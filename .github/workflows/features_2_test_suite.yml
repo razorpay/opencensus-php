@@ -35,7 +35,7 @@ jobs:
       - name: prepare_test
         run: ci-assets/prepare_test.sh
         env:
-          GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
       - name: features_2_test_suite
         run: ci-assets/features_2_test_suite.sh
         env:

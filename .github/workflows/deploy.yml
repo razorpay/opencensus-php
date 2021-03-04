@@ -19,7 +19,7 @@ jobs:
       - name: prepare_test
         run: ci-assets/prepare_test.sh
         env:
-          GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
           SONAR_HOST: https://sonar.razorpay.com
           SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
       - name: smart collect test suite
@@ -44,7 +44,7 @@ jobs:
           ES_HOST: elasticsearch
           ES_AUDIT_HOST: elasticsearch
           LQEXT_TESTING_TXN_SKIP_COUNT: 5
-          GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
           SONAR_HOST: https://sonar.razorpay.com
           SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
           GIT_COMMIT_ID: ${{ github.sha }}

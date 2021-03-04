@@ -35,7 +35,7 @@ jobs:
     - name: prepare_test
       run: ci-assets/prepare_test.sh
       env:
-        GIT_TOKEN: ${{ secrets.GIT_ACTION_TOKEN }}
+        GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
     - name: validate_php_syntax
       run: ci-assets/validate_php_syntax.sh
   build-web:
@@ -61,7 +61,7 @@ jobs:
           file: ./Dockerfile.web
           build-args: |
             GIT_COMMIT_HASH=${{ github.sha }}
-            GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }}
+            GIT_TOKEN=${{ secrets.GIT_TOKEN }}
             GIT_USERNAME=rzp
             ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.2-api-web
             ARMORY_IMAGE=c.rzp.io/razorpay/armory:wkhtmltopdf-v182
@@ -90,7 +90,7 @@ jobs:
            file: ./Dockerfile.worker
            build-args: |
              GIT_COMMIT_HASH=${{ github.sha }}
-             GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }}
+             GIT_TOKEN=${{ secrets.GIT_TOKEN }}
              GIT_USERNAME=rzp
              ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.2-api-web
              ARMORY_IMAGE=c.rzp.io/razorpay/armory:wkhtmltopdf-v182
@@ -119,7 +119,7 @@ jobs:
            file: ./Dockerfile.checkout
            build-args: |
              GIT_COMMIT_HASH=${{ github.sha }}
-             GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }}
+             GIT_TOKEN=${{ secrets.GIT_TOKEN }}
              GIT_USERNAME=rzp
              NGINX_IMAGE=c.rzp.io/razorpay/onggi:nginx-alpine-3.12
 
@@ -146,7 +146,7 @@ jobs:
            file: ./Dockerfile.openresty
            build-args: |
              GIT_COMMIT_HASH=${{ github.sha }}
-             GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }}
+             GIT_TOKEN=${{ secrets.GIT_TOKEN }}
              GIT_USERNAME=rzp
              ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.2-api-web
              OPENRESTY_IMAGE=c.rzp.io/razorpay/onggi:openresty-1.17.8.2-0-alpine-fat-nosse42
@@ -173,7 +173,7 @@ jobs:
            file: ./Dockerfile.web
            build-args: |
              GIT_COMMIT_HASH=${{ github.sha }}
-             GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }}
+             GIT_TOKEN=${{ secrets.GIT_TOKEN }}
              GIT_USERNAME=rzp
 
   build-dockerhub-worker:
@@ -198,7 +198,7 @@ jobs:
            file: ./Dockerfile.worker
            build-args: |
              GIT_COMMIT_HASH=${{ github.sha }}
-             GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }}
+             GIT_TOKEN=${{ secrets.GIT_TOKEN }}
              GIT_USERNAME=rzp
 
   build-dockerhub-checkout:
@@ -223,7 +223,7 @@ jobs:
           file: ./Dockerfile.checkout
           build-args: |
             GIT_COMMIT_HASH=${{ github.sha }}
-            GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }}
+            GIT_TOKEN=${{ secrets.GIT_TOKEN }}
             GIT_USERNAME=rzp
 
   build-dockerhub-openresty:
@@ -248,7 +248,7 @@ jobs:
          file: ./Dockerfile.openresty
          build-args: |
            GIT_COMMIT_HASH=${{ github.sha }}
-           GIT_TOKEN=${{ secrets.GIT_ACTION_TOKEN }}
+           GIT_TOKEN=${{ secrets.GIT_TOKEN }}
            GIT_USERNAME=rzp
 
   workflow_status:
