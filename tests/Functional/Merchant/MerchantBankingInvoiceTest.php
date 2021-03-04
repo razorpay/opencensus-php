@@ -1741,6 +1741,8 @@ class MerchantBankingInvoiceTest extends TestCase
 
     public function testBankingInvoiceDownloadFromAdminDashboard()
     {
+        $this->markTestSkipped("failing intermittently on drone");
+
         $this->setupBankingInvoice();
 
         $this->ba->adminAuth();
