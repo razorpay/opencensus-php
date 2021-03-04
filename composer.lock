@@ -4697,12 +4697,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/opencensus-php.git",
-                "reference": "b6853932d2364a343f3da274221faaf11350d98a"
+                "reference": "1ffd9ded0a728802308d3c405f6fbed55244bc82"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/opencensus-php/zipball/b6853932d2364a343f3da274221faaf11350d98a",
-                "reference": "b6853932d2364a343f3da274221faaf11350d98a",
+                "url": "https://api.github.com/repos/razorpay/opencensus-php/zipball/1ffd9ded0a728802308d3c405f6fbed55244bc82",
+                "reference": "1ffd9ded0a728802308d3c405f6fbed55244bc82",
                 "shasum": ""
             },
             "archive": {
