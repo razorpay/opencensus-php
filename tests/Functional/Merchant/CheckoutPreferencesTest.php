@@ -1459,19 +1459,6 @@ class CheckoutPreferencesTest extends TestCase
         $response = $this->runRequestResponseFlow($testData);
     }
 
-    public function testGetCheckoutPersonalisationForNonLoggedInUserUpiIntent()
-    {
-        $this->ba->publicAuth();
-
-        $order = $this->fixtures->order->create();
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $testData['request']['content']['order_id'] = $order->getPublicId();
-
-        $response = $this->runRequestResponseFlow($testData);
-    }
-
     public function testGetCheckoutPersonalisationForNonLoggedInUserWithContact()
     {
         $this->ba->publicAuth();

@@ -7506,10 +7506,6 @@ return [
                                 'method'     => 'netbanking',
                             ],
                             [
-                                'instrument' => 'abcd@okhdfc',
-                                'method'     => 'upi',
-                            ],
-                            [
                                 'instrument' => 'phonepay',
                                 'method'     => 'wallet',
                             ],
@@ -7547,10 +7543,6 @@ return [
                                 'method'     => 'netbanking',
                             ],
                             [
-                                'instrument' => 'abcd@okhdfc',
-                                'method'     => 'upi',
-                            ],
-                            [
                                 'instrument' => 'phonepay',
                                 'method'     => 'wallet',
                             ],
@@ -7586,10 +7578,6 @@ return [
                             [
                                 'instrument' => null,
                                 'method'     => 'netbanking',
-                            ],
-                            [
-                                'instrument' => null,
-                                'method'     => 'upi',
                             ],
                             [
                                 'instrument' => 'phonepay',
@@ -7670,10 +7658,6 @@ return [
                                 'method'     => 'netbanking',
                             ],
                             [
-                                'instrument' => null,
-                                'method'     => 'upi',
-                            ],
-                            [
                                 'instrument' => 'phonepay',
                                 'method'     => 'wallet',
                             ],
@@ -7743,10 +7727,6 @@ return [
                             [
                                 'instrument' => 'icici_bank',
                                 'method'     => 'netbanking',
-                            ],
-                            [
-                                'instrument' => 'abcd@okhdfc',
-                                'method'     => 'upi',
                             ],
                             [
                                 'instrument' => 'phonepay',

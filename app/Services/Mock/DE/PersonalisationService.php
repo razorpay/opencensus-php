@@ -22,7 +22,6 @@ class PersonalisationService
         }
 
         $instruments = [
-                    $upiIntrument,
                     [
                         'instrument' => 'phonepay',
                         'method'     => 'wallet',
