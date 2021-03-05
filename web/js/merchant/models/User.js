@@ -804,6 +804,11 @@ export default class User {
     return this.getExpStatus('block_bank_account_update_merchant_dashboard');
   }
 
+  // NPS survey feature
+  showNPSSurvey() {
+    return this.getExpStatus('dashboard_show_nps_survey');
+  }
+
   // Setter Methods
   set secondFactorAuthOfCurrentMerchant(secondFactorAuth) {
     this.merchants[this.current].second_factor_auth = secondFactorAuth;

@@ -2,6 +2,7 @@ import { Component, Suspense } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import moment from 'moment';
+import { makePopup } from '@typeform/embed';
 
 import Loader from 'common/ui/Loader';
 
@@ -34,6 +35,7 @@ import { fireAnalyticsEvents, setTrackData } from 'common/utils/googleAnalytics'
 import { resizeWindow, updateMerchantLiveTransactionFlag } from 'merchant/reducers/app';
 import { matchFullPageView } from 'merchant/routes';
 import { classList, isPresent } from 'common/utils/rzp-utils';
+import { isMobileDevice } from 'merchant/components/Home/data';
 
 import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import rolesList from 'merchant/helpers/permissions/roles-list';
@@ -143,6 +145,7 @@ export default class App extends Component {
 
     this.state = {
       isLoading: true,
+      npsSurveyPopup: false,
     };
 
     this.handleResize = debounce(this.handleResize.bind(this), 200);
@@ -272,20 +275,56 @@ export default class App extends Component {
 
   componentDidMount() {
     window.addEventListener('resize', this.handleResize);
+    const user = window.rzp_user;
+    if (user) {
+      const NPSEnableTypeForm = makePopup(
+        `https://razorpay.typeform.com/to/ndlvP2XX?mid=${user.current}&source=dashboard&email=${user.email}`,
+        {
+          mode: 'popup',
+          hideHeaders: true,
+          hideFooters: true,
+          onSubmit: this.closeSurvey,
+        },
+      );
+      this.state.NPSEnableTypeForm = NPSEnableTypeForm; // saving reference typeform
+    }
   }
 
-  componentWillReceiveProps({ user, history, location, baseLocation }) {
+  componentWillReceiveProps({ user, history, location, baseLocation, org }) {
     if (user.isAuthenticated) {
       const role = user.userRole;
       this.redirectToRoute(role);
 
       this.renderFullPageView = this.getFPView(baseLocation || location);
     }
+    if (org && user) {
+      const surveyShowed = !!LocalStorageService.getItem('razorpay_nps_survey_showed');
+      if (
+        org &&
+        org.custom_code &&
+        org.custom_code.toLowerCase() === 'rzp' && // only for razorpay org
+        user.showNPSSurvey() && // experiment check
+        !surveyShowed &&
+        !isMobileDevice() &&
+        this.state.NPSEnableTypeForm
+      ) {
+        const takeNPSSurvey = moment(moment(user.created_at, 'X').format('YYYY-MM-DD')).isBetween(
+          '2021-01-31',
+          '2021-03-01',
+        );
+        this.setState({ npsSurveyPopup: takeNPSSurvey });
+      }
+    }
   }
 
   componentWillUnmount() {
     window.removeEventListener('resize', this.handleResize);
   }
+
+  closeSurvey = () => {
+    this.setState({ npsSurveyPopup: false });
+    this.state.NPSEnableTypeForm.close();
+  };
 
   fetchSupportedCurrencies() {
     return merchantFetch('currency/all/proxy');
@@ -608,6 +647,13 @@ export default class App extends Component {
                   org_custom_code={org.custom_code}
                 />
               </React.Fragment>
+            )}
+
+            {this.state.npsSurveyPopup && (
+              <>
+                {LocalStorageService.setItem('razorpay_nps_survey_showed', 1)}
+                {this.state.NPSEnableTypeForm.open()}
+              </>
             )}
 
             <Content

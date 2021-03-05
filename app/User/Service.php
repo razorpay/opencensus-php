@@ -1460,7 +1460,8 @@ class Service extends Base\Service
             'rx_opfin_sso_announcement_xdashboard',
             'enable_tpv_fe',
             'shopify_gtm_notification_cohorts',
-            'es_ondeman_restricted_cohorts'
+            'es_ondeman_restricted_cohorts',
+            'dashboard_show_nps_survey'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
