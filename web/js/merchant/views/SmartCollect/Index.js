@@ -14,19 +14,18 @@ import OnBoarding from './OnBoarding';
 import QuickGuide from './QuickGuide';
 import PaymentsList from './Payments/List';
 import VirtualAccountsList from './VirtualAccounts/List';
+import BlockOnBoarding from './BlockOnBoarding';
 
 @connect(
-  state => {
+  (state) => {
     return {
-      VAProductOnBoarding: getCurrentProductOnBoardingDetails(
-        state,
-        RZPFeatures.VA
-      ),
+      user: state.session.user,
+      VAProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.VA),
     };
   },
   {
     handleProductQuickGuide,
-  }
+  },
 )
 export default class SmartCollectContainer extends React.Component {
   componentDidMount() {
@@ -37,14 +36,22 @@ export default class SmartCollectContainer extends React.Component {
   }
 
   render() {
+    const { user } = this.props;
+    if (user.isUnregisteredBusiness && !user.isVirtualAccountsEnabled) {
+      return (
+        <div class="SmartCollect-Container">
+          <BlockOnBoarding />
+        </div>
+      );
+    }
+
     const { isQuickGuideOpen, showOnboarding } = this.props.VAProductOnBoarding;
 
     if (showOnboarding) {
       return <OnBoarding />;
     }
 
-    const className =
-      this.props.location.pathname.includes('virtualaccounts') && 'active';
+    const className = this.props.location.pathname.includes('virtualaccounts') && 'active';
 
     return (
       <div class="SmartCollect-Container">
