@@ -49,27 +49,25 @@ const CaInfo = (props) => {
   };
 
   const sendViewEvent = (status) => {
-    !showNitroRXCAFlow &&
-      props.tracking.trackEvent(
-        window.rzpQ.merchantActions().viewed('dashboard.neopricing_tracker', {
-          status: status ? analyticsStatusMap[status] : 'application_pending',
-        }),
-      );
+    props.tracking.trackEvent(
+      window.rzpQ.merchantActions().viewed('dashboard.neopricing_tracker', {
+        status: status ? analyticsStatusMap[status] : 'application_pending',
+      }),
+    );
     props.updateCAstatus(status);
   };
 
   const GoToCaDocs = () => {
     window.open('https://razorpay.com/docs/razorpayx/current-account/', '_blank');
-    !showNitroRXCAFlow &&
-      props.tracking.trackEvent(
-        window.rzpQ.merchantActions().clicked('dashboard.neopricing_tracker', {
-          clicked_on: 'view_documents',
-          status:
-            caAccount && caAccount.status
-              ? analyticsStatusMap[caAccount.status]
-              : analyticsStatusMap['created'],
-        }),
-      );
+    props.tracking.trackEvent(
+      window.rzpQ.merchantActions().clicked('dashboard.neopricing_tracker', {
+        clicked_on: 'view_documents',
+        status:
+          caAccount && caAccount.status
+            ? analyticsStatusMap[caAccount.status]
+            : analyticsStatusMap['created'],
+      }),
+    );
   };
 
   const handleAnnouncementClose = () => {
