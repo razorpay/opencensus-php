@@ -21,7 +21,7 @@ class ReconciliationFields
     const REFUND_REF_NO         = 'refund_ref_no';
     const GROSS_TXN_AMOUNT      = ['gross_txn_amount', 'amount'];
     const TXN_CHARGES           = 'txn_charges';
-    const SERVICE_TAX           = ['service_tax', 'txn_gst_18'];
+    const SERVICE_TAX           = ['service_tax', 'txn_gst_18','txn_service_taxs'];
     const SB_CESS               = ['sb_cess', 'txn_sb_cess'];
     const KRISHI_KALYAN_CESS    = ['krishi_kalyan_cess', 'txn_krishi_kalyan_cess'];
     const TOTAL_CHARGEABLE      = ['total_chargeable', 'txn_net_chargeable'];
