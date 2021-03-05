@@ -273,7 +273,7 @@ class WorkflowActionTest extends TestCase
         ], 'live');
 
         // This will create a wf action in Mysql and ES, not using default workflow.
-        $workflow = $this->editAdmin(Org::RZP_ORG_SIGNED, Org::SUPER_ADMIN_SIGNED, [], 'live');
+        $workflow = $this->editAdmin(Org::RZP_ORG_SIGNED, Org::SUPER_ADMIN_SIGNED, ['name' => 'akshay'], 'live');
 
         //ES is not so Real Time, so need to refresh manually.
         $this->esClient->indices()->refresh();
@@ -289,6 +289,10 @@ class WorkflowActionTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
+
+        $admin = $this->getAdmin(Org::RZP_ORG_SIGNED, Org::SUPER_ADMIN_SIGNED, null, 'live');
+
+        $this->assertEquals('akshay', $admin['name']);
     }
 
     public function testWorkflowActionSuperAdminApprove()

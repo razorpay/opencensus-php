@@ -14,6 +14,7 @@ class Name
     const EXECUTED             = 'executed';
     const OPEN                 = 'open';
     const CLOSED               = 'closed';
+    const FAILED               = 'failed';
 
     // Action States post which we do not accept any state changes
     const CLOSED_ACTION_STATES = [

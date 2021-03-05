@@ -889,7 +889,9 @@ class Core extends Base\Core
 
         if ($replayOriginalRequest === true)
         {
-            $internalResponse = App::call([$controller, $functionName], array_values($routeParams));
+            // Not using App::call here because in Laravel6 this internally
+            // matches function param names as well
+            $internalResponse = $controller->$functionName(...array_values($routeParams));
 
             if ($internalResponse->getStatusCode() !== 200)
             {

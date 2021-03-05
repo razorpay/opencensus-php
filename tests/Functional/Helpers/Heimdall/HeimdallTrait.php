@@ -14,28 +14,28 @@ use RZP\Models\Admin\Permission;
  */
 trait HeimdallTrait
 {
-    protected function deleteAdmin($orgId, $adminId, $token = null)
+    protected function deleteAdmin($orgId, $adminId, $token = null, $mode = 'test')
     {
         $request = [
             'url'    => '/admin/' . $adminId,
             'method' => 'DELETE'
         ];
 
-        $this->ba->adminAuth('test', $token, $orgId);
+        $this->ba->adminAuth($mode, $token, $orgId);
 
         $response = $this->makeRequestAndGetContent($request);
 
         return $response;
     }
 
-    protected function getAdmin($orgId, $adminId, $token = null)
+    protected function getAdmin($orgId, $adminId, $token = null, $mode = 'test')
     {
         $request = [
             'url'    => '/admin/' . $adminId . '/fetch',
             'method' => 'GET'
         ];
 
-        $this->ba->adminAuth('test', $token, $orgId);
+        $this->ba->adminAuth($mode, $token, $orgId);
 
         $response = $this->makeRequestAndGetContent($request);
 
