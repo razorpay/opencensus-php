@@ -444,4 +444,33 @@ return [
         ],
     ],
 
+    'testGetFreshdeskTicketCareApp' => [
+        'request' => [
+            'url' => '/fd/support_dashboard/ticket/razorpayid0012',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content'       => [
+                'key2' => 'value2',
+            ],
+            'status_code'   => 200,
+        ],
+    ],
+
+    'testUpdateFreshdeskTicketInternal' => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'url'     => '/internal/freshdesk/ticket/razorpayid0012',
+            'content' => [
+                'account_id' => '10000000000000',
+                'key1'       => 'value1',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'key2' => 'value2',
+            ],
+        ],
+    ],
+
 ];

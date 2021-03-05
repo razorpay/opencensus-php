@@ -17,7 +17,8 @@ class CareProxyController extends Controller
     const GET_CALLBACK      = 'twirp/rzp.care.callback.v1.CallbackService/GetCallback';
 
     //cron
-    const INIT_SLOTS = 'twirp/rzp.care.callback.v1.CallbackService/InitSlots';
+    const INIT_SLOTS             = 'twirp/rzp.care.callback.v1.CallbackService/InitSlots';
+    const PUSH_CALLBACK_TO_QUEUE = 'twirp/rzp.care.callback.v1.CallbackService/PushCallbackToQueue';
 
     const MERCHANT_ROUTES = [
         self::CHECK_ELIGIBILITY,
@@ -28,6 +29,7 @@ class CareProxyController extends Controller
 
     const CRON_ROUTES = [
         self::INIT_SLOTS,
+        self::PUSH_CALLBACK_TO_QUEUE,
     ];
 
     public function postDashboardProxyRequest($path)

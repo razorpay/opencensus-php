@@ -138,11 +138,9 @@ class Authorization
 
     public function careAppAuth()
     {
-        $config = \Config::get('applications.care');
+        $this->appAuth('rzp_test_10000000000000', \Config::get('applications.care')['secret']);
 
-        $pwd = $config['secret'];
-
-        $this->appAuthLive($pwd);
+        $this->proxy = true;
     }
 
     public function addAppAuthHeaders($hostName)

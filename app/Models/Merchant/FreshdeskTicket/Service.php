@@ -1032,6 +1032,19 @@ class Service extends Base\Service
         return $input['group_id'];
     }
 
+    public function patchTicketInternal($id, $content)
+    {
+        $ticket = $this->repo->merchant_freshdesk_tickets->findByIdAndMerchant(
+            $id,
+            $this->merchant);
+
+        $fdInstance = $ticket->getFdInstance();
+
+        $url = self::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][$fdInstance];
+
+        return $this->app['freshdesk_client']->updateTicketV2($ticket->getTicketId(), $content, $url);
+    }
+
     public function resolveTicket($fdInstance , $ticketId) : array
     {
         if (empty($ticketId) === true || empty($fdInstance) === true)

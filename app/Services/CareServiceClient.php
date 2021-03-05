@@ -13,12 +13,13 @@ use RZP\Exception\IntegrationException;
 class CareServiceClient
 {
     protected $app;
-
     protected $config;
 
-    const CONTENT_TYPE      = 'Content-Type';
-    const AUTHORIZATION     = 'Authorization';
-    const X_REQUEST_ID      = 'X-Request-Id';
+    const CONTENT_TYPE                     = 'Content-Type';
+    const AUTHORIZATION                    = 'Authorization';
+    const X_REQUEST_ID                     = 'X-Request-Id';
+    const TIMEOUT                          = 'timeout';
+    const DEFAULT_TIMEOUT_DURATION_SECONDS = 20;
 
 
     public function __construct($app)
@@ -43,14 +44,14 @@ class CareServiceClient
     protected function sendRequestAndProcessResponse($path, $method, $content)
     {
         $this->app['trace']->info(TraceCode::CARE_SERVICE_REQUEST, [
-            'path'       => $path,
-            'method'     => $method,
+            'path'   => $path,
+            'method' => $method,
         ]);
 
         $response = $this->sendRequest($path, $method, $content);
 
         $this->app['trace']->info(TraceCode::CARE_SERVICE_RESPONSE, [
-            'status_code'     => $response->status_code,
+            'status_code' => $response->status_code,
         ]);
 
         return $this->processResponse($response);
@@ -62,7 +63,15 @@ class CareServiceClient
 
         $headers = array_merge($headers, $this->getHeaders());
 
-        $content = json_encode($content, JSON_FORCE_OBJECT);
+        $options = array_merge($options, $this->getOptions());
+
+        if (empty($content) === true)
+        {
+            $content = '{}';
+        } else
+        {
+            $content = json_encode($content);
+        }
 
         return Requests::request($url, $headers, $content, $method, $options);
     }
@@ -72,7 +81,7 @@ class CareServiceClient
         if ($response->status_code >= 500)
         {
             throw new IntegrationException('care_service integration exception',
-            ErrorCode::SERVER_ERROR);
+                ErrorCode::SERVER_ERROR);
         }
 
         $parsedResponse = $this->parseResponse($response);
@@ -82,9 +91,9 @@ class CareServiceClient
             $description = $parsedResponse['msg'] ?? '';
 
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR,
-            null,
-            $parsedResponse,
-            $description);
+                null,
+                $parsedResponse,
+                $description);
         }
 
         return $parsedResponse;
@@ -105,9 +114,9 @@ class CareServiceClient
     protected function getHeaders()
     {
         return [
-            self::CONTENT_TYPE      => 'application/json',
-            self::AUTHORIZATION     => $this->getAuthorizationHeader(),
-            self::X_REQUEST_ID      => $this->app['request']->getTaskId(),
+            self::CONTENT_TYPE  => 'application/json',
+            self::AUTHORIZATION => $this->getAuthorizationHeader(),
+            self::X_REQUEST_ID  => $this->app['request']->getTaskId(),
         ];
     }
 
@@ -131,9 +140,16 @@ class CareServiceClient
     protected function addMerchantDetails($input)
     {
         $input['merchant'] = [
-            'id'    => $this->app['basicauth']->getMerchantId(),
+            'id' => $this->app['basicauth']->getMerchantId(),
         ];
 
         return $input;
+    }
+
+    protected function getOptions()
+    {
+        return [
+            self::TIMEOUT => self::DEFAULT_TIMEOUT_DURATION_SECONDS,
+        ];
     }
 }

@@ -11,7 +11,7 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\Freshdesk\FreshdeskTrait;
 
 
-class FreshdeskTicketTestV2 extends TestCase
+class FreshdeskTicketV2Test extends TestCase
 {
     use RequestResponseFlowTrait;
     use FreshdeskTrait;
@@ -26,7 +26,7 @@ class FreshdeskTicketTestV2 extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__ . '/helpers/SupportTicketDashboardTestData.php';
+        $this->testDataFilePath = __DIR__ . '/helpers/FreshdeskTicketV2TestData.php';
 
         parent::setUp();
 
@@ -641,6 +641,35 @@ class FreshdeskTicketTestV2 extends TestCase
                 'fr_due_by'         => '2020-12-08T16:04:20Z',
             ],
         ], $ticket);
+    }
+
+    public function testGetFreshdeskTicketCareApp()
+    {
+        $this->ba->careAppAuth();
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/12?include=stats', 'get',
+            [
+            ],
+            [
+                'key2' => 'value2',
+            ]);
+
+        $this->startTest();
+    }
+
+    public function testUpdateFreshdeskTicketInternal()
+    {
+        $this->ba->careAppAuth();
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/12', 'put',
+        [
+            'key1' => 'value1',
+        ],
+        [
+            'key2' => 'value2',
+        ]);
+
+        $this->startTest();
     }
 
     protected function checkFreshdeskCorrectInstanceCallAndRespondWith($expectedPath,

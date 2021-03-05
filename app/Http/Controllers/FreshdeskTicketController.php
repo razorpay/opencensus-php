@@ -158,4 +158,14 @@ class FreshdeskTicketController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function patchTicketInternal($id)
+    {
+        $input = Request::all();
+
+        $response = (new FreshdeskTicketService)->patchTicketInternal($id, $input);
+
+        return ApiResponse::json($response);
+
+    }
 }

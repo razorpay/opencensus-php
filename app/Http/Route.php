@@ -2142,6 +2142,7 @@ class Route
         'fd_consume_webhook'                      => ['post',      'fd/webhook/{event}',                                        'FreshdeskTicketController@postWebhook'                        ],
 
         'freshdesk_create_ticket'                 => ['post',      'freshdesk/tickets',                                          'FreshdeskTicketController@postTicket'                        ],
+        'freshdesk_update_ticket_internal'        => ['patch',     'internal/freshdesk/ticket/{id}',                             'FreshdeskTicketController@patchTicketInternal'               ],
         'freshdesk_otp_send'                      => ['post',      'freshdesk/tickets/otp',                                      'FreshdeskTicketController@postOtp'                           ],
 
         'freshdesk_fetch_tickets'                 => ['post',      'freshdesk/tickets/customer',                                 'FreshdeskTicketController@fetchCustomerTickets'              ],
@@ -3067,6 +3068,7 @@ class Route
 
         'loc_cron',
 
+        'freshdesk_update_ticket_internal',
         'care_service_cron_proxy',
     ];
 
@@ -6339,6 +6341,8 @@ class Route
 
         'care' => [
             'internal_merchant_fetch',
+            'freshdesk_update_ticket_internal',
+            'fd_fetch_ticket',
         ],
     ];
 
