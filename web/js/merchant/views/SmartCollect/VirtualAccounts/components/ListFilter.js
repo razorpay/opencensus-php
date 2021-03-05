@@ -16,6 +16,16 @@ export default (props) => {
 
       {props.showAdvancedFilters && (
         <>
+          <div class="form-group list-filter-item account-number-filter">
+            <label>Account Number/UPI Address</label>
+            <Field
+              name="payee_account"
+              component="input"
+              class="form-control input-sm"
+              onBlur={props.onEleBlur('payee_vpa')}
+            />
+          </div>
+
           <div class="form-group list-filter-item">
             <label>Customer Name</label>
             <Field

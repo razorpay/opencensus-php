@@ -15,7 +15,7 @@ import PaymentsListFilter from './Filter';
 
 import { fetchSmartCollectPayments as fetchAll } from 'merchant/reducers/collection';
 
-@connect((state) => state.scPayments, { fetchAll })
+@connect((state) => ({ ...state.scPayments, user: state.session.user }), { fetchAll })
 @RTracking(() => window.rzpQ.component('VAPaymentsListContainer'))
 export default class VAPaymentsListContainer extends ListContainer {
   componentDidMount() {
@@ -116,6 +116,7 @@ export default class VAPaymentsListContainer extends ListContainer {
           onClearAnalytics={this.onClearAnalytics}
           onSubmit={this.onSearchSubmit}
           onEleBlur={this.onSearchEleBlur}
+          showAdvancedFilters={this.props.user.isSmartCollectAdvancedSearchFeaturesEnabled}
         />
 
         <PaymentsTable
