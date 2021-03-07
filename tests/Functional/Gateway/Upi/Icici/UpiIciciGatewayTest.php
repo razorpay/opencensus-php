@@ -290,168 +290,103 @@ class UpiIciciGatewayTest extends TestCase
         $this->assertEquals('pay', $gatewayEntity['type']);
     }
 
-    public function testIntentTpvWithoutZeroesForSbi()
+    public function tpvBankAccountHandling()
     {
-        $terminal = $this->fixtures->create('terminal:shared_upi_icici_intent_terminal');
+        $cases = [];
 
-        $terminal->setAttribute('tpv', 2)->saveOrFail();
+        $cases['sbi_missing_zeroes'] = [
+            [
+                'account_number' => '03040304',
+                'ifsc'           => 'SBIN0001069'
+            ],
+            [
+                'payerAccount'   => '00000000003040304', // Leading zeroes padding for 17 chars
+            ]
+        ];
 
-        $this->ba->privateAuth();
+        $cases['ratn_with_leading_zeroes'] = [
+            [
+                'account_number'    => '0000840304030466',
+                'ifsc'              => 'RATN0000001',
+            ],
+            [
+                'payerAccount'      => '840304030466', // Removing leading zeroes
+            ]
+        ];
 
-        $this->fixtures->merchant->enableTPV();
+        $cases['ratn_without_leading_zeroes'] = [
+            [
+                'account_number'    => '1000840304030466',
+                'ifsc'              => 'RATN0000001',
+            ],
+            [
+                'payerAccount'      => '1000840304030466', // Unchanged as no leading zeroes
+            ]
+        ];
 
-        $this->mockServerContentFunction(function (& $content, $action, $request) use (& $requestAsserted)
-        {
-            // zeros are left padded for SBI
-            $this->assertSame('00000000003040304', $request['payerAccount']);
-            $requestAsserted = true;
+        $cases['apgb_missing_zeroes'] = [
+            [
+                'account_number'    => '91122249452',
+                'ifsc'              => 'APGB0000001',
+            ],
+            [
+                'payerAccount'      => '00000091122249452', //Leading zeroes padding for 17 chars
+            ]
+        ];
 
-            if ($action === 'authorize')
-            {
-                $content['refId'] = 'ICICIRefId';
-            }
-            else
-            {
-                $content['PayerVA'] = 'user@icici';
-            }
-        });
-
-        $this->startTest($this->testData[__FUNCTION__]);
-
-        $order = $this->getLastEntity('order', true);
-
-        $payment = $this->getDefaultUpiPaymentArray();
-
-        unset($payment['vpa']);
-        $payment['_']['flow'] = 'intent';
-
-        $payment['amount'] = $order['amount'];
-        $payment['bank'] = $order['bank'];
-        $payment['order_id'] = $order['id'];
-
-        $this->doAuthPayment($payment);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals('1UpiIntICICTml', $payment['terminal_id']);
-
-        $this->fixtures->merchant->disableTPV();
-
-        $gatewayEntity = $this->getLastEntity('upi', true);
-
-        $this->assertEquals('pay', $gatewayEntity['type']);
-
-        $this->assertTrue($requestAsserted);
+        return $cases;
     }
 
-    public function testIntentTpvWithLeadingZeroesForRBL()
+    /**
+     * @dataProvider tpvBankAccountHandling
+     * @param array $bankAccount
+     * @param array $expected
+     */
+    public function testTpvBankAccountHandling(array $bankAccount, array $expected)
     {
-        $terminal = $this->fixtures->create('terminal:shared_upi_icici_intent_terminal');
+        $terminal = $this->fixtures->create('terminal:shared_upi_icici_tpv_terminal');
 
-        $terminal->setAttribute('tpv', 2)->saveOrFail();
+        $this->fixtures->merchant->enableTpv();
 
         $this->ba->privateAuth();
 
-        $this->fixtures->merchant->enableTPV();
+        $testdata = $this->testData[__FUNCTION__];
 
-        $this->mockServerContentFunction(function (& $content, $action, $request) use (& $requestAsserted)
+        $testdata['request']['content']['bank_account'] = array_merge([
+            'name'  => 'Test User',
+        ], $bankAccount);
+
+        // Create Order with Test data
+        $this->startTest($testdata);
+
+        $order = $this->getDbLastOrder();
+
+        $payment = $this->getDefaultUpiBlockPaymentArray();
+
+        $payment['amount']      = $order->getAmount();
+        $payment['bank']        = $order->getBank();
+        $payment['order_id']    = $order->getPublicId();
+
+        // Set assertion
+        $this->mockServerContentFunction(function (& $content, $action, $request) use (& $asserted, $expected)
         {
+            $asserted = true;
             // remove first four zeroes from the account number since it starts with 0
-            $this->assertSame('840304030466', $request['payerAccount']);
-            $this->assertEquals(12, strlen($request['payerAccount']));
-            $requestAsserted = true;
-
-            if ($action === 'authorize')
-            {
-                $content['refId'] = 'ICICIRefId';
-            }
-            else
-            {
-                $content['PayerVA'] = 'user@icici';
-            }
+            $this->assertArraySubset($expected, $request);
         });
-
-        $this->startTest($this->testData[__FUNCTION__]);
-
-        $order = $this->getLastEntity('order', true);
-
-        $payment = $this->getDefaultUpiPaymentArray();
-
-        unset($payment['vpa']);
-        $payment['_']['flow'] = 'intent';
-
-        $payment['amount'] = $order['amount'];
-        $payment['bank'] = $order['bank'];
-        $payment['order_id'] = $order['id'];
 
         $this->doAuthPayment($payment);
 
-        $payment = $this->getLastEntity('payment', true);
+        $this->assertTrue($asserted, 'Gateway request assertion failed');
 
-        $this->assertEquals('1UpiIntICICTml', $payment['terminal_id']);
+        $this->assertArraySubset([
+            'status'        => 'created',
+            'terminal_id'   => $terminal->getId(),
+        ], $this->getDbLastPayment()->toArray());
 
-        $this->fixtures->merchant->disableTPV();
-
-        $gatewayEntity = $this->getLastEntity('upi', true);
-
-        $this->assertEquals('pay', $gatewayEntity['type']);
-
-        $this->assertTrue($requestAsserted);
-    }
-
-    public function testIntentTpvWithoutLeadingZeroesForRBL()
-    {
-        $terminal = $this->fixtures->create('terminal:shared_upi_icici_intent_terminal');
-
-        $terminal->setAttribute('tpv', 2)->saveOrFail();
-
-        $this->ba->privateAuth();
-
-        $this->fixtures->merchant->enableTPV();
-
-        $this->mockServerContentFunction(function (& $content, $action, $request) use (& $requestAsserted)
-        {
-            //Since account number does not start with 0, it should not be modified.
-            $this->assertSame('1000840304030466', $request['payerAccount']);
-            $this->assertEquals(16, strlen($request['payerAccount']));
-            $requestAsserted = true;
-
-            if ($action === 'authorize')
-            {
-                $content['refId'] = 'ICICIRefId';
-            }
-            else
-            {
-                $content['PayerVA'] = 'user@icici';
-            }
-        });
-
-        $this->startTest($this->testData[__FUNCTION__]);
-
-        $order = $this->getLastEntity('order', true);
-
-        $payment = $this->getDefaultUpiPaymentArray();
-
-        unset($payment['vpa']);
-        $payment['_']['flow'] = 'intent';
-
-        $payment['amount'] = $order['amount'];
-        $payment['bank'] = $order['bank'];
-        $payment['order_id'] = $order['id'];
-
-        $this->doAuthPayment($payment);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals('1UpiIntICICTml', $payment['terminal_id']);
-
-        $this->fixtures->merchant->disableTPV();
-
-        $gatewayEntity = $this->getLastEntity('upi', true);
-
-        $this->assertEquals('pay', $gatewayEntity['type']);
-
-        $this->assertTrue($requestAsserted);
+        $this->assertArraySubset([
+            'type'          => 'collect',
+        ], $this->getDbLastUpi()->toArray());
     }
 
     public function testIntentDisabledPayment()

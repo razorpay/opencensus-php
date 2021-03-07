@@ -96,68 +96,14 @@ return [
         ],
     ],
 
-    'testIntentTpvWithoutZeroesForSbi' => [
+    'testTpvBankAccountHandling' => [
         'request' => [
             'content' => [
                 'amount'         => 50000,
                 'currency'       => 'INR',
                 'receipt'        => 'rcptid42',
                 'method'         => 'upi',
-                'bank_account'   => [
-                    'name'           => 'Test User',
-                    'account_number' => '03040304',
-                    'ifsc'           => 'SBIN0001069'
-                ]
-            ],
-            'method'    => 'POST',
-            'url'       => '/orders',
-        ],
-        'response' => [
-            'content' => [
-                'amount'         => 50000,
-                'currency'       => 'INR',
-                'receipt'        => 'rcptid42',
-            ],
-        ],
-    ],
-
-    'testIntentTpvWithLeadingZeroesForRBL' => [
-        'request' => [
-            'content' => [
-                'amount'         => 50000,
-                'currency'       => 'INR',
-                'receipt'        => 'rcptid42',
-                'method'         => 'upi',
-                'bank_account'   => [
-                    'name'           => 'Test User',
-                    'account_number' => '0000840304030466',
-                    'ifsc'           => 'RATN0000001'
-                ]
-            ],
-            'method'    => 'POST',
-            'url'       => '/orders',
-        ],
-        'response' => [
-            'content' => [
-                'amount'         => 50000,
-                'currency'       => 'INR',
-                'receipt'        => 'rcptid42',
-            ],
-        ],
-    ],
-
-    'testIntentTpvWithoutLeadingZeroesForRBL' => [
-        'request' => [
-            'content' => [
-                'amount'         => 50000,
-                'currency'       => 'INR',
-                'receipt'        => 'rcptid42',
-                'method'         => 'upi',
-                'bank_account'   => [
-                    'name'           => 'Test User',
-                    'account_number' => '1000840304030466',
-                    'ifsc'           => 'RATN0000001'
-                ]
+                'bank_account'   => []
             ],
             'method'    => 'POST',
             'url'       => '/orders',
