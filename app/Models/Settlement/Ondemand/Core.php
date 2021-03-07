@@ -14,6 +14,7 @@ use RZP\Models\Reversal;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
 use RZP\Models\Transaction;
 use RZP\Constants\Timezone;
@@ -250,10 +251,11 @@ class Core extends Base\Core
         $pricingPlanId = $merchant->getPricingPlanId();
 
         return $this->repo->pricing
-                          ->getPricingRulesByPlanIdProductFeaturePaymentMethod($pricingPlanId,
+                          ->getPricingRulesByPlanIdProductFeaturePaymentMethodOrgId($pricingPlanId,
                                                                                Product::PRIMARY,
                                                                                $pricingFeature,
-                                                                               Payout\Method::FUND_TRANSFER);
+                                                                               Payout\Method::FUND_TRANSFER,
+                                                                               $merchant->getSignedOrgId());
     }
 
     public function updateOndemandPricingPercent($merchant, $percentRate)
@@ -262,17 +264,21 @@ class Core extends Base\Core
                                                            PricingFeature::SETTLEMENT_ONDEMAND);
         if(empty($settlementOndemandPricing) === false)
         {
-            $pricingArray = $settlementOndemandPricing->get()->toArray();
+            $pricingArray = $settlementOndemandPricing->toArray();
 
-            $pricingArray[0][Pricing\Entity::PERCENT_RATE] = $percentRate;
+            $pricingArray[Pricing\Entity::PERCENT_RATE] = $percentRate;
 
-            $pricingArray[0]['idempotency_key'] ='random';
+            $pricingArray['idempotency_key'] ='random';
 
-            $pricingArray[0][Pricing\Entity::MERCHANT_ID] = $merchant->getId();
+            $pricingArray[Pricing\Entity::MERCHANT_ID] = $merchant->getId();
 
-            $pricingArray[0]['update'] = true;
+            $pricingArray['update'] = true;
 
-            (new Pricing\Service)->postAddBulkPricingRules($pricingArray);
+            $inputArray = [];
+
+            array_push($inputArray, $pricingArray);
+
+            (new Pricing\Service)->postAddBulkPricingRules($inputArray, $settlementOndemandPricing->getOrgId());
         }
     }
 
@@ -299,18 +305,20 @@ class Core extends Base\Core
             $settlementOndemandPricing = $this->getOndemandPricingByFeature($merchant,
                                                                PricingFeature::SETTLEMENT_ONDEMAND);
 
-            if($settlementOndemandPricing->count() < 1)
+            $pricingPlan = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($pricingPlanId);
+
+            if($settlementOndemandPricing === null)
             {
                 $this->repo->transactionOnLiveAndTest(function () use($merchant,
                                                                       $pricingPlanId,
                                                                       $settlementOndemandPricing,
+                                                                      $pricingPlan,
                                                                       $percentRate)
                 {
                     // Replicates plan for this merchant if it was shared
                     if ($this->repo->merchant->fetchMerchantsCountWithPricingPlanId($pricingPlanId) !== 1)
                     {
-                        $newPlan = (new Pricing\Service())->replicatePlanAndAssign($merchant,
-                                                                                   $this->repo->pricing->getPlanByIdOrFailPublic($pricingPlanId));
+                        $newPlan = (new Pricing\Service())->replicatePlanAndAssign($merchant, $pricingPlan);
 
                         $merchant->refresh();
 
@@ -329,7 +337,7 @@ class Core extends Base\Core
                         Pricing\Entity::FEE_BEARER          => $merchant->getFeeBearer(),
                         ];
 
-                    $updatedPlanRule = (new Pricing\Service())->addPlanRule($pricingPlanId, $settlementOndemandPricingRule);
+                    $updatedPlanRule = (new Pricing\Service())->addPlanRule($pricingPlanId, $settlementOndemandPricingRule, $pricingPlan->getOrgId());
 
                     $this->trace->info(TraceCode::ADD_ONDEMAND_PRICING_IF_ABSENT, [
                         'merchant_id'   => $merchant->getId(),

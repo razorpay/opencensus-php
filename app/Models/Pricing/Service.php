@@ -36,13 +36,13 @@ class Service extends Base\Service
         return $plan->toArrayPublic();
     }
 
-    public function addPlanRule($id, $input)
+    public function addPlanRule($id, $input, $orgId = null)
     {
         $this->trace->info(
             TraceCode::PRICING_PLAN_RULE_ADD_ATTEMPT,
             ['id' => $id, $input]);
 
-        $plan = $this->repo->pricing->getPlanByIdOrFailPublic($id);
+        $plan = $this->repo->pricing->getPlanByIdOrFailPublic($id, $orgId);
 
         $ruleOrgId = $plan->getOrgId();
 
@@ -55,12 +55,13 @@ class Service extends Base\Service
         return $rule->toArray();
     }
 
-    public function postAddBulkPricingRules($input)
+    public function postAddBulkPricingRules($input, $orgId = null)
     {
         $this->trace->info(
             TraceCode::BATCH_ADD_PRICING_RULE_REQUEST,
             [
-                'request body' => $input
+                'request body' => $input,
+                'org id'        => $orgId
             ]);
 
         $pricingRulesCollection = new PublicCollection;
@@ -73,9 +74,9 @@ class Service extends Base\Service
             {
                 $mutex = App::getFacadeRoot()['api.mutex'];
                 $mutexKey = sprintf(self::MERCHANT_PRICING_UPDATE_MUTEX, $item[Entity::MERCHANT_ID]);
-                $pricingRulesCollection = $mutex->acquireAndRelease($mutexKey, function () use ($idempotencyKey, $shouldUpdate, $item, $pricingRulesCollection)
+                $pricingRulesCollection = $mutex->acquireAndRelease($mutexKey, function () use ($idempotencyKey, $shouldUpdate, $item, $pricingRulesCollection, $orgId)
                 {
-                $result = $this->repo->transactionOnLiveAndTest(function () use ($item, $idempotencyKey, $shouldUpdate)
+                $result = $this->repo->transactionOnLiveAndTest(function () use ($item, $idempotencyKey, $shouldUpdate, $orgId)
                 {
                     $merchant = $this->repo->merchant->findByPublicId($item[Entity::MERCHANT_ID]);
 
@@ -90,7 +91,7 @@ class Service extends Base\Service
 
                     $planId = $merchant->getPricingPlanId();
 
-                    $plan = $this->repo->pricing->getPlanByIdOrFailPublic($planId);
+                    $plan = $this->repo->pricing->getPlanByIdOrFailPublic($planId, $orgId);
 
                     $ruleOrgId = $plan->getOrgId();
 
@@ -106,7 +107,8 @@ class Service extends Base\Service
                         $methodSubtype,
                         $item[Pricing\Entity::PAYMENT_NETWORK],
                         $item[Pricing\Entity::INTERNATIONAL],
-                        0);
+                        0,
+                        $orgId);
 
                     if ($existingRule === null)
                     {
@@ -160,9 +162,10 @@ class Service extends Base\Service
                                 $methodSubtype,
                                 $item[Pricing\Entity::PAYMENT_NETWORK],
                                 $item[Pricing\Entity::INTERNATIONAL],
-                                0);
+                                0,
+                                $orgId);
 
-                            (new Pricing\Core)->editPlanRule($planId, $existingRule->getId(), $rule);
+                            (new Pricing\Core)->editPlanRule($planId, $existingRule->getId(), $rule, $orgId);
                         }
                         else
                         {

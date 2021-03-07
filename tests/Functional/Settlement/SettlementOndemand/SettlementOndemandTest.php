@@ -1367,6 +1367,106 @@ class SettlementOndemandTest extends TestCase
         $this->assertNotNull($secondMerchantOndemandFeature);
     }
 
+    public function testEnableEsOnDemandRestrictedAccessForCrossOrgMerchantFromBatchRoute()
+    {
+        $orgId = '6dLbNSpv5XbCOG';
+
+        $this->ba->batchAuth();
+
+        $this->fixtures->org->createHdfcOrg();
+
+        $this->fixtures->pricing->createTestPlanForNoOndemandAndEsAutomaticPricing();
+
+        $this->fixtures->pricing->createPricingPlanForDifferentOrg($orgId);
+
+        $this->fixtures->create('merchant', [
+            'id'     => '10000000000001',
+            'org_id' => $orgId
+        ]);
+
+        $this->fixtures->merchant->edit('10000000000001',
+            ['pricing_plan_id' => '1hDYlICxbxOCYx',  'international' => 0, 'org_id' => $orgId]);
+
+        $this->fixtures->merchant->edit('10000000000000',
+            ['pricing_plan_id' => '1BFFkd38fFGbnh',  'international' => 0]);
+
+        $this->startTest();
+
+        $featureConfigs = $this->getEntities(
+            'settlement.ondemand.feature_config',
+            ['count' => 2],
+            true,
+            'test');
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'                   => '10000000000001',
+            'percentage_of_balance_limit'   => 50,
+            'settlements_count_limit'       => 2,
+            'max_amount_limit'              => 2000000,
+        ], $featureConfigs['items'][0]);
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'                   => '10000000000000',
+            'percentage_of_balance_limit'   => 50,
+            'settlements_count_limit'       => 2,
+            'max_amount_limit'              => 2000000,
+        ], $featureConfigs['items'][1]);
+
+        $pricingRule1 = $this->getDbEntity('pricing',
+            [   'product' => 'primary',
+                'feature' =>'settlement_ondemand',
+                'plan_id' => '1BFFkd38fFGbnh'
+            ],
+            'test');
+
+        $this->assertEquals($pricingRule1['percent_rate'], 50);
+
+        $pricingRule2 = $this->getDbEntity('pricing',
+            [   'product' => 'primary',
+                'feature' =>'settlement_ondemand',
+                'plan_id' => '1hDYlICxbxOCYx'
+            ],
+            'test');
+
+        $this->assertEquals($pricingRule2['percent_rate'], 50);
+
+        $firstMerchantOndemandFeature = $this->getDbEntity('feature',
+            [   'name'        => 'es_on_demand',
+                'entity_id'   => '10000000000000',
+                'entity_type' => 'merchant'
+            ],
+            'test');
+
+        $firstMerchantOndemandRestrictedFeature = $this->getDbEntity('feature',
+            [   'name'        => 'es_on_demand_restricted',
+                'entity_id'   => '10000000000000',
+                'entity_type' => 'merchant'
+            ],
+            'test');
+
+        $secondMerchantOndemandFeature = $this->getDbEntity('feature',
+            [   'name'        => 'es_on_demand',
+                'entity_id'   => '10000000000001',
+                'entity_type' => 'merchant'
+            ],
+            'test');
+
+        $secondMerchantOndemandRestrictedFeature = $this->getDbEntity('feature',
+            [   'name'        => 'es_on_demand_restricted',
+                'entity_id'   => '10000000000001',
+                'entity_type' => 'merchant'
+            ],
+            'test');
+
+        $this->assertNotNull($firstMerchantOndemandFeature);
+
+        $this->assertNotNull($firstMerchantOndemandRestrictedFeature);
+
+        $this->assertNotNull($secondMerchantOndemandRestrictedFeature);
+
+        $this->assertNotNull($secondMerchantOndemandFeature);
+    }
+
     public function testUpdateFeatureConfigFromBatchRoute()
     {
         $this->ba->batchAuth();
@@ -1377,12 +1477,125 @@ class SettlementOndemandTest extends TestCase
             'id' => '100DemoAccount'
         ]);
 
-
         $this->fixtures->merchant->edit('10000000000000',
             ['pricing_plan_id' => '1A0Fkd38fGZPVC',  'international' => 0]);
 
         $this->fixtures->merchant->edit('100DemoAccount',
             ['pricing_plan_id' => '1A0Fkd38fGZPVC',  'international' => 0]);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '100DemoAccount', 'name' => 'es_on_demand']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand_restricted']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '100DemoAccount', 'name' => 'es_on_demand_restricted']);
+
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand.feature_config',[
+            'merchant_id'                 => '10000000000000',
+            'percentage_of_balance_limit' => 50,
+            'settlements_count_limit'     => 2,
+            'max_amount_limit'            => 7500
+        ]);
+
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand.feature_config',[
+            'merchant_id'                 => '100DemoAccount',
+            'percentage_of_balance_limit' => 25,
+            'settlements_count_limit'     => 1,
+            'max_amount_limit'            => 1000
+        ]);
+
+        $this->startTest();
+
+        $featureConfigs = $this->getEntities(
+            'settlement.ondemand.feature_config',
+            ['count' => 2],
+            true,
+            'test');
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'                   => '100DemoAccount',
+            'percentage_of_balance_limit'   => 50,
+            'settlements_count_limit'       => 2,
+            'max_amount_limit'              => 2000000,
+        ], $featureConfigs['items'][0]);
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'                   => '10000000000000',
+            'percentage_of_balance_limit'   => 50,
+            'settlements_count_limit'       => 2,
+            'max_amount_limit'              => 2000000,
+        ], $featureConfigs['items'][1]);
+
+        $pricingRule = $this->getDbEntity('pricing',
+            [   //'product' => 'primary',
+                'feature' =>'settlement_ondemand',
+                'plan_id' => '1A0Fkd38fGZPVC'
+            ],
+            'test');
+
+        $this->assertEquals($pricingRule['percent_rate'], 50);
+
+        $firstMerchantOndemandRestrictedFeature = $this->getDbEntity('feature',
+            [   'name'        => 'es_on_demand_restricted',
+                'entity_id'   => '10000000000000',
+                'entity_type' => 'merchant'
+            ],
+            'test');
+
+        $secondMerchantOndemandRestrictedFeature = $this->getDbEntity('feature',
+            [   'name'        => 'es_on_demand_restricted',
+                'entity_id'   => '100DemoAccount',
+                'entity_type' => 'merchant'
+            ],
+            'test');
+
+        $this->assertNull($firstMerchantOndemandRestrictedFeature);
+
+        $this->assertNull($secondMerchantOndemandRestrictedFeature);
+
+    }
+
+    public function testUpdateFeatureConfigForCrossOrgMerchantFromBatchRoute()
+    {
+        $orgId = '6dLbNSpv5XbCOG';
+
+        $this->ba->batchAuth();
+
+        $this->fixtures->org->createHdfcOrg();
+
+        $this->fixtures->pricing->createStandardPlan();
+
+        $this->fixtures->pricing->createPricingPlanForDifferentOrg($orgId);
+
+        $this->fixtures->create('pricing',[
+            'id'                  => '1zE3CYqf1zbyaa',
+            'plan_id'             => '1hDYlICxbxOCYx',
+            'plan_name'           => 'testDefaultPlan',
+            'feature'             => 'settlement_ondemand',
+            'payment_method'      => 'fund_transfer',
+            'payment_method_type' => null,
+            'payment_network'     => null,
+            'payment_issuer'      => null,
+            'percent_rate'        => 25,
+            'fixed_rate'          => 0,
+            'org_id'              => $orgId,
+        ]);
+
+        $this->fixtures->create('merchant', [
+            'id'     => '100DemoAccount',
+            'org_id' => $orgId
+        ]);
+
+        $this->fixtures->merchant->edit('10000000000000',
+            ['pricing_plan_id' => '1A0Fkd38fGZPVC',  'international' => 0]);
+
+        $this->fixtures->merchant->edit('100DemoAccount',
+            ['pricing_plan_id' => '1hDYlICxbxOCYx',  'international' => 0, 'org_id' => $orgId]);
 
         $this->fixtures->feature->create([
             'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);

@@ -1653,6 +1653,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ORG_ID);
     }
 
+    public function getSignedOrgId()
+    {
+        return Org\Entity::getSignedId($this->getAttribute(self::ORG_ID));
+    }
+
     public function getInvoiceCode()
     {
         return $this->getAttribute(self::INVOICE_CODE);

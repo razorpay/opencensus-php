@@ -145,7 +145,7 @@ class Service extends Base\Service
         $settlementOndemandPricing = (new Ondemand\Core)->getOndemandPricingByFeature($merchant,
             PricingFeature::SETTLEMENT_ONDEMAND);
 
-        if(($settlementOndemandPricing->count() < 1))
+        if($settlementOndemandPricing === null)
         {
             try
             {

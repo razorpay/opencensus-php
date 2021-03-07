@@ -41,19 +41,22 @@ class Repository extends Base\Repository
     ];
 
 
-    protected function newQueryWithOrgIdParam()
+    protected function newQueryWithOrgIdParam($orgId = null)
     {
          $query = $this->newQuery();
-         return $this->addQueryParamOrgId($query);
+         return $this->addQueryParamOrgId($query, $orgId);
     }
 
-    protected function addQueryParamOrgId($query)
+    protected function addQueryParamOrgId($query, $orgId = null)
     {
         $app = App::getFacadeRoot();
 
         $rzpOrgId = Org\Entity::getSignedId(Org\Entity::RAZORPAY_ORG_ID);
 
-        $orgId = (empty($app['basicauth']->getOrgId()) === true) ? $rzpOrgId : $app['basicauth']->getOrgId();
+        if ($orgId === null)
+        {
+            $orgId = (empty($app['basicauth']->getOrgId()) === true) ? $rzpOrgId : $app['basicauth']->getOrgId();
+        }
 
         $crossOrgId = $app['basicauth']->getCrossOrgId();
 
@@ -102,9 +105,9 @@ class Repository extends Base\Repository
      * @throws Exception\BadRequestException
      * @throws Exception\LogicException
      */
-    public function getPlan(string $id, string $type = null, bool $fail = false, bool $public = false)
+    public function getPlan(string $id, string $type = null, bool $fail = false, bool $public = false, string $orgId = null)
     {
-        $query   = $this->newQueryWithOrgIdParam();
+        $query   = $this->newQueryWithOrgIdParam($orgId);
 
         $cacheTags = Entity::getCacheTags($this->entity, $id, $type);
 
@@ -241,9 +244,9 @@ class Repository extends Base\Repository
      * @throws Exception\BadRequestException
      * @throws Exception\LogicException
      */
-    public function getPlanByIdOrFailPublic($id)
+    public function getPlanByIdOrFailPublic($id, $orgId = null)
     {
-        return $this->getPlan($id, null, true, true);
+        return $this->getPlan($id, null, true, true, $orgId);
     }
 
     public function getZeroPricingPlanRuleForMethod($feature, $method, $merchant, $product = Product::PRIMARY)
@@ -400,9 +403,9 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getPlanRule($planId, $ruleId)
+    public function getPlanRule($planId, $ruleId, $orgId = null)
     {
-        return $this->newQueryWithOrgIdParam()
+        return $this->newQueryWithOrgIdParam($orgId)
                      ->planId($planId)
                      ->where(Entity::ID, '=', $ruleId)
                      ->firstOrFailPublic();
@@ -430,9 +433,9 @@ class Repository extends Base\Repository
         }
     }
 
-    public function deletePlanRuleForce($planId, $ruleId)
+    public function deletePlanRuleForce($planId, $ruleId, $orgId = null)
     {
-        $rule = $this->newQueryWithOrgIdParam()
+        $rule = $this->newQueryWithOrgIdParam($orgId)
                      ->planId($planId)
                      ->where(Entity::ID, '=', $ruleId)
                      ->firstOrFailPublic();
@@ -460,9 +463,10 @@ class Repository extends Base\Repository
         $methodSubtype,
         $network,
         $international,
-        $amountRangeActive = 0)
+        $amountRangeActive = 0,
+        $orgId = null)
     {
-        $rule = $this->newQueryWithOrgIdParam()
+        $rule = $this->newQueryWithOrgIdParam($orgId)
                      ->where(Entity::PLAN_ID, '=',$planId)
                      ->where(Entity::PRODUCT, '=', $product)
                      ->where(Entity::FEATURE, '=', $feature)
@@ -477,13 +481,14 @@ class Repository extends Base\Repository
         return $rule;
     }
 
-    public function getPricingRulesByPlanIdProductFeaturePaymentMethod($planId, $product, $feature, $method)
+    public function getPricingRulesByPlanIdProductFeaturePaymentMethodOrgId($planId, $product, $feature, $method, $orgId = null)
     {
-        $rule = $this->newQueryWithOrgIdParam()
+        $rule = $this->newQueryWithOrgIdParam($orgId)
                      ->where(Entity::PLAN_ID, '=',$planId)
                      ->where(Entity::PRODUCT, '=', $product)
                      ->where(Entity::FEATURE, '=', $feature)
-                     ->where(Entity::PAYMENT_METHOD, '=', $method);
+                     ->where(Entity::PAYMENT_METHOD, '=', $method)
+                     ->first();
 
         return $rule;
     }

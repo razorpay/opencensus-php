@@ -1132,6 +1132,92 @@ return [
                 'status'                => 'initiated',
             ]
         ]
+    ],
+
+    'testEnableEsOnDemandRestrictedAccessForCrossOrgMerchantFromBatchRoute' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/feature',
+            'method'  => 'post',
+            'content' => [
+                [
+                    'merchant_id'                   => '10000000000000',
+                    'percentage_of_balance_limit'   => 50,
+                    'settlements_count_limit'       => 2,
+                    'full_access'                   => 'no',
+                    'pricing_percent'               => 50,
+                    'max_amount_limit'              => 2000000,
+                    'idempotency_key'               => 'batch_10000000000000'
+                ],
+                [
+                    'merchant_id'                   => '10000000000001',
+                    'percentage_of_balance_limit'   => 50,
+                    'settlements_count_limit'       => 2,
+                    'full_access'                   => 'no',
+                    'pricing_percent'               => 50,
+                    'max_amount_limit'              => 2000000,
+                    'idempotency_key'               => 'batch_10000000000001'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 2,
+                'items'     => [
+                    [
+                        'success'           => true,
+                        'idempotency_key'   => 'batch_10000000000000'
+                    ],
+                    [
+                        'success'           => true,
+                        'idempotency_key'   => 'batch_10000000000001'
+                    ],
+                ],
+            ],
+        ]
+    ],
+
+    'testUpdateFeatureConfigForCrossOrgMerchantFromBatchRoute' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/feature',
+            'method'  => 'post',
+            'content' => [
+                [
+                    'merchant_id'                   => '10000000000000',
+                    'percentage_of_balance_limit'   => 50,
+                    'settlements_count_limit'       => 2,
+                    'full_access'                   => 'yes',
+                    'pricing_percent'               => 50,
+                    'max_amount_limit'              => 2000000,
+                    'idempotency_key'               => 'batch_10000000000000'
+                ],
+                [
+                    'merchant_id'                   => '100DemoAccount',
+                    'percentage_of_balance_limit'   => 50,
+                    'settlements_count_limit'       => 2,
+                    'full_access'                   => 'yes',
+                    'pricing_percent'               => 50,
+                    'max_amount_limit'              => 2000000,
+                    'idempotency_key'               => 'batch_100DemoAccount'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 2,
+                'items'     => [
+                    [
+                        'success'           => true,
+                        'idempotency_key'   => 'batch_10000000000000'
+                    ],
+                    [
+                        'success'           => true,
+                        'idempotency_key'   => 'batch_100DemoAccount'
+                    ],
+                ],
+            ],
+        ]
     ]
 
 ];

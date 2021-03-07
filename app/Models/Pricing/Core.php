@@ -86,9 +86,9 @@ class Core extends Base\Core
      * Duplicate the existing rule, update its properties from input and create it as a new rule.
      * Soft delete the previous rule.
      */
-    public function editPlanRule(String $planId, String $ruleId, array $input): Entity
+    public function editPlanRule(String $planId, String $ruleId, array $input, String $orgId = null): Entity
     {
-        $rule = $this->repo->pricing->getPlanRule($planId, $ruleId);
+        $rule = $this->repo->pricing->getPlanRule($planId, $ruleId, $orgId);
 
         $newRule = $rule->replicate();
 
@@ -112,9 +112,9 @@ class Core extends Base\Core
              ->setEntityAndId($rule->getEntity(), $planId)
              ->handle($rule, $newRule);
 
-        $newRule = $this->repo->transactionOnLiveAndTest(function() use ($rule, $newRule)
+        $newRule = $this->repo->transactionOnLiveAndTest(function() use ($rule, $newRule, $orgId)
         {
-            $this->repo->pricing->deletePlanRuleForce($rule->getPlanId(), $rule->getId());
+            $this->repo->pricing->deletePlanRuleForce($rule->getPlanId(), $rule->getId(), $orgId);
 
             $this->repo->saveOrFail($newRule);
 

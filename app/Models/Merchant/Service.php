@@ -2596,18 +2596,13 @@ class Service extends Base\Service
         $pricingPlanId = $this->merchant->getPricingPlanId();
 
         $onDemandPricing = $this->repo->pricing
-                                    ->getPricingRulesByPlanIdProductFeaturePaymentMethod($pricingPlanId,
+                                    ->getPricingRulesByPlanIdProductFeaturePaymentMethodOrgId($pricingPlanId,
                                                                                          Product::PRIMARY,
                                                                                          $pricingFeature,
                                                                                          Payout\Method::FUND_TRANSFER);
 
-        if ($onDemandPricing->count() < 1)
-        {
-            return null;
-        }
-
         // We do not expect multiple rows of primary-payout-fund_transfer for a given planId
-        return $onDemandPricing->first();
+        return $onDemandPricing;
     }
 
     public function updateOnDemandPricingForMerchantBeforeEnableSchedule($pricingFeature = PricingFeature::PAYOUT)
