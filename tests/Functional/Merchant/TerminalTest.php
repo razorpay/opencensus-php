@@ -2154,6 +2154,25 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateUpiJuspayQrExpectedTerminal()
+    {
+        $url = '/merchants/10000000000000/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $response = $this->startTest();
+
+        $tid = $response['id'];
+
+        $data = [
+            'expected' => 0,
+        ];
+
+        $terminal = $this->editTerminal($tid, $data);
+
+        $this->assertSame(false, $terminal['expected']);
+    }
+
     public function testEditJuspayTerminal()
     {
         $terminal = $this->fixtures->create('terminal:upi_juspay_terminal');

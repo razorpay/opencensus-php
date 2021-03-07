@@ -210,6 +210,7 @@ class Validator extends Base\Validator
         Entity::UPI                        => 'required|boolean|in:1',
         Entity::TYPE                       => 'sometimes|array',
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::EXPECTED                   => 'sometimes_if:type.pay,1|boolean|in:1',
     ];
 
     protected static $atomTerminalRules = [
@@ -654,6 +655,7 @@ class Validator extends Base\Validator
         Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4',
         Entity::VPA                        => 'sometimes|string',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::EXPECTED                   => 'sometimes|boolean|in:0,1',
     ];
 
     protected static $netbankingIciciEditTerminalRules = [
