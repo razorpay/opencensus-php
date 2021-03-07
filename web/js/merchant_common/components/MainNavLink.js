@@ -50,12 +50,15 @@ export default class MainNavLink extends Component {
         window.rzpQ.merchantActions().initiated(`${this.props.label}.click.initiated`),
       );
     }
-    tracking.trackEvent(
-      window.rzpQ.merchantActions().clicked(`dashboard.leftnav`, {
-        menu_label: this.props.label,
-        session_id: window.session_id,
-      }),
-    );
+
+    if (window.rzpQ.merchantActions() && window.rzpQ.merchantActions().clicked) {
+      tracking.trackEvent(
+        window.rzpQ.merchantActions().clicked(`dashboard.leftnav`, {
+          menu_label: this.props.label,
+          session_id: window.session_id,
+        }),
+      );
+    }
 
     analyticsService.track({
       objectName: 'sidebar',
@@ -82,7 +85,7 @@ export default class MainNavLink extends Component {
       });
     }
 
-    if (this.props.label === 'App Store') {
+    if (this.props.label === 'App Store' && window.rzpQ && window.rzpQ.onbr().clicked) {
       tracking.trackEvent(
         window.rzpQ.onbr().clicked('partnerships.appstore', {
           merchantId: window.rzp_user.merchant.id,

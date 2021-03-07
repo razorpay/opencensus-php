@@ -12,8 +12,8 @@ const SupportButton = ({ type, buttonLabel, category, openSection, tracking }) =
       }),
     );
     analyticsService.track({
-      objectName: 'act.contact_support',
-      actionName: 'click',
+      objectName: 'contact support',
+      actionName: 'clicked',
       screen: 'On contact support button click ',
       properties: {
         location: 'Contact Support Button',

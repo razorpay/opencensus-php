@@ -78,8 +78,8 @@ export default class ActivationCard extends Component {
                   }),
                 );
                 analyticsService.track({
-                  objectName: 'SignUp',
-                  actionName: 'Activate Account_Progress Bar CTA Clicked',
+                  objectName: 'SignUp Activate Account Progress Bar CTA',
+                  actionName: 'clicked',
                   screen: 'home page',
                   properties: {
                     ...getCommonSegmentProperties(),

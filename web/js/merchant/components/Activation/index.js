@@ -330,9 +330,9 @@ export default class ActivationWizard extends React.Component {
               }),
             );
             analyticsService.track({
-              objectName: 'kyc.upload_document',
-              actionName: 'click',
-              screen: 'User uploads KYC Document on Activation page',
+              objectName: 'kyc upload document',
+              actionName: 'clicked',
+              screen: 'KYC Document',
               properties: {
                 location: 'Activation page',
                 ...getCommonAnalyticsProperties(window.rzp_user),
@@ -2025,7 +2025,10 @@ export default class ActivationWizard extends React.Component {
   // returns validity
   tabValidity(i) {
     //Special handling for NDC tab
-    if (this.props.data.activation_status === 'needs_clarification' && i !== NEEDS_CLARIFICATION_STEP) {
+    if (
+      this.props.data.activation_status === 'needs_clarification' &&
+      i !== NEEDS_CLARIFICATION_STEP
+    ) {
       return true;
     }
 
