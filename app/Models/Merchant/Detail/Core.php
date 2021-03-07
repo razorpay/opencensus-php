@@ -3661,15 +3661,7 @@ class Core extends Base\Core
 
     private function getIsMerchantImpersonated(Merchant\Entity $merchant) : bool
     {
-        if ($merchant->getOrgId() !== Org\Entity::RAZORPAY_ORG_ID)
-        {
-            return false;
-        }
-
-        $isDedupeEnabled = $this->mcore->isRazorxExperimentEnable($merchant->getId(),
-            RazorxTreatment::DEDUPE_FUNCTIONALITY);
-
-        if ($isDedupeEnabled === true)
+        if ($this->isDedupeAllowed($merchant) === true)
         {
             $riskScores = $this->mrclient->getMerchantImpersonatedDetails(Constants::MERCHANT_RISK_CLIENT_TYPE_ONBOARDING, $merchant->getId());
 
@@ -3684,15 +3676,7 @@ class Core extends Base\Core
 
     private function calculateIsMerchantImpersonated(Merchant\Entity $merchant) : bool
     {
-        if ($merchant->getOrgId() !== Org\Entity::RAZORPAY_ORG_ID)
-        {
-            return false;
-        }
-
-        $isDedupeEnabled = $this->mcore->isRazorxExperimentEnable($merchant->getId(),
-            RazorxTreatment::DEDUPE_FUNCTIONALITY);
-
-        if ($isDedupeEnabled === true)
+        if ($this->isDedupeAllowed($merchant) === true)
         {
             $fields = [];
 
@@ -3721,6 +3705,27 @@ class Core extends Base\Core
         }
 
         return false;
+    }
+
+    public function isDedupeAllowed($merchant)
+    {
+        if ($merchant->getOrgId() !== Org\Entity::RAZORPAY_ORG_ID)
+        {
+            return false;
+        }
+
+        if ($merchant->isLinkedAccount() === true)
+        {
+            return false;
+        }
+
+        if ($this->mcore->isRazorxExperimentEnable($merchant->getId(),
+                RazorxTreatment::DEDUPE_FUNCTIONALITY) === false)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     private function checkImpersonation($merchant, $riskScores, $mode): bool

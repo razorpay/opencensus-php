@@ -13,9 +13,7 @@ use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Models\Card\Network;
 use RZP\Models\Merchant\RazorxTreatment;
-use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
-use RZP\Services\MerchantRiskClient;
 use RZP\Services\RazorXClient;
 use RZP\Services\HubspotClient;
 use RZP\Models\Currency\Currency;
@@ -2955,30 +2953,7 @@ class ActivationTest extends OAuthTestCase
 
     public function testActivationFormSubmissionOfLinkedAccount()
     {
-        $mockMR = $this->getMockBuilder(MerchantRiskClient::class)
-            ->setMethods(['getMerchantImpersonatedDetails'])
-            ->getMock();
-
-        $mockMR->expects($this->once())
-            ->method('getMerchantImpersonatedDetails')
-            ->willReturn([
-                "client_type" => "onboarding",
-                "entity_id" => "Ede1NCc0fb1pum"
-            ]);
-
-        $mockMC = $this->getMockBuilder(MerchantCore::class)
-            ->setMethods(['isRazorxExperimentEnable'])
-            ->getMock();
-
-        $mockMC->expects($this->once())
-            ->method('isRazorxExperimentEnable')
-            ->willReturn(true);
-
         $core = new DetailCore();
-
-        $core->setMerchantRiskClient($mockMR);
-
-        $core->setMerchantCoreForRazorx($mockMC);
 
         $linkedAccount = $this->fixtures->create('merchant', ['parent_id' => '10000000000000']);
 

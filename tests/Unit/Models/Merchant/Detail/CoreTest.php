@@ -90,4 +90,13 @@ class CoreTest extends TestCase
 
         $this->assertEquals(ActivationFlow::WHITELIST, $core->getActivationFlow($merchant, $merchantDetails ,null,false));
     }
+
+    public function testDedupeBeingSkippedForLinkedAccount()
+    {
+        $core = new DetailCore();
+
+        $linkedAccount = $this->fixtures->create('merchant', ['parent_id' => '10000000000000']);
+
+        $this->assertEquals(false, $core->isDedupeAllowed($linkedAccount));
+    }
 }
