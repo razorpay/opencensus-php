@@ -109,7 +109,7 @@ class RequestHandler
         if ($spanContext->enabled()) {
             $this->tracer = extension_loaded('opencensus') ?
                 new ExtensionTracer($spanContext, $exporter, $options) :
-                new ContextTracer($spanContext);
+                new ContextTracer($spanContext, $exporter, $options);
         } else {
             $this->tracer = new NullTracer();
         }

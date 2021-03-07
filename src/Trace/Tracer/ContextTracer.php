@@ -37,12 +37,21 @@ class ContextTracer implements TracerInterface
      */
     private $spans = [];
 
+    private $exporter;
+
+    /**
+     * @var int
+     * Number of max spans that can be hold in a memory, if number goes beyond this value,
+     * tracer will export the closed spans till then.
+     */
+    private $spanBufferLimit = 100;
+
     /**
      * Create a new ContextTracer
      *
      * @param SpanContext|null $initialContext [optional] The starting span context.
      */
-    public function __construct(SpanContext $initialContext = null)
+    public function __construct(SpanContext $initialContext = null, $exporter = null, $options = [])
     {
         if ($initialContext) {
             Context::current()->withValues([
@@ -51,6 +60,13 @@ class ContextTracer implements TracerInterface
                 'enabled' => $initialContext->enabled(),
                 'fromHeader' => $initialContext->fromHeader()
             ])->attach();
+        }
+
+        $this->exporter = $exporter;
+
+        // set span limit from options if present
+        if (isset($options['span_buffer_limit'])) {
+            $this->spanBufferLimit = $options['span_buffer_limit'];
         }
     }
 
@@ -69,6 +85,9 @@ class ContextTracer implements TracerInterface
 
     public function startSpan(array $spanOptions = []): Span
     {
+        // checks if spanlimit has reached and if yes flushes the closed spans
+        $this->checkSpanLimit();
+
         $spanOptions += [
             'traceId' => $this->spanContext()->traceId(),
             'parentSpanId' => $this->spanContext()->spanId(),
@@ -150,5 +169,41 @@ class ContextTracer implements TracerInterface
         return array_key_exists('span', $options)
             ? $options['span']
             : Context::current()->value('currentSpan');
+    }
+
+    public function checkSpanLimit()
+    {
+        $count = count($this->spans());
+
+        if ($count >= $this->spanBufferLimit) {
+            $closedSpans = [];
+
+            foreach ($this->spans() as $k) {
+                $endTime = $k->endTime();
+
+                if ($endTime != null and $endTime->getTimestamp() != 0) {
+                    $closedSpans[] = $k;
+                }
+            }
+
+            $this->exportAndDeleteSpans($closedSpans);
+        }
+    }
+
+    public function exportAndDeleteSpans($closedSpans)
+    {
+        if ($this->exporter != null) {
+            $this->exporter->export($closedSpans);
+            $s = $this->spans();
+
+            foreach ($closedSpans as $cSpan) {
+                foreach ($s as $key => $span) {
+                    if ($span->spanId() == $cSpan->spanId()) {
+                        unset($this->spans[$key]);
+                        break;
+                    }
+                }
+            }
+        }
     }
 }

@@ -122,4 +122,21 @@ class TracerTest extends TestCase
         $this->assertEquals('trace-id', $link->traceId());
         $this->assertEquals('span-id', $link->spanId());
     }
+
+    public function testSpanFlush()
+    {
+        $rt = Tracer::start($this->exporter, [
+            'sampler' => new AlwaysSampleSampler(),
+            'skipReporting' => true,
+            'span_buffer_limit' => 5
+        ]);
+
+        $tracer = $rt->tracer();
+        for ($i=0; $i<=5; $i++) {
+            $tracer->inSpan(['name' => 'root' . $i], function () {});
+        }
+
+        $count = count($tracer->spans());
+        $this->assertEquals(3, $count);
+    }
 }
