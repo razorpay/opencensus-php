@@ -44,6 +44,7 @@ trait PaymentTrait
     use PaymentBilldeskTrait;
     use PaymentFirstDataTrait;
     use PaymentPaysecureTrait;
+    use PaymentMandateHQTrait;
     use PaymentAxisGeniusTrait;
     use PaymentNetbankingTrait;
     use PaymentFreechargeTrait;

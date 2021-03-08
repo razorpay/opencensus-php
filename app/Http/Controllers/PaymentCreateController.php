@@ -629,6 +629,22 @@ class PaymentCreateController extends Controller
         return $response;
     }
 
+    public function redirectToAuthorizeFromMandateHQ($id, $hash)
+    {
+        $input = Request::all();
+
+        $data = $this->service(E::PAYMENT)->redirectToAuthorizeFromMandateHQ($id, $hash, $input);
+
+        $merchant =  $this->app['basicauth']->getMerchant();
+
+        $data += (new CheckoutView)->addOrgInformationInResponse($merchant);
+
+        $response = $this->processCoprotoData($data);
+
+        $this->logResponseIfApplicable($response);
+
+        return $response;
+    }
 
     public function postAuthorize($id)
     {
@@ -650,6 +666,15 @@ class PaymentCreateController extends Controller
         $merchant =  $this->app['basicauth']->getMerchant();
 
         $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
+
+        return $data;
+    }
+
+    public function handleMandateHQCallback()
+    {
+        $input = Request::all();
+
+        $data = $this->service(E::PAYMENT)->handleMandateHQCallback($input);
 
         return $data;
     }

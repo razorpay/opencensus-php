@@ -2,13 +2,18 @@
 
 namespace RZP\Models\Card\IIN;
 
+use App;
+
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Models\Feature;
+use RZP\Models\Merchant;
 use RZP\Models\Bank\Name;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Card\Type;
-use RZP\Models\Currency\Currency;
+use RZP\Constants\Environment;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Base\QueryCache\Cacheable;
 
 class Entity extends Base\PublicEntity
@@ -137,6 +142,10 @@ class Entity extends Base\PublicEntity
         self::ENABLED     => 'bool',
         self::LOCKED      => 'bool',
         self::RECURRING   => 'bool',
+    ];
+
+    protected $issuerEnabledForCardMandate = [
+        IFSC::RATN, // RBL
     ];
 
     public function supports($flows): bool
@@ -272,6 +281,26 @@ class Entity extends Base\PublicEntity
     public function isRecurring()
     {
         return $this->getAttribute(self::RECURRING);
+    }
+
+    public function isCardMandateApplicable(Merchant\Entity $merchant)
+    {
+        $app = App::getFacadeRoot();
+
+        if ($app['env'] === Environment::PRODUCTION)
+        {
+            return false;
+        }
+
+        $issuer = $this->getIssuer();
+
+        if (($merchant->isFeatureEnabled(Feature\Constants::RECURRING_CARD_MANDATE) === true) and
+            (in_array($issuer, $this->issuerEnabledForCardMandate, true) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public function setTrivia($trivia)

@@ -37,6 +37,7 @@ class Entity extends Base\PublicEntity
     const TOKEN                     = 'token';
     const METHOD                    = 'method';
     const CARD_ID                   = 'card_id';
+    const CARD_MANDATE_ID           = 'card_mandate_id';
     const VPA_ID                    = 'vpa_id';
     const CARD                      = 'card';
     const VPA                       = 'vpa';
@@ -278,6 +279,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Card\Entity');
     }
 
+    public function cardMandate()
+    {
+        return $this->belongsTo('RZP\Models\CardMandate\Entity');
+    }
+
     public function vpa()
     {
         return $this->belongsTo('RZP\Models\PaymentsUpi\Vpa\Entity');
@@ -458,6 +464,16 @@ class Entity extends Base\PublicEntity
     public function getUpiMandate()
     {
         return $this->upiMandate;
+    }
+
+    public function getCardMandateId()
+    {
+        return $this->getAttribute(self::CARD_MANDATE_ID);
+    }
+
+    public function hasCardMandate()
+    {
+        return $this->getCardMandateId() !== null;
     }
 
     public function isLocal()

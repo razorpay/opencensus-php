@@ -400,6 +400,8 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerHyperVerge();
 
+        $this->registerMandateHQ();
+
         $this->registerCareServiceClient();
 
         $this->registerFreshchatClient();
@@ -462,6 +464,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'reminders',
             'batchService',
             'hyperVerge',
+            'mandateHQ',
             'scrooge',
             'razorflow',
             'repo',
@@ -620,6 +623,18 @@ class ApiServiceProvider extends BaseServiceProvider
             $mock = $app['config']->get('applications.hyper_verge.mock');
 
             $implementation = $mock ? Mock\HyperVerge\HyperVerge::class : RZP\Services\HyperVerge::class;
+
+            return new $implementation($app);
+        });
+    }
+
+    protected function registerMandateHQ()
+    {
+        $this->app->bind('mandateHQ', function($app)
+        {
+            $mock = $app['config']->get('applications.mandate_hq.mock');
+
+            $implementation = $mock ? Mock\MandateHQ::class : RZP\Services\MandateHQ::class;
 
             return new $implementation($app);
         });

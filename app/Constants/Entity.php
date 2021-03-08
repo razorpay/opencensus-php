@@ -80,6 +80,8 @@ class Entity
     const TRANSACTION                = 'transaction';
     const FEE_BREAKUP                = 'fee_breakup';
     const UPI_MANDATE                = 'upi_mandate';
+    const CARD_MANDATE               = 'card_mandate';
+    const CARD_MANDATE_NOTIFICATION  = 'card_mandate_notification';
     const PAYOUT_LINK                = 'payout_link';
     const PAYOUT_SOURCE              = 'payout_source';
     const SETTINGS                   = 'settings';
@@ -649,6 +651,8 @@ class Entity
         self::MERCHANT_ATTRIBUTE        => \RZP\Models\Merchant\Attribute::class,
         self::LOW_BALANCE_CONFIG        => \RZP\Models\Merchant\Balance\LowBalanceConfig::class,
         self::UPI_MANDATE               => \RZP\Models\UpiMandate::class,
+        self::CARD_MANDATE              => \RZP\Models\CardMandate::class,
+        self::CARD_MANDATE_NOTIFICATION => \RZP\Models\CardMandate\CardMandateNotification::class,
 
         self::BANKING_ACCOUNT_STATEMENT_DETAILS => \RZP\Models\BankingAccountStatement\Details::class,
 

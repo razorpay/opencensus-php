@@ -67,10 +67,11 @@ class Core extends Base\Core
      * @param Customer\Entity  $customer
      * @param array            $input
      * @param Card\Entity|null $card
+     * @param bool             $validateExisting
      *
      * @return Entity
      */
-    public function create($customer, $input, Card\Entity $card = null)
+    public function create($customer, $input, Card\Entity $card = null, bool $validateExisting = true)
     {
         $traceInput = $input;
         unset($traceInput[Entity::AADHAAR_NUMBER]);
@@ -148,26 +149,27 @@ class Core extends Base\Core
 
         $token->merchant()->associate($customer->merchant);
 
-        $existingToken = $this->validateExistingToken($token);
-
-        //
-        // For cards, we check if there's already an existing
-        // token with the same customer, and simply return that
-        // instead of creating a new token altogether.
-        // However, for emandate, we don't do this check,
-        // because emandate tokens are newly created for each
-        // and every new first recurring payment, for now.
-        //
-        if ($existingToken !== null)
+        if ($validateExisting === true)
         {
-            return $existingToken;
-        }
-        else
-        {
-            $this->repo->saveOrFail($token);
+            $existingToken = $this->validateExistingToken($token);
 
-            return $token;
+            //
+            // For cards, we check if there's already an existing
+            // token with the same customer, and simply return that
+            // instead of creating a new token altogether.
+            // However, for emandate, we don't do this check,
+            // because emandate tokens are newly created for each
+            // and every new first recurring payment, for now.
+            //
+            if ($existingToken !== null)
+            {
+                return $existingToken;
+            }
         }
+
+        $this->repo->saveOrFail($token);
+
+        return $token;
     }
 
     public function createViaCps($input,$merchant, Card\Entity $card)
@@ -265,6 +267,16 @@ class Core extends Base\Core
         $this->repo->saveOrFail($token);
 
         return $token;
+    }
+
+    public function cloneToken(Entity $token) :Entity
+    {
+        $createInput = [
+            Entity::METHOD      => $token->getMethod(),
+            Entity::CARD_ID     => $token->getCardId(),
+        ];
+
+        return $this->create($token->customer, $createInput, null, false);
     }
 
     public function edit($token, $input)

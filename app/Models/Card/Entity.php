@@ -14,7 +14,7 @@ use RZP\Models\Bank\IFSC;
 
 /**
  * @property Merchant\Entity $merchant
- * @property mixed           iinRelation
+ * @property IIN\Entity      $iinRelation
  */
 class Entity extends Base\PublicEntity
 {

@@ -42,6 +42,7 @@ use RZP\Models\Card\IIN;
 use RZP\Services\Doppler;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Entity;
+use RZP\Models\CardMandate;
 use RZP\Models\Transaction;
 use RZP\Models\PaymentLink;
 use RZP\Constants\Timezone;
@@ -217,7 +218,8 @@ trait Authorize
             }
         }
 
-        if ($ret !== null)
+        if (($ret !== null) and
+             ($payment->isCardMandateCreateApplicable() === false))
         {
             return $ret;
         }
@@ -842,6 +844,52 @@ trait Authorize
         return $data;
     }
 
+    protected function processCardRecurringMandateInitialPaymentCreated(Payment\Entity $payment)
+    {
+        $cardMandate = (new CardMandate\Core)->create($payment);
+
+        $token = $payment->localToken;
+
+        $token->cardMandate()->associate($cardMandate->getId());
+
+        $token->saveOrFail();
+
+        $data = [
+            'request' => [
+                'url'     => $cardMandate->getMandateSummaryUrl(),
+                'method'  => 'get',
+                'content' => [],
+            ],
+            'version'    => 1,
+            'type'       => 'first',
+            'payment_id' => $payment->getPublicId(),
+            'gateway'    => Crypt::encrypt('mandate_hq'),
+        ];
+
+        return $data;
+    }
+
+    protected function processCardRecurringMandateAutoPaymentCreated(Payment\Entity $payment)
+    {
+        if ($payment->isCardAutoRecurring() === true)
+        {
+            (new CardMandate\Core)->createPreDebitNotification($payment);
+
+            $data = ['razorpay_payment_id' => $payment->getPublicId()];
+
+            if (($payment->hasOrder() === true) and
+                ($this->app['basicauth']->isProxyOrPrivilegeAuth() === false) and
+                ($this->app->runningInQueue() === false))
+            {
+                $this->fillReturnDataWithOrder($payment, $data);
+            }
+
+            return $data;
+        }
+
+        throw new Exception\LogicException('Should not be called for any payment other than Card Auto Recurring');
+    }
+
     protected function processPaymentFinal(Payment\Entity $payment, array & $gatewayInput, array $data): array
     {
         if ((isset($gatewayInput['skip_gateway_call']) === true) and
@@ -863,6 +911,16 @@ trait Authorize
         if ($this->shouldSkipAuthorizeOnRecurringForUpi($payment, $data) === true)
         {
             return $this->processRecurringCreatedForUpi($payment, $data);
+        }
+
+        if ($payment->isCardMandateCreateApplicable() === true)
+        {
+            return $this->processCardRecurringMandateInitialPaymentCreated($payment);
+        }
+
+        if ($payment->isCardMandateNotificationCreateApplicable() === true)
+        {
+            return $this->processCardRecurringMandateAutoPaymentCreated($payment);
         }
 
         return $this->processAuth($payment, $data);
@@ -1844,6 +1902,11 @@ trait Authorize
         if (is_null($token) === false)
         {
             $this->validateTokenExpiredAt($token);
+
+            if ($token->hasCardMandate() === true)
+            {
+                (new CardMandate\Core)->validateAutoPaymentCreation($token->cardMandate, $payment);
+            }
         }
     }
 
@@ -3627,6 +3690,56 @@ trait Authorize
         }
     }
 
+    protected function getRecurringTypeFromToken(Payment\Entity $payment, Token\Entity $token, array $input)
+    {
+        if ($payment->isRecurring() === true)
+        {
+            $type = Payment\RecurringType::INITIAL;
+
+            if (($token !== null) and
+                ($token->isLocal() === true) and
+                ($token->isRecurring() === true) and
+                (isset($input['token']) === true))
+            {
+                if (($this->app['basicauth']->isPrivateAuth() === true) or
+                    ($this->app->runningInQueue() === true))
+                {
+                    $type = Payment\RecurringType::AUTO;
+                }
+            }
+
+            if (($token === null) and
+                ($input['recurring'] === Payment\RecurringType::AUTO))
+            {
+                $type = Payment\RecurringType::AUTO;
+            }
+        }
+
+        //
+        // TODO: Will have to figure out the recurring type when we allow
+        // the end-users to pay for the subscription themselves manually
+        // before we charge. This can happen when we create an invoice first
+        // and then an hour later, we auto-charge. In that 1 hr gap, the
+        // customer can make a payment (via public auth and all)
+        //
+        if ($this->subscription !== null)
+        {
+            $type = Payment\RecurringType::AUTO;
+
+            if ($this->subscription->hasBeenAuthenticated() === false)
+            {
+                $type = Payment\RecurringType::INITIAL;
+            }
+            else if ((isset($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE]) === true) and
+                (boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE]) === true))
+            {
+                $type = Payment\RecurringType::CARD_CHANGE;
+            }
+        }
+
+        return $type;
+    }
+
     protected function setRecurringType(Payment\Entity $payment, array $input)
     {
         $type = null;
@@ -4057,6 +4170,12 @@ trait Authorize
 
         if ($payment->isMethodCardOrEmi() === true)
         {
+            if (($payment->isRequiredToCreateNewTokenAlways() === true) and
+                ($this->getRecurringTypeFromToken($payment, $token, $input) === Payment\RecurringType::INITIAL))
+            {
+                $token = (new Token\Core)->cloneToken($token);
+            }
+
             $payment->localToken()->associate($token);
 
             $gatewayInput['card'] = $this->associateAndGetCardArrayForSavedToken($token, $input);
@@ -4325,11 +4444,18 @@ trait Authorize
             Token\Entity::METHOD => $payment->getMethod()
         ];
 
+        $validateExisting = true;
+
         if ($payment->isMethodCardOrEmi())
         {
             $saveMethodInput[Token\Entity::METHOD] = Payment\Method::CARD;
 
             $saveMethodInput[Token\Entity::CARD_ID] = $savedCardId;
+
+            if ($payment->isRequiredToCreateNewTokenAlways() === true)
+            {
+                $validateExisting = false;
+            }
         }
         else if ($payment->isEmandate() === true)
         {
@@ -4444,7 +4570,7 @@ trait Authorize
         // @codingStandardsIgnoreStart
         try
         {
-            $token = (new Token\Core)->create($customer, $saveMethodInput);
+            $token = (new Token\Core)->create($customer, $saveMethodInput, null, $validateExisting);
         }
         catch (\Exception $e)
         {
@@ -7556,7 +7682,7 @@ trait Authorize
 
     protected function validateAndSaveInputDetailsIfRequired($payment, $input, $gatewayInput, $ret)
     {
-        $type = $this->getFallbackOrRedirectType($payment, $ret);
+        $type = $this->getFallbackOrRedirectOrCardMandateType($payment, $ret);
 
         if ($type === null)
         {
@@ -8164,7 +8290,7 @@ trait Authorize
         return $inputDetails;
     }
 
-    protected function getFallbackOrRedirectType($payment, $ret)
+    protected function getFallbackOrRedirectOrCardMandateType(Payment\Entity $payment, $ret)
     {
         if ((empty($ret['request']['method']) === false) and
             ($ret['request']['method'] === 'redirect'))
@@ -8177,6 +8303,11 @@ trait Authorize
             ($ret['type'] === 'otp'))
         {
             return 'fallback';
+        }
+
+        if ($payment->isCardMandateCreateApplicable() === true)
+        {
+            return 'card_mandate';
         }
 
         return null;

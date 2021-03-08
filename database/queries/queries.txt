@@ -6122,6 +6122,9 @@ ALTER TABLE stakeholders
 ALTER TABLE settlement_ondemand_payouts
     MODIFY COLUMN mode VARCHAR(255);
 
+ALTER TABLE tokens
+    ADD COLUMN card_mandate_id CHAR(14);
+
 ALTER TABLE merchant_details
     ADD COLUMN business_suggested_pin VARCHAR(255) DEFAULT NULL;
 

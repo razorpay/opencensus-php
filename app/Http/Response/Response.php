@@ -387,6 +387,7 @@ class Response
             'payment_redirect_to_authenticate_get',
             'payment_redirect_to_authenticate_post',
             'gateway_payment_callback_getsimpl_post',
+            'payment_mandate_hq_redirect_authenticate',
         ];
 
         return (in_array($route, $callbackRoutes));

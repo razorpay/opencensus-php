@@ -575,6 +575,10 @@ return [
 
     'mandate_hq' => [
         'secret'   => env('APP_MANDATE_HQ_SECRET'),
+        'url'      => env('APP_MANDATE_HQ_URL'),
+        'username' => env('APP_MANDATE_HQ_USERNAME'),
+        'password' => env('APP_MANDATE_HQ_PASSWORD'),
+        'mock'     => env('APP_MANDATE_HQ_MOCK', false),
     ],
 
     'loan_origination_system' => [

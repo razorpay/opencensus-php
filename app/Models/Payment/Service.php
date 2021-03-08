@@ -35,6 +35,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants;
 use RZP\Constants\MailTags;
+use RZP\Models\CardMandate;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Settlement\Bucket;
@@ -43,6 +44,7 @@ use RZP\Base\ConnectionType;
 use RZP\Models\Payment\Verify\Verify;
 use RZP\Models\Locale\Core as Locale;
 use RZP\Models\SubscriptionRegistration;
+use RZP\Models\CardMandate\CardMandateNotification;
 use RZP\Models\Payment\Processor\Constants as PaymentConstants;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
@@ -400,6 +402,46 @@ class Service extends Base\Service
         return [
             'url' => $this->app['api.route']->getUrl('payment_redirect_to_authenticate_get', ['id' => $id])
         ];
+    }
+
+    public function redirectToAuthorizeFromMandateHQ($id, $hash, $input)
+    {
+        $processor = $this->getNewProcessor();
+
+        $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $approved = $input[CardMandate\Constants::MANDATE_HQ_APPROVED] ?? CardMandate\Constants::MANDATE_HQ_TRUE;
+
+        (new CardMandate\Core)->updateCardMandateAfterMandateAction($payment, $hash, $approved);
+
+        if ($approved === CardMandate\Constants::MANDATE_HQ_FALSE)
+        {
+            return $processor->failMandateCanceledCardAutoRecurringPayment($payment);
+        }
+
+        return $processor->processRedirectToAuthorize($payment, $payment->getId());
+    }
+
+    public function handleMandateHQCallback($input)
+    {
+        $id = $input['id'] ?? '';
+        $status = $input['status'] ?? '';
+        $entity = $input['entity'] ?? '';
+
+        if ($entity === 'mandate')
+        {
+            (new CardMandate\Core)->processCallBack($id, $status);
+        }
+        elseif ($entity === 'notification')
+        {
+            (new CardMandateNotification\Core)->processCallBack($id, $status);
+        }
+        else
+        {
+            throw new Exception\BadRequestValidationFailureException('invalid entity');
+        }
+
+        return [];
     }
 
     public function redirectToAuthorize($id)

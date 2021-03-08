@@ -307,6 +307,10 @@ class Table
 
     const UPI_MANDATE          = 'upi_mandates';
 
+    const CARD_MANDATE              = 'card_mandates';
+
+    const CARD_MANDATE_NOTIFICATION = 'card_mandate_notifications';
+
     const PROMOTION_EVENT      = 'promotions_events';
     //Payout downtimes table
     const PAYOUT_DOWNTIMES     = 'payout_downtimes';

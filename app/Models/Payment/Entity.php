@@ -47,6 +47,7 @@ use RZP\Models\Payment\Analytics\Metadata;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Processor\Constants;
 use RZP\Models\Payment\Processor\App as AppMethod;
+use RZP\Models\CardMandate\CardMandateNotification;
 use RZP\Models\Payment\Refund\TransactionTrackerMessages;
 use RZP\Models\Partner\Commission\CommissionSourceInterface;
 
@@ -64,6 +65,8 @@ use RZP\Models\Partner\Commission\CommissionSourceInterface;
  * @property Emi\Entity             $emiPlan
  * @property Customer\Entity        $customer
  * @property PaymentMeta\Entity     $paymentMeta
+ * @property Customer\Token\Entity  $localToken
+ * @property CardMandateNotification\Entity $cardMandateNotification
  */
 class Entity extends Base\PublicEntity implements CommissionSourceInterface
 {
@@ -236,6 +239,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const BASE_CURRENCY                     = 'base_currency';
     const PAYMENT_TIMEOUT_NACH              = 86400 * 180;  // 180 Days
     const PAYMENT_TIMEOUT_UPI_RECURRING     = 259200;   // 3 Days
+    const PAYMENT_TIMEOUT_CARD_RECURRING_MANDATE = 259200;   // 3 Days
     const MCC_MARKDOWN_PERCENTAGE           = 1;
 
     // payment services
@@ -2082,6 +2086,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             ($this->getAttribute(self::RECURRING) === true));
     }
 
+    public function isCardAutoRecurring(): bool
+    {
+        return (($this->isCardRecurring()) and
+                     ($this->isSecondRecurring()));
+    }
+
     public function isUpi()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::UPI);
@@ -3661,6 +3671,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->hasOne('RZP\Gateway\Netbanking\Base\Entity');
     }
 
+    public function cardMandateNotification()
+    {
+        return $this->hasOne('RZP\Models\CardMandate\CardMandateNotification\Entity');
+    }
+
     public function enach()
     {
         return $this->hasOne('RZP\Gateway\Enach\Base\Entity');
@@ -3982,6 +3997,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         {
             return self::PAYMENT_TIMEOUT_UPI_RECURRING;
         }
+        else if (($this->isCardAutoRecurring() === true) and ($this->cardMandateNotification !== null))
+        {
+            return self::PAYMENT_TIMEOUT_CARD_RECURRING_MANDATE;
+        }
 
         $autoRefundDelay = $this->merchant->getAutoRefundDelay();
 
@@ -4212,6 +4231,73 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return false;
     }
 
+    public function isCardMandateCreateApplicable(): bool
+    {
+        $token = $this->localToken;
+
+        if (($this->isCardRecurring() === true) and
+            ($this->isRecurringTypeInitial() === true) and
+            (empty($token) === false) and
+            (empty($token->getCardMandateId()) === true) and
+            ($this->card->iinRelation !== null) and
+            ($this->card->iinRelation->isCardMandateApplicable($this->merchant) === true) and
+            ($this->hasSubscription() === false))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isCardMandateNotificationCreateApplicable(): bool
+    {
+        return (($this->isCardMandateRecurringAutoPayment() === true)
+            and ($this->cardMandateNotification === null));
+    }
+
+    public function isCardMandateRecurringAutoPayment(): bool
+    {
+        $token = $this->localToken;
+
+        if (($this->isCardAutoRecurring()) and
+            (empty($token) === false) and
+            ($token->hasCardMandate() === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isCardMandateRecurringInitialPayment(): bool
+    {
+        $token = $this->localToken;
+
+        if (($this->isCardRecurring() === true) and
+            ($this->isRecurringTypeInitial() === true) and
+            (empty($token) === false) and
+            ($token->hasCardMandate() === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isRequiredToCreateNewTokenAlways(): bool
+    {
+        if (($this->isCardRecurring() === true) and
+            ($this->card !== null) and
+            ($this->card->iinRelation !== null) and
+            ($this->card->iinRelation->isCardMandateApplicable($this->merchant) === true) and
+            ($this->hasSubscription() === false))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public function toArrayPublicCustomer(bool $populateMessages = false): array
     {
         $data = parent::toArrayPublicCustomer();
@@ -4434,4 +4520,3 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return in_array($this->getMerchantId(), $allowedMerchantsForDeficit, true);
     }
 }
-

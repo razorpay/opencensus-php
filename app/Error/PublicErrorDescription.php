@@ -76,6 +76,11 @@ class PublicErrorDescription
     const BAD_REQUEST_RATE_LIMIT_EXCEEDED                                       = 'Request failed. Please try after sometime.';
     const BAD_REQUEST_CONFLICT_ALREADY_EXISTS                                   = 'Duplicate request. This request has already been processed.';
     const BAD_REQUEST_PAYMENT_ALREADY_PROCESSED                                 = 'The payment has already been processed';
+    const BAD_REQUEST_CARD_MANDATE_CANCELLED_BY_USER                            = 'Card mandate created for payment has been cancelled by user';
+    const BAD_REQUEST_CARD_MANDATE_IS_NOT_ACTIVE_CANCELLED                      = 'Card mandate is not active, it is cancelled by user';
+    const BAD_REQUEST_AMOUNT_GREATER_THAN_CARD_MANDATE_MAX_AMOUNT               = 'Payment amount is greater than card mandate\'s max amount';
+    const BAD_REQUEST_CARD_MANDATE_IS_NOT_ACTIVE_PAUSED                         = 'Card mandate is not active, it is paused by user';
+    const BAD_REQUEST_CARD_MANDATE_IS_NOT_ACTIVE_EXPIRED                        = 'Card mandate is not active, it is expired';
     const BAD_REQUEST_PAYMENT_ALREADY_CAPTURED                                  = 'This payment has already been captured';
     const BAD_REQUEST_PAYMENT_ALREADY_CAPTURED_OR_VOIDED                        = 'The payment has already been either captured or voided';
     const BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED                            = 'Currency is not supported';
@@ -172,6 +177,8 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_AMOUNT_GREATER_THAN_TOKEN_MAX_AMOUNT              = 'Payment amount exceeds the maximum amount allowed.';
     const BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD                              = 'Payment was blocked because of fraud';
     const BAD_REQUEST_PAYMENT_FAILED_BECAUSE_SESSION_EXPIRED                    = 'Payment processing failed because session expired due to taking too much time. Please try the payment again.';
+    const BAD_REQUEST_PAYMENT_CARD_MANDATE_NOTIFICATION_NOT_SENT                = 'Payment debit notification failed to deliver to customer';
+    const BAD_REQUEST_PAYMENT_CARD_MANDATE_NOTIFICATION_VERIFY_FAILED           = 'Payment debit notification failed to verify';
     const BAD_REQUEST_PAYMENT_TIMED_OUT                                         = 'Payment was not completed on time.';
     const BAD_REQUEST_PAYMENT_TIMED_OUT_AT_GATEWAY                              = 'Payment was not completed on time.';
     const BAD_REQUEST_PAYMENT_TIMED_OUT_AT_WALLET_PAYMENT_PAGE                  = 'Payment was not completed on time.';

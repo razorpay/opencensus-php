@@ -2139,6 +2139,46 @@ class Processor
         $this->updatePaymentFailed($exception, $traceCode);
     }
 
+    public function failNotificationNotSentCardAutoRecurringPayment(Payment\Entity $payment)
+    {
+        $this->payment = $payment;
+
+        $traceCode = TraceCode::PAYMENT_CARD_MANDATE_NOTIFICATION_NOT_SENT;
+        $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_CARD_MANDATE_NOTIFICATION_NOT_SENT;
+
+        $exception = new Exception\BadRequestException($errorCode);
+
+        $this->updatePaymentFailed($exception, $traceCode);
+
+        throw $exception;
+    }
+
+    public function failMandateCanceledCardAutoRecurringPayment(Payment\Entity $payment)
+    {
+        $this->payment = $payment;
+
+        $traceCode = TraceCode::PAYMENT_CARD_MANDATE_CANCELLED_BY_USER;
+        $errorCode = ErrorCode::BAD_REQUEST_CARD_MANDATE_CANCELLED_BY_USER;
+
+        $exception = new Exception\BadRequestException($errorCode);
+
+        $this->updatePaymentFailed($exception, $traceCode);
+
+        throw $exception;
+    }
+
+    public function failNotificationVerifyFailedCardAutoRecurringPayment(Payment\Entity $payment)
+    {
+        $this->payment = $payment;
+
+        $traceCode = TraceCode::PAYMENT_CARD_MANDATE_NOTIFICATION_VERIFY_FAILED;
+        $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_CARD_MANDATE_NOTIFICATION_VERIFY_FAILED;
+
+        $exception = new Exception\BadRequestException($errorCode);
+
+        $this->updatePaymentFailed($exception, $traceCode);
+    }
+
     protected function updatePaymentFailed($exception, $traceCode)
     {
         $error = $exception->getError();
@@ -3971,6 +4011,13 @@ class Processor
         // UPI recurring payment when created are supposed to be left in created state
         // We will set a instantaneous reminder, which will process the payment state
         if ($this->shouldHitAuthorizeOnRecurringForUpi($payment, $gatewayInput) === false)
+        {
+            return false;
+        }
+
+        // Card recurring payment when created are supposed to be left in created state
+        // We will set a instantaneous reminder, which will process the payment state
+        if ($payment->isCardMandateNotificationCreateApplicable() === true)
         {
             return false;
         }

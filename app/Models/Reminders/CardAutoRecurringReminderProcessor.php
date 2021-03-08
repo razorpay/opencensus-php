@@ -1,0 +1,55 @@
+<?php
+
+namespace RZP\Models\Reminders;
+
+use RZP\Models\Card;
+use RZP\Models\Payment;
+use RZP\Models\CardMandate\CardMandateNotification;
+
+class CardAutoRecurringReminderProcessor extends ReminderProcessor
+{
+    public function process(string $entity, string $namespace, string $id, array $data)
+    {
+        $payment = (new Payment\Core)->retrievePaymentById($id);
+
+        $notification = (new CardMandateNotification\Core)->verifyNotification($payment);
+
+        $processor = (new Payment\Processor\Processor($payment->merchant));
+        $processor->setPayment($payment);
+
+        $gatewayInput = $this->getGatewayInputForPayment($payment);
+
+        if ($notification->getStatus() === CardMandateNotification\Status::VERIFICATION_FAILED)
+        {
+            $processor->failNotificationVerifyFailedCardAutoRecurringPayment($payment);
+        }
+        else
+        {
+            $processor->gatewayRelatedProcessing($payment, [], $gatewayInput);
+        }
+
+        return [];
+    }
+
+    public function getGatewayInputForPayment(Payment\Entity $payment)
+    {
+        $card = $payment->card;
+
+        $cardNumber = (new Card\CardVault)->getCardNumber($card->getVaultToken());
+
+        $iin = $this->app['repo']->iin->find($card['iin']);
+
+        $cardInput = array_merge(
+            $card->toArray(),
+            [
+                'number' => $cardNumber,
+                'cvv' => null,
+                'message_type' => $iin['message_type'],
+            ]);
+
+        return [
+            'card' => $cardInput,
+            'iin'  => $iin->toArray(),
+        ];
+    }
+}

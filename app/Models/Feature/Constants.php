@@ -228,6 +228,11 @@ class Constants
     const SUBSCRIPTION_UPI                = 'subscription_upi';
 
     /**
+     * card mandate for recurring card payment
+     */
+    const RECURRING_CARD_MANDATE = 'recurring_card_mandate';
+
+    /**
      * Only partners having this feature will be able to onboard the submerchants using the account apis
      */
     const SUBMERCHANT_ONBOARDING          = 'submerchant_onboarding';
@@ -819,6 +824,7 @@ class Constants
         self::PAYMENTLINKS_V2                 => true,
         self::RECURRING_DEBIT_UMRN            => true,
         self::NACH_FORM_DIRECT_DOWNLOAD       => true,
+        self::RECURRING_CARD_MANDATE          => true,
         self::PAYMENTLINKS_COMPATIBILITY_V2   => true,
         self::SEND_PAYMENT_CONFIG_ID          => false,
         self::PAYMENT_STATUS_AGGREGATE        => true,

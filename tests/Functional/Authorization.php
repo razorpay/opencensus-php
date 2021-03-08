@@ -99,6 +99,13 @@ class Authorization
         $this->proxy = true;
     }
 
+    public function reminderAuth()
+    {
+        $this->appAuth('rzp_test_10000000000000', \Config::get('applications.reminders')['secret']);
+
+        $this->proxy = true;
+    }
+
     public function salesForceAuth()
     {
         $this->appAuth('rzp_test_10000000000000', \Config::get('applications.salesforce')['secret']);

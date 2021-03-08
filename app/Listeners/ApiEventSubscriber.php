@@ -17,6 +17,7 @@ use Razorpay\Trace\Logger;
 use RZP\Models\PaymentLink;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
+use RZP\Models\CardMandate;
 use RZP\Models\Customer\Token;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Payment\Downtime;
@@ -292,6 +293,11 @@ class ApiEventSubscriber extends Base\Core
             $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
 
             $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
+        }
+
+        if ($payment->isCardMandateRecurringInitialPayment() === true)
+        {
+            (new CardMandate\Core)->postAuthorizeConfirmMandate($payment);
         }
 
         $this->dispatchEventToStork($payload);

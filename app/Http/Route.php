@@ -82,6 +82,7 @@ class Route
         'payment_redirect_to_authenticate_get'     => ['get',      'payments/{id}/authenticate',                     'PaymentCreateController@postRedirectToAuthorize'                   ],
         'payment_get_authenticate_url'             => ['get',      'payments/{id}/authenticate/url',                 'PaymentCreateController@getAutenticateUrl'                         ],
         'payment_redirect_to_authenticate_post'    => ['post',     'payments/{id}/authenticate',                     'PaymentCreateController@postRedirectToAuthorize'                   ],
+        'payment_mandate_hq_redirect_authenticate' => ['get',      'payments/{id}/mandate_hq/authenticate/{hash}',   'PaymentCreateController@redirectToAuthorizeFromMandateHQ'          ],
         'payment_get_authentication_entity'        => ['get',      'payments/authentication/{id}',                   'PaymentController@getPaymentAuthenticationEntity'                  ],
         'payment_get_authorization_entity'         => ['get',      'payments/authorization/{id}',                    'PaymentController@getPaymentAuthorizationEntity'                   ],
         'payment_callback_ajax_with_key_get'       => ['get',      'payments/{id}/callback/ajax/{hash}/{key}',       'PaymentCreateController@postAJAXCallback'                          ],
@@ -108,6 +109,7 @@ class Route
         'payment_get_flows_private'                => ['post',     'payment/flows',                                  'PaymentController@getPaymentFlowsPrivate'                          ],
         'payment_get_iin_details'                  => ['get',      'payment/iin',                                    'IinController@getIinDetails'                                       ],
         'get_issuer_from_iin'                      => ['get',      'mandate_hq/iin/{id}',                            'IinController@getIssuerDetails'                                    ],
+        'mandate_hq_callback'                      => ['post',     'mandate_hq/callback',                            'PaymentCreateController@handleMandateHQCallback'                   ],
         'payment_bank_transfer_fetch'              => ['get',      'payments/{id}/bank_transfer',                    'BankTransferController@fetchBankTransferForPayment'                ],
         'payments_downtime'                        => ['get',      'payments/downtimes',                             'DowntimeController@getMethodDowntimeData'                          ],
         'payments_downtime_by_id'                  => ['get',      'payments/downtimes/{id}',                        'DowntimeController@getMethodDowntimeDataByID'                      ],
@@ -2302,6 +2304,7 @@ class Route
         'payment_create',
         'payment_create_checkout',
         'payment_create_jsonp',
+        'payment_mandate_hq_redirect_authenticate',
         'payment_create_ajax',
         'payment_create_checkout_json',
         'payment_create_fees',
@@ -3064,6 +3067,7 @@ class Route
 
         // Mandate HQ
         'get_issuer_from_iin',
+        'mandate_hq_callback',
 
         'nach_batch_process',
 
@@ -6030,6 +6034,7 @@ class Route
 
         'mandate_hq' => [
             'get_issuer_from_iin',
+            'mandate_hq_callback',
         ],
 
         'kotak' => [
@@ -6553,6 +6558,7 @@ class Route
         'payment_create_checkout',
         'payment_create_aeps',
         'payment_create_jsonp',
+        'payment_mandate_hq_redirect_authenticate',
         'payment_create_ajax',
         'payment_create_fees',
         'payment_calculate_fees',
@@ -7408,6 +7414,7 @@ class Route
             'v1/payments/create/jsonp',
             'payments/create/jsonp',
             self::$apiRoutes['payment_create_jsonp'][1],
+            'v1/payments/{id}/mandate_hq/authenticate/{hash}',
             'v1/payments',
             'v1/payments/create',
             'v1/payments/create/recurring',
