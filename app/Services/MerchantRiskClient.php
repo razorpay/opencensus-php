@@ -21,7 +21,7 @@ use RZP\Exception\ServerErrorException;
 class MerchantRiskClient
 {
 
-    const REQUEST_TIMEOUT = 2000;
+    const REQUEST_TIMEOUT = 4000;
 
     const REQUEST_CONNECT_TIMEOUT = 2000;
 
