@@ -71,6 +71,7 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('active', $fav['results']['account_status']);
         $this->assertNotNull($fav['results']['utr']);
         $this->assertEquals('10000000000000', $fav['balance_id']);
+        $this->assertEquals('INR', $fav['currency']);
 
         // Fee and tax will be calculated at the time fund account validation is created.
         $this->assertEquals(354, $fav['fees']);
@@ -396,6 +397,71 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals('failed', $fta->getStatus());
 
         $this->assertEquals('failed', $payout->getStatus());
+
+    }
+
+    public function testIfFundAccountValidationAlreadyInFinalStateBeforeFTAUpdate()
+    {
+        $this->mockRazorxTreatment();
+
+        $this->testFundAccValidationWithAccountNumberAndBankAccount();
+
+        $fav = $this->getDbLastEntity('fund_account_validation');
+
+        $fta = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->fund_account_validation->editEntity('fund_account_validation', $fav['id'], ['status' => 'completed']);
+
+        $favId = $fav->getId();
+
+        $this->fixtures->edit(
+            'fund_transfer_attempt',
+            $fta->getId(),
+            [
+                'is_fts' => 1,
+            ]);
+
+        $this->updateFtaAndSource($favId, 'INITIATED','944926344925','IN_PROGRESS',false);
+
+        $fav = $this->getDbEntityById('fund_account_validation', $favId);
+
+        $fta = $this->getDbEntityById('fund_transfer_attempt', $fta->getId());
+
+        $this->assertEquals('initiated', $fta->getStatus());
+
+        $this->assertEquals('completed', $fav->getStatus());
+
+    }
+
+
+    public function testFundAccValidationWhenFtaStillInitiatedDuringRecon()
+    {
+        $this->mockRazorxTreatment();
+
+        $this->testFundAccValidationWithAccountNumberAndBankAccount();
+
+        $fav = $this->getDbLastEntity('fund_account_validation');
+
+        $fta = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $favId = $fav->getId();
+
+        $this->fixtures->edit(
+            'fund_transfer_attempt',
+            $fta->getId(),
+            [
+                'is_fts' => 1,
+            ]);
+
+        $this->updateFtaAndSource($favId, 'INITIATED','944926344925','IN_PROGRESS',false);
+
+        $fav = $this->getDbEntityById('fund_account_validation', $favId);
+
+        $fta = $this->getDbEntityById('fund_transfer_attempt', $fta->getId());
+
+        $this->assertEquals('initiated', $fta->getStatus());
+
+        $this->assertEquals('created', $fav->getStatus());
 
     }
 
@@ -1130,6 +1196,39 @@ class FundAccountValidationTest extends TestCase
         $fav = $this->getLastEntity('fund_account_validation', true);
         // Queue will be processed by now.
         $this->assertEquals('failed', $fav['status']);
+    }
+
+    public function testFinalStateReachedFundAccValidationNotMarkAsFailed()
+    {
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
+
+        $this->startTest();
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+
+        $this->fixtures->fund_account_validation->editEntity('fund_account_validation', $fav['id'], ['status' => 'completed']);
+
+        $this->assertEquals(null, $fav['results']['account_status']);
+
+        $request = [
+            'method'  => 'PATCH',
+            'url'     => '/fund_accounts/validations/bulk/fail',
+            'content' => [
+                Validation::FUND_ACCOUNT_VALIDATION_IDS => [
+                    $fav['id']
+                ],
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+        // Queue will be processed by now.
+        $this->assertNotEquals('failed', $fav['status']);
     }
 
     public function testFundAccValidationOnPrepaidModelWithNoFeeCreditsAndNoBalanceNewApiError()
