@@ -2,15 +2,15 @@
 
 namespace RZP\Gateway\Paytm;
 
-use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
-use RZP\Gateway\Base\Action;
-use RZP\Gateway\Base\VerifyResult;
-use RZP\Gateway\Paytm;
+use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Base\Action;
+use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\VerifyResult;
 
 class Gateway extends Base\Gateway
 {
@@ -57,20 +57,26 @@ class Gateway extends Base\Gateway
 
         $this->assertAmount($expectedAmount, $actualAmount);
 
-        $payment = $this->repo->findByPaymentIdAndActionOrFail(
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['gateway']['ORDERID'], Action::AUTHORIZE);
 
         $values = $this->lowerArrayKeys($input['gateway']);
 
         $values['received'] = 1;
 
-        $payment->fill($values);
+        $gatewayPayment->fill($values);
 
-        $this->repo->saveOrFail($payment);
+        $this->repo->saveOrFail($gatewayPayment);
 
         $this->verifyPaymentCallbackResponse($input);
 
-        $acquirerData = $this->getAcquirerData($input, $payment);
+        /*
+         * If callback status was a success, we verify the payment immediately
+         * as we don't want rely only on redirect response
+         */
+        $this->verifyCallback($input, $gatewayPayment);
+
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
         return $this->getCallbackResponseData($input, $acquirerData);
     }
@@ -706,5 +712,45 @@ class Gateway extends Base\Gateway
             'refundId'                       => $content['body']['refundId'] ?? null,
             'rrn'                            => $content['body']['refundDetailInfoList']['rrn'] ?? null,
         ];
+    }
+
+    protected function verifyCallback(array $input, $gatewayPayment)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        $verify->payment = $gatewayPayment;
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        $this->checkGatewaySuccess($verify);
+
+        /*
+         * If verify returns false, we throw an error as authorize request / response has been tampered with
+         */
+        if ($verify->gatewaySuccess === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
+        }
+
+        $rzpAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+
+        $gatewayAmount = number_format($verify->verifyResponseContent['TXNAMOUNT'], 2, '.', '');
+
+        $this->assertAmount($rzpAmount, $gatewayAmount);
+    }
+
+    protected function checkGatewaySuccess(Verify $verify)
+    {
+        $verify->gatewaySuccess = false;
+
+        $content = $verify->verifyResponseContent;
+
+        if ($content['STATUS'] === Status::SUCCESS)
+        {
+            $verify->gatewaySuccess = true;
+        }
     }
 }
