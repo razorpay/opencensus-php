@@ -708,5 +708,18 @@ return  [
             ],
             'status_code'   =>  200
         ]
+    ],
+
+    'testConfigInternalListByIsDefault' => [
+        'request' => [
+            'method'    => 'GET',
+            'url'       => '/internal/config?is_default=true',
+        ],
+        'response'      =>  [
+            'content'   => [
+                'count' => 1,
+            ],
+            'status_code'   =>  200
+        ]
     ]
 ];

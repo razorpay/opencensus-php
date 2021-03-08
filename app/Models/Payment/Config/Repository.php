@@ -59,15 +59,18 @@ class Repository extends Base\Repository
     }
 
     public function fetchMultipleByParam($input){
-        $query =  $this->newQuery()->where(Entity::IS_DELETED, false);
+        $query = $this->newQuery()->where(Entity::IS_DELETED, false);
+
+        if ((isset($input['is_default']) === true) and (($input['is_default'] === 'true') or (strval($input['is_default']) === '1'))) {
+            $query->where(Entity::IS_DEFAULT, true);
+            unset($input['is_default']);
+        }
 
         $this->buildQueryWithParams($query, $input);
 
         $this->addQueryOrder($query);
 
-        $configs = $query->get();
-
-        return $configs;
+        return $query->get();
     }
 
     public function fetchByIdAndNotDeleted($id){

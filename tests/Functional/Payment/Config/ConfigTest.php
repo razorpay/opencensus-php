@@ -301,4 +301,14 @@ class ConfigTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testConfigInternalListByIsDefault()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('config', ['type' => 'checkout', 'name' => 'Default Checkout', 'is_default' => true]);
+        $this->fixtures->create('config', ['type' => 'checkout', 'name' => 'Checkout', 'is_default' => false]);
+
+        $this->startTest();
+    }
 }
