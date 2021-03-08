@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { classList } from 'common/utils/rzp-utils';
 
 const OTP_LENGTH = 6;
-const DigitField = ({ pos, digit, currentIndex, setCurPos, handleInput }) => {
+const DigitField = ({ pos, digit, currentIndex, setCurPos, handleInput, isFocused }) => {
   return (
     <input
       name=""
@@ -16,13 +16,14 @@ const DigitField = ({ pos, digit, currentIndex, setCurPos, handleInput }) => {
       onKeyDown={(e) => {
         handleInput(pos, e);
       }}
-      ref={(input) => input && currentIndex == pos && input.focus()}
+      ref={(input) => input && currentIndex == pos && isFocused && input.focus()}
     />
   );
 };
 export class OtpInput extends Component {
   state = {
     currentIndex: 1,
+    isFocused: typeof this.props.autoFocus !== 'undefined' ? this.props.autoFocus : true,
     digit: this.props.otp
       ? this.props.otp
           .split('')
@@ -82,21 +83,36 @@ export class OtpInput extends Component {
   };
 
   render() {
-    const { currentIndex } = { ...this.state };
-    const { wrong } = { ...this.props };
-    const opt = [
-      { cList: ['first'], key: 1 },
-      { cList: ['middle-man'], key: 2 },
-      { cList: ['last'], key: 3 },
-      '-',
-      { cList: ['first'], key: 4 },
-      { cList: ['middle-man'], key: 5 },
-      { cList: ['last'], key: 6 },
-    ];
+    const { currentIndex, isFocused } = { ...this.state };
+    const { wrong, heading, otpSize } = { ...this.props };
+    const opt =
+      otpSize === '4'
+        ? [
+            { cList: ['first'], key: 1 },
+            { cList: ['middle-man'], key: 2 },
+            { cList: ['first'], key: 3 },
+            { cList: ['middle-man'], key: 4 },
+          ]
+        : [
+            { cList: ['first'], key: 1 },
+            { cList: ['middle-man'], key: 2 },
+            { cList: ['last'], key: 3 },
+            '-',
+            { cList: ['first'], key: 4 },
+            { cList: ['middle-man'], key: 5 },
+            { cList: ['last'], key: 6 },
+          ];
 
     return (
-      <div>
-        <strong class="">Enter the code</strong>
+      <div
+        onFocus={() => !this.props.autoFocus && this.setState({ isFocused: true })}
+        onBlur={() => !this.props.autoFocus && this.setState({ isFocused: false })}
+      >
+        {heading !== undefined ? (
+          <div className="otp-heading">{heading}</div>
+        ) : (
+          <strong class="">Enter the code</strong>
+        )}
         {wrong && <span class="pull-right wrong-msg">Wrong OTP</span>}
         <div class="otp-input">
           {opt.map((i) => {
@@ -112,12 +128,13 @@ export class OtpInput extends Component {
                   key={i.key}
                   class={classList(
                     ...i.cList,
-                    currentIndex == i.key ? 'active' : '',
+                    currentIndex == i.key && otpSize !== '4' ? 'active' : '',
                     wrong ? 'wrong' : '',
                   )}
                 >
                   <DigitField
                     {...this.state}
+                    isFocused={isFocused}
                     pos={i.key}
                     setCurPos={this.setCurPos}
                     handleInput={this.handleInput}

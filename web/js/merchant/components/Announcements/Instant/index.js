@@ -236,7 +236,8 @@ export default class InstantActivationAnnouncements extends Component {
           content = (
             <React.Fragment>
               We are reviewing your KYC details. It usually takes{' '}
-              {user.isAutoKycDone ? '3 - 5' : '8 - 10'} business days. We will reach out to you if we need any further details.
+              {user.isAutoKycDone ? '3 - 5' : '8 - 10'} business days. We will reach out to you if
+              we need any further details.
             </React.Fragment>
           );
         }

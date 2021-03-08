@@ -17,36 +17,33 @@ export default RTracking((state, props, args) => {
   let actionContent = null;
   let trackingIntent = null;
 
-
-  if(user.activation_status === 'under_review') {
+  if (user.activation_status === 'under_review') {
     actionCopy = 'KYC Under Review';
-  } else if (user.activation_progress < 100 ) {
+  } else if (user.activation_progress < 100) {
     // If user form is still unfilled
     actionCopy = 'Activate your account';
     trackingIntent = 'act.form_fill';
     if (isL1Submitted) {
       actionCopy = 'Submit KYC';
       if (user.isActivated) {
-        actionCopy = user.isUnregisteredBusiness
-          ? 'Submit KYC'
-          : 'Accept Payments';
+        actionCopy = user.isUnregisteredBusiness ? 'Submit KYC' : 'Accept Payments';
         trackingIntent = 'dash.accept_payments';
       }
     }
   } else if (user.isAccepted) {
     actionCopy = 'Settlements Enabled';
   } else if (user.isActivated) {
-      actionCopy = 'Account Activated';
+    actionCopy = 'Account Activated';
   } else if (user.isSubmitted) {
     actionCopy = 'Form submitted';
   } else if (user.activation_progress == 100) {
     // Form is unfilled and Not submitted
     actionCopy = 'Submit Form';
-  } 
+  }
 
   return !isBlacklistFlow ? (
     <ShowWhen
-      additionalCondition={user =>
+      additionalCondition={(user) =>
         user.isAllowedEdit('activation') &&
         !user.isPartner() &&
         (!user.isSubmitted || !config.hasPersonalised)
@@ -59,7 +56,7 @@ export default RTracking((state, props, args) => {
             props.tracking.trackEvent(
               window.rzpQ.onbr().initiated(trackingIntent, {
                 clickSource: 'LHS_Nav_Bar',
-              })
+              }),
             );
           props.onSidebarBannerClick();
         }}
@@ -67,9 +64,7 @@ export default RTracking((state, props, args) => {
         <div
           className={classList(
             'activation-status',
-            user.isSubmitted && !config.hasPersonalised
-              ? 'not-personalised'
-              : ''
+            user.isSubmitted && !config.hasPersonalised ? 'not-personalised' : '',
           )}
         >
           <div className="clearfix">
@@ -80,11 +75,7 @@ export default RTracking((state, props, args) => {
           </div>
           {do {
             if (showInstantActivation && !isL1Submitted) {
-              actionContent = (
-                <div className="activation-status-secondary">
-                  Form not Completed
-                </div>
-              );
+              actionContent = <div className="activation-status-secondary">Form not Completed</div>;
             } else {
               actionContent = !user.isSubmitted ? (
                 <div className="activation-bar-content activation-status-secondary">
@@ -92,28 +83,20 @@ export default RTracking((state, props, args) => {
                   isL1Submitted &&
                   user.isActivated &&
                   !user.isUnregisteredBusiness ? (
-                    <div className="activation-bar-text">
-                      Click here to know more
-                    </div>
+                    <div className="activation-bar-text">Click here to know more</div>
                   ) : (
                     <>
                       <div className="activation-bar-text">
                         {user.activation_progress}% Complete
                       </div>
                       <div className="activation-bar">
-                        <ProgressBar
-                          type="success"
-                          max={100}
-                          value={user.activation_progress}
-                        />
+                        <ProgressBar type="success" max={100} value={user.activation_progress} />
                       </div>
                     </>
                   )}
                 </div>
               ) : (
-                <div className="activation-status-secondary">
-                  Personalise your Account
-                </div>
+                <div className="activation-status-secondary">Personalise your Account</div>
               );
             }
           }}

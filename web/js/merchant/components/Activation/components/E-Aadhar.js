@@ -3,8 +3,8 @@ import RTracking from 'react-tracking';
 import Input, { Description } from 'common/new-ui/Input';
 import { AsyncBtn } from 'common/new-ui/Button';
 import { merchantFetch } from 'merchant/utils/ajax';
+import OtpInput from 'common/new-ui/Input/OtpInput';
 import { classList } from 'common/utils/rzp-utils';
-import CopyOtpInput from './OtpInput';
 import analyticsService from '@commander/services/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
@@ -488,7 +488,7 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
                       }}
                     />
                     <div className="Input-content captcha-screen__pin">
-                      <CopyOtpInput
+                      <OtpInput
                         heading=""
                         autoFocus={false}
                         onChange={updateSecurityPin}
@@ -527,7 +527,7 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
               {isOtpGenerated && !isValidOtp && error !== 'INVALID_SESSION_ID' && (
                 <div className="otp-screen">
                   <div className="Input-content otp-screen__otp">
-                    <CopyOtpInput
+                    <OtpInput
                       heading="OTP has been sent to the number linked with Aadhar"
                       onComplete={updateOtpValue}
                       onChange={updateOtpValue}

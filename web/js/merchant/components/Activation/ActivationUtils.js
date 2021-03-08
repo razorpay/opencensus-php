@@ -274,7 +274,7 @@ function isSourceRX() {
 function showSubcategory(activation) {
   let { state, props } = activation;
   let showSubcategory = false;
-  const nc_flow = props.data.activation_status === 'needs_clarification'
+  const nc_flow = props.data.activation_status === 'needs_clarification';
 
   let businessCategory =
     state.dirty.business_category != null
