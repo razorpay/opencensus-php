@@ -224,7 +224,8 @@ class Validator extends Base\Validator
             );
         }
 
-        if (empty($input[CustomerEntity::EMAIL]) === true)
+        if (empty($input[CustomerEntity::EMAIL]) === true and
+            $merchant->isFeatureEnabled(Feature\Constants::EMAIL_OPTIONAL) === false)
         {
             throw new BadRequestValidationFailureException(
                 PublicErrorDescription::BAD_REQUEST_AUTH_LINK_EMAIL_EMPTY,
