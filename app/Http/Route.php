@@ -140,6 +140,7 @@ class Route
         'payment_authorize_failed'                 => ['post',     'payments/{id}/authorize_failed',                 'PaymentController@postAuthorizeFailedPayment'                      ],
         'payment_fix_attempted_orders'             => ['post',     'payments/fix_attempted_orders',                  'PaymentController@postFixAttemptedOrders'                          ],
         'payment_fix_authorize_at'                 => ['post',     'payments/fix_authorized_at',                     'PaymentController@postFixAuthorizedAt'                             ],
+        'internal_payment_authorize_refund'        => ['post',     'internal/payments/{id}/authorize_refund',         'PaymentController@postRefundAuthorizedInternal'                            ],
         'payment_authorize_refund'                 => ['post',     'payments/{id}/authorize_refund',                 'PaymentController@postRefundAuthorized'                            ],
         'payments_multiple_authorize_refund'       => ['post',     'payments/authorize_refund/bulk',                 'PaymentController@postRefundAuthorizedInBulk'                      ],
         'payment_add_metadata'                     => ['post',     'payments/{x_entity_id}/metadata',                'PaymentController@postPaymentMetadata'                             ],
@@ -3067,7 +3068,7 @@ class Route
         'nach_batch_process',
 
         'loc_cron',
-
+        'internal_payment_authorize_refund',
         'freshdesk_update_ticket_internal',
         'care_service_cron_proxy',
     ];
@@ -6308,6 +6309,8 @@ class Route
         ],
 
         'pg_router' => [
+            'api_entity_fetch',
+            'internal_payment_authorize_refund',
             'internal_fetch_config_by_id',
             'internal_fetch_configs',
             'api_entity_fetch'

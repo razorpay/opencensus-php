@@ -582,4 +582,15 @@ class PaymentController extends Controller
 
         return ApiResponse::json($pm);
     }
+
+    public function postRefundAuthorizedInternal($id)
+    {
+        $input = Request::all();
+
+        $refund = $this->service()->refundAuthorized($id, $input);
+
+        $data = ["data" => $refund];
+
+        return ApiResponse::json($data);
+    }
 }
