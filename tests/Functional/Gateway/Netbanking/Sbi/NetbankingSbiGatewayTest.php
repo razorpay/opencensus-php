@@ -93,7 +93,7 @@ class NetbankingSbiGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals($this->testData['testTpvPaymentEntity'], $gatewayEntity);
 
-        $this->assertEquals($gatewayEntity['account_number'], $data['request']['content']['account_number']);
+        $this->assertEquals('00004030403040304', $gatewayEntity['account_number']);
 
         $order = $this->getLastEntity('order', true);
 
