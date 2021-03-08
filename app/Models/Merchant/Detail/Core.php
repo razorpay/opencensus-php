@@ -2936,6 +2936,12 @@ class Core extends Base\Core
             return false;
         }
 
+        // if aadhaar is not linked we say verification is done
+        if((bool)$stakeholder->getAadhaarLinked() === false)
+        {
+            return true;
+        }
+
         return $stakeholder->getAadhaarEsignStatus() === 'verified';
     }
 
@@ -2946,7 +2952,17 @@ class Core extends Base\Core
             return false;
         }
 
-        $isAadhaarEsignEnabled = (new Merchant\Core())->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
+        if(BusinessType::isAadhaarEsignVerificationRequired($merchantDetails->getBusinessType()) === false)
+        {
+            return false;
+        }
+
+        if($merchantDetails->merchant->isLinkedAccount() === true)
+        {
+            return false;
+        }
+
+        $isAadhaarEsignEnabled = $this->mcore->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
             RazorxTreatment::ESIGN_AADHAR_FUNCTIONALITY);
 
         if($isAadhaarEsignEnabled === false)
@@ -2954,19 +2970,7 @@ class Core extends Base\Core
             return false;
         }
 
-        if(BusinessType::isAadhaarEsignVerificationRequired($merchantDetails->getBusinessType()) === false)
-        {
-            return false;
-        }
-
-        $stakeholder = $merchantDetails->stakeholder;
-
-        if(empty($stakeholder) === true)
-        {
-            return true;
-        }
-
-        return $stakeholder->getAadhaarLinked();
+        return true;
     }
 
     public function canSubmitActivationForm(
