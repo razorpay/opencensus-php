@@ -689,6 +689,7 @@ class Entity extends Base\PublicEntity
                 Balance\Entity::BALANCE,
                 Balance\Entity::CURRENCY,
                 Balance\Entity::LOCKED_BALANCE,
+                Balance\Entity::LAST_FETCHED_AT,
             ]);
     }
 

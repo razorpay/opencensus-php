@@ -1433,6 +1433,37 @@ return [
         ],
     ],
 
+    'testBankingAccountFetchCheckFieldLastFetchedAtInBalance' => [
+        'request'  => [
+            'url'     => '/banking_accounts',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'account_number'    => '2224440041626905',
+                        'status'            => 'created',
+                        'balance'           => [
+                            'balance'       => 300,
+                            'currency'      => 'INR',
+                        ]
+                    ],
+                    [
+                        'account_number'    => '1234567808',
+                        'status'            => 'created',
+                        'balance'           => [
+                            'balance'       => 90000,
+                            'currency'      => 'INR',
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testBulkAssignReviewersToBankingAccounts' => [
         'request'  => [
             'url'     => '/banking_accounts/reviewers',

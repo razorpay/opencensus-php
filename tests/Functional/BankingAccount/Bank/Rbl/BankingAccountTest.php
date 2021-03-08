@@ -2142,6 +2142,67 @@ class BankingAccountTest extends TestCase
         $this->startTest();
     }
 
+    public function testBankingAccountFetchCheckFieldLastFetchedAtInBalance()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $merchantId = $merchantDetail->merchant['id'];
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $xBalance1 = $this->fixtures->create('balance',
+            [
+                'merchant_id'       => $merchantId,
+                'type'              => 'banking',
+                'account_type'      => 'shared',
+                'account_number'    => '2224440041626905',
+                'balance'           => 300,
+            ]);
+
+        $xBalance2 = $this->fixtures->create('balance',
+            [
+                'merchant_id'       => $merchantId,
+                'type'              => 'banking',
+                'account_type'      => 'direct',
+                'account_number'    => '1234567808',
+                'balance'           => 90000,
+                'channel'           => 'rbl'
+            ]);
+
+        $ba1 = $this->fixtures->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => $merchantId,
+            'channel'               => 'yesbank',
+            'status'                => 'created',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $ba2 = $this->createBankingAccount();
+
+        $this->fixtures->edit('banking_account', $ba1->getId(), [
+            'account_number' => '2224440041626905',
+            'balance_id'     => $xBalance1->getId(),
+            'balance_last_fetched_at' => 1677042035,
+        ]);
+
+        $this->fixtures->edit('banking_account', $ba2['id'], [
+            'account_number' => '1234567808',
+            'balance_id'     => $xBalance2->getId(),
+            'balance_last_fetched_at' => 1677042035,
+        ]);
+
+        $response = $this->startTest();
+
+        $this->assertNull($response['items'][0]['balance']['last_fetched_at']);
+
+        $this->assertNotNull($response['items'][1]['balance']['last_fetched_at']);
+    }
+
     protected function setMozartMockResponse($mockedResponse)
     {
         $mock = Mockery::mock(Mozart::class)->makePartial();
