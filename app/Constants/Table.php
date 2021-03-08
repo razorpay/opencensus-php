@@ -30,6 +30,7 @@ class Table
     const CONTACT                      = 'contacts';
     const COUNTER                      = 'counters';
     const QR_CODE                      = 'qr_code';
+    const QR_PAYMENT_REQUEST           = 'qr_payment_request';
     const BALANCE                      = 'balance';
     const PRICING                      = 'pricing';
     const PRODUCT                      = 'product';
