@@ -346,7 +346,9 @@ class AdminFetch
                 ],
             ],
 
-            Entity::PAYMENTS_NBPLUS_NETBANKING => [],
+            Entity::PAYMENTS_NBPLUS_NETBANKING => [
+                'payment_id'   => Fetch::FIELD_PAYMENT_ID,
+            ],
 
             Entity::NBPLUS_EMANDATE_REGISTRATION => [],
 
