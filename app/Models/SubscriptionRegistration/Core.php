@@ -126,21 +126,6 @@ class Core extends Base\Core
 
     public function createOrderForUPI(& $input, $customer)
     {
-        // Validate amount and Max amount fields specific to UPI here
-        // These data will not be available in subscription registration entity, so can not be validated there
-        // Also Recurring Type will not be available in order entity, hence validating here
-        if (isset($input['amount']) === false or
-            $input['amount'] < Validator::UPIMANDATE_AMOUNT_MIN_LIMIT or
-            $input['amount'] > Validator::UPIMANDATE_AMOUNT_MAX_LIMIT)
-        {
-            $msg = 'For UPI Authlink, amount should be between '
-                        . Validator::UPIMANDATE_AMOUNT_MIN_LIMIT
-                        . ' and '
-                        . Validator::UPIMANDATE_AMOUNT_MAX_LIMIT;
-
-            throw new Exception\BadRequestValidationFailureException( $msg, 'amount');
-        }
-
         // Set default values for frequency and max amount for upi
         $frequency = $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::FREQUENCY] ?? UpiFrequency::MONTHLY;
         $maxAmount = $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::MAX_AMOUNT] ?? UpiValidator::MAX_AMOUNT_LIMIT;

@@ -135,11 +135,6 @@ class Validator extends Base\Validator
                 $maxAmountLimit = PaperMandate\Validator::MAX_AMOUNT_LIMIT;
             }
 
-            if ($method === Payment\Method::UPI)
-            {
-                $maxAmountLimit = self::UPIMANDATE_AMOUNT_MAX_LIMIT;
-            }
-
             if (($authType === Payment\AuthType::AADHAAR) or
                 ($authType === Payment\AuthType::AADHAAR_FP))
             {

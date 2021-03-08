@@ -690,7 +690,7 @@ return [
             'method'  => 'post',
             'content' => [
                     'type'     => 'link',
-                    'amount'   => '210000',
+                    'amount'   => '510000',
                     'customer' => [
                         'email'   => 'test@razorpay.com',
                         'contact' => '9999999999',
@@ -699,7 +699,7 @@ return [
                 'description'               => 'test description',
                 'subscription_registration' => [
                     'method'     => 'upi',
-                    'max_amount' => 200000,
+                    'max_amount' => 600000,
                     'frequency'  => 'yearly'
                 ],
             ],
@@ -708,8 +708,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => ErrorCode::BAD_REQUEST_ERROR,
-                    'field'       => 'amount',
-                    'description' => 'For UPI Authlink, amount should be between 100 and 200000'
+                    'description' => 'Max amount for UPI recurring payment cannot be greater than Rs. 5000.00'
                 ],
             ],
             'status_code' => 400,
