@@ -666,6 +666,18 @@ export default class User {
     return this.isFeatureEnabled('caw_upi') || this.getExpStatus('upi_caw');
   }
 
+  get isPLSwitchEnabled() {
+    const isRazorXExperimentEnabled = this.getExpStatus('pl_swith_v2');
+    const isRoleAllowed =
+      this.userRole === rolesList.OWNER ||
+      this.userRole === rolesList.ADMIN ||
+      this.userRole === rolesList.MANAGER;
+
+    const isMerchantOnOldPL = this.isPaymentlinksV2CompatEnabled && !this.isPaymentlinksV2Enabled;
+
+    return isRoleAllowed && isRazorXExperimentEnabled && isMerchantOnOldPL;
+  }
+
   get isEsignAadharEnabled() {
     return this.getExpStatus('esign_aadhar_functionality');
   }

@@ -1461,6 +1461,7 @@ class Service extends Base\Service
             'enable_tpv_fe',
             'shopify_gtm_notification_cohorts',
             'es_ondeman_restricted_cohorts',
+            'pl_swith_v2',
             'dashboard_show_nps_survey'
         ];
 

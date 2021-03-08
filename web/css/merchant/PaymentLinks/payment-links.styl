@@ -238,3 +238,32 @@ TODO: Display aside on top of form as expandable slider OR else show PREV button
 
     .Input-label
       margin-left: 3px
+
+.PaymentLinks--Migration
+  min-width: 590px
+
+  &::after
+    content: ""
+    background-image: url("assets/payment_links/switchV2.svg")
+    background-repeat: no-repeat
+    width: 100%
+    height: 100%
+    position: absolute
+    top: 0px
+    right: -330px
+
+  .modal-body
+    padding-right: 263px
+
+.PaymentLinks--MigrationSuccess
+
+  .i-check-circle
+    color: #00BB55;
+    vertical-align: middle;
+
+  .btn-default
+    display: none;
+  
+  .btn-primary
+    margin-left: 0 !important;
+    width: 100% !important;

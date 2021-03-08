@@ -14,7 +14,7 @@ export const PAYMENTLINKS_FETCH = 'PAYMENTLINKS_FETCH';
 export const PL_CREATE_UPDATE_LIST = 'PL_CREATE_UPDATE_LIST';
 export const PL_EDIT_UPDATE_LIST = 'PL_EDIT_UPDATE_LIST';
 
-export const fetchPaymentLinks = params => {
+export const fetchPaymentLinks = (params) => {
   const user = store.getState().session.user;
   let url, queryParams;
 
@@ -36,11 +36,11 @@ export const fetchPaymentLinks = params => {
   const payload = merchantFetch({
     url,
     params: queryParams,
-  }).then(resp => {
+  }).then((resp) => {
     if (resp.data) {
       if (user.isPaymentlinksV2Enabled) {
-        resp.data.items = resp.data.payment_links.map(paymentlink =>
-          transformPLDetails_NewToOld(paymentlink)
+        resp.data.items = resp.data.payment_links.map((paymentlink) =>
+          transformPLDetails_NewToOld(paymentlink),
         );
 
         delete resp.data.payment_links;
@@ -76,12 +76,10 @@ export const updatePLInReduxList = (respPayload, isNew) => {
     payload = new Invoice(respPayload.data).deserialize();
   }
 
-  return dispatch => {
+  return (dispatch) => {
     // Update list view
     dispatch({
-      type: isNew
-        ? `${PL_CREATE_UPDATE_LIST}::SUCCESS`
-        : `${PL_EDIT_UPDATE_LIST}::SUCCESS`,
+      type: isNew ? `${PL_CREATE_UPDATE_LIST}::SUCCESS` : `${PL_EDIT_UPDATE_LIST}::SUCCESS`,
       payload,
     });
 
@@ -99,7 +97,7 @@ let initialState = {
   count: 0,
 };
 
-export default function(state = initialState, action) {
+export default function (state = initialState, action) {
   switch (action.type) {
     case `${PAYMENTLINKS_FETCH}::PENDING`:
       return merge(state, {
@@ -123,15 +121,11 @@ export default function(state = initialState, action) {
     // Update the list view after creation / edit of payment link
 
     case `${PL_CREATE_UPDATE_LIST}::SUCCESS`:
-      return set(
-        state,
-        'paymentlinks',
-        unshift(state.paymentlinks, action.payload)
-      );
+      return set(state, 'paymentlinks', unshift(state.paymentlinks, action.payload));
 
     case `${PL_EDIT_UPDATE_LIST}::SUCCESS`:
       let paymentlinkIndex = state.paymentlinks.findIndex(
-        paymentlink => paymentlink.id === action.payload.id
+        (paymentlink) => paymentlink.id === action.payload.id,
       );
 
       return set(state, `paymentlinks.${paymentlinkIndex}`, action.payload);

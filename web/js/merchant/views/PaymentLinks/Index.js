@@ -10,6 +10,7 @@ import PaymentLinksList from 'merchant/views/PaymentLinks/PaymentLinks/List';
 import BatchUploadList from 'merchant/views/PaymentLinks/BatchUpload/List';
 
 import PaymentButtonLaunchBanner from 'merchant/components/Announcements/PaymentButtonLaunch';
+import SwitchToPaymentLinksV2 from 'merchant/components/Announcements/SwitchToPaymentLinksV2';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 
@@ -156,7 +157,13 @@ export default class PaymentLinksContainer extends React.Component {
     }
     return (
       <React.Fragment>
-        <PaymentButtonLaunchBanner productName="PaymentLinks" />
+        <ShowWhen additionalCondition={(user) => !user.isPLSwitchEnabled}>
+          <PaymentButtonLaunchBanner productName="PaymentLinks" />
+        </ShowWhen>
+
+        <ShowWhen additionalCondition={(user) => user.isPLSwitchEnabled}>
+          <SwitchToPaymentLinksV2 source="payment-links-list" />
+        </ShowWhen>
 
         <tabbed-container>
           {isQuickGuideOpen && <QuickGuide />}
