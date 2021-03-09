@@ -367,6 +367,130 @@ class IciciGatewayTest extends TestCase
         $this->assertEquals('failed', $payment['status']);
     }
 
+    public function testGatewaySuccessRegistrationAckFile()
+    {
+        $payment = $this->createDummyRegisterToken();
+
+        $token = $this->getDbLastEntityToArray('token');
+
+        $this->assertNull($token['gateway_token']);
+        $this->assertEquals('initiated', $token['recurring_status']);
+
+        $batchFile = $this->getBatchFileToUploadForBankRegisterAcknowledgementResponse($payment, true);
+
+        $url = '/admin/batches';
+
+        $this->ba->adminAuth();
+
+        $batch = $this->makeRequestWithGivenUrlAndFile($url, $batchFile, 'acknowledge');
+
+        $this->assertEquals('nach', $batch['type']);
+        $this->assertEquals('created', $batch['status']);
+
+        $completedBatch = $this->getLastEntity('batch', true);
+        $this->assertEquals('processed', $completedBatch['status']);
+        $this->assertEquals(1, $completedBatch['success_count']);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('created', $payment['status']);
+        $this->assertEmpty($payment['internal_error_code'], "Payment should not have some Error Code");
+        $this->assertEmpty($payment['error_description'], "Payment should not have some Error Reason");
+
+        $token = $this->getDbLastEntityToArray('token');
+
+        $this->assertEquals('IBKL0000000000000001', $token['gateway_token']);
+        $this->assertEquals('initiated', $token['recurring_status']);
+        $this->assertEquals(false, $token['recurring']);
+        $this->assertNotEmpty($token['acknowledged_at']);
+        $this->assertEmpty($token['recurring_failure_reason'], "Token should not have some Error Reason");
+    }
+
+    public function testGatewayFailureRegistrationAckFile()
+    {
+        $payment = $this->createDummyRegisterToken();
+
+        $token = $this->getDbLastEntityToArray('token');
+
+        $this->assertNull($token['gateway_token']);
+        $this->assertEquals('initiated', $token['recurring_status']);
+
+        $batchFile = $this->getBatchFileToUploadForBankRegisterAcknowledgementResponse($payment, false);
+
+        $url = '/admin/batches';
+
+        $this->ba->adminAuth();
+
+        $batch = $this->makeRequestWithGivenUrlAndFile($url, $batchFile, 'acknowledge');
+
+        $this->assertEquals('nach', $batch['type']);
+        $this->assertEquals('created', $batch['status']);
+
+        $completedBatch = $this->getLastEntity('batch', true);
+        $this->assertEquals('processed', $completedBatch['status']);
+        $this->assertEquals(0, $completedBatch['success_count']);
+        $this->assertEquals(1, $completedBatch['failure_count']);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('created', $payment['status']);
+
+        $token = $this->getDbLastEntityToArray('token');
+
+        $this->assertNull($token['gateway_token']);
+        $this->assertEquals('initiated', $token['recurring_status']);
+        $this->assertEquals(false, $token['recurring']);
+        $this->assertNull($token['acknowledged_at']);
+        $this->assertNull($token['recurring_failure_reason']);
+    }
+
+    public function testGatewaySuccessRegistrationAckFileRetry()
+    {
+        $payment = $this->createDummyRegisterToken();
+
+        $token = $this->getDbLastEntityToArray('token');
+
+        $this->assertNull($token['gateway_token']);
+        $this->assertEquals('initiated', $token['recurring_status']);
+
+        $batchFile = $this->getBatchFileToUploadForBankRegisterAcknowledgementResponse($payment, true);
+
+        $url = '/admin/batches';
+
+        $this->ba->adminAuth();
+
+        $batch = $this->makeRequestWithGivenUrlAndFile($url, $batchFile, 'acknowledge');
+
+        $this->assertEquals('nach', $batch['type']);
+        $this->assertEquals('created', $batch['status']);
+
+        $completedBatch = $this->getLastEntity('batch', true);
+        $this->assertEquals('processed', $completedBatch['status']);
+        $this->assertEquals(1, $completedBatch['success_count']);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('created', $payment['status']);
+        $this->assertEmpty($payment['internal_error_code'], "Payment should not have some Error Code");
+        $this->assertEmpty($payment['error_description'], "Payment should not have some Error Reason");
+
+        $token = $this->getDbLastEntityToArray('token');
+
+        $this->assertEquals('IBKL0000000000000001', $token['gateway_token']);
+        $this->assertEquals('initiated', $token['recurring_status']);
+        $this->assertEquals(false, $token['recurring']);
+        $this->assertNotEmpty($token['acknowledged_at']);
+        $this->assertEmpty($token['recurring_failure_reason'], "Token should not have some Error Reason");
+
+        $batchFile = $this->getBatchFileToUploadForBankRegisterAcknowledgementResponse($payment, true);
+
+        $url = '/admin/batches';
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestWithGivenUrlAndFile($url, $batchFile, 'acknowledge');
+    }
+
     protected function createRecurringNachPayment()
     {
         $initialPayment = $this->createAcceptedToken();
@@ -481,6 +605,42 @@ class IciciGatewayTest extends TestCase
         $handle = fopen(__DIR__ . '/test.zip', 'r');
 
         $file = (new TestingFile('test.zip', $handle));
+
+        return $file;
+    }
+
+    protected function getBatchFileToUploadForBankRegisterAcknowledgementResponse($payment, $status)
+    {
+        $paymentId = $payment['id'];
+
+        $this->fixtures->stripSign($paymentId);
+
+        $dom = new DOMDocument();
+
+        if ($status === true)
+        {
+            $dom->load(__DIR__ . '/AckSuccessResponse.xml');
+        }
+        else
+        {
+            $dom->load(__DIR__ . '/AckFailedResponse.xml');
+        }
+
+        $responseXml = strtr($dom->saveXML(), ['$paymentId' => $paymentId, '$status' => $status]);
+
+        $zip = new ZipArchive();
+
+        $date = now(Timezone::IST)->format('dmY');
+
+        $zip->open(__DIR__ . '/MMS-CREATE-ICIC-ICIC401790-' . $date . '-100004-INP-ACK.zip', ZipArchive::CREATE);
+
+        $zip->addFromString( 'MMS-CREATE-ICIC-ICIC401790-'. $date . '-200001-INP-ACK.xml', $responseXml);
+
+        $zip->close();
+
+        $handle = fopen(__DIR__ . '/MMS-CREATE-ICIC-ICIC401790-' . $date . '-100004-INP-ACK.zip', 'r');
+
+        $file = (new TestingFile('MMS-CREATE-ICIC-ICIC401790-' . $date . '-100004-INP-ACK.zip', $handle));
 
         return $file;
     }

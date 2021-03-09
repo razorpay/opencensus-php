@@ -721,6 +721,15 @@ class Core extends Base\Core
 
             $token->setRecurringFailureReason($gatewayData[Entity::RECURRING_FAILURE_REASON]);
         }
+        else if ($gatewayRecurringStatus === RecurringStatus::INITIATED)
+        {
+            $gatewayToken = $gatewayData[Entity::GATEWAY_TOKEN];
+
+            if (empty($gatewayToken) === false)
+            {
+                $token->setGatewayToken($gatewayToken);
+            }
+        }
     }
 
     public function updatePaymentToken($payment, $card)

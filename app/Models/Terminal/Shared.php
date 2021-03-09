@@ -71,6 +71,7 @@ class Shared
     const NETBANKING_JSB_TERMINAL            = '1000NbJsbTrmnl';
     const NETBANKING_IOB_TERMINAL            = '1000NbIobTrmnl';
     const NACH_CITI_TERMINAL                 = '100NbcitiTrmnl';
+    const NACH_ICICI_TERMINAL                = '100NbIcicTrmnl';
     const NETBANKING_KVB_TERMINAL            = '1000NbKvbTrmnl';
     const NETBANKING_KVB_TPV_TERMINAL        = '1000NbKvbTpvTl';
     const NETBANKING_SVC_TERMINAL            = '1000NbSvcTrmnl';
@@ -208,6 +209,7 @@ class Shared
         self::CARDLESS_EMI_ZESTMONEY_TERMINAL,
         self::WORLDLINE_TERMINAL,
         self::NACH_CITI_TERMINAL,
+        self::NACH_ICICI_TERMINAL,
     );
 
     // NOTE: No two shared terminal should be present for same gateway
@@ -283,6 +285,7 @@ class Shared
         self::PAYLATER_ICICI_TERMINAL            => Gateway::PAYLATER_ICICI,
         self::WORLDLINE_TERMINAL                 => Gateway::WORLDLINE,
         self::NACH_CITI_TERMINAL                 => Gateway::NACH_CITI,
+        self::NACH_ICICI_TERMINAL                => Gateway::NACH_ICICI,
     ];
 
     public static function getSharedTerminalMapping()

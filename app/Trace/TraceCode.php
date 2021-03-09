@@ -388,6 +388,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_FUND_TRANSFER_FILE_DETAIL_UPDATED               = 'BATCH_FUND_TRANSFER_FILE_DETAIL_UPDATED';
     const PAYMENT_RECURRING_INVALID_STATUS                      = 'PAYMENT_RECURRING_INVALID_STATUS';
     const GATEWAY_TOKEN_MISMATCH                                = 'GATEWAY_TOKEN_MISMATCH';
+    const GATEWAY_TOKEN_ALREADY_PRESENT                         = 'GATEWAY_TOKEN_ALREADY_PRESENT';
+    const TOKEN_ALREADY_IN_FINAL_STATUS                         = 'TOKEN_ALREADY_IN_FINAL_STATUS';
     const GATEWAY_DECRYPTION_FAILED                             = 'GATEWAY_DECRYPTION_FAILED';
     const CHECK_ACCOUNT_REQUEST                                 = 'CHECK_ACCOUNT_REQUEST';
     const CHECK_ACCOUNT_RESPONSE                                = 'CHECK_ACCOUNT_RESPONSE';
@@ -777,6 +779,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const NACH_REGISTER_REQUEST                                 = 'NACH_REGISTER_REQUEST';
     const NACH_REGISTER_RESPONSE_ERROR                          = 'NACH_REGISTER_RESPONSE_ERROR';
+    const NACH_ACKNOWLEDGE_RESPONSE_ERROR                       = 'NACH_ACKNOWLEDGE_RESPONSE_ERROR';
     const NACH_REGISTER_AUTHENTICATION                          = 'NACH_REGISTER_AUTHENTICATION';
     const NACH_REGISTER_PAYMENT_CREATION                        = 'NACH_REGISTER_PAYMENT_CREATION';
     const NACH_REGISTER_PAYMENT_CREATION_ERROR                  = 'NACH_REGISTER_PAYMENT_CREATION_ERROR';
