@@ -25,31 +25,31 @@
                 <center style="text-align:left;max-width:572px;padding-left:16px;padding-right:16px;margin-left:auto;margin-right:auto;line-height:25px;letter-spacing:.2px;color:#515878;font-size:16px;margin-top:20px">
                     <p>Greetings from Razorpay!<br>
                         <br>
-                        There's some good news for you! You're now eligible for Razorpay Early Settlements. You can now reduce your <strong>settlement period from T+2 days to a few seconds</strong>, just for a nominal fee.
-                        <br><br>
-                        Enable <strong>Same-day Settlements </strong>to get your customer payments twice a day on the same day. With Same Day Settlements, you can trigger On-Demand settlements for any amount and <strong>get your settlements within 10 seconds</strong>, even on weekends and holidays!
-                        <br><br>
-                    <strong>Enable Same-Day Settlements with these 4 simple steps:</strong>
-                    <ol>
-                        <li>Login to your dashboard from <a href="https://dashboard.razorpay.com/#/access/signin?utm_source=mailchimp&amp;utm_medium=email&amp;utm_campaign=early-settlements-activation" style="color:#1aace5" target="_blank" data-saferedirecturl="https://www.google.com/url?q=https://dashboard.razorpay.com/%23/access/signin?utm_source%3Dmailchimp%26utm_medium%3Demail%26utm_campaign%3Dearly-settlements-activation&amp;source=gmail&amp;ust=1569584021872000&amp;usg=AFQjCNHPXu8AQBAvSntLZYIISyqEsI7qvg">here</a>.</li>
-                        <li>Click “<strong>Enable Now</strong>” under settlements tab. </li>
-                        <li>Check the pricing.</li>
-                        <li>Go live with Early Settlements.</li>
-                    </ol>
-                    <strong>Benefits of Early Settlements for your business:</strong></p>
-                    <ol>
-                        <li>Almost instant access to your money for your business.</li>
-                        <li>Reduce your daily cash crunch and increase cash flows.</li>
-                        <li>Manage your inventory and stock in a better way.</li>
-                        <li>Pay your creditors / vendors on time without any delays.</li>
-                    </ol>
-                    <p><br>
-                        Looking forward to hearing from you. For any queries, please reach out to us by responding to this mail or through our support channel at <a href="https://razorpay.com/support/#request" style="color:#1aace5" target="_blank" data-saferedirecturl="https://www.google.com/url?q=https://razorpay.com/support/%23request&amp;source=gmail&amp;ust=1569584021872000&amp;usg=AFQjCNF3e7EeoKNdG_F7USCqRkgRj9q9PA">https://razorpay.com/support/</a><br>
+                        We are glad to inform you that you're now eligible for Razorpay Early Settlements. This helps you reduce your <strong>settlement period from T+2 days to a few seconds</strong> for a nominal fee. Early Settlements will help you:
                         <br>
-                        <br>
-                        Thanks &amp; Regards,<br>
-                        Razorpay Team<br>
-                        &nbsp;</p>
+                    <ol>
+                        <li>Reduce your daily cash crunch and increase cash flows</li>
+                        <li>Pay your creditors and vendors on time without any delays</li>
+                        <li>Manage your stock and customer journey efficiently</li>
+                    </ol>
+                    <br>
+                    <strong>What is ‘Early Settlements’?</strong>
+                    <ol>
+                        <li><strong>On-demand Instant Settlements:</strong> Cash your customer payments and get the pending settlements in less than 10seconds. You can transfer your customer payments to your bank account whenever you want even during non-banking hours and bank holidays.</li>
+                        <li><strong>Scheduled Same-day Settlements:</strong> Available for select users only, you can get your customer payments the very same day and become efficient with Same-day Settlements. All your payments will be settled twice a day in less than a day instead of waiting for 2 days.</li>
+                    </ol>
+                    <strong>How to use Instant Settlements?</strong>
+                    <p>Login to your dashboard from <a href="https://dashboard.razorpay.com/app/instantsettlements?utm_source=mailchimp&amp;utm_medium=email&amp;utm_campaign=early-settlements-activation" style="color:#1aace5" target="_blank" data-saferedirecturl="https://www.google.com/url?q=https://dashboard.razorpay.com/%23/access/signin?utm_source%3Dmailchimp%26utm_medium%3Demail%26utm_campaign%3Dearly-settlements-activation&amp;source=gmail&amp;ust=1569584021872000&amp;usg=AFQjCNHPXu8AQBAvSntLZYIISyqEsI7qvg">here</a> and click <strong>“Settle Now”</strong> under the settlements tab to use On-demand Settlements</p>
+                    <br>
+                    <strong>How to enable Same-day Settlements?</strong>
+                    <p>Login to your dashboard from <a href="https://dashboard.razorpay.com/app/instantsettlements?utm_source=mailchimp&amp;utm_medium=email&amp;utm_campaign=early-settlements-activation" style="color:#1aace5" target="_blank" data-saferedirecturl="https://www.google.com/url?q=https://dashboard.razorpay.com/%23/access/signin?utm_source%3Dmailchimp%26utm_medium%3Demail%26utm_campaign%3Dearly-settlements-activation&amp;source=gmail&amp;ust=1569584021872000&amp;usg=AFQjCNHPXu8AQBAvSntLZYIISyqEsI7qvg">here</a> and click <strong>“Enable Now”</strong> under the settlements tab to use Same-day Settlements. If you do not see this option now, you will see it soon with regular usage of payment gateway.</p>
+                    <center> <a href="https://dashboard.razorpay.com/app/instantsettlements?utm_source=mailchimp&amp;utm_medium=email&amp;utm_campaign=early-settlements-activation" style="color:#0066ff" target="_blank" data-saferedirecturl="https://www.google.com/url?q=https://dashboard.razorpay.com/%23/access/signin?utm_source%3Dmailchimp%26utm_medium%3Demail%26utm_campaign%3Dearly-settlements-activation&amp;source=gmail&amp;ust=1569584021872000&amp;usg=AFQjCNHPXu8AQBAvSntLZYIISyqEsI7qvg">Click to try Early Settlements now</a></center>
+                    <br>
+                    <p>Looking forward to hearing from you. For any queries, please reach out to us by responding to this mail or through our support channel at <a href="https://razorpay.com/support/#request" style="color:#0099ff" target="_blank" data-saferedirecturl="https://www.google.com/url?q=https://razorpay.com/support/%23request&amp;source=gmail&amp;ust=1569584021872000&amp;usg=AFQjCNF3e7EeoKNdG_F7USCqRkgRj9q9PA">https://razorpay.com/support/</a></p>
+                    <br>
+                    Thanks &amp; Regards,<br>
+                    Razorpay Team<br>
+                    &nbsp;</p>
                 </center>
             </td>
             </tr>
