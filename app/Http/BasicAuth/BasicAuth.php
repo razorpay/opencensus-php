@@ -839,6 +839,14 @@ class BasicAuth
         // Check key is blank and it's an internal app
         if (($this->isKeyBlank()) and ($this->verifyInternalApp()))
         {
+            // Trace to identify the routes incorrectly called
+            // TODO: remove it after fixing it
+            if ($this->authCreds->creds['key_id'] !== '')
+            {
+                $this->trace->info(
+                TraceCode::BAD_REQUEST_ROUTE_INCORRECT_AUTH, ['route_name' => $this->route->getCurrentRouteName()]);
+            }
+
             // It's an internal auth. We check whether dashboard
             // merchant header is set. In that case, it's coming
             // from merchant dashboard and not admin dashboard

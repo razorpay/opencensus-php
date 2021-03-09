@@ -854,6 +854,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_ABSENT_REFUND_FAILED                          = 'GATEWAY_ABSENT_REFUND_FAILED';
 
     const BAD_REQUEST_INVALID_API_KEY                           = 'BAD_REQUEST_INVALID_API_KEY';
+    const BAD_REQUEST_ROUTE_INCORRECT_AUTH                      = 'BAD_REQUEST_ROUTE_INCORRECT_AUTH';
     const BAD_REQUEST_INVALID_API_SECRET                        = 'BAD_REQUEST_INVALID_API_SECRET';
     const BAD_REQUEST_API_SECRET_NOT_PROVIDED                   = 'BAD_REQUEST_API_SECRET_NOT_PROVIDED';
     const BAD_REQUEST_INVALID_CLIENT_KEY                        = 'BAD_REQUEST_INVALID_CLIENT_KEY';
