@@ -535,32 +535,6 @@ class Constants
             ]
         ],
         [
-            'title'       => '#UnlockGrowth with global market',
-            'description' => 'Grow your business with international payments! Join Anupam Pahuja, Harshil Mathur on 11th Feb, 2PM & win free credits worth ₹60k',
-            'start_ts'    => 1612946321,
-            'end_ts'      => 1613052000,
-            'icon'        => 'https://cdn.razorpay.com/static/assets/International_globe.png',
-            'id'          => 'FEB21-INT-WEB',
-            'buttons'     => [
-                [
-                    'type'  => 'button',
-                    'label' => 'Register for free',
-                    'url'   => 'https://share.hsforms.com/1Xw1xscaISRSPsoXNfK_D5g3b5b6',
-                ],
-                [
-                    'type'  => 'primary-inverted',
-                    'label' => 'Learn more',
-                    'url'   => 'https://lp.razorpay.com/links/unlocking-growth-from-global-markets',
-                ]
-            ],
-            'filters'       => [
-                'activated' => 1,
-                'business_type' => ['11', '2'],
-                'business_category' => ['ecommerce', 'education'],
-                'live_transaction_done' => 1,
-            ],
-        ],
-        [
             'title'       => 'Instant Settlements from Day 1',
             'description' => 'Settle your customer payments instantly 24x7',
             'start_ts'    => 1613932200,

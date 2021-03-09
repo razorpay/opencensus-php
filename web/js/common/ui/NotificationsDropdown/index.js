@@ -294,7 +294,6 @@ export default class NotificationsDropdown extends Component {
       'opfin-sso-check',
       'JAN21-PG-GTM1',
       'JAN21-PG-GTM1-V2',
-      'FEB21-INT-WEB',
       'Feb20-ES1-PILOT',
       'Feb20-ES1-PILOT_V2',
     ];
