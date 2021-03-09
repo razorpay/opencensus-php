@@ -876,4 +876,10 @@ return [
         'host'         => env('CARE_SERVICE_HOST'),
         'password'     => env('CARE_SERVICE_PASSWORD'),
     ],
+
+    'templating'    => [
+        'user'          => env('TEMPLATING_SERVICE_AUTH_KEY'),
+        'password'      => env('TEMPLATING_SERVICE_AUTH_SECRET'),
+        'url'           => env('TEMPLATING_SERVICE_URL'),
+    ],
 ];

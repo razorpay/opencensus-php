@@ -4136,6 +4136,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AUTO_CAPTURE_CALL_TO_GATEWAY_TIME_TAKEN               = 'AUTO_CAPTURE_CALL_TO_GATEWAY_TIME_TAKEN';
     const MERCHANT_BALANCE_UPDATE_LOCK_TIME_TAKEN               = 'MERCHANT_BALANCE_UPDATE_LOCK_TIME_TAKEN';
 
+    // Trace Code
+    const TEMPLATING_RESPONSE                                   = 'TEMPLATING_RESPONSE';
+    const TEMPLATING_REQUEST                                    = 'TEMPLATING_REQUEST';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

@@ -563,6 +563,12 @@ class Name
     // Set globally whitelisted payer accounts for rx fund loading
     const SET_RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS = 'set_rx_globally_whitelisted_payer_accounts';
 
+    // Templating Service
+    const TEMPLATING_SERVICE_WRITE_NAMESPACES          = 'templating_service_write_namespaces';
+    const TEMPLATING_SERVICE_READ_NAMESPACES           = 'templating_service_read_namespaces';
+    const TEMPLATING_SERVICE_WRITE_TEMPLATE_CONFIGS    = 'templating_service_write_template_configs';
+    const TEMPLATING_SERVICE_READ_TEMPLATE_CONFIGS     = 'templating_service_read_template_configs';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,

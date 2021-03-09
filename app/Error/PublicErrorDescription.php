@@ -1333,4 +1333,7 @@ class PublicErrorDescription
     const BAD_REQUEST_TPV_NOT_EXISTS                                                = 'No TPV found with the entered details';
 
     const BAD_REQUEST_TPV_CREATE_OPERATION_IN_PROGRESS                              = 'Request failed because another request is in progress with the same merchant id';
+
+    // Templating Service
+    const BAD_REQUEST_ERROR_IN_TEMPLATING_RESPONSE                                  = 'Received an Error Response from templating service';
 }

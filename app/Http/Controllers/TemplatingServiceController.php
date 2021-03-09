@@ -1,0 +1,72 @@
+<?php
+
+namespace RZP\Http\Controllers;
+
+use App;
+use ApiResponse;
+
+use RZP\Services\Templating;
+
+class TemplatingServiceController extends Controller
+{
+    public function createNamespace()
+    {
+        $data = $this
+            ->templatingService()
+            ->createNamespace($this->input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function listNamespace()
+    {
+        $data = $this
+            ->templatingService()
+            ->listNamespace($this->input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getTemplateConfig($id)
+    {
+        $data = $this
+            ->templatingService()
+            ->getTemplateConfig($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateTemplateConfig($id)
+    {
+        $data = $this
+            ->templatingService()
+            ->updateTemplateConfig($id, $this->input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function createTemplateConfig()
+    {
+        $data = $this
+            ->templatingService()
+            ->createTemplateConfig($this->input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function listTemplateConfig()
+    {
+        $data = $this
+            ->templatingService()
+            ->listTemplateConfig($this->input);
+
+        return ApiResponse::json($data);
+    }
+
+    protected function templatingService()
+    {
+        $app = App::getFacadeRoot();
+
+        return new Templating($app);
+    }
+}

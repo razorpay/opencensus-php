@@ -2297,6 +2297,14 @@ class Route
         'merchant_tpv_create'                     => ['post',    'merchant/tpv',                                            'BankingAccountTpvController@createTpvFromXDashboard'          ],
         'care_service_dashboard_proxy'            => ['post',    'care_service/merchant/{path?}',                           'CareProxyController@postDashboardProxyRequest'                ],
         'care_service_cron_proxy'                 => ['post',    'care_service/cron/{path?}',                               'CareProxyController@postCronProxyRequest'                     ],
+
+        // Templating Service
+        'templating_create_namespace'             => ['post',    'templating/namespaces',                                   'TemplatingServiceController@createNamespace'                  ],
+        'templating_list_namespace'               => ['get',     'templating/namespaces',                                   'TemplatingServiceController@listNamespace'                    ],
+        'templating_create_template_config'       => ['post',    'templating/template_configs',                             'TemplatingServiceController@createTemplateConfig'             ],
+        'templating_update_template_config'       => ['patch',   'templating/template_configs/{id}',                        'TemplatingServiceController@updateTemplateConfig'             ],
+        'templating_get_template_config'          => ['get',     'templating/template_configs/{id}',                        'TemplatingServiceController@getTemplateConfig'                ],
+        'templating_list_template_config'         => ['get',     'templating/template_configs',                             'TemplatingServiceController@listTemplateConfig'               ],
     ];
 
     public static $public = [
@@ -4406,6 +4414,14 @@ class Route
         'admin_tpv_edit',
         'admin_fetch_tpvs',
         'admin_merchants_tpvs_create',
+
+        // Templating Routes
+        'templating_create_namespace',
+        'templating_list_namespace',
+        'templating_get_template_config',
+        'templating_list_template_config',
+        'templating_create_template_config',
+        'templating_update_template_config',
     ];
 
     public static $routePermission = [
@@ -5270,6 +5286,13 @@ class Route
         'admin_tpv_edit'                                      => Permission::EDIT_BANKING_ACCOUNT_TPV,
         'admin_fetch_tpvs'                                    => Permission::VIEW_BANKING_ACCOUNT_TPV,
         'admin_merchants_tpvs_create'                         => Permission::CREATE_BANKING_ACCOUNT_TPV,
+
+        'templating_create_namespace'                         => Permission::TEMPLATING_SERVICE_WRITE_NAMESPACES,
+        'templating_list_namespace'                           => Permission::TEMPLATING_SERVICE_READ_NAMESPACES,
+        'templating_create_template_config'                   => Permission::TEMPLATING_SERVICE_WRITE_TEMPLATE_CONFIGS,
+        'templating_update_template_config'                   => Permission::TEMPLATING_SERVICE_WRITE_TEMPLATE_CONFIGS,
+        'templating_list_template_config'                     => Permission::TEMPLATING_SERVICE_READ_TEMPLATE_CONFIGS,
+        'templating_get_template_config'                      => Permission::TEMPLATING_SERVICE_READ_TEMPLATE_CONFIGS,
     ];
 
     public static $bankingRoutePermissions = [

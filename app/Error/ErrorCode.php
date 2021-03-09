@@ -1279,6 +1279,11 @@ class ErrorCode
     // Requests from api service to stork failed unexpectedly.
     const SERVER_ERROR_STORK_FAILURE                                                = 'SERVER_ERROR_STORK_FAILURE';
 
+    // Templating Service Error Codes
+    const SERVER_ERROR_TEMPLATING_REQUEST_FAILURE                                   = 'SERVER_ERROR_TEMPLATING_REQUEST_FAILURE';
+    const SERVER_ERROR_IN_TEMPLATING_RESPONSE                                       = 'SERVER_ERROR_IN_TEMPLATING_RESPONSE';
+    const BAD_REQUEST_ERROR_IN_TEMPLATING_RESPONSE                                  = 'BAD_REQUEST_ERROR_IN_TEMPLATING_RESPONSE';
+
     const SERVER_ERROR_MERCHANT_RISKS_FAILURE                                       = 'SERVER_ERROR_MERCHANT_RISKS_FAILURE';
     const SERVER_ERROR_MERCHANT_RISK_ALERTS_FAILURE                                 = 'SERVER_ERROR_MERCHANT_RISK_ALERTS_FAILURE';
     const BAD_REQUEST_STORK_WEBHOOK_NOT_FOUND                                       = 'BAD_REQUEST_STORK_WEBHOOK_NOT_FOUND';
