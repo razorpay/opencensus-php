@@ -693,6 +693,42 @@ class MerchantCreateTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateSubMerchantByAdminForAggregatorBatch()
+    {
+        Mail::fake();
+
+        $app = $this->markPartnerAndCreateAppAndUserMapping('aggregator');
+
+        $configAttributes = [
+            PartnerConfig\Entity::DEFAULT_PLAN_ID => Pricing::DEFAULT_PRICING_PLAN_ID,
+        ];
+
+        $this->createConfigForPartnerApp($app->getId(), null, $configAttributes);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testCreateSubMerchantWithInvalidEmailByAdminForAggregatorBatch()
+    {
+        Mail::fake();
+
+        $app = $this->markPartnerAndCreateAppAndUserMapping('aggregator');
+
+        $this->fixtures->merchant->edit('10000000000000', ['email' => 'merch1@razorpay.com']);
+
+        $configAttributes = [
+            PartnerConfig\Entity::DEFAULT_PLAN_ID => Pricing::DEFAULT_PRICING_PLAN_ID,
+        ];
+
+        $this->createConfigForPartnerApp($app->getId(), null, $configAttributes);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->startTest();
+    }
+
     public function testCreateSubMerchantByAggregatorWithDefaultPaymentMethods()
     {
         Mail::fake();

@@ -118,8 +118,26 @@ class SubMerchant
             Constants::CATEGORY_DETAILS => [
                 MDEntity::BUSINESS_CATEGORY,
                 MDEntity::BUSINESS_SUBCATEGORY,
+            ],
+            Constants::CONFIG_PARAMS => [
+                Merchant::PARTNER_ID,
+                Merchant::USE_EMAIL_AS_DUMMY,
+                Merchant::AUTOFILL_DETAILS,
+                Merchant::AUTO_ACTIVATE,
+                Merchant::AUTO_SUBMIT,
+                Merchant::SKIP_BA_REGISTRATION,
+                Merchant::AUTO_ENABLE_INTERNATIONAL,
             ]
         ];
+    }
+
+    public static function getConfigParamsFromEntry(array $entry): array
+    {
+        $configParamKeys = self::getKeysToSanitize()[Constants::CONFIG_PARAMS] ?? [];
+
+        $configParams = array_only($entry, $configParamKeys);
+
+        return $configParams;
     }
 
     public static function getInstantActivationInput(array $e): array

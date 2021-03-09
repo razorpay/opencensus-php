@@ -3050,6 +3050,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_SERVICE_IIN_BULK_RESPONSE                       = 'BATCH_SERVICE_IIN_BULK_RESPONSE';
     const BATCH_SERVICE_CANCEL_BATCH                            = 'BATCH_SERVICE_CANCEL_BATCH';
     const BATCH_SERVICE_CANCEL_BATCH_FAILED                     = 'BATCH_SERVICE_CANCEL_BATCH_FAILED';
+    const BATCH_SERVICE_SUBMERCHANT_CREATE_ENTRY                = 'BATCH_SERVICE_SUBMERCHANT_CREATE_ENTRY';
+    const BATCH_SERVICE_SUBMERCHANT_CREATE_RESPONSE             = 'BATCH_SERVICE_SUBMERCHANT_CREATE_RESPONSE';
 
     const PAYMENT_ON_HOLD                                       = 'PAYMENT_ON_HOLD';
     const PAYMENT_ON_HOLD_TOGGLE                                = 'PAYMENT_ON_HOLD_TOGGLE';

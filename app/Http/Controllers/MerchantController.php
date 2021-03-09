@@ -56,6 +56,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function bulkOnboardSubMerchantViaBatch()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->bulkOnboardSubMerchantViaBatch($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function createLinkedAccount()
     {
         $input = Request::all();

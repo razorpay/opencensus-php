@@ -1,7 +1,9 @@
 <?php
 
 use RZP\Error\ErrorCode;
+use RZP\Models\Batch\Header;
 use RZP\Error\PublicErrorCode;
+use RZP\Models\Merchant\Entity;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Balance\BalanceConfig;
 
@@ -1182,5 +1184,127 @@ return [
                 ]
             ]
         ]
+    ],
+
+    'testCreateSubMerchantByAdminForAggregatorBatch' => [
+        'request'  => [
+            'url'     => '/submerchants_bulk_onboard/batch',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Entity-Id' => '10000000000000',
+            ],
+            'content' => [
+                Header::MERCHANT_NAME             => 'SubMerchantone',
+                Header::MERCHANT_EMAIL            => 'merch1@razorpay.com',
+                Header::CONTACT_NAME              => 'merch',
+                Header::CONTACT_EMAIL             => 'merch1@razorpay.com',
+                Header::CONTACT_MOBILE            => '9302930211',
+                Header::TRANSACTION_REPORT_EMAIL  => 'merch1@razorpay.com',
+                Header::ORGANIZATION_TYPE         => 3,
+                Header::BUSINESS_NAME             => 'sub merch business',
+                Header::BILLING_LABEL             => 'acme',
+                Header::INTERNATIONAL             => 0,
+                Header::PAYMENTS_FOR              => 'business',
+                Header::BUSINESS_MODEL            => 'acme',
+                Header::BUSINESS_CATEGORY         => 'financial_services',
+                Header::BUSINESS_SUB_CATEGORY     => 'lending',
+                Header::REGISTERED_ADDRESS        => 'acme',
+                Header::REGISTERED_CITY           => 'bangalore',
+                Header::REGISTERED_STATE          => 'karnataka',
+                Header::REGISTERED_PINCODE        => '849583',
+                Header::OPERATIONAL_ADDRESS       => 'acme',
+                Header::OPERATIONAL_CITY          => 'bangalore',
+                Header::OPERATIONAL_STATE         => 'karnataka',
+                Header::OPERATIONAL_PINCODE       => '930293',
+                Header::DOE                       => '1990-02-12',
+                Header::GSTIN                     => '22AAAAA0000A1Z5',
+                Header::PROMOTER_PAN              => 'KDOPK0930L',
+                Header::WEBSITE_URL               => 'http://www.facebook.com',
+                Header::PROMOTER_PAN_NAME         => 'sdfds',
+                Header::BANK_ACCOUNT_NUMBER       => '123456789098',
+                Header::BANK_BRANCH_IFSC          => 'HDFC0000077',
+                Header::BANK_ACCOUNT_NAME         => 'Mr merch',
+                Header::REFERENCE1                => 'service id',
+                Header::COMPANY_CIN               => 'U65999KA2018PTC114468',
+                Header::COMPANY_PAN               => 'JFKCU3829K',
+                Header::COMPANY_PAN_NAME          => 'dsfdfsd',
+                Header::MERCHANT_ID               => '',
+                Entity::AUTO_SUBMIT               => 1,
+                Entity::AUTOFILL_DETAILS          => 1,
+                Entity::AUTO_ACTIVATE             => 1,
+                Entity::USE_EMAIL_AS_DUMMY        => 0,
+                Entity::PARTNER_ID                => '10000000000000',
+                Entity::SKIP_BA_REGISTRATION      => 1,
+                Entity::AUTO_ENABLE_INTERNATIONAL => 0,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_name' => "SubMerchantone",
+                'merchant_email' => "merch1@razorpay.com",
+                'Status' => "success",
+            ],
+        ],
+    ],
+
+    'testCreateSubMerchantWithInvalidEmailByAdminForAggregatorBatch' => [
+        'request'  => [
+            'url'     => '/submerchants_bulk_onboard/batch',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Entity-Id' => '10000000000000',
+            ],
+            'content' => [
+                Header::MERCHANT_NAME             => 'SubMerchantone',
+                Header::MERCHANT_EMAIL            => 'merch1@razorpay.com',
+                Header::CONTACT_NAME              => 'merch',
+                Header::CONTACT_EMAIL             => 'merch1@razorpay.com',
+                Header::CONTACT_MOBILE            => '9302930211',
+                Header::TRANSACTION_REPORT_EMAIL  => 'merch1@razorpay.com',
+                Header::ORGANIZATION_TYPE         => 3,
+                Header::BUSINESS_NAME             => 'sub merch business',
+                Header::BILLING_LABEL             => 'acme',
+                Header::INTERNATIONAL             => 0,
+                Header::PAYMENTS_FOR              => 'business',
+                Header::BUSINESS_MODEL            => 'acme',
+                Header::BUSINESS_CATEGORY         => 'financial_services',
+                Header::BUSINESS_SUB_CATEGORY     => 'lending',
+                Header::REGISTERED_ADDRESS        => 'acme',
+                Header::REGISTERED_CITY           => 'bangalore',
+                Header::REGISTERED_STATE          => 'karnataka',
+                Header::REGISTERED_PINCODE        => '849583',
+                Header::OPERATIONAL_ADDRESS       => 'acme',
+                Header::OPERATIONAL_CITY          => 'bangalore',
+                Header::OPERATIONAL_STATE         => 'karnataka',
+                Header::OPERATIONAL_PINCODE       => '930293',
+                Header::DOE                       => '1990-02-12',
+                Header::GSTIN                     => '22AAAAA0000A1Z5',
+                Header::PROMOTER_PAN              => 'KDOPK0930L',
+                Header::WEBSITE_URL               => 'http://www.facebook.com',
+                Header::PROMOTER_PAN_NAME         => 'sdfds',
+                Header::BANK_ACCOUNT_NUMBER       => '123456789098',
+                Header::BANK_BRANCH_IFSC          => 'HDFC0000077',
+                Header::BANK_ACCOUNT_NAME         => 'Mr merch',
+                Header::REFERENCE1                => 'service id',
+                Header::COMPANY_CIN               => 'U65999KA2018PTC114468',
+                Header::COMPANY_PAN               => 'JFKCU3829K',
+                Header::COMPANY_PAN_NAME          => 'dsfdfsd',
+                Header::MERCHANT_ID               => '',
+                Entity::AUTO_SUBMIT               => 1,
+                Entity::AUTOFILL_DETAILS          => 1,
+                Entity::AUTO_ACTIVATE             => 1,
+                Entity::USE_EMAIL_AS_DUMMY        => 0,
+                Entity::PARTNER_ID                => '10000000000000',
+                Entity::SKIP_BA_REGISTRATION      => 1,
+                Entity::AUTO_ENABLE_INTERNATIONAL => 0,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'Status'            => "failure",
+                'Error Code'        => "BAD_REQUEST_ERROR",
+                'Error Description' => "The email has already been taken.",
+            ],
+        ],
     ],
 ];

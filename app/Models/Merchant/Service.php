@@ -65,6 +65,7 @@ use RZP\Jobs\CallBackFillMerchantApps;
 use RZP\Mail\InstrumentRequest\StatusNotify;
 use RZP\Models\Settlement\SettlementTrait;
 use RZP\Models\Batch\Header as BatchHeader;
+use RZP\Models\Batch\Status as BatchStatus;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Models\Schedule\Task as ScheduleTask;
@@ -86,6 +87,8 @@ use RZP\Models\Merchant\Methods\DefaultMethodsForCategory;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\Gateway\Terminal\Service as TerminalService;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
+use RZP\Models\Batch\Helpers\SubMerchant as SubMerchantBatchHelper;
+use RZP\Models\Partner\SubMerchantBatchUtility as SubMerchantBatchUtil;
 use RZP\Models\Merchant\Detail\BusinessType as MerchantDetBusinessType;
 use RZP\Models\Merchant\Balance\BalanceConfig\Service as BalanceConfigService;
 
@@ -166,6 +169,41 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
         $data = (new RateLimitBatch())->partnerSubmerchantInvite($merchant, $input);
+
+        return $data;
+    }
+
+    public function bulkOnboardSubMerchantViaBatch(array $input)
+    {
+        $tracePayload = [
+            BatchHeader::MERCHANT_NAME   => $input[BatchHeader::MERCHANT_NAME],
+            BatchHeader::MERCHANT_EMAIL  => $input[BatchHeader::MERCHANT_EMAIL],
+            BatchHeader::PARTNER_ID      => $input[BatchHeader::PARTNER_ID],
+        ];
+
+        try
+        {
+            $configs = SubMerchantBatchHelper::getConfigParamsFromEntry($input);
+
+            $data = (new SubMerchantBatchUtil())->processSubMerchantEntry($input, $configs);
+        }
+        catch (BaseException $e)
+        {
+            $this->trace->traceException($e, null, TraceCode::BATCH_PROCESSING_ERROR, $tracePayload);
+
+            $error = $e->getError();
+
+            $data[BatchHeader::STATUS]            = BatchStatus::FAILURE;
+            $data[BatchHeader::ERROR_CODE]        = $error->getPublicErrorCode();
+            $data[BatchHeader::ERROR_DESCRIPTION] = $error->getDescription();
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, null, TraceCode::BATCH_PROCESSING_ERROR, $tracePayload);
+
+            $data[BatchHeader::STATUS]     = BatchStatus::FAILURE;
+            $data[BatchHeader::ERROR_CODE] = ErrorCode::SERVER_ERROR;
+        }
 
         return $data;
     }
@@ -3914,7 +3952,6 @@ class Service extends Base\Service
 
     public function fetchPartnerIntent(): array
     {
-
         $response = (new Settings\Service)->get(
             Constants::PARTNER,
             Constants::PARTNER_INTENT);

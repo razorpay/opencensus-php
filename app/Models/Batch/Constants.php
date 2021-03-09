@@ -14,6 +14,7 @@ class Constants
     const DATA                           = 'data';
     const BANK_DETAILS                   = 'bank_details';
     const CATEGORY_DETAILS               = 'category_details';
+    const CONFIG_PARAMS                  = 'config_params';
     const DEFAULT                        = 'default';
     const BATCH_ACTION                   = 'batch_action';
     const ENTITY                         = 'entity';
