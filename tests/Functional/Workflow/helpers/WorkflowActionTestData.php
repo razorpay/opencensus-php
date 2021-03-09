@@ -207,6 +207,30 @@ return [
             ],
         ],
     ],
+    'testWorkflowActionExecuteLastApprovalForCredits' => [
+        'request' => [
+            'method'    => 'POST',
+            'url'       => '/w-actions/%s/checkers',
+            'content'   => [
+                'approved'  => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'state'     => 'executed',
+                'checkers'  => [
+                    [
+                        'approved' => true,
+                        'admin_id' => 'admin_' . \RZP\Tests\Functional\Fixtures\Entity\Org::CHECKER_ADMIN,
+                    ],
+                    [
+                        'approved'  => true,
+                        'admin_id'  => 'admin_' . \RZP\Tests\Functional\Fixtures\Entity\Org::MAKER_ADMIN,
+                    ]
+                ]
+            ],
+        ],
+    ],
     'testWorkflowActionSuperAdminApprove' => [
         'request' => [
             'method'    => 'POST',

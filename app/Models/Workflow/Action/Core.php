@@ -3,13 +3,15 @@
 namespace RZP\Models\Workflow\Action;
 
 use App;
+use Route;
 use Request;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
+use ReflectionMethod;
 
+use RZP\Exception;
 use RZP\Models\State;
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Role;
@@ -891,6 +893,11 @@ class Core extends Base\Core
         {
             // Not using App::call here because in Laravel6 this internally
             // matches function param names as well
+
+            $routeParams = Route::current()->resolveMethodDependencies(
+                array_values($routeParams), new ReflectionMethod($controller, $functionName)
+            );
+
             $internalResponse = $controller->$functionName(...array_values($routeParams));
 
             if ($internalResponse->getStatusCode() !== 200)

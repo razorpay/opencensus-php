@@ -7,10 +7,12 @@ use Hash;
 use Config;
 
 use RZP\Models\Base\EsDao;
+use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Models\Admin\Permission as AdminPermission;
+use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Admin\Org\Repository as OrgRepository;
 use RZP\Models\Admin\Role\Repository as RoleRepository;
@@ -22,6 +24,7 @@ class WorkflowActionTest extends TestCase
 {
     use RequestResponseFlowTrait;
     use DbEntityFetchTrait;
+    use EntityActionTrait;
     use HeimdallTrait;
     use WorkflowTrait;
 
@@ -293,6 +296,60 @@ class WorkflowActionTest extends TestCase
         $admin = $this->getAdmin(Org::RZP_ORG_SIGNED, Org::SUPER_ADMIN_SIGNED, null, 'live');
 
         $this->assertEquals('akshay', $admin['name']);
+    }
+
+    public function testWorkflowActionExecuteLastApprovalForCredits()
+    {
+        $this->fixtures->on('live')->create('org:admin_for_razorpay_org');
+
+        $permission = $this->getDbEntity('permission', ['name' => 'add_merchant_credits'], 'live');
+
+        DB::connection('live')->table('permission_map')->insert(
+            [
+                'entity_id'     => Org::RZP_ORG,
+                'entity_type'   => 'org',
+                'permission_id' => $permission->getId(),
+            ]);
+
+        $balance = $this->getDbEntities('balance', ['merchant_id' => Account::TEST_ACCOUNT], 'live')->first();
+
+        $this->assertEquals(0, $balance['credits']);
+
+        $org = (new OrgRepository)->getRazorpayOrg();
+        $this->fixtures->on('live')->create('org:workflow_users', ['org' => $org]);
+
+        $this->createWorkflow([
+            'org_id'      => '100000razorpay',
+            'name'        => 'some workflow',
+            'permissions' => ['add_merchant_credits'],
+        ], 'live');
+
+
+        // This will create a wf action in Mysql and ES, not using default workflow.
+        $workflow = $this->addCredits([], Account::TEST_ACCOUNT, 'live');
+
+        //ES is not so Real Time, so need to refresh manually.
+        $this->esClient->indices()->refresh();
+
+        $this->approveWorkflowAction($workflow['id'], 'live');
+
+        $this->ba->adminAuth('live', Org::MAKER_ADMIN_TOKEN, Org::RZP_ORG_SIGNED);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $workflow['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $balance = $this->getDbEntities('balance', ['merchant_id' => Account::TEST_ACCOUNT], 'live')->first()->toArray();
+
+        $creditsLog = $this->getDbLastEntity('credits', 'live')->toArray();
+
+        $this->assertEquals(25, $balance['credits']);
+
+        $this->assertEquals($creditsLog['value'], 25);
     }
 
     public function testWorkflowActionSuperAdminApprove()

@@ -98,14 +98,22 @@ trait EntityActionTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function addCredits(array $input = array(), $mid = Account::TEST_ACCOUNT)
+    protected function addCredits(array $input = [], $mid = Account::TEST_ACCOUNT, $mode = 'test')
     {
+        $defaultInput = [
+            'type'     => 'amount',
+            'value'    => 25,
+            'campaign' => 'silent-ads',
+        ];
+
+        $input = array_merge($defaultInput, $input);
+
         $request = array(
             'url' => '/merchants/'.$mid.'/credits_log',
             'method' => 'POST',
             'content' => $input);
 
-        $this->ba->adminAuth();
+        $this->ba->adminAuth($mode, null);
 
         return $this->makeRequestAndGetContent($request);
     }
