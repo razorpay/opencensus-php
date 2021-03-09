@@ -146,6 +146,7 @@ export default class App extends Component {
     this.state = {
       isLoading: true,
       npsSurveyPopup: false,
+      marchNPSSurveyPopup: false,
     };
 
     this.handleResize = debounce(this.handleResize.bind(this), 200);
@@ -277,16 +278,28 @@ export default class App extends Component {
     window.addEventListener('resize', this.handleResize);
     const user = window.rzp_user;
     if (user) {
-      const NPSEnableTypeForm = makePopup(
-        `https://razorpay.typeform.com/to/ndlvP2XX?mid=${user.current}&source=dashboard&email=${user.email}`,
+      // the first survey we will be using again in next month so just comenting out the part as of now.
+      // const NPSEnableTypeForm = makePopup(
+      //   `https://razorpay.typeform.com/to/ndlvP2XX?mid=${user.current}&source=dashboard&email=${user.email}`,
+      //   {
+      //     mode: 'popup',
+      //     hideHeaders: true,
+      //     hideFooters: true,
+      //     onSubmit: this.closeSurvey,
+      //   },
+      // );
+      // this.state.NPSEnableTypeForm = NPSEnableTypeForm; // saving reference typeform
+
+      const MarchNPSEnableTypeForm = makePopup(
+        `https://razorpay.typeform.com/to/YFrkZOZp#mid=${user.current}&source=dashboard&email=${user.email}`,
         {
           mode: 'popup',
           hideHeaders: true,
           hideFooters: true,
-          onSubmit: this.closeSurvey,
+          onSubmit: this.closeMarchSurvey,
         },
       );
-      this.state.NPSEnableTypeForm = NPSEnableTypeForm; // saving reference typeform
+      this.state.MarchNPSEnableTypeForm = MarchNPSEnableTypeForm; // saving reference typeform
     }
   }
 
@@ -298,21 +311,37 @@ export default class App extends Component {
       this.renderFullPageView = this.getFPView(baseLocation || location);
     }
     if (org && user) {
-      const surveyShowed = !!LocalStorageService.getItem('razorpay_nps_survey_showed');
+      // the first survey we will be using again in next month so just comenting out the part as of now.
+      // const surveyShowed = !!LocalStorageService.getItem('razorpay_nps_survey_showed');
+      // if (
+      //   org &&
+      //   org.custom_code &&
+      //   org.custom_code.toLowerCase() === 'rzp' && // only for razorpay org
+      //   user.showNPSSurvey() && // experiment check
+      //   !surveyShowed &&
+      //   !isMobileDevice() &&
+      //   this.state.NPSEnableTypeForm
+      // ) {
+      //   const takeNPSSurvey = this.dateIsInRange(user.created_at, [['2021-01-31', '2021-03-01']]);
+      //   this.setState({ npsSurveyPopup: takeNPSSurvey });
+      // }
+
+      const marchSurveyShowed = !!LocalStorageService.getItem('razorpay_march_nps_survey_showed');
       if (
         org &&
         org.custom_code &&
         org.custom_code.toLowerCase() === 'rzp' && // only for razorpay org
         user.showNPSSurvey() && // experiment check
-        !surveyShowed &&
+        !marchSurveyShowed &&
         !isMobileDevice() &&
-        this.state.NPSEnableTypeForm
+        this.state.MarchNPSEnableTypeForm
       ) {
-        const takeNPSSurvey = moment(moment(user.created_at, 'X').format('YYYY-MM-DD')).isBetween(
-          '2021-01-31',
-          '2021-03-01',
-        );
-        this.setState({ npsSurveyPopup: takeNPSSurvey });
+        const takeMarchNPSSurvey = this.dateIsInRange(user.created_at, [
+          ['2020-01-31', '2020-03-01'],
+          ['2020-07-31', '2020-09-01'],
+          ['2020-10-31', '2020-12-01'],
+        ]);
+        this.setState({ marchNPSSurveyPopup: takeMarchNPSSurvey });
       }
     }
   }
@@ -321,9 +350,30 @@ export default class App extends Component {
     window.removeEventListener('resize', this.handleResize);
   }
 
+  /**
+   * this function check wether the date is inside any of the date ranges or not
+   * @param {String} inputDate - this date should be in unix timestamp format
+   * @param {Object} dateRanges - this array contain arrays of date ranges date format should be YYYY-MM-DD
+   * @returns {boolean}
+   */
+  dateIsInRange = (input, ranges) => {
+    if (ranges) {
+      const result = ranges.reduce((res, range) => {
+        return res || moment(moment(input, 'X').format('YYYY-MM-DD')).isBetween(range[0], range[1]);
+      }, false);
+      return result;
+    }
+    return false;
+  };
+
   closeSurvey = () => {
     this.setState({ npsSurveyPopup: false });
     this.state.NPSEnableTypeForm.close();
+  };
+
+  closeMarchSurvey = () => {
+    this.setState({ marchNPSSurveyPopup: false });
+    this.state.MarchNPSEnableTypeForm.close();
   };
 
   fetchSupportedCurrencies() {
@@ -610,6 +660,27 @@ export default class App extends Component {
     return FPView;
   };
 
+  getSurveyForm = () => {
+    const { npsSurveyPopup, marchNPSSurveyPopup } = this.state;
+    // the first survey we will be using again in next month so just comenting out the part as of now.
+    return (
+      <>
+        {/* {npsSurveyPopup && !LocalStorageService.getItem('razorpay_nps_survey_showed') && (
+          <>
+            {LocalStorageService.setItem('razorpay_nps_survey_showed', 1)}
+            {this.state.NPSEnableTypeForm.open()}
+          </>
+        )} */}
+        {marchNPSSurveyPopup && !LocalStorageService.getItem('razorpay_march_nps_survey_showed') && (
+          <>
+            {LocalStorageService.setItem('razorpay_march_nps_survey_showed', 1)}
+            {this.state.MarchNPSEnableTypeForm.open()}
+          </>
+        )}
+      </>
+    );
+  };
+
   render() {
     const { user, config, org, mode, modeFormatted, merchant_gst } = this.props;
 
@@ -649,12 +720,7 @@ export default class App extends Component {
               </React.Fragment>
             )}
 
-            {this.state.npsSurveyPopup && (
-              <>
-                {LocalStorageService.setItem('razorpay_nps_survey_showed', 1)}
-                {this.state.NPSEnableTypeForm.open()}
-              </>
-            )}
+            {this.getSurveyForm()}
 
             <Content
               user={user}
