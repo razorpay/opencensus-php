@@ -58,6 +58,7 @@ class Route
         'merchant_autokyc_hard_limit'              => ['post',     'merchants/auto-kyc-cron/hard-limit',             'MerchantController@postHardLimitBreachOnAutoKYC'                 ],
         'merchant_autokyc_escalation'              => ['post',     'merchants/auto-kyc-cron/escalations',            'MerchantController@handleAutoKycEscalationCron'                  ],
         'payment_create'                           => ['post',     'payments',                                       'PaymentCreateController@postCreatePayment'                         ],
+        'internal_transactions'                    => ['post',      'internal/transactions',                         'TransactionController@postInternalTransaction'                 ],
         // @todo: Require feature S2S for payment_create_private route.
         'payment_create_private'                   => ['post',     'payments/create',                                'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_private_json'              => ['post',     'payments/create/json',                           'PaymentCreateController@postCreateS2SJsonPayment'                  ],
@@ -3080,6 +3081,7 @@ class Route
         'nach_batch_process',
 
         'loc_cron',
+        'internal_transactions',
         'internal_payment_authorize_refund',
         'freshdesk_update_ticket_internal',
         'care_service_cron_proxy',
@@ -6341,7 +6343,8 @@ class Route
             'internal_payment_authorize_refund',
             'internal_fetch_config_by_id',
             'internal_fetch_configs',
-            'api_entity_fetch'
+            'api_entity_fetch',
+            'internal_transactions'
         ],
 
         'freshdesk_webhook' => [

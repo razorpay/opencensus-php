@@ -460,4 +460,15 @@ class Service extends Base\Service
             $response[$prefix . $feeBreakup->getName()] = $feeBreakup->getAmount();
         }
     }
+
+    public function postInternalTransaction(array $input)
+    {
+        $payment = new Payment\Entity();
+
+        $payment->forceFill($input['payment']);
+
+        $txn = (new Transaction\Core)->createUpdateLedgerTransaction($payment);
+
+        return $txn->toArrayPublic();
+    }
 }

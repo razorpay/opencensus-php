@@ -1044,4 +1044,23 @@ class TransactionTest extends TestCase
         $this->app->razorx->method('getTreatment')
             ->willReturn('on');
     }
+
+    public function testPaymentCaptureTransactionsCreateInternal()
+    {
+        $this->markTestSkipped();
+        
+        $this->ba->appAuth();
+
+        $cardId = $this->fixtures->create('card')['id'];
+
+        $terminal = $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content']['payment']['card_id'] = "card_".$cardId;
+
+        $testData['request']['content']['payment']['terminal_id'] = $terminal['id'];
+
+        $this->startTest();
+    }
 }

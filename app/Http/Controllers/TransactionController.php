@@ -88,4 +88,13 @@ class TransactionController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function postInternalTransaction()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->postInternalTransaction($input);
+
+        return ApiResponse::json($response);
+    }
 }

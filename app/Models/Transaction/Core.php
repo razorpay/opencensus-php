@@ -12,6 +12,7 @@ use RZP\Exception;
 use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Jobs\Settlement\Bucket;
+use RZP\Jobs\CardsPaymentRecon;
 use RZP\Mail\Merchant\FeeCreditsAlert;
 use RZP\Models\Base;
 use RZP\Models\Base\PublicCollection;
@@ -39,6 +40,7 @@ use RZP\Models\Merchant\Balance;
 use RZP\Constants\Entity as E;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Payment\Processor\Processor;
 use RZP\Models\Merchant\Balance\BalanceConfig;
 use RZP\Models\Transaction\Processor as TransactionProcessor;
 
@@ -144,6 +146,108 @@ class Core extends Base\Core
         $this->dispatchForSettlementBucketing($txn);
 
         return [$txn, $feesSplit];
+    }
+
+    public function createUpdateLedgerTransaction(Payment\Entity $payment)
+    {
+        $merchant =  $this->repo->merchant->findByPublicId($payment->getMerchantId());
+
+        $payment->merchant()->associate($merchant);
+
+        if ($payment->isCard() === true)
+        {
+            $card = $this->repo->card->findByPublicId($payment->getCardId());
+
+            $payment->card()->associate($card);
+        }
+
+        $terminalId = $payment->getTerminalId();
+
+        \RZP\Models\Terminal\Entity::verifyIdAndSilentlyStripSign($terminalId);
+
+        $terminal = $this->repo->terminal->findOrFail($payment->getTerminalId());
+
+        $payment->terminal()->associate($terminal);
+
+        if ($payment->getStatus() == "captured")
+        {
+            $txn =  $this->createTransactionForCapturedPayment($payment);
+        }
+        else if ($payment->getStatus() == "authorized")
+        {
+            $txn =  $this->createTransactionForAuthorizedPayment($payment);
+        }
+        else
+        {
+            throw new Exception\BadRequestValidationFailureException("Payment Status not in correct status for transaction creation");
+        }
+
+        $this->dispatchUpdatedTransactionToCPS($txn);
+
+        return $txn;
+    }
+
+    private function dispatchUpdatedTransactionToCPS($txn)
+    {
+        $data = [
+            "entity_type" => "transaction",
+            "payment_id" => $txn->getEntityId(),
+            "transaction" => $txn->toArrayPublic(),
+            "mode" => $this->mode
+        ];
+
+        if ($this->app->runningUnitTests() === false)
+        {
+            CardsPaymentRecon::dispatch($data);
+        }
+    }
+
+    private function createTransactionForAuthorizedPayment(Payment\Entity $payment)
+    {
+        list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($payment);
+
+        $this->repo->saveOrFail($txn);
+
+        return $txn;
+    }
+
+    private function createTransactionForCapturedPayment(Payment\Entity $payment)
+    {
+        list($txn, $feesSplit) = $this->createOrUpdateFromPaymentCaptured($payment);
+
+        // $merchantBalance is required in the caller function only if lateBalanceUpdate is set to true.
+
+        $merchantBalance = null;
+
+        if ($payment->isLateBalanceUpdate() === true)
+        {
+            $merchantId = $txn->getMerchantId();
+
+            $merchantBalance = $this->repo->balance->findOrFail($merchantId);
+
+            $txn->accountBalance()->associate($merchantBalance);
+        }
+
+        $processor = new Processor($payment->merchant);
+
+        $processor->calculateAndSetMdrFeeIfApplicable($payment, $txn);
+
+        $this->trace->debug(TraceCode::TRANSACTION_DETAILS,
+            [
+                'transaction_id'        => $txn->getId(),
+                'payment_id'            => $txn->getEntityId(),
+                'transaction_credit'    => $txn->getCredit(),
+                'transaction_debit'     => $txn->getDebit(),
+                'transaction_amount'    => $txn->getAmount(),
+                'transaction_fee'       => $txn->getFee()
+            ]
+        );
+
+        $this->repo->saveOrFail($txn);
+
+        $this->saveFeeDetails($txn, $feesSplit);
+
+        return $txn;
     }
 
     /**
