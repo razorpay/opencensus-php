@@ -462,7 +462,9 @@ class Selector extends Base\Core
         $response = $this->app->razorx->getTreatment($this->input['merchant']->getId(), 'payments_fetch_config_parent_terminal',
                     $this->mode);
 
-        $merchant = (empty($this->input['charge_account_merchant']) === false) ? $this->input['charge_account_merchant'] : $this->input['merchant'];
+        $chargeAccountmerchant = (empty($this->input['charge_account_merchant']) === false) ? $this->input['charge_account_merchant'] : null;
+
+        $merchant = $this->input['merchant'];
 
         if ($response === 'on')
         {
@@ -470,6 +472,16 @@ class Selector extends Base\Core
             $merchantTerminals = $this->repo
                                       ->terminal
                                       ->getTerminalForMerchantParentMerchantAndSharedMerchant($merchant);
+
+            if ($chargeAccountmerchant !== null)
+            {
+                $chargeAccountMerchantTerminals = $this->repo
+                                                   ->terminal
+                                                   ->getTerminalForMerchantParentMerchantAndSharedMerchant($chargeAccountmerchant);
+
+                $merchantTerminals = $merchantTerminals->merge($chargeAccountMerchantTerminals);
+
+            }
         }
         else
         {
@@ -477,6 +489,15 @@ class Selector extends Base\Core
             $merchantTerminals = $this->repo
                                       ->terminal
                                       ->getTerminalsForMerchantAndSharedMerchant($merchant);
+
+            if ($chargeAccountmerchant !== null)
+            {
+                $chargeAccountMerchantTerminals = $this->repo
+                                                   ->terminal
+                                                   ->getTerminalsForMerchantAndSharedMerchant($chargeAccountmerchant);
+
+                $merchantTerminals = $merchantTerminals->merge($chargeAccountMerchantTerminals);
+            }
         }
 
         $payment = $this->input['payment'];
