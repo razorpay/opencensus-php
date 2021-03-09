@@ -399,6 +399,7 @@ return [
           'test'    => env('SETTLEMENTS_TEST_URL'),
         ],
         'dashboard' => [
+            'mock' => env('SETTLEMENTS_DASHBOARD_MOCK', false),
             'live' => [
                 'key'       => env('SETTLEMENTS_DASHBOARD_LIVE_KEY'),
                 'secret'    => env('SETTLEMENTS_DASHBOARD_LIVE_SECRET'),

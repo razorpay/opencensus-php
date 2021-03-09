@@ -1156,7 +1156,11 @@ class ApiServiceProvider extends BaseServiceProvider
     {
         $this->app->singleton('settlements_dashboard', function($app)
         {
-            return new Settlements\Dashboard($app);
+            $mock = $app['config']->get('applications.settlements_service.dashboard.mock');
+
+            $implementation = ($mock === true) ? Mock\SettlementsDashboard::class : Settlements\Dashboard::class;
+
+            return new $implementation($app);
         });
     }
 

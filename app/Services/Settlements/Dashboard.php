@@ -37,6 +37,8 @@ class Dashboard extends Base
 
     const REPLAY_SETTLEMENTS_STATUS_UPDATE = '/twirp/rzp.settlements.settlement.v1.SettlementService/ReplaySettlementUpdate';
 
+    const MIGRATE_TO_PAYOUT                = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/MigrateToPayout';
+
     public function __construct($app)
     {
         parent::__construct($app);
@@ -246,6 +248,18 @@ class Dashboard extends Base
         $req = $this->getBankAccountCreateRequestForSettlementService($input);
 
         return $this->bankAccountCreate($req, $mode);
+    }
+
+    /**
+     * migrateToPayout migrate the fts merchant to payout for settlement
+     * @param array $input
+     * @return array
+     * @throws RuntimeException
+     * @throws \Throwable
+     */
+    public function migrateToPayout(array $input) : array
+    {
+        return $this->makeRequest(self::MIGRATE_TO_PAYOUT, $input, self::SERVICE_DASHBOARD);
     }
 
     /**

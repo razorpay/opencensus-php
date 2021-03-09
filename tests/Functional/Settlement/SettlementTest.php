@@ -2528,4 +2528,20 @@ class SettlementTest extends TestCase
         $this->assertEquals(true, $result['active']);
         $this->assertNull($result['partner_bank_account']);
     }
+
+    public function testSettlementAdminDashboardAction()
+    {
+        $this->ba->adminAuth();
+
+        $request = [
+            'url'     => '/settlements/migration/migrate_to_payout',
+            'method'  => 'POST',
+            'content' => ['merchant_id' => ['merchant_12345']],
+        ];
+
+       $response =  $this->makeRequestAndGetContent($request);
+
+       $this->assertEquals(1,$response['count']);
+       $this->assertEquals(200, $response['status_code']);
+    }
 }
