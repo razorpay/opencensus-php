@@ -16,6 +16,7 @@ use RZP\Models\Payment\Gateway;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Mpan\Entity as MpanEntity;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Gateway\Terminal\Service as GatewayTerminalService;
 
 class Core extends Base\Core
@@ -433,7 +434,7 @@ class Core extends Base\Core
             throw new Exception\BadRequestValidationFailureException('Banks available only for netbanking gateways and some paylater/cardless_emi providers');
         }
 
-        $enabledBanks = (array) $terminal->getEnabledBanks();
+        $enabledBanksList = (array) $terminal->getEnabledBanks();
 
         if ($terminal->isNetbankingEnabled())
         {
@@ -453,10 +454,16 @@ class Core extends Base\Core
             $supportedBanks = Payment\Processor\CardlessEmi::getSupportedBanksForMultilenderProvider($terminal->getGatewayAcquirer());
         }
 
-        $disabledBanks = array_values(array_diff($supportedBanks, $enabledBanks));
+        $disabledBanksList = array_values(array_diff($supportedBanks, $enabledBanksList));
 
-        $enabledBanks  = Netbanking::getNames($enabledBanks);
-        $disabledBanks = Netbanking::getNames($disabledBanks);
+        $enabledBanks  = Netbanking::getNames($enabledBanksList);
+        $disabledBanks = Netbanking::getNames($disabledBanksList);
+
+        if ($terminal->isCardlessEmiEnabled())
+        {
+            $enabledBanks  = CardlessEmi::getDisplayName($enabledBanksList);
+            $disabledBanks = CardlessEmi::getDisplayName($disabledBanksList);
+        }
 
         return [
             'enabled'  => $enabledBanks,

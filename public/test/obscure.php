@@ -249,6 +249,7 @@ function disableEmptyInputs(form) {
                 <option value="hdfc">HDFC Bank Paylater</option>
                 <option value="kkbk">Kotak Bank</option>
                 <option value="idfb">IDFC First Bank</option>
+                <option value="hcin">Home Credit</option>
                 <option value="fdrl">Federal Bank</option>
                 <option value="bajajfinserv">Bajaj Finserv</option>
             </select>

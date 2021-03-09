@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment\Processor;
 
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Bank\Name;
 
 class CardlessEmi
 {
@@ -14,6 +15,10 @@ class CardlessEmi
     const KKBK = 'kkbk';
     const FDRL = 'fdrl';
     const IDFB = 'idfb';
+    const ICIC = 'icic';
+    const HCIN = 'hcin';
+
+    const HCIN_IFSC = 'HCIN';
 
     public static $fullName = [
         self::EARLYSALARY  => 'EarlySalary',
@@ -21,11 +26,17 @@ class CardlessEmi
         self::FLEXMONEY    => 'FlexMoney',
     ];
 
+    public static $fullDisplayName = [
+        self::HCIN_IFSC  => 'Home Credit',
+    ];
+
     public static $fullNameForSupportedBanks = [
-        self::HDFC    => 'hdfc',
-        self::KKBK    => 'kkbk',
-        self::FDRL    => 'fdrl',
-        self::IDFB    => 'idfb',
+        self::HDFC      => 'hdfc',
+        self::KKBK      => 'kkbk',
+        self::FDRL      => 'fdrl',
+        self::IDFB      => 'idfb',
+        self::ICIC      => 'icic',
+        self::HCIN      => 'hcin',
     ];
 
     public static $supportedBanks = [
@@ -34,6 +45,8 @@ class CardlessEmi
             IFSC::KKBK,
             IFSC::FDRL,
             IFSC::IDFB,
+            IFSC::ICIC,
+            self::HCIN_IFSC,
         ]
     ];
 
@@ -43,6 +56,8 @@ class CardlessEmi
             IFSC::IDFB,
             IFSC::HDFC,
             IFSC::KKBK,
+            IFSC::ICIC,
+            self::HCIN_IFSC,
         ]
     ];
 
@@ -82,6 +97,21 @@ class CardlessEmi
     public static function getCardlessEmiDirectAquirers()
     {
         return array_keys(self::$fullName);
+    }
+
+    public static function getDisplayName($codes)
+    {
+        $names = Name::getNames($codes);
+
+        $names = array_merge(
+                 $names,
+                 array_intersect_key(
+                    self::$fullDisplayName,
+                    array_flip($codes)));
+
+        asort($names);
+
+        return $names;
     }
 
     public static function getProviderForBank($bank)

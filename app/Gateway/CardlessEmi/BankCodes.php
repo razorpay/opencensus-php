@@ -16,6 +16,8 @@ class BankCodes
         CardlessEmi::IDFB => '10770',                      // IDFC First Bank
         CardlessEmi::KKBK => '10800',                      // Kotak Bank
         CardlessEmi::FDRL => '10780',                      // Federal Bank
+        CardlessEmi::ICIC => '14360',                      // ICICI Bank
+        CardlessEmi::HCIN => '13860',                      // Home Credit
     ];
 
     public static function getBankCode($ifsc)
