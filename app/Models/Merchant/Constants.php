@@ -311,7 +311,6 @@ final class Constants
     const MERCHANT_RISK_CONFIG = [
         Detail\Entity::BUSINESS_MODEL => [
             'lists' => [
-                self::BLACKLIST,
                 self::BRAND_LIST,
                 self::HIGH_RISK_LIST
             ],
@@ -374,7 +373,6 @@ final class Constants
         ],
         Detail\Entity::BUSINESS_NAME => [
             'lists' => [
-                self::BLACKLIST,
                 self::BRAND_LIST,
                 self::HIGH_RISK_LIST
             ],
@@ -382,7 +380,6 @@ final class Constants
         ],
         Detail\Entity::BUSINESS_DBA => [
             'lists' => [
-                self::BLACKLIST,
                 self::BRAND_LIST,
                 self::HIGH_RISK_LIST
             ],
@@ -469,24 +466,6 @@ final class Constants
         ],
         [
             'keysToCheck' => [
-                Detail\Entity::BUSINESS_NAME => [
-                    'list' => self::BLACKLIST,
-                    'matchType'=> self::EXACT_MATCH
-                ]
-            ],
-            'method' => 'lockFormDeactivate'
-        ],
-        [
-            'keysToCheck' => [
-                Detail\Entity::BUSINESS_DBA => [
-                    'list' => self::BLACKLIST,
-                    'matchType'=> self::EXACT_MATCH
-                ]
-            ],
-            'method' => 'lockFormDeactivate'
-        ],
-        [
-            'keysToCheck' => [
                 Detail\Entity::BUSINESS_WEBSITE => [
                     'list' => self::BRAND_LIST,
                     'matchType'=> self::EXACT_MATCH,
@@ -543,15 +522,6 @@ final class Constants
             'keysToCheck' => [
                 Detail\Entity::BUSINESS_MODEL => [
                     'list' => self::HIGH_RISK_LIST,
-                    'matchType'=> self::EXACT_MATCH
-                ]
-            ],
-            'method' => ''
-        ],
-        [
-            'keysToCheck' => [
-                Detail\Entity::BUSINESS_MODEL => [
-                    'list' => self::BLACKLIST,
                     'matchType'=> self::EXACT_MATCH
                 ]
             ],
