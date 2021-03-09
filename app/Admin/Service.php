@@ -1203,6 +1203,22 @@ class Service extends Base\Service
         return $minimal_payment;
     }
 
+    public function getOrgFeatures()
+    {
+        $features = [];
+
+        $domain = \Request::server('SERVER_NAME');
+
+        list($error, $org) = $this->getOrg($domain);
+
+        if (empty($error) === true)
+        {
+            return $org['features'];
+        }
+
+        return $features;
+    }
+
     public function getOrg($domain)
     {
         $orgDataFromCache = $this->getOrgDataFromCache($domain);

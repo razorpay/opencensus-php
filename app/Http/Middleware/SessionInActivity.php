@@ -139,10 +139,11 @@ class SessionInActivity
     {
         $user = Auth::guard('user');
 
-        // check if merchant user is not logged in and admin user of axis bank is logged in
+        // check if merchant user is not logged in and admin user logged in
+        // and admin org has feature logout_admin_inactivity
         if ((empty($user->user()) === true) and
             (Auth::guard('api')->check() === true) and
-            ($this->isFeatureEnabledForOrg(Auth::guard('api')->user()->org_id, self::LOGOUT_ADMIN_INACTIVITY)))
+            ($this->isFeatureEnabledForOrg(self::LOGOUT_ADMIN_INACTIVITY) === true))
         {
            return true;
         }
@@ -150,49 +151,11 @@ class SessionInActivity
         return false;
     }
 
-    protected function isFeatureEnabledForOrg($org_id, $featureName)
+    protected function isFeatureEnabledForOrg($featureName)
     {
-        $features = $this->getOrgFeatures($org_id);
+        $features = (new Admin\Service)->getOrgFeatures();
 
         return in_array($featureName, $features);
-    }
-
-    protected function getOrgFeatures($org_id)
-    {
-        $features = [];
-
-        $cacheKey = $this->getCacheKeyForOrgFeatures($org_id);
-
-        $featuresFromCache = $this->cache->get($cacheKey);
-
-        if (is_null($featuresFromCache) === false)
-        {
-            $features =  $featuresFromCache;
-        }
-        else
-        {
-            $request = new ApiRequestAny(['client_type' => 'admin']);
-
-            list($error, $data) = $request->send("orgs/$org_id", "GET");
-
-            $this->trace->info(TraceCode::ORG_FEATURES_CACHE_MISS, [
-                'org_id' => $org_id,
-            ]);
-
-            if (empty($error))
-            {
-                $this->cache->put($cacheKey, $data['features'], self::CACHE_STORE_TIMEOUT_FOR_ORG_FEATURES);
-
-                $features = $data['features'];
-            }
-        }
-
-        return $features;
-    }
-
-    protected function getCacheKeyForOrgFeatures($org_id)
-    {
-        return 'features_' . $org_id;
     }
 }
 
