@@ -18,7 +18,8 @@ use RZP\Exception\BadRequestValidationFailureException;
  */
 class MyOperator
 {
-    const API_BASE_URL                           = 'https://developers.myoperator.co';
+    const API_BASE_URL                           = 'https://developers.myoperator.co/';
+    const API_BASE_URLV2                          = 'https://obd-api.myoperator.co/';
     const API_CALL_OUTBOUND_PATH                 = '/call/outbound';
 
     // Remote API set timeout in seconds.
@@ -66,7 +67,7 @@ class MyOperator
             'country_code'   => $code,
             'contact_number' => $number,
         ];
-        $resp = $this->makeCalLOutboundApiRequest($payload);
+        $resp = $this->makeCalLOutboundApiRequest($payload, self::API_CALL_OUTBOUND_PATH,Requests::POST);
 
         return $this->validateResponse($resp);
     }
@@ -98,11 +99,10 @@ class MyOperator
         return [$code, (int) $number];
     }
 
-    protected function makeCalLOutboundApiRequest(array $payload): Requests_Response
+    protected function makeCalLOutboundApiRequest(array $payload, $path, $method): Requests_Response
     {
         $this->trace->info(TraceCode::MYOPERATOR_CALL_OUTBOUND_API_REQ, compact('payload'));
-
-        $endpoint = self::API_BASE_URL . self::API_CALL_OUTBOUND_PATH;
+        $endpoint = self::API_BASE_URL . $path;
         $headers = [
             'Accept'       => 'application/json',
             'Content-type' => 'application/json',
@@ -110,11 +110,20 @@ class MyOperator
         $options = [
             'timeout' => self::API_TIMEOUT,
         ];
-        // MyOperator expects API token in post payload.
-        $payload += $this->getToken();
-        $payload = json_encode($payload);
 
-        return Requests::post($endpoint, $headers, $payload, $options);
+        if($method == Requests::POST)
+        {
+            // MyOperator expects API token in post payload.
+            $payload += $this->getToken();
+            $payload = json_encode($payload);
+
+            return Requests::post($endpoint, $headers, $payload, $options);
+        }
+        else
+        {
+            $endpoint = $endpoint."?token=".$this->config['api_token'];
+            return Requests::get($endpoint, $headers, $options);
+        }
     }
 
     /**
@@ -172,5 +181,59 @@ class MyOperator
             $this->trace->error("No token found for MyOperator");
         }
         return ['token' => $token];
+    }
+
+    public function getProxyCallToMyOperatorV1($path): array
+    {
+        $resp = $this->makeCalLOutboundApiRequest([], $path, Requests::GET);
+
+        return $this->validateResponse($resp);
+    }
+
+    public function postProxyCallToMyOperatorV2($path, $input): array
+    {
+        $this->trace->info(TraceCode::MYOPERATOR_CALL_CAMPAIGN_API_REQ, ["call_id" => $input["reference_id"]]);
+
+        $input['secret_token'] = $this->config['secret_token'];
+
+        return  $this->makeApiRequestAndGetResponse($input, $path, Requests::POST);
+    }
+
+    protected function makeApiRequestAndGetResponse(array $payload, $path,  $method): array
+    {
+        $headers = [
+            'Accept'        => 'application/json',
+            'Content-type'  => 'application/json',
+            'x-api-key'     => $this->config['x_api_key'],
+        ];
+        $options = [
+            'timeout' => self::API_TIMEOUT,
+        ];
+
+        $request = [
+            'url' => self::API_BASE_URLV2 . $path,
+            'headers'   => $headers,
+            'content'   => json_encode($payload),
+            'options'   => $options,
+            'method'    => $method,
+            ];
+
+        return $this->makeRequest($request);
+    }
+
+    protected function makeRequest($request)
+    {
+        $method = $request['method'];
+
+        $response = Requests::$method(
+            $request['url'],
+            $request['headers'],
+            $request['content'],
+            $request['options']
+        );
+
+        $this->trace->info(TraceCode::MYOPERATOR_CALL_CAMPAIGN_API_RES, ["response_status" => $response->status_code]);
+
+        return json_decode($response->body, true);
     }
 }

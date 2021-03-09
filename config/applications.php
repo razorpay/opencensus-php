@@ -648,9 +648,11 @@ return [
     ],
 
     'myoperator' => [
-        'mock'      => env('MYOPERATOR_MOCK'),
-        'api_token' => env('MYOPERATOR_API_TOKEN'),
-        'x_api_token' => env('X_MYOPERATOR_API_TOKEN'),
+        'mock'              => env('MYOPERATOR_MOCK'),
+        'api_token'         => env('MYOPERATOR_API_TOKEN'),
+        'x_api_token'       => env('X_MYOPERATOR_API_TOKEN'),
+        'secret_token'      => env('MYOPERATOR_SECRET_TOKEN'),
+        'x_api_key'         => env('MYOPERATOR_X_API_KEY'),
     ],
 
     'vendor_payments' => [

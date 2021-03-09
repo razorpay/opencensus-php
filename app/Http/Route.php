@@ -1825,7 +1825,7 @@ class Route
 
         'merchant_submit_support_call_request'      => ['post',     'merchants/support_call',                         'MerchantController@submitSupportCallRequest'                       ],
         'can_merchant_submit_support_call_request'  => ['get',      'merchants/support_call/can_submit',              'MerchantController@canSubmitSupportCallRequest'                    ],
-        'get_merchant_support_option_flags'                 => ['get',      'merchants/support/option/flags',                 'MerchantController@getMerchantSupportOptionFlags'                    ],
+        'get_merchant_support_option_flags'         => ['get',      'merchants/support/option/flags',                 'MerchantController@getMerchantSupportOptionFlags'                    ],
         'merchant_es_sync_cron'                     => ['post',     'merchant/sync_es/bulk',                          'MerchantController@syncMerchantsToEs'                              ],
 
         // Banking Contact Routes
@@ -2298,6 +2298,13 @@ class Route
         'merchant_tpv_create'                     => ['post',    'merchant/tpv',                                            'BankingAccountTpvController@createTpvFromXDashboard'          ],
         'care_service_dashboard_proxy'            => ['post',    'care_service/merchant/{path?}',                           'CareProxyController@postDashboardProxyRequest'                ],
         'care_service_cron_proxy'                 => ['post',    'care_service/cron/{path?}',                               'CareProxyController@postCronProxyRequest'                     ],
+        'myoperator_v1_proxy_get'                 => ['get',     'myoperator/{path?}',                                      
+                                                      
+                                                      
+                                                      
+                                                      'MyOperatorController@getProxyCallToMyOperatorV1'              ],
+        'myoperator_v2_proxy_post'                => ['post',    'myoperator/campaign/{path?}',                              'MyOperatorController@postProxyCallToMyOperatorV2'              ],
+
 
         // Templating Service
         'templating_create_namespace'             => ['post',    'templating/namespaces',                                   'TemplatingServiceController@createNamespace'                  ],
@@ -3085,6 +3092,10 @@ class Route
         'internal_payment_authorize_refund',
         'freshdesk_update_ticket_internal',
         'care_service_cron_proxy',
+
+        // care
+        'myoperator_v1_proxy_get',
+        'myoperator_v2_proxy_post',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -6375,6 +6386,8 @@ class Route
 
         'care' => [
             'internal_merchant_fetch',
+            'myoperator_v1_proxy_get',
+            'myoperator_v2_proxy_post',
             'freshdesk_update_ticket_internal',
             'fd_fetch_ticket',
         ],

@@ -5,6 +5,7 @@ namespace Functional\Care;
 
 use Mockery;
 use RZP\Trace\TraceCode;
+use RZP\Services\MyOperator;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
@@ -74,9 +75,10 @@ class CareServiceTest extends TestCase
             });
     }
 
-
-    public function testProxy()
+    public function testCareProxy()
     {
+        $this->ba->proxyAuth();
+
         $testCases = [
             [
                 self::AUTH                                => 'proxy',
