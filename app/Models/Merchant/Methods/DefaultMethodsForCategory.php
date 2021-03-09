@@ -568,6 +568,25 @@ class DefaultMethodsForCategory
                     self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
                 ]
             ],
+            '5094'  =>  [
+                Category::ECOMMERCE    =>  [
+                    self::BLACKLISTED_METHODS => [ENTITY::EMI],
+                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [],
+                ]
+            ],
+            '5944'  =>  [
+                Category::ECOMMERCE    =>  [
+                    self::BLACKLISTED_METHODS => [ENTITY::EMI],
+                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [],
+                ]
+            ],
+            '7631'  =>  [
+                Category::ECOMMERCE    =>  [
+                    self::BLACKLISTED_METHODS => [ENTITY::EMI],
+                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [],
+                ]
+            ],
+
 
             // if category, category2 does not matches with any of above, add methods which are to be blacklised for all category merchants in this
             Category::OTHERS  =>  [
