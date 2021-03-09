@@ -2812,6 +2812,7 @@ class PayoutTest extends OAuthTestCase
 
         //1. I approve the level1 finL1Role of workflow
         $this->ba->proxyAuth('rzp_live_10000000000000', $this->finL1RoleUser->getId());
+
         $request = [
             'method'  => 'POST',
             'url'     => "/payouts/{$payout['id']}/approve",
@@ -7906,6 +7907,7 @@ class PayoutTest extends OAuthTestCase
         $this->ba->addXOriginHeader();
 
         $testData = $this->testData[__FUNCTION__];
+
         $balanceId = $this->bankingBalance->getId();
 
         $testData['request']['url'] = '/payouts/' . $balanceId . '/free_payout';
@@ -8570,12 +8572,12 @@ class PayoutTest extends OAuthTestCase
     {
         $this->testCreatePayoutLinkPayoutWithSourceDetails();
 
-        /** @var Payout\Entity $payout2 */
+        /** @var Payout\Entity $payout1 */
         $payout1 = $this->getDbLastEntity('payout');
 
         $this->testCreatePayoutLinkPayoutWithSourceDetails();
 
-        /** @var Payout\Entity $payout1 */
+        /** @var Payout\Entity $payout2 */
         $payout2 = $this->getDbLastEntity('payout');
 
         $payoutSources = $payout2->getSourceDetails()->toArray();
@@ -8607,13 +8609,10 @@ class PayoutTest extends OAuthTestCase
     {
         $this->testCreatePayoutLinkPayoutWithSourceDetails();
 
-        /** @var Payout\Entity $payout2 */
+        /** @var Payout\Entity $payout1 */
         $payout1 = $this->getDbLastEntity('payout');
 
         $this->testCreatePayoutLinkPayoutWithSourceDetails();
-
-        /** @var Payout\Entity $payout1 */
-        $payout2 = $this->getDbLastEntity('payout');
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -8641,13 +8640,10 @@ class PayoutTest extends OAuthTestCase
     {
         $this->testCreatePayoutLinkPayoutWithSourceDetails();
 
-        /** @var Payout\Entity $payout2 */
+        /** @var Payout\Entity $payout1 */
         $payout1 = $this->getDbLastEntity('payout');
 
         $this->testCreatePayoutLinkPayoutWithSourceDetails();
-
-        /** @var Payout\Entity $payout1 */
-        $payout2 = $this->getDbLastEntity('payout');
 
         $this->testData[__FUNCTION__] = $this->testData['testFetchPayoutsOnProxyAuth'];
 
@@ -10346,6 +10342,69 @@ class PayoutTest extends OAuthTestCase
 
         // append headers
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
+
+    public function testFetchPayoutWithSourceIdAndSourceTypeOnProxyAuth()
+    {
+        $this->testCreatePayoutLinkPayoutWithSourceDetails();
+
+        /** @var Payout\Entity $payout1 */
+        $payout1 = $this->getDbLastEntity('payout');
+
+        $this->testCreatePayoutLinkPayoutWithSourceDetails();
+
+        /** @var Payout\Entity $payout2 */
+        $payout2 = $this->getDbLastEntity('payout');
+
+        $payoutSources = $payout2->getSourceDetails()->toArray();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payouts?product=banking&source_id=' . $payoutSources[0]['source_id'] .
+                                      '&source_type=' . $payoutSources[0]['source_type'];
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        // Now only one payout will be found. because of the same I-Key
+        $this->assertEquals(1, $response['count']);
+
+        $this->assertEquals($payout1->getPublicId(), $payout2->getPublicId());
+
+        $responsePayoutIds = [$response['items'][0]['id']];
+
+        $payoutIds = [$payout1->getPublicId()];
+
+        $this->assertCount(0, array_diff($responsePayoutIds, $payoutIds));
+
+        $sourceDetails = [Payout\Entity::SOURCE_DETAILS => $payoutSources];
+
+        $this->assertArraySelectiveEquals($sourceDetails, $response['items'][0]);
+    }
+
+    public function testFetchPayoutWithSourceIdAndSourceTypeOnPrivateAuth()
+    {
+        $this->testCreatePayoutLinkPayoutWithSourceDetails();
+
+        /** @var Payout\Entity $payout1 */
+        $payout1 = $this->getDbLastEntity('payout');
+
+        $this->testCreatePayoutLinkPayoutWithSourceDetails();
+
+        $payoutSources = $payout1->getSourceDetails()->toArray();
+
+        $accountNumber = $this->bankingBalance->getAccountNumber();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payouts?account_number=' . $accountNumber . '&source_id=' .
+                                      $payoutSources[0]['source_id'] . '&source_type=' .
+                                      $payoutSources[0]['source_type'];
+
+        $this->ba->privateAuth();
 
         $this->startTest();
     }

@@ -11887,4 +11887,34 @@ return [
             ],
         ],
     ],
+
+    'testFetchPayoutWithSourceIdAndSourceTypeOnProxyAuth' => [
+        'request'   => [
+            'method'  => 'GET',
+            'url'     => '/payouts',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testFetchPayoutWithSourceIdAndSourceTypeOnPrivateAuth' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/payouts',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'source_id, source_type is/are not required and should not be sent',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\ExtraFieldsException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ],
+    ],
 ];

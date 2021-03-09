@@ -52,6 +52,8 @@ class Fetch extends BaseFetch
             Entity::PENDING_ON_ME_VIA_WFS           => 'sometimes|boolean',
             Entity::PENDING_ON_ROLES_VIA_WFS        => 'sometimes|array',
             Entity::PENDING_ON_ROLES_VIA_WFS . '.*' => 'filled|string|in:finance_l1,finance_l2,finance_l3,owner,admin',
+            PayoutSource::SOURCE_ID                 => 'sometimes|string',
+            PayoutSource::SOURCE_TYPE               => 'sometimes|string',
         ],
         AuthType::PRIVILEGE_AUTH => [
             Entity::PRODUCT           => 'sometimes|string',
@@ -96,6 +98,8 @@ class Fetch extends BaseFetch
             Entity::SCHEDULED_FROM,
             Entity::SCHEDULED_TO,
             Entity::SORTED_ON,
+            PayoutSource::SOURCE_ID,
+            PayoutSource::SOURCE_TYPE,
         ],
         AuthType::PRIVILEGE_AUTH => [
             Entity::MERCHANT_ID,
