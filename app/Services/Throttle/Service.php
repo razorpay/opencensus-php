@@ -138,10 +138,10 @@ class Service
         {
             $items = explode(":", $key);
 
-            $formattedRules[$items[0]][$items[1]] = $value;
+            $formatRules[$items[0]][$items[1]] = $value;
         }
 
-        return $formattedRules;
+        return $formatRules;
     }
 
     public function deleteConfig(array $input)
