@@ -188,6 +188,11 @@ class Base extends BaseCore
 
                 $this->repo->saveOrFail($payout);
 
+                if (empty($sourceDetails) === false)
+                {
+                    $this->processSourceDetails($sourceDetails, $payout);
+                }
+
                 return $payout;
             }
 

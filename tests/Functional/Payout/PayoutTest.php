@@ -8229,6 +8229,7 @@ class PayoutTest extends OAuthTestCase
 
         $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertNull($payoutAttempt);
+
         // On private auth, payout.user_id should be null
         $this->assertNull($payout['user_id']);
 
@@ -10488,5 +10489,41 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertNotNull($updatedPayout[Payout\Entity::FAILURE_REASON]);
         $this->assertEquals(ErrorCodeMapping::$failureReasonMapping['INVALID_VPA'], $updatedPayout[Payout\Entity::FAILURE_REASON]);
+    }
+
+    public function testSourceCreationInCaseOfCreateRequestSubmittedPayoutCreatedByVendorPayments()
+    {
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $this->mockRazorxTreatment('yesbank',
+                                   'on',
+                                   'on',
+                                   'off',
+                                   'off',
+                                   'on',
+                                   'on',
+                                   'on');
+
+        $response = $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->assertEquals('create_request_submitted', $payout['internal_status']);
+        $this->assertEquals('processing', $payout['status']);
+        $this->assertNotNull($payout['create_request_submitted_at']);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertNull($payoutAttempt);
+
+        // On private auth, payout.user_id should be null
+        $this->assertNull($payout['user_id']);
+
+        // Verify transaction entity
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertNull($txn);
+
+        $sourceDetails = [Payout\Entity::SOURCE_DETAILS => $payout['source_details']];
+
+        $this->assertArraySelectiveEquals($sourceDetails, $response);
     }
 }
