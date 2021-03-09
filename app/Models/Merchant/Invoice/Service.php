@@ -12,6 +12,7 @@ use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Services\UfhService;
 use RZP\Models\Merchant\Balance;
+use RZP\Jobs\MerchantInvoiceBackFill;
 use RZP\Models\Merchant\Invoice\EInvoice;
 use RZP\Models\Base\Traits\ProcessAccountNumber;
 use RZP\Models\Merchant\Invoice\EInvoice\PgEInvoice;
@@ -150,6 +151,13 @@ class Service extends Base\Service
 
     public function pdfControl($input)
     {
+        $strictB2c = false;
+
+        if((isset($input['strict_b2c']) === true) and ($input['strict_b2c'] === '1'))
+        {
+            $strictB2c = true;
+        }
+
         (new Validator())->validateInput('pdf_control', $input);
 
         $this->trace->info(
@@ -160,14 +168,11 @@ class Service extends Base\Service
 
         $result = [];
 
-        $strictB2c = false;
-
-        if($input['strict_b2c'] === '1')
-        {
-            $strictB2c = true;
-        }
-
         switch ($input['action']){
+            case Constants::ACTION_BACKFILL:
+                $result = $this->backFillMerchantInvoiceB2cPDFs($input['merchant_ids'], $input['from_month'],
+                    $input['from_year'], $input['to_year'], $input['to_month']);
+                break;
             case Constants::ACTION_CREATE:
                 $result =  $this->createPgMerchantInvoicePdf($input['merchant_ids'], $input['month'],
                     $input['year'], $strictB2c);
@@ -175,6 +180,55 @@ class Service extends Base\Service
             case Constants::ACTION_DELETE:
                 $result = $this->removeMerchantInvoicePdf($input['merchant_ids'], $input['month'], $input['year']);
                 break;
+        }
+
+        return $result;
+    }
+
+    // This method is used for backfilling(storing in S3) the PG merchant invoices PDFs for the months on or before Dec-2020.
+    public function backFillMerchantInvoiceB2cPDFs($merchantIds, $fromMonth, $fromYear, $toYear, $toMonth)
+    {
+        $fromDate = Carbon::createFromDate($fromYear, $fromMonth, 1, Timezone::IST);
+        $toDate = Carbon::createFromDate($toYear, $toMonth, 1, Timezone::IST);
+
+        $result = [];
+
+        while($fromDate <= $toDate)
+        {
+            $month = $fromDate->month;
+            $year  = $fromDate->year;
+            $index  = $month.'-'.$year;
+
+            $result[$index] = [
+                'success_count' => 0,
+                'failed_count' => 0,
+            ];
+
+            foreach ($merchantIds as $merchantId)
+            {
+                try
+                {
+                    MerchantInvoiceBackFill::dispatch($merchantId, $month, $year, $this->mode);
+
+                    $result[$index]['success_count'] += 1;
+                }
+                catch (\Throwable $e)
+                {
+                    $result[$index]['failed_count'] += 1;
+
+                    $this->trace->traceException(
+                        $e,
+                        TraceCode::MERCHANT_BACK_FILL_PG_INVOICE_DISPATCH_FAILED,
+                        [
+                            'merchant_id'   => $merchantId,
+                            'month'         => $month,
+                            'year'          => $year,
+                        ]
+                    );
+                }
+            }
+
+            $fromDate->addMonth();
         }
 
         return $result;

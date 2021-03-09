@@ -162,7 +162,7 @@ class EInvoice
         {
 
             throw new RuntimeException(
-                'Unexpected response code received from Scrooge service.',
+                'Non 200 response code: '. $code.' received from GSP.',
                 [
                     'status_code'   => $code,
                     'response_body' => json_decode($response->body),

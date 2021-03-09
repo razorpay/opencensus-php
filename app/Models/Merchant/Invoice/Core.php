@@ -647,4 +647,65 @@ class Core extends Base\Core
             return $date->endOfMonth();
         }
     }
+
+    public function createPgMerchantInvoicePdf($merchantIds, $month, $year)
+    {
+        $result = [
+            'success_mids' => [],
+            'failed_mids'  => []
+        ];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            $name = (new PdfGenerator)->getNameForMerchantPgInvoice($year, $month, $merchantId);
+
+            $file = $this->repo
+                ->file_store
+                ->getFileWithNameAndMerchantIdAndName($merchantId, $name, FileStore\Type::MERCHANT_INVOICE);
+
+            if (empty($file) == false)
+            {
+                $this->trace->info(
+                    TraceCode::MERCHANT_INVOICE_PDF_CREATION_FAILED,
+                    [
+                        'merchant_id' => $merchantId,
+                        'year'        => $year,
+                        'month'       => $month,
+                        'reason'      => 'merchant invoice file store entry is already present'
+                    ]);
+
+                $result['failed_mids'][] = $merchantId;
+            }
+            else
+            {
+                try
+                {
+                    $invoiceBreakup = $this->repo
+                        ->merchant_invoice
+                        ->fetchInvoiceReportData($merchantId, $month, $year);
+
+                    (new PdfGenerator)->generatePgInvoice($merchantId, $month, $year, $invoiceBreakup);
+
+                    $result['success_mids'][] = $merchantId;
+                }
+                catch (\Throwable $e)
+                {
+                    $result['failed_mids'][] = $merchantId;
+
+                    $this->trace->traceException(
+                        $e,
+                        null,
+                        TraceCode::MERCHANT_INVOICE_PDF_CREATION_FAILED,
+                        [
+                            'merchant_id' => $merchantId,
+                            'year'        => $year,
+                            'month'       => $month,
+                            'reason'      => $e->getMessage(),
+                        ]);
+                }
+            }
+        }
+
+        return $result;
+    }
 }

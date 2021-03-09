@@ -18,6 +18,8 @@ final class Constants
 
     const ACTION_CREATE = 'create';
 
+    const ACTION_BACKFILL = 'backfill';
+
     const MERCHANT_INVOICE_SKIPPED_MIDS_KEY = 'merchant_invoice_skipped_mids';
 
     const ADD_TO_SKIPPED_MIDS_LIST = 'add';

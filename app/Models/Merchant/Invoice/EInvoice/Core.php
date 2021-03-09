@@ -205,12 +205,9 @@ class Core extends Base\Core
             Constants::ADDRESS_1 => $address1,
         ];
 
-
         if(empty($address2) === false)
         {
-            $buyerDetails[] = [
-                Constants::ADDRESS_2 => $address2,
-            ];
+            $buyerDetails[Constants::ADDRESS_2] = $address2;
         }
 
         return $buyerDetails;
@@ -218,7 +215,7 @@ class Core extends Base\Core
 
     protected function getFormattedAddress(string $addressString)
     {
-        $address = str_split($addressString, 100);
+        $address = mb_str_split($addressString, 100);
         $address1 = $address[0];
         $address2 = null;
 

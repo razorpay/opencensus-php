@@ -573,6 +573,87 @@ class MerchantInvoiceTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testInvoicePdfBackfill()
+    {
+        $oldDateTime = Carbon::create(2018, 1, 27, 12, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $this->createData();
+
+        $oldDateTime = Carbon::create(2018, 2, 27, 12, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $this->createData(true);
+
+        Carbon::setTestNow();
+
+        $this->ba->appAuth();
+
+        $currentTime = $oldDateTime = Carbon::create(2018, 2, 1, 12, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($currentTime);
+
+        $request = [
+            'url'     => '/merchants/invoice/create',
+            'method'  => 'POST',
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $currentTime = $oldDateTime = Carbon::create(2018, 3, 1, 12, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($currentTime);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $entities = $this->getEntities('merchant_invoice', [], true);
+
+        $this->assertEquals(10, $entities['count']);
+
+        $entities = $entities['items'];
+
+        $amount = 0;
+
+        $tax = 0;
+
+        foreach ($entities as $e)
+        {
+            $amount  += $e[Invoice\Entity::AMOUNT];
+            $tax     += $e[Invoice\Entity::TAX];
+        }
+
+        //this is to verify the invoice created are of non zero amount
+        $this->assertNotEquals(0, $amount);
+        $this->assertNotEquals(0, $tax);
+
+        $result =  $this->merchantInvoicePdfControlBackfill(
+            'backfill',
+            ['10000000000000'],
+            1,
+            2018,
+            2,
+            2018,
+            'generating bulk pdf'
+        );
+
+        $expectedResponse = [
+            '1-2018' =>  [
+                'success_count' => 1,
+                'failed_count'  => 0,
+            ],
+            '2-2018' => [
+                'success_count' =>  1,
+                'failed_count'  => 0,
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $result);
+
+        Carbon::setTestNow();
+    }
+
     public function testInvoicePdfCreate()
     {
         // currently skipping the test case to find the issue will fix and reenable this
@@ -756,40 +837,46 @@ class MerchantInvoiceTest extends TestCase
         Carbon::setTestNow();
     }
 
-    protected function createData()
+    protected function createData($merchantAlreadyCreated = false)
     {
-        $this->fixtures->edit('merchant', '10000000000000', [
-            'activated' => 1,
-            'activated_at' => Carbon::now(Timezone::IST)->timestamp,
-            'invoice_code' => 'hello1234567',
-        ]);
-
-        $this->fixtures->on('live')->create('methods:default_methods', [
-            'merchant_id' => '1cXSLlUU8V9sXl'
-        ]);
-
-        $this->fixtures->create(
-            'merchant_detail',
-            [
-                'merchant_id' => '10000000000000',
-                'gstin' => '29kjsngjk213922',
-                'business_registered_pin' => '123456',
-                'business_registered_address'   => 'abc street',
-                'business_registered_city'      => 'abcdef',
-                'business_name'                 => 'abcd',
+        if($merchantAlreadyCreated === false)
+        {
+            $this->fixtures->edit('merchant', '10000000000000', [
+                'activated' => 1,
+                'activated_at' => Carbon::now(Timezone::IST)->timestamp,
+                'invoice_code' => 'hello1234567',
             ]);
 
-        $this->fixtures->create(
-            'payout',
-            [
-                'channel'           => 'icici',
-                'amount'            => 1000,
-                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
+            $this->fixtures->on('live')->create('methods:default_methods', [
+                'merchant_id' => '1cXSLlUU8V9sXl'
             ]);
 
-        $this->ba->privateAuth();
+            $this->fixtures->create(
+                'merchant_detail',
+                [
+                    'merchant_id' => '10000000000000',
+                    'gstin' => '29kjsngjk213922',
+                    'business_registered_pin' => '123456',
+                    'business_registered_address'   => 'abc street',
+                    'business_registered_city'      => 'abcdef',
+                    'business_name'                 => 'abcd',
+                ]);
 
-        $this->createValidationWithFundAccountEntity();
+            $this->fixtures->create(
+                'payout',
+                [
+                    'channel'           => 'icici',
+                    'amount'            => 1000,
+                    'pricing_rule_id'   => '1nvp2XPMmaRLxb',
+                ]);
+
+            $this->ba->privateAuth();
+
+            $this->createValidationWithFundAccountEntity();
+
+            // NB payment
+            $this->fixtures->create('terminal:shared_netbanking_indusind_terminal');
+        }
 
         // Card payment less than 2k
         $p1  = $this->getDefaultPaymentArray();
@@ -813,9 +900,6 @@ class MerchantInvoiceTest extends TestCase
             'captured_at' => Carbon::now(Timezone::IST)->timestamp + 5,
         ]);
 
-        // NB payment
-        $this->fixtures->create('terminal:shared_netbanking_indusind_terminal');
-
         $p3 = $this->getDefaultNetbankingPaymentArray('INDB');
 
         $p3['amount'] = 40000;
@@ -835,6 +919,26 @@ class MerchantInvoiceTest extends TestCase
         $this->org = $this->fixtures->create('org');
 
         $this->authToken = $this->getAuthTokenForOrg($this->org);
+    }
+
+    protected function merchantInvoicePdfControlBackfill($action, $merchantIds, $fromMonth,
+                                                         $fromYear, $toMonth, $toYear, $reason)
+    {
+        $request = [
+            'url'     => '/merchants/invoice/pdf_control',
+            'method'  => 'POST',
+            'content' => [
+                'action'       => $action,
+                'merchant_ids' => $merchantIds,
+                'from_month'   => $fromMonth,
+                'from_year'    => $fromYear,
+                'to_month'     => $toMonth,
+                'to_year'      => $toYear,
+                'reason'       => $reason,
+            ]
+        ];
+
+        return  $this->makeRequestAndGetContent($request);
     }
 
     protected function merchantInvoicePdfControl($action, $merchantIds, $month, $year, $reason)

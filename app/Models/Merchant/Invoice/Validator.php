@@ -59,11 +59,15 @@ class Validator extends Base\Validator
     protected static $pdfControlRules = [
         'merchant_ids'   => 'required|array',
         'merchant_ids.*' => 'required|string|size:14',
-        Entity::YEAR     => 'required|digits:4',
-        Entity::MONTH    => 'required|digits_between:1,2',
-        'action'         => 'required|string|in:delete,create',
+        Entity::YEAR     => 'required_if:action,delete,create|digits:4',
+        Entity::MONTH    => 'required_if:action,delete,create|digits_between:1,2',
+        'action'         => 'required|string|in:delete,create,backfill',
         'reason'         => 'required|string',
-        'strict_b2c'     => 'required|boolean'
+        'strict_b2c'     => 'required_if:action,create|boolean',
+        'from_year'      => 'required_if:action,backfill|integer|digits:4|max:2020',
+        'from_month'     => 'required_if:action,backfill|digits_between:1,2',
+        'to_year'        => 'required_if:action,backfill|integer|digits:4|max:2020',
+        'to_month'       => 'required_if:action,backfill|digits_between:1,2',
     ];
 
     protected static $generationControlRules = [
