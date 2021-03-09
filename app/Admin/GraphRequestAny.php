@@ -115,10 +115,6 @@ class GraphRequestAny
 
         $appMode = Request::header('x-app-mode');
 
-        $merchantId = Request::header('x-dashboard-merchant-id');
-        
-        $userId = Request::header('x-dashboard-user-id');
-
         $defaultHeaders =  [
             'X-Dashboard'                           => 'true',
             'X-Org-Hostname'                        => $domain,
@@ -132,8 +128,6 @@ class GraphRequestAny
             'apollographql-client-name'             => $apolloClientName,
             'apollographql-client-version'          => $apolloClientVersion,
             'X-App-Mode'                            => $appMode,
-            'X-Dashboard-Merchant-Id'               => $merchantId,
-            'X-Dashboard-User-Id'                   => $userId,
         ];
 
         $this->headers = array_merge($defaultHeaders, $this->headers);
@@ -147,17 +141,18 @@ class GraphRequestAny
         {
 
             $proxyAuthheaders = [
+                'X-Dashboard-User-Id'           => $user->id,
                 'X-Dashboard-User-Email'        => $user->email,
                 'X-Dashboard-User-Session-Id'   => Session::getId(),
             ];
 
-            // $currentMerchant = $user->currentMerchant();
+            $currentMerchant = $user->currentMerchant();
 
-            // if ($currentMerchant)
-            // {
-            //     $proxyAuthheaders['X-Dashboard-User-Role']      = $currentMerchant->role;
-            //     $proxyAuthheaders['X-Dashboard-Merchant-Id']    = $currentMerchant->id;
-            // }
+            if ($currentMerchant)
+            {
+                $proxyAuthheaders['X-Dashboard-User-Role']      = $currentMerchant->role;
+                $proxyAuthheaders['X-Dashboard-Merchant-Id']    = $currentMerchant->id;
+            }
 
             $this->headers = array_merge($proxyAuthheaders, $this->headers);
         }
