@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d7e10b01549efc8ce2932bba80e40506",
+    "content-hash": "99c5a52d0650595cd61a3e70e2c7c230",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -4693,16 +4693,16 @@
         },
         {
             "name": "opencensus/opencensus",
-            "version": "v0.7.5.1",
+            "version": "v0.7.5.1-alpha",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/opencensus-php.git",
-                "reference": "1ffd9ded0a728802308d3c405f6fbed55244bc82"
+                "reference": "9994a459ce8f86a2eedda60e6609f5dc55a1d85e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/opencensus-php/zipball/1ffd9ded0a728802308d3c405f6fbed55244bc82",
-                "reference": "1ffd9ded0a728802308d3c405f6fbed55244bc82",
+                "url": "https://api.github.com/repos/razorpay/opencensus-php/zipball/9994a459ce8f86a2eedda60e6609f5dc55a1d85e",
+                "reference": "9994a459ce8f86a2eedda60e6609f5dc55a1d85e",
                 "shasum": ""
             },
             "archive": {
@@ -11565,6 +11565,7 @@
         "razorpay/hodor": 20,
         "razorpay/laravel-excel": 20,
         "razorpay/edge-passport-php": 20,
+        "opencensus/opencensus": 15,
         "opencensus/opencensus-exporter-jaeger": 15,
         "codacy/coverage": 20,
         "symfony/phpunit-bridge": 20

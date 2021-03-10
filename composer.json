@@ -61,7 +61,7 @@
         "brozot/laravel-fcm": "^1.3",
         "razorpay/laravel-excel": "dev-master",
         "razorpay/edge-passport-php": "dev-master",
-        "opencensus/opencensus":"0.7.5.1",
+        "opencensus/opencensus":"0.7.5.1-alpha",
         "opencensus/opencensus-exporter-jaeger": "^0.1.2-alpha",
         "wyndow/fuzzywuzzy": "^0.6.0",
         "guzzlehttp/psr7": "^1.6",

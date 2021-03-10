@@ -49,7 +49,7 @@ class OpenCensusProvider extends ServiceProvider
             $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
             $db_host = $this->app['config']->get('applications.jaeger.db_host')[$mode];
 
-            PDO::load($db_host);
+            PDO::load();
             Redis::load();
             Curl::load();
 
