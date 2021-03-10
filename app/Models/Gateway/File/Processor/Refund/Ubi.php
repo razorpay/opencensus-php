@@ -39,7 +39,7 @@ class Ubi extends Base
         {
             $transactionDate = Carbon::createFromTimestamp($row['payment']['created_at'], Timezone::IST)->format('dmY');
 
-            $particular1 = str_pad("", 30, ' ', STR_PAD_LEFT);
+            $particular1 = str_pad($row['payment']['id'], 30, ' ', STR_PAD_LEFT);
             $particular2 = str_pad("", 20, ' ', STR_PAD_LEFT);
 
             $transactionAmount = str_pad($row['refund']['amount'], 18, '0', STR_PAD_LEFT);
