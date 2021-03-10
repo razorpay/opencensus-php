@@ -5124,7 +5124,6 @@ class Route
         'p2p_admin_manage_banks'                    => Permission::P2P_MANAGE_MERCHANT,
         'recon_fetch_batchs_files_multiple'         => '*',
         'recon_fetch_files_count'                   => '*',
-        'on_demand_settlement_fees'                 => '*',
 
         'fts_dashboard_fund_transfer_update'        => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
         'fts_dashboard_fund_transfer_status_bulk'   => '*',
