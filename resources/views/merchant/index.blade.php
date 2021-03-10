@@ -46,6 +46,8 @@ _dcs.account = '9421167';
 </script>
 <script async defer src="https://apis.google.com/js/api:client.js"></script>
 
+<script async defer src="https://accounts.google.com/gsi/client"></script>
+
 <script>
   document.domain = window.location.hostname.split(".").slice(-2).join(".");
 

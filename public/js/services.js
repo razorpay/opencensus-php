@@ -237,12 +237,7 @@ angular
         return this.alerts;
       };
 
-      this.closeAlert = function (index) {
-        this.alerts.splice(index, 1);
-      };
-
       this.addAlert = function ($type, $message, reset) {
-        $message = $message || 'An error occured.';
         if (reset) {
           this.alerts = [];
         }
@@ -251,14 +246,40 @@ angular
           msg: $message,
         });
 
-        window.scrollTo(0, 0);
+        var alert = document.createElement('alert');
+        var alertHTML = `<span class="info">
+                          <img src="../../img/success-alert.svg" class="success" />
+                          <img src="../../img/danger-alert.svg" class="danger" />
+                        </span>
+                        <button type="button" class="close">
+                          <img src="../../img/close-alert.svg" />
+                        </button>`;
+        alert.innerHTML = `${$message || 'An error occured.'}${alertHTML}`;
+
+        alert.classList.add('alert', `alert-${$type}`, 'alert-dismissable');
+        alert.getElementsByClassName('close')[0].addEventListener('click', function (e) {
+          document.getElementById('alerts').removeChild(e.currentTarget.parentElement);
+        });
+        document.getElementById('alerts').appendChild(alert);
+        var currentLength = this.alerts.length;
+        setTimeout(() => {
+          this.animateMe(currentLength - 1, alert);
+        }, 10);
+      };
+
+      this.animateMe = function (seq, alert) {
+        alert.style.transform = `translateY(-100%) translateY(${-20 - seq * 10}px)`;
       };
 
       this.resetAlerts = function (last) {
         if (!last) {
           this.alerts = [];
+          document.getElementById('alerts').innerHTML = '';
         } else {
           this.alerts.pop();
+          document
+            .getElementById('alerts')
+            .removeChild(document.getElementById('alerts').lastChild);
         }
       };
     };

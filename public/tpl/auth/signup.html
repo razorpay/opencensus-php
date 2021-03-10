@@ -1,5 +1,5 @@
 <div class="auth-overflow-container">
-  <div class="signup-translate-container" ng-style="{'transform': 'translateX(' + ((-240)*signup.currentStep) + 'px)'}">
+  <div class="signup-translate-container" ng-style="{'transform': 'translateX(' + ((-320)*signup.currentStep) + 'px)'}">
     <div class="auth-step" >
       <div class="signup-form-step" ng-if="(isOrgCheckDone && organization && organization.allow_sign_up) || merchant_invitation">
         <div class="auth-heading">
@@ -37,7 +37,6 @@
           <div class="loading-animation"><div class="spinner-container" style="background-image: url('img/loading-bubbles.svg')"></div></div>
         </form>
 
-        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
       </div>
       <div class="" ng-if="isOrgCheckDone && !(organization && organization.allow_sign_up || invite)">
         <span>You are not authorized to access this page</span>
