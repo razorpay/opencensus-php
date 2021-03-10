@@ -16,13 +16,13 @@ const TotalOwedAmountBreakdown = ({
       <div class="breakup-wrapper">
         <div class="flex m-b">
           <div class="full-width no-margin">Total Principal Due</div>
-          <Amount value={totalPrincipalAmount * 100} />
+          <Amount value={totalPrincipalAmount} />
         </div>
 
         <div class="m-b">
           <div className="flex">
             <div className="full-width no-margin">Total Interest Due</div>
-            <Amount value={totalInterestAmount * 100} />
+            <Amount value={totalInterestAmount} />
           </div>
           <span class="text-faded">Inclusive all fees</span>
         </div>
@@ -32,7 +32,7 @@ const TotalOwedAmountBreakdown = ({
           <div className="full-width no-margin">
             <strong>Total Owed Amount</strong>
           </div>
-          <Amount value={totalOwedAmount * 100} />
+          <Amount value={totalOwedAmount} />
         </div>
       </div>
     </div>
