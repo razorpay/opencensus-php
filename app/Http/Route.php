@@ -768,6 +768,7 @@ class Route
         'order_payments'                           => ['get',      'orders/{id}/payments',                           'OrderController@fetchPayments'                                     ],
         'order_refund_multiple_authorized'         => ['post',     'orders/payments/refund',                         'PaymentController@postRefundAuthorizedPaymentsOfPaidOrders'        ],
         'order_edit'                               => ['patch',    'orders/{id}',                                    'OrderController@update'                                            ],
+        'internal_order_update'                    => ['patch',    'internal/orders/{id}',                                    'OrderController@internalOrderUpdate'                                            ],
         'fetch_order_line_items'                   => ['get',      'orders/{id}/line_items',                         'OrderController@fetchLineItems'                                    ],
         'fetch_product_details_for_order'          => ['get',      'orders/{id}/product_details',                    'OrderController@fetchProductDetailsForOrder'                       ],
 
@@ -3092,6 +3093,7 @@ class Route
         'internal_payment_authorize_refund',
         'freshdesk_update_ticket_internal',
         'care_service_cron_proxy',
+        'internal_order_update',
 
         // care
         'myoperator_v1_proxy_get',
@@ -6358,6 +6360,7 @@ class Route
             'internal_fetch_config_by_id',
             'internal_fetch_configs',
             'api_entity_fetch',
+            'internal_order_update',
             'internal_transactions'
         ],
 

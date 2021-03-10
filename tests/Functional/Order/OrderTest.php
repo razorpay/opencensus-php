@@ -2150,6 +2150,21 @@ class OrderTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateOrderSuccessFromPGRouter()
+    {
+        $this->ba->appAuth();
+
+        $order = $this->fixtures->create('order');
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/internal/orders/'.$order->getPublicId();
+
+        $testData['request']['content']['merchant_id'] = $order->getMerchantId();
+
+        $this->startTest();
+    }
+
     public function testCreateOrderWithInvalidValidProductType()
     {
         $this->startTest();

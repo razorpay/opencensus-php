@@ -178,6 +178,10 @@ class Entity extends Base\PublicEntity
         self::PRODUCT_TYPE,
         self::APP_OFFER,
         self::PG_ROUTER_SYNCED,
+        self::STATUS,
+        self::AMOUNT_PAID,
+        self::AUTHORIZED,
+        self::ATTEMPTS
     ];
 
     protected $generateIdOnCreate = true;

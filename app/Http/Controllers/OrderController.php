@@ -83,4 +83,13 @@ class OrderController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function internalOrderUpdate(string $id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->internalOrderUpdate($id,$input);
+
+        return ApiResponse::json($data);
+    }
 }

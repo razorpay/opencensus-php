@@ -83,6 +83,14 @@ class Validator extends Base\Validator
         Entity::FIRST_PAYMENT_MIN_AMOUNT    => 'sometimes|integer|min_amount|custom',
     ];
 
+    protected static $internalEditRules = [
+        Entity::AMOUNT_PAID            => 'sometimes|integer',
+        Entity::STATUS                 => 'sometimes|string',
+        Entity::ATTEMPTS               => 'sometimes|integer',
+        Entity::AUTHORIZED             => 'sometimes|boolean',
+        Entity::MERCHANT_ID            => 'required|string',
+    ];
+
     protected static $minAmountCheckRules = [
         Entity::AMOUNT => 'required|integer|min_amount'
     ];

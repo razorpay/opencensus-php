@@ -432,4 +432,25 @@ class Service extends Base\Service
 
         }
     }
+
+    public function internalOrderUpdate(string $id, array $input): array
+    {
+        $orderId = Entity::verifyIdAndSilentlyStripSign($id);
+
+        $order = $this->mutex->acquireAndRelease($orderId,
+            function() use ($orderId, $input)
+            {
+                $order = $this->repo->order->findByIdAndMerchantId($orderId, $input['merchant_id']);
+
+                $order->edit($input,"internal_edit");
+
+                $this->repo->saveOrFail($order);
+
+                return $order;
+            },
+            20,
+            ErrorCode::BAD_REQUEST_ORDER_ANOTHER_OPERATION_IN_PROGRESS);
+
+        return $order->toArrayPublic();
+    }
 }

@@ -1890,6 +1890,23 @@ return [
         ],
     ],
 
+    'testUpdateOrderSuccessFromPGRouter' => [
+        'request' => [
+            'content' => [
+                'status'           => "paid",
+            ],
+            'method'    => 'PATCH',
+            'url'       => '/internal/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'        => 1000000,
+                'currency'      => 'INR',
+                'status'        => "paid"
+            ],
+        ],
+    ],
+
     'testCreateOrderWithAmountGreaterThanMaxAmountAndCurrencyUSD' => [
         'request'   => [
             'content' => [
