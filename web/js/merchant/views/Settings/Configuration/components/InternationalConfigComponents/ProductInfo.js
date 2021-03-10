@@ -1,5 +1,5 @@
 import React from 'react';
-import { InternationalStatusLabel } from 'merchant/components/StatusLabel';
+import InternationalStatusLabel from 'merchant/components/InternationalStatusLabel';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
 const ProductAction = ({

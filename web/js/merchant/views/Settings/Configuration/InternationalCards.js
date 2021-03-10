@@ -3,14 +3,14 @@ import Amount from 'common/ui/Amount';
 import Button from 'common/new-ui/Button';
 import SwitchField from 'common/ui/Forms/SwitchField';
 import withInternationalConfig from './InternationalConfig';
-import { InternationalStatusLabel } from 'merchant/components/StatusLabel';
+import InternationalStatusLabel from 'merchant/components/InternationalStatusLabel';
 import ProductInfo from './components/InternationalConfigComponents/ProductInfo.js';
 
 const statusMap = {
   approved: 'enabled',
   no_action_received: 'disabled',
-  in_review: 'access_requested',
-  rejected: 'request_rejected',
+  in_review: 'under_review',
+  rejected: 'rejected',
 };
 
 const InternationalCards = ({

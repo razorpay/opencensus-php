@@ -121,19 +121,6 @@ export const offerStatusMap = {
   disabled: 'label-muted',
 };
 
-export const internationalStatusMap = {
-  request_rejected: 'label-danger-light',
-  rejected: 'label-danger-light',
-  disabled: 'label-muted',
-  access_requested: 'label-primary-light',
-  in_review: 'label-primary-light',
-  under_review: 'label-primary-light',
-  enabled: 'label-success-light',
-  approved: 'label-success-light',
-  activated: 'label-success-light',
-  no_website_added: 'label-warning',
-};
-
 export const commissionInvoiceStatusMap = {
   issued: 'label-muted',
   under_review: 'label-pending',
@@ -161,7 +148,6 @@ const entityMap = {
   dispute: disputeStatusMap,
   token: tokenStatusMap,
   offer: offerStatusMap,
-  international: internationalStatusMap,
   commissionInvoice: commissionInvoiceStatusMap,
 };
 
@@ -179,7 +165,6 @@ export const DisputeStatusLabel = StatusLabel(disputeStatusMap);
 export const TokenStatusLabel = StatusLabel(tokenStatusMap);
 export const OfferStatusLabel = StatusLabel(offerStatusMap);
 export const RefundStatusLabel = StatusLabel(refundStatusMap);
-export const InternationalStatusLabel = StatusLabel(internationalStatusMap);
 export const CommissionInvoiceStatusLabel = StatusLabel(commissionInvoiceStatusMap);
 export const SubmerchantSettlementLabel = StatusLabel(SubmerchantSettlementStatusMap);
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import Amount from 'common/ui/Amount';
 import SwitchField from 'common/ui/Forms/SwitchField';
-import { InternationalStatusLabel } from 'merchant/components/StatusLabel';
+import InternationalStatusLabel from 'merchant/components/InternationalStatusLabel';
 import withInternationalConfig from '../../Configuration/InternationalConfig';
 
 const statusMap = {
@@ -135,7 +135,7 @@ const ProductInfo = ({
       break;
     case 'in_review':
       description =
-        'Request has been submitted. We are verifying your request. This would take roughly 3-5 days.';
+        'Request has been submitted. We are verifying your request. This would take roughly 5-7 days.';
       break;
     case 'no_action_received':
       description = `Raise a request to activate international card payments on ${
