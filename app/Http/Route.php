@@ -2101,6 +2101,8 @@ class Route
 
         //route for updating merchant mtu
         'merchant_mtu_update'                      => ['post',      'merchant_mtu_update',                                     'MerchantController@merchantsMtuUpdate'                    ],
+        // same route for updating merchant mtu from dashboard
+        'merchant_mtu_update_dashboard'            => ['post',      'merchant_mtu_update_dashboard',                           'MerchantController@merchantsMtuUpdate'                    ],
 
         //balance configs apis
         'fetch_merchant_balance_configs'           => ['get',      'balance_configs',                                           'BalanceConfigController@getMerchantBalanceConfigs'       ],
@@ -3202,6 +3204,7 @@ class Route
         'salesforce_event',
         'salesforce_opportunity_details',
         'fetch_product_status',
+        'merchant_mtu_update_dashboard',
         'settlement_ondemand_create_dashboard',
         'settlement_ondemand_fees_dashboard',
         'settlement_ondemand_feature_validate',
