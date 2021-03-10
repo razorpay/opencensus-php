@@ -55,6 +55,10 @@ return [
             'name'   => env('AWS_S3_BEAM_BUCKET'),
             'region' => env('AWS_S3_BEAM_BUCKET_REGION', 'ap-south-1')
         ],
+        'recon_sftp_input_bucket' => [
+            'name'   => env('AWS_S3_RECON_SFTP_INPUT_BUCKET'),
+            'region' => env('AWS_S3_RECON_SFTP_INPUT_BUCKET_REGION', 'ap-south-1')
+        ],
     ],
 
     'local' => [

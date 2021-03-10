@@ -222,6 +222,7 @@ class Type
     const H2H_DEFAULT_BUCKET_CONFIG             = 'h2h_default_bucket_config';
     const BEAM_BUCKET_CONFIG                    = 'beam_bucket_config';
     const BATCH_SERVICE_BUCKET_CONFIG           = 'batch_service_bucket_config';
+    const RECON_SFTP_INPUT_BUCKET_CONFIG        = 'recon_sftp_input_bucket';
 
     const PAYOUT_SAMPLE                         = 'payout_sample';
 
@@ -536,7 +537,6 @@ class Type
             self::HDFC_FSS_FAILED_REFUND,
             self::OBC_NETBANKING_REFUND,
             self::SVC_NETBANKING_REFUND,
-            self::FSB_NETBANKING_REFUND,
             self::JKB_NETBANKING_REFUND,
             self::DCB_NETBANKING_REFUND,
             self::UBI_NETBANKING_REFUND,
@@ -603,6 +603,10 @@ class Type
         self::BATCH_SERVICE_BUCKET_CONFIG => [
             self::BATCH_SERVICE,
         ],
+
+        self::RECON_SFTP_INPUT_BUCKET_CONFIG => [
+            self::FSB_NETBANKING_REFUND,
+        ]
     ];
 
     /**

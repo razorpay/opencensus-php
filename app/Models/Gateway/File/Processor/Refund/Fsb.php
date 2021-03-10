@@ -34,6 +34,7 @@ class Fsb extends Base
     const GATEWAY                = Payment\Gateway::NETBANKING_FSB;
     const GATEWAY_CODE           = IFSC::FSFB;
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
+    const BASE_STORAGE_DIRECTORY = 'Fsfb/Refund/Netbanking/';
 
     protected function formatDataForFile(array $data)
     {
@@ -69,7 +70,7 @@ class Fsb extends Base
     {
         $time = Carbon::now(Timezone::IST)->format('Ymd');
 
-        return static::FILE_NAME . $time . '-0';
+        return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . $time . '-0';
     }
 
     protected function addGatewayEntitiesToDataWithPaymentIds(array $data, array $paymentIds)
