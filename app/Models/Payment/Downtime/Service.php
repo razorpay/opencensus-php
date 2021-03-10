@@ -24,6 +24,8 @@ class Service extends Base\Service
 {
     const RAZORX_DOWNTIME_V2 = "downtime_v2_webhook";
 
+    const DOWNTIME_WEBHOOK_TIMEOUT = 5000;
+
     protected function getRepository()
     {
         return $this->repo->getCustomDriver(EntityConstants::PAYMENT_DOWNTIME);
@@ -205,7 +207,8 @@ class Service extends Base\Service
                 'limit'      => 5000,
                 'active'     => true,
                 'event'      => $event,
-            ]
+            ],
+            self::DOWNTIME_WEBHOOK_TIMEOUT
         );
 
         $body = json_decode($response->body, true) ?: [];
