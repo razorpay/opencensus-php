@@ -409,17 +409,6 @@ class Entity
     const CAPITAL_COLLECTIONS_REPAYMENT            = 'capital_collections.repayment';
     const CAPITAL_COLLECTIONS_REPAYMENT_BREAKUP    = 'capital_collections.repayment_breakup';
 
-    // line_of_credit
-    const LINE_OF_CREDIT_ACCOUNT_BALANCES                         = 'line_of_credit.account_balances';
-    const LINE_OF_CREDIT_ONBOARDINGS                              = 'line_of_credit.onboardings';
-    const LINE_OF_CREDIT_REPAYMENTS                               = 'line_of_credit.repayments';
-    const LINE_OF_CREDIT_WITHDRAWAL_CONFIGS                       = 'line_of_credit.withdrawal_configs';
-    const LINE_OF_CREDIT_DESTINATION_ACCOUNTS                     = 'line_of_credit.destination_accounts';
-    const LINE_OF_CREDIT_REPAYMENT_BREAKDOWNS                     = 'line_of_credit.repayment_breakdowns';
-    const LINE_OF_CREDIT_SOURCE_ACCOUNTS                          = 'line_of_credit.source_accounts';
-    const LINE_OF_CREDIT_WITHDRAWALS                              = 'line_of_credit.withdrawals';
-
-
     const COMMISSION = 'commission';
     const COMMISSION_COMPONENT = 'commission_component';
     const PARTNER_ACTIVATION             = 'partner_activation';
@@ -993,15 +982,6 @@ class Entity
         self::CAPITAL_COLLECTIONS_CREDIT_REPAYMENT  => \RZP\Services\CapitalCollectionsClient::class,
         self::CAPITAL_COLLECTIONS_REPAYMENT         => \RZP\Services\CapitalCollectionsClient::class,
         self::CAPITAL_COLLECTIONS_REPAYMENT_BREAKUP => \RZP\Services\CapitalCollectionsClient::class,
-
-        self::LINE_OF_CREDIT_ACCOUNT_BALANCES                       => \RZP\Services\CapitalLineOfCreditClient::class,
-        self::LINE_OF_CREDIT_ONBOARDINGS                            => \RZP\Services\CapitalLineOfCreditClient::class,
-        self::LINE_OF_CREDIT_REPAYMENTS                             => \RZP\Services\CapitalLineOfCreditClient::class,
-        self::LINE_OF_CREDIT_WITHDRAWAL_CONFIGS                     => \RZP\Services\CapitalLineOfCreditClient::class,
-        self::LINE_OF_CREDIT_DESTINATION_ACCOUNTS                   => \RZP\Services\CapitalLineOfCreditClient::class,
-        self::LINE_OF_CREDIT_REPAYMENT_BREAKDOWNS                   => \RZP\Services\CapitalLineOfCreditClient::class,
-        self::LINE_OF_CREDIT_SOURCE_ACCOUNTS                        => \RZP\Services\CapitalLineOfCreditClient::class,
-        self::LINE_OF_CREDIT_WITHDRAWALS                            => \RZP\Services\CapitalLineOfCreditClient::class,
     ];
 
     protected static $syncedInLiveAndTest = [
