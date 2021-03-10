@@ -62,7 +62,11 @@ class Sbin extends Base
 
         $claims = $claims->reject(function($claim)
         {
-            return $claim->isEmandate() === true;
+            if (($claim->isEmandate() === true) or ($claim->terminal->isDirectSettlement() === true))
+            {
+                return true;
+            }
+            return false;
         });
 
         return $claims;

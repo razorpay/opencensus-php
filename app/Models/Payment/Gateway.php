@@ -47,6 +47,7 @@ class Gateway
     const FIRST_DATA             = 'first_data';
     const FULCRUM                = 'fulcrum';
     const HDFC                   = 'hdfc';
+    const SBIN                   = 'sbin';
     const HITACHI                = 'hitachi';
     const MOBIKWIK               = 'mobikwik';
     const NETBANKING_SIB         = 'netbanking_sib';
@@ -294,6 +295,7 @@ class Gateway
         self::CASHFREE              => self::CASHFREE,
         self::NETBANKING_YESB       => self::YESB,
         self::NETBANKING_IDFC       => self::IDFC,
+        self::NETBANKING_SBI        => self::SBIN,
     ];
 
     /**

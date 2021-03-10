@@ -64,6 +64,83 @@ class NetbankingSbiCombinedFileTest extends TestCase
         $this->performPostFileGenerationAssertions();
     }
 
+    public function testGenerateCombinedFileDirectSettlementTerminal()
+    {
+        Mail::fake();
+
+        $this->fixtures->terminal->edit($this->terminal->getId(), [
+            'type' => [
+                'direct_settlement_with_refund' => '1',
+            ],
+        ]);
+
+        $payment = $this->getDefaultNetbankingPaymentArray('SBIN');
+
+        $payment = $this->doAuthPayment($payment);
+
+        $this->updateAuthorizedAtOfPayment($payment['razorpay_payment_id']);
+
+        $refund = $this->refundPayment($payment['razorpay_payment_id']);
+
+        $this->updateCreatedAtOfRefund($refund['id']);
+
+        $refund = $this->getDbLastEntity('refund');
+
+        $this->assertNull($refund->getGatewayRefunded());
+        $this->assertEquals(1, $refund->getReference3());
+        $this->assertEquals('processed', $refund->getStatus());
+
+        $content = $this->generateFiles();
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull($content[File\Entity::SENT_AT]);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $files = $this->getEntities('file_store', ['count' => 1], true);
+
+        $rfDate = Carbon::now(Timezone::IST)->format('d.m.Y');
+
+        $expectedFilesContent = [
+            'entity' => 'collection',
+            'count'  => 1,
+            'items'  => [
+                [
+                    'type'     => 'sbi_netbanking_refund',
+                    'location' => 'RZPY_SBI_Refund' . '_' . $rfDate . '.txt'
+                ],
+            ],
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFilesContent, $files);
+
+        Mail::assertSent(DailyFileMail::class, function ($mail)
+        {
+            $date = Carbon::today(Timezone::IST)->format('d-m-Y');
+
+            $testData = [
+                'subject' => 'Sbi Netbanking claims and refund files for '. $date,
+                'amount' => [
+                    'claims'  => 0,
+                    'refunds' => 500,
+                    'total'   => -500,
+                ],
+                'count' => [
+                    'claims'  => 0,
+                    'refunds' => 1,
+                ]
+            ];
+
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
+
+            $this->checkRefundsFile($mail->viewData['refundsFile']);
+
+            $this->assertCount(1, $mail->attachments);
+
+            return true;
+        });
+    }
+
     public function testGenerateCombinedFileForSubsidiaryBanks()
     {
         Mail::fake();
