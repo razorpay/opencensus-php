@@ -157,4 +157,14 @@ class Gateway extends Mozart\Gateway
 
         return $upiEntity;
     }
+
+    protected function getPreviousStepName($gateway)
+    {
+        return null;
+    }
+
+    protected function getPreviousStepForDB($gateway)
+    {
+        return null;
+    }
 }

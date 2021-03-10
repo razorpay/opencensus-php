@@ -15,10 +15,12 @@ use RZP\Gateway\Base\Action;
 use RZP\Gateway\Upi\Mindgate;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Models\Currency\Currency;
+use RZP\Gateway\Upi\Base\CommonGatewayTrait;
 
 class Gateway extends Mindgate\Gateway
 {
     use RequestTrait;
+    use CommonGatewayTrait;
 
     /**
      * Default request timeout duration in seconds.
@@ -58,12 +60,13 @@ class Gateway extends Mindgate\Gateway
     /**
      * @param array $input
      * @return array|void
-     * @throws Exception\LogicException
+     * @throws Exception\GatewayErrorException
      */
-    public function authorize(array $input)
+    public function authorize(array $input): array
     {
-        throw new Exception\LogicException(
-            'Live payment authorize not available on UPI Yesbank');
+        parent::action($input, Action::AUTHORIZE);
+
+        return $this->upiAuthorize($input);
     }
 
     /**

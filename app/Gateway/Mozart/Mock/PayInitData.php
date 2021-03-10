@@ -137,6 +137,14 @@ class PayInitData extends Base\Mock\Server
         return $response;
     }
 
+    public function upi_yesbank($entities)
+    {
+        if ($this->isV2Mock($entities['payment']['description']))
+        {
+            return $this->upiMozartV2($entities);
+        }
+    }
+
     public function cred($entities)
     {
         // will optimize it later

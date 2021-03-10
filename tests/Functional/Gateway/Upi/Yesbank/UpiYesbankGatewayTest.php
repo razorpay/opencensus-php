@@ -6,7 +6,6 @@ use RZP\Constants\Mode;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
 use RZP\Models\Payment\Gateway;
-use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Upi\Base\Secure;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
@@ -14,16 +13,20 @@ use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Tests\Functional\Fixtures\Entity\Terminal;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Gateway\Upi\UpiPaymentTrait;
 
 class UpiYesbankGatewayTest extends TestCase
 {
     use PaymentTrait;
+    use UpiPaymentTrait;
     use DbEntityFetchTrait;
 
     /**
      * @var Terminal
      */
     protected $sharedTerminal;
+
+    protected $payment;
 
     public function setUp()
     {
@@ -33,7 +36,23 @@ class UpiYesbankGatewayTest extends TestCase
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_yesbank_terminal');
 
+        $this->fixtures->merchant->enableMethod(Account::TEST_ACCOUNT, Method::UPI);
+
+        $this->fixtures->merchant->activate();
+
+        $this->gateway = 'mozart';
+
+        $this->setMockGatewayTrue();
+
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
         $this->gateway = Gateway::UPI_YESBANK;
+
+        $this->setMockGatewayTrue();
+
+        $this->payment = $this->getDefaultUpiPaymentArray();
     }
 
     public function testPayoutRouteWithAccess()

@@ -1600,6 +1600,7 @@ class Gateway
         Upi::ICIC  => Gateway::UPI_ICICI,
         Upi::SBIN  => Gateway::UPI_SBI,
         Upi::UTIB  => Gateway::UPI_AXIS,
+        Upi::YESB  => Gateway::UPI_YESBANK,
     ];
 
     public static $acquirerToCodeMap = [
