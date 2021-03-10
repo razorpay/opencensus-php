@@ -13,6 +13,7 @@
     justify-content: flex-start;
     transform: translateX(-30%);
     transition: all 500ms ease-in-out;
+    z-index: 5;
 
     &.move-right {
       transform: translateX(0%);
@@ -293,8 +294,8 @@
       padding-top: 12px;
       border-top: 1px solid rgba(22, 47, 86, 0.08);
       font-size: 13px;
-      margin-bottom: auto;
-      margin-top: 26px;
+      margin-bottom: 0;
+      margin-top: auto;
 
     .left-border
       &:before
@@ -326,17 +327,86 @@
         animation-fill-mode: forwards;
       }
 
-      .withdrawals__credit-meta {
+      .withdrawals__credit-meta
         display: flex;
         flex-direction: column;
         flex-grow: 0;
         flex-shrink: 0;
-      }
-
-      .withdrawals__credit-meta
         border-left: none;
         border-right :2px solid rgba(11,112,247,0.078);
 
+.cash-advance-first-withdrawal-background
+  position: absolute
+  background: #fff
+  box-shadow: 2px 2px 6px rgba(22, 47, 86, 0.08)
+  top: 0
+  left: 0
+  bottom: 0
+  right: 0
+
+.cash-advance-first-withdrawal
+  position: absolute
+  top: 100%
+  right: -1px
+  left: 0
+  padding: 13px 12px 13px 30px
+  border: 1px solid rgba(68, 155, 171, 0.12);
+  background: #DCF4FB
+  border-radius: 0 0 6px 6px
+  animation: 1s first-withdraw-offer-slideIn
+  > i
+    color: #1C9CB2
+    margin-right: 6px
+  span
+    color: #1C9CB2
+    font-weight: bold
+    position: relative
+    cursor: pointer
+    &:hover > p
+      display: block
+  p
+    cursor: normal
+    display: none
+    background: #2C3243
+    font-weight: normal
+    color: #fff
+    padding: 16px
+    border-radius: 3px
+    position: absolute
+    width: 260px
+    left: 50%
+    margin-left: -40px
+    top: 100%
+    margin-top: 12px
+    font-size: 13px
+    &:before
+      content: ''
+      position: absolute
+      border: 6px solid transparent
+      border-bottom-color: #2C3243
+      bottom: 100%
+      left: 40px
+    &:after
+      content: ''
+      position: absolute
+      top: -13px
+      left: 0
+      right: 0
+      height: 13px
+    strong
+      font-size: 14px
+
+.show-first-withdrawal-offer
+  .repayment_details_wrapper .withdrawals__credit-meta
+    height: calc(100% + 48px)
+  +.overview-footer, +tabbed-container
+    margin-top: 70px
+
+.withdrawals__footer-first-withdrawal-info
+  background: #F0F9FB
+  padding: 10px 14px
+  border-radius: 2px
+  margin: 10px 0 -20px
 
 @-webkit-keyframes fadeIn {
   0% { opacity: 0; }
@@ -357,3 +427,16 @@
   0% { opacity: 1; }
   100% { opacity: 0; }
 }
+
+@keyframes first-withdraw-offer-slideIn
+  0%
+    opacity: 0
+    transform: translateY(-100%)
+
+  50%
+    opacity: 0
+    transform: translateY(-100%)
+
+  100%
+    transform: none
+    opacity: 1

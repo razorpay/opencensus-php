@@ -583,8 +583,35 @@ export default class AmountWithdraw extends React.Component {
       ? this.getRepayableAmount()
       : {};
     const repayableAmount = getFormattedAmountNew((principle + interest) * 100, true);
+    const showFirstWithdrawalOffer = this.getFirstWithdrawalOffer();
     return (
       <div className="withdrawals__action-container card flex">
+        {showFirstWithdrawalOffer ? (
+          <React.Fragment>
+            <div class="cash-advance-first-withdrawal">
+              <i class="i i-offer2" />
+              Doing your first withdrawal? Get 100% interest waived on withdrawal up to ₹50,000.
+              <span>
+                {' '}
+                View offer details
+                <p>
+                  <strong>
+                    <i class="i i-offer2" /> Cashback Offer
+                  </strong>
+                  <br />
+                  <br />
+                  100% cashback of all the interest on your first withdrawal up to ₹50,000 and
+                  maximum of 10 days repayment period.
+                  <br />
+                  <br />
+                  All the interest charged will be deposited back into your bank account within a
+                  day of repayment
+                </p>
+              </span>
+            </div>
+            <div class="cash-advance-first-withdrawal-background"></div>
+          </React.Fragment>
+        ) : null}
         <div class="no-margin full-width" style={{ position: 'relative' }}>
           <div className="flex" style={{ marginBottom: 8, alignItems: 'center' }}>
             <h3 className="title text--secondary">Withdraw Amount</h3>
@@ -915,18 +942,37 @@ export default class AmountWithdraw extends React.Component {
 
   getLeftSection = (currentView) => {
     const { withdrawalConfigurationDetails: { data = null } = {} } = this.props;
+    const showFirstWithdrawalOffer = this.getFirstWithdrawalOffer();
 
     if (!data) return null;
 
     const meta = this.getRepayableAmount();
-    return <WithdrawnAmountSummary {...meta} repaymentDate={moment(this.state.selectedDueDate)} />;
+    return (
+      <WithdrawnAmountSummary
+        {...meta}
+        repaymentDate={moment(this.state.selectedDueDate)}
+        showFirstWithdrawalOffer={showFirstWithdrawalOffer}
+      />
+    );
+  };
+
+  getFirstWithdrawalOffer = () => {
+    return (
+      !this.props.haveWithdrawals?.length &&
+      this.props.user.isFeatureEnabled('loc_first_withdrawal')
+    );
   };
 
   render() {
     const { currentView, showRepaymentDetailsBreakup } = this.state;
+    const showFirstWithdrawalOffer = this.getFirstWithdrawalOffer();
 
     return (
-      <div class={`withdrawals__top-summary ${showRepaymentDetailsBreakup ? 'move-right' : ''}`}>
+      <div
+        class={`withdrawals__top-summary${showRepaymentDetailsBreakup ? ' move-right' : ''}${
+          showFirstWithdrawalOffer ? ' show-first-withdrawal-offer' : ''
+        }`}
+      >
         <div
           className={`repayment_details_wrapper card ${
             showRepaymentDetailsBreakup ? 'fade-in' : 'fade-out'

@@ -26,7 +26,14 @@ function computeRepaymentSchedule(repaymentDate, diffDays) {
   return repaymentSchedule;
 }
 
-function WithdrawnAmountSummary({ principle, interest, repaymentDate, roi, diffDays }) {
+function WithdrawnAmountSummary({
+  showFirstWithdrawalOffer,
+  principle,
+  interest,
+  repaymentDate,
+  roi,
+  diffDays,
+}) {
   const totalRepayableAmount = parseFloat(principle * 100).toFixed(2);
   const interestPopoverContent = `(${getFormattedAmountNew(
     principle * 100,
@@ -75,6 +82,12 @@ function WithdrawnAmountSummary({ principle, interest, repaymentDate, roi, diffD
           </div>
         </div>
       </div>
+      {showFirstWithdrawalOffer ? (
+        <div class="withdrawals__footer-first-withdrawal-info">
+          The interest charged will be deposited back into your bank account within a day of
+          repayment.
+        </div>
+      ) : null}
       <div className="withdrawals__footer left-border">
         This amount will be deducted in {diffDays} instalments from your settlement balance between{' '}
         <strong>{repaymentSchedule}</strong> on a daily basis
