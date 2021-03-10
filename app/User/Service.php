@@ -247,12 +247,26 @@ class Service extends Base\Service
         return $this->handleLoginResponse($error, $genericUser);
     }
 
-    public function verifyOtpAndMarkUserTwoFactorVerified(array $input, string $url)
+    public function verifyOtpAndMarkUserTwoFactorVerified(array $input)
     {
         // no need of extracting data from response
+        list($error) = (new ApiRequestAny(['client_type' => 'user']))
+            ->processInput($input)
+            ->send('users/2fa/verify', 'POST');
+
+        if (empty($error) === true)
+        {
+            $this->markUserTwoFactorVerified();
+        }
+
+        return [$error, []];
+    }
+
+    public function verifyUserContactAndMarkUserTwoFactorVerified(array $input)
+    {
         list($error) = (new ApiRequestAny(['client_type' => 'merchant']))
             ->processInput($input)
-            ->send($url, 'POST');
+            ->send('users/verify_contact', 'POST');
 
         if (empty($error) === true)
         {

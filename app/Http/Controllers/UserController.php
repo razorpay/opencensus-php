@@ -343,10 +343,8 @@ class UserController extends Controller
     {
         $input = Input::all();
 
-        $apiUrl = 'users/2fa/verify';
-
         list($error, $data) = (new User\Service)
-            ->verifyOtpAndMarkUserTwoFactorVerified($input, $apiUrl);
+            ->verifyOtpAndMarkUserTwoFactorVerified($input);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -358,10 +356,8 @@ class UserController extends Controller
     {
         $input = Input::all();
 
-        $apiUrl = 'users/verify_contact';
-
         list($error, $data) = (new User\Service)
-            ->verifyOtpAndMarkUserTwoFactorVerified($input, $apiUrl);
+            ->verifyUserContactAndMarkUserTwoFactorVerified($input);
 
         return AppResponse::jsonResponse($error, $data);
     }
