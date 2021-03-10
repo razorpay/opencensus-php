@@ -313,6 +313,8 @@ class Core extends Base\Core
                 Trace::ERROR,
                 TraceCode::SETTLEMENT_TRANSACTION_STREAMING_FAILED,
                 $payload);
+
+            throw $e;
         }
     }
 
