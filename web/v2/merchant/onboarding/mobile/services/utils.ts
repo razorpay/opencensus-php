@@ -67,7 +67,7 @@ export const isL1Submitted = (onboarding_milestone: string | null): boolean => {
   if (onboarding_milestone === 'activation_flow') {
     return false;
   }
-  if (onboarding_milestone === 'L1') {
+  if (onboarding_milestone === 'L1' || onboarding_milestone === 'L2') {
     return true;
   }
   return false;
@@ -314,4 +314,39 @@ export function isPersonalPanVisible(context) {
     !isUnregisteredBusiness(context.business_overview.business_type.value) &&
     +context.business_overview.business_type.value === PROPRIETORSHIP
   );
+}
+
+export function hasSelectedBlacklistCategory(context, businessCategory) {
+  const blacklistCategory: any = [];
+
+  businessCategory.forEach((item) => {
+    item.matches.forEach((_item) => {
+      if (_item.subcategory_value === context.business_subcategory) {
+        blacklistCategory.push(_item);
+      }
+    });
+  });
+
+  return (
+    isUnregisteredBusiness(context.business_type) &&
+    blacklistCategory.length &&
+    blacklistCategory[0].non_registered_activation_flow === 'blacklist'
+  );
+}
+
+export function getDocumentTitle(context) {
+  const businessType = context.business_overview.business_type.value;
+
+  switch (businessType) {
+    case '3':
+      return 'Partnership Deed';
+    case '7':
+      return 'NGO Registeration Certificate';
+    case '9':
+      return 'Trust Registeration Certificate';
+    case '10':
+      return 'Society Registeration Certificate';
+    default:
+      return 'Certificate of Incorporation';
+  }
 }

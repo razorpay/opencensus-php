@@ -26,6 +26,7 @@ import {
   getBizCatSubCatPair,
   isDocmentTabComplete,
   getDefaultSelectedDocs,
+  getDocumentTitle,
 } from '../services/utils';
 import ShopEstablishmentNumber from './ShopEstablishmentNumber';
 
@@ -86,7 +87,7 @@ const DocumentUpload: React.FC = () => {
     if (file && file.length) {
       const curDoc = file[file.length - 1];
       const response = await documentDelete(curDoc);
-
+      setProgress(0);
       const isComplete = isDocmentTabComplete({
         ...data,
         documents: { ...documents, ...response.documents },
@@ -187,7 +188,7 @@ const DocumentUpload: React.FC = () => {
         onSubmit={() => console.log('onSubmit')}
       >
         {(formikProps) => (
-          <form onChange={formikProps.handleChange}>
+          <form>
             {isVisible('address_proof', data) && (
               <FormSection title="Authorised Signatory's Address Proof">
                 <Field>
@@ -212,7 +213,7 @@ const DocumentUpload: React.FC = () => {
                 </Field>
                 <Field>
                   <FileUpload
-                    onFileUpload={async (e) => onChange(e, `${addressDoc}_front`, formikProps)}
+                    onFileUpload={(e) => onChange(e, `${addressDoc}_front`, formikProps)}
                     onRemove={onDeleteFile}
                     progress={progress}
                     accept={ACCEPTED_DOCUMENT}
@@ -241,7 +242,7 @@ const DocumentUpload: React.FC = () => {
               </FormSection>
             )}
             {isVisible('business_proof_url', data) && (
-              <FormSection title="Certificate of Incorporation">
+              <FormSection title={getDocumentTitle(data)}>
                 <Field last>
                   <FileUpload
                     onFileUpload={(e) => onChange(e, 'business_proof_url', formikProps)}

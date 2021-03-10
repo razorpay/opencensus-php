@@ -7,10 +7,12 @@ import Text from '@razorpay/blade/src/atoms/Text';
 import View from '@razorpay/blade/src/atoms/View';
 import Button from '@razorpay/blade/src/atoms/Button';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
-import { Field, GetTouchedFields } from '../Form';
-import useActivation, { getRequestData } from '../hooks/useActivation';
+import { Field } from '../Form';
+import useActivation from '../hooks/useActivation';
 import BusinessType from '../Fields/BusinessType';
 import BusinessCategory from '../Fields/BusinessCategory';
+import useBusinessCategory from '../hooks/useBusinessCategory';
+import { hasSelectedBlacklistCategory } from '../services/utils';
 
 interface BusinessModelDetailsI {
   business_type: string;
@@ -20,32 +22,20 @@ interface BusinessModelDetailsI {
 
 const BusinessModelDetails: React.FC<RouteComponentProps> = (props) => {
   const { data, postData } = useActivation();
+  const [status, businessCategoriesData] = useBusinessCategory('');
   const { onboarding_card_details: onboardingCardDetails, onboarding_milestone } = data;
-  const [isBlurCalled, setIsBlurCalled] = useState(false);
   const [hasBusinessModel, setHasBusinessModel] = useState(
     onboardingCardDetails.business_subcategory.value === 'others',
   );
-  const isBlackListed = data.activation_flow === 'blacklist';
 
-  const handleSubmit = (updatedDetails) => {
-    if (updatedDetails.business_model) return;
-    const reqData = getRequestData(onboardingCardDetails, updatedDetails);
-    if (Object.keys(reqData).length) {
-      postData(reqData);
-    }
-  };
-  const handleBlur = (e, formikProps) => {
-    formikProps.handleBlur(e);
-    setIsBlurCalled(true);
-  };
   const handleStartActivation = (formDetails) => {
     const body = {
       business_subcategory: formDetails.business_subcategory,
+      business_type: formDetails.business_type,
       business_model: formDetails.business_model,
-      onboarding_milestone: 'activation_flow',
     };
 
-    postData({ ...body })
+    postData(body)
       .then((res) => {
         if (res.onboarding_milestone === 'activation_flow') {
           props.history.push('/onboarding/steps');
@@ -83,26 +73,22 @@ const BusinessModelDetails: React.FC<RouteComponentProps> = (props) => {
         onSubmit={() => console.log('onSubmit')}
       >
         {(formikProps) => {
+          const isBlackListed =
+            status === 'success' &&
+            hasSelectedBlacklistCategory(formikProps.values, businessCategoriesData);
           let isFormValid = false;
           if (formikProps.isValid && !isBlackListed) {
             isFormValid = true;
           }
           return (
-            <form
-              onChange={formikProps.handleChange}
-              onBlur={(e) => {
-                handleBlur(e, formikProps);
-              }}
-            >
+            <form>
               <Field>
                 <BusinessType
                   onboardingMilestone={onboarding_milestone}
                   value={formikProps.values.business_type}
                   errorText={formikProps.touched.business_type && formikProps.errors.business_type}
                   onChange={(value) => {
-                    formikProps.setFieldTouched('business_type');
                     formikProps.setFieldValue('business_type', value);
-                    setIsBlurCalled(true);
                   }}
                 />
               </Field>
@@ -114,9 +100,7 @@ const BusinessModelDetails: React.FC<RouteComponentProps> = (props) => {
                     formikProps.errors.business_subcategory
                   }
                   onChange={(value) => {
-                    formikProps.setFieldTouched('business_subcategory');
                     formikProps.setFieldValue('business_subcategory', value);
-                    setIsBlurCalled(true);
                     setHasBusinessModel(value === 'others');
                   }}
                 />
@@ -135,6 +119,9 @@ const BusinessModelDetails: React.FC<RouteComponentProps> = (props) => {
                       placeholder="Enter text here"
                       width="auto"
                       value={formikProps.values.business_model}
+                      onChange={(value) => {
+                        formikProps.setFieldValue('business_model', value);
+                      }}
                       errorText={
                         formikProps.touched.business_model && formikProps.errors.business_model
                       }
@@ -162,11 +149,6 @@ const BusinessModelDetails: React.FC<RouteComponentProps> = (props) => {
                   </Button>
                 </View>
               </Space>
-              <GetTouchedFields
-                handleSubmit={handleSubmit}
-                isBlurCalled={isBlurCalled}
-                setIsBlurCalled={setIsBlurCalled}
-              />
             </form>
           );
         }}

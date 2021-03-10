@@ -304,3 +304,25 @@ export const ADDITIONAL_DOCS_LABEL_VALUE_MAP = {
     },
   },
 };
+
+export const L1_FORM_FIELD_NAMES = [
+  'business_dba',
+  'business_category',
+  'business_model',
+  'business_subcategory',
+  'promoter_pan',
+  'promoter_pan_name',
+  'business_type',
+  'business_name',
+  'business_website',
+  'company_pan',
+  'company_cin',
+  'business_registered_state',
+  'business_registered_address',
+  'business_registered_pin',
+  'business_registered_city',
+  'business_operation_state',
+  'business_operation_city',
+  'business_operation_pin',
+  'business_operation_address',
+];

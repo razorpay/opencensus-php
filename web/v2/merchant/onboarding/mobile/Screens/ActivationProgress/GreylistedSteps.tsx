@@ -48,6 +48,9 @@ const GreylistedSteps: React.FC<RouteComponentProps> = ({ history }) => {
   const underReviewInfo = isStatusUnderReview
     ? 'Your details are under review . We will get back to you in 7-8 working days'
     : '';
+  const hasPoiStatus =
+    data.poi_verification_status === 'incorrect_details' ||
+    data.poi_verification_status === 'not_matched';
 
   return (
     <View>
@@ -72,7 +75,8 @@ const GreylistedSteps: React.FC<RouteComponentProps> = ({ history }) => {
             name: 'Business Details',
             id: 'business_details',
             onClick,
-            isComplete: isBusinessDetailsCompleted,
+            isComplete: isBusinessDetailsCompleted && !hasPoiStatus,
+            hasErrorText: hasPoiStatus ? 'Unable to verify your PAN. Please update' : '',
           },
           {
             name: 'Bank and Business Details',

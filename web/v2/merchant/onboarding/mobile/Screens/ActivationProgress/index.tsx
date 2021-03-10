@@ -5,8 +5,8 @@ import Space from '@razorpay/blade/src/atoms/Space';
 import { Motion, spring, presets } from 'react-motion';
 import { FullPageLoader } from 'v2/components/Loader';
 import useActivation from '../../hooks/useActivation';
-import { getMerchantFlow } from '../../services/utils';
-import WhitelistedSteps from './WhitelistedSteps';
+// import { getMerchantFlow } from '../../services/utils';
+// import WhitelistedSteps from './WhitelistedSteps';
 import GreylistedSteps from './GreylistedSteps';
 import ActivationProgressHeader from './ActivationProgressHeader';
 
@@ -39,12 +39,12 @@ const ActivationProgress: React.FC = () => {
   if (status === 'error') {
     return <View> Something went wrong </View>;
   }
-  const merchantFlow = getMerchantFlow(data.business_type, data.activation_flow);
+  // const merchantFlow = getMerchantFlow(data.business_type, data.activation_flow);
 
-  let Steps = WhitelistedSteps;
-  if (merchantFlow === 'greylist') {
-    Steps = GreylistedSteps;
-  }
+  const Steps = GreylistedSteps; //WhitelistedSteps;
+  // if (merchantFlow === 'greylist') {
+  //   Steps = GreylistedSteps;
+  // }
 
   return (
     <Motion

@@ -21,7 +21,7 @@ const BusinessType: React.FC<BusinessTypePropsT> = ({
     <Select label="Business Type" errorText={errorText} value={value} onChange={onChange}>
       {Object.keys(BusinessTypes)
         .map((business_type) => {
-          if (isL1Submitted(onboardingMilestone)) {
+          if (isL1Submitted(onboardingMilestone) || onboardingMilestone !== null) {
             if (value === '11') {
               if (business_type !== '11') {
                 return null;

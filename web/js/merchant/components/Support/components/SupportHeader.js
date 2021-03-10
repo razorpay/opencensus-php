@@ -1,11 +1,9 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
 
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { classList } from 'common/utils/rzp-utils';
 
-@withRouter
 @connect((state) => {
   return {
     closeOnboardingStep: state.home.closeOnboardingStep,
@@ -37,8 +35,7 @@ export default class SupportHeader extends Component {
   }
 
   render() {
-    const { notifyCount = 0, isOpened, onToggle, history } = this.props;
-    const isOnBoardingRevempScreen = history.location.pathname.includes('onboarding');
+    const { notifyCount = 0, isOpened, onToggle, isOnBoardingRevampScreen } = this.props;
     const content = (
       <>
         {notifyCount ? <span class="notify-icon">{notifyCount}</span> : null}
@@ -56,7 +53,7 @@ export default class SupportHeader extends Component {
         class={classList(
           'support-launcher',
           isOpened && 'active',
-          isOnBoardingRevempScreen && 'onboarding-screen',
+          isOnBoardingRevampScreen && 'onboarding-screen',
         )}
         onClick={onToggle}
       >

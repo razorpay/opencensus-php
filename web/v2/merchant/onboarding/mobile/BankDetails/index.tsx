@@ -60,7 +60,7 @@ const BankDetails: React.FC = () => {
   useEffect(() => {
     // when checkbox is unchecked then bankAndCompanyDetailsCompleted set to false
     if (!hasGSTIN && data.gstin === '' && !data.gstin.length) {
-      setBankAndCompanyDetailsCompleted(false);
+      setBankAndCompanyDetailsCompleted(hasGSTIN);
     }
   }, [hasGSTIN]);
 

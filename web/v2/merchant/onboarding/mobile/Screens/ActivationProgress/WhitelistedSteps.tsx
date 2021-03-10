@@ -5,7 +5,10 @@ import Size from '@razorpay/blade/src/atoms/Size';
 import shallow from 'zustand/shallow';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
 import useActivation from '../../hooks/useActivation';
-import { useActivationFormState } from '../../context/store';
+import {
+  useActivationFormState,
+  // isVisible
+} from '../../context/store';
 import OnboardingStepCard from '../../OnboardingStepCard';
 import { StepPropsT } from '../../Step';
 import { getMerchantFlow, isL1Submitted, getPoiVerificationStatus } from '../../services/utils';
@@ -13,12 +16,18 @@ import {
   EnableSettlements as EnableSettlementModal,
   SubmitForm as SubmitFormModal,
 } from '../../ActivationModals';
+// import { L1_FORM_FIELD_NAMES } from '../../Constants/OnboardingConstants'; /*temporally commented
+
 const Screen = styled(View)`
   background-color: #f9fbfe;
 `;
 
 const WhitelistedSteps: React.FC<RouteComponentProps> = ({ history }) => {
-  const { data, postData } = useActivation();
+  const {
+    data,
+    postData,
+    // instantPostData,
+  } = useActivation();
   const {
     isContactDetailsCompleted,
     isBusinessOverviewCompleted,
@@ -48,7 +57,10 @@ const WhitelistedSteps: React.FC<RouteComponentProps> = ({ history }) => {
     (isComplete) => isComplete,
   );
 
-  const [isEnableSettlementModalOpen, setIsEnableSettlementModalOpen] = useState(false);
+  const [
+    isEnableSettlementModalOpen,
+    // setIsEnableSettlementModalOpen
+  ] = useState(false);
   const [isSubmitFormModalOpen, setIsSubmitFormModalOpen] = useState(false);
   const merchantFlow = getMerchantFlow(data.business_type, data.activation_flow);
 
@@ -61,17 +73,24 @@ const WhitelistedSteps: React.FC<RouteComponentProps> = ({ history }) => {
   const onEnableSettlementClick = () => {
     history.push('/onboarding/form');
   };
-  const submitL1 = () => {
-    postData({ onboarding_milestone: 'L1' }).then((res) => {
-      if (res && res.onboarding_milestone === 'L1') {
-        setIsEnableSettlementModalOpen(true);
-      }
-    });
-  };
+  // const submitL1 = () => {
+  //   const l1ReqData = L1_FORM_FIELD_NAMES.reduce((acc, key) => {
+  //     if (isVisible(key, data)) {
+  //       acc[key] = data[key];
+  //     }
+  //     return acc;
+  //   }, {});
+
+  //   instantPostData(l1ReqData).then((res) => {
+  //     if (res && res.onboarding_milestone === 'L1') {
+  //       setIsEnableSettlementModalOpen(true);
+  //     }
+  //   });
+  // };
   const onCTAClick = () => {
-    if (!isL1Submitted(data.onboarding_milestone) || isUnregPoiStatus) {
-      submitL1();
-    }
+    // if (!isL1Submitted(data.onboarding_milestone) || isUnregPoiStatus) {
+    //   submitL1();
+    // }
   };
   const submitL2 = () => {
     postData({ submit: 1 }).then((res) => {
@@ -80,9 +99,11 @@ const WhitelistedSteps: React.FC<RouteComponentProps> = ({ history }) => {
       }
     });
   };
-  const enableSettlementInfo = data.submitted
-    ? 'Your documents are under review. We will get back to you in 3 working days'
-    : '';
+  const enableSettlementInfo =
+    data.submitted &&
+    !(data.activation_status === 'activated' || data.activation_status === 'activated_mcc_pending')
+      ? 'Your documents are under review. We will get back to you in 3 working days'
+      : '';
   let enableSettlementSteps: StepPropsT[] = [
     {
       name: 'Complete step 1 to unlock this',
@@ -91,7 +112,10 @@ const WhitelistedSteps: React.FC<RouteComponentProps> = ({ history }) => {
       isLocked: true,
     },
   ];
-  if (data.onboarding_milestone === 'L1' && !isUnregPoiStatus) {
+  if (
+    (data.onboarding_milestone === 'L1' || data.onboarding_milestone === 'L2') &&
+    !isUnregPoiStatus
+  ) {
     enableSettlementSteps = [
       {
         name: 'Bank and Business Details',
@@ -110,6 +134,9 @@ const WhitelistedSteps: React.FC<RouteComponentProps> = ({ history }) => {
   const canL1Submit =
     !isL1Submitted(data.onboarding_milestone) && isL1Complete && !isUnregPoiStatus;
   const canL2Submit = isL1Submitted(data.onboarding_milestone) && isL2Complete && data.can_submit;
+  const hasPoiStatus =
+    data.poi_verification_status === 'incorrect_details' ||
+    data.poi_verification_status === 'not_matched';
   return (
     <Screen>
       <OnboardingStepCard
@@ -136,8 +163,8 @@ const WhitelistedSteps: React.FC<RouteComponentProps> = ({ history }) => {
             name: 'Business Details',
             id: 'business_details',
             onClick,
-            isComplete: isBusinessDetailsCompleted && !isUnregPoiStatus,
-            hasErrorText: isUnregPoiStatus ? 'Unable to verify your PAN. Please update' : '',
+            isComplete: isBusinessDetailsCompleted && !hasPoiStatus,
+            hasErrorText: hasPoiStatus ? 'Unable to verify your PAN. Please update' : '',
           },
         ]}
         onCTAClick={onCTAClick}

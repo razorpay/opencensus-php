@@ -27,6 +27,7 @@ const BusninessCategory: React.FC<BusinessCategoryPropsT> = ({
       label="Your Business Category"
       searchable={true}
       placeholder=""
+      filterOptions={false}
       inputPlaceholder="Search Business Category"
       errorText={errorText}
       loading={businessCategoriesStatus === 'loading'}

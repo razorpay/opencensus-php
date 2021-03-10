@@ -19,6 +19,9 @@ export const fetchActivationData = async () => {
 export const postActivation = (data) =>
   fetch<any>({ url: 'merchant/activation', method: 'POST', data });
 
+export const instantActivation = (data) =>
+  fetch<any>({ url: 'merchant/instant_activation', method: 'POST', data });
+
 export const getRequestData = (prevDetails, updatedDetails) => {
   const filteredFields = Object.keys(updatedDetails).filter(
     (key) =>
@@ -55,6 +58,14 @@ export default function useActivation() {
 
   const queryCache = useQueryCache();
   const [postData] = useMutation(postActivation, {
+    onSuccess: (result) => {
+      const formattedData = activationFormatter(result);
+      queryCache.setQueryData('activation', formattedData);
+    },
+    onError: (err: any) => snackbar.error(err.response.errors[0]),
+  });
+
+  const [instantPostData] = useMutation(instantActivation, {
     onSuccess: (result) => {
       const formattedData = activationFormatter(result);
       queryCache.setQueryData('activation', formattedData);
@@ -149,5 +160,5 @@ export default function useActivation() {
     setHasGSTIN,
   ]);
 
-  return { status, data, postData, documentUpload, documentDelete };
+  return { status, data, postData, documentUpload, documentDelete, instantPostData };
 }

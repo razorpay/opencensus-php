@@ -26,6 +26,7 @@ const EnableSettlementsModal: React.FC<EnableSettlementsModalPropsT> = ({ isOpen
     window.location.href = '/app/onboarding/steps';
   };
   const onExploreToAcceptPaymentsLinkClick = () => {
+    switchMode(user.current, 'live');
     window.location.href = '/';
   };
   return (

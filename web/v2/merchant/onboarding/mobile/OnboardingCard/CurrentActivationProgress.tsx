@@ -132,7 +132,11 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; pay
     }
   }
 
-  if (data.onboarding_milestone === 'activation_flow' || data.onboarding_milestone === 'L1') {
+  if (
+    data.onboarding_milestone === 'activation_flow' ||
+    data.onboarding_milestone === 'L1' ||
+    data.onboarding_milestone === 'L2'
+  ) {
     return <RemainingStepsInfo data={data} payments={payments} />;
   }
 

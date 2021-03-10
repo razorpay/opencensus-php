@@ -1,6 +1,7 @@
 import { connect } from 'react-redux';
 import { Component } from 'react';
 import { trackSupportButton } from './ga';
+import { withRouter } from 'react-router-dom';
 
 import { checkCallEligibility } from 'merchant/reducers/config';
 import SupportHeader from 'merchant/components/Support/components/SupportHeader';
@@ -9,6 +10,7 @@ import { merchantFetch } from 'merchant/utils/ajax';
 
 import { classList } from 'common/utils/rzp-utils';
 
+@withRouter
 @connect(
   (state) => {
     return {
@@ -90,12 +92,13 @@ export default class Support extends Component {
   };
 
   render() {
-    const { user } = this.props;
+    const { user, history } = this.props;
     const { notifyCount, isOpened, isHidden } = this.state;
     // Temporarily disabled till further notice for improving support quality index for calls,
     const isCallEnabled = false;
     // const isCallEnabled = !user.isActivated || this.props.isCallEnabled;
 
+    const isOnBoardingRevampScreen = history.location.pathname.includes('onboarding');
     const DASHBOARD_HOST_REGEX = /(dashboard.*\.razorpay\.(com|in)|localhost)$/;
 
     if (!DASHBOARD_HOST_REGEX.test(location.hostname)) {
@@ -104,7 +107,12 @@ export default class Support extends Component {
 
     return (
       <div class={classList('support', isHidden && 'hidden')}>
-        <SupportHeader onToggle={this.handleToggle} isOpened={isOpened} notifyCount={notifyCount} />
+        <SupportHeader
+          onToggle={this.handleToggle}
+          isOpened={isOpened}
+          notifyCount={notifyCount}
+          isOnBoardingRevampScreen={isOnBoardingRevampScreen}
+        />
         <SupportBody
           onToggle={this.handleToggle}
           isOpened={isOpened}

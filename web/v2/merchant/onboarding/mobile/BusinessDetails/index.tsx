@@ -14,7 +14,7 @@ import { Select, Option } from 'v2/components/Select';
 import { FormSection, Field, GetTouchedFields } from '../Form';
 import { useActivationFormState, isVisible, isTabComplete } from '../context/store';
 import useActivation, { getRequestData } from '../hooks/useActivation';
-import { getLabel, getHelpText, getPoiVerificationStatus } from '../services/utils';
+import { getLabel, getHelpText } from '../services/utils';
 import { states } from '../Constants/OnboardingConstants';
 
 const StyledSeparator = styled(View)`
@@ -90,7 +90,9 @@ const BusinessDetails: React.FC = () => {
   const hasSameAdress = useActivationFormState((state) => state.same_address);
   const [isBlurCalled, setIsBlurCalled] = useState(false);
 
-  const isUnregPoiStatus = getPoiVerificationStatus(data);
+  const hasPoiStatus =
+    data.poi_verification_status === 'incorrect_details' ||
+    data.poi_verification_status === 'not_matched';
 
   const copySameAddress = (reqData, updatedDetails) => {
     let _reqData = { ...reqData };
@@ -179,11 +181,11 @@ const BusinessDetails: React.FC = () => {
           <FormSection
             title="PAN Details"
             subtitle={
-              isUnregPoiStatus
+              hasPoiStatus
                 ? 'PAN Verification failed. Please review your details and submit again'
                 : 'These details will be verified with the government database'
             }
-            hasError={isUnregPoiStatus}
+            hasError={hasPoiStatus}
           >
             <Field visible={isVisible('company_pan', data)}>
               <TextInput

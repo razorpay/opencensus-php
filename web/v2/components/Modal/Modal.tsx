@@ -75,7 +75,7 @@ const Modal: React.FC<ModalPropsT> = ({
               <BottomSheet $y={styles.sheetY} $bottomSheetHeight={bottomSheetHeight}>
                 <BottomSheetHandle />
                 {bottomSheetHeaderText ? (
-                  <Space padding={[1.5, 0, 1, 0]} margin={[0, 3, 0, 3]}>
+                  <Space padding={[1.5, 0, 1, 0]} margin={[0, 1.25, 0, 3]}>
                     <BottomSheetTextHeader size="xsmall" color="shade.960" weight="bold">
                       {bottomSheetHeaderText}
                       {closeable ? (
