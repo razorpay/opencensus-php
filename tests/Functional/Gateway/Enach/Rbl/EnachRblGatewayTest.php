@@ -1588,7 +1588,7 @@ class EnachRblGatewayTest extends TestCase
                         'NODAL_ACNO'      => 'RATN3234334',
                         'STATUS'          => $status,
                         'CODE_DESC'       => $errorDesc,
-                        'RETURN_CODE'     => $errorCode,
+                        'RET_CODE'        => $errorCode,
                     ],
                 ],
             ],

@@ -488,7 +488,7 @@ class Header
     const ENACH_REGISTER_UTILITY_NAME       = 'UTILITY_NAME';
     const ENACH_REGISTER_NODAL_ACNO         = 'NODAL_ACNO';
     const ENACH_REGISTER_STATUS             = 'STATUS';
-    const ENACH_REGISTER_RETURN_CODE        = 'RETURN_CODE';
+    const ENACH_REGISTER_RETURN_CODE        = 'RET_CODE';
     const ENACH_REGISTER_CODE_DESC          = 'CODE_DESC';
 
     //
