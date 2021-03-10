@@ -285,16 +285,12 @@ export default class PaymentButtonCreate extends React.Component {
   };
 
   handleSavePaymentReceipt = (data) => {
-    const { payment_button } = this.props;
     const isEditExistingId = !!this.paymentButtonId;
 
     this.props.updateReceiptDetails(data); // Updating in the store
 
     if (isEditExistingId) {
-      return this.saveReceiptSettings(
-        this.paymentButtonId,
-        payment_button.paymentButtonEntity.receipt,
-      ).then((resp) => {
+      return this.saveReceiptSettings(this.paymentButtonId, data).then((resp) => {
         this.props.showNotification({
           type: 'success',
           message: 'Receipt settings are updated successfully',

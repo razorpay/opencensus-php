@@ -225,16 +225,12 @@ export default class SubscriptionButtonCreate extends React.Component {
   };
 
   handleSavePaymentReceipt = (data) => {
-    const { subscription_button } = this.props;
     const isEditExistingId = !!this.subscriptionButtonId;
 
     this.props.updateReceiptDetails(data); // Updating in the store
 
     if (isEditExistingId) {
-      return this.saveReceiptSettings(
-        this.subscriptionButtonId,
-        subscription_button.subscriptionButtonEntity.receipt,
-      ).then((resp) => {
+      return this.saveReceiptSettings(this.subscriptionButtonId, data).then((resp) => {
         this.props.showNotification({
           type: 'success',
           message: 'Receipt settings are updated.',
