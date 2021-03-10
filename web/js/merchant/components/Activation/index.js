@@ -2210,8 +2210,14 @@ function ActivationField(field) {
 
   // temp solution for business category on NC flow
   let isNCFlowComponentDisabled = false;
-  if (rest.name === 'business_category' || rest.name === 'business_subcategory') {
+  if (
+    rest.name === 'business_category' ||
+    rest.name === 'business_subcategory' ||
+    rest.name === 'business_website' ||
+    rest.name === 'business_type'
+  ) {
     isNCFlowComponentDisabled = this.isOnKYCTab() ? true : false;
+    defaultValue = this.props.data[rest.name];
   }
 
   const _Component = rest.customField ? CustomField : Component;
