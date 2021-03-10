@@ -17,7 +17,7 @@ import {
   status,
   createdAt as createdAtProperty,
 } from 'common/ui/item/pair';
-import analyticsService from '@commander/services/analytics';
+import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 const type = {
@@ -61,7 +61,7 @@ export default class Dispute extends ListContainer {
           type="link"
           count={this.state.count}
           onSubmit={(args) => {
-            analyticsService.track({
+            analyticsTrack({
               objectName: 'disputes search',
               actionName: 'clicked',
               screen: 'transactions',

@@ -170,7 +170,7 @@ export default class AddFundsContainer extends Component {
   };
 
   handleActivate = () => {
-    if (window.rzpTicketSystem) {
+    if (window.rzpTicketSystem && window.rzpTicketSystem.addEventListener) {
       const rzpTicketSystem = window.rzpTicketSystem;
       window.rzpTicketSystem.addEventListener('ticket-created', this.handleTicketCreation);
       rzpTicketSystem.setPrefill('#request', ['merchant', 'account-configuration-changes']);

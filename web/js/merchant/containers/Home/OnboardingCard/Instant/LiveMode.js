@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import Button from 'common/new-ui/Button';
 import { LIVE_MODE } from 'merchant/containers/Home/OnboardingCard/data';
 import { switchToMode } from 'merchant/containers/Home/OnboardingCard/SwitchToMode';
-import analyticsService from '@commander/services/analytics';
+import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
 
 import Step, { StepTitle, StepContent, possibleStatuses } from './Step';
@@ -67,7 +67,7 @@ export default class LiveMode extends Component {
               className="btn-link"
               onClick={() => {
                 track.fillActivationForm();
-                analyticsService.track({
+                analyticsTrack({
                   objectName: 'SignUp',
                   actionName: 'Fill KYC CTA clicked',
                   screen: 'home page',

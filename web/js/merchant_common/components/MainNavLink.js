@@ -5,7 +5,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import { setActivePageName, toggleMobileMenu } from 'merchant/reducers/app';
 import RTracking from 'react-tracking';
-import analyticsService from '@commander/services/analytics';
+import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 @connect(
@@ -60,7 +60,7 @@ export default class MainNavLink extends Component {
       );
     }
 
-    analyticsService.track({
+    analyticsTrack({
       objectName: 'sidebar',
       actionName: 'clicked',
       screen: 'home page',
@@ -73,7 +73,7 @@ export default class MainNavLink extends Component {
     });
 
     if (this.props.label === 'Transactions') {
-      analyticsService.track({
+      analyticsTrack({
         objectName: 'transactions tab',
         actionName: 'clicked',
         screen: 'transactions',

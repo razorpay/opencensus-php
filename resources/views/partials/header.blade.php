@@ -24,6 +24,8 @@
   @endif
   <script src="https://wchat.freshchat.com/js/widget.js" async defer></script>
   <script src="https://cdn.razorpay.com/static/ticket-system/bundle.js" async defer></script>
+
+
   <script type="text/javascript">
         var _hsq = window._hsq = window._hsq || [];
 

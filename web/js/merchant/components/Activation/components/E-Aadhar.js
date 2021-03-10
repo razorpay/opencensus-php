@@ -5,7 +5,7 @@ import { AsyncBtn } from 'common/new-ui/Button';
 import { merchantFetch } from 'merchant/utils/ajax';
 import OtpInput from 'common/new-ui/Input/OtpInput';
 import { classList } from 'common/utils/rzp-utils';
-import analyticsService from '@commander/services/analytics';
+import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 const Error = ({ text }) => {
@@ -37,7 +37,7 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
     setError('');
     setWrongOtp(false);
     trackEvent(window.rzpQ.onbr().initiated('kyc.e-aadhar_OTP'));
-    analyticsService.track({
+    analyticsTrack({
       objectName: 'kyc.e-aadhar OTP',
       actionName: 'Type',
       screen: 'Type OTP on Activation page',
@@ -48,7 +48,7 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
   const updateSecurityPin = (pinValue) => {
     setPin(pinValue);
     trackEvent(window.rzpQ.onbr().initiated('kyc.e-aadhar_passcode'));
-    analyticsService.track({
+    analyticsTrack({
       objectName: 'kyc.e-aadhar passcode',
       actionName: 'type',
       screen: 'KYC Passcode type on Activation page',
@@ -75,7 +75,7 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
         checked: target.value === '1',
       }),
     );
-    analyticsService.track({
+    analyticsTrack({
       objectName: 'kyc.mobile not linked',
       actionName: 'click on checkbox',
       screen: 'KYC on Activation page',
@@ -89,7 +89,7 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
     setPin('');
     document.getElementsByName('aadhar_number')[0].value = '';
     trackEvent(window.rzpQ.onbr().initiated('kyc.e-aadhar_reset'));
-    analyticsService.track({
+    analyticsTrack({
       objectName: 'kyc.aadhar reset',
       actionName: 'click on reset process',
       screen: 'Captcha screen on Activation page',
@@ -126,7 +126,7 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
             error_code: res.data?.error_code ? res.data?.error_code : null,
           }),
         );
-        analyticsService.track({
+        analyticsTrack({
           objectName: 'kyc.e-aadhar get code',
           actionName: 'generate captcha',
           screen: 'Verify with OTP on Activation page',
@@ -143,7 +143,7 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
             error_code: err.errors[0],
           }),
         );
-        analyticsService.track({
+        analyticsTrack({
           objectName: 'kyc.e-aadhar get code',
           actionName: 'generate captcha Error',
           screen: 'Verify with OTP on Activation page',
@@ -208,7 +208,7 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
             }),
           );
         }
-        analyticsService.track({
+        analyticsTrack({
           objectName: 'kyc.e-aadhar send otp',
           actionName: 'send OTP',
           screen: 'Send OTP button on Activation page',
@@ -288,7 +288,7 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
             }),
           );
         }
-        analyticsService.track({
+        analyticsTrack({
           objectName: 'kyc.e-aadhar OTP submit',
           actionName: 'OTP verified successfully',
           screen: 'Submit OTP on Activation page',
@@ -312,7 +312,7 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
             trigger: true,
           }),
         );
-        analyticsService.track({
+        analyticsTrack({
           objectName: 'kyc.e-aadhar OTP submit',
           actionName: 'OTP verify failed',
           screen: 'Submit OTP on Activation page',
@@ -365,7 +365,7 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
                       interaction_aadhar: true,
                     }),
                   );
-                  analyticsService.track({
+                  analyticsTrack({
                     objectName: 'kyc.e-aadhar',
                     actionName: 'focus',
                     screen: 'Activation page',
@@ -418,7 +418,7 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
                             target="_blank"
                             onClick={() => {
                               trackEvent(window.rzpQ.onbr().initiated('kyc.e-aadhar_consent_link'));
-                              analyticsService.track({
+                              analyticsTrack({
                                 objectName: 'kyc.e-aadhar consent link',
                                 actionName: 'click on privacy policy (e-aadhar)',
                                 screen: 'KYC on Activation page',
@@ -479,7 +479,7 @@ const EAadhar = ({ aadharStatus, isAadharLinked, mobileLinkedOnChange, tracking 
                       }
                       onFocus={() => {
                         trackEvent(window.rzpQ.onbr().initiated('kyc.e-aadhar_code'));
-                        analyticsService.track({
+                        analyticsTrack({
                           objectName: 'kyc.e-aadhar code',
                           actionName: 'focus on enter captcha',
                           screen: 'Entering captch on Activation page',

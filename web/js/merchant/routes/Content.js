@@ -2,7 +2,7 @@ import React, { Component, Suspense } from 'react';
 import { NavLink, Switch, Route, withRouter, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-import analyticsService from '@commander/services/analytics';
+import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import { matchDetail, matchModal, supportHashMapping } from 'merchant/routes';
@@ -216,7 +216,9 @@ export default class Content extends Component {
     if (window.rzpTicketSystem) {
       const actionHash = supportHashMapping[hash];
       if (actionHash && !!location.pathname && location.pathname !== '/') {
-        window.rzpTicketSystem.addEventListener('modal-close', onModalClose);
+        if (window.rzpTicketSystem.addEventListener) {
+          window.rzpTicketSystem.addEventListener('modal-close', onModalClose);
+        }
         window.rzpTicketSystem.openModal(actionHash, {
           chat: false,
           call: false,
@@ -228,10 +230,12 @@ export default class Content extends Component {
   };
 
   listenTrackEvents = () => {
-    if (window.rzpTicketSystem) {
+    if (window.rzpTicketSystem && window.rzpTicketSystem.addEventListener) {
       window.rzpTicketSystem.addEventListener('track-event', function (data) {
-        analyticsService.track({
+        analyticsTrack({
           ...data.event,
+          objectName: data.event.objectName,
+          actionName: data.event.actionName,
           properties: {
             ...data.properties,
             ...getCommonAnalyticsProperties(window.rzp_user),

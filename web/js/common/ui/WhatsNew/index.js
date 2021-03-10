@@ -10,7 +10,7 @@ import RazorpayXNitroAnnouncement from '../NotificationsDropdown/RazorpayXNitroA
 import { showAcceptPaymentsModal } from 'merchant/reducers/home';
 import OpfinAnnouncementV2 from '../NotificationsDropdown/components/OpfinAnnouncementV2';
 import OpfinAnnouncement10L from '../NotificationsDropdown/components/OpfinAnnouncement10L';
-import analyticsService from '@commander/services/analytics';
+import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { openSlider } from 'merchant_common/reducers/slider';
 import Slider from 'common/ui/Slider';
@@ -189,7 +189,7 @@ export default class WhatsNew extends Component {
   }
 
   onShow = () => {
-    analyticsService.track({
+    analyticsTrack({
       objectName: 'announcements drop down',
       actionName: 'clicked',
       screen: 'home page',
@@ -490,7 +490,7 @@ const NotificationCard = ({
   }, []);
 
   const handleCTAClick = (e, btn, urlPath) => {
-    analyticsService.track({
+    analyticsTrack({
       objectName: 'announcements',
       actionName: 'clicked',
       screen: 'home page',

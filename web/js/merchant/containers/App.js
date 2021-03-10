@@ -8,7 +8,7 @@ import Loader from 'common/ui/Loader';
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import ModalDialog from 'common/ui/ModalDialog';
-import analyticsService from '@commander/services/analytics';
+import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import Notifications from 'common/ui/Notifications';
 import LocalStorageService from 'common/utils/localStorage';
@@ -164,8 +164,8 @@ export default class App extends Component {
 
   componentWillMount() {
     const user = window.rzp_user;
-    if (user) {
-      analyticsService.identify({
+    if (user && window.analytics) {
+      analytics.identify({
         id: user.user.id,
         properties: getCommonAnalyticsProperties(window.rzp_user),
       });
@@ -548,7 +548,7 @@ export default class App extends Component {
       eventAction: 'Switch - Mode',
       eventLabel: mode,
     });
-    analyticsService.track({
+    analyticsTrack({
       objectName: 'mode',
       actionName: 'selected',
       screen: 'home page',
@@ -580,7 +580,7 @@ export default class App extends Component {
   };
 
   switchMerchant = (merchant) => {
-    analyticsService.track({
+    analyticsTrack({
       objectName: 'switch merchant',
       actionName: 'selected',
       screen: 'home page',
@@ -592,7 +592,7 @@ export default class App extends Component {
     this.props
       .switchMerchant(merchant.id)
       .then(() => {
-        analyticsService.track({
+        analyticsTrack({
           objectName: 'switch merchant',
           actionName: 'result',
           screen: 'home page',
