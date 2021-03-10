@@ -3048,6 +3048,53 @@ return [
         ],
     ],
 
+    'testCreateUpiYesbankCollectTerminal'        => [
+        'request' => [
+            'content' => [
+                'gateway'                       => 'upi_yesbank',
+                'gateway_acquirer'              => 'yesbank',
+                'category'                      => '1520',
+                'gateway_merchant_id'           => 'YES0000000012026',
+                'gateway_secure_secret'         => 'Something',
+                'upi'                           => 1,
+                'vpa'                           => 'abcd@some'
+            ],
+            'method' => 'POST'
+        ],
+        'response'  => [
+            'content'  => [
+                'gateway_merchant_id'       => 'YES0000000012026',
+                'gateway_acquirer'          => 'yesbank',
+                'enabled'                   => true
+            ]
+        ]
+    ],
+
+    'testCreateUpiYesbankIntentTerminal'        => [
+        'request' => [
+            'content' => [
+                'gateway'                       => 'upi_yesbank',
+                'gateway_acquirer'              => 'yesbank',
+                'category'                      => '1520',
+                'gateway_merchant_id'           => 'YES0000000012026',
+                'gateway_secure_secret'         => 'Something',
+                'upi'                           => 1,
+                'vpa'                           => 'abcd@some',
+                'type'                          => [
+                    'pay'                       => '1'
+                ]
+            ],
+            'method' => 'POST'
+        ],
+        'response'  => [
+            'content'  => [
+                'gateway_merchant_id'       => 'YES0000000012026',
+                'gateway_acquirer'          => 'yesbank',
+                'enabled'                   => true
+            ]
+        ]
+    ],
+
     'testCreateJuspayTerminal'                => [
         'request' => [
             'content' => [

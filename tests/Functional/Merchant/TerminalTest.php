@@ -2196,6 +2196,37 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateUpiYesbankCollectTerminal()
+    {
+        $url = '/merchants/10000000000000/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateUpiYesbankIntentTerminal()
+    {
+        $url = '/merchants/10000000000000/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testEditUpiYesbankTerminal()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_upi_yesbank_terminal', ['vpa' => 'abc@ybl']);
+
+        $tid = $terminal['id'];
+
+        $data = array('vpa' => 'xyz@ybl');
+
+        $content = $this->editTerminal($tid, $data);
+
+        $this->assertEquals('xyz@ybl', $terminal->reload()->vpa);
+    }
+
     public function testCreateCybersourceYesBTerminal()
     {
         $url = '/merchants/100000Razorpay/terminals';

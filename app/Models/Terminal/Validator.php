@@ -91,6 +91,7 @@ class Validator extends Base\Validator
         Payment\Gateway::UPI_ICICI,
         Payment\Gateway::UPI_CITI,
         Payment\Gateway::UPI_JUSPAY,
+        Payment\Gateway::UPI_YESBANK,
         Payment\Gateway::ENACH_RBL,
         Payment\Gateway::FIRST_DATA,
         Payment\Gateway::CYBERSOURCE,
@@ -1026,8 +1027,15 @@ class Validator extends Base\Validator
         Entity::GATEWAY                    => 'required|in:upi_yesbank',
         Entity::UPI                        => 'required|boolean|in:1',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
-        Entity::TYPE                       => 'required|array',
-        Entity::TYPE . '.pay'              => 'required|in:1',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::TYPE . '.pay'              => 'sometimes|in:1',
+        Entity::VPA                        => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+    ];
+
+    protected static $upiYesbankEditTerminalRules = [
+        Entity::VPA                        => 'sometimes|string',
+        Entity::TYPE                       => 'sometimes|array',
     ];
 
     protected static $netbankingAirtelTerminalRules = [
