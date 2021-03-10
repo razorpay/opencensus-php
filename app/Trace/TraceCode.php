@@ -734,6 +734,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LOAN_ORIGINATION_SYSTEM_PROXY_RESPONSE                = 'LOAN_ORIGINATION_SYSTEM_PROXY_RESPONSE';
     const LINE_OF_CREDIT_PROXY_REQUEST                          = 'LINE_OF_CREDIT_PROXY_REQUEST';
     const LINE_OF_CREDIT_PROXY_RESPONSE                         = 'LINE_OF_CREDIT_PROXY_RESPONSE';
+    const LINE_OF_CREDIT_PROXY                                  = 'LINE_OF_CREDIT_PROXY';
     const LINE_OF_CREDIT_CRON_REQUEST                           = 'LINE_OF_CREDIT_CRON_REQUEST';
     const LINE_OF_CREDIT_CRON_RESPONSE                          = 'LINE_OF_CREDIT_CRON_RESPONSE';
     const CAPITAL_CARDS_PROXY_REQUEST                           = 'CAPITAL_CARDS_PROXY_REQUEST';

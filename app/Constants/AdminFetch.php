@@ -523,7 +523,255 @@ class AdminFetch
                     ],
                 ],
             ],
-
+            Entity::LINE_OF_CREDIT_ACCOUNT_BALANCES => [
+                'id'                            => [
+                    Fetch::LABEL => 'Id',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+                'owner_id'                      => [
+                    Fetch::LABEL => 'OwnerId',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+                'owner_type'           => [
+                    Fetch::LABEL => 'OwnerType',
+                    Fetch::TYPE => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'RZP_MERCHANT',
+                        'LOS_APPLICANT',
+                    ],
+                ],
+            ],
+            Entity::LINE_OF_CREDIT_ONBOARDINGS => [
+                'id'                  => [
+                    Fetch::LABEL => 'Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'owner_id'            => [
+                    Fetch::LABEL => 'OwnerId',
+                        Fetch::TYPE  => Fetch::TYPE_STRING,
+                    ],
+                'owner_type'           => [
+                    Fetch::LABEL => 'OwnerType',
+                    Fetch::TYPE => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'RZP_MERCHANT',
+                        'LOS_APPLICANT',
+                    ]
+                ],
+                'external_ref_id'     => [
+                    Fetch::LABEL => 'ExternalRefId',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                    ],
+                'partner_id'          => [
+                    Fetch::LABEL => 'PartnerId',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                    ],
+            ],
+            Entity::LINE_OF_CREDIT_REPAYMENTS => [
+                'id' => [
+                    Fetch::LABEL => 'Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'withdrawal_id' => [
+                    Fetch::LABEL => 'WithdrawalId',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                    ],
+                'transaction_ref_id' => [
+                    Fetch::LABEL => 'TransactionRefId',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+            ],
+            Entity::LINE_OF_CREDIT_WITHDRAWAL_CONFIGS => [
+                'id' => [
+                    Fetch::LABEL => 'Id',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+                'destination_account_id' => [
+                    Fetch::LABEL => 'DestinationAccountId',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                    ],
+                'source_account_id' => [
+                    Fetch::LABEL => 'SourceAccountId',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                    ],
+                'owner_id' => [
+                    Fetch::LABEL => 'OwnerId',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                    ],
+                'owner_type'           => [
+                    Fetch::LABEL => 'OwnerType',
+                    Fetch::TYPE => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'RZP_MERCHANT',
+                        'LOS_APPLICANT',
+                    ],
+                ],
+                'automated_loc' => [
+                    Fetch::LABEL => 'AutomatedLOC',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                    ],
+                'status'               => [
+                    Fetch::LABEL => 'Status',
+                    Fetch::TYPE => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'ACTIVE',
+                        'ARCHIVE',
+                        'ONHOLD',
+                        ],
+                    ],
+            ],
+            Entity::LINE_OF_CREDIT_DESTINATION_ACCOUNTS => [
+                'id'                   => [
+                    Fetch::LABEL => 'Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'owner_id'             => [
+                    Fetch::LABEL => 'OwnerId',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'owner_type'           => [
+                    Fetch::LABEL => 'OwnerType',
+                    Fetch::TYPE => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'RZP_MERCHANT',
+                        'LOS_APPLICANT',
+                    ]
+                ],
+                'account_type'         => [
+                    Fetch::LABEL => 'AccountType',
+                    Fetch::TYPE => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'SAVINGS',
+                        'CURRENT',
+                        'OD',
+                    ],
+                ],
+                'ifsc_code'            => [
+                    Fetch::LABEL => 'IfscCode',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'status'               => [
+                    Fetch::LABEL => 'Status',
+                    Fetch::TYPE => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'ACTIVE',
+                        'INACTIVE',
+                        'CLOSED',
+                    ],
+                ],
+            ],
+            Entity::LINE_OF_CREDIT_REPAYMENT_BREAKDOWNS => [
+                'id'           => [
+                    Fetch::LABEL => 'Id',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+                'repayment_id' => [
+                    Fetch::LABEL => 'RepaymentId',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+                'category'     => [
+                    Fetch::LABEL => 'Category',
+                    Fetch::TYPE => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'INTEREST',
+                        'PRINCIPAL',
+                        'PROCESSING_FEE',
+                        'LATE_FEE_CHARGES',
+                    ],
+                ],
+            ],
+            Entity::LINE_OF_CREDIT_SOURCE_ACCOUNTS => [
+                'id'                   => [
+                    Fetch::LABEL => 'Id',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'owner_id'             => [
+                    Fetch::LABEL => 'OwnerId',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'owner_type'           => [
+                    Fetch::LABEL => 'OwnerType',
+                    Fetch::TYPE => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'RZP_MERCHANT',
+                        'LOS_APPLICANT',
+                    ],
+                ],
+                'account_type'         => [
+                    Fetch::LABEL => 'AccountType',
+                    Fetch::TYPE => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'SAVINGS',
+                        'CURRENT',
+                        'OD',
+                    ],
+                ],
+                'ifsc_code'            => [
+                    Fetch::LABEL => 'IfscCode',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'status'               => [
+                    Fetch::LABEL => 'Status',
+                    Fetch::TYPE => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'ACTIVE',
+                        'INACTIVE',
+                        'CLOSED',
+                    ],
+                ],
+            ],
+            Entity::LINE_OF_CREDIT_WITHDRAWALS => [
+                'id'                   => [
+                        Fetch::LABEL => 'Id',
+                        Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+                'transaction_ref_id'   => [
+                        Fetch::LABEL => 'TransactionRefId',
+                        Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+                'withdrawal_config_id' => [
+                        Fetch::LABEL => 'WithdrawalConfigId',
+                        Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+                'owner_id'             => [
+                        Fetch::LABEL => 'OwnerId',
+                        Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+                'owner_type'           => [
+                        Fetch::LABEL => 'OwnerType',
+                        Fetch::TYPE => Fetch::TYPE_ARRAY,
+                        Fetch::VALUES => [
+                            'RZP_MERCHANT',
+                            'LOS_APPLICANT',
+                        ],
+                ],
+                'status'               => [
+                        Fetch::LABEL => 'Status',
+                        Fetch::TYPE => Fetch::TYPE_ARRAY,
+                        Fetch::VALUES => [
+                            'CREATED',
+                            'INITIATED',
+                            'PENDING',
+                            'PROCESSED',
+                            'REJECTED',
+                            'FAILED',
+                            'REPAID',
+                            'PARTIALLY_REPAID',
+                        ],
+                ],
+                'disbursal_utr'        => [
+                        Fetch::LABEL => 'DisbursalUtr',
+                        Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+                'partner_utr'          => [
+                        Fetch::LABEL => 'PartnerUtr',
+                        Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+                'plan_id'              => [
+                        Fetch::LABEL => 'PlanId',
+                        Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
+            ],
             Entity::PAYMENTS_CARDS_AUTHORIZATION  => [
                 'payment_id'   => Fetch::FIELD_PAYMENT_ID,
                 'merchant_id'  => Fetch::FIELD_MERCHANT_ID,
