@@ -26,6 +26,8 @@ pipeline:
       - npm config set cache npm_cache
       # Root directory
       - npm ci
+    when:
+      event: push
 
   build-js-signup:
     group: build-and-test
