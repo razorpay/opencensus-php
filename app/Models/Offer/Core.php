@@ -19,6 +19,7 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Offer\SubscriptionOffer;
 use RZP\Models\Payment\Processor\Wallet;
+use RZP\Models\Currency\Core as CurrencyCore;
 
 class Core extends Base\Core
 {
@@ -164,7 +165,9 @@ class Core extends Base\Core
         {
             $payment->setAmount($input['order_amount']);
 
-            $payment->setBaseAmount($input['order_amount']);
+            $baseAmount = (new CurrencyCore())->getBaseAmount($input['order_amount'], $input['currency']);
+
+            $payment->setBaseAmount($baseAmount);
         }
 
         //As offer is not applicable, dissociating it

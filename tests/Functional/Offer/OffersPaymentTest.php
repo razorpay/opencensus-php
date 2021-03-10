@@ -1075,4 +1075,29 @@ class OffersPaymentTest extends TestCase
         $this->assertEquals($payment['id'], 'pay_' . $entityOffer['entity_id']);
     }
 
+    public function testInternationalNonApplicableOfferPayment()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => '1']);
+
+        $offer = $this->fixtures->create('offer', ['international' => 1, 'block' => 0]);
+
+        $order = $this->fixtures->order->createWithOffers($offer, [
+            'force_offer' => true,
+            'currency' => 'USD',
+            'payment_capture' => 1,
+        ]);
+
+        $payment = $this->getOrderPaymentArray($order);
+
+        $payment['currency'] = 'USD';
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals('1000000', $payment['base_amount']);
+        $this->assertEquals('100000', $payment['amount']);
+    }
+
 }
