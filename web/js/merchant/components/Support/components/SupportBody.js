@@ -12,6 +12,10 @@ import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
 import WriteToUsPopup from './WriteToUsPopup';
 
+const isWorkingDay = () => {
+  return window.RZP && window.RZP.holidays && window.RZP.holidays.isExtendedWorkingDay;
+};
+
 @connect(null, {
   openModal,
   closeModal,
@@ -58,7 +62,7 @@ class SupportBody extends Component {
           },
         });
         // if notifications pending, then enable chat
-        if (!isChatAvailable() && notifyCount < 1) {
+        if (!isWorkingDay() && notifyCount < 1) {
           return;
         }
 
@@ -137,8 +141,7 @@ class SupportBody extends Component {
   render() {
     const { notifyCount, isOpened, onToggle, isCallEnabled } = this.props;
     const { handleClick, openDashboardGuide } = this;
-    let shouldDisable = !isWorkingDay();
-    let shouldChatDisable = !isChatAvailable();
+    const shouldDisable = !isWorkingDay();
 
     return (
       <div class={classList('support-body', isOpened && 'active')}>
@@ -192,14 +195,14 @@ class SupportBody extends Component {
             ) > -1 && this.props.supportFlags.show_chat ? (
               <li
                 class={`support-item p-all chat ${
-                  shouldChatDisable && notifyCount < 1 ? 'disabled' : ''
+                  shouldDisable && notifyCount < 1 ? 'disabled' : ''
                 }`}
                 onClick={() => handleClick('chat')}
               >
-                Chat with us <small class="help-content">(9am-8pm, working days)</small>
+                Chat with us <small class="help-content">(10am-8pm, working days)</small>
                 {notifyCount > 0 && <span class="notify-icon m-l">{notifyCount}</span>}
                 <small class="help-block">
-                  {shouldChatDisable && notifyCount < 1
+                  {shouldDisable && notifyCount < 1
                     ? 'Currently unavailable'
                     : 'For quick questions or help on dashboard'}
                 </small>
@@ -211,7 +214,7 @@ class SupportBody extends Component {
               class={`support-item p-all call ${shouldDisable ? 'disabled' : ''}`}
               onClick={() => handleClick('call')}
             >
-              Call Support <small class="help-content">(9am-6pm, working days)</small>
+              Call Support <small class="help-content">(10am-8pm, working days)</small>
               <small class="help-block">
                 {shouldDisable ? 'Currently unavailable' : 'For queries and help on the dashboard'}
               </small>
@@ -237,13 +240,5 @@ class SupportBody extends Component {
     );
   }
 }
-
-const isWorkingDay = () => {
-  return window.RZP && window.RZP.holidays && window.RZP.holidays.isWorkingDay;
-};
-
-const isChatAvailable = () => {
-  return window.RZP && window.RZP.holidays && window.RZP.holidays.isExtendedWorkingDay;
-};
 
 export default SupportBody;
