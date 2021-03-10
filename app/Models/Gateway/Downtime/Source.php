@@ -14,6 +14,7 @@ class Source
     const INTERNAL          = 'INTERNAL';
     const DOWNTIME_V2       = 'DOWNTIME_V2';
     const DOWNTIME_SERVICE  = 'DOWNTIME_SERVICE';
+    const PHONEPE           = 'PHONEPE';
     const OTHER             = 'OTHER';
 
     const DUMMY             = 'dummy';
@@ -27,6 +28,7 @@ class Source
         Source::INTERNAL,
         Source::DOWNTIME_V2,
         Source::DOWNTIME_SERVICE,
+        Source::PHONEPE,
         Source::OTHER,
     ];
 

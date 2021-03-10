@@ -535,7 +535,7 @@ class PaymentDowntimeTest extends TestCase
             'url' => '/payments/downtimes/DummyID'
         ];
 
-        try {;
+        try {
             $paymentDowntime = $this->makeRequestAndGetContent($fetchDowntimeRequest);
         }
         catch (\Exception $e)
@@ -1583,6 +1583,120 @@ class PaymentDowntimeTest extends TestCase
         $this->assertEquals('card', $paymentDowntime['method']);
         $this->assertEquals('VISA', $paymentDowntime['network']);
         $this->assertEquals('HGYAjhc', $paymentDowntime['merchant_id']);
+    }
+
+    public function testPhonePeAPIVPADowntime()
+    {
+        $this->enablePhonePeDowntime();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/gateway/downtimes/phonepe/cron',
+            'content' => [
+                'a' => 1,
+            ],
+        ];
+
+        $this->ba->cronAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $gatewayDowntime = $this->getLastEntity('gateway_downtime', true);
+
+        $this->assertEquals('upi', $gatewayDowntime['method']);
+        $this->assertEquals('PHONEPE', $gatewayDowntime['source']);
+        $this->assertEquals('ybl', $gatewayDowntime['vpa_handle']);
+        $this->assertNull($gatewayDowntime['end']);
+
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertEquals('upi', $paymentDowntime['method']);
+        $this->assertEquals('ybl', $paymentDowntime['vpa_handle']);
+        $this->assertNull($paymentDowntime['end']);
+
+        Carbon::setTestNow(Carbon::now()->addMinutes(10));
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/gateway/downtimes/phonepe/cron',
+            'content' => [
+                'a' => 2,
+            ],
+        ];
+
+        $this->ba->cronAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $gatewayDowntime = $this->getLastEntity('gateway_downtime', true);
+
+        $this->assertEquals('upi', $gatewayDowntime['method']);
+        $this->assertEquals('PHONEPE', $gatewayDowntime['source']);
+        $this->assertEquals('ybl', $gatewayDowntime['vpa_handle']);
+        $this->assertNotNull($gatewayDowntime['end']);
+
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertEquals('upi', $paymentDowntime['method']);
+        $this->assertEquals('ybl', $paymentDowntime['vpa_handle']);
+        $this->assertNotNull($paymentDowntime['end']);
+    }
+
+    public function testPhonePeAPIIssuerDowntime()
+    {
+        $this->enablePhonePeDowntime();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/gateway/downtimes/phonepe/cron',
+            'content' => [
+                'a' => 3,
+            ],
+        ];
+
+        $this->ba->cronAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $gatewayDowntime = $this->getLastEntity('gateway_downtime', true);
+
+        $this->assertEquals('upi', $gatewayDowntime['method']);
+        $this->assertEquals('PHONEPE', $gatewayDowntime['source']);
+        $this->assertEquals('PMCB', $gatewayDowntime['issuer']);
+        $this->assertNull($gatewayDowntime['end']);
+
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertEquals('upi', $paymentDowntime['method']);
+        $this->assertEquals('PMCB', $paymentDowntime['issuer']);
+        $this->assertNull($paymentDowntime['end']);
+
+        Carbon::setTestNow(Carbon::now()->addMinutes(10));
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/gateway/downtimes/phonepe/cron',
+            'content' => [
+                'a' => 2,
+            ],
+        ];
+
+        $this->ba->cronAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $gatewayDowntime = $this->getLastEntity('gateway_downtime', true);
+
+        $this->assertEquals('upi', $gatewayDowntime['method']);
+        $this->assertEquals('PHONEPE', $gatewayDowntime['source']);
+        $this->assertEquals('PMCB', $gatewayDowntime['issuer']);
+        $this->assertNotNull($gatewayDowntime['end']);
+
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertEquals('upi', $paymentDowntime['method']);
+        $this->assertEquals('PMCB', $paymentDowntime['issuer']);
+        $this->assertNotNull($paymentDowntime['end']);
     }
 
     protected function createUpiAllGatewayDowntime()

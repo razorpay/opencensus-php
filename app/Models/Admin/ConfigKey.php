@@ -64,6 +64,7 @@ class ConfigKey
     const ENABLE_PAYMENT_DOWNTIME_NETBANKING    = self::PREFIX . 'enable_payment_downtimes_netbanking';
     const ENABLE_PAYMENT_DOWNTIME_UPI           = self::PREFIX . 'enable_payment_downtimes_upi';
     const ENABLE_PAYMENT_DOWNTIME_WALLET        = self::PREFIX . 'enable_payment_downtimes_wallet';
+    const ENABLE_PAYMENT_DOWNTIME_PHONEPE       = self::PREFIX . 'enable_payment_downtime_phonepe';
 
     const ENABLE_DOWNTIME_SERVICE               = self::PREFIX . 'enable_downtime_service';
     const ENABLE_DOWNTIME_SERVICE_CARD          = self::PREFIX . 'enable_downtime_service_card';
@@ -230,6 +231,7 @@ class ConfigKey
         self::ENABLE_DOWNTIME_SERVICE_CARD,
         self::ENABLE_DOWNTIME_SERVICE_NETBANKING,
         self::ENABLE_DOWNTIME_SERVICE_UPI,
+        self::ENABLE_PAYMENT_DOWNTIME_PHONEPE,
         self::RX_BAS_FORCED_FETCH_TIME_IN_HOURS,
         self::DELAY_RUPAY_CAPTURE,
         self::PAGINATION_ATTRIBUTES_FOR_TRIM_SPACE,
@@ -252,6 +254,7 @@ class ConfigKey
         self::ENABLE_PAYMENT_DOWNTIME_UPI => [Name::CREATE_GATEWAY_DOWNTIME],
         self::ENABLE_PAYMENT_DOWNTIME_WALLET => [Name::CREATE_GATEWAY_DOWNTIME],
         self::ENABLE_PAYMENT_DOWNTIMES => [Name::CREATE_GATEWAY_DOWNTIME],
+        self::ENABLE_PAYMENT_DOWNTIME_PHONEPE => [Name::CREATE_GATEWAY_DOWNTIME],
         self::RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS_FOR_FUND_LOADING => [Name::SET_RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS],
         self::RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_MERCHANTS => [Name::EDIT_DESTINATION_MIDS_TO_WHITELIST_VA_TO_VA_PAYOUTS],
     ];

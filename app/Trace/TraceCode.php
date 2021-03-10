@@ -1995,6 +1995,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const STATUSCAKE_RETURNED_FAILURE                           = 'STATUSCAKE_RETURNED_FAILURE';
     const STATUSCAKE_CONNECTION_FAILED                          = 'STATUSCAKE_CONNECTION_FAILED';
     const STATUSCAKE_CRON_FAILED                                = 'STATUSCAKE_CRON_FAILED';
+    const PHONEPE_DOWNTIME_CREATE                               = 'PHONEPE_DOWNTIME_CREATE';
+    const PHONEPE_DOWNTIME_RESOLVE                              = 'PHONEPE_DOWNTIME_RESOLVE';
 
     // Trace code for Merchant Details
     const MERCHANT_DETAIL_DOES_NOT_EXIST                        = 'MERCHANT_DETAIL_DOES_NOT_EXIST';

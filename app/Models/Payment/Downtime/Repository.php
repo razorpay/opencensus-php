@@ -128,7 +128,7 @@ class Repository extends Base\Repository
         {
             foreach ($attributes as $attribute)
             {
-                if(isset($input[$attribute]) && $input[$attribute] != Entity::NA)
+                if(isset($input[$attribute]) && !($input[$attribute] == Entity::NA || $input[$attribute] == Entity::UNKNOWN))
                 {
                     $query->where($attribute, $input[$attribute]);
                     break;

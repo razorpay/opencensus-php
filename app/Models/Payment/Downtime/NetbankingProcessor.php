@@ -108,6 +108,7 @@ class NetbankingProcessor extends BaseProcessor
                 $downtime = (new Core)->edit($downtime, $updateList);
             }
         }
+
     }
 
     protected function getPaymentDowntimeCreationArray(string $bank, Collection $gatewayDowntimes)

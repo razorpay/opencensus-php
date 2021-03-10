@@ -441,6 +441,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerErrorMappingService();
 
         $this->registerMerchantRiskAlertClient();
+
+        $this->registerPhonepeDowntimeService();
     }
 
     /**
@@ -1284,4 +1286,20 @@ class ApiServiceProvider extends BaseServiceProvider
             return new MerchantRiskAlertClient();
         });
     }
+
+    protected function registerPhonepeDowntimeService()
+    {
+        $this->app->singleton('phonepe', function($app)
+        {
+            $mock = $app['config']->get('applications.gateway_downtime.phonepe.mock');
+
+            if($mock === true)
+            {
+                return new Mock\Phonepe($app);
+            }
+
+            return new Phonepe($app);
+        });
+    }
+
 }

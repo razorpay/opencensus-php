@@ -390,7 +390,12 @@ return [
             'api_key'    => env('STATUSCAKE_API_KEY'),
             'tests_url'  => env('STATUSCAKE_TESTS_URL'),
             'update_url' => env('STATUSCAKE_UPDATE_URL'),
-        ]
+        ],
+        'phonepe' => [
+            'url'       => env('PHONEPE_API_URL'),
+            'secret'    => env('PHONEPE_API_SECRET'),
+            'mock'      => env('PHONEPE_DOWNTIME_MOCK', false)
+        ],
     ],
 
     'settlements_service' => [

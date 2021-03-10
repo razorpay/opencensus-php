@@ -91,7 +91,7 @@ class Validator extends Base\Validator
         ConfigKey::ENABLE_DOWNTIME_SERVICE_UPI          => 'filled|boolean',
         ConfigKey::ENABLE_DOWNTIME_SERVICE_NETBANKING   => 'filled|boolean',
         ConfigKey::ENABLE_DOWNTIME_SERVICE_CARD         => 'filled|boolean',
-
+        ConfigKey::ENABLE_PAYMENT_DOWNTIME_PHONEPE      => 'filled|boolean',
 
         ConfigKey::WORLDLINE_TID_RANGE_LIST           => 'filled|array',
         ConfigKey::WORLDLINE_TID_RANGE_LIST.'.*'      => 'filled|array',

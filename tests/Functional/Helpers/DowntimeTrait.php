@@ -81,4 +81,17 @@ trait DowntimeTrait
             ],
         ]);
     }
+
+    protected function enablePhonePeDowntime()
+    {
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent([
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                'config:enable_payment_downtime_phonepe' => '1',
+            ],
+        ]);
+    }
 }

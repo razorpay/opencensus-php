@@ -254,9 +254,11 @@ class Validator extends Base\Validator
             return;
         }
 
-        throw new Exception\BadRequestValidationFailureException(
-            'Unknown issuer given for UPI', 'issuer', ['issuer' => $issuer]);
-
+        if (IFSC::exists($issuer) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                $issuer . ' is not a valid Bank code');
+        }
     }
 
     protected function validateCardIssuer(string $issuer = null)

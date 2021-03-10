@@ -51,7 +51,7 @@ class Constants
                 return  [Entity::ISSUER];
                 break;
             case Method::UPI :
-                return [Entity::VPA_HANDLE];
+                return [Entity::VPA_HANDLE, Entity::ISSUER, Entity::PSP];
                 break;
         }
     }

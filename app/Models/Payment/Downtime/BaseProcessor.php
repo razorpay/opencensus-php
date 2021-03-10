@@ -71,6 +71,30 @@ class BaseProcessor extends Base\Core
         }
     }
 
+    protected function createDowntime($input)
+    {
+        $downtime = $this->getDuplicate($input);
+
+        if ($downtime === null)
+        {
+            $downtime = (new Core)->create($input);
+        }
+        else
+        {
+            // During edit the status gets updated and hence multiple notifications are triggered.
+            if (isset($input[Entity::SCHEDULED]) && isset($input[Entity::SEVERITY]))
+            {
+                $updateList = [
+                    Entity::SEVERITY => $input[Entity::SEVERITY],
+                    Entity::SCHEDULED => $input[Entity::SCHEDULED],
+                ];
+                $downtime = (new Core)->edit($downtime, $updateList);
+            }
+        }
+
+        return $downtime;
+    }
+
     protected function calculateDowntimeScheduled(Collection $gatewayDowntimes): bool
     {
         return $gatewayDowntimes->every(GatewayDowntime::SCHEDULED, '=', true);

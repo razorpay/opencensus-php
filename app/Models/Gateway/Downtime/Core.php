@@ -217,6 +217,11 @@ class Core extends Base\Core
         return $this->repo->gateway_downtime->fetchMostRecentActive($input, $fetchByKeys);
     }
 
+    public function fetchActiveDowntime($param)
+    {
+        return $this->repo->gateway_downtime->fetchActiveDowntime($param);
+    }
+
     /**
      * Gets the list of relevant downtimes from database
      *

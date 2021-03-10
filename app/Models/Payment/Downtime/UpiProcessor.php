@@ -53,21 +53,34 @@ class UpiProcessor extends BaseProcessor
     {
         $vpaList = $this->getUnavailableVpaList($gatewayDowntimes);
 
+        $unavailableIssuers = $this->getUnavailableIssuers($gatewayDowntimes);
+
         foreach ($vpaList as $vpa)
         {
             if($vpa === GatewayDowntime::ALL)
             {
                 $downtimes = $gatewayDowntimes->where(GatewayDowntime::VPA_HANDLE, '=', null);
+
+                $downtimes = $downtimes->whereIn(GatewayDowntime::ISSUER, [GatewayDowntime::UNKNOWN, GatewayDowntime::NA, null]);
             }
             else
             {
                 $downtimes = $gatewayDowntimes->where(GatewayDowntime::VPA_HANDLE, '=', $vpa);
             }
 
-            $this->createPaymentDowntime($downtimes, $vpa);
+            $this->createPaymentDowntime($downtimes, $vpa, 'vpa');
         }
 
-        $this->endOngoingDowntimes($vpaList, $mid);
+        foreach ($unavailableIssuers as $unavailableIssuer)
+        {
+            $downtimes = $gatewayDowntimes->where(GatewayDowntime::ISSUER, '=', $unavailableIssuer);
+
+            $this->createPaymentDowntime($downtimes, $unavailableIssuer, 'issuer');
+        }
+
+        $unavailableList = array_merge($vpaList, $unavailableIssuers);
+
+        $this->endOngoingDowntimes($unavailableList, $mid);
 
         $this->googlePayDowntime($gatewayDowntimes, $mid);
     }
@@ -98,9 +111,9 @@ class UpiProcessor extends BaseProcessor
         return false;
     }
 
-    protected function createPaymentDowntime(Collection $gatewayDowntimes, $vpa = null, $psp = null): Entity
+    protected function createPaymentDowntime(Collection $gatewayDowntimes, $instrument = null, $instrumentType = null): Entity
     {
-        $input = $this->getPaymentDowntimeCreationArray($gatewayDowntimes, $vpa, $psp);
+        $input = $this->getPaymentDowntimeCreationArray($gatewayDowntimes, $instrument, $instrumentType);
 
         $downtime = $this->getDuplicate($input);
 
@@ -124,9 +137,9 @@ class UpiProcessor extends BaseProcessor
         return $downtime;
     }
 
-    protected function getPaymentDowntimeCreationArray(Collection $gatewayDowntimes, $vpa = null, $psp = null): array
+    protected function getPaymentDowntimeCreationArray(Collection $gatewayDowntimes, $instrument = null, $instrumentType = null): array
     {
-        list($begin, $end) = $this->calculateDowntimePeriod($gatewayDowntimes, $vpa);
+        list($begin, $end) = $this->calculateDowntimePeriod($gatewayDowntimes, $instrument, $instrumentType);
 
         $scheduled = $this->calculateDowntimeScheduled($gatewayDowntimes);
 
@@ -146,9 +159,21 @@ class UpiProcessor extends BaseProcessor
             Entity::STATUS      => $status,
             Entity::SCHEDULED   => $scheduled,
             Entity::SEVERITY    => $severity,
-            Entity::VPA_HANDLE  => $vpa,
-            Entity::PSP         => $psp ?? UpiVpaMapping::getPsp($vpa),
         ];
+
+        switch ($instrumentType)
+        {
+            case 'vpa':
+                $input[Entity::VPA_HANDLE] = $instrument;
+                $input[Entity::PSP] = UpiVpaMapping::getPsp($instrument);
+                break;
+            case 'psp':
+                $input[Entity::PSP] = $instrument;
+                break;
+            case 'issuer':
+                $input[Entity::ISSUER] = $instrument;
+                break;
+        }
 
         $mids = $gatewayDowntimes->where(GatewayDowntime::MERCHANT_ID, '!=', null)->unique(GatewayDowntime::MERCHANT_ID)->pluck(GatewayDowntime::MERCHANT_ID)->toArray();
 
@@ -160,11 +185,11 @@ class UpiProcessor extends BaseProcessor
         return $input;
     }
 
-    protected function calculateDowntimePeriod(Collection $gatewayDowntimes, $vpa = null): array
+    protected function calculateDowntimePeriod(Collection $gatewayDowntimes, $instrument = null, $instrumentType = null): array
     {
-        if( isset($vpa) === true && $vpa != GatewayDowntime::ALL)
+        if( $instrumentType == 'vpa' && $instrument != GatewayDowntime::ALL)
         {
-            $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::VPA_HANDLE, '=', $vpa);
+            $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::VPA_HANDLE, '=', $instrument);
         }
 
         $gatewayDowntimeMaxStart = $gatewayDowntimes->max(GatewayDowntime::BEGIN);
@@ -186,12 +211,25 @@ class UpiProcessor extends BaseProcessor
 
         $gatewayDown = $gatewayDowntimes->where(GatewayDowntime::VPA_HANDLE, '=', null);
 
+        $gatewayDown = $gatewayDown->whereIn(GatewayDowntime::ISSUER, [GatewayDowntime::UNKNOWN, GatewayDowntime::NA, null]);
+
         if ($this->impliesUpiDowntime($gatewayDown) === true)
         {
             array_push($vpa, GatewayDowntime::ALL);
         }
 
         return $vpa;
+    }
+
+    protected function getUnavailableIssuers(Collection $gatewayDowntimes): array
+    {
+        $gatewayDowntimes = $gatewayDowntimes->unique(GatewayDowntime::ISSUER);
+
+        $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::ISSUER, '!=', null);
+
+        $gatewayDowntimes = $gatewayDowntimes->whereNotIn(GatewayDowntime::ISSUER, [GatewayDowntime::UNKNOWN, GatewayDowntime::NA, GatewayDowntime::ALL]);
+
+        return $gatewayDowntimes->pluck(GatewayDowntime::ISSUER)->toArray();
     }
 
     protected function googlePayDowntime($gatewayDowntimes, string $mid=null)
@@ -207,7 +245,7 @@ class UpiProcessor extends BaseProcessor
         {
             if ($this->isGooglePayDown($gatewayDowntimes) === true)
             {
-                $this->createPaymentDowntime($gatewayDowntimes, null, ProviderPsp::GOOGLE_PAY);
+                $this->createPaymentDowntime($gatewayDowntimes, ProviderPsp::GOOGLE_PAY, 'psp');
             }
         }
         else

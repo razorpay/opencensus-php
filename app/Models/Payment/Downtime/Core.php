@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment\Downtime;
 
 use RZP\Exception;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
@@ -53,6 +54,13 @@ class Core extends Base\Core
         $gatewayDowntimes = $this->repo->gateway_downtime->fetchCurrentAndFutureDowntimes($withoutTerminal = true);
 
         $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::SOURCE, '!=', Source::STATUSCAKE);
+
+        $paymentDowntimesEnabled = (bool) ConfigKey::get(ConfigKey::ENABLE_PAYMENT_DOWNTIME_PHONEPE, false);
+
+        if ($paymentDowntimesEnabled === false)
+        {
+            $gatewayDowntimes = $gatewayDowntimes->where(GatewayDowntime::SOURCE, '!=', Source::PHONEPE);
+        }
 
         foreach (Payment\Method::getAllPaymentMethods() as $method)
         {

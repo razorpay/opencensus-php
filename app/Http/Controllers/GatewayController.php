@@ -1441,6 +1441,17 @@ class GatewayController extends Controller
         ]);
     }
 
+    protected function phonepeDowntimeCron(Downtime\Service $service)
+    {
+        $input = Request::all();
+
+        $service->phonePeDowntime($input);
+
+        return ApiResponse::json([
+            'success' => true
+        ]);
+    }
+
     protected function callGatewayPreprocessCallback($method, $gatewayName, $input, $mode)
     {
         $variant = null;

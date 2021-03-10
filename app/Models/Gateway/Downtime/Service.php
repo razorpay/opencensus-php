@@ -154,4 +154,19 @@ class Service extends Base\Service
     {
         (new DowntimeDetection())->createDowntimeDetectionJobs();
     }
+
+    public function phonePeDowntime($input)
+    {
+        $this->setMode();
+
+        $processor = new Webhook\Processor(Source::PHONEPE);
+
+        $this->trace->info(TraceCode::GATEWAY_DOWNTIME_WEBHOOK, []);
+
+        //$input = [];
+
+        $data = $processor->process($input);
+
+        return $data;
+    }
 }
