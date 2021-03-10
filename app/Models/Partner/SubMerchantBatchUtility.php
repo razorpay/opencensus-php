@@ -126,9 +126,10 @@ class SubMerchantBatchUtility extends Base\Core
         $this->trace->info(
             TraceCode::BATCH_SERVICE_SUBMERCHANT_CREATE_RESPONSE,
             [
-                'status'        => $entry[Header::STATUS],
-                'merchant_id'   => $entry[Header::MERCHANT_ID],
-                'partner_id'    => $configs[Header::PARTNER_ID],
+                'status'         => $entry[Header::STATUS],
+                'merchant_id'    => $entry[Header::MERCHANT_ID],
+                'merchant_email' => $entry[Header::MERCHANT_EMAIL],
+                'partner_id'     => $configs[Header::PARTNER_ID],
             ]
         );
 
@@ -391,6 +392,13 @@ class SubMerchantBatchUtility extends Base\Core
     private function updateAuthDetails(ME $merchant)
     {
         $this->app['basicauth']->setMerchant($merchant);
+
+        $batchContext = [
+            Entity::TYPE    => Type::SUB_MERCHANT,
+            Constants::DATA => $this->settings,
+        ];
+
+        $this->app['basicauth']->setBatchContext($batchContext);
     }
 
     /**
