@@ -40,6 +40,7 @@ use RZP\Models\Workflow\Action;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Methods\Core as MethodCore;
 use RZP\Models\Payment\Config as PaymentConfig;
+use RZP\Models\Partner\Activation as PartnerActivation;
 /**
  * @property Org\Entity             $org
  * @property Detail\Entity          $merchantDetail
@@ -54,6 +55,7 @@ use RZP\Models\Payment\Config as PaymentConfig;
  * @property Base\Collection        $activeBankingAccounts
  * @property Balance\Entity         $commissionBalance
  * @property PaymentConfig\Entity   $dccPaymentConfig
+ * @property PartnerActivation\Entity         $partnerActivation
  */
 class Entity extends Base\PublicEntity
 {
@@ -259,6 +261,8 @@ class Entity extends Base\PublicEntity
     const ALLOW_REVERSALS           = 'allow_reversals';
 
     const BUSINESS_BANKING_SIGNUP_AT= 'business_banking_signup_at';
+
+    const PARTNER_ACTIVATION  = 'partnerActivation';
 
     protected $entity = 'merchant';
 
@@ -2822,5 +2826,10 @@ class Entity extends Base\PublicEntity
     public function shouldShowCustomOrgBranding(): bool
     {
         return $this->isFeatureEnabled(Feature\Constants::ORG_CUSTOM_BRANDING);
+    }
+
+    public function partnerActivation()
+    {
+        return $this->hasOne('RZP\Models\Partner\Activation\Entity', self::MERCHANT_ID, self::ID);
     }
 }

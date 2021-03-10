@@ -1859,6 +1859,185 @@ class PartnerTest extends OAuthTestCase
         Mail::assertQueued(PartnerOnBoarded::class);
     }
 
+    public function testUpdatePartnerTypeAsResellerUsingProxyAuthForActivatedMerchant()
+    {
+        Mail::fake();
+
+        $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
+
+        $app = ['id'=>'8ckeirnw84ifke'];
+
+        $this->mockAuthServiceCreateApplication($merchant, $app);
+
+        $now = Carbon::now()->getTimestamp();
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID,
+                                        [
+                                            'activated'    => true,
+                                            'activated_at' => $now
+                                        ]);
+
+        $this->fixtures->create('merchant_detail:sane',
+                                [
+                                    'merchant_id'       => self::DEFAULT_MERCHANT_ID,
+                                    'activation_status' => 'activated'
+                                ]);
+
+        $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'reseller']);
+
+        $this->ba->proxyAuth();
+
+        $testData = $this->testData['testUpdatePartnerTypeAsResellerUsingProxyAuth'];
+
+        $this->runRequestResponseFlow($testData);
+
+        $expectedPartner = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
+
+        $merchantApplications = (new MerchantApplications\Repository())->fetchMerchantApplication(self::DEFAULT_MERCHANT_ID, Merchant\Constants::MERCHANT_ID);
+
+        $applicationTypes = $merchantApplications->pluck(Entity::TYPE)->toArray();
+
+        $applicationType = $applicationTypes[0];
+
+        $this->assertEquals(MerchantApplications\Entity::REFERRED, $applicationType);
+
+        $this->assertTrue($expectedPartner->isResellerPartner());
+
+        $partnerActivation = $this->getDbEntity('partner_activation');
+
+        $this->assertEquals( self::DEFAULT_MERCHANT_ID, $partnerActivation->getMerchantId());
+
+        $this->assertTrue(empty($partnerActivation->getActivatedAt()) === false);
+
+        $this->assertEquals( 'activated', $partnerActivation->getActivationStatus());
+
+        Mail::assertQueued(PartnerOnBoarded::class);
+    }
+
+
+    public function testUpdatePartnerTypeAsAggregatorUsingProxyAuthForActivatedMerchant()
+    {
+        Mail::fake();
+
+        $now = Carbon::now()->getTimestamp();
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID,
+                                        [
+                                            'activated'    => true,
+                                            'activated_at' => $now
+                                        ]);
+
+        $this->fixtures->create('merchant_detail:sane',
+                                [
+                                    'merchant_id'       => self::DEFAULT_MERCHANT_ID,
+                                    'activation_status' => 'activated'
+                                ]);
+
+        $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
+
+        $requestParams1 = [
+            'merchant_id' => $merchant->getId(),
+            'name'     => $merchant->getName(),
+            'website'  => $merchant->getWebsite() ?: 'https://www.razorpay.com',
+            'type'     => self::PARTNER,
+        ];
+
+        $requestParams2 = [
+            'merchant_id' => $merchant->getId(),
+            'name'     => Merchant\Entity::REFERRED_APPLICATION,
+            'website'  => $merchant->getWebsite() ?: 'https://www.razorpay.com',
+            'type'     => self::PARTNER,
+        ];
+
+        $this->authServiceMock
+            ->expects($this->exactly(2))
+            ->method('sendRequest')
+            ->with('applications', 'POST', $this->logicalOr($requestParams1, $requestParams2))
+            ->will($this->returnCallback(
+                function($route, $method, $params) {
+                    if($params['name'] === Merchant\Entity::REFERRED_APPLICATION) {
+                        return ['id'=>'8ckeirnw84ifkf'];
+                    }
+                    return ['id'=>'8ckeirnw84ifke'];
+                }
+            ));
+
+        $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'aggregator'], false);
+
+        $this->fixtures->merchant->createDummyReferredAppForManaged(['partner_type' => 'reseller'], false);
+
+        $this->ba->proxyAuth();
+
+        $testData = $this->testData['testUpdatePartnerTypeAsAggregatorUsingProxyAuth'];
+
+        $this->runRequestResponseFlow($testData);
+
+        $expectedPartner = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
+
+        $merchantApplications = (new MerchantApplications\Repository())->fetchMerchantApplication(self::DEFAULT_MERCHANT_ID, Merchant\Constants::MERCHANT_ID);
+
+        $applicationTypes = $merchantApplications->pluck(Entity::TYPE)->toArray();
+
+        $expectedAppTypes = ['managed', 'referred'];
+
+        $this->assertArraySelectiveEqualsWithCount($expectedAppTypes, $applicationTypes);
+
+        $this->assertTrue($expectedPartner->isAggregatorPartner());
+
+        $partnerActivation = $this->getDbEntity('partner_activation');
+
+        $this->assertEquals( self::DEFAULT_MERCHANT_ID, $partnerActivation->getMerchantId());
+
+        $this->assertTrue(empty($partnerActivation->getActivatedAt()) === false);
+
+        $this->assertEquals( 'activated', $partnerActivation->getActivationStatus());
+
+        Mail::assertQueued(PartnerOnBoarded::class);
+    }
+
+    public function testUpdatePartnerTypeAsPurePlatformUsingProxyAuthForActivatedMerchant()
+    {
+        Mail::fake();
+
+        $now = Carbon::now()->getTimestamp();
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID,
+                                        [
+                                            'activated'    => true,
+                                            'activated_at' => $now
+                                        ]);
+
+        $this->fixtures->create('merchant_detail:sane',
+                                [
+                                    'merchant_id'       => self::DEFAULT_MERCHANT_ID,
+                                    'activation_status' => 'activated'
+                                ]);
+
+        $this->ba->proxyAuth();
+
+        $testData = $this->testData['testUpdatePartnerTypeAsPurePlatformUsingProxyAuth'];
+
+        $this->runRequestResponseFlow($testData);
+
+        $expectedPartner = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
+
+        $this->assertTrue($expectedPartner->isPurePlatformPartner());
+
+        $merchantApplication = (new MerchantApplications\Repository())->fetchMerchantApplication(self::DEFAULT_MERCHANT_ID, Merchant\Constants::MERCHANT_ID);
+
+        $this->assertEmpty($merchantApplication);
+
+        $partnerActivation = $this->getDbEntity('partner_activation');
+
+        $this->assertEquals( self::DEFAULT_MERCHANT_ID, $partnerActivation->getMerchantId());
+
+        $this->assertTrue(empty($partnerActivation->getActivatedAt()) === false);
+
+        $this->assertEquals( 'activated', $partnerActivation->getActivationStatus());
+
+        Mail::assertQueued(PartnerOnBoarded::class);
+    }
+
     public function testUpdatePartnerTypeUsingProxyAuthWithInvalidPartnerType()
     {
         $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');

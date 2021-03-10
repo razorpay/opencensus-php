@@ -411,6 +411,7 @@ class Entity
 
     const COMMISSION = 'commission';
     const COMMISSION_COMPONENT = 'commission_component';
+    const PARTNER_ACTIVATION             = 'partner_activation';
 
     // these entities doesn't exist in api. they are required for transaction entity operations.
     const CREDIT_REPAYMENT               = 'credit_repayment';
@@ -807,6 +808,7 @@ class Entity
         self::COMMISSION            => \RZP\Models\Partner\Commission::class,
         self::COMMISSION_COMPONENT => \RZP\Models\Partner\Commission\Component::class,
         self::COMMISSION_INVOICE    => \RZP\Models\Partner\Commission\Invoice::class,
+        self::PARTNER_ACTIVATION    => \RZP\Models\Partner\Activation::class,
 
         self::OPTIONS               => \RZP\Models\Options::class,
 

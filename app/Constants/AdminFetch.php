@@ -12,6 +12,7 @@ use RZP\Models\FundTransfer;
 use RZP\Models\BankingAccount;
 use RZP\Models\Partner\Config;
 use RZP\Models\NodalBeneficiary;
+use RZP\Models\Partner\Activation;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Merchant\MerchantUser;
@@ -2876,6 +2877,13 @@ class AdminFetch
                 ],
                 Component\Entity::PRICING_FEATURE => [
                     Fetch::LABEL => 'Commission pricing feature',
+                    Fetch::TYPE  => Fetch::TYPE_STRING
+                ]
+            ],
+
+            Entity::PARTNER_ACTIVATION => [
+                Activation\Entity::MERCHANT_ID => [
+                    Fetch::LABEL => 'Merchant id',
                     Fetch::TYPE  => Fetch::TYPE_STRING
                 ]
             ],

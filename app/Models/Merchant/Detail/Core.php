@@ -40,6 +40,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Document;
 use RZP\Models\Merchant\Constants;
 use RZP\lib\ConditionParser\Parser;
+use RZP\Models\Partner\Activation;
 use RZP\Models\Merchant\Promotion;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\LegalEntity;
@@ -1773,6 +1774,8 @@ class Core extends Base\Core
         {
             $this->sendSmsBasedOnMilestones($currentActivationStatus, $merchantDetails);
         }
+
+        (new Activation\Core())->autoActivatePartnerIfApplicable($merchant, $merchantDetails);
 
         return $merchantDetails;
     }

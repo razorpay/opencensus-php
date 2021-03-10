@@ -41,6 +41,7 @@ class Table
     const ADDRESS                      = 'addresses';
     const DISCOUNT                     = 'discounts';
     const MERCHANT                     = 'merchants';
+    const PARTNER_ACTIVATION           = 'partner_activation';
     const COMMISSION                   = 'commissions';
     const COMMISSION_COMPONENT         = 'commission_components';
     const PAYOUT_LINK                  = 'payout_links';

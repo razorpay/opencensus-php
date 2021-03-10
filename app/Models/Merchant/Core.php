@@ -46,6 +46,7 @@ use RZP\Models\User\BankingRole;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Settlement\Bucket;
 use RZP\Models\Settings\Accessor;
+use RZP\Models\Partner\Activation;
 use RZP\Models\Settlement\Channel;
 use Razorpay\Trace\Logger as Trace;
 
@@ -1685,6 +1686,8 @@ class Core extends Base\Core
             $this->repo->saveOrFail($merchant);
 
             $this->setDefaultFeatureForPartner($merchant);
+
+            (new Activation\Core())->createOrFetchPartnerActivationForMerchant($merchant);
 
             $app = $this->createPartnerApp($merchant);
 
