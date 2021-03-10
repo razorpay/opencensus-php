@@ -110,7 +110,8 @@ class WorkflowPayoutAmountRulesTest extends TestCase
 
     public function testCreateRulesWithOverlappingRanges()
     {
-        $this->ba->adminProxyAuth();
+        $this->ba->adminAuth();
+        $this->ba->addAccountAuth('10000000000000');
 
         // Attach rules to first three workflows with merchant id '1000000000000' with overlapping ranges
         for ($index = 0; $index < 3; $index++) {
@@ -122,7 +123,8 @@ class WorkflowPayoutAmountRulesTest extends TestCase
 
     public function testCreateRulesWithRangesLeavingGaps()
     {
-        $this->ba->adminProxyAuth();
+        $this->ba->adminAuth();
+        $this->ba->addAccountAuth('10000000000000');
 
         // Attach rules to first three workflows with merchant id '1000000000000' with ranges leaving gaps
         for ($index = 0; $index < 3; $index++) {
@@ -134,7 +136,8 @@ class WorkflowPayoutAmountRulesTest extends TestCase
 
     public function testCreateRulesWithExtraRanges()
     {
-        $this->ba->adminProxyAuth();
+        $this->ba->adminAuth();
+        $this->ba->addAccountAuth('10000000000000');
 
         // Attach rules to first three workflows with merchant id '1000000000000' with ranges leaving gaps
         for ($index = 0; $index < 3; $index++) {
@@ -146,7 +149,8 @@ class WorkflowPayoutAmountRulesTest extends TestCase
 
     public function testCreateRulesWithDuplicateWorkflowIds()
     {
-        $this->ba->adminProxyAuth();
+        $this->ba->adminAuth();
+        $this->ba->addAccountAuth('10000000000000');
 
         // Attach three rules to the first workflow hence repeating the first workflow id three times
         for ($index = 0; $index < 3; $index++) {
@@ -158,7 +162,8 @@ class WorkflowPayoutAmountRulesTest extends TestCase
 
     public function testEditPayoutWorkflow()
     {
-        $this->ba->adminProxyAuth();
+        $this->ba->adminAuth();
+        $this->ba->addAccountAuth('10000000000000');
 
         // Attach a rule to the first workflow which we have created
         $payoutAmountRule = $this->fixtures->create('workflow_payout_amount_rules',[
@@ -182,7 +187,8 @@ class WorkflowPayoutAmountRulesTest extends TestCase
 
     public function testEditActivePayoutWorkflow()
     {
-        $this->ba->adminProxyAuth();
+        $this->ba->adminAuth();
+        $this->ba->addAccountAuth('10000000000000');
 
         // Attach a rule to the first workflow which we have created
         $payoutAmountRule = $this->fixtures->create('workflow_payout_amount_rules',[
@@ -224,14 +230,16 @@ class WorkflowPayoutAmountRulesTest extends TestCase
 
     public function testCreateRulesWithWrongWorkflowId()
     {
-        $this->ba->adminProxyAuth();
+        $this->ba->adminAuth();
+        $this->ba->addAccountAuth('10000000000000');
 
         $this->startTest();
     }
 
     public function testCreateWorkflowPayoutAmountRules()
     {
-        $this->ba->adminProxyAuth();
+        $this->ba->adminAuth();
+        $this->ba->addAccountAuth('10000000000000');
 
         // Attach rules to first three workflows with merchant id '1000000000000'
         // This should attach the rules by passing all validations
@@ -245,7 +253,8 @@ class WorkflowPayoutAmountRulesTest extends TestCase
 
     public function testEditWorkflowPayoutAmountRules()
     {
-        $this->ba->adminProxyAuth();
+        $this->ba->adminAuth();
+        $this->ba->addAccountAuth('10000000000000');
 
         // Attach a rule to the first workflow which we have created
         $this->fixtures->create('workflow_payout_amount_rules',[
@@ -272,7 +281,8 @@ class WorkflowPayoutAmountRulesTest extends TestCase
 
     public function testGetMerchantWorkflowPayoutAmountRules()
     {
-        $this->ba->adminProxyAuth();
+        $this->ba->adminAuth();
+        $this->ba->addAccountAuth('10000000000000');
 
         // These entries have to be made and inserted here and not setup() because otherwise the create workflow rules
         // test above will fail, stating that the workflow payout rules have already been created.
@@ -354,7 +364,8 @@ class WorkflowPayoutAmountRulesTest extends TestCase
 
     public function testCreateWorkflowRulesWithWrongPermission()
     {
-        $this->ba->adminProxyAuth();
+        $this->ba->adminAuth();
+        $this->ba->addAccountAuth('10000000000000');
 
         // Fetch permissionId of 'edit_admin' permission and store it in local permissionId variable
         $permissionId = DB::table('permissions')->where('name','=','edit_admin')->value('id');
@@ -382,7 +393,8 @@ class WorkflowPayoutAmountRulesTest extends TestCase
 
     public function testCreateWorkflowPayoutAmountRulesWithNoWorkflowId()
     {
-        $this->ba->adminProxyAuth();
+        $this->ba->adminAuth();
+        $this->ba->addAccountAuth('10000000000000');
 
         // Attach first two rules to workflows
         for ($index = 0; $index < 2; $index++) {

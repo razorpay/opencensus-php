@@ -105,6 +105,7 @@ class InstrumentRequestProxyTest extends TestCase
 
         $requests = [
             [
+                'type' => 'admin_proxy',
                 'url'      => '/merchant_instrument_request',
                 'method'   => \Requests::POST,
                 'content'   =>  [
@@ -113,6 +114,7 @@ class InstrumentRequestProxyTest extends TestCase
                 ]
             ],
             [
+                'type' => 'admin_proxy',
                 'url'      => '/merchant_instrument_request/mir_12341234',
                 'method'   => \Requests::PATCH,
                 'content'   =>  [
@@ -120,6 +122,7 @@ class InstrumentRequestProxyTest extends TestCase
                 ]
             ],
             [
+                'type' => 'admin',
                 'url'      => '/merchant_instrument_request_fetch',
                 'method'   => \Requests::POST,
                 'content'  => [
@@ -132,13 +135,20 @@ class InstrumentRequestProxyTest extends TestCase
 
         $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
 
-        $this->ba->adminProxyAuth();
-
         $this->mockTerminalsServiceSendRequest(null, 0);
 
         foreach($requests as $request)
         {
             $this->testData[__FUNCTION__]['request'] = $request;
+
+            if ($request['type'] === 'admin')
+            {
+                $this->ba->adminAuth();
+            }
+            else
+            {
+                $this->ba->adminProxyAuth();
+            }
 
             $this->startTest();
         }
@@ -470,7 +480,7 @@ class InstrumentRequestProxyTest extends TestCase
 
         $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
 
-        $this->ba->adminProxyAuth();
+        $this->ba->adminAuth();
 
         $testCases = [
             [

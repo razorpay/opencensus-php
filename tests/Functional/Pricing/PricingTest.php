@@ -1077,7 +1077,7 @@ class PricingTest extends TestCase
     {
         $content = $this->assignPricingPlanToMerchant();
 
-        $this->ba->batchAuth();
+        $this->ba->batchAppAuth();
 
         $response = $this->startTest();
 
@@ -1099,7 +1099,7 @@ class PricingTest extends TestCase
     {
         $content = $this->assignPricingPlanToMerchant();
 
-        $this->ba->batchAuth();
+        $this->ba->batchAppAuth();
 
         $this->fixtures->merchant->setFeeBearer(FeeBearer::CUSTOMER);
 
@@ -1125,7 +1125,7 @@ class PricingTest extends TestCase
 
         $this->fixtures->merchant->edit('1ApiFeeAccount', ['pricing_plan_id' => $content['id']]);
 
-        $this->ba->batchAuth();
+        $this->ba->batchAppAuth();
 
         $response = $this->startTest();
 
@@ -1140,7 +1140,7 @@ class PricingTest extends TestCase
 
         $this->fixtures->merchant->edit('1ApiFeeAccount', ['pricing_plan_id' => $content['id']]);
 
-        $this->ba->batchAuth();
+        $this->ba->batchAppAuth();
 
         $response = $this->startTest();
     }

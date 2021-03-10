@@ -44,6 +44,8 @@ class AdjustmentTest extends TestCase
             ]
         );
 
+        $this->ba->adminAuth();
+
         $response = $this->startTest();
 
         $adjId = $response['id'];
@@ -93,6 +95,8 @@ class AdjustmentTest extends TestCase
 
         $this->app->razorx->method('getTreatment')
             ->willReturn('on');
+
+        $this->ba->adminAuth();
 
         $response = $this->startTest();
 
@@ -153,6 +157,8 @@ class AdjustmentTest extends TestCase
         $this->app->razorx->method('getTreatment')
             ->willReturn('control');
 
+        $this->ba->adminAuth();
+
         $response = $this->startTest();
 
         $adjId = $response['id'];
@@ -212,6 +218,8 @@ class AdjustmentTest extends TestCase
         $this->app->razorx->method('getTreatment')
             ->willReturn('on');
 
+        $this->ba->adminAuth();
+
         $response = $this->startTest();
 
         $adjId = $response['id'];
@@ -270,6 +278,8 @@ class AdjustmentTest extends TestCase
 
         $this->app->razorx->method('getTreatment')
             ->willReturn('control');
+
+        $this->ba->adminAuth();
 
         $response = $this->startTest();
 
@@ -341,6 +351,8 @@ class AdjustmentTest extends TestCase
                 'merchant_id'   => '100xyz000xyz00'
             ]
         );
+
+        $this->ba->adminAuth();
 
         $response = $this->startTest();
 
@@ -414,6 +426,8 @@ class AdjustmentTest extends TestCase
         $this->app->razorx->method('getTreatment')
             ->willReturn('on');
 
+        $this->ba->adminAuth();
+
         $this->startTest();
 
         $balance = $this->getDbEntity('balance', ['id' => '100def000def00']);
@@ -432,7 +446,7 @@ class AdjustmentTest extends TestCase
                 'merchant_id'   => '100abc000abc00'
             ]);
 
-        $this->ba->batchAuth();
+        $this->ba->batchAppAuth();
 
         $this->startTest();
     }
@@ -490,7 +504,7 @@ class AdjustmentTest extends TestCase
 
         $this->fixtures->on('test')->admin->edit($admin['id'], ['allow_all_merchants' => true]);
 
-        $this->ba->adminProxyAuth('100abc000abc00', 'rzp_test_100abc000abc00');
+        $this->ba->adminAuth();
 
         $eventTestDataKey = 'testTransactionCreatedWebhookFiringAndMailOnAdjustmentCreateForBankingBalanceData';
         $this->expectWebhookEventWithContents('transaction.created', $eventTestDataKey);
@@ -594,7 +608,7 @@ class AdjustmentTest extends TestCase
 
         $this->fixtures->on('test')->admin->edit($admin['id'], ['allow_all_merchants' => true]);
 
-        $this->ba->adminProxyAuth('100abc000abc00', 'rzp_test_100abc000abc00');
+        $this->ba->adminAuth();
 
         $eventTestDataKey = 'testTransactionCreatedWebhookFiringAndMailOnNegativeAdjustmentCreateForBankingBalanceData';
         $this->expectWebhookEventWithContents('transaction.created', $eventTestDataKey);
@@ -698,7 +712,7 @@ class AdjustmentTest extends TestCase
 
         $this->fixtures->on('test')->admin->edit($admin['id'], ['allow_all_merchants' => true]);
 
-        $this->ba->adminProxyAuth('100abc000abc00', 'rzp_test_100abc000abc00');
+        $this->ba->adminAuth();
 
         $eventTestDataKey = 'testTransactionCreatedWebhookFiringAndMailOnAdjustmentCreateForBankingBalanceRazorxControlData';
         $this->expectWebhookEventWithContents('transaction.created', $eventTestDataKey);
@@ -802,7 +816,7 @@ class AdjustmentTest extends TestCase
 
         $this->fixtures->on('test')->admin->edit($admin['id'], ['allow_all_merchants' => true]);
 
-        $this->ba->adminProxyAuth('100abc000abc00', 'rzp_test_100abc000abc00');
+        $this->ba->adminAuth();
 
         $eventTestDataKey = 'testTransactionCreatedWebhookFiringAndMailOnNegativeAdjustmentCreateForBankingBalanceRazorxControlData';
         $this->expectWebhookEventWithContents('transaction.created', $eventTestDataKey);

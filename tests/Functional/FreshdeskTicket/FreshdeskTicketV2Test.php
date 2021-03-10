@@ -571,6 +571,8 @@ class FreshdeskTicketV2Test extends TestCase
             ]
         ]);
 
+        $this->ba->freshdeskWebhookAuth();
+
         $this->startTest();
 
         $afterCacheData = $this->app['cache']->get('support_dashboard_fr_time_data_cache_key_Activation_Urgent');
@@ -645,7 +647,7 @@ class FreshdeskTicketV2Test extends TestCase
 
     public function testGetFreshdeskTicketCareApp()
     {
-        $this->ba->careAppAuth();
+        $this->ba->careAuth();
 
         $this->expectFreshdeskRequestAndRespondWith('tickets/12?include=stats', 'get',
             [

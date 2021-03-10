@@ -645,7 +645,7 @@ class MerchantCreateTest extends TestCase
 
         $this->createConfigForPartnerApp($app->getId(), null, $configAttributes);
 
-        $this->ba->proxyAuth('rzp_test_10000000000000');
+        $this->ba->batchAppAuth();
 
         $redis = Redis::connection('mutex_redis')->client();
 
@@ -682,7 +682,7 @@ class MerchantCreateTest extends TestCase
 
         $this->createConfigForPartnerApp($app->getId(), null, $configAttributes);
 
-        $this->ba->proxyAuth('rzp_test_10000000000000');
+        $this->ba->batchAppAuth();
 
         $redis = Redis::connection('mutex_redis')->client();
 
@@ -705,7 +705,7 @@ class MerchantCreateTest extends TestCase
 
         $this->createConfigForPartnerApp($app->getId(), null, $configAttributes);
 
-        $this->ba->proxyAuth('rzp_test_10000000000000');
+        $this->ba->batchAppAuth();
 
         $this->startTest();
     }
@@ -724,7 +724,7 @@ class MerchantCreateTest extends TestCase
 
         $this->createConfigForPartnerApp($app->getId(), null, $configAttributes);
 
-        $this->ba->proxyAuth('rzp_test_10000000000000');
+        $this->ba->batchAppAuth();
 
         $this->startTest();
     }

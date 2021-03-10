@@ -916,7 +916,9 @@ class ScheduledPayoutTest extends TestCase
         $this->ba->batchAuth();
 
         $headers = [
-            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => 'MerchantUser01'
         ];
 
         $testData = & $this->testData[__FUNCTION__];

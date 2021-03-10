@@ -2528,7 +2528,7 @@ class BankingAccountTest extends TestCase
             ],
         ];
 
-        $this->ba->batchAuth();
+        $this->ba->batchAppAuth();
 
         $this->startTest($dataToReplace);
 
@@ -2576,7 +2576,7 @@ class BankingAccountTest extends TestCase
 
         $bankingAccountOld = $this->getDbLastEntity('banking_account');
 
-        $this->ba->batchAuth();
+        $this->ba->batchAppAuth();
 
         $this->startTest($dataToReplace);
 
@@ -2802,7 +2802,7 @@ class BankingAccountTest extends TestCase
 
         $dataToReplace['request']['content'] = array_merge($dataToReplace['request']['content'], $content);
 
-        $this->ba->batchAuth();
+        $this->ba->batchAppAuth();
 
         $this->startTest($dataToReplace);
     }

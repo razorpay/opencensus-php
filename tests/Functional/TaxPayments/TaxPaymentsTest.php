@@ -410,7 +410,7 @@ class TaxPaymentsTest extends TestCase
 
     public function testInitiateMonthlyPayoutsCallsServiceMethod()
     {
-        $this->ba->proxyAuth();
+        $this->ba->cronAuth();
 
         $tpMock = Mockery::mock('RZP\Services\TaxPayments\Service');
 
@@ -592,7 +592,7 @@ class TaxPaymentsTest extends TestCase
 
     public function testTaxPaymentAddPenaltyCronCallsServiceMethod()
     {
-        $this->ba->proxyAuth();
+        $this->ba->cronAuth();
 
         $tpMock = Mockery::mock('RZP\Services\TaxPayments');
 

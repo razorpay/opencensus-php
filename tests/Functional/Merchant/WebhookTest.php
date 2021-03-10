@@ -827,6 +827,9 @@ class WebhookTest extends TestCase
         $this->expectWebhookEventWithContents('terminal.created', $expectedEvent);
 
         $this->testData[__FUNCTION__]['request']['url'] = '/reminders/send/test/terminal/terminal_created_webhook/' . $terminal->getId();
+
+        $this->ba->reminderAppAuth();
+
         $this->startTest();
     }
 

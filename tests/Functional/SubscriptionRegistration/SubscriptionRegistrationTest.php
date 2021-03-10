@@ -388,6 +388,8 @@ class SubscriptionRegistrationTest extends TestCase
         // simulate test run at 4:00 PM
         Carbon::setTestNow(Carbon::now(Timezone::IST)->setTime(16, 0));
 
+        $this->ba->cronAuth();
+
         $result = $this->startTest();
 
         Queue::assertPushed(TokenRegistrationAutoCharge::class);

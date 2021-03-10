@@ -480,7 +480,8 @@ class MerchantDetailTest extends OAuthTestCase
         $admin = $this->ba->getAdmin();
         $admin->merchants()->attach($merchant);
 
-        $this->ba->adminProxyAuth($merchant->getId());
+        $this->ba->adminAuth();
+        $this->ba->addAccountAuth($merchant->getId());
 
         $this->startTest();
 
@@ -502,7 +503,8 @@ class MerchantDetailTest extends OAuthTestCase
         $admin = $this->ba->getAdmin();
         $admin->merchants()->attach($merchant);
 
-        $this->ba->adminProxyAuth($merchant->getId());
+        $this->ba->adminAuth();
+        $this->ba->addAccountAuth($merchant->getId());
 
         $this->startTest();
 
@@ -548,7 +550,8 @@ class MerchantDetailTest extends OAuthTestCase
         $admin = $this->ba->getAdmin();
         $admin->merchants()->attach($merchant);
 
-        $this->ba->adminProxyAuth($merchant->getId());
+        $this->ba->adminAuth();
+        $this->ba->addAccountAuth($merchant->getId());
 
         $this->startTest();
 
@@ -585,7 +588,8 @@ class MerchantDetailTest extends OAuthTestCase
         $admin = $this->ba->getAdmin();
         $admin->merchants()->attach($merchant);
 
-        $this->ba->adminProxyAuth($merchant->getId());
+        $this->ba->adminAuth();
+        $this->ba->addAccountAuth($merchant->getId());
 
         $this->startTest();
     }
@@ -599,7 +603,8 @@ class MerchantDetailTest extends OAuthTestCase
         $admin = $this->ba->getAdmin();
         $admin->merchants()->attach($merchant);
 
-        $this->ba->adminProxyAuth($merchant->getId());
+        $this->ba->adminAuth();
+        $this->ba->addAccountAuth($merchant->getId());
 
         $this->startTest();
     }
@@ -613,7 +618,8 @@ class MerchantDetailTest extends OAuthTestCase
         $admin = $this->ba->getAdmin();
         $admin->merchants()->attach($merchant);
 
-        $this->ba->adminProxyAuth($merchant->getId());
+        $this->ba->adminAuth();
+        $this->ba->addAccountAuth($merchant->getId());
 
         $this->startTest();
     }
@@ -631,7 +637,8 @@ class MerchantDetailTest extends OAuthTestCase
         $admin = $this->ba->getAdmin();
         $admin->merchants()->attach($merchant);
 
-        $this->ba->adminProxyAuth($merchant->getId());
+        $this->ba->adminAuth();
+        $this->ba->addAccountAuth($merchant->getId());
 
         $this->startTest();
     }
@@ -649,7 +656,8 @@ class MerchantDetailTest extends OAuthTestCase
         $admin = $this->ba->getAdmin();
         $admin->merchants()->attach($merchant);
 
-        $this->ba->adminProxyAuth($merchant->getId());
+        $this->ba->adminAuth();
+        $this->ba->addAccountAuth($merchant->getId());
 
         $this->startTest();
     }
@@ -666,7 +674,8 @@ class MerchantDetailTest extends OAuthTestCase
         $admin = $this->ba->getAdmin();
         $admin->merchants()->attach($merchant);
 
-        $this->ba->adminProxyAuth($merchant->getId());
+        $this->ba->adminAuth();
+        $this->ba->addAccountAuth($merchant->getId());
 
         $this->startTest();
     }
@@ -683,7 +692,8 @@ class MerchantDetailTest extends OAuthTestCase
         $admin = $this->ba->getAdmin();
         $admin->merchants()->attach($merchant);
 
-        $this->ba->adminProxyAuth($merchant->getId());
+        $this->ba->adminAuth();
+        $this->ba->addAccountAuth($merchant->getId());
 
         $this->startTest();
     }
@@ -1644,7 +1654,8 @@ class MerchantDetailTest extends OAuthTestCase
         $admin = $this->ba->getAdmin();
         $admin->merchants()->attach($merchant);
 
-        $this->ba->adminProxyAuth($merchant->getId());
+        $this->ba->adminAuth();
+        $this->ba->addAccountAuth($merchant->getId());
 
         $this->startTest();
 
@@ -2170,7 +2181,8 @@ class MerchantDetailTest extends OAuthTestCase
 
         $admin->merchants()->attach($merchant);
 
-        $this->ba->adminProxyAuth($merchant->getId());
+        $this->ba->adminAuth();
+        $this->ba->addAccountAuth($merchant->getId());
 
         $this->startTest();
     }

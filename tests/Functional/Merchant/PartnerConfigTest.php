@@ -70,6 +70,8 @@ class PartnerConfigTest extends OAuthTestCase
 
         $configsBeforeExecution = $this->getDbEntities('partner_config');
 
+        $this->ba->batchAppAuth();
+
         $this->startTest();
 
         $configsAfterExecution = $this->getDbEntities('partner_config');
@@ -92,6 +94,8 @@ class PartnerConfigTest extends OAuthTestCase
     {
         $this->allowAdminToAccessMerchant(Constants::DEFAULT_MERCHANT_ID);
 
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
@@ -106,12 +110,16 @@ class PartnerConfigTest extends OAuthTestCase
             ]
         );
 
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
     public function testAddingConfigWithDefaultPaymentMethodsForPurePlatform()
     {
         $this->allowAdminToAccessMerchant(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
@@ -151,6 +159,8 @@ class PartnerConfigTest extends OAuthTestCase
 
         $testData['request']['url'] = '/partner_configs/'. Constants::DEFAULT_PARTNER_CONFIGS_ID;
 
+        $this->ba->adminAuth();
+
         $this->startTest($testData);
     }
 
@@ -165,6 +175,8 @@ class PartnerConfigTest extends OAuthTestCase
             ]
         );
 
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
@@ -172,12 +184,16 @@ class PartnerConfigTest extends OAuthTestCase
     {
         $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
 
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
     public function testAddingConfigWhenBothAppAndPartnerIdSent()
     {
         $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
+
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
@@ -194,6 +210,8 @@ class PartnerConfigTest extends OAuthTestCase
             ]
         );
 
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
@@ -203,12 +221,16 @@ class PartnerConfigTest extends OAuthTestCase
 
         $this->createMerchantApplication('100nonplatform', 'reseller', '1000nonplatApp');
 
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
     public function testAddingConfigForPlatformPartnerUsingAppId()
     {
         $this->allowAdminToAccessMerchant(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
@@ -217,12 +239,16 @@ class PartnerConfigTest extends OAuthTestCase
     {
         $this->allowAdminToAccessMerchant(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
 
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
     public function testAddingConfigForSubvention()
     {
         $this->allowAdminToAccessMerchant(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
@@ -231,12 +257,16 @@ class PartnerConfigTest extends OAuthTestCase
     {
         $this->allowAdminToAccessMerchant(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
 
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
     public function testAddingConfigForPlatformPartnerUsingPartnerId()
     {
         $this->allowAdminToAccessMerchant(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
@@ -254,6 +284,8 @@ class PartnerConfigTest extends OAuthTestCase
                 'default_plan_id' => Pricing::DEFAULT_PRICING_PLAN_ID,
             ]
         );
+
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
@@ -273,12 +305,16 @@ class PartnerConfigTest extends OAuthTestCase
             ]
         );
 
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
     public function testAddingConfigForSubMerchantUsingAppId()
     {
         $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
+
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
@@ -288,6 +324,8 @@ class PartnerConfigTest extends OAuthTestCase
         $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
 
         $this->createMerchantApplication('100nonplatform', 'reseller', '1000nonplatApp');
+
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
@@ -307,6 +345,8 @@ class PartnerConfigTest extends OAuthTestCase
             ]
         );
 
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
@@ -315,6 +355,8 @@ class PartnerConfigTest extends OAuthTestCase
         $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
 
         $this->createMerchantApplication('100nonplatform', 'reseller', '1000nonplatApp');
+
+        $this->ba->adminAuth();
 
         $this->startTest();
     }
@@ -341,6 +383,8 @@ class PartnerConfigTest extends OAuthTestCase
             ]
         );
 
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
@@ -366,6 +410,8 @@ class PartnerConfigTest extends OAuthTestCase
                 'entity_id' => Constants::DEFAULT_NON_PLATFORM_APP_ID,
             ]
         );
+
+        $this->ba->adminAuth();
 
         $response = $this->startTest();
 
@@ -402,6 +448,8 @@ class PartnerConfigTest extends OAuthTestCase
             ]
         );
 
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
@@ -435,6 +483,8 @@ class PartnerConfigTest extends OAuthTestCase
 
         $testData['request']['url'] = '/partner_configs/'. Constants::DEFAULT_PARTNER_CONFIGS_ID;
 
+        $this->ba->adminAuth();
+
         $this->startTest($testData);
     }
 
@@ -467,6 +517,8 @@ class PartnerConfigTest extends OAuthTestCase
         $testData = $this->testData[__FUNCTION__];
 
         $testData['request']['url'] = '/partner_configs/'. Constants::DEFAULT_PARTNER_CONFIGS_ID;
+
+        $this->ba->adminAuth();
 
         $this->startTest($testData);
     }
@@ -576,6 +628,8 @@ class PartnerConfigTest extends OAuthTestCase
         $testData = $this->testData[__FUNCTION__];
 
         $testData['request']['url'] = '/partner_configs/'. Constants::DEFAULT_PARTNER_CONFIGS_ID;
+
+        $this->ba->adminAuth();
 
         $this->startTest($testData);
     }

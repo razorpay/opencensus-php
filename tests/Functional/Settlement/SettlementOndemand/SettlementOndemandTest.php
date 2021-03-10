@@ -1218,7 +1218,7 @@ class SettlementOndemandTest extends TestCase
 
     public function testEnableEsOnDemandFullAccessFromBatchRoute()
     {
-        $this->ba->batchAuth();
+        $this->ba->batchAppAuth();
 
         $this->fixtures->pricing->createTestPlanForNoOndemandAndEsAutomaticPricing();
 
@@ -1285,7 +1285,7 @@ class SettlementOndemandTest extends TestCase
 
     public function testEnableEsOnDemandRestrictedAccessFromBatchRoute()
     {
-        $this->ba->batchAuth();
+        $this->ba->batchAppAuth();
 
         $this->fixtures->pricing->createTestPlanForNoOndemandAndEsAutomaticPricing();
 
@@ -1371,7 +1371,7 @@ class SettlementOndemandTest extends TestCase
     {
         $orgId = '6dLbNSpv5XbCOG';
 
-        $this->ba->batchAuth();
+        $this->ba->batchAppAuth();
 
         $this->fixtures->org->createHdfcOrg();
 
@@ -1469,7 +1469,7 @@ class SettlementOndemandTest extends TestCase
 
     public function testUpdateFeatureConfigFromBatchRoute()
     {
-        $this->ba->batchAuth();
+        $this->ba->batchAppAuth();
 
         $this->fixtures->pricing->createStandardPlan();
 
@@ -1564,7 +1564,7 @@ class SettlementOndemandTest extends TestCase
     {
         $orgId = '6dLbNSpv5XbCOG';
 
-        $this->ba->batchAuth();
+        $this->ba->batchAppAuth();
 
         $this->fixtures->org->createHdfcOrg();
 
@@ -1676,7 +1676,7 @@ class SettlementOndemandTest extends TestCase
 
     public function testEnableEsOnDemandRestrictedAccessFromBatchRouteFailure()
     {
-        $this->ba->batchAuth();
+        $this->ba->batchAppAuth();
 
         $this->fixtures->pricing->createTestPlanForNoOndemandAndEsAutomaticPricing();
 

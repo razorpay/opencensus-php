@@ -2278,6 +2278,8 @@ class PayoutTest extends OAuthTestCase
 
         $headers = [
             'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => 'MerchantUser01'
         ];
 
         // append headers
@@ -3516,7 +3518,9 @@ class PayoutTest extends OAuthTestCase
         $this->ba->batchAuth();
 
         $headers = [
-            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => 'MerchantUser01'
         ];
 
         // append headers
@@ -3552,7 +3556,9 @@ class PayoutTest extends OAuthTestCase
         $this->ba->batchAuth();
 
         $headers = [
-            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => 'MerchantUser01'
         ];
 
         // append headers
@@ -3573,6 +3579,8 @@ class PayoutTest extends OAuthTestCase
 
         $headers = [
             'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => 'MerchantUser01'
         ];
 
         // append headers
@@ -5729,6 +5737,8 @@ class PayoutTest extends OAuthTestCase
 
         $headers = [
             'HTTP_X_Batch_Id' => 'C0zv9I46W4wiOq',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => 'MerchantUser01'
         ];
 
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
@@ -6087,7 +6097,9 @@ class PayoutTest extends OAuthTestCase
         $this->ba->batchAuth();
 
         $headers = [
-            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => 'MerchantUser01'
         ];
 
         // append headers
@@ -6344,7 +6356,9 @@ class PayoutTest extends OAuthTestCase
         $this->ba->batchAuth();
 
         $headers = [
-            'HTTP_X_Batch_Id' => 'C0zv9I46W4wiOq',
+            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => 'MerchantUser01'
         ];
 
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
@@ -6377,6 +6391,8 @@ class PayoutTest extends OAuthTestCase
 
         $headers = [
             'HTTP_X_Batch_Id' => 'C0zv9I46W4wiOq',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => 'MerchantUser01'
         ];
 
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
@@ -9060,7 +9076,7 @@ class PayoutTest extends OAuthTestCase
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/users/' . $user->getId();
 
-        $this->ba->proxyAuthLive();
+        $this->ba->proxyAuth('rzp_live');
 
         $response = $this->startTest();
 
@@ -9084,7 +9100,7 @@ class PayoutTest extends OAuthTestCase
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/users/' . $user->getId();
 
-        $this->ba->proxyAuthLive();
+        $this->ba->proxyAuth('rzp_live');
 
         $response = $this->startTest();
 
@@ -9121,7 +9137,7 @@ class PayoutTest extends OAuthTestCase
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/users/' . $user->getId();
 
-        $this->ba->proxyAuthLive();
+        $this->ba->proxyAuth('rzp_live');
 
         $response = $this->startTest();
 
@@ -9174,7 +9190,7 @@ class PayoutTest extends OAuthTestCase
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/users/' . $user->getId();
 
-        $this->ba->proxyAuthLive();
+        $this->ba->proxyAuth('rzp_live');
 
         $response = $this->startTest();
 
@@ -9430,7 +9446,9 @@ class PayoutTest extends OAuthTestCase
         $this->ba->batchAuth();
 
         $headers = [
-            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => 'MerchantUser01'
         ];
 
         // append headers
@@ -9963,7 +9981,9 @@ class PayoutTest extends OAuthTestCase
         $this->ba->batchAuth();
 
         $headers = [
-            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => 'MerchantUser01'
         ];
 
         // append headers
@@ -9997,7 +10017,9 @@ class PayoutTest extends OAuthTestCase
         $this->ba->batchAuth();
 
         $headers = [
-            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => 'MerchantUser01'
         ];
 
         // append headers
@@ -10337,7 +10359,9 @@ class PayoutTest extends OAuthTestCase
         $this->ba->batchAuth();
 
         $headers = [
-            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => 'MerchantUser01'
         ];
 
         // append headers

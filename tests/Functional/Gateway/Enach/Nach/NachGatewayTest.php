@@ -1147,7 +1147,7 @@ class NachGatewayTest extends TestCase
 
     public function runWithData($entries, $batchId)
     {
-        $this->ba->batchAuth();
+        $this->ba->batchAppAuth();
 
         $testData = $this->testData['process_via_batch_service'];
 

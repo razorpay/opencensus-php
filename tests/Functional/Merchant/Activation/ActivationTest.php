@@ -96,7 +96,7 @@ class ActivationTest extends OAuthTestCase
         $admin = $this->ba->getAdmin();
         $admin->merchants()->attach($merchant);
 
-        $this->ba->adminProxyAuth($merchant->id);
+        $this->ba->adminProxyAuth($merchant->getId(), 'rzp_test_' . $merchant->getId());
 
         $this->startTest();
     }
@@ -188,7 +188,7 @@ class ActivationTest extends OAuthTestCase
         // hence this test to assert even in the automatic MERCHANT_AUTO_UPDATE_SUBCATEGORY_METADATA flow
         // the above requirements are met
 
-        $terminal = $this->getEntityById('terminal', $terminalId);
+        $terminal = $this->getEntityById('terminal', $terminalId, true);
         $this->assertFalse($terminal['enabled']);
     }
 

@@ -270,7 +270,7 @@ class WorkflowTest extends TestCase
             ]);
 
         // Approve with Owner role user
-        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+        $this->ba->appAuthLive();
 
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/wf-service/state/callback';

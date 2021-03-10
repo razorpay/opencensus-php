@@ -259,7 +259,7 @@ class CreditLogsTest extends TestCase
             'merchant_id' => '10000000000000',
         ]);
 
-        $this->ba->batchAuth('rzp_live_10000000000000');
+        $this->ba->batchAppAuth('rzp_live');
 
         $admin = $this->fixtures->on('live')->create('admin', [
             'id'     => Org::SUPER_ADMIN,
@@ -289,7 +289,7 @@ class CreditLogsTest extends TestCase
 
     public function testBulkCreditRouteInTestMode()
     {
-        $this->ba->batchAuth();
+        $this->ba->batchAppAuth();
 
         $headers = [
             'HTTP_X_Batch_Id'          => 'C0zv9I46W4wiOq',
@@ -306,7 +306,7 @@ class CreditLogsTest extends TestCase
     {
         Mail::fake();
 
-        $this->ba->batchAuth('rzp_live_10000000000000');
+        $this->ba->batchAppAuth('rzp_live');
 
         $admin = $this->fixtures->on('live')->create('admin', [
             'id'     => Org::SUPER_ADMIN,

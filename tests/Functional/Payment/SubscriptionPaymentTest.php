@@ -121,7 +121,7 @@ class SubscriptionPaymentTest extends TestCase
             'content' => [],
         ];
 
-        $this->ba->subscriptionsAuth();
+        $this->ba->subscriptionsAppAuth();
 
         $response = $this->makeRequestAndGetContent($request);
 

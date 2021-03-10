@@ -185,7 +185,7 @@ class AppFrameworkTest extends TestCase
 
     public function testCreateAppMerchantMapping()
     {
-        $this->ba->batchAuth();
+        $this->ba->batchAppAuth();
 
         $headers = [
             'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',

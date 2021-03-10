@@ -229,7 +229,7 @@ class WebhookV2Test extends TestCase
     {
         $this->expectStorkServiceRequestForAction('getWebhookWithSecret');
 
-        $this->ba->hostedAuth();
+        $this->ba->hostedProxyAuth();
         $this->startTest();
     }
 
@@ -259,7 +259,7 @@ class WebhookV2Test extends TestCase
     {
         $this->expectStorkServiceRequestForAction('listWebhookWithSecret');
 
-        $this->ba->hostedAuth();
+        $this->ba->hostedProxyAuth();
         $this->startTest();
     }
 
@@ -364,6 +364,8 @@ class WebhookV2Test extends TestCase
 
     public function testSendDisableWebhookEmailForStork()
     {
+        $this->ba->storkAppAuth();
+
         Mail::fake();
 
         $this->startTest();

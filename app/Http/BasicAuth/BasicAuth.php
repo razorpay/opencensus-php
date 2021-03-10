@@ -1981,7 +1981,7 @@ class BasicAuth
 
     protected function isKeyBlank()
     {
-        return ($this->authCreds->creds['key'] === '');
+        return ($this->authCreds->creds[AuthCreds::KEY_ID] === '');
     }
 
     /**

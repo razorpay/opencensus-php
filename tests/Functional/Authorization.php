@@ -99,11 +99,32 @@ class Authorization
         $this->proxy = true;
     }
 
+    public function subscriptionsAppAuth()
+    {
+        $this->appAuth('rzp_test', \Config::get('applications.subscriptions')['secret']);
+
+        $this->proxy = false;
+    }
+
     public function reminderAuth()
     {
         $this->appAuth('rzp_test_10000000000000', \Config::get('applications.reminders')['secret']);
 
         $this->proxy = true;
+    }
+
+    public function reminderAppAuth()
+    {
+        $this->appAuth('rzp_test', \Config::get('applications.reminders')['secret']);
+
+        $this->proxy = false;
+    }
+
+    public function dashboardGuestAppAuth()
+    {
+        $this->appAuth('rzp_test', \Config::get('applications.dashboard_guest')['secret']);
+
+        $this->proxy = false;
     }
 
     public function salesForceAuth()
@@ -122,16 +143,31 @@ class Authorization
 
     public function mandateHQAuth()
     {
-        $this->appAuth('rzp_test_10000000000000', \Config::get('applications.mandate_hq')['secret']);
+        $this->appAuth('rzp_test', \Config::get('applications.mandate_hq')['secret']);
 
-        $this->proxy = true;
+        $this->proxy = false;
     }
+
 
     public function batchAuth($user = 'rzp_test_10000000000000')
     {
         $this->appAuth($user, \Config::get('applications.batch')['secret']);
 
         $this->proxy = true;
+    }
+
+    public function batchAppAuth($user = 'rzp_test')
+    {
+        $this->appAuth($user, \Config::get('applications.batch')['secret']);
+
+        $this->proxy = false;
+    }
+
+    public function storkAppAuth($user = 'rzp_test')
+    {
+        $this->appAuth($user, \Config::get('applications.stork')['secret']);
+
+        $this->proxy = false;
     }
 
     public function freshdeskWebhookAuth($mode = 'test')
@@ -144,6 +180,13 @@ class Authorization
     }
 
     public function careAppAuth()
+    {
+        $this->appAuth('rzp_test', \Config::get('applications.care')['secret']);
+
+        $this->proxy = false;
+    }
+
+    public function careAuth()
     {
         $this->appAuth('rzp_test_10000000000000', \Config::get('applications.care')['secret']);
 
@@ -160,6 +203,11 @@ class Authorization
         $this->appHeaders = [
             'X-Org-Hostname' => $hostName,
         ];
+    }
+
+    public function setAppAuthHeaders($headers)
+    {
+        $this->appHeaders = array_merge($this->appHeaders, $headers);
     }
 
     public function appAuthLive($pwd = '')
@@ -186,7 +234,7 @@ class Authorization
         $this->appHeaders['X-Request-Origin'] = \Config::get('applications.banking_service_url');
     }
 
-    public function hostedAuth($user = 'rzp_test_10000000000000', $merchantUser = null)
+    public function hostedProxyAuth($user = 'rzp_test_10000000000000', $merchantUser = null)
     {
         $this->appAuth($user, \Config::get('applications.hosted')['secret']);
 

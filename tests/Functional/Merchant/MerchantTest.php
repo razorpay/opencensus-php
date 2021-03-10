@@ -5931,7 +5931,7 @@ class MerchantTest extends TestCase
 
         $this->createBalanceEntities();
 
-        $this->ba->proxyAuth();
+        $this->ba->cronAuth();
 
         $this->startTest();
 
@@ -5948,7 +5948,7 @@ class MerchantTest extends TestCase
 
         $this->createBalanceEntities();
 
-        $this->ba->proxyAuth();
+        $this->ba->cronAuth();
 
         $this->startTest();
     }
@@ -7598,7 +7598,7 @@ class MerchantTest extends TestCase
 
     public function testSetInheritanceParentBatch()
     {
-        $this->ba->proxyAuth();
+        $this->ba->batchAppAuth();
 
         $subMerchantId = $this->setUpPartnerAndGetSubMerchantId();
 
@@ -9057,7 +9057,6 @@ class MerchantTest extends TestCase
                 $testCase[self::CREATE_MERCHANT_DETAILS]);
         }
         else if (empty($testCase[self::ACTIVATE_MERCHANT]) === false) {
-            s($this->fixtures->merchant);
             $this->fixtures->merchant->activate();
         }
     }

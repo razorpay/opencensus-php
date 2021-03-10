@@ -2287,7 +2287,8 @@ class UserTest extends TestCase
 
         $merchantIds = $user->merchants()->get()->pluck('id')->toArray();
 
-        $this->ba->proxyAuth('rzp_test_' . $merchantIds[0], $user['id'], 'owner');
+        $this->ba->dashboardGuestAppAuth('rzp_test');
+        $this->ba->setAppAuthHeaders(['X-Dashboard-User-Id' => $user['id']]);
 
         $response = $this->startTest();
 
@@ -2546,7 +2547,8 @@ class UserTest extends TestCase
 
         $this->fixtures->merchant->setRestricted(true, $merchantIds[0]);
 
-        $this->ba->proxyAuth('rzp_test_' . $merchantIds[0], $user['id'], 'owner');
+        $this->ba->dashboardGuestAppAuth('rzp_test');
+        $this->ba->setAppAuthHeaders(['X-Dashboard-User-Id' => $user['id']]);
 
         $response = $this->startTest();
 

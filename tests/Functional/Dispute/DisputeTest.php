@@ -162,7 +162,7 @@ class DisputeTest extends TestCase
         $testData = $this->testData[__FUNCTION__];
         $testData['request']['url'] ='/disputes/' . $dispute->getPublicId();
 
-        $this->ba->adminProxyAuth();
+        $this->ba->adminProxyAuth($payment->getMerchantId(), 'rzp_test_' . $payment->getMerchantId());
 
         $this->fixtures->edit(AdminEntity::ADMIN, Org::SUPER_ADMIN, [AdminEntity::ALLOW_ALL_MERCHANTS => 1]);
 
@@ -1679,8 +1679,6 @@ class DisputeTest extends TestCase
 
     protected function updateEditTestData(array $attributes = []): array
     {
-        $this->ba->adminProxyAuth();
-
         $this->fixtures->edit(AdminEntity::ADMIN, Org::SUPER_ADMIN, [AdminEntity::ALLOW_ALL_MERCHANTS => 1]);
 
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
@@ -1690,6 +1688,8 @@ class DisputeTest extends TestCase
         $dispute = $this->fixtures->create('dispute', $attributes);
 
         $this->merchant = $dispute->merchant;
+
+        $this->ba->adminProxyAuth($this->merchant->getId(), 'rzp_test_' . $this->merchant->getId());
 
         $testData = &$this->testData[$name];
 

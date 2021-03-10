@@ -2301,13 +2301,8 @@ class Route
         'merchant_tpv_create'                     => ['post',    'merchant/tpv',                                            'BankingAccountTpvController@createTpvFromXDashboard'          ],
         'care_service_dashboard_proxy'            => ['post',    'care_service/merchant/{path?}',                           'CareProxyController@postDashboardProxyRequest'                ],
         'care_service_cron_proxy'                 => ['post',    'care_service/cron/{path?}',                               'CareProxyController@postCronProxyRequest'                     ],
-        'myoperator_v1_proxy_get'                 => ['get',     'myoperator/{path?}',                                      
-                                                      
-                                                      
-                                                      
-                                                      'MyOperatorController@getProxyCallToMyOperatorV1'              ],
-        'myoperator_v2_proxy_post'                => ['post',    'myoperator/campaign/{path?}',                              'MyOperatorController@postProxyCallToMyOperatorV2'              ],
-
+        'myoperator_v1_proxy_get'                 => ['get',     'myoperator/{path?}',                                      'MyOperatorController@getProxyCallToMyOperatorV1'              ],
+        'myoperator_v2_proxy_post'                => ['post',    'myoperator/campaign/{path?}',                             'MyOperatorController@postProxyCallToMyOperatorV2'              ],
 
         // Templating Service
         'templating_create_namespace'             => ['post',    'templating/namespaces',                                   'TemplatingServiceController@createNamespace'                  ],
@@ -4376,7 +4371,6 @@ class Route
         'fund_account_validate_bulk_patch_status',
 
         'update_payout_status',
-        'pincode_get',
         'cities_get',
         'admin_key_migrate_to_credcase',
         'admin_access_maps_bootstrap_cache',

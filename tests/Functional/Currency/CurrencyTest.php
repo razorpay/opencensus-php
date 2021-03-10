@@ -86,7 +86,7 @@ class CurrencyTest extends TestCase
 
         $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
 
-        $this->ba->adminProxyAuth($merchantId, 'rzp_test_' . $merchantId);
+        $this->ba->adminProxyAuth();
 
         $res = $this->startTest();
 

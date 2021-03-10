@@ -168,7 +168,7 @@ class CardMandateTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
         $this->testData[__FUNCTION__]['request']['url'] = sprintf($url, $payment->getId());
-        $this->ba->reminderAuth();
+        $this->ba->reminderAppAuth();
 
         $this->startTest();
 
@@ -214,7 +214,7 @@ class CardMandateTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
         $this->testData[__FUNCTION__]['request']['url'] = sprintf($url, $payment->getId());
-        $this->ba->reminderAuth();
+        $this->ba->reminderAppAuth();
 
         $this->startTest();
 

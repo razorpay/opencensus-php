@@ -246,7 +246,7 @@ class NachMigrationTest extends TestCase
     {
         $this->setUpMerchant();
 
-        $this->ba->proxyAuth();
+        $this->ba->batchAppAuth();
 
         $this->startTest();
     }
@@ -255,7 +255,7 @@ class NachMigrationTest extends TestCase
     {
         $this->setUpMerchant();
 
-        $this->ba->proxyAuth();
+        $this->ba->batchAppAuth();
 
         $this->startTest();
     }

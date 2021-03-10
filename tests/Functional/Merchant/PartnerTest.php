@@ -495,7 +495,7 @@ class PartnerTest extends OAuthTestCase
 
         $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'reseller']);
 
-        $this->ba->batchAuth();
+        $this->ba->batchAppAuth();
 
         $this->expectstorkInvalidateAffectedOwnersCacheRequest(self::DEFAULT_SUBMERCHANT_ID);
 
@@ -510,7 +510,7 @@ class PartnerTest extends OAuthTestCase
 
         $this->fixtures->merchant->createDummyPartnerApp( ['partner_type' => 'reseller']);
 
-        $this->ba->batchAuth();
+        $this->ba->batchAppAuth();
 
         $this->startTest();
 
@@ -548,7 +548,7 @@ class PartnerTest extends OAuthTestCase
             'entity_id'       => $referralApp->getId()
         ]);
 
-        $this->ba->batchAuth();
+        $this->ba->batchAppAuth();
 
         $this->startTest();
 

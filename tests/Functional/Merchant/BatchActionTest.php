@@ -22,7 +22,7 @@ class BatchActionTest extends OAuthTestCase
     {
         $this->fixtures->create('merchant_detail',["merchant_id" => '10000000000000']);
 
-        $this->ba->proxyAuth();
+        $this->ba->batchAppAuth();
 
         $this->startTest();
 
@@ -42,7 +42,7 @@ class BatchActionTest extends OAuthTestCase
     {
         $merchant = $this->getEntityById('merchant', '10000000000000',true);
 
-        $this->ba->proxyAuth();
+        $this->ba->batchAppAuth();
 
         $this->startTest();
 
@@ -57,7 +57,7 @@ class BatchActionTest extends OAuthTestCase
 
         $this->fixtures->base->editEntity('merchant', $merchant['id'], [ 'suspended_at' => '123456789' ]);
 
-        $this->ba->proxyAuth();
+        $this->ba->batchAppAuth();
 
         $this->startTest();
 
@@ -72,7 +72,7 @@ class BatchActionTest extends OAuthTestCase
 
         $this->fixtures->base->editEntity('merchant', $merchant['id'], [ 'suspended_at' => '123456789' ]);
 
-        $this->ba->proxyAuth();
+        $this->ba->batchAppAuth();
 
         $this->startTest();
 
@@ -87,7 +87,7 @@ class BatchActionTest extends OAuthTestCase
 
         $this->fixtures->base->editEntity('merchant', $merchant['id'], ['suspended_at' => null]);
 
-        $this->ba->proxyAuth();
+        $this->ba->batchAppAuth();
 
         $this->startTest();
 
@@ -99,14 +99,14 @@ class BatchActionTest extends OAuthTestCase
 
     public function testUpdateFieldsInvalidAction()
     {
-        $this->ba->proxyAuth();
+        $this->ba->batchAppAuth();
 
         $this->startTest();
     }
 
     public function testUpdateFieldsInvalidEntity()
     {
-        $this->ba->proxyAuth();
+        $this->ba->batchAppAuth();
 
         $this->startTest();
     }
