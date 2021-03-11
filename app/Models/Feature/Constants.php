@@ -385,6 +385,11 @@ class Constants
     const WITHDRAW_LOC = 'withdraw_loc';
 
     /**
+     * Dashboard shows cashback offer provided with LOC
+     */
+    const LOC_FIRST_WITHDRAWAL = 'loc_first_withdrawal';
+
+    /**
      * Gives access to loc service
      */
     const CAPITAL_CARDS = 'capital_cards';
@@ -843,6 +848,7 @@ class Constants
         self::ALLOW_NETBANKING_FETCH          => true,
         self::IVR_DISABLE                     => true,
         self::WITHDRAW_LOC                    => true,
+        self::LOC_FIRST_WITHDRAWAL            => true,
         self::CAPITAL_CARDS                   => true,
         self::LOC_STAGE_1                     => true,
         self::LOC_STAGE_2                     => true,
@@ -1013,6 +1019,11 @@ class Constants
         self::WITHDRAW_LOC              => [
             'feature'       => self::WITHDRAW_LOC,
             'display_name'  => 'Withdraw Loc',
+            'documentation' => '',
+        ],
+        self::LOC_FIRST_WITHDRAWAL              => [
+            'feature'       => self::LOC_FIRST_WITHDRAWAL,
+            'display_name'  => 'Loc first withdrawal',
             'documentation' => '',
         ],
         self::LOC_STAGE_1               => [

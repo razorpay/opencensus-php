@@ -788,7 +788,42 @@ class FeaturesTest extends TestCase
 
         $this->ba->proxyAuth('rzp_live_10000000000000');
 
-        $this->startTest();
+        $response = $this->startTest();
+        $features = $response['features'];
+
+        $check = false;
+
+        foreach ($features as $feature)
+        {
+            switch ($feature['feature'])
+            {
+                case Constants::LOC_STAGE_2:
+                    $this->assertTrue($feature['value']);
+
+                    $this->assertEquals(
+                        Constants::$visibleFeaturesMap[Constants::LOC_STAGE_2]['display_name'],
+                        $feature['display_name']
+                    );
+
+                    $check = true;
+                    break;
+
+                case Constants::LOC_STAGE_1:
+                    $this->assertTrue($feature['value']);
+
+                    $this->assertEquals(
+                        Constants::$visibleFeaturesMap[Constants::LOC_STAGE_1]['display_name'],
+                        $feature['display_name']
+                    );
+
+                    break;
+
+                default:
+                    $this->assertFalse($feature['value']);
+            }
+        }
+        $this->assertTrue($check);
+
     }
 
     /**
