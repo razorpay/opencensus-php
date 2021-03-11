@@ -125,7 +125,7 @@ return [
             Fields::SUBMERCHANT_ID      => '78965412',
             Fields::TERMINAL_ID         => '5411',
             Fields::BANK_RRN            => '015306767323',
-            Fields::MERCHANT_TRAN_ID    => 'rzp.payto00000vpVpaIcici|xyz1234567',
+            Fields::MERCHANT_TRAN_ID    => 'payto00000vpVpaIcicixyz1234567',
             Fields::PAYER_NAME          => 'Ria Garg',
             Fields::PAYER_VA            => 'random@icici',
             Fields::PAYER_AMOUNT        => '40.00',

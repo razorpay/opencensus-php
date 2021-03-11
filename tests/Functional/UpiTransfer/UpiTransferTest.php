@@ -176,6 +176,7 @@ class UpiTransferTest extends TestCase
 
         $this->assertEquals($upiTransfer['expected'], true);
         $this->assertEquals(null, $upiTransfer['unexpected_reason']);
+        $this->assertNull($upiTransfer['transaction_reference']);
 
         $this->runUpiTransferRequestAssertions(
             'upi_icici',

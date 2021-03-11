@@ -35,6 +35,7 @@ class Gateway extends Base\Gateway
     const GATEWAY_API_RAZORX_PREFIX     = 'upi_icici_gateway_api_versions';
     const GATEWAY_API_VERSION_1         = 'v1';
     const GATEWAY_API_VERSION_2         = 'v2';
+    const VPA_LENGTH                    = 20;
 
     use AuthorizeFailed;
     use Base\RecurringTrait;
@@ -1715,14 +1716,13 @@ class Gateway extends Base\Gateway
 
         $amount = $this->getIntegerFormattedAmount($input[Fields::PAYER_AMOUNT]);
 
-        // icici will send merchant_tran_id in format vpa|tr e.g. rzp.payto00001111222|ref1234
-        $vpaAndMerchantTranId = explode('|', $input[Fields::MERCHANT_TRAN_ID]);
+        // icici will send merchant_tran_id in format vpatr e.g. payto000011112223333ref123
+        // vpa of length 20 will be extracted, remaining part will be tr
+        $vpa = substr($input[Fields::MERCHANT_TRAN_ID], 0, self::VPA_LENGTH);
 
-        $transactionReference = $vpaAndMerchantTranId[1] ?? null;
+        $transactionReference = substr($input[Fields::MERCHANT_TRAN_ID], self::VPA_LENGTH);
 
-        $vpa = explode('.', $vpaAndMerchantTranId[0]);
-        
-        $vpa = sizeof($vpa) > 1 ? $vpa[1] : $vpa[0];
+        $transactionReference = empty($transactionReference) ? null : $transactionReference;
 
         $upiTransferData = [
             UpiTransfer\GatewayResponseParams::AMOUNT                => $amount,
