@@ -10,6 +10,7 @@ class Name
     const VIEW_ALL_MERCHANTS                  = 'view_all_merchants';
     const VIEW_MERCHANT                       = 'view_merchant';
     const VIEW_MERCHANT_BALANCE               = 'view_merchant_balance';
+    const VIEW_CITIES                         = 'view_cities';
     // @todo:
     // Rename view_merchant_features to view_features as features
     // have now been extended to applications as well.
@@ -27,6 +28,13 @@ class Name
     const VIEW_MERCHANT_AGGREGATIONS          = 'view_merchant_aggregations';
     const VIEW_MERCHANT_TAGS                  = 'view_merchant_tags';
     const CREATE_PRICING_PLAN                 = 'create_pricing_plan';
+    const ADMIN_FETCH_MERCHANTS               = 'admin_fetch_merchants';
+    const ADMIN_GET_APP_AUTH                  = 'admin_get_app_auth';
+    const ADMIN_GET_FILE                      = 'admin_get_file';
+    const ADMIN_LEAD_VERIFY                   = 'admin_lead_verify';
+    const MANAGE_CONFIG_KEYS                  = 'manage_config_keys';
+    const FEATURE_ONBOARDING_FETCH_ALL_RESPONSES = 'feature_onboarding_fetch_all_responses';
+    const FETCH_PAYMENT_CONFIG_ADMIN          = 'fetch_payment_config_admin';
     const UPDATE_PRICING_PLAN                 = 'update_pricing_plan';
     const SET_PRICING_RULES                   = 'set_pricing_rules';
     const DELETE_PRICING_PLAN_RULES           = 'delete_pricing_plan_rules';
@@ -76,6 +84,7 @@ class Name
     const CREATE_EMI_FILES                    = 'create_emi_files';
     const CREATE_SETTLEMENT_INITIATE          = 'create_settlement_initiate';
     const CHECK_TERMINAL_SECRET               = 'check_terminal_secret';
+    const VIEW_TERMINAL                       = 'view_terminal';
     const DELETE_TERMINAL                     = 'delete_terminal';
     const EDIT_TERMINAL                       = 'edit_terminal';
     const TERMINAL_MANAGE_MERCHANT            = 'terminal_manage_merchant';
@@ -182,6 +191,7 @@ class Name
     const EDIT_WORKFLOW                       = 'edit_workflow';
     const DELETE_WORKFLOW                     = 'delete_workflow';
     const VIEW_WORKFLOW_REQUESTS              = 'view_workflow_requests';
+    const EDIT_ACTION                         = 'edit_action';
     const CREATE_GATEWAY_RULE                 = 'create_gateway_rule';
     const EDIT_GATEWAY_RULE                   = 'edit_gateway_rule';
     const DELETE_GATEWAY_RULE                 = 'delete_gateway_rule';
@@ -248,6 +258,7 @@ class Name
     const ADD_SHIELD_LIST_ITEMS               = 'add_shield_list_items';
     const PURGE_SHIELD_LIST_ITEMS             = 'purge_shield_list_items';
     const DELETE_SHIELD_LIST_ITEM             = 'delete_shield_list_item';
+    const RETRIEVE_SHIELD_UI_SETTINGS         = 'retrieve_shield_ui_settings';
     const VIEW_MERCHANT_ANALYTICS             = 'view_merchant_analytics';
     const ASSIGN_MERCHANT_ACTIVATION_REVIEWER = 'assign_merchant_activation_reviewer';
     const DB_META_QUERY                       = 'db_meta_query';
@@ -273,6 +284,7 @@ class Name
     const CREATE_VIRTUAL_ACCOUNTS             = 'create_virtual_accounts';
     const CREATE_BANKING_VIRTUAL_ACCOUNTS     = 'create_banking_virtual_accounts';
     const BANK_TRANSFER_INSERT                = 'bank_transfer_insert';
+    const BANK_TRANSFER_MODIFY_PAYER_ACCOUNT  = 'bank_transfer_modify_payer_account';
     const GET_SELF_SERVE_REPORT               = 'get_self_serve_report';
     const CREATE_SELF_SERVE_REPORT            = 'create_self_serve_report';
     const REPORT_CONFIG_FULL_OPERATIONS       = 'report_config_full_operations';
@@ -441,7 +453,15 @@ class Name
     const EDIT_MERCHANT_INTERNATIONAL         = 'edit_merchant_international';
     const EDIT_MERCHANT_PG_INTERNATIONAL      = 'edit_merchant_pg_international';
     const EDIT_MERCHANT_PROD_V2_INTERNATIONAL = 'edit_merchant_prod_v2_international';
-
+    const VIEW_CONFIG_KEYS                    = 'view_config_keys';
+    const MERCHANT_ACTIONS                    = 'merchant_actions';
+    const MERCHANT_ACTIVATION_REVIEWERS       = 'merchant_activation_reviewers';
+    const CREATE_MERCHANT                     = 'create_merchant';
+    const VIEW_MERCHANT_DOCUMENT              = 'view_merchant_document';
+    const AUTH_LOCAL_ADMIN                    = 'auth_local_admin';
+    const MANAGE_REDIS_KEYS                   = 'manage_redis_keys';
+    const USER_FETCH_ADMIN                    = 'user_fetch_admin';
+    const USER_CREATE                         = 'user_create';
     const VIEW_VIRTUAL_ACCOUNT                = 'view_virtual_account';
     const EDIT_MERCHANT_INTERNATIONAL_NEW     = 'edit_merchant_international_new';
     const UPLOAD_MERCHANT_DOCUMENT            = 'upload_merchant_document';
@@ -451,6 +471,7 @@ class Name
     const CREATE_PROMOTION_EVENT              = 'create_promotion_event';
     const CREDITS_BATCH_UPLOAD                = 'credits_batch_upload';
     const UPDATE_MERCHANT_2FA_SETTING         = 'update_merchant_2fa_setting';
+    const MERCHANT_SEND_ACTIVATION_MAIL       = 'merchant_send_activation_mail';
 
     // merchant preferences
     const UPDATE_MERCHANT_PREFERENCE          = 'update_merchant_preference';
@@ -529,6 +550,9 @@ class Name
 
     const PAYMENT_LINKS_V2_ADMIN              = 'payment_links_v2_admin';
 
+    // Dedupe Permission
+    const VIEW_MERCHANT_DEDUPE                = 'view_merchant_dedupe';
+
     // Permission for merchants to view free payouts attributes
     const MERCHANT_VIEW_FREE_PAYOUTS_ATTRIBUTES = 'merchant_view_free_payouts_attributes';
 
@@ -568,6 +592,22 @@ class Name
     const TEMPLATING_SERVICE_READ_NAMESPACES           = 'templating_service_read_namespaces';
     const TEMPLATING_SERVICE_WRITE_TEMPLATE_CONFIGS    = 'templating_service_write_template_configs';
     const TEMPLATING_SERVICE_READ_TEMPLATE_CONFIGS     = 'templating_service_read_template_configs';
+
+    const MANAGE_INHERITANCE                  = 'manage_inheritance';
+    const MARK_TRANSACTIONS_POSTPAID                   = 'mark_transactions_postpaid';
+    const FETCH_MERCHANT_BALANCE_CONFIG                = 'fetch_merchant_balance_config';
+    const CREATE_MERCHANT_BALANCE_CONFIG               = 'create_merchant_balance_config';
+    const EDIT_MERCHANT_BALANCE_CONFIG                 = 'edit_merchant_balance_config';
+    const DELETE_PAYMENT_CONFIG                        = 'delete_payment_config';
+    const UPDATE_ENTITY_BALANCE_ID                     = 'update_entity_balance_id';
+    const MDR_ADJUSTMENT                               = 'mdr_adjustment';
+    const CREATE_REWARD                                = 'create_reward';
+    const DELETE_REWARD                                = 'delete_reward';
+    const PG_ROUTER_ORDER_SYNC                         = 'pg_router_order_sync';
+    const GET_IRCTC_SETTLEMENT_FILE                    = 'get_irctc_settlement_file';
+    const CREATE_TRANSACTION_FEE_BREAKUP               = 'create_transaction_fee_breakup';
+
+    const TOKEN_REGISTRATION_ACTIONS = 'token_registration_actions';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,

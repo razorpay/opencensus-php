@@ -321,7 +321,7 @@ return [
     'testAppAuthWithAccount' => [
         'request' => [
             'method' => 'GET',
-            'url' => '/dummy/internal'
+            'url' => '/orgs/{id}/self'
         ],
         'response' => [
             'content' => [],
@@ -344,7 +344,7 @@ return [
     'testAccountAuthInvalidId' => [
         'request' => [
             'method' => 'GET',
-            'url' => '/dummy/internal'
+            'url' => '/orgs/{id}/self'
         ],
         'response' => [
             'content' => [

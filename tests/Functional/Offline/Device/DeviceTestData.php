@@ -5,40 +5,6 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
-    'testRegisterDevice' => [
-        'request' => [
-            'content' => [
-                'serial_number' => 'TestSerial',
-                'type'          => 'android',
-                'manufacturer'  => 'google',
-                'model'         => 'pixel',
-            ],
-            'method'    => 'POST',
-            'url'       => '/offlines/devices/register',
-        ],
-        'response' => [
-            'content' => [
-                'serial_number' => 'TestSerial',
-                'type'          => 'android',
-            ],
-        ],
-    ],
-
-    'testLinkDevice' => [
-        'request' => [
-            'content' => [
-                'activation_token' => '',
-            ],
-            'method'    => 'POST',
-            'url'       => '/offlines/devices/link',
-        ],
-        'response' => [
-            'content' => [
-                'serial_number' => 'TestSerial2',
-                'type'          => 'android',
-            ],
-        ],
-    ],
 
     'testDeviceActivateInit' => [
         'request' => [

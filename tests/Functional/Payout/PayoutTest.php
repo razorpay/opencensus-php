@@ -5588,6 +5588,9 @@ class PayoutTest extends OAuthTestCase
         $testData['request']['url'] = "/w-actions/w_action_{$wfAction->id}/diff";
 
         $this->ba->adminAuth('live');
+
+        $this->addPermissionToBaAdmin(Admin\Permission\Name::VIEW_ALL_WORKFLOW);
+
         $this->startTest();
     }
 
@@ -5654,6 +5657,9 @@ class PayoutTest extends OAuthTestCase
         $testData['request']['url'] = "/w-actions/w_action_{$wfAction->id}/diff";
 
         $this->ba->adminAuth('live');
+
+        $this->addPermissionToBaAdmin(Admin\Permission\Name::VIEW_ALL_WORKFLOW);
+
         $this->startTest();
     }
 

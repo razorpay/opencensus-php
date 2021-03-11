@@ -121,7 +121,33 @@ class ReportingController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function proxy($path)
+    public function getTypes()
+    {
+        $path = 'config-type';
+
+        return $this->proxy($path);
+    }
+
+    public function getComponentsByType($type)
+    {
+        $path = 'config-components/' . $type;
+
+        return $this->proxy($path);
+    }
+
+    public function getOptions()
+    {
+        $path = 'config-options';
+
+        return $this->proxy($path);
+    }
+
+    /**
+     * Warning: Don't use this function from outside this class
+     *
+     * @return ApiResponse
+     */
+    protected function proxy($path)
     {
         $method = Request::method();
         $input = Request::all();
@@ -133,6 +159,7 @@ class ReportingController extends Controller
 
     /**
      * Returns reporting service instance. It's not in constructor as it
+     * depends on ba's vars which get set in middleware.
      * depends on ba's vars which get set in middleware.
      *
      * @return Reporting

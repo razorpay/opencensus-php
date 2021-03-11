@@ -33,14 +33,41 @@ return [
             Permission::CONFIRM_USER => [
                 'assignable'  => true,
             ],
+            Permission::VIEW_CITIES => [
+                'assignable'  => true,
+                'description' => 'view list of cities',
+            ],
+            Permission::USER_CREATE  => [
+                'assignable'  => true,
+            ],
+            Permission::USER_FETCH_ADMIN => [
+                'assignable'  => true,
+            ],
             Permission::CANCEL_BATCH => 'cancel batch',
             Permission::BULK_CREATE_ENTITY      => [
                 'assignable' => true,
                 'workflow'   => false,
             ],
             Permission::CORRECT_MERCHANT_OWNER_MISMATCH => 'Correct Merchant Owner Mismatch',
+            Permission::VIEW_CONFIG_KEYS => [
+                'assignable' => true,
+            ],
+            Permission::AUTH_LOCAL_ADMIN => [
+                'assignable' => true,
+            ],
         ],
 
+        PermissionCategory::CONFIG_KEY => [
+            Permission::MANAGE_CONFIG_KEYS => [
+                'assignable' => true
+            ],
+        ],
+
+        PermissionCategory::FILE_STORE => [
+            Permission::ADMIN_GET_FILE => [
+                'assignable' => true,
+            ]
+        ],
         PermissionCategory::RAZORX => [
             Permission::RAZORX_APPROVERS => 'Approve workflows for activation of razorx experiments',
         ],
@@ -48,6 +75,12 @@ return [
         PermissionCategory::MERCHANT => [
             Permission::VIEW_ALL_MERCHANTS            => [
                 'description' => 'View all merchants in merchant lists',
+                'assignable'  => true,
+            ],
+            Permission::MERCHANT_ACTIONS              => [
+                'assignable'  => true,
+            ],
+            Permission::CREATE_MERCHANT               => [
                 'assignable'  => true,
             ],
             Permission::VIEW_MERCHANT                 => [
@@ -64,6 +97,10 @@ return [
             ],
             Permission::MERCHANT_PRICING_PLANS => [
                 'description' => 'List all the merchant pricing plans',
+                'assignable'  => true,
+            ],
+            Permission::ADMIN_FETCH_MERCHANTS => [
+                'description' => 'Fetch Merchants',
                 'assignable'  => true,
             ],
         ],
@@ -116,11 +153,19 @@ return [
                 'assignable'  => true,
             ],
             Permission::VIEW_MERCHANT_FEATURES              => '',
+            Permission::FEATURE_ONBOARDING_FETCH_ALL_RESPONSES => '',
             Permission::VIEW_MERCHANT_BANKS                 => '',
             Permission::VIEW_NETWORKS                       => '',
             Permission::VIEW_MERCHANT_BANK_ACCOUNTS         => [
                 'assignable' => true,
             ],
+            Permission::MERCHANT_ACTIVATION_REVIEWERS      => [
+                'assignable' => true,
+            ],
+            Permission::VIEW_MERCHANT_DOCUMENT             => [
+                'assignable' => true,
+            ],
+            Permission::FEATURE_ONBOARDING_FETCH_ALL_RESPONSES => '',
             Permission::VIEW_MERCHANT_LOGIN                 => '',
             Permission::VIEW_ACTIVITY                       => '',
             Permission::VIEW_MERCHANT_HDFC_EXCEL            => '',
@@ -131,6 +176,9 @@ return [
             Permission::VIEW_ALL_MERCHANT_AGGREGATIONS      => '',
             Permission::VIEW_MERCHANT_AGGREGATIONS          => '',
             Permission::VIEW_MERCHANT_TAGS                  => '',
+            Permission::MERCHANT_SEND_ACTIVATION_MAIL       => [
+                'assignable' => true,
+            ],
             Permission::SET_PRICING_RULES                   => [
                 'assignable' => true,
                 'workflow'   => true
@@ -214,6 +262,10 @@ return [
             Permission::EDIT_MERCHANT_ENABLE_INTERNATIONAL  => '',
             Permission::EDIT_MERCHANT_DISABLE_INTERNATIONAL => '',
             Permission::EDIT_MERCHANT_TERMINAL              => '',
+            Permission::VIEW_TERMINAL                       =>  [
+                'description' => 'Ability to view a terminal',
+                'assignable' => true,
+            ],
             Permission::TOGGLE_TERMINAL                     => [
                 'description' => 'Ability to enable or disable a terminal',
                 'assignable' => true,
@@ -245,6 +297,7 @@ return [
                 'workflow'   => true
             ],
             Permission::VIEW_PAYMENT_VERIFY                 => '',
+            Permission::FETCH_PAYMENT_CONFIG_ADMIN          => '',
             Permission::EDIT_VERIFY_PAYMENTS                => '',
             Permission::EDIT_AUTHORIZED_FAILED_PAYMENT      => '',
             Permission::VIEW_REFUND_PAYMENTS                => '',
@@ -253,6 +306,9 @@ return [
             Permission::AUTHORIZE_PAYMENT                   => [
                 'assignable'  => true,
             ],
+            Permission::FETCH_PAYMENT_CONFIG_ADMIN          => [
+                'assignable'  => true,
+            ] ,
             Permission::VERIFY_PAYMENT                      => [
                 'assignable'  => true,
             ],
@@ -323,6 +379,7 @@ return [
                 'assignable' => true,
             ],
             Permission::CREATE_SETTLEMENT_INITIATE          => '',
+            Permission::GET_IRCTC_SETTLEMENT_FILE           => '',
             Permission::DELETE_TERMINAL                     => '',
             Permission::EDIT_TERMINAL                       => '',
             Permission::CREATE_SETTLEMENTS_RECONCILE        => '',
@@ -472,6 +529,7 @@ return [
             Permission::PAYMENT_CAPTURE_GATEWAY_MANUAL => '',
             Permission::PAYMENT_CAPTURE_VERIFY => '',
             Permission::CREATE_PAYMENT_CONFIG => '',
+            Permission::DELETE_PAYMENT_CONFIG =>'',
             Permission::UPDATE_PAYMENT_CONFIG => '',
             Permission::REFUND_MULTIPLE_AUTHORIZE_PAYMENTS => '',
             Permission::MERCHANT_BALANCE_BULK_BACKFILL => '',
@@ -492,6 +550,30 @@ return [
             Permission::MERCHANT_RISK_ALERT_FOH          => [
                 'assignable' => true,
                 'workflow'   => true
+            ],
+            Permission::FETCH_MERCHANT_BALANCE_CONFIG => [
+                'description' => 'Fetch merchant balance config',
+                'assignable'  => true
+            ],
+            Permission::CREATE_MERCHANT_BALANCE_CONFIG => [
+                'description' => 'Add merchant balance config',
+                'assignable'  => true
+            ],
+            Permission::EDIT_MERCHANT_BALANCE_CONFIG => [
+                'description' => 'Edit merchant balance config',
+                'assignable'  => true
+            ],
+            Permission::UPDATE_ENTITY_BALANCE_ID => [
+                'description' => 'Update Entity balance ID',
+                'assignable'  => true
+            ],
+            Permission::CREATE_REWARD => [
+                'description' => 'Create Reward for merchant',
+                'assignable'  => true
+            ],
+            Permission::DELETE_REWARD => [
+                'description' => 'Delete existing reward',
+                'assignable'  => true
             ],
         ],
 
@@ -602,6 +684,10 @@ return [
                 'description' => 'View Workflow requests',
                 'assignable'  => true,
             ],
+            Permission::EDIT_ACTION => [
+                'description' => 'Edit Action requests',
+                'assignable'  => true,
+            ],
         ],
 
         // Roles
@@ -687,6 +773,12 @@ return [
                 'assignable'  => true,
                 'workflow'    => true
             ],
+            Permission::ADMIN_GET_APP_AUTH => [
+                'assignable'  => true
+            ],
+            Permission::ADMIN_LEAD_VERIFY => [
+                'assignable'  => true
+            ],
         ],
 
         PermissionCategory::ACTION     => [
@@ -763,6 +855,13 @@ return [
             ],
             Permission::VIEW_MERCHANT_INVITE   => [
                 'description' => 'view_merchant_invite',
+                'assignable'  => true,
+            ],
+        ],
+
+        PermissionCategory::USER_INVITATION => [
+            Permission::VIEW_INVITATION => [
+                'description' => 'view user invites',
                 'assignable'  => true,
             ],
         ],
@@ -867,15 +966,16 @@ return [
         ],
 
         PermissionCategory::SHIELD => [
-            Permission::CREATE_SHIELD_RULE      => 'Create shield rule',
-            Permission::EDIT_SHIELD_RULE        => 'Edit shield rule',
-            Permission::DELETE_SHIELD_RULE      => 'Delete shield rule',
-            Permission::VIEW_SHIELD_LIST        => 'View shield list',
-            Permission::CREATE_SHIELD_LIST      => 'Create shield list',
-            Permission::DELETE_SHIELD_LIST      => 'Delete shield list',
-            Permission::ADD_SHIELD_LIST_ITEMS   => 'Add Shield List Items',
-            Permission::PURGE_SHIELD_LIST_ITEMS => 'Purge Shield List Items',
-            Permission::DELETE_SHIELD_LIST_ITEM => 'Delete Shield List Item',
+            Permission::CREATE_SHIELD_RULE          => 'Create shield rule',
+            Permission::EDIT_SHIELD_RULE            => 'Edit shield rule',
+            Permission::DELETE_SHIELD_RULE          => 'Delete shield rule',
+            Permission::VIEW_SHIELD_LIST            => 'View shield list',
+            Permission::CREATE_SHIELD_LIST          => 'Create shield list',
+            Permission::DELETE_SHIELD_LIST          => 'Delete shield list',
+            Permission::ADD_SHIELD_LIST_ITEMS       => 'Add Shield List Items',
+            Permission::PURGE_SHIELD_LIST_ITEMS     => 'Purge Shield List Items',
+            Permission::DELETE_SHIELD_LIST_ITEM     => 'Delete Shield List Item',
+            Permission::RETRIEVE_SHIELD_UI_SETTINGS => 'Retrieve shield admin UI settings',
         ],
 
         PermissionCategory::REPORTING => [
@@ -895,12 +995,30 @@ return [
             Permission::DEBUG_TRANSFERS_ROUTES => [
                 'description' => 'Debug Transfers/Route from admin dashboard',
                 'assignable'  => true
+            ],
+            Permission::PG_ROUTER_ORDER_SYNC => [
+                'description' => 'Sync Order into PG Router',
+                'assignable'  => true
+            ]
+        ],
+
+        PermissionCategory::ROUTE => [
+            Permission::BANK_TRANSFER_MODIFY_PAYER_ACCOUNT => [
+                'description' => 'Bank transfer modify payer account',
+                'assignable'  => true
             ]
         ],
 
         PermissionCategory::VIRTUAL_ACCOUNT => [
             Permission::DEBUG_VIRTUAL_ACCOUNT => [
                 'description' => 'Debug virtual accounts from admin dashboard',
+                'assignable'  => true
+            ]
+        ],
+
+        PermissionCategory::SUBSCRIPTION_REGISTRATIONS => [
+            Permission::TOKEN_REGISTRATION_ACTIONS => [
+                'description' => 'Token registration authenticate and associate',
                 'assignable'  => true
             ]
         ],
@@ -1156,6 +1274,21 @@ return [
             ]
         ],
 
+        PermissionCategory::TRANSACTIONS => [
+            Permission::MARK_TRANSACTIONS_POSTPAID => [
+                'description' => 'Admin action for marking transactions postpaid',
+                'assignable'  => true
+            ],
+            Permission::MDR_ADJUSTMENT => [
+                'description' => 'Mdr Adjustment of transactions',
+                'assignable'  => true
+            ],
+            Permission::CREATE_TRANSACTION_FEE_BREAKUP => [
+                'description' => 'Create transaction fee break up',
+                'assignable'  => true
+            ]
+        ],
+
         PermissionCategory::BANKING_ACCOUNT_TPV_CONFIG => [
             Permission::CREATE_BANKING_ACCOUNT_TPV => [
                 'description' => 'Create tpv',
@@ -1168,6 +1301,13 @@ return [
             Permission::VIEW_BANKING_ACCOUNT_TPV   => [
                 'description' => 'View tpvs for a merchant',
                 'assignable'  => true,
+            ],
+        ],
+
+        PermissionCategory::INHERITANCE  => [
+            Permission::MANAGE_INHERITANCE   => [
+                'description'   => 'Manage merchant config inheritance(currently only inherits terminals)',
+                'assignable'    => true,
             ],
         ],
     ],

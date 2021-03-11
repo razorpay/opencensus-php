@@ -20,22 +20,6 @@ class DeviceTest extends TestCase
         $this->ba->privateAuth();
     }
 
-    public function testRegisterDevice()
-    {
-        $this->ba->adminAuth();
-
-        $device = $this->startTest();
-    }
-
-    public function testLinkDevice()
-    {
-        $device = $this->fixtures->create('offline_device:registered');
-
-        $this->testData[__FUNCTION__]['request']['content']['activation_token'] = $device->getActivationToken();
-
-        $this->startTest();
-    }
-
     public function testDeviceActivateInit()
     {
         $this->ba->directAuth();

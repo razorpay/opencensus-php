@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Merchant;
 use RZP\Models\Admin\Admin\Token;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Artisan;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
@@ -205,6 +206,8 @@ class MerchantEsFetchTest extends TestCase
 
         $this->ba->adminAuth('test', $requestToken);
 
+        $this->setAdminPermission('admin_fetch_merchants');
+
         $this->startTest();
     }
 
@@ -213,6 +216,8 @@ class MerchantEsFetchTest extends TestCase
         $requestToken = $this->getAdminRequestToken('10000000000011');
 
         $this->ba->adminAuth('test', $requestToken);
+
+        $this->setAdminPermission('admin_fetch_merchants');
 
         $this->startTest();
     }
@@ -228,6 +233,8 @@ class MerchantEsFetchTest extends TestCase
 
         $this->ba->adminAuth('test', $requestToken);
 
+        $this->setAdminPermission('admin_fetch_merchants');
+
         $this->startTest();
     }
 
@@ -241,6 +248,8 @@ class MerchantEsFetchTest extends TestCase
         $requestToken = $this->getAdminRequestToken('10000000000011');
 
         $this->ba->adminAuth('test', $requestToken);
+
+        $this->setAdminPermission('admin_fetch_merchants');
 
         $this->startTest();
     }
@@ -264,6 +273,8 @@ class MerchantEsFetchTest extends TestCase
         $requestToken = $this->getAdminRequestToken($adminId);
 
         $this->ba->adminAuth("test", $requestToken);
+
+        $this->setAdminPermission('admin_fetch_merchants');
 
         $testData = $this->testData[$testDataIndex];
 
@@ -305,5 +316,18 @@ class MerchantEsFetchTest extends TestCase
         $requestToken = $adminToken->getAdminId() . $adminToken->getId();
 
         return $requestToken;
+    }
+
+    protected function setAdminPermission($permissionName)
+    {
+        $admin = $this->ba->getAdmin();
+
+        $admin->roles()->sync([Org::ADMIN_ROLE]);
+
+        $roleOfAdmin = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => $permissionName]);
+
+        $roleOfAdmin->permissions()->attach($perm->getId());
     }
 }

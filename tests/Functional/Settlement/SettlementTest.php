@@ -103,32 +103,6 @@ class SettlementTest extends TestCase
         $this->assertEquals(6000, $merchants[0]->balance->reload()->getBalance());
     }
 
-    /**
-     * Tests the different settlement routes which are expecting to read
-     * a file. Even if there is no file to read, they should exit
-     * gracefully with no fuss!
-     */
-    public function testSetlRoutesReadingFileWithNoFile()
-    {
-        $this->deleteSetlFiles();
-
-        $urls = [
-            '/settlements/h2hreconcile/kotak',
-        ];
-
-        $this->ba->appAuth();
-
-        // Verify by hitting each route that in case no file
-        // present, it returns without issues.
-        foreach ($urls as $url)
-        {
-            $request = ['url' => $url];
-
-            $response = $this->sendRequest($request);
-            $response->assertStatus(200);
-        }
-    }
-
     public function testHoldFundsDuringSettlement()
     {
         $this->fixtures->merchant->holdFunds('10000000000000');

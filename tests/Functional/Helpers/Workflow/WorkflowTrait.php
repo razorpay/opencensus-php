@@ -104,6 +104,7 @@ trait WorkflowTrait
     {
         $this->ba->adminAuth($mode, Org::CHECKER_ADMIN_TOKEN, Org::RZP_ORG_SIGNED);
 
+
         $request = [
             'method'    => 'POST',
             'url'       => '/w-actions/' . $workflowActionId . '/checkers',
@@ -118,6 +119,8 @@ trait WorkflowTrait
     public function performWorkflowAction($workflowActionId, bool $shouldApprove = true)
     {
         $this->ba->adminAuth('test');
+
+        $this->addPermissionToBaAdmin(Permission\Name::EDIT_ACTION);
 
         $request = [
             'method' => 'POST',
@@ -187,5 +190,46 @@ trait WorkflowTrait
                 ],
             ],
         ]);
+    }
+
+    protected function addPermissionToBaAdmin(string $permissionName): void
+    {
+        $admin = $this->ba->getAdmin();
+
+        $roleOfAdmin = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => $permissionName]);
+
+        $roleOfAdmin->permissions()->attach($perm->getId());
+    }
+
+    protected function addPermissionToBaAdminForToken(string $permissionName, $token = null): void
+    {
+        $perm = $this->fixtures->create('permission', ['name' => $permissionName]);
+
+        $admin = (new \RZP\Models\Admin\Admin\Token\Repository)
+            ->findOrFailToken($token)->admin;
+
+        $role = $admin->roles()->get()[0];
+
+        $permissionId = $perm->getId();
+
+        $finalPermissions = [Permission\Entity::verifyIdAndSilentlyStripSign($permissionId)];
+
+        foreach ($admin->roles()->get() as $role)
+        {
+            $permissions = $role->permissions()->get();
+
+            foreach ($permissions as $permission)
+            {
+                $permissionId = $permission->getId();
+
+                array_push($finalPermissions, Permission\Entity::verifyIdAndSilentlyStripSign($permissionId));
+            }
+        }
+
+        $finalPermissions = array_unique($finalPermissions);
+
+        $role->permissions()->sync($finalPermissions);
     }
 }

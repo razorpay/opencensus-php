@@ -8,7 +8,9 @@ use Config;
 
 use RZP\Models\Base\EsDao;
 use RZP\Models\Merchant\Account;
+use Rzp\Models\Admin\Permission;
 use RZP\Tests\Functional\TestCase;
+use Rzp\Models\Admin\Admin\Token;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Models\Admin\Permission as AdminPermission;
@@ -41,10 +43,15 @@ class WorkflowActionTest extends TestCase
         $this->fixtures->workflow_action->setUp();
 
         $makerRole = (new RoleRepository())->findByIdAndOrgId(Org::MAKER_ROLE, Org::RZP_ORG);
+        $checkerRole = (new RoleRepository())->findByIdAndOrgId(Org::CHECKER_ROLE, Org::RZP_ORG);
 
         $permissions = (new AdminPermission\Repository)->retrieveIdsByNames([AdminPermission\Name::EDIT_ADMIN]);
 
         $makerRole->permissions()->attach($permissions);
+
+        $permissions = (new AdminPermission\Repository)->retrieveIdsByNames([AdminPermission\Name::VIEW_WORKFLOW_REQUESTS]);
+        $makerRole->permissions()->attach($permissions);
+        $checkerRole->permissions()->attach($permissions);
     }
 
     /**
@@ -94,6 +101,8 @@ class WorkflowActionTest extends TestCase
     {
         $this->setDefaultActionIdInUrl();
 
+        $this->addPermissionToBaAdmin(AdminPermission\Name::VIEW_ALL_WORKFLOW);
+
         $this->testData[__FUNCTION__]['response']['content']['entity_id'] = Org::MAKER_ADMIN;
 
         $this->testData[__FUNCTION__]['response']['content']['entity_name'] = 'admin';
@@ -111,6 +120,8 @@ class WorkflowActionTest extends TestCase
         $defaultWorkflowActionId = 'w_action_' . WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID;
 
         $this->setDefaultActionIdInUrl();
+
+        $this->addPermissionToBaAdmin(AdminPermission\Name::EDIT_ACTION);
 
         $this->testData[__FUNCTION__]['response']['content']['org_id'] = Org::RZP_ORG_SIGNED;
 
@@ -175,6 +186,8 @@ class WorkflowActionTest extends TestCase
             ],
         ];
 
+        $this->addPermissionToBaAdmin(AdminPermission\Name::VIEW_ALL_WORKFLOW);
+
         $this->startTest();
     }
 
@@ -183,6 +196,8 @@ class WorkflowActionTest extends TestCase
         $defaultWorkflowActionId = 'w_action_' . WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID;
 
         $this->setDefaultActionIdInUrl(Org::CHECKER_ADMIN_TOKEN);
+
+        $this->addPermissionToBaAdmin(AdminPermission\Name::EDIT_ACTION);
 
         $this->testData[__FUNCTION__]['response']['content']['checkers'][0]['admin_id'] = Org::CHECKER_ADMIN_SIGNED;
 
@@ -206,12 +221,16 @@ class WorkflowActionTest extends TestCase
 
         $this->ba->adminAuth('test');
 
+        $this->addPermissionToBaAdmin(AdminPermission\Name::EDIT_ACTION);
+
         $this->startTest();
     }
 
     public function testWorkflowActionApproveDiffRole()
     {
         $this->setDefaultActionIdInUrl();
+
+        $this->addPermissionToBaAdmin(AdminPermission\Name::EDIT_ACTION);
 
         $this->startTest();
     }
@@ -244,6 +263,8 @@ class WorkflowActionTest extends TestCase
 
         $this->ba->adminAuth('test', Org::CHECKER_ADMIN_TOKEN, Org::RZP_ORG_SIGNED);
 
+        $this->addPermissionToBaAdmin(AdminPermission\Name::EDIT_ACTION);
+
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
         $url = sprintf($url, $workflow['id']);
@@ -255,6 +276,8 @@ class WorkflowActionTest extends TestCase
 
     public function testWorkflowActionExecuteLastApproval()
     {
+        $this->addPermissionEditActionToAdmins();
+
         $this->fixtures->on('live')->create('org:admin_for_razorpay_org');
 
         $permission = $this->getDbEntity('permission', ['name' => 'edit_admin'], 'live');
@@ -300,6 +323,8 @@ class WorkflowActionTest extends TestCase
 
     public function testWorkflowActionExecuteLastApprovalForCredits()
     {
+        $this->addPermissionEditActionToAdmins();
+
         $this->fixtures->on('live')->create('org:admin_for_razorpay_org');
 
         $permission = $this->getDbEntity('permission', ['name' => 'add_merchant_credits'], 'live');
@@ -352,6 +377,35 @@ class WorkflowActionTest extends TestCase
         $this->assertEquals($creditsLog['value'], 25);
     }
 
+    protected function addPermissionEditActionToAdmins(): void
+    {
+        $perm = $this->fixtures->create('permission', ['name' => 'edit_action']);
+
+        $admin = $this->ba->getAdmin(Org::CHECKER_ADMIN_TOKEN);
+
+        $role = $admin->roles()->get()[0];
+
+        $permId = $perm->getId();
+
+        $perms = [Permission\Entity::verifyIdAndSilentlyStripSign($permId)];
+
+        $unsignedOldPerms = $perms;
+
+        $role->permissions()->sync($unsignedOldPerms);
+
+        $admin = (new Token\Repository)->findOrFailToken(Org::MAKER_ADMIN_TOKEN)->admin;
+
+        $role = $admin->roles()->get()[0];
+
+        $permId = $perm->getId();
+
+        $perms = [Permission\Entity::verifyIdAndSilentlyStripSign($permId)];
+
+        $unsignedOldPerms = $perms;
+
+        $role->permissions()->sync($unsignedOldPerms);
+    }
+
     public function testWorkflowActionSuperAdminApprove()
     {
         $this->fixtures->on('live')->create('org:admin_for_razorpay_org');
@@ -388,6 +442,8 @@ class WorkflowActionTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
+        $this->addPermissionToBaAdmin(AdminPermission\Name::EDIT_ACTION);
+
         $this->startTest();
     }
 
@@ -414,6 +470,8 @@ class WorkflowActionTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
+        $this->addPermissionToBaAdmin(AdminPermission\Name::EDIT_ACTION);
+
         $this->startTest();
     }
 
@@ -432,6 +490,8 @@ class WorkflowActionTest extends TestCase
         $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $workflow['id']);
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->addPermissionToBaAdmin(AdminPermission\Name::EDIT_ACTION);
 
         $this->startTest();
     }

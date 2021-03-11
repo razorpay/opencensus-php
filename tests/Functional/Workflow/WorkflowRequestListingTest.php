@@ -5,6 +5,9 @@ namespace RZP\Tests\Functional\Workflow;
 use RZP\Services\EsClient;
 use Illuminate\Support\Facades\DB;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Admin\Permission as AdminPermission;
+use RZP\Models\Admin\Role\Repository as RoleRepository;
+use RZP\Models\Admin\Permission\Name;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
@@ -31,6 +34,12 @@ class WorkflowRequestListingTest extends TestCase
         // we have all the required roles in the default org setup.
         //workflow actions need to be created.
         $this->fixtures->workflow_action->setUp();
+
+        $makerRole = (new RoleRepository())->findByIdAndOrgId(Org::MAKER_ROLE, Org::RZP_ORG);
+        $checkerRole = (new RoleRepository())->findByIdAndOrgId(Org::CHECKER_ROLE, Org::RZP_ORG);
+        $permissions = (new AdminPermission\Repository)->retrieveIdsByNames([AdminPermission\Name::VIEW_WORKFLOW_REQUESTS]);
+        $makerRole->permissions()->attach($permissions);
+        $checkerRole->permissions()->attach($permissions);
     }
 
     /**
@@ -40,6 +49,8 @@ class WorkflowRequestListingTest extends TestCase
     public function testWorkflowCheckerRequests()
     {
         $this->ba->adminAuth('test', Org::CHECKER_ADMIN_TOKEN, 'org_' . Org::RZP_ORG);
+
+        $this->addPermissionToBaAdmin(Name::VIEW_ALL_WORKFLOW);
 
         $this->startTest();
     }
@@ -58,6 +69,8 @@ class WorkflowRequestListingTest extends TestCase
             "count"  => 0,
             "items"  => [],
         ];
+
+        $this->addPermissionToBaAdminForToken(Name::VIEW_ALL_WORKFLOW, Org::CHECKER_ADMIN_TOKEN);
 
         $this->startTest();
     }
@@ -81,6 +94,8 @@ class WorkflowRequestListingTest extends TestCase
 
         $this->testData[__FUNCTION__]['response']['content']['items'][0]['id'] = $action->getPublicId();
 
+        $this->addPermissionToBaAdmin(Name::VIEW_ALL_WORKFLOW);
+
         $this->startTest();
     }
 
@@ -92,6 +107,10 @@ class WorkflowRequestListingTest extends TestCase
         $workflow = $this->editAdmin(Org::RZP_ORG_SIGNED, Org::SUPER_ADMIN_SIGNED);
 
         $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
+
+        $this->addPermissionToBaAdminForToken(Name::EDIT_ACTION, Org::CHECKER_ADMIN_TOKEN);
+
+        $this->addPermissionToBaAdminForToken(Name::VIEW_ALL_WORKFLOW, Org::CHECKER_ADMIN_TOKEN);
 
         $this->approveWorkflowAction($workflow['id']);
 
@@ -135,6 +154,8 @@ class WorkflowRequestListingTest extends TestCase
     {
         $this->ba->adminAuth('test');
 
+        $this->addPermissionToBaAdmin(Name::VIEW_ALL_WORKFLOW);
+
         $this->fixtures->create('workflow_action:closed_workflow_action');
 
         $this->startTest();
@@ -144,6 +165,8 @@ class WorkflowRequestListingTest extends TestCase
     {
         $this->ba->adminAuth('test');
 
+        $this->addPermissionToBaAdmin(Name::VIEW_ALL_WORKFLOW);
+
         $this->fixtures->create('workflow_action:closed_workflow_action');
 
         $this->startTest();
@@ -152,6 +175,8 @@ class WorkflowRequestListingTest extends TestCase
     public function testWorkflowSearchByMakerId()
     {
         $this->ba->adminAuth('test', Org::CHECKER_ADMIN_TOKEN, 'org_' . Org::RZP_ORG);
+
+        $this->addPermissionToBaAdmin(Name::VIEW_ALL_WORKFLOW);
 
         $action = $this->fixtures->create('workflow_action', [
             'maker_id'   => '12345678',

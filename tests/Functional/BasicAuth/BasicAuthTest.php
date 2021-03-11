@@ -241,9 +241,15 @@ class BasicAuthTest extends TestCase
 
         $this->ba->addAccountAuth($merchant->getId());
 
+        $publicOrgID = 'org_' . Org::RZP_ORG;
+
+        $url = '/orgs/' . $publicOrgID . '/self';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
         $result = $this->startTest();
 
-        $this->assertEquals($merchant->getId(), $result['id']);
+        $this->assertEquals($publicOrgID, $result['id']);
     }
 
     public function testAdminAuthWithAccount()

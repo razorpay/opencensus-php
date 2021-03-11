@@ -77,26 +77,6 @@ trait SettlementTrait
         ];
     }
 
-    protected function deleteSetlFiles()
-    {
-        $deleteUrls = [
-            '/settlements/file/setl_initiate',
-            '/settlements/file/reconcile',
-        ];
-
-        $this->ba->adminAuth();
-
-        // Delete setl files first in case they already exist
-        foreach ($deleteUrls as $deleteUrl)
-        {
-            $request = ['url' => $deleteUrl, 'method' => 'delete'];
-
-            $response = $this->sendRequest($request);
-
-            $this->assertResponseOk($response);
-        }
-    }
-
     protected function runPaymentOnHoldUpdateCron()
     {
         $request = [

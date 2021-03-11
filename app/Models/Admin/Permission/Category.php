@@ -22,6 +22,7 @@ class Category
     const AUDIT_LOG                    = 'audit_log';
     const PERMISSION                   = 'permission';
     const INVITATION                   = 'invitation';
+    const USER_INVITATION              = 'user_invitations';
     const SETTLEMENT                   = 'settlement';
     const GATEWAY_RULE                 = 'gateway_rule';
     const GATEWAY_DOWNTIME             = 'gateway_downtime';
@@ -49,4 +50,9 @@ class Category
     const MERCHANT_NOTIFICATION_CONFIG = 'merchant_notification_config';
     const PAYMENT_LINK_V2              = 'payment_links_v2';
     const BANKING_ACCOUNT_TPV_CONFIG   = 'banking_account_tpv_config';
+    const TRANSACTIONS                 = 'transactions';
+    const SUBSCRIPTION_REGISTRATIONS   = 'subscription_registrations';
+    const INHERITANCE                  = 'inheritance';
+    const FILE_STORE                   = 'file_store';
+    const CONFIG_KEY                   = 'config_key';
 }
