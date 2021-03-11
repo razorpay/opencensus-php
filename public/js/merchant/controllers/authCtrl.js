@@ -89,18 +89,6 @@ app
       $scope.showKnowMore = false;
       $scope.currentService = serviceName();
 
-      $scope.isInlineOneTap = true;
-      $scope.isOneTapExpOn = false;
-      $scope.isOneTapEnabled = false;
-      $scope.isGauthTypeDecided = false;
-      $scope.oneTapScaling = 0.8;
-      $scope.authVersion = $scope.isOneTapExpOn ? 1.2 : 1.1; // for analytics
-
-      // initialize onetap only when not X and if optimize experiment(isOneTapExpOn) returns true
-      if ($scope.currentService != 'X' && window.isOneTapExpOn) {
-        $scope.isOneTapExpOn = true;
-      }
-
       $scope.organization = {};
       $scope.isOrgCheckDone = false;
       organization.fetchCurrentOrg().then(function (data) {
@@ -134,12 +122,6 @@ app
       var isProd = window.location.hostname.endsWith('razorpay.com');
       var isAxisBankUATEnv = window.location.hostname.includes('dashboard-axis.stage.razorpay.in');
       var isLoginWithGoogle = false;
-      var ONE_TAP_SELECTOR = 'one-tap-wrapper';
-      var ONE_TAP_WRAPPER = 'one-tap-overflow';
-      var G_AUTH_TYPES = {
-        oneTap: 'google-one-tap',
-        btn: 'google-button',
-      };
 
       $scope.signup = {
         currentStep: 0, // 0, 1, 2
@@ -289,96 +271,6 @@ app
         initializeGAPI();
       };
 
-      $scope.updateOneTap = function (isEnabled) {
-        $scope.isOneTapEnabled = isEnabled;
-        if (!isEnabled) {
-          var oneTapWrapper = document.getElementById(ONE_TAP_WRAPPER);
-          if (oneTapWrapper) {
-            oneTapWrapper.style.display = 'none';
-          }
-        }
-      };
-
-      function handleOneTapNotify(notification) {
-        var notifyType = notification.getMomentType();
-        if (notifyType === 'display') {
-          if (notification.isDisplayed()) {
-            $scope.updateOneTap(true);
-            fireInitGauthType(G_AUTH_TYPES.oneTap);
-            var oneTapIframe = document.querySelector('#' + ONE_TAP_SELECTOR + ' iframe');
-            if (oneTapIframe) {
-              // Adding explicit height to onetap overflow wrapper to hide the extra space left due to (.8)scale down.
-              var iframeObserver = new MutationObserver(function () {
-                if (oneTapIframe.style.height) {
-                  document.getElementById(ONE_TAP_WRAPPER).style.height =
-                    Math.round(parseInt(oneTapIframe.style.height) * $scope.oneTapScaling) + 'px';
-                }
-              });
-              iframeObserver.observe(oneTapIframe, {
-                attributes: true,
-                attributeFilter: ['style'],
-              });
-            } else {
-              $scope.isInlineOneTap = false;
-            }
-          } else {
-            $scope.updateOneTap(false);
-            fireInitGauthType(G_AUTH_TYPES.btn, notification.getNotDisplayedReason());
-          }
-        } else if (notifyType === 'skipped') {
-          $scope.updateOneTap(false);
-          if (
-            notification.getSkippedReason() === 'tap_outside' ||
-            notification.getSkippedReason() === 'user_cancel'
-          ) {
-            fireDLInitiatedEvents('login.google_onetap_close');
-          } else {
-            fireInitGauthType(G_AUTH_TYPES.btn, notification.getNotDisplayedReason());
-          }
-        }
-        $scope.isGauthTypeDecided = true;
-        if (notifyType !== 'dismissed') {
-          $scope.$apply();
-        }
-      }
-
-      $scope.initOneTap = function () {
-        // setting up an interval to wait and check if onetap(window.google) has loaded from script
-        var checkScriptLoadingInterval = setInterval(() => {
-          if (window.google) {
-            window.google.accounts.id.initialize({
-              client_id: window.OAUTH_CLIENT_ID,
-              cancel_on_tap_outside: false,
-              context: 'signin',
-              prompt_parent_id: ONE_TAP_SELECTOR,
-              callback: (res) => {
-                if (res.credential) {
-                  var separatorOr = document.getElementsByClassName('separator-container-onetap');
-                  var tokenEmail;
-                  if (separatorOr.length) {
-                    separatorOr[0].style.display = 'none';
-                  }
-                  try {
-                    tokenEmail = JSON.parse(atob(res.credential.split('.')[1])).email;
-                  } catch (e) {
-                    tokenEmail = '';
-                  }
-
-                  updateSpinnerState('show');
-                  fireDLSuccessEvents('login.google_oauth', {
-                    emailId: email,
-                    googleAuthVariant: G_AUTH_TYPES.oneTap,
-                  });
-                  signinHandler(res.credential, tokenEmail, G_AUTH_TYPES.oneTap);
-                }
-              },
-            });
-            window.google.accounts.id.prompt(handleOneTapNotify);
-            clearInterval(checkScriptLoadingInterval);
-          }
-        }, 50);
-      };
-
       const pushPromMetric = ({ flow, label }) => {
         if (!window.rzpQMetrics) return;
 
@@ -411,57 +303,35 @@ app
         mode: $scope.eventsMode,
         sessionId: window.session_id,
         service: $scope.currentService,
-        version: $scope.authVersion,
+        version: 1.1,
         ref_url: $location.search().utm_source || document.referrer,
         url: document.location.href,
       };
 
-      function fireDLFailureEvents(eventName, properties) {
+      const fireDLFailureEvents = function (eventName, properties) {
         window.rzpQ &&
           window.rzpQ.push(
             window.rzpQ.now().onbr().failed(eventName, Object.assign(gauthEventObj, properties)),
           );
-      }
+      };
 
-      function fireDLSuccessEvents(eventName, properties) {
+      const fireDLSuccessEvents = function (eventName, properties) {
         window.rzpQ &&
           window.rzpQ.push(
             window.rzpQ.now().onbr().success(eventName, Object.assign(gauthEventObj, properties)),
           );
-      }
+      };
 
-      function fireDLInitiatedEvents(eventName, properties) {
+      const fireDLInitiatedEvents = function (eventName, properties) {
         window.rzpQ &&
           window.rzpQ.push(
             window.rzpQ.now().onbr().initiated(eventName, Object.assign(gauthEventObj, properties)),
           );
-      }
-
-      const fireGauthLoginEvt = function (email, error, gAuthType) {
-        fireDLFailureEvents('login.login', {
-          emailId: email,
-          error,
-          method: 'google_oauth',
-          googleAuthVariant: gAuthType,
-        });
       };
 
-      function fireInitGauthType(type, onetapHideReason) {
-        var utmData = readUTMsCookie();
-
-        fireDLSuccessEvents('login.display_google_auth', {
-          googleAuthVariant: type,
-          oneTapHide: onetapHideReason,
-          source: 'sign_in',
-          first_utm: utmData.firstUtm,
-          last_utm: utmData.lastUtm,
-          ref_url: $location.search().utm_source || document.referrer,
-          first_page: utmData.firstPage,
-          final_page: utmData.finalPage,
-          website: utmData.website,
-          version: 1.2,
-        });
-      }
+      const fireGauthLoginEvt = function (email, error) {
+        fireDLFailureEvents('login.login', { emailId: email, error, method: 'google_oauth' });
+      };
 
       $scope.closeGauthPopUp = function () {
         $scope.showGAuthPopup = false;
@@ -530,11 +400,8 @@ app
         if (triggerButton) {
           updateSpinnerState('show');
           if (!isInitiatedEventFired) {
-            fireDLInitiatedEvents('login.google_oauth', { googleAuthVariant: G_AUTH_TYPES.btn });
-            fireDLInitiatedEvents('login.login', {
-              method: 'google_oauth',
-              googleAuthVariant: G_AUTH_TYPES.btn,
-            });
+            fireDLInitiatedEvents('login.google_oauth');
+            fireDLInitiatedEvents('login.login', { method: 'google_oauth' });
             pushPromMetric({ flow: 'login', label: 'login_initiate' });
             isInitiatedEventFired = true;
           }
@@ -574,7 +441,6 @@ app
                         fireDLFailureEvents('login.google_oauth', {
                           emailId: email,
                           error: error.details,
-                          googleAuthVariant: G_AUTH_TYPES.btn,
                         });
                       }
                     } else {
@@ -588,11 +454,8 @@ app
           attachSignin(button);
           if (triggerButton) {
             if (!isInitiatedEventFired) {
-              fireDLInitiatedEvents('login.google_oauth', { googleAuthVariant: G_AUTH_TYPES.btn });
-              fireDLInitiatedEvents('login.login', {
-                method: 'google_oauth',
-                googleAuthVariant: G_AUTH_TYPES.btn,
-              });
+              fireDLInitiatedEvents('login.google_oauth');
+              fireDLInitiatedEvents('login.login', { method: 'google_oauth' });
               pushPromMetric({ flow: 'login', label: 'login_initiate' });
             }
             button.click();
@@ -601,95 +464,82 @@ app
         }
       };
 
-      function googleBtnSigninHandler(googleUser) {
-        var idToken = googleUser.getAuthResponse().id_token;
-        var email = googleUser.getBasicProfile().getEmail();
-
-        fireDLSuccessEvents('login.google_oauth', {
-          emailId: email,
-          googleAuthVariant: G_AUTH_TYPES.btn,
-        });
-        signinHandler(idToken, email, G_AUTH_TYPES.btn);
-      }
-
-      function signinHandler(idToken, email, authType) {
-        $scope.idToken = idToken;
-        $scope.googleAuthEmail = email;
-
-        var payload = {
-          method: 'post',
-          url: '/user/oauth-signin',
-          data: {
-            email,
-            id_token: $scope.idToken,
-            oauth_provider: 'google',
-          },
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        };
-        let request = $http(payload);
-        request
-          .success(function (data) {
-            if (data.success) {
-              isLoginWithGoogle = true;
-              user
-                .identity(true)
-                .then(function (userDetails) {
-                  userIdentitySuccess(userDetails);
-                })
-                .catch(function (errors) {
-                  updateSpinnerState('hide');
-                  fireGauthLoginEvt(email, errors[0], authType);
-                  $scope.alerts.addAlert('danger', errors[0]);
-                  $scope.updateOneTap(false);
-                });
-            } else {
-              updateSpinnerState('hide');
-
-              if (data.errors && data.errors.length) {
-                var firstError = data.errors[0];
-
-                if (typeof firstError === 'object' && !!firstError.internal_error_code) {
-                  $scope.handleErrorsWithInternalCode(firstError);
-                } else if (firstError.includes('Razorpay Account Not Found')) {
-                  if (isMerchantX) {
-                    $scope.alerts.addAlert('danger', `No account found for ${email}`);
-                  } else {
-                    $scope.googleAuthEmail = email;
-                    $scope.showGAuthPopup = true;
-                  }
-                  fireDLSuccessEvents('login.account_not_found_modal', {
-                    emailId: email,
-                    method: 'google_oauth',
-                    googleAuthVariant: authType,
-                  });
-                  fireGauthLoginEvt(email, firstError, authType);
-                } else {
-                  fireGauthLoginEvt(email, firstError, authType);
-                  $scope.alerts.addAlert('danger', firstError);
-                }
-              }
-              $scope.updateOneTap(false);
-            }
-          })
-          .error(function (errors) {
-            $scope.updateOneTap(false);
-            updateSpinnerState('hide');
-            fireGauthLoginEvt(email, errors[0], authType);
-            $scope.alerts.addAlert('danger', errors[0]);
-          });
-      }
-
       const attachSignin = (element) => {
-        googleAuthObj.attachClickHandler(element, {}, googleBtnSigninHandler, function (errors) {
-          updateSpinnerState('hide');
-          fireDLFailureEvents('login.google_oauth', {
-            emailId: email,
-            error: errors.error,
-            googleAuthVariant: G_AUTH_TYPES.btn,
-          });
-        });
+        googleAuthObj.attachClickHandler(
+          element,
+          {},
+          function (googleUser) {
+            $scope.idToken = googleUser.getAuthResponse().id_token;
+            const email = googleUser.getBasicProfile().getEmail();
+            $scope.googleAuthEmail = email;
+
+            fireDLSuccessEvents('login.google_oauth', { emailId: email });
+
+            var payload = {
+              method: 'post',
+              url: '/user/oauth-signin',
+              data: {
+                email,
+                id_token: $scope.idToken,
+                oauth_provider: 'google',
+              },
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            };
+            let request = $http(payload);
+            request
+              .success(function (data) {
+                if (data.success) {
+                  isLoginWithGoogle = true;
+                  user
+                    .identity(true)
+                    .then(function (userDetails) {
+                      userIdentitySuccess(userDetails);
+                    })
+                    .catch(function (errors) {
+                      updateSpinnerState('hide');
+                      fireGauthLoginEvt(email, errors[0]);
+                      $scope.alerts.addAlert('danger', errors[0]);
+                    });
+                } else {
+                  updateSpinnerState('hide');
+
+                  if (data.errors && data.errors.length) {
+                    var firstError = data.errors[0];
+
+                    if (typeof firstError === 'object' && !!firstError.internal_error_code) {
+                      $scope.handleErrorsWithInternalCode(firstError);
+                    } else if (firstError.includes('Razorpay Account Not Found')) {
+                      if (isMerchantX) {
+                        $scope.alerts.addAlert('danger', `No account found for ${email}`);
+                      } else {
+                        $scope.googleAuthEmail = email;
+                        $scope.showGAuthPopup = true;
+                      }
+                      fireDLSuccessEvents('login.account_not_found_modal', {
+                        emailId: email,
+                        method: 'google_oauth',
+                      });
+                      fireGauthLoginEvt(email, firstError);
+                    } else {
+                      fireGauthLoginEvt(email, firstError);
+                      $scope.alerts.addAlert('danger', firstError);
+                    }
+                  }
+                }
+              })
+              .error(function (errors) {
+                updateSpinnerState('hide');
+                fireGauthLoginEvt(email, errors[0]);
+                $scope.alerts.addAlert('danger', errors[0]);
+              });
+          },
+          function (errors) {
+            updateSpinnerState('hide');
+            fireDLFailureEvents('login.google_oauth', { emailId: email, error: errors.error });
+          },
+        );
       };
 
       const getCookie = function (name) {
@@ -718,7 +568,7 @@ app
         document.cookie = `${name}=${value};domain=${domain};expires=${expires};`;
       };
 
-      function readUTMsCookie() {
+      const readUTMsCookie = function () {
         const rzpUtmCookie = getCookie('rzp_utm');
         let utms = {};
         let parsedCookie = JSON.parse(rzpUtmCookie);
@@ -730,7 +580,7 @@ app
         utms.finalPage = parsedCookie && parsedCookie.final_page ? parsedCookie.final_page : '';
         utms.website = parsedCookie && parsedCookie.website ? parsedCookie.website : '';
         return utms;
-      }
+      };
 
       $scope.onCreateAccountWithGoogle = function (email) {
         updateSpinnerState('show');
@@ -763,7 +613,6 @@ app
                 userIdentitySuccess(userDetails);
               })
               .catch(function (errors) {
-                $scope.updateOneTap(false);
                 updateSpinnerState('hide');
                 $scope.alerts.addAlert('danger', errors[0]);
               });
@@ -773,7 +622,6 @@ app
             if (data.errors && data.errors.length) {
               $scope.alerts.addAlert('danger', data.errors[0]);
             }
-            $scope.updateOneTap(false);
           }
         });
       };
@@ -1187,10 +1035,6 @@ app
         fireDLSuccessEvents('login.login', {
           source: 'sign_in',
           method: isLoginWithGoogle ? 'google_oauth' : 'email',
-          googleAuthVariant:
-            $scope.isGauthTypeDecided && $scope.isOneTapEnabled
-              ? G_AUTH_TYPES.oneTap
-              : G_AUTH_TYPES.btn,
           emailId: data.user.email,
           userid: data.user.id,
           mid: data.current,
@@ -1749,7 +1593,6 @@ app
               first_page: utm.firstPage,
               final_page: utm.finalPage,
               website: utm.website,
-              version: 1.2,
             });
           }
 

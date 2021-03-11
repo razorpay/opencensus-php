@@ -1,15 +1,15 @@
 <div class="auth-overflow-container">
   <div class="login-translate-container"
-    ng-style="{'transform': 'translateX(' + ((-320)*login.currentStep) + 'px)', 'width': '2880'}">
+    ng-style="{'transform': 'translateX(' + ((-240)*login.currentStep) + 'px)', 'width': '2160'}">
     <div class="auth-step">
       <div class="auth-heading">
         Forgot Password
       </div>
-      <div class="auth-text reset-auth-text">
+      <div class="auth-text">
         Enter your email and we will send you a password reset link
       </div>
 
-      <form class="auth-form reset-form" name="forgotPwdForm" xng-submit="goToStep(1)"
+      <form class="auth-form" name="forgotPwdForm" xng-submit="goToStep(1)"
         ng-submit="forgotPwdSubmit(forgotPwdForm.$valid)">
         <label class="form-label auth-subheading" for="email">Email</label>
         <input override-tab type="email" placeholder="example@xyz.com" name="email" id="email"
@@ -21,7 +21,7 @@
           <div class="spinner-container" style="background-image: url('img/loading-bubbles.svg')"></div>
         </div>
       </form>
-      <div class="highlight-clickable-text forgot-password-text-login" ng-click="goToSigninLayout()">
+      <div class="highlight-clickable-text forgot-password-text" ng-click="goToSigninLayout()">
         Back to Login
       </div>
       <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">
@@ -34,7 +34,7 @@
       </div>
       <div class="login-details-overflow-container">
         <div class="login-details-translate-container"
-          ng-style="{'transform': 'translateX(' + ((-320)*login.currentSubStep) + 'px)'}">
+          ng-style="{'transform': 'translateX(' + ((-240)*login.currentSubStep) + 'px)'}">
           <div class="auth-substep">
             <div class="auth-text">
               <span ng-if="lockme">You have been inactive for more than 5 minutes. Enter password to access the
@@ -52,9 +52,9 @@
               </button>
             </div>
 
-            <div class=" separator-container separator-container-google" ng-if="!isOrgAXIS">
-              <div class="separator"></div>
-              <span class="text">or</span>
+            <div class=" separator-container" ng-if="!isOrgAXIS">
+                <div class="separator"></div>
+                <span class="text">or</span>
             </div>
 
             <form class="auth-form" name="loginForm" xng-submit="goToLoginStep(0, 1)"
@@ -87,7 +87,7 @@
 
             </form>
 
-            <div class="subtext subtext-captcha-inline" ng-if="!isOrgAXIS">
+            <div class="subtext" ng-if="!isOrgAXIS">
               Protected by reCAPTCHA. Google
               <a href="https://policies.google.com/privacy" class="inline-block ds-highlight-clickable-text">Privacy
                 Policy</a> &
@@ -95,23 +95,17 @@
                 Service</a> apply.
             </div>
 
-            <div class=" separator-container separator-container-onetap" ng-if="!isOrgAXIS">
-              <div class="separator"></div>
-              <span class="text">or</span>
-            </div>
-
-            <div id="one-tap-overflow" ng-if="!isOrgAXIS && isOneTapExpOn">
-              <div id="one-tap-wrapper" ng-init="initOneTap()"></div>
-            </div>
-
             <div class="loading-animation">
               <div class="spinner-container" style="background-image: url('img/loading-bubbles.svg')"></div>
             </div>
 
+            <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">
+              {{alert.msg}}
+            </alert>
           </div>
         </div>
       </div>
-      <div ng-if="!lockme && isOrgCheckDone && !isOrgHDFC && !isOrgAXIS" class="contact-us-text contact-us-text-inline">
+      <div ng-if="!lockme && isOrgCheckDone && !isOrgHDFC && !isOrgAXIS" class="contact-us-text">
         Need help? <a class="highlight-clickable-text" ng-click="onContactUs()"
           href="https://razorpay.com/support/#request/merchant" target="_blank">Contact Us</a>
       </div>
