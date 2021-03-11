@@ -1632,15 +1632,33 @@ class Core extends Base\Core
                     'config_key' => 'description',
                 ],
                 [
+                    'key'        => 'description',
+                    'value'      => $paymentLink->getDescription(),
+                    'list'       => 'authorities_list',
+                    'config_key' => 'description',
+                ],
+                [
                     'key'        => 'title',
                     'value'      => $paymentLink->getTitle(),
                     'list'       => 'high_risk_list',
                     'config_key' => 'title',
                 ],
                 [
+                    'key'        => 'title',
+                    'value'      => $paymentLink->getTitle(),
+                    'list'       => 'authorities_list',
+                    'config_key' => 'title',
+                ],
+                [
                     'key'        => 'terms',
                     'value'      => $paymentLink->getTerms(),
                     'list'       => 'high_risk_list',
+                    'config_key' => 'terms',
+                ],
+                [
+                    'key'        => 'terms',
+                    'value'      => $paymentLink->getTerms(),
+                    'list'       => 'authorities_list',
                     'config_key' => 'terms',
                 ]
             ]
