@@ -443,7 +443,7 @@ class PaymentCreateDCCTest extends TestCase
         $fee = $cardCurrencyObject['fee'];
         $amount = $cardCurrencyObject['amount'];
         $baseAmount = $flowsData['content']['amount'];
-        $markup = 0.05;
+        $markup = 0.06;
         $feeExpected = $forexRate * $markup * $baseAmount;
         $feeExpected = number_format($feeExpected, 2, '.','');
 

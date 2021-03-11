@@ -537,7 +537,7 @@ class Entity extends Base\PublicEntity
     const MAX_PAYMENT_AMOUNT_DEFAULT                  = 50000000;
     const MAX_PAYMENT_AMOUNT_DEFAULT_FOR_UNREGISTERED = 1000000;
     const RISK_THRESHOLD_DEFAULT                      = 8;
-    const DCC_MARKUP_PERCENTAGE_DEFAULT               = 5;
+    const DCC_MARKUP_PERCENTAGE_DEFAULT               = 6;
 
     public function refresh()
     {
