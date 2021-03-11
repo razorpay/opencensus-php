@@ -576,6 +576,9 @@ class Name
     // NPS survey create
     const NPS_SURVEY                          = 'nps_survey';
 
+    // Salesforce
+    const VIEW_SALESFORCE_OPPORTUNITY_DETAIL           = 'view_salesforce_opportunity_detail';
+
     // TPV for fund loading into X
     const CREATE_BANKING_ACCOUNT_TPV                   = 'create_banking_account_tpv';
     const EDIT_BANKING_ACCOUNT_TPV                     = 'edit_banking_account_tpv';
