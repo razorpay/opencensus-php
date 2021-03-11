@@ -1427,4 +1427,35 @@ return [
             'internal_error_code'   => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testFetchBankingAccountStatus' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [
+                'product' => 'banking'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'               => 'acc_10000000000009',
+                        'entity'           => 'merchant',
+                        'user'             => [],
+                        'details'          => [
+                            'activation_status' => 'under_review',
+                        ],
+                        'dashboard_access' => false,
+                        'banking_account' => [
+                            'va_status' => null,
+                            'ca_status' =>  'created',
+                        ]
+                    ]
+                ],
+            ],
+        ],
+    ],
 ];

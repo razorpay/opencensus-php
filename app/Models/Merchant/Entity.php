@@ -127,6 +127,8 @@ class Entity extends Base\PublicEntity
     const DASHBOARD_WHITELISTED_IPS_TEST = 'dashboard_whitelisted_ips_test';
     const PARTNERSHIP_URL                = 'partnership_url';
     const LEGAL_ENTITY_ID                = 'legal_entity_id';
+    const CA_STATUS                      = 'ca_status';
+    const VA_STATUS                      = 'va_status';
 
     // Source denotes if a merchant activation request came from PG or business banking.
     const ACTIVATION_SOURCE        = 'activation_source';
@@ -529,6 +531,7 @@ class Entity extends Base\PublicEntity
         self::DASHBOARD_ACCESS,
         self::APPLICATION,
         self::PRODUCT,
+        self::BANKING_ACCOUNT
     ];
 
     const MAX_PAYMENT_AMOUNT_DEFAULT                  = 50000000;

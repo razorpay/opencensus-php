@@ -7,6 +7,7 @@ use Mail;
 use Carbon\Carbon;
 use RZP\Constants\Product;
 use RZP\Mail\Merchant\PartnerOnBoarded;
+use RZP\Models\BankingAccount;
 use RZP\Models\Batch;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
@@ -2047,6 +2048,21 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testFetchBankingAccountStatus()
+    {
+        $this->createPartnerAndAddMultipleSubmerchants();
+
+        $this->ba->adminProxyAuth();
+
+        $this->createBankingAccount();
+
+        $this->fixtures->user->createBankingUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     protected function createMerchantRequest(
         string $merchantRequestName,
         bool $createSubmission = false,
@@ -2191,5 +2207,25 @@ class PartnerTest extends OAuthTestCase
     {
         $this->assertArraySelectiveEquals($expected, $actual);
         $this->assertCount(count($expected), $actual);
+    }
+
+    protected function createBankingAccount(array $extraParams = [])
+    {
+        $defaultParams = [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'channel'               => 'rbl',
+            'status'                => 'created',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+            'merchant_id'           => self::DEFAULT_SUBMERCHANT_ID,
+        ];
+
+        $params = array_merge($defaultParams, $extraParams);
+
+        $ba1 = $this->fixtures->create('banking_account', $params);
+
+        return $ba1;
     }
 }

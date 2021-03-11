@@ -2649,6 +2649,8 @@ class Core extends Base\Core
 
         $applyProductFilter = array_key_exists(ENTITY::PRODUCT, $params);
 
+        $product = $params[ENTITY::PRODUCT] ?? Product::PRIMARY;
+
         if ($applyProductFilter === true){
             list($offset, $merchants) = $this->filterSubmerchantsOnProduct($params, $appIds, $partner->getId());
         }
@@ -2661,9 +2663,9 @@ class Core extends Base\Core
 
         $partnerUser = $partner->primaryOwner();
 
-        $merchants = $merchants->map(function($submerchant) use ($partnerUser)
+        $merchants = $merchants->map(function($submerchant) use ($partnerUser, $product)
         {
-            return $this->getPartnerSubmerchantData($submerchant, $partnerUser);
+            return $this->getPartnerSubmerchantData($submerchant, $partnerUser, $product);
         });
 
         return $applyProductFilter ? [$merchants, 'offset' => $offset] : [$merchants];
@@ -2774,6 +2776,16 @@ class Core extends Base\Core
         $submerchant[Entity::APPLICATION] = [
             OAuthApp\Entity::ID => $submerchant->getAttribute(Constants::APPLICATION_ID),
         ];
+
+        if($product === Product::BANKING)
+        {
+            list($va_status, $ca_status) = $this->getBankingAccountStatus($submerchant->getId());
+
+            $submerchant[Entity::BANKING_ACCOUNT] = [
+                ENTITY::VA_STATUS => $va_status,
+                ENTITY::CA_STATUS => $ca_status
+            ];
+        }
 
         return $submerchant;
     }
@@ -4647,5 +4659,30 @@ class Core extends Base\Core
         } while (count($result) < $count);
 
         return array($skip, $result);
+    }
+
+    /**
+     * This method fetches the banking account statuses(Current Account, Virtual Account) for a merchant
+     * This is applicable only for merchants with banking products.
+     *
+     * @param string $merchantId
+     * @return array
+     */
+    public function getBankingAccountStatus(string $merchantId): array
+    {
+        $bankingAccounts = $this->repo->banking_account->fetchMerchantBankingAccounts($merchantId);
+
+        $va = current(array_filter($bankingAccounts, function($account) {
+            return $account[\RZP\Models\BankingAccount\Entity::ACCOUNT_TYPE] === 'nodal';
+        }));
+
+        $ca = current(array_filter($bankingAccounts, function ($account) {
+            return $account[\RZP\Models\BankingAccount\Entity::ACCOUNT_TYPE] === 'current';
+        }));
+
+        $va_status = $va[\RZP\Models\BankingAccount\Entity::STATUS];
+        $ca_status = $ca[\RZP\Models\BankingAccount\Entity::STATUS];;
+
+        return array($va_status, $ca_status);
     }
 }
