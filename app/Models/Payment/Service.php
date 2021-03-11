@@ -2256,6 +2256,8 @@ class Service extends Base\Service
 
         $bucket = $input['bucket'] ?? null;
 
+        $useSlave = $input['use_slave'] ?? false;
+
         $end = Carbon::now(Timezone::IST)->subSeconds($delay)->getTimestamp();
 
         $start = $this->getStartTimestamp($delay);
@@ -2263,7 +2265,7 @@ class Service extends Base\Service
         $startTime = Carbon::createFromTimestamp($start, Timezone::IST)->toTimeString();
         $endTime = Carbon::createFromTimestamp($end, Timezone::IST)->toTimeString();
 
-        return (new Verify)->verifyAllPaymentsNewRoute([$start, $end], $gateway, $count, $bucket);
+        return (new Verify)->verifyAllPaymentsNewRoute([$start, $end], $gateway, $count, $bucket, $useSlave);
     }
 
     public function verifyPaymentsInBulk(array $input)

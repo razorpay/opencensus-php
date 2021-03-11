@@ -193,7 +193,8 @@ class Validator extends Base\Validator
         'gateway'                    => 'sometimes|string|max:50',
         'delay'                      => 'sometimes|integer|max:2592000',
         'count'                      => 'sometimes|integer|max:10000',
-        'bucket'                     => 'sometimes|sequential_array'
+        'bucket'                     => 'sometimes|sequential_array',
+        'use_slave'                  => 'sometimes|boolean',
     ];
 
     protected static $bulkVerifyRules = [

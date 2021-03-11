@@ -325,14 +325,32 @@ class Verify extends Base\Core
         return $summary;
     }
 
-    public function verifyAllPaymentsNewRoute($timestamps, $gateway, $count, $bucket)
+    public function fetchFailedAndCreatedPayments($timestamps, $gateway, $count, $bucket, $useSlave, $disabledGateways)
+    {
+        if ($useSlave === true)
+        {
+            $payments = $this->repo->useSlave( function() use ($timestamps, $gateway, $count, $bucket, $disabledGateways)
+            {
+                return $this->repo->payment->getPaymentsToVerifyByGatewayAndTime($timestamps, $gateway, $count,
+                                            $disabledGateways, $bucket, [Payment\Status::FAILED, Payment\Status::CREATED]);
+            });
+        }
+        else
+        {
+            $payments = $this->repo->payment->getPaymentsToVerifyByGatewayAndTime($timestamps, $gateway, $count,
+                                            $disabledGateways, $bucket, [Payment\Status::FAILED, Payment\Status::CREATED]);
+        }
+
+        return $payments;
+    }
+
+    public function verifyAllPaymentsNewRoute($timestamps, $gateway, $count, $bucket, $useSlave)
     {
         $verifyFetchStartTime = Carbon::now()->getTimestamp();
 
         $disabledGateways = $this->getBlockedGateways();
 
-        $payments = $this->repo->payment->getPaymentsToVerifyByGatewayAndTime($timestamps, $gateway, $count,
-            $disabledGateways, $bucket, [Payment\Status::FAILED, Payment\Status::CREATED]);
+        $payments = $this->fetchFailedAndCreatedPayments($timestamps, $gateway, $count, $bucket, $useSlave, $disabledGateways);
 
         $payments = $this->filterPaymentsWithFinalErrorCode($payments);
 
