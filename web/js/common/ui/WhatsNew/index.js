@@ -166,6 +166,7 @@ export default class WhatsNew extends Component {
   handleCTA = ({ id }) => {
     switch (id) {
       case 'announcement-projectNitro-cta1':
+      case 'announcement-projectNitro-hyderabad-cta1':
         this.showRazorpayXNitroAnnouncement();
         break;
       case 'announcement-Nov20-Opfin-NitroV3-cta1':
@@ -354,6 +355,7 @@ export default class WhatsNew extends Component {
       'JAN21-PG-GTM1-V2',
       'Feb20-ES1-PILOT',
       'Feb20-ES1-PILOT_V2',
+      'projectNitro-hyderabad',
     ];
     const hasUnread = !!this.state.totalUnread;
 

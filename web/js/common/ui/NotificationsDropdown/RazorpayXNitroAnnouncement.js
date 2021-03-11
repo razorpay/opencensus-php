@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
+import { compose } from 'redux';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import axios from 'axios';
 import { AsyncBtn } from 'common/new-ui/Button';
@@ -12,6 +13,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { getCookie } from '../../utils/cookies';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { updateUser } from 'merchant_common/reducers/user';
+import { caReqEventType } from 'merchant/containers/Home/OnboardingCard/data';
 
 const NAME = 'full_name';
 const PHONE = 'phone';
@@ -129,6 +131,7 @@ class InfoForm extends React.Component {
         cta_text: 'Request for a Current Account',
         pageUrl: window.location.href,
         formId: 'NitroV1-Bangalore-v1',
+        campaignId: this.props.user.nitroCampaignId,
         status,
       }),
     );
@@ -147,9 +150,7 @@ class InfoForm extends React.Component {
     });
   };
 
-  save = (formData) => {
-    const { onSubmissionSuccess } = this.props;
-
+  sendDataToHubspot = (formData) => {
     return axios({
       method: 'post',
       baseURL:
@@ -158,17 +159,72 @@ class InfoForm extends React.Component {
         'Content-Type': 'application/json',
       },
       data: {
-        fields: fields.map((field) => ({
-          name: field,
-          value: formData[field],
-        })),
+        fields: [
+          ...fields.map((field) => ({
+            name: field,
+            value: formData[field],
+          })),
+          {
+            name: 'campaignid',
+            value: this.props.user.nitroCampaignId || '',
+          },
+        ],
         context: {
           hutk: getCookie('hubspotutk'),
           pageUri: window.location.href,
           pageName: document.title,
         },
       },
-    })
+    });
+  };
+
+  sendDataToSalesForce = (data) => {
+    const SF_CHALLENGES =
+      'what_are_the_biggest_challenges_you_face_with_your_current_account_today';
+    const SF_VENDORS = 'how_do_you_pay_your_vendors_customers';
+    const SF_MONTHLY_PAYMENTS__GIVEN = 'how_many_outward_payments_do_you_make_in_a_month';
+    const SF_RAZORPAYX_SWITCH = 'how_soon_can_you_switch_to_a_razorpayx_current_account';
+    const SF_MONTHLY_PAYMENTS_RECEIVED = 'how_many_payments_do_you_receive_every_month';
+
+    const payload = {
+      event_type: caReqEventType,
+      event_properties: {
+        interested_in_current_account: 1,
+        product_name: 'Current_Account',
+        source: 'Project Nitro',
+        Campaign_ID: this.props.user.nitroCampaignId,
+        contact_name: data[NAME],
+        business_name: data[NAME],
+        contact_email: data[EMAIL],
+        contact_mobile: data[PHONE],
+        [SF_CHALLENGES]: data[CHALLENGES],
+        [SF_VENDORS]: data[VENDORS],
+        [SF_MONTHLY_PAYMENTS__GIVEN]: data[MONTHLY_PAYMENTS__GIVEN],
+        [SF_MONTHLY_PAYMENTS_RECEIVED]: data[MONTHLY_PAYMENTS_RECEIVED],
+        [SF_RAZORPAYX_SWITCH]: data[RAZORPAYX_SWITCH],
+        pin_code: null,
+        average_monthly_balance: null,
+        current_ca: null,
+        use_case: null,
+      },
+    };
+
+    return merchantFetch({
+      url: `merchant/${this.props.user.current}/salesforce_event`,
+      mode: 'live',
+      method: 'post',
+      data: payload,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  };
+
+  save = (formData) => {
+    const { onSubmissionSuccess } = this.props;
+
+    return this.sendDataToHubspot(formData)
+      .then(() => this.sendDataToSalesForce(formData))
       .then(() => {
         this.props.showNotification({
           type: 'success',
@@ -248,12 +304,12 @@ class InfoForm extends React.Component {
           <div class="col-md-6">
             <div class="form-group">
               <label className="control-label label-required">
-                What are the biggest challenges with you Current Account today?
+                What are the biggest challenges with your Current Account today?
               </label>
               <div>
                 <Field
                   name={CHALLENGES}
-                  placeholder="What are the biggest challenges with you Current Account today?"
+                  placeholder="What are the biggest challenges with your Current Account today?"
                   component={InputField}
                   class="form-control"
                   onBlur={this.props.onBlur}
@@ -372,14 +428,16 @@ class InfoForm extends React.Component {
   }
 }
 
-const RazorpayXNitroAnnouncement = ({ hideModal, fromWhere, tracking }) => {
+const RazorpayXNitroAnnouncement = ({ hideModal, fromWhere, tracking, user }) => {
   const [activeView, setActiveView] = useState('detail-view');
 
   const onOfferAccept = () => {
     setActiveView('form-view');
 
     tracking.trackEvent(
-      window.rzpQ.merchantActions().initiated(`${fromWhere}_click_popup_screen1_cta`),
+      window.rzpQ.merchantActions().initiated(`${fromWhere}_click_popup_screen1_cta`, {
+        campaignId: user.nitroCampaignId,
+      }),
     );
   };
 
@@ -408,6 +466,14 @@ const RazorpayXNitroAnnouncement = ({ hideModal, fromWhere, tracking }) => {
   );
 };
 
-export default RTracking({
-  page: 'ScheduledNitroBanner',
-})(RazorpayXNitroAnnouncement);
+export default compose(
+  connect(
+    (state) => ({
+      user: state.session.user,
+    }),
+    null,
+  ),
+  RTracking({
+    page: 'ScheduledNitroBanner',
+  }),
+)(RazorpayXNitroAnnouncement);

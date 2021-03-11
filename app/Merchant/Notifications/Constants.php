@@ -111,6 +111,25 @@ class Constants
             ],
         ],
         [
+            'title'       => 'Get 1.65% pricing with RazorpayX',
+            'description' => 'Open a current account with RazorpayX & reduce your transaction fee to 1.65%.',
+            'start_ts'    => 1612788789,
+            'end_ts'      => 1617167373,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro.svg',
+            'id'          => 'projectNitro-hyderabad',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Learn More',
+                    'url'   => '',
+                    'id'    => 'announcement-projectNitro-hyderabad-cta1',
+                ],
+            ],
+            'filters'     => [
+                'experiments'         => ['nitro_hyderabad_v1'],
+            ],
+        ],
+        [
             'title'       => 'Introducing Payment Buttons',
             'description' => 'Start accepting payments on your website or blog in less than 5 minutes. No coding needed.',
             'start_ts'    => 1598941800,

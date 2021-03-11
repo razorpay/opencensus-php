@@ -315,8 +315,17 @@ export default class User {
       this.getExpStatus('project_nitro') ||
       this.getExpStatus('project_nitro_1') ||
       this.getExpStatus('project_nitro_feb_2021') ||
-      this.getExpStatus('project_nitro_feb_2021_1')
+      this.getExpStatus('project_nitro_feb_2021_1') ||
+      this.getExpStatus('nitro_hyderabad_v1')
     );
+  }
+
+  get nitroCampaignId() {
+    if (this.getExpStatus('nitro_hyderabad_v1')) {
+      return 'projectNitro-hyderabad';
+    }
+
+    return null;
   }
 
   get isChargeAtWillEnabled() {
