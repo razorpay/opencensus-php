@@ -5129,7 +5129,7 @@ class Route
         'recon_fetch_files_count'                   => '*',
 
         'fts_dashboard_fund_transfer_update'        => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
-        'fts_dashboard_fund_transfer_status_bulk'   => '*',
+        'fts_dashboard_fund_transfer_status_bulk'   => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
         'fts_dashboard_pending_transfers_get'       => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
         'fts_dashboard_raw_bank_status'             => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,
         'fts_dashboard_fund_transfer_check_status'  => Permission::FTS_TRANSFER_ATTEMPT_BULK_UPDATE,

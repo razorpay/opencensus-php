@@ -21,6 +21,8 @@ class FtsTest extends TestCase
 
     public function setUp()
     {
+        $this->testDataFilePath = __DIR__ . '/FtsTestData.php';
+
         parent::setUp();
 
         $this->ba->privateAuth();
@@ -155,5 +157,12 @@ class FtsTest extends TestCase
         ];
 
         $this->makeRequestAndGetContent($request);
+    }
+
+    public function testBulkStatus()
+    {
+        $this->ba->adminAuth(Mode::LIVE);
+
+        $this->startTest();
     }
 }
