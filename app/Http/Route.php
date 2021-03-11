@@ -4856,8 +4856,8 @@ class Route
         'scrooge_refunds_retry_with_attempt_appended_id'=> Permission::RETRY_REFUNDS_WITH_APPENDED_ID,
         'scrooge_refunds_retry_custom_fund_transfers' => Permission::BULK_RETRY_REFUNDS_VIA_FTA,
 
-        'schedule_fetch'                           => '*',
-        'schedule_update_next_run'                 => '*',
+        'schedule_fetch'                           => Permission::SCHEDULE_FETCH,
+        'schedule_update_next_run'                 => Permission::SCHEDULE_UPDATE,
         'send_newsletter'                          => '*',
         'send_test_newsletter'                     => '*',
         'set_config_keys'                          => '*',
