@@ -58,71 +58,66 @@ class Core extends Base\Core
 
     public function createForFundAccount($input, $merchant)
     {
-        $card = $this->repo->transaction(
-            function() use ($input, $merchant)
+        $input[Card\Entity::VAULT] = Card\Vault::RZP_VAULT;
+
+        $card = $this->create($input, $merchant);
+
+        $cardType = $card->getType();
+        $cardIssuer = $card->getIssuer();
+        $cardVaultToken = $card->getCardVaultToken();
+        $cardNetwork = $card->getNetwork();
+
+        //experiment for fund account of prepaid card type creation
+        $prepaidCardVariant = $this->app->razorx->getTreatment(
+            $merchant->getId(),
+            Merchant\RazorxTreatment::PAYOUT_TO_PREPAID_CARDS,
+            $this->mode,
+            FundAccount\Entity::FUND_ACCOUNT_RX_RETRY_COUNT
+        );
+
+        if (($cardIssuer === Issuer::SCBL) and
+            ($card->isAmex() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_CARD_NOT_SUPPORTED_FOR_FUND_ACCOUNT,
+                null,
+                [
+                    'type'              => $cardType,
+                    'issuer'            => $cardIssuer,
+                    'network'           => $cardNetwork,
+                    'card_vault_token'  => $cardVaultToken,
+                ],
+                $cardNetwork . " cards are not supported for issuer " . Issuer::SCBL
+            );
+        }
+
+        if (($card->getCardVaultToken() === null) or
+            (Type::isValidFundAccountCardType($cardType, $prepaidCardVariant) === false) or
+            (in_array($cardIssuer, FundTransfer\Mode::getSupportedIssuers(), true) === false))
+        {
+            $variant = $this->app->razorx->getTreatment(
+                $merchant->getId(),
+                Merchant\RazorxTreatment::PAYOUT_TO_AMEX_CARDS,
+                $this->mode,
+                FundAccount\Entity::FUND_ACCOUNT_RX_RETRY_COUNT
+            );
+
+            if (($card->isAmex() === true) and
+                ($cardIssuer === null) and
+                ($variant === 'on'))
             {
-                $input[Card\Entity::VAULT] = Card\Vault::RZP_VAULT;
-
-                $card = $this->create($input, $merchant);
-                $cardType = $card->getType();
-                $cardIssuer = $card->getIssuer();
-                $cardVaultToken = $card->getCardVaultToken();
-                $cardNetwork = $card->getNetwork();
-
-                //experiment for fund account of prepaid card type creation
-                $prepaidCardVariant = $this->app->razorx->getTreatment(
-                    $merchant->getId(),
-                    Merchant\RazorxTreatment::PAYOUT_TO_PREPAID_CARDS,
-                    $this->mode,
-                    FundAccount\Entity::FUND_ACCOUNT_RX_RETRY_COUNT
-                );
-
-                if (($cardIssuer === Issuer::SCBL) and
-                    ($card->isAmex() === false))
-                {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_CARD_NOT_SUPPORTED_FOR_FUND_ACCOUNT,
-                        null,
-                        [
-                            'type'              => $cardType,
-                            'issuer'            => $cardIssuer,
-                            'network'           => $cardNetwork,
-                            'card_vault_token'  => $cardVaultToken,
-                        ],
-                        $cardNetwork . " cards are not supported for issuer " . Issuer::SCBL
-                    );
-                }
-
-                if (($card->getCardVaultToken() === null) or
-                    (Type::isValidFundAccountCardType($cardType, $prepaidCardVariant) === false) or
-                    (in_array($cardIssuer, FundTransfer\Mode::getSupportedIssuers(), true) === false))
-                {
-                    $variant = $this->app->razorx->getTreatment(
-                        $merchant->getId(),
-                        Merchant\RazorxTreatment::PAYOUT_TO_AMEX_CARDS,
-                        $this->mode,
-                        FundAccount\Entity::FUND_ACCOUNT_RX_RETRY_COUNT
-                    );
-
-                    if (($card->isAmex() === true) and
-                        ($cardIssuer === null) and
-                        ($variant === 'on'))
-                    {
-                        return $card;
-                    }
-
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_CARD_NOT_SUPPORTED_FOR_FUND_ACCOUNT,
-                        null,
-                        [
-                            'type'              => $cardType,
-                            'issuer'            => $cardIssuer,
-                            'card_vault_token'  => $cardVaultToken,
-                        ]);
-                }
-
                 return $card;
-            });
+            }
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_CARD_NOT_SUPPORTED_FOR_FUND_ACCOUNT,
+                null,
+                [
+                    'type'              => $cardType,
+                    'issuer'            => $cardIssuer,
+                    'card_vault_token'  => $cardVaultToken,
+                ]);
+        }
 
         (new Beneficiary)->enqueueForBeneficiaryRegistration($card, FundAccountType::CARD);
 

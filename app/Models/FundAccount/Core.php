@@ -126,22 +126,18 @@ class Core extends Base\Core
 
         $fundAccount = $fundAccount->build($input);
 
-        $this->repo->transaction(
-            function() use ($input, $merchant, $source, $fundAccount, $batchId)
-            {
-                $account = $this->createAccount($input, $merchant, $source);
+        $account = $this->createAccount($input, $merchant, $source);
 
-                $fundAccount->source()->associate($source);
+        $fundAccount->source()->associate($source);
 
-                $fundAccount->account()->associate($account);
+        $fundAccount->account()->associate($account);
 
-                if (empty($batchId) === false)
-                {
-                    $fundAccount->setBatchId($batchId);
-                }
+        if (empty($batchId) === false)
+        {
+            $fundAccount->setBatchId($batchId);
+        }
 
-                $this->repo->saveOrFail($fundAccount);
-            });
+        $this->repo->saveOrFail($fundAccount);
 
         $this->createFTSAccountForFundAccount($input, $fundAccount, $source);
 

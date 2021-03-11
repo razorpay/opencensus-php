@@ -4881,9 +4881,17 @@ class PayoutTest extends OAuthTestCase
 
         $this->mockRazorxTreatment('yesbank', 'on' , 'off' , 'off', 'off', 'control');
 
+        $countOfCardsBeforeFundAccountCreateRequest = count($this->getDbEntities('card'));
+
         $this->ba->privateAuth();
 
         $this->startTest();
+
+        $countOfCardsAfterFundAccountCreateRequest = count($this->getDbEntities('card'));
+
+        // This is to check that card entity is created even though fund account creation fails.
+        $this->assertEquals($countOfCardsBeforeFundAccountCreateRequest + 1,
+                            $countOfCardsAfterFundAccountCreateRequest);
     }
 
     public function testPayoutToAmexCardWithNullIssuerWithUPIMode()
@@ -5064,9 +5072,17 @@ class PayoutTest extends OAuthTestCase
             'entity_type' => 'merchant',
         ]);
 
+        $countOfCardsBeforeFundAccountCreateRequest = count($this->getDbEntities('card'));
+
         $this->ba->privateAuth();
 
         $this->startTest();
+
+        $countOfCardsAfterFundAccountCreateRequest = count($this->getDbEntities('card'));
+
+        // This is to check that card entity is created even though fund account creation fails.
+        $this->assertEquals($countOfCardsBeforeFundAccountCreateRequest + 1,
+                            $countOfCardsAfterFundAccountCreateRequest);
     }
 
     public function prepareAdminForPayoutWorkflow($mode)
@@ -8748,9 +8764,17 @@ class PayoutTest extends OAuthTestCase
             'entity_type' => 'merchant',
         ]);
 
+        $countOfCardsBeforeFundAccountCreateRequest = count($this->getDbEntities('card'));
+
         $this->ba->privateAuth();
 
         $this->startTest();
+
+        $countOfCardsAfterFundAccountCreateRequest = count($this->getDbEntities('card'));
+
+        // This is to check that card entity is created even though fund account creation fails.
+        $this->assertEquals($countOfCardsBeforeFundAccountCreateRequest + 1,
+                            $countOfCardsAfterFundAccountCreateRequest);
     }
 
     /*
