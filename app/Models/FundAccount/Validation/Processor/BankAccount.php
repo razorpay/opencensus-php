@@ -28,10 +28,6 @@ class BankAccount extends Base
         parent::__construct($validation);
     }
 
-    protected static $blockedBankCodesForFundAccountValidation = [
-
-    ];
-
     protected static $attemptToRetryAfterSecondsMap = [
         2 => 1800,       // 30 Minutes
         3 => 5400,       // 90 Minutes
@@ -402,20 +398,5 @@ class BankAccount extends Base
         }
         return false;
 
-    }
-
-    public function validateFundAccountBeforeCreating()
-    {
-        $bankCode = $this->account->getBankCode();
-
-        if (in_array($bankCode, self::$blockedBankCodesForFundAccountValidation) === true)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_BANK_NOT_ALLOWED,
-                null,
-                [
-                    'bank' => $bankCode,
-                ]);
-        }
     }
 }

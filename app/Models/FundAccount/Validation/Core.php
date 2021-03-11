@@ -131,8 +131,6 @@ class Core extends Base\Core
 
             $processor->setDefaultValuesForValidation();
 
-            $processor->validateFundAccountBeforeCreating();
-
             $validation->setAttempts(1);
 
             // We are saving here because when when creating transaction,
