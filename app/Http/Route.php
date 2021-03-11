@@ -5071,8 +5071,8 @@ class Route
 
         'currency_fetch_all_proxy'                 => '*',
         'payment_on_hold_bulk_update'              => Permission::SETTLEMENT_RELEASE_HOLD_PAYMENT,
-        'payment_card_vault_migrate'               => '*',
-        'vault_token_renewal'                      => '*',
+        'payment_card_vault_migrate'               => Permission::VAULT_TOKEN_CREATE,
+        'vault_token_renewal'                      => Permission::VAULT_TOKEN_CREATE,
         'banking_account_update'                   => Permission::VIEW_ACTIVATION_FORM, // Internal entity updates are behind stricter permissions.
         'banking_account_activate'                 => Permission::BANKING_UPDATE_ACCOUNT,
         'banking_account_webhook_account'
