@@ -41,6 +41,8 @@ class Service extends Base\Service
 
     public function getPaymentDowntimeByID(array $input, string $id): array
     {
+        $id = trim($id,"down_");
+
         $downtimes = $this->getRepository()->findOrFailPublic($id);
 
         return $downtimes->toArrayPublic();
