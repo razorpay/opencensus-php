@@ -248,7 +248,7 @@ class Validator extends Base\Validator
     protected static $hdfcTerminalRules = [
         Entity::GATEWAY                    => 'required|in:hdfc',
         Entity::GATEWAY_MERCHANT_ID        => 'required|integer|digits_between:4,8',
-        Entity::GATEWAY_TERMINAL_ID        => 'required|integer|digits:8',
+        Entity::GATEWAY_TERMINAL_ID        => 'required|alpha_num|size:8',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string|max:15',
         Entity::EMI                        => 'sometimes|boolean',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
