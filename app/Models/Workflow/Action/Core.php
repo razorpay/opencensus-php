@@ -893,6 +893,10 @@ class Core extends Base\Core
         {
             // Not using App::call here because in Laravel6 this internally
             // matches function param names as well
+            // calling resolveMethodDependencies so that all method dependencies
+            // can be resolved.
+            // Eg: postCreateCreditsLog(Credits\Service $service, $id)
+            // In above case the 1st param will be resolved automatically
 
             $routeParams = Route::current()->resolveMethodDependencies(
                 array_values($routeParams), new ReflectionMethod($controller, $functionName)

@@ -5220,7 +5220,7 @@ class Route
         // Workflow Service requests
         'wfs_config_create'                        => Permission::WFS_CONFIG_CREATE,
         'wfs_config_update'                        => Permission::WFS_CONFIG_UPDATE,
-        'wfs_config_get'                           => '*',
+        'wfs_config_get'                           => Permission::WFS_CONFIG_CREATE,
 
         // Instrument requests
         'get_internal_instrument_request_by_id'       => Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST,

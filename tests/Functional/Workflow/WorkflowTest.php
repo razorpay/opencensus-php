@@ -406,6 +406,83 @@ class WorkflowTest extends TestCase
 
     }
 
+    public function testGetWorkflowConfigWFSWithPermission()
+    {
+        $this->setUpExperimentForNWFS();
+
+        $admin = $this->prepareAdminForPayoutWorkflow('test');
+
+        $adminToken = $this->fixtures->on('test')->create('admin_token', [
+            'admin_id'   => $admin->getId(),
+            'token'      => Hash::make('ThisIsATokenForTest'),
+        ]);
+
+        $this->fixtures->on('test')->create(
+            'workflow_config',
+            [
+                'id'              => 'FQfRKbJwE4aWbp',
+                'config_id'       => 'FQE6Xw4ZpoM21X',
+                'config_type'     => 'payout-approval',
+                'enabled'         => false,
+                'merchant_id'     => '10000000000000',
+                'org_id'          => '100000razorpay',
+            ]);
+
+        $workflowConfig = $this->getDbLastEntity('workflow_config');
+
+        $token = 'ThisIsATokenForTest' . $adminToken->getId();
+
+        $this->ba->adminAuth('test', $token);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/wf-service/configs/' . $workflowConfig['config_id'];
+
+        $this->startTest();
+    }
+
+    public function testGetWorkflowConfigWFSWithoutPermission()
+    {
+        $this->setUpExperimentForNWFS();
+
+        $admin = $this->prepareAdminForPayoutWorkflow('test');
+
+        $role = $this->getDbLastEntity('role');
+
+        $permission = $this->getDbEntities('permission', ['name' => 'wfs_config_create']);
+
+        $role->permissions()->detach($permission[0]['id']);
+
+        $adminToken = $this->fixtures->on('test')->create('admin_token', [
+            'admin_id'   => $admin->getId(),
+            'token'      => Hash::make('ThisIsATokenForTest'),
+        ]);
+
+        $token = 'ThisIsATokenForTest' . $adminToken->getId();
+
+        $this->ba->adminAuth('test', $token);
+
+        $this->fixtures->on('test')->create(
+            'workflow_config',
+            [
+                'id'              => 'FQfRKbJwE4aWbp',
+                'config_id'       => 'FQE6Xw4ZpoM21X',
+                'config_type'     => 'payout-approval',
+                'enabled'         => false,
+                'merchant_id'     => '10000000000000',
+                'org_id'          => '100000razorpay',
+            ]);
+
+        $workflowConfig = $this->getDbLastEntity('workflow_config');
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/wf-service/configs/' . $workflowConfig['config_id'];
+
+        $this->startTest();
+
+        $workflowConfig = $this->getDbLastEntity('workflow_config', 'test');
+        $this->assertEquals(false, $workflowConfig['enabled']);
+    }
+
     private function setUpExperimentForNWFS()
     {
         $this->mockRazorxTreatment(
