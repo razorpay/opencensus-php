@@ -42,9 +42,16 @@ class Core extends Base\Core
             'Downtime'  => $downtime->toArray(),
         ]);
 
+        $lastSeverity = $downtime->getSeverity();
+
         $downtime->edit($input);
 
         $this->repo->saveOrFail($downtime);
+
+        if($downtime->isScheduled() === false)
+        {
+            PaymentDowntimeEvent::dispatch($this->mode, Status::STARTED, serialize($downtime), $lastSeverity);
+        }
 
         return $downtime;
     }

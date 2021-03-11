@@ -3,6 +3,7 @@
 namespace RZP\Mail\Base;
 
 use App;
+use Redis;
 use \Swift_Mailer;
 use RZP\Diag\EventCode;
 use RZP\Models\Feature;
@@ -190,6 +191,15 @@ class Mailable extends BaseMailable
                 }
 
                 $app['diag']->trackEmailEvent(EventCode::EMAIL_REWARD_SENT, $rewardEventProperties);
+            }
+
+            if (isset($this->data['downtime']) === true)
+            {
+                $redisKey = 'downtime_' . $this->data['id'];
+
+                $redis = Redis::connection();
+
+                $redis->sadd($redisKey, "<" . $msgID . "@ap-south-1.amazonses.com>");
             }
 
             $trace->info(TraceCode::SEND_EMAIL_SUCCESSFUL,

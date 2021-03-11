@@ -7,18 +7,14 @@ use Mail;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Constants\Mode;
 use RZP\Mail\Downtime;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Base\RuntimeManager;
-use RZP\Models\Payment\Method;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Listeners\ApiEventSubscriber;
-use RZP\Models\Gateway\Downtime\Source;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Webhook\Event;
-use RZP\Models\Gateway\Downtime\Entity as GatewayEntity;
 
 class Service extends Base\Service
 {
@@ -121,14 +117,26 @@ class Service extends Base\Service
         ];
     }
 
-    public function eventDowntimeStarted(Entity $downtime)
+    public function eventDowntimeStarted(Entity $downtime, $lastSeverity=null)
     {
-        $this->emailDowntime(Constants::CREATED, $downtime);
+        $this->emailDowntime(Constants::CREATED, $downtime, $lastSeverity);
 
         try
         {
             // @see getMerchantsSubscribingToWebhookEvent method.
-            $merchantIds = $this->getMerchantsSubscribingToWebhookEvent(Event::PAYMENT_DOWNTIME_STARTED);
+            if($downtime->getMerchantId() === null)
+            {
+                $merchantIds = $this->getMerchantsSubscribingToWebhookEvent(Event::PAYMENT_DOWNTIME_STARTED);
+            }
+            else
+            {
+                $variant = $this->app->razorx->getTreatment($downtime->getMerchantId(), self::RAZORX_DOWNTIME_V2, $this->mode);
+
+                if (strtolower($variant) === 'on')
+                {
+                    $merchantIds = $this->getMerchantsSubscribingToWebhookEventForMerchant(Event::PAYMENT_DOWNTIME_STARTED, $downtime->getMerchantId());
+                }
+            }
 
             foreach ($merchantIds as $merchantId)
             {
@@ -150,13 +158,27 @@ class Service extends Base\Service
         }
     }
 
-    public function eventDowntimeResolved(Entity $downtime)
+    public function eventDowntimeResolved(Entity $downtime, $lastSeverity=null)
     {
-        $this->emailDowntime(Constants::RESOLVED, $downtime);
+        $this->emailDowntime(Constants::RESOLVED, $downtime, $lastSeverity);
 
         try {
             // @see getMerchantsSubscribingToWebhookEvent method.
-            $merchantIds = $this->getMerchantsSubscribingToWebhookEvent(Event::PAYMENT_DOWNTIME_RESOLVED);
+            if($downtime->getMerchantId() === null)
+            {
+                $merchantIds = $this->getMerchantsSubscribingToWebhookEvent(Event::PAYMENT_DOWNTIME_RESOLVED);
+            }
+            else
+            {
+                $variant = $this->app->razorx->getTreatment($downtime->getMerchantId(), self::RAZORX_DOWNTIME_V2, $this->mode);
+
+                if (strtolower($variant) === 'on')
+
+                {
+                    $merchantIds = $this->getMerchantsSubscribingToWebhookEventForMerchant(Event::PAYMENT_DOWNTIME_RESOLVED, $downtime->getMerchantId());
+                }
+            }
+
 
             foreach ($merchantIds as $merchantId)
             {
@@ -217,20 +239,69 @@ class Service extends Base\Service
         return  array_values(array_unique(array_pluck($webhooks, 'owner_id')));
     }
 
+    protected function getMerchantsSubscribingToWebhookEventForMerchant(string $event, string $mid): array
+    {
+        /** @var \RZP\Services\Stork */
+        $service = $this->app->stork_service;
+
+        $service->init($this->mode);
+
+        // Attempts twice before throwing exception.
+        $response = $service->request(
+            '/twirp/rzp.stork.webhook.v1.WebhookAPI/List',
+            [
+                'service'    => $service->service,
+                'owner_type' => 'merchant',
+                'limit'      => 5000,
+                'active'     => true,
+                'event'      => $event,
+                'owner_id'   => $mid,
+            ]
+        );
+
+        $body = json_decode($response->body, true) ?: [];
+        $webhooks = $body['webhooks'] ?? [];
+
+        return  array_values(array_unique(array_pluck($webhooks, 'owner_id')));
+    }
+
+
     protected function increaseAllowedSystemLimits()
     {
         RuntimeManager::setTimeLimit(300);
     }
 
-    public function emailDowntime(string $status, Entity $downtime)
+    public function emailDowntime(string $status, Entity $downtime, $lastSeverity=null)
     {
         $downtimeArray = $downtime->toArray();
+
+        $recipientEmail = null;
+
+        if( $downtime->getMerchantId() !== null)
+        {
+            $variant = $this->app->razorx->getTreatment($downtime->getMerchantId(), self::RAZORX_DOWNTIME_V2, $this->mode);
+
+            if (strtolower($variant) === 'on')
+            {
+                $email = $this->repo->merchant->fetchAllMerchantContacts([$downtime->getMerchantId()])->get()->toArray();
+                $recipientEmails = array_pop($email);
+                $recipientEmail = [$recipientEmails['email']];
+            }
+            else
+            {
+                $recipientEmail = [
+                    'product.onlinepayments@razorpay.com',
+                    'tech.onlinepayments.routing@razorpay.com',
+                    'srm@razorpay.com '
+                ];
+            }
+        }
 
         try
         {
             if ($status === Constants::CREATED)
             {
-                $createEmail = new Downtime\DowntimeNotification($downtimeArray, Constants::CREATED);
+                $createEmail = new Downtime\DowntimeNotification($downtimeArray, Constants::CREATED, $recipientEmail, $lastSeverity);
 
                 Mail::send($createEmail);
 
@@ -243,7 +314,7 @@ class Service extends Base\Service
             }
             elseif ($status === Constants::RESOLVED)
             {
-                $resolveEmail = new Downtime\DowntimeNotification($downtimeArray, Constants::RESOLVED);
+                $resolveEmail = new Downtime\DowntimeNotification($downtimeArray, Constants::RESOLVED, $recipientEmail);
 
                 Mail::send($resolveEmail);
 

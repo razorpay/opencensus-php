@@ -2,11 +2,13 @@
 
 namespace RZP\Mail\Downtime;
 
+use Redis;
 use Carbon\Carbon;
 use RZP\Constants\MailTags;
 use RZP\Constants\Timezone;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
+use RZP\Models\Gateway\Downtime\Severity;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Downtime\Entity;
 use RZP\Models\Payment\Processor\Netbanking;
@@ -21,13 +23,21 @@ class DowntimeNotification extends Mailable
 
     const RESOLVED  = 'RESOLVED';
 
-    public function __construct(array $downtime, string $status)
+    const REFERENCE_ID_TAG = 'References';
+
+    const IN_REPLY_TO = 'In-Reply-To';
+
+    public function __construct(array $downtime, string $status, $email=[], $lastSeverity=null)
     {
         parent::__construct();
 
         $this->data = $downtime;
 
         $this->status = $status;
+
+        $this->data['last_severity'] = $lastSeverity;
+
+        $this->data['downtime'] = 'yes';
 
         if (isset($this->data[Entity::ISSUER]) && $this->data['method'] != Method::WALLET)
         {
@@ -82,29 +92,60 @@ class DowntimeNotification extends Mailable
         }
 
         $this->data['dimension'] = $dimension;
+
+        switch ($this->data[Entity::SEVERITY])
+        {
+            case Severity::HIGH:
+                $this->data['severity_text'] = "high number of";
+                break;
+            case Severity::MEDIUM:
+                $this->data['severity_text'] = "some";
+                break;
+            case Severity::LOW:
+                $this->data['severity_text'] = "a few";
+                break;
+        }
+
+        if(isset($downtime[Entity::MERCHANT_ID]) === true)
+        {
+            $this->data['type'] = 'merchant';
+        }
+        else
+        {
+            $this->data['type'] = 'platform';
+        }
+
+        $this->data['email'] = $email;
     }
 
     protected function addRecipients()
     {
         $recipientEmail = null;
 
-        switch ($this->data['method'])
+        if(isset($this->data[Entity::MERCHANT_ID]) === true)
         {
-            case Method::CARD :
-                $recipientEmail = Constants::MAIL_ADDRESSES[Constants::PG_NOTIFICATION_CARD];
-                break;
+            $recipientEmail = $this->data['email'];
+        }
+        else
+        {
+            switch ($this->data['method'])
+            {
+                case Method::CARD :
+                    $recipientEmail = Constants::MAIL_ADDRESSES[Constants::PG_NOTIFICATION_CARD];
+                    break;
 
-            case Method::WALLET :
-                $recipientEmail = Constants::MAIL_ADDRESSES[Constants::PG_NOTIFICATION_WALLET];
-                break;
+                case Method::WALLET :
+                    $recipientEmail = Constants::MAIL_ADDRESSES[Constants::PG_NOTIFICATION_WALLET];
+                    break;
 
-            case Method::UPI :
-                $recipientEmail = Constants::MAIL_ADDRESSES[Constants::PG_NOTIFICATION_UPI];
-                break;
+                case Method::UPI :
+                    $recipientEmail = Constants::MAIL_ADDRESSES[Constants::PG_NOTIFICATION_UPI];
+                    break;
 
-            case Method::NETBANKING :
-                $recipientEmail = Constants::MAIL_ADDRESSES[Constants::PG_NOTIFICATION_NETBANKING];
-                break;
+                case Method::NETBANKING :
+                    $recipientEmail = Constants::MAIL_ADDRESSES[Constants::PG_NOTIFICATION_NETBANKING];
+                    break;
+            }
         }
 
         $this->to($recipientEmail);
@@ -116,33 +157,71 @@ class DowntimeNotification extends Mailable
     {
         $method = $this->data[Entity::METHOD];
 
-        $scheduled = $this->data[Entity::SCHEDULED];
+        if($method === Method::CARD)
+        {
+            $method = 'cards';
+        }
 
         $subject = null;
 
         if ($this->status === self::RESOLVED)
         {
-            $subject = '[Resolved] RE: ';
+            if ( $this->data['dimension'] == null || $this->data['dimension'] == "All UPI instruments")
+            {
+                $subject = 'Payments using ' . $method . ' are now back to normal';
+            }
+            else
+            {
+                $subject = 'Payments using ' . $this->data['dimension'] . ' ' . $method . ' are now back to normal';
+            }
         }
-
-        if ($scheduled === false)
+        elseif($this->data['last_severity'] === null)
         {
-            if (isset($this->data['dimension']) && $method === Method::CARD)
+            if ( $this->data['dimension'] == null || $this->data['dimension'] == "All UPI instruments")
             {
-                $subject = $subject . "[IMP] We have noticed a disruption in " . $this->data['dimension'] . " Debit & Credit Card services" ;
+                $subject = ucwords($this->data['severity_text']) . ' declines observed in customer payments attempted by '  . $method;
             }
-            elseif (isset($this->data['dimension']) && $method === Method::UPI)
+            else
             {
-                $subject = $subject . "[IMP] We have noticed a disruption in " . $this->data['dimension'] . " UPI services" ;
-            }
-            elseif (isset($this->data['dimension']) && $method === Method::NETBANKING)
-            {
-                $subject = $subject . "[IMP] We have noticed a disruption in " . $this->data['dimension'] . " Net Banking services" ;
+                $subject = ucwords($this->data['severity_text']) . ' declines observed by ' .  $this->data['dimension'] . ' for payments attempted by ' . $method;
             }
         }
         else
         {
-            $subject = $subject . ' ' . $this->data['dimension'] . ' has announced scheduled downtime';
+            if( $this->data[Entity::SEVERITY] === Severity::HIGH || ($this->data[Entity::SEVERITY] === Severity::MEDIUM && $this->data['last_severity'] === Severity::LOW))
+            {
+                if ( $this->data['dimension'] == null || $this->data['dimension'] == "All UPI instruments")
+                {
+                    $subject = 'Increased number of declines observed now for payments using ' . $method;
+                }
+                else
+                {
+                    $subject = 'Increased number of declines now by ' . $this->data['dimension'] . ' for payments using ' . $method;
+                }
+            }
+            elseif ( $this->data[Entity::SEVERITY] === Severity::MEDIUM && $this->data['last_severity'] === Severity::HIGH)
+            {
+                if ( $this->data['dimension'] == null || $this->data['dimension'] == "All UPI instruments")
+                {
+                    $subject = 'Lesser number of declines observed now for payments using ' . $method;
+                }
+                else
+                {
+                    $subject = 'Lesser number of declines now by ' . $this->data['dimension'] . ' for payments using ' . $method;
+                }
+
+            }
+            elseif ( $this->data[Entity::SEVERITY] === Severity::LOW)
+            {
+                if ( $this->data['dimension'] == null || $this->data['dimension'] == "All UPI instruments")
+                {
+                    $subject = 'Very few declines observed now for payments using ' . $method;
+                }
+                else
+                {
+                    $subject = 'Very few declines now by ' . $this->data['dimension'] . ' for payments using ' . $method;
+                }
+            }
         }
 
         $this->data['subject'] = $subject;
@@ -190,7 +269,14 @@ class DowntimeNotification extends Mailable
     {
         if ($this->status === self::CREATED)
         {
-            $this->view('emails.downtime.create_downtime');
+            if ($this->data['last_severity'] !== null)
+            {
+                $this->view('emails.downtime.update_downtime');
+            }
+            else
+            {
+                $this->view('emails.downtime.create_downtime');
+            }
         }
         else if ($this->status === self::RESOLVED)
         {
@@ -209,6 +295,28 @@ class DowntimeNotification extends Mailable
             $headers = $message->getHeaders();
 
             $headers->addTextHeader(MailTags::HEADER, $mailTag);
+
+            $redisKey = 'downtime_' . $this->data['id'];
+
+            $redis = Redis::connection();
+
+            $count = $redis->scard($redisKey);
+
+            if ($count > 0)
+            {
+                $messageIds = $redis->smembers($redisKey);
+
+                $references = '';
+
+                foreach ($messageIds as $messageId)
+                {
+                    $references = $references . " " . $messageId;
+                }
+
+                $headers->addTextHeader(self::IN_REPLY_TO, $messageIds[$count-1]);
+
+                $headers->addTextHeader(self::REFERENCE_ID_TAG, $references);
+            }
         });
 
         return $this;

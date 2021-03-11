@@ -23,12 +23,15 @@ class PaymentDowntimeEvent extends Job
     /** @var string */
     public $serializedDowntime;
 
-    public function __construct(string $mode, $status, string $serializedDowntime)
+    public $lastSeverity;
+
+    public function __construct(string $mode, $status, string $serializedDowntime, $lastSeverity=null)
     {
         parent::__construct($mode);
 
         $this->status = $status;
         $this->serializedDowntime = $serializedDowntime;
+        $this->lastSeverity = $lastSeverity;
     }
 
     public function handle()
@@ -45,7 +48,7 @@ class PaymentDowntimeEvent extends Job
                 ['status' => $this->status, 'downtime' => $downtime->getId()]
             );
 
-            (new Downtime\Service())->{'eventDowntime'.ucfirst($this->status)}($downtime);
+            (new Downtime\Service())->{'eventDowntime'.ucfirst($this->status)}($downtime, $this->lastSeverity);
         }
         catch (\Throwable $e)
         {

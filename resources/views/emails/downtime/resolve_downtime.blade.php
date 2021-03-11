@@ -164,7 +164,7 @@
                                             <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
 
                                                 <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="card title" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; padding-bottom: 16px; border-top-left-radius: 0; border-top-right-radius: 0;"><div class="center-align font-size-normal font-color-primary" style="text-align: center; font-size: 16px; line-height: 1.5; color: #0D2366; text-transform: capitalize;"> Resolved {{ $method }} {{ $dimension }} Downtime </div></div>
+                                                    <div class="card title" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; padding-bottom: 16px; border-top-left-radius: 0; border-top-right-radius: 0;"><div class="center-align font-size-normal font-color-primary" style="text-align: center; font-size: 16px; line-height: 1.5; color: #0D2366; text-transform: capitalize;"> {{ $subject }} </div></div>
                                                 </div>
 
                                             </td>
@@ -231,7 +231,19 @@
                                             <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
 
                                                 <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="card highlight" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; border-top: 2px solid #528FF0; padding-top: 20px; padding-bottom: 20px; margin-top: 8px;"><p class="para-normal font-size-medium" style="font-size: 14px; line-height: 1.5; color: #515978;">Dear Customer, <br> <br>The services are now in a monitoring mode and we have observed no issues.</p><p class="para-normal font-size-medium" style="font-size: 14px; line-height: 1.5; color: #515978;"> Thanks and best regards, <br> Razorpay Support</p> </div>
+                                                    <div class="card highlight" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; border-top: 2px solid #528FF0; padding-top: 20px; padding-bottom: 20px; margin-top: 8px;"><p class="para-normal font-size-medium" style="font-size: 14px; line-height: 1.5; color: #515978;"> Dear Razorpay Seller,
+                                                            <br> <br>
+
+                                                            @if($dimension == null || $dimension == 'All UPI instruments')
+                                                                        There are no declines anymore for payments made by customers using {{ $method }}.
+                                                            @else
+                                                                        There are no declines anymore by {{ $dimension }} for payments made by customers using {{ $method }}.
+                                                            @endif
+
+                                                            <br> <br>
+                                                                    We have removed the warning from Checkout and it is back to Payments as usual.
+                                                            </p><p class="para-normal font-size-medium" style="font-size: 14px; line-height: 1.5; color: #515978;">
+                                                            Thanks and Regards, <br> Razorpay Support</p> </div>
                                                 </div>
 
                                             </td>

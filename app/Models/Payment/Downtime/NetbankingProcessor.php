@@ -98,7 +98,8 @@ class NetbankingProcessor extends BaseProcessor
         else
         {
             // During update the status gets updated and hence multiple notifications are triggered.
-            if (isset($input[Entity::SCHEDULED]) && isset($input[Entity::SEVERITY]))
+            if (isset($input[Entity::SCHEDULED]) && isset($input[Entity::SEVERITY]) &&
+                ($input[Entity::SEVERITY] != $downtime->getSeverity()))
             {
                 $updateList = [
                     Entity::SEVERITY => $input[Entity::SEVERITY],
@@ -107,6 +108,7 @@ class NetbankingProcessor extends BaseProcessor
 
                 $downtime = (new Core)->edit($downtime, $updateList);
             }
+            return $downtime;
         }
 
     }

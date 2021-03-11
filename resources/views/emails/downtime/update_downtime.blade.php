@@ -239,36 +239,55 @@
                                                             @else
                                                                 Dear Razorpay Seller,
                                                             @endif
-                                                            <br> <br>
+                                                            <br><br>
 
                                                                 @if($dimension == null || $dimension == 'All UPI instruments')
-                                                                    {{ $method }} payments are facing
-                                                                @elseif($method == 'card')
-                                                                    {{ $dimension }} {{ $method }} are facing
-                                                                @elseif($method == 'upi')
-                                                                    UPI payments using {{ $dimension }} are facing
+                                                                    @if($severity == 'high')
+                                                                        We are now observing a high increase in the number of declines for payments made by customers using {{ $method }}
+                                                                    @elseif($severity == 'medium' && $last_severity == 'low')
+                                                                        We are now observing a some increase in the number of declines for payments made by customers using {{ $method }}
+                                                                    @elseif($severity == 'medium' && $last_severity == 'high')
+                                                                        Things are getting better now and we are observing lesser declines for payments made by customers using {{ $method }}
+                                                                    @else
+                                                                        Things are getting better now and we are observing only a few declines for payments made by customers using {{ $method }}
+                                                                    @endif
                                                                 @else
-                                                                    {{ $method }} payments via {{ $dimension }} are facing
+                                                                    @if($severity == 'high')
+                                                                        We are now observing a high increase in the number of declines by {{ $dimension }} for payments made by customers using {{ $method }}
+                                                                    @elseif($severity == 'medium' && $last_severity == 'low')
+                                                                        We are now observing a some increase in the number of declines by {{ $dimension }} for payments made by customers using {{ $method }}
+                                                                    @elseif($severity == 'medium' && $last_severity == 'high')
+                                                                        Things are getting better now and we are observing lesser declines by {{ $dimension }} for payments made by customers using {{ $method }}
+                                                                    @else
+                                                                        Things are getting better now and we are observing only a few declines by {{ $dimension }} for payments made by customers using {{ $method }}
+                                                                    @endif
                                                                 @endif
 
-                                                                @if($scheduled == false)
-                                                                    an Unscheduled
+                                                                @if($type == 'merchant')
+                                                                    .
                                                                 @else
-                                                                    a Scheduled
+                                                                     for all sellers.
                                                                 @endif
-
-                                                                @if($dimension == null || $dimension == 'All UPI instruments')
-                                                                    downtime which means there are some issues your customers might face to complete payments using {{ $method }} method.
-                                                                @else
-                                                                    downtime which means there are some issues connecting to {{ $dimension }} to complete customer payments.
-                                                                @endif
-
 
                                                                 <br><br>
 
-                                                                <span class="bigger"><b>IMPACT ON CUSTOMERS:</b></span>
-                                                                <br>
-                                                                Since there is a <b>{{ $severity }} chance of payment failure,</b> we have started showing warnings to your customers on the Checkout.
+                                                                @if($severity == 'high')
+                                                                    <span class="bigger"><b>IMPACT ON CUSTOMERS:</b></span>
+                                                                    <br>
+                                                                    Since there is now a <b> high chance of payment failure</b>, we have started showing warnings to your customers on the Checkout.
+                                                                @elseif($severity == 'medium' && $last_severity == 'low')
+                                                                    <span class="bigger"><b>IMPACT ON CUSTOMERS:</b></span>
+                                                                    <br>
+                                                                    Since there is now a <b>moderate chance of payment failure</b>, we have started showing warnings to your customers on the Checkout.
+                                                                @elseif($severity == 'medium' && $last_severity == 'high')
+                                                                    <span class="bigger"><b>WHAT ARE CUSTOMERS LOOKING AT:</b></span>
+                                                                    <br>
+                                                                    Since there is a <b>moderate chance of payment failure</b>, we are still showing warnings to your customers on the Checkout.
+                                                                @else
+                                                                    <span class="bigger"><b>WHAT ARE CUSTOMERS LOOKING AT:</b></span>
+                                                                    <br>
+                                                                    Since there is a <b>low chance of payment failure</b>, we are still showing warnings to your customers on the Checkout.
+                                                                @endif
 
                                                                 <br><br>
 
@@ -278,13 +297,13 @@
                                                                 @else
                                                                     {{ $dimension }}
                                                                 @endif
-                                                                 to get everything up and running. We will update you at the earliest with the latest information.
+                                                                to get everything back to normal. We will update you at the earliest with the latest information.
                                                                 <br><br>
 
                                                                 Thanks and Regards,  <br>
                                                                 Razorpay Support
 
-                                                </div>
+                                                    </div>
 
                                             </td>
                                         </tr>
