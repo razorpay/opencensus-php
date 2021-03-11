@@ -566,6 +566,8 @@ class Name
     const ACCOUNTING_PAYOUTS_SYNC                       = 'accounting_payouts_sync';
     const ACCOUNTING_PAYOUTS_WAITLIST                   = 'accounting_payouts_waitlist';
 
+    const ADMIN_FETCH_FUND_ACCOUNT_VALIDATION           = 'admin_fetch_fund_account_validation';
+
     const APP_REGISTRATION                              = 'app_registration';
     const APP_MAPPING                                   = 'app_mapping';
 

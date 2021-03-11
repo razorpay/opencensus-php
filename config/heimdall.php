@@ -575,6 +575,12 @@ return [
                 'description' => 'Delete existing reward',
                 'assignable'  => true
             ],
+            Permission::ADMIN_FETCH_FUND_ACCOUNT_VALIDATION => [
+                'assignable' => true,
+            ],
+            Permission::VIEW_SALESFORCE_OPPORTUNITY_DETAIL => [
+                'assignable' => true,
+            ],
         ],
 
         PermissionCategory::SETTLEMENT => [

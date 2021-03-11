@@ -5174,7 +5174,7 @@ class Route
         'update_late_auth_config_admin_bulk'        => Permission::UPDATE_PAYMENT_CONFIG,
         'create_payment_config_bulk'                => Permission::CREATE_PAYMENT_CONFIG,
         'sync_pg_router_order_bulk'                 => Permission::PG_ROUTER_ORDER_SYNC,
-        'admin_fetch_fund_account_validate'         => '*',
+        'admin_fetch_fund_account_validate'         => Permission::ADMIN_FETCH_FUND_ACCOUNT_VALIDATION,
         'create_promotions_events'                  => Permission::CREATE_PROMOTION_EVENT,
         'fee_recovery_payout_admin'                 => Permission::PROCESS_FEE_RECOVERY,
         'fee_recovery_payout_schedule_task'         => Permission::ASSIGN_FEE_RECOVERY_SCHEDULE,
