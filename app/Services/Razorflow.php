@@ -53,6 +53,8 @@ class Razorflow
     const SLACK_REQUEST_TIMESTAMP = 'slack_request_timestamp';
     const SLACK_SIGNATURE         = 'slack_signature';
 
+    const PAYLOAD                 = 'payload';
+    const ENDPOINT_TICKET_SUBMIT  = 'ticketSubmit';
     /**
      * Razorflow constructor.
      *
@@ -119,6 +121,14 @@ class Razorflow
         $input['custom_endpoint'] = $customEndpoint;
 
         $response = $this->invokeSlashCommand($input);
+
+        // need to return empty response to allow dialog to close
+        if ($customEndpoint === self::ENDPOINT_TICKET_SUBMIT) {
+            return [
+                self::RESPONSE_BODY =>json_decode("{}"),
+                self::RESPONSE_CODE => $response[self::RESPONSE_BODY][self::RESPONSE_CODE] ?? 400
+            ];
+        }
 
         return [
             self::RESPONSE_BODY => $response[self::RESPONSE_BODY][self::RESPONSE_BODY] ?? '',
@@ -291,6 +301,12 @@ class Razorflow
     protected function generateRequest(string $endpoint, string $method, array $data): array
     {
         $url = $this->baseUrl . $endpoint;
+
+        //payload if encoded as string need to be decoded before pushing to razorflow, to allow proto to match
+        if ((isset($data[self::PAYLOAD]) === true) && (is_string($data[self::PAYLOAD]) === true))
+        {
+            $data[self::PAYLOAD]= json_decode($data[self::PAYLOAD], true);
+        }
 
         // json encode if data is must, else ignore.
         if (in_array($method, [Requests::POST, Requests::PATCH, Requests::PUT], true) === true)
