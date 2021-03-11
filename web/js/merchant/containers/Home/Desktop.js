@@ -49,7 +49,6 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
   (state) => ({
     user: state.session.user,
     config: state.config,
-    tls_version: state.profile.tls_version,
     internationalProductsStatus: state.config.internationalProductsStatus,
   }),
   {
@@ -440,32 +439,25 @@ class AnalyticsDesktop extends Component {
           )}
 
           {this.isWhatsappNotificationEnabled(user) && this.renderWhatsappNotification()}
-          {/* security upgrade browser banner */}
-          {this.props.tls_version === '1.0' || this.props.tls_version === '1.1' ? (
-            <AnnouncementBanner title="Upgrade your browser" theme="danger" canBeClosed={true}>
-              Please upgrade your browser to continue accessing this site. We are disabling support
-              for browsers which use TLS 1.0 and 1.1 for security reasons.
-            </AnnouncementBanner>
-          ) : (
-            <Fragment>
-              {/* capital banner*/}
-              {user.isCapitalBannerEnabled && <CapitalAnnouncement userId={user.current} />}
 
-              {user.isCovidFeatureEnabled && <CovidCampaignAnnouncement userId={user.current} />}
+          <Fragment>
+            {/* capital banner*/}
+            {user.isCapitalBannerEnabled && <CapitalAnnouncement userId={user.current} />}
 
-              <div className={`v2-onboarding-card${expandOnboardingBanner ? ' expand' : ''}`}>
-                {showOnboardingBanner && (
-                  <NewUserOnboardingCard
-                    payments={payments}
-                    onClose={onHideOnboardingBanner}
-                    onFirstStepClose={onFirstStepClose}
-                    isFirstStep={showOnboardingBannerFirstStep}
-                    showInstantActivation={showInstantActivation}
-                  />
-                )}
-              </div>
-            </Fragment>
-          )}
+            {user.isCovidFeatureEnabled && <CovidCampaignAnnouncement userId={user.current} />}
+
+            <div className={`v2-onboarding-card${expandOnboardingBanner ? ' expand' : ''}`}>
+              {showOnboardingBanner && (
+                <NewUserOnboardingCard
+                  payments={payments}
+                  onClose={onHideOnboardingBanner}
+                  onFirstStepClose={onFirstStepClose}
+                  isFirstStep={showOnboardingBannerFirstStep}
+                  showInstantActivation={showInstantActivation}
+                />
+              )}
+            </div>
+          </Fragment>
           {hasSecondaryBanner && (
             <div className="secondary-announcement-banner">
               <PersonaliseBanner track={trackPersonaliseBanner} />

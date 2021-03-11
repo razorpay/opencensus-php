@@ -45,7 +45,6 @@ import RTracking from 'react-tracking';
 import qs from 'query-string';
 import Wrapper from 'v2/components/Bootstrap/Wrapper';
 import { fetchActiveTickets } from 'merchant/reducers/config.js';
-import { fetchTlsVersion } from 'merchant/reducers/profile';
 
 @withRouter
 @connect(
@@ -63,7 +62,6 @@ import { fetchTlsVersion } from 'merchant/reducers/profile';
     ...NotificationActions,
     updateTwoFactorVerified,
     fetchGST,
-    fetchTlsVersion,
     fetchActiveTickets: fetchActiveTickets,
     resizeWindow,
   },
@@ -196,7 +194,6 @@ export default class App extends Component {
 
     let currentMode = LocalStorageService.getItem(this.modeToken);
     this.props.fetchGST();
-    this.props.fetchTlsVersion();
     this.props.fetchConfig();
     this.props.fetchRefundPricing();
 
