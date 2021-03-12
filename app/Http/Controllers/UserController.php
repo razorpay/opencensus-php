@@ -72,7 +72,7 @@ class UserController extends Controller
                 'isPreSignupComplete'   => $details['pre_signup_complete'],
                 'user'                  => json_encode($details),
                 'org'                   => json_encode($org),
-                'api_host'              => ApiUrl::getApiBaseUrl(),
+                'api_host'              => ApiUrl::getCheckoutApi(),
                 'session_id'            => Session::getId(),
             ];
         }

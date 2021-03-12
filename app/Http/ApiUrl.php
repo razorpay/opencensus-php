@@ -52,6 +52,17 @@ class ApiUrl
         return $url;
     }
 
+    public static function getCheckoutApi()
+    {
+        $url = Config::get('api.checkout_url');
+        if (!$url)
+        {
+            $url = self::getApiBaseUrl();
+        }
+
+        return $url;
+    }
+
     public static function isValidApiHostCookie(string $cookie = null)
     {
         if (empty($cookie) === true)
