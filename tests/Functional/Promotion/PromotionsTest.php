@@ -362,4 +362,29 @@ class PromotionsTest extends TestCase
         $hubSpotMock->expects($this->exactly(1))
             ->method($methodName);
     }
+
+    public function testUpdatePromotionWithoutPermission()
+    {
+        $promotion = $this->fixtures->create('promotion');
+
+        $this->testData[__FUNCTION__]['request']['url'] ='/promotions/' . $promotion->getPublicId();
+
+        $role = $this->ba->getAdmin()->roles->first();
+
+        $permission = $this->getDbEntities('permission', ['name' => 'create_promotion_event']);
+
+        $role->permissions()->detach($permission[0]['id']);
+
+        $this->startTest();
+    }
+
+    public function testUpdatePromotionWithPermission()
+    {
+        $promotion = $this->fixtures->create('promotion');
+
+        $this->testData[__FUNCTION__]['request']['url'] ='/promotions/' . $promotion->getPublicId();
+
+        $this->startTest();
+    }
+
 }

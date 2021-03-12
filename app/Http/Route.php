@@ -4810,7 +4810,7 @@ class Route
         'payments_multiple_authorize_refund'       => Permission::REFUND_MULTIPLE_AUTHORIZE_PAYMENTS,
         'promotion_create'                         => Permission::CREATE_PROMOTION_COUPON,
         'promotion_create_for_event'               => Permission::CREATE_PROMOTION_COUPON,
-        'promotion_update'                         => '*',
+        'promotion_update'                         => Permission::CREATE_PROMOTION_EVENT,
         // keeping the permission same for rewards as well, as mostly marketing/sme team has
         // this permission and so it won't be required to assign them a new promotion
         'promotion_deactivate'                     => Permission::DEACTIVATE_PROMOTION,

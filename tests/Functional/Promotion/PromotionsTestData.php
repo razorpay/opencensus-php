@@ -498,4 +498,43 @@ return [
             ],
         ],
     ],
+
+    'testUpdatePromotionWithoutPermission' => [
+        'request' => [
+            'url'      => '',
+            'method'   => 'PATCH',
+            'content'  => [
+                'name'  => 'Updated name'
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_ACCESS_DENIED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ],
+    ],
+
+    'testUpdatePromotionWithPermission' => [
+        'request' => [
+            'url'      => '',
+            'method'   => 'PATCH',
+            'content'  => [
+                'name'  => 'Updated name'
+            ]
+        ],
+        'response'  => [
+            'content' => [
+                'name' => 'Updated name',
+            ],
+        ],
+    ],
+
 ];
