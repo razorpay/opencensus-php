@@ -22,6 +22,7 @@ use OpenCensus\Trace\Span;
 use OpenCensus\Trace\SpanContext;
 use OpenCensus\Trace\Tracer\TracerInterface;
 use PHPUnit\Framework\TestCase;
+use OpenCensus\Trace\Exporter\NullExporter;
 
 /**
  * @group trace
@@ -375,5 +376,21 @@ abstract class AbstractTracerTest extends TestCase
         $scope = $tracer->withSpan($rootSpan);
         $this->assertTrue($rootSpan->attached());
         $scope->close();
+    }
+
+    public function testSpanFlush()
+    {
+        $exporter = new NullExporter();
+        $tracer = $this->makeTracer(null, $exporter, [
+            'span_buffer_limit' => 5
+        ]);
+
+        for ($i=0; $i<=5; $i++) {
+            $tracer->inSpan(['name' => 'root' . $i], function () {
+            });
+        }
+
+        $count = count($tracer->spans());
+        $this->assertEquals(1, $count);
     }
 }
