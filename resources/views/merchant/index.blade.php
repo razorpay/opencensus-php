@@ -66,7 +66,6 @@ _dcs.account = '9421167';
     };
   }
 </script>
-
 <!-- Hotjar Tracking Code for dashboard.razorpay.com -->
 @if(env('APP_ENV') === 'production')
   @include('partials/hotjar')

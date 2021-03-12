@@ -5,7 +5,7 @@ import Input from 'common/new-ui/Input';
 import { AsyncBtn } from 'common/new-ui/Button';
 import ModalHeader from 'common/ui/ModalHeader';
 
-import { pickProps } from 'common/utils/rzp-utils';
+import { pickProps, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { isPhone } from 'common/utils/validators';
 
 import { closeModal } from 'merchant_common/reducers/modals';
@@ -49,9 +49,28 @@ export default class EditContactMobileForm extends React.Component {
     return this.props
       .updateContactMobile(data)
       .then(() => {
+        analyticsTrack({
+          objectName: 'change contact number',
+          actionName: 'result',
+          screen: 'my account',
+          properties: {
+            status: 'success',
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
         this.props.onContactMobileUpdate(this.state.contactMobile);
       })
       .catch(({ errors }) => {
+        analyticsTrack({
+          objectName: 'change contact number',
+          actionName: 'result',
+          screen: 'my account',
+          properties: {
+            status: 'failure',
+            failureReason: errors[0],
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
         this.props.showNotification({
           type: 'error',
           message: errors[0],
@@ -66,6 +85,18 @@ export default class EditContactMobileForm extends React.Component {
     }
     return false;
   };
+
+  componentDidMount() {
+    analyticsTrack({
+      objectName: 'change contact number confirmation popup',
+      actionName: 'displayed',
+      screen: 'my account',
+      properties: {
+        '2FaFlow': 'change mobile number',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+  }
 
   render() {
     return (

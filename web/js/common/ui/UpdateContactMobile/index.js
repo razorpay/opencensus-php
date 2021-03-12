@@ -13,6 +13,8 @@ import { updateContactMobile } from 'merchant_common/reducers/user';
 import TwoFactorVerificationOTP from 'common/ui/TwoFactorVerification/TwoFactorVerificationOTP';
 
 import EditContactMobileForm from './EditContactMobileForm';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { analyticsTrack } from 'common/utils/analytics';
 
 @connect(
   (state) => ({
@@ -103,7 +105,16 @@ export default class UpdateContactMobile extends React.Component {
     });
   };
 
-  triggerEmailVerificationOtp = () => {
+  triggerEmailVerificationOtp = (resend) => {
+    analyticsTrack({
+      objectName: '2fa email otp',
+      actionName: 'sent',
+      screen: 'my account',
+      properties: {
+        resend: resend,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     return triggerOtpOnEmail()
       .then(({ data }) => {
         this.setState({

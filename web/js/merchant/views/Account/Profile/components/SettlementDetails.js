@@ -5,6 +5,8 @@ import Amount from 'common/ui/Amount';
 import SettlementSchedule from 'merchant/views/Settlements/Settlements/components/SettlementSchedule';
 import { fetchSchedule, fetchHolidayList } from 'merchant/reducers/settlements/details';
 import { fetchCurrentBalance } from 'merchant/reducers/home';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 @connect(
   (state) => ({
@@ -27,6 +29,14 @@ export default class SettlementDetails extends Component {
   }
 
   viewSettlementSchedule = () => {
+    analyticsTrack({
+      objectName: 'view settlement schedule',
+      actionName: 'clicked',
+      screen: 'my account',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     this.props.openModal({
       size: 'medium',
       component: <SettlementSchedule />,

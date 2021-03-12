@@ -7,16 +7,17 @@ import InputField from 'common/ui/Forms/InputField';
 
 import { required, email, phone } from 'common/utils/validators';
 import { roles, agentRole, RBLRoles } from 'merchant/helpers/data';
-import { without } from 'common/utils/rzp-utils';
+import { without, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { closeModal } from 'merchant_common/reducers/modals';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import { RegistrationLinkRoles } from '../../../../helpers/data';
+import { analyticsTrack } from 'common/utils/analytics';
 
 const selector = formValueSelector('newInvitation');
 @connect(
-  state => {
+  (state) => {
     return {
       selectedRole: selector(state, 'role'),
       ...state.session,
@@ -25,7 +26,7 @@ const selector = formValueSelector('newInvitation');
   {
     showNotification,
     closeModal,
-  }
+  },
 )
 @reduxForm({
   form: 'newInvitation',
@@ -47,20 +48,52 @@ export default class NewInvitation extends Component {
       ...this.props.defaults,
     });
   }
-  save = body => {
+  save = (body) => {
+    const is_edit = this.props.ctaText === 'Update Invitation';
+    analyticsTrack({
+      objectName: is_edit ? 'invitation update popup' : 'invite new member popup',
+      actionName: 'clicked',
+      screen: 'my account',
+      properties: {
+        action: 'send invitation',
+        location: 'manage team',
+        ...body,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     let user = this.props.user.user;
     const { successMsg } = this.props;
     return this.props
       .onFormSubmit(body)
       .then(() => {
+        analyticsTrack({
+          objectName: 'invite new member',
+          actionName: 'status',
+          screen: 'my account',
+          properties: {
+            location: 'manage team',
+            status: 'success',
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
         this.props.showNotification({
           type: 'success',
-          message:
-            typeof successMsg === 'function' ? successMsg(body) : successMsg,
+          message: typeof successMsg === 'function' ? successMsg(body) : successMsg,
         });
         this.props.closeModal();
       })
-      .catch(err => {
+      .catch((err) => {
+        analyticsTrack({
+          objectName: 'invite new member status',
+          actionName: 'clicked',
+          screen: 'my account',
+          properties: {
+            location: 'manage team',
+            status: 'failure',
+            failureReason: err.errors[0],
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
         this.props.showNotification({
           type: 'error',
           message: err.errors,
@@ -79,13 +112,7 @@ export default class NewInvitation extends Component {
   };
 
   render() {
-    const {
-      handleSubmit,
-      selectedRole,
-      user,
-      visibleFields,
-      ...props
-    } = this.props;
+    const { handleSubmit, selectedRole, user, visibleFields, ...props } = this.props;
 
     let ROLES = this.filterRoles();
 
@@ -119,7 +146,7 @@ export default class NewInvitation extends Component {
                   validate={[
                     required(),
                     email('Invalid Email'),
-                    value => {
+                    (value) => {
                       if (value === this.props.user.user.email) {
                         return "You can't invite yourself";
                       }
@@ -138,7 +165,7 @@ export default class NewInvitation extends Component {
                   validate={[
                     required(),
                     phone('Invalid Mobile'),
-                    value => {
+                    (value) => {
                       if (value === this.props.user.user.contact_mobile) {
                         return "You can't invite yourself";
                       }
@@ -154,7 +181,7 @@ export default class NewInvitation extends Component {
                 <label>Role</label>
                 <div class="input-container">
                   <Field name="role" component="select" class="form-control">
-                    {Object.keys(ROLES).map(role => (
+                    {Object.keys(ROLES).map((role) => (
                       <option key={role} value={role}>
                         {ROLES[role].label}
                       </option>
@@ -164,9 +191,7 @@ export default class NewInvitation extends Component {
               </div>
               <div class="form-group">
                 {ROLES[selectedRole] && ROLES[selectedRole].desc ? (
-                  <div class="alert alert-info text-center">
-                    {ROLES[selectedRole].desc}
-                  </div>
+                  <div class="alert alert-info text-center">{ROLES[selectedRole].desc}</div>
                 ) : null}
               </div>
             </>

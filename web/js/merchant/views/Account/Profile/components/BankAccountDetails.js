@@ -2,7 +2,9 @@ import React, { useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import DetailRow from 'merchant/components/DetailRow';
-import { Popover, PopoverBody } from 'common/ui/Popover';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 const BankAccountDetails = ({
   bankAccount,
@@ -52,7 +54,21 @@ const BankAccountDetails = ({
         )}
         {showRequestChange &&
           (isBankAccountChangeAllowed ? (
-            <a class="pull-right" onClick={onChangeBankAccountDetails}>
+            <a
+              class="pull-right"
+              onClick={(...e) => {
+                analyticsTrack({
+                  objectName: 'bank account edit',
+                  actionName: 'clicked',
+                  screen: 'my account',
+                  properties: {
+                    action: 'cancel',
+                    ...getCommonAnalyticsProperties(window.rzp_user),
+                  },
+                });
+                onChangeBankAccountDetails(...e);
+              }}
+            >
               Request Change
             </a>
           ) : (

@@ -5,6 +5,8 @@ import OtpInput from 'common/new-ui/Input/OtpInput';
 import { AsyncBtn } from 'common/new-ui/Button';
 
 import { closeModal } from 'merchant_common/reducers/modals';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 @connect(null, { closeModal })
 export default class TwoFactorVerificationOTP extends React.Component {
@@ -39,10 +41,48 @@ export default class TwoFactorVerificationOTP extends React.Component {
       });
   };
 
+  componentDidMount() {
+    analyticsTrack({
+      objectName: '2fa setup popup',
+      actionName: 'displayed',
+      screen: 'my account',
+      properties: {
+        '2FaFlow': this.props.title,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+
+    analyticsTrack({
+      objectName: '2fa otp',
+      actionName: 'sent',
+      screen: 'my account',
+      properties: {
+        action: 'cancel',
+        '2FaFlow': this.props.title,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+  }
+
   render() {
     return (
       <div>
-        <ModalHeader title={this.props.title} onCloseClick={this.onCloseClick} />
+        <ModalHeader
+          title={this.props.title}
+          onCloseClick={(...e) => {
+            analyticsTrack({
+              objectName: '2fa setup popup',
+              actionName: 'clicked',
+              screen: 'my account',
+              properties: {
+                action: 'cancel',
+                '2FaFlow': this.props.title,
+                ...getCommonAnalyticsProperties(window.rzp_user),
+              },
+            });
+            this.onCloseClick(...e);
+          }}
+        />
         <div class="modal-body">
           {this.props.renderMessage()}
           <OtpInput
@@ -54,7 +94,19 @@ export default class TwoFactorVerificationOTP extends React.Component {
             Didn’t receive an OTP?{' '}
             <AsyncBtn.Transparent
               pendingState="Sending OTP..."
-              onClick={this.props.onResend}
+              onClick={(...e) => {
+                analyticsTrack({
+                  objectName: '2fa setup popup',
+                  actionName: 'clicked',
+                  screen: 'my account',
+                  properties: {
+                    action: 'resend',
+                    '2FaFlow': this.props.title,
+                    ...getCommonAnalyticsProperties(window.rzp_user),
+                  },
+                });
+                this.props.onResend(...e);
+              }}
               class="m-l"
               showLoader={false}
             >

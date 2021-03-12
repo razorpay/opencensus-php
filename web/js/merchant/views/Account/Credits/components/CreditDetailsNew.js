@@ -2,8 +2,9 @@ import { Component } from 'react';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
 import Amount from 'common/ui/Amount';
+import { analyticsTrack } from 'common/utils/analytics';
 
-import { classList } from 'common/utils/rzp-utils';
+import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 export default class CreditDetails extends Component {
   state = {
@@ -12,6 +13,17 @@ export default class CreditDetails extends Component {
 
   toggleCollapsible = () => {
     const showCollapsible = this.state.showCollapsible;
+    if (!showCollapsible) {
+      analyticsTrack({
+        objectName: this.props.toggleText,
+        actionName: 'viewed',
+        screen: 'my account',
+        properties: {
+          location: 'credits',
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      });
+    }
 
     this.setState(
       {
@@ -19,12 +31,12 @@ export default class CreditDetails extends Component {
       },
       () => {
         this.props.trackToggleHistory(this.props.title)(!showCollapsible);
-      }
+      },
     );
   };
 
   getRemainingPercentage = ({ used, value }) => {
-    return Math.round(100 * used / value);
+    return Math.round((100 * used) / value);
   };
 
   pruneAmountCredits = (items = []) => {
@@ -32,7 +44,7 @@ export default class CreditDetails extends Component {
       prunedItems = [];
 
     // remove expired credits
-    prunedItems = items.filter(item => {
+    prunedItems = items.filter((item) => {
       if (item.campaign.indexOf('Expired') > -1) {
         let campaignName = item.campaign.replace('Expired', '');
 
@@ -47,11 +59,8 @@ export default class CreditDetails extends Component {
     });
 
     // add expired property if all credits used
-    prunedItems = prunedItems.map(item => {
-      if (
-        expiredCampaigns.indexOf(item.campaign) > -1 ||
-        item.used === item.value
-      ) {
+    prunedItems = prunedItems.map((item) => {
+      if (expiredCampaigns.indexOf(item.campaign) > -1 || item.used === item.value) {
         item['expired'] = true;
       }
 
@@ -61,13 +70,7 @@ export default class CreditDetails extends Component {
   };
 
   render() {
-    const {
-      title,
-      totalCredits,
-      description,
-      toggleText,
-      onManageAlert,
-    } = this.props;
+    const { title, totalCredits, description, toggleText, onManageAlert } = this.props;
     const { showCollapsible } = this.state;
 
     const creditItems = this.pruneAmountCredits(this.props.creditItems);
@@ -91,13 +94,8 @@ export default class CreditDetails extends Component {
           </strong>
           <div class="collapsible-container">
             {!!creditItems.length && (
-              <button
-                class="btn-link toggle-history"
-                onClick={this.toggleCollapsible}
-              >
-                <i
-                  class={`m-r i-chevron-${!!showCollapsible ? 'up' : 'down'}`}
-                />
+              <button class="btn-link toggle-history" onClick={this.toggleCollapsible}>
+                <i class={`m-r i-chevron-${!!showCollapsible ? 'up' : 'down'}`} />
                 {`${toggleText} (${creditItems.length})`}
               </button>
             )}
@@ -105,12 +103,9 @@ export default class CreditDetails extends Component {
               <div class="collapsible">
                 <div class="history">
                   {!!creditItems.length &&
-                    creditItems.map(cItem => (
+                    creditItems.map((cItem) => (
                       <div
-                        class={classList(
-                          'container',
-                          cItem.expired && 'disabled'
-                        )}
+                        class={classList('container', cItem.expired && 'disabled')}
                         key={cItem.id}
                       >
                         <div class="col-md-6 col-sm-6 col-lg-6 col-xs-12">
@@ -118,24 +113,16 @@ export default class CreditDetails extends Component {
                             {cItem.used === cItem.value ? (
                               <>
                                 <strong>
-                                  <Amount
-                                    value={cItem.value}
-                                    currency={'INR'}
-                                  />
+                                  <Amount value={cItem.value} currency={'INR'} />
                                 </strong>{' '}
                                 All credits used
                               </>
                             ) : (
                               <>
                                 <strong>
-                                  <Amount
-                                    value={cItem.value - cItem.used}
-                                    currency={'INR'}
-                                  />
+                                  <Amount value={cItem.value - cItem.used} currency={'INR'} />
                                 </strong>{' '}
-                                of{' '}
-                                <Amount value={cItem.value} currency={'INR'} />{' '}
-                                is still unused
+                                of <Amount value={cItem.value} currency={'INR'} /> is still unused
                               </>
                             )}
                           </div>
@@ -145,8 +132,7 @@ export default class CreditDetails extends Component {
                             <span
                               class="progress-bar"
                               style={{
-                                width: `${this.getRemainingPercentage(cItem) *
-                                  2}px`,
+                                width: `${this.getRemainingPercentage(cItem) * 2}px`,
                               }}
                             />
                             <span class="progress-bar-overlay" />
@@ -158,9 +144,7 @@ export default class CreditDetails extends Component {
                               <>
                                 Valid till{' '}
                                 <strong>
-                                  {moment(cItem.expired_at, 'X').format(
-                                    'DD MMM YYYY'
-                                  )}
+                                  {moment(cItem.expired_at, 'X').format('DD MMM YYYY')}
                                 </strong>
                               </>
                             ) : (

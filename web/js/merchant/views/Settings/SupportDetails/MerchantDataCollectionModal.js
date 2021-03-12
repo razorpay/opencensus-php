@@ -11,7 +11,8 @@ import {
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { required, isMobile, isEmail, isUrlLenient, isPhone } from 'common/utils/validators';
 import InputField from 'common/ui/Forms/InputField';
-import { autoPrefixUrls } from 'common/utils/rzp-utils';
+import { autoPrefixUrls, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { analyticsTrack } from 'common/utils/analytics';
 
 @connect(null, { showNotification, createSupportDetail })
 @RTracking(() => window.rzpQ.component('MerchantDataCollectionModal'))
@@ -98,20 +99,59 @@ export default class MerchantDataCollectionModal extends Component {
       });
   };
 
+  componentDidMount() {
+    analyticsTrack({
+      objectName: 'support details popup',
+      actionName: 'displayed',
+      screen: 'my account',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+  }
+
   render() {
     const { closeModal, handleSubmit } = this.props;
     return (
       <div className="support-modal-content">
         <div className="merchant-heading">
           Support details
-          <button type="button" className="close" onClick={closeModal}>
+          <button
+            type="button"
+            className="close"
+            onClick={(...e) => {
+              analyticsTrack({
+                objectName: 'support details popup',
+                actionName: 'clicked',
+                screen: 'my account',
+                properties: {
+                  action: 'cancel',
+                  ...getCommonAnalyticsProperties(window.rzp_user),
+                },
+              });
+              closeModal(...e);
+            }}
+          >
             <i className="i i-close" />
           </button>
         </div>
         <p className="merchant-subtitle">
           Let your customers know how to reach you for any queries.
         </p>
-        <form onSubmit={handleSubmit(this.onSubmit)}>
+        <form
+          onSubmit={(...e) => {
+            analyticsTrack({
+              objectName: 'support details popup',
+              actionName: 'clicked',
+              screen: 'my account',
+              properties: {
+                action: 'submit',
+                ...getCommonAnalyticsProperties(window.rzp_user),
+              },
+            });
+            return handleSubmit(this.onSubmit)(...e);
+          }}
+        >
           <div class="form-group">
             <label>Support Phone number</label>
             <Field

@@ -8,6 +8,8 @@ import { updateSession } from 'merchant/reducers/session';
 import User from 'merchant/models/User';
 
 import Toggle2FA from '../../components/TwoFAVerification/Toggle2FA';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 @connect((state) => ({ user: state.session.user }), {
   toggleMerchant2FaEnforcement,
@@ -26,6 +28,16 @@ export default class Merchant2FASettings extends React.PureComponent {
   };
 
   handleTwoFactorVerificationOnLoginToggle = (onToggleChange) => (flag, callback) => {
+    analyticsTrack({
+      objectName: '2fa team',
+      actionName: 'toggled',
+      screen: 'my account',
+      properties: {
+        type: flag ? 'enable' : 'disable',
+        location: 'my screen',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     return this.context.criticalFlow({
       mode: ['live', 'test'],
       onUserTwoFaVerified: () => {
@@ -53,8 +65,10 @@ export default class Merchant2FASettings extends React.PureComponent {
         twoFaEnabled={twoFaEnabled}
         onToggleComplete={this.onToggleComplete}
         getToggle2FaSuccessMsg={getToggle2FaSuccessMsg}
+        eventPrefix={'2fa team'}
         confirmDisableMessage="Are you sure you want to disable 2-step verification to all your team members?"
         confirmEnableMessage="Are you sure you want to enable 2-step verification to all your team members?"
+        location={'manage team'}
         onToggleChange={this.handleTwoFactorVerificationOnLoginToggle}
       />
     );

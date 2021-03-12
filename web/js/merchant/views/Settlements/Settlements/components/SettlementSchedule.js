@@ -5,7 +5,8 @@ import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
 import HolidayModal from 'merchant/views/Settlements/Settlements/components/Modals/HolidayModal';
 import ContentToggler from 'common/ui/Toggler/ContentToggler';
-import { titleCase } from 'common/utils/rzp-utils';
+import { titleCase, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { analyticsTrack } from 'common/utils/analytics';
 
 @connect((state) => state.settlement, {
   closeModal,
@@ -71,6 +72,15 @@ export default class SettlementSchedule extends Component {
   };
 
   viewHolidayList = () => {
+    analyticsTrack({
+      objectName: 'view settlement schedule popup',
+      actionName: 'clicked',
+      screen: 'my account',
+      properties: {
+        action: 'bank holidays',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     if (this.props.holidayList.error === true) return;
 
     this.props.openModal({
@@ -91,6 +101,15 @@ export default class SettlementSchedule extends Component {
         <ModalHeader
           title={`Settlement Cycle`}
           onCloseClick={() => {
+            analyticsTrack({
+              objectName: 'view settlement schedule popup',
+              actionName: 'clicked',
+              screen: 'my account',
+              properties: {
+                action: 'cancel',
+                ...getCommonAnalyticsProperties(window.rzp_user),
+              },
+            });
             this.props.closeModal();
             window.rzpAnalytics({
               eventCategory: 'Settlement Revamp',
@@ -205,6 +224,15 @@ export default class SettlementSchedule extends Component {
                     style={{ width: '48%', margin: '0 1%' }}
                     class="btn btn-primary"
                     onClick={() => {
+                      analyticsTrack({
+                        objectName: 'view settlement schedule popup',
+                        actionName: 'clicked',
+                        screen: 'my account',
+                        properties: {
+                          action: 'settlement guide',
+                          ...getCommonAnalyticsProperties(window.rzp_user),
+                        },
+                      });
                       window.rzpAnalytics({
                         eventCategory: 'Settlement Revamp',
                         eventAction: 'Settlement Guide',

@@ -35,7 +35,7 @@ export default function MyAccount() {
 
           <ShowWhen myRole="owner admin" additionalCondition={(user) => user.isFdTicketsEnabled}>
             <NavLink
-              onCLick={() => {
+              onClick={() => {
                 window.rzpAnalytics({
                   eventCategory: 'Ticket Dashboard',
                   eventAction: 'Support tickets tab clicked',

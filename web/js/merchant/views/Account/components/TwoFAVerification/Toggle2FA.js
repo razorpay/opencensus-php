@@ -14,6 +14,8 @@ import SwitchField from 'common/ui/Forms/SwitchField';
 
 import UpdateSelfContactMobile from 'merchant/views/Account/Profile/components/UpdateSelfContactMobile';
 import PasswordVerification from './PasswordVerification';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 @connect((state) => ({ user: state.session.user }), {
   openModal,
@@ -59,7 +61,16 @@ class Toggle2FA extends Component {
         const { second_factor_auth } = response.data;
         const twoFaStatus = second_factor_auth ? 'on' : 'off';
         const message = getToggle2FaSuccessMsg(twoFaStatus);
-
+        analyticsTrack({
+          objectName: `2fa switch`,
+          actionName: 'result',
+          screen: 'my account',
+          properties: {
+            type: second_factor_auth ? 'Enable 2FA' : 'Disable 2FA',
+            status: 'success',
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
         this.props.showNotification({
           type: 'success',
           message,
@@ -68,6 +79,17 @@ class Toggle2FA extends Component {
       })
       .catch(({ errors }) => {
         const error = (errors || [])[0];
+        analyticsTrack({
+          objectName: `2fa switch`,
+          actionName: 'result',
+          screen: 'my account',
+          properties: {
+            type: second_factor_auth ? 'Enable 2FA' : 'Disable 2FA',
+            status: 'failure',
+            failureReason: error,
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
         if (error === 'User 2FA setup is required') {
           // this is for restricted mode merchants
           // when all team members don't have a verified mobile number
@@ -121,8 +143,36 @@ class Toggle2FA extends Component {
       header: 'Enable 2-step verification',
       message: this.props.confirmEnableMessage,
       affirmativeLabel: 'Yes, enable it',
-      abort: this.abort,
-      action: () => action(flag),
+      abort: (...e) => {
+        analyticsTrack({
+          objectName: `${this.props.eventPrefix ? this.props.eventPrefix : '2fa'} account ${
+            flag ? 'enable' : 'disable'
+          } confirmation popup`,
+          actionName: 'clicked',
+          screen: 'my account',
+          properties: {
+            location: this.props.location,
+            action: 'cancel',
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
+        return this.abort(...e);
+      },
+      action: () => {
+        analyticsTrack({
+          objectName: `${this.props.eventPrefix ? this.props.eventPrefix : '2fa'} account ${
+            flag ? 'enable' : 'disable'
+          } confirmation popup`,
+          actionName: 'clicked',
+          screen: 'my account',
+          properties: {
+            location: this.props.location,
+            action: 'yes',
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
+        return action(flag);
+      },
     });
   };
 

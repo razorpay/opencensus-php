@@ -26,6 +26,8 @@ import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBa
 import { isMobileDevice } from 'merchant/components/Home/data';
 import { MobilePopup, UseAppFooter } from 'merchant/components/MobilePopup';
 import LocalStorageService from 'common/utils/localStorage';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 let url = 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app';
 if (getMobileOperatingSystem() == 'iOS') {
@@ -117,17 +119,60 @@ export default class TransactionsContainer extends Component {
         </ShowWhen>
         <tabbed-container>
           <header id="transactions-header">
-            <NavLink to="/payments" exact>
+            <NavLink
+              to="/payments"
+              onClick={() => {
+                analyticsTrack({
+                  objectName: 'transactions tab',
+                  actionName: 'clicked',
+                  screen: 'transactions',
+                  properties: {
+                    tabName: 'payments',
+                    ...getCommonAnalyticsProperties(window.rzp_user),
+                  },
+                });
+              }}
+              exact
+            >
               Payments
             </NavLink>
             <ShowWhen
               featureEnabled="direct_debit"
               additionalCondition={(user) => user.isAllowedView('payments_batch_uploads')}
             >
-              <NavLink to="/payments/batchuploads">Batch Payments</NavLink>
+              <NavLink
+                to="/payments/batchuploads"
+                onClick={() => {
+                  analyticsTrack({
+                    objectName: 'transactions tab',
+                    actionName: 'clicked',
+                    screen: 'transactions',
+                    properties: {
+                      tabName: 'batch payments',
+                      ...getCommonAnalyticsProperties(window.rzp_user),
+                    },
+                  });
+                }}
+              >
+                Batch Payments
+              </NavLink>
             </ShowWhen>
             <ShowWhen additionalCondition={(user) => user.isAllowedView('refunds')}>
-              <NavLink to="/refunds" exact>
+              <NavLink
+                to="/refunds"
+                exact
+                onClick={() => {
+                  analyticsTrack({
+                    objectName: 'transactions tab',
+                    actionName: 'clicked',
+                    screen: 'transactions',
+                    properties: {
+                      tabName: 'refunds',
+                      ...getCommonAnalyticsProperties(window.rzp_user),
+                    },
+                  });
+                }}
+              >
                 Refunds
               </NavLink>
             </ShowWhen>
@@ -137,14 +182,55 @@ export default class TransactionsContainer extends Component {
                 isActive={(match, { pathname }) =>
                   pathname === '/refunds/batchupload' || pathname === '/refunds/batchuploads'
                 }
+                onClick={() => {
+                  analyticsTrack({
+                    objectName: 'transactions tab',
+                    actionName: 'clicked',
+                    screen: 'transactions',
+                    properties: {
+                      tabName: 'batch refunds',
+                      ...getCommonAnalyticsProperties(window.rzp_user),
+                    },
+                  });
+                }}
               >
                 Batch Refunds
               </NavLink>
             </ShowWhen>
             <ShowWhen additionalCondition={(user) => user.isAllowedView('orders')}>
-              <NavLink to="/orders">Orders</NavLink>
+              <NavLink
+                to="/orders"
+                onClick={() => {
+                  analyticsTrack({
+                    objectName: 'transactions tab',
+                    actionName: 'clicked',
+                    screen: 'transactions',
+                    properties: {
+                      tabName: 'orders',
+                      ...getCommonAnalyticsProperties(window.rzp_user),
+                    },
+                  });
+                }}
+              >
+                Orders
+              </NavLink>
             </ShowWhen>
-            <NavLink to="/disputes">Disputes</NavLink>
+            <NavLink
+              to="/disputes"
+              onClick={() => {
+                analyticsTrack({
+                  objectName: 'transactions tab',
+                  actionName: 'clicked',
+                  screen: 'transactions',
+                  properties: {
+                    tabName: 'disputes',
+                    ...getCommonAnalyticsProperties(window.rzp_user),
+                  },
+                });
+              }}
+            >
+              Disputes
+            </NavLink>
             {no_settlement &&
             (pathname === '/payments' || pathname === '/refunds' || pathname === '/orders') &&
             mode === 'live' &&

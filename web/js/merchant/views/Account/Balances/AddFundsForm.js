@@ -9,13 +9,24 @@ import InputField from 'common/ui/Forms/InputField';
 import { updatePassword } from 'merchant/reducers/profile';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 @connect(null, { closeModal })
 @reduxForm({
   form: 'AddFundsForm',
 })
 export default class AddFundsForm extends Component {
-  addFunds = fieldProps => {
+  addFunds = (fieldProps) => {
+    analyticsTrack({
+      objectName: 'add funds popup',
+      actionName: 'clicked',
+      screen: 'my account',
+      properties: {
+        action: 'Add Funds',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     this.props.closeModal();
     this.props.openCheckout(fieldProps);
   };
@@ -25,7 +36,21 @@ export default class AddFundsForm extends Component {
 
     return (
       <form onSubmit={handleSubmit(this.addFunds)}>
-        <ModalHeader title="Add Funds" onCloseClick={this.props.closeModal} />
+        <ModalHeader
+          title="Add Funds"
+          onCloseClick={() => {
+            analyticsTrack({
+              objectName: 'add funds popup',
+              actionName: 'clicked',
+              screen: 'my account',
+              properties: {
+                action: 'cancel',
+                ...getCommonAnalyticsProperties(window.rzp_user),
+              },
+            });
+            this.props.closeModal();
+          }}
+        />
         <div class="modal-body">
           <div class="form-group">
             <Field

@@ -8,6 +8,8 @@ import InputField from 'common/ui/Forms/InputField';
 
 import { closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { analyticsTrack } from 'common/utils/analytics';
 
 @connect(null, { closeModal, showNotification })
 @reduxForm({
@@ -25,14 +27,51 @@ export default class MerchantConfigForm extends PureComponent {
   resetValue = this.resetValue.bind(this);
 
   resetValue() {
+    analyticsTrack({
+      objectName: 'display name edit popup',
+      actionName: 'clicked',
+      screen: 'my account',
+      properties: {
+        action: 'reset',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     this.props.change(this.props.attribute, this.props.value);
   }
 
   render() {
     const { handleSubmit } = this.props;
     return (
-      <form onSubmit={handleSubmit(this.props.updateMerchantConfig)}>
-        <ModalHeader title={'Edit ' + this.props.label} onCloseClick={this.props.closeModal} />
+      <form
+        onSubmit={(...a) => {
+          debugger;
+          analyticsTrack({
+            objectName: 'display name edit popup',
+            actionName: 'clicked',
+            screen: 'my account',
+            properties: {
+              action: 'update',
+              ...getCommonAnalyticsProperties(window.rzp_user),
+            },
+          });
+          return handleSubmit(this.props.updateMerchantConfig)(...a);
+        }}
+      >
+        <ModalHeader
+          title={'Edit ' + this.props.label}
+          onCloseClick={(args) => {
+            analyticsTrack({
+              objectName: 'display name edit popup',
+              actionName: 'clicked',
+              screen: 'my account',
+              properties: {
+                action: 'cancel',
+                ...getCommonAnalyticsProperties(window.rzp_user),
+              },
+            });
+            this.props.closeModal(args);
+          }}
+        />
         <div class="modal-body">
           <div class="form-group">
             <label class="label-required">{this.props.label}</label>

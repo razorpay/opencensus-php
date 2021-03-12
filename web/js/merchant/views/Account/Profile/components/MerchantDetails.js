@@ -7,7 +7,12 @@ import ProgressBar from 'common/ui/ProgressBar';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import Amount from 'common/ui/Amount';
 
-import { titleCase, isPresent, getFormattedAmount } from 'common/utils/rzp-utils';
+import {
+  titleCase,
+  isPresent,
+  getFormattedAmount,
+  getCommonAnalyticsProperties,
+} from 'common/utils/rzp-utils';
 
 import DetailRow from 'merchant/components/DetailRow';
 import { ActivationStatusLabel } from 'merchant/components/StatusLabel';
@@ -18,6 +23,7 @@ import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
 import EditWebsiteDetailsModal from './EditWebsiteDetailsModal';
 import UserContactMobile from './UserContactMobile';
+import { analyticsTrack } from 'common/utils/analytics';
 
 function renderWebsites(user, handleEditWebsite, isWebsiteInWorkflow) {
   let businessWebsite = user.business_website ? (
@@ -116,12 +122,41 @@ const MerchantDetails = ({
             user.display_name ? (
               <span>
                 {user.display_name}
-                <a class="p-l" onClick={changeDisplayName} title="Edit Display Name">
+                <a
+                  class="p-l"
+                  onClick={(...args) => {
+                    analyticsTrack({
+                      objectName: 'dispay name edit',
+                      actionName: 'clicked',
+                      screen: 'my account',
+                      properties: {
+                        action: 'reset',
+                        ...getCommonAnalyticsProperties(window.rzp_user),
+                      },
+                    });
+                    return changeDisplayName(...args);
+                  }}
+                  title="Edit Display Name"
+                >
                   <i className="i i-edit" />
                 </a>
               </span>
             ) : (
-              <a className="p-l" onClick={changeDisplayName} title="Set Display Name">
+              <a
+                className="p-l"
+                onClick={() => {
+                  analyticsTrack({
+                    objectName: 'display name edit',
+                    actionName: 'clicked',
+                    screen: 'my account',
+                    properties: {
+                      ...getCommonAnalyticsProperties(window.rzp_user),
+                    },
+                  });
+                  return changeDisplayName();
+                }}
+                title="Set Display Name"
+              >
                 Set Display Name
               </a>
             )
@@ -131,7 +166,23 @@ const MerchantDetails = ({
 
       <DetailRow
         label="Contact Email"
-        value={() => <a href={`mailto:${user.email}`}>{user.email}</a>}
+        value={() => (
+          <a
+            onClick={() => {
+              analyticsTrack({
+                objectName: 'contact email',
+                actionName: 'clicked',
+                screen: 'my account',
+                properties: {
+                  ...getCommonAnalyticsProperties(window.rzp_user),
+                },
+              });
+            }}
+            href={`mailto:${user.email}`}
+          >
+            {user.email}
+          </a>
+        )}
       />
 
       <UserContactMobile />
@@ -160,6 +211,14 @@ const MerchantDetails = ({
                       clickSource: 'My_Account',
                     }),
                   );
+                  analyticsTrack({
+                    objectName: 'view KYC form',
+                    actionName: 'clicked',
+                    screen: 'my account',
+                    properties: {
+                      status: window.rzp_user.verification.status,
+                    },
+                  });
                 }}
               >
                 {do {
@@ -279,7 +338,22 @@ const MerchantDetails = ({
               user.billing_label ? (
                 <span>
                   {user.billing_label}
-                  <a class="p-l" onClick={changeBillingLabel} title="Edit Billing Label">
+                  <a
+                    class="p-l"
+                    onClick={(e) => {
+                      analyticsTrack({
+                        objectName: 'Brand name edit',
+                        actionName: 'clicked',
+                        screen: 'my account',
+                        properties: {
+                          currentBrandName: user.billing_label,
+                          ...getCommonAnalyticsProperties(window.rzp_user),
+                        },
+                      });
+                      changeBillingLabel(e);
+                    }}
+                    title="Edit Billing Label"
+                  >
                     <i class="i i-edit" />
                   </a>
                 </span>

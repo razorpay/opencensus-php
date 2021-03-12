@@ -10,6 +10,8 @@ import {
 import TwoFactorVerificationOTP from './TwoFactorVerificationOTP';
 import TwoFaVerificationContext from './TwoFactorVerificationContext';
 import TwoFactorVerificationSetup from './TwoFactorVerificationSetup';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { analyticsTrack } from 'common/utils/analytics';
 
 @connect(
   (state) => ({
@@ -76,6 +78,18 @@ export default class TwoFaVerificationContextProvider extends React.Component {
     this.onCloseCallback = onFlowTermination;
 
     const { user, twoFactorVerified, modeOfApp } = this.props;
+
+    if (onBankAccountUpdateReq) {
+      analyticsTrack({
+        objectName: '2fa setup popup',
+        actionName: 'displayed',
+        screen: 'my account',
+        properties: {
+          '2FaFlow': 'Bank Account update',
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      });
+    }
 
     if (
       (user.isCriticalRouteExperimentEnabled || onBankAccountUpdateReq) &&

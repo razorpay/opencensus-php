@@ -8,12 +8,13 @@ import {
   storeTicketDetails,
   getTicketStatus,
 } from 'merchant/reducers/profile';
-import { rupeesToPaise } from 'common/utils/rzp-utils';
+import { rupeesToPaise, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import AddFundsForm from 'merchant/views/Account/Balances/AddFundsForm';
 import Amount from 'common/ui/Amount';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { loadCheckout } from 'merchant/utils/fetchKeysAndCheckout';
+import { analyticsTrack } from 'common/utils/analytics';
 @connect(
   (state) => ({
     ...state.session,
@@ -43,6 +44,14 @@ export default class AddFundsContainer extends Component {
   }
 
   componentDidMount() {
+    analyticsTrack({
+      objectName: 'balances',
+      actionName: 'viewed',
+      screen: 'my account',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     this.props.fetchCurrentBalance();
     this.props.fetchReserveBalance();
     this.props.getTicketStatus();
@@ -127,6 +136,16 @@ export default class AddFundsContainer extends Component {
         dashboard: true,
       },
       handler: function (transaction = {}) {
+        analyticsTrack({
+          objectName: 'add funds',
+          actionName: 'result',
+          screen: 'my account',
+          properties: {
+            status: 'success',
+            location: 'balances',
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
         this.addFunds({
           amount: amountInPaise,
           razorpay_payment_id: transaction.razorpay_payment_id,
@@ -153,6 +172,16 @@ export default class AddFundsContainer extends Component {
   };
 
   handlAddFunds = () => {
+    analyticsTrack({
+      objectName: 'add funds',
+      actionName: 'clicked',
+      screen: 'my account',
+      properties: {
+        location: 'balances',
+        currentBalance: this.props.account_balance.data.balance,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     this.props.openModal({
       size: 'small',
       component: <AddFundsForm openCheckout={this.openCheckout} />,
@@ -197,6 +226,15 @@ export default class AddFundsContainer extends Component {
   }
 
   handleContactUs = () => {
+    analyticsTrack({
+      objectName: 'contact us',
+      actionName: 'clicked',
+      screen: 'my account',
+      properties: {
+        location: 'balances',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     if (window.rzpTicketSystem) {
       const rzpTicketSystem = window.rzpTicketSystem;
       window.rzpTicketSystem.addEventListener('ticket-created', this.handleTicketCreation);

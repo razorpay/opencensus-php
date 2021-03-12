@@ -15,12 +15,14 @@ import Merchant2FASettings from './components/Merchant2FASettings';
 import NewInvitation from './components/NewInvitation';
 
 import rolesList from 'merchant/helpers/permissions/roles-list';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 @connect(
-  state => ({
+  (state) => ({
     user: state.session.user.user,
   }),
-  { sendInvitation, openModal, closeModal }
+  { sendInvitation, openModal, closeModal },
 )
 export default class ManageTeamContainer extends React.Component {
   static contextTypes = {
@@ -28,6 +30,17 @@ export default class ManageTeamContainer extends React.Component {
   };
 
   inviteNewMember = () => {
+    analyticsTrack({
+      objectName: 'invite new member',
+      actionName: 'clicked',
+      screen: 'my account',
+      properties: {
+        location: 'manage team',
+        pendingInvitations: this.props.user.invitations.length,
+        // members left to be added
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     const visibleFields = {
       email: true,
       role: true,
@@ -37,24 +50,18 @@ export default class ManageTeamContainer extends React.Component {
       sender_name: this.props.user.name,
       role: rolesList.MANAGER,
     };
-
     this.props.openModal({
       size: 'small',
       component: (
         <>
-          <ModalHeader
-            title="Invite New Member"
-            onCloseClick={this.props.closeModal}
-          />
+          <ModalHeader title="Invite New Member" onCloseClick={this.props.closeModal} />
           <div class="modal-body">
             <NewInvitation
               visibleFields={visibleFields}
               defaults={defaults}
               onSuccess={this.props.closeModal}
               onFormSubmit={this.props.sendInvitation}
-              successMsg={data =>
-                'Invitation has been successfully sent to ' + data.email
-              }
+              successMsg={(data) => 'Invitation has been successfully sent to ' + data.email}
               ctaText="Send Invitation"
             />
           </div>
@@ -63,6 +70,17 @@ export default class ManageTeamContainer extends React.Component {
     });
   };
 
+  componentDidMount() {
+    analyticsTrack({
+      objectName: 'manage team',
+      actionName: 'viewed',
+      screen: 'my account',
+      properties: {
+        location: 'manage team',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+  }
   render() {
     return (
       <div class="content-wrapper content-sm" id="settings-content">
@@ -72,7 +90,7 @@ export default class ManageTeamContainer extends React.Component {
         <HeaderAction>
           <div class="btn-toolbar pull-right">
             <DocsLink url="https://razorpay.com/docs/team-support/" />
-            <ShowWhen additionalCondition={user => user.isAllowedEdit('team')}>
+            <ShowWhen additionalCondition={(user) => user.isAllowedEdit('team')}>
               <button class="btn btn-primary" onClick={this.inviteNewMember}>
                 Invite New Member
               </button>
@@ -80,9 +98,7 @@ export default class ManageTeamContainer extends React.Component {
           </div>
         </HeaderAction>
         <div class="ManageTeam--list">
-          <ShowWhen
-            additionalCondition={user => user.isAllowedView('invitations')}
-          >
+          <ShowWhen additionalCondition={(user) => user.isAllowedView('invitations')}>
             <PendingInvitationsList {...this.props} />
           </ShowWhen>
 

@@ -3,19 +3,16 @@ import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 import PropTypes from 'prop-types';
 
-import {
-  cancelInvitation,
-  updateInvitation,
-  resendInvitation,
-} from 'merchant/reducers/invitation';
+import { cancelInvitation, updateInvitation, resendInvitation } from 'merchant/reducers/invitation';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
-import { pickProps } from 'common/utils/rzp-utils';
+import { pickProps, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import ModalHeader from 'common/ui/ModalHeader';
 
 import NewInvitation from '../components/NewInvitation';
+import { analyticsTrack } from 'common/utils/analytics';
 
 @connect(null, {
   cancelInvitation,
@@ -31,6 +28,16 @@ export default class InvitationsActions extends Component {
   };
 
   update = () => {
+    analyticsTrack({
+      objectName: 'invitation update',
+      actionName: 'clicked',
+      screen: 'my account',
+      properties: {
+        location: 'manage team',
+        // pending invitations left
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     const { invitation, updateInvitation, closeModal, ...props } = this.props;
     const visibleFields = {
       role: true,
@@ -50,7 +57,37 @@ export default class InvitationsActions extends Component {
               ctaText="Update Invitation"
               successMsg="Invitation is updated successfully"
               closeModal={this.props.closeModal}
-              onFormSubmit={this.props.updateInvitation}
+              onFormSubmit={(...e) => {
+                return this.props
+                  .updateInvitation(...e)
+                  .then(() => {
+                    analyticsTrack({
+                      objectName: 'invitation update',
+                      actionName: 'status',
+                      screen: 'my account',
+                      properties: {
+                        location: 'manage team',
+                        status: 'success',
+                        ...getCommonAnalyticsProperties(window.rzp_user),
+                      },
+                    });
+                    return Promise.resolve();
+                  })
+                  .catch((e) => {
+                    analyticsTrack({
+                      objectName: 'invitation update',
+                      actionName: 'status',
+                      screen: 'my account',
+                      properties: {
+                        location: 'manage team',
+                        status: 'failure',
+                        failureReason: e.errors[0],
+                        ...getCommonAnalyticsProperties(window.rzp_user),
+                      },
+                    });
+                    return Promise.reject();
+                  });
+              }}
             />
           </div>
         </>
@@ -59,22 +96,62 @@ export default class InvitationsActions extends Component {
   };
 
   cancel = () => {
+    analyticsTrack({
+      objectName: 'invitation cancel',
+      actionName: 'clicked',
+      screen: 'my account',
+      properties: {
+        location: 'manage team',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     const { invitation, cancelInvitation } = this.props;
     this.context.confirm({
       header: 'Cancel Invitation',
       message: (
         <>
-          Are you sure you want to cancel invitation sent to{' '}
-          <strong>{invitation.email}</strong>?
+          Are you sure you want to cancel invitation sent to <strong>{invitation.email}</strong>?
         </>
       ),
       affirmativeLabel: 'Yes, Cancel',
       affirmativePendingLabel: 'Cancelling...',
       abortLabel: "No, Don't Cancel",
+      abort: () => {
+        analyticsTrack({
+          objectName: 'invitation cancel popup',
+          actionName: 'clicked',
+          screen: 'my account',
+          properties: {
+            location: 'manage team',
+            action: 'no',
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
+      },
       action: () => {
+        analyticsTrack({
+          objectName: 'invitation cancel popup',
+          actionName: 'clicked',
+          screen: 'my account',
+          properties: {
+            location: 'manage team',
+            action: 'yes',
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
         return cancelInvitation(invitation.id)
-          .then(response => {
+          .then((response) => {
             if (response) {
+              analyticsTrack({
+                objectName: 'invitation cancel',
+                actionName: 'status',
+                screen: 'my account',
+                properties: {
+                  location: 'manage team',
+                  status: 'success',
+                  ...getCommonAnalyticsProperties(window.rzp_user),
+                },
+              });
               this.props.showNotification({
                 type: 'success',
                 message: 'Invitation successfully cancelled',
@@ -82,6 +159,17 @@ export default class InvitationsActions extends Component {
             }
           })
           .catch(({ errors }) => {
+            analyticsTrack({
+              objectName: 'invitation cancel',
+              actionName: 'status',
+              screen: 'my account',
+              properties: {
+                location: 'manage team',
+                status: 'failure',
+                failureReason: errors[0],
+                ...getCommonAnalyticsProperties(window.rzp_user),
+              },
+            });
             this.props.showNotification({
               type: 'error',
               message: errors,
@@ -93,13 +181,32 @@ export default class InvitationsActions extends Component {
 
   resend = () => {
     const { invitation, loggedInUserName } = this.props;
+    analyticsTrack({
+      objectName: 'invitation resend',
+      actionName: 'clicked',
+      screen: 'my account',
+      properties: {
+        location: 'manage team',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     return this.props
       .resendInvitation({
         id: invitation.id,
         sender_name: loggedInUserName,
       })
-      .then(response => {
+      .then((response) => {
         if (response) {
+          analyticsTrack({
+            objectName: 'invitation resend',
+            actionName: 'status',
+            screen: 'my account',
+            properties: {
+              status: 'success',
+              location: 'manage team',
+              ...getCommonAnalyticsProperties(window.rzp_user),
+            },
+          });
           this.props.showNotification({
             type: 'success',
             message: 'Invitation resent successfully',
@@ -107,6 +214,17 @@ export default class InvitationsActions extends Component {
         }
       })
       .catch(({ errors }) => {
+        analyticsTrack({
+          objectName: 'invitation resend',
+          actionName: 'status',
+          screen: 'my account',
+          properties: {
+            location: 'manage team',
+            status: 'failure',
+            failureReason: errors[0],
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
         this.props.showNotification({
           type: 'error',
           message: errors,

@@ -1,27 +1,32 @@
-import { Fragment } from 'react';
+import { Fragment, useEffect } from 'react';
 import Spinner from 'common/ui/Spinner';
 import HeaderAction from 'common/ui/HeaderAction';
 
-import { groupBy } from 'common/utils/rzp-utils';
+import { groupBy, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import CreditDetails from './CreditDetails';
 import CreditDetailsNew from './CreditDetailsNew';
 import DocsLink from 'merchant/components/DocsLink';
+import { analyticsTrack } from 'common/utils/analytics';
 
-export default props => {
-  let {
-    creditsData,
-    balanceData,
-    loading,
-    currentUser,
-    showDocumentation = true,
-  } = props;
+export default (props) => {
+  let { creditsData, balanceData, loading, currentUser, showDocumentation = true } = props;
 
   if (!currentUser) {
-    error =
-      'Your user account is not associated at present with any active merchant account.';
+    error = 'Your user account is not associated at present with any active merchant account.';
   }
   const creditItems = groupBy(creditsData.items, 'type');
-
+  useEffect(() => {
+    analyticsTrack({
+      objectName: 'credits',
+      actionName: 'viewed',
+      screen: 'my account',
+      properties: {
+        action: 'cancel',
+        location: 'credits',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+  }, []);
   return (
     <div class="credits content-wrapper content-sm">
       {showDocumentation && (

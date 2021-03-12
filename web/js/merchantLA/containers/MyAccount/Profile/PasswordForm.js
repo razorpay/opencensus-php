@@ -8,22 +8,45 @@ import InputField from 'common/ui/Forms/InputField';
 import { updatePassword } from 'merchantLA/reducers/profile';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 @connect(null, { closeModal, showNotification })
 @reduxForm({
   form: 'updatePasswordChangeForm',
 })
 export default class PasswordForm extends PureComponent {
-  changePassword = props => {
+  changePassword = (props) => {
     return updatePassword(props)
       .then(() => {
         this.props.showNotification({
           type: 'success',
           message: 'Password changed successfully.',
         });
+        analyticsTrack({
+          objectName: 'change password',
+          actionName: 'status',
+          screen: 'my account',
+          properties: {
+            location: 'profile',
+            success: true,
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
         this.props.closeModal();
       })
-      .catch(err => {
+      .catch((err) => {
+        analyticsTrack({
+          objectName: 'change password',
+          actionName: 'status',
+          screen: 'my account',
+          properties: {
+            location: 'profile',
+            success: false,
+            failureReason: err.errors[0],
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
         this.props.showNotification({
           type: 'error',
           message: err.errors,
@@ -35,10 +58,7 @@ export default class PasswordForm extends PureComponent {
     const { handleSubmit } = this.props;
     return (
       <form onSubmit={handleSubmit(this.changePassword)}>
-        <ModalHeader
-          title="Change Password"
-          onCloseClick={this.props.closeModal}
-        />
+        <ModalHeader title="Change Password" onCloseClick={this.props.closeModal} />
         <div class="modal-body">
           <div class="form-group">
             <Field

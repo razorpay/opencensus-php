@@ -72,19 +72,6 @@ export default class MainNavLink extends Component {
       },
     });
 
-    if (this.props.label === 'Transactions') {
-      analyticsTrack({
-        objectName: 'transactions tab',
-        actionName: 'clicked',
-        screen: 'transactions',
-        properties: {
-          tabName: 'transactions',
-          location: 'sidebar',
-          ...getCommonAnalyticsProperties(window.rzp_user),
-        },
-      });
-    }
-
     if (this.props.label === 'App Store' && window.rzpQ && window.rzpQ.onbr().clicked) {
       tracking.trackEvent(
         window.rzpQ.onbr().clicked('partnerships.appstore', {

@@ -9,6 +9,8 @@ import { closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { fetchBillingLabelSuggestions } from 'merchant/reducers/profile';
 import { reduxForm } from 'redux-form';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 @connect(
   (state) => {
@@ -36,6 +38,14 @@ export default class UpdateBillingLabel extends PureComponent {
   componentDidMount() {
     fetchBillingLabelSuggestions()
       .then(({ data }) => {
+        analyticsTrack({
+          objectName: 'Brand name edit popup',
+          actionName: 'displayed',
+          screen: 'my account',
+          properties: {
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
         this.setState({ loading: false, suggestions: data });
       })
       .catch(() => {
@@ -45,6 +55,18 @@ export default class UpdateBillingLabel extends PureComponent {
   }
 
   onClickedSuggestion = (suggestion, index) => {
+    analyticsTrack({
+      objectName: 'brand name suggestions',
+      actionName: 'selected',
+      screen: 'my account',
+      properties: {
+        originalName: this.state.billingLabel,
+        selectedBrandName: suggestion,
+        // website: '',
+        // businessName: // props remaining to be added
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     const { openCustomLabel } = this.state;
     if (openCustomLabel) {
       this.setState({ openCustomLabel: false });
@@ -84,6 +106,14 @@ export default class UpdateBillingLabel extends PureComponent {
   };
 
   openCutomBillingLabelInput = () => {
+    analyticsTrack({
+      objectName: 'add custom brand name',
+      actionName: 'clicked',
+      screen: 'my account',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     this.setState({
       isValid: false,
       billingLabel: '',
@@ -106,6 +136,14 @@ export default class UpdateBillingLabel extends PureComponent {
       billing_label: this.state.billingLabel,
     };
     const { user } = this.props;
+    analyticsTrack({
+      objectName: 'save brand name',
+      actionName: 'clicked',
+      screen: 'my account',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
 
     window.rzpAnalytics({
       eventCategory: 'Brand Name',
@@ -113,7 +151,36 @@ export default class UpdateBillingLabel extends PureComponent {
       eventLabel: `${user.id}`,
     });
 
-    this.props.updateMerchantConfig(data);
+    this.props
+      .updateMerchantConfig(data)
+      .then(() => {
+        analyticsTrack({
+          objectName: 'save brand name',
+          actionName: 'result',
+          screen: 'my account',
+          properties: {
+            status: true,
+            newBrandName: this.state.billing_label,
+            // original remaining
+            // originalBrandName: this.state.billingLabel,
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
+      })
+      .catch((e) => {
+        analyticsTrack({
+          objectName: 'save brand name',
+          actionName: 'result',
+          screen: 'my account',
+          properties: {
+            status: false,
+            failureReason: e.errors[0],
+            newBrandName: billing_label,
+            originalBrandName: this.state.billingLabel,
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
+      });
   };
 
   render() {

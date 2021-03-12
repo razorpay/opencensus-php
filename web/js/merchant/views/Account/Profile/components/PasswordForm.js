@@ -9,6 +9,8 @@ import InputField from 'common/ui/Forms/InputField';
 import { updatePassword } from 'merchant/reducers/profile';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 @connect(null, { updatePassword, closeModal, showNotification })
 @RTracking(() => window.rzpQ.component('PasswordForm'))
@@ -16,13 +18,12 @@ import { showNotification } from 'merchant_common/reducers/notifications';
   form: 'updatePasswordChangeForm',
 })
 export default class PasswordForm extends PureComponent {
-  changePassword = props => {
+  changePassword = (props) => {
     let errorMessage;
     if (props.old_password === props.password) {
       errorMessage = 'Old password cannot be the same as the new password';
     } else if (props.password !== props.password_confirmation) {
-      errorMessage =
-        'New password and new password confirmation should be same';
+      errorMessage = 'New password and new password confirmation should be same';
     }
 
     if (errorMessage) {
@@ -37,6 +38,15 @@ export default class PasswordForm extends PureComponent {
     return this.props
       .updatePassword(props)
       .then(() => {
+        analyticsTrack({
+          objectName: 'change password',
+          actionName: 'status',
+          screen: 'my account',
+          properties: {
+            status: 'success',
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
         const { showNotification, closeModal, tracking } = this.props;
         showNotification({
           type: 'success',
@@ -45,11 +55,21 @@ export default class PasswordForm extends PureComponent {
         tracking.trackEvent(
           window.rzpQ.onbr().initiated('dash.my_account_actions', {
             action: 'Change_Password_Successful',
-          })
+          }),
         );
         closeModal();
       })
-      .catch(err => {
+      .catch((err) => {
+        analyticsTrack({
+          objectName: 'change password',
+          actionName: 'status',
+          screen: 'my account',
+          properties: {
+            status: 'failure',
+            failureReason: err.errors[0],
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
         this.props.showNotification({
           type: 'error',
           message: err.errors,
@@ -60,10 +80,36 @@ export default class PasswordForm extends PureComponent {
   render() {
     const { handleSubmit } = this.props;
     return (
-      <form onSubmit={handleSubmit(this.changePassword)}>
+      <form
+        onSubmit={(args) => {
+          analyticsTrack({
+            objectName: 'change password popup',
+            actionName: 'clicked',
+            screen: 'my account',
+            properties: {
+              location: 'profile',
+              action: 'change password',
+              ...getCommonAnalyticsProperties(window.rzp_user),
+            },
+          });
+          return handleSubmit(this.changePassword)(...args);
+        }}
+      >
         <ModalHeader
           title="Change Password"
-          onCloseClick={this.props.closeModal}
+          onCloseClick={() => {
+            analyticsTrack({
+              objectName: 'change password popup',
+              actionName: 'clicked',
+              screen: 'my account',
+              properties: {
+                location: 'profile',
+                action: 'cancel',
+                ...getCommonAnalyticsProperties(window.rzp_user),
+              },
+            });
+            this.props.closeModal();
+          }}
         />
         <div class="modal-body">
           <div class="form-group">

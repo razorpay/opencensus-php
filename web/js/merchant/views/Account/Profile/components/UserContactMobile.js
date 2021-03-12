@@ -9,6 +9,8 @@ import UpdateContactMobile from 'common/ui/UpdateContactMobile';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { updateContactMobile, updateUser } from 'merchant_common/reducers/user';
 import { verifyTwoFactorOtp } from 'merchant_common/reducers/twoFactor';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { analyticsTrack } from 'common/utils/analytics';
 
 @connect(
   (state) => ({
@@ -30,6 +32,14 @@ export default class UserContactMobile extends React.Component {
   };
 
   onChangeContactMobile = () => {
+    analyticsTrack({
+      objectName: 'change contact number',
+      actionName: 'clicked',
+      screen: 'my account',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     this.props.openModal({
       size: 'small',
       component: <UpdateContactMobile onComplete={this.onUpdateContactMobileComplete} />,

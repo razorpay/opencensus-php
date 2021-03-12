@@ -5,6 +5,8 @@ import { fetchSupportDetail } from 'merchant/reducers/support_detail';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import MerchantDataCollectionModal from 'merchant/views/Settings/SupportDetails/MerchantDataCollectionModal';
 import { isMobile } from 'common/utils/validators';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 @connect((state) => ({ support_detail: state.supportdetails.merchantSupportDetail }), {
   fetchSupportDetail,
@@ -18,6 +20,19 @@ export default class SupportDetails extends Component {
   }
 
   openAddSupportDetailModal = (data) => {
+    const is_edit = Object.keys(this.props.support_detail.data).length;
+    if (is_edit) {
+      analyticsTrack({
+        objectName: 'support details edit',
+        actionName: 'clicked',
+        screen: 'my account',
+        properties: {
+          supportDetailPresent: this.props.support_detail.data ? true : false,
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      });
+    }
+
     this.props.openModal({
       size: 'small',
       component: (

@@ -8,6 +8,7 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import * as ProfileActions from 'merchant/reducers/profile';
 import ShowWhen from 'merchant/components/ShowWhen';
+import { analyticsTrack } from 'common/utils/analytics';
 
 import User from 'merchant/models/User';
 import MerchantDetails from 'merchant/views/Account/Profile/components/MerchantDetails';
@@ -31,6 +32,7 @@ import User2FASettings from './components/User2FASettings';
 import { ATTR_DETAILS } from 'merchant/views/Account/constants';
 import UpdateBillingLabel from './components/UpdateBillingLabel';
 import TwoFactorVerificationContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 @connect(
   (state) => {
@@ -183,6 +185,15 @@ export default class Profile extends Component {
     }),
   )
   openChangePasswordModal = () => {
+    analyticsTrack({
+      objectName: 'change password',
+      actionName: 'clicked',
+      screen: 'my account',
+      properties: {
+        location: 'profile',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     this.props.openModal({
       size: 'small',
       component: <PasswordForm />,
@@ -194,6 +205,16 @@ export default class Profile extends Component {
       .updateMerchantConfig(props)
       .then((resp) => {
         if (resp.success) {
+          analyticsTrack({
+            objectName: 'display name update',
+            actionName: 'status',
+            screen: 'my account',
+            properties: {
+              status: 'success',
+              newDisplayName: props.display_name,
+              ...getCommonAnalyticsProperties(window.rzp_user),
+            },
+          });
           this.props.showNotification({
             type: 'success',
             message: 'Display name changed successfully.',
@@ -212,6 +233,17 @@ export default class Profile extends Component {
         return resp;
       })
       .catch((err) => {
+        analyticsTrack({
+          objectName: 'display name update',
+          actionName: 'status',
+          screen: 'my account',
+          properties: {
+            status: 'failure',
+            newDisplayName: props.display_name,
+            failureReason: err.errors[0],
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
         this.props.showNotification({
           type: 'error',
           message: err.errors,
@@ -334,7 +366,14 @@ export default class Profile extends Component {
 
     //not needed
     delete body.account_number_confirmation;
-
+    analyticsTrack({
+      objectName: 'Bank account save',
+      actionName: 'clicked',
+      screen: 'my account',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     //required fields for api
     body.beneficiary_email = this.props.user.email;
     body.beneficiary_mobile = this.props.user.contact_mobile;

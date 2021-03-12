@@ -2,6 +2,8 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 import TwoFactorVerificaionContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import { toggleUser2FaEnforcement } from 'merchant/reducers/team';
 import { updateSession } from 'merchant/reducers/session';
@@ -28,16 +30,46 @@ export default class User2FASettings extends React.PureComponent {
   };
 
   handleTwoFactorVerificationOnLoginToggle = (onToggleChange) => (flag, callback) => {
+    analyticsTrack({
+      objectName: '2fa account',
+      actionName: 'toggled',
+      screen: 'my account',
+      properties: {
+        location: 'profile',
+        switchType: flag ? 'Enable 2fa' : 'Disabled 2fa',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     return this.context.criticalFlow({
       modes: ['live', 'test'],
       onUserTwoFaVerified: () => {
         // Tempory implementation
         // to avoid requirement of both new and old context
         // In <Toggle2Fa/>
+        analyticsTrack({
+          objectName: `2fa account ${flag ? 'enable' : 'disable'} confirmation popup`,
+          actionName: 'clicked',
+          screen: 'my account',
+          properties: {
+            location: 'profile',
+            action: 'confirm',
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
         return onToggleChange(flag, callback);
       },
 
       onFlowTermination: () => {
+        analyticsTrack({
+          objectName: `2fa account ${flag ? 'enable' : 'disable'} confirmation popup`,
+          actionName: 'clicked',
+          screen: 'my account',
+          properties: {
+            location: 'profile',
+            action: 'cancel',
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
         return callback(false);
       },
     });
@@ -55,6 +87,7 @@ export default class User2FASettings extends React.PureComponent {
         twoFaEnabled={user.second_factor_auth}
         onToggleComplete={this.onToggleComplete}
         getToggle2FaSuccessMsg={getToggle2FaSuccessMsg}
+        location={'profile'}
         confirmEnableMessage="Are you sure you want to enable 2-step verification for your user account?"
         confirmDisableMessage="Are you sure you want to disable 2-step verification for your user account?"
         onToggleChange={this.handleTwoFactorVerificationOnLoginToggle}
