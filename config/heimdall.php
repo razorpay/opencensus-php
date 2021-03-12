@@ -444,6 +444,10 @@ return [
                 'description' => 'Upload manually prepared MIS file to mark txn reconciled (used by FinOps)',
                 'assignable'  => true,
             ],
+            Permission::GET_RECONCILIATION                  => [
+                'description' => 'Used for recon dashboard related routes',
+                'assignable'  => true,
+            ],
             Permission::ADD_SETTLEMENT_RECONCILIATION       => '',
             Permission::RETRY_SETTLEMENT                    => '',
             Permission::MERCHANT_INVOICE_EDIT               => '',

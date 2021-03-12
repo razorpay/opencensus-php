@@ -586,6 +586,7 @@ class BilldeskGatewayTest extends TestCase
 
         $this->fixtures->edit('billdesk', $billdeskRefund['id'], ['refStatus' => '0699']);
 
+        $this->ba->cronAuth();
         $this->startTest();
 
         $paymentTransaction = $this->getEntityById('transaction', $paymentTransaction['id'], true);
