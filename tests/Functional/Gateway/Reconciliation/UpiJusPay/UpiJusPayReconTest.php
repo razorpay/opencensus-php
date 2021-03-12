@@ -122,17 +122,21 @@ class UpiJusPayReconTest extends TestCase
 
         $this->assertEquals(true, $updatedPayment['gateway_captured']);
 
-        $gatewayEntity = $this->getDbEntity('mozart', ['payment_id' => $updatedPayment['id']]);
+        /**
+         * @var $upi \RZP\Gateway\Upi\Base\Entity
+         */
+        $upi = $this->getDbEntity('upi', ['payment_id' => $updatedPayment['id']]);
 
-        $data = json_decode($gatewayEntity['raw'], true);
+        // Assert RRN is updated both in payment and UPI entity
+        $this->assertEquals('009007125383', $upi->getNpciReferenceId());
+        $this->assertEquals('009007125383', $updatedPayment['reference16']);
 
-        $this->assertEquals($data['rrn'], '009007125383');
+        // Assert vpa is updated both in payment and UPI entity
+        $this->assertEquals('john.miller@ybl', $upi->getVpa());
 
-        $this->assertEquals($data['rrn'], $updatedPayment['reference16']);
+        //Assert upi.npci_txn_id
+        $this->assertEquals('BJJ08df8cc33c68435988aafa54de908913', $upi->getNpciTransactionId());
 
-        $this->assertEquals($data['payerVpa'], 'john.miller@ybl');
-
-        $this->assertEquals($data['gatewayTransactionId'], 'BJJ08df8cc33c68435988aafa54de908913');
 
         $transactionEntity = $this->getDbEntity('transaction', ['entity_id' => $updatedPayment['id']]);
 
@@ -183,29 +187,11 @@ class UpiJusPayReconTest extends TestCase
             $paymentArray
         )->toArray();
 
-        $this->fixtures->create(
-            'mozart',
-            array(
-                'payment_id' => $payment['id'],
-                'action'     => 'authorize',
-                'gateway'    => 'upi_juspay',
-                'amount'     => $amount,
-                'raw'        => json_encode(
-                    [
-                        'rrn'                   => '',
-                        'type'                  => 'MERCHANT_CREDITED_VIA_PAY',
-                        'amount'                => $amount,
-                        'status'                => 'payment_successful',
-                        'payeeVpa'              => 'billpayments@abfspay',
-                        'payerVpa'              => '',
-                        'payerName'             => 'JOHN MILLER',
-                        'paymentId'             => $payment['id'],
-                        'gatewayResponseCode'   => '00',
-                        'gatewayTransactionId'  => 'BJJ08df8cc33c68435988aafa54de908913'
-                    ]
-                )
-            )
-        );
+        $this->fixtures->create('upi', ['payment_id'            => $payment['id'],
+                                                 'action'               => 'authorize',
+                                                 'npci_reference_id'    => '009007125383',
+                                                 'npci_txn_id'          => 'BJJ08df8cc33c68435988aafa54de908913',
+            ]);
 
         return $payment;
     }

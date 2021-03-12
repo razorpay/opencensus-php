@@ -83,7 +83,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         try
         {
-            return $this->repo->mozart->findByPaymentIdAndMapByAction($paymentId, [Action::AUTHORIZE])->first();
+            return  $this->repo->upi->findByPaymentIdAndAction($paymentId, Action::AUTHORIZE);
         }
         catch (DbQueryException $ex)
         {
@@ -107,19 +107,21 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     protected function setReferenceNumberInGateway(string $referenceNumber, PublicEntity $gatewayPayment)
     {
-        $data = json_decode($gatewayPayment['raw'], true);
-
-        $npciRefId = $data['rrn'] ?? null;
+        $npciRefId = $gatewayPayment->getNpciReferenceId();
 
         if ((empty($npciRefId) === false) and
             ($npciRefId !== $referenceNumber))
         {
-            $this->messenger->raiseReconAlert(
+            $infoCode = ($this->reconciled === true) ? Base\InfoCode::DUPLICATE_ROW : Base\InfoCode::DATA_MISMATCH;
+
+            $this->trace->info(
+                TraceCode::RECON_MISMATCH,
                 [
-                    'trace_code'                => TraceCode::RECON_MISMATCH,
-                    'info_code'                 => Base\InfoCode::DATA_MISMATCH,
                     'message'                   => 'Npci Reference id is not same as in recon',
+                    'info_code'                 => $infoCode,
                     'payment_id'                => $this->payment->getId(),
+                    'base_amount'               => $this->payment->getBaseAmount(),
+                    'payment_status'            => $this->payment->getStatus(),
                     'db_reference_number'       => $npciRefId,
                     'recon_reference_number'    => $referenceNumber,
                     'gateway'                   => $this->gateway
@@ -128,11 +130,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             return;
         }
 
-        $data['rrn'] = $referenceNumber;
-
-        $raw = json_encode($data);
-
-        $gatewayPayment->setRaw($raw);
+        // We will only update the RRN if it is empty
+        $gatewayPayment->setNpciReferenceId($referenceNumber);
     }
 
     protected function getAccountDetails($row)
@@ -159,19 +158,21 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     protected function persistAccountDetails(array $rowDetails, PublicEntity $gatewayPayment)
     {
-        if (empty($rowDetails[BaseReconciliate::ACCOUNT_DETAILS]) === true)
-        {
-            return;
-        }
-
-        $data = json_decode($gatewayPayment['raw'], true);
-
-        $payerVpa = $data['payerVpa'] ?? null;
+        $payerVpa = $gatewayPayment->getVpa();
 
         $reconVpa = $rowDetails[Reconciliate::ACCOUNT_DETAILS]['vpa'] ?? null;
 
-        if ((empty($payerVpa) === false) and
-            (strtolower($payerVpa) !== strtolower($reconVpa)))
+        if (($payerVpa === null) and
+            (empty($reconVpa) === false))
+        {
+            $gatewayPayment->fill($rowDetails[Reconciliate::ACCOUNT_DETAILS]);
+
+            $gatewayPayment->generatePspData($rowDetails);
+
+            return;
+        }
+
+        if (strtolower($payerVpa) !== strtolower($reconVpa))
         {
             $this->trace->info(TraceCode::RECON_INFO_ALERT, [
                 'message'           => 'Payer VPA is not same as in recon',
@@ -183,31 +184,24 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 'gateway'           => $this->gateway
             ]);
         }
-
-        $data['payerVpa'] = $reconVpa;
-
-        $raw = json_encode($data);
-
-        $gatewayPayment->setRaw($raw);
     }
 
     protected function setGatewayTransactionId(string $gatewayTransactionId, PublicEntity $gatewayPayment)
     {
-        $data = json_decode($gatewayPayment['raw'], true);
-
-        $dbGatewayTransactionId = $data['gatewayTransactionId'] ?? null;
-
-        $dbGatewayTransactionId = trim($dbGatewayTransactionId);
+        $dbGatewayTransactionId = trim($gatewayPayment->getNpciTransactionId());
 
         if ((empty($dbGatewayTransactionId) === false) and
             ($dbGatewayTransactionId !== $gatewayTransactionId))
         {
-            $this->messenger->raiseReconAlert(
+            $infoCode = ($this->reconciled === true) ? Base\InfoCode::DUPLICATE_ROW : Base\InfoCode::DATA_MISMATCH;
+
+            $this->trace->info(
+                TraceCode::RECON_MISMATCH,
                 [
-                    'trace_code'                => TraceCode::RECON_MISMATCH,
-                    'info_code'                 => Base\InfoCode::DATA_MISMATCH,
+                    'info_code'                 => $infoCode,
                     'message'                   => 'Gateway Transaction Id in db is not same as in recon',
                     'payment_id'                => $this->payment->getId(),
+                    'base_amount'               => $this->payment->getBaseAmount(),
                     'db_reference_number'       => $dbGatewayTransactionId,
                     'recon_reference_number'    => $gatewayTransactionId,
                     'gateway'                   => $this->gateway
@@ -216,10 +210,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             return;
         }
 
-        $data['gatewayTransactionId'] = $gatewayTransactionId;
-
-        $raw = json_encode($data);
-
-        $gatewayPayment->setRaw($raw);
+        $gatewayPayment->setNpciTransactionId($gatewayTransactionId);
     }
 }

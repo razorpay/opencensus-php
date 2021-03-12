@@ -23,6 +23,11 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
     {
         $payment = $data['payment'];
 
+        if ($this->gateway === PaymentGateway::UPI_JUSPAY)
+        {
+            return;
+        }
+
         $data['mozart'] = $this->repo->mozart->findByPaymentIdAndAction($payment['id'], 'authorize')->toArray();
     }
 
