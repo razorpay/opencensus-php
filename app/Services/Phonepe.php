@@ -3,6 +3,7 @@
 namespace RZP\Services;
 
 use RZP\Http\Request\Requests;
+use RZP\Trace\TraceCode;
 
 class Phonepe
 {
@@ -10,9 +11,13 @@ class Phonepe
 
     protected $config;
 
+    protected $trace;
+
     public function __construct($app)
     {
         $this->app = $app;
+
+        $this->trace = $app['trace'];
 
         $this->config = $app['config']->get('applications.gateway_downtime.phonepe');
     }
@@ -41,11 +46,24 @@ class Phonepe
     {
         $request = $this->buildRequest();
 
-        $response = Requests::GET(
-            $request['url'],
-            $request['headers'],
-            $request['options']
-        );
+        try
+        {
+            $response = Requests::GET(
+                $request['url'],
+                $request['headers'],
+                $request['options']
+            );
+        }
+        catch (\Requests_Exception $e)
+        {
+            $this->trace->error(
+                TraceCode::PHONEPE_DOWNTIME_FETCH_ERROR,
+                [
+                    'data'    => $e->getData()
+                ]);
+            throw $e;
+        }
+
 
         return json_decode($response->body, true);
     }

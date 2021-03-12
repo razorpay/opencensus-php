@@ -1097,6 +1097,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_DOWNTIME_SORTING                              = 'GATEWAY_DOWNTIME_SORTING';
     const GATEWAY_DOWNTIME_SORTING_FAILED                       = 'GATEWAY_DOWNTIME_SORTING_FAILED';
     const GATEWAY_DOWNTIME_WEBHOOK                              = 'GATEWAY_DOWNTIME_WEBHOOK';
+    const GATEWAY_DOWNTIME_PHONEPE_WEBHOOK                      = 'GATEWAY_DOWNTIME_PHONEPE_WEBHOOK';
     const GATEWAY_DOWNTIME_SERVICE_WEBHOOK                      = 'GATEWAY_DOWNTIME_SERVICE_WEBHOOK';
     const GATEWAY_ONBOARD_REQUEST                               = 'GATEWAY_ONBOARD_REQUEST';
     const GATEWAY_ONBOARD_RESPONSE                              = 'GATEWAY_ONBOARD_RESPONSE';
@@ -1111,6 +1112,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_PAYMENT_MODE_MISMATCH                         = 'GATEWAY_PAYMENT_MODE_MISMATCH';
     const GET_GATEWAY_DOWNTIME_REQUEST                          = 'GET_GATEWAY_DOWNTIME_REQUEST';
     const FETCH_GATEWAY_DOWNTIME_ERROR                          = 'FETCH_GATEWAY_DOWNTIME_ERROR';
+
+    const PHONEPE_DOWNTIME_FETCH_ERROR                          = 'PHONEPE_DOWNTIME_FETCH_ERROR';
 
     const FTA_BULK_RECONCILE_REQUEST                            = 'FTA_BULK_RECONCILE_REQUEST';
     const FTA_RECONCILE_DISPATCH_FAILED                         = 'FTA_RECONCILE_DISPATCH_FAILED';

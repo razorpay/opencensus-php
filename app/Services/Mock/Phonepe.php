@@ -6,8 +6,10 @@ use RZP\Services\Phonepe as BasePhonepe;
 
 class Phonepe extends BasePhonepe
 {
-    public function sendRequest($a)
+    public function sendRequest($input)
     {
+        $a = $input['a'];
+
         if($a == 1)
         {
             return [

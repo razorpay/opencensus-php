@@ -38,7 +38,6 @@ class PhonepeProcessor implements ProcessorInterface
     const PROVIDER_ID = 'providerId';
     const REASON = 'reason';
 
-
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -53,7 +52,6 @@ class PhonepeProcessor implements ProcessorInterface
 
         $this->core = new Downtime\Core;
     }
-
     public function validate(array $input)
     {
         // TODO: Implement validate() method.
@@ -61,9 +59,9 @@ class PhonepeProcessor implements ProcessorInterface
 
     public function process(array $input)
     {
-        $downtimesInput = $this->app['phonepe']->sendRequest($input['a']);
+        $downtimesInput = $this->app['phonepe']->sendRequest($input);
 
-        $this->trace->info(TraceCode::GATEWAY_DOWNTIME_WEBHOOK, $downtimesInput);
+        $this->trace->info(TraceCode::GATEWAY_DOWNTIME_PHONEPE_WEBHOOK, $downtimesInput);
 
         $this->processDowntimes($downtimesInput);
     }
