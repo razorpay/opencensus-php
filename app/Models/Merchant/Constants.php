@@ -152,6 +152,8 @@ final class Constants
     const BRAND_LIST = 'brand_list';
     const BLACKLIST = 'blacklist';
     const HIGH_RISK_LIST = 'high_risk_list';
+    const AUTHORITIES_LIST = 'authorities_list';
+
     const EXACT_MATCH = 'exact_match';
     const FUZZY_MATCH = 'fuzzy_match';
     const FUZZY_MATCH_THRESHOLD = 'FUZZY_MATCH_THRESHOLD';
@@ -312,7 +314,8 @@ final class Constants
         Detail\Entity::BUSINESS_MODEL => [
             'lists' => [
                 self::BRAND_LIST,
-                self::HIGH_RISK_LIST
+                self::HIGH_RISK_LIST,
+                self::AUTHORITIES_LIST,
             ],
             'config_key' => 'business_model'
         ],
@@ -374,14 +377,16 @@ final class Constants
         Detail\Entity::BUSINESS_NAME => [
             'lists' => [
                 self::BRAND_LIST,
-                self::HIGH_RISK_LIST
+                self::HIGH_RISK_LIST,
+                self::AUTHORITIES_LIST,
             ],
             'config_key' => 'merchant_name'
         ],
         Detail\Entity::BUSINESS_DBA => [
             'lists' => [
                 self::BRAND_LIST,
-                self::HIGH_RISK_LIST
+                self::HIGH_RISK_LIST,
+                self::AUTHORITIES_LIST,
             ],
             'config_key' => 'billing_name'
         ],
@@ -484,8 +489,26 @@ final class Constants
         ],
         [
             'keysToCheck' => [
+                Detail\Entity::BUSINESS_NAME => [
+                    'list' => self::AUTHORITIES_LIST,
+                    'matchType'=> self::EXACT_MATCH
+                ]
+            ],
+            'method' => ''
+        ],
+        [
+            'keysToCheck' => [
                 Detail\Entity::BUSINESS_DBA => [
                     'list' => self::HIGH_RISK_LIST,
+                    'matchType'=> self::EXACT_MATCH
+                ]
+            ],
+            'method' => ''
+        ],
+        [
+            'keysToCheck' => [
+                Detail\Entity::BUSINESS_DBA => [
+                    'list' => self::AUTHORITIES_LIST,
                     'matchType'=> self::EXACT_MATCH
                 ]
             ],
@@ -522,6 +545,15 @@ final class Constants
             'keysToCheck' => [
                 Detail\Entity::BUSINESS_MODEL => [
                     'list' => self::HIGH_RISK_LIST,
+                    'matchType'=> self::EXACT_MATCH
+                ]
+            ],
+            'method' => ''
+        ],
+        [
+            'keysToCheck' => [
+                Detail\Entity::BUSINESS_MODEL => [
+                    'list' => self::AUTHORITIES_LIST,
                     'matchType'=> self::EXACT_MATCH
                 ]
             ],
