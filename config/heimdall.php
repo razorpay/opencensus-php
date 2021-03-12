@@ -1002,6 +1002,10 @@ return [
                 'description' => 'Debug Transfers/Route from admin dashboard',
                 'assignable'  => true
             ],
+            Permission::DUMMY_ROUTE => [
+                'description' => 'dummy route',
+                'assignable'  => true
+            ],
             Permission::PG_ROUTER_ORDER_SYNC => [
                 'description' => 'Sync Order into PG Router',
                 'assignable'  => true

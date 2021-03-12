@@ -4755,7 +4755,7 @@ class Route
         'credits_create_bulk'                      => Permission::ADD_MERCHANT_CREDITS,
         'currency_fetch_rates'                     => Permission::CURRENCY_FETCH_RATES,
         'dispute_migrate_adjustments'              => '*',
-        'dummy_route'                              => '*',
+        'dummy_route'                              => Permission::DUMMY_ROUTE,
         'emi_plan_fetch_by_id'                     => Permission::VIEW_MERCHANT,
         'es_debug_get'                             => '*',
         'es_aliases_post'                          => Permission::ES_WRITE_OPERATION,
