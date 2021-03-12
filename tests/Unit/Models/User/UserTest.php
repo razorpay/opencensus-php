@@ -1359,6 +1359,10 @@ class UserTest extends TestCase
 
         $this->userEntityMock->shouldReceive('getMerchantId')->andReturn('1cXSLlUU8V9sXl');
 
+        $this->merchantEntityMock->shouldReceive('getEntity')->andReturn($this->merchantEntityMock);
+
+        $this->merchantEntityMock->shouldReceive('getId')->andReturn('1cXSLlUU8V9sXl');
+
         $this->userEntityMock->shouldReceive('getEmail')->andReturn('dummy@example.com');
 
         $response = $this->userService->confirm('100002Razorpay');
@@ -1660,7 +1664,7 @@ class UserTest extends TestCase
         $this->repoMock->shouldReceive('driver')->with('user')->andReturn($this->userRepoMock);
 
         $this->userRepoMock->shouldReceive('findOrFailPublic')->andReturn(((new Core())->create($content['userData'])));
-
+        
         $this->merchantEntityMock->shouldReceive('getId')->andReturn('1cXSLlUU8V9sXl');
 
         $this->merchantEntityMock->shouldReceive('getEmail')->andReturn('dummy@example.com');

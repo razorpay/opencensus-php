@@ -63,6 +63,8 @@ class Service extends Base\Service
 
         $tokenData = null;
 
+        $partnerIntent = $input[Merchant\Constants::PARTNER_INTENT] ?? false;
+
         $this->trace->count(Merchant\Metric::SIGNUP_TOTAL);
 
         $this->app->hubspot->trackSignupEvent($input);
@@ -174,7 +176,7 @@ class Service extends Base\Service
 
             if (isset($input[Merchant\Constants::PARTNER_INTENT]))
             {
-                $merchantInputData[Merchant\Constants::PARTNER_INTENT] = $input[Merchant\Constants::PARTNER_INTENT];
+                $merchantInputData[Merchant\Constants::PARTNER_INTENT] = $partnerIntent;
             }
 
             if (empty($tokenData) === false)
@@ -193,8 +195,9 @@ class Service extends Base\Service
 
         $visitorId = $this->fetchVisitorIdFromCookie();
 
-        $customProperties = [Entity::EMAIL      => $user[Entity::EMAIL],
-                             Entity::VISITOR_ID => $visitorId];
+        $customProperties = [Entity::EMAIL                      => $user[Entity::EMAIL],
+                             Entity::VISITOR_ID                 => $visitorId,
+                             Merchant\Constants::PARTNER_INTENT => $partnerIntent];
 
         $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_CREATE_ACCOUNT_SUCCESS, $this->merchant, null, $customProperties);
 

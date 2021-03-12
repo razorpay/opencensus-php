@@ -113,6 +113,8 @@ class DetailServiceTest extends TestCase
 
         $this->coreMock->shouldReceive('setModeAndDefaultConnection')->andReturn();
 
+        $this->merchantEntityMock->shouldReceive('getEntity')->andReturn($this->merchantEntityMock);
+
         $response = $this->merchantService->saveMerchantDetailForPreSignUp($merchantData);
 
         $this->assertEquals([], $response);

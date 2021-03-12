@@ -112,7 +112,20 @@ class Service extends Base\Service
 
         (new User\Service)->addUtmParameters($input);
 
+        $partnerIntent = false;
+
+        if ($this->merchant !== null)
+        {
+            $partnerIntentResponse = (new Merchant\Service())->fetchPartnerIntent();
+
+            $partnerIntent = $partnerIntentResponse[Constants::PARTNER_INTENT] ?? false;
+        }
+
+        $input[Constants::PARTNER_INTENT] = $partnerIntent;
+
         $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_FINISH_SIGNUP_SUCCESS, $this->merchant, null, $input);
+
+        unset($input[Constants::PARTNER_INTENT]);
 
         // Putting in a try catch block so that any error here does not disrupt
         // the main signup flow. This will be removed once X flow simplifies the payload for salesforce

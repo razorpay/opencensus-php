@@ -86,9 +86,19 @@ class Core extends Base\Core
 
         $mid = $user->getMerchantId();
 
-        $customProperties = [Entity::EMAIL             => $user->getEmail(),
-                             Entity::MERCHANT_ID       => $mid,
-                             Entity::VERIFICATION_TYPE => $verificationType ?? Entity::LINK];
+        $partnerIntent = false;
+
+        if ($mid !== null and $this->merchant !== null)
+        {
+            $partnerIntentResponse = (new Merchant\Service())->fetchPartnerIntent();
+
+            $partnerIntent = $partnerIntentResponse[Merchant\Constants::PARTNER_INTENT] ?? false;
+        }
+
+        $customProperties = [Entity::EMAIL                      => $user->getEmail(),
+                             Entity::MERCHANT_ID                => $mid,
+                             Entity::VERIFICATION_TYPE          => $verificationType ?? Entity::LINK,
+                             Merchant\Constants::PARTNER_INTENT => $partnerIntent];
 
         $this->app['diag']->trackOnboardingEvent(EventCode::SIGNUP_EMAIL_VERIFICATION_SUCCESS, $this->merchant, null, $customProperties);
 
