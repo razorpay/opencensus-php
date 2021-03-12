@@ -26,23 +26,26 @@ const PaymentMethod = ({
 }) => {
   useEffect(() => {
     setLoading();
-    fetchMerchantInstruments().catch(({ errors }) => {
-      showNotification({
-        type: 'error',
-        message: errors[0],
-      });
-    });
-    fetchRequestedInstruments().catch(({ errors }) => {
-      showNotification({
-        type: 'error',
-        message: errors[0],
-      });
-    });
+    fetchAllIntruments();
     return () => {
       clearIntermediateInstrument();
       clearLeafInstrument();
     };
   }, [fetchMerchantInstruments, fetchRequestedInstruments]);
+
+  const fetchAllIntruments = async () => {
+    try {
+      await fetchMerchantInstruments();
+      await fetchRequestedInstruments();
+    } catch (errors) {
+      showNotification({
+        type: 'error',
+        message: errors[0],
+      });
+    }
+    return;
+  };
+
   return loading ? (
     <div class="page-spinner-container">
       <Spinner />

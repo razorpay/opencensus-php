@@ -1,4 +1,4 @@
-export const REQUEST = 'request';
+export const REQUESTED = 'requested';
 export const PENDING = 'pending';
 export const ACTIVATED = 'activated';
 export const REJECTED = 'rejected';

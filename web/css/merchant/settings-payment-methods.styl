@@ -36,6 +36,8 @@ $checkout-modal-width = 400px
       flex-wrap:no-wrap
     .level-1
       background: white
+      .icon
+        margin-left: 22px
       ul
         border-left: 1px solid #E6E7E8
     .level-2
@@ -63,7 +65,6 @@ $checkout-modal-width = 400px
         background: #FFFFFF
         .icon
           width: 30px
-          margin-left: 22px;
         .detail
           flex:5
           padding-left: 15px
@@ -173,6 +174,7 @@ $checkout-modal-width = 400px
         flex-direction: column
         justify-content: center
         align-items: center
+        padding: 0 15px
         > div
           width: 100%
           display: flex
@@ -196,6 +198,7 @@ $checkout-modal-width = 400px
             display: flex
             align-items: center
             justify-content: space-between
+            padding-left: 0
         + .paypal-leaf-item
           display: block
           height: auto
@@ -222,9 +225,9 @@ $checkout-modal-width = 400px
             line-height: 17px
             color: #7B8199
 
-        .instrument__paytm-wallet
-          padding: 15px
-          .container
+        .instrument-description
+          padding: 15px 0px
+          .instrument-description-container
             background: rgba(232, 235, 239, 0.32)
             padding: 10px
             width: auto
@@ -251,12 +254,19 @@ $checkout-modal-width = 400px
             font-size: 20px
           p
             margin: 5px 20px
-      li.activated-paytm-list-item 
-        height: 200px
+      li.list-item-has-description 
+        height: auto
+        padding: 10px 15px
         > div
           flex-wrap: wrap
         .detail
           padding: 0
+      li.list-item-has-long-description
+        min-height: 105px
+        p
+          max-width: 250px
+      li.list-item
+        min-height: 56px
 
 
       
@@ -267,10 +277,7 @@ $checkout-modal-width = 400px
       padding: 5px 15px
       border-radius: 15px
       border: none
-      border: none
-      margin-right: 20px
       height: 25px
-      margin-top: 5px
       user-select: none
     .activated
       min-width: 80px

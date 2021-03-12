@@ -148,13 +148,36 @@ let initialState = {
               name: 'UPI',
               status: 'Request',
               slug: 'upi',
-              description: 'Select a UPI app to make a payment',
+              description: (
+                <p>
+                  Gpay, Phonepe, Paytm, and{' '}
+                  <a
+                    href="https://www.npci.org.in/what-we-do/upi/3rd-party-apps"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    more...
+                  </a>
+                </p>
+              ),
             },
             {
               name: 'Google Pay Omnichannel',
               status: 'Request',
               slug: 'google_pay',
-              description: 'Pay via Google Pay Number',
+              description: (
+                <p>
+                  An enhancement that allows customers to pay via google pay by entering their{' '}
+                  <b>phone number instead of UPI ID.</b>{' '}
+                  <a
+                    href="https://razorpay.com/docs/payment-gateway/payment-methods/upi/google-pay/omnichannel/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Know more...
+                  </a>
+                </p>
+              ),
             },
           ],
         },
@@ -860,6 +883,7 @@ export default function (state = initialState, action) {
         );
         lodashset(stateClone, `${path}.path`, s.instrument);
         lodashset(stateClone, `${path}.status`, s.status);
+        lodashset(stateClone, `${path}.created_at`, s.created_at);
         if (['action_required', 'rejected'].includes(s.status)) {
           lodashset(stateClone, `${path}.comment`, s.comment);
         }
@@ -897,6 +921,7 @@ export default function (state = initialState, action) {
           action.payload.data.merchant_instrument_request_id,
         );
         lodashset(stateClone, `${pathToUpdate}.status`, action.payload.data.status);
+        lodashset(stateClone, `${pathToUpdate}.created_at`, action.payload.data.created_at);
         return stateClone;
       }
       return state;

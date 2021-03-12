@@ -1,5 +1,6 @@
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+import moment from 'moment';
 
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -18,7 +19,7 @@ import { DetailsDrawer } from './Modals/PaytmWallet/DetailsDrawer';
 import { bindActionCreators } from 'redux';
 import {
   ACTION_REQUIRED,
-  REQUEST,
+  REQUESTED,
   PENDING,
   ACTIVATED,
   ACCOUNT_LINKABLE,
@@ -163,6 +164,7 @@ class LeafListItem extends React.Component {
       instrument,
       intermediateInstrument,
       leafInstrument: { actionItems },
+      instrumentsTat,
     } = this.props;
     let ctaClass = {
       Request: 'btn btn-primary',
@@ -175,13 +177,15 @@ class LeafListItem extends React.Component {
       action_required: 'action-required status',
     };
 
-    let customHeight = instrument.description ? { minHeight: '70px' } : {};
-
     let getListClass = (status, path) => {
       if ([ACTION_REQUIRED, REJECTED].includes(status)) {
         return 'action-required-list-item';
-      } else if (status === ACTIVATED && path === 'pg.wallet.paytm') {
-        return 'activated-paytm-list-item';
+      } else if ((status === ACTIVATED && path === 'pg.wallet.paytm') || status === REQUESTED) {
+        return 'list-item-has-description';
+      } else if (instrument.path === 'pg.upi.google_pay') {
+        return 'list-item-has-long-description';
+      } else {
+        return 'list-item';
       }
     };
 
@@ -210,7 +214,7 @@ class LeafListItem extends React.Component {
       }
     };
     return (
-      <li class={getListClass(instrument.status, instrument.path)} style={customHeight}>
+      <li class={getListClass(instrument.status, instrument.path)}>
         <div>
           {instrument.icon && (
             <div class="icon">
@@ -234,7 +238,7 @@ class LeafListItem extends React.Component {
           <div class="detail raise-request">
             <div>
               {displayName(instrument.name)}
-              {actionItems && Object.keys(actionItems).includes(instrument.path) ? (
+              {/* {actionItems && Object.keys(actionItems).includes(instrument.path) ? (
                 <span>
                   <span class="notify-badge">1</span>
                   <Popover align="bottom" theme="dark">
@@ -245,7 +249,7 @@ class LeafListItem extends React.Component {
                     </PopoverBody>
                   </Popover>
                 </span>
-              ) : null}
+              ) : null} */}
               {instrument.description && <p>{instrument.description}</p>}
             </div>
             {[REJECTED, ACTION_REQUIRED].includes(instrument.status) && (
@@ -260,6 +264,7 @@ class LeafListItem extends React.Component {
               ACTION_REQUIRED,
               REQUESTABLE,
               ACCOUNT_LINKABLE,
+              CANCELLED,
             ].includes(instrument.status) && (
               <button class="btn btn-link" onClick={() => this.handleCancelRequest(instrument)}>
                 Cancel
@@ -268,8 +273,8 @@ class LeafListItem extends React.Component {
           </div>
           <div>
             {instrument.status === ACTIVATED && instrument.path === 'pg.wallet.paytm' && (
-              <div className="flex-end instrument__paytm-wallet">
-                <div className="container">
+              <div className="flex-end instrument-description">
+                <div className="instrument-description-container">
                   <div className="detail">
                     <strong>Live Mode</strong>
                     <div class="activated status" style={{ marginRight: '0' }}>
@@ -297,7 +302,7 @@ class LeafListItem extends React.Component {
             {[ACCOUNT_LINKABLE].includes(instrument.status) && (
               <div className="flex-end">
                 <button
-                  class="btn btn-primary mr-25 ml-5"
+                  class="btn btn-primary ml-5"
                   disabled={this.state.loading}
                   onClick={() => this.handlePaytmWalletIntegration(1, instrument.status)}
                 >
@@ -305,16 +310,10 @@ class LeafListItem extends React.Component {
                 </button>
               </div>
             )}
-            {[REQUEST, REQUESTABLE, CANCELLED].includes(instrument.status) && (
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'flex-end',
-                  alignItems: 'center',
-                }}
-              >
+            {[REQUESTABLE, CANCELLED].includes(instrument.status) && (
+              <div className="flex-end">
                 <button
-                  class="btn btn-primary mr-25 ml-5"
+                  class="btn btn-primary ml-5"
                   disabled={this.state.loading}
                   onClick={this.handleCreateRequest}
                 >
@@ -322,15 +321,9 @@ class LeafListItem extends React.Component {
                 </button>
               </div>
             )}
-            {![REQUEST, REQUESTABLE, CANCELLED, ACCOUNT_LINKABLE].includes(instrument.status) &&
+            {![REQUESTABLE, CANCELLED, ACCOUNT_LINKABLE].includes(instrument.status) &&
               instrument.path !== 'pg.wallet.paytm' && (
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'flex-end',
-                    alignItems: 'center',
-                  }}
-                >
+                <div className="flex-end">
                   <div class={ctaClass[instrument.status]}>
                     <>
                       {instrument.status.replace('_', ' ')}
@@ -347,6 +340,50 @@ class LeafListItem extends React.Component {
               )}
           </div>
         </div>
+        {/* Requested state */}
+        {instrument.status === REQUESTED && (
+          <div className="flex-end instrument-description">
+            <div
+              className="instrument-description-container"
+              style={{
+                display: 'flex',
+                flexGrow: 1,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-evenly',
+              }}
+            >
+              <i className="i i-info-outline"></i>
+              <p style={{ fontSize: '14px' }}>
+                Estimated date of enablement:{' '}
+                <strong>
+                  {instrumentsTat &&
+                    moment
+                      .unix(instrument.created_at)
+                      .add(instrumentsTat[instrument.path], 'days')
+                      .format('Do MMMM YYYY')}
+                  {instrumentsTat &&
+                    moment().diff(
+                      moment
+                        .unix(instrument.created_at)
+                        .add(instrumentsTat[instrument.path], 'days'),
+                    ) > 0 &&
+                    '*'}
+                </strong>{' '}
+              </p>
+            </div>
+            {instrumentsTat &&
+              moment().diff(
+                moment.unix(instrument.created_at).add(instrumentsTat[instrument.path], 'days'),
+              ) > 0 && (
+                <div>
+                  <p style={{ color: 'rgba(0, 0, 0, 0.38)', fontSize: '14px', paddingTop: '8px' }}>
+                    * Sorry for the inconvenience, the request is taking longer than usual.
+                  </p>
+                </div>
+              )}
+          </div>
+        )}
         {[ACTION_REQUIRED, REJECTED].includes(instrument.status) && (
           <>
             <div class="comment" title={instrument.comment}>
@@ -354,7 +391,7 @@ class LeafListItem extends React.Component {
               <p>{instrument.comment || 'No comments available'}</p>
             </div>
 
-            <p style={{ margin: '5px 20px' }}>
+            {/* <p style={{ margin: '5px 20px' }}>
               Please complete your{' '}
               <span>
                 {' '}
@@ -363,7 +400,7 @@ class LeafListItem extends React.Component {
                 </Link>
               </span>{' '}
               to re-submit your request.
-            </p>
+            </p> */}
           </>
         )}
       </li>
