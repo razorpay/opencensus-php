@@ -45,13 +45,13 @@ const ListItem = ({
           {instrumentActions ? (
             <span>
               <span class="notify-badge">{instrumentActions}</span>
-              <Popover align="bottom" theme="dark">
+              {/* <Popover align="bottom" theme="dark">
                 <PopoverBody>
                   <div style={{ textAlign: 'left' }}>
                     item requires user action. Please complete your activation form.
                   </div>
                 </PopoverBody>
-              </Popover>
+              </Popover> */}
             </span>
           ) : null}
         </strong>
