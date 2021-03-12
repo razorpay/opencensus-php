@@ -681,13 +681,13 @@ class Validator extends Base\Validator
 
     protected static $payoutLinkBulkTypeRowRules = [
         Header::PAYOUT_LINK_BULK_CONTACT_NAME      => 'required|string',
-        Header::PAYOUT_LINK_BULK_CONTACT_NUMBER    => 'required|string',
-        Header::PAYOUT_LINK_BULK_CONTACT_EMAIL     => 'required|string',
+        Header::PAYOUT_LINK_BULK_CONTACT_NUMBER    => 'required_without:'.Header::PAYOUT_LINK_BULK_CONTACT_EMAIL.'|string',
+        Header::PAYOUT_LINK_BULK_CONTACT_EMAIL     => 'required_without:'.Header::PAYOUT_LINK_BULK_CONTACT_NUMBER.'|string',
         Header::PAYOUT_LINK_BULK_PAYOUT_DESC       => 'required|string',
         Header::CONTACT_TYPE                       => 'required|string',
         Header::PAYOUT_LINK_BULK_AMOUNT            => 'required|regex:/^-?\d+(\.\d{1,2})?$/',
-        Header::PAYOUT_LINK_BULK_SEND_SMS          => 'required|in:Yes,No',
-        Header::PAYOUT_LINK_BULK_SEND_EMAIL        => 'required|in:Yes,No',
+        Header::PAYOUT_LINK_BULK_SEND_SMS          => 'required|string|in:Yes,No',
+        Header::PAYOUT_LINK_BULK_SEND_EMAIL        => 'required|string|in:Yes,No',
         Header::PAYOUT_PURPOSE                     => 'required|string',
         Header::PAYOUT_LINK_BULK_REFERENCE_ID      => 'sometimes|string',
         Header::PAYOUT_LINK_BULK_NOTES_TITLE       => 'sometimes|string',
@@ -1274,6 +1274,21 @@ class Validator extends Base\Validator
         $this->validateEntriesWithPublicExceptionHandled($entries, function (array $entry)
         {
             $this->validateInput('payoutLinkBulkTypeRow', $entry);
+
+            if(empty($entry[Header::PAYOUT_LINK_BULK_CONTACT_NUMBER]) === true && $entry[Header::PAYOUT_LINK_BULK_SEND_SMS] === "Yes")
+            {
+                throw new BadRequestValidationFailureException(
+                    'No contact number provided, but send-sms is true',
+                    Entity::FILE);
+            }
+
+            if(empty($entry[Header::PAYOUT_LINK_BULK_CONTACT_EMAIL]) === true && $entry[Header::PAYOUT_LINK_BULK_SEND_EMAIL] === "Yes")
+            {
+                throw new BadRequestValidationFailureException(
+                    'No contact email provided, but send-email is true',
+                    Entity::FILE);
+            }
+
         });
     }
 

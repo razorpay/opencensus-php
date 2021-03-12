@@ -66,6 +66,7 @@ class Limit
         Type::SUBMERCHANT_TYPE_UPDATE               => 50000,
         Type::NACH_MIGRATION                        => 500100,
         Type::LINKED_ACCOUNT_CREATE                 => 50000,
+        Type::PAYOUT_LINK_BULK                      => 50000,
     ];
 
     /**
