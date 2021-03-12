@@ -75,6 +75,7 @@ class Constants
     const GATEWAY                = 'gateway';
     const SUB_TYPE               = 'sub_type';
     const SHEET_NAME             = 'sheet_name';
+    const ENTITY_TYPE            = 'entity_type';
 
     // Batch services uses this column name for Amount
     const COLUMN_BATCH_AMOUNT    = 'Amount (In Paise)';

@@ -102,6 +102,8 @@ class Gateway
     const AUTH_CODE     = 'auth_code';
     const RECON_ID      = 'recon_id';
     const PAYMENT_ID    = 'payment_id';
+    const GATEWAY       = 'gateway';
+    const ENTITY_TYPE   = 'entity_type';
 
     /**
      * The application instance.

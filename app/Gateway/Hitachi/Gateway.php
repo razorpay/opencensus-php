@@ -1744,11 +1744,16 @@ class Gateway extends Base\Gateway
                 // Note : This push part we can do in async way and
                 // just return true here, as there is no failure case ahead.
 
-                $attr = [
-                    self::PAYMENT_ID    =>  $paymentId,
+                $entity = [
                     self::RRN           =>  $input['gateway'][Entity::RRN],
                     self::AUTH_CODE     =>  $input['gateway'][Entity::AUTH_ID],
-                    self::RECON_ID      =>  $input['gateway'][Entity::MERCHANT_REFERENCE],
+                    self::RECON_ID      =>  $input['gateway'][Entity::MERCHANT_REFERENCE]
+                ];
+
+                $attr = [
+                    self::PAYMENT_ID    =>  $paymentId,
+                    self::ENTITY_TYPE   =>  self::GATEWAY,
+                    self::GATEWAY       =>  $entity
                 ];
 
                 $queueName = $this->app['config']->get('queue.payment_card_api_reconciliation.' . $this->mode);

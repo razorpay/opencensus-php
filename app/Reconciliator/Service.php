@@ -258,6 +258,11 @@ class Service extends Base\Service
             return;
         }
 
+        $data = $pushData;
+        $pushData = [];
+
+        $pushData[Constants::ENTITY_TYPE] = Constants::GATEWAY;
+        $pushData[Constants::GATEWAY] = $data;
         $pushData['payment_id'] = $paymentId;
 
         $queueName = $this->app['config']->get('queue.payment_card_api_reconciliation.' . $this->mode);
