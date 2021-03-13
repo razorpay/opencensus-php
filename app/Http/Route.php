@@ -4680,7 +4680,7 @@ class Route
         'settings_delete'                          => Permission::EDIT_WALLET_CONFIG,
         'merchant_analytics'                       => Permission::VIEW_MERCHANT_ANALYTICS,
         'merchant_activation_files'                => Permission::VIEW_MERCHANT,
-        'merchant_activation_archive'              => '*', // permission handled in code
+        'merchant_activation_archive'              => Permission::EDIT_MERCHANT,
         'merchant_activation_status'               => Permission::EDIT_ACTIVATE_MERCHANT,
         'merchant_activation_status_change_log'    => Permission::VIEW_ACTIVATION_FORM,
         'merchant_update_key_access'               => Permission::EDIT_MERCHANT_KEY_ACCESS,
