@@ -5218,7 +5218,7 @@ class Route
         'update_payout_status'                     => Permission::PAYOUT_STATUS_UPDATE_MANUALLY,
         'payouts_bulk_amount_type'                 => Permission::RX_ADMIN_ACTION_PERMISSION,
 
-        'admin_key_migrate_to_credcase'            => '*',
+        'admin_key_migrate_to_credcase'            => Permission::EDGE_WRITE_OPERATION,
 
         'admin_access_maps_bootstrap_cache'        => Permission::STORK_WRITE_OPERATION,
 

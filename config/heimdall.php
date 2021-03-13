@@ -807,12 +807,16 @@ return [
             Permission::EDIT_THROTTLE_SETTINGS       => [
                 'description'  => 'Edit throttle settings',
             ],
-            Permission::STORK_WRITE_OPERATION           => [
+            Permission::STORK_WRITE_OPERATION        => [
                 'description' => 'Perform write operations around stork integration e.g. webhook migrations etc',
                 'assignable'  => true,
             ],
-            Permission::STORK_SUPPORT_OPERATION           => [
+            Permission::STORK_SUPPORT_OPERATION      => [
                 'description' => 'Perform various support operation e.g. processing bulk webhook events via csv etc',
+                'assignable'  => true,
+            ],
+            Permission::EDGE_WRITE_OPERATION         => [
+                'description' => 'Allows performing various write operations around dual writes and migrations for credcase, and edge',
                 'assignable'  => true,
             ],
         ],

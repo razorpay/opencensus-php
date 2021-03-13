@@ -350,6 +350,9 @@ class Name
     // Perform various support operation e.g. processing bulk webhook events via csv etc.
     const STORK_SUPPORT_OPERATION             = 'stork_support_operation';
 
+    // Allows performing various write operations around dual writes and migrations for credcase, and edge.
+    const EDGE_WRITE_OPERATION                = 'edge_write_operation';
+
     // Permissions for UPI/P2P Service
     const UPI_MANAGE_PSPS                     = 'upi_manage_psps';
     const UPI_MANAGE_DATA                     = 'upi_manage_data';
