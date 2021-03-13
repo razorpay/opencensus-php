@@ -619,6 +619,9 @@ class Name
 
     const TOKEN_REGISTRATION_ACTIONS = 'token_registration_actions';
 
+    // Perform general purpose read operations e.g. query cache stats, elasticsearch meta etc.
+    const DEVELOPERS_READ                              = 'developers_read';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,

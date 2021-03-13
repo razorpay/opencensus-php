@@ -819,6 +819,10 @@ return [
                 'description' => 'Allows performing various write operations around dual writes and migrations for credcase, and edge',
                 'assignable'  => true,
             ],
+            Permission::DEVELOPERS_READ              => [
+                'description' => 'Perform general purpose read operations e.g. query cache stats, elasticsearch meta etc',
+                'assignable'  => true,
+            ],
         ],
 
         // Permissions
