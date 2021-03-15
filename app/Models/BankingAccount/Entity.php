@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Models\Payout;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
+use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Admin;
 use RZP\Models\FeeRecovery;
 use RZP\Models\Merchant\Balance;
@@ -648,6 +649,13 @@ class Entity extends Base\PublicEntity
                 $latestFeeRecoveryPayout = (new Payout\Repository)->fetchFeeLastDeductedAt($this->getMerchantId(),
                                                                                   $balance->getId());
 
+                app('trace')->info(
+                    TraceCode::BANKING_ACCOUNT_OUTSTANDING_AMOUNT,
+                    [
+                        'balance_id'       => $balance->getId(),
+                        'merchant_id'      => $this->getMerchantId(),
+                    ]);
+
                 $outstandingAmount = $this->fetchOutstandingAmountToBeRecovered();
 
                 $array[self::FEE_RECOVERY_DETAILS] = [
@@ -758,11 +766,29 @@ class Entity extends Base\PublicEntity
         $unrecoveredAmountForPayouts = $feeRecoveryRepo->fetchUnrecoveredAmountForPayouts($this->getMerchantId(),
                                                                                           $this->balance->getId());
 
+        app('trace')->info(
+            TraceCode::BANKING_ACCOUNT_OUTSTANDING_AMOUNT,
+            [
+                'unrecovered_amount_payouts'        => $unrecoveredAmountForPayouts->toArrayPublic(),
+            ]);
+
         $unrecoveredAmountForFailedPayouts = $feeRecoveryRepo->fetchUnrecoveredAmountForFailedPayouts($this->getMerchantId(),
                                                                                           $this->balance->getId());
 
+        app('trace')->info(
+            TraceCode::BANKING_ACCOUNT_OUTSTANDING_AMOUNT,
+            [
+                'unrecovered_amount_failed_payouts' => $unrecoveredAmountForFailedPayouts->toArrayPublic(),
+            ]);
+
         $unrecoveredAmountForReversals = $feeRecoveryRepo->fetchUnrecoveredAmountForReversals($this->getMerchantId(),
                                                                                               $this->balance->getId());
+
+        app('trace')->info(
+            TraceCode::BANKING_ACCOUNT_OUTSTANDING_AMOUNT,
+            [
+                'unrecovered_amount_reversals'      => $unrecoveredAmountForReversals->toArrayPublic(),
+            ]);
 
         $outstandingAmount = $unrecoveredAmountForPayouts->getAttribute(Payout\Entity::FEES) -
                              $unrecoveredAmountForFailedPayouts->getAttribute(Payout\Entity::FEES) -
