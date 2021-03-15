@@ -46,6 +46,7 @@ class BankTransferCreateProcess extends Job
                 TraceCode::BANK_TRANSFER_PROCESS_QUEUE_COMPLETED,
                 [
                     'bankTransferRequestId' => $this->bankTransferRequestId,
+                    'retryCount'            => $this->attempts(),
                 ]
             );
         }
