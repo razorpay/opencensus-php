@@ -4787,7 +4787,7 @@ class Route
         'methods_update_merchants'                 => Permission::METHODS_ASSIGN_BULK,
         'migrate_tokens_to_gateway_tokens'         => Permission::MIGRATE_TOKENS_TO_GATEWAY_TOKENS,
         'mock_generate_reconciliation'             => Permission::VIEW_MERCHANT,
-        'nodal_add_beneficiary'                    => '*',
+        'nodal_add_beneficiary'                    => Permission::SETTLEMENT_BULK_UPDATE,
         'org_get_self'                             => Permission::VIEW_ORG,
         'payment_authorize_time_out'               => Permission::PAYMENT_AUTHORIZE_TIMEOUT,
         'payment_auto_capture_email'               => Permission::AUTOCAPTURE_PAYMENTS_MAIL,
