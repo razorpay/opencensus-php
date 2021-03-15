@@ -700,6 +700,35 @@ class CardPaymentServiceTest extends TestCase
         $this->disbaleCpsConfig();
     }
 
+    public function testNotEnrolledImaliPayment()
+    {
+        $this->razorxValue = 'cardps';
+        $this->enableCpsConfig();
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $terminal = $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['auth_split']);
+        $this->mockCps($terminal, 'not_enrolled_auth_split');
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $res = $this->doAuthPayment($paymentArray);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('authenticated', $payment['status']);
+        $this->assertEquals($payment['public_id'], $res['razorpay_payment_id']);
+        $this->assertEquals(Payment\Entity::CARD_PAYMENT_SERVICE, $payment['cps_route']);
+
+        $this->disbaleCpsConfig();
+    }
+
     public function testIvr3dsFallback()
     {
         $this->razorxValue = "cardps";
@@ -1632,6 +1661,53 @@ class CardPaymentServiceTest extends TestCase
         }
     }
 
+
+    private function mockCpsNotEnrolledSplit(string $url, array $input, $terminal)
+    {
+        $input = $input['input'];
+        switch ($url) {
+            case 'action/authorize':
+                return [
+                    'data' => [
+                        'status' => 'authenticated',
+                    ],
+                ];
+            case 'action/callback' :
+                return [
+                    'data' => [
+                        'status' => 'authenticated',
+                    ],
+                ];
+            case 'action/pay':
+                if ((isset($input['iin']['iin']) === true) and ($input['iin']['iin'] === '556763')) {
+                    return [
+                        'data' => null,
+                        'error' => [
+                            'internal_error_code' => 'BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE',
+                            'gateway_error_code' => '',
+                            'gateway_error_description' => '',
+                            'description' => 'Not sufficient funds'
+                        ],
+                        'payment' => [],
+                        'success' => false,
+                    ];
+                }
+                return [
+                    'data' => [
+                        'acquirer' => [
+                            'reference2' => 'test'
+                        ],
+                        'two_factor_auth' => 'Y'
+                    ],
+                    'payment' => [
+                        'auth_type' => "3ds",
+                    ],
+                ];
+            default:
+                return null;
+        }
+    }
+
     protected function mockCpsEmptyAuthCode($url, $input, $terminal)
     {
         $input = $input['input'];
@@ -1757,6 +1833,8 @@ class CardPaymentServiceTest extends TestCase
                         return $this->mockCpsCallbackSplit($method, $url, $input, $terminal);
                     case 'empty_auth_code':
                         return $this->mockCpsEmptyAuthCode($url, $input, $terminal);
+                    case 'not_enrolled_auth_split':
+                        return $this->mockCpsNotEnrolledSplit($url, $input, $terminal);
                 }
             });
 

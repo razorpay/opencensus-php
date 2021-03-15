@@ -523,6 +523,13 @@ trait Authorize
                     $request = $this->callGatewayAuthorize($payment, $terminalGatewayInput);
                 }
 
+                if ((isset($request['status']) == true) and ($request['status'] == 'authenticated'))
+                {
+                    $this->updatePaymentAuthenticated($request);
+
+                    return null;
+                }
+
                 $this->app['diag']->trackPaymentEventV2(
                     EventCode::PAYMENT_AUTHENTICATION_2FA_URL_SENT,
                     $payment,
@@ -921,6 +928,11 @@ trait Authorize
         if ($payment->isCardMandateNotificationCreateApplicable() === true)
         {
             return $this->processCardRecurringMandateAutoPaymentCreated($payment);
+        }
+
+        if ($payment->getStatus() === Payment\Status::AUTHENTICATED)
+        {
+            return $this->postPaymentAuthenticateProcessing($payment);
         }
 
         return $this->processAuth($payment, $data);
