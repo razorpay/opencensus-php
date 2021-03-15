@@ -209,6 +209,17 @@ class Header
     const RECURRING_CHARGE_ORDER_ID    = 'order_id';
 
     //
+    // Custom Batch recurring payments for BSE
+    //
+    const RECURRING_CHARGE_BSE_UNIQUE_REFERENCE_NUMBER = 'Unique Reference Number';
+    const RECURRING_CHARGE_BSE_DEBIT_AMOUNT            = 'Debit Amount';
+    const RECURRING_CHARGE_BSE_DUE_DATE                = 'Due Date';
+    const RECURRING_CHARGE_BSE_ACTUAL_DEBIT_DATE       = 'Actual debit date';
+    const RECURRING_CHARGE_BSE_ICCL_REFERENCE          = 'ICCL reference';
+    const RECURRING_CHARGE_BSE_TRANSACTION_TYPE        = 'Transaction Type';
+    const RECURRING_CHARGE_BSE_UMRN                    = 'UMRN';
+
+    //
     // HDFC Emandate Register Response File Headers
     //
     const HDFC_EM_REGISTER_CLIENT_NAME                      = HdfcEMRegisterHeadings::CLIENT_NAME;
@@ -1854,6 +1865,33 @@ class Header
                 self::RECURRING_CHARGE_CURRENCY,
                 self::RECURRING_CHARGE_RECEIPT,
                 self::RECURRING_CHARGE_DESCRIPTION,
+                self::NOTES,
+                self::RECURRING_CHARGE_ORDER_ID,
+                self::RECURRING_CHARGE_PAYMENT_ID,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        Type::RECURRING_CHARGE_BSE => [
+            self::INPUT => [
+                self::RECURRING_CHARGE_BSE_UNIQUE_REFERENCE_NUMBER,
+                self::RECURRING_CHARGE_BSE_DEBIT_AMOUNT,
+                self::RECURRING_CHARGE_BSE_DUE_DATE,
+                self::RECURRING_CHARGE_BSE_ACTUAL_DEBIT_DATE,
+                self::RECURRING_CHARGE_BSE_ICCL_REFERENCE,
+                self::RECURRING_CHARGE_BSE_TRANSACTION_TYPE,
+                self::RECURRING_CHARGE_BSE_UMRN,
+                self::NOTES,
+            ],
+            self::OUTPUT => [
+                self::RECURRING_CHARGE_BSE_UNIQUE_REFERENCE_NUMBER,
+                self::RECURRING_CHARGE_BSE_DEBIT_AMOUNT,
+                self::RECURRING_CHARGE_BSE_DUE_DATE,
+                self::RECURRING_CHARGE_BSE_ACTUAL_DEBIT_DATE,
+                self::RECURRING_CHARGE_BSE_ICCL_REFERENCE,
+                self::RECURRING_CHARGE_BSE_TRANSACTION_TYPE,
+                self::RECURRING_CHARGE_BSE_UMRN,
                 self::NOTES,
                 self::RECURRING_CHARGE_ORDER_ID,
                 self::RECURRING_CHARGE_PAYMENT_ID,

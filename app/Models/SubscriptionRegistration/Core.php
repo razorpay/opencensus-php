@@ -24,6 +24,7 @@ use RZP\Models\Customer\Token;
 use RZP\Exception\LogicException;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Payment\Processor\Processor;
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\PaperMandate\PaperMandateUpload;
 use RZP\Models\Payment\Processor\Upi as UpiPayment;
 use \RZP\Models\UpiMandate\Frequency as UpiFrequency;
@@ -553,7 +554,17 @@ class Core extends Base\Core
 
     public function chargeToken(string $id, array $input, Merchant\Entity $merchant, String $batchId = null)
     {
-        $token = $this->repo->token->findByPublicIdAndMerchant($id, $merchant);
+        $token = null;
+
+        if ($merchant->isFeatureEnabled(Feature::RECURRING_DEBIT_UMRN) === true)
+        {
+            $token = $this->repo->token->getByGatewayTokenAndMerchantId($id, $merchant->getId());
+        }
+
+        if (empty($token) === true)
+        {
+            $token = $this->repo->token->findByPublicIdAndMerchant($id, $merchant);
+        }
 
         $customer = $token->customer;
 

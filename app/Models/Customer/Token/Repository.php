@@ -103,6 +103,15 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function getByGatewayTokenAndMerchantId(string $gatewayToken, string $merchantId)
+    {
+        return $this->newQuery()
+                    ->where(Token\Entity::MERCHANT_ID, '=', $merchantId)
+                    ->where(Token\Entity::GATEWAY_TOKEN, '=', $gatewayToken)
+                    ->orderBy(Token\Entity::CREATED_AT, 'desc')
+                    ->first();
+    }
+
     public function getByWalletTerminalAndCustomerId($wallet, $terminal, $customer)
     {
         return $this->newQuery()

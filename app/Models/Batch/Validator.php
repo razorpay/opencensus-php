@@ -186,6 +186,14 @@ class Validator extends Base\Validator
         Entity::SCHEDULE        => 'sometimes|numeric',
     ];
 
+    protected static $recurringChargeBseCreateRules = [
+        Entity::TYPE            => 'required|in:recurring_charge_bse',
+        Entity::FILE            => 'required_without:file_id|file|max:10240' . self::DEFAULT_MIME_RULE,
+        Entity::NAME            => 'filled|string|max:255',
+        Entity::FILE_ID         => 'required_without:file|public_id',
+        Entity::SCHEDULE        => 'sometimes|numeric',
+    ];
+
     protected static $tokenRules = [
         Entity::TOKEN           => 'required|max:255|alpha_num',
     ];

@@ -38,6 +38,7 @@ class Limit
         Type::ELFIN                                 => 5000,
         Type::PARTNER_SUBMERCHANTS                  => 5000,
         Type::ENTITY_MAPPING                        => 10000,
+        Type::RECURRING_CHARGE_BSE                  => 50000,
         Type::AUTH_LINK                             => 500100,
         Type::RECURRING_CHARGE                      => 500100,
         Type::SUB_MERCHANT                          => 5000,

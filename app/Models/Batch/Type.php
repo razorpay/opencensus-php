@@ -33,6 +33,9 @@ class Type
 
     const RECURRING_CHARGE          = 'recurring_charge';
 
+    // BSE custom batch
+    const RECURRING_CHARGE_BSE      = 'recurring_charge_bse';
+
     const RECONCILIATION            = 'reconciliation';
 
     const EMANDATE                  = 'emandate';
@@ -352,6 +355,7 @@ class Type
         self::LINKED_ACCOUNT_REVERSAL,
         self::ADJUSTMENT,
         self::PAYMENT_LINK_V2,
+        self::RECURRING_CHARGE_BSE,
         self::ECOLLECT_ICICI,
         self::ECOLLECT_RBL,
         self::REPORT,
@@ -388,6 +392,7 @@ class Type
         self::ADJUSTMENT,
         self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG,
         self::PAYMENT_LINK_V2,
+        self::RECURRING_CHARGE_BSE,
         self::ECOLLECT_ICICI,
         self::ECOLLECT_RBL,
         self::REPORT,
