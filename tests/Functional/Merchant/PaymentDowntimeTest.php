@@ -488,8 +488,6 @@ class PaymentDowntimeTest extends TestCase
 
     public function testPaymentDowntimeGetByID()
     {
-        $this->markTestSkipped();
-
         $this->ba->adminAuth();
 
         $addDowntimeRequest = [
@@ -511,12 +509,10 @@ class PaymentDowntimeTest extends TestCase
 
         $this->ba->privateAuth();
 
-        $id = trim($downtime['id'],"down_");
-
         $fetchDowntimeRequest = [
             'content' => [],
             'method' => 'GET',
-            'url' => '/payments/downtimes/' . $id
+            'url' => '/payments/downtimes/' . $downtime['id'],
         ];
 
         $paymentDowntime = $this->makeRequestAndGetContent($fetchDowntimeRequest);
