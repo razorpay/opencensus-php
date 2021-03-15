@@ -317,43 +317,6 @@ class UpiYesbankGatewayTest extends TestCase
         $this->assertEquals('F', $gatewayEntity['status_code']);
     }
 
-    public function testPayoutVpaVerifyWithAmountTampering()
-    {
-        $this->markTestSkipped('Currently skipping the test, till FTA and gateway code integration is merged');
-
-        $response = $this->testPayoutToVpa();
-
-        $upi = $this->getDbLastEntity('upi');
-
-        $attributes = [
-            'terminal'  => ['gateway_merchant_id' => '12445'],
-            'gateway_input' => [
-                'ref_id'    => $upi['merchant_reference'],
-            ]
-        ];
-
-        $this->ba->privateAuth();
-
-        $request = $this->getPayoutRequest($attributes, 'verify');
-
-        $this->mockServerContentFunction(
-            function (& $content, $action = null)
-            {
-                if ($action === 'payout_verify')
-                {
-                    $content['amount']  = '900.00';
-                }
-            });
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        $this->assertFalse($response['success']);
-
-        $this->assertEquals('SERVER_ERROR_AMOUNT_TAMPERED', $response['api_error_code']);
-
-        $this->assertEquals('RZP_AMOUNT_MISMATCH', $response['response_code']);
-    }
-
     public function testDuplicatePayoutRequest()
     {
         $this->markTestSkipped('Currently skipping the test, till FTA and gateway code integration is merged');

@@ -215,6 +215,13 @@ class Gateway extends Mindgate\Gateway
             }
             else {
                 switch ($errorCode) {
+                    case ErrorCode::BAD_REQUEST_DUPLICATE_PAYOUT:
+                        $formattedResponse = $this->generateResponseForDuplicatePayout($gatewayPayment,
+                            'RZP_DUPLICATE_REFERENCE_RECEIVED',
+                            $input,
+                            Status::PENDING);
+                        break;
+
                     case ErrorCode::BAD_REQUEST_VALIDATION_FAILURE:
                         $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
                             'RZP_FTA_REQUEST_INVALID', $input);
@@ -282,22 +289,6 @@ class Gateway extends Mindgate\Gateway
                                                          Action::PAYOUT_VERIFY,
                                                          TraceCode::VPA_PAYOUT_VERIFY_GATEWAY_RESPONSE);
 
-            $expectedAmount = number_format($gatewayPayment[Entity::AMOUNT] / 100, 2, '.', '');
-
-            $actualAmount = number_format($responseArray[Fields::AMOUNT], 2, '.', '');
-
-            if ($expectedAmount !== $actualAmount)
-            {
-                $this->trace->error(
-                    TraceCode::GATEWAY_FATAL_ERROR,
-                    [
-                        'input'    => $input,
-                        'response' => $responseArray,
-                    ]);
-
-                return $this->generateResponseForRazorpayFailure($gatewayPayment, 'RZP_AMOUNT_MISMATCH', $input);
-            }
-
             if ($responseArray[Fields::ORDERNO] !== $gatewayPayment[Entity::MERCHANT_REFERENCE])
             {
                 $this->trace->error(
@@ -357,6 +348,13 @@ class Gateway extends Mindgate\Gateway
             {
                 switch ($code)
                 {
+                    case ErrorCode::BAD_REQUEST_DUPLICATE_PAYOUT:
+                        $formattedResponse = $this->generateResponseForDuplicatePayout($gatewayPayment,
+                            'RZP_DUPLICATE_REFERENCE_RECEIVED',
+                            $input,
+                            Status::PENDING);
+                        break;
+
                     case ErrorCode::BAD_REQUEST_VALIDATION_FAILURE:
                         $formattedResponse = $this->generateResponseForRazorpayFailure($gatewayPayment,
                                                                                        'RZP_FTA_REQUEST_INVALID',
@@ -805,5 +803,48 @@ class Gateway extends Mindgate\Gateway
                 'request'    => $request,
                 'gateway'    => $this->gateway,
             ]);
+    }
+
+    protected function generateResponseForDuplicatePayout(
+        $gatewayPayment,
+        $errorCode,
+        $ftaInput = [],
+        $statusCode = Status::PENDING)
+    {
+        $apiErrorCode = ResponseCodeMap::getApiErrorCode($errorCode);
+
+        $gatewayErrorCodeDesc = ResponseCodes::getResponseMessage($errorCode);
+
+        $response = [
+            Fields::SUCCESS                     => false,
+            Fields::STATUS_CODE                 => $statusCode,
+            Fields::API_ERROR_CODE              => $apiErrorCode,
+            Fields::RESPONSE_CODE               => $errorCode,
+            Fields::ERROR_CODE                  => $errorCode,
+            Fields::RESPONSE_ERROR_CODE         => $errorCode,
+            Fields::STATUS_DESC                 => $gatewayErrorCodeDesc,
+        ];
+
+        if (empty($gatewayPayment) === false)
+        {
+            $gatewayPaymentResponse = [
+                Fields::BANK_REFERENCE_NUMBER       => $gatewayPayment->getGatewayPaymentId(),
+                Fields::REQUEST_REFERENCE_NUMBER    => $gatewayPayment->getMerchantReference(),
+                Fields::UNIQUE_RESPONSE_NUMBER      => $gatewayPayment->getNpciReferenceId(),
+            ];
+
+            $response = array_merge($response, $gatewayPaymentResponse);
+        }
+
+        if (empty($response[Fields::REQUEST_REFERENCE_NUMBER]) === true)
+        {
+            $response[Fields::REQUEST_REFERENCE_NUMBER] = $ftaInput[Fields::GATEWAY_INPUT][Fields::REF_ID] ?? null;
+        }
+
+        $this->trace->info(
+            TraceCode::GATEWAY_INTERNAL_FORMATTED_RESPONSE,
+            $response);
+
+        return $response;
     }
 }
