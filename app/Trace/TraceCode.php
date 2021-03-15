@@ -3342,6 +3342,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CREDCASE_REQUEST_ROTATE                               = 'CREDCASE_REQUEST_ROTATE';
     const MIGRATE_TO_CREDCASE_REQUEST                           = 'MIGRATE_TO_CREDCASE_REQUEST';
 
+    const CREDCASE_SIGNER_ERROR                                 = 'CREDCASE_SIGNER_ERROR';
+    const CREDCASE_SIGNER_REDIS_ERROR                           = 'CREDCASE_SIGNER_REDIS_ERROR';
+    const CREDCASE_SIGNER_INVOKED                               = 'CREDCASE_SIGNER_INVOKED';
+
     // See RZP/Modules/Migrate.
     const MIGRATE_ASYNC_REQUEST                                 = 'MIGRATE_ASYNC_REQUEST';
     const MIGRATE_ASYNC_SUMMARY                                 = 'MIGRATE_ASYNC_SUMMARY';

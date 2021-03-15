@@ -81,6 +81,12 @@ return [
         'password'           => env('CREDCASE_PASSWORD'),
     ],
 
+    // Ref \RZP\Services\CredcaseSigner.php.
+    'credcase_signer' => [
+        'mock'        => env('CREDCASE_SIGNER_MOCK'),
+        'private_key' => env('CREDCASE_SIGNER_PRIVATE_KEY'),
+    ],
+
     //check razorpay/business_verification_service
     'business_verification_service' => [
         'mock'         => env('BVS_MOCK', false),

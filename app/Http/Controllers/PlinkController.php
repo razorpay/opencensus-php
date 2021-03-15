@@ -12,6 +12,7 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment\Entity;
 use RZP\Trace\TraceCode;
+use RZP\Services\CredcaseSigner;
 
 class PlinkController extends Controller
 {
@@ -310,7 +311,7 @@ class PlinkController extends Controller
 
         $this->ba->authCreds->setKeyEntity($key);
 
-        $response['razorpay_signature'] = $this->ba->sign($str);
+        $response['razorpay_signature'] = (new CredcaseSigner)->sign($str);
 
         return $response;
 	}
@@ -349,7 +350,7 @@ class PlinkController extends Controller
 
         $this->ba->authCreds->setKeyEntity($key);
 
-        $response['razorpay_signature'] = $this->ba->sign($str);
+        $response['razorpay_signature'] = (new CredcaseSigner)->sign($str);
 
         return $response;
     }

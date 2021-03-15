@@ -57,4 +57,9 @@ class Application extends \Illuminate\Foundation\Application
     {
         return Environment::isEnvironmentQA($this->env);
     }
+
+    public function isEnvironmentProduction(): bool
+    {
+        return ($this->env === Environment::PRODUCTION);
+    }
 }

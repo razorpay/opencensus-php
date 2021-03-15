@@ -89,6 +89,11 @@ class BasicAuth
     const OAUTH                 = 'oauth';
     const PARTNER               = 'partner';
 
+    // Public key used in public auth, and callback route param can be one of these forms.
+    const PARTNER_KEY_REGEX = '/^(rzp_(test|live)_partner_([a-zA-Z0-9]{14}))[-~](acc_[a-zA-Z0-9]{14})$/';
+    const OAUTH_KEY_REGEX   = '/^(rzp_(test|live)_oauth_[a-zA-Z0-9]{14}).*$/';
+    const KEY_REGEX         = '/^rzp_(test|live)_([a-zA-Z0-9]{14})$/';
+
     /**
      * The application instance.
      *
@@ -1985,6 +1990,8 @@ class BasicAuth
     }
 
     /**
+     * @deprecated This function will be removed, please use \RZP\Services\CredcaseSigner.
+     *
      * The secret used for signing can be one of the following:
      * 1. Api key secret for key auth
      * 2. OAuth app's client secret for Bearer/PublicOAuthToken auth
@@ -2043,13 +2050,7 @@ class BasicAuth
     {
         $secret = null;
 
-        $partnerKeyRegex = '/^(rzp_(test|live)_partner_([a-zA-Z0-9]{14}))[-~](acc_[a-zA-Z0-9]{14})$/';
-
-        $oauthKeyRegex = '/^(rzp_(test|live)_oauth_[a-zA-Z0-9]{14}).*$/';
-
-        $keyRegex = '/^rzp_(test|live)_([a-zA-Z0-9]{14})$/';
-
-        $found = (preg_match($oauthKeyRegex, $publicKey, $matches) === 1);
+        $found = (preg_match(self::OAUTH_KEY_REGEX, $publicKey, $matches) === 1);
 
         if ($found === true)
         {
@@ -2068,7 +2069,7 @@ class BasicAuth
             }
         }
 
-        $found = (preg_match($partnerKeyRegex, $publicKey, $matches) === 1);
+        $found = (preg_match(self::PARTNER_KEY_REGEX, $publicKey, $matches) === 1);
 
         if ($found === true)
         {
@@ -2081,7 +2082,7 @@ class BasicAuth
             return $secret;
         }
 
-        $found = (preg_match($keyRegex, $publicKey, $matches) === 1);
+        $found = (preg_match(self::KEY_REGEX, $publicKey, $matches) === 1);
 
         if ($found === true)
         {

@@ -40,6 +40,7 @@ use RZP\Models\Payment\Metric;
 use RZP\Models\Payment\Status;
 use RZP\Models\UpiMandate\Core;
 use RZP\Models\Payment\AuthType;
+use RZP\Services\CredcaseSigner;
 use RZP\Services\NbPlus\Service;
 use RZP\Constants\Entity as E;
 use RZP\Base\RepositoryManager;
@@ -1756,7 +1757,7 @@ class Processor
 
         $str = implode('|', $data);
 
-        return $this->ba->sign($str, $publicKey);
+        return (new CredcaseSigner)->sign($str, $publicKey);
     }
 
     protected function checkMerchantPermissions()

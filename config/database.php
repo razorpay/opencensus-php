@@ -408,6 +408,23 @@ return array(
             'persistent' => true,
         ],
 
+        // This connection is used by \RZP\Services\CredcaseSigner.
+        'credcase_signer' => [
+            'scheme'             => env('CREDCASE_SIGNER_REDIS_SCHEME'),
+            'host'               => env('CREDCASE_SIGNER_REDIS_HOST'),
+            'port'               => env('CREDCASE_SIGNER_REDIS_PORT'),
+            'username'           => env('CREDCASE_SIGNER_REDIS_USERNAME'),
+            'password'           => env('CREDCASE_SIGNER_REDIS_PASSWORD'),
+            'timeout'            => env('CREDCASE_SIGNER_REDIS_TIMEOUT'),
+            'read_write_timeout' => env('CREDCASE_SIGNER_REDIS_READ_WRITE_TIMEOUT'),
+            'persistent'         => true,
+            // TODO: To figure out and fix certificate verification.
+            'ssl'                => [
+                'verify_peer'      => false,
+                'verify_peer_name' => false,
+            ],
+        ],
+
         'secure' => [
             'host'     => env('SECURE_REDIS_HOST'),
             'port'     => env('SECURE_REDIS_PORT'),
