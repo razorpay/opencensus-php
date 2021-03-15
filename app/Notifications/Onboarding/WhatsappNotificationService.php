@@ -9,6 +9,8 @@ use RZP\Notifications\BaseNotificationService;
 
 class WhatsappNotificationService extends BaseNotificationService
 {
+    protected const ONBOARDING_PREFIX = 'onboarding.';
+
     public function send(): void
     {
         (new Stork)->sendWhatsappMessage(
@@ -22,10 +24,14 @@ class WhatsappNotificationService extends BaseNotificationService
     protected function getPayload()
     {
         $merchant = $this->args['merchant'];
+
+        $templateName = self::ONBOARDING_PREFIX . strtolower($this->event);
+
         return [
-            'ownerId'   => $merchant->getMerchantId(),
-            'ownerType' => Constants::MERCHANT,
-            'params'    => [
+            'ownerId'       => $merchant->getMerchantId(),
+            'ownerType'     => Constants::MERCHANT,
+            'template_name' => $templateName,
+            'params'        => [
                 'merchantName' => $merchant->getName(),
                 'dashboardUrl' => $this->app['config']->get('applications.dashboard.url')
             ]

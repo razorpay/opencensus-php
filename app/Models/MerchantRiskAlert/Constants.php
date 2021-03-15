@@ -26,5 +26,7 @@ class Constants
 
     const FOH_SMS_TEMPLATE = 'sms.merchant_risk.alert.funds_on_hold';
 
+    const FOH_WHATSAPP_TEMPLATE_NAME = 'merchant_risk.alert.funds_on_hold';
+
     const FOH_WHATSAPP_TEMPLATE = 'We have put your settlement on hold as we observed suspicious account activity on your account  MID - {merchantId} in the name of M/s. {merchantName} held with Razorpay. Please check your registered email for more details';
 }

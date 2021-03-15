@@ -264,6 +264,7 @@ class Stork
 
     /**
      * Makes call to stork service to send a message via Whatsapp
+     * Please always add `template_name` to the $input.
      *
      * @param string $mode -> live/test
      * @param string $template
@@ -284,12 +285,18 @@ class Stork
         try {
             $text = (new TemplateEngine)->render($template, $input['params']);
 
+            $context = json_decode('{}');
+            if (isset($input['template_name']) === true)
+            {
+                $context = json_decode(json_encode(['template' => $input['template_name']]));
+            }
+
             $requestPayload = [
                 'message' => [
-                    'service' => $this->service,
-                    'owner_id' => $input['ownerId'],
-                    'owner_type' => $input['ownerType'],
-                    'context' => json_decode('{}'),
+                    'service'           => $this->service,
+                    'owner_id'          => $input['ownerId'],
+                    'owner_type'        => $input['ownerType'],
+                    'context'           => $context,
                     'whatsapp_channels' => [
                         [
                             'destination' => $receiver,

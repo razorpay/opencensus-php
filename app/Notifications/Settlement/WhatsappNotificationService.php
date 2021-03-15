@@ -12,6 +12,8 @@ use RZP\Notifications\BaseNotificationService;
 
 class WhatsappNotificationService extends BaseNotificationService
 {
+    protected const SETTLEMENT_PREFIX = 'settlement.';
+
     public function send(): void
     {
         $payload = $this->getPayload();
@@ -107,13 +109,16 @@ class WhatsappNotificationService extends BaseNotificationService
         $merchant = $this->args['merchant'];
         $settlement = $this->args['settlement'];
 
+        $templateName = self::SETTLEMENT_PREFIX . strtolower($this->event);
+
         $payload = [
-            'ownerId'   => $merchant->getId(),
-            'ownerType' => Merchant\Constants::MERCHANT,
-            'template' => $this->getTemplateMessage(),
-            'receiver' => $this->getPhone(),
-            'source'   => 'api.'. $this->mode . '.settlements',
-            'params'   => [
+            'ownerId'       => $merchant->getId(),
+            'ownerType'     => Merchant\Constants::MERCHANT,
+            'template'      => $this->getTemplateMessage(),
+            'template_name' => $templateName,
+            'receiver'      => $this->getPhone(),
+            'source'        => 'api.'. $this->mode . '.settlements',
+            'params'        => [
                 'merchant_id'     => $merchant->getId(),
                 'bank_account_id' => $this->args['bankAccountNumber'],
                 'settlement_id'   => $settlement->getPublicId(),

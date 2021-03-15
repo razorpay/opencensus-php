@@ -264,12 +264,13 @@ class Service extends Base\Service
         $receiver = $merchant->merchantDetail->getContactMobile();
 
         $whatsAppPayload = [
-            'ownerId'   => $merchant->getId(),
-            'ownerType' => 'merchant',
-            'params'    => [
+            'ownerId'       => $merchant->getId(),
+            'ownerType'     => 'merchant',
+            'template_name' => Constants::FOH_WHATSAPP_TEMPLATE_NAME,
+            'params'        => [
                 'merchantId'   => $merchant->getId(),
                 'merchantName' => $merchant->getName(),
-            ]
+            ],
         ];
 
         (new Stork)->sendWhatsappMessage(

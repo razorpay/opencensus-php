@@ -68,7 +68,7 @@ class Core extends \RZP\Models\AppStore\Base\Core
             $this->optInForWhatsapp($mobileNumber);
 
             //Send Message
-            $this->sendMessage($merchantId, Templates::WELCOME_MESSAGE_TEMPLATE, $mobileNumber);
+            $this->sendMessage($merchantId, Templates::PL_WELCOME_MESSAGE_TEMPLATE, $mobileNumber);
 
         }
         catch (\Exception $e)
@@ -132,7 +132,7 @@ class Core extends \RZP\Models\AppStore\Base\Core
 
     public function sendMessageForWrongTemplate(string $merchantId, string $mobileNumber)
     {
-        $this->sendMessage($merchantId, Templates::WRONG_MESSAGE_TEMPLATE, $mobileNumber);
+        $this->sendMessage($merchantId, Templates::PL_WRONG_MESSAGE_TEMPLATE, $mobileNumber);
     }
 
     /**
@@ -163,9 +163,10 @@ class Core extends \RZP\Models\AppStore\Base\Core
     protected function sendMessage(string $merchantId, string $templateName, string $mobileNumber, array $params = [])
     {
         $payload = [
-            'ownerId'   => $merchantId,
-            'ownerType' => Constants::MERCHANT,
-            'params'    => $params
+            'ownerId'       => $merchantId,
+            'ownerType'     => Constants::MERCHANT,
+            'params'        => $params,
+            'template_name' => strtolower($templateName ?? ''),
         ];
         (new Stork)->sendWhatsappMessage(
             $this->mode,
