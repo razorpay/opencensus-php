@@ -127,6 +127,7 @@ class Route
         'batch_fetch_by_id'                        => ['get',      'batches/{id}',                                   'BatchController@getBatchById'                                      ],
         'batch_process_file'                       => ['post',     'batches/process',                                'BatchController@processBatches'                                    ],
         'batch_process_by_id'                      => ['post',     'batches/{id}/process',                           'BatchController@processBatch'                                      ],
+        // To be removed since all batches migrated. Removing permission as of now.
         'batch_retry_output_file'                  => ['post',     'batches/{id}/retry_output_file',                 'BatchController@retryBatchOutputFile'                              ],
         'batch_download_file'                      => ['get',      'batches/{id}/download',                          'BatchController@downloadBatch'                                     ],
         'batch_stats'                              => ['get',      'batches/{id}/stats',                             'BatchController@getStats'                                          ],
@@ -4735,7 +4736,6 @@ class Route
         'bank_transfer_edit_payer_account'         => Permission::BANK_TRANSFER_MODIFY_PAYER_ACCOUNT,
         'bank_transfer_insert'                     => Permission::BANK_TRANSFER_INSERT,
         'bank_transfer_strip_payer_accounts'       => Permission::BANK_TRANSFER_MODIFY_PAYER_ACCOUNT,
-        'batch_retry_output_file'                  => '*',
         'coupon_apply'                             => Permission::CREATE_PROMOTION_COUPON,
         'coupon_create'                            => Permission::CREATE_PROMOTION_COUPON,
         'coupon_delete'                            => Permission::CREATE_PROMOTION_COUPON,
