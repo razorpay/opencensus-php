@@ -8404,6 +8404,10 @@ trait Authorize
                 $accountNumber = str_pad($accountNumber, 17, '0', STR_PAD_LEFT);
                 break;
 
+            case IFSC::APGV:
+                $accountNumber = str_pad($accountNumber, 17, '0', STR_PAD_LEFT);
+                break;
+
             default:
                 break;
         }

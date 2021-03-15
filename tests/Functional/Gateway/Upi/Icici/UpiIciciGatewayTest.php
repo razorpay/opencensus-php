@@ -333,6 +333,15 @@ class UpiIciciGatewayTest extends TestCase
                 'payerAccount'      => '00000091122249452', //Leading zeroes padding for 17 chars
             ]
         ];
+        $cases['apgv_missing_zeroes'] = [
+            [
+                'account_number'    => '91122249452',
+                'ifsc'              => 'APGB0000001',
+            ],
+            [
+                'payerAccount'      => '00000091122249452', //Leading zeroes padding for 17 chars
+            ]
+        ];
 
         return $cases;
     }
