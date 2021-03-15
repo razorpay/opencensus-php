@@ -294,28 +294,13 @@ class AdminAccess
 
     private function checkPermissionAllowed(string $toCheck, array $haystack, string $routeName)
     {
-        // Wildcard check takes precedence for obvious reasons
         if ($toCheck === self::WILDCARD_PERMISSION)
         {
-            //
-            // Don't allow wildcard permission routes for restricted orgs. These orgs are banks like SBI
-            // using heimdall for specific actions and view of transactions from their gateways and do
-            // not onboard/manage merchants like other orgs. Restricting them from routes with wildcard
-            // permission is for added security, if they ever need those routes then we will add proper
-            // permissions and allow those permissions to the orgs that need them. These orgs will
-            // generally have access to a very restricted set of permissions.
-            //
-            // The list in `$restrictedOrgWildCardRoutes` contains all the routes that are basic
-            // to admin logging in and fetching his current session detail and hence does not make
-            // sense to add permissions on those.
-            //
-            if (($this->ba->getOrgType() === Org\Entity::RESTRICTED) and
-                (in_array($routeName, Route::$restrictedOrgWildCardRoutes, true) === false))
-            {
-                return false;
-            }
-
-            return true;
+           // Previously, admin routes could be accessed without permission if there '*'(wildcard_permission) entry
+           // for that route in $routePermissionMap
+           // Now we want every route that needs to be accessible via admin auth needs to have a specific permission
+           // Therefore deny access to admin route if it has a wildcard permission
+           return false;
         }
 
         // Check if the required permission is present in the

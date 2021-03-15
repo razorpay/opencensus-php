@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\BasicAuth;
 
 use Carbon\Carbon;
+use RZP\Http\Route;
 use RZP\Models\Key;
 
 use RZP\Models\Merchant;
@@ -620,6 +621,19 @@ class BasicAuthTest extends TestCase
             $merchantUser->getId());
 
         $this->startTest();
+    }
+
+    public function testAdminRouteWildcardPermissionFail()
+    {
+        $permission = Route::$routePermission['admin_get_multiple'];
+
+        Route::$routePermission['admin_get_multiple'] = '*';
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        Route::$routePermission['admin_get_multiple'] = $permission;
     }
 
 
