@@ -27,7 +27,8 @@ class Service extends Base\Service
     protected $mutex;
 
     const SFTP_BUCKET_TARGETS = [
-        Batch\Constants::ENACH_NB_ICICI
+        Batch\Constants::ENACH_NB_ICICI,
+        Batch\Constants::ENACH_RBL,
     ];
 
     // skips extracting the zip file before creating the batch
