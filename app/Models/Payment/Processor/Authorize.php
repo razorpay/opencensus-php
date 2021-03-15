@@ -2633,6 +2633,10 @@ trait Authorize
 
                 $input['dummy_payment'] = true;
 
+                unset($input['save']);
+
+                $payment->setSave(false);
+
                 $this->preProcessForUpiIfApplicable($input);
 
                 $this->validateAndSetReceiverIfApplicable($payment, $input);
