@@ -21,7 +21,7 @@ class Core extends Base\Core
 {
     protected $card = null;
 
-    public function create($input, $merchant, $recurring = false)
+    public function create($input, $merchant, $recurring = false, $dummyProcessing = false)
     {
         $card = (new Card\Entity)->build($input);
 
@@ -38,7 +38,10 @@ class Core extends Base\Core
             $card->iinRelation()->associate($iin);
         }
 
-        $card->saveOrFail();
+        if ($dummyProcessing === false)
+        {
+            $this->repo->saveOrFail($card);
+        }
 
         return $card;
     }
@@ -140,7 +143,7 @@ class Core extends Base\Core
         return $this->card;
     }
 
-    public function createAndReturnWithSensitiveData(array $input, Merchant\Entity $merchant, bool $recurring): array
+    public function createAndReturnWithSensitiveData(array $input, Merchant\Entity $merchant, bool $recurring, bool $dummyProcessing): array
     {
         //
         // We are running modifiers outside the build() because
@@ -161,7 +164,7 @@ class Core extends Base\Core
 
         if ($newCardVariant === 'on')
         {
-            $card = $this->create($input, $merchant, $recurring);
+            $card = $this->create($input, $merchant, $recurring, $dummyProcessing);
         }
         else
         {
@@ -220,7 +223,8 @@ class Core extends Base\Core
 
                         $this->checkCvvLength($card, $input);
 
-                        if ($cardCDC === true)
+                        if (($cardCDC === true) and
+                            ($dummyProcessing === false))
                         {
                             $this->repo->saveOrFail($card);
                         }
@@ -232,7 +236,7 @@ class Core extends Base\Core
 
             if ($card === null)
             {
-                $card = $this->create($input, $merchant, $recurring);
+                $card = $this->create($input, $merchant, $recurring, $dummyProcessing);
             }
         }
 

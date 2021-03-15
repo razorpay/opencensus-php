@@ -2617,18 +2617,21 @@ trait Authorize
 
     /**
      * Function gets called processAndReturnTerminal and processAndReturnFees, in this flow
-     * runPaymentMethodRelatedPreProcessing creates cards and tokens which is not used at all.
-     * to avoid this we run the flow in beginTransactionAndRollback
+     * runPaymentMethodRelatedPreProcessing creates cards which is not used at all. To avoid this
+     * we are passing dummy_payment flag in the input. There are no writes happen to DB in the function so,
+     * we can run all select queries in replica instead of master.
      *
      * @param $payment
      * @param $input
      */
     protected function dummyPrePaymentAuthorizeProcessing($payment, $input)
     {
-        $this->repo->beginTransactionAndRollback(
+        $this->repo->useSlave(
             function() use ($payment, $input)
             {
                 $gatewayInput = [];
+
+                $input['dummy_payment'] = true;
 
                 $this->preProcessForUpiIfApplicable($input);
 
@@ -6606,14 +6609,20 @@ trait Authorize
     {
         $this->setRzpVaultForPayment($cardInput, $vault, $merchant, $input);
 
-        $this->setIsCVVOptionalFlagIfApplicable($cardInput, $input);
-
         $cardCore = new Card\Core;
+
+        /*  if dummy_payment parameter is set, the flow is being called from
+         *  dummyPrePaymentAuthorizeProcessing, In this case we don't need to create
+         *  any card in database. Instead we return a card object.
+         */
+        $dummyProcessing = $input['dummy_payment'] ?? false;
+
+        $this->setIsCVVOptionalFlagIfApplicable($cardInput, $input);
 
         $recurring = (($this->payment->isRecurring()) or
                       ($this->isPreferredRecurring($input)));
 
-        $cardData = $cardCore->createAndReturnWithSensitiveData($cardInput, $merchant, $recurring);
+        $cardData = $cardCore->createAndReturnWithSensitiveData($cardInput, $merchant, $recurring, $dummyProcessing);
 
         $card = $cardCore->getCard();
 
@@ -6625,7 +6634,8 @@ trait Authorize
 
         $this->payment->card()->associate($card);
 
-        $this->repo->saveOrFail($card);
+        // commenting this code as card entity gets save in Card\Core
+        // $this->repo->saveOrFail($card);
 
         return $cardData;
 

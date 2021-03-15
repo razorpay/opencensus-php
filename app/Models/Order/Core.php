@@ -30,7 +30,7 @@ class Core extends Base\Core
      *
      * @return Entity
      */
-    public function create(array $input, Merchant\Entity $merchant, bool $partialPayment = false)
+    public function create(array $input, Merchant\Entity $merchant, bool $partialPayment = false, $dummyProcessing=false)
     {
         $inputTrace = $input;
 
@@ -73,7 +73,7 @@ class Core extends Base\Core
 
         $this->createLateAuthConfigIfApplicable($input, $order);
 
-        list($order, $ba) = $this->repo->transaction(function() use ($order, $input)
+        list($order, $ba) = $this->repo->transaction(function() use ($order, $input, $dummyProcessing)
         {
             //The variable pushToQueue is added since we want to delay razorx call and queue push till
             //transaction completion.
@@ -92,7 +92,10 @@ class Core extends Base\Core
 
             $this->associateProducts($order, $input);
 
-            $this->repo->saveOrFail($order);
+            if ($dummyProcessing === false)
+            {
+                $this->repo->saveOrFail($order);
+            }
 
             return [$order, $ba];
         });

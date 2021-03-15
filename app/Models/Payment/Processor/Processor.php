@@ -1146,6 +1146,8 @@ class Processor
     /**
      * This function is used while creating the Qr codes. It will
      * create dummy payment and fetch terminal corresponding to that.
+     * No writes happens during this call, hence we can use replica connection
+     * instead of master.
      *
      * @param array $input
      *
@@ -1159,7 +1161,7 @@ class Processor
 
         $this->tracePaymentNewRequest($input);
 
-        $terminal = $this->repo->beginTransactionAndRollback(
+        $terminal = $this->repo->useSlave(
             function() use ($input, $receiver)
             {
                 //creating dummy order if order_id_mandatory feature is enabled for a merchant
@@ -1202,7 +1204,7 @@ class Processor
             'receipt'  => 'rcptid42',
         ];
 
-        return (new Order\Core())->create($input, $merchant);
+        return (new Order\Core())->create($input, $merchant, false, true);
     }
 
     public function processAndReturnFees(array & $input)
