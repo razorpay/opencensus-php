@@ -1020,6 +1020,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_PAYMENT_VERIFY                                = 'GATEWAY_PAYMENT_VERIFY';
     const GATEWAY_PAYMENT_VERIFY_REQUEST                        = 'GATEWAY_PAYMENT_VERIFY_REQUEST';
     const GATEWAY_PAYMENT_VERIFY_RESPONSE                       = 'GATEWAY_PAYMENT_VERIFY_RESPONSE';
+    const GATEWAY_PRE_PROCESS_CALLBACK                          = 'GATEWAY_PRE_PROCESS_CALLBACK';
     const GATEWAY_DECRYPT_MOZART_REQUEST                        = 'GATEWAY_DECRYPT_MOZART_REQUEST';
     const GATEWAY_DECRYPT_MOZART_RESPONSE                       = 'GATEWAY_DECRYPT_MOZART_RESPONSE';
     const GATEWAY_PAYMENT_DATA_PICKUP                           = 'GATEWAY_PAYMENT_DATA_PICKUP';

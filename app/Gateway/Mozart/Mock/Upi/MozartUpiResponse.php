@@ -58,6 +58,17 @@ class MozartUpiResponse extends Collection
         return $this;
     }
 
+    public function setTerminal(array $terminal)
+    {
+        $data = $this->getData();
+
+        $data[self::TERMINAL] = $terminal;
+
+        $this->put(self::DATA, $data);
+
+        return $this;
+    }
+
     public function getData()
     {
         return $this->get(self::DATA);

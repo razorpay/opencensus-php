@@ -52,4 +52,6 @@ class Action
     const MANDATE_REVOKE        = 'mandate_revoke';
 
     const NOTIFY                = 'notify';
+
+    const PRE_PROCESS           = 'pre_process';
 }

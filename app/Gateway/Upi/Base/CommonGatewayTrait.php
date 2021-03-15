@@ -5,9 +5,11 @@ namespace RZP\Gateway\Upi\Base;
 use RZP\Exception;
 use RZP\Gateway\Upi;
 use RZP\Models\Payment;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
+use RZP\Constants\Environment;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Payment\UpiMetadata\Flow;
 
@@ -72,8 +74,6 @@ trait CommonGatewayTrait
 
     public function upiCallback(array $input)
     {
-        $input = $this->prepareCallbackInput($input);
-
         /**
          * @var $gatewayEntity Entity
          */
@@ -87,11 +87,7 @@ trait CommonGatewayTrait
             $mozartEntity = $mozart->findEntityByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
         }
 
-        $result = $this->upiSendGatewayRequest(
-            $input,
-            TraceCode::GATEWAY_PAYMENT_REQUEST,
-            'pay_verify'
-        );
+        $result = $input['gateway'];
 
         $response = new Response($result['data'] ?? []);
 
@@ -182,6 +178,37 @@ trait CommonGatewayTrait
         $verify->match = ($status === VerifyResult::STATUS_MATCH);
 
         $this->upiUpdateGatewayEntity($gatewayPayment, $response->getFilteredUpi());
+    }
+
+    /**
+     * Pre Process function will be callback function , The purpose it serves that it makes the callback
+     * to comply with the contracts . Give a simple interface to work with.
+     * @param array $input
+     * @return array
+     */
+    public function upiPreProcess(array $input)
+    {
+        $gatewayInput = [
+            'gateway'  => $input,
+            'terminal' => '',    // Attaching it so mozart request sender does not fail
+            'payment'  => [
+                'gateway' => $this->gateway,
+                'id'      => '',
+            ]
+        ];
+
+        $mozart = $this->getUpiMozartGatewayWithModeFromEnvironment();
+
+        return $mozart->sendUpiMozartRequest(
+            $gatewayInput,
+            TraceCode::GATEWAY_PRE_PROCESS_CALLBACK,
+            'pre_process'
+        );
+    }
+
+    public function upiPaymentIdFromServerCallback($input)
+    {
+        return $input['data']['upi']['merchant_reference'];
     }
 
     /****************** Helper **************************
@@ -446,6 +473,30 @@ trait CommonGatewayTrait
                 'action'   => $this->action,
             ]
         );
+    }
+
+    /**
+     * This function will be used for any action , we dont have
+     * mode determined yet.
+     * eg. pre_process
+     * It sets the mode as `test` for all the environments except for
+     * production
+     * @return Upi\Mozart\Gateway
+     */
+     protected function getUpiMozartGatewayWithModeFromEnvironment()
+     {
+         $mozart = $this->getUpiMozartGatewayWithModeSet();
+
+         if ($this->env === Environment::PRODUCTION)
+         {
+             $mozart->setMode(Mode::LIVE);
+         }
+        else
+        {
+            $mozart->setMode(Mode::TEST);
+        }
+
+        return $mozart;
     }
 
     /**

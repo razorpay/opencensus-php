@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Gateway\Mozart;
 
 use Carbon\Carbon;
+use RZP\Gateway\Upi\Juspay;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Payment\Refund;
@@ -61,7 +62,7 @@ class UpiJuspayGatewayTest extends TestCase
             Entity::REFUND_AT       => null,
         ], $payment->toArray());
 
-        $request = $this->mockServer('mozart')->getCallbackRequest($payment->toArray());
+        $request = $this->mockServer('upi_juspay')->getCallback($payment->toArray());
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -80,8 +81,8 @@ class UpiJuspayGatewayTest extends TestCase
           UpiEntity::ACTION              => 'authorize',
           UpiEntity::GATEWAY             => 'upi_juspay',
           UpiEntity::RECEIVED            => 1,
-          UpiEntity::NPCI_TXN_ID         => 'BJJ8fa34bf3f6c64fe0bd540060eb9bcc71',
-          UpiEntity::NPCI_REFERENCE_ID   => '103800854910',
+          UpiEntity::NPCI_TXN_ID         => 'APP34749005b22e45bfa1e9a38e668fc43c',
+          UpiEntity::NPCI_REFERENCE_ID   => '034520388334',
           UpiEntity::MERCHANT_REFERENCE  => $payment->getId(),
         ], $upi->toArray());
 
@@ -92,7 +93,6 @@ class UpiJuspayGatewayTest extends TestCase
     {
         $this->createTestTerminal();
 
-        $this->payment['description'] = 'failedCallback';
 
         $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
 
@@ -105,7 +105,11 @@ class UpiJuspayGatewayTest extends TestCase
 
         $this->assertTrue($payment->isCreated());
 
-        $request = $this->mockServer('mozart')->getCallbackRequest($payment->toArray());
+        $request = $this->mockServer('upi_juspay')
+                        ->getCallback($payment->toArray(),
+                            [
+                                Juspay\Fields::GATEWAY_RESPONSE_CODE => 'U69'
+                            ]);
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -162,7 +166,7 @@ class UpiJuspayGatewayTest extends TestCase
 
         $payment = $this->getDbLastPayment();
 
-        $request = $this->mockServer('mozart')->getCallbackRequest($payment->toArray());
+        $request = $this->mockServer('upi_juspay')->getCallback($payment->toArray());
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -210,7 +214,9 @@ class UpiJuspayGatewayTest extends TestCase
 
         $payment = $this->getDbLastPayment();
 
-        $request = $this->mockServer('mozart')->getCallbackRequest($payment->toArray());
+        $request = $this->mockServer('upi_juspay')->getCallback($payment->toArray(), [
+            Juspay\Fields::PAYER_VPA  => 'customer@xyz',
+        ]);
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -245,7 +251,7 @@ class UpiJuspayGatewayTest extends TestCase
 
         $payment = $this->getDbLastPayment();
 
-        $request = $this->mockServer('mozart')->getCallbackRequest($payment->toArray());
+        $request = $this->mockServer('upi_juspay')->getCallback($payment->toArray());
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -273,7 +279,7 @@ class UpiJuspayGatewayTest extends TestCase
 
         $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
 
-        $request = $this->mockServer('mozart')->getCallbackRequest($payment->toArray());
+        $request = $this->mockServer('upi_juspay')->getCallback($payment->toArray());
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -296,7 +302,9 @@ class UpiJuspayGatewayTest extends TestCase
 
         $payment = $this->getDbLastPayment();
 
-        $request = $this->mockServer('mozart')->getCallbackRequest($payment->toArray());
+        $request = $this->mockServer('upi_juspay')->getCallback($payment->toArray(), [
+            Juspay\Fields::PAYER_VPA => 'customer@vpa',
+        ]);
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -306,7 +314,7 @@ class UpiJuspayGatewayTest extends TestCase
 
         $this->assertArraySubset([
              Entity::STATUS      =>  'authorized',
-             Entity::REFERENCE16 =>  '123456789012',
+             Entity::REFERENCE16 =>  '034520388334',
              Entity::VPA         =>  'customer@vpa',
         ], $payment->toArray());
 
@@ -314,7 +322,7 @@ class UpiJuspayGatewayTest extends TestCase
 
         $this->assertArraySubset([
             'vpa'               => 'customer@vpa',
-            'npci_reference_id' => '123456789012',
+            'npci_reference_id' => '034520388334',
         ], $upi->toArray());
     }
 
@@ -331,13 +339,15 @@ class UpiJuspayGatewayTest extends TestCase
 
         $payment = $this->getDbLastPayment();
 
-        $request = $this->mockServer('mozart')->getCallbackRequest($payment->toArray());
+        $request = $this->mockServer('upi_juspay')->getCallback($payment->toArray(), [
+            Juspay\Fields::AMOUNT => '100.00',
+        ]);
 
         $response = $this->makeRequestAndGetContent($request);
 
         $payment->reload();
 
-        $this->assertSame('failed',$payment->getStatus());
+        $this->assertSame('failed', $payment->getStatus());
 
         $this->assertSame('SERVER_ERROR_AMOUNT_TAMPERED', $payment->getInternalErrorCode());
     }

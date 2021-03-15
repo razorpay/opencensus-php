@@ -44,7 +44,7 @@ class Gateway extends Base\Gateway
 
     public function preProcessServerCallback($input): array
     {
-        return $input;
+        return $this->upiPreProcess($input);
     }
 
     public function refund(array $input)
@@ -75,7 +75,7 @@ class Gateway extends Base\Gateway
 
     public function getPaymentIdFromServerCallback(array $response, $gateway)
     {
-        return $this->getPaymentIdFromServerCallbackRequest($response, $gateway);
+        return $this->upiPaymentIdFromServerCallback($response);
     }
 
     /**

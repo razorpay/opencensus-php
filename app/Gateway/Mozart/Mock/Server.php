@@ -165,6 +165,13 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
+    public function preProcess($input)
+    {
+        $preProcessObj = new PreProcess();
+
+        return $this->processMockResponse($input, $preProcessObj, Action::PRE_PROCESS);
+    }
+
     protected function processMockResponse($input, $actionClass, $action, $gateway = null)
     {
         $input = json_decode($input, true);

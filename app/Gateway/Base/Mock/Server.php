@@ -393,4 +393,9 @@ class Server extends Base\Core
     {
         return Str::contains($case, 'v2');
     }
+
+    protected function getIntegerFormattedAmount(string $amount)
+    {
+        return (int) number_format(($amount * 100), 0, '.', '');
+    }
 }
