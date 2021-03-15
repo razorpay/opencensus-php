@@ -16,6 +16,7 @@ use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
+use RZP\Models\Merchant\Balance\LowBalanceConfig\Entity;
 
 class LowBalanceConfigTest extends TestCase
 {
@@ -100,7 +101,7 @@ class LowBalanceConfigTest extends TestCase
                 'notify_after'        => 21600 // 6hrs
             ],
             'server' => [
-                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
             ],
         ];
 
@@ -115,6 +116,16 @@ class LowBalanceConfigTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedResult, $observedResult);
+
+        // Asserting that these fields are not sent in response for proxy auth
+        $this->assertNotContains('autoload_amount', $observedResult);
+        $this->assertNotContains('type', $observedResult);
+
+        $lowBalanceConfigEntity = $this->getDbLastEntity('low_balance_config', 'live');
+
+        // Asserting default values for these low balance configs
+        $this->assertEquals(0, $lowBalanceConfigEntity['autoload_amount']);
+        $this->assertEquals(Entity::NOTIFICATION, $lowBalanceConfigEntity['type']);
 
         Carbon::setTestNow();
 
@@ -587,6 +598,15 @@ class LowBalanceConfigTest extends TestCase
         $this->assertNotEquals(0, $lowBalanceConfig4->getNotifyAt());
         $this->assertNotEquals(0, $lowBalanceConfig2->getNotifyAt());
 
+        // Asserting that no adjustments were created in this flow since all low balance configs
+        // created were of type notification
+        $this->assertNull($this->getDbLastEntity('adjustment', 'live'));
+
+        // Asserting that the type of the low balance config created was of type `notification`
+        // and that the default autoload_amount is set to `0`
+        $this->assertEquals(Entity::NOTIFICATION, $lowBalanceConfig1['type']);
+        $this->assertEquals(0, $lowBalanceConfig1['autoload_amount']);
+
         return [$lowBalanceConfig1, $lowBalanceConfig2, $lowBalanceConfig3, $lowBalanceConfig4, $lowBalanceConfig5];
     }
 
@@ -655,4 +675,267 @@ class LowBalanceConfigTest extends TestCase
         $this->assertNotEquals(0, $lowBalanceConfig4->getNotifyAt());
     }
 
+    /**
+     * In this test we create a Low Balance Config of Type Autoload Balance
+     * Since this is done via admin auth, the Low Balance Config should get created
+     */
+    public function testCreateLowBalanceConfigOfTypeAutoloadBalanceViaAdminAuth()
+    {
+        $oldDateTime = Carbon::create(2019, 07, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
+
+        $this->ba->adminProxyAuth('10000000000000', 'rzp_live_10000000000000');
+
+        $this->startTest();
+
+        Carbon::setTestNow();
+    }
+
+    /**
+     * In this test we try to create a Low Balance Config of Type Autoload Balance
+     * Since this is done via proxy auth, the Low Balance Config should not get created
+     */
+    public function testCreateLowBalanceConfigOfTypeAutoloadBalanceViaProxyAuth()
+    {
+        $oldDateTime = Carbon::create(2019, 07, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $this->startTest();
+
+        Carbon::setTestNow();
+    }
+
+    /**
+     * In this test we try to create a Low Balance Config of Type `invalid`
+     * Since this is type is invalid, the Low Balance Config should not get created
+     */
+    public function testCreateLowBalanceConfigOfTypeInvalidViaAdminAuth()
+    {
+        $oldDateTime = Carbon::create(2019, 07, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
+
+        $this->ba->adminProxyAuth('10000000000000', 'rzp_live_10000000000000');
+
+        $this->startTest();
+
+        Carbon::setTestNow();
+    }
+
+    /**
+     * In this test we try to create a Low Balance Config of with a negative Autoload Balance amount
+     * Since the autoload_amount cannot be less than `0`, the Low Balance Config should not get created
+     */
+    public function testCreateLowBalanceConfigOfTypeAutoloadBalanceWithNegativeAmountViaAdminAuth()
+    {
+        $oldDateTime = Carbon::create(2019, 07, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
+
+        $this->ba->adminProxyAuth('10000000000000', 'rzp_live_10000000000000');
+
+        $this->startTest();
+
+        Carbon::setTestNow();
+    }
+
+    /**
+     * In this test we try to create a Low Balance Config of Type Autoload Balance, when another of type notification
+     * already exists for that merchant. Since we can have one low_balance_config of each type, hence the
+     * Low Balance Config should get created
+     */
+    public function testCreateLowBalanceConfigOfTypeAutoloadBalanceWhenEmailConfigExists()
+    {
+        $this->testCreateLowBalanceConfig();
+
+        $oldDateTime = Carbon::create(2019, 07, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->on('test')->edit('admin', $admin["id"], ['allow_all_merchants' => true]);
+
+        $this->ba->adminProxyAuth('10000000000000', 'rzp_live_10000000000000');
+
+        $this->startTest();
+
+        Carbon::setTestNow();
+    }
+
+    /**
+     * In this test we enable a Low Balance Config of Type Autoload Balance
+     * Since this is done via admin auth, the Low Balance Config should get enabled
+     */
+    public function testEnableLowBalanceConfigOfTypeAutoloadBalanceViaAdminAuth()
+    {
+        $this->testCreateLowBalanceConfigOfTypeAutoloadBalanceViaAdminAuth();
+
+        $lowBalanceConfig = $this->getDbLastEntity('low_balance_config', 'live');
+
+        $this->fixtures->edit('low_balance_config', $lowBalanceConfig['id'], ['status' => 'disabled']);
+        $lowBalanceConfig = $this->getDbLastEntityToArray('low_balance_config','live');
+
+        $this->assertSame('disabled', $lowBalanceConfig['status']);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/low_balance_configs/'  . 'lbc_' . $lowBalanceConfig['id'] . '/enable';
+
+        $this->startTest();
+    }
+
+    /**
+     * In this test we disable a Low Balance Config of Type Autoload Balance
+     * Since this is done via admin auth, the Low Balance Config should get disabled
+     */
+    public function testDisableLowBalanceConfigOfTypeAutoloadBalanceViaAdminAuth()
+    {
+        $this->testCreateLowBalanceConfigOfTypeAutoloadBalanceViaAdminAuth();
+
+        $lowBalanceConfig = $this->getDbLastEntity('low_balance_config', 'live');
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/low_balance_configs/'  . 'lbc_' . $lowBalanceConfig['id'] . '/disable';
+
+        $this->startTest();
+    }
+
+    /**
+     * In this test we update a Low Balance Config of Type Autoload Balance
+     * Since this is done via admin auth, the Low Balance Config should get updated
+     */
+    public function testUpdateLowBalanceConfigOfTypeAutoloadBalanceViaAdminAuth()
+    {
+        $this->testCreateLowBalanceConfigOfTypeAutoloadBalanceViaAdminAuth();
+
+        $lowBalanceConfig = $this->getDbLastEntity('low_balance_config', 'live');
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/low_balance_configs/lbc_'  . $lowBalanceConfig['id'];
+        $this->startTest();
+    }
+
+    /**
+     * In this test we delete a Low Balance Config of Type Autoload Balance
+     * Since this is done via admin auth, the Low Balance Config should get deleted
+     */
+    public function testDeleteLowBalanceConfigOfTypeAutoloadBalanceViaAdminAuth()
+    {
+        $this->testCreateLowBalanceConfigOfTypeAutoloadBalanceViaAdminAuth();
+
+        $lowBalanceConfig = $this->getDbLastEntity('low_balance_config', 'live')->toArray();
+
+        $countBeforeDeleting = count($this->getDbEntities('low_balance_config',[], 'live'));
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/low_balance_configs/lbc_'  . $lowBalanceConfig['id'];
+        $this->startTest();
+
+        $countAfterDeletion = count($this->getDbEntities('low_balance_config',[], 'live'));
+
+        $this->assertEquals(1, $countBeforeDeleting - $countAfterDeletion);
+    }
+
+    /**
+     * In this test we try to delete a Low Balance Config of Type Autoload Balance
+     * Since this is done via proxy auth, the Low Balance Config should not get deleted
+     */
+    public function testDeleteLowBalanceConfigOfTypeAutoloadBalanceViaProxyAuth()
+    {
+        $this->testCreateLowBalanceConfigOfTypeAutoloadBalanceViaAdminAuth();
+
+        $countBeforeDeleting = count($this->getDbEntities('low_balance_config',[], 'live'));
+
+        $lowBalanceConfig = $this->getDbLastEntity('low_balance_config', 'live');
+
+        $this->ba->proxyAuth('rzp_live_10000000000000', User::MERCHANT_USER_ID);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/low_balance_configs/lbc_'  . $lowBalanceConfig['id'];
+        $this->startTest();
+
+        $countAfterDeletion = count($this->getDbEntities('low_balance_config',[], 'live'));
+
+        // Assert that there is no change in count of low balance configs
+        $this->assertEquals(0, $countBeforeDeleting - $countAfterDeletion);
+    }
+
+    /**
+     * In this test we try to update a Low Balance Config of Type Autoload Balance
+     * Since this is done via proxy auth, the Low Balance Config should get updated
+     */
+    public function testUpdateLowBalanceConfigOfTypeAutoloadBalanceViaProxyAuth()
+    {
+        $lowBalanceConfig = $this->testCreateLowBalanceConfig();
+
+        $this->fixtures->on('live')->edit('low_balance_config', $lowBalanceConfig['id'],
+                                            [
+                                                'type' => 'autoload_balance'
+                                            ]);
+
+        $this->ba->proxyAuth('rzp_live_10000000000000', User::MERCHANT_USER_ID);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/low_balance_configs/'  . $lowBalanceConfig['id'];
+        $this->startTest();
+
+        $updatedLowBalanceConfig = $this->getDbLastEntity('low_balance_config', 'live');
+
+        // asserts that even though the request was successful, the low_balance_config did not change
+        $this->assertEquals(0, $updatedLowBalanceConfig['autoload_balance']);
+    }
+
+    /**
+     * In this test we trigger a Low Balance Config cron of Type Autoload Balance
+     * We then assert that the following occurred:
+     *      1. An adjustment was created
+     *      2. Merchant's banking balance got incremented
+     *      3. Adjustment amount = Low Balance Config autoload_amount
+     *      4. No email was dispatched
+     */
+    public function testLowBalanceConfigOfTypeAutoloadBalance()
+    {
+        Mail::fake();
+
+        $this->testCreateLowBalanceConfigOfTypeAutoloadBalanceViaAdminAuth();
+
+        $lowBalanceConfig = $this->getDbLastEntity('low_balance_config', 'live');
+
+        $this->fixtures->on('live')->edit('balance', $lowBalanceConfig['balance_id'], ['balance' => 0]);
+
+        $balance = $this->getDbEntityById('balance', $lowBalanceConfig['balance_id'], 'live');
+
+        $this->processLowBalanceAlertsForMerchants();
+
+        $updatedBalance = $this->getDbEntityById('balance', $lowBalanceConfig['balance_id'], 'live');
+
+        // Assert that balance got incremented by the Autoload Amount
+        $this->assertEquals($lowBalanceConfig['autoload_amount'], ($updatedBalance['balance'] - $balance['balance']));
+
+        // Assert that no email was sent for this flow
+        Mail::assertNotQueued(LowBalanceAlert::class);
+
+        $adjustment = $this->getDbLastEntity('adjustment', 'live');
+
+        // Assert amount, balance_id and description of the adjustment created for autoload of balance
+        $this->assertEquals($lowBalanceConfig['autoload_amount'], $adjustment['amount']);
+        $this->assertEquals($lowBalanceConfig['balance_id'], $adjustment['balance_id']);
+        $this->assertEquals(Entity::AUTOLOAD_BALANCE_ADJUSTMENT_DESCRIPTION, $adjustment['description']);
+    }
 }

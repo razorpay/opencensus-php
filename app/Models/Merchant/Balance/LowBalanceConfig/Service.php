@@ -2,7 +2,9 @@
 
 namespace RZP\Models\Merchant\Balance\LowBalanceConfig;
 
+use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Error\ErrorCode;
 use RZP\Models\Base\Traits\ServiceHasCrudMethods;
 
 class Service extends Base\Service
@@ -13,6 +15,8 @@ class Service extends Base\Service
      * @var Core
      */
     protected $core;
+
+    protected $entityRepo;
 
     public function __construct()
     {
@@ -40,6 +44,17 @@ class Service extends Base\Service
         /** @var  $entity Entity */
         $entity = $this->repo->low_balance_config->findByPublicIdAndMerchant($id, $this->merchant);
 
+        if (($entity->getType() === Entity::AUTOLOAD_BALANCE) and
+            ($this->isAdminAuth() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_LOW_BALANCE_CONFIG_ENABLE_DISABLE_ADMIN_AUTH_ONLY,
+                null,
+                [
+                    'id'    => $id
+                ]);
+        }
+
         $response = $this->core->disableConfig($entity);
 
         return $response->toArrayPublic();
@@ -50,9 +65,39 @@ class Service extends Base\Service
         /** @var  $entity Entity */
         $entity = $this->repo->low_balance_config->findByPublicIdAndMerchant($id, $this->merchant);
 
+        if (($entity->getType() === Entity::AUTOLOAD_BALANCE) and
+            ($this->isAdminAuth() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_LOW_BALANCE_CONFIG_ENABLE_DISABLE_ADMIN_AUTH_ONLY,
+                null,
+                [
+                    'id'    => $id
+                ]);
+        }
+
         $response = $this->core->enableConfig($entity);
 
         return $response->toArrayPublic();
+    }
+
+    public function delete(string $id)
+    {
+        /** @var  $entity Entity */
+        $entity = $this->repo->low_balance_config->findByPublicIdAndMerchant($id, $this->merchant);
+
+        if (($entity->getType() === Entity::AUTOLOAD_BALANCE) and
+            ($this->isAdminAuth() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_LOW_BALANCE_CONFIG_DELETE_NOT_ALLOWED,
+                null,
+                [
+                    'id'    => $id
+                ]);
+        }
+
+        return $this->core->delete($entity);
     }
 
     public function alert()
@@ -60,5 +105,10 @@ class Service extends Base\Service
         $response = $this->core->processLowBalanceAlertsForMerchants();
 
         return $response;
+    }
+
+    public function isAdminAuth()
+    {
+        return $this->auth->isAdminAuth();
     }
 }

@@ -1484,6 +1484,8 @@ final class FactoryData
                      'threshold_amount'    => 1000,
                      'notify_at'           => 0,
                      'notify_after'        => 8,
+                     'type'                => 'notification',
+                     'autoload_amount'     => 0,
         ]);
 
         $factory(\RZP\Models\Merchant\Credits\Balance\Entity::class, [

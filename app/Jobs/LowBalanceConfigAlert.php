@@ -43,12 +43,14 @@ class LowBalanceConfigAlert extends Job
                     'params' => $this->params,
                 ]);
 
-            $response = (new LowBalanceConfig\Core)->checkLowBalanceConfigsForAlert($this->params);
+            [$balanceIdsForNotification,
+                $balanceIdsForAutoloadBalance] = (new LowBalanceConfig\Core)->checkLowBalanceConfigsForAlert($this->params);
 
             $this->trace->info(
-                TraceCode::LOW_BALANCE_CONFIG_ALERTS_EMAIL_SENT,
+                TraceCode::LOW_BALANCE_CONFIG_ALERTS_JOB_COMPLETE,
                 [
-                    'balance_ids' => $response,
+                    'notification_balance_ids'  => $balanceIdsForNotification,
+                    'autoload_balance_ids'      => $balanceIdsForAutoloadBalance,
                 ]);
 
             $this->delete();

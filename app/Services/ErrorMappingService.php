@@ -56,9 +56,7 @@ class ErrorMappingService
         $this->trace = $app['trace'];
 
         $this->loadErrorMapping();
-
     }
-
 
     protected function loadErrorMapping()
     {

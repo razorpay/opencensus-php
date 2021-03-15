@@ -26,8 +26,13 @@ class CreateLowBalanceConfigsTable extends Migration
 
             $table->char(Entity::BALANCE_ID, Entity::ID_LENGTH);
 
+            $table->integer(Entity::TYPE)
+                  ->nullable();
+
             // TODO: use unsigned integer or unsigned big integer ?
             $table->unsignedBigInteger(Entity::THRESHOLD_AMOUNT);
+
+            $table->unsignedBigInteger(Entity::AUTOLOAD_AMOUNT);
 
             $table->text(Entity::NOTIFICATION_EMAILS);
 

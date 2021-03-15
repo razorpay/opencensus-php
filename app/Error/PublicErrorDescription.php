@@ -1254,6 +1254,10 @@ class PublicErrorDescription
 
     const BAD_REQUEST_LOW_BALANCE_CONFIG_ALREADY_EXISTS_FOR_ACCOUNT_NUMBER           = 'Low balance config already exists for account number';
     const BAD_REQUEST_LOW_BALANCE_CONFIG_IS_NOT_SUPPORTED_IN_TEST_MODE               = 'Low balance config is not supported in test mode';
+    const BAD_REQUEST_LOW_BALANCE_CONFIG_AUTH_NOT_SUPPORTED                          = 'Invalid parameters for current auth.';
+    const BAD_REQUEST_LOW_BALANCE_CONFIG_ENABLE_DISABLE_ADMIN_AUTH_ONLY              = 'Following action cannot be performed via dashboard.';
+    const BAD_REQUEST_LOW_BALANCE_CONFIG_DELETE_NOT_ALLOWED                          = 'Delete operation is not allowed on low balance configs of autoload_balance type.';
+    const BAD_REQUEST_LOW_BALANCE_CONFIG_INVALID_TYPE                                = 'Invalid Low Balance Config type.';
 
     const BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_INVALID_MODE                                              = 'Incorrect mode provided.';
     const BAD_REQUEST_MERCHANT_NOTIFICATION_CONFIG_INVALID_MOBILE_NUMBER                                     = 'Incorrect mobile numbers provided.';

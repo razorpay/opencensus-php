@@ -66,6 +66,7 @@
           <exclude>./tests/Functional/Pagination/</exclude>
           <exclude>./tests/Functional/RequestLog/</exclude>
           <exclude>./tests/Functional/Survey/</exclude>
+          <exclude>./tests/Functional/Merchant/LowBalanceConfigTest.php</exclude>
           <exclude>./tests/Functional/BankingAccountTpv/</exclude>
       </testsuite>
       <testsuite name="Features-1 Test Suite">

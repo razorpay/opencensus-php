@@ -1184,6 +1184,12 @@ return [
             Permission::MANUALLY_LINK_RBL_ACCOUNT_STATEMENT => [
                 'assignable' => true,
             ],
+            Permission::CREATE_LOW_BALANCE_CONFIG_ADMIN => [
+                'assignable' => true,
+            ],
+            Permission::UPDATE_LOW_BALANCE_CONFIG_ADMIN => [
+                'assignable' => true,
+            ]
         ],
 
         PermissionCategory::REDIS_CONFIG_PERIMSSIONS => [

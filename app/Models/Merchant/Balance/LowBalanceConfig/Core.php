@@ -5,10 +5,12 @@ namespace RZP\Models\Merchant\Balance\LowBalanceConfig;
 use Mail;
 use Carbon\Carbon;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Adjustment;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Balance;
 use RZP\Jobs\LowBalanceConfigAlert;
@@ -50,7 +52,9 @@ class Core extends Base\Core
 
         $balance = $this->repo->balance->findOrFailById($balanceId);
 
-        $this->checkAndThrowErrorIfAlreadyExistingConfig($balanceId, $this->merchant->getId());
+        $type = $input[Entity::TYPE] ?? Entity::NOTIFICATION;
+
+        $this->checkAndThrowErrorIfAlreadyExistingConfig($balanceId, $this->merchant->getId(), $type);
 
         // building entity
         $lowBalanceConfig = new Entity();
@@ -121,11 +125,11 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::LOW_BALANCE_CONFIG_UPDATE_RESPONSE,
            [
-               'low_balance_config' => $updatedLowBalanceConfigEntity->toArray(),
+               'low_balance_config' => $entity->toArray(),
            ]
         );
 
-        return $updatedLowBalanceConfigEntity;
+        return $updatedLowBalanceConfigEntity ?? $entity;
     }
 
     public function delete(Entity $lowBalanceConfig)
@@ -257,21 +261,49 @@ class Core extends Base\Core
         return $updatedLowBalanceConfigEntity;
     }
 
-    protected function checkAndThrowErrorIfAlreadyExistingConfig($balanceId, $merchantId)
+    protected function checkAndThrowErrorIfAlreadyExistingConfig(string $balanceId,
+                                                                 string $merchantId,
+                                                                 string $type)
     {
-        /** @var  $lowBalanceConfigs Base\PublicCollection*/
-        $lowBalanceConfigs = $this->repo->low_balance_config
-                                  ->findByBalanceIdAndMerchantId($balanceId, $merchantId);
-
-        if ($lowBalanceConfigs->count() > 0)
+        if ($type === Entity::AUTOLOAD_BALANCE)
         {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_LOW_BALANCE_CONFIG_ALREADY_EXISTS_FOR_ACCOUNT_NUMBER,
-                null,
-                [
-                     'low_balance_config_ids' => $lowBalanceConfigs->getQueueableIds(),
-                ]
-            );
+            /** @var $autoloadBalanceLowBalanceConfigs Base\PublicCollection */
+            $autoloadBalanceLowBalanceConfigs = $this->repo->low_balance_config
+                ->findByBalanceIdMerchantIdAndType(
+                    $balanceId,
+                    $merchantId,
+                    Entity::AUTOLOAD_BALANCE);
+
+            if ($autoloadBalanceLowBalanceConfigs->count() > 0)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_LOW_BALANCE_CONFIG_ALREADY_EXISTS_FOR_ACCOUNT_NUMBER,
+                    null,
+                    [
+                        'low_balance_config_ids' => $autoloadBalanceLowBalanceConfigs->getQueueableIds(),
+                    ]
+                );
+            }
+        }
+        else
+        {
+            /** @var $notificationLowBalanceConfigs Base\PublicCollection */
+            $notificationLowBalanceConfigs = $this->repo->low_balance_config
+                ->findByBalanceIdMerchantIdAndType(
+                    $balanceId,
+                    $merchantId,
+                    Entity::NOTIFICATION);
+
+            if ($notificationLowBalanceConfigs->count() > 0)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_LOW_BALANCE_CONFIG_ALREADY_EXISTS_FOR_ACCOUNT_NUMBER,
+                    null,
+                    [
+                        'low_balance_config_ids' => $notificationLowBalanceConfigs->getQueueableIds(),
+                    ]
+                );
+            }
         }
     }
 
@@ -373,35 +405,47 @@ class Core extends Base\Core
     public function checkLowBalanceConfigsForAlert($lowBalanceConfigIds)
     {
         $balanceIdsForWhichEmailWasSent = [];
+        $balanceIdsForWhichBalanceWasIncremented = [];
 
         foreach ($lowBalanceConfigIds as $lowBalanceConfigId)
         {
             /** @var Entity $lowBalanceConfig */
             $lowBalanceConfig = $this->repo->low_balance_config->findOrFail($lowBalanceConfigId);
 
-            $isEmailSent =  $this->checkConfigForNotification($lowBalanceConfig);
+            [$isEmailSent, $isBalanceAutoIncremented] =  $this->checkConfigForNotification($lowBalanceConfig);
 
             if ($isEmailSent === true)
             {
                 $balanceIdsForWhichEmailWasSent[] = $lowBalanceConfig->getBalanceId();
             }
+            if ($isBalanceAutoIncremented === true)
+            {
+                $balanceIdsForWhichBalanceWasIncremented[] = $lowBalanceConfig->getBalanceId();
+            }
         }
 
-        return $balanceIdsForWhichEmailWasSent;
+        return [$balanceIdsForWhichEmailWasSent, $balanceIdsForWhichBalanceWasIncremented];
     }
 
-    public function checkConfigForNotification(Entity $entity) :bool
+    /**
+     * @param Entity $lowBalanceConfigEntity
+     * @return bool[]|false[]
+     * @throws Exception\LogicException
+     */
+    public function checkConfigForNotification(Entity $lowBalanceConfigEntity)
     {
         $isEmailSent = false;
 
+        $isBalanceAutoIncremented = false;
+
         $currentTime = Carbon::now()->getTimestamp();
 
-        $balanceEntity      = $entity->balance;
+        $balanceEntity      = $lowBalanceConfigEntity->balance;
         $balanceType        = $balanceEntity->getType();
         $balanceAccountType = $balanceEntity->getAccountType();
         $channel            = $balanceEntity->getChannel();
 
-        $thresholdAmount    = $entity->getThresholdAmount();
+        $thresholdAmount    = $lowBalanceConfigEntity->getThresholdAmount();
 
         $balanceAmount = $this->getBalanceDependingUponProductAccountTypeAndChannel($balanceEntity,
                                                                                     $balanceAccountType,
@@ -415,60 +459,49 @@ class Core extends Base\Core
                 'balance_amount'   => $balanceAmount,
                 'threshold_amount' => $thresholdAmount,
                 'balance_id'       => $balanceEntity->getId(),
-                'notify_at'        => $entity->getNotifyAt(),
+                'notify_at'        => $lowBalanceConfigEntity->getNotifyAt(),
+                'type'             => $lowBalanceConfigEntity->getType(),
+                'autoload_amount'  => $lowBalanceConfigEntity->getAutoloadAmount(),
             ]
         );
 
         if ($balanceAmount > $thresholdAmount)
         {
-            $entity->setNotifyAt(0);
+            $lowBalanceConfigEntity->setNotifyAt(0);
 
-            $entity->saveOrFail();
+            $lowBalanceConfigEntity->saveOrFail();
 
-            return $isEmailSent;
+            return [$isEmailSent, $isBalanceAutoIncremented];
         }
 
-        if ($entity->getNotifyAt() > $currentTime)
+        if ($lowBalanceConfigEntity->getNotifyAt() > $currentTime)
         {
-            return $isEmailSent;
+            return [$isEmailSent, $isBalanceAutoIncremented];
         }
 
-        $notificationEmails = $entity->getNotificationEmails();
+        if ($lowBalanceConfigEntity->getType() === Entity::AUTOLOAD_BALANCE)
+        {
+            $this->autoLoadBalance($lowBalanceConfigEntity, $balanceEntity, $balanceAmount, $thresholdAmount);
 
-        // mailable emails are sent to multiple email addresses if passed an array.
-        // hence converting comma separated emails to array
-        $notificationEmails = explode(',', $notificationEmails);
+            $isBalanceAutoIncremented = true;
+        }
+        else
+        {
+            $this->sendLowBalanceNotificationEmails($lowBalanceConfigEntity,
+                $balanceEntity,
+                $balanceAmount,
+                $thresholdAmount);
 
-        $data = [
-            'emails'                => $notificationEmails,
-            'masked_account_number' => mask_except_last4($balanceEntity->getAccountNumber()),
-            'available_balance'     => (float) $balanceAmount / 100,
-            'threshold'             => (float) $thresholdAmount / 100,
-            'merchant_id'           => $entity->getMerchantId(),
-            'business_name'         => $entity->merchant->merchantDetail->getBusinessName(),
-        ];
+            $isEmailSent = true;
+        }
 
-        $this->trace->info(
-            TraceCode::LOW_BALANCE_CONFIG_ALERTS_EMAIL_DATA,
-            [
-                'data'               => $data,
-                'merchant_id'        => $entity->getMerchantId(),
-                'low_balance_config' => $entity->getPublicId(),
-            ]);
+        $nextNotifyAt = $currentTime + $lowBalanceConfigEntity->getNotifyAfter();
 
-        $lowBalanceEmail = new LowBalanceAlertMailable($entity->merchant, $data);
+        $lowBalanceConfigEntity->setNotifyAt($nextNotifyAt);
 
-        Mail::queue($lowBalanceEmail);
+        $lowBalanceConfigEntity->saveOrFail();
 
-        $isEmailSent = true;
-
-        $nextNotifyAt = $currentTime + $entity->getNotifyAfter();
-
-        $entity->setNotifyAt($nextNotifyAt);
-
-        $entity->saveOrFail();
-
-        return $isEmailSent;
+        return [$isEmailSent, $isBalanceAutoIncremented];
     }
 
     public function getBalanceDependingUponProductAccountTypeAndChannel(Balance\Entity $balanceEntity,
@@ -503,5 +536,78 @@ class Core extends Base\Core
         }
 
         return $balanceAmount;
+    }
+
+    protected function autoLoadBalance(Entity $lowBalanceConfigEntity,
+                                       Balance\Entity $balanceEntity,
+                                       $balanceAmount,
+                                       $thresholdAmount)
+    {
+        $data = [
+            'masked_account_number' => mask_except_last4($balanceEntity->getAccountNumber()),
+            'available_balance'     => (float) $balanceAmount / 100,
+            'threshold'             => (float) $thresholdAmount / 100,
+            'autoload_amount'       => $lowBalanceConfigEntity->getAutoloadAmount(),
+            'merchant_id'           => $lowBalanceConfigEntity->getMerchantId(),
+            'business_name'         => $lowBalanceConfigEntity->merchant->merchantDetail->getBusinessName(),
+        ];
+
+        $this->trace->info(
+            TraceCode::LOW_BALANCE_CONFIG_AUTOLOAD_BALANCE_DATA,
+            [
+                'data'               => $data,
+                'merchant_id'        => $lowBalanceConfigEntity->getMerchantId(),
+                'low_balance_config' => $lowBalanceConfigEntity->getPublicId(),
+            ]);
+
+        $inputForAdjustment = [
+            'amount'        => $lowBalanceConfigEntity->getAutoloadAmount(),
+            'description'   => Entity::AUTOLOAD_BALANCE_ADJUSTMENT_DESCRIPTION,
+            'currency'      => 'INR',
+            'type'          => 'banking',
+        ];
+
+        $adjustment = (new Adjustment\Core)->createAdjustment($inputForAdjustment, $lowBalanceConfigEntity->merchant);
+
+        $this->trace->info(
+            TraceCode::LOW_BALANCE_CONFIG_AUTOLOAD_BALANCE_ADJUSTMENT_CREATED,
+            [
+                'merchant_id'        => $lowBalanceConfigEntity->getMerchantId(),
+                'low_balance_config' => $lowBalanceConfigEntity->getPublicId(),
+                'adjustment_id'      => $adjustment->getId(),
+            ]);
+    }
+
+    protected function sendLowBalanceNotificationEmails(Entity $lowBalanceConfigEntity,
+                                                        Balance\Entity $balanceEntity,
+                                                        $balanceAmount,
+                                                        $thresholdAmount)
+    {
+        $notificationEmails = $lowBalanceConfigEntity->getNotificationEmails();
+
+        // mailable emails are sent to multiple email addresses if passed an array.
+        // hence converting comma separated emails to array
+        $notificationEmails = explode(',', $notificationEmails);
+
+        $data = [
+            'emails'                => $notificationEmails,
+            'masked_account_number' => mask_except_last4($balanceEntity->getAccountNumber()),
+            'available_balance'     => (float) $balanceAmount / 100,
+            'threshold'             => (float) $thresholdAmount / 100,
+            'merchant_id'           => $lowBalanceConfigEntity->getMerchantId(),
+            'business_name'         => $lowBalanceConfigEntity->merchant->merchantDetail->getBusinessName(),
+        ];
+
+        $this->trace->info(
+            TraceCode::LOW_BALANCE_CONFIG_ALERTS_EMAIL_DATA,
+            [
+                'data'               => $data,
+                'merchant_id'        => $lowBalanceConfigEntity->getMerchantId(),
+                'low_balance_config' => $lowBalanceConfigEntity->getPublicId(),
+            ]);
+
+        $lowBalanceEmail = new LowBalanceAlertMailable($lowBalanceConfigEntity->merchant, $data);
+
+        Mail::queue($lowBalanceEmail);
     }
 }

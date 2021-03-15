@@ -320,4 +320,233 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_LOW_BALANCE_CONFIG_IS_NOT_SUPPORTED_IN_TEST_MODE,
         ],
     ],
+
+    'testCreateLowBalanceConfigOfTypeAutoloadBalanceViaAdminAuth' => [
+        'request' => [
+            'url'     => '/low_balance_configs',
+            'method'  => 'POST',
+            'content' => [
+                'account_number'      => '2224440041626905',
+                'threshold_amount'    => 1000,
+                'notify_after'        => 21600,
+                'type'                => 'autoload_balance',
+                'autoload_amount'     => 2000,
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'account_number'      => '2224440041626905',
+                'threshold_amount'    => '1000',
+                'notify_after'        => '21600',
+                'status'              => 'enabled',
+            ],
+        ],
+    ],
+
+    'testCreateLowBalanceConfigOfTypeAutoloadBalanceViaProxyAuth' => [
+        'request' => [
+            'url'     => '/low_balance_configs',
+            'method'  => 'POST',
+            'content' => [
+                'account_number'      => '2224440041626905',
+                'threshold_amount'    => 1000,
+                'notify_after'        => 21600,
+                'type'                => 'autoload_balance',
+                'autoload_amount'     => 2000,
+            ],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid parameters for current auth.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_LOW_BALANCE_CONFIG_AUTH_NOT_SUPPORTED,
+        ],
+    ],
+
+    'testCreateLowBalanceConfigOfTypeInvalidViaAdminAuth' => [
+        'request' => [
+            'url'     => '/low_balance_configs',
+            'method'  => 'POST',
+            'content' => [
+                'account_number'      => '2224440041626905',
+                'threshold_amount'    => 1000,
+                'notify_after'        => 21600,
+                'type'                => 'invalid_type',
+                'autoload_amount'     => 2000,
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid Low Balance Config type.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_LOW_BALANCE_CONFIG_INVALID_TYPE,
+        ],
+    ],
+
+    'testCreateLowBalanceConfigOfTypeAutoloadBalanceWithNegativeAmountViaAdminAuth' => [
+        'request' => [
+            'url'     => '/low_balance_configs',
+            'method'  => 'POST',
+            'content' => [
+                'account_number'      => '2224440041626905',
+                'threshold_amount'    => 1000,
+                'notify_after'        => 21600,
+                'type'                => 'autoload_balance',
+                'autoload_amount'     => -2000,
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The autoload amount must be at least 100.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateLowBalanceConfigOfTypeAutoloadBalanceWhenEmailConfigExists' => [
+        'request' => [
+            'url'     => '/low_balance_configs',
+            'method'  => 'POST',
+            'content' => [
+                'account_number'      => '2224440041626905',
+                'threshold_amount'    => 1000,
+                'notify_after'        => 21600,
+                'type'                => 'autoload_balance',
+                'autoload_amount'     => 2000,
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'account_number'      => '2224440041626905',
+                'threshold_amount'    => '1000',
+                'notify_after'        => '21600',
+                'status'              => 'enabled',
+            ],
+        ],
+    ],
+
+    'testEnableLowBalanceConfigOfTypeAutoloadBalanceViaAdminAuth' => [
+        'request' => [
+            'url'     => '/low_balance_configs',
+            'method'  => 'POST',
+            'content' => [],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'enabled'
+            ]
+        ]
+    ],
+
+    'testDisableLowBalanceConfigOfTypeAutoloadBalanceViaAdminAuth' => [
+        'request' => [
+            'url'     => '/low_balance_configs',
+            'method'  => 'POST',
+            'content' => [],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'disabled'
+            ]
+        ]
+    ],
+
+    'testUpdateLowBalanceConfigOfTypeAutoloadBalanceViaAdminAuth' => [
+        'request' => [
+            'url'     => '/low_balance_configs',
+            'method'  => 'PATCH',
+            'content' => [
+                'autoload_amount' => 900000,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'autoload_amount' => '900000',
+            ]
+        ]
+    ],
+
+    'testDeleteLowBalanceConfigOfTypeAutoloadBalanceViaAdminAuth' => [
+        'request' => [
+            'url'     => '/low_balance_configs',
+            'method'  => 'DELETE',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'deleted' => true
+            ]
+        ]
+    ],
+
+    'testDeleteLowBalanceConfigOfTypeAutoloadBalanceViaProxyAuth' => [
+        'request' => [
+            'url'     => '/low_balance_configs',
+            'method'  => 'DELETE',
+            'content' => [],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Delete operation is not allowed on low balance configs of autoload_balance type.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_LOW_BALANCE_CONFIG_DELETE_NOT_ALLOWED,
+        ],
+    ],
+
+    'testUpdateLowBalanceConfigOfTypeAutoloadBalanceViaProxyAuth' => [
+        'request' => [
+            'url'     => '/low_balance_configs',
+            'method'  => 'PATCH',
+            'content' => [
+                'autoload_amount' => 900000,
+            ],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
 ];

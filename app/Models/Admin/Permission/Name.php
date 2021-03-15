@@ -521,6 +521,8 @@ class Name
     const ENABLE_LOW_BALANCE_CONFIG           = 'enable_low_balance_config';
     const DISABLE_LOW_BALANCE_CONFIG          = 'disable_low_balance_config';
     const DELETE_LOW_BALANCE_CONFIG           = 'delete_low_balance_config';
+    const CREATE_LOW_BALANCE_CONFIG_ADMIN     = 'create_low_balance_config_admin';
+    const UPDATE_LOW_BALANCE_CONFIG_ADMIN     = 'update_low_balance_config_admin';
 
     // Merchant Notification Config
     const CREATE_MERCHANT_NOTIFICATION_CONFIG        = 'create_merchant_notification_config';

@@ -19,6 +19,7 @@ class Factory
 
         foreach ($sourceDetails as $source)
         {
+
             switch ($source->getSourceType())
             {
                 case PayoutSourceEntity::VENDOR_PAYMENTS:

@@ -9,12 +9,22 @@ class Repository extends Base\Repository
 {
     protected $entity = Constants\Entity::LOW_BALANCE_CONFIG;
 
-    public function findByBalanceIdAndMerchantId(string $balanceId, string $merchantId)
+    public function findByBalanceIdMerchantIdAndType(string $balanceId, string $merchantId, string $type)
     {
-        return $this->newQuery()
-             ->where(Entity::BALANCE_ID, '=', $balanceId)
-             ->where(Entity::MERCHANT_ID, '=', $merchantId)
-             ->get();
+        $query = $this->newQuery()
+                      ->where(Entity::BALANCE_ID, '=', $balanceId)
+                      ->where(Entity::MERCHANT_ID, '=', $merchantId);
+
+        if ($type === Entity::AUTOLOAD_BALANCE)
+        {
+            $query = $query->where(Entity::TYPE, '=', Entity::LOW_BALANCE_TYPE_SERIALIZER[Entity::AUTOLOAD_BALANCE]);
+        }
+        else
+        {
+            $query = $query->where(Entity::TYPE, '!=', Entity::LOW_BALANCE_TYPE_SERIALIZER[Entity::AUTOLOAD_BALANCE]);
+        }
+
+        return $query->get();
     }
 
     public function getTotalEnabledConfigsCount()
@@ -44,12 +54,12 @@ class Repository extends Base\Repository
         // https://use-the-index-luke.com/no-offset
         // using seek(or keyset pagination) instead of offset for better query performance
         return $this->newQuery()
-            ->select($lowBalanceConfigAttrs)
-            ->where(Entity::STATUS, '=', Status::ENABLED)
-            ->whereRaw('('.Entity::CREATED_AT . ',' . Entity::ID . ')' . '< (?,?)',
+                    ->select($lowBalanceConfigAttrs)
+                    ->where(Entity::STATUS, '=', Status::ENABLED)
+                    ->whereRaw('('.Entity::CREATED_AT . ',' . Entity::ID . ')' . '< (?,?)',
                        [$lastFetchedConfig->getCreatedAt(), $lastFetchedConfig->getId()])
-            ->orderByRaw(Entity::CREATED_AT . ' desc,' . Entity::ID . ' desc')
-            ->limit($limit)
-            ->get();
+                    ->orderByRaw(Entity::CREATED_AT . ' desc,' . Entity::ID . ' desc')
+                    ->limit($limit)
+                    ->get();
     }
 }

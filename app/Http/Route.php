@@ -5260,6 +5260,12 @@ class Route
         'admin_fetch_tpvs'                                    => Permission::VIEW_BANKING_ACCOUNT_TPV,
         'admin_merchants_tpvs_create'                         => Permission::CREATE_BANKING_ACCOUNT_TPV,
 
+        'create_low_balance_config'                     => Permission::CREATE_LOW_BALANCE_CONFIG_ADMIN,
+        'update_low_balance_config'                     => Permission::UPDATE_LOW_BALANCE_CONFIG_ADMIN,
+        'enable_low_balance_config'                     => Permission::UPDATE_LOW_BALANCE_CONFIG_ADMIN,
+        'disable_low_balance_config'                    => Permission::UPDATE_LOW_BALANCE_CONFIG_ADMIN,
+        'delete_low_balance_config'                     => Permission::UPDATE_LOW_BALANCE_CONFIG_ADMIN,
+
         'templating_create_namespace'                         => Permission::TEMPLATING_SERVICE_WRITE_NAMESPACES,
         'templating_list_namespace'                           => Permission::TEMPLATING_SERVICE_READ_NAMESPACES,
         'templating_create_template_config'                   => Permission::TEMPLATING_SERVICE_WRITE_TEMPLATE_CONFIGS,
