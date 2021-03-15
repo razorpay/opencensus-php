@@ -15,7 +15,7 @@ import debounce from 'common/utils/debounce';
 import PropTypes from 'prop-types';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import ModalCloseReasons from 'merchant/views/Settlements/Settlements/components/Modals/ModalCloseReasons';
-import ScheduledBanner from 'merchant/views/Settlements/Settlements/components/ScheduledBanner';
+import SettlementsUpsellBanner from 'merchant/views/Settlements/Settlements/components/SettlementsUpsellBanner';
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 import LocalStorageService from 'common/utils/localStorage';
 
@@ -567,6 +567,9 @@ export default class OndemandModal extends Component {
   };
 
   renderPostTransaction = () => {
+    const { eventCategory, closeModal } = this.props;
+    const { hideCloseButton } = this.state;
+
     return (
       <div class="onmdemand-modal">
         <ModalHeader
@@ -579,14 +582,19 @@ export default class OndemandModal extends Component {
             <div class="help-block">
               The settlement has been initiated and should soon reflect in your bank account.
             </div>
-            <Button.Primary class="close-btn" onClick={() => this.handleCloseModal('Close Button')}>
-              Close
-            </Button.Primary>
+            {hideCloseButton ? null : (
+              <Button.Primary
+                class="close-btn"
+                onClick={() => this.handleCloseModal('Close Button')}
+              >
+                Close
+              </Button.Primary>
+            )}
           </div>
 
-          <ScheduledBanner
-            eventCategory={this.props.eventCategory}
-            fromWhere="Early Settlement Modal"
+          <SettlementsUpsellBanner
+            closeModal={closeModal}
+            hideCloseButton={() => this.setState({ hideCloseButton: true })}
           />
         </div>
       </div>
