@@ -20,7 +20,6 @@ return [
             'public_error_description' => ''
         ],
     ],
-
     'testFetchMultiple' => [
         'request' => [
             'url' =>'/risk?',
@@ -32,21 +31,5 @@ return [
                 'count' => 1,
             ]
         ]
-    ],
-
-    'testBlockedBin' => [
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD,
-            'public_error_description' => ''
-        ],
     ],
 ];

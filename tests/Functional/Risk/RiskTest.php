@@ -50,11 +50,8 @@ class RiskTest extends TestCase
     public function testFetchMultiple()
     {
         $this->markTestSkipped('Maxmind code removed');
-
         $payment = $this->makeFraudulentPayment();
-
         $this->testData[__FUNCTION__]['request']['content']['payment_id'] = $payment['id'];
-
         $this->startTest();
     }
 }

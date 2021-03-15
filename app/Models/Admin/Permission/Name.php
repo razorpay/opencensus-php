@@ -316,6 +316,8 @@ class Name
     const MANAGE_RENDERING_PREFERENCES  	  = 'manage_rendering_preferences';
     const ADJUSTMENT_BATCH_UPLOAD             = 'adjustment_batch_upload';
     const CREATE_BULK_ADJUSTMENT              = 'create_bulk_adjustment';
+    const ADD_BULK_MERCHANT_ADJUSTMENT        = 'add_bulk_merchant_adjustment';
+    const REVERSE_BULK_MERCHANT_ADJUSTMENT    = 'reverse_bulk_merchant_adjustment';
     const REPORTING_BATCH_UPLOAD              = 'reporting_batch_upload';
     const DOWNLOAD_CREDIT_BUREAU_REPORTS      = 'download_credit_bureau_reports';
     const CAPITAL_DEVELOPER                   = 'capital_developer';

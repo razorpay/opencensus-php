@@ -86,6 +86,8 @@ class TransactionTest extends TestCase
 
         $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
+        $this->setAdminPermission('reverse_bulk_merchant_adjustment');
+
         $response = $this->runRequestResponseFlow($testData);
 
         $rev = $this->getLastEntity('adjustment', true);
@@ -1062,5 +1064,16 @@ class TransactionTest extends TestCase
         $testData['request']['content']['payment']['terminal_id'] = $terminal['id'];
 
         $this->startTest();
+    }
+
+    protected function setAdminPermission($permissionName)
+    {
+        $admin = $this->ba->getAdmin();
+
+        $roleOfAdmin = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => $permissionName]);
+
+        $roleOfAdmin->permissions()->attach($perm->getId());
     }
 }
