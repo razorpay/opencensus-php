@@ -38,6 +38,19 @@ class AuthLink extends Base
 
     }
 
+    public function storeAndValidateInputFile(array $input): array
+    {
+        $precision = ini_get('precision');
+
+        ini_set('precision', 15);
+
+        $response = parent::storeAndValidateInputFile($input);
+
+        ini_set('precision', $precision);
+
+        return $response;
+    }
+
     protected function processEntry(array & $entry)
     {
         $this->trimEntry($entry);

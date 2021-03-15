@@ -46,8 +46,14 @@ class NachMigration extends Base
 
         try
         {
+            $precision = ini_get('precision');
+
+            ini_set('precision', 15);
+
             // step 3: validate entries in file
             $response = parent::storeAndValidateInputFile($input);
+
+            ini_set('precision', $precision);
         }
         catch (BadRequestException $be)
         {
@@ -76,7 +82,6 @@ class NachMigration extends Base
 
         return $response;
     }
-
 
     protected function getValidatedEntriesStatsAndPreview(array $entries): array
     {
@@ -215,6 +220,4 @@ class NachMigration extends Base
         }
 
     }
-
-
 }
