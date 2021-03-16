@@ -42,7 +42,7 @@ class RazorXClient
 
     const RETRY_COUNT_KEY = 'retry_count';
 
-    const METRIC_RAZORX_REQUEST_DURATION_MS = 'razorx_request_duration_ms';
+    const METRIC_RAZORX_REQUEST_DURATION_SECS = 'razorx_request_duration_seconds.histogram';
 
     protected $baseUrl;
 
@@ -400,7 +400,7 @@ class RazorXClient
     {
         try
         {
-            $reqStartAt = millitime();
+            $reqStartAt = microtime(true);
 
             $response = Requests::request(
                 $request['url'],
@@ -409,7 +409,7 @@ class RazorXClient
                 $request['method'],
                 $request['options']);
 
-            $this->trace->histogram(self::METRIC_RAZORX_REQUEST_DURATION_MS, millitime() - $reqStartAt);
+            $this->trace->histogram(self::METRIC_RAZORX_REQUEST_DURATION_SECS, microtime(true) - $reqStartAt);
 
             return $this->parseAndReturnResponse($response, $request);
         }

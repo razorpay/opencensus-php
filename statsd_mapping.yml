@@ -176,3 +176,19 @@ mappings:
   buckets: [10, 30, 60, 120, 300, 600, 1800, 2700, 3600, 7200, 10800, 21600, 43200, 64800, 86400, 129600, 172800, 259200, 345600, 432000, 604800, 864000]
   # [10s, 30s, 1m, 2m, 5m, 10m, 30m, 45m, 1h, 2h, 3h, 6h, 12h, 18h, 1d, 1.5d, 2d, 3d, 4d, 5d, 7d, 10d]
   name: "api_payout_processed_to_reversed_duration_seconds"
+
+  # Ref golang's `prometheus.ExponentialBuckets(0.0005, 1.5, 18)`, rounded off to 6 decimals - 0.5ms to 492ms.
+- match: api_signer_redis_get_latency_seconds.*
+  timer_type: histogram
+  buckets: [0.000500, 0.000750, 0.001125, 0.001688, 0.002531, 0.003797, 0.005695, 0.008543, 0.012814, 0.019222, 0.028833, 0.043249, 0.064873, 0.097310, 0.145965, 0.218947, 0.328420, 0.492631]
+  name: "api_signer_redis_get_latency_seconds"
+
+- match: api_signer_latency_seconds.*
+  timer_type: histogram
+  buckets: [0.000500, 0.000750, 0.001125, 0.001688, 0.002531, 0.003797, 0.005695, 0.008543, 0.012814, 0.019222, 0.028833, 0.043249, 0.064873, 0.097310, 0.145965, 0.218947, 0.328420, 0.492631]
+  name: "api_signer_latency_seconds"
+
+- match: api_razorx_request_duration_seconds.*
+  timer_type: histogram
+  buckets: [0.000500, 0.000750, 0.001125, 0.001688, 0.002531, 0.003797, 0.005695, 0.008543, 0.012814, 0.019222, 0.028833, 0.043249, 0.064873, 0.097310, 0.145965, 0.218947, 0.328420, 0.492631]
+  name: "api_razorx_request_duration_seconds"

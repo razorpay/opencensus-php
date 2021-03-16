@@ -21,10 +21,10 @@ class CredcaseSigner
 
     const METRIC_SIGN_REQUESTS_TOTAL            = 'signer_requests_total'; // Labels: by:api|credcase_signer.
     const METRIC_SIGN_FAILURE_TOTAL             = 'signer_failure_total';
-    const METRIC_SIGN_LATENCY_MS                = 'signer_latency_ms'; // Labels: by:api|credcase_signer.
+    const METRIC_SIGN_LATENCY_SECS              = 'signer_latency_seconds.histogram'; // Labels: by:api|credcase_signer.
     const METRIC_SIGN_REDIS_KEY_NOT_FOUND_TOTAL = 'signer_redis_key_not_found_total';
     const METRIC_SIGN_REDIS_ERROR_TOTAL         = 'signer_redis_error_total';
-    const METRIC_SIGN_REDIS_GET_LATENCY_MS      = 'signer_redis_get_latency_ms';
+    const METRIC_SIGN_REDIS_GET_LATENCY_SECS    = 'signer_redis_get_latency_seconds.histogram';
 
     const CREDCASE_CACHE_KEY_PREFIX             = 'credcase:ks';
     const CREDCASE_CACHE_KEY_VERSION            = 'v1';
@@ -130,7 +130,7 @@ class CredcaseSigner
         $this->trace->debug(TraceCode::CREDCASE_SIGNER_INVOKED, compact('payload', 'publicKey'));
         $this->trace->count(self::METRIC_SIGN_REQUESTS_TOTAL, ['by' => 'credcase_signer']);
 
-        $startAt = millitime();
+        $startAt = microtime(true);
         try
         {
             $cacheKey = self::CREDCASE_CACHE_KEY_PREFIX . ':' . self::CREDCASE_CACHE_KEY_VERSION . ':' . $publicKey;
@@ -143,9 +143,9 @@ class CredcaseSigner
             {
                 try
                 {
-                    $redisGetStartAt = millitime();
+                    $redisGetStartAt = microtime(true);
                     $encryptedSecret = $this->redis->get($cacheKey);
-                    $this->trace->histogram(self::METRIC_SIGN_REDIS_GET_LATENCY_MS, millitime() - $redisGetStartAt);
+                    $this->trace->histogram(self::METRIC_SIGN_REDIS_GET_LATENCY_SECS, microtime(true) - $redisGetStartAt);
                     break;
                 }
                 catch (Throwable $e)
@@ -168,7 +168,7 @@ class CredcaseSigner
         }
         finally
         {
-            $this->trace->histogram(self::METRIC_SIGN_LATENCY_MS, millitime() - $startAt, ['by' => 'credcase_signer']);
+            $this->trace->histogram(self::METRIC_SIGN_LATENCY_SECS, microtime(true) - $startAt, ['by' => 'credcase_signer']);
         }
     }
 
@@ -181,9 +181,9 @@ class CredcaseSigner
     {
         $this->trace->count(self::METRIC_SIGN_REQUESTS_TOTAL, ['by' => 'api']);
 
-        $startAt = millitime();
+        $startAt = microtime(true);
         $signature = $this->ba->sign($payload, $publicKey);
-        $this->trace->histogram(self::METRIC_SIGN_LATENCY_MS, millitime() - $startAt, ['by' => 'api']);
+        $this->trace->histogram(self::METRIC_SIGN_LATENCY_SECS, microtime(true) - $startAt, ['by' => 'api']);
 
         return $signature;
     }
