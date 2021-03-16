@@ -379,10 +379,19 @@ class ScroogeFetchEntitiesTest extends TestCase
                 substr($subTestArgs['refund1']['id'], 5)
             ],
             'entities' => [
+                'card' => [
+                    'iin',
+                    'network'
+                ],
+                'terminal' => [
+                    'gateway_acquirer',
+                    'category'
+                ],
                 'gateway_entity' => [
                     'mozart' => [
                         'authorize' => [
                             'status',
+                            'data.transaction.id',
                         ],
                         'capture' => [
                             'status',
@@ -392,7 +401,31 @@ class ScroogeFetchEntitiesTest extends TestCase
             ],
         ];
 
-        $expectedOutput = [];
+        $expectedOutput = [
+            substr($subTestArgs['refund1']['id'], 5) => [
+                'entities' => [
+                    'card' => [
+                        'iin'     => '401200',
+                        'network' => 'Visa'
+                    ],
+                    'terminal' => [
+                        'category'         => NULL,
+                        'gateway_acquirer' => 'hdfc',
+                    ],
+                    'gateway_entity' => [
+                        'mozart' => [
+                            'authorize' => [
+                                'status'              => 'payment_successful',
+                                'data.transaction.id' => '90c8ec9b',
+                            ],
+                            'capture' => [
+                                'status' => '',
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ];
 
         return [$input, $expectedOutput];
     }

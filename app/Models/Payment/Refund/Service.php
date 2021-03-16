@@ -568,14 +568,26 @@ class Service extends Base\Service
                                     {
                                         if (method_exists($this->repo->$gatewayEntity, 'findByPaymentIdAndActionorFail') === true)
                                         {
-                                            $entity = $this->repo
-                                                           ->$gatewayEntity
-                                                           ->findByPaymentIdAndActionorFail($paymentEntity['id'], $gatewayAction)
-                                                           ->toArray();
+                                            $entity = [];
+
+                                            try
+                                            {
+                                                $entity = $this->repo
+                                                               ->$gatewayEntity
+                                                               ->findByPaymentIdAndActionorFail($paymentEntity['id'], $gatewayAction)
+                                                               ->toArray();
+                                            }
+                                            catch (\Exception $ex)
+                                            {
+                                                // Sometimes we try to fetch some entries generically and that may not applicable for a particular refund
+                                                // In such cases we do not want this exception to fail returning other necessary data
+                                                // Hence catching and silently ignoring. Logging is also redundant here as this noice is expected
+                                            }
 
                                             $map = [];
 
-                                            if ($gatewayEntity === RefundConstants::MOZART)
+                                            if (($gatewayEntity === RefundConstants::MOZART) and
+                                                (isset($entity['raw']) === true))
                                             {
                                                 $entity = json_decode($entity['raw'], true);
                                             }
