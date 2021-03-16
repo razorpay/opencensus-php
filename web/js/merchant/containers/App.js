@@ -288,7 +288,7 @@ export default class App extends Component {
       // this.state.NPSEnableTypeForm = NPSEnableTypeForm; // saving reference typeform
 
       const MarchNPSEnableTypeForm = makePopup(
-        `https://razorpay.typeform.com/to/YFrkZOZp#mid=${user.current}&source=dashboard&email=${user.email}`,
+        `https://razorpay.typeform.com/to/YFrkZOZp?mid=${user.current}&source=dashboard&email=${user.email}`,
         {
           mode: 'popup',
           hideHeaders: true,
