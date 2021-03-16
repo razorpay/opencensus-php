@@ -1,5 +1,7 @@
 import Input from 'common/new-ui/Input';
+import { analyticsTrack } from 'common/utils/analytics';
 
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { extractExtensionFromTemplate } from '../utils';
 
 const DEFAULT_FILE_FORMAT = 'csv';
@@ -33,6 +35,16 @@ export default class SelectFormat extends React.Component {
 
   onChange = ({ target }) => {
     const { value } = target;
+    analyticsTrack({
+      objectName: 'select format',
+      actionName: 'clicked',
+      screen: 'reports',
+      properties: {
+        location: 'generate reports',
+        format: value,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     this.setState({ value });
   };
 

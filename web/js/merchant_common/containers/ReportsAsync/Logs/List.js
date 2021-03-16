@@ -1,6 +1,8 @@
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
+import { analyticsTrack } from 'common/utils/analytics';
 
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { downloadFromUFH } from 'merchant/utils/downloadFile';
 import Spinner from 'common/ui/Spinner';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -10,23 +12,46 @@ import LogItem from './Item';
 @RTracking(() => window.rzpQ.component('LogList'))
 @connect(null, { showNotification })
 export default class LogList extends React.PureComponent {
-  onDownloadClick = ({ target }) => {
+  onDownloadClick = ({ target }, reportType, format, startTime, endTime) => {
     const { fileId, consumerId } = target.dataset;
     const accountId =
-      this.props.currentMerchantId !== consumerId
-        ? consumerId.replace('acc_')
-        : undefined;
+      this.props.currentMerchantId !== consumerId ? consumerId.replace('acc_') : undefined;
     return downloadFromUFH(fileId, accountId)
-      .then(response => {
+      .then((response) => {
         this.props.tracking.trackEvent(
           window.rzpQ.reporting().success('reporting.download_file', {
             report_file_id: fileId,
             report_consumer: consumerId,
-          })
+          }),
         );
+        analyticsTrack({
+          objectName: 'download report',
+          actionName: 'result',
+          screen: 'reports',
+          properties: {
+            location: 'generate reports',
+            status: 'Success',
+            reportType: reportType,
+            format: format,
+            reportStartTime: startTime,
+            reportEndTime: endTime,
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
         return response;
       })
       .catch(({ errors }) => {
+        analyticsTrack({
+          objectName: 'download report',
+          actionName: 'result',
+          screen: 'reports',
+          properties: {
+            location: 'generate reports',
+            status: 'Failure',
+            failureReason: (errors || [])[0],
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
         return this.props.showNotification({
           type: 'error',
           message: (errors || [])[0],
@@ -47,12 +72,10 @@ export default class LogList extends React.PureComponent {
             <div class="LogList__header">
               <strong>Recent Reports</strong>
             </div>
-            {items.map(item => (
+            {items.map((item) => (
               <LogItem
                 key={item.id}
-                config={
-                  allConfigs.find(({ id }) => id === item.config_id) || {}
-                }
+                config={allConfigs.find(({ id }) => id === item.config_id) || {}}
                 onDownloadClick={this.onDownloadClick}
                 pollLog={props.pollLog}
                 {...item}

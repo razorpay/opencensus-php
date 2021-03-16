@@ -1,5 +1,5 @@
-import { classList } from 'common/utils/rzp-utils';
-
+import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { analyticsTrack } from 'common/utils/analytics';
 import {
   getFormattedDate,
   extractExtensionFromTemplate,
@@ -45,7 +45,26 @@ export default class LogItem extends React.PureComponent {
 
           <LogStatus
             actualStatus={actualStatus}
-            onDownloadClick={props.onDownloadClick}
+            onDownloadClick={(e) => {
+              const format =
+                extractExtensionFromTemplate(props.template_overrides) ||
+                extractExtensionFromTemplate(config.template) ||
+                DEFAULT_FILE_FORMAT;
+              analyticsTrack({
+                objectName: 'download report',
+                actionName: 'clicked',
+                screen: 'reports',
+                properties: {
+                  location: 'generate reports',
+                  reportType: config.name,
+                  format: format,
+                  reportStartTime: props.start_time,
+                  reportEndTime: props.end_time,
+                  ...getCommonAnalyticsProperties(window.rzp_user),
+                },
+              });
+              props.onDownloadClick(e, config.name, format, props.start_time, props.end_time);
+            }}
             consumerId={props.consumer}
             fileId={props.file_id}
           />

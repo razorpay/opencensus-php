@@ -1,11 +1,12 @@
 import { connect } from 'react-redux';
+import { analyticsTrack } from 'common/utils/analytics';
 
 import Input from 'common/new-ui/Input';
 import Button from 'common/new-ui/Button';
 
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 
-import { classList } from 'common/utils/rzp-utils';
+import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import ChooseEmail from './ChooseEmail';
 
@@ -19,13 +20,22 @@ export default class EmailReport extends React.Component {
     const { name: clickedEmail, checked } = target;
     const { selectedEmails } = this.state;
 
+    analyticsTrack({
+      objectName: 'email selection',
+      actionName: 'clicked',
+      screen: 'reports',
+      properties: {
+        location: 'generate reports',
+        emailSelected: checked,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+
     let newSelectedEmails;
     if (checked) {
       newSelectedEmails = [...selectedEmails, clickedEmail];
     } else {
-      newSelectedEmails = selectedEmails.filter(
-        email => email !== clickedEmail
-      );
+      newSelectedEmails = selectedEmails.filter((email) => email !== clickedEmail);
     }
 
     this.setState({ selectedEmails: newSelectedEmails });
@@ -56,12 +66,7 @@ export default class EmailReport extends React.Component {
       <div class="Input EmailReport">
         <div class="Input-content">
           <div class="Input">
-            <div
-              class={classList(
-                'Input-label',
-                isFormDisabled && 'Input--disabled'
-              )}
-            >
+            <div class={classList('Input-label', isFormDisabled && 'Input--disabled')}>
               Email Report To
             </div>
             {selectedEmails.length > 1 ? (
@@ -95,12 +100,7 @@ function NoOfEmailsSelected({ noOfEmails }) {
   return <div class="NoOfEmailsSelected">{noOfEmails} Emails selected</div>;
 }
 
-function SelectEmailCheckBox({
-  selectedEmails,
-  onChange,
-  defaultEmail,
-  isFormDisabled,
-}) {
+function SelectEmailCheckBox({ selectedEmails, onChange, defaultEmail, isFormDisabled }) {
   const singleSelectedEmail = selectedEmails[0];
   return (
     <Input.Check

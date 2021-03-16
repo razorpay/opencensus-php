@@ -1,9 +1,10 @@
 import RTracking from 'react-tracking';
+import { analyticsTrack } from 'common/utils/analytics';
 
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
 import { AsyncBtn } from 'common/new-ui/Button';
-import { isPresent } from 'common/utils/rzp-utils';
+import { isPresent, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import Spinner from 'common/ui/Spinner';
 import SelectAccount from 'common/ui/AccountsList';
 
@@ -33,10 +34,30 @@ export default class GenerateReportPanel extends React.PureComponent {
   state = {};
 
   onConfigChange = (selectedConfig) => {
+    analyticsTrack({
+      objectName: 'select report type',
+      actionName: 'clicked',
+      screen: 'reports',
+      properties: {
+        location: 'generate reports',
+        reportType: selectedConfig.name,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     this.setState({ selectedConfig });
   };
 
   onAccountChange = (selectedAccount) => {
+    analyticsTrack({
+      objectName: 'account selection',
+      actionName: 'clicked',
+      screen: 'reports',
+      properties: {
+        location: 'generate reports',
+        reportType: selectedAccount,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     this.setState({ selectedAccount });
   };
 
@@ -70,6 +91,21 @@ export default class GenerateReportPanel extends React.PureComponent {
     const [startTime, endTime] = this.selectPeriod.getDateRange();
     const emails = this.emailReport.getWrappedInstance().getValue();
 
+    analyticsTrack({
+      objectName: 'generate report',
+      actionName: 'clicked',
+      screen: 'reports',
+      properties: {
+        location: 'generate reports',
+        reportType: selectedConfig.name,
+        accountSelected: selectedAccount,
+        periodStart: startTime,
+        periodEnd: endTime,
+        formatSelected: this.selectFormat.getValue(),
+        emailSelected: isPresent(emails) ? true : false,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     const accountId =
       marketplaceConfigTypes.includes(selectedConfig.type) &&
       (!selectedAccount.current ? selectedAccount.id : undefined);

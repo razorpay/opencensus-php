@@ -1,9 +1,11 @@
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
+import { analyticsTrack } from 'common/utils/analytics';
 
 import Spinner from 'common/ui/Spinner';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import LogList from './Logs/List';
 import GenerateReportPanel from './GenerateReportPanel';
@@ -20,10 +22,7 @@ export default class ReportHome extends React.PureComponent {
 
     if (typeof window.hj === 'function') {
       window.hj('trigger', 'report-async-started');
-      window.hj('tagRecording', [
-        'report-async-started',
-        this.props.user.current,
-      ]);
+      window.hj('tagRecording', ['report-async-started', this.props.user.current]);
     }
   }
 
@@ -34,20 +33,54 @@ export default class ReportHome extends React.PureComponent {
           ...payload,
           generated_by: this.props.user.current,
         },
-        accountId
+        accountId,
       )
-      .then(data => {
+      .then((data) => {
         if (data) {
+          const selectedConfig =
+            this.props.configs.items &&
+            this.props.configs.items.filter((item) => item.id === payload.config_id);
           if (data.is_already_present) {
             this.props.showNotification({
               type: 'info',
               message:
                 'Request with same report type and date range is in processing. Please check your request history',
             });
+            analyticsTrack({
+              objectName: 'generate report',
+              actionName: 'result',
+              screen: 'reports',
+              properties: {
+                location: 'generate reports',
+                reportType: selectedConfig[0].name,
+                periodStart: payload.start_time,
+                periodEnd: payload.end_time,
+                formatSelected: payload.template_overrides,
+                emailSelected: payload.emails && payload.emails.length > 0 ? true : false,
+                status: 'Success',
+                infoMessage:
+                  'Request with same report type and date range is in processing. Please check your request history',
+                ...getCommonAnalyticsProperties(window.rzp_user),
+              },
+            });
           } else if (data.id) {
-            const accountId =
-              data.generated_by !== data.consumer ? data.consumer : undefined;
+            const accountId = data.generated_by !== data.consumer ? data.consumer : undefined;
             this.props.pollLog(data.id, accountId);
+            analyticsTrack({
+              objectName: 'generate report',
+              actionName: 'result',
+              screen: 'reports',
+              properties: {
+                location: 'generate reports',
+                reportType: selectedConfig[0].name,
+                periodStart: payload.start_time,
+                periodEnd: payload.end_time,
+                formatSelected: payload.template_overrides,
+                emailSelected: payload.emails && payload.emails.length > 0 ? true : false,
+                status: 'Success',
+                ...getCommonAnalyticsProperties(window.rzp_user),
+              },
+            });
           }
         }
       })
@@ -76,11 +109,31 @@ export default class ReportHome extends React.PureComponent {
             message: error,
           });
         }
+        analyticsTrack({
+          objectName: 'generate report',
+          actionName: 'result',
+          screen: 'reports',
+          properties: {
+            location: 'generate reports',
+            status: 'Failure',
+            failureReason: error,
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
       });
   };
 
   onLoadMoreLogs = () => {
     const { logs } = this.props;
+    analyticsTrack({
+      objectName: 'load more',
+      actionName: 'clicked',
+      screen: 'reports',
+      properties: {
+        location: 'generate reports',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     this.props.fetchLogs({ count: 5, skip: logs.items.length });
   };
 

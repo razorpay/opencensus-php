@@ -1,7 +1,8 @@
 import moment from 'moment';
+import { analyticsTrack } from 'common/utils/analytics';
 
 import Input from 'common/new-ui/Input';
-import { isNone } from 'common/utils/rzp-utils';
+import { isNone, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import { getTimeUnix, getStartAndEndUnixTimeStampsForDaysFrom } from '../utils';
 
@@ -31,6 +32,17 @@ export default class SelectPeriod extends React.Component {
 
   onChange = ({ target }) => {
     const { name, value, checked } = target;
+
+    analyticsTrack({
+      objectName: 'select period',
+      actionName: 'clicked',
+      screen: 'reports',
+      properties: {
+        location: 'generate reports',
+        period: value,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
 
     this.setState(
       {
