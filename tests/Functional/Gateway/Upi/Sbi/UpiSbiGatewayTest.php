@@ -23,6 +23,7 @@ use RZP\Gateway\Base\VerifyResult;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Upi\Sbi\RefundFile;
 use RZP\Models\Payment\PaymentMeta;
+use RZP\Excel\Import as ExcelImport;
 use RZP\Gateway\Upi\Sbi\RequestFields;
 use RZP\Gateway\Upi\Sbi\ResponseFields;
 use RZP\Gateway\Upi\Base\Entity as Upi;
@@ -776,7 +777,7 @@ class UpiSbiGatewayTest extends TestCase
         $this->assertEquals('SBI0000000000232_' . $time .'.csv', $file['location']);
         $this->assertEquals('SBI0000000000232_' . $time, $file['name']);
 
-        $refundFileRows = Excel::load('storage/files/filestore/'.$file['location'])->all()->toArray();
+        $refundFileRows = (new ExcelImport)->toArray('storage/files/filestore/'.$file['location'])[0];
 
         $paymentId = str_replace('pay_', '',$payments[0][Payment\Entity::ID]);
 
@@ -791,10 +792,10 @@ class UpiSbiGatewayTest extends TestCase
         $expectedRefundFileForNullMR = [
             'pg_merchant_id' => "SBI0000000000119",
             'refund_req_no' => $refundId,
-            'trans_ref_no' => 7971807546.0,
-            'customer_ref_no' => 123456789012.0,
+            'trans_ref_no' => 7971807546,
+            'customer_ref_no' => 123456789012,
             'order_no' => $paymentId,
-            'refund_req_amt' => 500.0,
+            'refund_req_amt' => 500,
             'refund_remark' =>  "Refund for ".$paymentId
         ];
 
@@ -803,20 +804,20 @@ class UpiSbiGatewayTest extends TestCase
         $expectedRefundFileForEmptyMR = [
             'pg_merchant_id' => "SBI0000000000119",
             'refund_req_no' => $refundId1,
-            'trans_ref_no' => 7971807546.0,
-            'customer_ref_no' => 123456789012.0,
+            'trans_ref_no' => 7971807546,
+            'customer_ref_no' => 123456789012,
             'order_no' => $paymentId1,
-            'refund_req_amt' => 500.0,
+            'refund_req_amt' => 500,
             'refund_remark' =>  "Refund for ".$paymentId1
         ];
 
         $expectedRefundFileContentForMR = [
             'pg_merchant_id' => "SBI0000000000119",
             'refund_req_no' => $refundId2,
-            'trans_ref_no' => 7971807546.0,
-            'customer_ref_no' => 123456789012.0,
+            'trans_ref_no' => 7971807546,
+            'customer_ref_no' => 123456789012,
             'order_no' => 'HDFc9935b57bb584fa493a265fb8723fdbb',
-            'refund_req_amt' => 100.0,
+            'refund_req_amt' => 100,
             'refund_remark' =>  "Refund for ".$upiEntity->getPaymentId()
         ];
 

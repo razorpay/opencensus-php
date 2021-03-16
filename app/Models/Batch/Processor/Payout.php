@@ -137,7 +137,7 @@ class Payout extends Base
      * @param string[] $sheetNames
      * @return mixed
      */
-    protected function createExcelObject($data, $name, $columnFormat = [], $sheetNames = ['Sheet 1'])
+    protected function createExcelObject($data, $dir, $name, $extension, $columnFormat = [], $sheetNames = ['Sheet 1'])
     {
         $errorFlag = false;
 
@@ -153,11 +153,11 @@ class Payout extends Base
 
         if ($errorFlag === true)
         {
-            return (new PayoutModel\Bulk\Base)->createExcelObject($data, $name, $columnFormat, $sheetNames);
+            return (new PayoutModel\Bulk\Base)->createExcelObject($data, $dir, $name, $extension, $columnFormat, $sheetNames);
         }
         else
         {
-            return parent::createExcelObject($data, $name, $columnFormat, $sheetNames);
+            return parent::createExcelObject($data, $dir, $name, $extension, $columnFormat, $sheetNames);
         }
     }
 }

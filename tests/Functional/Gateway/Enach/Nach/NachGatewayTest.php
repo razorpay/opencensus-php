@@ -2,16 +2,17 @@
 
 namespace RZP\Tests\Functional\Gateway\Enach\Nach;
 
-use Excel;
-
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\PaperMandate;
 use RZP\Constants\Entity as E;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Excel\Export as ExcelExport;
+use RZP\Excel\Import as ExcelImport;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Tests\Functional\Partner\PartnerTrait;
+use RZP\Excel\ExportSheet as ExcelSheetExport;
 use Illuminate\Http\Testing\File as TestingFile;
 use RZP\Tests\Functional\Fixtures\Entity\Terminal;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
@@ -148,7 +149,7 @@ class NachGatewayTest extends TestCase
         $this->assertArraySelectiveEquals($expectedFileContentZip, $zipFile);
         $this->assertArraySelectiveEquals($expectedFileContentRegister, $registerFile);
 
-        $registerFileRows = Excel::load('storage/files/filestore/' . $registerFile['location'])->all()->toArray();
+        $registerFileRows = (new ExcelImport)->toArray('storage/files/filestore/' . $registerFile['location'])[0];
 
         $expectedRegisterFileContent = [
             'category_code'        => "U099",
@@ -204,7 +205,7 @@ class NachGatewayTest extends TestCase
         $this->assertArraySelectiveEquals($expectedFileContentZip, $zipFile);
         $this->assertArraySelectiveEquals($expectedFileContentRegister, $registerFile);
 
-        $registerFileRows = Excel::load('storage/files/filestore/' . $registerFile['location'])->all()->toArray();
+        $registerFileRows = (new ExcelImport)->toArray('storage/files/filestore/' . $registerFile['location'])[0];
 
         $expectedRegisterFileContent = [
             'category_code'        => "U099",
@@ -876,22 +877,17 @@ class NachGatewayTest extends TestCase
 
         $name = 'RAZORP_EMANDATE_NACH00000000010000_21112019_test';
 
-        $excel = Excel::create(
-            $name,
-            function($excel) use ($sheets) {
+        $excel = (new ExcelExport)->setSheets(function() use ($sheets) {
+                $sheetsInfo = [];
                 foreach ($sheets as $sheetName => $data)
                 {
-                    $excel->sheet(
-                        $sheetName,
-                        function($sheet) use ($data) {
-                            $sheet->fromArray($data['items'], null, $data['config']['start_cell'], true);
-                        }
-                    );
+                    $sheetsInfo[$sheetName] = (new ExcelSheetExport($data['items']))->setTitle($sheetName)->setStartCell($data['config']['start_cell'])->generateAutoHeading(true);
                 }
-            }
-        );
 
-        $data = $excel->string('xlsx');
+                return $sheetsInfo;
+            });
+
+        $data = $excel->raw('Xlsx');
 
         $handle = tmpfile();
         fwrite($handle, $data);

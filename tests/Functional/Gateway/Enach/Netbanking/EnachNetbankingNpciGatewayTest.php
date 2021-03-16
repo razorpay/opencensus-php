@@ -20,9 +20,11 @@ use RZP\Models\Settlement\Channel;
 use RZP\Services\Mock\BeamService;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Excel\Export as ExcelExport;
 use RZP\Models\Order\Entity as Order;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Tests\Functional\Partner\PartnerTrait;
+use RZP\Excel\ExportSheet as ExcelSheetExport;
 use Illuminate\Http\Testing\File as TestingFile;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
@@ -876,22 +878,17 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $name = 'RAZORPAYPVTLTD_OutwardMandateMISReport' . Carbon::now(Timezone::IST)->format('dmY');
 
-        $excel = Excel::create(
-            $name,
-            function($excel) use ($sheets) {
-                foreach ($sheets as $sheetName => $data)
-                {
-                    $excel->sheet(
-                        $sheetName,
-                        function($sheet) use ($data) {
-                            $sheet->fromArray($data['items'], null, $data['config']['start_cell'], true);
-                        }
-                    );
-                }
+        $excel = (new ExcelExport)->setSheets(function() use ($sheets) {
+            $sheetsInfo = [];
+            foreach ($sheets as $sheetName => $data)
+            {
+                $sheetsInfo[$sheetName] = (new ExcelSheetExport($data['items']))->setTitle($sheetName)->setStartCell($data['config']['start_cell'])->generateAutoHeading(true);
             }
-        );
 
-        $data = $excel->string('xlsx');
+            return $sheetsInfo;
+        });
+
+        $data = $excel->raw('Xlsx');
 
         $handle = tmpfile();
         fwrite($handle, $data);
@@ -952,13 +949,14 @@ class EnachNetbankingNpciGatewayTest extends TestCase
             'payment_id' => $debitPayment['id'],
         ];
 
-        $excel = Excel::create("test_cancel", function($excel) use ($data) {
-            $excel->sheet('Sheet1', function($sheet) use ($data) {
-                $sheet->fromArray($data);
-            });
+        $excel = (new ExcelExport)->setSheets(function() use ($data) {
+
+            $sheetsInfo[] = (new ExcelSheetExport($data))->setTitle('Sheet1');
+
+            return $sheetsInfo;
         });
 
-        $data = $excel->string('xlsx');
+        $data = $excel->raw('Xlsx');
 
         $handle = tmpfile();
         fwrite($handle, $data);

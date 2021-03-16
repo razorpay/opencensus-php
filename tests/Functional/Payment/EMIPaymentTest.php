@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use RZP\Jobs\BeamJob;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
+use RZP\Excel\Import as ExcelImport;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -257,7 +258,7 @@ class EMIPaymentTest extends TestCase
         $filename = $zip->getNameIndex(0);
         $zip->close();
 
-        $emiFileContents = Excel::load($pathinfo['dirname'] . '/' . $filename)->all()->toArray();
+        $emiFileContents = (new ExcelImport)->toArray($pathinfo['dirname'] . '/' . $filename);
 
         // Check if the fields are set correctly
         $arrayContent = [
@@ -270,13 +271,13 @@ class EMIPaymentTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             $arrayContent,
-            $emiFileContents[0]);
+            $emiFileContents[0][0]);
 
         $arrayContent['emi_id'] = $iciciPayment2['id'];
 
         $this->assertArraySelectiveEquals(
             $arrayContent,
-            $emiFileContents[1]);
+            $emiFileContents[0][1]);
 
         // Assert ICICI file contents done
 
