@@ -107,10 +107,10 @@ class NbplusNetbankingUbiCombinedFileTest extends NbPlusPaymentServiceNetbanking
 
         $refundsFileContents = file($filePath);
 
-        $refund1 = substr($refundsFileContents[0],74,19);
-        $refund2 = substr($refundsFileContents[1],74,19);
-        $refund3 = substr($refundsFileContents[2],74,19);
-        $refund4 = substr($refundsFileContents[3],74,19);
+        $refund1 = substr($refundsFileContents[0],88,19);
+        $refund2 = substr($refundsFileContents[1],88,19);
+        $refund3 = substr($refundsFileContents[2],88,19);
+        $refund4 = substr($refundsFileContents[3],88,19);
 
         $totalRefundAmount = $refund1 + $refund2 + $refund3;
 
