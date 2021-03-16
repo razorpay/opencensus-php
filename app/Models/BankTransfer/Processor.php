@@ -138,6 +138,7 @@ class Processor extends VirtualAccount\Processor
                                    'balance_type'       => $balanceType,
                                    'virtual_account_id' => $this->virtualAccount->getId(),
                                    'bank_transfer_id'   => $bankTransfer->getId(),
+                                   'unexpected_reason'  => $bankTransfer->getUnexpectedReason()
                                ]
             );
 
@@ -215,7 +216,12 @@ class Processor extends VirtualAccount\Processor
 
             $bankTransfer->payment()->associate($payment);
 
-            $this->createAndAssociatePayerBankAccount($bankTransfer);
+            // Doing this here as in case of Banking balance flow, we have associated the payer bank account before this
+            // and it can come here in case of banking account tpv failure.
+            if (empty($bankTransfer->payerBankAccount) === true)
+            {
+                $this->createAndAssociatePayerBankAccount($bankTransfer);
+            }
 
             $this->repo->saveOrFail($bankTransfer);
 
@@ -648,11 +654,20 @@ class Processor extends VirtualAccount\Processor
 
         if ($balanceType === Balance\Type::BANKING)
         {
+            $this->createAndAssociatePayerBankAccount($bankTransfer);
+
+            $payerBankAccount = $bankTransfer->payerBankAccount;
+
+            $payerDetails = [
+                BankAccount\Entity::IFSC           => $payerBankAccount->getIfscCode(),
+                BankAccount\Entity::ACCOUNT_NUMBER => $payerBankAccount->getAccountNumber(),
+            ];
+
             /*
-             * If the payer account is globally whitelisted, we don't have to check the tpv flow at all. We also don't
-             * need to do the network calls to razorx in this scenario and hence returning directly from here.
+             * If the payer account is globally whitelisted, we don't have to check the tpv flow at all.
+             * Hence, returning directly from here.
              */
-            if($this->isGloballyWhitelistedPayerAccount($bankTransfer) === true)
+            if($this->isGloballyWhitelistedPayerAccount($payerDetails) === true)
             {
                 $this->repo->saveOrFail($bankTransfer);
 
@@ -707,9 +722,9 @@ class Processor extends VirtualAccount\Processor
             if (($enableTpvFeature === true) and
                 ($disableTpvFeature === false))
             {
-                $payerAccountNumber = $bankTransfer->getPayerAccount();
+                $payerAccountNumber = $payerDetails[BankAccount\Entity::ACCOUNT_NUMBER];
 
-                $firstFourDigitsOfIfsc = substr($bankTransfer->getPayerIfsc(), 0, 4);
+                $firstFourDigitsOfIfsc = substr($payerDetails[BankAccount\Entity::IFSC], 0, 4);
 
                 $bankingAccountTpv = $this->repo->banking_account_tpv
                                                 ->getApprovedActiveTpvAccountWithPayerAccountNumberAndIfscFirstFour(
@@ -789,7 +804,7 @@ class Processor extends VirtualAccount\Processor
      * to whitelist account details of Razorpay as these are used for settling PG funds to X VA (via settlement or
      * settlement on-demand).
      */
-    protected function isGloballyWhitelistedPayerAccount(Entity $bankTransfer)
+    protected function isGloballyWhitelistedPayerAccount(array $payerDetails)
     {
         /*
          * The value for the key will be an array of arrays with the following structure
@@ -813,9 +828,9 @@ class Processor extends VirtualAccount\Processor
             ]
         );
 
-        $payerAccountNumber = $bankTransfer->getPayerAccount();
+        $payerAccountNumber = $payerDetails[BankAccount\Entity::ACCOUNT_NUMBER];
 
-        $firstFourDigitsOfIfsc = substr($bankTransfer->getPayerIfsc(), 0, 4);
+        $firstFourDigitsOfIfsc = substr($payerDetails[BankAccount\Entity::IFSC], 0, 4);
 
         $isGloballyWhitelistedPayerAccount = false;
 
