@@ -30,6 +30,7 @@ class Entity extends Base\Entity
      */
     const PERMISSIONS       = 'permissions';
     const ADMINS            = 'admins';
+    const ROLES             = 'roles';
 
     protected $entity = 'role';
 

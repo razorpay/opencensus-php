@@ -1059,7 +1059,7 @@ class Route
         'role_get_multiple'                        => ['get',      'roles',                                          'OrganizationController@getMultipleRoles'                           ],
         'role_get'                                 => ['get',      'roles/{id}',                                     'OrganizationController@getRole'                                    ],
         'role_edit'                                => ['put',      'roles/{id}',                                     'OrganizationController@putRole'                                    ],
-        'role_add_permissions'                     => ['put',      'roles/{id}/add/permissions',                     'OrganizationController@putPermissionsToRole'                       ],
+        'role_add_permissions'                     => ['put',      'roles/add/permissions',                          'OrganizationController@putPermissionsToRoles'                      ],
         'role_delete'                              => ['delete',   'roles/{id}',                                     'OrganizationController@deleteRole'                                 ],
         'admin_create'                             => ['post',     'admins',                                         'OrganizationController@createAdmin'                                ],
         'admin_get_multiple'                       => ['get',      'admins',                                         'OrganizationController@fetchAdminMultiple'                         ],

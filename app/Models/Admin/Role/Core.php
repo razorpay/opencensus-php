@@ -48,20 +48,35 @@ class Core extends Base\Core
         return $role;
     }
 
-    public function addPermissionsToRole($role, array $input)
+    public function validateRoles(array $roles)
     {
-        if (isset($input[Entity::PERMISSIONS]) === true)
+        if (isset($roles) === true)
         {
-            $this->repo->permission->validateExists($input[Entity::PERMISSIONS]);
+            Entity::verifyIdAndStripSignMultiple($roles);
+            $this->repo->role->validateExists($roles);
+        }
+    }
 
-            $this->repo->sync(
-                $role, Entity::PERMISSIONS, $input[Entity::PERMISSIONS], false);
+    public function validatePermissions(array $permissions)
+    {
+        if (isset($permissions) === true)
+        {
+            $this->repo->permission->validateExists($permissions);
+        }
+    }
+
+    public function addPermissionsToRoles($role, $permissions)
+    {
+        try
+        {
+            $this->repo->sync($role, Entity::PERMISSIONS, $permissions, false);
+        }
+        catch (\Exception $e)
+        {
+            return false;
         }
 
-        $role = $this->repo->role->findOrFailPublicWithRelations(
-            $role->getId(), [Entity::PERMISSIONS]);
-
-        return $role;
+        return true;
     }
 
     protected function syncPermissions($role, array $input)

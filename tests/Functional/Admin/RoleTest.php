@@ -131,13 +131,8 @@ class RoleTest extends TestCase
 
         $request = $this->testData[__FUNCTION__]['request'];
 
-        $url = $request['url'];
-
-        $url = sprintf($url, $role->getPublicId());
-
-        $request['url'] = $url;
-
         $request['content']['permissions'] = $newPerms;
+        $request['content']['roles'] = [$role->getPublicId()];
 
         $this->testData[__FUNCTION__]['request'] = $request;
 
@@ -151,19 +146,13 @@ class RoleTest extends TestCase
 
         $result = $this->startTest();
 
-        $this->assertEquals($result['id'], $role->getPublicId());
+        $this->assertCount(1, $result['success_roles']);
+        $this->assertCount(0, $result['fail_roles']);
+        $this->assertContains($role->getId(), $result['success_roles']);
 
-        $this->assertEquals($result['name'], $role->name);
-
-        $responsePerms = $result['permissions'];
-
-        $func = function($p) {
-            return $p['id'];
-        };
-
-        $responsePermissionIds = array_map($func, $responsePerms);
-
-        $roleFromDb = (new Role\Core())->findRoleByOrgAndName($this->org, $role->name);
+        $orgId = $this->org->getId();
+        $rolePublicId = $role->getPublicId();
+        $roleFromDb = (new Role\Repository())->findByPublicIdAndOrgId($rolePublicId, $orgId);
 
         $savedPermissions = $roleFromDb->permissions->all();
 
@@ -179,11 +168,7 @@ class RoleTest extends TestCase
 
         sort($expectedPermissionIds);
 
-        sort($responsePermissionIds);
-
         $this->assertEquals($expectedPermissionIds, $savedPermissionIds);
-
-        $this->assertEquals($expectedPermissionIds, $responsePermissionIds);
     }
 
     public function testGetRole()

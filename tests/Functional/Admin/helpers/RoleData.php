@@ -82,7 +82,7 @@ return [
 
     'testAddPermissionsToRole' => [
         'request' => [
-            'url' => '/roles/%s/add/permissions',
+            'url' => '/roles/add/permissions',
             'method' => 'put',
             'content' => [],
         ],

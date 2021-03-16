@@ -81,20 +81,40 @@ class Service extends Base\Service
         return $role->toArrayPublic();
     }
 
-    public function putPermissionsToRole(string $roleId, array $input)
+    public function putPermissionsToRoles(array $input)
     {
         if (empty($input[Entity::PERMISSIONS]) === false)
         {
-            Permission\Entity::verifyIdAndStripSignMultiple(
-                $input[Entity::PERMISSIONS]);
+            Permission\Entity::verifyIdAndStripSignMultiple($input[Entity::PERMISSIONS]);
         }
 
         $orgId = $this->app['basicauth']->getAdmin()->getPublicOrgId();
 
-        $role = $this->repo->role->findByPublicIdAndOrgId($roleId, $orgId);
+        $roles = $input[Entity::ROLES];
+        $permissions = $input[Entity::PERMISSIONS];
 
-        $role = $this->core()->addPermissionsToRole($role, $input);
+        $this->core()->validateRoles($roles);
+        $this->core()->validatePermissions($permissions);
 
-        return $role->toArrayPublic();
+        $successRoles = [];
+        $failureRoles = [];
+
+        foreach ($roles as $roleId)
+        {
+            $role = $this->repo->role->findByPublicIdAndOrgId($roleId, $orgId);
+
+            $success = $this->core()->addPermissionsToRoles($role, $permissions);
+
+            if ($success === true) {
+                array_push($successRoles, $roleId);
+            }
+            else{
+                array_push($failureRoles, $roleId);
+            }
+        }
+        $data['success_roles'] = $successRoles;
+        $data['fail_roles'] = $failureRoles;
+
+        return $data;
     }
 }
