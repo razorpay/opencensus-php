@@ -226,7 +226,6 @@ class MySqlConnection extends BaseMySqlConnection
                     return parent::getReadPdo();
                 }
 
-
                 $result = $this->shouldUseSlave($this->readPdo);
 
                 //
@@ -301,6 +300,16 @@ class MySqlConnection extends BaseMySqlConnection
         if (($result === null) and ($this->heartbeatForceRun === false))
         {
             return null;
+        }
+
+        /**
+         * foceReadPdo is set to true in case of useSlave(callable $callback), if it's true then
+         * queries has to be run on slave. Since skip slave condition is evaluated
+         * above we can safely route queries to slave.
+         */
+        if ($this->forceReadPdo === true)
+        {
+            return $readPdo;
         }
 
         // If the Redis lagchecker is not in effect then we'll go ahead with

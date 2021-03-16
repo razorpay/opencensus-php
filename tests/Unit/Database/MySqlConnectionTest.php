@@ -311,6 +311,51 @@ class MySqlConnectionTest extends TestCase
         $this->assertEquals(['boom'], $results);
     }
 
+    public function testReadPdoSelectedInForceReadPdo()
+    {
+        $readPdo   = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
+        $writePdo  = $this->getMockBuilder(MockPDO::class)->setMethods(['prepare'])->getMock();
+        $statement = $this->getMockBuilder(PDOStatement::class)
+                          ->setMethods(['execute', 'fetchAll', 'bindValue'])
+                          ->getMock();
+
+        $lagChecker = $this->getMockBuilder(RedisLagChecker::class)->setMethods(['useReadPdoIfApplicable'])->getMock();
+        $lagChecker->expects($this->once())
+                   ->method('useReadPdoIfApplicable')
+                   ->with($readPdo)
+                   ->will($this->returnValue($readPdo));
+
+         //
+        // Sets expectations on the mock objects
+        //
+        $writePdo->expects($this->never())->method('prepare');
+        $readPdo->expects($this->once())->method('prepare')->with('foo')->will($this->returnValue($statement));
+        $statement->expects($this->once())->method('bindValue')->with('foo', 'bar', 2);
+        $statement->expects($this->once())->method('execute');
+        $statement->expects($this->once())->method('fetchAll')->will($this->returnValue(['boom']));
+
+        $mockConnection = $this->getMockConnection(['prepareBindings'], $writePdo);
+        $mockConnection->setReadPdo($readPdo);
+        $mockConnection->lagChecker = $lagChecker;
+
+        $mockConnection->expects($this->once())
+                       ->method('prepareBindings')
+                       ->with($this->equalTo(['foo' => 'bar']))
+                       ->will($this->returnValue(['foo' => 'bar']));
+
+        //
+        // Sets these attributes on the connection object so that lag check
+        // is re-evaluated for the select.
+        //
+        $mockConnection->forceCheckReplicaLag = true;
+
+        $mockConnection->forceReadPdo = true;
+
+        $results = $mockConnection->select('foo', ['foo' => 'bar']);
+        $this->assertEquals(['boom'], $results);
+    }
+
+
     protected function getMockConnection($methods = [], $pdo = null)
     {
         $pdo = $pdo ?: new MockPDO;
