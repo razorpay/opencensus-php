@@ -102,12 +102,8 @@ app
       };
 
       // initialize onetap only when not X and if optimize experiment(isOneTapExpOn) returns true
-      if (window.isOneTapExpOn) {
-        if ($scope.currentService != 'X') {
-          $scope.isOneTapExpOn = true;
-        } else {
-          fireInitGauthType(G_AUTH_TYPES.btn, 'RX user');
-        }
+      if ($scope.currentService != 'X' && window.isOneTapExpOn) {
+        $scope.isOneTapExpOn = true;
       }
 
       $scope.organization = {};
