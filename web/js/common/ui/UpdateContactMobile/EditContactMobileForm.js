@@ -7,6 +7,7 @@ import ModalHeader from 'common/ui/ModalHeader';
 
 import { pickProps, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { isPhone } from 'common/utils/validators';
+import { analyticsTrack } from 'common/utils/analytics';
 
 import { closeModal } from 'merchant_common/reducers/modals';
 import { updateContactMobile } from 'merchant_common/reducers/user';
