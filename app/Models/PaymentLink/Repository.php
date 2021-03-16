@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Exception\BadRequestException;
 use RZP\Models\PaymentLink\PaymentPageItem;
+use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
@@ -20,6 +21,8 @@ class Repository extends Base\Repository
         Entity::PAYMENT_PAGE_ITEMS,
         Entity::PAYMENT_PAGE_ITEMS . '.' . PaymentPageItem\Entity::ITEM,
     ];
+
+    const SUCCEEDING_PP_PAYMENTS_SLAVE_EXPERIMENT = 'succeeding_pp_payments_slave_experiment';
 
     /**
      * Gets all ACTIVE status payment links which are past EXPIRE_BY.
@@ -62,6 +65,27 @@ class Repository extends Base\Repository
 
     public function getSucceedingPayments(Entity $paymentLink)
     {
+        $variant = $this->app->razorx->getTreatment(
+            $paymentLink->getMerchantId(),
+            self::SUCCEEDING_PP_PAYMENTS_SLAVE_EXPERIMENT,
+            $this->app['rzp.mode']
+        );
+
+        if ($variant === 'on')
+        {
+            return $this->repo->useSlave( function() use ($paymentLink)
+            {
+                return $paymentLink->payments()
+                    ->whereIn(
+                        Payment\Entity::STATUS,
+                        [
+                            Payment\Status::CREATED,
+                            Payment\Status::AUTHORIZED,
+                        ])
+                    ->get();
+            });
+        }
+
         return $paymentLink->payments()
                            ->whereIn(
                                Payment\Entity::STATUS,
