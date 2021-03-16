@@ -77,6 +77,6 @@ class Type
             return (in_array($type, self::$fundAccountCardTypesInExperiment, true) === true);
         }
 
-        return ($type === self::CREDIT);
+        return in_array($type, [self::CREDIT, self::DEBIT], true);
     }
 }

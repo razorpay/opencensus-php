@@ -26,6 +26,7 @@ use RZP\Models\Admin\Permission;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Application\ApplicationMerchantMaps;
+use RZP\Models\FundTransfer\Mode as FundTransferMode;
 use RZP\Models\Payout\BatchHelper as PayoutBatchHelper;
 use RZP\Models\FundAccount\Service as FundAccountService;
 use RZP\Models\FundAccount\BatchHelper as FundAccountHelper;
@@ -114,6 +115,8 @@ class Service extends Base\Service
 
         (new Validator)->setStrictFalse()
                        ->validateInput(Validator::BEFORE_CREATE_FUND_ACCOUNT_PAYOUT, $input);
+
+        (new Validator)->validateAndUpdateCardMode($input);
 
         $isCompositePayout = false;
 

@@ -135,6 +135,7 @@ class Entity
     const CREDIT_TRANSACTION         = 'credit_transaction';
     const CREDIT_BALANCE             = 'credit_balance';
     const MERCHANT_EMI_PLANS         = 'merchant_emi_plans';
+    const SETTING                    = 'setting';
     const COMMISSION_INVOICE         = 'commission_invoice';
     const TERMINAL_ANALYTICS         = 'terminal_analytics';
     const SETTLEMENT_TRANSFER        = 'settlement_transfer';

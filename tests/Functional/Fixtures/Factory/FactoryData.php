@@ -1694,5 +1694,13 @@ final class FactoryData
             'created_at'  => $faker->timestamp,
             'updated_at'  => $faker->timestamp,
         ]);
+
+        $factory(\RZP\Models\Settings\Entity::class, [
+            'module'                 => 'm2p_transfer',
+            'entity_type'            => 'merchant',
+            'key'                    => 'xyz',
+            'value'                  => 'xyz',
+            'entity_id'              => 'GAX5zcOdI0Y664',
+        ]);
     }
 }

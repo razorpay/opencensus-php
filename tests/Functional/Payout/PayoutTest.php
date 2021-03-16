@@ -10639,4 +10639,406 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertArraySelectiveEquals($sourceDetails, $response);
     }
+
+    // Following test depends on configs. Adding/removing configs defined in Models/FundTransfer/M2P/M2PConfigs file can fail these.
+    // We need to make changes to the test sample data to pass them
+    public function testCreateM2PPayoutForDebitCardWithUpperCaseCardMode()
+    {
+        $this->fixtures->create('iin', [
+            'iin'     => 340169,
+            'network' => Network::$fullName[Network::MC],
+            'type'    => Type::DEBIT,
+            'issuer'  => Issuer::YESB
+        ]);
+
+        $fundAccountRequest = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts',
+            'content' => [
+                "account_type" => "card",
+                "contact_id"   => "cont_1000001contact",
+                "card"         => [
+                    "name"         => "Prashanth YV",
+                    "number"       => "340169570990137",
+                    "cvv"          => "212",
+                    "expiry_month" => 10,
+                    "expiry_year"  => 21,
+                ]
+            ]
+        ];
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::S2S,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->ba->privateAuth();
+
+        $fundAccount = $this->makeRequestAndGetContent($fundAccountRequest);
+
+        $this->assertEquals(Issuer::YESB, $fundAccount['card']['issuer']);
+        $this->assertEquals(Network::$fullName[Network::MC], $fundAccount['card']['network']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account_id']  = $fundAccount['id'];
+        $testData['response']['content']['fund_account_id'] = $fundAccount['id'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($payout['mode'],'card');
+        $this->assertEquals($payout['channel'], 'm2p');
+        $this->assertEquals($payoutAttempt['channel'], 'm2p');
+        $this->assertEquals($payoutAttempt['mode'],'CT');
+
+    }
+
+    // Following test depends on configs. Adding/removing configs defined in Models/FundTransfer/M2P/M2PConfigs file can fail these.
+    // We need to make changes to the test sample data to pass them
+    public function testCreateM2PPayoutForDebitCardWithLowerCaseCardMode()
+    {
+        $this->fixtures->create('iin', [
+            'iin'     => 340169,
+            'network' => Network::$fullName[Network::MC],
+            'type'    => Type::DEBIT,
+            'issuer'  => Issuer::YESB
+        ]);
+
+        $fundAccountRequest = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts',
+            'content' => [
+                "account_type" => "card",
+                "contact_id"   => "cont_1000001contact",
+                "card"         => [
+                    "name"         => "Prashanth YV",
+                    "number"       => "340169570990137",
+                    "cvv"          => "212",
+                    "expiry_month" => 10,
+                    "expiry_year"  => 21,
+                ]
+            ]
+        ];
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::S2S,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->ba->privateAuth();
+
+        $fundAccount = $this->makeRequestAndGetContent($fundAccountRequest);
+
+        $this->assertEquals(Issuer::YESB, $fundAccount['card']['issuer']);
+        $this->assertEquals(Network::$fullName[Network::MC], $fundAccount['card']['network']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account_id']  = $fundAccount['id'];
+        $testData['response']['content']['fund_account_id'] = $fundAccount['id'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($payout['mode'],'card');
+        $this->assertEquals($payout['channel'], 'm2p');
+        $this->assertEquals($payoutAttempt['channel'], 'm2p');
+        $this->assertEquals($payoutAttempt['mode'], 'CT');
+    }
+
+    // Following test depends on configs. Adding/removing configs defined in Models/FundTransfer/M2P/M2PConfigs file can fail these.
+    // We need to make changes to the test sample data to pass them
+    public function testCreateM2PPayoutForDebitCardWithRandomCaseCardMode()
+    {
+        $this->fixtures->create('iin', [
+            'iin'     => 340169,
+            'network' => Network::$fullName[Network::MC],
+            'type'    => Type::DEBIT,
+            'issuer'  => Issuer::YESB
+        ]);
+
+        $fundAccountRequest = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts',
+            'content' => [
+                "account_type" => "card",
+                "contact_id"   => "cont_1000001contact",
+                "card"         => [
+                    "name"         => "Prashanth YV",
+                    "number"       => "340169570990137",
+                    "cvv"          => "212",
+                    "expiry_month" => 10,
+                    "expiry_year"  => 21,
+                ]
+            ]
+        ];
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::S2S,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->ba->privateAuth();
+
+        $fundAccount = $this->makeRequestAndGetContent($fundAccountRequest);
+
+        $this->assertEquals(Issuer::YESB, $fundAccount['card']['issuer']);
+        $this->assertEquals(Network::$fullName[Network::MC], $fundAccount['card']['network']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account_id']  = $fundAccount['id'];
+        $testData['response']['content']['fund_account_id'] = $fundAccount['id'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($payout['mode'],'card');
+        $this->assertEquals($payout['channel'], 'm2p');
+        $this->assertEquals($payoutAttempt['channel'], 'm2p');
+        $this->assertEquals($payoutAttempt['mode'],'CT');
+
+    }
+
+    // Following test depends on configs. Adding/removing configs defined in Models/FundTransfer/M2P/M2PConfigs file can fail these.
+    // We need to make changes to the test sample data to pass them
+    //
+    // Testing the case when the debit card is supported during FA creation
+    // but support is revoked sometime between FA and PAYOUT creation
+    public function testCreateM2PPayoutWithoutSupportedModes()
+    {
+        $this->fixtures->create('iin', [
+            'iin'     => 340169,
+            'network' => Network::$fullName[Network::MC],
+            'type'    => Type::DEBIT,
+            'issuer'  => Issuer::YESB
+        ]);
+
+        $fundAccountRequest = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts',
+            'content' => [
+                "account_type" => "card",
+                "contact_id"   => "cont_1000001contact",
+                "card"         => [
+                    "name"         => "Prashanth YV",
+                    "number"       => "340169570990137",
+                    "cvv"          => "212",
+                    "expiry_month" => 10,
+                    "expiry_year"  => 21,
+                ]
+            ]
+        ];
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::S2S,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->ba->privateAuth();
+
+        $fundAccount = $this->makeRequestAndGetContent($fundAccountRequest);
+
+        $this->assertEquals(Issuer::YESB, $fundAccount['card']['issuer']);
+        $this->assertEquals(Network::$fullName[Network::MC], $fundAccount['card']['network']);
+
+        $card = $this->getDbLastEntity('card');
+
+        // Editing the card issuer to make it an unsupported card as
+        // configs can't be edited here.
+        $this->fixtures->edit(
+            'card',
+            $card->getId(),
+            [
+                'issuer' => "default_issuer"
+            ]
+        );
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account_id']  = $fundAccount['id'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+
+    }
+
+    // Following test depends on configs. Adding/removing configs defined in Models/FundTransfer/M2P/M2PConfigs file can fail these.
+    // We need to make changes to the test sample data to pass them
+    public function testCreateM2PPayoutForMerchantBlacklistedByProduct()
+    {
+        $this->fixtures->create(
+            'settings',
+            [
+                'module'      => 'm2p_transfer',
+                'entity_type' => 'merchant',
+                'entity_id'   => 10000000000000,
+                'key'         => 'settlement',
+                'value'       => 'true',
+            ]
+        );
+
+        $this->fixtures->create('iin', [
+            'iin'     => 340169,
+            'network' => Network::$fullName[Network::MC],
+            'type'    => Type::DEBIT,
+            'issuer'  => Issuer::YESB
+        ]);
+
+        $fundAccountRequest = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts',
+            'content' => [
+                "account_type" => "card",
+                "contact_id"   => "cont_1000001contact",
+                "card"         => [
+                    "name"         => "Prashanth YV",
+                    "number"       => "340169570990137",
+                    "cvv"          => "212",
+                    "expiry_month" => 10,
+                    "expiry_year"  => 21,
+                ]
+            ]
+        ];
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::S2S,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->ba->privateAuth();
+
+        $fundAccount = $this->makeRequestAndGetContent($fundAccountRequest);
+
+        $this->assertEquals(Issuer::YESB, $fundAccount['card']['issuer']);
+        $this->assertEquals(Network::$fullName[Network::MC], $fundAccount['card']['network']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account_id']  = $fundAccount['id'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+
+    }
+
+    // Following test depends on configs. Adding/removing configs defined in Models/FundTransfer/M2P/M2PConfigs file can fail these.
+    // We need to make changes to the test sample data to pass them
+    public function testCreateM2PPayoutForMerchantBlacklistedByNetwork()
+    {
+        $this->fixtures->create(
+            'settings',
+            [
+                'module'      => 'm2p_transfer',
+                'entity_type' => 'merchant',
+                'entity_id'   => 10000000000000,
+                'key'         => 'MC',
+                'value'       => 'true',
+            ]
+        );
+
+        $this->fixtures->create('iin', [
+            'iin'     => 340169,
+            'network' => Network::$fullName[Network::MC],
+            'type'    => Type::DEBIT,
+            'issuer'  => Issuer::YESB
+        ]);
+
+        $fundAccountRequest = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts',
+            'content' => [
+                "account_type" => "card",
+                "contact_id"   => "cont_1000001contact",
+                "card"         => [
+                    "name"         => "Prashanth YV",
+                    "number"       => "340169570990137",
+                    "cvv"          => "212",
+                    "expiry_month" => 10,
+                    "expiry_year"  => 21,
+                ]
+            ]
+        ];
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::S2S,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->ba->privateAuth();
+
+        $fundAccount = $this->makeRequestAndGetContent($fundAccountRequest);
+
+        $this->assertEquals(Issuer::YESB, $fundAccount['card']['issuer']);
+        $this->assertEquals(Network::$fullName[Network::MC], $fundAccount['card']['network']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account_id']  = $fundAccount['id'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+
+    }
 }

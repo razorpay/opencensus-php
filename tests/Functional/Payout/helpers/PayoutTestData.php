@@ -11854,6 +11854,7 @@ return [
                         'priority'    => 2,
                     ],
                 ],
+
             ],
         ],
         'response' => [
@@ -11889,9 +11890,9 @@ return [
     ],
 
     'testFetchPayoutWithSourceIdAndSourceTypeOnProxyAuth' => [
-        'request'   => [
-            'method'  => 'GET',
-            'url'     => '/payouts',
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/payouts',
         ],
         'response' => [
             'content' => [],
@@ -11899,7 +11900,7 @@ return [
     ],
 
     'testFetchPayoutWithSourceIdAndSourceTypeOnPrivateAuth' => [
-        'request'  => [
+        'request'   => [
             'method' => 'GET',
             'url'    => '/payouts',
         ],
@@ -11915,6 +11916,168 @@ return [
         'exception' => [
             'class'               => Exception\ExtraFieldsException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ],
+    ],
+
+    'testCreateM2PPayoutForDebitCardWithUpperCaseCardMode' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'amount'          => 100,
+                'mode'            => 'CARD',
+                'currency'        => 'INR',
+                'account_number'  => '2224440041626905',
+                'purpose'         => 'payout'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'amount'          => 100,
+                'currency'        => 'INR',
+                'status'          => 'processing',
+                'purpose'         => 'payout',
+                'mode'            => 'card',
+            ],
+        ],
+    ],
+
+    'testCreateM2PPayoutForDebitCardWithLowerCaseCardMode' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'amount'          => 100,
+                'mode'            => 'card',
+                'currency'        => 'INR',
+                'account_number'  => '2224440041626905',
+                'purpose'         => 'payout'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'amount'          => 100,
+                'currency'        => 'INR',
+                'status'          => 'processing',
+                'purpose'         => 'payout',
+                'mode'            => 'card',
+            ],
+        ],
+    ],
+
+    'testCreateM2PPayoutForDebitCardWithRandomCaseCardMode' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'amount'          => 100,
+                'mode'            => 'cARd',
+                'currency'        => 'INR',
+                'account_number'  => '2224440041626905',
+                'purpose'         => 'payout'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'amount'          => 100,
+                'currency'        => 'INR',
+                'status'          => 'processing',
+                'purpose'         => 'payout',
+                'mode'            => 'card',
+            ],
+        ],
+    ],
+
+    'testCreateM2PPayoutWithoutSupportedModes' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'amount'          => 100,
+                'mode'            => 'card',
+                'currency'        => 'INR',
+                'account_number'  => '2224440041626905',
+                'purpose'         => 'payout'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payout mode CARD is not supported for the fund account',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateM2PPayoutForMerchantBlacklistedByProduct' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'amount'          => 100,
+                'mode'            => 'card',
+                'currency'        => 'INR',
+                'account_number'  => '2224440041626905',
+                'purpose'         => 'payout'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_M2P_MERCHANT_BLACKLISTED_FOR_PRODUCT,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_M2P_MERCHANT_BLACKLISTED_FOR_PRODUCT,
+        ],
+    ],
+
+    'testCreateM2PPayoutForMerchantBlacklistedByNetwork' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'amount'          => 100,
+                'mode'            => 'card',
+                'currency'        => 'INR',
+                'account_number'  => '2224440041626905',
+                'purpose'         => 'payout'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_M2P_MERCHANT_BLACKLISTED_BY_NETWORK,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_M2P_MERCHANT_BLACKLISTED_BY_NETWORK,
         ],
     ],
 ];

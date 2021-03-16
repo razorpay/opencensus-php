@@ -955,6 +955,8 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYOUT_INVALID_MODE                                       = 'Payout mode is invalid';
     const BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED                                 = 'Mode is unsupported';
     const BAD_REQUEST_DAILY_LIMIT_SUBMERCHANT_INVITE_EXCEEDED                   = 'Daily limit for submerchant add exceeded';
+    const BAD_REQUEST_M2P_MERCHANT_BLACKLISTED_FOR_PRODUCT                      = 'Payout mode CARD is disabled for your account';
+    const BAD_REQUEST_M2P_MERCHANT_BLACKLISTED_BY_NETWORK                       = 'Payout to the card network via mode CARD is blocked by banking partner';
 
     const BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS                       = 'The information that you have filled could not be processed. Please try again later';
 

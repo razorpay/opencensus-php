@@ -207,7 +207,8 @@ class Validator extends Base\Validator
 
             $networkCode = $attempt->card->getNetworkCode();
 
-            if ($cardType === \RZP\Models\Card\Type::DEBIT)
+            if (($cardType === \RZP\Models\Card\Type::DEBIT) or
+                ($channel === Channel::M2P))
             {
                 //
                 // The only supported mode for Fund Transfer to Debit Cards

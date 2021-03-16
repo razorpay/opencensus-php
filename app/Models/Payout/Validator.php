@@ -407,6 +407,44 @@ class Validator extends Base\Validator
                     ]);
             }
 
+            $cardType    = $fundAccount->account->getType();
+            $cardIin     = $fundAccount->account->getIin();
+            $cardNetwork = $fundAccount->account->getNetwork();
+
+            if($mode === Mode::CARD)
+            {
+                $hasSupportedModes = false;
+                $supportedModeConfigs = (new Mode)->getM2PSupportedChannelModeConfig(
+                    $cardIssuer,
+                    $cardNetwork,
+                    $cardType,
+                    $cardIin
+                );
+
+                foreach ($supportedModeConfigs as $supportedMode)
+                {
+                    if ($supportedMode[Mode::CHANNEL] === Settlement\Channel::M2P)
+                    {
+                        $hasSupportedModes = true;
+                    }
+                }
+
+                if($hasSupportedModes === false)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Payout mode CARD is not supported for the fund account',
+                        null,
+                        [
+                            'fund_account' => $fundAccount->getId(),
+                            'card_issuer'  => $cardIssuer,
+                            'card_network' => $networkCode,
+                            'cardType'     => $cardType
+                        ]);
+                }
+
+                return;
+            }
+
             Mode::validateModeOfIssuer($mode, $cardIssuer, $networkCode);
         }
     }
@@ -929,5 +967,15 @@ class Validator extends Base\Validator
             }
 
         return PayoutMode::validateChannelAndModeForPayouts($channel, $destinationType, $mode);
+    }
+
+    public function validateAndUpdateCardMode(array & $input)
+    {
+        if((isset($input[Entity::MODE]) === true) and
+            (strtolower($input[Entity::MODE]) === PayoutMode::CARD))
+        {
+            $input[Entity::MODE] = PayoutMode::CARD;
+        }
+
     }
 }

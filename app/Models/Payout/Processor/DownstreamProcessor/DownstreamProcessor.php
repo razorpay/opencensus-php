@@ -146,6 +146,11 @@ class DownstreamProcessor
 
         $mode = $this->payout->getMode();
 
+        if ($mode === FundTransferMode::CARD)
+        {
+            return Channel::M2P;
+        }
+
         $razorxFeature = strtoupper(sprintf("%s_MODE_PAYOUT_FILTER", $mode));
 
         $variant = $this->app->razorx->getTreatment(

@@ -15,12 +15,17 @@ class Mode
     const IFT   = 'IFT';
     const UPI   = 'UPI';
 
+    // We will be storing mode 'card' for payouts through
+    // M2P, but we will be supporting 'Card', 'cArd', 'CaRD' etc in request body
+    const CARD  = 'card';
+
     protected static $allSupportedModes = [
         self::RTGS,
         self::IMPS,
         self::NEFT,
         self::IFT,
         self::UPI,
+        self::CARD,
     ];
 
     public static function validateMode(string $mode)
@@ -93,13 +98,18 @@ class Mode
                     self::IMPS,
                     self::NEFT,
                 ]
+            ],
+            Settlement\Channel::M2P       => [
+                Constants\Entity::CARD          => [
+                    self::CARD,
+                ]
             ]
         ];
     }
 
     protected static function isValid(string $mode): bool
     {
-        return (in_array($mode, self::$allSupportedModes, true) === true);
+        return (in_array($mode, self::$allSupportedModes) === true);
     }
 
     public static function validateChannelAndModeForPayouts(string $channel = null,

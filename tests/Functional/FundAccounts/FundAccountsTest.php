@@ -7,6 +7,8 @@ use Queue;
 
 use RZP\Error\Error;
 use RZP\Models\Feature;
+use RZP\Models\Card\Issuer;
+use RZP\Models\Card\Network;
 use RZP\Models\Contact\Type;
 use RZP\Services\RazorXClient;
 use RZP\Jobs\FTS\CreateAccount;
@@ -1061,6 +1063,46 @@ class FundAccountsTest extends TestCase
     public function testCreateFundAccountInvalidBankAccountArray()
     {
         $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->startTest();
+    }
+
+    // Following test depends on configs. Adding/removing configs defined in Models/FundTransfer/M2P/M2PConfigs file can fail these.
+    // We need to make changes to the test sample data to pass them
+    public function testCreateFundAccountDebitCard()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->fixtures->create('iin', [
+            'iin'     => 340169,
+            'network' => Network::$fullName[Network::VISA],
+            'type'    => \RZP\Models\Card\Type::DEBIT,
+            'issuer'  => Issuer::KKBK
+        ]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
+
+        $this->mockCardVault();
+
+        $this->startTest();
+    }
+
+    // Following test depends on configs. Adding/removing configs defined in Models/FundTransfer/M2P/M2PConfigs file can fail these.
+    // We need to make changes to the test sample data to pass them
+    public function testCreateFundAccountDebitCardWithoutSupportedModes()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->fixtures->create('iin', [
+            'iin'     => 340169,
+            'network' => Network::$fullName[Network::MC],
+            'type'    => \RZP\Models\Card\Type::DEBIT,
+            'issuer'  => "default_issuer"
+        ]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
+
+        $this->mockCardVault();
 
         $this->startTest();
     }

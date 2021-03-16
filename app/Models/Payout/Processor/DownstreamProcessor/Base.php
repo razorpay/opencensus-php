@@ -10,6 +10,7 @@ use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\FundTransfer\Mode;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 
@@ -71,6 +72,8 @@ class Base extends BaseCore
                 break;
 
             case Constants\Entity::CARD:
+                $ftaInput = $this->modifyFTAInputForCARDModeIfRequired($ftaInput);
+
                 $ftaCore->createWithCard($payout, $ftaAccount, $ftaInput);
                 break;
 
@@ -83,6 +86,17 @@ class Base extends BaseCore
                         'fta_account_entity'    => $ftaAccountEntity,
                     ]);
         }
+    }
+
+    protected function modifyFTAInputForCARDModeIfRequired(array $ftaInput)
+    {
+        if ((isset($ftaInput[FundTransferAttempt\Entity::MODE]) === true) and
+            ($ftaInput[FundTransferAttempt\Entity::MODE] === Mode::CARD))
+        {
+            $ftaInput[FundTransferAttempt\Entity::MODE] = Mode::CT;
+        }
+
+        return $ftaInput;
     }
 
     protected function postTransactionCreationProcessing(Transaction\Entity $txn, Entity $payout)

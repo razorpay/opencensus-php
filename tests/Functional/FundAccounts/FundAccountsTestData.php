@@ -2674,4 +2674,63 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testCreateFundAccountDebitCard' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'card',
+                'contact_id'   => 'cont_1000000contact',
+                'card' => [
+                    'name' => 'Mr. A B',
+                    'number' => '340169570990137',
+                    'cvv' => '123',
+                    'expiry_month' => 8,
+                    'expiry_year' => 2025
+                ]
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'card',
+                'contact_id'   => 'cont_1000000contact',
+                'card'      => [
+                ],
+            ],
+            'status_code' => 201
+        ],
+    ],
+
+    'testCreateFundAccountDebitCardWithoutSupportedModes' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'card',
+                'contact_id'   => 'cont_1000000contact',
+                'card' => [
+                    'name' => 'Mr. A B',
+                    'number' => '340169570990137',
+                    'cvv' => '123',
+                    'expiry_month' => 8,
+                    'expiry_year' => 2025
+                ]
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Card not supported for fund account creation',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CARD_NOT_SUPPORTED_FOR_FUND_ACCOUNT,
+        ],
+    ],
 ];

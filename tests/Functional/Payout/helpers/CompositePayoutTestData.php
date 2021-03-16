@@ -1357,4 +1357,278 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testCreateCompositeM2PPayoutForDebitCardWithUpperCaseCardMode' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number' => '2224440041626905',
+                'amount'         => 20000,
+                'currency'       => 'INR',
+                'purpose'        => 'payout',
+                'narration'      => 'Batman',
+                'mode'           => 'card',
+                'notes'          => [
+                    'abc' => 'xyz',
+                ],
+                'fund_account'   => [
+                    'account_type' => 'card',
+                    'card' => [
+                        'name' => 'Prashanth YV',
+                        'number' => '340169570990137',
+                        'cvv' => '123',
+                        'expiry_month' => 8,
+                        'expiry_year' => 2025
+                    ],
+                    'contact'      => [
+                        'name'    => 'Prashanth YV',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'payout',
+                'amount'       => 20000,
+                'currency'     => 'INR',
+                'narration'    => 'Batman',
+                'purpose'      => 'payout',
+                'status'       => 'processing',
+                'mode'         => 'card',
+                'notes'        => [
+                    'abc' => 'xyz',
+                ],
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'account_type' => 'card',
+                    'card' => [
+                        'name'      => 'Prashanth YV',
+                        'last4'     =>  '0137',
+                        'network'   =>  'MasterCard',
+                        'type'      =>  'debit',
+                        'issuer'    =>  'YESB',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateCompositeM2PPayoutForDebitCardWithLowerCaseCardMode' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number' => '2224440041626905',
+                'amount'         => 20000,
+                'currency'       => 'INR',
+                'purpose'        => 'payout',
+                'narration'      => 'Batman',
+                'mode'           => 'card',
+                'notes'          => [
+                    'abc' => 'xyz',
+                ],
+                'fund_account'   => [
+                    'account_type' => 'card',
+                    'card' => [
+                        'name' => 'Prashanth YV',
+                        'number' => '340169570990137',
+                        'cvv' => '123',
+                        'expiry_month' => 8,
+                        'expiry_year' => 2025
+                    ],
+                    'contact'      => [
+                        'name'    => 'Prashanth YV',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'payout',
+                'amount'       => 20000,
+                'currency'     => 'INR',
+                'narration'    => 'Batman',
+                'purpose'      => 'payout',
+                'status'       => 'processing',
+                'mode'         => 'card',
+                'notes'        => [
+                    'abc' => 'xyz',
+                ],
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'account_type' => 'card',
+                    'card' => [
+                        'name'      => 'Prashanth YV',
+                        'last4'     =>  '0137',
+                        'network'   =>  'MasterCard',
+                        'type'      =>  'debit',
+                        'issuer'    =>  'YESB',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateCompositeM2PPayoutForDebitCardWithoutSupportedModes' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number' => '2224440041626905',
+                'amount'         => 20000,
+                'currency'       => 'INR',
+                'purpose'        => 'payout',
+                'narration'      => 'Batman',
+                'mode'           => 'card',
+                'notes'          => [
+                    'abc' => 'xyz',
+                ],
+                'fund_account'   => [
+                    'account_type' => 'card',
+                    'card' => [
+                        'name' => 'Prashanth YV',
+                        'number' => '340169570990137',
+                        'cvv' => '123',
+                        'expiry_month' => 8,
+                        'expiry_year' => 2025
+                    ],
+                    'contact'      => [
+                        'name'    => 'Prashanth YV',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Card not supported for fund account creation',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CARD_NOT_SUPPORTED_FOR_FUND_ACCOUNT,
+        ],
+    ],
+
+    'testCreateCompositeM2PPayoutForDebitCardMerchantBlockedByProduct' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number' => '2224440041626905',
+                'amount'         => 20000,
+                'currency'       => 'INR',
+                'purpose'        => 'payout',
+                'narration'      => 'Batman',
+                'mode'           => 'card',
+                'notes'          => [
+                    'abc' => 'xyz',
+                ],
+                'fund_account'   => [
+                    'account_type' => 'card',
+                    'card' => [
+                        'name' => 'Prashanth YV',
+                        'number' => '340169570990137',
+                        'cvv' => '123',
+                        'expiry_month' => 8,
+                        'expiry_year' => 2025
+                    ],
+                    'contact'      => [
+                        'name'    => 'Prashanth YV',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => \RZP\Error\PublicErrorDescription::BAD_REQUEST_M2P_MERCHANT_BLACKLISTED_FOR_PRODUCT,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_M2P_MERCHANT_BLACKLISTED_FOR_PRODUCT,
+        ],
+    ],
+
+    'testCreateCompositeM2PPayoutForDebitCardMerchantBlockedByNetwork' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number' => '2224440041626905',
+                'amount'         => 20000,
+                'currency'       => 'INR',
+                'purpose'        => 'payout',
+                'narration'      => 'Batman',
+                'mode'           => 'card',
+                'notes'          => [
+                    'abc' => 'xyz',
+                ],
+                'fund_account'   => [
+                    'account_type' => 'card',
+                    'card' => [
+                        'name' => 'Prashanth YV',
+                        'number' => '340169570990137',
+                        'cvv' => '123',
+                        'expiry_month' => 8,
+                        'expiry_year' => 2025
+                    ],
+                    'contact'      => [
+                        'name'    => 'Prashanth YV',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => \RZP\Error\PublicErrorDescription::BAD_REQUEST_M2P_MERCHANT_BLACKLISTED_BY_NETWORK,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_M2P_MERCHANT_BLACKLISTED_BY_NETWORK,
+        ],
+    ],
 ];

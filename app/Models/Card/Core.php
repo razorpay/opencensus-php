@@ -65,10 +65,10 @@ class Core extends Base\Core
 
         $card = $this->create($input, $merchant);
 
-        $cardType = $card->getType();
-        $cardIssuer = $card->getIssuer();
+        $cardType       = $card->getType();
+        $cardIssuer     = $card->getIssuer();
         $cardVaultToken = $card->getCardVaultToken();
-        $cardNetwork = $card->getNetwork();
+        $cardNetwork    = $card->getNetwork();
 
         //experiment for fund account of prepaid card type creation
         $prepaidCardVariant = $this->app->razorx->getTreatment(
@@ -85,18 +85,47 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_CARD_NOT_SUPPORTED_FOR_FUND_ACCOUNT,
                 null,
                 [
-                    'type'              => $cardType,
-                    'issuer'            => $cardIssuer,
-                    'network'           => $cardNetwork,
-                    'card_vault_token'  => $cardVaultToken,
+                    'type'             => $cardType,
+                    'issuer'           => $cardIssuer,
+                    'network'          => $cardNetwork,
+                    'card_vault_token' => $cardVaultToken,
                 ],
                 $cardNetwork . " cards are not supported for issuer " . Issuer::SCBL
             );
         }
 
+        // Querying m2p supported modes here because m2p supports debit as well as credit card payouts.
+        // If a credit card is not supported for IMPS, NEFT, we check if m2p supports it.
+        // If it does, we allow FA creation.
+        $m2pSupportedModeConfigs = (new FundTransfer\Mode)->getM2PSupportedChannelModeConfig($cardIssuer, $cardNetwork, $cardType, $card->getIin());
+
+        if ($cardType === Card\Type::DEBIT)
+        {
+            if (($card->getCardVaultToken() === null) or
+                (empty($m2pSupportedModeConfigs) === true))
+            {
+                // if the fund account is of type card and it is a debit card and if no supported mode
+                // is found via m2p channel(m2p is the only channel supporting debit card payouts),
+                // then fail FA creation.
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_CARD_NOT_SUPPORTED_FOR_FUND_ACCOUNT,
+                    null,
+                    [
+                        'type'             => $cardType,
+                        'issuer'           => $cardIssuer,
+                        'card_vault_token' => $cardVaultToken,
+                    ]);
+            }
+
+            return $card;
+        }
+
+        // If a credit card is not supported for IMPS, NEFT, we check if m2p supports it.
+        // If it does, we allow FA creation.
         if (($card->getCardVaultToken() === null) or
             (Type::isValidFundAccountCardType($cardType, $prepaidCardVariant) === false) or
-            (in_array($cardIssuer, FundTransfer\Mode::getSupportedIssuers(), true) === false))
+            ((in_array($cardIssuer, FundTransfer\Mode::getSupportedIssuers(), true) === false) and
+             (empty($m2pSupportedModeConfigs) === true)))
         {
             $variant = $this->app->razorx->getTreatment(
                 $merchant->getId(),
@@ -116,9 +145,9 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_CARD_NOT_SUPPORTED_FOR_FUND_ACCOUNT,
                 null,
                 [
-                    'type'              => $cardType,
-                    'issuer'            => $cardIssuer,
-                    'card_vault_token'  => $cardVaultToken,
+                    'type'             => $cardType,
+                    'issuer'           => $cardIssuer,
+                    'card_vault_token' => $cardVaultToken,
                 ]);
         }
 

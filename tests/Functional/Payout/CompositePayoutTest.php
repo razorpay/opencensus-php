@@ -5,6 +5,9 @@ namespace RZP\Tests\Functional\Payout;
 use RZP\Error\Error;
 use RZP\Models\Payout;
 use RZP\Models\Feature;
+use RZP\Models\Card\Type;
+use RZP\Models\Card\Issuer;
+use RZP\Models\Card\Network;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payout\WorkflowFeature;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -536,5 +539,175 @@ class CompositePayoutTest extends TestCase
         $this->assertEquals(count($payouts), 0);
         $this->assertEquals(count($fundAccounts), 0);
         $this->assertEquals(count($contacts), 0);
+    }
+
+    public function testCreateCompositeM2PPayoutForDebitCardWithUpperCaseCardMode()
+    {
+        $this->fixtures->create('iin', [
+            'iin'     => 340169,
+            'network' => Network::$fullName[Network::MC],
+            'type'    => Type::DEBIT,
+            'issuer'  => Issuer::YESB
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::S2S,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($payout['mode'],'card');
+        $this->assertEquals($payout['channel'], 'm2p');
+        $this->assertEquals($payoutAttempt['channel'], 'm2p');
+        $this->assertEquals($payoutAttempt['mode'],'CT');
+    }
+
+    public function testCreateCompositeM2PPayoutForDebitCardWithLowerCaseCardMode()
+    {
+        $this->fixtures->create('iin', [
+            'iin'     => 340169,
+            'network' => Network::$fullName[Network::MC],
+            'type'    => Type::DEBIT,
+            'issuer'  => Issuer::YESB
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::S2S,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($payout['mode'],'card');
+        $this->assertEquals($payout['channel'], 'm2p');
+        $this->assertEquals($payoutAttempt['channel'], 'm2p');
+        $this->assertEquals($payoutAttempt['mode'],'CT');
+    }
+
+    public function testCreateCompositeM2PPayoutForDebitCardWithoutSupportedModes()
+    {
+        $this->fixtures->create('iin', [
+            'iin'     => 340169,
+            'network' => Network::$fullName[Network::MC],
+            'type'    => Type::DEBIT,
+            'issuer'  => "default_issuer"
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::S2S,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    // Following test depends on configs. Adding/removing configs defined in Models/FundTransfer/M2P/M2PConfigs file can fail these.
+    // We need to make changes to the test sample data to pass them
+    public function testCreateCompositeM2PPayoutForDebitCardMerchantBlockedByProduct()
+    {
+        $this->fixtures->create('iin', [
+            'iin'     => 340169,
+            'network' => Network::$fullName[Network::MC],
+            'type'    => Type::DEBIT,
+            'issuer'  => Issuer::YESB
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::S2S,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create(
+            'settings',
+            [
+                'module'      => 'm2p_transfer',
+                'entity_type' => 'merchant',
+                'entity_id'   => 10000000000000,
+                'key'         => 'settlement',
+                'value'       => 'true',
+            ]
+        );
+
+        $this->startTest();
+    }
+
+    // Following test depends on configs. Adding/removing configs defined in Models/FundTransfer/M2P/M2PConfigs file can fail these.
+    // We need to make changes to the test sample data to pass them
+    public function testCreateCompositeM2PPayoutForDebitCardMerchantBlockedByNetwork()
+    {
+        $this->fixtures->create('iin', [
+            'iin'     => 340169,
+            'network' => Network::$fullName[Network::MC],
+            'type'    => Type::DEBIT,
+            'issuer'  => Issuer::YESB
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::S2S,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create(
+            'settings',
+            [
+                'module'      => 'm2p_transfer',
+                'entity_type' => 'merchant',
+                'entity_id'   => 10000000000000,
+                'key'         => Network::MC,
+                'value'       => 'true',
+            ]
+        );
+
+        $this->startTest();
     }
 }

@@ -14,6 +14,7 @@ use RZP\Models\Payout\CounterHelper;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Models\FundTransfer\Mode as FundTransferMode;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class FundAccountPayout extends Base
@@ -187,6 +188,11 @@ class FundAccountPayout extends Base
         $merchant = $payout->merchant;
 
         $mode = $payout->getMode();
+
+        if ($mode === FundTransferMode::CARD)
+        {
+            return Channel::M2P;
+        }
 
         $razorxFeature = strtoupper(sprintf("%s_MODE_PAYOUT_FILTER", $mode));
 

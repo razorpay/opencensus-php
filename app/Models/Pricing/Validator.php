@@ -405,12 +405,13 @@ class Validator extends Base\Validator
                 FundTransfer\Mode::IMPS,
                 FundTransfer\Mode::RTGS,
                 FundTransfer\Mode::IFT,
+                FundTransfer\Mode::CARD,
             ];
 
             if (in_array($mode, $validModes, true) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'Payout mode should be NEFT/IMPS/RTGS/IFT',
+                    'Payout mode should be NEFT/IMPS/RTGS/IFT/card',
                     'mode',
                     [
                         'mode'  => $mode,

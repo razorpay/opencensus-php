@@ -32,6 +32,7 @@ class Module
     const FREE_PAYOUT           = 'free_payout';
     const PAYOUT_AMOUNT_TYPE    = 'payout_amount_type';
     const VIRTUAL_ACCOUNT       = 'virtual_account';
+    const M2P_TRANSFER          = 'm2p_transfer';
 
     /**
      * @param string $module
