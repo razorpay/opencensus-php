@@ -4,4 +4,5 @@ interface Window {
   session_id: string;
   rzpQ: any;
   __VERSION__: string;
+  razorpayAnalytics: any;
 }

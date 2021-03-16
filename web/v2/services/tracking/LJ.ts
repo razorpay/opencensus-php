@@ -2,11 +2,11 @@ let utm = null;
 let gclid = null;
 let browser_details = {};
 
-if (typeof window.analytics !== 'undefined') {
-  utm = window.analytics.utils.getLandingParams();
-  gclid = window.analytics.utils.getCookie('gclid');
-  if (typeof window.analytics.utils.getBrowserDetails !== 'undefined') {
-    browser_details = window.analytics.utils.getBrowserDetails();
+if (typeof window.razorpayAnalytics !== 'undefined') {
+  utm = window.razorpayAnalytics.utils.getLandingParams();
+  gclid = window.razorpayAnalytics.utils.getCookie('gclid');
+  if (typeof window.razorpayAnalytics.utils.getBrowserDetails !== 'undefined') {
+    browser_details = window.razorpayAnalytics.utils.getBrowserDetails();
   }
 }
 
