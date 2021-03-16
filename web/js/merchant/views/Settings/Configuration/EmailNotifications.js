@@ -26,10 +26,11 @@ export default class EmailNotifications extends Component {
       eventAction: 'Change - Email Notifications Addresses',
     });
     analyticsTrack({
-      objectName: 'documentation',
+      objectName: 'save email notifications',
       actionName: 'clicked',
-      screen: 'home page',
+      screen: 'settings',
       properties: {
+        location: 'configuration',
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });

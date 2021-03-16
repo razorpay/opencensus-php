@@ -1,5 +1,7 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { updateFeatures } from 'merchant/reducers/config';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -56,6 +58,17 @@ export default class FlashCheckout extends Component {
       should_sync: shouldSync,
     };
 
+    analyticsTrack({
+      objectName: 'flash checkout',
+      actionName: 'toggled',
+      screen: 'settings',
+      properties: {
+        location: 'configuration',
+        flashCheckout: enableFC ? 'Enabled' : 'Disabled',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+
     return this.props
       .updateFeatures(data, this.props.user.current)
       .then((res) => {
@@ -70,6 +83,17 @@ export default class FlashCheckout extends Component {
           type: 'success',
           message: 'Your preference was saved',
         });
+        analyticsTrack({
+          objectName: 'flash checkout toggle',
+          actionName: 'result',
+          screen: 'settings',
+          properties: {
+            location: 'configuration',
+            status: 'Success',
+            flashCheckout: enableFC ? 'Enabled' : 'Disabled',
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
         this.setState({
           fcEnabled: !this.state.fcEnabled,
         });
@@ -80,6 +104,18 @@ export default class FlashCheckout extends Component {
         this.props.showNotification({
           type: 'error',
           message: err.errors,
+        });
+        analyticsTrack({
+          objectName: 'flash checkout toggle',
+          actionName: 'result',
+          screen: 'settings',
+          properties: {
+            location: 'configuration',
+            status: 'Failure',
+            flashCheckout: enableFC ? 'Enabled' : 'Disabled',
+            failureReason: err.errors[0],
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
         });
       });
   };
@@ -113,7 +149,23 @@ export default class FlashCheckout extends Component {
                 additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
               >
                 <div class="col-sm-10">
-                  <a class="highlight" target="_blank" href="https://razorpay.com/flashcheckout/">
+                  <a
+                    class="highlight"
+                    target="_blank"
+                    href="https://razorpay.com/flashcheckout/"
+                    onClick={() =>
+                      analyticsTrack({
+                        objectName: 'know more',
+                        actionName: 'clicked',
+                        screen: 'settings',
+                        properties: {
+                          location: 'configuration',
+                          flowName: 'Flash Checkout',
+                          ...getCommonAnalyticsProperties(window.rzp_user),
+                        },
+                      })
+                    }
+                  >
                     Know more
                     <i class="i i-external-link" style={{ marginLeft: '5px' }} />
                   </a>

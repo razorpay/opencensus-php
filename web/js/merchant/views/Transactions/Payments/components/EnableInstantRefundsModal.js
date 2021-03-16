@@ -14,13 +14,10 @@ import Amount from 'common/ui/Amount';
 import { Fragment } from 'react';
 import { updateConfig } from 'merchant/reducers/config';
 import RTracking from 'react-tracking';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
-import {
-  isBlank,
-  rupeesToPaise,
-  paiseToRupees,
-  titleCase,
-} from 'common/utils/rzp-utils';
+import { isBlank, rupeesToPaise, paiseToRupees, titleCase } from 'common/utils/rzp-utils';
 import {
   refundPayment,
   fetchItem as fetchPayment,
@@ -32,7 +29,7 @@ import { showWhenUtil } from 'merchant/components/ShowWhen';
 const selector = formValueSelector('refundModal');
 
 @connect(
-  state => {
+  (state) => {
     let partial = selector(state, 'partial');
     let reverse_all = selector(state, 'reverse_all');
     let payable_amount = selector(state, 'amount');
@@ -55,7 +52,7 @@ const selector = formValueSelector('refundModal');
     updateConfig,
     fetchTransfers,
     ...NotificationsActions,
-  }
+  },
 )
 @RTracking(() => window.rzpQ.component('EnableInstantRefundsModal'))
 export default class EnableInstantRefundsModal extends Component {
@@ -73,6 +70,17 @@ export default class EnableInstantRefundsModal extends Component {
   }
 
   enableInstantRefunds = () => {
+    analyticsTrack({
+      objectName: `enable ${this.props.speed === 'normal' ? 'normal' : 'instant'} refund popup`,
+      actionName: 'clicked',
+      screen: 'settings',
+      properties: {
+        location: 'configuration',
+        actionName: `enable ${this.props.speed === 'normal' ? 'normal' : 'instant'} refund`,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+
     let label;
     this.props
       .updateConfig({
@@ -108,36 +116,40 @@ export default class EnableInstantRefundsModal extends Component {
         }`;
         window.rzpAnalytics({
           eventCategory: 'Dashboard - Instant Refund',
-          eventAction: `Enable ${
-            this.props.speed === 'normal' ? 'Normal' : 'Instant'
-          } Refund`,
+          eventAction: `Enable ${this.props.speed === 'normal' ? 'Normal' : 'Instant'} Refund`,
           eventLabel: label,
         });
         if (this.props.speed === 'normal') {
           this.props.tracking.trackEvent(
-            window.rzpQ
-              .merchantActions()
-              .initiated(`Click - Enable Normal Refund`, {
-                label: `Normal Refund Modal`,
-                session_id: window.session_id,
-                category: 'Merchant Dashboard - IR',
-              })
+            window.rzpQ.merchantActions().initiated(`Click - Enable Normal Refund`, {
+              label: `Normal Refund Modal`,
+              session_id: window.session_id,
+              category: 'Merchant Dashboard - IR',
+            }),
           );
         } else {
           this.props.tracking.trackEvent(
-            window.rzpQ
-              .merchantActions()
-              .initiated(`Click - Enable Instant Refund`, {
-                label: `Instant Refund Modal - ${
-                  this.props.pricing.custom_pricing
-                    ? 'Custom Pricing'
-                    : 'Normal Pricing'
-                }`,
-                session_id: window.session_id,
-                category: 'Merchant Dashboard - IR',
-              })
+            window.rzpQ.merchantActions().initiated(`Click - Enable Instant Refund`, {
+              label: `Instant Refund Modal - ${
+                this.props.pricing.custom_pricing ? 'Custom Pricing' : 'Normal Pricing'
+              }`,
+              session_id: window.session_id,
+              category: 'Merchant Dashboard - IR',
+            }),
           );
         }
+
+        analyticsTrack({
+          objectName: `${this.props.speed === 'normal' ? 'normal' : 'instant'} refund`,
+          actionName: 'result',
+          screen: 'settings',
+          properties: {
+            location: 'configuration',
+            status: 'Success',
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
+
         this.props.updated();
         this.props.closeModal();
       })
@@ -145,6 +157,17 @@ export default class EnableInstantRefundsModal extends Component {
         this.props.showNotification({
           type: 'error',
           message: errors,
+        });
+        analyticsTrack({
+          objectName: `${this.props.speed === 'normal' ? 'normal' : 'instant'} refund`,
+          actionName: 'result',
+          screen: 'settings',
+          properties: {
+            location: 'configuration',
+            status: 'Failure',
+            failureReason: errors[0],
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
         });
       });
   };
@@ -162,51 +185,54 @@ export default class EnableInstantRefundsModal extends Component {
                   label: `Normal Refund Modal`,
                   session_id: window.session_id,
                   category: 'Merchant Dashboard - IR',
-                })
+                }),
               );
             } else {
               this.props.tracking.trackEvent(
                 window.rzpQ.merchantActions().initiated(`Click - Cancel`, {
                   label: `Instant Refund Modal - ${
-                    this.props.pricing.custom_pricing
-                      ? 'Custom Pricing'
-                      : 'Normal Pricing'
+                    this.props.pricing.custom_pricing ? 'Custom Pricing' : 'Normal Pricing'
                   }`,
                   session_id: window.session_id,
                   category: 'Merchant Dashboard - IR',
-                })
+                }),
               );
             }
+            analyticsTrack({
+              objectName: `enable ${
+                this.props.speed === 'normal' ? 'normal' : 'instant'
+              } refund popup`,
+              actionName: 'clicked',
+              screen: 'settings',
+              properties: {
+                location: 'configuration',
+                actionName: 'close',
+                ...getCommonAnalyticsProperties(window.rzp_user),
+              },
+            });
             this.props.closeModal();
           }}
           title={
             <div>
-              {this.props.speed !== 'normal' ? (
-                <i class="i i-instant-refund" />
-              ) : null}{' '}
-              Enable {this.props.speed === 'normal' ? 'Normal' : 'Instant'}{' '}
-              Refund
+              {this.props.speed !== 'normal' ? <i class="i i-instant-refund" /> : null} Enable{' '}
+              {this.props.speed === 'normal' ? 'Normal' : 'Instant'} Refund
             </div>
           }
         />
         <div class="modal-body" style={{ paddingBottom: 0 }}>
           <div>
             <React.Fragment>
-              <div
-                style={{ margin: '10px 0' }}
-                class="change-default-refund-speed"
-              >
+              <div style={{ margin: '10px 0' }} class="change-default-refund-speed">
                 <div>
                   {this.props.speed == 'normal' ? (
                     <p>
-                      Your customers will receive their refunds in 5-7 days. The
-                      default refund speed for all your refunds will be set to
-                      `normal`
+                      Your customers will receive their refunds in 5-7 days. The default refund
+                      speed for all your refunds will be set to `normal`
                     </p>
                   ) : (
                     <p>
-                      Your customers will receive refunds instantly. The default
-                      refund speed for all your refunds will be set to `optimum`{' '}
+                      Your customers will receive refunds instantly. The default refund speed for
+                      all your refunds will be set to `optimum`{' '}
                     </p>
                   )}
                   &nbsp;
@@ -234,16 +260,13 @@ export default class EnableInstantRefundsModal extends Component {
                                         }`,
                                         category: 'Merchant Dashboard - IR',
                                         session_id: window.session_id,
-                                      })
+                                      }),
                                   );
                                 }
                               }}
                               class="show-fee-struct"
                             >
-                              <b>
-                                {this.state.show_breakup ? 'Hide' : 'Show'}{' '}
-                                Pricing
-                              </b>{' '}
+                              <b>{this.state.show_breakup ? 'Hide' : 'Show'} Pricing</b>{' '}
                               <i
                                 class={`i action-arrow i-chevron-${
                                   this.state.show_breakup ? 'up' : 'down'
@@ -257,10 +280,7 @@ export default class EnableInstantRefundsModal extends Component {
                       </div>
                       {this.state.show_breakup ? (
                         <Fragment>
-                          <div
-                            class="panel-body"
-                            style={{ paddingBottom: '8px' }}
-                          >
+                          <div class="panel-body" style={{ paddingBottom: '8px' }}>
                             {!this.props.pricing.custom_pricing ? (
                               <div class="instant-breakup">
                                 <div class="flex">
@@ -279,23 +299,15 @@ export default class EnableInstantRefundsModal extends Component {
                                 </div>
                                 {rules.map((r, i) => (
                                   <div key={i} class="flex">
-                                    <div
-                                      class="text-left amt"
-                                      style={{ flexGrow: 1 }}
-                                    >
+                                    <div class="text-left amt" style={{ flexGrow: 1 }}>
                                       ₹{' '}
                                       {i > 0
                                         ? r.amount_range_min / 100 + 1
                                         : r.amount_range_min / 100}{' '}
                                       {i == rules.length - 1 ? 'and' : '-'}{' '}
-                                      {i == rules.length - 1
-                                        ? `above`
-                                        : r.amount_range_max / 100}{' '}
+                                      {i == rules.length - 1 ? `above` : r.amount_range_max / 100}{' '}
                                     </div>
-                                    <div
-                                      class="text-right"
-                                      style={{ flexGrow: 1 }}
-                                    >
+                                    <div class="text-right" style={{ flexGrow: 1 }}>
                                       <Amount
                                         value={r.fixed_rate}
                                         currency={'INR'}
@@ -314,8 +326,7 @@ export default class EnableInstantRefundsModal extends Component {
                                       class="pointer"
                                       onClick={() => {
                                         window.rzpAnalytics({
-                                          eventCategory:
-                                            'Dashboard - Instant Refund',
+                                          eventCategory: 'Dashboard - Instant Refund',
                                           eventAction: 'Contact Support',
                                           eventLabel: `Fee Modal | Contact Support`,
                                         });
@@ -357,8 +368,8 @@ export default class EnableInstantRefundsModal extends Component {
           <div class="confirm-note-info">
             {this.props.speed == 'normal' ? (
               <div>
-                You can still issue instant refunds either from the Dashboard or
-                using the refund API. To know more,{' '}
+                You can still issue instant refunds either from the Dashboard or using the refund
+                API. To know more,{' '}
                 <a
                   href="https://razorpay.com/docs/payment-gateway/refunds/#using-the-dashboard"
                   target="_blank"
@@ -369,13 +380,11 @@ export default class EnableInstantRefundsModal extends Component {
                       eventLabel: `Learn More | Enable Normal Refund`,
                     });
                     this.props.tracking.trackEvent(
-                      window.rzpQ
-                        .merchantActions()
-                        .initiated(`Click - Click Here`, {
-                          label: `Normal Refund Modal`,
-                          session_id: window.session_id,
-                          category: 'Merchant Dashboard - IR',
-                        })
+                      window.rzpQ.merchantActions().initiated(`Click - Click Here`, {
+                        label: `Normal Refund Modal`,
+                        session_id: window.session_id,
+                        category: 'Merchant Dashboard - IR',
+                      }),
                     );
                     this.analytics.learn_more = true;
                   }}
@@ -387,8 +396,8 @@ export default class EnableInstantRefundsModal extends Component {
               </div>
             ) : (
               <div>
-                You can still issue normal refunds either from the Dashboard or
-                using the refund API. To know more,{' '}
+                You can still issue normal refunds either from the Dashboard or using the refund
+                API. To know more,{' '}
                 <a
                   href="https://razorpay.com/docs/payment-gateway/refunds/#using-the-dashboard"
                   target="_blank"
@@ -400,17 +409,13 @@ export default class EnableInstantRefundsModal extends Component {
                     });
 
                     this.props.tracking.trackEvent(
-                      window.rzpQ
-                        .merchantActions()
-                        .initiated(`Click - Click Here`, {
-                          label: `Instant Refund Modal - ${
-                            this.props.pricing.custom_pricing
-                              ? 'Custom Pricing'
-                              : 'Normal Pricing'
-                          }`,
-                          session_id: window.session_id,
-                          category: 'Merchant Dashboard - IR',
-                        })
+                      window.rzpQ.merchantActions().initiated(`Click - Click Here`, {
+                        label: `Instant Refund Modal - ${
+                          this.props.pricing.custom_pricing ? 'Custom Pricing' : 'Normal Pricing'
+                        }`,
+                        session_id: window.session_id,
+                        category: 'Merchant Dashboard - IR',
+                      }),
                     );
 
                     this.analytics.learn_more = true;
@@ -426,18 +431,11 @@ export default class EnableInstantRefundsModal extends Component {
           </div>
         </div>
         <div>
-          <div
-            class="Modal__actions"
-            style={{ padding: '20px', paddingTop: 0 }}
-          >
+          <div class="Modal__actions" style={{ padding: '20px', paddingTop: 0 }}>
             <div class="row flex" style={{ marginBottom: '5px' }}>
               <div class="w100" class="change-default-speed-btn">
-                <button
-                  class="btn btn-primary btn-block"
-                  onClick={this.enableInstantRefunds}
-                >
-                  Enable {this.props.speed == 'normal' ? 'Normal' : 'Instant'}{' '}
-                  Refund
+                <button class="btn btn-primary btn-block" onClick={this.enableInstantRefunds}>
+                  Enable {this.props.speed == 'normal' ? 'Normal' : 'Instant'} Refund
                 </button>
               </div>
             </div>
@@ -458,9 +456,7 @@ const raiseTicket = () => {
     }, 0);
     setTimeout(() => {
       var el = document.getElementsByName('request-description')[0];
-      el.value =
-        'Hello Team,\n' +
-        'I’d like to know my custom pricing for instant refunds.';
+      el.value = 'Hello Team,\n' + 'I’d like to know my custom pricing for instant refunds.';
       el.focus();
     }, 1000);
   }

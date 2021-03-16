@@ -2,6 +2,8 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import FileUploadButton from 'common/ui/FileUpload/Button';
 import { uploadLogo, fetchLocale, updateLocale, saveLocale } from 'merchant/reducers/config';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -54,6 +56,15 @@ export default class CheckoutTheme extends Component {
   }
 
   uploadLogo = (event) => {
+    analyticsTrack({
+      objectName: 'logo choose file',
+      actionName: 'clicked',
+      screen: 'settings',
+      properties: {
+        location: 'configuration',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     let file = event.target.files[0];
     return this.props
       .uploadLogo(file, 'logo')
@@ -62,18 +73,39 @@ export default class CheckoutTheme extends Component {
           type: 'success',
           message: 'File Uploaded Successfully',
         });
+        analyticsTrack({
+          objectName: 'logo choose file',
+          actionName: 'result',
+          screen: 'settings',
+          properties: {
+            location: 'configuration',
+            status: 'Success',
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
       })
       .catch(({ errors }) => {
         this.props.showNotification({
           type: 'error',
           message: errors,
         });
+        analyticsTrack({
+          objectName: 'logo choose file',
+          actionName: 'result',
+          screen: 'settings',
+          properties: {
+            location: 'configuration',
+            status: 'Failure',
+            failureReason: errors[0],
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
       });
   };
 
   onSave = (e) => {
     this.analytics();
-    this.props.handleSubmit(this.props.onSave)(e);
+    this.props.handleSubmit(this.props.onSave)(e, 'theme');
   };
 
   analytics = () => {
@@ -81,9 +113,31 @@ export default class CheckoutTheme extends Component {
       eventCategory: 'Dashboard - Settings',
       eventAction: 'Change - Checkout Theme',
     });
+    analyticsTrack({
+      objectName: 'theme color save changes',
+      actionName: 'clicked',
+      screen: 'settings',
+      properties: {
+        location: 'configuration',
+        colorCode: this.state.brandColor,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
   };
 
   onChangeBrandColor = (e) => {
+    analyticsTrack({
+      objectName: 'theme color',
+      actionName: 'switched',
+      screen: 'settings',
+      properties: {
+        location: 'configuration',
+        previousColorCode: this.state.brandColor,
+        newColorCode: e.target.value,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+
     this.setState({ brandColor: e.target.value });
 
     this.updatePreviewTextClr();

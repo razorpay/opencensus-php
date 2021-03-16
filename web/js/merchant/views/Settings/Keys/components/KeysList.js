@@ -1,5 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import TableBody from 'common/ui/TableBody';
 import Time from 'common/ui/Time';
@@ -15,6 +17,18 @@ const KeysListItem = (props) => {
   const context = useTwoFactorVerificationContext();
 
   const onRegenerateKeys = () => {
+    analyticsTrack({
+      objectName: `regenerate ${mode} key`,
+      actionName: 'clicked',
+      screen: 'settings',
+      properties: {
+        location: 'API Keys',
+        apiKeyCreatedAt: created_at,
+        apiKeyExpiry: expired_at ? expired_at : 'never',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+
     return context.criticalFlow({
       modes: ['live'],
       onUserTwoFaVerified: () => {
@@ -106,8 +120,7 @@ export default connect(null, { openModal, closeModal })((props) => {
                     </React.Fragment>
                   ) : !businessWebsite && !isWebsiteInWorkflow ? (
                     <div>
-                      <p
-                      >{`Please provide your Business Website/App details in order to generate API keys in Live Mode`}</p>
+                      <p>{`Please provide your Business Website/App details in order to generate API keys in Live Mode`}</p>
                       <button
                         class="btn btn-primary"
                         onClick={() =>

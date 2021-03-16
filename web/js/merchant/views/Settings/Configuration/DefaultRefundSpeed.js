@@ -14,6 +14,8 @@ import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import InstantRefundFee from 'merchant/views/Transactions/Payments/components/InstantRefundFee';
 import { fetchRefundPricing, createLateAuthConfig } from 'merchant/reducers/config';
 import RTracking from 'react-tracking';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 @connect(
   (state) => {
@@ -67,6 +69,17 @@ export default class DefaultRefundSpeed extends Component {
           category: 'Merchant Dashboard - IR',
         }),
     );
+
+    analyticsTrack({
+      objectName: `${speed === 'normal' ? 'normal' : 'instant'} refund`,
+      actionName: 'clicked',
+      screen: 'settings',
+      properties: {
+        location: 'configuration',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+
     this.props.openModal({
       component: (
         <EnableInstantRefundsModal
@@ -151,6 +164,18 @@ export default class DefaultRefundSpeed extends Component {
               class="highlight know-more"
               target="_blank"
               href="https://razorpay.com/docs/payment-gateway/refunds/#setting-the-default-speed-of-refunds"
+              onClick={() =>
+                analyticsTrack({
+                  objectName: 'know more',
+                  actionName: 'clicked',
+                  screen: 'settings',
+                  properties: {
+                    location: 'configuration',
+                    flowName: 'Default Refund Speed',
+                    ...getCommonAnalyticsProperties(window.rzp_user),
+                  },
+                })
+              }
             >
               Know more
               <i class="i i-external-link" style={{ marginLeft: '5px' }} />
@@ -163,6 +188,18 @@ export default class DefaultRefundSpeed extends Component {
                 paddingLeft: '9px',
               }}
               href="https://razorpay.com/docs/payment-gateway/instant-refunds/api"
+              onClick={() =>
+                analyticsTrack({
+                  objectName: 'api reference guide',
+                  actionName: 'clicked',
+                  screen: 'settings',
+                  properties: {
+                    location: 'configuration',
+                    flowName: 'Default Refund Speed',
+                    ...getCommonAnalyticsProperties(window.rzp_user),
+                  },
+                })
+              }
             >
               API Reference Guide
               <i class="i i-external-link" style={{ marginLeft: '5px' }} />

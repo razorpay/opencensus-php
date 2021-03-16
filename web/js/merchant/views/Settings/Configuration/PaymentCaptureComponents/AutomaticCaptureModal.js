@@ -1,12 +1,9 @@
 import ModalHeader from 'common/ui/ModalHeader';
 import { useState } from 'react';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
-function AutomaticCaptureModal({
-  handleBack,
-  handleDone,
-  closeModal,
-  selectedLateAuthType,
-}) {
+function AutomaticCaptureModal({ handleBack, handleDone, closeModal, selectedLateAuthType }) {
   const [selectedRow, setselectedRow] = useState(null);
 
   return (
@@ -14,6 +11,16 @@ function AutomaticCaptureModal({
       <ModalHeader
         title="Automatic Capture"
         onCloseClick={() => {
+          analyticsTrack({
+            objectName: 'automatic capture popup',
+            actionName: 'clicked',
+            screen: 'settings',
+            properties: {
+              location: 'configuration',
+              actionName: 'close',
+              ...getCommonAnalyticsProperties(window.rzp_user),
+            },
+          });
           closeModal();
         }}
       />
@@ -31,8 +38,7 @@ function AutomaticCaptureModal({
           <div class="section-content">
             <div class="title">Capture all payments automatically</div>
             <div class="description">
-              All payments authorised within 5 days of creation will be captured
-              automatically
+              All payments authorised within 5 days of creation will be captured automatically
             </div>
           </div>
         </div>
@@ -49,9 +55,8 @@ function AutomaticCaptureModal({
           <div class="section-content">
             <div class="title">Setup custom timeout</div>
             <div class="description">
-              Setup capture timeout according to your business needs. Payments
-              authorised within timeout will be captured and others will be
-              refunded to your customers
+              Setup capture timeout according to your business needs. Payments authorised within
+              timeout will be captured and others will be refunded to your customers
             </div>
           </div>
         </div>
@@ -63,10 +68,7 @@ function AutomaticCaptureModal({
             class="btn btn-primary"
             disabled={selectedRow ? false : true}
             onClick={() => {
-              handleDone(
-                selectedLateAuthType,
-                selectedRow === 1 ? false : true
-              );
+              handleDone(selectedLateAuthType, selectedRow === 1 ? false : true);
             }}
           >
             Done

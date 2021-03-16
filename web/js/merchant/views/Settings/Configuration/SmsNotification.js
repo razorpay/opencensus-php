@@ -4,6 +4,8 @@ import { connect } from 'react-redux';
 import { updateConfig } from 'merchant/reducers/config';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import SwitchField from 'common/ui/Forms/SwitchField';
 
@@ -49,6 +51,18 @@ function SmsNotification({ currentUser, showNotification }) {
       eventCategory: 'Dashboard - Settings',
       eventAction: `${action} - SMS notifications`,
     });
+
+    analyticsTrack({
+      objectName: 'sms notifications',
+      actionName: 'toggled',
+      screen: 'settings',
+      properties: {
+        location: 'configuration',
+        currentValue: action === 'Enable' ? 'Disable' : 'Enable',
+        newValue: action,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
   };
 
   const toggleSmsNotification = (sms_optin_checked, cb) => {
@@ -66,6 +80,19 @@ function SmsNotification({ currentUser, showNotification }) {
           type: 'success',
           message: 'Your SMS preference was saved',
         });
+
+        analyticsTrack({
+          objectName: 'sms notifications toggle',
+          actionName: 'result',
+          screen: 'settings',
+          properties: {
+            location: 'configuration',
+            status: 'Success',
+            currentValue: sms_optin_checked ? 'Disable' : 'Enable',
+            newValue: sms_optin_checked ? 'Enable' : 'Disable',
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
       })
       .catch(({ errors }) => {
         if (errors) {
@@ -73,6 +100,17 @@ function SmsNotification({ currentUser, showNotification }) {
           showNotification({
             type: 'error',
             message: errors,
+          });
+          analyticsTrack({
+            objectName: 'sms notifications toggle',
+            actionName: 'result',
+            screen: 'settings',
+            properties: {
+              location: 'configuration',
+              status: 'Failure',
+              failureReason: errors[0],
+              ...getCommonAnalyticsProperties(window.rzp_user),
+            },
           });
         }
       });

@@ -10,8 +10,10 @@ import { generateKey } from 'merchant/reducers/keys';
 import { required, phone, email } from 'common/utils/validators';
 import { closeModal } from 'merchant_common/reducers/modals';
 import RadioButton from 'common/ui/Forms/RadioButton';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
-@connect(state => state.session, { closeModal })
+@connect((state) => state.session, { closeModal })
 @reduxForm({
   form: 'rollKey',
   initialValues: {
@@ -26,10 +28,25 @@ export default class RollKey extends Component {
     };
   }
 
-  save = props => {
+  save = (props) => {
     var params = this.props.params;
     params.delay_roll = props.delay_roll;
     params.merchantId = this.props.merchantId;
+
+    analyticsTrack({
+      objectName: 'regenerate key popup',
+      actionName: 'clicked',
+      screen: 'settings',
+      properties: {
+        location: 'API Keys',
+        actionName: 'ok',
+        option:
+          props.delay_roll === '0'
+            ? 'De-activate Old Key Immediately'
+            : 'De-activate old key in 24 hours',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
 
     return this.props.generateKey(params).catch(({ errors }) => {
       this.setState({
@@ -43,7 +60,22 @@ export default class RollKey extends Component {
 
     return (
       <div>
-        <ModalHeader title="Roll Key" onCloseClick={this.props.closeModal} />
+        <ModalHeader
+          title="Roll Key"
+          onCloseClick={() => {
+            analyticsTrack({
+              objectName: 'regenerate key popup',
+              actionName: 'clicked',
+              screen: 'settings',
+              properties: {
+                location: 'API Keys',
+                actionName: 'close',
+                ...getCommonAnalyticsProperties(window.rzp_user),
+              },
+            });
+            this.props.closeModal();
+          }}
+        />
 
         <form class="form-horizontal" onSubmit={handleSubmit(this.save)}>
           <div class="modal-body">
@@ -71,7 +103,19 @@ export default class RollKey extends Component {
             <button
               type="button"
               class="btn btn-default"
-              onClick={this.props.closeModal}
+              onClick={() => {
+                analyticsTrack({
+                  objectName: 'regenerate key popup',
+                  actionName: 'clicked',
+                  screen: 'settings',
+                  properties: {
+                    location: 'API Keys',
+                    actionName: 'cancel',
+                    ...getCommonAnalyticsProperties(window.rzp_user),
+                  },
+                });
+                this.props.closeModal();
+              }}
             >
               Cancel
             </button>

@@ -2,9 +2,10 @@ import { Component } from 'react';
 import ModalHeader from 'common/ui/ModalHeader';
 import Input from 'common/new-ui/Input';
 import TimeInput from './TimeInput';
-import { classList } from 'common/utils/rzp-utils';
+import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { parseTimeoutValues, renderTimeoutAsString, capitalize } from './util';
 import Popover, { PopoverBody } from 'common/ui/Popover';
+import { analyticsTrack } from 'common/utils/analytics';
 
 const refund_options = [
   { label: 'Select Option', name: '' },
@@ -34,10 +35,7 @@ export default class PaymentsCaptureConfigurationModal extends Component {
     let manual = {};
 
     if (capture_options['automatic_expiry_period']) {
-      automatic = parseTimeoutValues(
-        capture_options,
-        'automatic_expiry_period'
-      );
+      automatic = parseTimeoutValues(capture_options, 'automatic_expiry_period');
     }
 
     if (capture_options['manual_expiry_period']) {
@@ -66,7 +64,7 @@ export default class PaymentsCaptureConfigurationModal extends Component {
   };
 
   handleNext = () => {
-    this.setState(prevState => {
+    this.setState((prevState) => {
       return {
         activeStep: prevState.activeStep + 1,
         completedSteps: [...prevState.completedSteps, prevState.activeStep],
@@ -81,21 +79,16 @@ export default class PaymentsCaptureConfigurationModal extends Component {
   };
 
   handleBack = () => {
-    this.setState(prevState => {
+    this.setState((prevState) => {
       return {
         activeStep: prevState.activeStep - 1,
-        completedSteps: [
-          ...prevState.completedSteps.slice(
-            0,
-            prevState.completedSteps.length - 1
-          ),
-        ],
+        completedSteps: [...prevState.completedSteps.slice(0, prevState.completedSteps.length - 1)],
       };
     });
   };
 
   handleSkip = () => {
-    this.setState(prevState => {
+    this.setState((prevState) => {
       return {
         activeStep: prevState.activeStep + 1,
         completedSteps: [...prevState.completedSteps, prevState.activeStep],
@@ -124,8 +117,21 @@ export default class PaymentsCaptureConfigurationModal extends Component {
       eventCategory: 'Dashboard - Payments Capture Settings',
       eventAction: 'Save and Close',
       eventLabel: `${capitalize(captureType)} - Select ${capitalize(
-        refundValue
+        refundValue,
       )} speed - Hover tool tip `,
+    });
+
+    analyticsTrack({
+      objectName: 'set refund speed',
+      actionName: 'clicked',
+      screen: 'settings',
+      properties: {
+        location: 'configuration',
+        actionName: 'save & close',
+        flowName: `${captureType} capture`,
+        refundSpeed: refundValue,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
     });
   };
   // top: 144px;
@@ -140,27 +146,26 @@ export default class PaymentsCaptureConfigurationModal extends Component {
     }
   };
 
-  handleDropdownSelection = e => this.setState({ refundValue: e.target.value });
+  handleDropdownSelection = (e) => this.setState({ refundValue: e.target.value });
 
-  capitalizeFirstLetter = string =>
-    string.charAt(0).toUpperCase() + string.slice(1);
+  capitalizeFirstLetter = (string) => string.charAt(0).toUpperCase() + string.slice(1);
 
   onTooltipHover = () => {
     window.rzpAnalytics({
       eventCategory: 'Dashboard - Payments Capture Settings',
       eventAction: 'Save and Close',
       eventLabel: `${capitalize(captureType)} - Select ${capitalize(
-        refundValue
+        refundValue,
       )} speed - Hover tool tip `,
     });
   };
 
-  getContentHeightAutomatic = _ =>
+  getContentHeightAutomatic = (_) =>
     this.state.refundValue === 'optimum'
       ? 'full-span-modal-automatic-optimum'
       : 'full-span-modal-automatic-normal';
 
-  getContentHeightManual = _ =>
+  getContentHeightManual = (_) =>
     this.state.refundValue === 'optimum'
       ? 'full-span-modal-manual-optimum'
       : 'full-span-modal-manual-normal';
@@ -176,12 +181,22 @@ export default class PaymentsCaptureConfigurationModal extends Component {
             ? captureType === 'automatic'
               ? this.getContentHeightAutomatic()
               : this.getContentHeightManual()
-            : null
+            : null,
         )}
       >
         <ModalHeader
           title={`${this.capitalizeFirstLetter(captureType)} Capture`}
           onCloseClick={() => {
+            analyticsTrack({
+              objectName: 'set automatic capture timeout',
+              actionName: 'clicked',
+              screen: 'settings',
+              properties: {
+                location: 'configuration',
+                actionName: 'close',
+                ...getCommonAnalyticsProperties(window.rzp_user),
+              },
+            });
             this.props.closeModal();
           }}
         />
@@ -202,20 +217,15 @@ export default class PaymentsCaptureConfigurationModal extends Component {
           <div
             class={classList(
               'configuration-row__automatic',
-              this.state.activeStep === 1 ? 'highlight' : ''
+              this.state.activeStep === 1 ? 'highlight' : '',
             )}
             style={{ marginTop: '20px' }}
           >
             {this.state.activeStep === 1 && captureType === 'automatic' ? (
               <>
                 <div class="content-header">Set Automatic Capture Timeout</div>
-                <div
-                  class="vertical-connector"
-                  style={{ top: '121px', height: '170px' }}
-                />
-                <div class="content-subtitle">
-                  Capture all payments authorised within
-                </div>
+                <div class="vertical-connector" style={{ top: '121px', height: '170px' }} />
+                <div class="content-subtitle">Capture all payments authorised within</div>
                 <div class="content-container">
                   <TimeInput
                     handleValueChange={this.handleAutomaticTimeoutValues}
@@ -226,12 +236,21 @@ export default class PaymentsCaptureConfigurationModal extends Component {
                 <div class="content-action">
                   <button
                     class="btn btn-primary"
-                    onClick={this.handleNext}
-                    disabled={
-                      Object.keys(this.state.automatic).length > 0
-                        ? false
-                        : true
-                    }
+                    onClick={() => {
+                      analyticsTrack({
+                        objectName: 'set automatic capture timeout',
+                        actionName: 'clicked',
+                        screen: 'settings',
+                        properties: {
+                          location: 'configuration',
+                          actionName: 'next',
+                          timeoutPeriod: this.state.automatic,
+                          ...getCommonAnalyticsProperties(window.rzp_user),
+                        },
+                      });
+                      this.handleNext();
+                    }}
+                    disabled={Object.keys(this.state.automatic).length > 0 ? false : true}
                   >
                     Next
                   </button>
@@ -243,9 +262,7 @@ export default class PaymentsCaptureConfigurationModal extends Component {
                   <div
                     class={classList(
                       'content-header',
-                      this.state.completedSteps.includes(1)
-                        ? 'content-filled'
-                        : ''
+                      this.state.completedSteps.includes(1) ? 'content-filled' : '',
                     )}
                   >
                     Set Automatic Capture Timeout
@@ -258,7 +275,7 @@ export default class PaymentsCaptureConfigurationModal extends Component {
           <div
             class={classList(
               'configuration-row__manual',
-              this.state.activeStep === 2 ? 'highlight' : ''
+              this.state.activeStep === 2 ? 'highlight' : '',
             )}
           >
             {this.state.activeStep === 2 ? (
@@ -268,23 +285,31 @@ export default class PaymentsCaptureConfigurationModal extends Component {
                   {captureType === 'automatic' && (
                     <button
                       class="btn btn-xs btn-default"
-                      onClick={this.handleSkip}
+                      onClick={() => {
+                        analyticsTrack({
+                          objectName: 'add manual capture timeout',
+                          actionName: 'clicked',
+                          screen: 'settings',
+                          properties: {
+                            location: 'configuration',
+                            actionName: 'skip',
+                            flowName: `${captureType} capture`,
+                            ...getCommonAnalyticsProperties(window.rzp_user),
+                          },
+                        });
+                        this.handleSkip();
+                      }}
                     >
                       Skip
                     </button>
                   )}
                 </div>
-                <div
-                  class="vertical-connector"
-                  style={this.renderStylesWhenActive()}
-                />
+                <div class="vertical-connector" style={this.renderStylesWhenActive()} />
                 <p class="help-text">
-                  Payments authorised after 60 minutes can be captured manually.
-                  Till what time do you want to capture payments manually?
+                  Payments authorised after 60 minutes can be captured manually. Till what time do
+                  you want to capture payments manually?
                 </p>
-                <div class="content-subtitle">
-                  Manually capture all payments authorised within
-                </div>
+                <div class="content-subtitle">Manually capture all payments authorised within</div>
                 <div class="content-container">
                   <TimeInput
                     handleValueChange={this.handleManualTimeoutValues}
@@ -297,25 +322,50 @@ export default class PaymentsCaptureConfigurationModal extends Component {
                     <div />
                     <p>
                       Payments authorised after{' '}
-                      <strong>
-                        {renderTimeoutAsString(this.state.manual)}
-                      </strong>{' '}
-                      will be refunded.
+                      <strong>{renderTimeoutAsString(this.state.manual)}</strong> will be refunded.
                     </p>
                   </div>
                 )}
                 <div class="content-action">
                   {captureType === 'automatic' && (
-                    <button class="btn btn-default" onClick={this.handleBack}>
+                    <button
+                      class="btn btn-default"
+                      onClick={() => {
+                        analyticsTrack({
+                          objectName: 'add manual capture timeout',
+                          actionName: 'clicked',
+                          screen: 'settings',
+                          properties: {
+                            location: 'configuration',
+                            actionName: 'back',
+                            flowName: `${captureType} capture`,
+                            ...getCommonAnalyticsProperties(window.rzp_user),
+                          },
+                        });
+                        this.handleBack();
+                      }}
+                    >
                       Back
                     </button>
                   )}
                   <button
                     class="btn btn-primary"
-                    onClick={this.handleNext}
-                    disabled={
-                      Object.keys(this.state.manual).length > 0 ? false : true
-                    }
+                    onClick={() => {
+                      analyticsTrack({
+                        objectName: 'add manual capture timeout',
+                        actionName: 'clicked',
+                        screen: 'settings',
+                        properties: {
+                          location: 'configuration',
+                          actionName: 'next',
+                          flowName: `${captureType} capture`,
+                          timeoutPeriod: this.state.manual,
+                          ...getCommonAnalyticsProperties(window.rzp_user),
+                        },
+                      });
+                      this.handleNext();
+                    }}
+                    disabled={Object.keys(this.state.manual).length > 0 ? false : true}
                   >
                     Next
                   </button>
@@ -326,9 +376,7 @@ export default class PaymentsCaptureConfigurationModal extends Component {
                 <div
                   class={classList(
                     'content-header',
-                    this.state.completedSteps.includes(2)
-                      ? 'content-filled'
-                      : ''
+                    this.state.completedSteps.includes(2) ? 'content-filled' : '',
                   )}
                 >
                   Add Manual Capture Timeout
@@ -338,7 +386,9 @@ export default class PaymentsCaptureConfigurationModal extends Component {
                   style={{
                     top:
                       this.state.activeStep === 3
-                        ? captureType === 'manual' ? '100px' : '167px'
+                        ? captureType === 'manual'
+                          ? '100px'
+                          : '167px'
                         : '305px',
                   }}
                 />
@@ -348,16 +398,15 @@ export default class PaymentsCaptureConfigurationModal extends Component {
           <div
             class={classList(
               'configuration-row__refund',
-              this.state.activeStep === 3 ? 'highlight' : ''
+              this.state.activeStep === 3 ? 'highlight' : '',
             )}
           >
             {this.state.activeStep === 3 ? (
               <>
                 <div class="content-header">Set Refund Speed</div>
                 <p class="help-text">
-                  All payments that are not captured within manual timeout
-                  period will be refunded to you customers. Select a refund
-                  speed.
+                  All payments that are not captured within manual timeout period will be refunded
+                  to you customers. Select a refund speed.
                 </p>
                 <div class="content-subtitle">Refund Speed</div>
                 <div class="content-container">
@@ -377,10 +426,9 @@ export default class PaymentsCaptureConfigurationModal extends Component {
                         <Popover align="bottom" theme="dark">
                           <PopoverBody>
                             <div style={{ fontStyle: 'normal' }}>
-                              A minimal fee would be charged for payments
-                              refunded instantly. Currently supported for UPI,
-                              netbanking and select credit cards only. Normal
-                              speed will apply on other payment methods.
+                              A minimal fee would be charged for payments refunded instantly.
+                              Currently supported for UPI, netbanking and select credit cards only.
+                              Normal speed will apply on other payment methods.
                             </div>
                           </PopoverBody>
                         </Popover>
@@ -389,7 +437,23 @@ export default class PaymentsCaptureConfigurationModal extends Component {
                   )}
                 </div>
                 <div class="content-action">
-                  <button class="btn btn-default" onClick={this.handleBack}>
+                  <button
+                    class="btn btn-default"
+                    onClick={() => {
+                      analyticsTrack({
+                        objectName: 'set refund speed',
+                        actionName: 'clicked',
+                        screen: 'settings',
+                        properties: {
+                          location: 'configuration',
+                          actionName: 'back',
+                          flowName: `${captureType} capture`,
+                          ...getCommonAnalyticsProperties(window.rzp_user),
+                        },
+                      });
+                      this.handleBack();
+                    }}
+                  >
                     Back
                   </button>
                   <button

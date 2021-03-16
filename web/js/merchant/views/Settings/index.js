@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Route, Switch, NavLink, withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
-
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 import TestModeBanner from 'merchant/components/TestModeBanner';
@@ -167,5 +168,14 @@ const analyticsGoTo = (name) => {
   window.rzpAnalytics({
     eventCategory: 'Dashboard - Settings',
     eventAction: `Go To - ${name}`,
+  });
+  analyticsTrack({
+    objectName: name,
+    actionName: 'viewed',
+    screen: 'settings',
+    properties: {
+      location: name,
+      ...getCommonAnalyticsProperties(window.rzp_user),
+    },
   });
 };

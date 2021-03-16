@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { connect } from 'react-redux';
 import LeafListItem from './LeafListItem';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import Paypal from './Paypal';
 import International from './International';
 
@@ -22,6 +24,22 @@ const LeafList = ({ instrument, intermediateInstrument }) => {
   });
   if (!instrument) return null;
   function renderLeafList(leafList) {
+    let analyticsList = {};
+    leafList.list &&
+      leafList.list.forEach((item) => {
+        analyticsList[item.name] = item.status;
+      });
+    analyticsTrack({
+      objectName: 'method instruments',
+      actionName: 'displayed',
+      screen: 'settings',
+      properties: {
+        location: 'Payment Methods',
+        methodName: instrument.name,
+        ...analyticsList,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     let list = leafList.list
       .filter((_) => {
         if (intermediateInstrument && intermediateInstrument.slug === 'netbanking') {
@@ -60,7 +78,23 @@ const LeafList = ({ instrument, intermediateInstrument }) => {
               <strong style={{ fontSize: '14px' }}>{leafList.header} </strong>
               {leafList.docLink && (
                 <span class="toggler-btn">
-                  <a href={leafList.docLink} target="_blank" rel="noreferrer">
+                  <a
+                    href={leafList.docLink}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={() =>
+                      analyticsTrack({
+                        objectName: 'method documentation',
+                        actionName: 'clicked',
+                        screen: 'settings',
+                        properties: {
+                          location: 'Payment Methods',
+                          methodName: instrument.name,
+                          ...getCommonAnalyticsProperties(window.rzp_user),
+                        },
+                      })
+                    }
+                  >
                     Documentation <i class="i i-external-link" style={{ marginLeft: '5px' }} />
                   </a>
                 </span>
@@ -70,23 +104,43 @@ const LeafList = ({ instrument, intermediateInstrument }) => {
               <div class="filter">
                 <button
                   class={`filter-btn ${filter === 'active' ? 'filter-active' : ''}`}
-                  onClick={() =>
+                  onClick={() => {
                     setFilter(() => {
                       addShadow();
                       return 'active';
-                    })
-                  }
+                    });
+                    analyticsTrack({
+                      objectName: 'active banks',
+                      actionName: 'clicked',
+                      screen: 'settings',
+                      properties: {
+                        location: 'Payment Methods',
+                        netbanking: instrument.name,
+                        ...getCommonAnalyticsProperties(window.rzp_user),
+                      },
+                    });
+                  }}
                 >
                   Active Banks
                 </button>
                 <button
                   class={`filter-btn ${filter === 'inactive' ? 'filter-active' : ''}`}
-                  onClick={() =>
+                  onClick={() => {
                     setFilter(() => {
                       addShadow();
                       return 'inactive';
-                    })
-                  }
+                    });
+                    analyticsTrack({
+                      objectName: 'add more banks',
+                      actionName: 'clicked',
+                      screen: 'settings',
+                      properties: {
+                        location: 'Payment Methods',
+                        netbanking: instrument.name,
+                        ...getCommonAnalyticsProperties(window.rzp_user),
+                      },
+                    });
+                  }}
                 >
                   Add more Banks
                 </button>

@@ -1,5 +1,7 @@
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import moment from 'moment';
 
 import Popover, { PopoverBody } from 'common/ui/Popover';
@@ -84,6 +86,18 @@ class LeafListItem extends React.Component {
       leafInstrument && leafInstrument.slug
     }.${instrument.slug}`.replace(/\.null|\.undefined/g, '');
 
+    analyticsTrack({
+      objectName: 'instrument',
+      actionName: 'requested',
+      screen: 'settings',
+      properties: {
+        location: 'Payment Methods',
+        instrumentName: instrument.name,
+        method: leafInstrument.name,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+
     this.context
       .confirm({
         header: 'Confirmation',
@@ -103,24 +117,87 @@ class LeafListItem extends React.Component {
         affirmativePendingLabel: 'Requesting...',
         abortLabel: 'Cancel',
         action: () => {
+          analyticsTrack({
+            objectName: 'instrument request confirmation popup',
+            actionName: 'clicked',
+            screen: 'settings',
+            properties: {
+              location: 'Payment Methods',
+              actionName: 'confirm',
+              instrumentName: instrument.name,
+              method: leafInstrument.name,
+              ...getCommonAnalyticsProperties(window.rzp_user),
+            },
+          });
           return this.props
             .createMerchantInstrumentRequest(requestSlug)
+            .then(() =>
+              analyticsTrack({
+                objectName: 'instrument request',
+                actionName: 'result',
+                screen: 'settings',
+                properties: {
+                  location: 'Payment Methods',
+                  instrumentName: instrument.name,
+                  method: leafInstrument.name,
+                  status: 'Success',
+                  ...getCommonAnalyticsProperties(window.rzp_user),
+                },
+              }),
+            )
             .catch(({ errors }) => {
               this.props.showNotification({
                 type: 'error',
                 message: errors[0],
+              });
+              analyticsTrack({
+                objectName: 'instrument request',
+                actionName: 'result',
+                screen: 'settings',
+                properties: {
+                  location: 'Payment Methods',
+                  instrumentName: instrument.name,
+                  method: leafInstrument.name,
+                  status: 'Failure',
+                  failureReason: errors[0],
+                  ...getCommonAnalyticsProperties(window.rzp_user),
+                },
               });
             })
             .finally(() => this.setState({ loading: false }));
         },
         abort: () => {
           this.setState({ loading: false });
+          analyticsTrack({
+            objectName: 'instrument request confirmation popup',
+            actionName: 'clicked',
+            screen: 'settings',
+            properties: {
+              location: 'Payment Methods',
+              actionName: 'cancel',
+              instrumentName: instrument.name,
+              method: leafInstrument.name,
+              ...getCommonAnalyticsProperties(window.rzp_user),
+            },
+          });
         },
       })
       .catch((e) => {});
   };
 
   handleCancelRequest = (instrument) => {
+    const { leafInstrument } = this.props;
+    analyticsTrack({
+      objectName: 'instrument',
+      actionName: 'cancelled',
+      screen: 'settings',
+      properties: {
+        location: 'Payment Methods',
+        instrumentName: instrument.name,
+        method: leafInstrument.name,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     this.context
       .confirm({
         header: 'Are you sure?',
@@ -128,6 +205,18 @@ class LeafListItem extends React.Component {
         affirmativeLabel: 'Yes',
         abortLabel: 'No',
         action: () => {
+          analyticsTrack({
+            objectName: 'instrument cancel confirmation popup',
+            actionName: 'clicked',
+            screen: 'settings',
+            properties: {
+              location: 'Payment Methods',
+              actionName: 'Yes',
+              instrumentName: instrument.name,
+              method: leafInstrument.name,
+              ...getCommonAnalyticsProperties(window.rzp_user),
+            },
+          });
           this.props
             .cancelMerchantInstrumentRequest(instrument.merchant_instrument_request_id)
             .then((d) => {
@@ -136,6 +225,18 @@ class LeafListItem extends React.Component {
                   type: 'success',
                   message: `Request for ${instrument.name} cancelled successfully`,
                 });
+                analyticsTrack({
+                  objectName: 'instrument cancel',
+                  actionName: 'result',
+                  screen: 'settings',
+                  properties: {
+                    location: 'Payment Methods',
+                    instrumentName: instrument.name,
+                    method: leafInstrument.name,
+                    status: 'Success',
+                    ...getCommonAnalyticsProperties(window.rzp_user),
+                  },
+                });
               }
             })
             .catch(({ errors }) => {
@@ -143,9 +244,35 @@ class LeafListItem extends React.Component {
                 type: 'error',
                 message: errors[0],
               });
+              analyticsTrack({
+                objectName: 'instrument cancel',
+                actionName: 'result',
+                screen: 'settings',
+                properties: {
+                  location: 'Payment Methods',
+                  instrumentName: instrument.name,
+                  method: leafInstrument.name,
+                  status: 'Failure',
+                  failureReason: errors[0],
+                  ...getCommonAnalyticsProperties(window.rzp_user),
+                },
+              });
             });
         },
-        abort: () => {},
+        abort: () => {
+          analyticsTrack({
+            objectName: 'instrument cancel confirmation popup',
+            actionName: 'clicked',
+            screen: 'settings',
+            properties: {
+              location: 'Payment Methods',
+              actionName: 'No',
+              instrumentName: instrument.name,
+              method: leafInstrument.name,
+              ...getCommonAnalyticsProperties(window.rzp_user),
+            },
+          });
+        },
       })
       .catch((e) => {});
   };

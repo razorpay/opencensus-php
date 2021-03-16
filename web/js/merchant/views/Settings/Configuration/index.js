@@ -9,6 +9,8 @@ import CheckoutTheme from './CheckoutTheme';
 import EmailNotifications from './EmailNotifications';
 import PaymentSettings from './PaymentSettings';
 import RTracking from 'react-tracking';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import InstantRefundFee from 'merchant/views/Transactions/Payments/components/InstantRefundFee';
 import DebitRefundAnnouncement from '../../../components/Announcements/Refunds/DebitRefund';
@@ -37,7 +39,7 @@ export default class CongfigurationContainer extends Component {
     });
   }
   is_hash_loaded_once = false;
-  saveConfig = ({ brand_color, transaction_report_email }) => {
+  saveConfig = ({ brand_color, transaction_report_email }, config) => {
     let data = {
       brand_color: brand_color ? brand_color.substr(1).toUpperCase() : null,
       transaction_report_email: transaction_report_email
@@ -53,12 +55,61 @@ export default class CongfigurationContainer extends Component {
           message: 'Configuration Updated',
           hidePrevious: true,
         });
+        if (config === 'theme') {
+          analyticsTrack({
+            objectName: 'theme color save changes',
+            actionName: 'result',
+            screen: 'settings',
+            properties: {
+              location: 'configuration',
+              status: 'Success',
+              colorCode: res.data.brand_color,
+              ...getCommonAnalyticsProperties(window.rzp_user),
+            },
+          });
+        } else {
+          analyticsTrack({
+            objectName: 'save email notifications',
+            actionName: 'result',
+            screen: 'settings',
+            properties: {
+              location: 'configuration',
+              status: 'Success',
+              ...getCommonAnalyticsProperties(window.rzp_user),
+            },
+          });
+        }
       })
       .catch((err) => {
         this.props.showNotification({
           type: 'error',
           message: err.errors,
         });
+        if (config === 'theme') {
+          analyticsTrack({
+            objectName: 'theme color save changes',
+            actionName: 'result',
+            screen: 'settings',
+            properties: {
+              location: 'configuration',
+              status: 'Failure',
+              failureReason: err.errors[0],
+              ...getCommonAnalyticsProperties(window.rzp_user),
+            },
+          });
+        } else {
+          analyticsTrack({
+            objectName: 'save email notifications',
+            actionName: 'result',
+            screen: 'settings',
+            properties: {
+              location: 'configuration',
+              status: 'Failure',
+              failureReason: err.errors[0],
+              ...getCommonAnalyticsProperties(window.rzp_user),
+            },
+          });
+        }
       });
   };
 

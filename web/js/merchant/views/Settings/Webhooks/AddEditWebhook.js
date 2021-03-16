@@ -14,6 +14,8 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import DocsLink from 'merchant/components/DocsLink';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 @connect(
   (state) => ({
@@ -256,6 +258,19 @@ export default class webhookForm extends Component {
         submitWebhook = this.props.saveWebhook(data);
       }
 
+      analyticsTrack({
+        objectName: `${this.props.webhook ? 'edit' : 'add'} webhooks popup`,
+        actionName: 'clicked',
+        screen: 'settings',
+        properties: {
+          location: 'webhooks',
+          actionName: 'save',
+          webhookUrl: data.url,
+          activeEventsStatus: data.events,
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      });
+
       return submitWebhook
         .then((resp) => {
           this.props.onSave(resp);
@@ -278,6 +293,17 @@ export default class webhookForm extends Component {
                   webhook_count: webhookList.length || '',
                 }),
               );
+
+          analyticsTrack({
+            objectName: `${webhook ? 'edit' : 'add'} webhooks`,
+            actionName: 'result',
+            screen: 'settings',
+            properties: {
+              location: 'webhooks',
+              status: 'Success',
+              ...getCommonAnalyticsProperties(window.rzp_user),
+            },
+          });
         })
         .catch((err) => {
           this.setState({
@@ -294,6 +320,18 @@ export default class webhookForm extends Component {
                   errors: err.errors,
                 }),
               );
+
+          analyticsTrack({
+            objectName: `${webhook ? 'edit' : 'add'} webhooks`,
+            actionName: 'result',
+            screen: 'settings',
+            properties: {
+              location: 'webhooks',
+              status: 'Failure',
+              failureReason: err.errors[0],
+              ...getCommonAnalyticsProperties(window.rzp_user),
+            },
+          });
         });
     }
   };
@@ -353,7 +391,22 @@ export default class webhookForm extends Component {
 
     return (
       <div>
-        <ModalHeader title="Webhook Setup" onCloseClick={this.props.closeModal} />
+        <ModalHeader
+          title="Webhook Setup"
+          onCloseClick={() => {
+            analyticsTrack({
+              objectName: `${webhook ? 'edit' : 'add'} webhooks popup`,
+              actionName: 'clicked',
+              screen: 'settings',
+              properties: {
+                location: 'webhooks',
+                actionName: 'close',
+                ...getCommonAnalyticsProperties(window.rzp_user),
+              },
+            });
+            this.props.closeModal();
+          }}
+        />
 
         <form className="form-horizontal" onSubmit={handleSubmit(this.save)}>
           <div className="modal-body">
@@ -601,7 +654,23 @@ export default class webhookForm extends Component {
           </div>
 
           <div className="modal-footer">
-            <button type="button" className="btn btn-default" onClick={this.props.closeModal}>
+            <button
+              type="button"
+              className="btn btn-default"
+              onClick={() => {
+                analyticsTrack({
+                  objectName: `${webhook ? 'edit' : 'add'} webhooks popup`,
+                  actionName: 'clicked',
+                  screen: 'settings',
+                  properties: {
+                    location: 'webhooks',
+                    actionName: 'cancel',
+                    ...getCommonAnalyticsProperties(window.rzp_user),
+                  },
+                });
+                this.props.closeModal();
+              }}
+            >
               Cancel
             </button>
 

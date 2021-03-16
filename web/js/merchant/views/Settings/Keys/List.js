@@ -10,22 +10,24 @@ import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import KeysList from 'merchant/views/Settings/Keys/components/KeysList';
 import RollKey from 'merchant/views/Settings/Keys/components/RollKey';
 import NewKey from 'merchant/views/Settings/Keys/components/NewKey';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 @connect(
-  state => {
+  (state) => {
     return {
       keys: state.keys,
       session: state.session,
     };
   },
-  { ...KeyActions, ...ModalActions, ...NotificationsActions }
+  { ...KeyActions, ...ModalActions, ...NotificationsActions },
 )
 @RTracking(() => window.rzpQ.component('KeysListContainer'))
 export default class KeysListContainer extends ListContainer {
   fetchEntityList(params) {
     return this.props.fetchKeys(
       { mode: this.props.session.mode },
-      this.props.session.user.has_key_access
+      this.props.session.user.has_key_access,
     );
   }
 
@@ -42,7 +44,7 @@ export default class KeysListContainer extends ListContainer {
     });
   };
 
-  showNewKeyModal = key => {
+  showNewKeyModal = (key) => {
     this.props.openModal({
       component: <NewKey apiKey={key} />,
     });
@@ -51,20 +53,47 @@ export default class KeysListContainer extends ListContainer {
   @RTracking(() =>
     window.rzpQ.onbr().initiated('dash.settings_action', {
       action: 'Initiate_API_Key_Gen',
-    })
+    }),
   )
-  generateKey = params => {
-    return this.props.generateKey(params).then(response => {
-      var key = response.new || response;
+  generateKey = (params) => {
+    return this.props
+      .generateKey(params)
+      .then((response) => {
+        var key = response.new || response;
 
-      this.props.showNotification({
-        type: 'success',
-        message: 'New Key Generated',
-        closeTimeout: 15000,
+        this.props.showNotification({
+          type: 'success',
+          message: 'New Key Generated',
+          closeTimeout: 15000,
+        });
+
+        analyticsTrack({
+          objectName: `regenerate ${this.props.session.mode} key`,
+          actionName: 'result',
+          screen: 'settings',
+          properties: {
+            location: 'API Keys',
+            status: 'Success',
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
+
+        this.props.closeModal();
+        this.showNewKeyModal(key);
+      })
+      .catch((err) => {
+        analyticsTrack({
+          objectName: `regenerate ${this.props.session.mode} key`,
+          actionName: 'result',
+          screen: 'settings',
+          properties: {
+            location: 'API Keys',
+            status: 'Failure',
+            failureReason: err.errors[0],
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
       });
-      this.props.closeModal();
-      this.showNewKeyModal(key);
-    });
   };
 
   render() {

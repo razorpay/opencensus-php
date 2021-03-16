@@ -14,6 +14,8 @@ import {
 } from 'merchant/reducers/config';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 @connect(
   (state) => {
@@ -129,16 +131,46 @@ export default class PaymentSettings extends Component {
     if (payload.config.capture_options.manual_expiry_period === null)
       delete payload.config.capture_options.manual_expiry_period;
 
-    this.props.createLateAuthConfig(payload, method).then(() => {
-      this.props.showNotification({
-        type: 'success',
-        message: this.state.doesConfigExist ? 'Preference Updated' : 'Preference Saved',
+    this.props
+      .createLateAuthConfig(payload, method)
+      .then(() => {
+        this.props.showNotification({
+          type: 'success',
+          message: this.state.doesConfigExist ? 'Preference Updated' : 'Preference Saved',
+        });
+
+        analyticsTrack({
+          objectName: `${authType} capture`,
+          actionName: 'result',
+          screen: 'settings',
+          properties: {
+            location: 'configuration',
+            status: 'Success',
+            automaticTimeoutPeriod: body.automatic,
+            manualCapturePeriod: body.manual,
+            refundSpeed: payload.config.capture_options.refund_speed,
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
+
+        this.props.fetchLateAuthConfig();
+        this.setState({
+          isToggleActive: false,
+        });
+      })
+      .catch((err) => {
+        analyticsTrack({
+          objectName: `${authType} capture`,
+          actionName: 'result',
+          screen: 'settings',
+          properties: {
+            location: 'configuration',
+            status: 'Failure',
+            failureReason: err.errors[0],
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
       });
-      this.props.fetchLateAuthConfig();
-      this.setState({
-        isToggleActive: false,
-      });
-    });
   };
 
   getTimeoutValue = (obj) => {
@@ -180,6 +212,15 @@ export default class PaymentSettings extends Component {
   };
 
   handleCaptureInitiationDone = (selectedLateAuthType) => {
+    analyticsTrack({
+      objectName: `${selectedLateAuthType} capture`,
+      actionName: 'clicked',
+      screen: 'settings',
+      properties: {
+        location: 'configuration',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     this.props.closeModal();
     if (selectedLateAuthType === 'automatic') {
       this.props.openModal({
@@ -220,6 +261,18 @@ export default class PaymentSettings extends Component {
         eventAction: 'Done',
         eventLabel: 'Configure now - Automatic capture - Set Custom Timeout - Done',
       });
+
+      analyticsTrack({
+        objectName: 'automatic capture popup',
+        actionName: 'clicked',
+        screen: 'settings',
+        properties: {
+          location: 'configuration',
+          actionName: 'done',
+          option: 'set custom timeout',
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      });
     } else {
       // set default config for that auth-type
       // make api call here
@@ -237,6 +290,18 @@ export default class PaymentSettings extends Component {
         eventAction: 'Done',
         eventLabel: 'Configure now - Automatic capture - Capture payments automatically - Done',
       });
+
+      analyticsTrack({
+        objectName: 'automatic capture popup',
+        actionName: 'clicked',
+        screen: 'settings',
+        properties: {
+          location: 'configuration',
+          actionName: 'done',
+          option: 'capture payments automatically',
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      });
     }
   };
 
@@ -247,6 +312,16 @@ export default class PaymentSettings extends Component {
       eventCategory: 'Dashboard - Payments Capture Settings',
       eventAction: 'Back',
       eventLabel: 'Configure now - Automatic Capture - Back',
+    });
+    analyticsTrack({
+      objectName: 'automatic capture popup',
+      actionName: 'clicked',
+      screen: 'settings',
+      properties: {
+        location: 'configuration',
+        actionName: 'back',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
     });
   };
 
@@ -329,6 +404,18 @@ export default class PaymentSettings extends Component {
               href="https://razorpay.com/docs/payment-gateway/payments/capture-settings/"
               target="_blank"
               rel="noreferrer"
+              onClick={() =>
+                analyticsTrack({
+                  objectName: 'know more',
+                  actionName: 'clicked',
+                  screen: 'settings',
+                  properties: {
+                    location: 'configuration',
+                    flowName: 'payment capture',
+                    ...getCommonAnalyticsProperties(window.rzp_user),
+                  },
+                })
+              }
             >
               Know More <i class="i i-external-link" style={{ marginLeft: '5px' }} />
             </a>

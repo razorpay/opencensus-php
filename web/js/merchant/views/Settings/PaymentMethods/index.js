@@ -5,6 +5,8 @@ import IntermediateList from './components/IntermediateList';
 import LeafList from './components/LeafList';
 import Spinner from 'common/ui/Spinner';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import {
   fetchMerchantInstruments,
@@ -60,6 +62,17 @@ const PaymentMethod = ({
             href="https://razorpay.com/docs/payment-gateway/dashboard-guide/settings/payment-methods/"
             target="_blank"
             rel="noreferrer"
+            onClick={() =>
+              analyticsTrack({
+                objectName: 'know more',
+                actionName: 'clicked',
+                screen: 'settings',
+                properties: {
+                  location: 'Payment Methods',
+                  ...getCommonAnalyticsProperties(window.rzp_user),
+                },
+              })
+            }
           >
             Know More <i class="i i-external-link" style={{ marginLeft: '5px' }} />
           </a>

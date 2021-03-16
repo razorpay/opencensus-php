@@ -11,8 +11,10 @@ import { closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import ajax from 'merchant/utils/ajax';
 import fileDownload from 'common/utils/file-download';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
-@connect(state => state.session, { closeModal, showNotification })
+@connect((state) => state.session, { closeModal, showNotification })
 @reduxForm({
   form: 'newKeyModal',
 })
@@ -38,7 +40,7 @@ export default class NewKey extends Component {
     }
   }
 
-  save = props => {
+  save = (props) => {
     this.context.confirm({
       message:
         'Are you sure you have saved the key details? ' +
@@ -60,7 +62,7 @@ export default class NewKey extends Component {
         secret: key.secret,
       },
     })
-      .then(data => {
+      .then((data) => {
         fileDownload(data, 'rzp.csv');
       })
       .catch(({ errors }) => {
@@ -75,28 +77,30 @@ export default class NewKey extends Component {
     const { handleSubmit, apiKey } = this.props;
     const key = apiKey;
 
+    analyticsTrack({
+      objectName: 'new key popup',
+      actionName: 'displayed',
+      screen: 'settings',
+      properties: {
+        location: 'API Keys',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+
     return (
       <div>
         <ModalHeader title="New Key" onCloseClick={handleSubmit(this.save)} />
 
         <Alert type="error" message={this.state.errors} />
 
-        <form
-          class="form-horizontal payment-link-form"
-          onSubmit={handleSubmit(this.save)}
-        >
+        <form class="form-horizontal payment-link-form" onSubmit={handleSubmit(this.save)}>
           <div class="modal-body">
             <div class="form-group">
               <label class="col-md-3 control-label">
                 <div>Key Id</div>
               </label>
               <div class="col-md-8">
-                <Field
-                  name="keyId"
-                  component="input"
-                  class="form-control"
-                  readOnly="readonly"
-                />
+                <Field name="keyId" component="input" class="form-control" readOnly="readonly" />
               </div>
             </div>
             <div class="form-group">
@@ -114,10 +118,7 @@ export default class NewKey extends Component {
             </div>
             <div class="form-group">
               <div class="col-md-8 col-md-offset-3">
-                <button
-                  class="btn-link no-padding"
-                  onClick={this.handleDownloadToken}
-                >
+                <button class="btn-link no-padding" onClick={this.handleDownloadToken}>
                   Download Key Details
                 </button>
               </div>
@@ -125,11 +126,7 @@ export default class NewKey extends Component {
           </div>
 
           <div class="modal-footer">
-            <button
-              type="submit"
-              class="btn btn-primary"
-              onClick={handleSubmit(this.save)}
-            >
+            <button type="submit" class="btn btn-primary" onClick={handleSubmit(this.save)}>
               OK
             </button>
           </div>
