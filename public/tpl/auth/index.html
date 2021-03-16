@@ -69,7 +69,7 @@
       </div>
 
     </div>
-    <div class="auth-body">
+    <div class="auth-body rx" ng-class="{'one-tap-exp-on': isOneTapExpOn, 'one-tap-exp-off': !isOneTapExpOn, 'auth-type-decided': isGauthTypeDecided, 'inline-one-tap': isInlineOneTap, 'outside-one-tap': !isInlineOneTap, 'one-tap-visible': isOneTapEnabled, 'google-button-visible': !isOneTapEnabled}">
       <div class="auth-messaging" ng-class="rightLayout ? 'login' : 'signup'">
         <div class="signup-messaging">
           <div class="messaging-heading text-center">
@@ -107,6 +107,19 @@
           </div>
 
           <a href="https://razorpay.com/affordability-suite/?source=loginscreen&campaign=affordibility" target="_blank" class="messaging-link" ng-click="handlePromotionClick({order : 2, title : 'Run your festive offers with Razorpay'})">Learn More <span>→</span></a>
+          
+          <div class="subtext subtext-captcha-outside" ng-if="!isOrgAXIS">
+            Protected by reCAPTCHA. Google
+            <a href="https://policies.google.com/privacy" class="inline-block ds-highlight-clickable-text">Privacy
+              Policy</a> &
+            <a href="https://policies.google.com/terms" class="inline-block ds-highlight-clickable-text">Terms of
+              Service</a> apply.
+          </div>
+
+          <div ng-if="!lockme && isOrgCheckDone && !isOrgHDFC && !isOrgAXIS" class="contact-us-text contact-us-text-outside">
+            Need help? <a class="highlight-clickable-text" ng-click="onContactUs()"
+              href="https://razorpay.com/support/#request/merchant" target="_blank">Contact Us</a>
+          </div>
 
         </div>
         <div class="login-messaging" ng-if="isOrgRZP === false">
@@ -133,6 +146,7 @@
 
             </div>
           </div>
+          <div id="alerts"></div>
         </div>
       </div>
     </div>

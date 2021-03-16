@@ -615,7 +615,7 @@
 .checkbox-captcha .g-recaptcha {
     width: 240px;
     height: 78px;
-    transform: scale(.79);
+    transform: scale(.84);
     transform-origin: top left;
 }
 
@@ -691,3 +691,332 @@
 
 }
 
+/* Css with OneTap start*/
+
+.login-messaging .subtext {
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 12px;
+    line-height: 1.5;
+    position: absolute;
+    right: -317px;
+    bottom: -122px;
+    max-width: 230px;
+    text-align: center;
+}
+
+.login-messaging .contact-us-text {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+}
+
+.auth-main-container.right-align .translate-container {
+    -webkit-transform: translateX(-320px);
+    transform: translateX(-320px);
+    width: 640px;
+}
+
+.login-translate-container {
+    width: 2880px;
+}
+
+.signup-translate-container {
+    width: 1280px;
+}
+
+.auth-main-container {
+    padding: 0;
+}
+
+.auth-step,
+.auth-signin-container,
+.auth-signup-container,
+.login-details-translate-container,
+.auth-substep,
+.login-details-overflow-container {
+    width: 320px;
+}
+
+.translate-container,
+.login-details-translate-container {
+    width: 640px;
+}
+
+.signup-details-translate-container {
+    width: 1600px;
+}
+
+.auth-signin-container .auth-heading {
+    padding: 20px 32px 0 32px;
+}
+
+.signup-form-step {
+    padding: 20px 32px;
+}
+
+.signup-detail-header {
+    padding: 20px 32px 0 32px;
+}
+
+.signup-detail-form .steps-dots {
+    padding: 0 32px;
+    background-clip: content-box;
+}
+
+.verify-container {
+    padding: 20px 32px;
+}
+
+.verify-container .auth-heading {
+    padding: 0;
+}
+
+.signup-detail-form .auth-substep {
+    padding: 0 32px 20px 32px;
+    width: 320px;
+}
+
+.signup-detail-header .auth-heading {
+    padding: 0;
+}
+
+.signup-details-overflow-container {
+    width: 320px;
+    height: 513px;
+}
+
+.signup-detail-form .auth-substep {
+    height: 513px;
+}
+
+.auth-substep {
+    overflow: hidden overlay;
+    padding: 0 32px 20px 32px;
+    height: 548px;
+}
+
+.login-details-overflow-container .auth-form-input[type="email"] {
+    margin-bottom: 20px;
+}
+
+.separator-container-onetap {
+    position: relative;
+    padding-top: 26px;
+    padding-bottom: 26px;
+}
+
+.auth-signin-container #one-tap-wrapper {
+    transform-origin: 0 0;
+    transform: scale(0.8);
+    margin-left: -6px;
+}
+
+.auth-signin-container #one-tap-wrapper iframe {
+    max-width: 334px;
+}
+
+.auth-signin-container #one-tap-wrapper #one-tap-overflow {
+    overflow: hidden;
+}
+
+.auth-signin-container .auth-form {
+    margin-top: 24px;
+}
+
+.auth-signin-container .auth-form label {
+    margin-top: 4px;
+}
+
+.auth-step,
+.auth-signin-container {
+    height: 598px;
+}
+
+.auth-substep::-webkit-scrollbar {
+    width: 20px;
+    background-color: transparent;
+}
+
+.auth-substep::-webkit-scrollbar-thumb {
+    border: 8px solid rgba(0, 0, 0, 0);
+    background-clip: padding-box;
+    border-radius: 10px;
+    background-color: rgba(22, 47, 86, 0.1);
+}
+
+.auth-substep::-webkit-scrollbar-track {
+    box-shadow: initial;
+    border-radius: 8px;
+    background-color: transparent;
+}
+
+.account-block-container .auth-heading,
+.contact-admin-container .auth-heading,
+.enter-2fa-container .auth-heading,
+.setup-mobile-container .auth-heading,
+.verify-mobile-2fa-container .auth-heading {
+    padding: 0;
+}
+
+.account-block-container,
+.contact-admin-container,
+.enter-2fa-container,
+.setup-mobile-container,
+.verify-mobile-2fa-container,
+.page-confirm-container,
+.page-reset-container {
+    padding: 20px 32px;
+}
+
+.reset-form,
+.reset-auth-text,
+.forgot-password-text-login {
+    padding: 0 32px;
+}
+
+.auth-step,
+.auth-main-container .overflow-container {
+    position: relative;
+}
+
+.auth-step .contact-us-text {
+    position: absolute;
+    left: 50%;
+    margin-left: -59px;
+    bottom: 30px;
+}
+
+.alert {
+    width: 256px;
+    margin: 0 auto;
+    position: absolute;
+    left: 32px;
+    top: 100%;
+    transition: ease-in all .5s;
+    font-size: 16px;
+    line-height: 20px;
+    color: white;
+}
+
+.page-reset-container .alert,
+.page-confirm-container .alert {
+    width: 297px;
+    margin: 0;
+    position: relative;
+    left: 0;
+    top: 0;
+    transition: none;
+}
+
+.page-reset-container .static-alert .alert,
+.page-confirm-container .static-alert .alert {
+    transform: none !important;
+}
+
+.alert.alert-dismissable {
+    padding: 15px 40px;
+}
+
+.alert.hide {
+    display: none;
+}
+
+.alert-up {
+    transform: translateY(-100%) translateY(-20px);
+}
+
+.alert.alert-danger {
+    background: #D12D2D;
+}
+
+.alert.alert-success {
+    background: rgb(31, 137, 14);
+}
+
+.alert.alert-success .info img{
+    width: 20px;
+}
+
+.alert .info,
+.alert .close {
+    position: absolute;
+    color: white;
+    opacity: 1;
+}
+
+.alert .info {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    top: 0;
+    left: 11px;
+}
+
+.alert .info .danger,
+.alert .info .success {
+    display: none;
+}
+
+.alert.alert-danger .info .danger {
+    display: block;
+}
+
+.alert.alert-success .info .success {
+    display: block;
+}
+
+.alert .close {
+    top: 15px;
+    right: 16px;
+}
+
+.one-tap-exp-on .g-btn-container,
+.one-tap-exp-on .one-tap-overflow,
+.one-tap-exp-on .separator-container-google,
+.one-tap-exp-on .separator-container-onetap,
+.one-tap-exp-on .contact-us-text-outside,
+.one-tap-exp-on .contact-us-text-inline,
+.one-tap-exp-on .subtext-captcha-outside {
+    display: none;
+}
+
+.one-tap-exp-off .subtext-captcha-outside,
+.one-tap-exp-off .separator-container-onetap,
+.one-tap-exp-off .contact-us-text-outside,
+.one-tap-exp-off .one-tap-overflow {
+    display: none;
+}
+
+.one-tap-exp-on.auth-type-decided.google-button-visible .g-btn-container,
+.one-tap-exp-on.auth-type-decided.google-button-visible .separator-container-google,
+.one-tap-exp-on.auth-type-decided.google-button-visible .contact-us-text-inline {
+    display: block;
+}
+
+.one-tap-exp-on.auth-type-decided.one-tap-visible.inline-one-tap .one-tap-overflow,
+.one-tap-exp-on.auth-type-decided.one-tap-visible.inline-one-tap .separator-container-onetap,
+.one-tap-exp-on.auth-type-decided.one-tap-visible.inline-one-tap .contact-us-text-outside,
+.one-tap-exp-on.auth-type-decided.one-tap-visible.inline-one-tap .subtext-captcha-outside {
+    display: block;
+}
+
+.one-tap-exp-on.auth-type-decided.one-tap-visible.outside-one-tap .one-tap-overflow {
+    display: none;
+}
+
+.one-tap-exp-on.auth-type-decided.one-tap-visible.inline-one-tap .subtext-captcha-inline {
+    display: none;
+}
+
+.one-tap-exp-on.auth-type-decided.one-tap-visible.outside-one-tap .separator-container-onetap,
+.one-tap-exp-on.auth-type-decided.one-tap-visible.outside-one-tap .contact-us-text-outside,
+.one-tap-exp-on.auth-type-decided.one-tap-visible.outside-one-tap .subtext-captcha-outside {
+    display: none;
+}
+
+.one-tap-exp-on.auth-type-decided.one-tap-visible.outside-one-tap .contact-us-text-inline,
+.one-tap-exp-on.auth-type-decided.one-tap-visible.outside-one-tap .subtext-captcha-inline {
+    display: block;
+}
+/* Css with OneTap end*/
