@@ -96,63 +96,72 @@ class TerminalProcessor extends Base\Core
 
         $terminal = [];
 
-        try
+        $isProduction = $this->app->environment(Environment::PRODUCTION);
+
+        if ($isProduction === true)
         {
-            $this->trace->info(
-                TraceCode::AUTH_SELECTION_VIA_SMART_ROUTING,
-                ['payment_id' => $payment->getId()]
-            );
-
-            $input = [
-                'payment'  => $this->payment,
-                'merchant' => $this->payment->merchant,
-            ];
-
-            $options = $this->getTerminalSelectionOptions();
-
-            $terminalSelector = new Terminal\Selector($input, $options);
-
-            $terminalAuthZ = $this->payment->terminal->toArray();
-
-            $terminalsAuthZ = [$terminalAuthZ];
-
-            $terminal = $terminalSelector->selectAuthenticationTerminal($terminalsAuthZ);
-
-            $this->trace->info(
-                TraceCode::AUTH_TERMINAL_SELECTED_VIA_SMART_ROUTING,
-                [
-                    'payment_id' => $payment->getId(),
-                    'terminal'   => $terminal,
-                ]
-            );
-
-            if ($terminal === null)
+            try
             {
-                $apiTerminal = $paymentAuthSelect->select();
+                $this->trace->info(
+                    TraceCode::AUTH_SELECTION_VIA_SMART_ROUTING,
+                    ['payment_id' => $payment->getId()]
+                );
+
+                $input = [
+                    'payment'  => $this->payment,
+                    'merchant' => $this->payment->merchant,
+                ];
+
+                $options = $this->getTerminalSelectionOptions();
+
+                $terminalSelector = new Terminal\Selector($input, $options);
+
+                $terminalAuthZ = $this->payment->terminal->toArray();
+
+                $terminalsAuthZ = [$terminalAuthZ];
+
+                $terminal = $terminalSelector->selectAuthenticationTerminal($terminalsAuthZ);
 
                 $this->trace->info(
-                    TraceCode::AUTH_TERMINAL_MISMATCH_VIA_SMART_ROUTING,
+                    TraceCode::AUTH_TERMINAL_SELECTED_VIA_SMART_ROUTING,
                     [
                         'payment_id' => $payment->getId(),
-                        'terminal_selected_via_router'   => $terminal,
-                        'terminal_selected_via_api'      => $apiTerminal,
+                        'terminal'   => $terminal,
                     ]
                 );
 
-                $terminal = $apiTerminal;
+                if ($terminal === null)
+                {
+                    $apiTerminal = $paymentAuthSelect->select();
+
+                    $this->trace->info(
+                        TraceCode::AUTH_TERMINAL_MISMATCH_VIA_SMART_ROUTING,
+                        [
+                            'payment_id' => $payment->getId(),
+                            'terminal_selected_via_router'   => $terminal,
+                            'terminal_selected_via_api'      => $apiTerminal,
+                        ]
+                    );
+
+                    $terminal = $apiTerminal;
+                }
+            }
+            catch (\Exception $e)
+            {
+                $terminal = $paymentAuthSelect->select();
+
+                $this->trace->error(
+                    TraceCode::SMART_ROUTING_AUTHN_REQUEST_FAILED,
+                    [
+                        'message' => 'Failed to send authentication data to smart routing',
+                        'payment_id' => $payment->getId(),
+                    ]
+                );
             }
         }
-        catch (\Exception $e)
+        else
         {
             $terminal = $paymentAuthSelect->select();
-
-            $this->trace->error(
-                TraceCode::SMART_ROUTING_AUTHN_REQUEST_FAILED,
-                [
-                    'message' => 'Failed to send authentication data to smart routing',
-                    'payment_id' => $payment->getId(),
-                ]
-            );
         }
 
         $this->trace->info(
