@@ -4443,6 +4443,13 @@ trait Authorize
 
         }
 
+        $dummyProcessing = $input['dummy_payment'] ?? false;
+
+        if ($dummyProcessing === true)
+        {
+            return null;
+        }
+
         $this->trace->info(
             TraceCode::PAYMENT_SAVE_METHOD,
             [
