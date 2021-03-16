@@ -6173,3 +6173,6 @@ ALTER TABLE stakeholders
 
 ALTER TABLE bvs_validation
     ADD COLUMN rule_execution_list JSON DEFAULT NULL;
+
+ALTER TABLE rewards
+    ADD COLUMN brand_name CHAR(26) DEFAULT NULL;

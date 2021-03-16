@@ -75,6 +75,9 @@ class CreateRewards extends Migration
             $table->index(Reward::NAME);
 
             $table->index(Reward::CREATED_AT);
+
+            $table->string(Reward::BRAND_NAME, Reward::BRAND_NAME_LENGTH)
+                ->nullable();
         });
     }
 

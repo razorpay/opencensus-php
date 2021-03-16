@@ -22,10 +22,11 @@ class Entity extends Base\PublicEntity
     const ADVERTISER_ID                  = 'advertiser_id';
     const IS_DELETED                     = 'is_deleted';
     const MERCHANT_WEBSITE_REDIRECT_LINK = 'merchant_website_redirect_link';
+    const BRAND_NAME                     =  'brand_name';
     //Attribute lengths
     const NAME_LENGTH         = 50;
     const DISPLAY_TEXT_LENGTH = 255;
-
+    CONST BRAND_NAME_LENGTH   = 26;
 
     protected $entity      = 'reward';
 
@@ -47,6 +48,7 @@ class Entity extends Base\PublicEntity
         self::MIN_AMOUNT,
         self::TERMS,
         self::MERCHANT_WEBSITE_REDIRECT_LINK,
+        self::BRAND_NAME,
     ];
 
     protected $visible = [
@@ -68,6 +70,7 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::IS_DELETED,
         self::MERCHANT_WEBSITE_REDIRECT_LINK,
+        self::BRAND_NAME,
     ];
 
     protected $public = [
@@ -89,6 +92,7 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::IS_DELETED,
         self::MERCHANT_WEBSITE_REDIRECT_LINK,
+        self::BRAND_NAME,
     ];
 
     protected $dates = [

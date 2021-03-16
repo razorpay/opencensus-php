@@ -31,6 +31,7 @@ class Validator extends Base\Validator
         Entity::COUPON_CODE                     => 'required|string',
         Entity::LOGO                            => 'sometimes|string',
         Entity::MERCHANT_WEBSITE_REDIRECT_LINK  => 'sometimes|string',
+        Entity::BRAND_NAME                      => 'sometimes|filled|string|max:26',
     ];
 
     public function validateRewardPeriod(array $input)
