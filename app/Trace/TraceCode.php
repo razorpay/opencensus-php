@@ -2952,6 +2952,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AUTH_SELECTED_TERMINAL                                = 'AUTH_SELECTED_TERMINAL';
     const AUTH_SELECTION_VIA_SMART_ROUTING                      = 'AUTH_SELECTION_VIA_SMART_ROUTING';
     const AUTH_TERMINAL_SELECTED_VIA_SMART_ROUTING              = 'AUTH_TERMINAL_SELECTED_VIA_SMART_ROUTING';
+    const AUTH_TERMINAL_MISMATCH_VIA_SMART_ROUTING              = 'AUTH_TERMINAL_MISMATCH_VIA_SMART_ROUTING';
 
     const ORG_MAILER_BLOCKED                                    = 'ORG_MAILER_BLOCKED';
     const NO_MERCHANT_CONTEXT_MAIL                              = 'NO_MERCHANT_CONTEXT_MAIL';
