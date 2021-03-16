@@ -31,6 +31,15 @@ class Validator extends Base\Validator
     const DIRECT_SALES = 'direct_sales';
     const KEY_ACCOUNT = 'key_account';
     const SME = 'sme';
+    const CAPITAL_SME = 'capital_sme';
+    const CAPITAL_GROWTH = 'capital_growth';
+    const CAPITAL_KAM = 'capital_kam';
+    const CAPITAL_DIRECT_SALES = 'capital_direct_sales';
+    const PG_SME = 'pg_sme';
+    const PG_GROWTH = 'pg_growth';
+    const PG_KAM = 'pg_kam';
+    const PG_DIRECT_SALES = 'pg_direct_sales';
+    const SELF_SERVE = 'self_serve';
 
     // placeholder create rules to allow both the below flows
     protected static $createRules = [
@@ -123,7 +132,16 @@ class Validator extends Base\Validator
         self::DIRECT_SALES,
         self::GROWTH,
         self::KEY_ACCOUNT,
-        self::SME
+        self::SME,
+        self::CAPITAL_SME,
+        self::CAPITAL_GROWTH,
+        self::CAPITAL_KAM,
+        self::CAPITAL_DIRECT_SALES,
+        self::PG_SME,
+        self::PG_GROWTH,
+        self::PG_KAM,
+        self::PG_DIRECT_SALES,
+        self::SELF_SERVE
     ];
 
     public function validateBusinessCategory($attribute, $value)

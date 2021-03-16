@@ -56,10 +56,20 @@ class Leads extends Base
           ActivationDetail\Validator::ZERO_BALANCE  => 'Zero Balance',
       ],
       self::SALES_TEAM => [
-          ActivationDetail\Validator::GROWTH        => 'Growth',
-          ActivationDetail\Validator::DIRECT_SALES  => 'Direct Sales',
-          ActivationDetail\Validator::KEY_ACCOUNT   => 'Key Account',
-          ActivationDetail\Validator::SME           => 'SME',
+          ActivationDetail\Validator::GROWTH                 => 'X Growth',
+          ActivationDetail\Validator::DIRECT_SALES           => 'X Direct Sales',
+          ActivationDetail\Validator::KEY_ACCOUNT            => 'X Key Account',
+          ActivationDetail\Validator::SME                    => 'X SME',
+          ActivationDetail\Validator::CAPITAL_SME            => 'Capital SME',
+          ActivationDetail\Validator::CAPITAL_GROWTH         => 'Capital Growth',
+          ActivationDetail\Validator::CAPITAL_KAM            => 'Capital KAM',
+          ActivationDetail\Validator::CAPITAL_DIRECT_SALES   => 'Capital Direct Sales',
+          ActivationDetail\Validator::PG_SME                 => 'PG SME',
+          ActivationDetail\Validator::PG_GROWTH              => 'PG Growth',
+          ActivationDetail\Validator::PG_KAM                 => 'PG KAM',
+          ActivationDetail\Validator::PG_DIRECT_SALES        => 'PG Direct Sales',
+          ActivationDetail\Validator::SELF_SERVE             => 'Self Serve'
+
       ]
     ];
 
