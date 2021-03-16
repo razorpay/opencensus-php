@@ -13,13 +13,13 @@ const SET_WINDOW_HEIGHT = 'SET_WINDOW_HEIGHT';
 const SET_MOBILE_RES = 'SET_MOBILE_RES';
 const RESIZE_WINDOW = 'RESIZE_WINDOW';
 
-const isMobileResolution = width => {
+const isMobileResolution = (width) => {
   return width <= 768;
 };
 
-export const updateMerchantLiveTransactionFlag = id => {
+export const updateMerchantLiveTransactionFlag = (id) => {
   return merchantFetch({
-    url: 'merchant_mtu_update',
+    url: 'merchant_mtu_update_dashboard',
     method: 'post',
     data: {
       merchants: [id],
@@ -35,21 +35,21 @@ let initialState = {
   isMobileResolution: isMobileResolution(window.innerWidth),
 };
 
-export const setBaseLocation = location => {
+export const setBaseLocation = (location) => {
   return {
     type: LOCATION_UPDATE,
     payload: location,
   };
 };
 
-export const setActiveEntity = id => {
+export const setActiveEntity = (id) => {
   return {
     type: ENTITY_UPDATE,
     payload: id,
   };
 };
 
-export const setActivePageName = name => {
+export const setActivePageName = (name) => {
   return {
     type: SET_ACTIVE_PAGE_NAME,
     payload: name,
@@ -74,15 +74,15 @@ export const resizeWindow = () => {
 };
 
 // Usage: If dual view slider is opened then 2 rows will be highlighted in the scene as per activeEntityId and activeSecEntityId
-export const setSecActiveEntity = id => {
+export const setSecActiveEntity = (id) => {
   return {
     type: SEC_ENTITY_UPDATE,
     payload: id,
   };
 };
 
-export const luminateRow = id => {
-  return dispatch => {
+export const luminateRow = (id) => {
+  return (dispatch) => {
     dispatch({
       type: ROW_LUMINATE_ADD,
       payload: { id },
@@ -96,7 +96,7 @@ export const luminateRow = id => {
   };
 };
 
-export default function(state = initialState, action) {
+export default function (state = initialState, action) {
   switch (action.type) {
     case ENTITY_UPDATE:
       return set(state, 'activeEntityId', action.payload);
@@ -127,11 +127,7 @@ export default function(state = initialState, action) {
       state = set(state, 'isMobileResolution', isMobileResolution);
 
       // forcing not to show mobile menu in desktop resolution
-      state = set(
-        state,
-        'showMobileMenu',
-        !isMobileResolution ? false : state.showMobileMenu
-      );
+      state = set(state, 'showMobileMenu', !isMobileResolution ? false : state.showMobileMenu);
       return state;
 
     default:
