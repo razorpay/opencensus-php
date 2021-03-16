@@ -1114,7 +1114,7 @@ class PayoutTest extends TestCase
             [
                 // NOTE : Account number is set as a merchant's banking balance's account number : 2224440041626905
                 // The trailing whitespace makes sure that the account number is displayed correctly
-                '2323230041626905',
+                '2323230041626905 ',
                 10,
                 'INR',
                 'ABCD',
@@ -1123,14 +1123,14 @@ class PayoutTest extends TestCase
                 'bank_account',
                 'Mehul Kaushik',
                 'SBIN0010720',
-                100200300400,
+                '100200300400 ',
                 null,
                 'Mehul Kaushik',
                 'test123',
                 null,
                 'employee',
                 'mehul.kaushik@razorpay.com',
-                null,
+                ' ',
                 null,
                 'test',
                 'test',
@@ -1278,7 +1278,7 @@ class PayoutTest extends TestCase
             [
                 // NOTE : Account number is set as a merchant's banking balance's account number : 2224440041626905
                 // The trailing whitespace makes sure that the account number is displayed correctly
-                '2323230041626905',
+                '2323230041626905 ',
                 10,
                 'INR',
                 'ABCD',
@@ -1287,14 +1287,14 @@ class PayoutTest extends TestCase
                 'bank_account',
                 'Mehul Kaushik',
                 'SBIN0010720',
-                100200300400,
+                '100200300400 ',
                 null,
                 'Mehul Kaushik',
                 'test123',
                 null,
                 'employee',
                 'mehul.kaushik@razorpay.com',
-                null,
+                ' ',
                 null,
                 'test',
                 'test',

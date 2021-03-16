@@ -20,7 +20,7 @@ class BatchHelper
             Entity::TYPE            => $entry[self::CONTACT][self::TYPE],
             Entity::NAME            => $entry[self::CONTACT][self::NAME],
             Entity::EMAIL           => $entry[self::CONTACT][self::EMAIL],
-            Entity::CONTACT         => $entry[self::CONTACT][self::MOBILE],
+            Entity::CONTACT         => trim($entry[self::CONTACT][self::MOBILE]),
             Entity::REFERENCE_ID    => $entry[self::CONTACT][self::REFERENCE_ID],
             // Notes is optional.
             Entity::NOTES           => $entry[self::NOTES] ?? [],

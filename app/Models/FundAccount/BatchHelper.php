@@ -34,7 +34,7 @@ class BatchHelper
             case Type::BANK_ACCOUNT:
                 $input[Entity::BANK_ACCOUNT] = [
                     BankAccount\Entity::IFSC           => $entry[self::FUND_ACCOUNT][self::IFSC],
-                    BankAccount\Entity::ACCOUNT_NUMBER => $entry[self::FUND_ACCOUNT][self::NUMBER],
+                    BankAccount\Entity::ACCOUNT_NUMBER => trim($entry[self::FUND_ACCOUNT][self::NUMBER]),
                     BankAccount\Entity::NAME           => $entry[self::FUND_ACCOUNT][self::NAME],
                 ];
                 break;
