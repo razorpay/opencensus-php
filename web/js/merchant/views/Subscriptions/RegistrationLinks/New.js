@@ -73,7 +73,7 @@ const UPIMandatoryFields = [
   {
     name: 'amount',
     validator: (value) => {
-      return isAmount(value) && value <= 2000 && value >= 1;
+      return isAmount(value) && value <= 5000 && value >= 1;
     },
   },
 ];
@@ -142,7 +142,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
     const isUPI = this.state.formFields.mandateMethod === 'upi';
 
     if (isUPI) {
-      DEFAULT_MAX_AMOUNT = 2000;
+      DEFAULT_MAX_AMOUNT = 5000;
     }
 
     return isUPI && this.props.user.isUPICAWEnabled;
@@ -513,7 +513,7 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
           const fields = this.state.formFields;
           const maxAmount = rupeesToPaise(fields.mandateMaxAmount);
           const amount = rupeesToPaise(fields.amount);
-          if (maxAmount > 200000 || maxAmount < amount) {
+          if (maxAmount > 500000 || maxAmount < amount) {
             return false;
           }
         }

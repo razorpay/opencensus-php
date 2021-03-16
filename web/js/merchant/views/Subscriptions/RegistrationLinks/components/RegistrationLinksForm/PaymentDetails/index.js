@@ -69,7 +69,7 @@ export default (props) => {
           isTPVEnabled={props.isTPVEnabled}
           amount={amount}
           onBlurElement={onBlurElement}
-          placeholder="Max 2000"
+          placeholder="Max 5000"
           amountValidator={amountValidator}
           handleTPV={props.handleTPV}
           bankAccountNumber={props.bankAccountNumber}
@@ -186,7 +186,7 @@ function amountValidator(value) {
     return validation;
   }
 
-  if (value > 2000) {
-    return 'Amount should not be greater than 2000';
+  if (value > 5000) {
+    return 'Amount should not be greater than 5000';
   }
 }
