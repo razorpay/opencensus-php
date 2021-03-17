@@ -9,6 +9,7 @@
       initiated: noop, //User starts an activity
       dropped: noop, //User drops an activity
       clicked: noop, //User click activity
+      viewed: noop, //User view activity
       success: noop, //Successfully completes activity
       failed: noop, //A failure occured
       push: noop, //Explicitly push as custom event to the queue
