@@ -400,6 +400,80 @@ class UpiJuspayGatewayTest extends TestCase
         }, RuntimeException::class, 'Payment amount verification failed.');
     }
 
+    public function testDirectPayment()
+    {
+        $this->createTestExpectedQrTerminal();
+
+        $request = $this->mockServer('upi_juspay')->getDirectCallback($this->terminal, [
+            Juspay\Fields::AMOUNT => '10.00'
+        ]);
+
+        $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertArraySubset([
+            Entity::AMOUNT        => 1000,
+            Entity::MERCHANT_ID   => $this->terminal['merchant_id'],
+            Entity::METHOD        => 'upi',
+            Entity::GATEWAY       => 'upi_juspay',
+            Entity::STATUS        => 'authorized',
+            Entity::VPA           => 'customer@abfspay',
+            Entity::REFERENCE16   => '034520388334',
+        ], $payment->toArray());
+
+        $upi = $this->getDbLastUpi();
+
+        $this->assertArraySubset([
+            UpiEntity::PAYMENT_ID           => $payment->getId(),
+            UpiEntity::VPA                  => $payment->getVpa(),
+            UpiEntity::NPCI_TXN_ID          => 'APP34749005b22e45bfa1e9a38e668fc43c',
+            UpiEntity::NPCI_REFERENCE_ID    => $payment->getReference16(),
+            UpiEntity::RECEIVED             => true,
+            UpiEntity::AMOUNT               => $payment->getAmount(),
+            UpiEntity::ACTION               => 'authorize',
+            UpiEntity::STATUS_CODE          => '00',
+        ], $upi->toArray());
+    }
+
+    public function testDirectFailedPayment()
+    {
+        $this->createTestExpectedQrTerminal();
+
+        $request = $this->mockServer('upi_juspay')->getDirectCallback($this->terminal, [
+            Juspay\Fields::AMOUNT                   => '10.00',
+            Juspay\Fields::GATEWAY_RESPONSE_CODE    => 'U30',
+            Juspay\Fields::GATEWAY_RESPONSE_MESSAGE => 'Transaction failed',
+            Juspay\Fields::MERCHANT_REQUEST_ID      => 'SomeGeneratedId'
+        ]);
+
+        $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertArraySubset([
+            Entity::AMOUNT        => 1000,
+            Entity::MERCHANT_ID   => $this->terminal['merchant_id'],
+            Entity::METHOD        => 'upi',
+            Entity::GATEWAY       => 'upi_juspay',
+            Entity::STATUS        => 'failed',
+        ], $payment->toArray());
+
+        $upi = $this->getDbLastUpi();
+
+        $this->assertArraySubset([
+            UpiEntity::PAYMENT_ID           => $payment->getId(),
+            UpiEntity::VPA                  => 'customer@abfspay',
+            UpiEntity::NPCI_TXN_ID          => 'APP34749005b22e45bfa1e9a38e668fc43c',
+            UpiEntity::NPCI_REFERENCE_ID    => '034520388334',
+            UpiEntity::RECEIVED             => true,
+            UpiEntity::AMOUNT               => $payment->getAmount(),
+            UpiEntity::ACTION               => 'authorize',
+            UpiEntity::STATUS_CODE          => 'U30',
+            UpiEntity::MERCHANT_REFERENCE   => 'SomeGeneratedId',
+        ], $upi->toArray());
+    }
+
     protected function enableIntentFlow($description = 'intentPayment')
     {
         $this->terminal = $this->fixtures->create('terminal:upi_juspay_intent_terminal');
@@ -418,6 +492,17 @@ class UpiJuspayGatewayTest extends TestCase
     protected function createTestTerminal()
     {
         $this->terminal = $this->fixtures->create('terminal:upi_juspay_terminal');
+
+        $this->fixtures->merchant->enableMethod(Account::TEST_ACCOUNT, Method::UPI);
+
+        $this->fixtures->merchant->activate();
+    }
+
+    protected function createTestExpectedQrTerminal()
+    {
+        $this->terminal = $this->fixtures->create('terminal:upi_juspay_intent_terminal', [
+            'expected' => 1
+        ]);
 
         $this->fixtures->merchant->enableMethod(Account::TEST_ACCOUNT, Method::UPI);
 

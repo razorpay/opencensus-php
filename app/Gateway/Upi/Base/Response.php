@@ -39,7 +39,7 @@ class Response extends Collection
     {
         if ($this->isV2() === true)
         {
-            $attributes = $this->get(self::UPI);
+            $attributes = $this->get(self::UPI, []);
         }
         else
         {
@@ -53,7 +53,7 @@ class Response extends Collection
     {
         if ($this->isV2() === true)
         {
-            return $this->get(self::TERMINAL);
+            return $this->get(self::TERMINAL, []);
         }
 
         return $this->toArray();
@@ -63,7 +63,7 @@ class Response extends Collection
     {
         if ($this->isV2() === true)
         {
-            return $this->get(self::PAYMENT);
+            return $this->get(self::PAYMENT, []);
         }
 
         return $this->toArray();

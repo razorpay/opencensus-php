@@ -4,6 +4,7 @@ namespace RZP\Gateway\Upi\Juspay;
 
 use RZP\Models\Payment;
 use RZP\Gateway\Upi\Base;
+use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\AuthorizeFailed;
 
@@ -78,6 +79,22 @@ class Gateway extends Base\Gateway
         return $this->upiPaymentIdFromServerCallback($response);
     }
 
+    public function getParsedDataFromUnexpectedCallback($input)
+    {
+        return $this->upiGetParsedDataFromUnexpectedCallback($input);
+    }
+
+    public function validatePush($input)
+    {
+        parent::action($input, Action::VALIDATE_PUSH);
+
+        $this->upiValidatePush($input);
+    }
+
+    public function authorizePush($input)
+    {
+        return $this->upiAuthorizePush($input);
+    }
     /**
      * Function to postprocess the response of callback. In case of success, return true.
      * However in case of exception, suppress the error and return failure response.

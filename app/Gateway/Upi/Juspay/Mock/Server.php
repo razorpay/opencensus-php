@@ -27,6 +27,18 @@ class Server extends Base\Mock\Server
         ];
     }
 
+    public function getDirectCallback($terminal, $attributes = [])
+    {
+        $default = $this->getDefaultPayload();
+
+        $default[Fields::MERCHANT_ID]         = $terminal['gateway_merchant_id'];
+        $default[Fields::MERCHANT_CHANNEL_ID] = $terminal['gateway_merchant_id2'];
+
+        $attributes = array_merge($default, $attributes);
+
+        return $this->getCallbackRequest($attributes);
+    }
+
     public function getCallback($payment, $attributes = [])
     {
         $default = $this->getDefaultPayload();

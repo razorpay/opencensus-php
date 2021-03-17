@@ -1317,6 +1317,11 @@ class Service extends Base\Service
 
         $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $data['terminal']);
 
+        if ($terminal->isExpected() === true)
+        {
+            $merchantId = $terminal->getMerchantId();
+        }
+
         if ($terminal->isDirectSettlement() === true)
         {
             $merchantId = $terminal->getMerchantId();

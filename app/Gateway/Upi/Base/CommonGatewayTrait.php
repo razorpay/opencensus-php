@@ -131,6 +131,8 @@ trait CommonGatewayTrait
 
         $response             = new Response($result['data'] ?? []);
 
+        $this->upiTraceGatewayResponse($response, $result, TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE);
+
         $verify->setVerifyResponseBody($result);
 
         // Attaching the upi entity, for authorize failed flow.
@@ -201,16 +203,109 @@ trait CommonGatewayTrait
 
         $mozart = $this->getUpiMozartGatewayWithModeFromEnvironment();
 
-        return $mozart->sendUpiMozartRequest(
+        $result = $mozart->sendUpiMozartRequest(
             $gatewayInput,
             TraceCode::GATEWAY_PRE_PROCESS_CALLBACK,
             'pre_process'
         );
+
+        $response = new Response($result['data'] ?? []);
+
+        $this->upiTraceGatewayResponse($response, $result, TraceCode::GATEWAY_PRE_PROCESS_CALLBACK);
+
+        return $result;
     }
 
     public function upiPaymentIdFromServerCallback($input)
     {
         return $input['data']['upi']['merchant_reference'];
+    }
+
+    public function upiGetParsedDataFromUnexpectedCallback($input)
+    {
+        $data = $input['data'];
+
+        $payment = [
+            'method'   => 'upi',
+            'amount'   => $data['payment']['amount_authorized'],
+            'currency' => $data['payment']['currency'],
+            'contact'  => '+919999999999',
+            'email'    => 'void@razorpay.com',
+            'upi'     => [
+                'flow'  => 'intent'
+            ],
+        ];
+
+        return [
+            'payment'   => $payment,
+            'terminal'  => $data['terminal'],
+        ];
+    }
+
+    public function upiValidatePush($input)
+    {
+        $this->upiIsDuplicateUnexpectedPayment($input);
+    }
+
+    protected function upiIsDuplicateUnexpectedPayment($input)
+    {
+        $data = $input['data'];
+
+        $gatewayPayment = $this->upiGetRepository()->fetchByMerchantReference($data['upi']['merchant_reference']);
+
+        if ($gatewayPayment !== null)
+        {
+            throw new LogicException(
+                'Duplicate Gateway payment found',
+                null,
+                [
+                    'callbackData' => $input,
+                ]
+            );
+        }
+    }
+
+    protected function upiAuthorizePush($data)
+    {
+        list ($paymentId, $content) = $data;
+
+        $response = new Response($content['data'] ?? []);
+
+        // Create attributes for upi entity.
+        $attributes = [
+            Entity::TYPE                => Upi\Base\Type::PAY,
+            Entity::RECEIVED            => 1,
+        ];
+
+        $attributes = array_merge($attributes, $response->getFilteredUpi());
+
+        $payment  = $response->getPayment();
+
+        $upi      = $response->getUpi();
+
+        // Create input structure for upi entity.
+        $input = [
+            'payment'    => [
+                'id'       => $paymentId,
+                'gateway'  => $this->gateway,
+                'vpa'      => $upi['vpa'],
+                'amount'   => $payment['amount_authorized'],
+            ],
+        ];
+
+        // Call to set the input in gateway
+        parent::authorize($input);
+
+        $gatewayPayment = $this->upiCreateGatewayEntity($input, $attributes);
+
+        $this->upiCheckErrorsAndThrowExceptionFromResponse($content);
+
+        return [
+            'acquirer' => [
+                Payment\Entity::VPA           => $gatewayPayment->getVpa(),
+                Payment\Entity::REFERENCE16   => $gatewayPayment->getNpciReferenceId(),
+            ]
+        ];
     }
 
     /****************** Helper **************************
@@ -499,7 +594,7 @@ trait CommonGatewayTrait
         }
 
         return $mozart;
-    }
+     }
 
     /**
      * Returns UPI Mozart gateway
