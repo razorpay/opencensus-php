@@ -36,6 +36,8 @@ trait CommonGatewayTrait
     {
         $attributes = $this->upiPrepareGatewayAttributes($input, Action::AUTHORIZE);
 
+        $this->upiAttachPaymentRemark($input);
+
         $gatewayEntity = $this->upiCreateGatewayEntity($input, $attributes);
 
         $mozart = $this->getUpiMozartGatewayWithModeSet();
@@ -540,5 +542,19 @@ trait CommonGatewayTrait
         }
 
         return $gatewayPayment->toArray();
+    }
+
+    /*
+     * Attach Payment Remark using payment description.
+     * */
+    protected function upiAttachPaymentRemark(&$input)
+    {
+        $paymentDescription = $input['payment']['description'] ?? '';
+
+        $filteredPaymentDescription = Payment\Entity::getFilteredDescription($paymentDescription);
+
+        $description = $input['merchant']->getFilteredDba() . ' ' . $filteredPaymentDescription;
+
+        $input[Entity::UPI][Entity::REMARK] = $description ? substr($description, 0, 50) : 'Pay via Razorpay';
     }
 }

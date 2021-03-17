@@ -110,6 +110,7 @@ class Shared
     const UPI_ICICI_INTENT_TERMINAL          = '1UpiIntICICTml';
     const UPI_ICICI_VPA_TERMINAL             = '100UpiIciciVpa';
     const UPI_YESBANK_RAZORPAY_TERMINAL      = '100UpiYesbankT';
+    const UPI_YESBANK_INTENT_TERMINAL        = '1UpiYesbankTml';
     const AEPS_ICICI_RAZORPAY_TERMINAL       = '1000AepsShared';
     const AIRTELMONEY_RAZORPAY_TERMINAL      = '100ArtlMnyTmnl';
     const AMAZONPAY_RAZORPAY_TERMINAL        = '100AmznpayTmnl';

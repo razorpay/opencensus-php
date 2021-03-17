@@ -3143,6 +3143,19 @@ class Terminal extends Base
         return $this->createSharedUpiHulkIntentTerminal(array_merge($attributes, $override));
     }
 
+    public function createUpiYesbankIntentTerminal()
+    {
+        $attributes = [
+            'id'                        => Shared::UPI_YESBANK_INTENT_TERMINAL,
+            'type'                      => [
+                'non_recurring' => '1',
+                'pay'           => '1',
+            ]
+        ];
+
+        return $this->createSharedUpiYesbankTerminal($attributes);
+    }
+
     public function createSharedUpiYesbankTerminal(array $override)
     {
         $termId = Shared::UPI_YESBANK_RAZORPAY_TERMINAL;

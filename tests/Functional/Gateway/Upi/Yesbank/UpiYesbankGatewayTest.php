@@ -26,8 +26,6 @@ class UpiYesbankGatewayTest extends TestCase
      */
     protected $sharedTerminal;
 
-    protected $payment;
-
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/UpiYesbankGatewayTestData.php';
