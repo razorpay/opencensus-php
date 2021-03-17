@@ -89,8 +89,10 @@ class Core extends Base\Core
         {
             $isExpected = $bharatQr === null ? null : $bharatQr->isExpected();
 
+            $methodDimension = ['bqr_method' => $gatewayResponse['qr_data']['method']];
+
             (new VirtualAccount\Metric())->pushPaymentMetrics(Constants\Entity::BHARAT_QR, $isExpected, $valid,
-                                                              $terminal->getGateway(), $errorMessage);
+                                                              $terminal->getGateway(), $errorMessage, $methodDimension);
         }
 
         return $valid;

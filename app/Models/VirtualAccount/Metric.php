@@ -95,15 +95,17 @@ class Metric extends Base\Core
     }
 
     public function pushPaymentMetrics(string $method, bool $isExpected = null, bool $success = false,
-                                       string $gateway = null, string $error = null)
+                                       string $gateway = null, string $error = null, array $extraDimensions = [])
     {
         $dimensions = [
             'method'            => $method,
             'expected'          => $isExpected,
             'successful'        => $success,
             'gateway'           => $gateway,
-            'error'             => $error
+            'error'             => $error,
         ];
+
+        $dimensions = array_merge($dimensions, $extraDimensions);
 
         $this->trace->count(
             Metric::VIRTUAL_ACCOUNT_PAYMENT,
