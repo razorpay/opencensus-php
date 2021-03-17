@@ -1855,6 +1855,7 @@ return [
                 'max_fee'      => 10000,
                 'percent_rate' => 450,
                 'fixed_rate'   => 0,
+                'procurer'     => 'merchant'
             ],
             'method' => 'PATCH'
         ],
@@ -1865,8 +1866,36 @@ return [
                 'fixed_rate'   => 0,
                 'min_fee'      => 101,
                 'max_fee'      => 10000,
+                'procurer'     => 'merchant'
             ],
         ],
+    ],
+
+    'testUpdatePricingPlanRuleEmptyProcurer' => [
+        'request' => [
+            'content' => [
+                'min_fee'      => 101,
+                'max_fee'      => 10000,
+                'percent_rate' => 450,
+                'fixed_rate'   => 0,
+                'procurer'     => ''
+
+            ],
+            'method' => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'error'   => [
+                    'code'  => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid Procurer Value'
+                ]
+            ],
+            'status_code'   => 400
+        ],
+        'exception' => [
+            'class'                 => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
     ],
 
     'testUpdateCommissionRule' => [

@@ -3,6 +3,7 @@
 namespace RZP\Models\Pricing;
 
 use RZP\Base;
+use RZP\Constants\Procurer;
 use RZP\Constants\Product;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -64,6 +65,7 @@ class Validator extends Base\Validator
         Entity::MIN_FEE             => 'sometimes|integer|max:100000',
         Entity::MAX_FEE             => 'sometimes|nullable|integer|min:1|max:100000',
         Entity::FEE_BEARER          => 'sometimes|in:platform,customer',
+        Entity::PROCURER            => 'sometimes',
     ];
 
     protected static $merchantPricingPlansSummaryRules = [
@@ -102,7 +104,8 @@ class Validator extends Base\Validator
 
     protected static $editPlanRuleValidators = [
         'addPlanRuleRate',
-        'addPlanRuleMinAndMaxFee'
+        'addPlanRuleMinAndMaxFee',
+        'editPlanRuleProcurer',
     ];
 
     protected static $createPlanRules = [
@@ -245,6 +248,31 @@ class Validator extends Base\Validator
             }
         }
     }
+
+    protected function validateEditPlanRuleProcurer($input)
+    {
+        if (isset($input[Entity::PROCURER]) === false)
+        {
+           return;
+        }
+
+        if (($input[Entity::PROCURER]) === null)
+        {
+            return;
+        }
+
+        $validProcurers = [Procurer::MERCHANT, Procurer::RAZORPAY];
+
+        if (in_array($input[Entity::PROCURER], $validProcurers) === true)
+        {
+            return;
+        }
+
+        throw new Exception\BadRequestValidationFailureException(
+            'Invalid Procurer Value');
+
+    }
+
 
     protected function validateAddPlanRuleEmandateOrNach($input)
     {

@@ -429,6 +429,23 @@ class PricingTest extends TestCase
         $this->assertNotNull($rule['deleted_at']);
     }
 
+    public function testUpdatePricingPlanRuleEmptyProcurer()
+    {
+        $content = $this->createPricingPlan2();
+
+        $rule = $this->getEntityById('pricing', $content['rules']['0']['id'], true);
+
+        $this->assertEquals($rule['deleted_at'], null);
+
+        $testData['request']['url'] = '/pricing/' . $content['id'] . '/rule/' . $rule['id'];
+
+        $this->startTest($testData);
+
+        $rule = Pricing\Entity::withTrashed()->findOrFail($rule['id']);
+
+        $this->assertNull($rule['deleted_at']);
+    }
+
     public function testUpdateCommissionRule()
     {
         $content = $this->createPricingPlan2(['type' => 'commission']);
