@@ -16,32 +16,35 @@ class Core extends Base\Core
 
     public function createOrEditAvgOrderValue(Detail\Entity $merchantDetails, $input)
     {
-        $avgOrderValue = $merchantDetails->avgOrderValue;
+        return $this->repo->transactionOnLiveAndTest(function () use ($merchantDetails, $input) {
 
-        if ($avgOrderValue === null)
-        {
-            $this->trace->info(
-                TraceCode::AVG_ORDER_VALUE_DOES_NOT_EXIST,
-                [
-                    'merchant_id' => $merchantDetails->getMerchantId(),
-                ]
-            );
+            $avgOrderValue = $merchantDetails->avgOrderValue;
 
-            $input[Entity::MERCHANT_ID] = $merchantDetails->merchant->getId();
+            if ($avgOrderValue === null)
+            {
+                $this->trace->info(
+                    TraceCode::AVG_ORDER_VALUE_DOES_NOT_EXIST,
+                    [
+                        'merchant_id' => $merchantDetails->getMerchantId(),
+                    ]
+                );
 
-            $avgOrderValue = $this->createAvgOrderValue($merchantDetails, $input);
+                $input[Entity::MERCHANT_ID] = $merchantDetails->merchant->getId();
 
-            $merchantDetails->setRelation(Detail\Entity::MERCHANT_AVG_ORDER_VALUE, $avgOrderValue);
-        }
+                $avgOrderValue = $this->createAvgOrderValue($merchantDetails, $input);
 
-        else
-        {
-            $avgOrderValue->edit($input, 'edit');
+                $merchantDetails->setRelation(Detail\Entity::MERCHANT_AVG_ORDER_VALUE, $avgOrderValue);
+            }
 
-            $this->repo->merchant_avg_order_value->saveOrFail($avgOrderValue);
-        }
+            else
+            {
+                $avgOrderValue->edit($input, 'edit');
+
+                $this->repo->merchant_avg_order_value->saveOrFail($avgOrderValue);
+            }
 //todo: all create/update calls to be added here
-        return $avgOrderValue;
+            return $avgOrderValue;
+        });
     }
 
     private function createAvgOrderValue($merchantDetails, $input)
