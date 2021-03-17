@@ -45,8 +45,9 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::LOCKED    => 'bool',
-        self::SUBMITTED => 'bool',
+        self::LOCKED                    => 'bool',
+        self::SUBMITTED                 => 'bool',
+        self::KYC_CLARIFICATION_REASONS => 'array'
     ];
 
     protected $defaults = [
@@ -122,6 +123,6 @@ class Entity extends Base\PublicEntity
     public function activationStates()
     {
         return $this->hasMany('\RZP\Models\State\Entity', State\Entity::ENTITY_ID)
-                    ->where(State\Entity::ENTITY_TYPE, 'partner_kyc');
+                    ->where(State\Entity::ENTITY_TYPE, 'partner_activation');
     }
 }

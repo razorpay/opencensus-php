@@ -14,4 +14,9 @@ class Repository  extends BaseRepository
     protected $proxyFetchParamRules = [
         Entity::MERCHANT_ID       => 'sometimes|string|size:14',
     ];
+
+    protected function addQueryOrder($query)
+    {
+        $query->orderBy(Entity::MERCHANT_ID, 'desc');
+    }
 }
