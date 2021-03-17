@@ -1078,11 +1078,78 @@ class Service extends Base\Service
         return $arrayPublic;
     }
 
+    public function addMswipeTerminals($merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $terminals = (new Terminal\Repository())->getTerminalsForMerchantAndSharedMerchant($merchant);
+
+        $this->checkAndAddMswipeTerminals($terminals, $merchant);
+    }
+
+    public function checkAndAddMswipeTerminals($terminals, $merchant) :bool
+    {
+
+        try {
+            $mswipeTerminalIds = ['C7EW8LggSH7FnY', 'CXjvHPZlPnqWBX', 'CNqL80h9pI0hsI', 'CHYaN0FnjkG5ni',
+                'CWybuzsFqa9KDz'];
+
+            if ($merchant->isUseMswipeTerminalsEnabled() === false)
+            {
+                return false;
+            }
+
+            $terminalIds = $this->getTerminalIds($terminals);
+
+            $diff = array_diff($mswipeTerminalIds, $terminalIds);
+
+            if (count($diff) === 0) {
+                return false;
+            }
+
+            foreach ($mswipeTerminalIds as $mswipeTerminalId) {
+                if (in_array($mswipeTerminalId, $terminalIds) === true) {
+                    continue;
+                }
+                $this->addMerchantToTerminal($mswipeTerminalId, $merchant->getId());
+            }
+
+            // disabling cache for this merchant for terminal fetch as merchant has been added as submerchant to other
+            // terminals, new fetch result will have these extra terminals in result.
+            $cacheTag = Entity::getCacheTag($merchant->getId());
+
+            (new Entity)->flushCache($cacheTag);
+
+            return true;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(
+                TraceCode::PAYMENTS_MWSIPE_TERMINAL_ASSIGNEMENT_ERROR,
+                [
+                    'error'     => $e->getMessage(),
+                ]);
+        }
+
+        return false;
+    }
+
+    protected function getTerminalIds($terminals)
+    {
+        $terminalIds = [];
+
+        foreach ($terminals as $terminal)
+        {
+            $terminalIds[] = $terminal->getId();
+        }
+
+        return $terminalIds;
+
+    }
     protected function increaseAllowedSystemLimits()
     {
         RuntimeManager::setTimeLimit(300);
     }
-
 }
 
 

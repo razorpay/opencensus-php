@@ -80,6 +80,26 @@ return [
         ],
     ],
 
+    'testMswipeFeaturesAdd' => [
+        'request'   => [
+            'content' => [
+                'names'       => ['use_mswipe_terminals'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000'
+            ],
+            'url'     => '/features',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard'                => 'true',
+                'HTTP_X-Dashboard-Admin-Username' => 'admin',
+            ],
+        ],
+        'response'  => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
     'testDeleteNonExistentFeatureFromMerchant' => [
         'request'   => [
             'url'    => '/features/10000000000000/xxxxx',

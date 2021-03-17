@@ -1007,64 +1007,14 @@ class Selector extends Base\Core
     // fetch terminals to get terminals of parent merchant as well
     protected function addMswipeTerminals(&$terminals)
     {
-        try {
-            $merchant = $this->input['merchant'];
+        $merchant = $this->input['merchant'];
 
-            $mswipeTerminalIds = ['C7EW8LggSH7FnY', 'CXjvHPZlPnqWBX', 'CNqL80h9pI0hsI', 'CHYaN0FnjkG5ni',
-                'CWybuzsFqa9KDz'];
+        $terminalUpdated = (new Terminal\Service())->checkAndAddMswipeTerminals($terminals, $merchant);
 
-            if ($merchant->isUseMswipeTerminalsEnabled() === false)
-            {
-                return;
-            }
-
-            $terminalIds = $this->getTerminalIds($terminals);
-
-            $diff = array_diff($mswipeTerminalIds, $terminalIds);
-
-            if (count($diff) === 0)
-            {
-                return;
-            }
-
-            foreach ($mswipeTerminalIds as $mswipeTerminalId)
-            {
-                if (in_array($mswipeTerminalId, $terminalIds) === true)
-                {
-                    continue;
-                }
-
-                (new Service)->addMerchantToTerminal($mswipeTerminalId, $merchant->getId());
-            }
-
-            // disabling cache for this merchant for terminal fetch as merchant has been added as submerchant to other
-            // terminals, new fetch result will have these extra terminals in result.
-            $cacheTag = Terminal\Entity::getCacheTag($merchant->getId());
-
-            (new Terminal\Entity)->flushCache($cacheTag);
+        if ($terminalUpdated === true) {
 
             $terminals = $this->getTerminals();
         }
-        catch (\Throwable $e)
-        {
-            $this->trace->error(
-                TraceCode::PAYMENTS_MWSIPE_TERMINAL_ASSIGNEMENT_ERROR,
-                [
-                    'error'     => $e->getMessage(),
-                ]);
-        }
-    }
-
-    protected function getTerminalIds($terminals)
-    {
-        $terminalIds = [];
-
-        foreach ($terminals as $terminal)
-        {
-            $terminalIds[] = $terminal->getId();
-        }
-
-        return $terminalIds;
     }
 
     protected function alertDinersDisabledForMerchant(Merchant\Entity $merchant, $payment)

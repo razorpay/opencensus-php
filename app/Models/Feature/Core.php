@@ -10,6 +10,7 @@ use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Mail\Los\LoanEligible;
@@ -71,8 +72,7 @@ class Core extends Base\Core
         // Features for other entity types which are external to api, aren't checked
         // for existence.
         //
-        else
-        {
+        else {
             $feature->setEntityId($entityId);
 
             $feature->setEntityType($entityType);
@@ -101,6 +101,11 @@ class Core extends Base\Core
         $this->approveFeatureOnboardingRequestIfApplicable($feature, $shouldSync);
 
         $this->notifyFeatureUpdateOnSlack($feature);
+
+        if (($feature->getName() === Feature::USE_MSWIPE_TERMINALS) && ($feature->getEntityType() === Constants::MERCHANT))
+        {
+            (new Terminal\Service())->addMswipeTerminals($feature->getEntityId());
+        }
 
         if (($feature->getName() === Feature::ES_ON_DEMAND) && ($feature->getEntityType() === Constants::MERCHANT))
         {

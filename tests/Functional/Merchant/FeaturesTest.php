@@ -11,6 +11,7 @@ use RZP\Error\PublicErrorCode;
 use RZP\Models\Feature\Entity;
 use RZP\Services\RazorXClient;
 use RZP\Models\Feature\Constants;
+use RZP\Models\Terminal;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Loc\CashAdvanceEligible;
 use RZP\Error\PublicErrorDescription;
@@ -70,6 +71,34 @@ class FeaturesTest extends TestCase
         $this->addFeatures(Mode::TEST);
 
         $this->startTest();
+    }
+
+    public function testMswipeFeaturesAdd()
+    {
+        $this->fixtures->create('merchant', ['id' => '10000000000001']);
+
+        $this->fixtures->create('terminal', ['id' => 'C7EW8LggSH7FnY']);
+        $this->fixtures->create('terminal', ['id' => 'CXjvHPZlPnqWBX']);
+        $this->fixtures->create('terminal', ['id' => 'CNqL80h9pI0hsI']);
+        $this->fixtures->create('terminal', ['id' => 'CHYaN0FnjkG5ni']);
+        $this->fixtures->create('terminal', ['id' => 'CWybuzsFqa9KDz']);
+
+        $this->startTest();
+
+        $dt = Terminal\Entity::findOrFail('C7EW8LggSH7FnY');
+        $this->assertEquals(1, $dt->merchants->count());
+
+        $dt = Terminal\Entity::findOrFail('CXjvHPZlPnqWBX');
+        $this->assertEquals(1, $dt->merchants->count());
+
+        $dt = Terminal\Entity::findOrFail('CNqL80h9pI0hsI');
+        $this->assertEquals(1, $dt->merchants->count());
+
+        $dt = Terminal\Entity::findOrFail('CHYaN0FnjkG5ni');
+        $this->assertEquals(1, $dt->merchants->count());
+
+        $dt = Terminal\Entity::findOrFail('CWybuzsFqa9KDz');
+        $this->assertEquals(1, $dt->merchants->count());
     }
 
     public function testApplicationFeatures()
