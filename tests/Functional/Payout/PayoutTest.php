@@ -10640,6 +10640,105 @@ class PayoutTest extends OAuthTestCase
         $this->assertArraySelectiveEquals($sourceDetails, $response);
     }
 
+    public function testUpdatePayoutStatusToProcessedManuallyInBatch()
+    {
+        $this->testCreatePayout();
+
+        $payout1 = $this->getDbLastEntity('payout');
+
+        $this->testCreatePayout();
+
+        $payout2 = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout1['id'], ['status' => 'initiated']);
+
+        $this->fixtures->edit('payout', $payout2['id'], ['status' => 'initiated']);
+
+        $request = [
+            'url' => '/payouts/manual/status_update/batch',
+            'method' => 'PATCH',
+            'content' => [
+                'payout_ids' => [$payout1['id'], $payout2['id']],
+                'status' => 'processed',
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $updatePayout1 = $this->getDbEntityById('payout', $payout1['id']);
+
+        $updatePayout2 = $this->getDbEntityById('payout', $payout2['id']);
+
+        $this->assertEquals('processed', $updatePayout1['status']);
+
+        $this->assertEquals('processed', $updatePayout2['status']);
+    }
+
+
+    public function testUpdatePayoutStatusToReversedManuallyInBatch()
+    {
+        $this->testCreatePayout();
+
+        $payout1 = $this->getDbLastEntity('payout');
+
+        $this->testCreatePayout();
+
+        $payout2 = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout1['id'], ['status' => 'initiated']);
+
+        $this->fixtures->edit('payout', $payout2['id'], ['status' => 'initiated']);
+
+        $request = [
+            'url' => '/payouts/manual/status_update/batch',
+            'method' => 'PATCH',
+            'content' => [
+                'payout_ids' => [$payout1['id'], $payout2['id']],
+                'status' => 'processed',
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $updatePayout1 = $this->getDbEntityById('payout', $payout1['id']);
+
+        $updatePayout2 = $this->getDbEntityById('payout', $payout2['id']);
+
+        $this->assertEquals('processed', $updatePayout1['status']);
+
+        $this->assertEquals('processed', $updatePayout2['status']);
+
+        $request = [
+            'url' => '/payouts/manual/status_update/batch',
+            'method' => 'PATCH',
+            'content' => [
+                'payout_ids' => [$payout1['id'], $payout2['id']],
+                'status' => 'reversed',
+                'failure_reason' => 'payout reversed at bank'
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $updatePayout1 = $this->getDbEntityById('payout', $payout1['id']);
+
+        $updatePayout2 = $this->getDbEntityById('payout', $payout2['id']);
+
+        $this->assertEquals('reversed', $updatePayout1['status']);
+
+        $this->assertEquals('reversed', $updatePayout2['status']);
+
+        $this->assertEquals('payout reversed at bank', $updatePayout1['failure_reason']);
+
+        $this->assertEquals('payout reversed at bank', $updatePayout2['failure_reason']);
+    }
+
     // Following test depends on configs. Adding/removing configs defined in Models/FundTransfer/M2P/M2PConfigs file can fail these.
     // We need to make changes to the test sample data to pass them
     public function testCreateM2PPayoutForDebitCardWithUpperCaseCardMode()
@@ -11039,6 +11138,5 @@ class PayoutTest extends OAuthTestCase
         $this->testData[__FUNCTION__] = $testData;
 
         $this->startTest();
-
     }
 }

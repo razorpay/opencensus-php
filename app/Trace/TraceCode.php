@@ -1539,6 +1539,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_STATUS_CODE_MAPPING_REQUIRED                   = 'PAYOUT_STATUS_CODE_MAPPING_REQUIRED';
     const PAYOUT_VA_TO_VA_ALLOWED                               = 'PAYOUT_VA_TO_VA_ALLOWED';
     const PAYOUT_VA_TO_VA_ALLOWED_BASED_ON_DESTINATION          = 'PAYOUT_VA_TO_VA_ALLOWED_BASED_ON_DESTINATION';
+    const PAYOUT_BULK_MANUAL_STATUS_UPDATE_EXCEPTION            = 'PAYOUT_BULK_MANUAL_STATUS_UPDATE_EXCEPTION';
 
     const MERCHANT_ARCHIVE                                      = 'MERCHANT_ARCHIVE';
     const MERCHANT_UNARCHIVE                                    = 'MERCHANT_UNARCHIVE';

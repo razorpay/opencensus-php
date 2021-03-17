@@ -67,6 +67,8 @@ class Validator extends Base\Validator
 
     const PAYOUT_BULK_SAMPLE_FILE = 'payout_bulk_sample_file';
 
+    const PAYOUT_BULK_STATUS_UPDATE_MANUAL = 'payout_bulk_status_update_manual';
+
     //
     // This is required for build. Currently, build does not
     // accept ruleName as a parameter. Hence, this list needs
@@ -286,6 +288,17 @@ class Validator extends Base\Validator
     protected static $payoutBulkSampleFileRules = [
         Entity::FILE_TYPE       => 'required|string|in:sample_file,template_file',
         Entity::FILE_EXTENSION  => 'required|string|in:csv,xlsx',
+    ];
+
+    protected static $payoutBulkStatusUpdateManualRules = [
+        Entity::PAYOUT_IDS          => 'required|array',
+        Entity::PAYOUT_IDS . '.*'   => 'required|string|size:14',
+        Entity::STATUS              => 'required|string',
+        Entity::FAILURE_REASON      => 'sometimes|string',
+    ];
+
+    protected static $payoutBulkStatusUpdateManualValidators = [
+        'final_status',
     ];
 
     protected function validateMethod($attribute, $method)

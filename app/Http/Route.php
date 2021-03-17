@@ -2244,6 +2244,7 @@ class Route
         'merchant_verify_attributes'              => ['post',    'merchant/verify/{verificationType}',                      'MerchantController@postVerifyMerchantAttributes'              ],
         'checkout_personalisation'                => ['get',     'personalisation',                                         'MerchantController@getPersonalisedMethods'                    ],
         'update_payout_status'                    => ['patch',   'payouts/{id}/manual/status',                              'PayoutController@updatePayoutStatusManually'                  ],
+        'update_payout_status_batch'              => ['patch',   'payouts/manual/status_update/batch',                       'PayoutController@updatePayoutStatusManuallyInBatch'                  ],
         'salesforce_event'                        => ['post',    'merchant/{mid}/salesforce_event',                         'SalesForceController@sendSalesForceEvent'                     ],
         'salesforce_opportunity_details'          => ['get',     'merchant/{mid}/salesforce_opportunity_detail',            'SalesForceController@getMerchantDetailsOnOpportunity'         ],
         'banking_account_statement_process_admin' => ['post',    'banking_account_statement/admin/process',                 'BankingAccountStatementController@fetchStatementForAccount'   ],
@@ -4359,6 +4360,7 @@ class Route
         'fund_account_validate_bulk_patch_status',
 
         'update_payout_status',
+        'update_payout_status_batch',
         'cities_get',
         'admin_key_migrate_to_credcase',
         'admin_access_maps_bootstrap_cache',
@@ -5204,6 +5206,7 @@ class Route
         'get_irctc_settlement_file_admin'             => Permission::GET_IRCTC_SETTLEMENT_FILE,
 
         'update_payout_status'                     => Permission::PAYOUT_STATUS_UPDATE_MANUALLY,
+        'update_payout_status_batch'               => Permission::PAYOUT_STATUS_UPDATE_MANUALLY,
         'payouts_bulk_amount_type'                 => Permission::RX_ADMIN_ACTION_PERMISSION,
 
         'admin_key_migrate_to_credcase'            => Permission::EDGE_WRITE_OPERATION,

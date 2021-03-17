@@ -385,4 +385,13 @@ class PayoutController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function updatePayoutStatusManuallyInBatch()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->updatePayoutStatusManuallyInBatch($input);
+
+        return ApiResponse::json($response);
+    }
 }

@@ -1627,4 +1627,43 @@ class Service extends Base\Service
 
         return ['success' => true];
     }
+
+    public function updatePayoutStatusManuallyInBatch(array $input)
+    {
+        (new Validator)->validateInput(Validator::PAYOUT_BULK_STATUS_UPDATE_MANUAL, $input);
+
+        $payouts = $this->repo->payout->findMany($input[Entity::PAYOUT_IDS]);
+
+        $failedIds = [];
+        $processedIds = [];
+
+        foreach ($payouts as $payout)
+        {
+            try
+            {
+                $payout = (new Core)->updatePayoutStatusManually($payout, $input);
+
+                $processedIds[] = $payout->getId();
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::PAYOUT_BULK_MANUAL_STATUS_UPDATE_EXCEPTION,
+                    [
+                        'payout_id'         => $payout->getId(),
+                        'failure_reason'    => $e->getMessage(),
+                    ]);
+
+                $failedIds[] = ["{$payout->getPublicId()} - {$e->getMessage()}"];
+            }
+        }
+
+        return [
+            'total_count'   => count($payouts),
+            'processed_ids' => $processedIds,
+            'failed_ids'    => $failedIds,
+        ];
+    }
 }
