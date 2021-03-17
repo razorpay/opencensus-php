@@ -1776,12 +1776,9 @@ class Processor
         // On live request, ensure that merchant is activated
         if ($merchant->isActivated() === false)
         {
-            throw new Exception\LogicException(
-                'A non-activated merchant is making live request. Blasphemy!',
-                null,
-                [
-                    'merchant_id' => $merchant->getId(),
-                ]);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR, null, null,
+                PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_FOR_LIVE_REQUEST);
         }
     }
 
