@@ -75,10 +75,6 @@ class BankingAccountStatement extends Job
                     'end_time'      => $workerEndTime
                 ]);
 
-            $this->trace->info(
-                TraceCode::BAS_FETCH_PROCESSED_BY_QUEUE,
-                $result);
-
             $this->delete();
         }
         catch (\Throwable $e)

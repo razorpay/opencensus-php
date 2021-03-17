@@ -130,7 +130,7 @@ class Core extends Base\Core
         catch (Exception\BadRequestException $e)
         {
             // catching only BadRequestException exception to log and have noop for duplicate statement fetch request
-            // Ignoring the duplicate exception and treating it success and delete account number from sqs.
+            // Not considering the duplicate exception as success and needs to check for retries.
             if ($e->getCode() === ErrorCode::BAD_REQUEST_ANOTHER_BANKING_ACCOUNT_STATEMENT_FETCH_IN_PROGRESS)
             {
                 $this->trace->traceException(
@@ -143,10 +143,8 @@ class Core extends Base\Core
                         'message'           => $e->getMessage(),
                     ]);
             }
-            else
-            {
-                throw $e;
-            }
+
+            throw $e;
         }
 
         return ['channel' => $channel, 'account_number' => $accountNumber];
