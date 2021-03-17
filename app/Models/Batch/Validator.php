@@ -186,6 +186,14 @@ class Validator extends Base\Validator
         Entity::SCHEDULE        => 'sometimes|numeric',
     ];
 
+    protected static $recurringChargeAxisCreateRules = [
+        Entity::TYPE            => 'required|in:recurring_charge_axis',
+        Entity::FILE            => 'required_without:file_id|file|max:60720' . self::DEFAULT_MIME_RULE, // 60MB
+        Entity::NAME            => 'filled|string|max:255',
+        Entity::FILE_ID         => 'required_without:file|public_id',
+        Entity::SCHEDULE        => 'sometimes|numeric',
+    ];
+
     protected static $recurringChargeBseCreateRules = [
         Entity::TYPE            => 'required|in:recurring_charge_bse',
         Entity::FILE            => 'required_without:file_id|file|max:10240' . self::DEFAULT_MIME_RULE,

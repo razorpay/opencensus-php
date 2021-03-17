@@ -33,6 +33,9 @@ class Type
 
     const RECURRING_CHARGE          = 'recurring_charge';
 
+    // Custom Batch recurring payments for AXIS
+    const RECURRING_CHARGE_AXIS     = 'recurring_charge_axis';
+
     // BSE custom batch
     const RECURRING_CHARGE_BSE      = 'recurring_charge_bse';
 
@@ -417,6 +420,7 @@ class Type
         self::LINKED_ACCOUNT_CREATE,
         self::RETRY_REFUNDS_TO_BA,
         self::SUB_MERCHANT,
+        self::RECURRING_CHARGE_AXIS,
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data

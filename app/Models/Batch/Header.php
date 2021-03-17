@@ -209,6 +209,25 @@ class Header
     const RECURRING_CHARGE_ORDER_ID    = 'order_id';
 
     //
+    // Custom Batch recurring payments for AXIS
+    //
+    const RECURRING_CHARGE_AXIS_SLNO              = 'slno';
+    const RECURRING_CHARGE_AXIS_URNNO             = 'URNNo';
+    const RECURRING_CHARGE_AXIS_FOLIO_NO          = 'Folio_No';
+    const RECURRING_CHARGE_AXIS_SCHEMECODE        = 'SchemeCode';
+    const RECURRING_CHARGE_AXIS_TRANSACTION_NO    = 'TransactionNo';
+    const RECURRING_CHARGE_AXIS_INVESTOR_NAME     = 'InvestorName';
+    const RECURRING_CHARGE_AXIS_PURCHASE_DAY      = 'Purchase Day';
+    const RECURRING_CHARGE_AXIS_PUR_AMOUNT        = 'Pur Amount';
+    const RECURRING_CHARGE_AXIS_BANK_ACCOUNTNO    = 'BankAccountNo';
+    const RECURRING_CHARGE_AXIS_PURCHASE_DATE     = 'Purchase Date';
+    const RECURRING_CHARGE_AXIS_BATCH_REF_NUMBER  = 'Batch Ref Number';
+    const RECURRING_CHARGE_AXIS_BRANCH            = 'Branch';
+    const RECURRING_CHARGE_AXIS_TR_TYPE           = 'Tr.Type';
+    const RECURRING_CHARGE_AXIS_UMRNNO_OR_TOKENID = 'UMRN No / TOKEN ID';
+    const RECURRING_CHARGE_AXIS_CREDIT_ACCOUNT_NO = 'Credit Account No';
+
+
     // Custom Batch recurring payments for BSE
     //
     const RECURRING_CHARGE_BSE_UNIQUE_REFERENCE_NUMBER = 'Unique Reference Number';
@@ -1870,6 +1889,43 @@ class Header
                 self::RECURRING_CHARGE_PAYMENT_ID,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        Type::RECURRING_CHARGE_AXIS => [
+            self::INPUT => [
+                self::RECURRING_CHARGE_AXIS_SLNO,
+                self::RECURRING_CHARGE_AXIS_URNNO,
+                self::RECURRING_CHARGE_AXIS_FOLIO_NO,
+                self::RECURRING_CHARGE_AXIS_SCHEMECODE,
+                self::RECURRING_CHARGE_AXIS_TRANSACTION_NO,
+                self::RECURRING_CHARGE_AXIS_INVESTOR_NAME,
+                self::RECURRING_CHARGE_AXIS_PURCHASE_DAY,
+                self::RECURRING_CHARGE_AXIS_PUR_AMOUNT,
+                self::RECURRING_CHARGE_AXIS_BANK_ACCOUNTNO,
+                self::RECURRING_CHARGE_AXIS_PURCHASE_DATE,
+                self::RECURRING_CHARGE_AXIS_BATCH_REF_NUMBER,
+                self::RECURRING_CHARGE_AXIS_BRANCH,
+                self::RECURRING_CHARGE_AXIS_TR_TYPE,
+                self::RECURRING_CHARGE_AXIS_UMRNNO_OR_TOKENID,
+                self::RECURRING_CHARGE_AXIS_CREDIT_ACCOUNT_NO,
+            ],
+            self::OUTPUT => [
+                self::RECURRING_CHARGE_AXIS_SLNO,
+                self::RECURRING_CHARGE_AXIS_URNNO,
+                self::RECURRING_CHARGE_AXIS_FOLIO_NO,
+                self::RECURRING_CHARGE_AXIS_SCHEMECODE,
+                self::RECURRING_CHARGE_AXIS_TRANSACTION_NO,
+                self::RECURRING_CHARGE_AXIS_INVESTOR_NAME,
+                self::RECURRING_CHARGE_AXIS_PURCHASE_DAY,
+                self::RECURRING_CHARGE_AXIS_PUR_AMOUNT,
+                self::RECURRING_CHARGE_AXIS_BANK_ACCOUNTNO,
+                self::RECURRING_CHARGE_AXIS_PURCHASE_DATE,
+                self::RECURRING_CHARGE_AXIS_BATCH_REF_NUMBER,
+                self::RECURRING_CHARGE_AXIS_BRANCH,
+                self::RECURRING_CHARGE_AXIS_TR_TYPE,
+                self::RECURRING_CHARGE_AXIS_UMRNNO_OR_TOKENID,
+                self::RECURRING_CHARGE_AXIS_CREDIT_ACCOUNT_NO,
             ],
         ],
 

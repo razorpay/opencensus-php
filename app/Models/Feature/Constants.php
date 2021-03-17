@@ -227,6 +227,9 @@ class Constants
     const CAW_UPI                         = 'caw_upi';
     const SUBSCRIPTION_UPI                = 'subscription_upi';
 
+    // feature flag for the AXIS recurring charge
+    const CAW_RECURRING_CHARGE_AXIS = 'caw_recurring_charge_axis';
+
     /**
      * card mandate for recurring card payment
      */
@@ -896,6 +899,7 @@ class Constants
         self::CAW_UPI                         => true,
         self::SUBSCRIPTION_UPI                => true,
         self::ALTERNATE_PAYOUT_FR             => true,
+        self::CAW_RECURRING_CHARGE_AXIS       => true,
     ];
 
     // Entity type constants
