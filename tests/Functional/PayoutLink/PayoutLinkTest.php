@@ -43,7 +43,7 @@ class PayoutLinkTest extends TestCase
     use DbEntityFetchTrait;
     use EntityActionTrait;
     use WebhookTrait;
-    use TestsWebhookEvents;
+    //use TestsWebhookEvents;
 
     protected $config;
 
@@ -2298,6 +2298,24 @@ class PayoutLinkTest extends TestCase
                 }));
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
+    public function testBulkResendNotification()
+    {
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $resendNotificaitonResponse = [
+            "success_payout_link_ids" => "poutlk_4eWc1vLJKgR2hE,poutlk_8QmI1vLJKgQBgq,poutlk_8bLC1vLJKfYTMq,poutlk_8gcr1vLJKftwqO,poutlk_4p841vLJKhV7qy",
+            "failed_payout_link_ids" => "poutlk_4KGz1vLJNkQ79k,poutlk_4ZBX1vLJP4B03I,poutlk_8Rjb1vLJYAOBZg"
+        ];
+
+        $plMock->shouldReceive('bulkResendNotification')->andReturn($resendNotificaitonResponse);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->adminAuth();
 
         $this->startTest();
     }

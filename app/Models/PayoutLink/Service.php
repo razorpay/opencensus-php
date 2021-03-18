@@ -743,6 +743,11 @@ class Service extends Base\Service
         return $this->app['payout-links']->getBatchSummary($this->merchant->getId(), $batchId);
     }
 
+    public function bulkResendNotification(array $input): array
+    {
+        return $this->app['payout-links']->bulkResendNotification($input);
+    }
+
     protected function formatFundAccountsArray(array &$fundAccountsArray)
     {
         $oldFundAccountsItems = $fundAccountsArray["items"];

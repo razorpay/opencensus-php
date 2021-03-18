@@ -212,4 +212,11 @@ class PayoutLinkController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function bulkResendNotification()
+    {
+        $response = $this->service()->bulkResendNotification($this->input);
+
+        return ApiResponse::json($response);
+    }
 }

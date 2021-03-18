@@ -44,6 +44,7 @@ class PayoutLinks
     const GET_SETTINGS_PAYOUT_LINK_PATH            = 'twirp/payoutlinks.Payoutlinks/GetSettings';
     const UPDATE_SETTINGS_PAYOUT_LINK_PATH         = 'twirp/payoutlinks.Payoutlinks/UpdateSettings';
     const PAYOUT_LINK_GENERATE_OTP_PATH            = 'twirp/payoutlinks.Payoutlinks/GenerateOTP';
+    const RESEND_BULK_NOTIFICATION_PATH            = 'twirp/payoutlinks.Payoutlinks/ResendBulkNotification';
     const PAYOUT_LINK_GET_FUND_ACCOUNTS_BY_CONTACT = 'twirp/payoutlinks.Payoutlinks/GetFundAccountsByContact';
     const PAYOUT_LINK_VERIFY_OTP_PATH              = 'twirp/payoutlinks.Payoutlinks/VerifyOTP';
     const PAYOUT_STATUS_UPDATE                     = 'twirp/payoutlinks.Payoutlinks/UpdatePayoutLinkStatus';
@@ -561,6 +562,15 @@ class PayoutLinks
         $response[self::BATCH_PL_INITIATED] = array_pull($response, self::BATCH_PL_INITIATED, 0);
 
         $response[self::BATCH_PL_PROCESSED] = array_pull($response, self::BATCH_PL_PROCESSED, 0);
+
+        return $response;
+    }
+
+    public function bulkResendNotification(array $input)
+    {
+        $url = $this->getConstructedUrl(self::RESEND_BULK_NOTIFICATION_PATH);
+
+        $response = $this->makeRequest($url, $input);
 
         return $response;
     }

@@ -1281,6 +1281,7 @@ class Route
         'payout_links_status'                      => ['get',       'payout-links/{x_entity_id}/status',              'PayoutLinkController@getStatus'                                    ],
         'payout_links_status_cors'                 => ['options',   'payout-links/{x_entity_id}/status',              'PayoutLinkController@allowCors'                                    ],
         'payout_update_pull_payout_status'         => ['post',      'payout-links/{id}/pullPayoutStatus',             'PayoutLinkController@pullPayoutStatus'                             ],
+        'payout_links_bulk_resend_notification_admin' => ['post',   'payout-links/bulk-resend-notification',          'PayoutLinkController@bulkResendNotification'                       ],
         'payout_links_customer_hosted_page'        => ['get',       'payout-links/{x_entity_id}/view',                'PayoutLinkController@viewHostedPage'                               ],
         // Below is a POST request, for reasons listed in the Controller
         'payout_links_added_fund_accounts'         => ['post',      'payout-links/{x_entity_id}/fund-accounts',       'PayoutLinkController@getFundAccountsOfContact'                     ],
@@ -3720,6 +3721,7 @@ class Route
         'offline_verification_service_delete',
         'd2c_bureau_reports_download',
         'payout_update_pull_payout_status',
+        'payout_links_bulk_resend_notification_admin',
         'payout_links_settings_post',
         'payout_links_settings_get',
         'add_additional_website',
@@ -4489,6 +4491,7 @@ class Route
         'd2c_bureau_reports_download'              => Permission::DOWNLOAD_CREDIT_BUREAU_REPORTS,
         'd2c_create_csv_report'                    => Permission::DOWNLOAD_CREDIT_BUREAU_REPORTS,
         'payout_update_pull_payout_status'         => Permission::PAYOUT_LINK_ADMIN_AUTH_EXECUTE,
+        'payout_links_bulk_resend_notification_admin'=> Permission::PAYOUT_LINK_ADMIN_AUTH_EXECUTE,
         'merchant_activation_update_website_status'=> Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
         'merchant_activation_update_website'       => Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
         'add_additional_website'                   => Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
@@ -6792,6 +6795,7 @@ class Route
         'payout_links_status',
         'payout_links_status_cors',
         'payout_update_pull_payout_status',
+        'payout_links_bulk_resend_notification_admin',
         'payout_links_customer_hosted_page',
         'payout_links_batch_summary',
 

@@ -2099,4 +2099,21 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_LINK_MICRO_SERVICE_FAILED,
         ],
     ],
+
+    'testBulkResendNotification' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/bulk-resend-notification',
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'payout_link_ids' => 'poutlk_4eWc1vLJKgR2hE,poutlk_8QmI1vLJKgQBgq,poutlk_8bLC1vLJKfYTMq,poutlk_8gcr1vLJKftwqO,poutlk_4p841vLJKhV7qy,poutlk_4KGz1vLJNkQ79k,poutlk_4ZBX1vLJP4B03I,poutlk_8Rjb1vLJYAOBZg'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'success_payout_link_ids' => 'poutlk_4eWc1vLJKgR2hE,poutlk_8QmI1vLJKgQBgq,poutlk_8bLC1vLJKfYTMq,poutlk_8gcr1vLJKftwqO,poutlk_4p841vLJKhV7qy',
+                'failed_payout_link_ids' => 'poutlk_4KGz1vLJNkQ79k,poutlk_4ZBX1vLJP4B03I,poutlk_8Rjb1vLJYAOBZg'
+            ],
+        ],
+    ],
 ];
