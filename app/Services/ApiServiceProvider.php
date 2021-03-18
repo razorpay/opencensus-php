@@ -857,6 +857,9 @@ class ApiServiceProvider extends BaseServiceProvider
             'installment'               => RZP\Models\CapitalTransaction\Entity::class,
 
             'charge'                    => RZP\Models\CapitalTransaction\Entity::class,
+
+            'partner_activation'        => RZP\Models\Partner\Activation\Entity::class,
+
         ]);
     }
 

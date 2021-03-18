@@ -1687,7 +1687,7 @@ class Core extends Base\Core
 
             $this->setDefaultFeatureForPartner($merchant);
 
-            (new Activation\Core())->createOrFetchPartnerActivationForMerchant($merchant);
+            (new Activation\Core())->createOrFetchPartnerActivationForMerchant($merchant, false);
 
             $app = $this->createPartnerApp($merchant);
 

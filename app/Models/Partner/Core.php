@@ -4,18 +4,25 @@ namespace RZP\Models\Partner;
 
 use Razorpay\OAuth;
 
-use RZP\Models\Base;
+use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Base\RuntimeManager;
+use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\AutoKyc;
+use RZP\Models\Merchant\Constants;
+use RZP\Models\Partner\Activation;
+use RZP\lib\ConditionParser\Parser;
+use RZP\Models\Merchant\Detail\Entity;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\PartnerActivationMigration;
+use RZP\Models\Merchant\Detail\ValidationFields;
 use RZP\Models\Feature\Constants as FeatureConstant;
 use RZP\Exception\BadRequestValidationFailureException;
 
-class Core extends Base\Core
+class Core extends Detail\Core
 {
     /**
      * @var OAuth\Application\Repository
@@ -197,5 +204,333 @@ class Core extends Base\Core
         }
 
         return ['count' => $count];
+    }
+
+    public function markPartnerKycSubmittedAndLock(Activation\Entity $partnerActivation)
+    {
+        $submittedAt = Carbon::now()->getTimestamp();
+
+        $input = [
+            'submitted'    => 1,
+            'submitted_at' => $submittedAt,
+            'locked'       => true,
+        ];
+
+        $partnerActivation->fill($input);
+
+        $this->repo->saveOrFail($partnerActivation);
+    }
+
+    public function getPartnerValidationFields(Entity $merchantDetails)
+    {
+        $businessType = $merchantDetails->getBusinessType();
+
+        return ValidationFields::getPartnerKycValidationFields($businessType);
+    }
+
+    /**
+     * This function is similar to Merchant/Detail/Core->saveMerchantDetails
+     * In this function, we would check whether all requirements are submitted and is eligible for submission.
+     * If partner submits the form, details get submitted, else activation progress is returned
+     *
+     * @param array           $input
+     * @param Entity          $merchantDetails
+     * @param Merchant\Entity $merchant
+     * @param Entity          $oldMerchantDetails
+     *
+     * @return mixed
+     * @throws \RZP\Exception\LogicException
+     * @throws \Throwable
+     */
+    public function processPartnerActivation(array $input, Detail\Entity $merchantDetails, Merchant\Entity $merchant, Detail\Entity $oldMerchantDetails)
+    {
+        return $this->mutex->acquireAndRelease(
+            $merchant->getId(),
+            function() use ($input, $merchantDetails, $oldMerchantDetails, $merchant) {
+
+                return $this->repo->transactionOnLiveAndTest(function() use (
+                    $input,
+                    $oldMerchantDetails,
+                    $merchantDetails,
+                    $merchant
+                ) {
+                    $verificationResponse = $this->getPartnerKycVerificationDetails($merchant);
+
+                    $partnerActivation = $this->getPartnerActivation($merchant);
+
+                    $this->repo->partner_activation->lockForUpdate($merchant->getId());
+
+                    $response = $this->createPartnerResponse($merchantDetails);
+
+                    if ($this->canSubmit($input, $verificationResponse) === true)
+                    {
+                        $response = $this->submitPartnerActivationForm($merchant, $merchantDetails, $oldMerchantDetails, $partnerActivation);
+
+                       //TODO handle NC status change to under_review workflow
+                    }
+
+                    return $response;
+                });
+            },
+            Activation\Constants::PARTNER_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_PARTNER_ACTIVATION_OPERATION_IN_PROGRESS,
+            Activation\Constants::PARTNER_MUTEX_RETRY_COUNT);
+
+    }
+
+    /**
+     * This function is used to lock and submit the partner activation form and update the partner with relevant activation status
+     * @param Merchant\Entity   $merchant
+     * @param Entity            $merchantDetails
+     * @param Entity            $oldMerchantDetails
+     * @param Activation\Entity $partnerActivation
+     *
+     * @return array
+     * @throws \Throwable
+     */
+    public function submitPartnerActivationForm(Merchant\Entity $merchant, Entity $merchantDetails, Entity $oldMerchantDetails, Activation\Entity $partnerActivation)
+    {
+        $activationStatus = $this->getApplicablePartnerActivationStatus($merchantDetails);
+
+        $this->markPartnerKycSubmittedAndLock($partnerActivation);
+
+        $this->attemptPennyTesting($merchantDetails, $merchant);
+
+        $this->triggerValidationRequests($merchant, $merchantDetails);
+
+        $input = [Activation\Entity::ACTIVATION_STATUS => $activationStatus];
+
+        (new Activation\Core)->updatePartnerActivationStatus($merchant, $oldMerchantDetails, $partnerActivation, $merchant, $input);
+
+        $this->trace->info(TraceCode::PARTNER_ACTIVATION_SUBMITTED,
+                           [
+                               'merchant_id' => $merchant->getId()
+                           ]);
+
+        return $this->createPartnerResponse($merchantDetails);
+    }
+
+    /**
+     * This function would check for requirements needs to be submitted by the partner based on business type.
+     * Activation progress is calculated based on the number of details submitted vs total number of details required
+     *
+     * @param Merchant\Entity $merchant
+     *
+     * @return array
+     */
+    public function getPartnerKycVerificationDetails(Merchant\Entity $merchant): array
+    {
+        $merchantDetails = $merchant->merchantDetail;
+
+        $validationFields = $this->getPartnerValidationFields($merchantDetails);
+
+        $totalRequiredFieldCount = count($validationFields);
+
+        $merchantDetailsArr = $merchantDetails->toArray();
+
+        $requiredFields = [];
+
+        foreach ($validationFields as $key)
+        {
+            if ($this->isKeyPresent($key, $merchantDetailsArr, []) === false)
+            {
+                $requiredFields[] = $key;
+            }
+        }
+
+        $response = [];
+
+        if (count($requiredFields) > 0)
+        {
+            $remainingFields = count($requiredFields);
+
+            $response[Activation\Constants::VERIFICATION] = [
+                Activation\Constants::STATUS              => Activation\Constants::DISABLED,
+                Activation\Constants::DISABLE_REASON      => Activation\Constants::REQUIRED_FIELDS,
+                Activation\Constants::REQUIRED_FIELDS     => $requiredFields,
+                Activation\Constants::ACTIVATION_PROGRESS => 100 - intval($remainingFields * 100 / $totalRequiredFieldCount),
+            ];
+
+            $response[Activation\Constants::CAN_SUBMIT] = false;
+        }
+        else
+        {
+            $response[Activation\Constants::VERIFICATION] = [
+                Activation\Constants::STATUS              => Activation\Constants::PENDING,
+                Activation\Constants::ACTIVATION_PROGRESS => 100,
+            ];
+            $response[Activation\Constants::CAN_SUBMIT]   = true;
+        }
+
+        return $response;
+    }
+
+    public function getPartnerActivation(Merchant\Entity $merchant)
+    {
+        $merchant->load('partnerActivation');
+
+        $partnerActivation = $merchant->partnerActivation;
+
+        if (empty($partnerActivation) === true)
+        {
+            $partnerActivation = (new Activation\Core)->createOrFetchPartnerActivationForMerchant($merchant, false);
+        }
+
+        return $partnerActivation;
+    }
+
+    public function createPartnerResponse(Entity $merchantDetails): array
+    {
+        $response = $merchantDetails->toArrayPublic();
+
+        $merchant = $merchantDetails->merchant;
+
+        $stakeholder = $merchantDetails->stakeholder;
+
+        $partnerActivation = $this->getPartnerActivation($merchant);
+
+        $currentActivationState = $partnerActivation->activationState();
+
+        $partnerRejectionReasons = [];
+
+        if ((empty($currentActivationState) === false) and
+            ($currentActivationState->name === Activation\Constants::REJECTED))
+        {
+            $rejectionReasons = $currentActivationState->rejectionReasons()->get();
+
+            $partnerRejectionReasons = $rejectionReasons->toArrayPublic();
+        }
+
+        $verification = $this->getPartnerKycVerificationDetails($merchant);
+
+        $response[Constants::MERCHANT]   = $merchant->toArrayPublic();
+        $response[E::STAKEHOLDER]        = $stakeholder;
+        $response['isAutoKycDone']       = $this->isPartnerKycDone($merchantDetails);
+        $response[E::PARTNER_ACTIVATION] = $this->getPartnerDetails($verification, $partnerActivation, $partnerRejectionReasons);
+
+        return $response;
+    }
+
+    /**
+     * This function is used to update the partner_activation entity. i.e. used for updating Kyc_clarification_reasons for the partner
+     *
+     * @param Merchant\Entity $merchant
+     * @param array           $input
+     *
+     * @return Activation\Entity
+     */
+    public function editPartnerActivation(Merchant\Entity $merchant, array $input): Activation\Entity
+    {
+        $partnerActivation = $this->getPartnerActivation($merchant);
+
+        $partnerActivation->edit($input);
+
+        $kycClarificationReasons = $this->getUpdatedPartnerKycClarificationReasons($input, $merchant->getId());
+
+        if(empty($kycClarificationReasons) === false)
+        {
+            $partnerActivation->setKycClarificationReasons($kycClarificationReasons);
+        }
+
+        $this->repo->saveOrFail($partnerActivation);
+
+        return $partnerActivation;
+    }
+
+    /**
+     * This function would fetch the updated kyc clarification reason for each field that has been added
+     * Marks newer clarification reasons as current clarification reason(i.e. latest)
+     *
+     * @param array  $input
+     * @param string $merchantId
+     *
+     * @return array|mixed
+     */
+    protected function getUpdatedPartnerKycClarificationReasons(array $input, string $merchantId)
+    {
+        $partnerActivation         = $this->repo->partner_activation->findOrFailPublic($merchantId);
+        $existingKycClarifications = $partnerActivation->getKycClarificationReasons() ?? [];
+        $existingReasons           = $existingKycClarifications[Entity::CLARIFICATION_REASONS] ?? null;
+
+        $newKycClarifications      = $input[Entity::KYC_CLARIFICATION_REASONS] ?? [];
+        $newAdditionalDetails      = $newKycClarifications[Entity::ADDITIONAL_DETAILS] ?? null;
+        $newReasons                = $newKycClarifications[Entity::CLARIFICATION_REASONS] ?? null;
+
+        if ((empty($newReasons) === true) and
+            (empty($newAdditionalDetails) === true))
+        {
+            return $existingKycClarifications;
+        }
+
+        $statusChangeLogs = $partnerActivation->getActivationStatusChangeLog();
+
+        $needsClarificationCount = $this->getStatusChangeCount($statusChangeLogs, Activation\Constants::UNDER_REVIEW);
+
+        $clarificationReasons = $this->getClarificationReasons($existingReasons, $newReasons, $needsClarificationCount, null);
+
+        return [
+            Entity::CLARIFICATION_REASONS => $clarificationReasons,
+            Entity::ADDITIONAL_DETAILS    => $newAdditionalDetails,
+            Merchant\Constants::NC_COUNT  => $needsClarificationCount
+        ];
+
+    }
+
+    private function getPartnerDetails(array $partnerVerification, Activation\Entity $partnerActivation, array $rejectionReasons)
+    {
+        $partnerDetails = [];
+
+        $partnerDetails = array_merge($partnerDetails, $partnerActivation->toArrayPublic());
+
+        $partnerDetails = array_merge($partnerDetails, $partnerVerification);
+
+        $partnerDetails = array_merge($partnerDetails, $rejectionReasons);
+
+        return $partnerDetails;
+    }
+
+    /**
+     * This function would return the applicable activation status based on the partner KYC verification
+     * If all the requirements are verified, partner gets auto activated, if not will be sent to under_review
+     * @param Entity $merchantDetails
+     *
+     * @return string
+     */
+    public function getApplicablePartnerActivationStatus(Entity $merchantDetails)
+    {
+        $isAutoKycDone = $this->isPartnerKycDone($merchantDetails);
+
+        if($isAutoKycDone === true)
+        {
+            return Activation\Constants::ACTIVATED;
+        }
+
+        return Activation\Constants::UNDER_REVIEW;
+    }
+
+    /**
+     * This function would validate the partner requirements are validated or not and returns a boolean flag accordingly
+     *
+     * @param $merchantDetails
+     *
+     * @return bool
+     */
+    public function isPartnerKycDone($merchantDetails)
+    {
+        $conditions = AutoKyc\Constants::PARTNER_KYC_VERIFICATION_CONDITIONS;
+
+        return (new Parser)->parse($conditions, function ($key, $condition) use ($merchantDetails){
+
+            $entity = $condition[AutoKyc\Constants::ENTITY];
+            $in = $condition[AutoKyc\Constants::IN];
+
+            switch ($entity)
+            {
+                case E::MERCHANT_DETAIL:
+                    return in_array($merchantDetails->getAttribute($key), $in, true);
+                case E::STAKEHOLDER:
+                    return $this->verifyStakeHolderCondition($merchantDetails, $key, $in);
+            }
+        });
     }
 }

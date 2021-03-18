@@ -145,6 +145,11 @@ return [
                 'description' => 'Back fill merchant applications of partner',
                 'assignable'  => true,
             ],
+            Permission::EDIT_ACTIVATE_PARTNER => [
+                'description' => 'Edit partner activation status',
+                'assignable'  => true,
+                'workflow'    => true,
+            ]
         ],
 
         PermissionCategory::MERCHANT_DETAIL => [

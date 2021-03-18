@@ -1208,6 +1208,17 @@ class Core extends Base\Core
 
         $ncCount = $this->getStatusChangeCount($statusChangeLogs, Status::UNDER_REVIEW);
 
+        $clarificationReasons = $this->getClarificationReasons($existingReasons, $newReasons, $ncCount, $source);
+
+        return [
+            Entity::CLARIFICATION_REASONS   =>  $clarificationReasons,
+            Entity::ADDITIONAL_DETAILS      =>  $newAdditionalDetails,
+            Merchant\Constants::NC_COUNT    =>  $ncCount
+        ];
+    }
+
+    protected function getClarificationReasons($existingReasons, $newReasons, $ncCount, $source = null)
+    {
         if (empty($newReasons) === false)
         {
             //
@@ -1249,11 +1260,7 @@ class Core extends Base\Core
             }
         }
 
-        return [
-            Entity::CLARIFICATION_REASONS   =>  $existingReasons,
-            Entity::ADDITIONAL_DETAILS      =>  $newAdditionalDetails,
-            Merchant\Constants::NC_COUNT    =>  $ncCount
-        ];
+        return $existingReasons;
     }
 
     public function editMerchantDetailFields(Merchant\Entity $merchant, array $input): Entity
@@ -1794,6 +1801,15 @@ class Core extends Base\Core
         $clarificationReasons = $clarificationCore->getFormattedKycClarificationReasons(
             $merchantDetail->getKycClarificationReasons());
 
+        $data = $this->getPayloadForClarificationEmail($merchant, $org, $clarificationReasons);
+
+        $email = new ClarificationEmail($data, $org->toArray());
+
+        Mail::queue($email);
+    }
+
+    public function getPayloadForClarificationEmail(Merchant\Entity $merchant, Org\Entity $org, $clarificationReasons)
+    {
         $data = [
             DEConstants::MERCHANT             => [
                 Merchant\Entity::NAME          => $merchant->getName(),
@@ -1806,9 +1822,7 @@ class Core extends Base\Core
             DEConstants::CLARIFICATION_REASON => $clarificationReasons,
         ];
 
-        $email = new ClarificationEmail($data, $org->toArray());
-
-        Mail::queue($email);
+        return $data;
     }
 
     /**
@@ -2481,7 +2495,7 @@ class Core extends Base\Core
         });
     }
 
-    private function verifyStakeHolderCondition(Entity $merchantDetails, string $key, array $in)
+    protected function verifyStakeHolderCondition(Entity $merchantDetails, string $key, array $in)
     {
         $isAadhaarEsignRequired = $this->isAadhaarEsignVerificationRequired($merchantDetails);
 

@@ -16,7 +16,20 @@ class Constants
     const ACTIVATED           = 'activated';
     const REJECTED            = 'rejected';
 
+    //verification constants
+    const PENDING  = 'pending';
+    const DISABLED = 'disabled';
+    const CAN_SUBMIT          = 'can_submit';
+    const STATUS              = 'status';
+    const VERIFICATION        = 'verification';
+    const ACTIVATION_PROGRESS = 'activation_progress';
+    const REQUIRED_FIELDS     = 'required_fields';
+    const DISABLE_REASON      = 'disable_reason';
+
     const ACTIVATION_STATUSES = [self::UNDER_REVIEW, self::ACTIVATED, self::REJECTED, self::REJECTED];
+
+    const PARTNER_MUTEX_LOCK_TIMEOUT = '60';
+    const PARTNER_MUTEX_RETRY_COUNT  = '2';
 
     /*
      * Allowed next activation statuses mapping

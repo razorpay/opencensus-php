@@ -50,6 +50,7 @@ class Name
     const EDIT_IIN_RULE                       = 'edit_iin_rule';
     const EDIT_IIN_RULE_BULK                  = 'edit_iin_rule_bulk';
     const EDIT_ACTIVATE_MERCHANT              = 'edit_activate_merchant';
+    const EDIT_ACTIVATE_PARTNER               = 'edit_activate_partner';
     const EDIT_MERCHANT_KEY_ACCESS            = 'edit_merchant_key_access';
     const EDIT_MERCHANT_ENABLE_LIVE           = 'edit_merchant_enable_live';
     const EDIT_MERCHANT_DISABLE_LIVE          = 'edit_merchant_disable_live';

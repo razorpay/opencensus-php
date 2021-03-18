@@ -16,6 +16,11 @@ class Entity extends Base\PublicEntity
     const SUBMITTED_AT              = 'submitted_at';
     const HOLD_FUNDS                = 'hold_funds';
     const KYC_CLARIFICATION_REASONS = 'kyc_clarification_reasons';
+    const REJECTION_REASONS         = 'rejection_reasons';
+    const CLARIFICATION_REASONS     = 'clarification_reasons';
+    const ADDITIONAL_DETAILS        = 'additional_details';
+
+    const ALLOWED_NEXT_ACTIVATION_STATUSES = 'allowed_next_activation_statuses';
 
 
     protected $entity = 'partner_activation';
@@ -32,6 +37,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::KYC_CLARIFICATION_REASONS,
+        self::ALLOWED_NEXT_ACTIVATION_STATUSES
     ];
 
     protected $fillable = [
@@ -44,9 +50,14 @@ class Entity extends Base\PublicEntity
         self::KYC_CLARIFICATION_REASONS,
     ];
 
+    protected $publicSetters = [
+        self::ALLOWED_NEXT_ACTIVATION_STATUSES,
+    ];
+
     protected $casts = [
         self::LOCKED                    => 'bool',
         self::SUBMITTED                 => 'bool',
+        self::HOLD_FUNDS                => 'bool',
         self::KYC_CLARIFICATION_REASONS => 'array'
     ];
 
@@ -58,11 +69,6 @@ class Entity extends Base\PublicEntity
     public function getMerchantId(): string
     {
         return $this->getAttribute(self::MERCHANT_ID);
-    }
-
-    public function setMerchantId(string $merchantId)
-    {
-        $this->setAttribute(self::MERCHANT_ID, $merchantId);
     }
 
     public function merchant()
@@ -125,4 +131,49 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('\RZP\Models\State\Entity', State\Entity::ENTITY_ID)
                     ->where(State\Entity::ENTITY_TYPE, 'partner_activation');
     }
+
+    public function activationState()
+    {
+        return $this->activationStates()
+                    ->orderBy(State\Entity::CREATED_AT, 'desc')
+                    ->first();
+    }
+
+    public function getActivationStatusChangeLog()
+    {
+        return $this->activationStates()
+                    ->orderBy(State\Entity::CREATED_AT)
+                    ->get();
+    }
+
+    public function setKycClarificationReasons(array $reasons)
+    {
+        return $this->setAttribute(self::KYC_CLARIFICATION_REASONS, $reasons);
+    }
+
+    public function getKycClarificationReasons()
+    {
+        return $this->getAttribute(self::KYC_CLARIFICATION_REASONS);
+    }
+
+    public function deactivate()
+    {
+        $this->setHoldFunds(true);
+    }
+
+    protected function setPublicAllowedNextActivationStatusesAttribute(array & $array)
+    {
+        $activationStatus = $this->getActivationStatus();
+
+        $allowedNextActivationStatuses = [];
+
+        if (empty($activationStatus) === false)
+        {
+            $allowedNextActivationStatuses = Constants::NEXT_ACTIVATION_STATUSES_MAPPING[$activationStatus];
+        }
+
+        $array[self::ALLOWED_NEXT_ACTIVATION_STATUSES] = $allowedNextActivationStatuses;
+    }
+
 }
+

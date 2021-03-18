@@ -347,4 +347,17 @@ class ValidationFields
 
         return $requiredFields;
     }
+
+    public static function getPartnerKycValidationFields(string $businessType): array
+    {
+        switch ($businessType)
+        {
+            case BusinessType::INDIVIDUAL:
+            case BusinessType::NOT_YET_REGISTERED:
+            case BusinessType::PROPRIETORSHIP:
+                return [Entity::PROMOTER_PAN, Entity::PROMOTER_PAN_NAME, Entity::BANK_ACCOUNT_NAME, Entity::BANK_ACCOUNT_NUMBER, Entity::BANK_BRANCH_IFSC];
+            default:
+                return [Entity::COMPANY_PAN, Entity::BUSINESS_NAME, Entity::BANK_ACCOUNT_NAME, Entity::BANK_ACCOUNT_NUMBER, Entity::BANK_BRANCH_IFSC];
+        }
+    }
 }

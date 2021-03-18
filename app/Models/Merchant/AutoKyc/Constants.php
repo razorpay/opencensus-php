@@ -113,4 +113,15 @@ class Constants
             ]
         ],
     ];
+
+    const PARTNER_KYC_VERIFICATION_CONDITIONS = [
+        Operator::AND   => [
+            Operator::OR => [
+                Entity::COMPANY_PAN_VERIFICATION_STATUS  => self::COMPANY_PAN_CONDITION,
+                Entity::POI_VERIFICATION_STATUS          => self::POI_CONDITION,
+                Entity::GSTIN_VERIFICATION_STATUS        => self::GSTIN_CONDITION
+            ],
+            Operator::AND => self::BANK_DETAILS_VERIFICATION_CONDITION
+        ]
+    ];
 }

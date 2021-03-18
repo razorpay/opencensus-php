@@ -2,12 +2,16 @@
 
 namespace RZP\Models\Partner\Activation;
 
+use Mail;
 use Carbon\Carbon;
 use RZP\Models\Base;
+use RZP\Models\State;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Models\State\Reason;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Partner\Activation;
+use RZP\Mail\Merchant\NeedsClarificationEmail as ClarificationEmail;
 
 class Core extends Base\Core
 {
@@ -77,7 +81,7 @@ class Core extends Base\Core
     private function createPartnerActivation(Merchant\Entity $merchant, Detail\Entity $merchantDetails, bool $considerActivatedMerchant)
     {
 
-        if($merchantDetails->getActivationStatus() !== Constants::ACTIVATED and $considerActivatedMerchant === true)
+        if ($merchantDetails->getActivationStatus() !== Constants::ACTIVATED and $considerActivatedMerchant === true)
         {
             return null;
         }
@@ -125,8 +129,8 @@ class Core extends Base\Core
      * Reason: partner activation is a subset of merchant activation
      * 1. we will not consider workflow management for partner activation in this case.
      *
-     * @param Merchant\Entity        $merchant
-     * @param Detail\Entity          $merchantDetails
+     * @param Merchant\Entity $merchant
+     * @param Detail\Entity   $merchantDetails
      *
      * @return array
      */
@@ -134,7 +138,7 @@ class Core extends Base\Core
     {
         $input = [];
 
-        if($merchantDetails->getActivationStatus() === Constants::ACTIVATED)
+        if ($merchantDetails->getActivationStatus() === Constants::ACTIVATED)
         {
             $this->populateCommonFields($input, $merchantDetails, Constants::COMMON_ACTIVATION_FIELDS_MERCHANT_DETAILS);
 
@@ -143,6 +147,8 @@ class Core extends Base\Core
             $now = Carbon::now()->getTimestamp();
 
             $input[Entity::ACTIVATED_AT] = $now;
+
+            $input[Entity::SUBMITTED_AT] = $now;
         }
 
         return $input;
@@ -186,4 +192,161 @@ class Core extends Base\Core
             ]);
         }
     }
+
+    /**
+     * This function does the following
+     * 1. updates the activation status of a partner
+     * 2. Maintains the state transition for the partner_activation status
+     * 3. In case of needs clarification status change, sends a needs clarification email
+     * @param Merchant\Entity   $merchant
+     * @param Detail\Entity     $oldMerchantDetails
+     * @param Entity            $partnerActivation
+     * @param Base\PublicEntity $maker
+     * @param array             $input
+     *
+     * @return array
+     * @throws \Throwable
+     */
+    public function updatePartnerActivationStatus(Merchant\Entity $merchant, Detail\Entity $oldMerchantDetails, Entity $partnerActivation, Base\PublicEntity $maker, array $input)
+    {
+        $partnerActivation->getValidator()->validateInput('activationStatus', $input);
+
+        $currentActivationStatus = $partnerActivation->getActivationStatus();
+
+        $partnerActivation->getValidator()
+                          ->validateActivationStatusChange(
+                              $currentActivationStatus,
+                              $input[Entity::ACTIVATION_STATUS]);
+
+        $this->trace->info(
+            TraceCode::PARTNER_UPDATE_ACTIVATION_STATUS,
+            ['input' => $input]);
+
+        $rejectionReasons = [];
+
+        if (empty($input[Entity::REJECTION_REASONS]) === false)
+        {
+            $rejectionReasons = $input[Entity::REJECTION_REASONS];
+
+            unset($input[Entity::REJECTION_REASONS]);
+        }
+
+        $partnerActivation->edit($input);
+
+        $this->repo->transactionOnLiveAndTest(function() use (
+            $partnerActivation,
+            $input,
+            $maker, $merchant, $rejectionReasons
+        ) {
+
+            $detailCore = (new Detail\Core());
+
+            if ($input[Entity::ACTIVATION_STATUS] === Constants::ACTIVATED)
+            {
+                $this->activate($partnerActivation, $merchant);
+            }
+
+            if ($input[Entity::ACTIVATION_STATUS] === Constants::REJECTED)
+            {
+                $partnerActivation->deactivate();
+
+                $detailCore->sendRejectionEmail($merchant);
+            }
+
+            if ($input[Entity::ACTIVATION_STATUS] === Constants::NEEDS_CLARIFICATION)
+            {
+                if (empty($partnerActivation->getKycClarificationReasons()) === false)
+                {
+                    $partnerActivation->setLocked(false);
+
+                    $this->sendNeedsClarificationEmail($merchant, $partnerActivation);
+                }
+            }
+
+            $stateData = [
+                State\Entity::NAME => $input[Entity::ACTIVATION_STATUS],
+            ];
+
+            $state = (new State\Core)->createForMakerAndEntity($stateData, $maker, $partnerActivation);
+
+            $this->repo->saveOrFail($partnerActivation);
+
+            if (empty($rejectionReasons) === false)
+            {
+                (new Reason\Core)->addRejectionReasons($rejectionReasons, $state);
+            }
+
+        });
+
+        return $partnerActivation->toArrayPublic();
+    }
+
+    /**
+     * The following function activates the requirements needed for a partner to earn commissions
+     * It does creating bankaccount, release funds, setting activatedAt and creating balance config for the partner
+     * @param Entity          $partnerActivation
+     * @param Merchant\Entity $merchant
+     *
+     * @return Entity
+     * @throws \Throwable
+     */
+    protected function activate(Entity $partnerActivation, Merchant\Entity $merchant): Entity
+    {
+        $merchantDetail = $merchant->merchantDetail;
+
+        if ($this->shouldCreateBankAccount($merchantDetail) === true)
+        {
+            (new Detail\Core)->setBankAccountForMerchant($merchant);
+
+            $merchant->getValidator()->validateHasBankAccount();
+        }
+
+        $partnerActivation->releaseFunds();
+
+        $partnerActivation->setActivatedAt(time());
+
+        $merchantCore = new Merchant\Core;
+
+        $merchantBalance = $merchantCore->createBalance($merchant, 'live');
+
+        $merchantCore->createBalanceConfig($merchantBalance, 'live');
+
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $partnerActivation, $merchantCore) {
+            $this->repo->saveOrFail($merchant);
+
+            $partnerActivation->setLocked(true);
+
+            $this->repo->saveOrFail($partnerActivation);
+
+        });
+
+        return $partnerActivation;
+    }
+
+    private function shouldCreateBankAccount(Detail\Entity $merchantDetail): bool
+    {
+        return ($merchantDetail->hasBankAccountDetails() === true);
+    }
+
+    /**
+     * This function would format the needs clarification reasons and sends an email to the partner
+     * @param Merchant\Entity $merchant
+     * @param Entity          $partnerActivation
+     */
+    public function sendNeedsClarificationEmail(Merchant\Entity $merchant, Entity $partnerActivation)
+    {
+        $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
+
+        $clarificationCore = New Detail\NeedsClarification\Core();
+
+        $clarificationReasons = $clarificationCore->getFormattedKycClarificationReasons(
+            $partnerActivation->getKycClarificationReasons());
+
+        $data = (new Detail\Core)->getPayloadForClarificationEmail($merchant, $org, $clarificationReasons);
+
+        $email = new ClarificationEmail($data, $org->toArray());
+
+        Mail::queue($email);
+    }
 }
+

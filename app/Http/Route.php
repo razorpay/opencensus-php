@@ -1762,7 +1762,14 @@ class Route
         'partner_config_bulk_upsert'               => ['post',     'partner_configs/bulk',                           'PartnerConfigController@bulkUpsert'                                ],
         'partner_config_fetch'                     => ['get',      'partner_configs',                                'PartnerConfigController@getConfig'                                 ],
         'partner_config_edit'                      => ['put',      'partner_configs/{id}',                           'PartnerConfigController@update'                                    ],
+
+        //Partner activation routes
+        'partner_activation_status'                => ['patch',    'partner/activation/{id}/status',                 'PartnerActivationController@updatePartnerActivationStatus'         ],
+        'partner_activation_update'                => ['put',      'partner/activation/{id}',                        'PartnerActivationController@editPartnerActivationDetails'          ],
+        'partner_activation_details'               => ['get',      'partner/activation',                             'PartnerActivationController@getPartnerActivationDetails'           ],
+        'partner_activation_save'                  => ['post',     'partner/activation',                             'PartnerActivationController@savePartnerActivationDetails'          ],
         'partner_activation_migrate'               => ['post',     'partner/activation/migrate',                     'MerchantController@createPartnerActivationForPartners'             ],
+
         'merchant_sync_stakeholder'                => ['post',     'merchants/stakeholders/sync',                    'MerchantController@syncStakeholderFromMerchant'                    ],
 
         'commissions_get_multiple'                 => ['get',      'commissions',                                    'CommissionController@list'                                         ],
@@ -3669,6 +3676,10 @@ class Route
         'merchant_tpv_create',
 
         'care_service_dashboard_proxy',
+
+        //Partner Activation routes
+        'partner_activation_details',
+        'partner_activation_save',
     ];
 
     //
@@ -4037,6 +4048,10 @@ class Route
         'backfill_merchant_applications',
         'backfill_referred_application',
         'merchant_sync_stakeholder',
+
+        // Partner Activation routes
+        'partner_activation_status',
+        'partner_activation_update',
 
         // Scrooge - ODS Dashboard
         'scrooge_dashboard_init',
@@ -5280,6 +5295,12 @@ class Route
         'templating_list_template_config'                     => Permission::TEMPLATING_SERVICE_READ_TEMPLATE_CONFIGS,
         'templating_get_template_config'                      => Permission::TEMPLATING_SERVICE_READ_TEMPLATE_CONFIGS,
         'currency_fetch_all_proxy'                            => Permission::CURRENCY_FETCH_RATES,
+
+        //Partner Activation routes
+        'partner_activation_details'               => '*',
+        'partner_activation_save'                  => '*',
+        'partner_activation_update'                => Permission::EDIT_PARTNERS,
+        'partner_activation_status'                => Permission::EDIT_ACTIVATE_PARTNER,
     ];
 
     public static $bankingRoutePermissions = [

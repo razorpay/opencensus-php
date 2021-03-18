@@ -12,11 +12,13 @@ class Constants
     const ENTITY_REJECTION_REASONS_MAPPING = [
         E::MERCHANT_REQUEST => Request\RejectionReasons::REJECTION_REASONS_MAPPING,
         E::MERCHANT_DETAIL  => Detail\RejectionReasons::REJECTION_REASONS_MAPPING,
+        E::PARTNER_ACTIVATION  => Detail\RejectionReasons::REJECTION_REASONS_MAPPING,
     ];
 
     const ENTITY_REASON_CODES_DESCRIPTIONS_MAPPING = [
         E::MERCHANT_REQUEST => Request\RejectionReasons::REASON_CODES_DESCRIPTIONS_MAPPING,
         E::MERCHANT_DETAIL  => Detail\RejectionReasons::REASON_CODES_DESCRIPTIONS_MAPPING,
+        E::PARTNER_ACTIVATION  => Detail\RejectionReasons::REASON_CODES_DESCRIPTIONS_MAPPING,
     ];
 
     public static function getValidRejectionReasonsMappingForEntity(string $entity)
