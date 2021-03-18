@@ -808,6 +808,53 @@ return [
         ],
     ],
 
+    'testFetchVirtualAccountsMultipleByPayeeAccount' => [
+        'input' => [
+            'input1' => [
+                'payee_account' => '2323230087430709',
+            ],
+            'input2' => [
+                'payee_account' => 'rzr.payto000007451209527@icici',
+            ]
+        ],
+        'output' => [
+            'output1' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'name'        => 'bank account search',
+                        'entity'      => 'virtual_account',
+                        'status'      => 'active',
+                        'receivers'   => [
+                            [
+                                'entity'    => 'bank_account',
+                                'ifsc'      => 'RAZR0000001',
+                                'bank_name' => null,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'output2' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'name'        => 'vpa search',
+                        'entity'      => 'virtual_account',
+                        'status'      => 'active',
+                        'receivers'   => [
+                            [
+                                'entity'    => 'vpa',
+                            ],
+                        ],
+                    ],
+                ],
+            ]
+        ],
+    ],
+
     'testCreateVirtualAccountWithVpa' => [
         'name'        => 'Test virtual account',
         'entity'      => 'virtual_account',

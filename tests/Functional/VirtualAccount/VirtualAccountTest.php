@@ -1399,6 +1399,37 @@ class VirtualAccountTest extends TestCase
         $this->assertArraySelectiveEquals($expectedOutput, $this->fetchVirtualAccounts($input['input2']));
     }
 
+    public function testFetchVirtualAccountsMultipleByPayeeAccount()
+    {
+        $virtualAccount1 = $this->createVirtualAccount(['name' => 'bank account search','receivers' => ['types' => ['bank_account']]]);
+
+        $virtualAccount2 = $this->createVirtualAccount(['name' => 'vpa search','receivers' => ['types' => ['vpa']]]);
+
+        $input = $this->testData[__FUNCTION__]['input'];
+
+        $expectedOutput = $this->testData[__FUNCTION__]['output'];
+
+        $accountNumber = $virtualAccount1['receivers'][0]['account_number'];
+
+        $input['input1']['payee_account'] = $accountNumber;
+
+        $this->assertArraySelectiveEquals($expectedOutput['output1'], $this->fetchVirtualAccounts($input['input1']));
+
+        $input['input1']['payee_account'] = substr($accountNumber,3,8);
+
+        $this->assertArraySelectiveEquals($expectedOutput['output1'], $this->fetchVirtualAccounts($input['input1']));
+
+        $address = $virtualAccount2['receivers'][0]['address'];
+
+        $input['input2']['payee_account'] = $address;
+
+        $this->assertArraySelectiveEquals($expectedOutput['output2'], $this->fetchVirtualAccounts($input['input2']));
+
+        $input['input2']['payee_account'] = substr($address, 4, 15);
+
+        $this->assertArraySelectiveEquals($expectedOutput['output2'], $this->fetchVirtualAccounts($input['input2']));
+    }
+
     public function testVirtualAccountForOrderPayCustomerFeeBearerPartialMultiplePayment()
     {
         $this->fixtures->merchant->addFeatures(['excess_order_amount']);
