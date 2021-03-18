@@ -299,7 +299,10 @@ class Service extends Base\Service
 
         (new Pricing\Validator)->validateInput('merchant_pricing_plans_summary', $input);
 
-        $pricingPlans = $this->repo->pricing->getMerchantPricingPlansSummary($input);
+        $pricingPlans = $this->repo->useSlave( function() use ($input)
+        {
+            return $this->repo->pricing->getMerchantPricingPlansSummary($input);
+        });
 
         $pricingPlans->map(function ($plan)
         {
