@@ -64,6 +64,16 @@ class IrctcBatch extends Job
 
                 $timeStarted = microtime(true);
 
+                $this->trace->info(
+                    TraceCode::RECON_INFO,
+                    [
+                        'message'          => 'To push details of current batch',
+                        'batch_id'         => $batchId,
+                        'timeStarted'      => $timeStarted,
+                        'batches'          => $this->batches,
+                        'batchType'        => $batchType
+                    ]);
+
                 BatchModel\Processor\Factory::get($batch)->validateAndProcess();
 
                 $timeTaken = microtime(true) - $timeStarted;
