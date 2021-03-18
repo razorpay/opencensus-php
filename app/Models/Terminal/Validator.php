@@ -14,6 +14,7 @@ use RZP\Models\Terminal\TpvType;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Terminal\BankingType;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Bank;
 use RZP\Models\Terminal\Status;
 
@@ -2140,6 +2141,12 @@ class Validator extends Base\Validator
 
     protected static function validateBank($attribute, $value)
     {
+        // skipping this check for some Cardless EMI providers as these are not banks and are not added in IFSC repo
+        if (CardlessEmi::isNonBankingProvider($value) === true)
+        {
+            return;
+        }
+
         if (Bank\IFSC::exists($value) === false)
         {
             throw new Exception\BadRequestValidationFailureException(

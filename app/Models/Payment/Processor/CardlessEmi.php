@@ -26,6 +26,7 @@ class CardlessEmi
         self::FLEXMONEY    => 'FlexMoney',
     ];
 
+    // Add dashboard display names for providers which and are not banks and are not present in IFSC repo
     public static $fullDisplayName = [
         self::HCIN_IFSC  => 'Home Credit',
     ];
@@ -82,6 +83,11 @@ class CardlessEmi
     public static function isMultilenderProvider($provider)
     {
         return array_key_exists($provider, self::$supportedBanks);
+    }
+
+    public static function isNonBankingProvider($provider)
+    {
+        return in_array($provider, array_keys(self::$fullDisplayName), true);
     }
 
     public static function getSupportedBanksForMultilenderProvider($provider)
