@@ -4,10 +4,15 @@ import { Redirect } from 'react-router-dom';
 
 import LoanEntity from 'merchant/models/Capital/BaseOrigination';
 
+const LOS_CARDS_LINK = 'https://x.razorpay.com/cards/apply';
+const CARDS_DASHBOARD_LINK = 'https://x.razorpay.com/cards';
+
 const CorporateCards = ({ user }) => {
   if (!user.isCardsLOSEnabled) return <Redirect to="/" />;
+
   const [loading, setLoading] = useState(true);
   const [ctaText, setCTAText] = useState('Apply Now');
+  const [link, setLink] = useState(LOS_CARDS_LINK);
   const currentCtaText = loading ? 'Loading...' : ctaText;
 
   useEffect(() => {
@@ -30,17 +35,20 @@ const CorporateCards = ({ user }) => {
             limit: 1,
           });
           const { status } = applications ? applications[0] : {};
-          let response = '';
+          let text = '';
+          let link = LOS_CARDS_LINK;
 
           if (!status || status === 'RZP_REJECTED' || status === 'RZP_CLOSED') {
-            response = 'Apply Now';
+            text = 'Apply Now';
           } else if (status === 'RZP_APPROVED') {
-            response = 'Go to Cards Dashboard';
+            text = 'Go to Cards Dashboard';
+            link = CARDS_DASHBOARD_LINK;
           } else {
-            response = 'Continue Applying';
+            text = 'Continue Applying';
           }
 
-          setCTAText(response);
+          setCTAText(text);
+          setLink(link);
         } catch (err) {}
       }
 
@@ -84,7 +92,7 @@ const CorporateCards = ({ user }) => {
               <img src="/dist/css/assets/capital/cc-deposits.png" />
             </li>
           </ul>
-          <a className="cta secondary" href="https://x.razorpay.com/cards/apply">
+          <a className="cta secondary" href={link}>
             {currentCtaText}
           </a>
         </div>
@@ -103,7 +111,7 @@ const CorporateCards = ({ user }) => {
               <li>Recurring charges for SaaS & cloud</li>
               <li>International & other digital expenses</li>
             </ul>
-            <a className="cta primary" href="https://x.razorpay.com/cards/apply">
+            <a className="cta primary" href={link}>
               {currentCtaText}
             </a>
           </div>
