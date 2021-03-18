@@ -42,15 +42,15 @@ class Ubi extends Base
             $refundDate = Carbon::createFromTimestamp($row['refund']['created_at'], Timezone::IST)->format('dmY');
 
             $particular1 = str_pad($row['payment']['id'], 30, ' ', STR_PAD_LEFT);
-            $particular2 = str_pad("", 20, ' ', STR_PAD_LEFT);
+            $particular2 = str_pad($row['refund']['id'], 20, ' ', STR_PAD_LEFT);
 
             $transactionAmount = str_pad($row['refund']['amount'], 18, '0', STR_PAD_LEFT);
 
             $formattedData[] = [
                 self::ACCOUNT_NUMBER      => $row['gateway'][Netbanking::BANK_ACCOUNT_NUMBER],
                 self::TRAN_TYPE           => 'C',
-                self::REFUND_DATE         => $refundDate,
-                self::DATE                => ' '.$transactionDate,
+                self::DATE                => $transactionDate,
+                self::REFUND_DATE         => ' '.$refundDate,
                 self::PARTICULAR1         => ' '.$particular1,
                 self::PARTICULAR2         => ' '.$particular2,
                 self::AMOUNT              => ' '.$transactionAmount,
@@ -75,8 +75,8 @@ class Ubi extends Base
         $formattedData[$index] = [
             self::ACCOUNT_NUMBER      => $config['account_number'],
             self::TRAN_TYPE           => 'D',
-            self::REFUND_DATE         => $refundDate,
-            self::DATE                => ' '.$transactionDate,
+            self::DATE                => $transactionDate,
+            self::REFUND_DATE         => ' '.$refundDate,
             self::PARTICULAR1         => ' '.$particular1,
             self::PARTICULAR2         => ' '.$particular2,
             self::AMOUNT              => ' '.$transactionAmount,
