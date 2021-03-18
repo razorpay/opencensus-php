@@ -7193,11 +7193,11 @@ class Route
         'account'                                           => HeartbeatLagChecker::SLAVE,
         'merchant_methods'                                  => HeartbeatLagChecker::SLAVE,
         'merchant_methods_downtime'                         => HeartbeatLagChecker::SLAVE,
-        'merchant_get_tags'                                 => HeartbeatLagChecker::SLAVE,
-        'merchant_activation_details'                       => HeartbeatLagChecker::SLAVE,
+        'merchant_get_tags'                                 => HeartbeatLagChecker::MASTER,
+        'merchant_activation_details'                       => HeartbeatLagChecker::MASTER,
         'user_fetch'                                        => HeartbeatLagChecker::MASTER,
         'invoice_fetch'                                     => HeartbeatLagChecker::MASTER,
-        'merchant_features_fetch'                           => HeartbeatLagChecker::SLAVE,
+        'merchant_features_fetch'                           => HeartbeatLagChecker::MASTER,
         'customer_get_saved_status'                         => HeartbeatLagChecker::SLAVE,
         'payment_fetch_card_details'                        => HeartbeatLagChecker::HEARTBEAT,
         'transfer_fetch'                                    => HeartbeatLagChecker::MASTER,
@@ -7231,7 +7231,7 @@ class Route
         'setl_combined_report'                              => HeartbeatLagChecker::SLAVE,
         'setl_combined_recon'                               => HeartbeatLagChecker::SLAVE,
         'balance_fetch'                                     => HeartbeatLagChecker::SLAVE,
-        'fetch_partner_intent'                              => HeartbeatLagChecker::SLAVE,
+        'fetch_partner_intent'                              => HeartbeatLagChecker::MASTER,
         'reporting_log_get'                                 => HeartbeatLagChecker::SLAVE,
         'fetch_merchant_balance_configs'                    => HeartbeatLagChecker::SLAVE,
         'fetch_payment_config'                              => HeartbeatLagChecker::SLAVE,
@@ -7246,6 +7246,7 @@ class Route
         'reminder_next_run'                                 => HeartbeatLagChecker::SLAVE,
         'user_fetch_for_merchant'                           => HeartbeatLagChecker::SLAVE,
         'reward_expire_cron'                                => HeartbeatLagChecker::MASTER,
+        'user_access'                                       => HeartbeatLagChecker::MASTER,
     ];
 
     /**

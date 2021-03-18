@@ -502,6 +502,18 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         return $this->hasOne('RZP\Models\Merchant\AvgOrderValue\Entity', self::MERCHANT_ID, self::MERCHANT_ID);
     }
 
+    public function getReviewer(){
+        // https://tomgrohl.medium.com/how-to-not-load-null-relations-in-laravel-5-dbfaedf56df2
+        // even if reviewer_id is null, $this->reviewer will make an unnecessary query
+        // select * from `admins` where `admins`.`id` is null and `admins`.`deleted_at` is null limit 1`
+        if ($this->getAttribute(self::REVIEWER_ID) === null){
+            return null;
+        }
+        else{
+            return $this->reviewer;
+        }
+    }
+
     public function reviewer()
     {
         return $this->belongsTo(Admin\Entity::class);
@@ -1153,7 +1165,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
 
     public function setPublicReviewerAttribute(array &$attributes)
     {
-        $reviewer = $this->reviewer;
+        $reviewer = $this->getReviewer();
 
         if ($reviewer !== null)
         {
