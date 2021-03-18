@@ -8,6 +8,7 @@ use Config;
 use Carbon\Carbon;
 
 use RZP\Error\Error;
+use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Models\Risk;
