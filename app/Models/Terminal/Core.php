@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Models\Admin;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
+use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -265,7 +266,38 @@ class Core extends Base\Core
 
         $terminal->setEnabled($toggle);
 
-        $this->repo->saveOrFail($terminal);
+        $shouldSync = true;
+
+        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+        $mId = $terminal->getMerchantId();
+
+        $variantFlag = $this->app->razorx->getTreatment($mId, "TERMINAL_EDIT_PROXY", $mode);
+
+        if ($variantFlag === "on")
+        {
+            $shouldSync = false;
+
+            $path = "v1/terminals/" .  $terminal->getId();
+
+            $input = [
+                Entity::ENABLED => $toggle
+            ];
+
+            $response = $this->app['terminals_service']->proxyTerminalService($input, "PATCH", $path);
+
+            $tsTerminal = Terminal\Service::getEntityFromTerminalServiceResponse($response);
+
+            $terminal->setSyncStatus(SyncStatus::SYNC_SUCCESS);
+
+            $this->repo->saveOrFail($terminal, ['shouldSync' => $shouldSync]);
+
+            return $tsTerminal;
+        }
+        else
+        {
+            $this->repo->saveOrFail($terminal, ['shouldSync' => $shouldSync]);
+        }
 
         return $terminal;
     }

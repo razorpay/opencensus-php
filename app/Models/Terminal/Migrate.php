@@ -459,6 +459,8 @@ trait Migrate
             $terminal->setDeletedAt($t["deleted_at"]);
         }
 
+        $terminal->syncEntity();
+
         return $terminal;
     }
 

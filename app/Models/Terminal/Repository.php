@@ -215,9 +215,9 @@ class Repository extends Base\Repository
 
         $mode = $this->app['rzp.mode'] ??  Mode::LIVE ;
 
-        $variantFlag = $this->app->razorx->getTreatment($id, "ROUTE_PROXY_TS_BY_ID",  $mode);
+        $variantFlag = $this->app->razorx->getTreatment($id, "ROUTE_PROXY_TS_BY_ID_2",  $mode);
 
-        if ($variantFlag === 'proxy')
+        if ($variantFlag === 'on')
         {
             $data = ["function" => "getById", "terminal_id" => $id];
 
@@ -235,6 +235,8 @@ class Repository extends Base\Repository
                 {
                     $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
                 }
+
+                return $terminal2;
             }
             catch (\Throwable $ex)
             {

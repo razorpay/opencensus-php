@@ -742,6 +742,13 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::DELETED_AT, $timestamp);
     }
 
+    public function syncEntity()
+    {
+        $this->syncOriginal();
+
+        $this->exists = true;
+    }
+
     public function setMerchantId($merchantId)
     {
         $this->setAttribute(self::MERCHANT_ID, $merchantId);

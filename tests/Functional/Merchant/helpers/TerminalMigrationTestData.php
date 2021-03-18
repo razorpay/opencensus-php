@@ -410,6 +410,32 @@ return [
         ],
     ],
 
+    'testToggleTerminalOnTerminalService' => [
+        'request' => [
+            'method'  => 'PUT',
+            'content' => [ 'toggle' => '0']
+        ],
+        'response' => [
+            'content' => [
+                'enabled' => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testToggleTerminalFromTerminalService' => [
+        'request' => [
+            'method'  => 'PUT',
+            'content' => [ 'toggle' => '0']
+        ],
+        'response' => [
+            'content' => [
+                'enabled' => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testAdminFetchTerminalByIdTerminalServiceValidResponseProxy' => [
         'request'    => [
             'method'    => 'GET'

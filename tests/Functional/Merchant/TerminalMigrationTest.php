@@ -1894,8 +1894,122 @@ class TerminalMigrationTest extends TestCase
         $this->startTest();
     }
 
-    // tests for fetching all terminals of merchant in admin route
+    public function testToggleTerminalOnTerminalService()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'enabled' => true
+            ]);
+        $tid = $terminal['id'];
 
+        $this->razorxValue = 'on';
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($tid) {
+
+            $data = [
+                "enabled" => false
+            ];
+
+            $this->assertEquals(json_encode($data), $content);
+
+            $this->assertEquals(Requests::PATCH, $method);
+
+            $this->assertStringEndsWith('/terminals/'.$tid, $path);
+
+            $data = $this->terminalRepository->getById($tid)->toArray();
+
+            $body = json_encode(['data' => $data]);
+
+            $response = new \Requests_Response;
+
+            $response->body = $body;
+
+            return $response;
+
+        }, 3);
+
+        $url = '/terminals/'.$tid.'/toggle';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testToggleTerminalFromTerminalService()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'enabled' => true,
+                'procurer' => 'razorpay',
+                'gateway_terminal_password' => 'test_password',
+                'gateway_acquirer' => 'hdfc',
+                'status' => 'activated',
+            ]);
+        $tid = $terminal['id'];
+
+        $originalTerminal = $this->terminalRepository->findOrFail($tid)->toArrayWithPassword();
+
+        $this->razorxValue = 'on';
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($tid, $originalTerminal) {
+
+            if ($method === Requests::GET)
+            {
+                $data = $originalTerminal;
+                // Setting mismatches to validate no other fields were effected.
+                $data["procurer"] = "merchant";
+                $data["gateway_terminal_password"] = null;
+                $data["gateway_acquirer"] = "ratn";
+                $data["status"] = "deactivated";
+
+                return $this->getDefaultTerminalServiceResponse($data);
+            }
+
+            $data = $originalTerminal;
+
+            $body = json_encode(['data' => $data]);
+
+            $response = new \Requests_Response;
+
+            $response->body = $body;
+
+            return $response;
+
+        }, 2);
+
+        $url = '/terminals/'.$tid.'/toggle';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        // Verifying fields.
+        $finalTerminal = $this->terminalRepository->findOrFail($tid)->toArrayWithPassword();
+
+        foreach ($finalTerminal as $key => $value)
+        {
+            if ($key === 'enabled' || $key === 'updated_at')
+            {
+                continue;
+            }
+
+            if ($key === 'sync_status')
+            {
+                $this->assertEquals("sync_success", $finalTerminal[$key]);
+
+                continue;
+            }
+            $this->assertEquals($originalTerminal[$key], $finalTerminal[$key]);
+        }
+    }
+
+    // tests for fetching all terminals of merchant in admin route
     public function testFetchTerminalsAdminAuth()
     {
         $this->markTestSkipped("until terminal service response is returned");
