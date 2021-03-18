@@ -383,6 +383,124 @@ class RblBankingAccountStatementTest extends TestCase
         $this->startTest();
     }
 
+    public function testRblAccountStatementCorrectionInClosingBalance()
+    {
+        $mockedResponse = $this->getRblDataResponse();
+
+        $txnData = $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'];
+
+        $txnData[0]['txnBalance']['amountValue'] = '215.5';
+
+        $txnData[1]['txnBalance']['amountValue'] = '114.55';
+
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'] = $txnData;
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $baBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
+
+        $this->assertNull($baBeforeTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $basdBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->assertNull($basdBeforeTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $this->ba->cronAuth();
+
+        $this->setupForRblAccountStatement();
+
+        $closingBalanceDiff = [
+            $baBeforeTest[BaEntity::ACCOUNT_NUMBER] => 100
+        ];
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RBL_STATEMENT_CLOSING_BALANCE_DIFF => $closingBalanceDiff]);
+
+        $testData = $this->testData['testRblAccountStatementCase1'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+
+        $transactions = $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'];
+
+        $txn = last($transactions);
+
+        $basActual = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT, true);
+
+        $externalActual = $this->getLastEntity(EntityConstants::EXTERNAL, true);
+
+        $externalId = str_after($externalActual[ExternalEntity::ID], 'ext_');
+
+        $externalTxnId = $externalActual[ExternalEntity::TRANSACTION_ID];
+
+        $this->txnEntity = $this->getDbEntityById(EntityConstants::TRANSACTION, $externalTxnId);
+
+        $txnActual = $this->txnEntity->toArray();
+
+        $baAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
+
+        $this->assertNotNull($baAfterTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $basdAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->assertNotNull($basdAfterTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $this->assertEquals($txnActual[TransactionEntity::POSTED_AT], $basActual[BasEntity::POSTED_DATE]);
+
+        $basExpected = [
+            BasEntity::MERCHANT_ID           => $txnActual[TransactionEntity::MERCHANT_ID],
+            BasEntity::BANK_TRANSACTION_ID   => trim($txn['txnId']),
+            BasEntity::TYPE                  => 'debit',
+            BasEntity::AMOUNT                => 10095,
+            BasEntity::BALANCE               => 11355,
+            BasEntity::POSTED_DATE           => 1451937993,
+            BasEntity::TRANSACTION_DATE      => 1451932200,
+            BasEntity::DESCRIPTION           => trim($txn['transactionSummary']['txnDesc']),
+            BasEntity::CHANNEL               => 'rbl',
+            BasEntity::ENTITY_ID             => $externalId,
+            BasEntity::ENTITY_TYPE           => $externalActual[ExternalEntity::ENTITY],
+            BasEntity::TRANSACTION_ID        => $txnActual[TransactionEntity::ID],
+        ];
+
+        $this->assertArraySubset($basExpected, $basActual, true);
+
+        $externalExpected = [
+            BasEntity::MERCHANT_ID                => $basActual[BasEntity::MERCHANT_ID],
+            ExternalEntity::BALANCE_ID            => $this->balance->getId(),
+            ExternalEntity::BANK_REFERENCE_NUMBER => $basActual[BasEntity::BANK_TRANSACTION_ID],
+            ExternalEntity::TYPE                  => $basActual[BasEntity::TYPE],
+            ExternalEntity::AMOUNT                => $basActual[BasEntity::AMOUNT],
+            ExternalEntity::CHANNEL               => $basActual[BasEntity::CHANNEL],
+            ExternalEntity::TRANSACTION_ID        => $txnActual[TransactionEntity::ID],
+        ];
+
+        $this->assertArraySubset($externalExpected, $externalActual, true);
+
+        $txnExpected = [
+            TransactionEntity::ID               => $externalTxnId,
+            TransactionEntity::ENTITY_ID        => $externalId,
+            TransactionEntity::TYPE             => 'external',
+            TransactionEntity::DEBIT            => $externalActual[ExternalEntity::AMOUNT],
+            TransactionEntity::CREDIT           => 0,
+            TransactionEntity::AMOUNT           => $externalActual[ExternalEntity::AMOUNT],
+            TransactionEntity::FEE              => 0,
+            TransactionEntity::TAX              => 0,
+            TransactionEntity::PRICING_RULE_ID  => null,
+            TransactionEntity::ON_HOLD          => false,
+            TransactionEntity::SETTLED          => false,
+            TransactionEntity::SETTLED_AT       => null,
+            TransactionEntity::SETTLEMENT_ID    => null,
+        ];
+
+        $this->assertArraySubset($txnExpected, $txnActual, true);
+
+        $bas = $this->getDbEntities(EntityConstants::BANKING_ACCOUNT_STATEMENT)[0];
+
+        $this->assertNotNull($bas);
+
+        $this->assertEquals(21450, $bas->getBalance());
+    }
+
     protected function verifyGeneratedXlsxFile($currentTime)
     {
         $openingBalanceCell = 'B36';

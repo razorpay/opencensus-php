@@ -364,6 +364,17 @@ class Gateway extends BaseProcessor
                 'txn_count' => count($transactionsData)
             ]);
 
+        // This is used to do correction to closing balance in bank's response.
+        // slack incident thread: https://razorpay.slack.com/archives/CM9230B5Y/p1615457898201700
+        $closingBalanceDiff = 0;
+
+        $closingBalanceDiffArray = (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_STATEMENT_CLOSING_BALANCE_DIFF]);
+
+        if (array_key_exists($this->accountNumber, $closingBalanceDiffArray) === true)
+        {
+            $closingBalanceDiff = $closingBalanceDiffArray[$this->accountNumber];
+        }
+
         foreach ($transactionsData as $transactionData)
         {
             //
@@ -383,7 +394,7 @@ class Gateway extends BaseProcessor
                 Entity::CATEGORY            => $this->getCategoryFromResponse($transactionData),
                 Entity::BANK_SERIAL_NUMBER  => $this->getSerialNumberFromResponse($transactionData),
                 Entity::BANK_INSTRUMENT_ID  => $this->getInstrumentIdFromResponse($transactionData),
-                Entity::BALANCE             => $this->getBalanceFromResponse($transactionData),
+                Entity::BALANCE             => $this->getBalanceFromResponse($transactionData, $closingBalanceDiff),
                 Entity::BALANCE_CURRENCY    => $this->getBalanceCurrencyFromResponse($transactionData),
                 Entity::POSTED_DATE         => $this->getPostedDateFromResponse($transactionData),
                 Entity::TRANSACTION_DATE    => $this->getTransactionDateFromResponse($transactionData),
@@ -469,11 +480,13 @@ class Gateway extends BaseProcessor
         return trim($transaction[Fields::TRANSACTION_SUMMARY][Fields::INSTRUMENT_ID]);
     }
 
-    protected function getBalanceFromResponse(array $transaction): int
+    protected function getBalanceFromResponse(array $transaction, int $closingBalanceDiff = 0): int
     {
         $amount = $transaction[Fields::TRANSACTION_BALANCE][Fields::AMOUNT_VALUE];
 
         $amount = intval(number_format($amount * 100, 0, '.', ''));
+
+        $amount -= $closingBalanceDiff;
 
         return $amount;
     }

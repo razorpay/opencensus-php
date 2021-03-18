@@ -119,6 +119,9 @@ class ConfigKey
 
     const RX_SHARED_ACCOUNT_ALLOWED_CHANNELS    = self::PREFIX . 'rx_shared_account_allowed_channels';
 
+    // This is used to do correction to closing balance in bank's response
+    const RBL_STATEMENT_CLOSING_BALANCE_DIFF = self::PREFIX . 'rbl_statement_closing_balance_diff';
+
     // This regex is used to scrub credit card numbers from logs.
     // Currently only banking specific routes will be affected by this
     const CREDIT_CARD_REGEX_FOR_REDACTING       = self::PREFIX . 'credit_card_regex_for_redacting';
@@ -238,6 +241,7 @@ class ConfigKey
         self::BULK_PAYOUTS_NEW_MERCHANT_CUTOFF_TIMESTAMP,
         self::RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_MERCHANTS,
         self::RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS_FOR_FUND_LOADING,
+        self::RBL_STATEMENT_CLOSING_BALANCE_DIFF,
     ];
 
     const REDIS_CONFIG_MAP = [
