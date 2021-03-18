@@ -66,6 +66,9 @@ const VirtualAccountCreate = lazy(() =>
     /* webpackChunkName: "VirtualAccountsCreate" */ 'merchant/views/SmartCollect/VirtualAccounts/Create/index'
   ),
 );
+const QRCodeCreate = lazy(() =>
+  import(/* webpackChunkName: "QRCodeCreate" */ 'merchant/views/QRCodes/QRCodes/Create'),
+);
 const OffersNew = lazy(() =>
   import(/* webpackChunkName: "OffersNew" */ 'merchant/views/Offers/New'),
 );
@@ -392,6 +395,10 @@ const entityModalsMap = {
   },
   '/virtualaccounts/new': {
     component: VirtualAccountCreate,
+  },
+  '/qr_codes/new': {
+    component: QRCodeCreate,
+    additionalCondition: (user) => user.isAllowedEdit('qr_codes'),
   },
   '/route/transfers/direct_transfer': {
     component: DirectTransfers,

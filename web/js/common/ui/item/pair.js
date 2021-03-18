@@ -251,3 +251,29 @@ export const paymentMethod = {
   title: 'Payment Method',
   value: (item) => item.payment_method,
 };
+
+export const qrCodeId = {
+  title: 'QR Code ID',
+  // TODO: rename va to qr_codes
+  value: makeIdLink('virtual_account'),
+};
+
+export const name = {
+  title: 'Name',
+  value: (item) => item.name,
+};
+
+export const qrType = {
+  title: 'QR Type',
+  value: (item) => item.type,
+};
+
+export const qrUsage = {
+  title: 'QR Usage',
+  value: (item) => item.usage,
+};
+
+export const amountReceived = {
+  title: 'Amount Received',
+  value: (item) => item.total_amount_received, //getAmount('item.total_amount_received'),
+};

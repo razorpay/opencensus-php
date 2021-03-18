@@ -14,6 +14,7 @@ import paymentButtonsReducer from 'merchant/reducers/paymentbuttons/list';
 import paymentButtonCreateReducer from 'merchant/reducers/paymentbuttons/create';
 import subscriptionButtonsReducer from 'merchant/reducers/subscriptionButtons/list';
 import subscriptionButtonCreateReducer from 'merchant/reducers/subscriptionButtons/create';
+import qrCodesReducer from 'merchant/reducers/qr_codes/list';
 import invoiceDetailsReducer from 'merchant/reducers/invoices/details';
 import profileReducer from 'merchant/reducers/profile';
 import customersReducer from 'merchant/reducers/customers';
@@ -65,6 +66,7 @@ import {
   reversalsReducer,
   mpPaymentsReducer,
   smartCollectPaymentsReducer,
+  qrCodePaymentsReducer,
   refundsReducer,
   settlementsReducer,
   instantSettlementsReducer,
@@ -148,6 +150,7 @@ export default combineReducers({
   accounts: mpAccountsReducer,
   mpPayments: mpPaymentsReducer,
   scPayments: smartCollectPaymentsReducer,
+  qrCodePayments: qrCodePaymentsReducer,
   transfers: transfersReducer,
   navigator: navigatorReducer,
   transfer: transferReducer,
@@ -184,4 +187,5 @@ export default combineReducers({
   supportdetails: supportDetailReducer,
   repayments: RepaymentsReducer,
   rewards: rewardsReducer,
+  qr_codes: qrCodesReducer,
 });

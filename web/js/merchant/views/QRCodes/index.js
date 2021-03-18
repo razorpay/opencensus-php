@@ -1,19 +1,116 @@
-import ComingSoon from 'merchant/components/ComingSoon';
-import featuresList from './features.json';
+import { connect } from 'react-redux';
+import { Route, Switch, NavLink } from 'react-router-dom';
 
-// TODO: add product docs url
-const QRCodesContainer = () => {
-  return (
-    <div class="QRCodes">
-      <ComingSoon
-        product="QR codes"
-        title="Razorpay QR Codes"
-        description="Adopt contact less payments through customized UPI & Bharat QR Codes"
-        features={featuresList}
-        previewURL="/dist/css/assets/qr_code/product_preview.gif"
-      />
-    </div>
-  );
-};
+import {
+  handleProductQuickGuide,
+  getCurrentProductOnBoardingDetails,
+} from 'merchant/reducers/onboarding';
+import { RZPFeatures } from 'merchant/helpers/data';
+import TestModeBanner from 'merchant/components/TestModeBanner';
+import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 
-export default QRCodesContainer;
+import ComingSoon from './ComingSoon';
+import QRCodesList from './QRCodes/List';
+import PaymentsList from './Payments/List';
+import QuickGuide, { getQRCodeQuickGuideIsClosed } from './QuickGuide';
+import OnBoarding, { getIsQRCodesEnabled, getIsAllowedResetQRCodesOnBoarding } from './OnBoarding';
+
+@connect(
+  (state) => ({
+    user: state.session.user,
+    qr_codes: state.qr_codes,
+    productOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.QR_CODES),
+  }),
+  { handleProductQuickGuide },
+)
+export default class QRCodeContainer extends React.Component {
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.qr_codes.loading !== this.props.qr_codes.loading) {
+      this.initOnboarding(nextProps);
+    }
+  }
+
+  componentWillUnmount() {
+    const { productOnBoarding } = this.props;
+
+    if (productOnBoarding.isTour) {
+      this.props.handleProductQuickGuide({
+        ...productOnBoarding,
+        showOnboarding: false,
+        isQuickGuideOpen: false,
+        isTour: false,
+      });
+    }
+  }
+
+  initOnboarding = (props = this.props) => {
+    if (props.productOnBoarding.isTour) {
+      return;
+    }
+
+    const data = {
+      user: props.user,
+      merchantId: props.user.current,
+      qr_codes: props.qr_codes,
+    };
+
+    const isQRCodesEnabled = getIsQRCodesEnabled(data);
+
+    let showOnboarding = !isQRCodesEnabled;
+
+    if (isQRCodesEnabled) {
+      showOnboarding = getIsAllowedResetQRCodesOnBoarding(data.qr_codes);
+    }
+
+    const productOnBoarding = {
+      ...props.productOnBoarding,
+      showOnboarding,
+      isQuickGuideOpen: !getQRCodeQuickGuideIsClosed(props),
+    };
+
+    this.props.handleProductQuickGuide(productOnBoarding);
+  };
+
+  render() {
+    if (this.props.user.isQRCodeComingSoonEnabled) {
+      return <ComingSoon />;
+    }
+
+    const { showOnboarding, isQuickGuideOpen } = this.props.productOnBoarding;
+
+    if (showOnboarding) {
+      return <OnBoarding />;
+    }
+
+    return (
+      <tabbed-container>
+        {isQuickGuideOpen && <QuickGuide />}
+
+        <header id="link-header">
+          <NavLink exact to="/qr_codes">
+            QR codes
+          </NavLink>
+          <NavLink to="/qr_codes/payments">Payments</NavLink>
+        </header>
+
+        <TestModeBanner />
+
+        <content>
+          <Switch>
+            <ShowWhenRoute
+              exact
+              additionalCondition={(user) => user.isAllowedView('qr_codes')}
+              path="/qr_codes"
+              component={QRCodesList}
+            />
+            <ShowWhenRoute
+              path="/qr_codes/payments"
+              component={PaymentsList}
+              additionalCondition={(user) => user.isAllowedView('qr_codes')}
+            />
+          </Switch>
+        </content>
+      </tabbed-container>
+    );
+  }
+}

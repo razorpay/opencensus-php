@@ -336,7 +336,8 @@
 .OnBoarding--Invoices,
 .OnBoarding--Offers,
 .OnBoarding--Rewards,
-.OnBoarding--SmartCollect
+.OnBoarding--SmartCollect,
+.OnBoarding--QRCodes
   .Landing--Image
     overflow: hidden
     z-index: 2
@@ -461,6 +462,18 @@
 
     img
       transform: translate(0, -25%)  rotateY(-180deg)
+
+.OnBoarding--QRCodes
+  .Landing--Image
+    &:before
+      background: #7a47c2
+      color: #7a47c2
+      background: linear-gradient(95deg, #0B0B57 16.04%, #5C5CF7 62.56%)
+      box-shadow: 1px 1px 0 #0B0B57, 2px 2px 0 #0B0B57, 3px 3px 0 #0B0B57, 4px 4px 0 #0B0B57
+
+    img
+      transform: translate(0, -25%)
+      right: 0
 
 .OnBoarding--SmartCollect
   .Landing--Image

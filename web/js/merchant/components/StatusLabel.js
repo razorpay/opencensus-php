@@ -75,6 +75,12 @@ export const virtualAccountStatusMap = {
   paid: 'label-success',
 };
 
+export const qrCOdeStatusMap = {
+  active: 'label-info',
+  closed: 'label-danger',
+  paid: 'label-success',
+};
+
 export const subscriptionStatusMap = {
   created: 'bg-light',
   authenticated: 'label-info',
@@ -167,5 +173,6 @@ export const OfferStatusLabel = StatusLabel(offerStatusMap);
 export const RefundStatusLabel = StatusLabel(refundStatusMap);
 export const CommissionInvoiceStatusLabel = StatusLabel(commissionInvoiceStatusMap);
 export const SubmerchantSettlementLabel = StatusLabel(SubmerchantSettlementStatusMap);
+export const QRCodeStatusLabel = StatusLabel(qrCOdeStatusMap);
 
 export default (item) => StatusLabel(entityMap[item.entity])(item);

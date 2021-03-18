@@ -286,6 +286,12 @@ export default class User {
     return isEnabled;
   }
 
+  get isQRCodeProductEnabled() {
+    const { isEnabled } = getOnBoardingDataFromLocalState(RZPFeatures.QR_CODES);
+
+    return isEnabled;
+  }
+
   get isRewardsPageEnabled() {
     return this.isFeatureEnabled('reward_merchant_dashboard');
   }
@@ -650,8 +656,16 @@ export default class User {
     return this.getExpStatus('caw_tpv');
   }
 
-  get isQRCodeEnabled() {
+  get isQRCodesEnabled() {
+    if (this.isQRCodeComingSoonEnabled) {
+      return true;
+    }
+
     return this.getExpStatus('qr_code');
+  }
+
+  get isQRCodeComingSoonEnabled() {
+    return this.getExpStatus('qr_code_coming_soon');
   }
 
   get isPaymentLinkCreationV2Enabled() {

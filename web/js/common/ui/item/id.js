@@ -13,6 +13,7 @@ const baseUrl = {
   token: '/tokens/',
   rvrsl: '/route/reversals/',
   offer: '/offers/',
+  qr_codes: '/qr_codes/',
 };
 
 const sources = {

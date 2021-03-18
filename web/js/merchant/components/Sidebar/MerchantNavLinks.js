@@ -85,9 +85,9 @@ export default function MerchantNavLinks(props) {
         label="QR codes"
         type="product"
         icon="i i-qr-code text-warm"
-        additionalCondition={(user) => user.isAllowedView('qr_codes') && user.isQRCodeEnabled}
+        additionalCondition={(user) => user.isAllowedView('qr_codes') && user.isQRCodesEnabled}
         to={routes.qrCodes}
-        isComingSoon
+        isComingSoon={user.isQRCodeComingSoonEnabled}
       />
 
       <MainNavLink

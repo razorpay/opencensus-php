@@ -191,3 +191,11 @@ export const fetchSmartCollectPayments = (params) => {
   return fetchAll(params, Payment, 'SC_PAYMENTS');
 };
 export const smartCollectPaymentsReducer = makeCollectionReducer('SC_PAYMENTS');
+
+// QR codes
+// TODO: Update the paths to QR code
+export const fetchQRCodesPayments = (params) => {
+  params.virtual_account = 1;
+  return fetchAll(params, Payment, 'SC_PAYMENTS');
+};
+export const qrCodePaymentsReducer = makeCollectionReducer('QR_CODE_PAYMENTS');
