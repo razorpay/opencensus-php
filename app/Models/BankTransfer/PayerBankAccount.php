@@ -66,6 +66,8 @@ class PayerBankAccount extends Base\Core
             }
         }
 
+        $label = trim($label);
+
         return substr($label, 0, 39);
     }
 

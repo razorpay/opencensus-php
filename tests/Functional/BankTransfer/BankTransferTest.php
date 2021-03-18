@@ -4604,7 +4604,7 @@ class BankTransferTest extends TestCase
     // We test that if payer ifsc is sent incorrect by bank like 9229 etc is sent as ifsc, we use the correct mapping
     // created by smart collect team and map it to correct ifsc and create a payer bank account and validate banking
     // account tpv based on that.
-    public function testSuccessfulFundLoadingWithIncorrectPayerIfscFromYesBanWhenTpvIsEnabled()
+    public function testSuccessfulFundLoadingWithIncorrectPayerIfscFromYesBankWhenTpvIsEnabled()
     {
         Mail::fake();
 
@@ -4929,6 +4929,118 @@ class BankTransferTest extends TestCase
         // Since this was an incorrect payee account number case, we won't send the fund loading mail.
         Mail::assertNotQueued(FundLoadingFailed::class);
     }
+
+    // We test that if payer name is sent with initial spaces, it doesn't fail creation of bank transfer but trims and
+    // saves the bank transfer as is but trims the beneficiary name is payer bank account so that payer bank account
+    // creation doesn't fail.
+    public function testSuccessfulFundLoadingWithSpacesAroundPayerNameFromYesBankWhenTpvIsEnabled()
+    {
+        Mail::fake();
+
+        $this->setupForYesBankXFundLoading();
+
+        $this->fixtures->on('live')->create('banking_account_tpv',
+                                            [
+                                                'balance_id' => $this->bankingBalance->getId(),
+                                                'status'     => 'approved',
+                                                'payer_ifsc' => 'ICIC0002445',
+                                            ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::ENABLE_TPV_FLOW,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        list($countOfPaymentsBeforeFundLoading,
+            $countOfTransactionsBeforeFundLoading,
+            $countOfBankTransfersBeforeFundLoading
+            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+
+        $utr = strtoupper(random_alphanum_string(22));
+
+        $payeeAccount = $this->bankAccount;
+
+        $this->testData[__FUNCTION__] = $this->testData['testBankTransferIciciIMPSForRazorpayXWithTpvEnabledButNoTpvAccountFound'];
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/ecollect/validate';
+
+        $request['content']['payer_ifsc'] = '9229';
+
+        $request['content']['payer_name'] = '  Name of account holder ';
+
+        $request['content']['mode'] = 'imps';
+
+        $request['content']['payee_account'] = $payeeAccount->getAccountNumber();
+
+        $request['content']['payee_ifsc'] = 'ICIC0000104';
+
+        $request['content']['transaction_id'] = $utr;
+
+        $this->ba->yesbankAuth('live');
+
+        $response = $this->startTest();
+
+        $this->assertEquals($utr, $response['transaction_id']);
+
+        list($countOfPaymentsAfterFundLoading,
+            $countOfTransactionsAfterFundLoading,
+            $countOfBankTransfersAfterFundLoading
+            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
+
+        // Assert that no new payment was created.
+        $this->assertEquals($countOfPaymentsBeforeFundLoading, $countOfPaymentsAfterFundLoading);
+
+        // Assert that exactly one of these entities was created during fund loading request.
+        $this->assertEquals($countOfBankTransfersBeforeFundLoading + 1, $countOfBankTransfersAfterFundLoading);
+        $this->assertEquals($countOfTransactionsBeforeFundLoading + 1,  $countOfTransactionsAfterFundLoading);
+
+        $transaction = $this->getDbLastEntity('transaction', 'live');
+
+        $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
+
+        $expectedAmount = $request['content']['amount'] . '00';
+
+        $merchantId = $this->bankingBalance->getMerchantId();
+
+        // Assertions on transaction entity created
+        $this->assertEquals($merchantId, $transaction->getMerchantId());
+        $this->assertEquals($expectedAmount, $transaction->getAmount());
+        $this->assertEquals('bank_transfer', $transaction->getType());
+        $this->assertEquals($bankTransfer->getId(), $transaction->getEntityId());
+
+        // Assertions on bank transfer entity created (Internal linking)
+        $this->assertEquals($merchantId, $bankTransfer->getMerchantId());
+        $this->assertEquals($this->virtualAccount->getId(), $bankTransfer->getVirtualAccountId());
+        $this->assertEquals($expectedAmount, $bankTransfer->getAmount());
+        $this->assertEquals('yesbank', $bankTransfer->getGateway());
+
+        // Assertions on payer bank account for bank transfer
+        $this->assertNotNull($bankTransfer->getPayerBankAccountId());
+
+        $payerBankAccount = $bankTransfer->payerBankAccount;
+
+        $this->assertEquals($request['content']['payer_account'], $payerBankAccount->getAccountNumber());
+        $this->assertEquals(BankCodes::NBIN_TO_IFSC_MAPPING[$request['content']['payer_ifsc']],
+                            $payerBankAccount->getIfscCode());
+        $this->assertEquals(trim($request['content']['payer_name']), $payerBankAccount->getBeneficiaryName());
+
+        // Assertions on bank transfer entity created (Request Params)
+        $this->assertEquals($expectedAmount, $bankTransfer->getAmount());
+        $this->assertEquals($request['content']['payer_ifsc'], $bankTransfer->getPayerIfsc());
+        $this->assertEquals($request['content']['payer_name'], $bankTransfer->getPayerName());
+        $this->assertEquals($request['content']['payer_account'], $bankTransfer->getPayerAccount());
+        $this->assertEquals($request['content']['payee_account'], $bankTransfer->getPayeeAccount());
+        $this->assertEquals($request['content']['payee_ifsc'], $bankTransfer->getPayeeIfsc());
+        $this->assertEquals($request['content']['description'], $bankTransfer->getDescription());
+        $this->assertEquals($utr, $bankTransfer->getUtr());
+
+        // Since banking account tpv account was found, we don't send the mail.
+        Mail::assertNotQueued(FundLoadingFailed::class);
+    }
+
     protected function enableRazorXTreatmentForRblBankTransferProcess()
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
