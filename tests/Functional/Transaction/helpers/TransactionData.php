@@ -481,6 +481,37 @@ return [
         ],
     ],
 
+    'testCreateMultipleCapitalBalanceTransactionPositiveAmount' => [
+        'request' => [
+            'content' => [
+                'repayment_id'          => 'G1SRTbSC6fQOHx',
+                'repayment_breakups'    => [
+                    [
+                        'id'            => 'G1SRTbSC6fQOHo',
+                        'amount'        => -1000,
+                        'currency'      => 'INR',
+                        'merchant_id'   => '10000000000000',
+                        'type'          => 'repayment_breakup',
+                        'balance_id'    => '',
+                    ],
+                    [
+                        'id'            => 'G1SRTbSC6fQOHp',
+                        'amount'        => -9,
+                        'currency'      => 'INR',
+                        'merchant_id'   => '10000000000000',
+                        'type'          => 'repayment_breakup',
+                        'balance_id'    => '',
+                    ],
+                ],
+            ],
+            'url'    => '/capital_balances/multi_transactions',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testTransactionsBulkUpdateBalanceId' => [
         'request' => [
             'url'    => '/admin/transaction/balance_id_update',

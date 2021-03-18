@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Transaction;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Balance\Type;
+use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Balance\Entity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -981,6 +982,94 @@ class TransactionTest extends TestCase
         ], $txn);
     }
 
+    public function testCreateMultipleCapitalBalanceTransactionPositiveAmount()
+    {
+        $principalBal = $this->fixtures->create('balance', [
+            Entity::MERCHANT_ID => '10000000000000',
+            Entity::TYPE        => Type::PRINCIPAL,
+            Entity::BALANCE     => 100000,
+        ]);
+
+        $interestBal = $this->fixtures->create('balance', [
+            Entity::MERCHANT_ID => '10000000000000',
+            Entity::TYPE        => Type::INTEREST,
+            Entity::BALANCE     => 500,
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['repayment_breakups'][0]['balance_id'] = $principalBal['id'];
+        $this->testData[__FUNCTION__]['request']['content']['repayment_breakups'][1]['balance_id'] = $interestBal['id'];
+
+        $collectionsServiceConfig = \Config::get('applications.capital_collections_client');
+        $pwd = $collectionsServiceConfig['secret'];
+
+        $this->ba->appAuth('rzp_'.'test', $pwd);
+
+        $response = $this->startTest();
+
+        // make 2nd request with same input.
+        $response2 = $this->startTest();
+
+        $this->assertArraySelectiveEquals($response, $response2);
+
+        /** @var PublicCollection $entities */
+        $entities = $this->getDbEntities('transaction');
+
+        $items = $entities->toArrayAdmin()['items'];
+
+        $this->assertCount(2, $items);
+
+        $this->assertArraySelectiveEquals([
+            [
+                'entity_id'         => 'G1SRTbSC6fQOHo',
+                'type'              => 'repayment_breakup',
+                'merchant_id'       => '10000000000000',
+                'amount'            => 1000,
+                'fee'               => 0,
+                'mdr'               => 0,
+                'tax'               => 0,
+                'debit'             => 1000,
+                'credit'            => 0,
+                'currency'          => 'INR',
+                'balance'           => 99000,
+                'channel'           => 'axis',
+                'fee_bearer'        => 'na',
+                'fee_model'         => 'na',
+                'credit_type'       => 'default',
+                'on_hold'           => false,
+                'settled'           => false,
+                'settlement_id'     => null,
+                'reconciled_type'   => 'na',
+                'balance_id'        => $principalBal['id'],
+                'balance_updated'   => null,
+                'entity'            => 'transaction',
+            ],
+            [
+                'entity_id'         => 'G1SRTbSC6fQOHp',
+                'type'              => 'repayment_breakup',
+                'merchant_id'       => '10000000000000',
+                'amount'            => 9,
+                'fee'               => 0,
+                'mdr'               => 0,
+                'tax'               => 0,
+                'debit'             => 9,
+                'credit'            => 0,
+                'currency'          => 'INR',
+                'balance'           => 491,
+                'channel'           => 'axis',
+                'fee_bearer'        => 'na',
+                'fee_model'         => 'na',
+                'credit_type'       => 'default',
+                'on_hold'           => false,
+                'settled'           => false,
+                'settlement_id'     => null,
+                'reconciled_type'   => 'na',
+                'balance_id'        => $interestBal['id'],
+                'balance_updated'   => null,
+                'entity'            => 'transaction',
+            ],
+        ], $items);
+    }
+
     protected function createMultipleTransactions()
     {
         $payments = $this->fixtures->times(5)->create(
@@ -1050,7 +1139,7 @@ class TransactionTest extends TestCase
     public function testPaymentCaptureTransactionsCreateInternal()
     {
         $this->markTestSkipped();
-        
+
         $this->ba->appAuth();
 
         $cardId = $this->fixtures->create('card')['id'];

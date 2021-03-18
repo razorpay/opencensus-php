@@ -1882,8 +1882,9 @@ class Route
         // Banking statement routes
         'transaction_statement_fetch'              => ['get',      'transactions/{id}',                              'StatementController@get'                                           ],
         'transaction_statement_fetch_multiple'     => ['get',      'transactions',                                   'StatementController@list'                                          ],
-        'credit_repayment_transaction_create'      => ['post',     'credit_repayments/transaction',                 'TransactionController@createCreditRepaymentTransaction'            ],
-        'capital_transaction_create'               => ['post',     'capital_balances/transaction',                  'TransactionController@createCapitalTransaction'                    ],
+        'credit_repayment_transaction_create'      => ['post',     'credit_repayments/transaction',                  'TransactionController@createCreditRepaymentTransaction'            ],
+        'capital_transaction_create'               => ['post',     'capital_balances/transaction',                   'TransactionController@createCapitalTransaction'                    ],
+        'capital_multiple_transaction_create'      => ['post',     'capital_balances/multi_transactions',            'TransactionController@createMultipleCapitalTransactions'           ],
 
         // TODO:remove after migration,
         // Temporary route to fix settled_at in case of fund account validation
@@ -2743,6 +2744,7 @@ class Route
         'internal_balance_fetch_by_id',
         'credit_repayment_transaction_create',
         'capital_transaction_create',
+        'capital_multiple_transaction_create',
         'merchant_sub_create_batch',
         'merchant_bulk_onboarding_admin',
         'currency_fetch_rates_internal',
@@ -4469,6 +4471,7 @@ class Route
         'internal_balance_fetch_by_merchant_id'    => Permission::CAPITAL_DEVELOPER,
         'credit_repayment_transaction_create'      => Permission::CAPITAL_DEVELOPER,
         'capital_transaction_create'               => Permission::CAPITAL_DEVELOPER,
+        'capital_multiple_transaction_create'      => Permission::CAPITAL_DEVELOPER,
         'internal_balance_fetch_by_id'             => Permission::CAPITAL_DEVELOPER,
         'capital_collections_service'              => Permission::CAPITAL_DEVELOPER,
         'capital_collections_webhook'              => Permission::CAPITAL_DEVELOPER,
@@ -6114,6 +6117,7 @@ class Route
             'internal_balance_fetch_by_merchant_id',
             'credit_repayment_transaction_create',
             'capital_transaction_create',
+            'capital_multiple_transaction_create',
             'internal_balance_fetch_by_id',
         ],
 

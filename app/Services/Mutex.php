@@ -315,6 +315,18 @@ class Mutex
         }
     }
 
+    public function acquireAndReleaseStrict($resource,
+                                            callable $callback,
+                                            $ttl = 60,
+                                            $errorCode = ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS,
+                                            $retryCount = 0,
+                                            $minRetryDelay = 100,
+                                            $maxRetryDelay = 200)
+    {
+        return $this->acquireAndRelease($resource, $callback, $ttl, $errorCode, $retryCount, $minRetryDelay,
+            $maxRetryDelay, true);
+    }
+
     public function setRedisClient($client)
     {
         $this->redis = $client;

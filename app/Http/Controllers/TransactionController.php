@@ -89,6 +89,15 @@ class TransactionController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function createMultipleCapitalTransactions()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createMultipleCapitalRepaymentTransactions($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function postInternalTransaction()
     {
         $input = Request::all();

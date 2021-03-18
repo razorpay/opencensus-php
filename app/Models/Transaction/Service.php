@@ -6,6 +6,7 @@ use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\Tracer;
+use RZP\Services\Mutex;
 use RZP\Base\JitValidator;
 use RZP\Models\FundAccount\Validation\Core;
 use RZP\Models\Payment;
@@ -20,11 +21,19 @@ use Razorpay\Spine\Exception\DbQueryException;
 
 class Service extends Base\Service
 {
+    /** @var Mutex $mutex */
+    protected $mutex;
+
+    /** @var \Illuminate\Contracts\Cache\Store $cache */
+    protected $cache;
+
     public function __construct()
     {
         parent::__construct();
 
         $this->mutex = $this->app['api.mutex'];
+
+        $this->cache = $this->app['cache'];
     }
 
     public function settlementFixer()
@@ -162,6 +171,84 @@ class Service extends Base\Service
             100,
             200,
             true);
+    }
+
+    public function createMultipleCapitalRepaymentTransactions($input)
+    {
+        // this expects 'repayment_id' as a key with array of repayment_breakups.
+        // if 'repayment_id' is present in cache, then it's assumed that transactions for
+        // repayment_breakups have already been saved.
+
+        if (isset($input['repayment_id']) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('repayment_id not present in input', null, $input);
+        }
+
+        $repaymentId = $input['repayment_id'];
+
+        $this->trace->count(\RZP\Models\CapitalTransaction\Metric::CAPITAL_TRANSACTION_CREATE_REQUEST);
+        $this->trace->info(TraceCode::CAPITAL_TRANSACTION_CREATE_REQUEST, $input);
+
+        return $this->mutex->acquireAndReleaseStrict('capital_transaction_' . $repaymentId, function () use ($input, $repaymentId)
+            {
+                if (isset($input['repayment_breakups']) === false)
+                {
+                    throw new Exception\BadRequestValidationFailureException('repayment_breakups not present in input', null, $input);
+                }
+
+                $repaymentBreakups = $input['repayment_breakups'];
+
+                $repaymentCacheKey = 'capital_transaction_repayment_' . $repaymentId;
+
+                if (empty($this->cache->get($repaymentCacheKey)) === false)
+                {
+                    // this repayment was already processed. return success response.
+                    return [];
+                }
+
+                // check if txn with same repayment_breakup.id already exists
+                // TODO: this check is not needed now. remove if everything works.
+                $capitalTxn = new \RZP\Models\CapitalTransaction\Entity($repaymentBreakups[0]);
+                $capitalTxn->merchant()->associate($this->repo->merchant->find($repaymentBreakups[0]['merchant_id']));
+                $capitalTxn->balance()->associate($this->repo->balance->findOrFailById($repaymentBreakups[0]['balance_id']));
+
+                // find transaction if it was created already for this entity.
+                // else create new transaction
+                try
+                {
+                    $this->repo->transaction->fetchByEntityAndAssociateMerchant($capitalTxn);
+
+                    $this->trace->count(\RZP\Models\CapitalTransaction\Metric::CAPITAL_TRANSACTION_ALREADY_CREATED);
+                    $this->trace->info(TraceCode::CAPITAL_TRANSACTION_ALREADY_CREATED, $input);
+
+                    return [];
+                }
+                catch (DbQueryException $e)
+                {
+                    // Do nothing. continue with creation of new transaction
+                }
+
+                return $this->repo->transaction(function () use ($repaymentBreakups, $repaymentCacheKey)
+                {
+                    foreach ($repaymentBreakups as $repaymentBreakup)
+                    {
+                        $capitalTxn = new \RZP\Models\CapitalTransaction\Entity($repaymentBreakup);
+                        $capitalTxn->merchant()->associate($this->repo->merchant->find($repaymentBreakup['merchant_id']));
+                        $capitalTxn->balance()->associate($this->repo->balance->findOrFailById($repaymentBreakup['balance_id']));
+
+                        [$txn, $feesplit] = (new Transaction\Processor\CapitalTransaction($capitalTxn))->createTransaction();
+
+                        $this->repo->saveOrFail($txn);
+
+                        $this->trace->count(\RZP\Models\CapitalTransaction\Metric::CAPITAL_TRANSACTION_CREATED);
+                        $this->trace->info(TraceCode::CAPITAL_TRANSACTION_CREATED, $repaymentBreakup);
+                    }
+
+                    $this->cache->put($repaymentCacheKey, $repaymentCacheKey, 24 * 60); // cache response of a repayment for 24hours
+
+                    return [];
+                });
+            });
     }
 
     public function updateMultipleTransactions(array $input)
