@@ -55,7 +55,14 @@ class Tracing
             'merchant_fetch_internal',
             'banking_accounts_list_internal',
             'payout_links_send_email',
-            'app_merchant_mapping_create'
+            'app_merchant_mapping_create',
+
+            // s2s routes for payments
+            'payment_create_private',
+            'payment_create_private_json',
+            'payment_create_checkout_json',
+            'payment_create_private_old',
+
         ]);
     }
 

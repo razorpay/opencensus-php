@@ -5,7 +5,6 @@ namespace RZP\Services;
 use App;
 use Requests_Hooks;
 use RZP\Exception;
-use Requests_Session;
 use RZP\Models\Order;
 use RZP\Models\Card;
 use RZP\Error\ErrorCode;
@@ -20,6 +19,7 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorClass;
 use RZP\Gateway\Base\Action;
 use Illuminate\Support\Arr;
+use RZP\Http\Request\Requests;
 
 class CardPaymentService
 {
@@ -53,7 +53,7 @@ class CardPaymentService
 
     // entities path
     const ENTITIES_PATH = 'entities/';
-    const ENTITIES_PATH_V2 = '/v1/entitiesV2/';
+    const ENTITIES_PATH_V2 = 'v1/entitiesV2/';
 
     protected $baseUrl;
     protected $config;
@@ -74,32 +74,12 @@ class CardPaymentService
         $this->trace = $app['trace'];
 
         $this->config = $app['config']->get('applications.card_payment_service');
-
-        //$this->mozartConfig = $app['config']->get('gateway.mozart');
-
-        if ($this->request === null)
-        {
-            $this->request = $this->initRequestObject();
-        }
-    }
-
-    protected function initRequestObject()
-    {
-        $baseUrl = $this->getBaseUrl();
-
-        $defaultHeaders = $this->getDefaultHeaders();
-
-        $defaultOptions = $this->getDefaultOptions();
-
-        $request = new Requests_Session($baseUrl, $defaultHeaders, [], $defaultOptions);
-
-        return $request;
     }
 
     public function fetchAuthorizationData(array $input)
     {
         $request = [
-            'url'     => $this->getBaseUrl() . 'entities/authorization',
+            'url'     => 'entities/authorization',
             'method'  => 'POST',
             'content' => $input,
             'headers' => [
@@ -120,7 +100,7 @@ class CardPaymentService
         foreach (array_chunk($input, self::CPS_BULK_LIMIT) as $chunk)
         {
             $request = [
-                'url'     => $this->getBaseUrl() . 'entities/all',
+                'url'     => 'entities/all',
                 'method'  => 'POST',
                 'content' => [
                     'authorization' => [
@@ -190,6 +170,9 @@ class CardPaymentService
             self::CONTENT_TYPE_HEADER      => self::APPLICATION_JSON,
             self::ACCEPT_HEADER            => self::APPLICATION_JSON,
             self::X_RAZORPAY_APP_HEADER    => 'api',
+            self::X_RAZORPAY_TASKID_HEADER => $this->app['request']->getTaskId(),
+            self::X_REQUEST_ID             => $this->app['request']->getId(),
+            self::X_RAZORPAY_TRACKID       => $this->app['req.context']->getTrackId(),
         ];
 
 
@@ -362,14 +345,10 @@ class CardPaymentService
     public function sendRequest(string $method, string $url, array $data = [])
     {
         $request = [
-            'url'     => $url,
+            'url'     => $this->getBaseUrl() . $url,
             'method'  => $method,
             'content' => $data,
-            'headers' => [
-                self::X_RAZORPAY_TASKID_HEADER => $this->app['request']->getTaskId(),
-                self::X_REQUEST_ID             => $this->app['request']->getId(),
-                self::X_RAZORPAY_TRACKID       => $this->app['req.context']->getTrackId(),
-            ],
+            'headers' => $this->getDefaultHeaders()
         ];
 
         if (isset($this->app['rzp.mode']) and $this->app['rzp.mode'] === 'test')
@@ -563,11 +542,12 @@ class CardPaymentService
                     $content = json_encode($request['content']);
                 }
 
-                $response = $this->request->request(
+                $response = Requests::request(
                     $request['url'],
                     $request['headers'],
                     $content,
-                    $request['method']);
+                    $request['method'],
+                    $this->getDefaultOptions());
 
                 break;
             }

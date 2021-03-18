@@ -20,6 +20,7 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Currency;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
+use RZP\Trace\Tracer;
 use RZP\Models\Offer;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
@@ -445,6 +446,21 @@ class Service extends Base\Service
     }
 
     public function redirectToAuthorize($id)
+    {
+        $attrs = [
+            'payment_id'       =>  $id,
+            'task_id'          =>  $this->app['request']->getTaskId()
+        ];
+
+        $response = Tracer::inSpan(['name' => 'payment.redirect.authorize', 'attributes' => $attrs],
+            function() use ($id){
+                return $this->coreRedirectToAuthorize($id);
+            });
+
+        return $response;
+    }
+
+    public function coreRedirectToAuthorize($id)
     {
         $traceData = ['track_id' => $id];
 

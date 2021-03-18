@@ -109,7 +109,7 @@ class PaymentCreateController extends Controller
 
         $this->logPaymentRequestEvent($input);
 
-        $data = $this->service(E::PAYMENT)->process($input);
+        $data = $this->createPaymentWihoutCoproto($input);
 
         $merchant =  $this->app['basicauth']->getMerchant();
 
@@ -135,7 +135,7 @@ class PaymentCreateController extends Controller
 
         (new Payment\Metric())->pushCheckoutSubmitRequestMetrics($input, $startTime);
 
-        $data = $this->service(E::PAYMENT)->process($input);
+        $data = $this->createPaymentWihoutCoproto($input);
 
         $merchant =  $this->app['basicauth']->getMerchant();
 
@@ -225,6 +225,18 @@ class PaymentCreateController extends Controller
         });
     }
 
+    protected function corecreatePaymentWihoutCoproto($input)
+    {
+        return $this->service(E::PAYMENT)->process($input);
+    }
+
+    protected function createPaymentWihoutCoproto($input)
+    {
+        return Tracer::inSpan(['name' => 'payment.create'], function() use ($input) {
+           return $this->corecreatePaymentWihoutCoproto($input);
+        });
+    }
+
     /**
      * Creates a new payment on a JSONP Request
      *
@@ -241,7 +253,7 @@ class PaymentCreateController extends Controller
 
         $this->logPaymentRequestEvent($input);
 
-        $data = $this->service(E::PAYMENT)->process($input);
+        $data = $this->createPaymentWihoutCoproto($input);
 
         $merchant =  $this->app['basicauth']->getMerchant();
 

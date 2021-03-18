@@ -2,7 +2,7 @@
 
 namespace RZP\Services;
 
-use Requests;
+
 use Requests_Hooks;
 use Aws\Kms\KmsClient;
 
@@ -12,6 +12,7 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Card\Validator;
+use RZP\Http\Request\Requests;
 use RZP\Models\Card;
 
 class CardVault
