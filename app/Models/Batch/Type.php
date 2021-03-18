@@ -375,6 +375,7 @@ class Type
         self::REFUND,
         self::LINKED_ACCOUNT_CREATE,
         self::RETRY_REFUNDS_TO_BA,
+        self::RECURRING_CHARGE_AXIS,
     ];
 
     /**

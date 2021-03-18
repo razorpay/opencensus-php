@@ -46,4 +46,9 @@ class RecurringChargeAxis extends Base
     {
         return $this->defaultEntries;
     }
+
+    protected function shouldSkipValidateInputFile(): bool
+    {
+        return true;
+    }
 }
