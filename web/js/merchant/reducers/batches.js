@@ -375,7 +375,7 @@ export const createPaymentsBatch = createBatch('direct_debit');
 export const fetchPaymentBatches = fetchBatches('direct_debit');
 
 /* batches for emandate */
-export const fetchHostMandateBatches = fetchBatches(['recurring_charge', 'auth_link']);
+export const fetchHostMandateBatches = fetchBatches(['recurring_charge', 'auth_link', 'recurring_charge_axis']);
 export const fetchHostMandateAuthLinkBatches = fetchBatches('auth_link');
 export const createRegistrationLinkBatch = createBatch('auth_link');
 export const validateRegistrationLinkBatch = validateBatch('auth_link');
@@ -383,6 +383,8 @@ export const validateRefundBatch = validateBatch('refund');
 export const createRefundBatch = createBatch('refund', 'REFUND');
 export const createRecurringChargeBatch = createBatch('recurring_charge');
 export const validateRecurringChargeBatch = validateBatch('recurring_charge');
+export const createRecurringChargeAxisBatch = createBatch('recurring_charge_axis');
+export const validateRecurringChargeAxisBatch = validateBatch('recurring_charge_axis');
 export const fetchHostedMandateBatchDetails = fetchBatchDetails();
 
 /* reducers */

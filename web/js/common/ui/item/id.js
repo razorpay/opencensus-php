@@ -28,6 +28,7 @@ const batchBaseUrls = {
   payment_link_v2: 'paymentlinks',
   auth_link: 'subscriptions',
   recurring_charge: 'subscriptions',
+  recurring_charge_axis: 'subscriptions',
   linked_account_reversal: 'reversals',
 };
 

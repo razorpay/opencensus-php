@@ -7,6 +7,8 @@ import setGaTrack from 'merchant/containers/BatchNew/ga';
 import {
   createRecurringChargeBatch,
   validateRecurringChargeBatch,
+  validateRecurringChargeAxisBatch,
+  createRecurringChargeAxisBatch,
   createRegistrationLinkBatch,
   validateRegistrationLinkBatch,
 } from 'merchant/reducers/batches';
@@ -19,6 +21,8 @@ const gaEvents = setGaTrack('Dashboard - Subscriptions - BU');
 @connect((state) => ({ user: state.session.user }), {
   createRecurringChargeBatch,
   validateRecurringChargeBatch,
+  validateRecurringChargeAxisBatch,
+  createRecurringChargeAxisBatch,
   createRegistrationLinkBatch,
   validateRegistrationLinkBatch,
   closeModal,
@@ -35,6 +39,20 @@ export default class CreateHostedMandateBatch extends Component {
       batchType="recurring_charge"
       docUrl="https://razorpay.com/docs/recurring-payments/"
       sampleUrl="https://cdn.razorpay.com/dashboard/sample_recurring_payments.csv"
+      processingOptions={true}
+    />
+  );
+
+  renderRecurringChargeAxisModal = () => (
+    <BatchUpload
+      acceptFileInfo={['csv', 'xlsx']}
+      createBatch={this.props.createRecurringChargeAxisBatch}
+      validateBatch={this.props.validateRecurringChargeAxisBatch}
+      gaEvents={gaEvents}
+      maxRows="5,00,000"
+      maxFileSize={57671680} // 55 MB
+      batchType="recurring_charge_axis"
+      docUrl="https://razorpay.com/docs/recurring-payments/"
       processingOptions={true}
     />
   );
@@ -79,7 +97,11 @@ export default class CreateHostedMandateBatch extends Component {
         {!user.isRegistrationLinkSupervisorRole && (
           <div
             class="panel panel-default recurring-charge"
-            onClick={openUploadModal(this.renderRecurringChargeModal)}
+            onClick={openUploadModal(
+              user.isCAWRecurringChargeAxisEnabled ?
+                this.renderRecurringChargeAxisModal :
+                this.renderRecurringChargeModal
+            )}
           >
             <div class="panel-body">
               <div class="logo" />

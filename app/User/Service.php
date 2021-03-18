@@ -1478,7 +1478,8 @@ class Service extends Base\Service
             'es_ondeman_restricted_cohorts',
             'nitro_hyderabad_v1',
             'pl_swith_v2',
-            'dashboard_show_nps_survey'
+            'dashboard_show_nps_survey',
+            'caw_recurring_charge_axis'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);

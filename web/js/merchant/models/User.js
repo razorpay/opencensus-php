@@ -626,6 +626,10 @@ export default class User {
     return this.isSubscriptionOffersEnabled && this.getExpStatus('subscription_offers_reports');
   }
 
+  get isCAWRecurringChargeAxisEnabled() {
+    return this.isFeatureEnabled('caw_recurring_charge_axis') || this.getExpStatus('caw_recurring_charge_axis');
+  }
+
   // 100% rollout done. Exp to be removed shortly
   get isPaymentButtonEnabledByRazorX() {
     return true;
