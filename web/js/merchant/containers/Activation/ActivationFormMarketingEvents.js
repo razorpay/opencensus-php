@@ -1,8 +1,7 @@
-import {
-  trackhubsContactUpdate,
-  fireAnalyticsEvents,
-} from 'common/utils/googleAnalytics';
+import { trackhubsContactUpdate, fireAnalyticsEvents } from 'common/utils/googleAnalytics';
 import BingDataObj from 'common/utils/bingDataObj';
+import { getCookie } from 'common/utils/cookies';
+
 import { addPrefixToObjectKeys, isPresent } from 'common/utils/rzp-utils';
 
 import { trackL1FormSuccess, trackL1FormError, trackSubmit } from './ga_new';
@@ -19,7 +18,7 @@ export function fireL1FormSuccessEvents(user) {
       completed: true,
     },
     {},
-    'l1_'
+    'l1_',
   );
   fireAnalyticsEvents({
     bingData: data,
@@ -59,8 +58,10 @@ export function fireFormStartEvents(isL1Completed = false) {
     {
       started: true,
     },
-    {},
-    prefix
+    {
+      hs_google_click_id: getCookie('gclid'),
+    },
+    prefix,
   );
 }
 
@@ -85,7 +86,7 @@ export function fireKYCSubmitEvents(data) {
     },
     {
       account_status: data.activation_status,
-    }
+    },
   );
 
   const activationFlow = data.activation_flow;
@@ -110,11 +111,7 @@ export function fireKYCSubmitEvents(data) {
   });
 }
 
-export function updateHubSpotContactsProperties(
-  data,
-  extra = {},
-  prefix = 'l2_'
-) {
+export function updateHubSpotContactsProperties(data, extra = {}, prefix = 'l2_') {
   const hbsData = addPrefixToObjectKeys(prefix, data);
   const trackData = {
     ...hbsData,
@@ -126,7 +123,7 @@ export function updateHubSpotContactsProperties(
 
   if (data.business_type) {
     trackData[businessTypeKey] = (
-      BUSINESS_TYPE_OPTIONS.find(e => e.name == data.business_type) || {}
+      BUSINESS_TYPE_OPTIONS.find((e) => e.name == data.business_type) || {}
     ).label;
   }
 
