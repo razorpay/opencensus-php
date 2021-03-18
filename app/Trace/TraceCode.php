@@ -2581,6 +2581,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SUBMIT_SUPPORT_CALL_REQUEST                           = 'SUBMIT_SUPPORT_CALL_REQUEST';
     const MYOPERATOR_CALL_OUTBOUND_API_REQ                      = 'MYOPERATOR_CALL_OUTBOUND_API_REQ';
     const MYOPERATOR_CALL_OUTBOUND_API_RES                      = 'MYOPERATOR_CALL_OUTBOUND_API_RES';
+    const MYOPERATOR_WEBHOOK                                    = 'MYOPERATOR_WEBHOOK';
 
     const MYOPERATOR_CALL_CAMPAIGN_API_REQ                      = 'MYOPERATOR_CALL_CAMPAIGN_API_REQ';
     const MYOPERATOR_CALL_CAMPAIGN_API_RES                      = 'MYOPERATOR_CALL_CAMPAIGN_API_RES';

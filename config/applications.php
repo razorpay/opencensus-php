@@ -659,6 +659,7 @@ return [
         'x_api_token'       => env('X_MYOPERATOR_API_TOKEN'),
         'secret_token'      => env('MYOPERATOR_SECRET_TOKEN'),
         'x_api_key'         => env('MYOPERATOR_X_API_KEY'),
+        'secret'            => env('MYOPERATOR_INTERNAL_APP_SECRET'),
     ],
 
     'vendor_payments' => [

@@ -2313,6 +2313,7 @@ class Route
         'templating_update_template_config'       => ['patch',   'templating/template_configs/{id}',                        'TemplatingServiceController@updateTemplateConfig'             ],
         'templating_get_template_config'          => ['get',     'templating/template_configs/{id}',                        'TemplatingServiceController@getTemplateConfig'                ],
         'templating_list_template_config'         => ['get',     'templating/template_configs',                             'TemplatingServiceController@listTemplateConfig'               ],
+        'care_service_myoperator_webhook_proxy'   => ['post',    'care_service/myoperator_webhook/{path?}',                 'CareProxyController@postMyOperatorWebhookProxyRequest'        ],
     ];
 
     public static $public = [
@@ -3096,6 +3097,7 @@ class Route
         // care
         'myoperator_v1_proxy_get',
         'myoperator_v2_proxy_post',
+        'care_service_myoperator_webhook_proxy',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -6360,6 +6362,11 @@ class Route
             'freshdesk_update_ticket_internal',
             'fd_fetch_ticket',
         ],
+
+        'myoperator' => [
+            'care_service_myoperator_webhook_proxy',
+        ],
+
     ];
 
     //

@@ -17,6 +17,7 @@ class CareServiceTest extends TestCase
     const EXPECTED_CARE_SERVICE_REQUEST       = 'expected_care_service_request';
     const ACTUAL_CARE_SERVICE_RESPONSE_BODY   = 'actual_care_service_response_body';
     const ACTUAL_CARE_SERVICE_RESPONSE_STATUS = 'actual_care_service_response_status';
+    const API_REQUEST_BODY                    = 'API_REQUEST_BODY';
 
     use RequestResponseFlowTrait;
 
@@ -59,10 +60,10 @@ class CareServiceTest extends TestCase
             {
                 return strtolower($actualMethod) === 'post';
             }),
-                Mockery::on(function ($actualContent) use ($expectedContent)
-                {
+            Mockery::on(function ($actualContent) use ($expectedContent)
+            {
                     return $expectedContent === $actualContent;
-                }))
+            }))
             ->andReturnUsing(function () use ($respondWithBody, $respondWithStatus)
             {
                 $response = new \Requests_Response;
@@ -156,6 +157,34 @@ class CareServiceTest extends TestCase
                 ],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
             ],
+            [
+                self::AUTH                                => 'myoperator',
+                self::API_ROUTE                           => '/care_service/myoperator_webhook/twirp/rzp.care.callback.v1.CallbackService/InCallWebhook',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.callback.v1.CallbackService/InCallWebhook',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                        'myoperator'    =>  "{ \"users\": [ \"918586848544\" ], \"client_ref_id\": \"fdfdfdf\"}",
+                    ],
+                self::API_REQUEST_BODY                     => [
+                    'myoperator'    =>  "{ \"users\": [ \"918586848544\" ], \"client_ref_id\": \"fdfdfdf\"}",
+                ],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                ],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
+                self::AUTH                                => 'myoperator',
+                self::API_ROUTE                           => '/care_service/myoperator_webhook/twirp/rzp.care.callback.v1.CallbackService/AfterCallWebhook',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.callback.v1.CallbackService/AfterCallWebhook',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                    'myoperator'    =>  "{ \"_cri\": \"fdfdfdfd\", \"_ld\": [{\"_rst\": \"2020-07-17 07:12:28\", \"_su\": \"1\", \"_ac\": \"received\"}] }"
+                ],
+                self::API_REQUEST_BODY                     => [
+                    'myoperator'    =>  "{ \"_cri\": \"fdfdfdfd\", \"_ld\": [{\"_rst\": \"2020-07-17 07:12:28\", \"_su\": \"1\", \"_ac\": \"received\"}] }"
+                ],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                ],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
         ];
 
         foreach ($testCases as $testCase)
@@ -167,6 +196,10 @@ class CareServiceTest extends TestCase
                 $testCase[self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS]
             );
 
+            if(empty($testCase[self::API_REQUEST_BODY]) === false)
+            {
+                $this->testData[__FUNCTION__]['request']['content'] = $testCase[self::API_REQUEST_BODY];
+            }
             $this->testData[__FUNCTION__]['request']['url'] = $testCase[self::API_ROUTE];
 
             $this->testData[__FUNCTION__]['response']['content']     = $testCase[self::ACTUAL_CARE_SERVICE_RESPONSE_BODY];
@@ -179,6 +212,9 @@ class CareServiceTest extends TestCase
                     break;
                 case 'cron':
                     $this->ba->cronAuth();
+                    break;
+                case 'myoperator':
+                    $this->ba->myOperatorAuth();
                     break;
             }
 

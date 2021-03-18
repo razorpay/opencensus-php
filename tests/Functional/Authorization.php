@@ -192,7 +192,6 @@ class Authorization
 
         $this->proxy = true;
     }
-
     public function addAppAuthHeaders($hostName)
     {
         if ($hostName === null)
@@ -423,6 +422,15 @@ class Authorization
         $pwd = $cronConfig['secret'];
 
         $this->appAuth('rzp_' . $mode, $pwd, $hostname);
+    }
+
+    public function myOperatorAuth($mode = 'test')
+    {
+        $myOperatorConfig = \Config::get('applications.myoperator');
+
+        $pwd = $myOperatorConfig['secret'];
+
+        $this->appAuth('rzp_' . $mode, $pwd);
     }
 
     public function expressAuth($mode = 'test', $user = null)

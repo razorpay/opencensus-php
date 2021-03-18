@@ -41,6 +41,15 @@ class CareServiceClient
         return $this->sendRequestAndProcessResponse($path, Requests::POST, $input);
     }
 
+    public function myOperatorWebhookProxyRequest($path, $input)
+    {
+        $this->app['trace']->info(TraceCode::MYOPERATOR_WEBHOOK, [
+            'path'       => $path,
+        ]);
+
+        return $this->sendRequestAndProcessResponse($path, Requests::POST, $input);
+    }
+
     protected function sendRequestAndProcessResponse($path, $method, $content)
     {
         $this->app['trace']->info(TraceCode::CARE_SERVICE_REQUEST, [

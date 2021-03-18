@@ -20,6 +20,10 @@ class CareProxyController extends Controller
     const INIT_SLOTS             = 'twirp/rzp.care.callback.v1.CallbackService/InitSlots';
     const PUSH_CALLBACK_TO_QUEUE = 'twirp/rzp.care.callback.v1.CallbackService/PushCallbackToQueue';
 
+    //MyOperator
+    const IN_CALL       = 'twirp/rzp.care.callback.v1.CallbackService/InCallWebhook';
+    const AFTER_CALL    = 'twirp/rzp.care.callback.v1.CallbackService/AfterCallWebhook';
+
     const MERCHANT_ROUTES = [
         self::CHECK_ELIGIBILITY,
         self::GET_SLOTS,
@@ -30,6 +34,11 @@ class CareProxyController extends Controller
     const CRON_ROUTES = [
         self::INIT_SLOTS,
         self::PUSH_CALLBACK_TO_QUEUE,
+    ];
+
+    const MYOPERATOR_ROUTES = [
+        self::IN_CALL,
+        self::AFTER_CALL
     ];
 
     public function postDashboardProxyRequest($path)
@@ -50,6 +59,17 @@ class CareProxyController extends Controller
         $input = Request::all();
 
         $response = $this->app['care_service']->cronProxyRequest($path, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postMyOperatorWebhookProxyRequest($path)
+    {
+        $this->validatePathForRequest(self::MYOPERATOR_ROUTES, $path);
+
+        $input = Request::all();
+
+        $response = $this->app['care_service']->myOperatorWebhookProxyRequest($path, $input);
 
         return ApiResponse::json($response);
     }
