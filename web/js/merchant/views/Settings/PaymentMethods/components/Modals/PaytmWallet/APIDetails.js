@@ -24,6 +24,12 @@ export const ProductionAPIDetails = ({ values, setValues, setDisabled }) => {
     }
   }
 
+  function validateWebsite(val) {
+    if (val.length < 1) {
+      return 'Website is required';
+    }
+  }
+
   useEffect(() => {
     const { merchant_id, merchant_key, website_name, industry_type } = values;
 
@@ -33,6 +39,7 @@ export const ProductionAPIDetails = ({ values, setValues, setDisabled }) => {
       merchant_id.length < 20 ||
       merchant_key.length < 16 ||
       website.includes('webstaging') ||
+      !website_name.trim().length ||
       industry_type.length < 1
     ) {
       return setDisabled(true);
@@ -89,6 +96,7 @@ export const ProductionAPIDetails = ({ values, setValues, setDisabled }) => {
                   label="Paytm Website Name"
                   placeholder="DEFAULT"
                   value={values.website_name}
+                  validator={validateWebsite}
                   onChange={onChange}
                 />
               </div>
