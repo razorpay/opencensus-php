@@ -2479,7 +2479,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Subscription service
     const SUBSCRIPTION_SERVICE_REQUEST                          = 'SUBSCRIPTION_SERVICE_REQUEST';
-    const SUBSCRIPTION_SERVICE_RESPONSE                         = 'SUBSCRIPTION_SERVICE_RESPONSE';
     const PAYMENT_MDR_UPDATE_ERROR                              = 'PAYMENT_MDR_UPDATE_ERROR';
     const PAYMENT_MDR_UPDATE_JOB_RECEIVED                       = 'PAYMENT_MDR_UPDATE_JOB_RECEIVED';
     const PAYMENT_MDR_LAST_UPDATED_DATA                         = 'PAYMENT_MDR_LAST_UPDATED_DATA';

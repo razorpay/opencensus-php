@@ -373,14 +373,10 @@ class External extends Base
         }
         elseif ($code >= 400 and $code < 500)
         {
-            $this->trace->info(TraceCode::SUBSCRIPTION_SERVICE_RESPONSE, $response);
-            
             $this->handleBadRequestErrors($responseBody['error']);
         }
         else
         {
-            $this->trace->info(TraceCode::SUBSCRIPTION_SERVICE_RESPONSE, $response);
-
             $this->handleInternalServerErrors($responseBody['error']);
         }
     }
