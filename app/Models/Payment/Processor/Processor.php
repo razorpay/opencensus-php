@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use RZP\Error\Error;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card;
 use RZP\Models\Risk;
 use RZP\Models\Admin;
@@ -184,6 +185,13 @@ class Processor
     const FINGERPRINT_MIGRATION_CACHE_KEY = 'fingerprint_migration';
 
     /**
+     * Razorx flag to indicate if a payment should go via PG Router and CPS or just via API service, during Payment creation
+     */
+    const CARD_PAYMENTS_VIA_PGROUTER = 'card_payments_via_pg_router';
+
+    const PGROUTER_FLOW_LIVE = false;
+
+    /**
      * @var Merchant\Entity
      */
     protected $merchant;
@@ -328,41 +336,103 @@ class Processor
                 'write_key' => '',
             ];
 
-            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_INPUT_VALIDATIONS_INITIATED, null, null, $meta);
-
-            $payment = $this->buildPaymentEntity($input);
-
-            $this->preProcessForSubscriptionsIfApplicable($input, $payment);
-
-            $ret = $this->preProcessPaymentInputs($input, $payment);
-
-            if ($ret !== null)
+            $pgrouter_pmt_variant = 'off';
+            // TODO: Exclude below params
+            // 1. International merchants / cards / currency
+            // 2. Customer fee bearer
+            // 3. Payment with offers
+            // 4. Payment discount / rewards
+            // 5. Async balance update
+            // 6. Direct settlement
+            // 7. Exclude payments from any Payment apps such as subscription, PL, PP, Routes, Invoices, etc
+            // 8. Gpay / cred have to be excluded
+            // 9. Payment has orderId in it already
+            // 10. Only checkout based payments
+            //
+            // TODO: Check with Antony and Vikas for further eligibility criteria. They have it documented
+            if (self::PGROUTER_FLOW_LIVE && empty($input[Payment\Entity::SUBSCRIPTION_ID]) === true &&
+                $input[Payment\Entity::METHOD] === Payment\Method::CARD) // TODO: Cards team to add eligibility criteria here for selection of card payments in Phase 1.
             {
-                $this->logPaymentRespawnEvent($input, $ret);
+                // TODO: Setup Razorx Flag in stage and prod environments
+                $pgrouter_pmt_variant = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), self::CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
 
-                return $ret;
+                $this->trace->info(
+                    TraceCode::PGROUTER_DEBUG,
+                    [
+                        'PAYMENT_FLOW' => $pgrouter_pmt_variant,
+                    ]);
             }
 
-            $this->repo->transaction(function() use ($input, $payment)
-            {
-                $this->createPaymentEntity($input, $payment);
-            });
+            if ($pgrouter_pmt_variant === 'on') {
+                //TODO: In cards flow, can this happen? If so, what all attributes have to picked from payment and added to order?
+                if (empty($input[Payment\Entity::ORDER_ID]) === true)
+                {
+                    $orderPayLoad = [
+                        "amount"           =>  $input['amount'],
+                        "currency"        => $input['currency'],
+                        "payment_capture" => true,
+                    ];
+                    $this->order = (new Order\Core)->create($orderPayLoad, $this->merchant);
 
-            $payment = $this->payment;
+                    $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($this->order->getId());
+                    $input[Payment\Entity::ORDER] = $this->order;
+                    $input[Payment\Entity::MERCHANT_ID] = $this->merchant->getId();
 
-            $this->preProcessPaymentMeta($input, $payment);
+                    // Dispatch into KAFKA queue to send to PG Router for dual write happens automatically via Orders Repo.
+                    // No need for any special logic here.
+                } else {
+                    $this->order = $this->fetchOrderFromInput($input);
+                }
 
-            // This flow is being used for only hosted (Shopify).
-            $this->checkSignature($input, $payment);
+                $output = $this->app['pg_router']->validateAndCreatePayment($input);
 
-            $paymentData = $this->authorize($payment, $input, $gatewayInput);
+                if ($output['code'] >= 500) // Implement retry, at least twice
+                {
+                    throw new Exception\ServerErrorException('Error with PG Router service',
+                        ErrorCode::SERVER_ERROR_PGROUTER_SERVICE_FAILURE);
+                }
+                if ($output['code'] == 400)
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        $output['body']['error']['internal_error_code']);
+                }
+                $paymentData = $output['body']['coproto']['response'];
+            } else {
+                $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_INPUT_VALIDATIONS_INITIATED, null, null, $meta);
 
-            // Creates an origin entity for the payment based on the auth used to initiate the payment.
-            (new EntityOrigin\Core)->createEntityOrigin($payment);
+                $payment = $this->buildPaymentEntity($input);
 
-            $this->logRequestTime($payment, $startTime);
+                $this->preProcessForSubscriptionsIfApplicable($input, $payment);
 
-            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment);
+                $ret = $this->preProcessPaymentInputs($input, $payment);
+
+                if ($ret !== null)
+                {
+                    $this->logPaymentRespawnEvent($input, $ret);
+
+                    return $ret;
+                }
+
+                $this->repo->transaction(function() use ($input, $payment)
+                {
+                    $this->createPaymentEntity($input, $payment);
+                });
+
+                $payment = $this->payment;
+
+                $this->preProcessPaymentMeta($input, $payment);
+
+                // This flow is being used for only hosted (Shopify).
+                $this->checkSignature($input, $payment);
+
+                $paymentData = $this->authorize($payment, $input, $gatewayInput);
+                // Creates an origin entity for the payment based on the auth used to initiate the payment.
+                (new EntityOrigin\Core)->createEntityOrigin($payment);
+
+                $this->logRequestTime($payment, $startTime);
+
+                $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment);
+            }
 
             return $paymentData;
         }

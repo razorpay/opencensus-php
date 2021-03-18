@@ -3,6 +3,7 @@
 namespace RZP\Services;
 
 use Requests;
+use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Order\Metric;
 use RZP\Trace\TraceCode;
@@ -35,6 +36,20 @@ class PGRouter
     const PGRouterUpdateSyncedOrderUrl = 'v1/update/synced/order';
 
     const PGRouterBulkOrderSyncUrl = 'v1/bulk/sync/orders';
+
+    // Payment related PG Router APIs below
+
+    // Deliberately using this URL. When PG Router becomes face of orders & payments, integrated merchants will hit this URL
+    // and PG Router will take this as first call to create paymentId and perform validations. So, will be easy to switch in future.
+    const PGRouterValidateAndCreatePayment = 'v1/payments/create/ajax';
+
+    const PGRouterFetchPayment = 'v1/payments/';
+
+    const PGRouterInitiatePayment = 'v1/payments/initiate';
+
+    const PGRouterPaymentCapture = '/v1/payments/%s/capture';
+
+    const PGRouterPaymentVerify = '/v1/payments/%s/verify';
 
     // Headers
     const ACCEPT            = 'Accept';
@@ -72,6 +87,103 @@ class PGRouter
         $this->auth = $app['basicauth'];
 
         $this->setHeaders();
+    }
+
+    /**
+     * @param array $input
+     * @param bool  $throwExceptionOnFailure
+     *
+     * @return array
+     */
+    public function validateAndCreatePayment(array $input, bool $throwExceptionOnFailure = false): array
+    {
+        return $this->sendRequest(self::PGRouterValidateAndCreatePayment, Requests::POST, $input, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param array $input
+     * @param bool  $throwExceptionOnFailure
+     *
+     * @return array
+     */
+    public function fetchPayment(string $id): array
+    {
+        $url = self::PGRouterFetchPayment . $id;
+        $output = $this->sendRequest($url, Requests::GET);
+
+        if ($output['code'] >= 500) // Implement retry, at least twice
+        {
+            throw new Exception\ServerErrorException('Error with PG Router service',
+                ErrorCode::SERVER_ERROR_PGROUTER_SERVICE_FAILURE);
+        }
+        if ($output['code'] == 400)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                $output['body']['error']['internal_error_code']);
+        }
+
+        return $output['body']['data'];
+    }
+
+    /**
+     * @param array $input
+     * @param bool  $throwExceptionOnFailure
+     *
+     * @return array
+     */
+    public function paymentCapture(string $id, array $captureParams, bool $throwExceptionOnFailure = false): array
+    {
+        $url = sprintf(self::PGRouterPaymentCapture, $id);
+        $output = $this->sendRequest($url, Requests::POST, $captureParams, $throwExceptionOnFailure);
+
+        if ($output['code'] >= 500) // Implement retry, at least twice
+        {
+            throw new Exception\ServerErrorException('Error with PG Router service',
+                ErrorCode::SERVER_ERROR_PGROUTER_SERVICE_FAILURE);
+        }
+        if ($output['code'] == 400)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                $output['body']['error']['internal_error_code']);
+        }
+
+        return $output['body']['data'];
+    }
+
+    /**
+     * @param array $input
+     * @param bool  $throwExceptionOnFailure
+     *
+     * @return array
+     */
+    public function paymentVerify(string $id): array
+    {
+        $url = sprintf(self::PGRouterPaymentVerify, $id);
+        $output = $this->sendRequest($url, Requests::GET);
+
+        if ($output['code'] >= 500) // Implement retry, at least twice
+        {
+            throw new Exception\ServerErrorException('Error with PG Router service',
+                ErrorCode::SERVER_ERROR_PGROUTER_SERVICE_FAILURE);
+        }
+        if ($output['code'] == 400)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                $output['body']['error']['internal_error_code']);
+        }
+
+        return $output['body']['data'];
+    }
+
+    /**
+     * @param array $input
+     * @param bool  $throwExceptionOnFailure
+     *
+     * @return array
+     */
+    public function initiatePayment(array $input, bool $throwExceptionOnFailure = false): array
+    {
+        return $this->sendRequest(self::PGRouterInitiatePayment, Requests::POST, $input, $throwExceptionOnFailure);
     }
 
     /**
@@ -189,7 +301,11 @@ class PGRouter
 
         unset($traceRequest['options']['auth']);
 
-        unset($traceRequest['content']['order_sync_request']['account_number']);
+        if (isset($traceRequest['content']['order_sync_request']) &&
+            isset($traceRequest['content']['order_sync_request']['account_number']))
+        {
+            unset($traceRequest['content']['order_sync_request']['account_number']);
+        }
 
         $this->trace->info(TraceCode::PG_ROUTER_REQUEST, $traceRequest);
     }
@@ -248,10 +364,13 @@ class PGRouter
             ],
         ];
 
+        $headers = $this->headers;
+        $headers['PHP_AUTH_USER'] = $this->auth->getPublicKey();
+
         return [
             'url'       => $url,
             'method'    => $method,
-            'headers'   => $this->headers,
+            'headers'   => $headers,
             'options'   => $options,
             'content'   => $data
         ];

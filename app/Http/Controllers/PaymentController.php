@@ -583,6 +583,14 @@ class PaymentController extends Controller
         return ApiResponse::json($pm);
     }
 
+    public function sendNotification()
+    {
+        $input = Request::all();
+
+        $this->service()->sendNotification($input);
+
+        return ApiResponse::json([]);
+    }
     public function postRefundAuthorizedInternal($id)
     {
         $input = Request::all();

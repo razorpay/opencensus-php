@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment;
 
+use FuzzyWuzzy\Process;
 use Mail;
 use Crypt;
 use Config;
@@ -27,6 +28,7 @@ use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Card;
 use RZP\Models\Card\IIN;
+use RZP\Models\Payment\Processor\Notify;
 use RZP\Models\Transfer;
 use RZP\Models\UpiMandate;
 use RZP\Models\Transaction;
@@ -309,11 +311,45 @@ class Service extends Base\Service
 
     public function verify($id)
     {
-        $payment = $this->core->retrieveById($id);
+        try
+        {
+            $payment = $this->core->retrieveById($id);
 
-        $merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
+            $merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
 
-        $data = $this->getNewProcessor($merchant)->verify($payment);
+            $data = $this->getNewProcessor($merchant)->verify($payment);
+        }
+        catch (Exception\DbQueryException $e)
+        {
+            if (Payment\Processor\Processor::PGROUTER_FLOW_LIVE == true) {
+                $this->trace->traceException(
+                    $e,
+                    Trace::INFO,
+                    TraceCode::PGROUTER_DEBUG,
+                    [
+                        'payment_id' => $id,
+                        'PG_ROUTER_FLOW' => true,
+                        'CLASS_OF_EXCEPTION' => get_class($e),
+                    ]);
+
+                // TODO: No need to do this in future. Once payment fetch is done via Repo layer, we need to perform different
+                // TODO: check to invoke PG Router. No need to fetch payment is done at that time.
+                $payment = $this->app['pg_router']->fetchPayment($id);
+                if ($payment == null or empty($payment)) {
+                    // If Payment is null, it means, this payment doesn't exist in PG Router flow also. So throw BAD_REQUEST_EXCEPTION
+                    throw $e;
+                }
+                // If the code reaches here, it means the payment was processed via PG Router flow. So, start processing for anything left to be processed via API such as offers / notification.
+                // Anything related to auto-capture / authorize / authenticate should be handled inside CPS / PG Router based on method specific or not
+                // 1. Call PG Router for callback action
+                // 2. Create payment entity
+                // 3. Send notification using payment and merchant entities
+
+                $data = $this->app['pg_router']->paymentVerify($id);
+            } else {
+                throw $e;
+            }
+        }
 
         return $data;
     }
@@ -970,11 +1006,47 @@ class Service extends Base\Service
      */
     public function capture($id, $input)
     {
-        $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
+        $pId = $id;
+        try
+        {
+            $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $payment = $this->getNewProcessor()->capture($payment, $input);
+            $payment = $this->getNewProcessor()->capture($payment, $input);
+            $finalResponse = $payment->toArrayPublic();
+        }
+        catch (\Throwable $e)
+        {
+            if (Payment\Processor\Processor::PGROUTER_FLOW_LIVE == true) {
+                $this->trace->traceException(
+                    $e,
+                    Trace::INFO,
+                    TraceCode::PGROUTER_DEBUG,
+                    [
+                        'payment_id' => $id,
+                        'PG_ROUTER_FLOW' => true
+                    ]);
 
-        return $payment->toArrayPublic();
+                // Call PG Router to invoke capture with exact parameters
+                // TODO: No need to do this in future. Once payment fetch is done via Repo layer, we need to perform different
+                // TODO: check to invoke PG Router. No need to fetch payment is done at that time.
+                $payment = $this->app['pg_router']->fetchPayment($pId);
+                if ($payment == null or empty($payment)) {
+                    // If Payment is null, it means, this payment doesn't exist in PG Router flow also. So throw BAD_REQUEST_EXCEPTION
+                    throw $e;
+                }
+                // If the code reaches here, it means the payment was processed via PG Router flow. So, start processing for anything left to be processed via API such as offers / notification.
+                // Anything related to auto-capture / authorize / authenticate should be handled inside CPS / PG Router based on method specific or not
+                // 1. Call PG Router for callback action
+                // 2. Create payment entity
+                // 3. Send notification using payment and merchant entities
+
+                $finalResponse = $this->app['pg_router']->paymentCapture($id, $input);
+            } else {
+                throw $e;
+            }
+
+        }
+        return $finalResponse;
     }
 
     /**
@@ -3307,5 +3379,19 @@ class Service extends Base\Service
     public function getPaymentMetaByPaymentIdAction($paymentId, $actionType)
     {
         return $this->repo->payment_meta->findByPaymentIdAction($paymentId, $actionType);
+    }
+
+    public function sendNotification(array $input)
+    {
+        $event = $input['event'];
+        $payment = new Payment\Entity();
+        unset($input['payment']['public_id']);
+        $payment->forceFill($input['payment']);
+
+        $merchant =  $this->repo->merchant->findByPublicId($payment->getMerchantId());
+
+        $payment->merchant()->associate($merchant);
+
+        (new Notify($payment))->trigger($event);
     }
 }

@@ -3020,6 +3020,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const PAYMENTS_DATA_PUSH_ROUTING_SERVICE_ERROR              = 'PAYMENTS_DATA_PUSH_ROUTING_SERVICE_ERROR';
 
+    // PG Router Service Tracecodes
+    const PGROUTER_DEBUG                                        = 'PGROUTER_DEBUG';
+
+
     // Core Payment Service tracecodes
     const CPS_GATEWAY_TRANSACTION_SYNC_SUCCESS                  = 'CPS_GATEWAY_TRANSACTION_SYNC_SUCCESS';
     const CPS_GATEWAY_TRANSACTION_SYNC_REQUEST                  = 'CPS_GATEWAY_TRANSACTION_SYNC_REQUEST';
