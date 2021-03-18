@@ -105,6 +105,10 @@ class Core extends Base\Core
 
         $this->repo->partner_activation->saveOrFail($partnerActivation);
 
+        $this->trace->info(TraceCode::PARTNER_ACTIVATION_CREATION_SUCCESS, [
+            'merchant_id' => $merchant->getId()
+        ]);
+
         if($partnerActivation->getActivationStatus() === Constants::ACTIVATED)
         {
             $this->trace->info(TraceCode::PARTNER_AUTO_ACTIVATION_FROM_MERCHANT_SUCCESS, [

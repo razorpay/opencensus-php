@@ -2228,4 +2228,107 @@ class PartnerTest extends OAuthTestCase
 
         return $ba1;
     }
+
+    public function testPartnerActivationMigrationForNonActivatedPartners()
+    {
+        $this->createMerchants(null);
+
+        $this->ba->adminAuth();
+
+        $partnerActivationEntitiesBeforeMigration = $this->getDbEntities('partner_activation');
+
+        $this->assertEquals(0, count($partnerActivationEntitiesBeforeMigration));
+
+        $testData = $this->testData['executePartnerMigration'];
+
+        $this->runRequestResponseFlow($testData);
+
+        $partnerActivationEntitiesAfterMigration = $this->getDbEntities('partner_activation');
+
+        $this->validatePartnerActivation($partnerActivationEntitiesAfterMigration, null);
+    }
+
+    public function testPartnerActivationMigrationForActivatedPartners()
+    {
+        $this->createMerchants("activated");
+
+        $this->ba->adminAuth();
+
+        $partnerActivationEntitiesBeforeMigration = $this->getDbEntities('partner_activation');
+
+        $this->assertEquals(0, count($partnerActivationEntitiesBeforeMigration));
+
+        $testData = $this->testData['executePartnerMigration'];
+
+        $this->runRequestResponseFlow($testData);
+
+        $partnerActivationEntitiesAfterMigration = $this->getDbEntities('partner_activation');
+
+        $this->validatePartnerActivation($partnerActivationEntitiesAfterMigration, "activated");
+    }
+
+    private function validatePartnerActivation($partnerActivationEntities, $activationStatus)
+    {
+        $this->assertEquals(10, count($partnerActivationEntities));
+
+        for ($index = 0; $index < 10; $index++)
+        {
+            $partnerActivation = $partnerActivationEntities->get($index);
+
+            $this->assertEquals($activationStatus, $partnerActivation->getActivationStatus());
+
+            if (empty($activationStatus) === true)
+            {
+                $this->assertNull($partnerActivation->getActivatedAt());
+            }
+            else
+            {
+                $this->assertNotNull($partnerActivation->getActivatedAt());
+            }
+        }
+    }
+
+    private function createMerchants($activationStatus)
+    {
+        $id_prefix = '1cXSLlUU8V9s';
+
+        for ($index = 10; $index < 20; $index++)
+        {
+            $suffix1 = stringify($index);
+            $suffix2 = stringify(10 + $index);
+
+            $merchantId1 = $id_prefix . $suffix1;
+            $merchantId2 = $id_prefix . $suffix2;
+
+            $this->createMerchant($merchantId1, $suffix1, true, $activationStatus);
+            $this->createMerchant($merchantId2, $suffix2, false, $activationStatus);
+        }
+    }
+
+    private function createMerchant(string $merchantId, string $suffix, bool $isPartner, $activationStatus = null)
+    {
+        if ($isPartner === true)
+        {
+            $this->fixtures->create('merchant', ['id' => $merchantId, 'partner_type' => 'reseller']);
+        }
+        else
+        {
+            $this->fixtures->create('merchant', ['id' => $merchantId]);
+        }
+
+        $this->fixtures->create('merchant_detail:sane', [
+            'merchant_id'       => $merchantId,
+            'business_type'     => 1,
+            'contact_name'      => 'contact name' . $suffix,
+            'contact_mobile'    => '8888888888',
+            'activation_status' => $activationStatus
+        ]);
+
+        $this->fixtures->create('stakeholder',
+                                [
+                                    'merchant_id' => $merchantId,
+                                    'name'        => 'stakeholder' . $suffix,
+                                ]);
+
+    }
 }

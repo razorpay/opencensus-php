@@ -18,6 +18,7 @@ use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\Group;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Partner\Activation;
 use RZP\Models\Base\QueryCache\CacheQueries;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -1168,5 +1169,29 @@ class Repository extends Base\Repository
         }
 
         return $query->get();
+    }
+
+    public function findPartnersWithoutPartnerActivation($limit, $afterId = null)
+    {
+        $merchantIdColumn                  = $this->dbColumn(Entity::ID);
+        $merchantPartnerType               = $this->dbColumn(Entity::PARTNER_TYPE);
+        $partnerActivationMerchantIdColumn = $this->repo->partner_activation->dbColumn(Activation\Entity::MERCHANT_ID);
+
+        $query = $this->newQuery()->select($merchantIdColumn)
+                      ->leftJoin(Table::PARTNER_ACTIVATION, $partnerActivationMerchantIdColumn, '=', $merchantIdColumn)
+                      ->whereNull($partnerActivationMerchantIdColumn)
+                      ->whereNotNull($merchantPartnerType);
+
+        if (empty($limit) === false)
+        {
+            $query->limit($limit);
+        }
+
+        if (empty($afterId) === false)
+        {
+            $query->where($merchantIdColumn, '>', $afterId);
+        }
+
+        return $query->orderBy($merchantIdColumn, 'asc')->get()->pluck(Entity::ID)->toArray();
     }
 }

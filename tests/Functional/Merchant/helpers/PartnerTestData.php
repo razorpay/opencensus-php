@@ -1458,4 +1458,17 @@ return [
             ],
         ],
     ],
+    'executePartnerMigration' => [
+        'request'  => [
+            'url'     => '/partner/activation/migrate',
+            'method'  => 'POST',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 10
+            ]
+        ]
+    ]
 ];

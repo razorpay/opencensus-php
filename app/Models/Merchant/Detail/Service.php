@@ -12,6 +12,7 @@ use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Admin;
 use RZP\Models\Coupon;
+use RZP\Models\Partner;
 use RZP\Diag\EventCode;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
@@ -1571,5 +1572,11 @@ class Service extends Base\Service
         }
 
         return $response;
+    }
+
+    public function createPartnerActivationForPartners(array $input)
+    {
+        $partnerCore =  new Partner\Core();
+        return $partnerCore->createPartnerActivationForPartners($input);
     }
 }

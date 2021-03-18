@@ -8,8 +8,10 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant\Detail;
 use RZP\Exception\BadRequestException;
+use RZP\Jobs\PartnerActivationMigration;
 use RZP\Models\Feature\Constants as FeatureConstant;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -157,5 +159,43 @@ class Core extends Base\Core
         //
         return (($merchant->isFeatureEnabled((FeatureConstant::BLOCK_ONBOARDING_SMS) === true)
             or ($partner->isFeatureEnabled(FeatureConstant::BLOCK_ONBOARDING_SMS) === true)));
+    }
+
+    public function createPartnerActivationForPartners(array $input)
+    {
+        RuntimeManager::setTimeLimit(1800);
+
+        if (empty($input['merchant_ids']) === false)
+        {
+            PartnerActivationMigration::dispatch($this->mode, $input['merchant_ids']);
+
+            return [];
+        }
+
+        $afterId = null;
+
+        $count = 0;
+
+        while (true)
+        {
+            $repo = $this->repo;
+
+            $merchantIds = $repo->useSlave(function () use ($afterId, $repo) {
+                return $repo->merchant->findPartnersWithoutPartnerActivation(1000, $afterId);
+            });
+
+            if (empty($merchantIds) === true)
+            {
+                break;
+            }
+
+            $afterId = end($merchantIds);
+
+            $count += count($merchantIds);
+
+            PartnerActivationMigration::dispatch($this->mode, $merchantIds);
+        }
+
+        return ['count' => $count];
     }
 }

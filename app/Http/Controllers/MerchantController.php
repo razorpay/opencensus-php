@@ -11,6 +11,7 @@ use RZP\Models\Gateway;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Partner;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Credits;
@@ -2030,6 +2031,15 @@ class MerchantController extends Controller
     public function getAovConfig()
     {
         $response = $this->service(E::MERCHANT_DETAIL)->getAovConfig();
+
+        return ApiResponse::json($response);
+    }
+
+    public function createPartnerActivationForPartners()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->createPartnerActivationForPartners($input);
 
         return ApiResponse::json($response);
     }

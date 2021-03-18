@@ -1762,7 +1762,7 @@ class Route
         'partner_config_bulk_upsert'               => ['post',     'partner_configs/bulk',                           'PartnerConfigController@bulkUpsert'                                ],
         'partner_config_fetch'                     => ['get',      'partner_configs',                                'PartnerConfigController@getConfig'                                 ],
         'partner_config_edit'                      => ['put',      'partner_configs/{id}',                           'PartnerConfigController@update'                                    ],
-
+        'partner_activation_migrate'               => ['post',     'partner/activation/migrate',                     'MerchantController@createPartnerActivationForPartners'             ],
         'merchant_sync_stakeholder'                => ['post',     'merchants/stakeholders/sync',                    'MerchantController@syncStakeholderFromMerchant'                    ],
 
         'commissions_get_multiple'                 => ['get',      'commissions',                                    'CommissionController@list'                                         ],
@@ -3676,6 +3676,7 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'partner_activation_migrate',
         'mir_instrument_set',
         'virtual_account_debug',
         'payment_links_v2_admin',
@@ -4962,6 +4963,7 @@ class Route
         'set_redis_keys'                           => Permission::MANAGE_REDIS_KEYS,
         'set_gateway_downtime_conf'                => Permission::CREATE_GATEWAY_DOWNTIME,
         'get_gateway_downtime_conf'                => Permission::VIEW_GATEWAY_DOWNTIME,
+        'partner_activation_migrate'               => Permission::ADMIN_MANAGE_PARTNERS,
         'partner_config_create'                    => Permission::EDIT_PARTNERS,
         'partner_config_fetch'                     => Permission::VIEW_PARTNERS,
         'partner_config_edit'                      => Permission::EDIT_PARTNERS,
