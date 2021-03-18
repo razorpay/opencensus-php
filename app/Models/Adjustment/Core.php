@@ -8,6 +8,7 @@ use RZP\Models\Dispute;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
@@ -18,6 +19,9 @@ use RZP\Models\Settlement\Channel as BankingChannel;
 
 class Core extends Base\Core
 {
+    // input param for adjustment creation on capital collection balances.
+    const BALANCE_ID = 'balance_id';
+
     public function createAdjustment(array $input, Merchant\Entity $merchant): Entity
     {
         $this->trace->info(
@@ -54,7 +58,26 @@ class Core extends Base\Core
 
         $sendReserveBalanceMail = false;
 
-        if (($balanceType === Balance\Type::RESERVE_BANKING) or
+        if (empty($input[self::BALANCE_ID]) === false)
+        {
+            // used for capital collections transactions.
+            // capital-collections uses balance_id for reference, not balance type
+            // as there can be multiple balances of same type on same merchant id:
+            // like multiple principal balances if merchant has multiple loc withdrawals.
+
+            /** @var Balance\Entity $balance */
+            $balance = $this->repo->balance->findByIdAndMerchant($input[self::BALANCE_ID], $merchant);
+
+            // check balance is of type: principal, charge, interest
+            if (in_array($balance->getType(), Balance\Type::$capitalBalances, true) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException('invalid capital collections balance: '.
+                    $balance->getType(), self::BALANCE_ID, $balance->toArrayPublic());
+            }
+
+            unset($adjInput[self::BALANCE_ID]);
+        }
+        else if (($balanceType === Balance\Type::RESERVE_BANKING) or
             ($balanceType === Balance\Type::RESERVE_PRIMARY))
         {
             [$balance, $sendReserveBalanceMail] = (new Balance\Core)->createOrFetchReserveBalance($merchant,

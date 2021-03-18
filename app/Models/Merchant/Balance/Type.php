@@ -38,6 +38,12 @@ class Type
         self::RESERVE_PRIMARY,
     ];
 
+    public static $capitalBalances = [
+        self::PRINCIPAL,
+        self::INTEREST,
+        self::CHARGE,
+    ];
+
     public static $settleableBalanceTypes = [
         self::PRIMARY,
         self::COMMISSION,

@@ -28,6 +28,28 @@ return [
         ]
     ],
 
+    'testAddAdjustmentOnCapitalBalance' => [
+        'request' => [
+            'url' => '/adjustments',
+            'method' => 'POST',
+            'content' => [
+                'amount'        =>  500000,
+                'merchant_id'   =>  '100abc000abc00',
+                'currency'      =>  'INR',
+                'description'   =>  'manual adjustment',
+                'balance_id'    => '',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'        => 'adjustment',
+                'amount'        => 500000,
+                'currency'      => 'INR',
+                'description'   => 'manual adjustment',
+            ],
+        ]
+    ],
+
     'testCreateReservePrimaryBalance' => [
         'request' => [
             'url' => '/adjustments',
