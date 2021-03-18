@@ -70,19 +70,33 @@ abstract class Processor extends Base\Core
     {
         $mutexResource = sprintf(self::MUTEX_RESOURCE, static::$channel, $this->mode);
 
-        $data = $this->mutex->acquireAndRelease(
-                                $mutexResource,
-                                function () use ($input)
-                                {
-                                    return $this->processReconciliation($input);
-                                },
-                                self::MUTEX_LOCK_TIMEOUT,
-                                ErrorCode::BAD_REQUEST_SETTLEMENT_RECONCILIATION_IN_PROGRESS,
-                                50,
-                                2000,
-                                4000);
+        try
+        {
+            return $this->mutex->acquireAndRelease(
+                $mutexResource,
+                function () use ($input)
+                {
+                    return $this->processReconciliation($input);
+                },
+                self::MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_SETTLEMENT_RECONCILIATION_IN_PROGRESS,
+                50,
+                2000,
+                4000);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::FUND_TRANSFER_RECONCILIATION_FILE_SKIPPED,
+                [
+                    'input' => $input,
+                    'error' => $e->getMessage(),
+                ]);
 
-        return $data;
+            throw $e;
+        }
     }
 
     protected function getSummary(): array

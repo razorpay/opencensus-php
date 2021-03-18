@@ -79,6 +79,35 @@ trait AttemptReconcileTrait
         return $content;
     }
 
+    protected function reconcileSettlementsUsingLambda($setlReconciliationFile, string $channel, bool $newLambda = true)
+    {
+        $this->ba->h2hAuth();
+
+        $content = [
+            'source' => 'lambda',
+            'prefix' => 'axis/poweraccess/settlements/axis_reversefeed_razorpay_20',
+            'key'    =>  $setlReconciliationFile,
+        ];
+
+        if ($newLambda === true)
+        {
+            $content['bucket'] = 'rzp-test-bucket';
+            $content['region'] = 'ap-south-1';
+        }
+
+        $request = [
+            'url' => '/settlements/h2hreconcile/' . $channel,
+            'method' => 'POST',
+            'content'=> $content,
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertFileNotExists($setlReconciliationFile);
+
+        return $content;
+    }
+
     protected function reconcileSettlementsForChannel(
         $setlFile,
         string $channel,

@@ -158,7 +158,25 @@ abstract class FileProcessor extends Processor
             {
                 $key = urldecode($input['key']);
 
-                $reconcileFile = $this->getH2HFileFromAws($key);
+                $bucket = 'h2h_bucket';
+                $region = null;
+
+                // With Old lambda the bucket and region is not being sent
+                // but with new lambda we are sending bucket and region
+                // it is added to support both the lambdas
+                // once we deprecate the old lambda then this can be removed from here
+                // and can be added at the validation layer itself
+                if(empty($input['bucket']) === false)
+                {
+                    $bucket = $input['bucket'];
+                }
+
+                if(empty($input['region']) === false)
+                {
+                    $region = $input['region'];
+                }
+
+                $reconcileFile = $this->getH2HFileFromAws($key, false, $bucket, $region);
             }
             else
             {

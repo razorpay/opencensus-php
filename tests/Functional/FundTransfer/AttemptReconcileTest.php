@@ -19,6 +19,7 @@ use RZP\Mail\Settlement\CriticalFailure;
 use RZP\Models\FundTransfer\Axis\Reconciliation\Status;
 use RZP\Mail\Settlement\Reconciliation as ReconciliationMail;
 use RZP\Mail\Merchant\SettlementFailure as SettlementFailureMail;
+use RZP\Models\FundTransfer\Axis2\Reconciliation\Status as Axis2ReconStatus;
 
 class AttemptReconcileTest extends TestCase
 {
@@ -762,6 +763,26 @@ class AttemptReconcileTest extends TestCase
         $this->verifySettlementReconForAxisReturnSettled();
     }
 
+    // this test is to support the new lambda which has bucket and region in payload
+    public function testSettlementReconcileEntitiesForAxis2ViaNewLambda()
+    {
+        $now = Carbon::create(2018, 8, 14, 15, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
+        $this->verifySettlementReconForAxis2(true);
+    }
+
+    // this test is to support the old lambda which do not have bucket and region in payload
+    public function testSettlementReconcileEntitiesForAxis2ViaOldLambda()
+    {
+        $now = Carbon::create(2018, 8, 14, 15, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
+        $this->verifySettlementReconForAxis2(false);
+    }
+
     protected function verifySettlementReconForAxisReturnSettled()
     {
         $channel = Channel::AXIS;
@@ -797,6 +818,35 @@ class AttemptReconcileTest extends TestCase
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertEquals(Attempt\Status::FAILED, $fta['status']);
+    }
+
+    protected function verifySettlementReconForAxis2($newLambda = true)
+    {
+        $channel = Channel::AXIS2;
+
+        // create and initiate the settlement
+        $content = $this->createDataAndAssertInitiateTransferSuccess(
+            $channel, 1, Attempt\Type::SETTLEMENT);
+
+        $setlFile = $content[$channel]['file']['local_file_path'];
+
+        // this is the reversefeed file which is being generated
+        $setlFile =  $this->generateReconciliationFileForChannel($setlFile, $channel);
+
+        // lambda trigger along with the reverse feed file
+        $res = $this->reconcileSettlementsUsingLambda($setlFile, $channel, $newLambda);
+
+        $this->assertEquals(0, $res['unprocessed_count']);
+        $this->assertEquals(1, $res['total_count']);
+        $this->assertEquals(Channel::AXIS2, $res['channel']);
+
+        $this->reconcileEntitiesForChannel(Channel::AXIS2);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals(Axis2ReconStatus::SUCCESS, $fta['bank_status_code']);
+
+        $this->assertEquals(Attempt\Status::PROCESSED, $fta['status']);
     }
 
     public function testSettlementVerificationForYesbank()

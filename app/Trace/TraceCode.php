@@ -1119,6 +1119,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const PHONEPE_DOWNTIME_FETCH_ERROR                          = 'PHONEPE_DOWNTIME_FETCH_ERROR';
 
+    const FUND_TRANSFER_RECONCILIATION_FILE_SKIPPED             = 'FUND_TRANSFER_RECONCILIATION_FILE_SKIPPED';
+
     const FTA_BULK_RECONCILE_REQUEST                            = 'FTA_BULK_RECONCILE_REQUEST';
     const FTA_RECONCILE_DISPATCH_FAILED                         = 'FTA_RECONCILE_DISPATCH_FAILED';
     const FTA_STATUS_CHECK_JOB_DISPATCHED                       = 'FTA_STATUS_CHECK_JOB_DISPATCHED';
