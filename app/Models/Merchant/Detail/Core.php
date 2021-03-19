@@ -1304,7 +1304,7 @@ class Core extends Base\Core
 
         if(isset($input['stakeholder']) === true)
         {
-            (new Stakeholder\Core)->editStakeholder($merchantDetails->stakeholder, $input['stakeholder'], 'activation');
+            (new Stakeholder\Core)->saveStakeholder(null, $merchant->getId(), $input['stakeholder'], 'activation');
         }
 
         if (isset($input['merchant_avg_order_value']) === true)

@@ -2158,6 +2158,40 @@ return [
         'status_code' => 200,
     ],
 
+    'testAadhaarNotLinkedWithoutStakeholderEntity' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+                'stakeholder'   => [
+                    'aadhaar_linked'    => 0
+                ]
+            ],
+        ],
+        'response'    => [
+            'content' => [
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
+    'testAadhaarNotLinkedWithStakeholderEntity' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+                'stakeholder'   => [
+                    'aadhaar_linked'    => 0
+                ]
+            ],
+        ],
+        'response'    => [
+            'content' => [
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
     'testAddingVirtualAccountInLinkedAccount' => [
         'request'     => [
             'method'  => 'POST',

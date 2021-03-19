@@ -2994,6 +2994,34 @@ class ActivationTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testAadhaarNotLinkedWithoutStakeholderEntity()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $merchantId = $merchant->getId();
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+    }
+
+    public function testAadhaarNotLinkedWithStakeholderEntity()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $merchantId = $merchant->getId();
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->create('stakeholder', ['merchant_id' => $merchantId]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+    }
+
     public function testHardLimitReachedWithLevelThree()
     {
         $merchantId = '1cXSLlUU8V9sXl';
