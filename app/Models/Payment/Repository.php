@@ -379,6 +379,14 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getMerchantFirstAuthorizedPaymentTimeStamp($merchantId)
+    {
+        return $this->newQuery()
+                    ->whereNotNull(Payment\Entity::AUTHORIZED_AT)
+                    ->where(Payment\Entity::MERCHANT_ID, '=', $merchantId)
+                    ->min(Payment\Entity::CREATED_AT);
+    }
+
     /**
      * Fetches old payments which can be timed-out at method level with respective
      * merchant relation.

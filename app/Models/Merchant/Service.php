@@ -112,6 +112,24 @@ class Service extends Base\Service
         'source.mids.*' => 'string|unsigned_id',
     ];
 
+    const MERCHANT_DATA_NOT_FOUND_ON_DRUID              = 'merchant data not found on druid';
+    const SEGMENT_DATA_USER_BUSINESS_CATEGORY           = 'user_business_category';
+    const SEGMENT_DATA_ACTIVATION_STATUS                = 'activation_status';
+    const SEGMENT_DATA_MCC                              = 'mcc';
+    const SEGMENT_DATA_ACTIVATED_AT                     = 'activated_at';
+    const SEGMENT_DATA_USER_ROLE                        = 'user_role';
+    const SEGMENT_DATA_FIRST_TRANSACTION_TIMESTAMP      = 'first_transaction_timestamp';
+    const SEGMENT_DATA_USER_DAYS_TILL_LAST_TRANSACTION  = 'user_days_till_last_transaction';
+    const SEGMENT_DATA_MERCHANT_LIFE_TIME_GMV           = 'merchant_lifetime_gmv';
+    const SEGMENT_DATA_AVERAGE_MONTHLY_GMV              = 'average_monthly_gmv';
+    const SEGMENT_DATA_PRIMARY_PRODUCT_USED             = 'primary_product_used';
+    const SEGMENT_DATA_PPC                              = 'ppc';
+    const SEGMENT_DATA_MTU                              = 'mtu';
+    const SEGMENT_DATA_AVERAGE_MONTHLY_TRANSACTIONS     = 'average_monthly_transactions';
+    const SEGMENT_DATA_PG_ONLY                          = 'pg_only';
+    const SEGMENT_DATA_PL_ONLY                          = 'pl_only';
+    const SEGMENT_DATA_PP_ONLY                          = 'pp_only';
+
     /**
      * Creates a merchant and saves in database
      *
@@ -1602,6 +1620,68 @@ class Service extends Base\Service
         $feeBearer = $this->merchant->isFeeBearerCustomer();
 
         return $feeBearer;
+    }
+
+    public function getMerchantDataForSegmentAnalysis()
+    {
+
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        $firstTransactionTimeStamp = $this->repo->payment->getMerchantFirstAuthorizedPaymentTimeStamp($merchant->getId());
+
+        $data = $this->getDataFromDruid($merchant->getId());
+
+        return [
+            self::SEGMENT_DATA_USER_BUSINESS_CATEGORY          => $merchantDetails->getBusinessCategory(),
+            self::SEGMENT_DATA_ACTIVATION_STATUS               => $merchantDetails->getActivationStatus(),
+            self::SEGMENT_DATA_MCC                             => $merchant->getCategory(),
+            self::SEGMENT_DATA_ACTIVATED_AT                    => $merchant->getactivatedAt(),
+            self::SEGMENT_DATA_USER_ROLE                       => $this->app['basicauth']->getUserRole(),
+            self::SEGMENT_DATA_FIRST_TRANSACTION_TIMESTAMP     => $firstTransactionTimeStamp,
+            self::SEGMENT_DATA_USER_DAYS_TILL_LAST_TRANSACTION => $data[self::SEGMENT_DATA_USER_DAYS_TILL_LAST_TRANSACTION] ?: null,
+            self::SEGMENT_DATA_MERCHANT_LIFE_TIME_GMV          => $data[self::SEGMENT_DATA_MERCHANT_LIFE_TIME_GMV] ?: null,
+            self::SEGMENT_DATA_AVERAGE_MONTHLY_GMV             => $data[self::SEGMENT_DATA_AVERAGE_MONTHLY_GMV] ?: null,
+            self::SEGMENT_DATA_PRIMARY_PRODUCT_USED            => $data[ self::SEGMENT_DATA_PRIMARY_PRODUCT_USED] ?: null,
+            self::SEGMENT_DATA_PPC                             => $data[self::SEGMENT_DATA_PPC] ?: null,
+            self::SEGMENT_DATA_MTU                             => isset($data[self::SEGMENT_DATA_MTU]) ? $data[self::SEGMENT_DATA_MTU] : null,
+            self::SEGMENT_DATA_AVERAGE_MONTHLY_TRANSACTIONS    => $data[self::SEGMENT_DATA_AVERAGE_MONTHLY_TRANSACTIONS] ?: null,
+            self::SEGMENT_DATA_PG_ONLY                         => isset($data[self::SEGMENT_DATA_PG_ONLY]) ? $data[self::SEGMENT_DATA_PG_ONLY] : null,
+            self::SEGMENT_DATA_PL_ONLY                         => isset($data[self::SEGMENT_DATA_PL_ONLY]) ? $data[self::SEGMENT_DATA_PL_ONLY] : null,
+            self::SEGMENT_DATA_PP_ONLY                         => isset($data[self::SEGMENT_DATA_PP_ONLY]) ? $data[self::SEGMENT_DATA_PP_ONLY] : null
+        ];
+    }
+
+    protected function getDataFromDruid($merchantId)
+    {
+        $query = 'select *from druid.segment_fact as merchant_data where merchant_data.merchant_details_merchant_id = \'%s\'';
+
+        $query = sprintf($query, $merchantId);
+
+        $content = [
+            'query' => $query
+        ];
+
+        $druidService = $this->app['druid.service'];
+
+        list($error, $data) = $druidService->getDataFromDruid($content);
+
+        if (empty($error) === false)
+        {
+            return null;
+        }
+
+        if (isset($data[0]) === false)
+        {
+            $this->trace->error(TraceCode::DRUID_REQUEST_FAILURE, [
+                'message' => self::MERCHANT_DATA_NOT_FOUND_ON_DRUID
+            ]);
+
+            return null;
+        }
+
+        return $data[0];
     }
 
     public function getPaymentMethods()

@@ -48,6 +48,13 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getMerchantDataForSegment()
+    {
+        $data = $this->service()->getMerchantDataForSegmentAnalysis();
+
+        return ApiResponse::json($data);
+    }
+
     public function postCreateSubMerchantViaBatch()
     {
         $input = Request::all();

@@ -1697,6 +1697,36 @@ return [
         ],
     ],
 
+    'testGetMerchantDataForSegment' => [
+        'request'  => [
+            'url'     => '/merchant/data_for_segment',
+            'method'  => 'get',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'user_business_category'          => 'ecommerce',
+                'activation_status'               => 'activated',
+                'mcc'                             => '5399',
+                'activated_at'                    => 1614921159,
+                'user_role'                       => 'owner',
+                'first_transaction_timestamp'     => 1614921180,
+                'user_days_till_last_transaction' => 30,
+                'merchant_lifetime_gmv'           => 100,
+                'average_monthly_gmv'             => 10,
+                'primary_product_used'            => 'payment_links',
+                'ppc'                             => 1,
+                'mtu'                             => true,
+                'average_monthly_transactions'    => 3,
+                'pg_only'                         => false,
+                'pl_only'                         => true,
+                'pp_only'                         => false
+            ]
+        ]
+    ],
+
     'testEditGstinInvalidRole' => [
         'request'  => [
             'url'     => '/merchant/gst',

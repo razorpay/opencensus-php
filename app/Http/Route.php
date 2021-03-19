@@ -1616,6 +1616,7 @@ class Route
         'oauth_sync_merchant_map'                  => ['post',     'oauth/update_merchant_map',                      'MerchantController@updateMerchantAccessMapFromTokens'              ],
 
         'merchant_analytics'                       => ['post',     'merchant/analytics',                             'MerchantController@postAnalytics'                                  ],
+        'get_merchant_data_for_segment'            => ['get',      'merchant/data_for_segment',                      'MerchantController@getMerchantDataForSegment'                      ],
 
         // Merchant Requests Routes
         'merchant_requests_get'                    => ['get',      'merchant/requests/{id}',                         'MerchantRequestController@get'                                     ],
@@ -3356,6 +3357,7 @@ class Route
         'oauth_application_update',
         'otp_create',
         'merchant_analytics',
+        'get_merchant_data_for_segment',
         'reports_refund_irctc',
         'feature_onboarding_create',
         'feature_onboarding_fetch_responses',
@@ -7255,6 +7257,7 @@ class Route
         'reminder_next_run'                                 => HeartbeatLagChecker::SLAVE,
         'user_fetch_for_merchant'                           => HeartbeatLagChecker::SLAVE,
         'reward_expire_cron'                                => HeartbeatLagChecker::MASTER,
+        'get_merchant_data_for_segment'                     => HeartbeatLagChecker::SLAVE,
         'user_access'                                       => HeartbeatLagChecker::MASTER,
     ];
 

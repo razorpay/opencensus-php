@@ -116,4 +116,13 @@ return [
             'secret'    => env('MERCHANT_RISK_ALERTS_CLIENT_SECRET')
         ],
     ],
+
+    'druid' => [
+        'mock'   => env('DRUID_MOCK', true),
+        'url'    => env('DRUID_BASE_URL'),
+        'auth'   => [
+            'key'    => env('DRUID_CLIENT_KEY'),
+            'secret' => env('DRUID_CLIENT_SECRET'),
+        ],
+    ],
 ];

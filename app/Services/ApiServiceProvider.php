@@ -6,12 +6,14 @@ use RZP;
 use Cache;
 use Swift_Mailer;
 use Buzz\Client\MultiCurl;
+use RZP\Services\DruidService;
 use Razorpay\OAuth\Application;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Database\Connection;
 use Http\Mock\Client as MockHttplug;
 use Http\Discovery\Psr17FactoryDiscovery;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use RZP\Services\Mock\DruidService as MockDruidService;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Illuminate\Database\MySqlConnection as IlluminateMySqlConnection;
 
@@ -303,6 +305,18 @@ class ApiServiceProvider extends BaseServiceProvider
             }
 
             return new UfhService($app);
+        });
+
+        $this->app->singleton('druid.service', function ($app)
+        {
+            $druidServiceMock = $app['config']->get('services.druid.mock');
+
+            if ($druidServiceMock === true)
+            {
+                return new MockDruidService();
+            }
+
+            return new DruidService();
         });
 
         $this->app->singleton('gateway_file', function($app)

@@ -25,6 +25,7 @@ use Illuminate\Database\Eloquent\Factory;
 use Rzp\Credcase\Migrate\V1\RotateApiKeyRequest;
 use Rzp\Credcase\Migrate\V1\MigrateApiKeyRequest;
 use RZP\Models\Admin\Org\Repository as OrgRepository;
+use RZP\Services\Mock\DruidService as MockDruidService;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
@@ -1799,7 +1800,6 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
-
     public function testGetBillingLabelSuggestionsWithoutWebsite()
     {
         $this->fixtures->create('merchant_detail', [
@@ -1908,6 +1908,63 @@ class MerchantTest extends TestCase
         ]);
 
         $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetMerchantDataForSegment()
+    {
+        config(['services.druid.mock' => true]);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'       => '10000000000000',
+            'activation_status' => 'activated',
+            'business_category' => 'ecommerce'
+        ]);
+
+        $merchant = $this->fixtures->edit('merchant','10000000000000', [
+            'category'      => '5399',
+            'activated_at'  => 1614921159
+        ]);
+
+        $this->fixtures->create(
+            'payment:authorized',[
+                'merchant_id' => $merchant['id'],
+                'created_at'  => 1614921180,
+            ]);
+
+        $user = $this->fixtures->create('user');
+
+        $merchantId = $merchant['id'];
+
+        $userID = $user['id'];
+
+        $this->createMerchantUserMapping($userID, $merchantId, 'owner');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $userID);
+
+        $druidService = $this->getMockBuilder(MockDruidService::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods([ 'getDataFromDruid'])
+            ->getMock();
+
+        $this->app->instance('druid.service', $druidService);
+
+        $dataFromDruid = [
+            'user_days_till_last_transaction' => 30,
+            'merchant_lifetime_gmv'           => 100.0,
+            'average_monthly_gmv'             => 10,
+            'primary_product_used'            => 'payment_links',
+            'ppc'                             => 1,
+            'mtu'                             => true,
+            'average_monthly_transactions'    => 3,
+            'pg_only'                         => false,
+            'pl_only'                         => true,
+            'pp_only'                         => false,
+        ];
+
+        $druidService->method( 'getDataFromDruid')
+            ->willReturn([null, [$dataFromDruid]]);
 
         $this->startTest();
     }
