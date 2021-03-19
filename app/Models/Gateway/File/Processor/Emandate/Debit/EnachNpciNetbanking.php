@@ -127,7 +127,7 @@ class EnachNpciNetbanking extends Base
             'channel'   => 'emandate',
             'filetype'  => FileStore\Type::ENACH_NPCI_NB_DEBIT,
             'subject'   => 'File Send failure',
-            'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::EMANDATE]
+            'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::NBPLUS_TECH]
         ];
 
         $beamResponse = $this->app['beam']->beamPush($data, $timelines, $mailInfo, true);
