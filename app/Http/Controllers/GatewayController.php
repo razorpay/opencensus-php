@@ -446,7 +446,14 @@ class GatewayController extends Controller
             case Gateway::UPI_AXIS:
                 $data = $this->processServerCallbackWithGatewayResponse($input, $gateway);
                 break;
+            // Need to whitelist upi_yesbank at bank end
+            case Gateway::UPI_YESBANK:
+            case 'upi_yesb':
+                $input = Request::getContent();
 
+                $data = $this->processServerCallbackWithGatewayResponse($input, Gateway::UPI_YESBANK);
+
+                break;
         }
 
         // UPI Gateways might send redirection headers

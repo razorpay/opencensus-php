@@ -2,17 +2,19 @@
 
 namespace RZP\Tests\Functional\Gateway\Upi;
 
+use RZP\Models\Payment\Status;
 use RZP\Models\Payment\Entity;
+use RZP\Models\Payment\UpiMetadata\Flow;
 use RZP\Gateway\Upi\Base\Entity as UpiEntity;
 
 trait UpiPaymentTrait
 {
 
-    public function testUpiCollectPaymentCreateSuccess()
+    public function testUpiCollectPaymentCreateSuccess($description = 'collect_request_success_v2')
     {
         $payment = $this->getDefaultUpiPaymentArray();
 
-        $payment['description'] = 'collect_request_success_v2';
+        $payment['description'] = $description;
 
         $response = $this->doAuthPaymentViaAjaxRoute($payment);
 
@@ -67,7 +69,7 @@ trait UpiPaymentTrait
         ], $upiEntity->toArray());
     }
 
-    public function testUpiIntentPaymentCreateSuccess()
+    public function testUpiIntentPaymentCreateSuccess($description = 'intent_request_success_v2')
     {
         $payment = $this->getDefaultUpiIntentPaymentArray();
 
@@ -77,7 +79,7 @@ trait UpiPaymentTrait
 
         $payment['upi']['flow'] = 'intent';
 
-        $payment['description'] = 'intent_request_success_v2';
+        $payment['description'] = $description;
 
         $response = $this->doAuthPaymentViaAjaxRoute($payment);
 
@@ -102,6 +104,100 @@ trait UpiPaymentTrait
             UpiEntity::ACTION              => 'authorize',
             UpiEntity::GATEWAY             => $this->gateway,
         ], $upiEntity->toArray());
+    }
+
+    public function testUpiCollectPaymentSuccess()
+    {
+        $this->testUpiCollectPaymentCreateSuccess();
+
+        $payment = $this->getDbLastpayment();
+
+        $upiEntity = $this->getDbLastUpi();
+
+        $request = $this->mockServer()->getCallback($upiEntity->toArray(), $payment->toArray());
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $upiEntity = $this->getDbLastUpi();
+
+        $payment = $this->getDbLastPayment();
+
+        // We should have received a successful response
+        $this->assertEquals(['success' => true], $response);
+
+        $this->assertArraySubset([
+            Entity::STATUS          => Status::AUTHORIZED,
+            Entity::REFERENCE16     => $upiEntity->getNpciReferenceId(),
+            Entity::TERMINAL_ID     => $this->sharedTerminal->getId(),
+            Entity::GATEWAY         => $this->gateway
+        ], $payment->toArray());
+
+        $this->assertArraySubset([
+            UpiEntity::TYPE                 => Flow::COLLECT,
+            UpiEntity::ACTION               => 'authorize',
+            UpiEntity::GATEWAY              => $this->gateway,
+            UpiEntity::VPA                  => 'vishnu@icici',
+        ], $upiEntity->toArray());
+
+        $this->assertNotNull($upiEntity->getStatusCode());
+    }
+
+    public function testUpiPaymentCallbackFailed()
+    {
+        $this->testUpiCollectPaymentCreateSuccess('callback_failed_v2');
+
+        $payment = $this->getDbLastpayment();
+
+        $upiEntity = $this->getDbLastUpi();
+
+        $request = $this->mockServer()->getCallback($upiEntity->toArray(), $payment->toArray());
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $upiEntity = $this->getDbLastUpi();
+
+        $payment = $this->getDbLastPayment();
+
+        // We should receive a failed response
+        $this->assertEquals(['success' => false], $response);
+
+        $this->assertEquals(Status::FAILED, $payment->getStatus());
+
+        $this->assertArraySubset([
+            Entity::STATUS              => Status::FAILED,
+            Entity::INTERNAL_ERROR_CODE => 'GATEWAY_ERROR_DEBIT_FAILED',
+            Entity::ERROR_CODE          => 'GATEWAY_ERROR',
+            Entity::ERROR_DESCRIPTION   => 'Payment failed. Please try again with another bank account.'
+        ], $payment->toArray());
+
+        $this->assertArraySubset([
+            UpiEntity::TYPE          => Flow::COLLECT,
+            UpiEntity::ACTION        => 'authorize',
+            UpiEntity::GATEWAY       => $this->gateway,
+        ], $upiEntity->toArray());
+
+        $this->assertNotNull($upiEntity->getStatusCode());
+    }
+
+    public function testCallbackAmountMismatch()
+    {
+        $this->testUpiIntentPaymentCreateSuccess('callback_amount_mismatch_v2');
+
+        $payment = $this->getDbLastpayment();
+
+        $upiEntity = $this->getDbLastUpi();
+
+        $request = $this->mockServer()->getCallback($upiEntity->toArray(), $payment->toArray());
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(['success' => false], $response);
+
+        $payment->reload();
+
+        $this->assertSame('failed', $payment->getStatus());
+
+        $this->assertSame('SERVER_ERROR_AMOUNT_TAMPERED', $payment->getInternalErrorCode());
     }
 }
 

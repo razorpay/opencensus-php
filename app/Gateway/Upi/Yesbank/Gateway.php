@@ -72,12 +72,23 @@ class Gateway extends Mindgate\Gateway
     /**
      * @param array $input
      * @return array
-     * @throws Exception\LogicException
+     * @throws Exception\GatewayErrorException
      */
     public function callback(array $input) :array
     {
-        throw new Exception\LogicException(
-            'Live payment callback not available on UPI Yesbank');
+        parent::action($input, Action::CALLBACK);
+
+        return $this->upiCallback($input);
+    }
+
+    public function preProcessServerCallback($input, $isBharatQr = false): array
+    {
+        return $this->upiPreProcess(['payload' => $input]);
+    }
+
+    public function getPaymentIdFromServerCallback(array $response): string
+    {
+        return $this->upiPaymentIdFromServerCallback($response);
     }
 
     /**
@@ -100,6 +111,27 @@ class Gateway extends Mindgate\Gateway
     {
         throw new Exception\LogicException(
             'Live payment verify not available on UPI Yesbank');
+    }
+
+    /**
+     * Function to postprocess the response of callback. In case of success, return true.
+     * However in case of exception, suppress the error and return failure response.
+     * @param  array  $input request array
+     * @param \Exception $exception exception object
+     * @return array success/failure response
+     */
+    public function postProcessServerCallback($input, $exception = null): array
+    {
+        if ($exception === null)
+        {
+            return [
+                'success' => true,
+            ];
+        }
+
+        return [
+            'success' => false,
+        ];
     }
 
     public function payout(array $input)
