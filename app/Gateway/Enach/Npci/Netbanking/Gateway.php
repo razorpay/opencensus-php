@@ -204,6 +204,8 @@ class Gateway extends Base\Gateway
             RequestFields::AUTH_MODE   => $authType,
         ];
 
+        $content = $this->addSpidIfRequired($content, $mid2);
+
         $request = $this->getStandardRequestArray($content, 'post', 'npciauth_old');
 
         $request = $this->addHeadersForNpciRequest($request);
@@ -215,6 +217,8 @@ class Gateway extends Base\Gateway
             RequestFields::BANK_ID     => $bank,
             RequestFields::AUTH_MODE   => $authType
         ];
+
+        $dataToTrace = $this->addSpidIfRequired($dataToTrace, $mid2);
 
         $this->traceGatewayPaymentRequest($dataToTrace, $input);
 
@@ -1025,5 +1029,19 @@ class Gateway extends Base\Gateway
         }
 
         return $displayDetails;
+    }
+
+    protected function addSpidIfRequired($content, $utilityCode): array
+    {
+        if ($this->input['merchant']->isFeatureEnabled(Feature::NPCI_SPID) === true)
+        {
+            $additionalContent = [
+                RequestFields::SPID => $utilityCode . '_22',
+            ];
+
+            $content = array_merge($content, $additionalContent);
+        }
+
+        return $content;
     }
 }

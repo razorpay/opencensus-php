@@ -9,6 +9,7 @@ class RequestFields
     const CHECKSUM    = 'CheckSumVal';
     const BANK_ID     = 'BankID';
     const AUTH_MODE   = 'AuthMode';
+    const SPID        = 'SPID';
 
     // Verify Request
     const MANDATE_REQ_ID_LIST = 'mandateReqIDList';

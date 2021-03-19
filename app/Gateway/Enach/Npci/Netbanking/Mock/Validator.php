@@ -15,6 +15,15 @@ class Validator extends Base\Validator
         RequestFields::AUTH_MODE        => 'required|string'
     );
 
+    protected static $authSpidRules = array(
+        RequestFields::MERCHANT_ID      => 'required|string',
+        RequestFields::REQUEST_XML      => 'required|string',
+        RequestFields::CHECKSUM         => 'required|string',
+        RequestFields::BANK_ID          => 'required|string',
+        RequestFields::AUTH_MODE        => 'required|string',
+        RequestFields::SPID             => 'required|string',
+    );
+
     protected static $verifyRules = array(
         RequestFields::MERCHANT_ID      => 'required|string',
         RequestFields::MANDATE_ID       => 'required|alpha_num|size:14',

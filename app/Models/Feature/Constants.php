@@ -526,6 +526,11 @@ class Constants
     const ESIGN = 'esign';
 
     /*
+    * This feature is enabled to merchants if merchant is live on emandates with more than one aggregator.
+    */
+    const NPCI_SPID = 'npci_spid';
+
+    /*
     * This feature is enabled when the merchant wants emandate debit to have same day settlement.
     */
     const EARLY_MANDATE_PRESENTMENT = 'early_mandate_presentment';
@@ -865,6 +870,7 @@ class Constants
         self::BLOCK_ONBOARDING_SMS            => true,
         self::OTP_SUBMIT_RESPONSE             => true,
         self::ESIGN                           => true,
+        self::NPCI_SPID                       => true,
         self::ROUTE_CODE_SUPPORT              => true,
         self::AUTH_SPLIT                      => true,
         self::VISA_SAFE_CLICK                 => true,
