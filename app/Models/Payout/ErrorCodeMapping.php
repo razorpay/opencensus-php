@@ -170,7 +170,7 @@ class ErrorCodeMapping
     ];
 
     public static $alternateFailureReasonMapping = [
-        'INVALID_VPA'                           => 'PSP failed to validate the UPI address. If the UPI address is valid, please retry after some time.',
+        'INVALID_VPA'                           => 'UPI validation failed. If the UPI ID is valid, please retry after sometime.',
     ];
 
     const DEFAULT_FAILURE_REASON = 'Payout failed. Contact support for help';
