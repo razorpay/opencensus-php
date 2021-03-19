@@ -162,7 +162,7 @@ class SubReconciliate extends Base\Core
     /**
      * @var array This array will contain MIS row and
      * corresponding reconciliation status and error
-     * msg in any. later an output file will be created.
+     * msg if any. later an output file will be created.
      */
     protected static $reconOutputData = [];
 

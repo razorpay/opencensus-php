@@ -5,6 +5,7 @@ namespace RZP\Reconciliator\Base\SubReconciliator;
 use App;
 
 use RZP\Constants;
+use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Models\QrCode;
 use RZP\Models\Payment;
@@ -21,6 +22,7 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Exception\ReconciliationException;
 use RZP\Models\Payment\Verify\Result as VerifyResult;
+use RZP\Reconciliator\RequestProcessor\Base as ReqBase;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends Base\Foundation\SubReconciliate
@@ -195,9 +197,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         try
         {
             //
-            // Note : We will proceed with recon process even if there is gateway mismatch.
-            // We trace such gateway mismatch alert in logs and daily report is sent to FinOps.
-            //
+            // Note : Recon process halts for upi_axis gateway when encountered with gateway mismatch.
             $this->checkForGatewayMismatch();
 
             $this->processReconciliationRow($row, $rowDetails, $paymentId);
@@ -272,8 +272,22 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                     'recon_gateway'         => $this->gateway,
                     'payment_gateway'       => $paymentGateway,
                     'payment_terminal_id'   => $this->payment->getTerminalId(),
+                    'batch_id'              => $this->batchId,
                 ]);
+
+            if (array_key_exists($this->gateway, ReqBase::HALT_RECON_ON_GATEWAY_MISMATCH) === true)
+            {
+                throw new ReconciliationException(Base\InfoCode::RECON_PAYMENT_GATEWAY_MISMATCH,
+                    [
+                        'recon_gateway' => $this->gateway,
+                        'payment_gateway' => $paymentGateway,
+                        'payment_id' => $this->payment->getId(),
+                        'batch_id' => $this->batch->getId(),
+                    ]);
+            }
         }
+
+        return;
     }
 
     /**

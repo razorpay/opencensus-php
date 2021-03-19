@@ -1223,7 +1223,7 @@ trait SettlementTrait
     }
 
     /**
-     * Returns the list of all channels for which settlments needs to be done
+     * Returns the list of all channels for which settlements needs to be done
      *
      * @param string|null $channel
      *

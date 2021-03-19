@@ -56,9 +56,9 @@ trait SettlementTrait
         $paymentCreatedAt = $holidayDate->copy();
 
         return [
-            'payment_created_at'        => $paymentCreatedAt->subDays(4)->format('j M Y'),
-            'payment_settlment_holiday' => $holidayDate->format('j M Y h:i:s'),
-            'payment_settlement_on'     => Holidays::getNextWorkingDay($holidayDate->addDay())->format('j M Y h:i:s'),
+            'payment_created_at'         => $paymentCreatedAt->subDays(4)->format('j M Y'),
+            'payment_settlement_holiday' => $holidayDate->format('j M Y h:i:s'),
+            'payment_settlement_on'      => Holidays::getNextWorkingDay($holidayDate->addDay())->format('j M Y h:i:s'),
         ];
     }
 

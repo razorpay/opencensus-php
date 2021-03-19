@@ -19,12 +19,14 @@ class CrawlerReconTest extends TestCase
 
         $this->gateway = '';
     }
-    
+
     public function testBobCrawlerReconciliation()
     {
         $this->gateway = 'netbanking_bob';
 
-        $payment = $this->createPayment('netbanking_bob', ['id'=>'D85nLQUuW4i5Jp', 'amount'=>100]);
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_bob_terminal');
+
+        $payment = $this->createPayment('netbanking_bob', ['id'=>'D85nLQUuW4i5Jp', 'amount'=>100, 'terminal_id' => $terminal['id']]);
 
         $this->createNetbanking($payment['id'], 'BOB', 'SUC');
 
@@ -62,7 +64,9 @@ class CrawlerReconTest extends TestCase
     {
         $this->gateway = 'mozart';
 
-        $payment = $this->createPayment('wallet_paypal', ['id'=>'DJEN97tL54dTIN', 'amount'=>100, 'currency'=>'USD','method'=>'wallet']);
+        $terminal = $this->fixtures->create('terminal:shared_paypal_terminal');
+
+        $payment = $this->createPayment('wallet_paypal', ['id'=>'DJEN97tL54dTIN', 'amount'=>100, 'currency'=>'USD','method'=>'wallet', 'terminal_id' => $terminal['id']]);
 
         $this->createWallet($payment['id'], 100,'wallet_paypal','USD', 'capture', 1234567);
 
@@ -79,7 +83,7 @@ class CrawlerReconTest extends TestCase
         $transactionEntity = $this->getDbLastEntity('transaction');
 
         $this->assertTrue($transactionEntity['reconciled_at'] !== null);
-        
+
         $this->assertBatchStatus(Status::PROCESSED);
     }
 
@@ -87,9 +91,11 @@ class CrawlerReconTest extends TestCase
     {
         $this->gateway = 'mozart';
 
-        $payment = $this->createPayment('getsimpl', ['id'=>'DXSg7YJuXEQs5Q', 'amount'=>100, 'method'=>'paylater']);
+        $terminal = $this->fixtures->create('terminal:getsimpl_terminal');
 
-        $this->createPaylater($payment['id'], 100,'getsimpl', 'capture', 1234567);
+        $payment = $this->createPayment('Getsimpl', ['id'=>'DXSg7YJuXEQs5Q', 'amount'=>100, 'method'=>'paylater', 'terminal_id' => $terminal['id']]);
+
+        $this->createPaylater($payment['id'], 100,'Getsimpl', 'capture', 1234567);
 
         $this->createRefund('Getsimpl', $payment, ['id'=>'DXSh0fhShgw6np', 'status'=> \RZP\Models\Payment\Refund\Status::PROCESSED, 'amount' => 100]);
 
@@ -112,7 +118,9 @@ class CrawlerReconTest extends TestCase
     {
         $this->gateway = 'netbanking_cub';
 
-        $payment = $this->createPayment('netbanking_cub', ['id'=>'DEelpRi0HMBGOi', 'amount'=>100]);
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_cub_terminal');
+
+        $payment = $this->createPayment('netbanking_cub', ['id'=>'DEelpRi0HMBGOi', 'amount'=>100, 'terminal_id' => $terminal['id']]);
 
         $this->createNetbanking($payment['id'], 'CUB', 'S');
 

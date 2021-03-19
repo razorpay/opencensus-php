@@ -27,7 +27,9 @@ class LambdaReconTest extends TestCase
     {
         $this->gateway = 'netbanking_icici';
 
-        $payment = $this->createPayment('netbanking_icici');
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_icici_terminal');
+
+        $payment = $this->createPayment('netbanking_icici', ['terminal_id' => $terminal['id']]);
 
         $this->createNetbanking($payment['id'], 'ICIC', 'S');
 

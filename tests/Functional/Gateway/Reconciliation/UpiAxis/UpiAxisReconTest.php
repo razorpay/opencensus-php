@@ -5,12 +5,13 @@ namespace RZP\Tests\Functional\Gateway\Reconciliation\UpiAxis;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 
-use RZP\Gateway\Upi\Base\Entity;
+use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
-use RZP\Models\Base\PublicEntity;
 use RZP\Models\Batch\Status;
+use RZP\Gateway\Upi\Base\Entity;
+use RZP\Models\Base\PublicEntity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Reconciliator\Base\Reconciliate;
 use RZP\Tests\Functional\Batch\BatchTestTrait;

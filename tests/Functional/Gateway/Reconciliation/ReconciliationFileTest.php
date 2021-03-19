@@ -2721,7 +2721,9 @@ class ReconciliationFileTest extends TestCase
     public function testHitachiReconPaymentFile()
     {
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-        $this->fixtures->create('terminal:shared_hitachi_terminal');
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'gateway_acquirer' => 'ratn']);
+
         $this->fixtures->merchant->addFeatures('charge_at_will');
 
         $this->payment['card']['number'] = CardNumber::VALID_ENROLL_NUMBER;
@@ -2767,7 +2769,9 @@ class ReconciliationFileTest extends TestCase
     public function testHitachiReconNonInrPaymentFile()
     {
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-        $this->fixtures->create('terminal:shared_hitachi_terminal');
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'gateway_acquirer' => 'ratn',
+        ]);
         $this->fixtures->merchant->addFeatures('charge_at_will');
 
         $this->payment['card']['number'] = CardNumber::VALID_ENROLL_NUMBER;
@@ -2832,6 +2836,7 @@ class ReconciliationFileTest extends TestCase
         $this->fixtures->on('live')->create('terminal', [
             'gateway_merchant_id'   => $reconRow['merchant_id'],
             'gateway'               => 'hitachi',
+            'gateway_acquirer'      => 'ratn',
         ]);
 
         $this->fixtures->edit(
@@ -2872,7 +2877,9 @@ class ReconciliationFileTest extends TestCase
     public function testHitachiForceAuthorizeFailedPayment()
     {
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-        $this->fixtures->create('terminal:shared_hitachi_terminal');
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'gateway_acquirer' => 'ratn'
+        ]);
         $this->fixtures->merchant->addFeatures('charge_at_will');
 
         $this->payment['card']['number'] = CardNumber::VALID_ENROLL_NUMBER;
@@ -2915,18 +2922,20 @@ class ReconciliationFileTest extends TestCase
     public function testHitachiForceAuthorizeFailedCpsPayment()
     {
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-        $this->fixtures->create('terminal:shared_hitachi_terminal');
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'gateway_acquirer' => 'ratn'
+        ]);
         $this->fixtures->merchant->addFeatures('charge_at_will');
 
         $this->payment['card']['number'] = CardNumber::VALID_ENROLL_NUMBER;
 
         $payment = $this->getNewPaymentEntity(false,true);
 
-        $gatewayPayment1 = $this->getLastEntity('hitachi', true);
+        $gatewayPayment = $this->getLastEntity('hitachi', true);
 
         $this->assertNull($payment['reference1']);
 
-        $entries[] = $this->overrideHitachiPayment($gatewayPayment1, ['auth_id' => $payment['reference2']]);
+        $entries[] = $this->overrideHitachiPayment($gatewayPayment, ['auth_id' => $payment['reference2']]);
 
         $file = $this->writeToExcelFile($entries, 'hitachi');
 
@@ -2934,7 +2943,7 @@ class ReconciliationFileTest extends TestCase
         // try to reconcile it with force authorize
         $this->fixtures->edit(
             'payment',
-            $gatewayPayment1['payment_id'],
+            $gatewayPayment['payment_id'],
             [
                 'status'    => Payment\Status::FAILED,
                 'cps_route' => 2,
@@ -4171,7 +4180,9 @@ class ReconciliationFileTest extends TestCase
 
     public function testAmexPaymentRecon()
     {
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_amex_terminal');
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_amex_terminal', [
+            'gateway_acquirer' => 'amex',
+        ]);
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
@@ -4224,7 +4235,9 @@ class ReconciliationFileTest extends TestCase
 
     public function testAmexPaymentReconFailureCount()
     {
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_amex_terminal');
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_amex_terminal', [
+            'gateway_acquirer' => 'amex',
+        ]);
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 

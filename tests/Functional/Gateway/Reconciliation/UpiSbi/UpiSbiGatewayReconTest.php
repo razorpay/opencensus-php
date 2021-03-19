@@ -139,6 +139,46 @@ class UpiSbiGatewayReconTest extends TestCase
         $this->assertEquals('SBI0000000000119', $upiEntity['gateway_merchant_id']);
     }
 
+    public function testGatewayMismatch()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $this->makeUpiSbiPaymentsSince(1, $createdAt);
+
+        $upiEntity = $this->getDbLastEntityToArray('upi');
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        //creating upisbi terminal to update it later in payment entitiy
+        $this->fixtures->create('terminal:shared_upi_axis_terminal');
+
+        //updating gateway and terminal to create gateway mismatch
+        $this->fixtures->edit('payment',
+            $upiEntity['payment_id'],
+            [
+                'gateway'       => 'upi_sbi',
+                'terminal_id'   => '100UPIAXISTmnl' //upisbi terminal
+            ]);
+
+        $this->fixtures->edit('upi',
+            $upiEntity['id'],
+            [
+                'gateway'       => 'upi_sbi'
+            ]);
+
+        $fileContents = $this->generateReconFile();
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile($uploadedFile, 'UpiSbi');
+
+        $this->assertBatchStatus(Status::PARTIALLY_PROCESSED);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNull($transactionEntity['reconciled_at']);
+    }
+
     public function testUpiSbiForceAuthorizePayment()
     {
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();

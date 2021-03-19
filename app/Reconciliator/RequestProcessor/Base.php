@@ -293,6 +293,7 @@ class Base extends Core
         Gateway::ISG                    => self::ISG,
         Gateway::EBS                    => self::EBS,
         Gateway::BT_YESBANK             => self::VIRTUAL_ACC_YESBANK,
+        Gateway::WORLDLINE              => self::VAS_AXIS,
 
         Gateway::AMEX                   => [
             Gateway::ACQUIRER_AMEX   => self::AMEX,
@@ -336,6 +337,11 @@ class Base extends Core
         Gateway::BAJAJFINSERV           => self::BAJAJFINSERV,
         Gateway::HDFC_DEBIT_EMI         => self::HDFC_DEBIT_EMI,
         Gateway::WORLDLINE              => self::VAS_AXIS,
+    ];
+
+    // Gateways for which halt gateway mismatch recon flow is ready
+    const HALT_RECON_ON_GATEWAY_MISMATCH = [
+        Base::UPI_SBI       => Base::UPI_SBI
     ];
 
     /**

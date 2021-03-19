@@ -38,7 +38,7 @@ class Core extends Base\Core
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_TYPE ,
                 "type",$input['type'],
-                "IIN Visa and MasterCard files are not be uploaded"
+                "IIN Visa and MasterCard files are not to be uploaded"
             );
         }
 

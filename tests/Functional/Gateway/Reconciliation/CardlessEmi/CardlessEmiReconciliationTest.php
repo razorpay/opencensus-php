@@ -42,6 +42,10 @@ class CardlessEmiReconciliationTest extends TestCase
 
     public function testPaymentReconciliation()
     {
+        $this->fixtures->edit('terminal', $this->sharedTerminal->getId(), [
+            'gateway_acquirer' => 'flexmoney',
+        ]);
+
         $createdAt = Carbon::yesterday(Timezone::IST)->getTimestamp();
 
         $payments = $this->makePaymentsSince($createdAt);
@@ -89,6 +93,10 @@ class CardlessEmiReconciliationTest extends TestCase
 
     public function testReconAmountValidationFailed()
     {
+        $this->fixtures->edit('terminal', $this->sharedTerminal->getId(), [
+            'gateway_acquirer' => 'flexmoney',
+        ]);
+
         $createdAt = Carbon::yesterday(Timezone::IST)->getTimestamp();
 
         $payments = $this->makePaymentsSince($createdAt, 1);

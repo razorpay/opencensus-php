@@ -498,7 +498,7 @@ class Merchant
         $mid = $this->merchant->getId();
 
         // add partner bank account to settlement entity if submerchant is settling to partner
-        // else try the settlment with current merchant bank account as that might
+        // else try the settlement with current merchant bank account as that might
         // have been the reason for settlement failure
         if(isset($merchantSettleToPartner[$mid]) === true)
         {

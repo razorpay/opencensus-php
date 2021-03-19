@@ -32,7 +32,9 @@ class NetbankingReconciliationTest extends TestCase
     {
         $this->gateway = 'netbanking_rbl';
 
-        $payment = $this->createPayment('netbanking_rbl');
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_rbl_terminal');
+
+        $payment = $this->createPayment('netbanking_rbl', ['terminal_id' => $terminal['id']]);
 
         $netbanking = $this->createNetbanking($payment['id'], 'RATN');
 
@@ -102,7 +104,9 @@ class NetbankingReconciliationTest extends TestCase
 
         $this->setMockGatewayTrue();
 
-        $payment = $this->createFailedPayment($this->gateway, ['amount' => 10000012]);
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_rbl_terminal');
+
+        $payment = $this->createFailedPayment($this->gateway, ['amount' => 10000012, 'terminal_id' => $terminal['id']]);
 
         $this->createNetbanking($payment['id'], 'RATN', null, null);
 
@@ -162,9 +166,11 @@ class NetbankingReconciliationTest extends TestCase
     {
         $this->gateway = 'netbanking_equitas';
 
-        $payment = $this->createPayment('netbanking_equitas');
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_equitas_terminal');
 
-        $netbanking = $this->createNetbanking($payment['id'], 'ESFB', 'S');
+        $payment = $this->createPayment('netbanking_equitas', ['terminal_id' => $terminal['id']]);
+
+        $this->createNetbanking($payment['id'], 'ESFB', 'S');
 
         $fileContents = $this->generateFile('equitas', []);
 
@@ -194,7 +200,9 @@ class NetbankingReconciliationTest extends TestCase
 
         $this->setMockGatewayTrue();
 
-        $payment = $this->createFailedPayment($this->gateway);
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_equitas_terminal');
+
+        $payment = $this->createFailedPayment($this->gateway, ['terminal_id' => $terminal['id']]);
 
         $netbanking = $this->createNetbanking($payment['id'], 'ESFB', 'F');
 
@@ -259,7 +267,9 @@ class NetbankingReconciliationTest extends TestCase
     {
         $this->gateway = 'netbanking_indusind';
 
-        $payment = $this->createPayment('netbanking_indusind');
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_indusind_terminal');
+
+        $payment = $this->createPayment('netbanking_indusind', ['terminal_id' => $terminal['id']]);
 
         $netbanking = $this->createNetbanking($payment['id'], 'INDB', 'Y');
 
@@ -327,13 +337,15 @@ class NetbankingReconciliationTest extends TestCase
     {
         $this->gateway = 'netbanking_pnb';
 
-        $payment1 = $this->createPayment('netbanking_pnb');
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_pnb_terminal');
+
+        $payment1 = $this->createPayment('netbanking_pnb', ['terminal_id' => $terminal['id']]);
 
         $this->createNetbanking($payment1['id'], 'PUNB', '0');
 
         $this->setMockGatewayTrue();
 
-        $payment2 = $this->createFailedPayment($this->gateway);
+        $payment2 = $this->createFailedPayment($this->gateway, ['terminal_id' => $terminal['id']]);
 
         $this->createNetbanking($payment2['id'], 'PUNB', '1000');
 
@@ -434,9 +446,11 @@ class NetbankingReconciliationTest extends TestCase
     {
         $this->gateway = 'netbanking_idfc';
 
-        $payment = $this->createPayment($this->gateway);
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_idfc_terminal');
 
-        $netbanking = $this->createNetbanking($payment['id'], 'IDFB', 'S');
+        $payment = $this->createPayment($this->gateway, ['terminal_id' => $terminal['id']]);
+
+        $this->createNetbanking($payment['id'], 'IDFB', 'S');
 
         $input = [
             'gateway' => $this->gateway,
@@ -467,7 +481,9 @@ class NetbankingReconciliationTest extends TestCase
 
         $this->setMockGatewayTrue();
 
-        $payment = $this->createFailedPayment($this->gateway);
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_idfc_terminal');
+
+        $payment = $this->createFailedPayment($this->gateway, ['terminal_id' => $terminal['id']]);
 
         $netbanking = $this->createNetbanking($payment['id'], 'IDFB', 'ACT001');
 
@@ -502,7 +518,9 @@ class NetbankingReconciliationTest extends TestCase
 
         $this->setMockGatewayTrue();
 
-        $payment = $this->createPayment('netbanking_obc', ['amount' => 150]);
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_obc_terminal');
+
+        $payment = $this->createPayment('netbanking_obc', ['amount' => 150, 'terminal_id' => $terminal['id']]);
 
         $this->createNetbanking($payment['id'], 'ORBC', 'Y');
 
@@ -533,7 +551,9 @@ class NetbankingReconciliationTest extends TestCase
     {
         $this->setMockGatewayTrue();
 
-        $payment = $this->createFailedPayment('netbanking_obc');
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_obc_terminal');
+
+        $payment = $this->createFailedPayment('netbanking_obc', ['terminal_id' => $terminal['id']]);
 
         $this->createNetbanking($payment['id'], 'ORBC', 'F');
 
@@ -572,9 +592,11 @@ class NetbankingReconciliationTest extends TestCase
 
         $this->setMockGatewayTrue();
 
-        $payment = $this->createPayment($this->gateway);
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_obc_terminal');
 
-        $netbanking = $this->createNetbanking($payment['id'], 'ORBC', 'Y');
+        $payment = $this->createPayment($this->gateway, ['terminal_id' => $terminal['id']]);
+
+        $this->createNetbanking($payment['id'], 'ORBC', 'Y');
 
         $this->mockReconContentFunction(
             function(& $content, $action = null)
@@ -607,13 +629,15 @@ class NetbankingReconciliationTest extends TestCase
     {
         $this->gateway = 'netbanking_bob';
 
-        $payment = $this->createPayment('netbanking_bob', ['amount' => 40000]);
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_bob_terminal');
 
-        $netbanking = $this->createNetbanking($payment['id'], 'BARB', 'S');
+        $payment = $this->createPayment('netbanking_bob', ['amount' => 40000, 'terminal_id' => $terminal['id']]);
 
-        $payment = $this->createPayment('netbanking_bob');
+        $this->createNetbanking($payment['id'], 'BARB', 'S');
 
-        $netbanking = $this->createNetbanking($payment['id'], 'BARB', 'S');
+        $payment = $this->createPayment('netbanking_bob', ['terminal_id' => $terminal['id']]);
+
+        $this->createNetbanking($payment['id'], 'BARB', 'S');
 
         $fileContents = $this->generateFile('bob', []);
 
@@ -640,7 +664,9 @@ class NetbankingReconciliationTest extends TestCase
     {
         $this->gateway = 'netbanking_hdfc';
 
-        $payment = $this->createPayment('netbanking_hdfc');
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
+
+        $payment = $this->createPayment('netbanking_hdfc', ['terminal_id' => $terminal['id']]);
 
         //bank name is wrong?
         $this->createNetbanking($payment['id'], 'ICIC', 'S');
@@ -668,7 +694,9 @@ class NetbankingReconciliationTest extends TestCase
     {
         $this->gateway = 'netbanking_allahabad';
 
-        $payment = $this->createPayment('netbanking_allahabad');
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_allahabad_terminal');
+
+        $payment = $this->createPayment('netbanking_allahabad', ['terminal_id' => $terminal['id']]);
 
         $this->createNetbanking($payment['id'], 'ALLA', 'Y');
 
@@ -695,7 +723,9 @@ class NetbankingReconciliationTest extends TestCase
     {
         $this->gateway = 'netbanking_canara';
 
-        $payment = $this->createPayment('netbanking_canara');
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_canara_terminal');
+
+        $payment = $this->createPayment('netbanking_canara', ['terminal_id' => $terminal['id']]);
 
         $this->createNetbanking($payment['id'], 'CNRB');
 
@@ -726,9 +756,11 @@ class NetbankingReconciliationTest extends TestCase
 
         $this->setMockGatewayTrue();
 
-        $payment = $this->createFailedPayment($this->gateway);
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_allahabad_terminal');
 
-        $netbanking = $this->createNetbanking($payment['id'], 'ALLA', 'N');
+        $payment = $this->createFailedPayment($this->gateway, ['terminal_id' => $terminal['id']]);
+
+        $this->createNetbanking($payment['id'], 'ALLA', 'N');
 
         $fileContents = $this->generateFile('allahabad', []);
 
@@ -755,7 +787,9 @@ class NetbankingReconciliationTest extends TestCase
 
         $this->setMockGatewayTrue();
 
-        $payment = $this->createFailedPayment($this->gateway);
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_canara_terminal');
+
+        $payment = $this->createFailedPayment($this->gateway, ['terminal_id' => $terminal['id']]);
 
         $this->createNetbanking($payment['id'], 'CNRB','F');
 
@@ -780,7 +814,9 @@ class NetbankingReconciliationTest extends TestCase
 
         $this->setMockGatewayTrue();
 
-        $payment = $this->createPayment($this->gateway);
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_canara_terminal');
+
+        $payment = $this->createPayment($this->gateway, ['terminal_id' => $terminal['id']]);
 
         $netbanking = $this->createNetbanking($payment['id'], 'CNRB');
 
@@ -817,7 +853,9 @@ class NetbankingReconciliationTest extends TestCase
 
         $this->setMockGatewayTrue();
 
-        $payment = $this->createFailedPayment($this->gateway);
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_icici_terminal');
+
+        $payment = $this->createFailedPayment($this->gateway, ['terminal_id' => $terminal['id']]);
 
         $this->createNetbanking($payment['id'], 'ICIC', 'N');
 
@@ -846,7 +884,9 @@ class NetbankingReconciliationTest extends TestCase
     {
         $this->gateway = 'netbanking_icici';
 
-        $payment = $this->createPayment('netbanking_icici');
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_icici_terminal');
+
+        $payment = $this->createPayment('netbanking_icici', ['terminal_id' => $terminal['id']]);
 
         $this->createNetbanking($payment['id'], 'ICIC', 'Y');
 
@@ -929,11 +969,13 @@ class NetbankingReconciliationTest extends TestCase
 
         $payments = [];
 
-        $payments[] = $this->createFailedPayment($this->gateway);
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_cbi_terminal');
+
+        $payments[] = $this->createFailedPayment($this->gateway, ['terminal_id' => $terminal['id']]);
 
         $this->createMozartEntity($payments[0]['id'], $payments[0]['amount'], 'netbanking_cbi', '123');
 
-        $payments[] = $this->createPayment($this->gateway, ['amount' => 2000]);
+        $payments[] = $this->createPayment($this->gateway, ['amount' => 2000, 'terminal_id' => $terminal['id']]);
 
         $this->createMozartEntity($payments[1]['id'], $payments[1]['amount'], 'netbanking_cbi', '234');
 
@@ -975,7 +1017,9 @@ class NetbankingReconciliationTest extends TestCase
     {
         $this->gateway = 'netbanking_scb';
 
-        $payment = $this->createPayment($this->gateway);
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_scb_terminal');
+
+        $payment = $this->createPayment($this->gateway, ['terminal_id' => $terminal['id']]);
 
         $this->createMozartEntity($payment['id'], $payment['amount'], 'netbanking_scb');
 
@@ -1032,7 +1076,9 @@ class NetbankingReconciliationTest extends TestCase
     {
         $this->gateway = 'netbanking_scb';
 
-        $payment = $this->createFailedPayment($this->gateway);
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_scb_terminal');
+
+        $payment = $this->createFailedPayment($this->gateway, ['terminal_id' => $terminal['id']]);
 
         $this->createMozartEntity($payment['id'], $payment['amount'], 'netbanking_scb');
 
@@ -1063,7 +1109,9 @@ class NetbankingReconciliationTest extends TestCase
     {
         $this->gateway = 'netbanking_sib';
 
-        $payment = $this->createPayment($this->gateway);
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_sib_terminal');
+
+        $payment = $this->createPayment($this->gateway, ['terminal_id' => $terminal['id']]);
 
         $this->createMozartEntity($payment['id'], $payment['amount'], 'netbanking_sib');
 
@@ -1154,7 +1202,9 @@ class NetbankingReconciliationTest extends TestCase
     {
         $this->gateway = 'netbanking_sib';
 
-        $payment = $this->createFailedPayment($this->gateway);
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_sib_terminal');
+
+        $payment = $this->createFailedPayment($this->gateway, ['terminal_id' => $terminal['id']]);
 
         $this->createMozartEntity($payment['id'], $payment['amount'], 'netbanking_sib');
 
@@ -1185,7 +1235,9 @@ class NetbankingReconciliationTest extends TestCase
     {
         $this->gateway = 'netbanking_yesb';
 
-        $payment = $this->createPayment($this->gateway);
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_yesb_terminal');
+
+        $payment = $this->createPayment($this->gateway, ['terminal_id' => $terminal['id']]);
 
         $this->createMozartEntity($payment['id'], $payment['amount'], 'netbanking_yesb');
 
@@ -1242,7 +1294,9 @@ class NetbankingReconciliationTest extends TestCase
     {
         $this->gateway = 'netbanking_yesb';
 
-        $payment = $this->createFailedPayment($this->gateway);
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_yesb_terminal');
+
+        $payment = $this->createFailedPayment($this->gateway, ['terminal_id' => $terminal['id']]);
 
         $this->createMozartEntity($payment['id'], $payment['amount'], 'netbanking_yesb');
 
@@ -1337,7 +1391,9 @@ class NetbankingReconciliationTest extends TestCase
     {
         $this->gateway = 'netbanking_kvb';
 
-        $payment = $this->createPayment($this->gateway);
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_kvb_terminal');
+
+        $payment = $this->createPayment($this->gateway, ['terminal_id' => $terminal['id']]);
 
         $this->createMozartEntity($payment['id'], $payment['amount'], 'netbanking_kvb');
 
@@ -1396,7 +1452,9 @@ class NetbankingReconciliationTest extends TestCase
     {
         $this->gateway = 'netbanking_kvb';
 
-        $payment = $this->createFailedPayment($this->gateway);
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_kvb_terminal');
+
+        $payment = $this->createFailedPayment($this->gateway, ['terminal_id' => $terminal['id']]);
 
         $this->createMozartEntity($payment['id'], $payment['amount'], 'netbanking_kvb');
 
@@ -1431,7 +1489,9 @@ class NetbankingReconciliationTest extends TestCase
 
         $this->gateway = 'netbanking_ibk';
 
-        $payment = $this->createPayment($this->gateway);
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_ibk_terminal');
+
+        $payment = $this->createPayment($this->gateway, ['terminal_id' => $terminal['id']]);
 
         $this->createMozartEntity($payment['id'], $payment['amount'], 'netbanking_ibk');
 
@@ -1492,7 +1552,9 @@ class NetbankingReconciliationTest extends TestCase
 
         $this->gateway = 'netbanking_ibk';
 
-        $payment = $this->createFailedPayment($this->gateway);
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_ibk_terminal');
+
+        $payment = $this->createFailedPayment($this->gateway, ['terminal_id' => $terminal['id']]);
 
         $this->createMozartEntity($payment['id'], $payment['amount'], 'netbanking_ibk');
 
@@ -1523,7 +1585,9 @@ class NetbankingReconciliationTest extends TestCase
     {
         $this->gateway = 'netbanking_cub';
 
-        $payment = $this->createPayment($this->gateway);
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_cub_terminal');
+
+        $payment = $this->createPayment($this->gateway, ['terminal_id' => $terminal['id']]);
 
         $this->createMozartEntity($payment['id'], $payment['amount'], 'netbanking_cub');
 
@@ -1580,7 +1644,9 @@ class NetbankingReconciliationTest extends TestCase
     {
         $this->gateway = 'netbanking_cub';
 
-        $payment = $this->createFailedPayment($this->gateway);
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_cub_terminal');
+
+        $payment = $this->createFailedPayment($this->gateway, ['terminal_id' => $terminal['id']]);
 
         $this->createMozartEntity($payment['id'], $payment['amount'], 'netbanking_cub');
 
@@ -1611,7 +1677,9 @@ class NetbankingReconciliationTest extends TestCase
     {
         $this->gateway = 'netbanking_corporation';
 
-        $payment = $this->createPayment($this->gateway);
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_corporation_terminal');
+
+        $payment = $this->createPayment($this->gateway, ['terminal_id' => $terminal['id']]);
 
         $this->createNetbanking($payment['id'], 'corporation', 'S');
 
@@ -1663,7 +1731,9 @@ class NetbankingReconciliationTest extends TestCase
     {
         $this->gateway = 'netbanking_corporation';
 
-        $payment = $this->createFailedPayment($this->gateway);
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_corporation_terminal');
+
+        $payment = $this->createFailedPayment($this->gateway, ['terminal_id' => $terminal['id']]);
 
         $this->createNetbanking($payment['id'], 'corporation', 'F');
 
@@ -1768,7 +1838,9 @@ class NetbankingReconciliationTest extends TestCase
     {
         $this->gateway = 'netbanking_vijaya';
 
-        $payment = $this->createPayment($this->gateway);
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_vijaya_terminal');
+
+        $payment = $this->createPayment($this->gateway, ['terminal_id' => $terminal['id']]);
 
         $this->createNetbanking($payment['id'], 'vijaya', 'Y');
 
@@ -1820,7 +1892,9 @@ class NetbankingReconciliationTest extends TestCase
     {
         $this->gateway = 'netbanking_vijaya';
 
-        $payment = $this->createFailedPayment($this->gateway);
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_vijaya_terminal');
+
+        $payment = $this->createFailedPayment($this->gateway, ['terminal_id' => $terminal['id']]);
 
         $this->createNetbanking($payment['id'], 'vijaya', 'N');
 
@@ -1857,7 +1931,9 @@ class NetbankingReconciliationTest extends TestCase
     {
         $this->gateway = 'netbanking_axis';
 
-        $payment = $this->createFailedPayment($this->gateway);
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_axis_terminal');
+
+        $payment = $this->createFailedPayment($this->gateway, ['terminal_id' => $terminal['id']]);
 
         $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
 
@@ -1892,7 +1968,9 @@ class NetbankingReconciliationTest extends TestCase
     {
         $this->gateway = 'netbanking_federal';
 
-        $payment = $this->createPayment($this->gateway);
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_federal_terminal');
+
+        $payment = $this->createPayment($this->gateway, ['terminal_id' => $terminal['id']]);
 
         $this->createNetbanking($payment['id'], 'federal');
 
@@ -1917,7 +1995,9 @@ class NetbankingReconciliationTest extends TestCase
     {
         $this->gateway = 'netbanking_kotak';
 
-        $payment = $this->createPayment($this->gateway);
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_kotak_terminal');
+
+        $payment = $this->createPayment($this->gateway, ['terminal_id' => $terminal['id']]);
 
         $this->createNetbanking($payment['id'], 'kotak', 'SUC', 99999, 456789);
 

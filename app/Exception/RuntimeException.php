@@ -14,10 +14,7 @@ class RuntimeException extends ServerErrorException
     {
         $code = $code ?? ErrorCode::SERVER_ERROR_RUNTIME_ERROR;
 
-        if ($message === null)
-        {
-            $message = 'Runtime error occurred';
-        }
+        $message = $message ?? 'Runtime error occurred';
 
         parent::__construct($message, $code, $data, $previous);
     }
