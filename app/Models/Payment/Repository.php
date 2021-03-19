@@ -24,6 +24,7 @@ use RZP\Models\Admin\Org;
 use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
+use RZP\Models\PaymentLink;
 use RZP\Models\BankTransfer;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Verify;
@@ -2332,5 +2333,24 @@ class Repository extends Base\Repository
         {
             $payment->emiPlan()->associate($emiPlan);
         }
+    }
+
+    public function getValidatePaymentsForPaymentPages(PaymentLink\Entity $paymentPage)
+    {
+        return $this->repo->useSlave( function() use ($paymentPage)
+        {
+            // Adding the 45 min check because we are checking only for created and authorized payments
+            // which are in progress.
+            // They are expected to change status within this time. otherwise we will refund the amount
+            // refund happens in payment pages post capture flow
+            $timeStamp = Carbon::today(Timezone::IST)->subMinutes(45)->getTimestamp();
+
+            return $this->newQuery()
+                       ->where(Entity::PAYMENT_LINK_ID, $paymentPage->getId())
+                       ->where(Entity::MERCHANT_ID, $paymentPage->getMerchantId())
+                       ->where(Entity::CREATED_AT, '>', $timeStamp)
+                       ->whereIn(Entity::STATUS,[Status::CREATED, Status::AUTHORIZED])
+                       ->get();
+        });
     }
 }

@@ -1062,7 +1062,7 @@ class Core extends Base\Core
 
         $lineItems = $order->lineItems()->get();
 
-        $succeedingPayments = $this->repo->payment_link->getSucceedingPayments($paymentLink);
+        $succeedingPayments = $this->repo->payment->getValidatePaymentsForPaymentPages($paymentLink);
 
         $paymentPageItemQuantity = $this->getActivePaymentQuantityCount($succeedingPayments);
 
