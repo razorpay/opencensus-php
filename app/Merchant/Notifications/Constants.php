@@ -601,6 +601,45 @@ class Constants
                 'experiments_with_variant' => ['es_ondeman_restricted_cohorts' => 'cohort-2'],
             ]
         ],
+        [
+            'id'          => 'whats-new-mar21-credpay-gtm',
+            'title'       => 'Introducing CRED Pay',
+            'description' => 'Boost repeat sales, loyalty, and average order value by 40% with CRED Pay.',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/cred_pay.png',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Apply for Access',
+                    'url'   => 'https://share.hsforms.com/1vq5O2PbXTlmh60MOedSeRA3b5b6',
+                ],
+                [
+                    'type'  => 'primary-inverted',
+                    'label' => 'Read More',
+                    'id'    => 'announcement-details-l2',
+                    'url'   => '/announcements/whats-new-mar21-credpay-gtm/'
+                ],
+            ],
+            'start_ts'    => 1616112000,
+            'end_ts'      => 1623974400,
+            'filters'     => [
+                'experiments'         => ['cred_pay_amex_notification'],
+            ],
+            'l2_content'  => [
+                'content'     => "<div class='title'> <img src='https://cdn.razorpay.com/static/assets/notifs/cred_pay.png' width='32px' /><p>Increase revenue, repeat purchases and loyalty with CRED Pay</p></div><div> <b> Tap into 5.9 million premium customers whose average order value is 40% higher than an average customer </b><ul><li>Up to 15% higher conversions</li><li>Target Premium Customers</li><li>Provide Exclusive Rewards</li><li>Boost Recurring Revenue</li><li>Up to 15% higher conversions</li><li>Exclusive Bank Offers</li></ul><div class='image'> <img src='https://cdn.razorpay.com/static/assets/whats-new/cred_pay.png' /></div><div> <b>CRED Pay Pricing</b><div>Given below are the pricing details for CRED Pay:</div><ul><li>Revenue Share: 5%</li><li> Discount: 10% (This sponsors the discount that your customers get on burning CRED coins.) <br /> <a href='https://razorpay.com/docs/payment-gateway/payment-methods/apps/cred/pricing/#roi-calculator' target='_blank' > Pricing details </a></li></ul></div><div class='paragraph'> <b>How Mosaic Wellness acquired premium customers with CRED pay</b><p> “We are consistently noticing higher basket sizes from CRED members and are thus incentivising these users with CRED coins. As a payment option, it gives users access to their credit cards saved on CRED along with a flow that bypasses OTP & CVV on select Visa cards leading to further reduction in payment drop offs.”</p> <b>Revant Bhate,</b> <br /> <b>CEO, Mosaic Wellness</b></div></div>",
+                'buttons'     => [
+                    [
+                        'type'  => 'button',
+                        'label' => 'Apply For Access',
+                        'url'   => 'https://share.hsforms.com/1vq5O2PbXTlmh60MOedSeRA3b5b6',
+                    ],
+                    [
+                        'type'  => 'primary-inverted',
+                        'label' => 'Pricing',
+                        'url'   => 'https://razorpay.com/docs/payment-gateway/payment-methods/apps/cred/pricing/#roi-calculator',
+                    ],
+                ],
+            ],
+        ],
     ];
 
     public static function getNotifications(): array

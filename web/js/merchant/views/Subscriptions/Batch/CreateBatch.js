@@ -98,9 +98,9 @@ export default class CreateHostedMandateBatch extends Component {
           <div
             class="panel panel-default recurring-charge"
             onClick={openUploadModal(
-              user.isCAWRecurringChargeAxisEnabled ?
-                this.renderRecurringChargeAxisModal :
-                this.renderRecurringChargeModal
+              user.isCAWRecurringChargeAxisEnabled
+                ? this.renderRecurringChargeAxisModal
+                : this.renderRecurringChargeModal,
             )}
           >
             <div class="panel-body">

@@ -356,6 +356,7 @@ export default class WhatsNew extends Component {
       'Feb20-ES1-PILOT',
       'Feb20-ES1-PILOT_V2',
       'projectNitro-hyderabad',
+      'whats-new-mar21-credpay-gtm',
     ];
     const hasUnread = !!this.state.totalUnread;
 

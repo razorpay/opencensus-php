@@ -1479,6 +1479,7 @@ class Service extends Base\Service
             'nitro_hyderabad_v1',
             'pl_swith_v2',
             'dashboard_show_nps_survey',
+            'cred_pay_amex_notification',
             'caw_recurring_charge_axis'
         ];
 

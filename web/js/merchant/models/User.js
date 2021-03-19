@@ -627,7 +627,10 @@ export default class User {
   }
 
   get isCAWRecurringChargeAxisEnabled() {
-    return this.isFeatureEnabled('caw_recurring_charge_axis') || this.getExpStatus('caw_recurring_charge_axis');
+    return (
+      this.isFeatureEnabled('caw_recurring_charge_axis') ||
+      this.getExpStatus('caw_recurring_charge_axis')
+    );
   }
 
   // 100% rollout done. Exp to be removed shortly
