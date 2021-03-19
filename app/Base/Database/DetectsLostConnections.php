@@ -2,7 +2,7 @@
 
 namespace RZP\Base\Database;
 
-use Exception;
+use Throwable;
 use Illuminate\Support\Str;
 
 trait DetectsLostConnections
@@ -13,7 +13,7 @@ trait DetectsLostConnections
      * @param  \Exception  $e
      * @return bool
      */
-    protected function causedByLostConnection(Exception $e)
+    protected function causedByLostConnection(Throwable $e)
     {
         $message = $e->getMessage();
 

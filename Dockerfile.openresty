@@ -22,7 +22,6 @@ RUN set -eu && \
     rm -rf /root/.composer && \
     composer clear-cache && \
     composer dump-autoload -o && \
-    php artisan optimize && \
     php artisan rzp:write_routes_meta
 
 

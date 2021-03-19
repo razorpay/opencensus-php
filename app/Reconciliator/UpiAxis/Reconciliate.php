@@ -2,6 +2,8 @@
 
 namespace RZP\Reconciliator\UpiAxis;
 
+use Illuminate\Support\Str;
+
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\FileProcessor;
 
@@ -34,12 +36,11 @@ class Reconciliate extends Base\Reconciliate
     {
         $type = null;
 
-        if (str_contains($fileName, self::PAYMENT_RECON_FILE_NAME) !== false)
+        if (Str::contains($fileName, self::PAYMENT_RECON_FILE_NAME) !== false)
         {
             $type = self::PAYMENT;
         }
-
-        if (str_contains($fileName, self::REFUND_RECON_FILE_NAME) !== false)
+        if (Str::contains($fileName, self::REFUND_RECON_FILE_NAME) !== false)
         {
             $type = self::REFUND;
         }

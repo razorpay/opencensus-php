@@ -28,8 +28,7 @@ RUN set -eu && \
 
 COPY . /app/
 
-RUN composer dump-autoload -o && \
-    php artisan optimize
+RUN composer dump-autoload -o
 
 RUN apk add make git
 ADD Makefile /app

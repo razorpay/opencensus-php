@@ -20,13 +20,7 @@ class TrustedProxy extends Middleware
     /**
      * The current proxy header mappings.
      *
-     * @var array
+     * @var null|string|int
      */
-    protected $headers = [
-        Request::HEADER_CLIENT_IP    => 'X_FORWARDED_FOR',
-        Request::HEADER_CLIENT_PROTO => 'X_FORWARDED_PROTO',
-        Request::HEADER_CLIENT_PORT  => 'X_FORWARDED_PORT',
-        Request::HEADER_FORWARDED    => null,
-        Request::HEADER_CLIENT_HOST  => 'X_FORWARDED_HOST',
-    ];
+    protected $headers = Request::HEADER_X_FORWARDED_ALL;
 }

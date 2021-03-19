@@ -214,7 +214,7 @@
             Total Amount: <strong class="due">₹{{$data['invoice']['amount_formatted']}}</strong><br>
             Total Balance Due: <strong class="due">₹{{$data['invoice']['amount_due_formatted']}}</strong>
             <hr>
-            <div>{!! nl2br(e($data['invoice']['description'])) !!}</div>
+            <div>{!! nl2br(e($data['invoice']['description'], false)) !!}</div>
           </div>
         </div>
         <div id="partial-container" class="{{$data['invoice']['status']}}">
@@ -312,7 +312,7 @@
                 document.querySelector('#break').innerHTML = 'Please wait...';
                 document.body.className = 'paid';
               },
-              description: "{!! preg_replace('/\n/m', '\n', e($data['invoice']['description'])) !!}",
+              description: "{!! preg_replace('/\n/m', '\n', e($data['invoice']['description'], false)) !!}",
               invoice_id: "{{$data['invoice']['id']}}",
               callback_url: location.href,
               remember_customer: false,

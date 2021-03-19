@@ -161,7 +161,8 @@ class GatewayDowntimeTest extends TestCase
 
         $this->assertEquals($downtimeTo, $response2['end']);
 
-        $this->assertEquals(true, $response2['scheduled']);
+        // unsetEditDuplicateInput contains scheduled, hence schedule cannot be edited and will be false
+        $this->assertEquals(false, $response2['scheduled']);
 
         $downtimeEntity = $this->getLastEntity('gateway_downtime', true);
 

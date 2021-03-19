@@ -7,8 +7,7 @@
          convertNoticesToExceptions="true"
          convertWarningsToExceptions="true"
          processIsolation="false"
-         stopOnFailure="false"
-         syntaxCheck="false">
+         stopOnFailure="false">
   <testsuites>
       <testsuite name="Application Test Suite">
           <directory>./tests/Functional/</directory>
@@ -172,7 +171,6 @@
           <directory>./tests/Functional/Gateway/Hitachi/</directory>
           <directory>./tests/Functional/Gateway/CardlessEmi</directory>
           <directory>./tests/Functional/Gateway/Mozart/</directory>
-          <exclude>./tests/Functional/Gateway/Mozart/UpiMindgateRecurringTest.php</exclude>
           <directory>./tests/Functional/Gateway/PayLater</directory>
           <directory>./tests/Functional/Gateway/Wallet/</directory>
           <directory>./tests/Functional/Gateway/FirstData/</directory>
@@ -182,6 +180,7 @@
           <directory>./tests/Functional/Gateway/Mobikwik/</directory>
           <directory>./tests/Functional/Gateway/Cybersource/</directory>
           <directory>./tests/Functional/Gateway/Hdfc/</directory>
+          <exclude>./tests/Functional/Gateway/Mozart/UpiMindgateRecurringTest.php</exclude>
       </testsuite>
       <testsuite name="Smart Collect Test Suite">
           <directory>./tests/Functional/VirtualAccount</directory>

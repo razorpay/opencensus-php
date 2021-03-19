@@ -108,7 +108,7 @@ class Validator extends Base\Validator
 
     protected static $uploadImagesRules = [
         'images'     => 'required|array|min:1|max:5',
-        'images.*'   => 'required|image|max:2048',
+        'images.*'   => 'required|mimes:jpg,jpeg,png,gif,bmp,svg|max:2048',
     ];
 
     protected static $minAmountCheckRules = [
