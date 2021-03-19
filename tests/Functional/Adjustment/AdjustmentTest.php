@@ -894,6 +894,8 @@ class AdjustmentTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['content']['balance_id'] = $balancefixture['id'];
 
+        $this->ba->adminAuth();
+
         $response = $this->startTest();
 
         $adjId = $response['id'];
