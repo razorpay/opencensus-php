@@ -171,7 +171,7 @@ class Base extends Core
         self::NETBANKING_PNB         => [],
         self::NETBANKING_ALLAHABAD   => ['imps.recon@allahabadbank.in', 'cbspo.aeps@allahabadbank.in'],
         self::NETBANKING_IDFC        => [],
-        self::NETBANKING_CSB         => ['noreply@csb.co.in'],
+        self::NETBANKING_CSB         => ['noreply@csb.co.in', 'donotreply@csb.co.in'],
         self::NETBANKING_CORPORATION => ['ncbsfeba@corpbank.co.in'],
         self::NETBANKING_VIJAYA      => [], //TODO: add this value when shared post UAT
         self::NETBANKING_BOB         => ['billpay@bankofbaroda.com'],
