@@ -1480,7 +1480,8 @@ class Service extends Base\Service
             'pl_swith_v2',
             'dashboard_show_nps_survey',
             'cred_pay_amex_notification',
-            'caw_recurring_charge_axis'
+            'caw_recurring_charge_axis',
+            'rx_enable_amazonpay_wallet_payout',
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
