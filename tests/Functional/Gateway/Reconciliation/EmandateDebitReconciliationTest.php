@@ -99,6 +99,81 @@ class EmandateDebitReconciliationTest extends TestCase
         $this->assertAxisEntities($debitPaymentIds);
     }
 
+    public function testAxisNbEmandateDebitReconPostFiveDays()
+    {
+
+        $this->fixtures->create('config', ['type' => 'late_auth', 'is_default' => true,
+            'config'     => '{
+                "capture": "automatic",
+                "capture_options": {
+                    "manual_expiry_period": 20,
+                    "automatic_expiry_period": 13,
+                    "refund_speed": "normal"
+                }
+            }']);
+
+        $this->bank = 'UTIB';
+
+        $this->gateway = 'netbanking_axis';
+
+        $this->createInitialPayment($this->bank);
+
+        $debitPaymentId = $this->createDebitPayment($this->bank, 2500);
+
+        $content = [
+            'type' => 'emandate_debit',
+            'targets' => ['axis']
+        ];
+
+        $this->generateDebitFile($content);
+
+        $fileContents = $this->generateReconFile(['type' => 'emandate_debit']);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->fixtures->edit(
+            'payment',
+            $debitPaymentId,
+            ['created_at' => Carbon::today(Timezone::IST)->subDays(7)->getTimestamp()]
+        );
+
+        $this->reconcile($uploadedFile, 'EmandateAxis');
+
+        $batch = $this->getDbLastEntityToArray('batch');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'type'          => 'reconciliation',
+                'sub_type'      => 'emandate_debit',
+                'gateway'       => 'EmandateAxis',
+                'status'        => 'processed',
+                'success_count' => 1,
+            ],
+            $batch
+        );
+
+        $debitPayment = $this->getDbEntityById('payment', $debitPaymentId)->toArray();
+
+        // Assert debit payment entity
+        $this->assertEquals('authorized', $debitPayment['status']);
+
+        // Asserts that the transaction is reconciled
+        $transaction = $this->getDbEntity('transaction', ['entity_id' => $debitPaymentId])
+            ->toArray();
+
+        $this->assertEquals($debitPayment['amount'], $transaction['amount']);
+
+        // Assert netbanking entity updates
+        $gatewayPayment = $this->getDbEntity('netbanking', ['payment_id' => $debitPaymentId])
+            ->toArray();
+
+        $this->assertEquals('Success', $gatewayPayment['status']);
+
+        $transaction = $this->getDbEntityById('transaction', $debitPayment['transaction_id'])->toArray();
+
+        $this->assertNotNull($transaction['reconciled_at']);
+    }
+
     public function testAxisNbEmandateDebitReconDuplicateUpload()
     {
         $this->bank = 'UTIB';

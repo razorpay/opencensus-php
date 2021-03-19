@@ -3846,9 +3846,8 @@ class Processor
 
     private function setPaymentRefundAtForConfig($payment, $manualTimeoutDuration)
     {
-        if ((in_array($payment->getMethod() , [ Payment\Method::EMANDATE,
-                    Payment\Method::NACH]) === true) and
-            ($payment->isRecurringTypeInitial() === true))
+        if (in_array($payment->getMethod() , [ Payment\Method::EMANDATE,
+                    Payment\Method::NACH]) === true)
         {
             return;
         }
