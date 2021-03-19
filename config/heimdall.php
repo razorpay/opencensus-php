@@ -580,6 +580,10 @@ return [
                 'description' => 'Create Reward for merchant',
                 'assignable'  => true
             ],
+            Permission::UPDATE_REWARD => [
+                'description' => 'Update Reward for merchant',
+                'assignable'  => true
+            ],
             Permission::DELETE_REWARD => [
                 'description' => 'Delete existing reward',
                 'assignable'  => true

@@ -4112,6 +4112,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CHECKOUT_VIEW_CREATION                                         = 'CHECKOUT_VIEW_CREATION';
 
     const REWARD_CREATE_REQUEST                                          =  'REWARD_CREATE_REQUEST';
+    const REWARD_UPDATE_REQUEST                                          =  'REWARD_UPDATE_REQUEST';
     const REWARD_DELETE_REQUEST                                          =  'REWARD_DELETE_REQUEST';
     const REWARD_ACTIVATE_DEACTIVATE_REQUEST                             = 'REWARD_ACTIVATE_DEACTIVATE_REQUEST';
     const REWARD_QUEUE_TO_LIVE                                           =  'REWARD_QUEUE_TO_LIVE';

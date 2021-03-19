@@ -617,6 +617,7 @@ class Name
     const UPDATE_ENTITY_BALANCE_ID                     = 'update_entity_balance_id';
     const MDR_ADJUSTMENT                               = 'mdr_adjustment';
     const CREATE_REWARD                                = 'create_reward';
+    const UPDATE_REWARD                                = 'update_reward';
     const DELETE_REWARD                                = 'delete_reward';
     const PG_ROUTER_ORDER_SYNC                         = 'pg_router_order_sync';
     const GET_IRCTC_SETTLEMENT_FILE                    = 'get_irctc_settlement_file';

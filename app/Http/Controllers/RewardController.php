@@ -13,8 +13,15 @@ class RewardController extends Controller
     public function createReward()
     {
         $input = Request::all();
-
         $data = $this->service()->create($input);
+        return ApiResponse::json($data);
+    }
+
+    public function updateReward()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->update($input);
 
         return ApiResponse::json($data);
     }

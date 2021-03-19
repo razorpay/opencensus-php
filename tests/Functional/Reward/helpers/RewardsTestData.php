@@ -32,7 +32,67 @@ return [
             ]
         ]
     ],
-
+    'testUpdateReward' => [
+        'request' => [
+            'content' => [
+                "merchant_ids"  => ['10000000000000'],
+                "reward"        => [
+                    'name'                => 'Updated Reward Name',
+                    'display_text'         => 'Extra Flat 15% off on Rs.499 or more',
+                    'logo'                => 'Updated logo',
+                    'terms'               => 'Updated Terms',
+                    'coupon_code'         => 'updated_coupon_code',
+                    'merchant_website_redirect_link' => 'https:\/\/bewakoof.app.link'
+                ],
+            ],
+            'url'    => '/rewards/update',
+            'method' => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'failed_merchant_ids' => [],
+                'reward' => [
+                    'entity'               => 'reward',
+                    'name'                 => 'Updated Reward Name',
+                    'display_text'         => 'Extra Flat 15% off on Rs.499 or more',
+                    'coupon_code'          => 'updated_coupon_code',
+                    'logo'                 => 'Updated logo',
+                    'terms'                => 'Updated Terms',
+                    'merchant_website_redirect_link' => 'https:\/\/bewakoof.app.link'
+                ]
+            ]
+        ]
+    ],
+    'testUpdateRewardWithWrongStartTime' => [
+        'request' => [
+            'content' => [
+                "merchant_ids"  => ['10000000000000'],
+                "reward"        => [
+                    'name'                => 'Updated Reward Name',
+                    'display_text'         => 'Extra Flat 15% off on Rs.499 or more',
+                    'logo'                => 'Updated logo',
+                    'terms'               => 'Updated Terms',
+                    'coupon_code'         => 'updated_coupon_code',
+                    'merchant_website_redirect_link' => 'https:\/\/bewakoof.app.link'
+                ],
+            ],
+            'url'    => '/rewards/update',
+            'method' => 'PATCH'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Updated Start time and current start time should be Later than Current Time',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_START_TIME
+        ],
+    ],
     'testActivateReward' => [
         'request' => [
             'content' => [

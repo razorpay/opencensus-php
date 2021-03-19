@@ -25,6 +25,7 @@ class RewardsTest extends TestCase
         $this->startTest();
     }
 
+
     public function testActivateReward()
     {
         $this->ba->proxyAuth();
@@ -36,6 +37,43 @@ class RewardsTest extends TestCase
         $this->testData[__FUNCTION__]['request']['content']['reward_id'] = $reward->getPublicId();
 
         $this->testData[__FUNCTION__]['response']['content']['live_reward_id'] = $reward->id;
+
+        $this->startTest();
+    }
+
+    public function testUpdateReward()
+    {
+        $this->ba->adminAuth();
+
+        $reward = $this->fixtures->create('reward');
+
+        $this->fixtures->create('merchant_reward',['reward_id' => $reward->id]);
+
+        $this->testData[__FUNCTION__]['request']['content']['reward']['id'] = $reward->getPublicId();
+
+
+        $this->testData[__FUNCTION__]['response']['content']['reward']['id'] = $reward->getPublicId();
+
+        $this->testData[__FUNCTION__]['request']['content']['reward']['ends_at'] = Carbon::now()->addDays(2)->getTimestamp();
+
+        $this->testData[__FUNCTION__]['response']['content']['reward']['starts_at'] = $reward->starts_at;
+
+        $this->testData[__FUNCTION__]['response']['content']['reward']['ends_at'] = Carbon::now()->addDays(2)->getTimestamp();
+
+        $this->startTest();
+    }
+
+    public function testUpdateRewardWithWrongStartTime()
+    {
+        $this->ba->adminAuth();
+
+        $reward = $this->fixtures->create('reward');
+
+        $this->fixtures->create('merchant_reward',['reward_id' => $reward->id]);
+
+        $this->testData[__FUNCTION__]['request']['content']['reward']['id'] = $reward->getPublicId();
+
+        $this->testData[__FUNCTION__]['request']['content']['reward']['starts_at'] = Carbon::yesterday()->getTimestamp();
 
         $this->startTest();
     }

@@ -2261,6 +2261,7 @@ class Route
         'banking_account_statement_process_admin' => ['post',    'banking_account_statement/admin/process',                 'BankingAccountStatementController@fetchStatementForAccount'   ],
         'merchant_banking_accounts_webhook'       => ['post',    'merchant/{id}/banking_accounts/',                         'MerchantController@sendBankingAccountsViaWebhook'             ],
         'reward_create'                           => ['post',    'rewards',                                                 'RewardController@createReward'                                ],
+        'reward_update'                           => ['patch',   'rewards/update',                                          'RewardController@updateReward'                                ],
         'reward_activate_or_deactivate'           => ['patch',   'rewards',                                                 'RewardController@activateDeactivateReward'                    ],
         'reward_delete'                           => ['delete',  'rewards/{id}',                                            'RewardController@deleteReward'                                ],
         'reward_fetch'                            => ['get',     'rewards',                                                 'RewardController@fetchReward'                                 ],
@@ -4412,9 +4413,9 @@ class Route
 
         'banking_account_statement_source_update_validate',
 
-        'reward_create',
         'reward_delete',
-
+        'reward_create',
+        'reward_update',
         // Admin merchant notification configs
         'create_merchant_notification_config_admin',
         'update_merchant_notification_config_admin',
@@ -5261,6 +5262,7 @@ class Route
         'banking_account_statement_source_update_validate' => Permission::MANUALLY_LINK_RBL_ACCOUNT_STATEMENT,
 
 
+        'reward_update'                               => Permission::UPDATE_REWARD,
         'reward_create'                               => Permission::CREATE_REWARD,
         'reward_delete'                               => Permission::DELETE_REWARD,
 

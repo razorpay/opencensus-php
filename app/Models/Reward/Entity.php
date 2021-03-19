@@ -184,4 +184,10 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::MIN_AMOUNT);
     }
+
+    public function getIsDeleted()
+    {
+        return $this->getAttribute(self::IS_DELETED);
+    }
+
 }

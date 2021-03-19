@@ -30,6 +30,44 @@ class Core extends Base\Core
         $this->repo->saveOrFail($merchantReward);
     }
 
+    public function update($reward)
+    {
+        $failed_merchants_id = [];
+
+        $now = Carbon::now()->getTimestamp();
+
+        $merchants = $this->repo->merchant_reward->fetchMerchantIdsByRewardId($reward['id']);
+
+        foreach($merchants as $merchant)
+        {
+            try
+            {
+                $columnsToUpdate = [];
+
+                if($merchant[ENTITY::STATUS] == ENTITY::EXPIRED)
+                {
+                    $columnsToUpdate[ENTITY::UPDATED_AT] = $now;
+
+                    if($merchant[Entity::ACCEPTED_AT] != null)
+                    {
+                        $columnsToUpdate[ENTITY::STATUS] = ENTITY::QUEUE;
+                    }
+                    else
+                    {
+                        $columnsToUpdate[ENTITY::STATUS] = ENTITY::AVAILABLE;
+                    }
+                }
+                $this->repo->merchant_reward->updateMerchant($merchant['merchant_id'] , $reward['id'], $columnsToUpdate);
+            }
+            catch(\Exception $e)
+            {
+                $this->trace->traceException($e);
+
+                $failed_merchants_id[] = $merchant->getMerchantId();
+            }
+        }
+        return $failed_merchants_id;
+    }
     /**
      * @param $merchantId
      * @param $rewardId

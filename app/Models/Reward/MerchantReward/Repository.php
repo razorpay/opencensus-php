@@ -140,4 +140,28 @@ class Repository extends Base\Repository
 
         return $query->first();
     }
+
+    public function fetchMerchantIdsByRewardId(string $rewardId)
+    {
+        $query = $this->newQuery()
+            ->where(Entity::REWARD_ID, '=', $rewardId);
+        return $query->get();
+    }
+
+    public function updateMerchant($merchantId,  $rewardId, array $params)
+    {
+        $this->newQuery()
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->where(Entity::REWARD_ID, '=', $rewardId)
+            ->update($params);
+    }
+
+    public function fetchMerchantRewardByMerchantIdAndRewardId($merchantId, $rewardId)
+    {
+        $query = $this->newQuery()
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->where(Entity::REWARD_ID, '=', $rewardId);
+            return $query->first();
+    }
+
 }

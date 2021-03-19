@@ -65,6 +65,49 @@ class Service extends Base\Service
         return $summary;
     }
 
+
+
+    public function update(array $input)
+    {
+        (new Validator())->validateInput('update', $input);
+
+        $newMerchantIds = [];
+
+        $reward = $input['reward'];
+
+        $reward['id'] = (new Entity())::verifyIdAndStripSign($reward['id']);
+
+        if (isset($input['merchant_ids']) === true)
+        {
+            $newMerchantIds = $input['merchant_ids'];
+        }
+
+
+        $updatedRewardFields = $this->core->update($reward);
+
+        $failed_merchants_id = (new MerchantReward\Core())->update($reward);
+
+        foreach ($newMerchantIds as $merchantId)
+        {
+            try
+            {
+                if($this->core->merchantRewardAlreadyExists($merchantId, $reward['id']) === false)
+                {
+                        (new MerchantReward\Core())->create($merchantId, $reward['id']);
+                }
+            }
+            catch(\Exception $e)
+            {
+                $this->trace->traceException($e);
+
+                $failed_merchants_id[] = $merchantId;
+            }
+        }
+        $response = ["failed_merchant_ids" =>  $failed_merchants_id, "reward" => $updatedRewardFields];
+
+        return $response;
+    }
+
     public function activateDeactivateReward(array $input)
     {
         (new MerchantRewardValidator())->validateInput('activate_deactivate', $input);

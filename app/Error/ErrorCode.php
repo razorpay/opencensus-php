@@ -2078,6 +2078,9 @@ class ErrorCode
 
     const BAD_REQUEST_CALLBACK_URL_INCORRECT                                        = 'BAD_REQUEST_CALLBACK_URL_INCORRECT';
 
+    const BAD_REQUEST_INVALID_START_TIME                                            = 'BAD_REQUEST_INVALID_START_TIME';
+
+    const BAD_REQUEST_INVALID_REWARD                                                = 'BAD_REQUEST_INVALID_REWARD';
     // Accounts/ stakeholder V2 document upload errorcodes
     const BAD_REQUEST_DOCUMENT_UPLOAD_OPERATION_IN_PROGRESS                         = 'BAD_REQUEST_DOCUMENT_UPLOAD_OPERATION_IN_PROGRESS';
     const BAD_REQUEST_INVALID_FILE_ACCESS                                           = 'BAD_REQUEST_INVALID_FILE_ACCESS';
