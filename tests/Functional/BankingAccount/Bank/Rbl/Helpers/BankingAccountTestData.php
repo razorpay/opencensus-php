@@ -723,6 +723,21 @@ return [
         ],
     ],
 
+    'testActivateWithoutKYC' => [
+        'request'  => [
+            'url'     => '/banking_accounts/{id}/activate',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'channel'       => 'rbl',
+                'status'        => 'activated',
+                'reference1'    => 'MERCHANT_SUB_CORP'
+            ]
+        ],
+    ],
+
     'testActivateFailedDueToFtsFailure' => [
         'request'  => [
             'url'     => '/banking_accounts/{id}/activate',

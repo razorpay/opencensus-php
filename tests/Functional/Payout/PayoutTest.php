@@ -2754,6 +2754,19 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testCreatePayoutFundsOnHoldForCurrentAccount()
+    {
+        $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
+
+        $this->liveSetUpForRbl();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['activated' => 0]);
+
+        $this->fixtures->on('live')->merchant->holdFunds();
+
+        $this->startTest();
+    }
+
     public function testCreatePayoutFundsOnHoldOnTestMode()
     {
         $contactId = $this->getDbLastEntity('contact')->getId();

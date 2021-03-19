@@ -266,6 +266,8 @@ class Entity extends Base\PublicEntity
 
     const PARTNER_ACTIVATION  = 'partnerActivation';
 
+    const CA_ACTIVATION_STATUS      = 'ca_activation_status';
+
     protected $entity = 'merchant';
 
     /**

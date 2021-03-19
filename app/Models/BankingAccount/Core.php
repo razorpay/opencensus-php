@@ -24,6 +24,7 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Balance;
 use RZP\Exception\LogicException;
+use RZP\Models\Merchant\Activate;
 use RZP\Models\Settlement\Channel;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankingAccount\State;
@@ -697,8 +698,6 @@ class Core extends Base\Core
 
     public function activate(Entity $bankingAccount, array $input, Admin\Entity $admin)
     {
-        $this->checkMerchantIsActivatedBeforeAccountActivation($bankingAccount);
-
         //
         // This is in a transaction because, BankingAccount entity update
         // and Balance entity creation, both should succeed or fail
@@ -745,6 +744,9 @@ class Core extends Base\Core
 
             return $bankingAccount;
         });
+
+        // For Adding payout feature without RZP KYC
+        (new Activate())->addPayoutFeatureForCurrentAccount($bankingAccount->merchant);
 
         $this->sendBankingCaActivationSmsIfApplicable($bankingAccount);
 

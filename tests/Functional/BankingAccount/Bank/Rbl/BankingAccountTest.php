@@ -667,6 +667,150 @@ class BankingAccountTest extends TestCase
         });
     }
 
+    public function testActivateWithoutKYC()
+    {
+        Mail::fake();
+
+        $this->mockRaven();
+
+        $attribute = ['activation_status' => 'deactivated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        (new User())->createBankingUserForMerchant($merchantDetail->merchant['id'], [
+            'contact_mobile' => '8888888888',
+        ]);
+
+        $this->testCreateActivationDetail();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->fixtures->edit('banking_account', $bankingAccount->getId(), [
+            'account_number'        => '1234567890',
+            'beneficiary_state'     => 'karnataka',
+            'beneficiary_country'   => 'india',
+            'status'                => RZP\Models\BankingAccount\Status::PROCESSED,
+            'sub_status'            => RZP\Models\BankingAccount\Status::API_ONBOARDING_IN_PROGRESS
+        ]);
+
+        $this->setupDataForActivation($bankingAccount);
+
+        $schedule = $this->setupDefaultScheduleForFeeRecovery();
+
+        $dataToReplace = [
+            'request' => [
+                'url' => '/banking_accounts/' . $bankingAccount->getPublicId() . '/activate'
+            ]
+        ];
+
+        $this->mockFundAccountService();
+
+        $expectedHubspotCall = false;
+        $this->mockHubspotAndAssertForChangeEvent($expectedHubspotCall);
+
+        $this->mockCardVault(function ()
+        {
+            return [
+                'success' => true,
+                'token'   => 'random'
+            ];
+        });
+
+        $mozartResponse = $this->getMozartMockedResponse(camel_case(Rbl\Action::ACCOUNT_BALANCE . '_' .
+                                                                    Rbl\Status::SUCCESS));
+
+        $this->setMozartMockResponse($mozartResponse);
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals(RZP\Models\BankingAccount\Status::ACTIVATED, $bankingAccount['status']);
+
+        $bankingAccountActivationDetail = $this->getDbLastEntity('banking_account_activation_detail');
+
+        $this->assertEquals(null, $bankingAccountActivationDetail['assignee_team']);
+
+        $this->assertTrue($expectedHubspotCall);
+
+        $balance = $this->getDbLastEntity('balance');
+
+        $this->assertEquals('rbl', $balance[RZP\Models\Merchant\Balance\Entity::CHANNEL]);
+
+        $this->assertEquals('direct', $balance[RZP\Models\Merchant\Balance\Entity::ACCOUNT_TYPE]);
+
+        $this->assertEquals($balance[RZP\Models\Merchant\Balance\Entity::ID],
+                            $bankingAccount[RZP\Models\BankingAccount\Entity::BALANCE_ID]);
+
+        $this->assertNotNull($bankingAccount[RZP\Models\BankingAccount\Entity::FTS_FUND_ACCOUNT_ID]);
+
+        $request  = [
+            'url'     => '/banking_accounts/activation/' . 'bacc_' . $bankingAccount['id'] . '/status_change_log',
+            'method'  => 'GET',
+            'content' => []
+        ];
+
+        $this->ba->adminAuth();
+
+        $logs = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('created', $logs['items'][0]['status']);
+        $this->assertEquals('activated', $logs['items'][1]['status']);
+        $this->assertEquals(null, $logs['items'][1]['sub_status']);
+
+        $this->assertNotNull($bankingAccount[RZP\Models\BankingAccount\Entity::FTS_FUND_ACCOUNT_ID]);
+        $this->assertNotNull($bankingAccount[RZP\Models\BankingAccount\Entity::FTS_FUND_ACCOUNT_ID]);
+
+        $contact = $this->getDbLastEntity('contact')->toArray();
+
+        $this->assertEquals($contact['type'], Contact\Type::RZP_FEES);
+        $this->assertEquals($contact['active'], true);
+        $this->assertEquals($contact['merchant_id'], $merchantDetail->merchant['id']);
+        $this->assertEquals($contact['name'], config('banking_account.razorpayx_fee_details.name'));
+
+        $fundAccount = $this->getDbLastEntity('fund_account')->toArray();
+
+        $this->assertEquals($fundAccount['merchant_id'], $merchantDetail->merchant['id']);
+        $this->assertEquals($fundAccount['source_type'], 'contact');
+        $this->assertEquals($fundAccount['source_id'], $contact['id']);
+        $this->assertEquals($fundAccount['active'], true);
+
+        $account = $this->getDbLastEntity('bank_account')->toArray();
+
+        $this->assertEquals($account['account_number'], config('banking_account.razorpayx_fee_details.account_number'));
+        $this->assertEquals($account['name'], config('banking_account.razorpayx_fee_details.name'));
+        $this->assertEquals($account['ifsc'], config('banking_account.razorpayx_fee_details.ifsc'));
+        $this->assertEquals($account['merchant_id'], $merchantDetail->merchant['id']);
+        $this->assertEquals($account['entity_id'], $contact['id']);
+
+        $scheduleTask = $this->getDbLastEntity('schedule_task')->toArray();
+
+        // Every activated merchant should have a default schedule task for fee recovery purposes.
+        $this->assertEquals($scheduleTask['merchant_id'], $merchantDetail->merchant['id']);
+        $this->assertEquals($scheduleTask['entity_id'], $balance['id']);
+        $this->assertEquals($scheduleTask['entity_type'], 'balance');
+        $this->assertEquals($scheduleTask['schedule_id'], $schedule['id']);
+
+        $counter = $this->getDbLastEntity('counter')->toArray();
+
+        // Counter creation check
+        $this->assertEquals($counter['balance_id'], $balance['id']);
+        $this->assertEquals($counter['account_type'], $balance['account_type']);
+
+        Mail::assertQueued(Activated::class);
+
+        Mail::assertQueued(ActivationMails\StatusChange::class, function ($mail) use($bankingAccount)
+        {
+            $mail->build();
+
+            return $mail->hasTo($bankingAccount->spocs()->first()['email']);
+        });
+    }
+
     public function testActivateFailedDueToMozartGatewayException()
     {
         Mail::fake();

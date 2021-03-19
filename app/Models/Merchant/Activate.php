@@ -661,7 +661,18 @@ class Activate extends Base\Core
         return boolval($config);
     }
 
-    protected function addPayoutFeatureIfApplicable(Entity $merchant, string $mode)
+    // Should not be called except for current account
+    public function addPayoutFeatureForCurrentAccount(Entity $merchant)
+    {
+        $this->addPayoutFeatureIfApplicable($merchant, Mode::LIVE,
+                                            (new Merchant\Core())->isCurrentAccountActivated($merchant->getMerchantId()));
+
+        $this->trace->info(TraceCode::PAYOUT_FEATURE_ADDED, [
+            Merchant\Constants::MERCHANT_ID => $merchant->getId()
+        ]);
+    }
+
+    protected function addPayoutFeatureIfApplicable(Entity $merchant, string $mode, bool $isCurrentAccountActivated = false)
     {
         if ($merchant->isFeatureEnabled(Feature\Constants::PAYOUT) === true)
         {
@@ -676,7 +687,7 @@ class Activate extends Base\Core
         // In test mode: always
         //
         if (($mode === Mode::TEST) or
-            ($merchantDetails->getActivationStatus() === Detail\Status::ACTIVATED))
+            ($merchantDetails->getActivationStatus() === Detail\Status::ACTIVATED) or $isCurrentAccountActivated)
         {
             $featureParams = [
                 Feature\Entity::ENTITY_ID   => $merchant->getId(),

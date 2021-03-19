@@ -3402,6 +3402,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TOKENIZE_QR_STRING_MPANS_REQUEST                         = 'TOKENIZE_QR_STRING_MPANS_REQUEST';
     const TOKENIZE_QR_STRING_MPANS_RESPONSE                        = 'TOKENIZE_QR_STRING_MPANS_RESPONSE';
 
+    // Payout Feature
+    const PAYOUT_FEATURE_ADDED                                  = 'PAYOUT_FEATURE_ADDED';
+
     // Smart Routing
     const SMART_ROUTING_SERVICE_ERROR                           = 'SMART_ROUTING_SERVICE_ERROR';
     const SMART_ROUTING_RETRY                                   = 'SMART_ROUTING_RETRY';

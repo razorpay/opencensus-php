@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Monolog\Logger;
 use RZP\Jobs\SyncStakeholder;
 use RZP\Listeners\ApiEventSubscriber;
+use RZP\Models\BankingAccount\Status;
 use Razorpay\OAuth\Application as OAuthApp;
 
 use RZP\Exception;
@@ -4684,5 +4685,12 @@ class Core extends Base\Core
         $ca_status = $ca[\RZP\Models\BankingAccount\Entity::STATUS];;
 
         return array($va_status, $ca_status);
+    }
+
+    public function isCurrentAccountActivated(string $merchantId): bool
+    {
+        $currentAccountStatus = ($this->getBankingAccountStatus($merchantId))[1];
+
+        return ($currentAccountStatus === Status::ACTIVATED);
     }
 }

@@ -882,13 +882,38 @@ class Core extends Base\Core
                     Merchant\Balance\Type::BANKING,
                     Merchant\Balance\AccountType::SHARED);
 
+                $balance_CA = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(
+                    $merchant['id'],
+                    Merchant\Balance\Type::BANKING,
+                    Merchant\Balance\AccountType::DIRECT);
+
                 // We hit this flow during /login too where merchant even though of X,
                 // doesn't have balance etc created yet.
-                if ($balance === null)
+
+                // If both VA and CA are not there
+                if ($balance === null and $balance_CA === null)
                 {
                     return $merchant;
                 }
 
+                $activationStatusCA = null;
+
+                if (empty($balance_CA) === false)
+                {
+                    $bankingAccountCA = $this->repo->banking_account->getFromBalanceId($balance_CA->getId());
+
+                    $activationStatusCA = $bankingAccountCA->getStatus();
+                }
+
+                // If Only CA is there
+                if (empty($balance) === true)
+                {
+                    return $merchant + [
+                        Merchant\Entity::CA_ACTIVATION_STATUS   => $activationStatusCA,
+                        ];
+                }
+
+                // If either VA is there or both VA and CA are there
                 $bankingAccount = $this->repo->banking_account->getFromBalanceId($balance->getId());
 
                 $bulkUserType = $this->getBulkPayoutsUserType($balance);
@@ -898,7 +923,10 @@ class Core extends Base\Core
                         // balance for business banking activated at should have account_type shared
                         // Relevant slack thread : https://razorpay.slack.com/archives/CE4DMABE3/p1574075046102400
 
+                        // Below fields except accounts and ca_activation_status are related to only virtual account
+
                         Merchant\Entity::BANKING_ACTIVATED_AT   => $balance->getCreatedAt(),
+                        Merchant\Entity::CA_ACTIVATION_STATUS   => $activationStatusCA,
                         Merchant\Entity::BANKING_BALANCE        => $balance->only([Merchant\Balance\Entity::BALANCE,
                                                                                    Merchant\Balance\Entity::CURRENCY]),
                         Merchant\Entity::BANKING_ACCOUNT        => $bankingAccount->toArrayPublic(),
