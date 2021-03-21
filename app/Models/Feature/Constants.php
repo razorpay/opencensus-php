@@ -1315,6 +1315,21 @@ class Constants
             'display_name'  => 'Exempts merchant from customer flagging link in email and hosted pages',
             'documentation' => '',
         ],
+        self::CAW_UPI => [
+            'feature'       => self::CAW_UPI,
+            'display_name'  => 'Allow UPI payment method on creating auth link',
+            'documentation' => '',
+        ],
+        self::SUBSCRIPTION_UPI => [
+            'feature'       => self::SUBSCRIPTION_UPI,
+            'display_name'  => 'Allow UPI payment method on subscription',
+            'documentation' => '',
+        ],
+        self::CAW_RECURRING_CHARGE_AXIS => [
+            'feature'       => self::CAW_RECURRING_CHARGE_AXIS,
+            'display_name'  => 'Custom Recurring Charge Batch for Axis',
+            'documentation' => '',
+        ],
     ];
 
     /**
