@@ -471,6 +471,16 @@ class GatewayController extends Controller
     {
         $input = Request::all();
 
+        $this->app['trace']->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            [
+                'method'           => $method,
+                'gateway'          => $gateway,
+                'callback_data'    => $input,
+                'mode'             => $mode,
+            ]
+        );
+
         $input = array_merge($input, $gatewayInput);
 
         $paymentId = $this->preProcessStaticCallback($method, $gateway, $input, $mode);
@@ -499,22 +509,13 @@ class GatewayController extends Controller
     {
         $input = Request::all();
 
-        $traceData = '';
-
-        foreach ($input as $key => $value)
-        {
-            $traceData = $traceData . '&' . $key . '=' . $value;
-        }
-
-        $traceData = base64_encode($traceData);
-
         $this->app['trace']->info(
             TraceCode::GATEWAY_PAYMENT_S2S_CALLBACK,
             [
                 'method'             => $method,
                 'gateway'            => $gateway,
                 'mode'               => $mode,
-                'callback_data'      => $traceData,
+                'callback_data'      => $input,
             ]
         );
 
@@ -841,15 +842,6 @@ class GatewayController extends Controller
 
     protected function preProcessStaticCallback($method, $gateway, $input, $mode)
     {
-        $this->app['trace']->info(
-            TraceCode::GATEWAY_PAYMENT_CALLBACK,
-            [
-                'gateway'          => $gateway,
-                'callback_data'    => $input,
-                'mode'             => $mode,
-            ]
-        );
-
         $currentRoute = $this->route->getCurrentRouteName();
 
         Payment\Method::validateMethod($method);
@@ -887,20 +879,6 @@ class GatewayController extends Controller
             throw new Exception\BadRequestException(
                 ErrorCode::GATEWAY_ERROR_INVALID_MODE
             );
-        }
-
-        // We call razorx to check if webhooks is enabled for gateway. This is done temporarily.
-        //Todo: Remove this code after making sure everything is working fine in production
-        if ($gateway === Gateway::ATOM)
-        {
-            $featureFlag = $method . '_' . RazorxTreatment::ENABLE_WEBHOOKS . '_' . $gateway;
-
-            $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), $featureFlag, $mode);
-
-            if ($variant != 'enablewebhooks')
-            {
-                return ['status' => 'WEBHOOKS_DISABLED_FOR_GATEWAY'];
-            }
         }
 
         $paymentId = $this->callGatewayPreprocessCallback($method, $gateway, $input, $mode);
