@@ -54,7 +54,7 @@ class BeamRequestFailure extends Mailable
     {
         $fromName = Constants::HEADERS[Constants::BEAM_FAILURE];
 
-        $sender = Constants::MAIL_ADDRESSES[Constants::SETTLEMENTS];
+        $sender = Constants::MAIL_ADDRESSES[Constants::REPORTS];
 
         $this->from($sender, $fromName);
 
