@@ -92,7 +92,27 @@ class Service extends Base\Service
             }
             else
             {
-                $filePath = $this->getH2HFileFromAws($key, true);
+
+                // Adding this to migrate the lambdas to indian region bucket
+                // with old lambda bucket and region was not being passed
+                // thus added this step to pass the bucket and region along with the new lambda
+                // keeping the following config in order to support both the lmbdas old and new
+                // to ease the migration process
+
+                $bucketConfig = 'h2h_bucket';
+                $bucketRegion = null;
+
+                if(empty($input['bucket']) === false)
+                {
+                    $bucketConfig = $input['bucket'];
+                }
+
+                if (empty($input['region']) === false)
+                {
+                    $bucketRegion = $input['region'];
+                }
+
+                $filePath = $this->getH2HFileFromAws($key, true, $bucketConfig, $bucketRegion);
             }
 
             $file = new HttpFoundation\File\File($filePath);
