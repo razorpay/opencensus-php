@@ -148,9 +148,16 @@ class CareServiceClient
 
     protected function addMerchantDetails($input)
     {
+        $user = $this->app['basicauth']->getUser();
+
         $input['merchant'] = [
-            'id' => $this->app['basicauth']->getMerchantId(),
+            'id'        => $this->app['basicauth']->getMerchantId(),
         ];
+
+        if (empty($user->getId()) === false)
+        {
+            $input['merchant']['user_id']  = $user->getId();
+        }
 
         return $input;
     }

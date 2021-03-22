@@ -6400,6 +6400,7 @@ class Route
             'myoperator_v2_proxy_post',
             'freshdesk_update_ticket_internal',
             'fd_fetch_ticket',
+            'user_fetch_internal'
         ],
 
         'myoperator' => [

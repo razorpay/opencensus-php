@@ -1492,6 +1492,11 @@ class BasicAuth
         return $this->internalApp === 'payout_links';
     }
 
+    public function isCareApp()
+    {
+        return $this->internalApp === 'care';
+    }
+
     public function isDashboardApp()
     {
         return (in_array($this->getInternalApp(), ['dashboard', 'dashboard_guest'], true) === true);

@@ -5,8 +5,8 @@ namespace Functional\Care;
 
 use Mockery;
 use RZP\Trace\TraceCode;
-use RZP\Services\MyOperator;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class CareServiceTest extends TestCase
@@ -78,8 +78,6 @@ class CareServiceTest extends TestCase
 
     public function testCareProxy()
     {
-        $this->ba->proxyAuth();
-
         $testCases = [
             [
                 self::AUTH                                => 'proxy',
@@ -88,6 +86,7 @@ class CareServiceTest extends TestCase
                 self::EXPECTED_CARE_SERVICE_REQUEST       => [
                     'merchant' => [
                         'id' => '10000000000000',
+                        'user_id' => User::MERCHANT_USER_ID,
                     ],
                 ],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
@@ -122,6 +121,7 @@ class CareServiceTest extends TestCase
                 self::EXPECTED_CARE_SERVICE_REQUEST       => [
                     'merchant' => [
                         'id' => '10000000000000',
+                        'user_id' => User::MERCHANT_USER_ID,
                     ],
                 ],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
@@ -136,6 +136,7 @@ class CareServiceTest extends TestCase
                 self::EXPECTED_CARE_SERVICE_REQUEST       => [
                     'merchant' => [
                         'id' => '10000000000000',
+                        'user_id' => User::MERCHANT_USER_ID,
                     ],
                 ],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
@@ -150,6 +151,7 @@ class CareServiceTest extends TestCase
                 self::EXPECTED_CARE_SERVICE_REQUEST       => [
                     'merchant' => [
                         'id' => '10000000000000',
+                        'user_id' => User::MERCHANT_USER_ID,
                     ],
                 ],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
@@ -200,6 +202,7 @@ class CareServiceTest extends TestCase
             {
                 $this->testData[__FUNCTION__]['request']['content'] = $testCase[self::API_REQUEST_BODY];
             }
+
             $this->testData[__FUNCTION__]['request']['url'] = $testCase[self::API_ROUTE];
 
             $this->testData[__FUNCTION__]['response']['content']     = $testCase[self::ACTUAL_CARE_SERVICE_RESPONSE_BODY];
@@ -208,7 +211,7 @@ class CareServiceTest extends TestCase
             switch ($testCase[self::AUTH])
             {
                 case 'proxy':
-                    $this->ba->proxyAuth();
+                    $this->ba->proxyAuth('rzp_live_10000000000000', User::MERCHANT_USER_ID);
                     break;
                 case 'cron':
                     $this->ba->cronAuth();
@@ -240,6 +243,7 @@ class CareServiceTest extends TestCase
             [
                 'merchant' => [
                     'id' => '10000000000000',
+                    'user_id' => User::MERCHANT_USER_ID,
                     ],
             ],
             [
@@ -261,6 +265,7 @@ class CareServiceTest extends TestCase
             [
                 'merchant' => [
                     'id' => '10000000000000',
+                    'user_id' => User::MERCHANT_USER_ID,
                 ],
             ],
             [

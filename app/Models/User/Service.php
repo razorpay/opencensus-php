@@ -541,7 +541,7 @@ class Service extends Base\Service
 
     protected function isAllowedInternalApp(): bool
     {
-        return ($this->auth->isPayoutLinkApp() or $this->auth->isVendorPaymentApp());
+        return ($this->auth->isPayoutLinkApp() or $this->auth->isVendorPaymentApp() or $this->auth->isCareApp());
     }
 
     public function updateMerchantManageTeam(string $userId, array $input): array
