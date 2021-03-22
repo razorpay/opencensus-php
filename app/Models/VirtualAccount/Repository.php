@@ -10,6 +10,7 @@ use RZP\Models\Order;
 use RZP\Base\BuilderEx;
 use RZP\Constants\Table;
 use RZP\Models\Customer;
+use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant\Entity as Merchant;
@@ -170,14 +171,18 @@ class Repository extends Base\Repository
 
     public function fetchVirtualAccountsToBeClosed()
     {
-        $currentTime = Carbon::now()->getTimestamp();
+        return $this->repo->useSlave( function()
+        {
+            $now = Carbon::now(Timezone::IST)->getTimestamp();
 
-        $query = $this->newQuery()
-                      ->where(Entity::STATUS, '=', Status::ACTIVE)
-                      ->whereNotNull(Entity::CLOSE_BY)
-                      ->where(Entity::CLOSE_BY, '<', $currentTime);
+            $nowMinus14days = Carbon::now(Timezone::IST)->addDays(-14)->getTimestamp();
 
-        return $query->get();
+            $query = $this->newQuery()
+                ->where(Entity::STATUS, '=', Status::ACTIVE)
+                ->whereBetween(Entity::CLOSE_BY, array($nowMinus14days, $now));
+
+            return $query->get();
+        });
     }
 
     public function getActiveVirtualAccountFromVpaId(string $vpaId)
