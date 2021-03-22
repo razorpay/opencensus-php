@@ -1476,6 +1476,8 @@ class Service extends Base\Service
             'enable_tpv_fe',
             'shopify_gtm_notification_cohorts',
             'es_ondeman_restricted_cohorts',
+            'project_nitro_feb_2021', 
+            'project_nitro_feb_2021_1',
             'nitro_hyderabad_v1',
             'pl_swith_v2',
             'dashboard_show_nps_survey',
