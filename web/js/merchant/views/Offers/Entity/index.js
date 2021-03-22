@@ -66,7 +66,9 @@ export default class OffersDetails extends React.Component {
     if (this.isSubscriptionOffer) {
       message = (
         <div class="disable-offer-alert">
-          <div class="heading">This Offer is active on 5 subscriptions!</div>
+          <div class="heading">
+            This Offer is active on {offer.current_offer_usage || 0} subscriptions!
+          </div>
 
           <div>
             Disabling this offer will not remove it from these subscriptions and it has to be
