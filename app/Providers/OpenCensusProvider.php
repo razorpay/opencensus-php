@@ -49,6 +49,15 @@ class OpenCensusProvider extends ServiceProvider
             $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
             $db_host = $this->app['config']->get('applications.jaeger.db_host')[$mode];
 
+            // add the default port to the db host, if port is missing
+            // this is to avoid showing up as 2 different db hosts
+            // one with default port and other without it.
+
+            if ($db_host && (strpos($db_host, ':') === false)){
+                $mysql_default_port = '3306';
+                $db_host = $db_host . ':' . $mysql_default_port;
+            }
+
             PDO::load($db_host);
             Redis::load();
             Curl::load();
