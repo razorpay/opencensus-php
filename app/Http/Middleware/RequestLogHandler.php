@@ -13,8 +13,9 @@ use RZP\Constants\Table;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Base\RepositoryManager;
+use RZP\Models\Admin\ConfigKey;
 use Illuminate\Foundation\Application;
-use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\RequestLog\Entity as LogEntity;
 
 class RequestLogHandler
@@ -32,6 +33,8 @@ class RequestLogHandler
     protected $basicauth;
     protected $route;
     protected $trace;
+
+    const DEFAULT_REQUEST_LOG_STATE = 'on';
 
     public function __construct(Application $app)
     {
@@ -57,11 +60,28 @@ class RequestLogHandler
         // For Razorx handling and saving in the entity
         $merchantId = $this->basicauth->getMerchantId() ?? null;
 
-        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+        $mode = $this->app['rzp.mode'];
 
-        if ((empty($merchantId) === true) or
-            ($this->app->razorx->getTreatment($merchantId, RazorxTreatment::REQUEST_LOG, $mode) !== 'on'))
+        $switchState = (new AdminService)->getConfigKey(
+            ['key' => ConfigKey::REQUEST_LOG_STATE]);
+
+        if (empty($switchState) === true)
         {
+            $switchState = self::DEFAULT_REQUEST_LOG_STATE;
+        }
+
+        // If the request isn't on live mode, then there's no need of logging
+        // Also, if the redis key is not 'on', then we don't log as well.
+        if (($mode !== Mode::LIVE) or
+            ($switchState !== 'on'))
+        {
+            $this->trace->info(
+                TraceCode::REQUEST_LOG_SKIPPED,
+                [
+                    'mode' => $mode,
+                    'Request Log status' => $switchState,
+                ]
+            );
             return $response;
         }
 

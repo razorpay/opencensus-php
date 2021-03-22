@@ -165,6 +165,8 @@ class ConfigKey
 
     const RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS_FOR_FUND_LOADING = self::PREFIX . 'rx_globally_whitelisted_payer_accounts_for_fund_loading';
 
+    const REQUEST_LOG_STATE = self::PREFIX . 'request_log_state';
+
     const PUBLIC_KEYS = [
         self::TERMINAL_SELECTION_LOG_VERBOSE,
         self::PRICING_RULE_SELECTION_LOG_VERBOSE,
@@ -242,6 +244,7 @@ class ConfigKey
         self::RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_MERCHANTS,
         self::RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS_FOR_FUND_LOADING,
         self::RBL_STATEMENT_CLOSING_BALANCE_DIFF,
+        self::REQUEST_LOG_STATE,
     ];
 
     const REDIS_CONFIG_MAP = [

@@ -173,9 +173,6 @@ final class RazorxTreatment
 
     const BULK_PAYOUTS_IMPROVEMENTS_ROLLOUT = 'bulk_payouts_improvements_rollout';
 
-    // experiment to enable request logging
-    const REQUEST_LOG = 'request_log';
-
     // experiment to enable whatsapp notifications and also refactoring notifications;
     const WHATSAPP_NOTIFICATIONS = 'whatsapp_notifications';
 

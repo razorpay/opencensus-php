@@ -11,7 +11,9 @@ use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Http\Route;
+use RZP\Models\Admin;
 use RZP\Models\Merchant;
+use RZP\Models\Pricing\Fee;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\BankingAccount\Channel;
@@ -37,21 +39,29 @@ class RequestLogsTest extends TestCase
 
     protected $app;
 
+    protected function setStateViaRedisKeyForEnablingRequestLogging(string $state = 'on')
+    {
+        (new Admin\Service)->setConfigKeys(
+            [
+                Admin\ConfigKey::REQUEST_LOG_STATE => $state,
+            ]);
+    }
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/Helpers/RequestLogsTestData.php';
 
         parent::setUp();
 
-        $this->ba->privateAuth();
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
-        $this->mockRazorx();
-
-        $this->setUpMerchantForBusinessBanking(false, 10000);
+        $this->setUpMerchantForBusinessBankingLive(false, 10000);
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['pricing_plan_id' => Fee::DEFAULT_PRICING_PLAN_ID]);
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['activated' => 1]);
 
         $this->merchantId = '10000000000000';
 
-        $this->fixtures->create('balance',
+        $this->fixtures->on('live')->create('balance',
         [
             'id' => 'testBalance000',
             'merchant_id' => '10000000000000',
@@ -61,23 +71,6 @@ class RequestLogsTest extends TestCase
             'currency' => 'INR',
         ]);
         $this->balanceId = 'testBalance000';
-    }
-
-    protected function mockRazorx()
-    {
-        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
-
-        $this->app->instance('razorx', $razorx);
-
-        $razorx->shouldReceive('getTreatment')
-               ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
-               {
-                   if($featureFlag === RazorxTreatment::REQUEST_LOG)
-                   {
-                       return 'on';
-                   }
-                   return 'control';
-               });
     }
 
     // DO NOT Modify any create* method, override $params instead.
@@ -214,10 +207,10 @@ class RequestLogsTest extends TestCase
             5. Check if the entity type is 'collection' in both response and log record.
         */
 
-        $this->fixtures->create('contact', $this->createContactEntityArray());
-        $this->fixtures->create('vpa', $this->createVpaEntityArray());
-        $this->fixtures->create('fund_account', $this->createVpaFundAccountEntityArray());
-        $this->fixtures->create('fund_account', $this->createVpaFundAccountEntityArray(['id' => 'fa100000000001']));
+        $this->fixtures->on('live')->create('contact', $this->createContactEntityArray());
+        $this->fixtures->on('live')->create('vpa', $this->createVpaEntityArray());
+        $this->fixtures->on('live')->create('fund_account', $this->createVpaFundAccountEntityArray());
+        $this->fixtures->on('live')->create('fund_account', $this->createVpaFundAccountEntityArray(['id' => 'fa100000000001']));
 
         // Request to hit 'Get all Fund Accounts' API endpoint
         $request = [
@@ -236,7 +229,7 @@ class RequestLogsTest extends TestCase
         }
 
         // Fetch record from DB
-        $dbContent = $this->getDbLastEntity('request_log');
+        $dbContent = $this->getDbLastEntity('request_log', 'live');
 
         // Assert the required condition
         $this->assertEquals($responseContent['entity'], $dbContent->entity_type,
@@ -257,10 +250,10 @@ class RequestLogsTest extends TestCase
                 and if the entity IDs are the same in both
         */
 
-        $this->fixtures->create('contact', $this->createContactEntityArray());
-        $this->fixtures->create('vpa', $this->createVpaEntityArray());
-        $this->fixtures->create('fund_account', $this->createVpaFundAccountEntityArray());
-        $this->fixtures->create('fund_account', $this->createVpaFundAccountEntityArray(['id' => 'fa100000000001']));
+        $this->fixtures->on('live')->create('contact', $this->createContactEntityArray());
+        $this->fixtures->on('live')->create('vpa', $this->createVpaEntityArray());
+        $this->fixtures->on('live')->create('fund_account', $this->createVpaFundAccountEntityArray());
+        $this->fixtures->on('live')->create('fund_account', $this->createVpaFundAccountEntityArray(['id' => 'fa100000000001']));
 
         // Request to fetch a fund account by ID
         $request = [
@@ -279,7 +272,7 @@ class RequestLogsTest extends TestCase
         }
 
         // Get record from DB
-        $dbContent = $this->getDbLastEntity('request_log');
+        $dbContent = $this->getDbLastEntity('request_log', 'live');
 
         // Check the required conditions
         $this->assertEquals($responseContent['entity'], $dbContent->entity_type,
@@ -299,8 +292,8 @@ class RequestLogsTest extends TestCase
          */
         $contact = $this->createContactEntityArray();
         $bnkAcc = $this->createBankAccountEntityArray();
-        $this->fixtures->create('contact', $contact);
-        $this->fixtures->create('bank_account', $bnkAcc);
+        $this->fixtures->on('live')->create('contact', $contact);
+        $this->fixtures->on('live')->create('bank_account', $bnkAcc);
 
         // Request to create a banking fund account
         $request = [
@@ -330,7 +323,7 @@ class RequestLogsTest extends TestCase
         }
 
         // Get record from DB table
-        $dbContent = $this->getDbLastEntity('request_log');
+        $dbContent = $this->getDbLastEntity('request_log', 'live');
 
         // Check relevant conditions
         $this->assertEquals($responseContent['entity'], $dbContent->entity_type,
@@ -350,8 +343,8 @@ class RequestLogsTest extends TestCase
          */
         $contact = $this->createContactEntityArray();
         $vpa = $this->createVpaEntityArray();
-        $this->fixtures->create('vpa', $vpa);
-        $this->fixtures->create('contact', $contact);
+        $this->fixtures->on('live')->create('vpa', $vpa);
+        $this->fixtures->on('live')->create('contact', $contact);
 
         // Request to create a banking fund account
         $request = [
@@ -379,7 +372,7 @@ class RequestLogsTest extends TestCase
         }
 
         // Get record from DB table
-        $dbContent = $this->getDbLastEntity('request_log');
+        $dbContent = $this->getDbLastEntity('request_log', 'live');
 
         // Check relevant conditions
         $this->assertEquals($responseContent['entity'], $dbContent->entity_type,
@@ -403,11 +396,11 @@ class RequestLogsTest extends TestCase
         $fundAcc1 = $this->createVpaFundAccountEntityArray(['account_id' => $vpa['id']]);
         $fundAcc2 = $this->createBankingFundAccountEntityArray(
             ['id' => 'fa100000000001','account_id' => $bankAcc['id'], 'active' => 0]);
-        $this->fixtures->create('vpa', $vpa);
-        $this->fixtures->create('contact', $contact);
-        $this->fixtures->create('bank_account', $bankAcc);
-        $this->fixtures->create('fund_account', $fundAcc1);
-        $this->fixtures->create('fund_account', $fundAcc2);
+        $this->fixtures->on('live')->create('vpa', $vpa);
+        $this->fixtures->on('live')->create('contact', $contact);
+        $this->fixtures->on('live')->create('bank_account', $bankAcc);
+        $this->fixtures->on('live')->create('fund_account', $fundAcc1);
+        $this->fixtures->on('live')->create('fund_account', $fundAcc2);
 
         // Requests section
         $requestArr = [
@@ -458,7 +451,7 @@ class RequestLogsTest extends TestCase
             }
 
             // Get record from DB table
-            $dbContent = $this->getDbLastEntity('request_log');
+            $dbContent = $this->getDbLastEntity('request_log', 'live');
 
             // Check relevant conditions
             $this->assertEquals($responseContent['entity'], $dbContent->entity_type,
@@ -488,7 +481,7 @@ class RequestLogsTest extends TestCase
         for($x = 0; $x <= 4; $x++)
         {
             $contact = $this->createContactEntityArray(['id' => substr_replace($defaultContactId, chr(48 + $x), -1)]);
-            $this->fixtures->create('contact', $contact);
+            $this->fixtures->on('live')->create('contact', $contact);
         }
 
         $request = array(
@@ -507,7 +500,7 @@ class RequestLogsTest extends TestCase
         }
 
         // Fetch record from DB
-        $dbContent = $this->getDbLastEntity('request_log');
+        $dbContent = $this->getDbLastEntity('request_log', 'live');
 
         // Assert the required condition
         $this->assertEquals($responseContent['entity'], $dbContent->entity_type,
@@ -531,7 +524,7 @@ class RequestLogsTest extends TestCase
         for($x = 0; $x <= 4; $x++)
         {
             $contact = $this->createContactEntityArray(['id' => substr_replace($defaultContactId, chr(48 + $x), -1)]);
-            $this->fixtures->create('contact', $contact);
+            $this->fixtures->on('live')->create('contact', $contact);
         }
 
         // Request to access contact with ID cont1000000002
@@ -551,7 +544,7 @@ class RequestLogsTest extends TestCase
         }
 
         // Fetch record from DB
-        $dbContent = $this->getDbLastEntity('request_log');
+        $dbContent = $this->getDbLastEntity('request_log', 'live');
 
         // Assert the required condition
         $this->assertEquals($responseContent['entity'], $dbContent->entity_type,
@@ -592,7 +585,7 @@ class RequestLogsTest extends TestCase
         }
 
         // Fetch record from DB
-        $dbContent = $this->getDbLastEntity('request_log');
+        $dbContent = $this->getDbLastEntity('request_log', 'live');
 
         // Assert the required condition
         $this->assertEquals($responseContent['entity'], $dbContent->entity_type,
@@ -611,7 +604,7 @@ class RequestLogsTest extends TestCase
          * 3. Check if entity type, entity id and route name match
          */
 
-        $this->fixtures->create('contact', $this->createContactEntityArray());
+        $this->fixtures->on('live')->create('contact', $this->createContactEntityArray());
 
         $request = [
             'url' => '/contacts/' . 'cont_' . 'cont1000000000',
@@ -635,7 +628,7 @@ class RequestLogsTest extends TestCase
         }
 
         // Fetch record from DB
-        $dbContent = $this->getDbLastEntity('request_log');
+        $dbContent = $this->getDbLastEntity('request_log', 'live');
 
         // Assert the required condition
         $this->assertEquals($responseContent['entity'], $dbContent->entity_type,
@@ -658,14 +651,14 @@ class RequestLogsTest extends TestCase
          * 3. Check if entity type, request method and route name match
          */
 
-        $this->fixtures->create('fund_account', $this->createVpaFundAccountEntityArray());
+        $this->fixtures->on('live')->create('fund_account', $this->createVpaFundAccountEntityArray());
 
         $defaultPayoutId = '10000000000001';
 
         for($x = 0; $x <= 4; $x++)
         {
             $payout = $this->createPayoutEntityArray(['id' => substr_replace($defaultPayoutId, chr(49 + $x), -1), 'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',]);
-            $this->fixtures->create('payout', $payout);
+            $this->fixtures->on('live')->create('payout', $payout);
         }
 
         $request = [
@@ -684,7 +677,7 @@ class RequestLogsTest extends TestCase
         }
 
         // Fetch record from DB
-        $dbContent = $this->getDbLastEntity('request_log');
+        $dbContent = $this->getDbLastEntity('request_log', 'live');
 
         // Assert the required condition
         $this->assertEquals($responseContent['entity'], $dbContent->entity_type,
@@ -703,14 +696,14 @@ class RequestLogsTest extends TestCase
          * 3. Check if entity type, entity ID and route name match
          */
 
-        $this->fixtures->create('fund_account', $this->createVpaFundAccountEntityArray());
+        $this->fixtures->on('live')->create('fund_account', $this->createVpaFundAccountEntityArray());
 
         $defaultPayoutId = '10000000000001';
 
         for($x = 0; $x <= 4; $x++)
         {
             $payout = $this->createPayoutEntityArray(['id' => substr_replace($defaultPayoutId, chr(49 + $x), -1),'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',]);
-            $this->fixtures->create('payout', $payout);
+            $this->fixtures->on('live')->create('payout', $payout);
         }
 
         $request = [
@@ -729,7 +722,7 @@ class RequestLogsTest extends TestCase
         }
 
         // Fetch record from DB
-        $dbContent = $this->getDbLastEntity('request_log');
+        $dbContent = $this->getDbLastEntity('request_log', 'live');
 
         // Assert the required condition
         $this->assertEquals($responseContent['entity'], $dbContent->entity_type,
@@ -748,9 +741,9 @@ class RequestLogsTest extends TestCase
          * 3. Check if entity type, entity ID and route name match
          */
 
-        $this->fixtures->create('contact', $this->createContactEntityArray());
-        $this->fixtures->create('vpa', $this->createVpaEntityArray());
-        $this->fixtures->create('fund_account', $this->createVpaFundAccountEntityArray());
+        $this->fixtures->on('live')->create('contact', $this->createContactEntityArray());
+        $this->fixtures->on('live')->create('vpa', $this->createVpaEntityArray());
+        $this->fixtures->on('live')->create('fund_account', $this->createVpaFundAccountEntityArray());
 
         $request = [
             'url'     => '/payouts',
@@ -776,7 +769,7 @@ class RequestLogsTest extends TestCase
         }
 
         // Fetch record from DB
-        $dbContent = $this->getDbLastEntity('request_log');
+        $dbContent = $this->getDbLastEntity('request_log', 'live');
         // Assert the required condition
         $this->assertEquals($responseContent['entity'], $dbContent->entity_type,
                             'RequestLogsTest: Entity Types do not match when creating a payout');
@@ -784,6 +777,49 @@ class RequestLogsTest extends TestCase
                             'RequestLogsTest: Entity IDs do not match when creating a payout');
         $this->assertEquals($route, $dbContent->route_name,
                             'RequestLogsTest: Route names do not match when creating a payout');
+    }
+
+    public function testPayoutCreateWhenRedisKeyIsOff()
+    {
+        /*
+         * 1. Create a contact, vpa and fund account
+         * 2. Request to create payout
+         * 3. Check if entity type, entity ID and route name match
+         */
+
+        $this->fixtures->on('live')->create('contact', $this->createContactEntityArray());
+        $this->fixtures->on('live')->create('vpa', $this->createVpaEntityArray());
+        $this->fixtures->on('live')->create('fund_account', $this->createVpaFundAccountEntityArray());
+
+        $request = [
+            'url'     => '/payouts',
+            'method'  => 'POST',
+            'content' => [
+                'fund_account_id' => 'fa_fa100000000000',
+                'amount'          => 100,
+                'mode'            => 'UPI',
+                'currency'        => 'INR',
+                'account_number'  => '2224440041626905',
+                'purpose'         => 'refund'
+            ],
+        ];
+
+        $this->setStateViaRedisKeyForEnablingRequestLogging('off');
+
+        $countBefore = count($this->getDbEntities('request_log',[], 'live'));
+
+        $this->makeRequestAndGetContent($request);
+
+        $countAfter = count($this->getDbEntities('request_log',[], 'live'));
+
+        $route = $this->app['api.route']->getCurrentRouteName();
+
+        if(! $this->checkIfRouteNameIsIncluded($route))
+        {
+            return;
+        }
+
+        $this->assertEquals(0, $countBefore - $countAfter);
     }
 
     public function testCreatePayoutWithIncorrectRequestBody()
@@ -794,9 +830,9 @@ class RequestLogsTest extends TestCase
          * 3. Check if entity type, entity ID and route name match
          */
 
-        $this->fixtures->create('contact', $this->createContactEntityArray());
-        $this->fixtures->create('vpa', $this->createVpaEntityArray());
-        $this->fixtures->create('fund_account', $this->createVpaFundAccountEntityArray());
+        $this->fixtures->on('live')->create('contact', $this->createContactEntityArray());
+        $this->fixtures->on('live')->create('vpa', $this->createVpaEntityArray());
+        $this->fixtures->on('live')->create('fund_account', $this->createVpaFundAccountEntityArray());
 
         $this->startTest();
 
@@ -808,7 +844,7 @@ class RequestLogsTest extends TestCase
         }
 
         // Fetch record from DB
-        $dbRecordsCount = count($this->getDbEntities('request_log'));
+        $dbRecordsCount = count($this->getDbEntities('request_log', [], 'live'));
 
         // Assert the required condition
         $this->assertEquals(0, $dbRecordsCount,
@@ -823,10 +859,10 @@ class RequestLogsTest extends TestCase
          * 3. Check if entity type, entity ID and route name match
          */
 
-        $this->fixtures->create('contact', $this->createContactEntityArray());
-        $this->fixtures->create('vpa', $this->createVpaEntityArray());
-        $this->fixtures->create('fund_account', $this->createVpaFundAccountEntityArray());
-        $this->fixtures->create('payout', $this->createPayoutEntityArray(['status' => 'queued','pricing_rule_id'   =>      '1nvp2XPMmaRLxb',]));
+        $this->fixtures->on('live')->create('contact', $this->createContactEntityArray());
+        $this->fixtures->on('live')->create('vpa', $this->createVpaEntityArray());
+        $this->fixtures->on('live')->create('fund_account', $this->createVpaFundAccountEntityArray());
+        $this->fixtures->on('live')->create('payout', $this->createPayoutEntityArray(['status' => 'queued','pricing_rule_id'   =>      '1nvp2XPMmaRLxb',]));
 
         $request = [
             'url' => '/payouts/pout_' . '10000000000001' . '/cancel',
@@ -843,7 +879,7 @@ class RequestLogsTest extends TestCase
         }
 
         // Fetch record from DB
-        $dbContent = $this->getDbLastEntity('request_log');
+        $dbContent = $this->getDbLastEntity('request_log', 'live');
 
         // Assert the required condition
         $this->assertEquals($responseContent['entity'], $dbContent->entity_type,
@@ -856,9 +892,9 @@ class RequestLogsTest extends TestCase
 
     public function testCreatePayoutWithOTP()
     {
-        $this->fixtures->create('contact', $this->createContactEntityArray());
-        $this->fixtures->create('vpa', $this->createVpaEntityArray());
-        $this->fixtures->create('fund_account', $this->createVpaFundAccountEntityArray());
+        $this->fixtures->on('live')->create('contact', $this->createContactEntityArray());
+        $this->fixtures->on('live')->create('vpa', $this->createVpaEntityArray());
+        $this->fixtures->on('live')->create('fund_account', $this->createVpaFundAccountEntityArray());
 
         $request = [
             'method'  => 'POST',
@@ -878,7 +914,7 @@ class RequestLogsTest extends TestCase
             ],
         ];
 
-        $this->ba->proxyAuth();
+        $this->ba->proxyAuth('rzp_live_10000000000000');
 
         $responseContent = $this->makeRequestAndGetContent($request);
 
@@ -889,7 +925,7 @@ class RequestLogsTest extends TestCase
             return;
         }
 
-        $dbContent = $this->getDbLastEntity('request_log');
+        $dbContent = $this->getDbLastEntity('request_log', 'live');
 
         $this->assertEquals($responseContent['entity'], $dbContent->entity_type,
                             'RequestLogsTest: Entity Types do not match when reversing a payout');
@@ -929,8 +965,6 @@ class RequestLogsTest extends TestCase
 
     protected function makeCreateLowBalanceConfigRequestAndGetContent()
     {
-        $this->setUpMerchantForBusinessBankingLive(true, 10000);
-
         $this->ba->proxyAuth('rzp_live_10000000000000', User::MERCHANT_USER_ID);
 
         // Request for Low Balance Config
