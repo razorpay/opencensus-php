@@ -8,13 +8,14 @@ run_bvt_suite_when_approved() {
     --header "Authorization: Bearer ${GIT_TOKEN}")
   cookies="$(cat /tmp/cookies | awk '/SESSION/ { print $NF }')"
   SPINNAKER_HEADER="Cookie: SESSION=$cookies"
-  PIPELINE_ID="21d5eec8-367e-4de7-bd39-bd614b9c5ddd"
+  # pipeline id of API PR Approval Filter
+  PIPELINE_ID="20ca36ae-948c-4a7f-8c72-97cb45768c24"
   # https://developer.github.com/v3/pulls/reviews/#list-reviews-on-a-pull-request
   echo "Status Code for fetching spinnaker cookie $statusCode"
   if [ "$skipRoast" = "true" ]; then
     if [ "$statusCode" = 200 ]; then
       spinnakerBody=$(curl --location --request GET "https://deploy-api.razorpay.com/executions?pipelineConfigIds=${PIPELINE_ID}&limit=50" \
-        -H "${SPINNAKER_HEADER}" | jq '[.[] | {status: .status,id: .id,startTime: .startTime,buildTime: .buildTime,commitId: .trigger.parameters.api_commit_id,pr_number: .trigger.parameters.pr_number}]')
+        -H "${SPINNAKER_HEADER}" | jq '[.[] | {status: .status,id: .id,startTime: .startTime,buildTime: .buildTime,commitId: .stages[0].outputs.app_commit_id,pr_number: .stages[0].outputs.pr_number}]')
       pipelines=$(echo "$spinnakerBody" | jq --raw-output '.[] | {pr_number: .pr_number,id: .id,status: .status,commitId: .commitId}| @base64')
       for p in $pipelines; do
       pipeline="$(echo "$p" | base64 -d)"
@@ -22,7 +23,7 @@ run_bvt_suite_when_approved() {
       pCommitId=$(echo "$pipeline" | jq --raw-output '.commitId')
       pPRNumber=$(echo "$pipeline" | jq --raw-output '.pr_number')
       pStatus=$(echo "$pipeline" | jq --raw-output '.status')
-      if [ "$pPRNumber" = "$PRNumber" ] && ([ "$pStatus" = "NOT_STARTED" ] || [ "$pStatus" = "RUNNING" ]); then
+      if [ "$pPRNumber" = "$PRNumber" ] && [ "$pStatus" = "RUNNING" ]; then
         spinnakerCancelRequestStatusCode=$(curl -o -s -w "%{http_code}" --location --request PUT "https://deploy-api.razorpay.com/pipelines/$pId/cancel" \
           -H "${SPINNAKER_HEADER}")
         echo "PR number $pPRNumber and Commit id $pCommitId in $pStatus state, this is being cancelled"
@@ -60,13 +61,13 @@ run_bvt_suite_when_approved() {
   fi
   if [ "$statusCode" = 200 ]; then
     spinnakerBody=$(curl --location --request GET "https://deploy-api.razorpay.com/executions?pipelineConfigIds=${PIPELINE_ID}&limit=50" \
-      -H "${SPINNAKER_HEADER}" | jq '[.[] | {status: .status,id: .id,startTime: .startTime,buildTime: .buildTime,commitId: .trigger.parameters.api_commit_id,pr_number: .trigger.parameters.pr_number}]')
+      -H "${SPINNAKER_HEADER}" | jq '[.[] | {status: .status,id: .id,startTime: .startTime,buildTime: .buildTime,commitId: .stages[0].outputs.app_commit_id,pr_number: .stages[0].outputs.pr_number}]')
     pipelines=$(echo "$spinnakerBody" | jq --raw-output '.[] | {pr_number: .pr_number,id: .id,status: .status,commitId: .commitId}| @base64')
     for p in $pipelines; do
       pipeline="$(echo "$p" | base64 -d)"
       pCommitId=$(echo "$pipeline" | jq --raw-output '.commitId')
       pStatus=$(echo "$pipeline" | jq --raw-output '.status')
-      if [ "$pCommitId" = "$commitId" ] && ([ "$pStatus" = "NOT_STARTED" ] || [ "$pStatus" = "RUNNING" ]); then
+      if [ "$pCommitId" = "$commitId" ] && [ "$pStatus" = "RUNNING" ]; then
         echo "$pCommitId"
         echo "$pStatus"
         echo "CommitId already in queue, ignoring for bvt execution"
@@ -79,7 +80,7 @@ run_bvt_suite_when_approved() {
       pCommitId=$(echo "$pipeline" | jq --raw-output '.commitId')
       pPRNumber=$(echo "$pipeline" | jq --raw-output '.pr_number')
       pStatus=$(echo "$pipeline" | jq --raw-output '.status')
-      if [ "$pPRNumber" = "$PRNumber" ] && ([ "$pStatus" = "NOT_STARTED" ] || [ "$pStatus" = "RUNNING" ]); then
+      if [ "$pPRNumber" = "$PRNumber" ] && [ "$pStatus" = "RUNNING" ]; then
         spinnakerCancelRequestStatusCode=$(curl -o -s -w "%{http_code}" --location --request PUT "https://deploy-api.razorpay.com/pipelines/$pId/cancel" \
           -H "${SPINNAKER_HEADER}")
         echo "PR number $pPRNumber and Commit id $pCommitId in $pStatus state, this is being cancelled"
