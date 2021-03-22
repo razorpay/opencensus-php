@@ -229,7 +229,7 @@ export default class NewSubscriptionLink extends Component {
     const stateKey = target.name ? 'fields' : 'internals';
     let values = { ...this.state[stateKey] };
 
-    if (name.match(/_time/)) {
+    if (!name || name.match(/_time/)) {
       return;
     } else if (target.type === 'number') {
       value = Number(value);
