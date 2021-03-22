@@ -328,7 +328,7 @@ class PaperNachIcici extends Base
 
             $tiffFileContents = $image->getImageBlob();
 
-            while ((strlen($tiffFileContents) > self::IMAGE_SIZE_LIMIT) and ($compressionValue > 50))
+            while ((strlen($tiffFileContents) > self::IMAGE_SIZE_LIMIT) and ($compressionValue > 25))
             {
                 $compressionValue -= 5;
 
