@@ -863,6 +863,8 @@ class Entity extends Base\PublicEntity
             $data[Card\Entity::VAULT_TOKEN] = $this->getCardVaultToken();
         }
 
+        $data['message_type'] = $this->iinRelation ? $this->iinRelation->getMessageType() : null;
+
         return $data;
     }
 

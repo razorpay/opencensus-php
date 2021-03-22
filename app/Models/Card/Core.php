@@ -269,8 +269,6 @@ class Core extends Base\Core
             }
         }
 
-        $messageType = $card->iinRelation ? $card->iinRelation['message_type'] : null;
-
         if ($this->isCvvOptional($input) === true)
         {
             $input['cvv'] = null;
@@ -281,7 +279,6 @@ class Core extends Base\Core
             [
                 'number'       => $input['number'],
                 'cvv'          => $input['cvv'],
-                'message_type' => $messageType,
             ]);
     }
 
