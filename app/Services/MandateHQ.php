@@ -14,6 +14,7 @@ class MandateHQ
         'register_mandate'              => 'mandate/mandate_request',
         'confirm_mandate'               => 'issuer/%s/confirm',
         'create_pre_debit_notification' => 'issuer/mandates/%s/notify',
+        'post_debit_notify'             => 'issuer/mandates/%s/post_debit_notify',
         'verify_notification'           => 'issuer/%s/verify',
     ];
 
@@ -38,7 +39,24 @@ class MandateHQ
 
     public function registerMandate($input)
     {
-        return $this->sendRequest(self::MANDATE_HQ_URLS['register_mandate'], 'post', $input);
+        $response = $this->sendRequest(self::MANDATE_HQ_URLS['register_mandate'], 'post', $input);
+
+        $error = $response['error'] ?? [];
+
+        $success = $error['success'] ?? true;
+
+        if ($success === false)
+        {
+            throw new Exception\ServerErrorException(
+                'Mandate HQ error',
+                ErrorCode::SERVER_ERROR_MANDATE_HQ_REQUEST_FAILED,
+                [
+                    'error' => $error
+                ]
+            );
+        }
+
+        return $response;
     }
 
     public function confirmMandate($mandateRegisterId)
@@ -58,6 +76,15 @@ class MandateHQ
     public function createPreDebitNotification($mandateId, $input)
     {
         $url = sprintf(self::MANDATE_HQ_URLS['create_pre_debit_notification'], $mandateId);
+
+        return $this->sendRequest($url, 'post', $input);
+    }
+
+    public function postDebitNotify($mandateId, $notificationId)
+    {
+        $input = ['notification_id' => $notificationId];
+
+        $url = sprintf(self::MANDATE_HQ_URLS['post_debit_notify'], $mandateId);
 
         return $this->sendRequest($url, 'post', $input);
     }

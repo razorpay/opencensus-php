@@ -166,6 +166,8 @@ class CardMandateTest extends TestCase
 
         $this->mockVerifyNotification();
 
+        $this->mockPostDebitNotification();
+
         $url = $this->testData[__FUNCTION__]['request']['url'];
         $this->testData[__FUNCTION__]['request']['url'] = sprintf($url, $payment->getId());
         $this->ba->reminderAppAuth();
@@ -173,7 +175,7 @@ class CardMandateTest extends TestCase
         $this->startTest();
 
         $cardMandateNotification = $this->getDbLastEntity('card_mandate_notification');
-        $this->assertEquals('verified', $cardMandateNotification->getStatus());
+        $this->assertEquals('post_debit_notified', $cardMandateNotification->getStatus());
 
         $payment = $this->getDbLastEntity('payment');
         $this->assertEquals('authorized', $payment->getStatus());
@@ -380,6 +382,18 @@ class CardMandateTest extends TestCase
         return $this->mockMandateHQ($callable, 'verifyNotification');
     }
 
+    protected function mockPostDebitNotification($success = true)
+    {
+        $callable = function () use ($success)
+        {
+            return [
+                'success' => $success
+            ];
+        };
+
+        return $this->mockMandateHQ($callable, 'postDebitNotify');
+    }
+
     protected function mockRegisterMandate()
     {
         $callable = function ()
@@ -426,7 +440,7 @@ class CardMandateTest extends TestCase
                     'error_message' => ""
                 ],
                 'notification_id' => 'ratn_PP3VC146gmBVGG',
-                'status' => $success ? 'completed' : 'failed',
+                'status' => $success ? 'debit_pending' : 'failed',
             ];
         };
 

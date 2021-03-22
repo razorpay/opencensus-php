@@ -215,11 +215,10 @@ class Core extends Base\Core
         return [
             Constants::MANDATE_HQ_INSTRUMENT => [
                 Constants::MANDATE_HQ_INSTRUMENT_ID     => $this->getCardNumber($card),
-                Constants::MANDATE_HQ_INSTRUMENT_EXPIRY => $card->getExpiryMonth() . '/' . $card->getExpiryYear(),
+                Constants::MANDATE_HQ_INSTRUMENT_EXPIRY => $card->getExpiryMonth() . '/' . substr($card->getExpiryYear(), -2),
                 Constants::MANDATE_HQ_INSTRUMENT_METHOD => Constants::MANDATE_HQ_INSTRUMENT_METHOD_CARD,
                 Constants::MANDATE_HQ_INSTRUMENT_TYPE   => Constants::MANDATE_HQ_INSTRUMENT_TYPE_CARD
             ],
-            Constants::MANDATE_HQ_PARTNER                 => Constants::MANDATE_HQ_PARTNER_RAZORPAY,
             Constants::MANDATE_HQ_MERCHANT                => $payment->merchant->getName(),
             Constants::MANDATE_HQ_MAX_AMOUNT              => $maxAmount,
             Constants::MANDATE_HQ_AMOUNT                  => $payment->getAmount(),
@@ -227,6 +226,7 @@ class Core extends Base\Core
             Constants::MANDATE_HQ_FREQUENCY               => Constants::MANDATE_HQ_FREQUENCY_AD_HOC,
             Constants::MANDATE_HQ_CALLBACK                => $url,
             Constants::MANDATE_HQ_END_TIME                => $endTime,
+            Constants::MANDATE_HQ_DEBIT_TYPE              => Constants::MANDATE_HQ_DEBIT_TYPE_MAX_AMOUNT
         ];
     }
 

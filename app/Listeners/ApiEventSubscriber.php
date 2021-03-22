@@ -299,6 +299,10 @@ class ApiEventSubscriber extends Base\Core
         {
             (new CardMandate\Core)->postAuthorizeConfirmMandate($payment);
         }
+        elseif ($payment->hasCardMandateNotification() === true)
+        {
+            (new CardMandate\CardMandateNotification\Core)->notifyAfterDebit($payment);
+        }
 
         $this->dispatchEventToStork($payload);
     }

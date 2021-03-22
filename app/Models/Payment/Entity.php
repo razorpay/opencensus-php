@@ -4284,6 +4284,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return false;
     }
 
+    public function hasCardMandateNotification(): bool
+    {
+        return $this->cardMandateNotification !== null;
+    }
+
     public function isRequiredToCreateNewTokenAlways(): bool
     {
         if (($this->isCardRecurring() === true) and

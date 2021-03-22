@@ -9,6 +9,7 @@ class Status
     const CREATED             = 'created';
     const NOTIFIED            = 'notified';
     const VERIFIED            = 'verified';
+    const POST_DEBIT_NOTIFIED = 'post_debit_notified';
     const VERIFICATION_FAILED = 'verification_failed';
     const FAILED              = 'failed';
     const PENDING             = 'pending';
@@ -26,7 +27,10 @@ class Status
         self::PENDING => [
             self::NOTIFIED,
         ],
-        self::VERIFIED => [],
+        self::VERIFIED => [
+            self::VERIFIED,
+            self::POST_DEBIT_NOTIFIED,
+        ],
         self::VERIFICATION_FAILED => [],
         self::FAILED => [],
     ];

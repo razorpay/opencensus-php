@@ -12,6 +12,7 @@ use RZP\Models\Reminders;
 use RZP\Models\CardMandate;
 use RZP\Constants\Entity as E;
 use RZP\Exception\LogicException;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Core extends Base\Core
 {
@@ -99,6 +100,45 @@ class Core extends Base\Core
         ]);
 
         return $cardMandateNotification;
+    }
+
+    public function notifyAfterDebit(Payment\Entity $payment)
+    {
+        $cardMandateNotification = $payment->cardMandateNotification;
+
+        if ($cardMandateNotification === null)
+        {
+            return;
+        }
+
+        if ($cardMandateNotification->getStatus() !== Status::VERIFIED)
+        {
+            throw new BadRequestValidationFailureException(
+                'card mandate notification is not in proper status'
+            );
+        }
+
+        $mandateId = $cardMandateNotification->cardMandate->getMandateId();
+        $notificationId = $cardMandateNotification->getNotificationId();
+
+        $this->app->mandateHQ->postDebitNotify($mandateId, $notificationId);
+
+        $this->repo->transaction(
+            function () use ($cardMandateNotification)
+            {
+                $this->repo->card_mandate_notification->lockForUpdateAndReload($cardMandateNotification);
+
+                if ($cardMandateNotification->getStatus() !== Status::VERIFIED)
+                {
+                    throw new BadRequestValidationFailureException(
+                        'card mandate notification is not in proper status'
+                    );
+                }
+
+                $cardMandateNotification->setStatus(Status::POST_DEBIT_NOTIFIED);
+
+                $cardMandateNotification->saveOrFail();
+            });
     }
 
     public function processCallBack($notificationId, $status): Entity
@@ -196,8 +236,10 @@ class Core extends Base\Core
             case Constants::MANDATE_HQ_STATUS_CREATED:
             case Constants::MANDATE_HQ_STATUS_PENDING:
                 return Status::PENDING;
-            case Constants::MANDATE_HQ_STATUS_COMPLETED:
+            case Constants::MANDATE_HQ_STATUS_DEBIT_PENDING:
                 return Status::NOTIFIED;
+            case Constants::MANDATE_HQ_STATUS_COMPLETED:
+                return Status::POST_DEBIT_NOTIFIED;
             case Constants::MANDATE_HQ_STATUS_FAILED:
                 return Status::FAILED;
             default:
