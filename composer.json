@@ -69,6 +69,7 @@
         "twirp/twirp": "^0.5.3",
         "halaxa/json-machine": "^0.4.1",
         "ext-zip": "*",
+        "google/apiclient": "^2.7",
         "maatwebsite/excel": "3.1.25",
         "phpoffice/phpspreadsheet": "^1.16"
     },

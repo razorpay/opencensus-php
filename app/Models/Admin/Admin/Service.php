@@ -11,6 +11,7 @@ use Event;
 use Request;
 use Carbon\Carbon;
 
+use Google_Client;
 use RZP\Error;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -24,8 +25,10 @@ use RZP\Models\Admin\Group;
 use RZP\Constants\HashAlgo;
 use RZP\Models\Admin\Action;
 use RZP\Events\AuditLogEntry;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Admin\Org\AuthPolicy;
 use RZP\Mail\Admin\Account as AdminMail;
+use GuzzleHttp\Psr7\Request as GuzzleRequest;
 
 class Service extends Base\Service
 {
@@ -240,6 +243,13 @@ class Service extends Base\Service
             'oauth_provider_id'  => $input['oauth_provider_id'],
         ];
 
+        $verifyAccessToken = $this->verifyAccessTokenWithGoogle($input);
+
+        if ($verifyAccessToken === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_TOKEN_INVALID);
+        }
+
         $this->core()->edit($admin, $oauthData);
 
         $data = $this->generateLoginToken($admin);
@@ -247,6 +257,74 @@ class Service extends Base\Service
         $this->fireAdminAction($admin, Action::LOGIN_OAUTH);
 
         return $data;
+    }
+
+    public function verifyAccessTokenWithGoogle($input)
+    {
+        try
+        {
+            $app = App::getFacadeRoot();
+
+            $client_id = $app->config->get('app.admin_google_oauth_client_id');
+
+            $mock = $app->config->get('app.admin_google_oauth_client_mock');
+
+            if ($mock === true)
+            {
+                return true;
+            }
+
+            $client = new Google_Client([Constant::CLIENT_ID => $client_id]);
+
+            $client->setAccessToken($input['oauth_access_token']);
+
+            $request = new GuzzleRequest('GET', Constant::GOOGLE_FETCH_USER_INFO_URL);
+
+            $response = $client->execute($request);
+
+            $responseJson = json_decode($response->getBody(), true);
+
+            if ($this->verifyResponseAttributesFromGoogle($responseJson, $input) === true)
+            {
+                return true;
+            }
+
+            return false;
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::ADMIN_GOOGLE_OAUTH_ERROR);
+
+            return false;
+        }
+    }
+
+    protected function verifyResponseAttributesFromGoogle($responseJson, $input)
+    {
+        $responseUserId        = $responseJson['user_id'] ?? null;
+        $responseEmail         = $responseJson['email'] ?? null;
+        $responseVerifiedEmail = $responseJson['verified_email'] ?? null;
+
+        $data = [
+            'user_id'       => $responseUserId,
+            'verifiedEmail' => $responseVerifiedEmail,
+            'email'         => $responseEmail,
+            'input_email'   => $input['email'],
+        ];
+
+        if (($responseUserId === $input['oauth_provider_id']) and
+            ($responseVerifiedEmail) and
+            ((strcmp(strtolower($responseEmail), strtolower($input['email'])) === 0) === true))
+        {
+            // verify Successfully.
+            $this->trace->info(TraceCode::ADMIN_GOOGLE_OAUTH_VERIFY_SUCCESS, $data);
+
+            return true;
+        }
+
+        $this->trace->info(TraceCode::ADMIN_GOOGLE_OAUTH_VERIFY_FAIL, $data);
+
+        return false;
     }
 
     /**

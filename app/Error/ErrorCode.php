@@ -406,6 +406,7 @@ class ErrorCode
     const BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN                                  = 'BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN';
     const BAD_REQUEST_NO_RECORDS_FOUND                                              = 'BAD_REQUEST_NO_RECORDS_FOUND';
     const BAD_REQUEST_CHANGE_PASSWORD_NOT_ALLOWED                                   = 'BAD_REQUEST_CHANGE_PASSWORD_NOT_ALLOWED';
+    const BAD_REQUEST_ACCESS_TOKEN_INVALID                                          = 'BAD_REQUEST_ACCESS_TOKEN_INVALID';
     const BAD_REQUEST_ONLY_HTTPS_ALLOWED                                            = 'BAD_REQUEST_ONLY_HTTPS_ALLOWED';
     const BAD_REQUEST_FORBIDDEN                                                     = 'BAD_REQUEST_FORBIDDEN';
     const BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED                                       = 'BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED';

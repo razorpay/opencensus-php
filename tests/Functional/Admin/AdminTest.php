@@ -523,6 +523,24 @@ class AdminTest extends TestCase
             'oauth_provider_id'  => 'test oauth provider id',
         ]);
 
+        $this->app['config']->set('app.admin_google_oauth_client_mock', true);
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testLoginOauthWithIncorrectAccessToken()
+    {
+        $admin = $this->fixtures->create('admin', [
+            'org_id'             => Org::RZP_ORG,
+            'email'              => 'test@email.com',
+            'oauth_access_token' => 'test oauth token',
+            'oauth_provider_id'  => 'test oauth provider id',
+        ]);
+
+        $this->app['config']->set('app.admin_google_oauth_client_mock', false);
+
         $this->ba->appAuth();
 
         $this->startTest();
