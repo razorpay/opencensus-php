@@ -107,6 +107,8 @@ class Gateway extends BaseProcessor
                 'retry_limit'         => $statementRetryLimit,
             ]);
 
+        $recordNumber = 1;
+
         do
         {
             // We don't have any bank response for the first request.
@@ -164,7 +166,7 @@ class Gateway extends BaseProcessor
                 throw $ex;
             }
 
-            $formattedResponse = $this->getFormattedResponse($bankResponse['data']);
+            $formattedResponse = $this->getFormattedResponse($bankResponse['data'], $recordNumber);
 
             $finalFormattedResponse = array_merge($finalFormattedResponse, $formattedResponse);
 
@@ -350,7 +352,7 @@ class Gateway extends BaseProcessor
         return $formattedData;
     }
 
-    public function getFormattedResponse(array $responseData)
+    public function getFormattedResponse(array $responseData, int & $recordNumber)
     {
         $responseBody = $responseData[Fields::PAYMENT_GENERIC_RESPONSE][Fields::BODY];
 
@@ -381,7 +383,15 @@ class Gateway extends BaseProcessor
             // Logging it here even though it's logged in Mozart Service since that
             // log is most probably going to be truncated due to large amount of data.
             //
-            $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_TRANSACTION_DATA, $transactionData);
+            $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_TRANSACTION_DATA,
+                               [
+                                   'record_no'            => $recordNumber,
+                                   Entity::CHANNEL        => $this->getChannel(),
+                                   Entity::ACCOUNT_NUMBER => $this->accountNumber
+                               ] + $transactionData
+            );
+
+            $recordNumber++;
 
             $transactions[] = [
                 Entity::CHANNEL             => $this->getChannel(),
