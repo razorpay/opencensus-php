@@ -2,16 +2,18 @@
 
 namespace RZP\Tests\Functional\Payment\Transfers;
 
+use RZP\Models\Transfer;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Payment\Transfers\TransferTrait;
-use RZP\Models\Transfer;
 
 class PaymentMarketplaceRefundTest extends TestCase
 {
     use PaymentTrait;
     use TransferTrait;
+    use DbEntityFetchTrait;
 
     // @todo: Clean up all test cases
     public function setUp()
@@ -329,10 +331,9 @@ class PaymentMarketplaceRefundTest extends TestCase
             ++$index;
         }
     }
-    
+
     public function testReverseAllOrderTransfers()
     {
-
         $data = $this->testData['createOrderTransfers'];
 
         $this->ba->privateAuth();
@@ -354,5 +355,52 @@ class PaymentMarketplaceRefundTest extends TestCase
         $transfer = $this->getLastEntity('transfer', true);
 
         $this->assertEquals('reversed', $transfer['status']);
+    }
+
+    public function testReverseFailedPaymentTransferUsingReverseAll()
+    {
+        $data = $this->testData['createOrderTransfers'];
+        $this->ba->privateAuth();
+        $order = $this->runRequestResponseFlow($data);
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order['id'];
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $orderTransfer = $this->getDbLastEntity('transfer');
+        $this->assertEquals('processed', $orderTransfer['status']);
+        $balanceLinkedAccount1 = $this->getDbEntity('balance', ['merchant_id' => 10000000000001]);
+        $this->assertEquals(20000, $balanceLinkedAccount1['balance']);
+
+        $this->fixtures->balance->edit('10000000000000', ['balance' => 1]);
+        $transfers = [
+            [
+                'account' => 'acc_10000000000002',
+                'amount'  => 5000,
+                'currency'=> 'INR',
+            ],
+        ];
+        $this->transferPayment($payment['id'], $transfers);
+        $this->fixtures->balance->edit('10000000000000', ['balance' => 123456]);
+
+        $paymentTransfer = $this->getDbLastEntity('transfer');
+        $this->assertEquals('failed', $paymentTransfer['status']);
+        $balanceLinkedAccount2 = $this->getDbEntity('balance', ['merchant_id' => 10000000000002]);
+        $this->assertEquals(0, $balanceLinkedAccount2['balance']);
+
+        $refund = $this->refundPayment($payment['id'], null, [], [], true);
+
+        $orderTransfer->reload();
+        $paymentTransfer->reload();
+        $balanceLinkedAccount1->reload();
+        $balanceLinkedAccount2->reload();
+        $balanceMerchant = $this->getDbEntity('balance', ['merchant_id' => 10000000000000]);
+
+        $this->assertEquals($payment['id'], $refund['payment_id']);
+        $this->assertEquals(50000, $refund['amount']);
+        $this->assertEquals('reversed', $orderTransfer['status']);
+        $this->assertEquals('failed', $paymentTransfer['status']);
+        $this->assertEquals(0, $balanceLinkedAccount1['balance']);
+        $this->assertEquals(0, $balanceLinkedAccount2['balance']);
+        $this->assertEquals(123456 + 20000 - 50000, $balanceMerchant['balance']);
     }
 }

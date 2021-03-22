@@ -247,7 +247,7 @@ trait Reversal
                 foreach ($transfersFromPayment as $transfer)
                 {
                     if ($transfer->isFailed() === true and
-                        $transfer->getAttempts() < Transfer\Constant::MAX_ALLOWED_ORDER_TRANSFER_PROCESS_ATTEMPTS)
+                        $transfer->getAttempts() < Transfer\Constant::MAX_ALLOWED_PAYMENT_TRANSFER_PROCESS_ATTEMPTS)
                     {
                         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TRANSFER_IN_PROGRESS);
                     }
