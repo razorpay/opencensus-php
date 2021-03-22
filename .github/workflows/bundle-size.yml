@@ -7,12 +7,21 @@ jobs:
     runs-on: [self-hosted]
     steps:
       - uses: actions/checkout@v2
+
+      - uses: actions/cache@v2
+        with:
+            path: |
+              ~/cache
+              !~/cache/exclude
+            key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+
       - uses: actions/setup-node@v2-beta
         with:
           node-version: '12'
+
       - uses: preactjs/compressed-size-action@v2
         with:
           repo-token: '${{ secrets.GITHUB_TOKEN }}'
-          strip-hash: '\\.(\\w{8})\\.js$'
+          strip-hash: '\.(\w{8})\.js$'
         env:
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
