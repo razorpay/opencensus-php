@@ -111,7 +111,7 @@ class NbplusNetbankingKotakCorpCombinedFileTest extends StaticCallbackNbplusGate
             $date = Carbon::today(Timezone::IST)->format('d-m-Y');
 
             $testData = [
-                'subject' => 'Corporate Kotak Netbanking claims and refund files for '.$date,
+                'subject' => 'Corporate Kotak_corp Netbanking claims and refund files for '.$date,
                 'amount' => [
                     'claims'  =>  '1000.00',
                     'refunds' =>  '505.00',
@@ -153,8 +153,6 @@ class NbplusNetbankingKotakCorpCombinedFileTest extends StaticCallbackNbplusGate
 
         $this->assertCount(8, $refundsFileRow1);
 
-        $this->assertEquals($refundsFileRow1[0], $fullRefund['id']);
-
         $refundAmount = number_format($fullRefund['amount'] / 100, 2, '.', '');
 
         $this->assertEquals($refundsFileRow1[2], floatval($refundAmount));
@@ -164,8 +162,6 @@ class NbplusNetbankingKotakCorpCombinedFileTest extends StaticCallbackNbplusGate
         $this->assertEquals($refundsFileRow1[5], floatval($actualAmount));
 
         $this->assertCount(8, $refundsFileRow2);
-
-        $this->assertEquals($refundsFileRow2[0], $partialRefund['id']);
 
         $refundAmount = number_format($partialRefund['amount'] / 100, 2, '.', '');
 

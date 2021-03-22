@@ -40,7 +40,7 @@ class KotakCorp extends Base
             $date = Carbon::createFromTimestamp($row['payment']['created_at'], Timezone::IST)->format('Ymd');
 
             $content[] = [
-                self::GATEWAY_TXN_ID       => $row[Entity::REFUND][Payment\Refund\Entity::ID],
+                self::GATEWAY_TXN_ID       => $row['gateway'][Netbanking::VERIFICATION_ID],
                 self::REFUND_TYPE          => 'R',
                 self::REFUND_AMOUNT        => $this->getFormattedAmount($row[Entity::REFUND][Payment\Refund\Entity::AMOUNT]),
                 self::BANK_REFERENCE_ID    => $row['gateway'][Netbanking::BANK_TRANSACTION_ID],

@@ -885,6 +885,31 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchReconciledPaymentsForGatewayWithBankCode($from, $to, $gateway, $bankCode, $status)
+    {
+        $paymentAttrs = $this->dbColumn('*');
+
+        $paymentId = $this->dbColumn(Entity::ID);
+
+        $txnRepo = $this->repo->transaction;
+
+        $transactionEntityType = $txnRepo->dbColumn(Transaction\Entity::TYPE);
+
+        $transactionReconciledAt = $txnRepo->dbColumn(Transaction\Entity::RECONCILED_AT);
+
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->select($paymentAttrs)
+            ->from(\DB::raw('`payments`, `transactions` USE INDEX (transactions_reconciled_at_index)'))
+            ->where($paymentId, '=', \DB::raw('`transactions`.`entity_id`'))
+            ->where(Entity::GATEWAY, '=', $gateway)
+            ->where(Entity::BANK, '=', $bankCode)
+            ->where($transactionEntityType, '=', 'payment')
+            ->where($transactionReconciledAt, '>=', $from)
+            ->where($transactionReconciledAt, '<=', $to)
+            ->whereIn(Entity::STATUS, $status)
+            ->get();
+    }
+
     public function fetchReconciledPaymentsForGatewayUsingReportingReplica($from, $to, $gateway, $statuses)
     {
         $paymentAttrs = $this->dbColumn('*');

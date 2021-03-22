@@ -9,7 +9,7 @@ use RZP\Constants\Timezone;
 
 class KotakCorp extends Base
 {
-    const BANK_NAME = 'Kotak';
+    const BANK_NAME = 'Kotak_corp';
 
     protected function formatDataForMail(array $data)
     {
