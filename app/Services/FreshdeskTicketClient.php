@@ -522,11 +522,11 @@ class FreshdeskTicketClient
             unset($request[$field]);
         }
 
-        $salesforceAgentId = $this->app['request']->header(self::X_SALESFORCE_EMAIL_ID);
+        $salesforceAgentEmailId = $this->app['request']->header(self::X_SALESFORCE_EMAIL_ID);
 
-        if (empty($salesforceAgentId) === false)
+        if (empty($salesforceAgentEmailId) === false)
         {
-            $request['salesforce_agent_id'] = $salesforceAgentId;
+            $request['salesforce_agent_email_id'] = $salesforceAgentEmailId;
         }
 
         return $request;

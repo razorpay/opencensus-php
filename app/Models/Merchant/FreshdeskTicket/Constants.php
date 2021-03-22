@@ -10,6 +10,8 @@ class Constants
     const STATUS   = 'status';
     const PER_PAGE = 'per_page';
 
+    const CC_EMAILS                 = 'cc_emails';
+
     const CUSTOM_FIELDS             = 'custom_fields';
     // custom fields
     const CATEGORY                  = 'cf_requester_category';

@@ -22,6 +22,10 @@ class FreshdeskTicketV2Test extends TestCase
 
     const RZP_CREATE_TICKET = 'rzp_create_ticket';
 
+    const RZP_CREATE_TICKET_USER_EMAIL_ONLY = 'rzp_create_ticket_user_email_only';
+
+    const RZP_CREATE_TICKET_SALESFORCE = 'rzp_create_ticket_salesforce';
+
     const RZP_FETCH_TICKET  = 'rzp_fetch_ticket';
 
     public function setUp()
@@ -268,11 +272,23 @@ class FreshdeskTicketV2Test extends TestCase
         $this->assertEquals('rzp', $fdInstance);
     }
 
+    public function testCreateTicketRzpWithoutCcEmails()
+    {
+        $frDueBy = time() + self::DAY * 2;
+
+        $expectedRequestResponse    =   $this->getExpectedRequestResponse(self::RZP_CREATE_TICKET_USER_EMAIL_ONLY);
+
+        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST', 'rzp',
+            $expectedRequestResponse['request'], $expectedRequestResponse['response']);
+
+        $this->startTest();
+    }
+
     public function testCreateTicketRzpSalesForce()
     {
         $this->ba->salesForceAuth();
 
-        $expectedRequestResponse = $this->getExpectedRequestResponse(self::RZP_CREATE_TICKET);
+        $expectedRequestResponse = $this->getExpectedRequestResponse(self::RZP_CREATE_TICKET_SALESFORCE);
 
         $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST', 'rzp',
             $expectedRequestResponse['request'], $expectedRequestResponse['response']);
@@ -294,7 +310,7 @@ class FreshdeskTicketV2Test extends TestCase
             [
                 'description' => 'ticket description',
                 'subject' => 'ticket subject',
-                'cc_emails' => ['a@b.com'],
+                'cc_emails' => ['a@b.com', 'merchantuser01@razorpay.com'],
                 'custom_fields' => [
                     'cf_requester_category'    => 'Merchant',
                     'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
@@ -342,7 +358,7 @@ class FreshdeskTicketV2Test extends TestCase
             [
                 'description' => 'ticket description',
                 'subject' => 'ticket subject',
-                'cc_emails' => ['a@b.com'],
+                'cc_emails' => ['a@b.com','merchantuser01@razorpay.com'],
                 'custom_fields' => [
                     'cf_requester_category'    => 'Merchant',
                     'cf_requestor_subcategory' => 'Activation',
@@ -390,7 +406,7 @@ class FreshdeskTicketV2Test extends TestCase
             [
                 'description' => 'ticket description',
                 'subject' => 'ticket subject',
-                'cc_emails' => ['a@b.com'],
+                'cc_emails' => ['a@b.com', 'merchantuser01@razorpay.com'],
                 'custom_fields' => [
                     'cf_requester_category'    => 'Merchant',
                     'cf_requestor_subcategory' => 'Activation',
@@ -434,7 +450,7 @@ class FreshdeskTicketV2Test extends TestCase
             [
                 'description' => 'ticket description',
                 'subject' => 'ticket subject',
-                'cc_emails' => ['a@b.com'],
+                'cc_emails' => ['a@b.com', 'merchantuser01@razorpay.com'],
                 'custom_fields' => [
                     'cf_requester_category'    => 'Invalid',
                     'cf_requestor_subcategory' => 'activation',
@@ -784,7 +800,7 @@ class FreshdeskTicketV2Test extends TestCase
                 'request'   =>  [
                     'description' => 'ticket description',
                     'subject' => 'ticket subject',
-                    'cc_emails' => ['a@b.com'],
+                    'cc_emails' => ['a@b.com','merchantuser01@razorpay.com'],
                     'custom_fields' => [
                         'cf_requester_category'    => 'Merchant',
                         'cf_requestor_subcategory' => 'Activation',
@@ -806,6 +822,60 @@ class FreshdeskTicketV2Test extends TestCase
                     ],
                     'priority' =>  1,
                 ]
+            ];
+        }
+
+        if ($key === self::RZP_CREATE_TICKET_USER_EMAIL_ONLY)
+        {
+            return [
+                'request'   =>  [
+                    'description' => 'ticket description',
+                    'subject' => 'ticket subject',
+                    'cc_emails' => ['merchantuser01@razorpay.com']
+                ],
+                'response'  =>
+                    [
+                        'id'            => '99',
+                        'description'   => 'ticket description',
+                        'fr_due_by'     => $frDueByFreshdeskFormat,
+                        'custom_fields' => [
+                            'cf_requester_category'    => 'Merchant',
+                            'cf_requestor_subcategory' => 'Activation',
+                            'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                        ],
+                        'priority' =>  1,
+                    ]
+            ];
+        }
+
+        if ($key === self::RZP_CREATE_TICKET_SALESFORCE)
+        {
+            return [
+                'request'   =>  [
+                    'description' => 'ticket description',
+                    'subject' => 'ticket subject',
+                    'cc_emails' => ['a@b.com'],
+                    'custom_fields' => [
+                        'cf_requester_category'    => 'Merchant',
+                        'cf_requestor_subcategory' => 'Activation',
+                        'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                    ],
+                    'email' =>  'test@razorpay.com',
+                    'phone' => '9876543210',
+                    'priority' =>  1,
+                ],
+                'response'  =>
+                    [
+                        'id'            => '99',
+                        'description'   => 'ticket description',
+                        'fr_due_by'     => $frDueByFreshdeskFormat,
+                        'custom_fields' => [
+                            'cf_requester_category'    => 'Merchant',
+                            'cf_requestor_subcategory' => 'Activation',
+                            'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                        ],
+                        'priority' =>  1,
+                    ]
             ];
         }
 

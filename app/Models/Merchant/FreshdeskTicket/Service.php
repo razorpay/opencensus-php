@@ -291,6 +291,8 @@ class Service extends Base\Service
 
         $fdInstance = $this->getFdInstanceFromType($type, $input);
 
+        $input = $this->appendUserEmailToCCEmails($input);
+
         $url = self::FRESHDESK_INSTANCES[$type][$fdInstance];
 
         unset($input[Constants::FD_INSTANCE]);
@@ -1106,6 +1108,32 @@ class Service extends Base\Service
             'FD Instance is Invalid ',
             [Constants::FD_INSTANCE => $fdInstance]
         );
+    }
+
+    protected function appendUserEmailToCCEmails($input) : array
+    {
+        $user = $this->app['basicauth']->getUser();
+
+        $emailId = "";
+
+        if (empty($user) === false)
+        {
+            $emailId  = $user->getEmail();
+        }
+
+        if (empty($emailId) === false)
+        {
+            if (empty($input[Constants::CC_EMAILS]) === false)
+            {
+                $input[Constants::CC_EMAILS][] = $emailId;
+            }
+            else
+            {
+                $input[Constants::CC_EMAILS] = [$emailId];
+            }
+        }
+
+        return $input;
     }
 
 }
