@@ -55,6 +55,7 @@ class Razorflow
 
     const PAYLOAD                 = 'payload';
     const ENDPOINT_TICKET_SUBMIT  = 'ticketSubmit';
+    const PAYLOAD_STRING          = 'payload_string';
     /**
      * Razorflow constructor.
      *
@@ -305,6 +306,7 @@ class Razorflow
         //payload if encoded as string need to be decoded before pushing to razorflow, to allow proto to match
         if ((isset($data[self::PAYLOAD]) === true) && (is_string($data[self::PAYLOAD]) === true))
         {
+            $data[self::PAYLOAD_STRING] = $data[self::PAYLOAD];
             $data[self::PAYLOAD]= json_decode($data[self::PAYLOAD], true);
         }
 
