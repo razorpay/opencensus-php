@@ -209,6 +209,7 @@ class Type
     const BOB_EMI_FILE                      = 'bob_emi_file';
 
     const FIRST_DATA_PARES_FILE             = 'first_data_pares_file';
+    const DATA_LAKE_SEGMENT_FILE            = 'data_lake_segment_file';
 
     const SETTLEMENT_BUCKET_CONFIG              = 'settlement_bucket_config';
     const TEST_BUCKET_CONFIG                    = 'test_bucket_config';
@@ -223,6 +224,7 @@ class Type
     const BEAM_BUCKET_CONFIG                    = 'beam_bucket_config';
     const BATCH_SERVICE_BUCKET_CONFIG           = 'batch_service_bucket_config';
     const RECON_SFTP_INPUT_BUCKET_CONFIG        = 'recon_sftp_input_bucket';
+    const DATA_LAKE_SEGMENTS_BUCKET_CONFIG       = 'data_lake_segments_bucket_config';
 
     const PAYOUT_SAMPLE                         = 'payout_sample';
 
@@ -497,6 +499,7 @@ class Type
         self::AUBL_NETBANKING_REFUND,
         self::AUBL_NETBANKING_COMBINED,
         self::KOTAK_CORP_NETBANKING_REFUND,
+        self::DATA_LAKE_SEGMENT_FILE
     ];
 
     /**
@@ -606,7 +609,11 @@ class Type
 
         self::RECON_SFTP_INPUT_BUCKET_CONFIG => [
             self::FSB_NETBANKING_REFUND,
-        ]
+        ],
+
+        self::DATA_LAKE_SEGMENTS_BUCKET_CONFIG => [
+            self::DATA_LAKE_SEGMENT_FILE,
+        ],
     ];
 
     /**

@@ -2116,6 +2116,9 @@ class Route
         // same route for updating merchant mtu from dashboard
         'merchant_mtu_update_dashboard'            => ['post',      'merchant_mtu_update_dashboard',                           'MerchantController@merchantsMtuUpdate'                    ],
 
+        //route to create/update segments at splitz
+        'segment_create_update'                    => ['post',      'segment_create_update',                                   'SegmentationController@segmentPopulate'                    ],
+
         //balance configs apis
         'fetch_merchant_balance_configs'           => ['get',      'balance_configs',                                           'BalanceConfigController@getMerchantBalanceConfigs'       ],
         'get_merchant_balance_config'              => ['get',      'balance_configs/{id}',                                      'BalanceConfigController@getBalanceConfigById'            ],
@@ -3113,6 +3116,7 @@ class Route
         'myoperator_v1_proxy_get',
         'myoperator_v2_proxy_post',
         'care_service_myoperator_webhook_proxy',
+        'segment_create_update',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -6206,6 +6210,7 @@ class Route
             'setl_notify_h2h',
             'bank_transfer_process_file_rbl',
             'bank_transfer_process_file',
+            'segment_create_update',
         ],
 
         'merchants-risk' => [

@@ -2,6 +2,14 @@
 
 use Aws\Laravel\AwsServiceProvider;
 
+use Aws\Credentials\CredentialProvider;
+
+use RZP\Services\Aws\Credentials\InstanceProfileProvider;
+
+$instanceProfileProvider = new InstanceProfileProvider(["timeout" => 10]);
+$provider = $instanceProfileProvider->getProvider();
+$memoizedProvider = CredentialProvider::memoize($provider);
+
 return [
     'aws' => [
         'bucket_region' => env('AWS_BUCKET_REGION', 'us-east-1'),
@@ -58,6 +66,11 @@ return [
         'recon_sftp_input_bucket' => [
             'name'   => env('AWS_S3_RECON_SFTP_INPUT_BUCKET'),
             'region' => env('AWS_S3_RECON_SFTP_INPUT_BUCKET_REGION', 'ap-south-1')
+        ],
+        'data_lake_segments_bucket_config' => [
+            'name'   => env('AWS_S3_DATA_LAKE_SEGMENT_BUCKET'),
+            'region' => env('AWS_S3_DATA_LAKE_SEGMENT_REGION', 'ap-south-1'),
+            'credentials'=>$memoizedProvider
         ],
     ],
 

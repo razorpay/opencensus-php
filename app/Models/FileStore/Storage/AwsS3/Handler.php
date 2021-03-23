@@ -29,13 +29,18 @@ class Handler extends BaseHandler
      *
      * @param string|null $region region of s3 bucket
      *
-     * @return Aws\Sdk Aws S3 client
+     * @param array|null $credentials
+     * @return Aws\AwsClientInterface Aws S3 client
      */
-    public static function getClient($region = null)
+    public static function getClient($region = null,$credentials = null)
     {
         $awsConfig = Config::get('aws');
 
         $awsConfig['region'] = $region ?: $awsConfig['bucket_region'];
+
+        if($credentials!=null){
+            $awsConfig['credentials'] = $credentials;
+        }
 
         $client = new Aws\Sdk($awsConfig);
 
@@ -174,7 +179,7 @@ class Handler extends BaseHandler
             return $key;
         }
 
-        $s3 = self::getClient($bucketConfig['region']);
+        $s3 = self::getClient($bucketConfig['region'],$bucketConfig['credentials']);
 
         try
         {

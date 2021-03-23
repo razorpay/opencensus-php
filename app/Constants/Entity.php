@@ -477,6 +477,8 @@ class Entity
     // Merchant Risk Alert
     const MERCHANT_RISK_ALERT = 'merchant_risk_alert';
 
+    const SEGMENTATION = 'segmentation';
+
     /**
      * Defines a map of entites which are currently
      * being cached and associated cache version prefixes
@@ -870,6 +872,8 @@ class Entity
         self::MERCHANT_RISK_ALERT => \RZP\Models\MerchantRiskAlert::class,
 
         self::BANKING_ACCOUNT_TPV   => \RZP\Models\BankingAccountTpv::class,
+
+        self::SEGMENTATION   => \RZP\Models\Segmentation::class,
     ];
 
     protected static $repository = [

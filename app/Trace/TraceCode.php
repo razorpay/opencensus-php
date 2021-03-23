@@ -2320,6 +2320,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RAZORX_BULK_REQUEST_EXCEPTION                         = 'RAZORX_BULK_REQUEST_EXCEPTION';
 
     const SPLITZ_REQUEST                                        = 'SPLITZ_REQUEST';
+    const SEGMENTATION_CONFIG                                   = 'SEGMENTATION_CONFIG';
+    const AWS_CACHE_EXCEPTION                                   = 'AWS_CACHE_EXCEPTION';
 
     const SERVER_ERROR_MISSING_HANDLER                          = 'SERVER_ERROR_MISSING_HANDLER';
     const GATEWAY_FILE_CREATE_REQUEST                           = 'GATEWAY_FILE_CREATE_REQUEST';
@@ -4221,6 +4223,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Trace Code
     const TEMPLATING_RESPONSE                                   = 'TEMPLATING_RESPONSE';
     const TEMPLATING_REQUEST                                    = 'TEMPLATING_REQUEST';
+
+    //Segmentation trigger trace codes
+    const SEGMENT_CREATE_UPDATE_ERROR                        = 'SEGMENT_CREATE_UPDATE_ERROR';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

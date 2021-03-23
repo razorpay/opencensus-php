@@ -1,0 +1,174 @@
+<?php
+
+
+namespace RZP\Services;
+
+
+use ApiResponse;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Http\Request\Requests;
+use RZP\Trace\TraceCode;
+use Throwable;
+use App;
+
+class SplitzService
+{
+
+    const CONTENT_TYPE_JSON = 'application/json';
+
+    const EVALUATE_URL = 'twirp/rzp.splitz.evaluate.v1.EvaluateAPI/Evaluate';
+    const CREATE_SEGMENT_URL = '/twirp/rzp.splitz.segment.v1.SegmentAPI/Create';
+    const UPDATE_SEGMENT_URL = '/twirp/rzp.splitz.segment.v1.SegmentAPI/Update';
+    const GET_SEGMENT_FROM_NAME_URL = 'twirp/rzp.splitz.segment.v1.SegmentAPI/GetByName';
+    const FALSE_POSITIVITY_RATE = "0.00001";
+
+    /**
+     * @var string
+     */
+    protected $baseUrl;
+
+    /**
+     * @var string
+     */
+    protected $key;
+
+    /**
+     * @var string
+     */
+    protected $secret;
+
+    /**
+     * @var string
+     */
+    protected $requestTimeout;
+
+    protected $trace;
+    protected $env;
+
+    public function __construct()
+    {
+        $app = App::getFacadeRoot();
+        $this->trace = $app['trace'];
+        $this->env = $app['env'];
+        $splitzConfig = $app['config']['applications.splitz'];
+        $this->baseUrl = $splitzConfig['url'];
+        $this->key = $splitzConfig['username'];
+        $this->secret = $splitzConfig['secret'];
+        $this->requestTimeout = $splitzConfig['request_timeout'];
+    }
+
+    public function createSegment($preSignedUrl, $segmentName)
+    {
+        $parameters = $this->getParametersForCreateSegment($preSignedUrl, $segmentName);
+        return $this->sendRequest($parameters, self::CREATE_SEGMENT_URL, Requests::POST);
+    }
+
+    private function getParametersForCreateSegment($presignedUrl, $segmentName): array
+    {
+        return [
+                'segment' => [
+                'name' => $segmentName,
+                'description' => $segmentName,
+                'signedUrl' => $presignedUrl,
+                'falsePositivityRate' => static::FALSE_POSITIVITY_RATE
+            ]
+        ];
+    }
+
+    public function sendRequest($parameters, $path, $method)
+    {
+        $requestParams = $this->getRequestParams($parameters, $path, $method);
+
+        try {
+            $response = Requests::request(
+                $requestParams['url'],
+                $requestParams['headers'],
+                $requestParams['data'],
+                $requestParams['method'],
+                $requestParams['options']);
+
+            return $this->parseAndReturnResponse($response);
+        } catch (Throwable $e) {
+            throw new Exception\ServerErrorException('Error completing the request', ErrorCode::SERVER_ERROR_SPLITZ_FAILURE, null, $e);
+        }
+    }
+
+    protected function getRequestParams($parameters, $path, $method)
+    {
+        $url = $this->baseUrl . $path;
+
+        $headers = [];
+
+        $parameters = json_encode($parameters);
+
+        $headers['Content-Type'] = self::CONTENT_TYPE_JSON;
+
+        $options = [
+            'timeout' => $this->requestTimeout,
+            'auth' => [$this->key, $this->secret],
+        ];
+
+        $this->trace->info(TraceCode::SPLITZ_REQUEST, ['url' => $url, 'parameters' => $parameters, 'headers' => $headers]);
+
+        return [
+            'url' => $url,
+            'headers' => $headers,
+            'data' => $parameters,
+            'options' => $options,
+            'method' => $method,
+        ];
+    }
+
+    protected function parseAndReturnResponse($res)
+    {
+        $code = $res->status_code;
+
+        $res = json_decode($res->body, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new Exception\RuntimeException('Malformed json response');
+        }
+
+        $splitzResponse = ['status_code' => $code, 'response' => $res];
+
+        return $splitzResponse;
+    }
+
+    public function updateSegment($preSignedUrl, $segmentName, $id)
+    {
+        $parameters = $this->getParametersForUpdateSegment($preSignedUrl, $segmentName, $id);
+        return $this->sendRequest($parameters, self::UPDATE_SEGMENT_URL, Requests::POST);
+    }
+
+    private function getParametersForUpdateSegment($presignedUrl, $segmentName, $id): array
+    {
+        return [
+                'segment' => [
+                'id' => $id,
+                'name' => $segmentName,
+                'description' => $segmentName,
+                'signedUrl' => $presignedUrl,
+                'falsePositivityRate' => static::FALSE_POSITIVITY_RATE
+            ]
+        ];
+    }
+
+    public function evaluateRequest($input)
+    {
+        return $this->sendRequest($input, self::CREATE_SEGMENT_URL, Requests::POST);
+    }
+
+    public function getSegmentFromName($segmentName)
+    {
+        $parameters = $this->getParametersForGetSegmentByName($segmentName);
+        return $this->sendRequest($parameters, self::GET_SEGMENT_FROM_NAME_URL, Requests::POST);
+    }
+
+    private function getParametersForGetSegmentByName($segmentName): array
+    {
+        return [
+            'segmentName' => $segmentName
+        ];
+    }
+}
