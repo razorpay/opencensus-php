@@ -30,11 +30,20 @@ class Base extends Mailable
 
     protected function addSender()
     {
-        $email = Constants::MAIL_ADDRESSES[Constants::REPORTS];
+        $email = Constants::MAIL_ADDRESSES[Constants::SETTLEMENTS];
 
         $header = $this->getFromHeader();
 
         $this->from($email, $header);
+
+        return $this;
+    }
+
+    protected function addCc()
+    {
+        $settlementsEmail =  Constants::MAIL_ADDRESSES[Constants::SETTLEMENTS];
+
+        $this->cc($settlementsEmail);
 
         return $this;
     }

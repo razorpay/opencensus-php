@@ -46,10 +46,10 @@ class Constants extends Base\Constants
 
     const FROM_EMAIL_MAP = [
         Channel::KOTAK   => 'kotak_beneficiary_file@razorpay.com',
-        Channel::ICICI   => Constants::MAIL_ADDRESSES[self::REPORTS],
-        Channel::AXIS    => Constants::MAIL_ADDRESSES[self::REPORTS],
-        Channel::AXIS2   => Constants::MAIL_ADDRESSES[self::REPORTS],
-        Channel::YESBANK => Constants::MAIL_ADDRESSES[self::REPORTS],
-        Channel::HDFC    => Constants::MAIL_ADDRESSES[self::REPORTS],
+        Channel::ICICI   => Constants::MAIL_ADDRESSES[self::SETTLEMENTS],
+        Channel::AXIS    => Constants::MAIL_ADDRESSES[self::SETTLEMENTS],
+        Channel::AXIS2   => Constants::MAIL_ADDRESSES[self::SETTLEMENTS],
+        Channel::YESBANK => Constants::MAIL_ADDRESSES[self::SETTLEMENTS],
+        Channel::HDFC    => Constants::MAIL_ADDRESSES[self::SETTLEMENTS],
     ];
 }
