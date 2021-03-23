@@ -79,7 +79,7 @@ export default class AddGST extends Component {
       business_registered_pin,
       business_registered_city,
       business_registered_state,
-    } = this.props.activationData;
+    } = this.props.activationData ? this.props.activationData : {};
 
     this.props.initialize({
       ...initialValues,
@@ -181,7 +181,7 @@ export default class AddGST extends Component {
   };
 
   shouldGSTINBeDisabled = (isEditable) => {
-    if (this.props.user.isFeatureEnabled(`gstin_self_serve`)) return false;
+    if (this.props.session.user.isFeatureEnabled(`gstin_self_serve`)) return false;
 
     if (isEditable) return false;
 
@@ -272,7 +272,7 @@ export default class AddGST extends Component {
                 )}
               </div>
 
-              {this.props.user.isFeatureEnabled(`gstin_self_serve`) &&
+              {this.props.session.user.isFeatureEnabled(`gstin_self_serve`) &&
                 this.props.selfServeStatus === 'not_started' && (
                   <React.Fragment>
                     {' '}
@@ -296,7 +296,7 @@ export default class AddGST extends Component {
                 )}
 
               {this.state.isGSTINSelfServeOn === false &&
-                this.props.user.isFeatureEnabled(`gstin_self_serve`) &&
+                this.props.session.user.isFeatureEnabled(`gstin_self_serve`) &&
                 this.props.selfServeStatus === 'not_started' && (
                   <div class="suggested-address-row">
                     <span>
@@ -352,7 +352,7 @@ export default class AddGST extends Component {
                 </div>
               )}
 
-              {!this.props.user.isFeatureEnabled(`gstin_self_serve`) && (
+              {!this.props.session.user.isFeatureEnabled(`gstin_self_serve`) && (
                 <div class="help-block">
                   <span>
                     GSTIN once submitted cannot be updated via dashboard. To update it, please{' '}
@@ -363,7 +363,7 @@ export default class AddGST extends Component {
 
               {(isEditable ||
                 this.state.isGSTINSelfServeOn ||
-                this.props.user.isFeatureEnabled(`gstin_self_serve`)) && (
+                this.props.session.user.isFeatureEnabled(`gstin_self_serve`)) && (
                 <div class="Modal__actions">
                   <AsyncButton
                     type="submit"

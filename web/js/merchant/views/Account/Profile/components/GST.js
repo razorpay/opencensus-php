@@ -55,7 +55,6 @@ export default class GSTDetails extends Component {
           suggestedAddress={this.state.business_suggested_address}
           suggestedPin={this.state.business_suggested_pin}
           showGSTINSelfServe={this.showGSTINSelfServe}
-          user={this.props.user}
           showNotification={this.props.showNotification}
           activationData={this.state.activationResponse}
           selfServeStatus={this.state.selfServeStatus}
