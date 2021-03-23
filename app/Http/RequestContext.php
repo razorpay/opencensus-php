@@ -164,7 +164,6 @@ final class RequestContext
         {
             $this->initInstanceVars();
             $this->setAuthVars();
-            $this->setAdditionalVars();
             $this->initialized = true;
         }
     }
@@ -363,61 +362,24 @@ final class RequestContext
     }
 
     /**
-     * Extracts user authentication information from request and sets corresponding instance variables.
+     * Extracts information from requests as per route's auth group.
+     * @throws BadRequestException
      */
     protected function setAuthVars()
     {
         $this->route = $this->request->route()->getName();
 
-        //
-        // Key can come
-        // - as part of authentication header(http basic username)
-        // - as part of route parameters for callback URLS
-        // - in request input as key_id for public routes
-        //
-        $key = $this->request->getUser() ?:
-                $this->request->route()->parameter('key') ?:
-                $this->request->input('key_id');
-
-        // If key is empty (direct auth & bearer token case) or is of invalid length just return from this method.
-        if ($this->isKeyOfValidLength($key) === false)
+        if ($this->setAdditionalVarsForPrivilegeAuth() == true)
         {
-            return;
-        }
-
-        $this->key              = $key;
-        $this->keyWithoutPrefix = substr($key, 9) ?: null;
-        $this->secret           = $this->request->getPassword();
-
-        $mode       = substr($key, 4, 4) ?: null;
-        $this->mode = Mode::exists($mode) ? $mode : null;
-    }
-
-    /**
-     * Extracts additional information from requests as per route's auth group.
-     * @throws BadRequestException
-     */
-    protected function setAdditionalVars()
-    {
-        if ($this->setAdditionalVarsForPublicAuth() == true)
-        {
-            $this->auth = Type::PUBLIC_AUTH;
+            $this->auth = Type::PRIVILEGE_AUTH;
         }
         else if ($this->setAdditionalVarsForPrivateAuth() == true)
         {
             $this->auth = Type::PRIVATE_AUTH;
         }
-        else if ($this->setAdditionalVarsForDirectAuth() == true)
+        else if ($this->setAdditionalVarsForPublicAuth() == true)
         {
-            $this->auth = Type::DIRECT_AUTH;
-        }
-        else if ($this->setAdditionalVarsForP2pDirectAuth() === true)
-        {
-            $this->auth = Type::DIRECT_AUTH;
-        }
-        else if ($this->setAdditionalVarsForPrivilegeAuth() == true)
-        {
-            $this->auth = Type::PRIVILEGE_AUTH;
+            $this->auth = Type::PUBLIC_AUTH;
         }
         else if ($this->setAdditionalVarsForDeviceAuth() == true)
         {
@@ -426,6 +388,14 @@ final class RequestContext
         else if ($this->setAdditionalVarsForP2pDeviceAuth() == true)
         {
             $this->auth = Type::DEVICE_AUTH;
+        }
+        else if ($this->setAdditionalVarsForDirectAuth() == true)
+        {
+            $this->auth = Type::DIRECT_AUTH;
+        }
+        else if ($this->setAdditionalVarsForP2pDirectAuth() === true)
+        {
+            $this->auth = Type::DIRECT_AUTH;
         }
         else if ($this->setAdditionalVarsForApiStatus() == true)
         {
@@ -481,6 +451,20 @@ final class RequestContext
             return false;
         }
 
+        // For callback routes, attempt getting key from route parameter first.
+        if ($isPublicCallbackRoute === true)
+        {
+            $key = $this->request->route()->parameter('key');
+        }
+        // Else check key_id first, else fallback to auth user.
+        if (empty($key) === true)
+        {
+            $key = $this->request->input('key_id') ?? $this->request->getUser();
+        }
+
+        $this->setKeyModeAndSecret($key);
+
+
         // Route belongs to one of 2 groups and accessed via oauth public token
         if ($this->isKeyOAuthPublicToken() === true)
         {
@@ -503,9 +487,6 @@ final class RequestContext
                           (in_array($this->route, P2pRoute::$private, true)));
         $isProxyRoute   = in_array($this->route, Route::$proxy, true);
 
-        // In case of proxy auth(even for private routes), internal app is dashboard and the same needs to be set
-        $this->setInternalAppNameByAuth();
-
         if (($isPrivateRoute === true) and (empty($token = $this->getBearerTokenFromRequest()) === false))
         {
             $parsed              = (new Parser)->parse($token);
@@ -516,7 +497,13 @@ final class RequestContext
 
             return true;
         }
-        else if ((($isPrivateRoute === true) and ($this->isDashboard() === true)) or ($isProxyRoute === true))
+
+        $this->setKeyModeAndSecret();
+
+        // In case of proxy auth(even for private routes), internal app is dashboard and the same needs to be set
+        $this->setInternalAppNameByAuth();
+
+        if ((($isPrivateRoute === true) and ($this->isDashboard() === true)) or ($isProxyRoute === true))
         {
             $this->mid  = $this->keyWithoutPrefix;
             $this->proxy = true;
@@ -543,11 +530,15 @@ final class RequestContext
 
     protected function setAdditionalVarsForP2pDirectAuth(): bool
     {
+        $this->setKeyModeAndSecret();
+
         return in_array($this->route, P2pRoute::$direct, true);
     }
 
     protected function setAdditionalVarsForPrivilegeAuth()
     {
+        $this->setKeyModeAndSecret();
+
         if (in_array($this->route, Route::$internal, true) === true)
         {
             $this->setInternalAppNameByAuth();
@@ -556,6 +547,8 @@ final class RequestContext
         }
         else if (in_array($this->route, Route::$admin, true) === true)
         {
+            $this->setInternalAppNameByAuth();
+
             $this->adminEmail = $this->request->headers->get(RequestHeader::X_DASHBOARD_ADMIN_EMAIL);
 
             return true;
@@ -566,6 +559,8 @@ final class RequestContext
 
     protected function setAdditionalVarsForDeviceAuth()
     {
+        $this->setKeyModeAndSecret();
+
         if (in_array($this->route, Route::$device, true) === true)
         {
             $this->keyId = $this->keyWithoutPrefix;
@@ -577,6 +572,8 @@ final class RequestContext
 
     protected function setAdditionalVarsForP2pDeviceAuth()
     {
+        $this->setKeyModeAndSecret();
+
         if (in_array($this->route, P2pRoute::$device, true) === true)
         {
             return true;
@@ -602,13 +599,30 @@ final class RequestContext
     {
         foreach ($this->applications as $name => $config)
         {
-            if (($config['secret'] ?? '') === $this->secret)
+            if ((empty($config['secret']) === false) and ($config['secret'] === $this->secret))
             {
                 $this->internalAppName = $name;
 
                 return;
             }
         }
+    }
+
+    protected function setKeyModeAndSecret($key = null, $secret = null)
+    {
+        $key = $key ?? $this->request->getUser();
+        // If key is empty (direct auth & bearer token case) or is of invalid length just return from this method.
+        if ($this->isKeyOfValidLength($key) === false)
+        {
+            return;
+        }
+
+        $this->key              = $key;
+        $this->keyWithoutPrefix = substr($this->key, 9) ?: null;
+        $this->secret           = $secret ?? $this->request->getPassword();
+
+        $mode       = substr($this->key, 4, 4) ?: null;
+        $this->mode = Mode::exists($mode) ? $mode : null;
     }
 
     /**

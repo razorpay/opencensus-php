@@ -197,6 +197,44 @@ return [
         ],
     ],
 
+    'privateRouteWithInvalidKey' => [
+        'expected' => [
+            'route'            => 'invoice_fetch_multiple',
+            'key'              => null,
+            'secret'           => null,
+            'bearerToken'      => null,
+            'mode'             => null,
+            'auth'             => 'private',
+            'keyWithoutPrefix' => null,
+            'keyId'            => null,
+            'mid'              => null,
+            'oauthClientId'    => null,
+            'oauthPublicToken' => null,
+            'internalAppName'  => null,
+            'adminEmail'       => null,
+            'proxy'            => false,
+        ],
+    ],
+
+    'privateRouteWithInvalidSecret' => [
+        'expected' => [
+            'route'            => 'invoice_fetch_multiple',
+            'key'              => 'rzp_test_TheTestAuthKey',
+            'secret'           => 'invalidsecret',
+            'bearerToken'      => null,
+            'mode'             => 'test',
+            'auth'             => 'private',
+            'keyWithoutPrefix' => 'TheTestAuthKey',
+            'keyId'            => 'TheTestAuthKey',
+            'mid'              => '10000000000000',
+            'oauthClientId'    => null,
+            'oauthPublicToken' => null,
+            'internalAppName'  => null,
+            'adminEmail'       => null,
+            'proxy'            => false,
+        ],
+    ],
+
     'proxyRoute' => [
         'expected' => [
             'route'            => 'batch_create',

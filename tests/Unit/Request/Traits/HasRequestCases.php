@@ -128,6 +128,13 @@ trait HasRequestCases
         return $this->mockRouteRequest($name, $path, [], ['invalidkey', self::$testSecret]);
     }
 
+    protected function mockPrivateRouteWithInvalidSecret(
+        string $name = 'invoice_fetch_multiple',
+        string $path = 'invoices'): Request
+    {
+        return $this->mockRouteRequest($name, $path, [], [self::$testKey, 'invalidsecret']);
+    }
+
     protected function mockPrivateRouteWithOAuthBearerToken(
         string $name = 'invoice_fetch_multiple',
         string $path = 'invoices'): Request

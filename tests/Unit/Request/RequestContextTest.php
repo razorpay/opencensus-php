@@ -20,11 +20,12 @@ class RequestContextTest extends TestCase
      * For all available request cases assert that proper context
      * vars are being set.
      */
-    public function testAllPositiveRequestCases()
+    public function testAllRequestCases()
     {
         $requestCases = array_keys($this->testData);
         foreach ($requestCases as $case)
         {
+            echo PHP_EOL."Request case: $case";
             $this->initRequestContextAndAssertForCase($case);
         }
     }
