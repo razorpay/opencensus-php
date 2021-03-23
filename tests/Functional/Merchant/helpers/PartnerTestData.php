@@ -79,6 +79,100 @@ return [
         ],
     ],
 
+    'testSubmerchantKYCByPartnerWithInvalidSubmerchant' => [
+        'request'  => [
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT_ID,
+                ],
+            ],
+            'status_code' => 401,
+        ],
+    ],
+
+    'testSubmerchantKYCByPartner' => [
+        'request'  => [
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+            'server'    => [
+                'HTTP_X-Razorpay-Account'    => '10000000000009',
+            ],
+            'content' => [
+                'bank_account_name'    => 'Test',
+                'bank_account_number'  => '111000',
+                'bank_branch_ifsc'     => 'SBIN0007105',
+                'bank_account_type'    => 'savings',
+                'business_name'        => 'Test',
+                'business_type'        => 1,
+                'business_category'    => 'financial_services',
+                'business_subcategory' => 'accounting',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'bank_account_name'    => 'Test',
+                'bank_account_number'  => '111000',
+                'bank_branch_ifsc'     => 'SBIN0007105',
+                'bank_account_type'    => 'savings',
+                'business_name'        => 'Test',
+                'business_type'        => '1',
+                'business_category'    => 'financial_services',
+                'business_subcategory' => 'accounting',
+            ],
+        ],
+    ],
+
+    'testfetchSubmerchantActivationByPartner' => [
+        'request'  => [
+            'url'     => '/merchant/activation',
+            'method'  => 'GET',
+            'server'    => [
+                'HTTP_X-Razorpay-Account'    => '10000000000009',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant' => [
+                    'id' => '10000000000009',
+                    'email' => 'testing@example.com',
+                    'name' => 'submerchant'
+                ]
+            ]
+        ],
+    ],
+
+    'testDocumentUploadForSubmerchant' => [
+        'request'  => [
+            'url'     => '/merchant/documents/upload',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '10000000000009',
+            ],
+            'content' => [
+                'document_type' => 'promoter_address_url'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'documents' => [
+                    'promoter_address_url' => [
+
+                    ]
+                ],
+            ]
+        ]
+    ],
+
     'testMarkingMerchantAsPartnerMissingType' => [
         'request'   => [
             'url'     => '/merchant/requests',

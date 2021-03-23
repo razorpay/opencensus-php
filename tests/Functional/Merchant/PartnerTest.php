@@ -13,6 +13,7 @@ use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\User\Role;
 use Razorpay\OAuth\Application;
+use Illuminate\Http\UploadedFile;
 use RZP\Models\Merchant\Request;
 use RZP\Models\Settings\Accessor;
 use RZP\Models\Merchant\AccessMap;
@@ -85,6 +86,72 @@ class PartnerTest extends OAuthTestCase
         $this->ba->adminProxyAuth();
 
         $this->startTest();
+    }
+
+    public function testDocumentUploadForSubmerchant()
+    {
+        $this->createResellerPartnerSubmerchant();
+
+        $this->updateUploadDocumentData(__FUNCTION__);
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $response = $this->sendRequest($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertArrayNotHasKey('promoter_address_url', $content['verification']['required_fields']);
+
+        $merchantDocument = $this->getDbLastEntity('merchant_document');
+
+        $this->assertEquals('merchant', $merchantDocument['entity_type']);
+        $this->assertEquals('10000000000009', $merchantDocument['entity_id']);
+    }
+
+    protected function updateUploadDocumentData(string $callee)
+    {
+        $testData = &$this->testData[$callee];
+
+        $testData['request']['files']['file'] = new UploadedFile(
+            __DIR__ . '/../Storage/a.png',
+            'a.png',
+            'image/png',
+            filesize(__DIR__ . '/../Storage/a.png'),
+            null,
+            true);
+    }
+
+    public function testSubmerchantKYCByPartnerWithInvalidSubmerchant()
+    {
+        $this->createResellerPartnerSubmerchant();
+
+        $this->startTest();
+    }
+
+    public function testSubmerchantKYCByPartner()
+    {
+        $this->createResellerPartnerSubmerchant();
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', self::DEFAULT_SUBMERCHANT_ID);
+
+        // assert legal entity data
+        $legalEntity = $this->getDbEntityById('legal_entity', $merchant->getLegalEntityId());
+
+        $this->assertEquals(1, $legalEntity->getBusinessTypeValue());
+        $this->assertEquals($legalEntity->getMcc(), 8931);
+        $this->assertEquals('financial_services', $legalEntity->getBusinessCategory());
+        $this->assertEquals('accounting', $legalEntity->getBusinessSubcategory());
+    }
+
+    public function testfetchSubmerchantActivationByPartner()
+    {
+        $this->createResellerPartnerSubmerchant();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->startTest($testData);
     }
 
     public function testUnmarkingMerchantAsPartner()
@@ -2330,5 +2397,51 @@ class PartnerTest extends OAuthTestCase
                                     'name'        => 'stakeholder' . $suffix,
                                 ]);
 
+    }
+
+    public function createResellerPartnerSubmerchant()
+    {
+        $merchantId = self::DEFAULT_MERCHANT_ID;
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, [
+            'partner_type' => 'reseller',
+            'email'        => 'test@example.com',
+        ]);
+
+        $this->fixtures->merchant->edit(self::DEFAULT_SUBMERCHANT_ID, [
+            'email' => 'testing@example.com',
+        ]);
+
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $app = factory(Application\Entity::class)->create([
+                                                              'id' => random_integer(10),
+                                                              'merchant_id' => self::DEFAULT_MERCHANT_ID,
+                                                              'type' => 'partner'
+                                                          ]);
+
+        $this->createMerchantApplication($app->merchant_id, 'reseller', $app->getId());
+
+        $this->fixtures->create('merchant_detail:sane',[
+            'merchant_id' => $app->merchant_id,
+            'contact_name'=> 'randomName',
+            'business_type' => 2
+        ]);
+
+        $this->fixtures->on('test')->edit('merchant_detail', self::DEFAULT_SUBMERCHANT_ID, ['business_type' => 2]);
+        $this->fixtures->on('live')->edit('merchant_detail', self::DEFAULT_SUBMERCHANT_ID, ['business_type' => 2]);
+
+        $this->fixtures->on('test')->edit('merchant', self::DEFAULT_SUBMERCHANT_ID, ['name' => 'submerchant']);
+        $this->fixtures->on('live')->edit('merchant', self::DEFAULT_SUBMERCHANT_ID, ['name' => 'submerchant']);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => $app->getId(),
+                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+            ]
+        );
     }
 }

@@ -41,6 +41,24 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function fetchSubMerchantReferredByPartner(string $submerchantId, string $partnerId)
+    {
+        $accessMapsEntityId   = $this->dbColumn(Entity::ENTITY_ID);
+        $accessMapsEntityType = Table::MERCHANT_ACCESS_MAP . '.' . Entity::ENTITY_TYPE;
+        $applicationIds       = $this->repo->merchant_application->dbColumn(MerchantApp\Entity::APPLICATION_ID);
+        $applicationType      = Table::MERCHANT_APPLICATION . '.' . MerchantApp\Entity::TYPE;
+        $applicationDeleted   = Table::MERCHANT_APPLICATION . '.' . MerchantApp\Entity::DELETED_AT;
+
+        return $this->newQuery()
+                    ->merchantId($submerchantId)
+                    ->join(Table::MERCHANT_APPLICATION, $accessMapsEntityId, $applicationIds)
+                    ->where($accessMapsEntityType, '=', Entity::APPLICATION)
+                    ->where($applicationType, '=', 'referred')
+                    ->where(Entity::ENTITY_OWNER_ID, $partnerId)
+                    ->whereNull($applicationDeleted)
+                    ->first();
+    }
+
     public function findMerchantAccessMapOnEntityIds(string $merchantId, array $entityIds, string $entityType): Base\PublicCollection
     {
         return $this->newQuery()

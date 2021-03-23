@@ -363,6 +363,16 @@ class BasicAuth
      */
     protected $idempotencyKeyId = null;
 
+    /**
+     *  Routes which are allowed to pass X-Razorpay-Account
+     * @var array
+     */
+    protected $whitelistRoutesForReferrerPartnerAccess = [
+        'merchant_activation_save',
+        'merchant_activation_details',
+        'merchant_document_upload',
+    ];
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -2135,7 +2145,10 @@ class BasicAuth
         // For Private auth requests - $this->merchant should be set
         if (($this->isPrivateAuth() === true) and
             (empty($this->authCreds->getMerchant()) === false) and
-            ($this->authCreds->getMerchant()->isMarketplace() === true))
+            (
+                ($this->authCreds->getMerchant()->isMarketplace() === true) or
+                ($this->authCreds->getMerchant()->isPartner())
+            ))
         {
             return true;
         }
@@ -2166,7 +2179,7 @@ class BasicAuth
         switch ($authType)
         {
             case Type::PRIVATE_AUTH:
-                return ($account->getParentId() === $this->authCreds->getMerchant()->getId());
+                return $this->parentAndPartnerCheckForPrivateAuth($account);
 
             case Type::PRIVILEGE_AUTH:
                 return true;
@@ -2174,6 +2187,38 @@ class BasicAuth
             default:
                 return false;
         }
+    }
+
+    /**
+     * Returns true if account's Parent Id is equal to MerchantId or
+     * ( route is whitelisted to accept X-Razorpay-Account and
+     * the accountId is referred submerchant of the Partner )
+     *
+     * @param $account
+     *
+     * @return bool
+     */
+    public function parentAndPartnerCheckForPrivateAuth($account)
+    {
+        if (($account->getParentId() === $this->authCreds->getMerchant()->getId()))
+        {
+            return true;
+        }
+
+        $route_name = $this->route->getCurrentRouteName();
+
+        if ((in_array($route_name, $this->whitelistRoutesForReferrerPartnerAccess, true) === true) and
+            ((new Merchant\Core)->isMerchantReferredByPartner($account->getId(), $this->authCreds->getMerchant()->getId()) === true))
+        {
+            $this->trace->info(TraceCode::PARTNER_CONTEXT_SWITCH_TO_SUBMERCHANT,
+                               ['route_name'     => $route_name,
+                                'submerchant_id' => $account->getId(),
+                                'partner_id'     => $this->authCreds->getMerchant()->getId()
+                               ]);
+            return true;
+        }
+
+        return false;
     }
 
     public function validateSuperAdminAccess()

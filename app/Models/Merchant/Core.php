@@ -2561,6 +2561,13 @@ class Core extends Base\Core
         return (empty($mapping) === false);
     }
 
+    public function isMerchantReferredByPartner(string $merchantId, string $partnerId): bool
+    {
+        $mapping = (new AccessMap\Repository)->fetchSubMerchantReferredByPartner($merchantId, $partnerId);
+
+        return (empty($mapping) === false);
+    }
+
     /**
      * @param Entity $merchant
      *

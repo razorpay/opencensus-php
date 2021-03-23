@@ -247,6 +247,7 @@ class Entity extends Base\PublicEntity
     const INSTANTLY_ACTIVATE        = 'instantly_activate';
     const USE_EMAIL_AS_DUMMY        = 'use_email_as_dummy';
     const PARTNER_ID                = 'partner_id';
+    const SUBMERCHANT_ID            = 'submerchant_id';
     const BANKING_ACCOUNT           = 'banking_account';
     const ACCOUNTS                  = 'accounts';
     const SKIP_BA_REGISTRATION      = 'skip_ba_registration';
