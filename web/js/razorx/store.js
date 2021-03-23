@@ -16,6 +16,7 @@ export const AppStore = observable
         'func',
         'automation',
         'bvt',
+        'axis',
         'testing',
         'stage',
         'production',
@@ -23,7 +24,7 @@ export const AppStore = observable
       ];
     },
 
-    updateMode: function(e) {
+    updateMode: function (e) {
       let newMode = e;
       if (!newMode) {
         return;
