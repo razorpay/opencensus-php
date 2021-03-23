@@ -3157,7 +3157,7 @@ class Gateway
         return (in_array($gateway, $gateways, true));
     }
 
-    public static function gatewaysAlwaysRoutedThroughNbplusService($gateway)
+    public static function gatewaysAlwaysRoutedThroughNbplusService($gateway, $bankCode)
     {
         $gateways = [
             self::NETBANKING_SVC,
@@ -3172,14 +3172,26 @@ class Gateway
             self::NETBANKING_AUSF,
         ];
 
-        return (in_array($gateway, $gateways, true));
+        $isRouted = in_array($gateway, $gateways, true);
+
+        if ($isRouted === true)
+        {
+            return $isRouted;
+        }
+
+        $gatewayWithBankCodes = [
+            self::NETBANKING_KOTAK => [Payment\Processor\Netbanking::KKBK_C],
+        ];
+
+        $isRouted = ((in_array($gateway, array_keys($gatewayWithBankCodes), true)) and (in_array($bankCode, $gatewayWithBankCodes[$gateway], true)));
+
+        return $isRouted;
     }
 
     public static function gatewaysPartiallyMigratedToNbPlusWithBankCode($gateway)
     {
         $gatewayPartiallyMigrated = [
             self::NETBANKING_BOB,
-            self::NETBANKING_KOTAK,
         ];
 
         return (in_array($gateway, $gatewayPartiallyMigrated, true));
