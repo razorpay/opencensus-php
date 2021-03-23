@@ -199,7 +199,7 @@ class SupportBody extends Component {
                 }`}
                 onClick={() => handleClick('chat')}
               >
-                Chat with us <small class="help-content">(10am-8pm, working days)</small>
+                Chat with us <small class="help-content">(9am-9pm, working days)</small>
                 {notifyCount > 0 && <span class="notify-icon m-l">{notifyCount}</span>}
                 <small class="help-block">
                   {shouldDisable && notifyCount < 1
@@ -214,7 +214,7 @@ class SupportBody extends Component {
               class={`support-item p-all call ${shouldDisable ? 'disabled' : ''}`}
               onClick={() => handleClick('call')}
             >
-              Call Support <small class="help-content">(10am-8pm, working days)</small>
+              Call Support <small class="help-content">(9am-9pm, working days)</small>
               <small class="help-block">
                 {shouldDisable ? 'Currently unavailable' : 'For queries and help on the dashboard'}
               </small>
