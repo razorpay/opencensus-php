@@ -219,6 +219,9 @@ class MailTags
     //payout downtime notification
     const PAYOUT_DOWNTIME_NOTIFICATION                  = 'payout_downtime_notification';
 
+    //international_enablement
+    const INTERNATIONAL_ENABLEMENT                       = 'international_enablement';
+
     // Merchant Risk Alert tags
     const MERCHANT_RISK_ALERT_FUNDS_ON_HOLD  = 'merchant_risk_alert_funds_on_hold';
 

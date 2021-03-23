@@ -3,14 +3,21 @@
 namespace RZP\Models\Typeform;
 
 use App;
+use Mail;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\lib\DataParser;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Services\Stork;
+use Illuminate\Support\Str;
+use RZP\Models\Workflow\Action;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Admin\Permission\Name;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Merchant\Core as MerchantCore;
+use RZP\Models\Schedule\Task as ScheduleTask;
+use RZP\Models\Payment\Method as PaymentMethod;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalField;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
 
@@ -92,6 +99,8 @@ class Core extends Base\Core
         if (key_exists('permission', $input))
         {
             $this->executeApproval($input['permission'], $merchant);
+
+            $this->processWorkflowRequestApproval($input['permission'], $merchant);
         }
         else
         {
@@ -126,6 +135,8 @@ class Core extends Base\Core
         //To be removed (post final testing)
         $this->trace->info(TraceCode::TYPEFORM_WORKFLOW_TRIGGERED, ['method' => 'createInternationalWorkflow']);
 
+        $internationalEnablementRequestId = Constants::INTERNATIONAL_ENABLEMENT_REQUEST_ID_PREFIX . $this->app['request']->getId();
+
         foreach ($productCategoriesRequested as $index => $productCategoryRequested)
         {
             $nextWorkflowPresent = false ? ($index === count($productCategoryRequested) - 1) : true;
@@ -137,12 +148,12 @@ class Core extends Base\Core
             $this->app['workflow']
                 ->setEntityAndId($merchant->getEntity(), $merchant->getId())
                 ->setPermission($permission)
+                ->setTags([$internationalEnablementRequestId])
                 ->handle(null, $typeformWorkflowData, $nextWorkflowPresent);
         }
         //To be removed (post final testing)
         $this->trace->info(TraceCode::TYPEFORM_WORKFLOW_TRIGGERED, ['approval action' => 'reached to createMerchantWorkflow']);
     }
-
 
     /**
      * @param string   $permission
@@ -193,7 +204,6 @@ class Core extends Base\Core
         {
             $productInternationalField->updateProductStatus($productName, ProductInternationalMapper::ENABLED);
         }
-
     }
 
     /**
@@ -219,6 +229,473 @@ class Core extends Base\Core
                 'Workflow can\'t be approved as Merchant Website is not Valid'
             );
         }
+    }
 
+    public function processWorkflowRequestApproval(string $permissionName, Merchant $merchant)
+    {
+        $workflowActions = (new Action\Core)->fetchOpenActionOnEntityOperation(
+            $merchant->getId(), Constants::MERCHANT_KEY, $permissionName);
+
+        // multiple open state workflows are not allowed
+        // here exactly one open state workflow should be present
+        $action = $workflowActions->first();
+
+        $this->notifyMerchantIfApplicable($action, true);
+    }
+
+    public function processWorkflowRequestRejection(Action\Entity $action, array $extraData)
+    {
+        $rejectionReason = $this->extractRejectionReasonFromPayload($extraData);
+
+        $rejectionTags = $this->extractRejectionTagsFromPayload($extraData);
+
+        // form the final tag list
+        $rejectionTags[] = $rejectionReason;
+
+        $action->tag($rejectionTags);
+
+        $this->repo->workflow_action->saveOrFail($action);
+
+        $this->notifyMerchantIfApplicable($action, false);
+    }
+
+    private function extractRejectionReasonFromPayload(array $extraData)
+    {
+        $rejectionReason = $extraData[Constants::REJECTION_REASON_KEY] ?? Constants::REJECT_REASON_MERCHANT_LOOKS_RISKY;
+
+        if ((is_string($rejectionReason) === false) || (Constants::isValidRejectionReason($rejectionReason) === false))
+        {
+            $rejectionReason = Constants::REJECT_REASON_MERCHANT_LOOKS_RISKY;
+        }
+
+        return Constants::REJECTION_REASON_PREFIX . $rejectionReason;
+    }
+
+    private function extractRejectionTagsFromPayload(array $extraData)
+    {
+        $validRejectionTags = [];
+
+        $rejectionTagsCsv = $extraData[Constants::REJECTION_TAGS_KEY] ?? '';
+
+        if ((empty($rejectionTagsCsv) === true) || (is_string($rejectionTagsCsv) === false))
+        {
+            return $validRejectionTags;
+        }
+
+        $rejectionTags = explode(Constants::CSV_SEPERATOR, $rejectionTagsCsv);
+
+        foreach ($rejectionTags as $rejectionTag)
+        {
+            if (Constants::isValidRejectionTag($rejectionTag) === true)
+            {
+                $validRejectionTags[] = Constants::REJECTION_TAG_PREFIX . $rejectionTag;
+            }
+        }
+
+        return array_unique($validRejectionTags);
+    }
+
+    private function notifyMerchantIfApplicable(Action\Entity $action, bool $calledOnRequestApproval)
+    {
+        $requestEnablementTag = $this->getInternationalEnablementRequestTag($action);
+
+        // For legacy support
+        if (empty($requestEnablementTag) === true)
+        {
+            $this->trace->info(TraceCode::INTERNATIONAL_ENABLEMENT_NOTIFICATION_LEGACY_FLOW, [
+                'workflow_action_id' => $action->getId(),
+            ]);
+
+            return;
+        }
+
+        if ($this->isNotificationEnabled($action, $requestEnablementTag) === true)
+        {
+            $action->tag(Constants::AUTO_MERCHANT_NOTIFICATION_ENABLED);
+
+            $this->repo->workflow_action->saveOrFail($action);
+        }
+        else
+        {
+            $action->tag(Constants::AUTO_MERCHANT_NOTIFICATION_DISABLED);
+
+            $this->repo->workflow_action->saveOrFail($action);
+
+            return;
+        }
+
+        $siblingActions = $this->getSiblingWorkflowActions($action, $requestEnablementTag);
+
+        $siblingAction = NULL;
+
+        if ($siblingActions->isEmpty() === false)
+        {
+            $siblingAction = $siblingActions->first();
+
+            if ($siblingAction->isOpen() === true)
+            {
+                return;
+            }
+        }
+
+        $notificationData = [];
+
+        // fill action sprefic data
+        $actionPermission = $action->permission->getName();
+
+        $notificationData[$actionPermission] = [
+            'approved' => $calledOnRequestApproval,
+        ];
+
+        if ($calledOnRequestApproval === false)
+        {
+            $rejectionReason = $this->getRejectionReasonForAction($action);
+
+            $notificationData[$actionPermission]['rejection_reason'] = $rejectionReason;
+        }
+        
+        // fill sibling action specific data
+        if (is_null($siblingAction) === false)
+        {
+            $siblingActionPermission = $siblingAction->permission->getName();
+
+            $siblingActionApproved = $siblingAction->isExecuted();
+
+            $notificationData[$siblingActionPermission] = [
+                'approved' => $siblingActionApproved,
+            ];
+
+            if ($siblingActionApproved === false)
+            {
+                $rejectionReason = $this->getRejectionReasonForAction($siblingAction);
+
+                $notificationData[$siblingActionPermission]['rejection_reason'] = $rejectionReason;
+            }
+        }
+
+        $merchantId = $action->getEntityId();
+
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $this->sendEnablementRequestClosureNotifications($merchant, $notificationData);
+    }
+
+    private function isNotificationEnabled(Action\Entity $action, string $treatmentId)
+    {
+        $mode = $this->app['rzp.mode'];
+
+        $variant = $this->app->razorx->getTreatment(
+            $treatmentId,
+            Constants::INTERNATIONAL_ENABLEMENT_NOTIFICATION_FEATURE_FLAG,
+            $mode);
+
+        $this->trace->info(TraceCode::INTERNATIONAL_ENABLEMENT_NOTIFICATION_RAZORX_VARIANT, [
+            'workflow_action_id' => $action->getId(),
+            'treatment_id'       => $treatmentId,
+            'razorx_variant'     => $variant,
+        ]);
+
+        return ($variant === Constants::INTERNATIONAL_ENABLEMENT_NOTIFICATION_FEATURE_FLAG_NOTIFY_VARIANT);
+    }
+
+    private function getInternationalEnablementRequestTag(Action\Entity $action)
+    {
+        $tagNames = $action->tagNames();
+
+        $internationalEnablementRequestIdPrefix = $this->formatTagName(Constants::INTERNATIONAL_ENABLEMENT_REQUEST_ID_PREFIX);
+
+        foreach ($tagNames as $tagName) 
+        {
+            if (Str::startsWith($tagName, $internationalEnablementRequestIdPrefix) === true)
+            {
+                return $tagName;
+            }
+        }
+
+        return '';
+    }
+
+    private function getSiblingWorkflowActions(Action\Entity $action, $searchTag = null)
+    {
+        if (empty($searchTag) === true)
+        {
+            $searchTag = $this->getInternationalEnablementRequestTag($action);
+        }
+
+        if (empty($searchTag) === true)
+        {
+            return collect([]);
+        }
+
+        $actionsWithSearchTag = Action\Entity::withAllTags([$searchTag])->get();
+
+        $siblingActions = $actionsWithSearchTag->filter(function(Action\Entity $actionWithSearchTag) use ($action)
+        {
+            return $actionWithSearchTag->getId() !== $action->getId();
+        });
+
+        return $siblingActions;
+    }
+
+    private function getRejectionReasonForAction(Action\Entity $action)
+    {
+        $rejectionReason = '';
+
+        if ($action->isRejected() === false)
+        {
+            return $rejectionReason;
+        }
+
+        $rejectionReasonPrefix = $this->formatTagName(Constants::REJECTION_REASON_PREFIX);
+
+        $tagNames = $action->tagNames();
+
+        foreach ($tagNames as $tagName) 
+        {
+            if (Str::startsWith($tagName, $rejectionReasonPrefix) === true)
+            {
+                $rejectionReason = Str::substr($tagName, strlen($rejectionReasonPrefix));
+            }
+        }
+
+        return $rejectionReason;
+    }
+
+    private function formatTagName(string $tagName)
+    {
+        $tagDisplayer = config('tagging.displayer');
+
+        return call_user_func($tagDisplayer, $tagName);
+    }
+
+    private function sendEnablementRequestClosureNotifications(Merchant $merchant, array $data)
+    {
+        $this->sendEnablementClosureSms($merchant, $data);
+
+        $this->sendEnablementClosureWhatsappMessage($merchant, $data);
+
+        $this->sendEnablementClosureEmail($merchant, $data);
+    }
+
+    private function sendEnablementClosureSms(Merchant $merchant, array $permissionsData)
+    {
+        $mode = $this->app['rzp.mode'];
+
+        $receiver = $merchant->merchantDetail->getContactMobile();
+
+        if (empty($receiver) === true)
+        {
+            return;
+        }
+
+        $template = Constants::SMS_INTERNATIONAL_ENABLEMENT_REJECTED_TPL;
+
+        foreach ($permissionsData as $permissionData)
+        {
+            if ($permissionData['approved'] === true)
+            {
+                $template = Constants::SMS_INTERNATIONAL_ENABLEMENT_APPROVED_TPL;
+            }
+        }
+
+        $payload = [
+            'receiver' => $receiver,
+            'template' => $template,
+            'source'   => 'api.' . $mode .'.international_enablement',
+            'params'   => [
+                'merchant_id'   => $merchant->getId(),
+                'business_name' => $merchant->getName(),
+            ]
+        ];
+
+        try
+        {
+            $this->app['raven']->sendSms($payload);
+
+            $this->app['trace']->info(
+                TraceCode::INTERNATIONAL_ENABLEMENT_SMS_SENT,
+                [
+                    'merchant_id' => $merchant->getId(),
+                ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->app['trace']->traceException($e,
+                Trace::CRITICAL,
+                TraceCode::INTERNATIONAL_ENABLEMENT_SMS_FAILED,
+                [
+                    'merchant_id' => $merchant->getId(),
+                ]
+            );
+        }
+    }
+
+    private function sendEnablementClosureWhatsappMessage(Merchant $merchant, array $permissionsData)
+    {
+        $mode = $this->app['rzp.mode'];
+
+        $receiver = $merchant->merchantDetail->getContactMobile();
+
+        $whatsAppPayload = [
+            'ownerId'   => $merchant->getId(),
+            'ownerType' => 'merchant',
+            'params'    => [
+                'merchant_id'   => $merchant->getId(),
+                'business_name' => $merchant->getName(),
+            ]
+        ];
+
+        $template = Constants::WHATSAPP_INTERNATIONAL_ENABLEMENT_REJECTED_TPL;
+        $templateName = Constants::WHATSAPP_INTERNATIONAL_ENABLEMENT_REJECTED_TPL_NAME;
+
+        foreach ($permissionsData as $permissionData)
+        {
+            if ($permissionData['approved'] === true)
+            {
+                $template = Constants::WHATSAPP_INTERNATIONAL_ENABLEMENT_APPROVED_TPL;
+                $templateName = Constants::WHATSAPP_INTERNATIONAL_ENABLEMENT_APPROVED_TPL_NAME;
+            }
+        }
+
+        $whatsAppPayload['template_name'] = $templateName;
+
+        (new Stork)->sendWhatsappMessage(
+            $mode,
+            $template,
+            $receiver,
+            $whatsAppPayload
+        );
+    }
+
+    private function sendEnablementClosureEmail(Merchant $merchant, array $permissionsData)
+    {
+        $mailable = $this->getEnablementMailable($merchant, $permissionsData);
+
+        try
+        {
+            Mail::queue($mailable);
+
+            $this->app['trace']->info(
+                TraceCode::INTERNATIONAL_ENABLEMENT_EMAIL_SENT,
+                [
+                    'merchant_id' => $merchant->getId(),
+                ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->app['trace']->traceException($e,
+                Trace::CRITICAL,
+                TraceCode::INTERNATIONAL_ENABLEMENT_EMAIL_FAILED,
+                [
+                    'merchant_id' => $merchant->getId(),
+                ]
+            );
+        }
+    }
+
+    private function getEnablementMailable(Merchant $merchant, array $permissionsData)
+    {
+        $data = [
+            'merchant_id'   => $merchant->getId(),
+            'business_name' => $merchant->getName(),
+        ];
+
+        $approvedPermList = [];
+        $rejectedPermList = [];
+        $rejectionReasons = [];
+        $mailableHandler  = NULL;
+
+        foreach ($permissionsData as $permissionName => $permissionData)
+        {
+            if ($permissionData['approved'] === true)
+            {
+                $approvedPermList[] = $permissionName;
+            }
+            else
+            {
+                $rejectedPermList[] = $permissionName;
+
+                $rejectionReason = $permissionData['rejection_reason'];
+
+                if (empty($rejectionReason) === true)
+                {
+                    $rejectionReason = Constants::REJECT_REASON_MERCHANT_LOOKS_SAFE;
+                }
+
+                $rejectionReasons[$rejectionReason] = Constants::REJECTION_REASON_PRIORITY[$rejectionReason];
+            }
+        }
+
+        if (count($rejectedPermList) == 2)
+        {
+            asort($rejectionReasons);
+
+            $rejectionReason = key($rejectionReasons);
+
+            $mailableHandler = Constants::REJECTED_MAILABLE_CLASS[$rejectionReason];
+        }
+        else if (count($approvedPermList) == 2)
+        {
+            $mailableHandler = Constants::ACCEPTED_MAILABLE_CLASS;
+
+            $this->addAdditionalApprovalEmailData($merchant, $data);
+        }
+        else if (count($approvedPermList) > 0 && count($rejectedPermList) > 0)
+        {
+            $data['approved_products'] = Constants::PERMISSION_PRODUCT_MAPPING[$approvedPermList[0]];
+
+            $data['rejected_products'] = Constants::PERMISSION_PRODUCT_MAPPING[$rejectedPermList[0]];
+
+            $mailableHandler = Constants::ACCEPTED_MAILABLE_CLASS;
+
+            $this->addAdditionalApprovalEmailData($merchant, $data);
+        }
+        else if (count($rejectedPermList) == 1)
+        {
+            $rejectionReason = key($rejectionReasons);
+
+            $mailableHandler = Constants::REJECTED_MAILABLE_CLASS[$rejectionReason];
+        }
+        else
+        {
+            $mailableHandler = Constants::ACCEPTED_MAILABLE_CLASS;
+
+            $this->addAdditionalApprovalEmailData($merchant, $data);
+        }
+
+        $merchantEmail = $merchant->merchantDetail->getContactEmail();
+
+        $mailable = new $mailableHandler($data, $merchantEmail);
+
+        return $mailable;
+    }
+
+    private function addAdditionalApprovalEmailData(Merchant $merchant, array & $emailData)
+    {
+        $emailData['max_txn_amount_inr'] = $merchant->getMaxPaymentAmount() / 100;
+
+        $domesticDelay = Merchant::INTERNATIONAL_SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
+
+        $internationalDelay = Merchant::INTERNATIONAL_SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
+
+        $scheduleTaskCore = new ScheduleTask\Core;
+
+        $domesticScheduleTask = $scheduleTaskCore->getMerchantSettlementSchedule($merchant, PaymentMethod::CARD, false);
+
+        if(is_null($domesticScheduleTask) === false)
+        {
+            $domesticDelay = $domesticScheduleTask->schedule->getDelay();
+        }
+
+        $internationalScheduleTask = $scheduleTaskCore->getMerchantSettlementSchedule($merchant, PaymentMethod::CARD, true);
+
+        if (is_null($internationalScheduleTask) === false)
+        {
+            $internationalDelay = $internationalScheduleTask->schedule->getDelay();
+        }
+
+        $emailData['domestic_settlement_cycle'] = $domesticDelay;
+
+        $emailData['international_settlement_cycle'] = $internationalDelay;
     }
 }

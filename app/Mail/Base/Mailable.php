@@ -112,10 +112,10 @@ class Mailable extends BaseMailable
 
         try
         {
+            Container::getInstance()->call([$this, 'build']);
+
             $toEmail = empty($this->to[0]['address']) ? '' : (is_string($this->to[0]['address']) ? $this->to[0]['address'] : '' );
             $toEmailHash = hash(HashAlgo::SHA256, $toEmail);
-
-            Container::getInstance()->call([$this, 'build']);
 
             $this->evaluateAndSetMailDriver($mailer);
 

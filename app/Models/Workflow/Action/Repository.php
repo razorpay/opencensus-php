@@ -395,7 +395,8 @@ class Repository extends Base\Repository
             {
                 $query->withTrashed();
             },
-            'permission'
+            'permission',
+            'tagged'
         ];
 
         return $action->with($relations)

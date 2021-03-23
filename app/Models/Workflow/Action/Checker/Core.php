@@ -90,7 +90,6 @@ class Core extends Base\Core
         $currentLevel = $action->getCurrentLevel();
 
         $workflowId = $action->workflow->getId();
-
         // A superadmin should be able to execute any open workflow bypassing all the steps
         if (($checkerType === 'admin') and ($checkerEntity->isSuperAdmin() === true))
         {

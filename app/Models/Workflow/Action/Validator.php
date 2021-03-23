@@ -59,6 +59,8 @@ class Validator extends Base\Validator
 
     public function validateCloseAction($maker, bool $autoclose)
     {
+        $this->validateIfCloseSupportedForPermission();
+
         if ($autoclose === false)
         {
             $this->canClose($maker);
@@ -132,5 +134,22 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ACTION_INVALID_TYPE);
         }
+    }
+
+    private function validateIfCloseSupportedForPermission()
+    {
+        $action = $this->entity;
+
+        $permissionName = $action->permission->getName();
+
+        if(in_array($permissionName, Constants::CLOSE_OPERATION_UNSUPPORTED_PERMISSIONS) === false)
+        {
+            return;
+        }
+
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_WORKFLOW_CLOSE_NOT_SUPPORTED,
+            null,
+            ["workflow_name" => $action->workflow->getName()]);
     }
 }

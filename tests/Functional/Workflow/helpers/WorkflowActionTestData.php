@@ -166,7 +166,7 @@ return [
             'method'    => 'POST',
             'url'       => '/w-actions/%s/checkers',
             'content'   => [
-                'approved'  => 0,
+                'approved'  => 0
             ]
         ],
         'response' => [

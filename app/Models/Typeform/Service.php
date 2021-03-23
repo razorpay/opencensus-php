@@ -2,7 +2,9 @@
 
 namespace RZP\Models\Typeform;
 
+use Request;
 use RZP\Models\Base;
+use RZP\Models\Workflow\Action;
 
 class Service extends Base\Service
 {
@@ -23,5 +25,12 @@ class Service extends Base\Service
         $response = $this->core()->processTypeformWebhook($input);
 
         return $response;
+    }
+
+    public function handleOnRejectWorkflowAction(Action\Entity $action)
+    {
+        $input = Request::all();
+
+        $this->core()->processWorkflowRequestRejection($action, $input);
     }
 }
