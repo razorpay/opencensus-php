@@ -13,6 +13,9 @@ return [
         'emails.user.password_reset',
         'emails.user.password_change',
         'emails.user.otp_email_verify',
+        'emails.downtime.update_downtime',
+        'emails.downtime.create_downtime',
+        'emails.downtime.resolve_downtime',
     ],
 
     'stork_whitelist' => [

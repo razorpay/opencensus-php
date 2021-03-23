@@ -131,19 +131,19 @@ class DowntimeNotification extends Mailable
             switch ($this->data['method'])
             {
                 case Method::CARD :
-                    $recipientEmail = Constants::MAIL_ADDRESSES[Constants::PG_NOTIFICATION_CARD];
+                    $recipientEmail = Constants::MAIL_ADDRESSES[Constants::DOWNTIME_NOTIFICATION_CARD];
                     break;
 
                 case Method::WALLET :
-                    $recipientEmail = Constants::MAIL_ADDRESSES[Constants::PG_NOTIFICATION_WALLET];
+                    $recipientEmail = Constants::MAIL_ADDRESSES[Constants::DOWNTIME_NOTIFICATION_WALLET];
                     break;
 
                 case Method::UPI :
-                    $recipientEmail = Constants::MAIL_ADDRESSES[Constants::PG_NOTIFICATION_UPI];
+                    $recipientEmail = Constants::MAIL_ADDRESSES[Constants::DOWNTIME_NOTIFICATION_UPI];
                     break;
 
                 case Method::NETBANKING :
-                    $recipientEmail = Constants::MAIL_ADDRESSES[Constants::PG_NOTIFICATION_NETBANKING];
+                    $recipientEmail = Constants::MAIL_ADDRESSES[Constants::DOWNTIME_NOTIFICATION_NETBANKING];
                     break;
             }
         }
