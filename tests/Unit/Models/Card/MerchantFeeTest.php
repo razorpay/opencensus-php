@@ -13,11 +13,13 @@ use RZP\Models\Terminal;
 use RZP\Models\VirtualAccount\Receiver;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class MerchantFeeTest extends TestCase
 {
     use PaymentTrait;
+    use TerminalTrait;
 
     protected $card = [
         'number'       => '4012001036275556',
@@ -30,6 +32,8 @@ class MerchantFeeTest extends TestCase
     protected $qrCode;
 
     protected $sharpTerminal;
+
+    protected $terminalsServiceMock;
 
     protected $input = [
         'method'   => 'card',
@@ -56,6 +60,8 @@ class MerchantFeeTest extends TestCase
         $this->qrCode = $this->fixtures->create('qr_code');
 
         $this->sharpTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->terminalsServiceMock = $this->getTerminalsServiceMock();
     }
 
     public function getMockPricingRepo($withCreditCardRule = false, $withReceiverRule = false, $withDefault = true, $pricingRules = [], $procurer = true)
@@ -1690,6 +1696,11 @@ class MerchantFeeTest extends TestCase
 
         // with razorx zero pricing rule
         $this->mockRazorx();
+
+        $this->mockTerminalsServiceSendRequest(function() {
+            return $this->getDefaultTerminalServiceResponse();
+        },1);
+
         $expectedPricingRules = [
             'payment'        => '1nvp2XPMmaaxyk',
             'optimizer'      => '1nvp2XPMmaaxya',
@@ -1706,6 +1717,10 @@ class MerchantFeeTest extends TestCase
         $this->fee->setPricingRepo($rules);
 
         $this->mockRazorx();
+        
+        $this->mockTerminalsServiceSendRequest(function() {
+            return $this->getDefaultTerminalServiceResponse();
+        },1);
 
         $expectedPricingRules = [
             'payment'        => '1ZeroPricingR1',

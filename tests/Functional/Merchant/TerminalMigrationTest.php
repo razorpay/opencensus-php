@@ -1894,13 +1894,106 @@ class TerminalMigrationTest extends TestCase
         $this->startTest();
     }
 
-    public function testToggleTerminalOnTerminalService()
+    public function testEditTerminalOnTerminalService()
     {
         $terminal = $this->fixtures->create(
             'terminal',
             [
-                'enabled' => true
+                'id' => 'AqdfGh5460opVt',
+                'merchant_id' => '10000000000000',
+                'gateway' => 'payu',
+                'gateway_merchant_id' => '250000002',
+                'gateway_secure_secret' => "1231424",
+                'mode' => 3,
+                'type'    => [
+                    'direct_settlement_with_refund' => '1'
+                ],
             ]);
+        $tid = $terminal['id'];
+
+        $data = [
+            'mode' => "2",
+        ];
+
+        $this->razorxValue = 'on';
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) {
+
+            $data = [
+                "mode" => "2"
+            ];
+
+            $this->assertEquals(json_encode($data), $content);
+
+            $this->assertEquals(Requests::PATCH, $method);
+
+            $this->assertStringEndsWith('/terminals/AqdfGh5460opVt', $path);
+
+            $data = $this->terminalRepository->getById('AqdfGh5460opVt')->toArray();
+
+            $data['mode'] = '2';
+
+            $body = json_encode(['data' => $data]);
+
+            $response = new \Requests_Response;
+
+            $response->body = $body;
+
+            return $response;
+
+        }, 3);
+
+        $content = $this->editTerminal($tid, $data);
+
+        $this->assertEquals( "2", $content['mode']);
+
+        $apiTerminal = $this->terminalRepository->getById('AqdfGh5460opVt')->toArray();
+
+        $this->assertEquals( "sync_success", $apiTerminal['sync_status']);
+    }
+
+    public function testEditTerminalOnTerminalServiceBadRequest()
+    {
+        $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460opVt',
+                'merchant_id' => '10000000000000',
+                'gateway' => 'payu',
+                'gateway_merchant_id' => '250000002',
+                'gateway_secure_secret' => "1231424",
+                'mode' => 3,
+                'type' => [
+                    'direct_settlement_with_refund' => '1'
+                ],
+            ]);
+
+        $this->razorxValue = 'on';
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) {
+
+            $data = [
+                "mode" => "2"
+            ];
+
+            $this->assertEquals(json_encode($data), $content);
+
+            $this->assertEquals(Requests::PATCH, $method);
+
+            $this->assertStringEndsWith('/terminals/AqdfGh5460opVt', $path);
+
+            return $this->getProxyEditTerminalServiceResponseBadRequest();
+
+        }, 1);
+
+        $this->startTest();
+    }
+
+    public function testToggleTerminalOnTerminalService()
+    {
+        $terminal = $this->fixtures->create('terminal',
+            ['enabled' => true]);
+
         $tid = $terminal['id'];
 
         $this->razorxValue = 'on';
@@ -1910,11 +2003,6 @@ class TerminalMigrationTest extends TestCase
             $data = [
                 "enabled" => false
             ];
-
-            $this->assertEquals(json_encode($data), $content);
-
-            $this->assertEquals(Requests::PATCH, $method);
-
             $this->assertStringEndsWith('/terminals/'.$tid, $path);
 
             $data = $this->terminalRepository->getById($tid)->toArray();

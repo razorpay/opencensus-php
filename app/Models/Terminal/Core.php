@@ -175,6 +175,7 @@ class Core extends Base\Core
         return $terminal;
     }
 
+    // not getting used anywhere
     public function copy($input, $terminal)
     {
         $this->trace->info(
@@ -239,13 +240,42 @@ class Core extends Base\Core
                 or (isset($input[Entity::MC_MPAN]) === false)
                 or (isset($input[Entity::VISA_MPAN]) === false)
                 or (isset($input[Entity::RUPAY_MPAN]) === false))
-                {
-                    $this->validateExistingTerminal($terminal);
-                }
+            {
+                $this->validateExistingTerminal($terminal);
+            }
 
             $this->validateDirectSettlementMapping($terminal);
 
-            $this->repo->saveOrFail($terminal);
+            $shouldSync = true;
+
+            $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+            $mId = $terminal->getMerchantId();
+
+            $variantFlag = $this->app->razorx->getTreatment($mId, "TERMINAL_EDIT_PROXY", $mode);
+
+            // if the $variantFlag is on, it will first edit on terminal service and then on api with shouldSync on creation as false,
+            // otherwise shouldSync will be true and syncing will happen at the time of creation itself.
+            if ($variantFlag === "on")
+            {
+                $shouldSync = false;
+
+                $path = "v1/terminals/" .  $terminal->getId();
+
+                $response = $this->app['terminals_service']->proxyTerminalService($input, "PATCH", $path);
+
+                $tsTerminal = Terminal\Service::getEntityFromTerminalServiceResponse($response);
+
+                $terminal->setSyncStatus(SyncStatus::SYNC_SUCCESS);
+
+                $this->repo->saveOrFail($terminal, ['shouldSync' => $shouldSync]);
+
+                return $tsTerminal;
+            }
+            else
+            {
+                $this->repo->saveOrFail($terminal, ['shouldSync' => $shouldSync]);
+            }
         }
 
         return $terminal;

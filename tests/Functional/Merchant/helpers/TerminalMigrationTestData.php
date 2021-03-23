@@ -410,6 +410,25 @@ return [
         ],
     ],
 
+    'testEditTerminalOnTerminalServiceBadRequest' => [
+        'request' => [
+            'method'  => 'PUT',
+            'url'     => '/terminals/AqdfGh5460opVt',
+            'content' => [ "mode" => '2']
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'Terminal doesn\'t exist with this Id',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => \RZP\Exception\BadRequestException::class,
+            'internal_error_code' => 'BAD_REQUEST_TERMINALS_SERVICE_ERROR',
+        ],
+    ],
     'testToggleTerminalOnTerminalService' => [
         'request' => [
             'method'  => 'PUT',

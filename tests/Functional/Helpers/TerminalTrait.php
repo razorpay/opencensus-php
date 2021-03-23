@@ -148,6 +148,11 @@ trait TerminalTrait
         return $response;
     }
 
+    protected function getProxyEditTerminalServiceResponseBadRequest() : \Requests_Response
+    {
+        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TERMINALS_SERVICE_ERROR, null, [], "Terminal doesn't exist with this Id");
+    }
+
 
     protected function getProxyCreateGatewayCredentialTerminalServiceResponse() : \Requests_Response
     {
