@@ -50,6 +50,13 @@ class Validator extends Base\Validator
         Entity::SETTINGS              => 'nullable|associative_array',
     ];
 
+    protected static $oauthRequestRules = [
+        Constants::OAUTH_SOURCE => 'sometimes|string',
+        Constants::ID_TOKEN     => 'required|string',
+        Entity::OAUTH_PROVIDER  => 'required|string|custom',
+        Entity::EMAIL           => 'required|email',
+    ];
+
     protected static $editEmailForMerchantRules = [
         Entity::EMAIL                 => 'filled|email|unique:users,email',
     ];
@@ -74,6 +81,7 @@ class Validator extends Base\Validator
         Entity::CAPTCHA_DISABLE       => 'sometimes|string',
         Entity::APP                   => 'sometimes|string',
         Entity::OAUTH_PROVIDER        => 'required_without:password|string|custom',
+        Constants::ID_TOKEN           => 'sometimes|string',
     ];
 
     protected static $verifyUserSecondFactorRules = [
@@ -329,15 +337,11 @@ class Validator extends Base\Validator
      */
     protected function validateOauthProvider(string $attribute, string $oauthProvider)
     {
-        $decodedOauthProvider = json_decode($oauthProvider);
+        $decodedOauthProvider = json_decode($oauthProvider, true);
 
-        if ((sizeof($decodedOauthProvider)!==1) or (OauthProvider::exists($decodedOauthProvider[0]) === false))
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_USER_OAUTH_PROVIDER_INVALID,
-                Entity::OAUTH_PROVIDER,
-                [Entity::OAUTH_PROVIDER => $oauthProvider]);
-        }
+        $oauthProvider = $decodedOauthProvider[0] ?? null;
+
+        OauthProvider::validate($oauthProvider);
     }
 
     /**
@@ -636,5 +640,10 @@ class Validator extends Base\Validator
 
         return;
 
+    }
+
+    public function validateOauthRequest(array $input)
+    {
+        $this->validateInputValues('oauth_request', $input);
     }
 }

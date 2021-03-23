@@ -2094,12 +2094,16 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const USERS_SEND_SMS_OTP_FAILED                             = 'USERS_SEND_SMS_OTP_FAILED';
     const USERS_SEND_EMAIL_OTP_FAILED                           = 'USERS_SEND_EMAIL_OTP_FAILED';
     const USER_NOT_FOUND                                        = 'USER_NOT_FOUND';
+    const USER_LOGIN                                            = 'USER_LOGIN';
     const USER_OAUTH_PROVIDER_LOGIN_SAVED                       = 'USER_OAUTH_PROVIDER_LOGIN_SAVED';
     const USER_OAUTH_PROVIDER_REGISTER                          = 'USER_OAUTH_PROVIDER_REGISTER';
     const INVALIDATE_CONTACT_DETAILS_ERROR                      = 'INVALIDATE_CONTACT_DETAILS_ERROR';
     const ADMIN_GOOGLE_OAUTH_ERROR                              = 'ADMIN_GOOGLE_OAUTH_ERROR';
     const ADMIN_GOOGLE_OAUTH_VERIFY_SUCCESS                     = 'ADMIN_GOOGLE_OAUTH_VERIFY_SUCCESS';
     const ADMIN_GOOGLE_OAUTH_VERIFY_FAIL                        = 'ADMIN_GOOGLE_OAUTH_VERIFY_FAIL';
+    const GOOGLE_OAUTH_ID_TOKEN_VERIFY_FAILURE                  = 'GOOGLE_OAUTH_ID_TOKEN_VERIFY_FAILURE';
+    const GOOGLE_OAUTH_ID_TOKEN_VERIFY_SUCCESS                  = 'GOOGLE_OAUTH_ID_TOKEN_VERIFY_SUCCESS';
+    const GOOGLE_OAUTH_INVALID_ID_TOKEN                         = 'GOOGLE_OAUTH_INVALID_ID_TOKEN';
 
     //Trace codes for users 2fa factory
     const SEND_2FA_OTP_SMS_FOR_ACTION                           = 'SEND_2FA_OTP_SMS_FOR_ACTION';

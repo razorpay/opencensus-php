@@ -326,9 +326,5 @@ return array(
 
     'apps_default_sender_email_address' => env('APPS_DEFAULT_SENDER_EMAIL_ADDRESS'),
 
-    'admin_google_oauth_client_id' => env('ADMIN_GOOGLE_OAUTH_CLIENT_ID'),
-
-    'admin_google_oauth_client_mock' => env('ADMIN_GOOGLE_OAUTH_CLIENT_MOCK', false),
-
     'amount_difference_allowed_authorized' => ['EQ8AzfZip2meDu', 'FBYspBmKlWefX9'],
 );

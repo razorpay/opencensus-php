@@ -265,9 +265,9 @@ class Service extends Base\Service
         {
             $app = App::getFacadeRoot();
 
-            $client_id = $app->config->get('app.admin_google_oauth_client_id');
+            $client_id = $app->config->get('oauth.admin_google_oauth_client_id');
 
-            $mock = $app->config->get('app.admin_google_oauth_client_mock');
+            $mock = $app->config->get('oauth.admin_google_oauth_client_mock');
 
             if ($mock === true)
             {

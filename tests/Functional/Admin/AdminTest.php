@@ -523,7 +523,7 @@ class AdminTest extends TestCase
             'oauth_provider_id'  => 'test oauth provider id',
         ]);
 
-        $this->app['config']->set('app.admin_google_oauth_client_mock', true);
+        $this->app['config']->set('oauth.admin_google_oauth_client_mock', true);
 
         $this->ba->appAuth();
 
@@ -539,7 +539,7 @@ class AdminTest extends TestCase
             'oauth_provider_id'  => 'test oauth provider id',
         ]);
 
-        $this->app['config']->set('app.admin_google_oauth_client_mock', false);
+        $this->app['config']->set('oauth.admin_google_oauth_client_mock', false);
 
         $this->ba->appAuth();
 

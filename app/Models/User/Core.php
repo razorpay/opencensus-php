@@ -371,9 +371,33 @@ class Core extends Base\Core
         ];
     }
 
+    public function verifyOauthIdToken(array &$input)
+    {
+        (new Validator)->validateOauthRequest($input);
+
+        $oauthProvider = json_decode($input[Entity::OAUTH_PROVIDER], true);
+        $oauthProvider = $oauthProvider[0];
+
+        // for now we have only one provider and this is validated above
+        switch ($oauthProvider)
+        {
+            case OauthProvider::GOOGLE:
+                $verified = (new GoogleOauthVerify)->verifyGoogleOauthIdToken($input);
+                if ($verified === false)
+                {
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID_TOKEN);
+                }
+        }
+
+        unset($input[Constants::OAUTH_SOURCE]);
+        unset($input[Constants::ID_TOKEN]);
+    }
+
     public function login(array $input, $validate2fa = true)
     {
         $this->getUserEntity()->getValidator()->validateInput('login', $input);
+
+        $this->trace->info(TraceCode::USER_LOGIN, ['email' => $input[Entity::EMAIL]]);
 
         if (empty($input[Entity::OAUTH_PROVIDER]) === true)
         {
@@ -382,6 +406,12 @@ class Core extends Base\Core
         else
         {
             $user = $this->repo->user->getUserFromEmailOrFail($input[Entity::EMAIL]);
+
+            // todo: make id_token mandatory once all clients start sending the id token
+            if (empty($input[Constants::ID_TOKEN]) === false)
+            {
+                $this->verifyOauthIdToken($input);
+            }
 
             if ($user !== null)
             {

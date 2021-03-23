@@ -351,18 +351,33 @@ class UserTest extends TestCase
         $this->assertNotNull($row);
     }
 
+    public function testOauthCreateWithIdToken()
+    {
+        $this->ba->appAuth();
+
+        $this->mockHubSpotClient('trackSignupEvent');
+
+        $this->startTest();
+    }
+
     public function testOauthLogin()
     {
-        $user = $this->fixtures->create('user', [
+        // user already exists with confirmed password
+        $this->fixtures->create('user', [
             'id'    => "FL0nl7kME8j3Dd",
             'email' => 'hello123@gmail.com',
             'password' => 'hello123']);
 
-        $testData = &$this->testData[__FUNCTION__];
-
         $this->ba->appAuth();
 
         $this->startTest();
+
+        $testData = $this->testData['testOauthLoginWithIdToken'];
+        $this->runRequestResponseFlow($testData);
+
+        $this->app['config']->set('oauth.merchant_oauth_mock', false);
+        $testData = $this->testData['testOauthLoginWithInvalidIdToken'];
+        $this->runRequestResponseFlow($testData);
     }
 
     /**
@@ -373,12 +388,10 @@ class UserTest extends TestCase
      */
     public function testOauthLoginSuccessPasswordAndOauthBothPresent()
     {
-        $user = $this->fixtures->create('user', [
+        $this->fixtures->create('user', [
             'id'    => "FL0nl7kME8j3Dd",
             'email' => 'hello123@gmail.com',
             'password' => 'hello123']);
-
-        $testData = &$this->testData[__FUNCTION__];
 
         $this->ba->appAuth();
 
@@ -388,8 +401,6 @@ class UserTest extends TestCase
     public function testOauthLoginInvalidatePassword()
     {
         $this->fixtures->create('user', ['id' => 'FL0nl7kME8j3Dd', 'email' => 'hello123@gmail.com', 'password' => 'hello123', 'confirm_token' => 'confirm_token']);
-
-        $testData =   &$this->testData[__FUNCTION__];
 
         $this->ba->appAuth();
 
@@ -449,14 +460,12 @@ class UserTest extends TestCase
     }
 
 
-    public function testOauthLoginFail()
+    public function testOauthLoginFailInvalidProvider()
     {
-        $user = $this->fixtures->create('user', [
+        $this->fixtures->create('user', [
             'id'    => "FL0nl7kME8j3Dd",
             'email' => 'hello123@gmail.com',
             'password' => 'hello123']);
-
-        $testData = &$this->testData[__FUNCTION__];
 
         $this->ba->appAuth();
 
@@ -465,12 +474,10 @@ class UserTest extends TestCase
 
     public function testOauthLoginFailPasswordOauthNotPresent()
     {
-        $user = $this->fixtures->create('user', [
+        $this->fixtures->create('user', [
             'id'    => "FL0nl7kME8j3Dd",
             'email' => 'hello123@gmail.com',
             'password' => 'hello123']);
-
-        $testData = &$this->testData[__FUNCTION__];
 
         $this->ba->appAuth();
 
@@ -479,13 +486,11 @@ class UserTest extends TestCase
 
     public function testMultipleOauthProviderLogin()
     {
-        $user = $this->fixtures->create('user', [
+        $this->fixtures->create('user', [
             'id'             => "FL0nl7kME8j3Dd",
             'email'          => 'hello123@gmail.com',
             'password'       => 'hello123',
             'oauth_provider' => "[\"google\"]"]);
-
-        $testData = &$this->testData[__FUNCTION__];
 
         $this->ba->appAuth();
 

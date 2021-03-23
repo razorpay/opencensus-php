@@ -293,7 +293,58 @@ return [
         ],
     ],
 
-    'testOauthLoginFail' => [
+    'testOauthLoginWithIdToken' => [
+        'request'  => [
+            'url'     => '/users/oauth-login',
+            'method'  => 'POST',
+            'content' => [
+                'email'          => 'hello123@gmail.com',
+                'oauth_provider' => "[\"google\"]",
+                'id_token'       => 'valid id token'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'          => null,
+                'contact_mobile_verified' => false,
+                'confirmed'               => true,
+                'merchants'               => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testOauthLoginWithInvalidIdToken' => [
+        'request'  => [
+            'url'     => '/users/oauth-login',
+            'method'  => 'POST',
+            'content' => [
+                'email'          => 'hello123@gmail.com',
+                'oauth_provider' => "[\"google\"]",
+                'id_token'       => 'invalid id token'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_ID_TOKEN,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID_TOKEN,
+        ],
+    ],
+
+    'testOauthLoginFailInvalidProvider' => [
         'request'  => [
             'url'     => '/users/oauth-login',
             'method'  => 'POST',
@@ -425,6 +476,23 @@ return [
             'content' => [
                 'email'          => 'hello123@gmail.com',
                 'oauth_provider' => "[\"google\"]",
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'hello123@gmail.com',
+            ],
+        ],
+    ],
+
+    'testOauthCreateWithIdToken' => [
+        'request'  => [
+            'url'     => '/users/oauth-register',
+            'method'  => 'POST',
+            'content' => [
+                'email'          => 'hello123@gmail.com',
+                'oauth_provider' => "[\"google\"]",
+                'id_token'       => 'valid id token',
             ],
         ],
         'response' => [

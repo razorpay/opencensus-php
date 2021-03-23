@@ -40,6 +40,27 @@ class Constants
 
     const BANNER_CLICKTIME = 'banner_clicktime';
 
+    // oauth constants start
+    const OAUTH_SOURCE = 'oauth_source';
+    const CLIENT_ID    = 'client_id';
+    const PAYLOAD      = 'payload';
+
+    const IOS       = 'ios';
+    const EPOS      = 'epos';
+    const ANDROID   = 'android';
+    const DASHBOARD = 'dashboard';
+
+    const EMAIL_VERIFIED = 'email_verified';
+    const ID_TOKEN       = 'id_token';
+
+    const OAUTH_MERCHANT_OAUTH_CLIENT_ID         = 'oauth.merchant_oauth_client_id';
+    const OAUTH_MERCHANT_OAUTH_CLIENT_ID_EPOS    = 'oauth.merchant_oauth_client_id_epos';
+    const OAUTH_MERCHANT_OAUTH_CLIENT_ID_ANDROID = 'oauth.merchant_oauth_client_id_android';
+    const OAUTH_MERCHANT_OAUTH_CLIENT_ID_IOS     = 'oauth.merchant_oauth_client_id_ios';
+    const OAUTH_MERCHANT_OAUTH_MOCK              = 'oauth.merchant_oauth_mock';
+
+    // oauth constants end
+
     public static $attributionList = [
         self::UTM_SOURCE,
         self::UTM_CAMPAIGN,

@@ -106,6 +106,12 @@ class Service extends Base\Service
             unset($input['merchant_invitation']);
         }
 
+        // todo: make id_token mandatory once all clients start sending the id token
+        if ((empty($input[Entity::OAUTH_PROVIDER]) === false) and (empty($input[Constants::ID_TOKEN]) === false))
+        {
+            $this->core->verifyOauthIdToken($input);
+        }
+
         /**
          * $user would not be null in a very rare edge case here
          * which happens when two subsequent invitations without either being
@@ -213,6 +219,7 @@ class Service extends Base\Service
             Entity::OAUTH_PROVIDER,
             Entity::CONTACT_MOBILE,
             Entity::CAPTCHA,
+            Constants::ID_TOKEN,
         ];
 
         $logData = $input;
