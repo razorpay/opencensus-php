@@ -110,9 +110,7 @@ export default class ListFilter extends Component {
               <i class={'m-l i i-chevron-' + (showAllFilters ? 'up' : 'down')} />
             </button>
           )}
-          <button class="btn btn-primary btn-sm" onClick={handleSubmit(this.handleOnSubmit)}>
-            Search
-          </button>
+          <button class="btn btn-primary btn-sm">Search</button>
           <AsyncButton class="btn btn-sm btn-link" onClick={this.resetForm} text="Clear" />
         </div>
       </form>

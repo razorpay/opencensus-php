@@ -327,7 +327,6 @@ export default class SubMerchantsList extends ListContainer {
                     form="SubmerchantListFilter"
                     type="link"
                     count={this.state.count}
-                    onSubmit={this.search}
                     onSearchAnalytics={trackSearchAnalytics}
                     onClearAnalytics={trackClearAnalytics}
                     showAppIdFilter={user.isPartner('pure_platform')}

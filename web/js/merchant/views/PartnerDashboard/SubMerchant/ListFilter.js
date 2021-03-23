@@ -21,11 +21,7 @@ export default ({ type, showAppIdFilter, ...otherProps }) => (
     {showAppIdFilter && (
       <div class="form-group list-filter-item">
         <label>Application Id</label>
-        <Field
-          name="application_id"
-          component="input"
-          class="form-control input-sm"
-        />
+        <Field name="application_id" component="input" class="form-control input-sm" />
       </div>
     )}
 
@@ -35,7 +31,7 @@ export default ({ type, showAppIdFilter, ...otherProps }) => (
         name="count"
         component="input"
         min={1}
-        max={100}
+        max={50}
         type="number"
         class="form-control input-sm"
       />
