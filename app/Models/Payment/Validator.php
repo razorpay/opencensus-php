@@ -251,7 +251,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $pspAmountLimit = [
-        'upi'       => 10000000, // Changing limit for @upi handle
+        'upi'       => 20000000, // Changing limit for @upi handle
     ];
 
     protected static $validateVpaRules = [
@@ -874,10 +874,10 @@ class Validator extends Base\Validator
 
         if ($method === Payment\Method::UPI)
         {
-            if ($amount > 10000000)
+            if ($amount > 20000000)
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'Amount for UPI payment cannot be greater than ₹100000.00');
+                    'Amount for UPI payment cannot be greater than ₹200000.00');
             }
 
             if ($this->isFlowIntent($input))

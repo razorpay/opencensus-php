@@ -3064,6 +3064,19 @@ class PaymentCreateTest extends TestCase
         $this->assertNotNull($upiMetadata->getExpiryTime());
     }
 
+    public function testUpiAmountLimit()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiBlockPaymentArray();
+
+        $payment['amount'] = 20000000; // Rs 2Lac
+
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $this->assertNotNull($response['payment_id']);
+    }
+
     public function testUpiBlockFail()
     {
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');

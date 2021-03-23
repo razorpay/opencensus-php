@@ -251,7 +251,7 @@ class UpiAxisGatewayTest extends TestCase
 
         $payment = $this->payment;
 
-        $payment['amount'] = 10000001;
+        $payment['amount'] = 20000001;
 
         $data = $this->testData[__FUNCTION__];
 
@@ -269,7 +269,7 @@ class UpiAxisGatewayTest extends TestCase
 
         $payment = $this->payment;
 
-        $payment['amount'] = 9000000;
+        $payment['amount'] = 19000000;
 
         $response = $this->doAuthPaymentViaAjaxRoute($payment);
 

@@ -34,7 +34,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Amount for UPI payment cannot be greater than ₹100000.00',
+                    'description' => 'Amount for UPI payment cannot be greater than ₹200000.00',
                 ],
             ],
             'status_code' => 400,
