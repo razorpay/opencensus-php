@@ -1643,8 +1643,12 @@ class Service extends Base\Service
             $amount = $input['amount'];
             $currency = $input['currency'];
 
-            if (($this->isDccEnabledIIN($iinEntity) === true) and
-                ($currency === Currency\Currency::INR))
+            /* conditions for showing dcc:
+                1. iin is dcc enabled and international(i.e country != IN)
+                2. merchant's currency != card currency
+            */
+            if (($this->isDccEnabledIIN($iinEntity) === true)
+                and ($currency !== $iinEntity->getIinCurrency()))
             {
                 $dccInfo = $this->getDCCInfo($amount, $currency, $merchant->getDccMarkupPercentage());
 

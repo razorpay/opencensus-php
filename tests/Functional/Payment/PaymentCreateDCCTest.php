@@ -302,8 +302,8 @@ class PaymentCreateDCCTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals($payment['convert_currency'], true);
-        $this->assertEquals($payment['base_amount'], 50000);
+        $this->assertEquals(true, $payment['convert_currency']);
+        $this->assertEquals(50000, $payment['base_amount']);
 
         //Payment entity fetch with Admin auth
         $paymentFetchRequestData = [
@@ -315,12 +315,192 @@ class PaymentCreateDCCTest extends TestCase
         $responseContent = json_decode($response->getContent(), true);
 
         $this->assertEquals(true, $responseContent['mcc']);
+        $this->assertEquals(false, $responseContent['dcc']);
 
         $forexRateApplied = number_format($payment['base_amount']/$payment['amount'], 6, '.', ',');
         $forexRateReceived = number_format($forexRateApplied/0.99, 6, '.', ',');
 
         $this->assertEquals($forexRateApplied, $responseContent['forex_rate_applied']);
         $this->assertEquals($forexRateReceived, $responseContent['forex_rate_received']);
+    }
+
+    public function testDccForeignCurrencyMerchantInternationalCard()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => 1]);
+
+        $payment = $this->payment;
+        $payment['currency'] = 'EUR';
+
+        $flowsData = [
+            'content' => ['amount' => $payment['amount'], 'currency' => $payment['currency'], 'card_number' => $payment['card']['number']],
+            'method'  => 'POST',
+            'url'     => '/payment/flows',
+        ];
+
+        $response = $this->sendRequest($flowsData);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $currencyRequestId = $responseContent['currency_request_id'];
+        $cardCurrency = $responseContent['card_currency'];
+
+        $payment = $this->payment;
+        $payment['currency'] = 'EUR';
+        $payment['dcc_currency'] = $cardCurrency;
+        $payment['currency_request_id'] = $currencyRequestId;
+
+        $usdAmount = $responseContent['all_currencies'][$payment['dcc_currency']]['amount'];
+        $inrAmount = $responseContent['all_currencies']['INR']['amount'];
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals("captured", $payment['status']);
+        $this->assertEquals($payment['id'], 'pay_' . $paymentMeta['payment_id']);
+        $this->assertEquals(null, $payment['convert_currency']);
+        $this->assertEquals(500000, $payment['base_amount']);
+        $this->assertEquals($cardCurrency, $paymentMeta['gateway_currency']);
+        $this->assertEquals($usdAmount, $paymentMeta['gateway_amount']);
+
+
+        //Payment entity fetch with Admin auth
+        $paymentFetchRequestData = [
+            'method'  => 'GET',
+            'url'     => '/admin/payment/' . $paymentMeta['payment_id'],
+        ];
+
+        $response = $this->sendRequest($paymentFetchRequestData);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $this->assertEquals(true, $responseContent['dcc']);
+        $this->assertEquals($usdAmount, $responseContent['gateway_amount']);
+        $this->assertEquals($paymentMeta['gateway_currency'], $responseContent['gateway_currency']);
+        $this->assertEquals($paymentMeta['forex_rate'], $responseContent['forex_rate']);
+        $this->assertEquals($paymentMeta['dcc_offered'], $responseContent['dcc_offered']);
+        $this->assertEquals($paymentMeta['dcc_mark_up_percent'], $responseContent['dcc_mark_up_percent']);
+
+        $dccMarkupAmount = (int) ceil(($payment['amount'] * $paymentMeta['forex_rate'] * $paymentMeta['dcc_mark_up_percent'])/100) ;
+
+        $this->assertEquals($dccMarkupAmount, $responseContent['dcc_markup_amount']);
+    }
+
+    public function testDccForeignCurrencyMerchantInternationalCardINRSelected()
+    {
+        $this->fixtures->create('order', [ 'amount' => 5000, 'currency' => 'EUR']);
+
+        $payment = $this->payment;
+        $payment['currency'] = 'EUR';
+
+        $flowsData = [
+            'content' => ['amount' => $payment['amount'], 'currency' => $payment['currency'], 'card_number' => $payment['card']['number']],
+            'method'  => 'POST',
+            'url'     => '/payment/flows',
+        ];
+
+        $response = $this->sendRequest($flowsData);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $currencyRequestId = $responseContent['currency_request_id'];
+
+        $payment = $this->payment;
+        $payment['currency'] = 'EUR';
+        $payment['dcc_currency'] = 'INR';
+        $payment['currency_request_id'] = $currencyRequestId;
+
+        $inrAmount = $responseContent['all_currencies']['INR']['amount'];
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals("captured", $payment['status']);
+        $this->assertEquals($payment['id'], 'pay_' . $paymentMeta['payment_id']);
+        $this->assertEquals(null, $payment['convert_currency']);
+        $this->assertEquals(500000, $payment['base_amount']);
+        $this->assertEquals(50000, $payment['amount']);
+        $this->assertEquals('EUR', $payment['currency']);
+        $this->assertEquals($inrAmount, $paymentMeta['gateway_amount']);
+        $this->assertEquals('INR', $paymentMeta['gateway_currency']);
+        $this->assertEquals(6, $paymentMeta['dcc_mark_up_percent']);
+
+
+        //Payment entity fetch with Admin auth
+        $paymentFetchRequestData = [
+            'method'  => 'GET',
+            'url'     => '/admin/payment/' . $paymentMeta['payment_id'],
+        ];
+
+        $response = $this->sendRequest($paymentFetchRequestData);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $this->assertEquals(true, $responseContent['dcc']);
+        $this->assertEquals($inrAmount, $responseContent['gateway_amount']);
+        $this->assertEquals($paymentMeta['gateway_currency'], $responseContent['gateway_currency']);
+        $this->assertEquals($paymentMeta['forex_rate'], $responseContent['forex_rate']);
+        $this->assertEquals($paymentMeta['dcc_offered'], $responseContent['dcc_offered']);
+        $this->assertEquals($paymentMeta['dcc_mark_up_percent'], $responseContent['dcc_mark_up_percent']);
+
+        $dccMarkupAmount = (int) ceil(($payment['amount'] * $paymentMeta['forex_rate'] * $paymentMeta['dcc_mark_up_percent'])/100) ;
+
+        $this->assertEquals($dccMarkupAmount, $responseContent['dcc_markup_amount']);
+    }
+
+    public function testDccForeignCurrencyMerchantInternationalCardMerchantCurrencySelected()
+    {
+        $this->fixtures->create('order', [ 'amount' => 5000, 'currency' => 'EUR']);
+
+        $payment = $this->payment;
+        $payment['currency'] = 'EUR';
+
+        $flowsData = [
+            'content' => ['amount' => $payment['amount'], 'currency' => $payment['currency'], 'card_number' => $payment['card']['number']],
+            'method'  => 'POST',
+            'url'     => '/payment/flows',
+        ];
+
+        $response = $this->sendRequest($flowsData);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $currencyRequestId = $responseContent['currency_request_id'];
+
+        $payment = $this->payment;
+        $payment['currency'] = 'EUR';
+        $payment['dcc_currency'] = 'EUR';
+        $payment['currency_request_id'] = $currencyRequestId;
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals("captured", $payment['status']);
+        $this->assertEquals($payment['id'], 'pay_' . $paymentMeta['payment_id']);
+        $this->assertEquals(null, $payment['convert_currency']);
+        $this->assertEquals(500000, $payment['base_amount']);
+        $this->assertEquals($paymentMeta['gateway_amount'], $payment['amount']);
+        $this->assertEquals($paymentMeta['gateway_currency'], $payment['currency']);
+
+        //Payment entity fetch with Admin auth
+        $paymentFetchRequestData = [
+            'method'  => 'GET',
+            'url'     => '/admin/payment/' . $paymentMeta['payment_id'],
+        ];
+
+        $response = $this->sendRequest($paymentFetchRequestData);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $this->assertEquals(false, $responseContent['dcc']);
+        $this->assertEquals($paymentMeta['gateway_amount'], $responseContent['gateway_amount']);
+        $this->assertEquals($paymentMeta['gateway_currency'], $responseContent['gateway_currency']);
+        $this->assertEquals($paymentMeta['forex_rate'], $responseContent['forex_rate']);
+        $this->assertEquals($paymentMeta['dcc_offered'], $responseContent['dcc_offered']);
+        $this->assertEquals($paymentMeta['dcc_mark_up_percent'], $responseContent['dcc_mark_up_percent']);
+
+        $dccMarkupAmount = (int) ceil(($payment['amount'] * $paymentMeta['forex_rate'] * $paymentMeta['dcc_mark_up_percent'])/100) ;
+
+        $this->assertEquals($dccMarkupAmount, $responseContent['dcc_markup_amount']);
     }
 
     public function testPaymentCreateWithDccInvalidCurrencyRequestId()

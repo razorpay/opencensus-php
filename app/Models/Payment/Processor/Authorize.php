@@ -3175,7 +3175,7 @@ trait Authorize
 
     protected function preProcessDCCInputs(array $input, Payment\Entity $payment)
     {
-        if (($payment->isCard() === false) or ($payment->merchant->isDCCEnabled() === false))
+        if (($payment->isCard() === false) or ($payment->merchant->isDCCEnabledInternationalMerchant() === false))
         {
             return;
         }
@@ -3222,7 +3222,9 @@ trait Authorize
 
         $merchant = $payment->merchant;
 
-        if ($currency !== Currency\Currency::INR)
+        if ($currency !== Currency\Currency::INR &&
+            ($merchant->isDCCEnabledInternationalMerchant() === false ||
+             $payment->isInternational() === false))
         {
             // mcc is supported only for merchants where this flag is set to true or false
             // or merchant is not fee bearer

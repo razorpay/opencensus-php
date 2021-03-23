@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Payment;
 
+use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -80,7 +81,7 @@ class USDPaymentTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals($payment['convert_currency'], true);
+        $this->assertEquals($payment['convert_currency'], null);
         $this->assertEquals($payment['base_amount'], 50000);
     }
 
@@ -88,6 +89,54 @@ class USDPaymentTest extends TestCase
     {
         $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => 0]);
         $this->fixtures->terminal->edit('1n25f6uN5S1Z5a', ['international' => 1, 'currency' => 'USD']);
+
+        $this->fixtures->create('order', [ 'amount' => 5000, 'currency' => 'USD']);
+
+        $order = $this->getLastEntity('order', true);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order['id'];
+        $payment['amount'] = $order['amount'];
+        $payment['currency'] = $order['currency'];
+        $payment['card']['number'] = '4012 0111 1111 1113';
+
+        $this->doAuthAndCapturePayment($payment, $payment['amount'], $payment['currency']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['convert_currency'], null);
+        $this->assertEquals($payment['base_amount'], 50000);
+    }
+
+    public function testUsdPaymentInternationalCardOnApiWithOrderAndDccDisabled()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => 1]);
+        $this->fixtures->terminal->edit('1n25f6uN5S1Z5a', ['international' => 1]);
+        $this->fixtures->merchant->addFeatures([Constants::DISABLE_NATIVE_CURRENCY]);
+
+        $this->fixtures->create('order', [ 'amount' => 5000, 'currency' => 'USD']);
+
+        $order = $this->getLastEntity('order', true);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order['id'];
+        $payment['amount'] = $order['amount'];
+        $payment['currency'] = $order['currency'];
+        $payment['card']['number'] = '4012 0111 1111 1113';
+
+        $this->doAuthAndCapturePayment($payment, $payment['amount'], $payment['currency']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['convert_currency'], true);
+        $this->assertEquals($payment['base_amount'], 50000);
+    }
+
+    public function testUsdPaymentInternationalCardOnGatewayWithOrderAndDccDisabled()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => 0]);
+        $this->fixtures->terminal->edit('1n25f6uN5S1Z5a', ['international' => 1, 'currency' => 'USD']);
+        $this->fixtures->merchant->addFeatures([Constants::DISABLE_NATIVE_CURRENCY]);
 
         $this->fixtures->create('order', [ 'amount' => 5000, 'currency' => 'USD']);
 

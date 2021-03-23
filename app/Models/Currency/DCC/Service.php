@@ -80,9 +80,9 @@ class Service extends Base\Service
         return $key;
     }
 
-    private function getDCCMarkUpPercentage($rates, $requestedCurrency, $markupPercent)
+    private function getDCCMarkUpPercentage($rates, $requestedCurrency, $baseCurrency, $markupPercent)
     {
-        if ($requestedCurrency === Currency\Currency::INR)
+        if ($requestedCurrency === $baseCurrency)
         {
             return 0;
         }
@@ -129,7 +129,7 @@ class Service extends Base\Service
         {
             if(isset($rates[$currency]) === true)
             {
-                $markUpPercent = $this->getDCCMarkUpPercentage($rates, $currency, $merchantMarkupPercent);
+                $markUpPercent = $this->getDCCMarkUpPercentage($rates, $currency, $baseCurrency, $merchantMarkupPercent);
 
                 $forexRateConverted =  number_format($rates[$currency], 6, '.', '');
 
@@ -161,7 +161,7 @@ class Service extends Base\Service
             {
                 $forexRate = number_format($rates[$requestedCurrency], 6, '.','');
 
-                $markUpPercent = $this->getDCCMarkUpPercentage($rates, $requestedCurrency, $merchantMarkUpPercent);
+                $markUpPercent = $this->getDCCMarkUpPercentage($rates, $requestedCurrency, $baseCurrency, $merchantMarkUpPercent);
 
                 $requestedCurrencyData['currency'] = $requestedCurrency;
 
