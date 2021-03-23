@@ -7,6 +7,7 @@ use Auth;
 use Input;
 use Config;
 use Request;
+use App\Admin;
 
 use App\Generic;
 use App\Http\AppResponse;
@@ -37,7 +38,13 @@ class GenericController extends Controller
         'users/oauth-register',
     ];
 
-    const USERS_RESET_PASSWORD_PATH = 'users/reset-password-token';
+    const USERS_RESET_PASSWORD_PATH  = 'users/reset-password-token';
+
+    const MERCHANT_BULK_ACTION_ROUTE = 'merchants/bulk';
+
+    const SUSPEND                    = 'suspend';
+
+    const UNSUSPEND                  = 'unsuspend';
 
     public function handleAny($mode, $path)
     {
@@ -73,6 +80,15 @@ class GenericController extends Controller
         }
 
         list($error, $data, $httpCode) = $request->send($path, $method);
+
+        $input = Input::all();
+
+        if (($path === self::MERCHANT_BULK_ACTION_ROUTE) and
+            (isset($input['action']) === true) and
+            (($input['action'] === self::SUSPEND) or ($input['action'] === self::UNSUSPEND)))
+        {
+            (new Admin\Service())->clearMerchantsUserSessions($input['merchant_ids']);
+        }
 
         if (($path === self::USERS_RESET_PASSWORD_PATH) &&
             ($httpCode === 200) &&

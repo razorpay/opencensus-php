@@ -459,6 +459,14 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
+    public function clearMerchantsUserSessions($merchantIds)
+    {
+        foreach ($merchantIds as $merchantId)
+        {
+            $this->clearMerchantUserSessions($merchantId);
+        }
+    }
+
     private function clearMerchantUserSessions($merchantId)
     {
         $merchantUsers = (new Merchant\Service)->getMerchantUsers($merchantId);
