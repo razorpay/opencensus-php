@@ -163,9 +163,20 @@ export default class App extends Component {
   componentWillMount() {
     const user = window.rzp_user;
     if (user && window.analytics) {
+      const mode = localStorage.getItem(`rzp_mode--${user.id}`);
+      const kycStatus = user.activated ? 'activated' : 'not activated';
+      const activatedAt = user.activated_at;
+
       analytics.identify({
         id: user.user.id,
-        properties: getCommonAnalyticsProperties(window.rzp_user),
+        userId: user.user.id,
+        emailId: user.email,
+        activatedAt,
+        mode,
+        userRole: user.role,
+        kycStatus,
+        merchantId: user.current,
+        businessCategory: user.businessCategory,
       });
     }
     const self = this;

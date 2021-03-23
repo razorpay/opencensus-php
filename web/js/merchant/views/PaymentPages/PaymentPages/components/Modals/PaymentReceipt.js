@@ -1,6 +1,8 @@
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import Form from 'common/new-ui/Form';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
@@ -22,13 +24,13 @@ export default class PaymentReceipt extends React.Component {
 
     let selectedInputField = null;
 
-    const udfFormFields = formItems.filter(field => {
+    const udfFormFields = formItems.filter((field) => {
       const isUDFField = !field.hasOwnProperty('item');
 
       return isUDFField;
     });
 
-    this.options = udfFormFields.map(field => {
+    this.options = udfFormFields.map((field) => {
       if (field.name === receipt.selected_udf_field) {
         selectedInputField = field;
       }
@@ -64,8 +66,8 @@ export default class PaymentReceipt extends React.Component {
           template: '',
           page_id: this.PAGE_ID,
         },
-        options
-      )
+        options,
+      ),
     );
   };
 
@@ -81,21 +83,26 @@ export default class PaymentReceipt extends React.Component {
     this.props.openModal({
       size: 'medium',
       component: (
-        <Merchant80gDetails
-          trackFn={this.trackReceipt}
-          get80gDetails={this.get80gDetails}
-        />
+        <Merchant80gDetails trackFn={this.trackReceipt} get80gDetails={this.get80gDetails} />
       ),
     });
   };
 
-  get80gDetails = data => {
+  get80gDetails = (data) => {
     this.setState({
       '80_details': data,
     });
   };
 
-  onSubmit = formData => {
+  onSubmit = (formData) => {
+    analyticsTrack({
+      objectName: 'receipts',
+      actionName: 'saved',
+      screen: 'create payment page',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     const data = {
       enable_receipt: 1, // Currently, enabling in all cases. Later, can add toggle
       enable_custom_serial_number: formData.enable_custom_serial_number,
@@ -109,7 +116,7 @@ export default class PaymentReceipt extends React.Component {
     const promise = this.props.handleSave(data);
 
     if (promise && promise.then) {
-      promise.then(resp => {
+      promise.then((resp) => {
         this.props.handleClose();
       });
     } else {
@@ -122,7 +129,15 @@ export default class PaymentReceipt extends React.Component {
     });
   };
 
-  trackSendingOptions = event => {
+  trackSendingOptions = (event) => {
+    analyticsTrack({
+      objectName: `receipts ${event.target.value === '0' ? 'automated' : 'manual'}`,
+      actionName: 'clicked',
+      screen: 'create payment page',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     this.trackReceipt(event.target.value === '0' ? 'automated' : 'manual');
   };
 
@@ -146,7 +161,7 @@ export default class PaymentReceipt extends React.Component {
     });
   };
 
-  trackSendingOptions = event => {
+  trackSendingOptions = (event) => {
     this.trackReceipt(event.target.value === '0' ? 'automated' : 'manual');
   };
 
@@ -181,8 +196,7 @@ export default class PaymentReceipt extends React.Component {
                   name="enable_custom_serial_number"
                   defaultValue={
                     props.paymentPageEntity.receipt
-                      ? props.paymentPageEntity.receipt
-                          .enable_custom_serial_number
+                      ? props.paymentPageEntity.receipt.enable_custom_serial_number
                       : ''
                   }
                   onClick={this.trackSendingOptions}
@@ -214,10 +228,7 @@ export default class PaymentReceipt extends React.Component {
                   >
                     View Sample Receipt <i class="i i-external-link" />
                   </a>
-                  <a
-                    href="https://razorpay.com/docs/payment-pages/receipt-80g"
-                    target="_blank"
-                  >
+                  <a href="https://razorpay.com/docs/payment-pages/receipt-80g" target="_blank">
                     Learn More <i class="i i-external-link" />
                   </a>
                 </div>
@@ -227,11 +238,18 @@ export default class PaymentReceipt extends React.Component {
                 <Input.Check
                   fieldLabel={() => (
                     <div>
-                      <b class="m-r">Show an Input Field on Receipt</b>{' '}
-                      (Optional)
+                      <b class="m-r">Show an Input Field on Receipt</b> (Optional)
                     </div>
                   )}
-                  onChange={e => {
+                  onChange={(e) => {
+                    analyticsTrack({
+                      objectName: 'receipts input field',
+                      actionName: 'chosen',
+                      screen: 'create payment page',
+                      properties: {
+                        ...getCommonAnalyticsProperties(window.rzp_user),
+                      },
+                    });
                     this.setState({
                       isInputFieldChecked: e.target.checked,
                     });
@@ -245,9 +263,7 @@ export default class PaymentReceipt extends React.Component {
                   placeholder="Pick an input field from this page"
                   options={this.options}
                   selected={
-                    this.state.selectedInputField
-                      ? this.state.selectedInputField.title
-                      : null
+                    this.state.selectedInputField ? this.state.selectedInputField.title : null
                   }
                   optionComponent={({ option }) => {
                     return (
@@ -270,9 +286,7 @@ export default class PaymentReceipt extends React.Component {
 
                 <Description
                   text="Customer's input will be shown on the receipt"
-                  class={classList(
-                    !this.state.isInputFieldChecked && 'Input-desc--disabled'
-                  )}
+                  class={classList(!this.state.isInputFieldChecked && 'Input-desc--disabled')}
                 />
               </div>
 
@@ -284,22 +298,27 @@ export default class PaymentReceipt extends React.Component {
                       <b class="m-r">Show 80G Details</b> (Optional)
                     </div>
                   )}
-                  onChange={e => {
+                  onChange={(e) => {
+                    analyticsTrack({
+                      objectName: 'receipts 80-G',
+                      actionName: 'clicked',
+                      screen: 'create payment page',
+                      properties: {
+                        ...getCommonAnalyticsProperties(window.rzp_user),
+                      },
+                    });
                     this.setState({
                       is80GDetailsChecked: e.target.checked,
                     });
                   }}
-                  onBlur={e => {
+                  onBlur={(e) => {
                     this.trackReceipt(e.target.checked ? '80g_on' : '80g_off');
                   }}
                   checked={this.state.is80GDetailsChecked}
                   defaultChecked={this.state.is80GDetailsChecked}
                   description={() => (
                     <div
-                      class={classList(
-                        !this.state.is80GDetailsChecked &&
-                          'Input-desc--disabled'
-                      )}
+                      class={classList(!this.state.is80GDetailsChecked && 'Input-desc--disabled')}
                     >
                       To manage your 80-G details,{' '}
                       <Button
@@ -318,9 +337,7 @@ export default class PaymentReceipt extends React.Component {
                 <Button.Transparent type="button" onClick={this.handleClose}>
                   Cancel
                 </Button.Transparent>
-                <Button.Primary type="submit">
-                  {props.saveBtnLabel || 'Save'}
-                </Button.Primary>
+                <Button.Primary type="submit">{props.saveBtnLabel || 'Save'}</Button.Primary>
               </footer>
             </Form>
           </ModalContent>

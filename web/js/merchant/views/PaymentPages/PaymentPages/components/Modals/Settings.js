@@ -6,6 +6,8 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import { lenientUrl, validateSlug } from 'common/utils/validators';
 import { DateField } from 'merchant/views/PaymentLinks/PaymentLinks/components/Edit/EditExpiry';
 import { trackPageSettingsData } from '../../ga';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import CreateEmbedButton from 'merchant/views/PaymentPages/PaymentPages/components/Modals/CreateEmbedButton';
 
@@ -23,15 +25,21 @@ export default class extends React.Component {
       theme: settings && settings.theme === 'dark' ? '0' : '1',
       slug: paymentPageEntity.slug || '',
       payment_success_message: settings ? settings.payment_success_message : '',
-      payment_success_redirect_url: settings
-        ? settings.payment_success_redirect_url
-        : '',
+      payment_success_redirect_url: settings ? settings.payment_success_redirect_url : '',
       _hasSuccessMsg: settings && settings.payment_success_message,
       _hasRedirectUrl: settings && settings.payment_success_redirect_url,
     };
   }
 
-  updateDate = newDate => {
+  updateDate = (newDate) => {
+    analyticsTrack({
+      objectName: 'settings expiry',
+      actionName: 'added',
+      screen: 'create payment page',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     this.setState({ expire_by: newDate });
   };
 
@@ -51,18 +59,26 @@ export default class extends React.Component {
     });
   };
 
-  onSuccessMsgChange = e => {
+  onSuccessMsgChange = (e) => {
     this.setState({
       payment_success_message: e.target.value.replace(/(\r\n|\n|\r)/gm, ''),
     });
   };
 
-  onSubmit = formData => {
+  onSubmit = (formData) => {
+    analyticsTrack({
+      objectName: 'settings',
+      actionName: 'saved',
+      screen: 'create payment page',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     this.props.handleAction(formData);
 
     /*
-    * Preparing Tracking data
-    * */
+     * Preparing Tracking data
+     * */
     const trackData = [];
 
     if (formData.expire_by) {
@@ -115,12 +131,7 @@ export default class extends React.Component {
       <Button.Transparent
         type="button"
         class="Button--Link"
-        disabled={
-          !(
-            paymentPageEntity.id &&
-            typeof paymentPageEntity.title !== 'undefined'
-          )
-        }
+        disabled={!(paymentPageEntity.id && typeof paymentPageEntity.title !== 'undefined')}
         onClick={this.openEmbedButtonView}
       >
         <b>Create</b>
@@ -132,11 +143,7 @@ export default class extends React.Component {
         <Modal showCloseBtn={false}>
           <ModalContent>
             <div class="main-title">Page Settings</div>
-            <Form
-              class="Settings-form"
-              onSubmit={this.onSubmit}
-              onChange={this.onChange}
-            >
+            <Form class="Settings-form" onSubmit={this.onSubmit} onChange={this.onChange}>
               <div class="settings-section">
                 <Input
                   name="slug"
@@ -145,7 +152,7 @@ export default class extends React.Component {
                   defaultValue={slug}
                   addonValueBefore="https://pages.razorpay.com/"
                   disabled={isTestMode}
-                  validator={val => {
+                  validator={(val) => {
                     const isEditMode = !!this.props.paymentPageEntity.id;
                     const toValidate = !isTestMode && isEditMode; // Validate only when live mode and editing page
 
@@ -178,12 +185,7 @@ export default class extends React.Component {
                 />
               </div>
               <div class="settings-section">
-                <input
-                  name="expire_by"
-                  value={expire_by || ''}
-                  readOnly
-                  hidden
-                />
+                <input name="expire_by" value={expire_by || ''} readOnly hidden />
                 <Input.DateTime
                   label="Page Expiry Date"
                   checkboxFieldLabel="No Expiry"
@@ -197,21 +199,17 @@ export default class extends React.Component {
 
               <div class="settings-section">
                 <div class="InputGroup InputGroup--vTop InputGroup--near Input">
-                  <div class="Input-label">
-                    Action after successful payment?
-                  </div>
+                  <div class="Input-label">Action after successful payment?</div>
                   <div class="Input-content">
                     <Input.Check
                       fieldLabel="Show custom message"
                       defaultValue={_hasSuccessMsg ? '1' : '0'}
-                      onChange={e => {
+                      onChange={(e) => {
                         const isChecked = e.target.value == '1';
 
                         this.setState({ _hasSuccessMsg: isChecked }, () => {
                           if (isChecked) {
-                            document
-                              .getElementsByName('payment_success_message')[0]
-                              .focus();
+                            document.getElementsByName('payment_success_message')[0].focus();
                           }
                         });
                       }}
@@ -226,9 +224,8 @@ export default class extends React.Component {
                           onChange={this.onSuccessMsgChange}
                         />
                         <span class="chars-pressed">
-                          {(payment_success_message
-                            ? payment_success_message.length
-                            : '0') + ' / 80'}
+                          {(payment_success_message ? payment_success_message.length : '0') +
+                            ' / 80'}
                         </span>
                       </div>
                     )}
@@ -236,16 +233,12 @@ export default class extends React.Component {
                     <Input.Check
                       fieldLabel="Redirect to your website"
                       defaultValue={_hasRedirectUrl ? '1' : '0'}
-                      onChange={e => {
+                      onChange={(e) => {
                         const isChecked = e.target.value == '1';
 
                         this.setState({ _hasRedirectUrl: isChecked }, () => {
                           if (isChecked) {
-                            document
-                              .getElementsByName(
-                                'payment_success_redirect_url'
-                              )[0]
-                              .focus();
+                            document.getElementsByName('payment_success_redirect_url')[0].focus();
                           }
                         });
                       }}
@@ -274,15 +267,11 @@ export default class extends React.Component {
                       parentQuerySelector={`.Modal-mask--paymentpages-settings .Modal-body`}
                     >
                       <PopoverBody>
-                        Your customers can pay from your website by clicking on
-                        this Payment Button
+                        Your customers can pay from your website by clicking on this Payment Button
                       </PopoverBody>
                     </Popover>
                   </span>
-                  {!(
-                    paymentPageEntity.id &&
-                    typeof paymentPageEntity.title !== 'undefined'
-                  ) ? (
+                  {!(paymentPageEntity.id && typeof paymentPageEntity.title !== 'undefined') ? (
                     <span class="help-content" style={{ float: 'right' }}>
                       <span>{EmbedBtn}</span>
                       <Popover
@@ -291,8 +280,7 @@ export default class extends React.Component {
                         parentQuerySelector={`.Modal-mask--paymentpages-settings .Modal-body`}
                       >
                         <PopoverBody>
-                          You can customize Embed Button after creating Payment
-                          Page
+                          You can customize Embed Button after creating Payment Page
                         </PopoverBody>
                       </Popover>
                     </span>
@@ -302,7 +290,20 @@ export default class extends React.Component {
                 </div>
               </div>
               <footer>
-                <Button.Transparent type="button" onClick={handleClose}>
+                <Button.Transparent
+                  type="button"
+                  onClick={() => {
+                    analyticsTrack({
+                      objectName: 'settings',
+                      actionName: 'closed',
+                      screen: 'create payment page',
+                      properties: {
+                        ...getCommonAnalyticsProperties(window.rzp_user),
+                      },
+                    });
+                    handleClose();
+                  }}
+                >
                   Cancel
                 </Button.Transparent>
                 <Button.Primary type="submit" disabled={disableSubmit}>

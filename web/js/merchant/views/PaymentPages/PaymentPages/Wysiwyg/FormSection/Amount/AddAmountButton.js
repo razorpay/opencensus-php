@@ -1,13 +1,21 @@
 import Button from 'common/new-ui/Button';
 import FieldsDropdown from '../FieldsDropdown';
-import {
-  getAmountFieldTypes,
-  getBaseFieldForAmountFieldType,
-} from '../Amount/helpers';
+import { getAmountFieldTypes, getBaseFieldForAmountFieldType } from '../Amount/helpers';
 import CreatorManager from './CreatorManager';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 class AddAmountButton extends React.PureComponent {
-  onSelectFieldType = fieldType => {
+  onSelectFieldType = (fieldType) => {
+    analyticsTrack({
+      objectName: 'amount item',
+      actionName: 'added',
+      screen: 'create payment page',
+      properties: {
+        type: fieldType.label,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     const initWithField = {
       ...getBaseFieldForAmountFieldType(fieldType.key),
       ...this.props.field,
@@ -17,20 +25,25 @@ class AddAmountButton extends React.PureComponent {
   };
 
   onClickPriceField = () => {
+    analyticsTrack({
+      objectName: 'amount item',
+      actionName: 'added',
+      screen: 'create payment page',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     window.rzpQ.push(
       window.rzpQ
         .now()
         .paymentPages()
-        .interaction('pp.create.field', { button_type: 'Price Field' })
+        .interaction('pp.create.field', { button_type: 'Price Field' }),
     );
   };
 
   render() {
     return (
-      <AmountDropdown
-        onSelect={this.onSelectFieldType}
-        beforeOptionsTxt="Select Amount Type"
-      >
+      <AmountDropdown onSelect={this.onSelectFieldType} beforeOptionsTxt="Select Amount Type">
         <Button.Transparent class="btn-dotted" onClick={this.onClickPriceField}>
           <span class="enclose-circle">
             <b>₹</b>
@@ -46,12 +59,7 @@ class AddAmountButton extends React.PureComponent {
 
 export default CreatorManager(AddAmountButton);
 
-export const AmountDropdown = ({
-  children,
-  onSelect,
-  selectedOption,
-  beforeOptionsTxt,
-}) => (
+export const AmountDropdown = ({ children, onSelect, selectedOption, beforeOptionsTxt }) => (
   <FieldsDropdown
     beforeOptionsTxt={beforeOptionsTxt}
     type="amount"

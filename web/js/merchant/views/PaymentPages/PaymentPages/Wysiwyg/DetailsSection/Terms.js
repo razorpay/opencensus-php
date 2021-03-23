@@ -1,5 +1,7 @@
 import Input from 'common/new-ui/Input';
 import Button from 'common/new-ui/Button';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 export default class extends React.PureComponent {
   state = { isEditable: false };
@@ -14,9 +16,7 @@ export default class extends React.PureComponent {
     }
 
     const content = target.value;
-    const fakeEle = window.document.querySelector(
-      '#terms-details .fake-textarea'
-    );
+    const fakeEle = window.document.querySelector('#terms-details .fake-textarea');
 
     fakeEle.value = content;
     const newHeight = fakeEle.scrollHeight;
@@ -25,9 +25,7 @@ export default class extends React.PureComponent {
   }
 
   componentDidMount() {
-    this.autoAdjustHeight(
-      document.body.querySelector('#terms-details textarea[name="terms"]')
-    );
+    this.autoAdjustHeight(document.body.querySelector('#terms-details textarea[name="terms"]'));
   }
 
   render() {
@@ -44,11 +42,11 @@ export default class extends React.PureComponent {
               placeholder="Enter Terms & Conditions"
               defaultValue={this.props.terms}
               onInput={this.handleOnInput}
-              onBlur={e => {
+              onBlur={(e) => {
                 this.setState({ isEditable: false });
                 this.props.updateData(e);
               }}
-              validator={function(val) {
+              validator={function (val) {
                 if (!val) {
                   return;
                 } else if (val.length < 5) {
@@ -63,6 +61,14 @@ export default class extends React.PureComponent {
           <Button.Transparent
             class="btn-link"
             onClick={() => {
+              analyticsTrack({
+                objectName: 'terms',
+                actionName: 'added',
+                screen: 'create payment page',
+                properties: {
+                  ...getCommonAnalyticsProperties(window.rzp_user),
+                },
+              });
               this.setState({ isEditable: true });
             }}
           >

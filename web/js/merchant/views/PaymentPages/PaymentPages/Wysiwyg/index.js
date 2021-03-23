@@ -10,6 +10,8 @@ import Svelte from './Svelte';
 import DetailsSection from './DetailsSection';
 import FormSection from './FormSection';
 import SubscriptionButtonLaunchFullPageBanner from 'merchant/components/Announcements/SubscriptionButtonLaunch/FullPageBanner';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import TemplatesMask from './Templates';
 import PPSettingsView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Settings';
@@ -151,7 +153,14 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
   changeFETheme(theme) {
     const parentEl = document.getElementById('paymentpage-container');
-
+    analyticsTrack({
+      objectName: 'settings theme',
+      actionName: 'changed',
+      screen: 'create payment page',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     if (theme === 'dark') {
       parentEl.classList.add('dark');
       parentEl.classList.remove('light');
@@ -323,6 +332,14 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
   // Update settings in store
   handleSaveSettings = (formData) => {
+    analyticsTrack({
+      objectName: 'settings',
+      actionName: 'saved',
+      screen: 'create payment page',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     const data = {};
 
     data.expire_by = formData.expire_by;
@@ -365,7 +382,15 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       action: 'Initiate_PP_Launch',
     }),
   )
-  handleSavePublish = () => {
+  handleSavePublish = (label) => {
+    analyticsTrack({
+      objectName: label,
+      actionName: 'clicked',
+      screen: 'create payment page',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     const isEditExistingId = !!this.props.id;
     const { paymentPageEntity, FORM_ITEMS } = this.props;
     // console.log('Handle Create..', paymentPageEntity);
@@ -643,12 +668,28 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   };
 
   togglePageSettings = () => {
+    analyticsTrack({
+      objectName: 'settings',
+      actionName: 'clicked',
+      screen: 'create payment page',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     this.setState({
       isSettingsOpened: !this.state.isSettingsOpened,
     });
   };
 
   togglePageReceiptModal = () => {
+    analyticsTrack({
+      objectName: 'payment receipts',
+      actionName: 'clicked',
+      screen: 'create payment page',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     this.setState({
       isPageReceiptModalOpened: !this.state.isPageReceiptModalOpened,
     });
@@ -689,7 +730,11 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
             Page Settings
           </Button.Transparent>
           <AsyncBtn.Primary
-            onClick={this.handleSavePublish}
+            onClick={(...e) => {
+              this.handleSavePublish(
+                payment_page_id ? 'Save and Publish Page' : 'Create and Publish Page',
+              );
+            }}
             disabled={!isAllowedToSubmit}
             pendingState="Publishing"
           >

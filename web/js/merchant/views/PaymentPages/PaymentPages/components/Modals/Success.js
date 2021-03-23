@@ -15,6 +15,8 @@ import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 import SocialShareOptions from './Share/SocialShareOptions';
 import Collapsible from 'merchant/components/Collapsible';
 import ProductCard from 'merchant/components/ProductCard/ProductCard';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 export default class extends React.PureComponent {
   state = {};
@@ -76,6 +78,14 @@ export default class extends React.PureComponent {
   };
 
   openEmbedButtonView = () => {
+    analyticsTrack({
+      objectName: 'get hyperlink',
+      actionName: 'button',
+      screen: 'create payment page',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     this.props.trackClickOnCreateEmbedButton && this.props.trackClickOnCreateEmbedButton('new');
 
     this.props.openModal({
@@ -114,6 +124,14 @@ export default class extends React.PureComponent {
               <CustomClipboard
                 value={url}
                 onCopy={() => {
+                  analyticsTrack({
+                    objectName: 'copy hyperlink',
+                    actionName: 'button',
+                    screen: 'create payment page',
+                    properties: {
+                      ...getCommonAnalyticsProperties(window.rzp_user),
+                    },
+                  });
                   const ele = document.getElementsByName('short_url');
                   ele[0] && ele[0].focus();
                   this.props.trackerFn('Click Copy URL');

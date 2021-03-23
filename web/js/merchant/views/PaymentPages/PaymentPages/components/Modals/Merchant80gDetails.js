@@ -9,6 +9,8 @@ import FileUpload from 'merchant/components/File/Upload';
 import Form from 'common/new-ui/Form';
 import Button from 'common/new-ui/Button';
 import Spinner from 'common/ui/Spinner';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -33,7 +35,7 @@ export default class Merchant80gDetails extends React.Component {
   componentDidMount() {
     // Fetch 80G details of merchant
     get80gMerchantDetails()
-      .then(res => {
+      .then((res) => {
         if (res && res.data) {
           this.setState({
             isLoading: false,
@@ -48,7 +50,7 @@ export default class Merchant80gDetails extends React.Component {
           throw new Error();
         }
       })
-      .catch(err => {
+      .catch((err) => {
         this.props.closeModal();
 
         this.props.showNotification({
@@ -64,7 +66,15 @@ export default class Merchant80gDetails extends React.Component {
     this.props.trackFn('80g_details_close');
   }
 
-  onSubmit = formData => {
+  onSubmit = (formData) => {
+    analyticsTrack({
+      objectName: 'receipts 80-G',
+      actionName: 'saved',
+      screen: 'create payment page',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     const reqPayload = {
       text_80g_12a: formData.text_80g_12a || '',
       image_url_80g: this.state.signatoryImageFileUrl || '',
@@ -75,7 +85,7 @@ export default class Merchant80gDetails extends React.Component {
     });
 
     set80gMerchantDetails(reqPayload)
-      .then(res => {
+      .then((res) => {
         this.setState({
           isSaving: false,
         });
@@ -106,25 +116,25 @@ export default class Merchant80gDetails extends React.Component {
       });
   };
 
-  handleOnFileUpload = fileUrl => {
+  handleOnFileUpload = (fileUrl) => {
     this.setState({
       signatoryImageFileUrl: fileUrl,
     });
   };
 
-  onBiggerFileSize = _ => {
+  onBiggerFileSize = (_) => {
     this.props.showNotification({
       type: 'error',
       message: `Image too large. Max limit ${THUMBNAIL_SIZE_LIMIT / 1024}KB`,
     });
   };
 
-  addFile = file => {
+  addFile = (file) => {
     const self = this;
 
     if (file) {
       const reader = new FileReader();
-      reader.onload = function(e) {
+      reader.onload = function (e) {
         self.setState({
           signatoryImageFile: {
             name: file.name,
@@ -168,8 +178,7 @@ export default class Merchant80gDetails extends React.Component {
 
         <div class="modal-body">
           <Banner>
-            These details are required to issue 80G receipts for Payment Page
-            transactions.
+            These details are required to issue 80G receipts for Payment Page transactions.
           </Banner>
 
           {this.state.isLoading ? (
@@ -185,7 +194,7 @@ export default class Merchant80gDetails extends React.Component {
                 description="This 80G description will be shown on receipts"
                 placeholder="All donations made to us are eligible for tax exemption under 80G of IT act ITBA/EXM/S80G/2019-20/1XXXXXXX Dated DD/MM/YYYY.."
                 defaultValue={this.state.text80g}
-                validator={val => {
+                validator={(val) => {
                   if (val && val.length > 128) {
                     return 'Field description cannot be more than 128 characters';
                   }
@@ -199,8 +208,7 @@ export default class Merchant80gDetails extends React.Component {
                 <Label
                   text={() => (
                     <div>
-                      <b class="m-r">Signature of Authorised Signatory</b>{' '}
-                      (Optional)
+                      <b class="m-r">Signature of Authorised Signatory</b> (Optional)
                     </div>
                   )}
                 />
@@ -218,7 +226,7 @@ export default class Merchant80gDetails extends React.Component {
                   removeFileButtonLabel="Remove Signature"
                   showFileSize={false}
                   onSave={this.onSave}
-                  onError={message => {
+                  onError={(message) => {
                     this.props.trackFn('80g_upload_fail', {
                       error: message,
                     });
@@ -228,25 +236,20 @@ export default class Merchant80gDetails extends React.Component {
               </div>
 
               <div class="Modal__actions">
-                <Button.Primary
-                  class="btn-block"
-                  type="submit"
-                  disabled={this.state.isSaving}
-                >
+                <Button.Primary class="btn-block" type="submit" disabled={this.state.isSaving}>
                   {this.state.isSaving ? 'Updating..' : 'Update'}
                 </Button.Primary>
               </div>
             </Form>
           )}
         </div>
-        {this.state.signatoryImageFile &&
-          !this.state.signatoryImageFileUrl && (
-            <ImageCropperModal
-              signatoryImageFile={this.state.signatoryImageFile}
-              closeModal={this.closeImageCropperModal}
-              onUpload={this.handleOnFileUpload}
-            />
-          )}
+        {this.state.signatoryImageFile && !this.state.signatoryImageFileUrl && (
+          <ImageCropperModal
+            signatoryImageFile={this.state.signatoryImageFile}
+            closeModal={this.closeImageCropperModal}
+            onUpload={this.handleOnFileUpload}
+          />
+        )}
       </div>
     );
   }
@@ -294,7 +297,7 @@ class ImageCropperModal extends React.Component {
       });
 
       upload80gSignatoryImage(file)
-        .then(res => {
+        .then((res) => {
           if (res && res.success) {
             const url = res.data[0];
 
@@ -323,35 +326,27 @@ class ImageCropperModal extends React.Component {
   onSaveImage = () => {
     const self = this;
 
-    this.vanilla.result('blob').then(function(blob) {
+    this.vanilla.result('blob').then(function (blob) {
       self.handleImageUpload.call(self, blob);
     });
   };
 
-  setRef = el => (this.cropperAreaEl = el);
+  setRef = (el) => (this.cropperAreaEl = el);
 
   render() {
     const { closeModal } = this.props;
 
     return (
       <ModalMask maskClosable={false} class="merchant-80g-details">
-        <Modal
-          onClose={closeModal}
-          class="animate-appear ImageCropper"
-          showCloseBtn
-        >
+        <Modal onClose={closeModal} class="animate-appear ImageCropper" showCloseBtn>
           <div class="modal-title">Adjust Image</div>
-          <div class="modal-description">
-            You can resize, resposition or crop your image here
-          </div>
+          <div class="modal-description">You can resize, resposition or crop your image here</div>
 
           <div class="Input-ImageCropper">
             <div class="Cropper-area Cropper-area--enabled" ref={this.setRef} />
 
             <div class="btn-group pull-right">
-              <Button.Transparent onClick={closeModal}>
-                Cancel
-              </Button.Transparent>
+              <Button.Transparent onClick={closeModal}>Cancel</Button.Transparent>
 
               <Button.Primary onClick={this.onSaveImage}>Save</Button.Primary>
             </div>

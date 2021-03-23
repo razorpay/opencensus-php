@@ -9,6 +9,8 @@ import {
   trackTemplateSelection,
   trackStartCreation,
 } from '../../ga';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 const createYourOwn = {
   card: {
@@ -35,7 +37,7 @@ export default class extends React.PureComponent {
     };
   };
 
-  backToTemplateView = _ => {
+  backToTemplateView = (_) => {
     this.setState({
       isTemplateSelectionOpened: true,
     });
@@ -49,11 +51,7 @@ export default class extends React.PureComponent {
     if (this.state.isTemplateSelectionOpened) {
       content = (
         <React.Fragment key="view-1">
-          <Link
-            class="back-btn"
-            to="/paymentpages/"
-            onClick={trackGoBackDashboard}
-          >
+          <Link class="back-btn" to="/paymentpages/" onClick={trackGoBackDashboard}>
             <i class="i i-chevron-left" />
             Back to Dashboard
           </Link>
@@ -79,12 +77,23 @@ export default class extends React.PureComponent {
                         title={META[m].card.title}
                         description={META[m].card.description}
                         img={META[m].card.img}
-                        selectTemplate={this.selectTemplate(
-                          META[m].key,
-                          META[m].label,
-                          META[m].quillPrefill,
-                          META[m].card.title
-                        )}
+                        selectTemplate={(...e) => {
+                          analyticsTrack({
+                            objectName: 'template',
+                            actionName: 'selected',
+                            screen: 'create payment page',
+                            properties: {
+                              templateName: META[m].card.title,
+                              ...getCommonAnalyticsProperties(window.rzp_user),
+                            },
+                          });
+                          return this.selectTemplate(
+                            META[m].key,
+                            META[m].label,
+                            META[m].quillPrefill,
+                            META[m].card.title,
+                          )(...e);
+                        }}
                       />
                     );
                   }
@@ -97,19 +106,14 @@ export default class extends React.PureComponent {
     } else {
       content = (
         <React.Fragment key="view-2">
-          <Button.Transparent
-            class="back-btn"
-            onClick={this.backToTemplateView}
-          >
+          <Button.Transparent class="back-btn" onClick={this.backToTemplateView}>
             <i class="i i-chevron-left" />
             Back to Templates
           </Button.Transparent>
           <Modal showCloseBtn={false}>
             <ModalContent>
               <div class="slide-in">
-                <div class="heading">
-                  Create New {this.state.templateLabel || 'Payment'} Page
-                </div>
+                <div class="heading">Create New {this.state.templateLabel || 'Payment'} Page</div>
                 <p>
                   This is how the page will appear to your customers.
                   <br />
@@ -118,9 +122,7 @@ export default class extends React.PureComponent {
                 <Button.Primary
                   onClick={() => {
                     this.props.onClose();
-                    trackStartCreation(
-                      this.state.templateTitle || createYourOwn.card.title
-                    );
+                    trackStartCreation(this.state.templateTitle || createYourOwn.card.title);
                   }}
                   autoFocus
                 >
@@ -138,7 +140,7 @@ export default class extends React.PureComponent {
         maskClosable={false}
         class={classList(
           'payment-pages-v2-templates',
-          this.state.isTemplateSelectionOpened ? 'view-1' : 'view-2'
+          this.state.isTemplateSelectionOpened ? 'view-1' : 'view-2',
         )}
         isBlur={true}
       >

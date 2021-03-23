@@ -1,9 +1,11 @@
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import Button from 'common/new-ui/Button';
 import RemoveBtn from 'merchant/views/PaymentPages/PaymentPages/components/RemoveBtn';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 export default class extends React.PureComponent {
-  onUpdate = allowSocialShare => {
+  onUpdate = (allowSocialShare) => {
     this.props.updateData({
       target: {
         name: 'allow_social_share',
@@ -37,14 +39,22 @@ export default class extends React.PureComponent {
           <span class="help-content">
             <Button.Transparent
               class="btn-link"
-              onClick={() => this.onUpdate(true)}
+              onClick={() => {
+                analyticsTrack({
+                  objectName: 'social share',
+                  actionName: 'added',
+                  screen: 'create payment page',
+                  properties: {
+                    ...getCommonAnalyticsProperties(window.rzp_user),
+                  },
+                });
+                this.onUpdate(true);
+              }}
             >
               + Add social media share icons
             </Button.Transparent>
             <Popover align="right" theme="dark">
-              <PopoverBody>
-                Allow your customers to share the page on social media
-              </PopoverBody>
+              <PopoverBody>Allow your customers to share the page on social media</PopoverBody>
             </Popover>
           </span>
         )}

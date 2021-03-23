@@ -1,6 +1,8 @@
 import { connect } from 'react-redux';
 import { Field } from 'redux-form';
 import HeaderAction from 'common/ui/HeaderAction';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import RTracking from 'react-tracking';
 
@@ -206,6 +208,14 @@ export default class PaymentPagesContainer extends ListContainer {
   };
 
   trackCreatePaymentPage = () => {
+    analyticsTrack({
+      objectName: 'create page',
+      actionName: 'clicked',
+      screen: 'create payment page',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     this.props.tracking.trackEvent(
       window.rzpQ.onbr().success('dash.pp_action', {
         action: 'Initiate_PP_Creation',
