@@ -141,9 +141,30 @@ export default class ProfileDropdown extends Component {
             user.isAnnouncementIconEnabled || user.isWhatsNewSectionEnabled
               ? ' dropdown-toggle--large-icon'
               : ''
-          }`}
+          }${user.isRTBProgramEnabled ? ' rtb-user-dropdown' : ''}`}
         >
-          <i className="i i-profile" />
+          {user.isRTBProgramEnabled ? (
+            <>
+              <span>
+                <img
+                  src="https://cdn.razorpay.com/static/assets/trustedbadge/rtb_user_icon_bg.svg"
+                  className="rtb-user-bg-img"
+                />
+                <img src="https://cdn.razorpay.com/static/assets/trustedbadge/rtb-user-icon.svg" />
+                Hey, Trusted Merchant
+              </span>
+              <Popover align="bottom" theme="dark">
+                <PopoverBody>
+                  <div>
+                    You are a trusted merchant and the Razorpay Trusted Badge is now being displayed
+                    on checkout for customers to see
+                  </div>
+                </PopoverBody>
+              </Popover>
+            </>
+          ) : (
+            <i className="i i-profile" />
+          )}
         </DropdownTrigger>
         <DropdownContent>
           <div class="dropdown-menu ProfileDropdown">

@@ -462,6 +462,7 @@ export default class Content extends Component {
             additionalCondition={(user) => user.isAllowedView('reports')}
           />
 
+          <ShowWhenRoute path="/trustedbadge" component={MyAccount} />
           <ShowWhenRoute
             path="/profile"
             component={MyAccount}

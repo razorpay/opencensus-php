@@ -17,7 +17,7 @@ import MerchantNavLinks from './MerchantNavLinks';
 import PartnerNavLinks from './PartnerNavLinks';
 
 const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds)/;
-const ACCOUNTS_ROUTES_REGEX = /^\/(profile|credits|addfunds|referrals)/;
+const ACCOUNTS_ROUTES_REGEX = /^\/(trustedbadge|profile|credits|addfunds|referrals)/;
 const SETTINGS_ROUTES_REGEX = /^\/(config|webhooks|keys|applications)/;
 const INVOICES_ROUTES_REGEX = /^\/(invoices|items)/;
 const MARKETPLACE_ROUTES_REGEX = /^\/route\/(payments|transfers|reversals|accounts)/;
@@ -31,7 +31,7 @@ const RZPLogoFullPNG = 'https://cdn.razorpay.com/logo_invert.svg';
 const BASE_ROUTES = {
   qrCodes: '/qr_codes',
   transactions: '/payments',
-  account: '/profile',
+  account: '/trustedbadge',
   settings: '/config',
   invoices: '/invoices',
   marketplace: '/route/payments',

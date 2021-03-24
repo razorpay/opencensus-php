@@ -1,5 +1,6 @@
 import { Route, NavLink, Link } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
+import TrustedBadge from 'merchant/views/Account/TrustedBadge';
 import Profile from 'merchant/views/Account/Profile';
 import Balances from 'merchant/views/Account/Balances';
 import Credits from 'merchant/views/Account/Credits/List';
@@ -13,6 +14,10 @@ export default function MyAccount() {
     <React.Fragment>
       <tabbed-container>
         <header id="myaccount-header">
+          <ShowWhen>
+            <NavLink to="/trustedbadge">Trusted Badge</NavLink>
+          </ShowWhen>
+
           <ShowWhen additionalCondition={(user) => user.isAllowedView('profile')}>
             <NavLink to="/profile">Profile</NavLink>
           </ShowWhen>
@@ -49,6 +54,7 @@ export default function MyAccount() {
           </ShowWhen>
         </header>
         <content>
+          <Route path="/trustedbadge" component={TrustedBadge} />
           <Route path="/profile" component={Profile} />
           <Route path="/credits" component={Credits} />
           <Route path="/addfunds" component={Balances} />

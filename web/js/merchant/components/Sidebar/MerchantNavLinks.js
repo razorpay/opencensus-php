@@ -1,8 +1,10 @@
 import MainNavLink from 'merchant_common/components/MainNavLink';
 import ShowWhen from 'merchant/components/ShowWhen';
+import LocalStorageService from 'common/utils/localStorage';
 
 export default function MerchantNavLinks(props) {
   const { routes, isReportsPending, isChargeAtWillEnabled, isSettlementEnabled, user } = props;
+  const showMyAccountCutomBadge = !LocalStorageService.getItem('rtb_page_visited');
   return (
     <>
       <MainNavLink
@@ -176,6 +178,15 @@ export default function MerchantNavLinks(props) {
           user.isAllowedMultiple('profile credits add_funds team referrals')
         }
         to={routes.account}
+        customBadge={
+          showMyAccountCutomBadge ? (
+            <>
+              NEW <i className="i i-rtb_new" />
+            </>
+          ) : (
+            false
+          )
+        }
       />
       <MainNavLink
         label="Settings"

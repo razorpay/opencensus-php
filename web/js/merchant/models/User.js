@@ -304,6 +304,10 @@ export default class User {
     return this.isFeatureEnabled('contact_optional');
   }
 
+  get isRTBProgramEnabled() {
+    return this.isFeatureEnabled('rzp_trusted_badge');
+  }
+
   get currentMerchant() {
     return this.merchants[this.current];
   }

@@ -1,0 +1,213 @@
+.trusted-badge-container
+  span
+    cursor: default;
+
+  .row
+    margin: 0px;
+
+  .tb-title
+    color: #0D2462;
+    font-size: 28px;
+    font-weight: 900;
+    line-height: 34px;
+    margin-bottom: 7px;
+    margin-top: 45px;
+
+  .col-sm-12
+    .tb-title
+      margin-top: 70px;
+      margin-bottom: 18px;
+
+  .tb-subtitle
+    color: #777B89;
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 22px;
+    margin-bottom: 18px;
+
+  .small-separator
+    height: 4px;
+    width: 24px;
+    margin-bottom: 30px;
+    background-color: #467DE7;
+
+  .small-separator.green-colored
+    background-color: #49D9B4;
+    margin-top: 18px;
+
+  .details-lines
+    .detail-done-icon
+      width: 5.5%;
+      position: relative;
+      float: left;
+    .detail-span
+      width: 94.5%;
+      position: relative;
+      float: left;
+      margin-bottom: 18px;
+      .trial-end-date
+        color: #467DE7;
+        font-weight: bold;
+        font-size: 20px;
+    .i.i-done
+      color: #15B11B;
+      vertical-align: bottom;
+    .increase-icon-line
+      line-height: 2.2;
+    span
+      color: rgba(81, 89, 120, 0.9);
+      font-size: 16px;
+
+  .joined-button
+    background-color: #15B11B;
+    color: #fff;
+    font-weight: bold;
+    font-size: 14px;
+    line-height: 20px;
+    margin-top: 14px;
+    padding: 9px 20px;
+    cursor: default;
+    .i.i-tick
+      font-size: 11px;
+      vertical-align: middle;
+      margin-left: 8px;
+  .joined-button.Button
+    &:hover
+      background-color: #15B11B;
+    &:active
+      background-color: #15B11B;
+      color: #fff;
+
+  .Button.Button--primary
+    margin-top: 14px;
+    background-color: #2B83EA;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 20px;
+    .spin-btn.white
+      border-top-color: #2B83EA;
+      opacity: 1;
+
+  .opt-out-block
+    font-size: 13px;
+    &--before
+      span
+        &:first-child
+          color: rgba(81, 89, 120, 0.9);
+      span
+        &:last-child
+          color: #467de7;
+          cursor: pointer;
+    &--after
+      span
+        &:first-child
+          color: rgba(209, 45, 45, 0.54);
+          font-weight: bold;
+          font-size: 16px;
+      span
+        &:last-child
+          display: block;
+          color: rgba(81, 89, 120, 0.9);
+          font-weight: 300;
+          font-size: 11px;
+
+  .info-cta
+    color: rgba(81, 89, 120, 0.9);
+    font-weight: 300;
+    font-size: 11px;
+    font-style: italic;
+    margin-top: 5px;
+
+  .image-center
+    text-align: center;
+    .intro-image
+      height: 385px;
+
+  &--Features
+    display: flex;
+    margin-top: 56px;
+    .Feature
+      width: calc(100% / 3 - 30px);
+      box-shadow: 0 3px 6px 0 rgba(48,52,62,0.1);
+      padding: 16px;
+      margin-right: 40px;
+      border-radius: 4px;
+      text-align: left;
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
+      background: #fff;
+      &:before, &:after
+        content: '';
+        position: absolute;
+        z-index: 2;
+        background: #f1f6fd;
+        width: 122%;
+        height: 150%;
+        left: -25%;
+        top: -75%;
+        transform: rotate(-19deg);
+      &:after
+        background: #f7fafe;
+        right: -25%;
+        left: 0;
+        top: -30%;
+        transform: rotate(30deg);
+        z-index: 1;
+      &:last-child
+        margin-right: 0px;
+
+    .Feature-icon
+      width: 46px;
+      position: relative;
+      z-index: 3;
+    .Feature-title
+      margin-top: 8px;
+      margin-bottom: 5px;
+      color: #0d2366;
+      position: relative;
+      z-index: 3;
+    .Feature-desc
+      position: relative;
+      z-index: 3;
+
+  .qualification-row
+    background: linear-gradient(180deg, #FFFFFF 0%, #E3EDFF 124.61%);
+    margin-top: 82px;
+    margin-left: -24px;
+    margin-right: -24px;
+    margin-bottom: -24px;
+    padding: 0px 24px;
+    .tb-title
+      margin-top: 15px;
+    .image-center
+      .qualification-image
+        height: 345px;
+        margin-bottom: 40px;
+
+.rtb-confirm-opt-out
+  p
+    &:last-child
+      margin: 8px 0px;
+
+@media (max-width: 1245px) {
+  .trusted-badge-container {
+    .image-center {
+      .intro-image {
+        height: 375px;
+      }
+    }
+  }
+}
+
+@media (max-width: 1280px) {
+  .trusted-badge-container {
+    .qualification-row {
+      .image-center {
+        .qualification-image {
+          height: 315px;
+        }
+      }
+    }
+  }
+}

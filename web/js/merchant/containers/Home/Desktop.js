@@ -44,6 +44,7 @@ import NCModal from 'merchant/components/Activation/NCModal';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import LocalStorageService from 'common/utils/localStorage';
 @withRouter
 @connect(
   (state) => ({
@@ -434,6 +435,30 @@ class AnalyticsDesktop extends Component {
                 >
                   Add Details
                 </button>
+              </Link>
+            </AnnouncementBanner>
+          )}
+
+          {!LocalStorageService.getItem('rtb_page_visited') && (
+            <AnnouncementBanner title="Get the trusted badge" theme="warning">
+              Become a trusted merchant and flaunt the badge of trust on checkout to increase
+              conversion.{' '}
+              <Link
+                onClick={() => {
+                  analyticsTrack({
+                    objectName: 'banner',
+                    actionName: 'clicked',
+                    screen: 'home page',
+                    properties: {
+                      hyperlinkClicked: 'Join the waitlist now',
+                      title: 'RTB Join the waitlist now',
+                      ...getCommonAnalyticsProperties(window.rzp_user),
+                    },
+                  });
+                }}
+                to="/trustedbadge"
+              >
+                Join the waitlist now!
               </Link>
             </AnnouncementBanner>
           )}

@@ -8,6 +8,46 @@ class Constants
 {
     const NOTIFICATIONS = [
         [
+            'title'       => 'You are eligible for our badge of trust',
+            'description' => 'Razorpay Trusted Badge helps you increase conversion on checkout and can be added to your point of sale',
+            'start_ts'    => 1616594400,
+            'end_ts'      => 1622505599,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/rtb_announcement.svg',
+            'track_event' => true,
+            'id'          => 'rtb-before-enabled',
+            'buttons'     => [
+                [
+                    'type'  => 'primary-inverted',
+                    'label' => 'Know More',
+                    'url'   => '/trustedbadge',
+                ],
+            ],
+            'filters'     => [
+                'activation_status' => ['activated'],
+                'not_features' => ["rzp_trusted_badge"],
+            ],
+        ],
+        [
+            'title'       => 'You have earned the Razorpay Trusted Badge!',
+            'description' => 'You are now a Razorpay trusted merchant. The badge has been added to your checkout and is ready to be flaunted.',
+            'start_ts'    => 1616594400,
+            'end_ts'      => 1622505599,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/rtb_announcement.svg',
+            'track_event' => true,
+            'id'          => 'rtb-after-enabled',
+            'buttons'     => [
+                [
+                    'type'  => 'primary-inverted',
+                    'label' => 'Know More',
+                    'url'   => '/trustedbadge',
+                ],
+            ],
+            'filters'     => [
+                'activation_status' => ['activated'],
+                'features' => ["rzp_trusted_badge"],
+            ],
+        ],
+        [
             'title'       => 'The Payments Mobile App is Live!',
             'description' => 'Track payments, create payment links and issue refunds from anywhere with the new Payments mobile app. Get the mobile app now.',
             'start_ts'    => 1608229800,
