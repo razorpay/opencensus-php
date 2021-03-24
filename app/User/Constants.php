@@ -39,6 +39,8 @@ class Constants
 
     const OAUTH_PROVIDER = 'oauth_provider';
 
+    const OAUTH_SOURCE = 'oauth_source';
+
     const RZP_USER_EMAIL = 'rzp_user_email';
 
     const EMAIL_VERIFIED = 'email_verified';

@@ -2,6 +2,7 @@
 
 namespace App\User;
 
+use App\Http\Headers;
 use Auth;
 use Cookie;
 use Session;
@@ -152,10 +153,12 @@ class Service extends Base\Service
         //
         if ((empty($error) === true))
         {
+            $oauthSource = Request::header(Headers::OAUTH_SOURCE) ?? Constants::DASHBOARD;
             $credentials = [
                 Constants::EMAIL          => $input[Constants::EMAIL],
                 Constants::ID_TOKEN       => $input[Constants::ID_TOKEN],
                 Constants::OAUTH_PROVIDER => $input[Constants::OAUTH_PROVIDER],
+                Constants::OAUTH_SOURCE   => $oauthSource,
             ];
 
             list($error, $data) = $this->oauthSignIn($credentials);
@@ -1079,6 +1082,7 @@ class Service extends Base\Service
 
         $credentials = [
             Constants::EMAIL          => $input[Constants::EMAIL],
+            Constants::ID_TOKEN       => $input[Constants::ID_TOKEN],
             Constants::OAUTH_PROVIDER => $input[Constants::OAUTH_PROVIDER],
         ];
 
