@@ -490,6 +490,7 @@ class Gateway
         IFSC::PYTM,
         IFSC::RATN,
         IFSC::SBIN,
+        IFSC::SCBL,
         IFSC::SIBL,
         IFSC::TMBL,
         IFSC::UJVN,
@@ -501,7 +502,6 @@ class Gateway
 
     const EMANDATE_REGISTRATION_DISABLED_BANKS = [
         IFSC::UTBI,
-        IFSC::IDIB,
         IFSC::ORBC,
         IFSC::ANDB,
         IFSC::USFB,
