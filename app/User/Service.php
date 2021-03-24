@@ -1476,7 +1476,7 @@ class Service extends Base\Service
             'enable_tpv_fe',
             'shopify_gtm_notification_cohorts',
             'es_ondeman_restricted_cohorts',
-            'project_nitro_feb_2021', 
+            'project_nitro_feb_2021',
             'project_nitro_feb_2021_1',
             'nitro_hyderabad_v1',
             'pl_swith_v2',
@@ -1484,6 +1484,7 @@ class Service extends Base\Service
             'cred_pay_amex_notification',
             'caw_recurring_charge_axis',
             'rx_enable_amazonpay_wallet_payout',
+            'upi_intent_notification'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);

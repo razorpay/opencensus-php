@@ -640,6 +640,45 @@ class Constants
                 ],
             ],
         ],
+        [
+            'id'          => 'whats-new-mar21-upiintentios-gtm',
+            'title'       => 'Activate UPI Intent on your iOS App',
+            'description' => 'Offer a superior payment experience to your iOS App users and boost success rates by ~10%',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/upi_intent.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Get iOS SDK',
+                    'url'   => 'https://razorpay.com/docs/payment-gateway/payment-methods/upi-intent/ios/',
+                ],
+                [
+                    'type'  => 'primary-inverted',
+                    'label' => 'Read More',
+                    'id'    => 'announcement-details-l2',
+                    'url'   => '/announcements/whats-new-mar21-upiintentios-gtm/'
+                ],
+            ],
+            'start_ts'    => 1616544000,
+            'end_ts'      => 1624492800,
+            'filters'     => [
+                'experiments'         => ['whats-new-dec-2020', 'upi_intent_notification'],
+            ],
+            'l2_content'  => [
+                'content'     => "<div><div class='title'> <img src='https://cdn.razorpay.com/static/assets/notifs/upi_intent.svg' width='32px' /><p>Unlock 200% growth for your UPI Payments</p></div><div> <p> We’re thrilled to announce that Razorpay is the first payment gateway to launch <b>UPI Intent for iOS.</b></p><div class='paragraph'><p> ‘UPI Intent’ enables your customers to seamlessly complete the payment from their favourite UPI app like GPay or PhonePe instead of typing in their UPI ID. This results in a far superior payment experience and <b>5-10% increase in success rates.</b></p></div><div class='image'> <img src='https://cdn.razorpay.com/static/assets/whats-new/upi-app-intent.gif' /></div><p> Until recently, UPI Intent was available <b>only</b> on Android Apps.</p><div class='paragraph'> Now, with a few lines of code, you can enable UPI Intent payments on your iOS App.</div><p> Click <a href='https://razorpay.com/docs/payment-gateway/payment-methods/upi-intent/ios/' target='_blank' >here</a>, or on the <b>‘Get iOS SDK’</b> below for details on how to integrate UPI Intent on your iOS App.</p><div class='paragraph'> Go ahead and provide the best payment experience to your customers.</div></div></div>",
+                'buttons'     => [
+                    [
+                        'type'  => 'button',
+                        'label' => 'Get iOS SDK',
+                        'url'   => 'https://razorpay.com/docs/payment-gateway/payment-methods/upi-intent/ios/',
+                    ],
+                    [
+                        'type'  => 'primary-inverted',
+                        'label' => 'Learn More',
+                        'url'   => 'https://razorpay.com/blog/upi-intent-ios/',
+                    ],
+                ],
+            ],
+        ],
     ];
 
     public static function getNotifications(): array
