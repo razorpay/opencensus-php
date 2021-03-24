@@ -274,7 +274,7 @@ class Repository extends Base\Repository
         $queuedAtColumn = $this->dbColumn(Entity::QUEUED_AT);
         $balanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->select($balanceIdColumn)
                     ->whereNotNull($queuedAtColumn)
                     ->distinct()
@@ -289,7 +289,7 @@ class Repository extends Base\Repository
         $statusColumn = $this->dbColumn(Entity::STATUS);
         $balanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
 
-        $query = $this->newQuery()
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
                       ->with(['balance', 'merchant', 'merchant.org'])
                       ->where($statusColumn, '=', Status::QUEUED)
                       ->where($balanceIdColumn, '=', $balanceId);
@@ -596,7 +596,7 @@ class Repository extends Base\Repository
         $payoutsBalanceIdColumn     = $this->dbColumn(Entity::BALANCE_ID);
         $payoutsInitiatedAtColumn   = $this->dbColumn(Entity::INITIATED_AT);
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->select($payoutsIdColumn, $payoutsFeesColumn)
                     ->merchantId($merchantId)
                     ->where($payoutsBalanceIdColumn, $balanceId)
@@ -629,7 +629,7 @@ class Repository extends Base\Repository
         $payoutsBalanceIdColumn     = $this->dbColumn(Entity::BALANCE_ID);
         $payoutsInitiatedAtColumn   = $this->dbColumn(Entity::INITIATED_AT);
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->select($payoutsIdColumn, $payoutsFeesColumn)
                     ->merchantId($merchantId)
                     ->where($payoutsBalanceIdColumn, $balanceId)
@@ -1235,7 +1235,7 @@ class Repository extends Base\Repository
         $payoutsInitiatedAtColumn   = $this->repo->payout->dbColumn(Entity::INITIATED_AT);
 
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->selectRaw(' SUM(' . $payoutsFeesColumn . ') AS fees')
                     ->merchantId($merchantId)
                     ->where($payoutsBalanceIdColumn, '=', $balanceId)
@@ -1251,7 +1251,7 @@ class Repository extends Base\Repository
         $payoutsBalanceIdColumn = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
         $payoutsFailedAtColumn   = $this->repo->payout->dbColumn(Entity::FAILED_AT);
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->selectRaw(' SUM(' . $payoutsFeesColumn . ') AS fees')
                     ->merchantId($merchantId)
                     ->where($payoutsBalanceIdColumn, '=', $balanceId)
@@ -1300,7 +1300,7 @@ class Repository extends Base\Repository
         $payoutsBalanceIdColumn     = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
         $payoutsScheduledAtColumn   = $this->repo->payout->dbColumn(Entity::SCHEDULED_AT);
 
-        $query = $this->newQuery()
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
                       ->select($payoutsBalanceIdColumn, $payoutStatusColumn, $payoutsIdColumn, $payoutAmountColumn)
                       ->where($payoutsScheduledAtColumn, '<', $currentTimeStamp)
                       ->whereIn($payoutStatusColumn, [Status::SCHEDULED, Status::PENDING]);

@@ -211,7 +211,7 @@ class Repository extends Base\Repository
         $reversalsEntityIdColumn    = $this->dbColumn(Entity::ENTITY_ID);
         $reversalsBalanceIdColumn   = $this->dbColumn(Entity::BALANCE_ID);
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->selectRaw(' SUM(' . $payoutsFeesColumn . ') AS fees')
                     ->join($payoutsTable, $reversalsEntityIdColumn, '=', $payoutsIdColumn)
                     ->merchantId($merchantId)
