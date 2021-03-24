@@ -24,12 +24,18 @@ import DocumentUpload from '../../DocumentUpload';
 import {
   EnableSettlements as EnableSettlementModal,
   SubmitForm as SubmitFormModal,
+  Dedupe as DedupeModal,
 } from '../../ActivationModals';
 import SaveAndExitModal from '../../SaveAndExitModal';
 import FAQs from '../../FAQs/FAQs';
-import { checkIfEAadharStepCompleted } from '../../services/utils';
+import { checkIfEAadharStepCompleted, checkIfDedupe } from '../../services/utils';
 // import { L1_FORM_FIELD_NAMES } from '../../Constants/OnboardingConstants';
+import {
+  analyticsTrack,
+  getCommonSegmentProperties,
+} from '../../../../../services/tracking/segment';
 
+import { useApp } from 'v2/context/App';
 type NextTextT = 'Submit And Verify' | 'Save And Verify' | 'Next';
 
 const StyledFooter = styled(View)`
@@ -58,6 +64,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
     postData,
     // instantPostData
   } = useActivation();
+  const { user } = useApp();
   const isContactDetailsCompleted = useActivationFormState(
     (state) => state.isContactDetailsCompleted,
   );
@@ -88,6 +95,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
   ] = useState(false);
   const [isSubmitFormModalOpen, setIsSubmitFormModalOpen] = useState(false);
   const [isSaveAndExitModalOpen, setIsSaveAndExitModalOpen] = useState(false);
+  const [isDedupeModalOpen, setIsDedupeModalOpen] = useState(false);
 
   // const isUnregPoiStatus = getPoiVerificationStatus(data);
   if (status === 'loading') {
@@ -119,8 +127,12 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
   // };
   const submitL2 = () => {
     postData({ submit: 1 }).then((res) => {
-      if (res && res.submitted) {
+      const isDedupeState = checkIfDedupe(res);
+      if (res && res.submitted && !isDedupeState) {
         setIsSubmitFormModalOpen(true);
+      }
+      if (isDedupeState) {
+        setIsDedupeModalOpen(true);
       }
     });
   };
@@ -143,9 +155,27 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
     switch (activeTabId) {
       case 'contact_details':
         setActiveTabId('business_overview');
+        analyticsTrack({
+          objectName: 'SignUp',
+          actionName: `${setActiveTabId('business_overview')} tab save and verify initiated`,
+          screen: 'home page',
+          properties: {
+            userId: user.id,
+            ...getCommonSegmentProperties(),
+          },
+        });
         break;
       case 'business_overview':
         setActiveTabId('business_details');
+        analyticsTrack({
+          objectName: 'SignUp',
+          actionName: `${setActiveTabId('business_details')} tab save and verify initiated`,
+          screen: 'home page',
+          properties: {
+            userId: user.id,
+            ...getCommonSegmentProperties(),
+          },
+        });
         break;
       case 'business_details':
         // if (
@@ -157,12 +187,39 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
         // if (!isL1Submitted(onboarding_milestone) || isUnregPoiStatus) {
         //   submitL1();
         // }
+        analyticsTrack({
+          objectName: 'SignUp',
+          actionName: `${setActiveTabId('bank_details')} tab save and verify initiated`,
+          screen: 'home page',
+          properties: {
+            userId: user.id,
+            ...getCommonSegmentProperties(),
+          },
+        });
         break;
       case 'bank_details':
         setActiveTabId('documents');
+        analyticsTrack({
+          objectName: 'SignUp',
+          actionName: `${setActiveTabId('documents')} tab save and verify initiated`,
+          screen: 'home page',
+          properties: {
+            userId: user.id,
+            ...getCommonSegmentProperties(),
+          },
+        });
         break;
       case 'documents':
         submitL2();
+        analyticsTrack({
+          objectName: 'SignUp',
+          actionName: 'save and exit initiated',
+          screen: 'home page',
+          properties: {
+            userId: user.id,
+            ...getCommonSegmentProperties(),
+          },
+        });
         break;
       default:
         break;
@@ -188,7 +245,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
         tabId="contact_details"
         completed={isContactDetailsCompleted}
       >
-        <ContactDetails />
+        <ContactDetails isFormLocked={!!data.locked} />
       </Tab>,
       <Tab
         key="business_overview"
@@ -196,7 +253,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
         tabId="business_overview"
         completed={isBusinessOverviewCompleted}
       >
-        <BusinessOverview />
+        <BusinessOverview isFormLocked={!!data.locked} />
       </Tab>,
       <Tab
         key="business_details"
@@ -204,7 +261,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
         tabId="business_details"
         completed={isBusinessDetailsCompleted}
       >
-        <BusinessDetails />
+        <BusinessDetails isFormLocked={!!data.locked} />
       </Tab>,
       <Tab
         key="bank_details"
@@ -212,7 +269,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
         tabId="bank_details"
         completed={isBankAndCompanyDetailsCompleted}
       >
-        <BankDetails />
+        <BankDetails isFormLocked={!!data.locked} />
       </Tab>,
       <Tab
         key="documents"
@@ -293,7 +350,21 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
       {/* Footer */}
       <Flex justifyContent="space-between">
         <StyledFooter>
-          <Button onClick={() => setIsOpen(true)} variant="tertiary">
+          <Button
+            onClick={() => {
+              setIsOpen(true);
+              analyticsTrack({
+                objectName: 'SignUp',
+                actionName: 'FAQ initiated',
+                screen: 'home page',
+                properties: {
+                  userId: user.id,
+                  ...getCommonSegmentProperties(),
+                },
+              });
+            }}
+            variant="tertiary"
+          >
             FAQs
           </Button>
           <Button
@@ -313,6 +384,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
       </Flex>
       <EnableSettlementModal isOpen={isEnableSettlementModalOpen} />
       <SubmitFormModal isOpen={isSubmitFormModalOpen} />
+      <DedupeModal isOpen={isDedupeModalOpen} />
       <SaveAndExitModal
         isOpen={isSaveAndExitModalOpen}
         onClose={() => setIsSaveAndExitModalOpen(false)}

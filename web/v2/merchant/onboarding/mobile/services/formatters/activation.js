@@ -5,6 +5,8 @@ const businessOverviewFields = [
   'business_category',
   'business_dba',
   'business_website',
+  'merchant_avg_order_value',
+  'business_model',
 ];
 const businessDetailFields = [
   'company_pan',

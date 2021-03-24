@@ -19,6 +19,8 @@ export const UploadedBox = styled.div`
   border-radius: ${spacings.xsmall};
   border: 1px solid ${colors.cloud[960]};
   box-sizing: border-box;
+  opacity: ${({ disabled }) => (disabled ? '0.3' : '1')};
+  pointer-events: ${({ disabled }) => (disabled ? 'none' : 'all')};
 `;
 export const FileNameContainer = styled.div`
   overflow: hidden;

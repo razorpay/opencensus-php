@@ -10,9 +10,16 @@ import { useActivationFormState, isVisible, isTabComplete } from '../context/sto
 import useActivation, { getRequestData } from '../hooks/useActivation';
 import { CIN_BusinessTypes } from '../Constants/OnboardingConstants';
 import { getLabel, isUnregisteredBusiness, getDetailsForIFSC } from '../services/utils';
+import { analyticsTrack, getCommonSegmentProperties } from '../../../../services/tracking/segment';
+import { useApp } from 'v2/context/App';
 
-const BankDetails: React.FC = () => {
+interface BankDetailsProps {
+  isFormLocked?: boolean;
+}
+
+const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
   const { data, postData } = useActivation();
+  const { user } = useApp();
   const bankAndCompanyDetails = data.bank_and_company_details;
   const businessOverviewDetails = data.business_overview;
   const hasGSTIN = useActivationFormState((state) => state.has_gstin);
@@ -127,6 +134,7 @@ const BankDetails: React.FC = () => {
           <FormSection
             title="Bank Details"
             subtitle="We will be depositing a small amount in this account to verify your bank details"
+            disabled={isFormLocked}
           >
             <Field>
               <TextInput
@@ -137,6 +145,18 @@ const BankDetails: React.FC = () => {
                 errorText={
                   formikProps.touched.bank_account_name && formikProps.errors.bank_account_name
                 }
+                onBlur={() => {
+                  analyticsTrack({
+                    objectName: 'SignUp',
+                    actionName: 'bank account name success',
+                    screen: 'home page',
+                    properties: {
+                      userId: user.id,
+                      ...getCommonSegmentProperties(),
+                    },
+                  });
+                }}
+                disabled={isFormLocked}
               />
             </Field>
             <Field>
@@ -148,6 +168,18 @@ const BankDetails: React.FC = () => {
                 errorText={
                   formikProps.touched.bank_account_number && formikProps.errors.bank_account_number
                 }
+                onBlur={() => {
+                  analyticsTrack({
+                    objectName: 'SignUp',
+                    actionName: 'bank account number success',
+                    screen: 'home page',
+                    properties: {
+                      userId: user.id,
+                      ...getCommonSegmentProperties(),
+                    },
+                  });
+                }}
+                disabled={isFormLocked}
               />
             </Field>
             <Field last>
@@ -168,12 +200,24 @@ const BankDetails: React.FC = () => {
                 errorText={
                   formikProps.touched.bank_branch_ifsc && formikProps.errors.bank_branch_ifsc
                 }
+                onBlur={() => {
+                  analyticsTrack({
+                    objectName: 'SignUp',
+                    actionName: 'bank branch ifsc success',
+                    screen: 'home page',
+                    properties: {
+                      userId: user.id,
+                      ...getCommonSegmentProperties(),
+                    },
+                  });
+                }}
+                disabled={isFormLocked}
               />
             </Field>
           </FormSection>
 
           {!isUnregisteredBusiness(businessOverviewDetails.business_type.value) ? (
-            <FormSection title="Company Details" last>
+            <FormSection title="Company Details" last disabled={isFormLocked}>
               <Field visible={isVisible('company_cin', data)}>
                 <TextInput
                   width="auto"
@@ -181,6 +225,18 @@ const BankDetails: React.FC = () => {
                   label={getLabel('company_cin', data)}
                   value={formikProps.values.company_cin}
                   errorText={formikProps.touched.company_cin && formikProps.errors.company_cin}
+                  onBlur={() => {
+                    analyticsTrack({
+                      objectName: 'SignUp',
+                      actionName: 'Company Cin success',
+                      screen: 'home page',
+                      properties: {
+                        userId: user.id,
+                        ...getCommonSegmentProperties(),
+                      },
+                    });
+                  }}
+                  disabled={isFormLocked}
                 />
               </Field>
               {!hasGSTIN ? (
@@ -192,6 +248,18 @@ const BankDetails: React.FC = () => {
                     helpText="Should match either of your registered address or operational address"
                     value={formikProps.values.gstin}
                     errorText={formikProps.touched.gstin && formikProps.errors.gstin}
+                    onBlur={() => {
+                      analyticsTrack({
+                        objectName: 'SignUp',
+                        actionName: 'Gst Identification Number success',
+                        screen: 'home page',
+                        properties: {
+                          userId: user.id,
+                          ...getCommonSegmentProperties(),
+                        },
+                      });
+                    }}
+                    disabled={isFormLocked}
                   />
                 </Field>
               ) : null}
@@ -209,6 +277,15 @@ const BankDetails: React.FC = () => {
                           formikProps.setFieldValue('gstin', '');
                         }
                         setIsBlurCalled(true);
+                        analyticsTrack({
+                          objectName: 'SignUp',
+                          actionName: "I don't have a GSTIN checkbox success",
+                          screen: 'home page',
+                          properties: {
+                            userId: user.id,
+                            ...getCommonSegmentProperties(),
+                          },
+                        });
                       }}
                     />
                   </View>

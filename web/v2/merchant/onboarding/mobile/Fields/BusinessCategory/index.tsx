@@ -13,7 +13,7 @@ export interface BusinessCategoryPropsT {
   disabled?: boolean;
 }
 
-const BusninessCategory: React.FC<BusinessCategoryPropsT> = ({
+const BusinessCategory: React.FC<BusinessCategoryPropsT> = ({
   value,
   errorText,
   onChange,
@@ -81,4 +81,4 @@ const BusninessCategory: React.FC<BusinessCategoryPropsT> = ({
   );
 };
 
-export default BusninessCategory;
+export default BusinessCategory;

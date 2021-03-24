@@ -30,7 +30,9 @@ import {
   getDocumentTitle,
   checkIfEAadharStepCompleted,
 } from '../services/utils';
+import { analyticsTrack, getCommonSegmentProperties } from '../../../../services/tracking/segment';
 import ShopEstablishmentNumber from './ShopEstablishmentNumber';
+import { useApp } from 'v2/context/App';
 
 const StyledSeparator = styled(View)`
   height: 1px;
@@ -44,6 +46,7 @@ interface DocumentUploadProps {
 
 const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
   const { data, documentUpload, documentDelete } = useActivation();
+  const { user } = useApp();
   const documents = data.documents;
 
   const bizCatSubCatPair = getBizCatSubCatPair(data).join('-');
@@ -66,6 +69,16 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
   );
 
   const onChange = async (e: any, docType: string, formikProps) => {
+    const documentType = docType.split('_').join(' '); // segment breaks if actionName has underscore
+    analyticsTrack({
+      objectName: 'SignUp',
+      actionName: `${documentType} upload initiated`,
+      screen: 'home page',
+      properties: {
+        userId: user.id,
+        ...getCommonSegmentProperties(),
+      },
+    });
     const formData = new FormData();
     formData.append('file', e.target.files[0]);
     formData.append('document_type', docType);
@@ -76,7 +89,18 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
 
     const response = await documentUpload({ formData, progressTracker: onUploadProgress });
 
-    if (!response) formikProps.setFieldError(docType, 'something went wrong');
+    if (!response) {
+      formikProps.setFieldError(docType, 'something went wrong');
+      analyticsTrack({
+        objectName: 'SignUp',
+        actionName: `${documentType} upload failed`,
+        screen: 'home page',
+        properties: {
+          userId: user.id,
+          ...getCommonSegmentProperties(),
+        },
+      });
+    }
 
     const isComplete = isDocmentTabComplete({
       ...data,
@@ -87,10 +111,28 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
       additionalDoc,
     });
     setDocumentUploadCompleted(isComplete && isAadharFilled);
+    analyticsTrack({
+      objectName: 'SignUp',
+      actionName: `${documentType} Upload success`,
+      screen: 'home page',
+      properties: {
+        userId: user.id,
+        ...getCommonSegmentProperties(),
+      },
+    });
   };
 
   const onDeleteFile = async (fileName: string) => {
     const file = documents[fileName].value;
+    analyticsTrack({
+      objectName: 'SignUp',
+      actionName: `${file} delete initiated`,
+      screen: 'home page',
+      properties: {
+        userId: user.id,
+        ...getCommonSegmentProperties(),
+      },
+    });
 
     if (file && file.length) {
       const curDoc = file[file.length - 1];
@@ -105,6 +147,15 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
         additionalDoc,
       });
       setDocumentUploadCompleted(isComplete && isAadharFilled);
+      analyticsTrack({
+        objectName: 'SignUp',
+        actionName: `${file} delete success`,
+        screen: 'home page',
+        properties: {
+          userId: user.id,
+          ...getCommonSegmentProperties(),
+        },
+      });
     }
   };
 
@@ -207,6 +258,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
                     searchable={false}
                     onChange={(value) => setAddressDoc(value)}
                     value={addressDoc}
+                    disabled={isFormLocked}
                   >
                     {/*eslint-disable dot-notation*/}
                     {Object.keys(ADDRESS_PROOF_TYPES).map((address_proof_type) => (
@@ -229,6 +281,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
                     name={`${addressDoc}_front`}
                     value={formikProps.values[`${addressDoc}_front`]}
                     error={getFieldError(formikProps.errors, `${addressDoc}_front`)}
+                    disabled={isFormLocked}
                   />
                   <Text color="shade.950" size="xsmall">
                     Front Side
@@ -243,6 +296,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
                     name={`${addressDoc}_back`}
                     value={formikProps.values[`${addressDoc}_back`]}
                     error={getFieldError(formikProps.errors, `${addressDoc}_back`)}
+                    disabled={isFormLocked}
                   />
                   <Text color="shade.950" size="xsmall">
                     Back Side
@@ -251,7 +305,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
               </FormSection>
             )}
             {isVisible('business_proof_url', data) && (
-              <FormSection title={getDocumentTitle(data)}>
+              <FormSection title={getDocumentTitle(data)} disabled={isFormLocked}>
                 <Field last>
                   <FileUpload
                     onFileUpload={(e) => onChange(e, 'business_proof_url', formikProps)}
@@ -261,6 +315,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
                     name="business_proof_url"
                     value={formikProps.values.business_proof_url}
                     error={getFieldError(formikProps.errors, 'business_proof_url')}
+                    disabled={isFormLocked}
                   />
                   <Text color="shade.950" size="xsmall">
                     You can visit pdf merger.com to combine all the pages into one file
@@ -284,6 +339,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
                     searchable={false}
                     onChange={(value) => setBusinessDoc(value)}
                     value={businessDoc}
+                    disabled={isFormLocked}
                   >
                     {/*eslint-disable dot-notation*/}
                     {Object.keys(BUSINESS_PROOF_TYPE_DOCS).map((business_proof_type) => (
@@ -308,6 +364,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
                     name={businessDoc}
                     value={formikProps.values[businessDoc]}
                     error={getFieldError(formikProps.errors, businessDoc)}
+                    disabled={isFormLocked}
                   />
                 </Field>
               </FormSection>
@@ -323,6 +380,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
                     name="business_pan_url"
                     value={formikProps.values.business_pan_url}
                     error={getFieldError(formikProps.errors, 'business_pan_url')}
+                    disabled={isFormLocked}
                   />
                   <Text color="shade.950" size="xsmall">
                     PAN details should be of the mentioned business only
@@ -341,6 +399,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
                     name="personal_pan"
                     value={formikProps.values.personal_pan}
                     error={getFieldError(formikProps.errors, 'personal_pan')}
+                    disabled={isFormLocked}
                   />
                   <Text color="shade.950" size="xsmall">
                     Upload scanned copy of personal PAN Card
@@ -359,6 +418,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
                     name="form_12a_url"
                     value={formikProps.values.form_12a_url}
                     error={getFieldError(formikProps.errors, 'form_12a_url')}
+                    disabled={isFormLocked}
                   />
                 </Field>
               </FormSection>
@@ -374,6 +434,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
                     name="form_80g_url"
                     value={formikProps.values.form_80g_url}
                     error={getFieldError(formikProps.errors, 'form_80g_url')}
+                    disabled={isFormLocked}
                   />
                 </Field>
               </FormSection>
@@ -387,6 +448,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
                     searchable={false}
                     onChange={(value) => setBankDoc(value)}
                     value={bankDoc}
+                    disabled={isFormLocked}
                   >
                     {/*eslint-disable dot-notation*/}
                     {Object.keys(BANK_PROOF_TYPE_DOC).map((bank_proof_type) => (
@@ -409,6 +471,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
                     name={bankDoc}
                     value={formikProps.values[bankDoc]}
                     error={getFieldError(formikProps.errors, bankDoc)}
+                    disabled={isFormLocked}
                   />
                   <Text color="shade.950" size="xsmall">
                     Please ensure the Business Name, Account Number & Branch IFSC are clearly
@@ -436,6 +499,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
                         setAdditionalDoc(value);
                       }}
                       value={additionalDoc}
+                      disabled={isFormLocked}
                     >
                       {/*eslint-disable dot-notation*/}
                       {Object.keys(ADDITIONAL_DOCS_LABEL_VALUE_MAP[bizCatSubCatPair]).map(
@@ -472,6 +536,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
                     name={additionalDoc}
                     value={additionalDoc ? formikProps.values[additionalDoc] : ''}
                     error={additionalDoc ? getFieldError(formikProps.errors, additionalDoc) : ''}
+                    disabled={isFormLocked}
                   />
                 </Field>
               </FormSection>

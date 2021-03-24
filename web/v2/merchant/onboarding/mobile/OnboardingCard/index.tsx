@@ -59,11 +59,11 @@ const OnboardingCard: React.FC = () => {
               <Space margin={[0, 0, 0.5, 0]}>
                 <HeadingContainer>
                   <Text size="large" weight="bold">
-                    Activate Your Account
+                    Account Activation
                   </Text>
                 </HeadingContainer>
               </Space>
-              {!!activationData.onboarding_milestone ? (
+              {activationData.activation_progress > 24 ? (
                 <>
                   <Space margin={[1, 2, 0, 0]}>
                     <Text size="small" color="positive.960" weight="bold">
@@ -94,9 +94,8 @@ const OnboardingCard: React.FC = () => {
         </Flex>
 
         <Separator $onboardingMilestone={activationData.onboarding_milestone} />
-
-        <BusinessModelDetails />
-
+        {/* since we dont have activation milestone relaying on activation_progress to check for initial step and show start activation */}
+        {activationData.activation_progress === 24 ? <BusinessModelDetails /> : null}
         <CurrentActivationProgress data={activationData} payments={paymentsData} />
       </Card>
     </View>

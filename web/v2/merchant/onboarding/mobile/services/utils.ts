@@ -351,6 +351,9 @@ export function getDocumentTitle(context) {
   }
 }
 
+export const checkIfDedupe = (data) => {
+  return data && !!data.locked && !data.activated && data.merchant.hold_funds;
+};
 export function checkIfEAadharStepCompleted(data) {
   let isEAadharFieldFilled = false;
   if (

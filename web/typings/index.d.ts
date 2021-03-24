@@ -5,4 +5,5 @@ interface Window {
   rzpQ: any;
   __VERSION__: string;
   razorpayAnalytics: any;
+  rzpTicketSystem: any;
 }

@@ -50,14 +50,14 @@ const EnableSettlementsModal: React.FC<EnableSettlementsModalPropsT> = ({ isOpen
             </Space>
 
             <Text size="medium" align="center">
-              Congratulations! You can start accepting payments from your customers now but you
-              would need to enable settlements for the payments to be settled to your account
+              Your account has been activated. You can accept payments now and they will be settled
+              to you according to your settlement schedule. Meanwhile we will review your details.
             </Text>
           </View>
           <Space margin={[2, 0, 0, 0]}>
             <View>
               <Button size="large" onClick={() => onEnableSettlementsClick()} block>
-                Enable settlements
+                Start accepting payments
               </Button>
             </View>
           </Space>

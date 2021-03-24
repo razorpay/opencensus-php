@@ -1,6 +1,6 @@
 import React from 'react';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
-import { isUnregisteredBusiness } from '../services/utils';
+import { isUnregisteredBusiness, checkIfDedupe } from '../services/utils';
 import RemainingStepsInfo from './RemainingStepsInfo';
 import Info from './Info';
 import Buttons from './Buttons';
@@ -14,47 +14,54 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; pay
   const onCTAClick = () => {
     history.push('/onboarding/steps');
   };
-  if (data.onboarding_milestone === 'activation_flow') {
-    if (
-      data.poi_verification_status === 'incorrect_details' ||
-      data.poi_verification_status === 'not_matched'
-    ) {
-      return (
-        <>
-          <Info
-            title={Messages.POI_VERIFICATION_STATUS.incorrect_details.title}
-            description={Messages.POI_VERIFICATION_STATUS.incorrect_details.description}
-            titleColor="negative.900"
-            hasError
-          />
-          <Buttons.Primary onClick={onCTAClick} title="Review Details" icon="arrowRight" />
-        </>
-      );
-    }
+  const contactSupport = () => {
+    window.rzpTicketSystem.openModal('#ticket');
+  };
+  const goToDashboard = () => {
+    window.location.href = '/app/settlements';
+  };
 
-    if (data.poi_verification_status === 'failed') {
-      return (
-        <>
-          <Info
-            title={Messages.POI_VERIFICATION_STATUS.failed.title}
-            description={Messages.POI_VERIFICATION_STATUS.failed.description}
-            titleColor="negative.900"
-            hasError
-          />
-          <Buttons.Primary onClick={onCTAClick} title="Try Again" />
-        </>
-      );
-    }
+  const isDedupeState = checkIfDedupe(data);
 
-    if (data.poi_verification_status === 'pending') {
-      return (
+  if (
+    data.poi_verification_status === 'incorrect_details' ||
+    data.poi_verification_status === 'not_matched'
+  ) {
+    return (
+      <>
         <Info
-          title={Messages.POI_VERIFICATION_STATUS.pending.title}
-          description={Messages.POI_VERIFICATION_STATUS.pending.description}
-          titleColor="neutral.960"
+          title={Messages.POI_VERIFICATION_STATUS.incorrect_details.title}
+          description={Messages.POI_VERIFICATION_STATUS.incorrect_details.description}
+          titleColor="negative.900"
+          hasError
         />
-      );
-    }
+        <Buttons.Primary onClick={onCTAClick} title="Review Details" icon="arrowRight" />
+      </>
+    );
+  }
+
+  if (data.poi_verification_status === 'failed') {
+    return (
+      <>
+        <Info
+          title={Messages.POI_VERIFICATION_STATUS.failed.title}
+          description={Messages.POI_VERIFICATION_STATUS.failed.description}
+          titleColor="negative.900"
+          hasError
+        />
+        <Buttons.Primary onClick={onCTAClick} title="Try Again" />
+      </>
+    );
+  }
+
+  if (data.poi_verification_status === 'pending') {
+    return (
+      <Info
+        title={Messages.POI_VERIFICATION_STATUS.pending.title}
+        description={Messages.POI_VERIFICATION_STATUS.pending.description}
+        titleColor="neutral.960"
+      />
+    );
   }
 
   if (data.submitted) {
@@ -122,10 +129,13 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; pay
       data.activation_status === 'activated_mcc_pending'
     ) {
       return (
-        <Info
-          title={Messages.ACTIVATION_STATUS_ACTIVATED.title}
-          description={Messages.ACTIVATION_STATUS_ACTIVATED.description}
-        />
+        <>
+          <Info
+            title={Messages.ACTIVATION_STATUS_ACTIVATED.title}
+            description={Messages.ACTIVATION_STATUS_ACTIVATED.description}
+          />
+          <Buttons.Secondary onClick={() => goToDashboard()} title="View settlement schedule" />
+        </>
       );
     }
   }
@@ -136,6 +146,32 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; pay
     data.onboarding_milestone === 'L2'
   ) {
     return <RemainingStepsInfo data={data} payments={payments} />;
+  }
+
+  if (isDedupeState) {
+    return (
+      <>
+        <Info
+          title={Messages.DEDUPE.title}
+          description={Messages.DEDUPE.description}
+          titleColor="negative.900"
+          hasError
+        />
+        <Buttons.Primary onClick={() => contactSupport()} title="Contact support" />
+      </>
+    );
+  }
+
+  if (data.activation_progress > 24) {
+    return (
+      <>
+        <Info
+          title={Messages.ACTIVATION_PROGRESS.title}
+          description={Messages.ACTIVATION_PROGRESS.description}
+        />
+        <Buttons.Primary onClick={onCTAClick} title="Fill Remaining Details" icon="arrowRight" />
+      </>
+    );
   }
 
   return null;

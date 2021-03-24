@@ -1,18 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Formik } from 'formik';
-import * as Yup from 'yup';
-import TextArea from '@razorpay/blade/src/atoms/TextArea';
 import Space from '@razorpay/blade/src/atoms/Space';
-import Text from '@razorpay/blade/src/atoms/Text';
 import View from '@razorpay/blade/src/atoms/View';
 import Button from '@razorpay/blade/src/atoms/Button';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
-import { Field } from '../Form';
 import useActivation from '../hooks/useActivation';
-import BusinessType from '../Fields/BusinessType';
-import BusinessCategory from '../Fields/BusinessCategory';
 import useBusinessCategory from '../hooks/useBusinessCategory';
 import { hasSelectedBlacklistCategory } from '../services/utils';
+import { analyticsTrack, getCommonSegmentProperties } from '../../../../services/tracking/segment';
+import { useApp } from 'v2/context/App';
 
 interface BusinessModelDetailsI {
   business_type: string;
@@ -21,54 +17,87 @@ interface BusinessModelDetailsI {
 }
 
 const BusinessModelDetails: React.FC<RouteComponentProps> = (props) => {
-  const { data, postData } = useActivation();
+  const { data } = useActivation();
+  const { user } = useApp();
   const [status, businessCategoriesData] = useBusinessCategory('');
-  const { onboarding_card_details: onboardingCardDetails, onboarding_milestone } = data;
-  const [hasBusinessModel, setHasBusinessModel] = useState(
-    onboardingCardDetails.business_subcategory.value === 'others',
-  );
+  const { onboarding_milestone } = data;
+  // const [hasBusinessModel, setHasBusinessModel] = useState(
+  //   onboardingCardDetails.business_subcategory.value === 'others',
+  // );
 
-  const handleStartActivation = (formDetails) => {
-    const body = {
-      business_subcategory: formDetails.business_subcategory,
-      business_type: formDetails.business_type,
-      business_model: formDetails.business_model,
-    };
+  const handleStartActivation = () => {
+    props.history.push('/onboarding/steps');
+    // const body = {
+    //   business_subcategory: formDetails.business_subcategory,
+    //   business_type: formDetails.business_type,
+    //   business_model: formDetails.business_model,
+    // };
+    analyticsTrack({
+      objectName: 'SignUp',
+      actionName: 'activation flow initiated',
+      screen: 'home page',
+      properties: {
+        userId: user.id,
+        ...getCommonSegmentProperties(),
+      },
+    });
 
-    postData(body)
-      .then((res) => {
-        if (res.onboarding_milestone === 'activation_flow') {
-          props.history.push('/onboarding/steps');
-        }
-      })
-      .catch((e) => {
-        console.log('error with the API', e);
-      });
+    // postData(body)
+    //   .then((res) => {
+    //     if (res.onboarding_milestone === 'activation_flow') {
+    //       props.history.push('/onboarding/steps');
+    //     }
+    //     analyticsTrack({
+    //       objectName: 'SignUp',
+    //       actionName: 'onboarding form activation form fill success',
+    //       screen: 'home page',
+    //       properties: {
+    //          userId: user.id,
+    //...getCommonSegmentProperties(),
+    //       },
+    //     });
+    //   })
+    //   .catch((e) => {
+    //     console.log('error with the API', e);
+    //     analyticsTrack({
+    //       objectName: 'SignUp',
+    //       actionName: 'onboarding form activation form fill  failed',
+    //       screen: 'home page',
+    //       properties: {
+    //          userId: user.id,
+    //...getCommonSegmentProperties(),
+    //       },
+    //     });
+    //   });
   };
   if (!onboarding_milestone) {
     return (
       <Formik
-        initialValues={{
-          business_type: onboardingCardDetails.business_type.value,
-          business_subcategory: onboardingCardDetails.business_subcategory.value,
-          business_model: onboardingCardDetails.business_model.value,
-        }}
+        initialValues={
+          {
+            // business_type: onboardingCardDetails.business_type.value,
+            // business_subcategory: onboardingCardDetails.business_subcategory.value,
+            // business_model: onboardingCardDetails.business_model.value,
+            // business_aov_range: '',
+          }
+        }
         validationSchema={() => {
-          return Yup.lazy((_values: BusinessModelDetailsI | undefined) => {
-            return Yup.object().shape({
-              business_type: Yup.string().trim().required(),
-              business_subcategory: Yup.string().trim().required(),
-              business_model: Yup.lazy(() => {
-                if (_values && _values.business_subcategory === 'others') {
-                  return Yup.string()
-                    .trim()
-                    .required('Business model is a required field')
-                    .nullable();
-                }
-                return Yup.string().nullable();
-              }),
-            });
-          });
+          // return Yup.lazy((_values: BusinessModelDetailsI | undefined) => {
+          //   return Yup.object().shape({
+          //     business_type: Yup.string().trim().required(),
+          //     business_subcategory: Yup.string().trim().required(),
+          //     business_model: Yup.lazy(() => {
+          //       if (_values && _values.business_subcategory === 'others') {
+          //         return Yup.string()
+          //           .trim()
+          //           .required('Business model is a required field')
+          //           .nullable();
+          //       }
+          //       return Yup.string().nullable();
+          //     }),
+          //     business_aov_range: Yup.string().trim().required(),
+          //   });
+          // });
         }}
         onSubmit={() => console.log('onSubmit')}
       >
@@ -82,7 +111,7 @@ const BusinessModelDetails: React.FC<RouteComponentProps> = (props) => {
           }
           return (
             <form>
-              <Field>
+              {/* <Field>
                 <BusinessType
                   onboardingMilestone={onboarding_milestone}
                   value={formikProps.values.business_type}
@@ -92,7 +121,7 @@ const BusinessModelDetails: React.FC<RouteComponentProps> = (props) => {
                   }}
                 />
               </Field>
-              <Field last={!hasBusinessModel}>
+              <Field>
                 <BusinessCategory
                   value={formikProps.values.business_subcategory}
                   errorText={
@@ -110,7 +139,7 @@ const BusinessModelDetails: React.FC<RouteComponentProps> = (props) => {
                   </Text>
                 </Space>
               </Field>
-              <Field visible={hasBusinessModel} last>
+              <Field>
                 <Space margin={[3.7, 0, 0, 0]}>
                   <View>
                     <TextArea
@@ -130,19 +159,35 @@ const BusinessModelDetails: React.FC<RouteComponentProps> = (props) => {
                   </View>
                 </Space>
               </Field>
+              <Field last>
+                <Space margin={[3.7, 0, 0, 0]}>
+                  <View>
+                    <BusinessAOV
+                      value={formikProps.values.business_aov_range}
+                      errorText={
+                        formikProps.touched.business_aov_range &&
+                        formikProps.errors.business_aov_range
+                      }
+                      onChange={(value) => {
+                        formikProps.setFieldValue('business_aov_range', value);
+                      }}
+                    />
+                  </View>
+                </Space>
+              </Field> 
               {isBlackListed ? (
                 <Space margin={[2, 0, 0, 0]}>
                   <Text color="red.900" size="small">
                     We do not have the support for your business category selected as of now.
                   </Text>
                 </Space>
-              ) : null}
+              ) : null} */}
               <Space margin={[2.5, 0, 0, 0]}>
                 <View>
                   <Button
                     block
                     size="large"
-                    onClick={() => handleStartActivation(formikProps.values)}
+                    onClick={handleStartActivation}
                     disabled={!isFormValid}
                   >
                     Start Activation

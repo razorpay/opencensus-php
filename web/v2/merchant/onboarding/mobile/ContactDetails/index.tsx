@@ -27,7 +27,11 @@ const contactDetailsSchema = Yup.object().shape({
     .nullable(),
 });
 
-const ContactDetails: React.FC = () => {
+interface ContactDetailsProps {
+  isFormLocked?: boolean;
+}
+
+const ContactDetails: React.FC<ContactDetailsProps> = ({ isFormLocked }) => {
   const { data, postData } = useActivation();
   const contactDetails = data.contact_details;
   const [isBlurCalled, setIsBlurCalled] = useState(false);
@@ -75,6 +79,7 @@ const ContactDetails: React.FC = () => {
                 label="Contact Name"
                 value={formikProps.values.contact_name}
                 errorText={formikProps.touched.contact_name && formikProps.errors.contact_name}
+                disabled={isFormLocked}
               />
             </Field>
             <Field>
@@ -85,6 +90,7 @@ const ContactDetails: React.FC = () => {
                 helpText="We will reach out at this email id in case of any account related issue"
                 value={formikProps.values.contact_email}
                 errorText={formikProps.touched.contact_email && formikProps.errors.contact_email}
+                disabled={isFormLocked}
               />
             </Field>
             <Field last>
@@ -95,6 +101,7 @@ const ContactDetails: React.FC = () => {
                 label="Contact Number"
                 value={formikProps.values.contact_mobile}
                 errorText={formikProps.touched.contact_mobile && formikProps.errors.contact_mobile}
+                disabled={isFormLocked}
               />
             </Field>
           </FormSection>

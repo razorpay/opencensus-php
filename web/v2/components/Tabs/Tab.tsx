@@ -44,7 +44,7 @@ const Tab = ({
   }, [isActive]);
 
   return (
-    <Flex flexDirection="column">
+    <Flex flexDirection="column" flex="none">
       <Space padding={[0, 1.75]}>
         <View>
           <Flex flex={1} alignItems="center">

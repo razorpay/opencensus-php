@@ -16,6 +16,8 @@ import { useActivationFormState, isVisible, isTabComplete } from '../context/sto
 import useActivation, { getRequestData } from '../hooks/useActivation';
 import { getLabel, getHelpText } from '../services/utils';
 import { states } from '../Constants/OnboardingConstants';
+import { analyticsTrack, getCommonSegmentProperties } from '../../../../services/tracking/segment';
+import { useApp } from 'v2/context/App';
 
 const StyledSeparator = styled(View)`
   height: 1px;
@@ -80,8 +82,13 @@ const businessDetailsSchema = Yup.object().shape({
     .nullable(),
 });
 
-const BusinessDetails: React.FC = () => {
+interface BusinessDetailsProps {
+  isFormLocked?: boolean;
+}
+
+const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
   const { data, postData } = useActivation();
+  const { user } = useApp();
   const businessDetails = data.business_details;
   const setBusinessDetailsCompleted = useActivationFormState(
     (state) => state.setBusinessDetailsCompleted,
@@ -126,6 +133,16 @@ const BusinessDetails: React.FC = () => {
   const handleSameAddress = (checked) => {
     setSameAddress(checked);
     setIsBlurCalled(true);
+    const checkboxStatus = checked ? 'select' : 'unselect';
+    analyticsTrack({
+      objectName: 'SignUp',
+      actionName: `Operational address is the same checkbox ${checkboxStatus} success`,
+      screen: 'home page',
+      properties: {
+        userId: user.id,
+        ...getCommonSegmentProperties(),
+      },
+    });
   };
 
   const handleBlur = (e, formikProps) => {
@@ -195,6 +212,18 @@ const BusinessDetails: React.FC = () => {
                 helpText="PAN of the Company"
                 value={formikProps.values.company_pan}
                 errorText={formikProps.touched.company_pan && formikProps.errors.company_pan}
+                disabled={isFormLocked}
+                onBlur={() => {
+                  analyticsTrack({
+                    objectName: 'SignUp',
+                    actionName: 'Business PAN success',
+                    screen: 'home page',
+                    properties: {
+                      userId: user.id,
+                      ...getCommonSegmentProperties(),
+                    },
+                  });
+                }}
               />
             </Field>
             <Field visible={isVisible('business_name', data)}>
@@ -205,6 +234,18 @@ const BusinessDetails: React.FC = () => {
                 helpText="As mentioned in the PAN"
                 value={formikProps.values.business_name}
                 errorText={formikProps.touched.business_name && formikProps.errors.business_name}
+                disabled={isFormLocked}
+                onBlur={() => {
+                  analyticsTrack({
+                    objectName: 'SignUp',
+                    actionName: 'Business Name success',
+                    screen: 'home page',
+                    properties: {
+                      userId: user.id,
+                      ...getCommonSegmentProperties(),
+                    },
+                  });
+                }}
               />
             </Field>
             <Field>
@@ -215,6 +256,18 @@ const BusinessDetails: React.FC = () => {
                 helpText={getHelpText('promoter_pan', data)}
                 value={formikProps.values.promoter_pan}
                 errorText={formikProps.touched.promoter_pan && formikProps.errors.promoter_pan}
+                disabled={isFormLocked}
+                onBlur={() => {
+                  analyticsTrack({
+                    objectName: 'SignUp',
+                    actionName: `${getLabel('promoter_pan', data)} success`,
+                    screen: 'home page',
+                    properties: {
+                      userId: user.id,
+                      ...getCommonSegmentProperties(),
+                    },
+                  });
+                }}
               />
             </Field>
             <Field last>
@@ -227,6 +280,18 @@ const BusinessDetails: React.FC = () => {
                 errorText={
                   formikProps.touched.promoter_pan_name && formikProps.errors.promoter_pan_name
                 }
+                disabled={isFormLocked}
+                onBlur={() => {
+                  analyticsTrack({
+                    objectName: 'SignUp',
+                    actionName: `${getLabel('promoter_pan_name', data)} success`,
+                    screen: 'home page',
+                    properties: {
+                      userId: user.id,
+                      ...getCommonSegmentProperties(),
+                    },
+                  });
+                }}
               />
             </Field>
           </FormSection>
@@ -234,6 +299,7 @@ const BusinessDetails: React.FC = () => {
           <FormSection
             title="Address Details"
             subtitle="These details will be verified with the government database"
+            disabled={isFormLocked}
           >
             <Field>
               <TextArea
@@ -245,6 +311,18 @@ const BusinessDetails: React.FC = () => {
                   formikProps.touched.business_registered_address &&
                   formikProps.errors.business_registered_address
                 }
+                disabled={isFormLocked}
+                onBlur={() => {
+                  analyticsTrack({
+                    objectName: 'SignUp',
+                    actionName: 'business registered address success',
+                    screen: 'home page',
+                    properties: {
+                      userId: user.id,
+                      ...getCommonSegmentProperties(),
+                    },
+                  });
+                }}
               />
             </Field>
             <Field>
@@ -257,6 +335,18 @@ const BusinessDetails: React.FC = () => {
                   formikProps.touched.business_registered_pin &&
                   formikProps.errors.business_registered_pin
                 }
+                disabled={isFormLocked}
+                onBlur={() => {
+                  analyticsTrack({
+                    objectName: 'SignUp',
+                    actionName: 'business registered pin success',
+                    screen: 'home page',
+                    properties: {
+                      userId: user.id,
+                      ...getCommonSegmentProperties(),
+                    },
+                  });
+                }}
               />
             </Field>
             <Field>
@@ -269,6 +359,18 @@ const BusinessDetails: React.FC = () => {
                   formikProps.touched.business_registered_city &&
                   formikProps.errors.business_registered_city
                 }
+                disabled={isFormLocked}
+                onBlur={() => {
+                  analyticsTrack({
+                    objectName: 'SignUp',
+                    actionName: 'business registered city success',
+                    screen: 'home page',
+                    properties: {
+                      userId: user.id,
+                      ...getCommonSegmentProperties(),
+                    },
+                  });
+                }}
               />
             </Field>
             <Field>
@@ -286,7 +388,17 @@ const BusinessDetails: React.FC = () => {
                   formikProps.setFieldTouched('business_registered_state');
                   formikProps.setFieldValue('business_registered_state', value);
                   setIsBlurCalled(true);
+                  analyticsTrack({
+                    objectName: 'SignUp',
+                    actionName: 'business registered state success',
+                    screen: 'home page',
+                    properties: {
+                      userId: user.id,
+                      ...getCommonSegmentProperties(),
+                    },
+                  });
                 }}
+                disabled={isFormLocked}
               >
                 {Object.keys(states).map((state_code) => (
                   <Option key={state_code} value={state_code} label={states[state_code]}>
@@ -318,6 +430,18 @@ const BusinessDetails: React.FC = () => {
                     formikProps.touched.business_operation_address &&
                     formikProps.errors.business_operation_address
                   }
+                  disabled={isFormLocked}
+                  onBlur={() => {
+                    analyticsTrack({
+                      objectName: 'SignUp',
+                      actionName: 'Business Operational Address success',
+                      screen: 'home page',
+                      properties: {
+                        userId: user.id,
+                        ...getCommonSegmentProperties(),
+                      },
+                    });
+                  }}
                 />
               </Field>
               <Field>
@@ -330,6 +454,18 @@ const BusinessDetails: React.FC = () => {
                     formikProps.touched.business_operation_pin &&
                     formikProps.errors.business_operation_pin
                   }
+                  disabled={isFormLocked}
+                  onBlur={() => {
+                    analyticsTrack({
+                      objectName: 'SignUp',
+                      actionName: 'business operation pin success',
+                      screen: 'home page',
+                      properties: {
+                        userId: user.id,
+                        ...getCommonSegmentProperties(),
+                      },
+                    });
+                  }}
                 />
               </Field>
               <Field>
@@ -342,6 +478,18 @@ const BusinessDetails: React.FC = () => {
                     formikProps.touched.business_operation_city &&
                     formikProps.errors.business_operation_city
                   }
+                  disabled={isFormLocked}
+                  onBlur={() => {
+                    analyticsTrack({
+                      objectName: 'SignUp',
+                      actionName: 'business operation city success',
+                      screen: 'home page',
+                      properties: {
+                        userId: user.id,
+                        ...getCommonSegmentProperties(),
+                      },
+                    });
+                  }}
                 />
               </Field>
               <Field last>
@@ -359,7 +507,17 @@ const BusinessDetails: React.FC = () => {
                     formikProps.setFieldTouched('business_operation_state');
                     formikProps.setFieldValue('business_operation_state', value);
                     setIsBlurCalled(true);
+                    analyticsTrack({
+                      objectName: 'SignUp',
+                      actionName: 'business operation state success',
+                      screen: 'home page',
+                      properties: {
+                        userId: user.id,
+                        ...getCommonSegmentProperties(),
+                      },
+                    });
                   }}
+                  disabled={isFormLocked}
                 >
                   {Object.keys(states).map((state_code) => (
                     <Option key={state_code} value={state_code} label={states[state_code]}>

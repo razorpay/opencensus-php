@@ -26,6 +26,7 @@ export interface SelectPropsT {
   disabled?: boolean;
   filterOptions?: boolean;
   loading?: boolean;
+  helpText?: string;
 }
 
 const Select: React.FC<SelectPropsT> = ({
@@ -39,6 +40,7 @@ const Select: React.FC<SelectPropsT> = ({
   filterOptions = true,
   loading = false,
   errorText,
+  helpText,
   onChange,
   onInputChange,
 }) => {
@@ -171,6 +173,7 @@ const Select: React.FC<SelectPropsT> = ({
           value={selctedLabel}
           disabled={disabled || isSelectInputDisabled}
           errorText={errorText}
+          helpText={helpText}
         />
       </View>
       <Modal isOpen={isModalOpen} onClose={onModalClose} bottomsheet={true} bottomSheetHeight="90%">

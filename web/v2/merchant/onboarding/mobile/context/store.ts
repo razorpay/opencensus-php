@@ -59,7 +59,8 @@ const isVisible = (fieldName, context) => {
     case 'bank_prrof':
     case 'cancelled_cheque':
     case 'bank_statement':
-      return context.activation_status === 'needs_clarification';
+      return false;
+    // return context.activation_status === 'needs_clarification';
     case 'business_proof':
     case 'gst_certificate':
     case 'msme_certificate':

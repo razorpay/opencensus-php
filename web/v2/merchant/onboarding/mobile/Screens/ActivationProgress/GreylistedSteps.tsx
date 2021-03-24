@@ -6,10 +6,16 @@ import OnboardingStepCard from '../../OnboardingStepCard';
 import { useActivationFormState } from '../../context/store';
 import useActivation from '../../hooks/useActivation';
 import { getMerchantFlow, checkIfEAadharStepCompleted } from '../../services/utils';
+import {
+  analyticsTrack,
+  getCommonSegmentProperties,
+} from '../../../../../services/tracking/segment';
 import { SubmitForm as SubmitFormModal } from '../../ActivationModals';
+import { useApp } from 'v2/context/App';
 
 const GreylistedSteps: React.FC<RouteComponentProps> = ({ history }) => {
   const { data, postData } = useActivation();
+  const { user } = useApp();
   const {
     isContactDetailsCompleted,
     isBusinessOverviewCompleted,
@@ -39,6 +45,15 @@ const GreylistedSteps: React.FC<RouteComponentProps> = ({ history }) => {
       if (res && res.submitted) {
         setIsSubmitFormModalOpen(true);
       }
+      analyticsTrack({
+        objectName: 'SignUp',
+        actionName: 'submit and verify success',
+        screen: 'home page',
+        properties: {
+          userId: user.id,
+          ...getCommonSegmentProperties(),
+        },
+      });
     });
   };
   const isStatusUnderReview =

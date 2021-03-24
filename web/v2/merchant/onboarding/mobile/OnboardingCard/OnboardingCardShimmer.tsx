@@ -59,14 +59,14 @@ const OnboardingCardShimmer: React.FC = () => {
             <Container />
           </Size>
           <br />
-          <Space margin={[1.5, 0, 1.375, 0]}>
+          {/* <Space margin={[1.5, 0, 1.375, 0]}>
             <Size height="8px" width="48%">
               <Container />
             </Size>
           </Space>
           <Size height="20px">
             <Container />
-          </Size>
+          </Size> */}
           <br />
           <Space margin={[2.5, 0, 0, 0]}>
             <View>

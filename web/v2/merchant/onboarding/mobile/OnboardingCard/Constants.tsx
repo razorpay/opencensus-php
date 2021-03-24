@@ -38,8 +38,9 @@ export const ACTIVATION_STATUS_NEEDS_CLARIFICATION = {
 };
 
 export const ACTIVATION_STATUS_ACTIVATED = {
-  title: 'Settlements have been enabled!',
-  description: 'Your payments will be settled to you according to your settlement schedule.',
+  title: 'Payments and Settlements have been enabled',
+  description:
+    'Your account has been activated. Your  payments will be settled to you according to your settlement schedule',
 };
 
 export const REMAINING_STEPS = {
@@ -167,4 +168,15 @@ export const REMAINING_STEPS = {
       },
     },
   },
+};
+
+export const DEDUPE = {
+  title: 'Clarification required',
+  description:
+    'We need some clarification regarding your submitted details. Please contact support to provide clarification and activate your account',
+};
+
+export const ACTIVATION_PROGRESS = {
+  title: 'You are just few steps away from enabling live payments',
+  description: 'Submit the remaining details and start accepting payments from your customers',
 };

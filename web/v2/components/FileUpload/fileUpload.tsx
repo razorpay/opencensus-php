@@ -17,6 +17,7 @@ export interface FileUploadPropsT {
   accept: Array<string>;
   name: string;
   error: string;
+  disabled?: boolean;
 }
 const fileTypesMap = {
   csv: 'text/csv',
@@ -28,11 +29,11 @@ const fileTypesMap = {
   png: 'image/png',
   xml: 'text/xml',
 };
-const Uploaded = ({ fileName, progress, onCancel }) => {
+const Uploaded = ({ fileName, progress, onCancel, disabled }) => {
   return (
     <Size height={6}>
       <Space padding={[1, 1.5]}>
-        <UploadedBox>
+        <UploadedBox disabled={disabled}>
           <Flex justifyContent="space-between">
             <View>
               <Flex>
@@ -70,7 +71,7 @@ const Uploaded = ({ fileName, progress, onCancel }) => {
   );
 };
 
-const UploadButton = ({ onChange, accept, name }) => {
+const UploadButton = ({ onChange, accept, name, disabled }) => {
   return (
     <Size height={6}>
       <DashedButton data-testid="upload-button">
@@ -81,7 +82,7 @@ const UploadButton = ({ onChange, accept, name }) => {
           type="file"
           onChange={onChange}
           accept={accept && accept.map((fileType) => fileTypesMap[fileType])}
-          disabled={!name}
+          disabled={!name || disabled}
         />
       </DashedButton>
     </Size>
@@ -95,6 +96,7 @@ const FileUpload: React.FC<FileUploadPropsT> = ({
   value = '',
   name = '',
   error = '',
+  disabled = false,
 }) => {
   const [fileName, setFileName] = useState(value);
 
@@ -113,20 +115,30 @@ const FileUpload: React.FC<FileUploadPropsT> = ({
   }, [error]);
 
   const onChange = (e) => {
-    if (!name) return;
+    if (disabled || !name) {
+      return;
+    }
     setFileName(e.currentTarget.files[0].name);
     onFileUpload(e, name);
   };
 
   const onCancel = () => {
+    if (disabled) {
+      return;
+    }
     setFileName('');
     onRemove(name);
   };
 
   return fileName ? (
-    <Uploaded fileName={fileName} progress={value ? 100 : progress} onCancel={onCancel} />
+    <Uploaded
+      fileName={fileName}
+      progress={value ? 100 : progress}
+      onCancel={onCancel}
+      disabled={disabled}
+    />
   ) : (
-    <UploadButton onChange={onChange} accept={accept} name={name} />
+    <UploadButton onChange={onChange} accept={accept} name={name} disabled={disabled} />
   );
 };
 
