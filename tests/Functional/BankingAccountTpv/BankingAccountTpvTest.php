@@ -37,13 +37,14 @@ class BankingAccountTpvTest extends TestCase
 
         $response = &$this->testData[__FUNCTION__]['response'];
 
-        $response['content'][Entity::FUND_ACCOUNT_VALIDATION_ID] = FundAccountValidation::verifyIdAndSilentlyStripSign($fav['id']);
+        $response['content'][Entity::FUND_ACCOUNT_VALIDATION_ID] =
+            FundAccountValidation::verifyIdAndSilentlyStripSign($fav['id']);
 
         $this->startTest();
 
         $fav = $this->getDbEntity('fund_account_validation',
                                   [
-                                      'id'          => $response['content'][Entity::FUND_ACCOUNT_VALIDATION_ID],
+                                      'id' => $response['content'][Entity::FUND_ACCOUNT_VALIDATION_ID],
                                   ]);
 
         $tpv = $this->getDbEntity('banking_account_tpv',
@@ -453,6 +454,137 @@ class BankingAccountTpvTest extends TestCase
                                   ]);
 
         $this->assertNotNull($fav);
+    }
+
+    // Test creation of tpv with prepended zeros from admin create route
+    public function testAdminTpvCreateWithPrependedZerosInPayerAccountNumber()
+    {
+        $this->ba->adminAuth();
+
+        $fav = $this->getFundAccountValidationInput();
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['content'][Entity::FUND_ACCOUNT_VALIDATION_ID] = $fav['id'];
+
+        $response = &$this->testData[__FUNCTION__]['response'];
+
+        $response['content'][Entity::FUND_ACCOUNT_VALIDATION_ID] =
+            FundAccountValidation::verifyIdAndSilentlyStripSign($fav['id']);
+
+        $response = $this->startTest();
+
+        $payerAccountNumber = (string) $request['content'][Entity::PAYER_ACCOUNT_NUMBER];
+
+        $fav = $this->getDbEntity('fund_account_validation',
+                                  [
+                                      'id' => $response[Entity::FUND_ACCOUNT_VALIDATION_ID],
+                                  ]);
+
+        $tpv = $this->getDbEntity('banking_account_tpv',
+                                  [
+                                      'merchant_id'          => '10000000000000',
+                                      'balance_id'           => '10000000000000',
+                                      'payer_ifsc'           => 'CITI0000006',
+                                      'payer_account_number' => $payerAccountNumber,
+                                      'status'               => Status::APPROVED,
+                                  ]);
+
+        $this->assertNotNull($fav);
+
+        $this->assertNotNull($tpv);
+
+        // Assert that we don't get this key in the response (we don't want to show it to merchants/ops)
+        $this->assertArrayNotHasKey('trimmed_payer_account_number', $response);
+
+        $trimmedPayerAccountNumber = $tpv->getTrimmedPayerAccountNumber();
+
+        $this->assertEquals(ltrim($payerAccountNumber, '0'), $trimmedPayerAccountNumber);
+    }
+
+    // Test creation of tpv with prepended zeros from dashboard
+    public function testCreateTpvFromXDashboardAdminUserWithPrependedZerosInPayerAccountNumber()
+    {
+        $attribute =
+            [
+                'activation_status' => 'activated',
+                'merchant_id'       => '10000000000000',
+                'business_type'     => '2',
+            ];
+
+        $this->fixtures->create('merchant_detail', $attribute);
+
+        $adminRoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], Role::ADMIN);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $adminRoleUser->getId());
+
+        $this->ba->addXOriginHeader();
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $response = $this->startTest();
+
+        $payerAccountNumber = (string) $request['content'][Entity::PAYER_ACCOUNT_NUMBER];
+
+        $tpv = $this->getDbEntity('banking_account_tpv',
+                                  [
+                                      'merchant_id'          => '10000000000000',
+                                      'status'               => Status::PENDING,
+                                      'payer_account_number' => $payerAccountNumber,
+                                  ]);
+
+        $this->assertNotNull($tpv);
+
+        $fav = $this->getDbEntity('fund_account_validation',
+                                  [
+                                      'merchant_id' => '100000Razorpay',
+                                  ]);
+
+        $this->assertNotNull($fav);
+
+        // Assert that we don't get this key in the response (we don't want to show it to merchants/ops)
+        $this->assertArrayNotHasKey('trimmed_payer_account_number', $response);
+
+        $trimmedPayerAccountNumber = $tpv->getTrimmedPayerAccountNumber();
+
+        $this->assertEquals(ltrim($payerAccountNumber, '0'), $trimmedPayerAccountNumber);
+    }
+
+    // This is just a functionality check, we don't expect admin to edit the payer account number but if they edit it
+    // anyways, we check that the trimmed payer account number column is updated as well.
+    public function testAdminEditTpvWithPrependedZerosInPayerAccountNumber()
+    {
+        $this->testAdminTpvCreateWithPrependedZerosInPayerAccountNumber();
+
+        $tpv = $this->getDbLastEntity('banking_account_tpv');
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = $request['url'] . $tpv->getId();
+
+        $this->ba->adminAuth();
+
+        $response = $this->startTest();
+
+        $payerAccountNumber = (string) $request['content'][Entity::PAYER_ACCOUNT_NUMBER];
+
+        $tpv = $this->getDbEntity('banking_account_tpv',
+                                  [
+                                      'merchant_id'          => '10000000000000',
+                                      'balance_id'           => '10000000000000',
+                                      'payer_ifsc'           => 'CITI0000006',
+                                      'status'               => Status::REJECTED,
+                                      'payer_account_number' => $payerAccountNumber,
+                                  ]);
+
+        $this->assertNotNull($tpv);
+
+        // Assert that we don't get this key in the response (we don't want to show it to merchants/ops)
+        $this->assertArrayNotHasKey('trimmed_payer_account_number', $response);
+
+        $trimmedPayerAccountNumber = $tpv->getTrimmedPayerAccountNumber();
+
+        $this->assertEquals(ltrim($payerAccountNumber, '0'), $trimmedPayerAccountNumber);
     }
 
     public function getFundAccountValidationInput()

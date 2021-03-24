@@ -18,23 +18,24 @@ class Entity extends Base\PublicEntity
 {
     use HasBalance;
 
-    const ID                         = 'id';
-    const TYPE                       = 'type';
-    const STATUS                     = 'status';
-    const NOTES                      = 'notes';
-    const REMARKS                    = 'remarks';
-    const IS_ACTIVE                  = 'is_active';
-    const PAYER_IFSC                 = 'payer_ifsc';
-    const PAYER_NAME                 = 'payer_name';
-    const BALANCE_ID                 = 'balance_id';
-    const CREATED_BY                 = 'created_by';
-    const MERCHANT_ID                = 'merchant_id';
-    const MERCHANT_IDS               = 'merchant_ids';
-    const PAYER_ACCOUNT_NUMBER       = 'payer_account_number';
-    const FUND_ACCOUNT_VALIDATION_ID = 'fund_account_validation_id';
-    const BANK_NAME                  = 'bank_name';
-    const FUND_ACCOUNT_VALIDATION    = 'fund_account_validation';
-    const ADMIN                      = 'admin';
+    const ID                           = 'id';
+    const TYPE                         = 'type';
+    const STATUS                       = 'status';
+    const NOTES                        = 'notes';
+    const REMARKS                      = 'remarks';
+    const IS_ACTIVE                    = 'is_active';
+    const PAYER_IFSC                   = 'payer_ifsc';
+    const PAYER_NAME                   = 'payer_name';
+    const BALANCE_ID                   = 'balance_id';
+    const CREATED_BY                   = 'created_by';
+    const MERCHANT_ID                  = 'merchant_id';
+    const MERCHANT_IDS                 = 'merchant_ids';
+    const PAYER_ACCOUNT_NUMBER         = 'payer_account_number';
+    const TRIMMED_PAYER_ACCOUNT_NUMBER = 'trimmed_payer_account_number';
+    const FUND_ACCOUNT_VALIDATION_ID   = 'fund_account_validation_id';
+    const BANK_NAME                    = 'bank_name';
+    const FUND_ACCOUNT_VALIDATION      = 'fund_account_validation';
+    const ADMIN                        = 'admin';
 
     protected static $sign = 'batpv';
 
@@ -51,6 +52,7 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::PAYER_NAME,
         self::PAYER_ACCOUNT_NUMBER,
+        self::TRIMMED_PAYER_ACCOUNT_NUMBER,
         self::PAYER_IFSC,
         self::CREATED_BY,
         self::REMARKS,
@@ -70,6 +72,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_BY,
         self::MERCHANT_ID,
         self::PAYER_ACCOUNT_NUMBER,
+        self::TRIMMED_PAYER_ACCOUNT_NUMBER,
         self::FUND_ACCOUNT_VALIDATION_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -108,11 +111,13 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::IS_ACTIVE                  => 0,
-        self::TYPE                       => Type::BANK_ACCOUNT,
-        self::FUND_ACCOUNT_VALIDATION_ID => null,
+        self::IS_ACTIVE                    => 0,
+        self::TYPE                         => Type::BANK_ACCOUNT,
+        self::FUND_ACCOUNT_VALIDATION_ID   => null,
         //will be removed after tpv p1 tasks are live
-        self::CREATED_BY                 => self::ADMIN,
+        self::CREATED_BY                   => self::ADMIN,
+        // TODO: remove after migration for existing records is done for this column.
+        self::TRIMMED_PAYER_ACCOUNT_NUMBER => null,
     ];
 
     protected $dates = [
@@ -126,27 +131,37 @@ class Entity extends Base\PublicEntity
 
     // -------------------- Getters -----------------------------
 
-    public function getAccountNumber()
+    public function getPayerAccountNumber()
     {
         return $this->getAttribute(self::PAYER_ACCOUNT_NUMBER);
     }
 
-    public function getState()
+    public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
+    }
+
+    public function getTrimmedPayerAccountNumber()
+    {
+        return $this->getAttribute(self::TRIMMED_PAYER_ACCOUNT_NUMBER);
     }
     // -------------------- End Getters --------------------------
 
     // -------------------- Setters -----------------------------
 
-    public function setFundAccountValidationId(string $id)
+    public function setFundAccountValidationId(string $fundAccountValidationId)
     {
-        $this->setAttribute(self::FUND_ACCOUNT_VALIDATION_ID, $id);
+        $this->setAttribute(self::FUND_ACCOUNT_VALIDATION_ID, $fundAccountValidationId);
     }
 
-    public function setIsActive(bool $val)
+    public function setIsActive(bool $isActive)
     {
-        $this->setAttribute(self::IS_ACTIVE, $val);
+        $this->setAttribute(self::IS_ACTIVE, $isActive);
+    }
+
+    public function setTrimmedPayerAccountNumber(string $trimmedPayerAccountNumber)
+    {
+        $this->setAttribute(self::TRIMMED_PAYER_ACCOUNT_NUMBER, $trimmedPayerAccountNumber);
     }
 
     // -------------------- End Setters --------------------------

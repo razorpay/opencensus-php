@@ -282,4 +282,85 @@ return [
             ],
         ],
     ],
+
+    'testAdminTpvCreateWithPrependedZerosInPayerAccountNumber' => [
+        'request'  => [
+            'url'     => '/admin/tpv/create',
+            'method'  => 'post',
+            'content' => [
+                'merchant_id'          => '10000000000000',
+                'balance_id'           => '10000000000000',
+                'status'               => Status::APPROVED,
+                'payer_name'           => 'Razorpay',
+                'payer_account_number' => '00098711120003344',
+                'payer_ifsc'           => 'CITI0000006',
+                'created_by'           => 'OPS_A',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'          => '10000000000000',
+                'balance_id'           => '10000000000000',
+                'status'               => Status::APPROVED,
+                'payer_name'           => 'Razorpay',
+                'payer_account_number' => '00098711120003344',
+                'payer_ifsc'           => 'CITI0000006',
+                'is_active'            => true,
+                'type'                 => 'bank_account',
+            ],
+        ],
+    ],
+
+    'testCreateTpvFromXDashboardAdminUserWithPrependedZerosInPayerAccountNumber' => [
+        'request'  => [
+            'url'     => '/merchant/tpv',
+            'method'  => 'post',
+            'content' => [
+                'balance_id'           => '10000000000000',
+                'payer_name'           => 'Razorpay',
+                'payer_account_number' => '098711120003344',
+                'payer_ifsc'           => 'CITI0000006',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'merchant_id'          => '10000000000000',
+                'balance_id'           => '10000000000000',
+                'status'               => Status::PENDING,
+                'payer_name'           => 'Razorpay',
+                'payer_account_number' => '098711120003344',
+                'payer_ifsc'           => 'CITI0000006',
+                'is_active'            => false,
+                'type'                 => 'bank_account',
+            ],
+        ],
+    ],
+
+    'testAdminEditTpvWithPrependedZerosInPayerAccountNumber' => [
+        'request'  => [
+            'url'     => '/admin/tpv/',
+            'method'  => 'patch',
+            'content' => [
+                'merchant_id'          => '10000000000000',
+                'balance_id'           => '10000000000000',
+                'payer_account_number' => '00987431120003344',
+                'status'               => Status::REJECTED,
+                'remarks'              => 'Morphed docs',
+                'payer_ifsc'           => 'CITI0000006',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'          => '10000000000000',
+                'balance_id'           => '10000000000000',
+                'status'               => Status::REJECTED,
+                'payer_name'           => 'Razorpay',
+                'payer_account_number' => '00987431120003344',
+                'payer_ifsc'           => 'CITI0000006',
+                'is_active'            => false,
+                'type'                 => 'bank_account',
+                'remarks'              => 'Morphed docs'
+            ],
+        ],
+    ],
 ];
