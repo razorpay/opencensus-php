@@ -20,74 +20,80 @@ class Service extends Base\Service
 
         foreach ($inputs as $input)
         {
-            $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_CREATE, [
-                'input' => $input,
-            ]);
+            $this->app['api.mutex']->acquireAndReleaseStrict(
+                'settlement_ondemand_feature_config'.$input[Entity::MERCHANT_ID],
+                   function() use ($input, $result) {
 
-            $idempotencyKey = $input[\RZP\Models\Batch\Constants::IDEMPOTENCY_KEY] ?? '';
+                    $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_CREATE, [
+                        'input' => $input,
+                    ]);
 
-            unset($input[\RZP\Models\Batch\Constants::IDEMPOTENCY_KEY]);
+                    $idempotencyKey = $input[\RZP\Models\Batch\Constants::IDEMPOTENCY_KEY] ?? '';
 
-            try
-            {
-                (new Validator)->validateInput(Validator::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_INPUT, $input);
+                    unset($input[\RZP\Models\Batch\Constants::IDEMPOTENCY_KEY]);
 
-                $this->repo->transaction(function () use ($input)
-                {
-                    $merchant = $this->repo->merchant->find($input[Entity::MERCHANT_ID]);
-
-                    //creates ondemand pricing rule if not present, else updates the present pricing rule with
-                    //given pricing_percent
-                    $this->createOrUpdatePricingRule($merchant, $input);
-
-                    if ($merchant->isFeatureEnabled(Feature\Constants::ES_ON_DEMAND) === false)
+                    try
                     {
-                        $featureInput = [
-                            Feature\Entity::ENTITY_ID   => $input[Entity::MERCHANT_ID],
-                            Feature\Entity::ENTITY_TYPE => Feature\Constants::MERCHANT,
-                            Feature\Entity::NAME        => Feature\Constants::ES_ON_DEMAND,
-                        ];
+                        (new Validator)->validateInput(Validator::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_INPUT, $input);
 
-                        (new Feature\Core)->create($featureInput, true);
+                        $this->repo->transaction(function () use ($input)
+                        {
+                            $merchant = $this->repo->merchant->find($input[Entity::MERCHANT_ID]);
+
+                            //creates ondemand pricing rule if not present, else updates the present pricing rule with
+                            //given pricing_percent
+                            $this->createOrUpdatePricingRule($merchant, $input);
+
+                            if ($merchant->isFeatureEnabled(Feature\Constants::ES_ON_DEMAND) === false)
+                            {
+                                $featureInput = [
+                                    Feature\Entity::ENTITY_ID   => $input[Entity::MERCHANT_ID],
+                                    Feature\Entity::ENTITY_TYPE => Feature\Constants::MERCHANT,
+                                    Feature\Entity::NAME        => Feature\Constants::ES_ON_DEMAND,
+                                ];
+
+                                (new Feature\Core)->create($featureInput, true);
+                            }
+
+                            if($input[Entity::FULL_ACCESS] === 'yes')
+                            {
+                                $this->disableRestricted($merchant, $input);
+                            }
+                            else if($input[Entity::FULL_ACCESS] === 'no')
+                            {
+                                $this->enableRestricted($merchant, $input);
+                            }
+
+                            $this->createOrUpdateFeatureConfig($input);
+
+                        });
+
+                        $result->push([
+                            'idempotency_key'   => $idempotencyKey,
+                            'success'           => true,
+                        ]);
                     }
-
-                    if($input[Entity::FULL_ACCESS] === 'yes')
+                    catch (\Throwable $e)
                     {
-                        $this->disableRestricted($merchant, $input);
-                    }
-                    else if($input[Entity::FULL_ACCESS] === 'no')
-                    {
-                        $this->enableRestricted($merchant, $input);
-                    }
+                        $result->push([
+                            'idempotency_key'   => $idempotencyKey,
+                            'success'           => false,
+                            'error'             => [
+                                Error::DESCRIPTION       => $e->getMessage(),
+                                Error::PUBLIC_ERROR_CODE => $e->getCode(),
+                            ]
+                        ]);
 
-                    $this->createOrUpdateFeatureConfig($input);
-
+                        $this->trace->traceException(
+                            $e,
+                            Trace::ERROR,
+                            TraceCode::SETTLEMENT_ONDEMAND_FEATURE_CREATION_FAILURE,
+                            [
+                                'merchant_id' => $input['merchant_id']
+                            ]);
+                    }
                 });
 
-                $result->push([
-                    'idempotency_key'   => $idempotencyKey,
-                    'success'           => true,
-                ]);
-            }
-            catch (\Throwable $e)
-            {
-                $result->push([
-                    'idempotency_key'   => $idempotencyKey,
-                    'success'           => false,
-                    'error'             => [
-                        Error::DESCRIPTION       => $e->getMessage(),
-                        Error::PUBLIC_ERROR_CODE => $e->getCode(),
-                    ]
-                ]);
-
-                $this->trace->traceException(
-                    $e,
-                    Trace::ERROR,
-                    TraceCode::SETTLEMENT_ONDEMAND_FEATURE_CREATION_FAILURE,
-                    [
-                        'merchant_id' => $input['merchant_id']
-                    ]);
-            }
         }
 
         $this->trace->info(
