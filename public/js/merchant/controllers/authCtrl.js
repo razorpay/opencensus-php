@@ -447,9 +447,10 @@ app
         });
       };
 
-      function fireInitGauthType(type, onetapHideReason) {
-        var utmData = readUTMsCookie();
 
+      const utmData = readUTMsCookie();
+
+      function fireInitGauthType(type, onetapHideReason) {
         fireDLSuccessEvents('login.display_google_auth', {
           googleAuthVariant: type,
           oneTapHide: onetapHideReason,
@@ -693,7 +694,7 @@ app
         });
       };
 
-      const getCookie = function (name) {
+      function getCookie(name) {
         const cookieName = `${name}=`;
         const cookieArray = document.cookie.split(';');
         for (let i = 0; i < cookieArray.length; i++) {
@@ -711,7 +712,7 @@ app
        * @param value
        * @param expiryDays - in days
        */
-      const setCookie = function (name, value, expiryDays = 365) {
+      function setCookie(name, value, expiryDays = 365) {
         const date = new Date();
         date.setDate(date.getDate() + expiryDays);
         const expires = date.toUTCString();
@@ -2464,9 +2465,16 @@ app
           window.rzpQ &&
             window.rzpQ.push(
               window.rzpQ.now().onbr().success('signup.display_signup_page', {
-                mode: $scope.eventsMode,
-                version: 1,
-                service: $scope.currentService,
+                  mode: $scope.eventsMode,
+                  version: 1,
+                  service: $scope.currentService,
+                  emailId: $scope.signup.data.email,
+                  first_utm: utmData.firstUtm,
+                  last_utm: utmData.lastUtm,
+                  ref_url: $location.search().utm_source || document.referrer,
+                  first_page: utmData.firstPage,
+                  final_page: utmData.finalPage,
+                  website: utmData.website,
               }),
             );
           $scope.isSignupDisplayEventFired = true;
