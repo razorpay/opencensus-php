@@ -36,7 +36,7 @@
         @if (isset($data['amount']))
             <div id="amt">
                 <div style="font-size:12px;color:#757575;line-height:15px;margin-bottom:5px;text-align:right">PAYING</div>
-                <div style="font-size:20px;line-height:24px;">{{ encode_currency($data['amount']) }}</div>
+                <div style="font-size:20px;line-height:24px;">{!! e(encode_currency($data['amount']), false) !!} </div>
             </div>
         @endif
     </div>
