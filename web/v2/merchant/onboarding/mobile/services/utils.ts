@@ -350,3 +350,14 @@ export function getDocumentTitle(context) {
       return 'Certificate of Incorporation';
   }
 }
+
+export function checkIfEAadharStepCompleted(data) {
+  let isEAadharFieldFilled = false;
+  if (
+    (data && data.stakeholder && data.stakeholder.aadhaar_esign_status === 'verified') ||
+    (data.stakeholder && data.stakeholder.aadhaar_linked === '0')
+  ) {
+    isEAadharFieldFilled = true;
+  }
+  return isEAadharFieldFilled;
+}

@@ -10,6 +10,7 @@ import Link from '@commander/shield/src/shared/Link';
 import { getColor } from '@razorpay/blade/src/_helpers/theme';
 import { Select, Option } from 'v2/components/Select';
 import { FileUpload } from 'v2/components/FileUpload';
+import ESignVerification from '../ESignVerification';
 import Card from '../../../../components/Card';
 import { FormSection, Field } from '../Form';
 import { useActivationFormState, isVisible } from '../context/store';
@@ -27,6 +28,7 @@ import {
   isDocmentTabComplete,
   getDefaultSelectedDocs,
   getDocumentTitle,
+  checkIfEAadharStepCompleted,
 } from '../services/utils';
 import ShopEstablishmentNumber from './ShopEstablishmentNumber';
 
@@ -36,7 +38,11 @@ const StyledSeparator = styled(View)`
   background-color: ${({ theme }) => getColor(theme, 'shade.920')};
 `;
 
-const DocumentUpload: React.FC = () => {
+interface DocumentUploadProps {
+  isFormLocked?: boolean;
+}
+
+const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
   const { data, documentUpload, documentDelete } = useActivation();
   const documents = data.documents;
 
@@ -52,6 +58,8 @@ const DocumentUpload: React.FC = () => {
   const [bankDoc, setBankDoc] = useState<string>(defaultBankDoc);
   const [additionalDoc, setAdditionalDoc] = useState<string>(defaultAdditionalDoc);
   const [progress, setProgress] = useState<number>(0);
+
+  const isAadharFilled = checkIfEAadharStepCompleted(data);
 
   const setDocumentUploadCompleted = useActivationFormState(
     (state) => state.setDocumentUploadCompleted,
@@ -78,7 +86,7 @@ const DocumentUpload: React.FC = () => {
       bankDoc,
       additionalDoc,
     });
-    setDocumentUploadCompleted(isComplete);
+    setDocumentUploadCompleted(isComplete && isAadharFilled);
   };
 
   const onDeleteFile = async (fileName: string) => {
@@ -96,7 +104,7 @@ const DocumentUpload: React.FC = () => {
         bankDoc,
         additionalDoc,
       });
-      setDocumentUploadCompleted(isComplete);
+      setDocumentUploadCompleted(isComplete && isAadharFilled);
     }
   };
 
@@ -119,11 +127,12 @@ const DocumentUpload: React.FC = () => {
       bankDoc,
       additionalDoc,
     });
-    setDocumentUploadCompleted(isComplete);
-  }, [addressDoc, businessDoc, bankDoc, additionalDoc]);
+    setDocumentUploadCompleted(isComplete && isAadharFilled);
+  }, [addressDoc, businessDoc, bankDoc, additionalDoc, isAadharFilled]);
 
   return (
     <>
+      <ESignVerification disabled={isFormLocked} />
       <Card padding={[2]} margin={[0, 0, 2, 0]}>
         <Flex>
           <View>

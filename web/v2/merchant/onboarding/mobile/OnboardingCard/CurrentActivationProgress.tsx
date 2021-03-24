@@ -122,12 +122,10 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; pay
       data.activation_status === 'activated_mcc_pending'
     ) {
       return (
-        <>
-          <Info
-            title={Messages.ACTIVATION_STATUS_ACTIVATED.title}
-            description={Messages.ACTIVATION_STATUS_ACTIVATED.description}
-          />
-        </>
+        <Info
+          title={Messages.ACTIVATION_STATUS_ACTIVATED.title}
+          description={Messages.ACTIVATION_STATUS_ACTIVATED.description}
+        />
       );
     }
   }

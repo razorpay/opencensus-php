@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { Formik } from 'formik';
 import TextInput from '@razorpay/blade/src/atoms/TextInput';
-import { isDocmentTabComplete } from 'v2/merchant/onboarding/mobile/services/utils';
+import {
+  isDocmentTabComplete,
+  checkIfEAadharStepCompleted,
+} from 'v2/merchant/onboarding/mobile/services/utils';
 import { Field, GetTouchedFields } from '../Form';
 import { useActivationFormState } from '../context/store';
 import useActivation, { getRequestData } from '../hooks/useActivation';
@@ -11,6 +14,8 @@ const ContactDetails: React.FC = () => {
   const documents = data.documents;
 
   const [isBlurCalled, setIsBlurCalled] = useState(false);
+
+  const isAadharFilled = checkIfEAadharStepCompleted(data);
 
   const setDocumentUploadCompleted = useActivationFormState(
     (state) => state.setDocumentUploadCompleted,
@@ -26,7 +31,8 @@ const ContactDetails: React.FC = () => {
       ...data,
       documents: { ...documents, ...updatedDetails },
     });
-    setDocumentUploadCompleted(isComplete);
+
+    setDocumentUploadCompleted(isComplete && isAadharFilled);
     const reqData = getRequestData(documents, updatedDetails);
     if (Object.keys(reqData).length) {
       postData(reqData);

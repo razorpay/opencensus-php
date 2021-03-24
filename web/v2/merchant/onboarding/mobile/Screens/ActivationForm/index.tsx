@@ -27,6 +27,7 @@ import {
 } from '../../ActivationModals';
 import SaveAndExitModal from '../../SaveAndExitModal';
 import FAQs from '../../FAQs/FAQs';
+import { checkIfEAadharStepCompleted } from '../../services/utils';
 // import { L1_FORM_FIELD_NAMES } from '../../Constants/OnboardingConstants';
 
 type NextTextT = 'Submit And Verify' | 'Save And Verify' | 'Next';
@@ -171,6 +172,14 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
     history.push('/onboarding/steps');
   };
 
+  const isAllTabCompleted =
+    isContactDetailsCompleted &&
+    isBusinessOverviewCompleted &&
+    isBusinessDetailsCompleted &&
+    isBankAndCompanyDetailsCompleted &&
+    isDocumentsUploadCompleted &&
+    checkIfEAadharStepCompleted(data);
+
   const getTabs = () => {
     const tabs = [
       <Tab
@@ -209,9 +218,9 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
         key="documents"
         title="Documents"
         tabId="documents"
-        completed={isDocumentsUploadCompleted}
+        completed={isDocumentsUploadCompleted && checkIfEAadharStepCompleted(data)}
       >
-        <DocumentUpload />
+        <DocumentUpload isFormLocked={!!data.locked} />
       </Tab>,
     ];
     // if (
@@ -290,7 +299,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
           <Button
             onClick={() => handleNextClick()}
             disabled={
-              activeTabId === 'documents' ? !can_submit : false
+              activeTabId === 'documents' ? !can_submit || !isAllTabCompleted : false
               // (activeTabId === 'business_details' &&
               //     !isL1Complete &&
               //     merchantFlow !== 'greylist' &&

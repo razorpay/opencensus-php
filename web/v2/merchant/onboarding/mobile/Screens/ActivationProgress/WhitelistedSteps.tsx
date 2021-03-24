@@ -11,7 +11,12 @@ import {
 } from '../../context/store';
 import OnboardingStepCard from '../../OnboardingStepCard';
 import { StepPropsT } from '../../Step';
-import { getMerchantFlow, isL1Submitted, getPoiVerificationStatus } from '../../services/utils';
+import {
+  getMerchantFlow,
+  isL1Submitted,
+  getPoiVerificationStatus,
+  checkIfEAadharStepCompleted,
+} from '../../services/utils';
 import {
   EnableSettlements as EnableSettlementModal,
   SubmitForm as SubmitFormModal,
@@ -127,7 +132,7 @@ const WhitelistedSteps: React.FC<RouteComponentProps> = ({ history }) => {
         name: 'Documents Upload',
         id: 'documents',
         onClick,
-        isComplete: isDocumentsUploadCompleted,
+        isComplete: isDocumentsUploadCompleted && checkIfEAadharStepCompleted(data),
       },
     ];
   }

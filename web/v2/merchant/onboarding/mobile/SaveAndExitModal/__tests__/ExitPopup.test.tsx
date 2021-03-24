@@ -5,7 +5,7 @@ import { render, screen } from 'test-utils';
 
 test('Exit Popup', () => {
   const buttonText = 'Continue filling Details';
-  const App = () => <ExitPopup isOpen={true} onClose={() => {}} exitToDashBoardLink={''} />;
+  const App = () => <ExitPopup isOpen={true} onClose={() => {}} exitToDashBoardLink="" />;
   render(<App />, {});
   expect(screen.getByText(buttonText)).toBeInTheDocument();
   expect(screen.getByText('Are you sure you want to exit?')).toBeInTheDocument();

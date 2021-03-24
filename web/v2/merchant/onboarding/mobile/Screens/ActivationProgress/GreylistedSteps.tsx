@@ -5,7 +5,7 @@ import View from '@razorpay/blade/src/atoms/View';
 import OnboardingStepCard from '../../OnboardingStepCard';
 import { useActivationFormState } from '../../context/store';
 import useActivation from '../../hooks/useActivation';
-import { getMerchantFlow } from '../../services/utils';
+import { getMerchantFlow, checkIfEAadharStepCompleted } from '../../services/utils';
 import { SubmitForm as SubmitFormModal } from '../../ActivationModals';
 
 const GreylistedSteps: React.FC<RouteComponentProps> = ({ history }) => {
@@ -88,7 +88,7 @@ const GreylistedSteps: React.FC<RouteComponentProps> = ({ history }) => {
             name: 'Documents Upload',
             id: 'documents',
             onClick,
-            isComplete: isDocumentsUploadCompleted,
+            isComplete: isDocumentsUploadCompleted && checkIfEAadharStepCompleted(data),
           },
         ]}
         showSettlement

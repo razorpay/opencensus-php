@@ -198,4 +198,54 @@ export const handlers = [
       );
     },
   ),
+
+  rest.post(
+    'http://localhost:6006/merchant/api/test/bvs/dashboard/twirp/platform.bvs.probe.v1.ProbeAPI/AadhaarGetCaptcha',
+    (req, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.delay(50),
+        ctx.json({
+          status_code: 200,
+          data: {
+            captcha_image:
+              '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',
+            sessionExpired: false,
+          },
+        }),
+      );
+    },
+  ),
+
+  rest.post(
+    'http://localhost:6006/merchant/api/test/bvs/dashboard/twirp/platform.bvs.probe.v1.ProbeAPI/AadhaarVerifyCaptchaAndSendOtp',
+    (req, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.delay(50),
+        ctx.json({
+          status_code: 200,
+          data: {
+            is_success: true,
+          },
+        }),
+      );
+    },
+  ),
+
+  rest.post(
+    'http://localhost:6006/merchant/api/test/bbvs/dashboard/twirp/platform.bvs.probe.v1.ProbeAPI/AadhaarSubmitOtp',
+    (req, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.delay(50),
+        ctx.json({
+          status_code: 200,
+          data: {
+            is_valid: true,
+          },
+        }),
+      );
+    },
+  ),
 ];
