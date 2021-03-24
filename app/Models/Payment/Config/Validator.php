@@ -50,6 +50,8 @@ class Validator extends Base\Validator
     const SUPPORTED_LANGUAGE_CODE = [
         'hi',
         'en',
+        'guj',
+        'mar',
     ];
 
     protected static $createRules = [
