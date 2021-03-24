@@ -1695,6 +1695,46 @@ class PaymentDowntimeTest extends TestCase
         $this->assertNotNull($paymentDowntime['end']);
     }
 
+    public function testPaymentDowntimeSeverityChange()
+    {
+        $request = [
+            'content' => [
+                'gateway'     => 'ALL',
+                'network'     => 'RUPAY',
+                'method'      => 'card',
+                'source'      => 'VAJRA',
+                'reason_code' => 'HIGHER_ERRORS',
+                'begin'       => strval(Carbon::now()->timestamp),
+                'issuer'      => 'UNKNOWN'
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes'
+        ];
+
+        $this->ba->adminAuth();
+        $this->makeRequestAndGetContent($request);
+
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertEquals('high', $paymentDowntime['severity']);
+
+        $request['content']['source'] = 'DOWNTIME_SERVICE';
+        $request['content']['reason_code'] = 'LOW_SUCCESS_RATE';
+        $this->makeRequestAndGetContent($request);
+
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertEquals('medium', $paymentDowntime['severity']);
+
+        $request['content']['source'] = 'DOPPLER';
+        $request['content']['reason_code'] = 'OTHER';
+        $this->makeRequestAndGetContent($request);
+
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertEquals('medium', $paymentDowntime['severity']);
+    }
+
     protected function createUpiAllGatewayDowntime()
     {
         foreach (Gateway::$methodMap['upi'] as $gateway)

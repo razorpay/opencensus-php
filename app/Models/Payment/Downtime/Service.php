@@ -294,7 +294,7 @@ class Service extends Base\Service
                 $recipientEmail = [
                     'product.onlinepayments@razorpay.com',
                     'tech.onlinepayments.routing@razorpay.com',
-                    'srm@razorpay.com '
+                    'srm@razorpay.com'
                 ];
             }
         }

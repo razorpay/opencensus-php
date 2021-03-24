@@ -102,14 +102,14 @@ class BaseProcessor extends Base\Core
 
     protected function calculateDowntimeSeverity(Collection $gatewayDowntimes): string
     {
-        $sortedBySeverity = $gatewayDowntimes->sort(function($a, $b) {
-            $severityA = ReasonCode::getSeverity($a->getReasonCode());
-            $severityB = ReasonCode::getSeverity($a->getReasonCode());
+        $sortedBySource = $gatewayDowntimes->sort(function ($a, $b){
+            $sourceA = $a->getSource();
+            $sourceB = $b->getSource();
 
-            return Severity::PRECEDENCE[$severityA] - Severity::PRECEDENCE[$severityB];
+            return Severity::PRECEDENCE_SOURCE[$sourceA] - Severity::PRECEDENCE_SOURCE[$sourceB];
         });
 
-        $reasonCode = $sortedBySeverity->first()->getReasonCode();
+        $reasonCode = $sortedBySource->first()->getReasonCode();
 
         return ReasonCode::getSeverity($reasonCode);
     }

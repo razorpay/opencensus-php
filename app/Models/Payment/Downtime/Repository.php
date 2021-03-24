@@ -26,6 +26,8 @@ class Repository extends Base\Repository
 
         $query->where(Entity::BEGIN, '<=', Carbon::now()->getTimestamp());
 
+        $query->whereNull(Entity::MERCHANT_ID);
+
         return $query->get();
     }
 
