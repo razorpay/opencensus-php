@@ -8000,7 +8000,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(100);
 
-        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT => 1]);
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RBL_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT => 1]);
 
         $this->ba->cronAuth();
 

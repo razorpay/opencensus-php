@@ -92,10 +92,17 @@ class ConfigKey
 
     CONST RX_BAS_FORCED_FETCH_TIME_IN_HOURS               = self::PREFIX . 'rx_bas_forced_fetch_time_in_hours';
 
+    // while creating payouts we fetch balance from gateway at a frequency decided in SLA.
+    // So if last fetched at was while ago greater than this value, then we will fetch balance
+    // again before creating a payout
     const GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING = self::PREFIX . 'gateway_balance_last_fetched_at_rate_limiting';
 
     //Banking account current accounts balance update for merchants .limit on number of merchants for which to update in one run
-    const BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT = self::PREFIX . 'banking_account_gateway_balance_update_rate_limit';
+    const RBL_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT = self::PREFIX . 'banking_account_gateway_balance_update_rate_limit';
+
+    //Merchant gateway balance is maintained at our end to display on dashboard and is updated by cron regularly.
+    //This key puts limit on number of merchants for which to update in one run for icici
+    const ICICI_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT = self::PREFIX . 'icici_banking_account_gateway_balance_update_rate_limit';
 
     // RBL_STATEMENT_FETCH_ATTEMPT_LIMIT is defining the number of attempt count for account statement fetch
     // per request. RBL has internal pagination with flag for statement fetch and we need to refetch with
@@ -200,7 +207,8 @@ class ConfigKey
         self::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT,
         self::LOW_BALANCE_RX_EMAIL,
         self::GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING,
-        self::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT,
+        self::RBL_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT,
+        self::ICICI_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT,
         self::RBL_STATEMENT_FETCH_ATTEMPT_LIMIT,
         self::RBL_STATEMENT_FETCH_SPECIAL_ATTEMPT_LIMIT,
         self::RBL_STATEMENT_FETCH_RETRY_LIMIT,

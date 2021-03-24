@@ -7,11 +7,13 @@ use RZP\Exception;
 class Channel
 {
     const RBL = 'rbl';
+    const ICICI = 'icici';
 
     public static function getChannels()
     {
         return [
             self::RBL,
+            self::ICICI
         ];
     }
 

@@ -34,7 +34,6 @@ use RZP\Mail\BankingAccount\XProActivation;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
 use Razorpay\Spine\Exception\DbQueryException;
-use RZP\Jobs\BankingAccountGatewayBalanceUpdate;
 use RZP\Models\BankingAccount\Channel as BAChannel;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\BankingAccount\Activation\Notification\Event;
@@ -1279,13 +1278,8 @@ class Core extends Base\Core
 
         $validator->validateInput(Validator::DISPATCH_GATEWAY_BALANCE, [Entity::CHANNEL => $channel]);
 
-        $limit = (int) (new AdminService)->getConfigKey(
-                                ['key' => ConfigKey::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT]);
-
-        if (empty($limit) === true)
-        {
-            $limit = self::DEFAULT_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT;
-        }
+        // different limit for each channel
+        $limit = $this->getGatewayBalanceUpdateRateLimit($channel);
 
         // get list of merchants based upon channel and balance last fetched at
         $merchantIds = $this->repo->banking_account
@@ -1305,6 +1299,39 @@ class Core extends Base\Core
         return $merchantIds;
     }
 
+    protected function getGatewayBalanceUpdateRateLimit(string $channel)
+    {
+
+        switch ($channel)
+        {
+            case Channel::RBL:
+                $limit = (int) (new AdminService)->getConfigKey(
+                    ['key' => ConfigKey::RBL_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT]);
+                break;
+
+            case Channel::ICICI:
+                $limit = (int) (new AdminService)->getConfigKey(
+                    ['key' => ConfigKey::ICICI_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT]);
+                break;
+
+            default:
+                // just a safe check (it would never reach here), ideally it will fail at
+                //validation at core when cron hits request with wrong channel
+                $this->trace->error(
+                    TraceCode::CHANNEL_NOT_SUPPORTED_FOR_BALANCE_FETCH,
+                    [
+                        'channel' => $channel
+                    ]);
+        }
+
+        if (empty($limit) === true)
+        {
+            $limit = self::DEFAULT_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT;
+        }
+
+        return $limit;
+    }
+
     protected function dispatchGatewayBalanceUpdateJob(string $channel, $merchantId)
     {
         $this->trace->info(
@@ -1314,11 +1341,38 @@ class Core extends Base\Core
                 Entity::MERCHANT_ID => $merchantId,
             ]);
 
-        BankingAccountGatewayBalanceUpdate::dispatch($this->mode,
-                                                     [
-                                                            Entity::CHANNEL     => $channel,
-                                                            Entity::MERCHANT_ID => $merchantId,
-                                                        ]);
+        // different queue for each channel
+        $job = $this->getGatewayBalanceUpdateJobForChannel($channel);
+
+        if (empty($job) === false)
+        {
+            $job::dispatch($this->mode,
+                           [
+                               Entity::CHANNEL     => $channel,
+                               Entity::MERCHANT_ID => $merchantId,
+                           ]);
+        }
+
+    }
+
+    protected function getGatewayBalanceUpdateJobForChannel(string $channel)
+    {
+        $job = 'RZP\Jobs' . '\\' . studly_case($channel) . 'BankingAccountGatewayBalanceUpdate';
+
+        if (class_exists($job) === true)
+        {
+            return $job;
+        }
+        else
+        {
+            // just a safe check (it would never reach here), ideally it will fail at
+            //validation at core when cron hits request with wrong channel
+            $this->trace->error(
+                TraceCode::CHANNEL_NOT_SUPPORTED_FOR_BALANCE_FETCH,
+                [
+                    'channel' => $channel
+                ]);
+        }
     }
 
     public function unsetPersonalIdentifiableInformation(array $input): array

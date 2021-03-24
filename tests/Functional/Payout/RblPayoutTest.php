@@ -14,7 +14,7 @@ use RZP\Models\BankingAccount;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Tests\Functional\Fixtures\Entity\User;
-use RZP\Jobs\BankingAccountGatewayBalanceUpdate;
+use RZP\Jobs\RblBankingAccountGatewayBalanceUpdate;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -329,7 +329,7 @@ class RblPayoutTest extends TestCase
 
     protected function setupRblDispatchGatewayBalanceUpdateForMerchants()
     {
-        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT => 1]);
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RBL_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT => 1]);
 
         $request = [
             'method'  => 'put',
@@ -497,9 +497,9 @@ class RblPayoutTest extends TestCase
 
         $this->setupRblDispatchGatewayBalanceUpdateForMerchants();
 
-        Queue::assertPushedTimes(BankingAccountGatewayBalanceUpdate::class, 1);
+        Queue::assertPushedTimes(RblBankingAccountGatewayBalanceUpdate::class, 1);
 
-        Queue::assertPushed(BankingAccountGatewayBalanceUpdate::class, function($job)
+        Queue::assertPushed(RblBankingAccountGatewayBalanceUpdate::class, function($job)
         {
             $this->assertEquals($job->getOriginProduct(), 'banking');
 

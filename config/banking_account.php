@@ -14,4 +14,10 @@ return [
         'account_number'    => env('RZP_FEES_DETAILS_ACCOUNT_NUMBER'),
         'ifsc'              => env('RZP_FEES_DETAILS_IFSC'),
     ],
+
+    'icici' => [
+        'aggr_id'             => env('ICICI_AGGR_ID'),
+        'aggr_name'           => env('ICICI_AGGR_NAME'),
+        'beneficiary_api_key' => env('ICICI_BENEFICIARY_API_KEY'),
+    ]
 ];

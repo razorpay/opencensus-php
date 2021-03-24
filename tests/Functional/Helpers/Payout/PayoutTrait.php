@@ -511,7 +511,7 @@ trait PayoutTrait
 
     protected function runBalanceFetchCron()
     {
-        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT => 1]);
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RBL_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT => 1]);
 
         $request = [
             'method'  => 'put',

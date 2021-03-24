@@ -24,6 +24,7 @@ class Channel
 
     protected static $directTypeChannels = [
         self::RBL,
+        self::ICICI,
     ];
 
     protected static $defaultSharedTypeChannels = [

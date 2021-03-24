@@ -6,7 +6,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\BankingAccount;
 use RZP\Models\Settlement\SlackNotification;
 
-class BankingAccountGatewayBalanceUpdate extends Job
+class RblBankingAccountGatewayBalanceUpdate extends Job
 {
     //TODO: move constants in config
     const MAX_RETRY_ATTEMPT = 3;

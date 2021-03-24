@@ -101,8 +101,9 @@ class Validator extends Base\Validator
         ConfigKey::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT   => 'filled|integer',
         ConfigKey::RX_BAS_FORCED_FETCH_TIME_IN_HOURS      => 'filled|integer',
 
-        ConfigKey::GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING     => 'filled|integer',
-        ConfigKey::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT => 'filled|integer',
+        ConfigKey::GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING           => 'filled|integer',
+        ConfigKey::RBL_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT   => 'filled|integer',
+        ConfigKey::ICICI_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT => 'filled|integer',
 
         ConfigKey::RBL_STATEMENT_FETCH_ATTEMPT_LIMIT  => 'filled|integer',
         ConfigKey::RBL_STATEMENT_FETCH_SPECIAL_ATTEMPT_LIMIT => 'filled|integer',
