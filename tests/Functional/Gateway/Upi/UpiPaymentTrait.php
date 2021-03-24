@@ -2,6 +2,9 @@
 
 namespace RZP\Tests\Functional\Gateway\Upi;
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
+use RZP\Exception\RuntimeException;
 use RZP\Models\Payment\Status;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Payment\UpiMetadata\Flow;
@@ -27,7 +30,7 @@ trait UpiPaymentTrait
         $this->assertArraySubset([
             Entity::STATUS          => 'created',
             Entity::GATEWAY         => $this->gateway,
-            Entity::TERMINAL_ID     => $this->sharedTerminal->getId(),
+            Entity::TERMINAL_ID     => $this->terminal->getId(),
             Entity::REFUND_AT       => null,
         ], $payment->toArray());
 
@@ -39,11 +42,11 @@ trait UpiPaymentTrait
         ], $upiEntity->toArray());
     }
 
-    public function testUpiCollectUpiPaymentCreateFail()
+    public function testUpiCollectUpiPaymentCreateFail($description = 'collect_request_failed_v2')
     {
         $payment = $this->getDefaultUpiPaymentArray();
 
-        $payment['description'] = 'collect_request_failed_v2';
+        $payment['description'] = $description;
 
         $this->makeRequestAndCatchException(function () use ($payment)
         {
@@ -57,7 +60,7 @@ trait UpiPaymentTrait
         $this->assertArraySubset([
             Entity::STATUS          => 'failed',
             Entity::GATEWAY         => $this->gateway,
-            Entity::TERMINAL_ID     => $this->sharedTerminal->getId(),
+            Entity::TERMINAL_ID     => $this->terminal->getId(),
             Entity::REFUND_AT       => null,
         ], $payment->toArray());
 
@@ -75,7 +78,7 @@ trait UpiPaymentTrait
 
         $intentTerminal = 'terminal:'.($this->gateway).'_intent_terminal';
 
-        $this->sharedTerminal = $this->fixtures->create($intentTerminal);
+        $this->terminal = $this->fixtures->create($intentTerminal);
 
         $payment['upi']['flow'] = 'intent';
 
@@ -94,7 +97,7 @@ trait UpiPaymentTrait
         $this->assertArraySubset([
             Entity::STATUS          => 'created',
             Entity::GATEWAY         => $this->gateway,
-            Entity::TERMINAL_ID     => $this->sharedTerminal->getId(),
+            Entity::TERMINAL_ID     => $this->terminal->getId(),
             Entity::REFUND_AT       => null,
         ], $payment->toArray());
 
@@ -128,7 +131,7 @@ trait UpiPaymentTrait
         $this->assertArraySubset([
             Entity::STATUS          => Status::AUTHORIZED,
             Entity::REFERENCE16     => $upiEntity->getNpciReferenceId(),
-            Entity::TERMINAL_ID     => $this->sharedTerminal->getId(),
+            Entity::TERMINAL_ID     => $this->terminal->getId(),
             Entity::GATEWAY         => $this->gateway
         ], $payment->toArray());
 
@@ -198,6 +201,52 @@ trait UpiPaymentTrait
         $this->assertSame('failed', $payment->getStatus());
 
         $this->assertSame('SERVER_ERROR_AMOUNT_TAMPERED', $payment->getInternalErrorCode());
+    }
+
+    public function testUpiVerifyPayment()
+    {
+        $this->testUpiCollectPaymentSuccess();
+
+        $payment = $this->getDbLastPayment();
+
+        $payment = $this->verifyPayment($payment->getPublicId());
+
+        $this->assertSame($payment['payment']['verified'], 1);
+    }
+
+    public function testUpiLateAuthPayment()
+    {
+        $this->testUpiCollectUpiPaymentCreateFail('late_authorized_v2');
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertSame(Status::FAILED, $payment->getStatus());
+
+        $time = Carbon::now(Timezone::IST)->addMinutes(4);
+
+        Carbon::setTestNow($time);
+
+        $this->verifyAllPayments();
+
+        $payment->reload();
+
+        $this->assertSame(Status::AUTHORIZED, $payment->getStatus());
+
+        $this->assertTrue($payment->isLateAuthorized());
+    }
+
+    public function testVerifyPaymentAmountMismatch()
+    {
+        $this->testUpiCollectUpiPaymentCreateFail('verify_amount_mismatch_v2');
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertSame(Status::FAILED, $payment->getStatus());
+
+        $this->makeRequestAndCatchException(function() use ($payment)
+        {
+            $this->verifyPayment($payment->getPublicId());
+        }, RuntimeException::class, 'Payment amount verification failed.');
     }
 }
 

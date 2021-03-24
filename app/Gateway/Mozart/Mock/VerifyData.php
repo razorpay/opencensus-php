@@ -37,6 +37,16 @@ class VerifyData extends Base\Mock\Server
         return $response;
     }
 
+    public function upi_yesbank($entities)
+    {
+        if ($this->isV2Mock($entities['payment']['description']))
+        {
+            return $this->upiMozartV2($entities);
+        }
+
+        return []; // Yesbank Supports only v2 contracts.
+    }
+
     public function upi_citi($entities)
     {
         $error = null;

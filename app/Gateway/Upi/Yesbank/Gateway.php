@@ -12,6 +12,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use Illuminate\Support\Str;
 use RZP\Gateway\Base\Action;
+use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Upi\Mindgate;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Models\Currency\Currency;
@@ -105,12 +106,25 @@ class Gateway extends Mindgate\Gateway
     /**
      * @param array $input
      * @return null|void
-     * @throws Exception\LogicException
+     * @throws Exception\BaseException
      */
     public function verify(array $input)
     {
-        throw new Exception\LogicException(
-            'Live payment verify not available on UPI Yesbank');
+        parent::action($input, Action::VERIFY);
+
+        $verify = new Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
+    }
+
+    protected function sendPaymentVerifyRequest($verify)
+    {
+        return $this->upiSendPaymentVerifyRequest($verify);
+    }
+
+    protected function verifyPayment($verify)
+    {
+        $this->upiVerifyPayment($verify);
     }
 
     /**

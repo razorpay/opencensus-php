@@ -24,7 +24,7 @@ class UpiYesbankGatewayTest extends TestCase
     /**
      * @var Terminal
      */
-    protected $sharedTerminal;
+    protected $terminal;
 
     public function setUp()
     {
@@ -32,7 +32,7 @@ class UpiYesbankGatewayTest extends TestCase
 
         parent::setUp();
 
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_yesbank_terminal');
+        $this->terminal = $this->fixtures->create('terminal:shared_upi_yesbank_terminal');
 
         $this->fixtures->merchant->enableMethod(Account::TEST_ACCOUNT, Method::UPI);
 
