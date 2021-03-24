@@ -179,7 +179,9 @@ class Handler extends BaseHandler
             return $key;
         }
 
-        $s3 = self::getClient($bucketConfig['region'],$bucketConfig['credentials']);
+        $credentials = array_key_exists('credentials',$bucketConfig)? $bucketConfig['credentials']:null;
+
+        $s3 = self::getClient($bucketConfig['region'], $credentials);
 
         try
         {
