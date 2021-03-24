@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\FundAccount;
 
+use App;
 use Queue;
 use \RZP\Constants;
 use RZP\Error\Error;
@@ -34,6 +35,8 @@ class FundAccountValidationTest extends TestCase
     use TestsBusinessBanking;
     use AttemptReconcileTrait;
     use FundAccountValidationTrait;
+
+    const VALIDATION_UPDATE_MUTEX = "FUND_ACCOUNT_VALIDATION_BEING_UPDATED";
 
     public function setUp()
     {
@@ -1245,4 +1248,27 @@ class FundAccountValidationTest extends TestCase
 
         $this->assertArrayNotHasKey(Error::METADATA, $response['error']);
     }
+
+    public function testMutexRetryForFundAccountValidationStatusUpdate()
+    {
+        $this->testFundAccValidationWithAccountNumberAndBankAccount();
+
+        $fav = $this->getDbLastEntity('fund_account_validation');
+
+        $favId = $fav->getId();
+
+        $app = App::getFacadeRoot();
+
+        $mutex = $app['api.mutex'];
+
+        //testing mutex retry when unable to take the lock since its already reserved by another event
+        $mutex->acquireAndRelease(
+            self::VALIDATION_UPDATE_MUTEX . $favId,
+            function () use ($favId)
+            {
+                $this->updateFtaAndSource($favId, 'PROCESSED', '933815233814', 'SUCCESS', false);
+            },
+            0.02);
+    }
+
 }

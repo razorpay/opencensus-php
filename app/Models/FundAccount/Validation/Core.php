@@ -22,6 +22,10 @@ class Core extends Base\Core
 
     const VALIDATION_UPDATE_MUTEX = "FUND_ACCOUNT_VALIDATION_BEING_UPDATED";
 
+    const VALIDATION_UPDATE_MUTEX_LOCK_TIMEOUT = 20;
+
+    const VALIDATION_UPDATE_MUTEX_RETRY_COUNT = 1;
+
     public function __construct()
     {
         parent::__construct();
@@ -245,7 +249,7 @@ class Core extends Base\Core
 
                     return;
                 },
-                20,
+                self::VALIDATION_UPDATE_MUTEX_LOCK_TIMEOUT,
                 ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
         }
         catch (\Throwable $e)
@@ -284,8 +288,9 @@ class Core extends Base\Core
 
                     return;
                 },
-                20,
-                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
+                self::VALIDATION_UPDATE_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+                self::VALIDATION_UPDATE_MUTEX_RETRY_COUNT);
         }
         catch (\Throwable $e)
         {
@@ -323,8 +328,9 @@ class Core extends Base\Core
 
                     return;
                 },
-                20,
-                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
+                self::VALIDATION_UPDATE_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+                self::VALIDATION_UPDATE_MUTEX_RETRY_COUNT);
         }
         catch (\Throwable $e)
         {

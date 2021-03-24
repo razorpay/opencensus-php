@@ -33,16 +33,32 @@ class Mutex extends BaseLock
         $retryCount = 0,
         $minRetryDelay = 100,
         $maxRetryDelay = 200,
-        $strict = false) : bool
+        $strict = false): bool
     {
-        if ($this->cache->store('file')->get($resource))
-        {
-            return false;
+        do {
+
+            if ($this->cache->store('file')->get($resource))
+            {
+                $acquired = false;
+            }
+            else
+            {
+                $this->cache->store('file')->put($resource, $this->requestId, $ttl);
+
+                $acquired = true;
+
+                break;
+            }
+
+            $delay = mt_rand($minRetryDelay, $maxRetryDelay);
+
+            usleep($delay * 10000);
+
+            $retryCount--;
         }
+        while ($retryCount >= 0);
 
-        $this->cache->store('file')->put($resource, $this->requestId, $ttl);
-
-        return true;
+        return $acquired;
     }
 
     /**
