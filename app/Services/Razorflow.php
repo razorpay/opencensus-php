@@ -286,8 +286,15 @@ class Razorflow
                 ]);
         }
 
+        $body = json_decode($response->body, true);
+
+        if (isset($body['body']) && isJson($body['body']) === true)
+        {
+            $body['body'] = json_decode($body['body'], true);
+        }
+
         return [
-            self::RESPONSE_BODY => json_decode($response->body, true),
+            self::RESPONSE_BODY => $body,
             self::RESPONSE_CODE => $code,
         ];
     }
