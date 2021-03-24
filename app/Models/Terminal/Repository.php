@@ -154,11 +154,11 @@ class Repository extends Base\Repository
         {
             $mode = $this->app['rzp.mode'] ??  Mode::LIVE ;
 
-            $variantFlag = $this->app->razorx->getTreatment($merchantIds[0], "ROUTE_PROXY_TS",  $mode);
+            $variantFlag = $this->app->razorx->getTreatment($merchantIds[0], "ROUTE_PROXY_TS_2",  $mode);
 
             $data = ["function" => "getByTypeAndMerchantIds", "merchant_ids" => $merchantIds, "type" => $type];
 
-            if ($variantFlag === 'proxy')
+            if ($variantFlag === 'on')
             {
                 $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
@@ -178,10 +178,14 @@ class Repository extends Base\Repository
 
                 $terminals = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response);
 
+
                 if (Terminal\Service::compareTerminalCollection($apiTerminals, $terminals) === false)
                 {
                     $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
                 }
+
+                return $terminals;
+
             }
         }
         catch (\Throwable $ex)
@@ -279,9 +283,9 @@ class Repository extends Base\Repository
         {
             $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
-            $variantFlag = $this->app->razorx->getTreatment($mId, "ROUTE_PROXY_TS", $mode);
+            $variantFlag = $this->app->razorx->getTreatment($mId, "ROUTE_PROXY_TS_2", $mode);
 
-            if ($variantFlag === 'proxy')
+            if ($variantFlag === 'on')
             {
                 $data = ["function" => "getActivatedDirectSettlementTerminalsByMerchant", "merchant_id"=> $mId];
 
@@ -303,6 +307,10 @@ class Repository extends Base\Repository
                     {
                         $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
                     }
+
+                    return $terminals2->filter(function ($terminal) {
+                        return (($terminal->isDirectSettlementWithoutRefund() === true) or ($terminal->isDirectSettlementWithRefund() === true));
+                    });
                 }
             }
         }
@@ -1081,9 +1089,9 @@ class Repository extends Base\Repository
 
         $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
-        $variantFlag = $this->app->razorx->getTreatment($gateway, "ROUTE_PROXY_TS", $mode);
+        $variantFlag = $this->app->razorx->getTreatment($gateway, "ROUTE_PROXY_TS_2", $mode);
 
-        if ($variantFlag === 'proxy')
+        if ($variantFlag === 'on')
         {
             $data = ["function" => "getIdsByMerchantIdsAndGateway", "mids" => $mids, "gateway" => $gateway];
 
@@ -1105,6 +1113,7 @@ class Repository extends Base\Repository
 
                 $terminalIds = $tsTerminals->pluck(Entity::ID)->all();
 
+
                 if ((sizeof($terminalIds) === sizeof($apiTerminalIds)) and (count($apiTerminalIds, $terminalIds) > 0)
                     and (count($terminalIds, $apiTerminalIds) > 0))
                 {
@@ -1112,6 +1121,9 @@ class Repository extends Base\Repository
                     $data["terminal_ids"] = $terminalIds;
                     $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
                 }
+
+                return $terminalIds;
+
             }
             catch (\Throwable $ex)
             {
