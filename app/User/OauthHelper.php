@@ -45,8 +45,6 @@ class OauthHelper
     {
         $oauthProvider = $input[Constants::OAUTH_PROVIDER];
 
-        $input[Constants::OAUTH_SOURCE] = Request::header(Headers::OAUTH_SOURCE) ?? Constants::DASHBOARD;
-
         switch ($oauthProvider)
         {
             case Constants::OAUTH_PROVIDER_GOOGLE:
@@ -57,8 +55,10 @@ class OauthHelper
         }
     }
 
-    protected function getOauthClientIdFromSource(string $oauthSource)
+    protected function getOauthClientIdFromSource()
     {
+        $oauthSource = Request::header(Headers::OAUTH_SOURCE) ?? Constants::DASHBOARD;
+
         switch ($oauthSource)
         {
             case Constants::IOS:
@@ -89,7 +89,7 @@ class OauthHelper
      */
     protected function verifyGoogleIdToken(array &$input): bool
     {
-        $clientId = $this->getOauthClientIdFromSource($input[Constants::OAUTH_SOURCE]);
+        $clientId = $this->getOauthClientIdFromSource();
 
         // Specify the CLIENT_ID of the app that accesses the backend
         $client = new Google_Client([Constants::CLIENT_ID => $clientId]);
@@ -104,6 +104,8 @@ class OauthHelper
         if (((strcmp(strtolower($payload[Constants::EMAIL]), strtolower($input[Constants::EMAIL])) === 0) === true) and
             ($payload[Constants::EMAIL_VERIFIED] === true))
         {
+            unset($input[Constants::ID_TOKEN]);
+
             $input[Constants::OAUTH_PROVIDER] = json_encode(array(Constants::OAUTH_PROVIDER_GOOGLE));
 
             return true;
