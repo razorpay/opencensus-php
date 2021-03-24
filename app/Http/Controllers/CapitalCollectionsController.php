@@ -33,7 +33,7 @@ class CapitalCollectionsController extends Controller
         $url     = $path;
         $body    = $request->all();
 
-        $this->trace->info(TraceCode::CAPITAL_COLLECTIONS_PROXY_REQUEST, [
+        $this->trace->debug(TraceCode::CAPITAL_COLLECTIONS_PROXY_REQUEST, [
             'request' => $url,
         ]);
 
@@ -85,7 +85,7 @@ class CapitalCollectionsController extends Controller
             $url .= '?' . $request->getQueryString();
         }
 
-        $this->trace->info(TraceCode::CAPITAL_COLLECTIONS_PROXY_REQUEST, [
+        $this->trace->debug(TraceCode::CAPITAL_COLLECTIONS_PROXY_REQUEST, [
             'request' => $url,
         ]);
 
@@ -164,7 +164,7 @@ class CapitalCollectionsController extends Controller
 
     protected function sendRequest($headers, $url, $method, $body)
     {
-        $this->trace->info(TraceCode::CAPITAL_COLLECTIONS_PROXY_REQUEST, [
+        $this->trace->debug(TraceCode::CAPITAL_COLLECTIONS_PROXY_REQUEST, [
             'url'     => $url,
             'method'  => $method,
         ]);
@@ -190,14 +190,14 @@ class CapitalCollectionsController extends Controller
         {
             $span->addAttribute('error', 'true');
 
-            $this->trace->info(TraceCode::CAPITAL_COLLECTIONS_PROXY_RESPONSE, [
+            $this->trace->warning(TraceCode::CAPITAL_COLLECTIONS_PROXY_RESPONSE, [
                 'status_code'   => $resp->getStatusCode(),
                 'body'          => $resp->getBody(),
             ]);
         }
         else
         {
-            $this->trace->info(TraceCode::CAPITAL_COLLECTIONS_PROXY_RESPONSE, [
+            $this->trace->debug(TraceCode::CAPITAL_COLLECTIONS_PROXY_RESPONSE, [
                 'status_code'   => $resp->getStatusCode(),
             ]);
         }

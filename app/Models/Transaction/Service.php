@@ -82,7 +82,7 @@ class Service extends Base\Service
             $txn = $this->repo->transaction->fetchByEntityAndAssociateMerchant($creditRepayment);
 
             $this->trace->count(\RZP\Models\CreditRepayment\Metric::CREDIT_REPAYMENT_TRANSACTION_ALREADY_CREATED);
-            $this->trace->info(TraceCode::CREDIT_REPAYMENT_TRANSACTION_ALREADY_CREATED, $input);
+            $this->trace->debug(TraceCode::CREDIT_REPAYMENT_TRANSACTION_ALREADY_CREATED, $input);
             // $scope->close();
 
             return $txn->toArrayPublic();
@@ -102,7 +102,7 @@ class Service extends Base\Service
                     $this->repo->saveOrFail($txn);
 
                     $this->trace->count(\RZP\Models\CreditRepayment\Metric::CREDIT_REPAYMENT_TRANSACTION_CREATED);
-                    $this->trace->info(TraceCode::CREDIT_REPAYMENT_TRANSACTION_CREATED, $input);
+                    $this->trace->debug(TraceCode::CREDIT_REPAYMENT_TRANSACTION_CREATED, $input);
                     // $scope->close();
 
                     return $txn->toArrayPublic();
@@ -141,7 +141,7 @@ class Service extends Base\Service
             $txn = $this->repo->transaction->fetchByEntityAndAssociateMerchant($capitalTxn);
 
             $this->trace->count(\RZP\Models\CapitalTransaction\Metric::CAPITAL_TRANSACTION_ALREADY_CREATED);
-            $this->trace->info(TraceCode::CAPITAL_TRANSACTION_ALREADY_CREATED, $input);
+            $this->trace->debug(TraceCode::CAPITAL_TRANSACTION_ALREADY_CREATED, $input);
 
             return $txn->toArrayPublic();
         }
@@ -160,7 +160,7 @@ class Service extends Base\Service
                     $this->repo->saveOrFail($txn);
 
                     $this->trace->count(\RZP\Models\CapitalTransaction\Metric::CAPITAL_TRANSACTION_CREATED);
-                    $this->trace->info(TraceCode::CAPITAL_TRANSACTION_CREATED, $input);
+                    $this->trace->debug(TraceCode::CAPITAL_TRANSACTION_CREATED, $input);
 
                     return $txn->toArrayPublic();
                 });
@@ -219,7 +219,7 @@ class Service extends Base\Service
                     $this->repo->transaction->fetchByEntityAndAssociateMerchant($capitalTxn);
 
                     $this->trace->count(\RZP\Models\CapitalTransaction\Metric::CAPITAL_TRANSACTION_ALREADY_CREATED);
-                    $this->trace->info(TraceCode::CAPITAL_TRANSACTION_ALREADY_CREATED, $input);
+                    $this->trace->debug(TraceCode::CAPITAL_TRANSACTION_ALREADY_CREATED, $input);
 
                     return [];
                 }
@@ -241,7 +241,7 @@ class Service extends Base\Service
                         $this->repo->saveOrFail($txn);
 
                         $this->trace->count(\RZP\Models\CapitalTransaction\Metric::CAPITAL_TRANSACTION_CREATED);
-                        $this->trace->info(TraceCode::CAPITAL_TRANSACTION_CREATED, $repaymentBreakup);
+                        $this->trace->debug(TraceCode::CAPITAL_TRANSACTION_CREATED, $repaymentBreakup);
                     }
 
                     $this->cache->put($repaymentCacheKey, $repaymentCacheKey, 24 * 60); // cache response of a repayment for 24hours

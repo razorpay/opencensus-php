@@ -29,7 +29,7 @@ class CapitalCollectionsClient implements ExternalService
 
     public function fetchMultiple(string $entity, array $input)
     {
-        $this->trace->info(TraceCode::CAPITAL_COLLECTIONS_PROXY, $input);
+        $this->trace->debug(TraceCode::CAPITAL_COLLECTIONS_PROXY, $input);
 
         $request = [
             'from'          => $input['from'] ?? 0,
@@ -92,7 +92,7 @@ class CapitalCollectionsClient implements ExternalService
 
     protected function sendRequest($headers, $url, $method, $body)
     {
-        $this->trace->info(TraceCode::CAPITAL_COLLECTIONS_PROXY_REQUEST, [
+        $this->trace->debug(TraceCode::CAPITAL_COLLECTIONS_PROXY_REQUEST, [
             'url'     => $url,
             'method'  => $method,
             'body'    => $body,
@@ -106,7 +106,7 @@ class CapitalCollectionsClient implements ExternalService
 
         if ($resp->getStatusCode() >= 400)
         {
-            $this->trace->info(TraceCode::CAPITAL_COLLECTIONS_PROXY_RESPONSE, [
+            $this->trace->warning(TraceCode::CAPITAL_COLLECTIONS_PROXY_RESPONSE, [
                 'status_code'   => $resp->getStatusCode(),
                 'body'          => $resp->getBody(),
             ]);
@@ -115,7 +115,7 @@ class CapitalCollectionsClient implements ExternalService
         }
         else
         {
-            $this->trace->info(TraceCode::CAPITAL_COLLECTIONS_PROXY_RESPONSE, [
+            $this->trace->debug(TraceCode::CAPITAL_COLLECTIONS_PROXY_RESPONSE, [
                 'status_code'   => $resp->getStatusCode(),
             ]);
         }

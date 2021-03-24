@@ -71,7 +71,7 @@ class CapitalCardsController extends Controller
         $url     = $path;
         $body    = $request->all();
 
-        $this->trace->info(TraceCode::CAPITAL_CARDS_PROXY_REQUEST, [
+        $this->trace->debug(TraceCode::CAPITAL_CARDS_PROXY_REQUEST, [
             'request' => $url,
         ]);
 
@@ -116,7 +116,7 @@ class CapitalCardsController extends Controller
         $url     = $path;
         $body    = $request->all();
 
-        $this->trace->info(TraceCode::CAPITAL_CARDS_PROXY_REQUEST, [
+        $this->trace->debug(TraceCode::CAPITAL_CARDS_PROXY_REQUEST, [
             'request' => $url,
         ]);
 
@@ -194,7 +194,7 @@ RequestInterface
 
     protected function sendRequest($headers, $url, $method, $body)
     {
-        $this->trace->info(TraceCode::CAPITAL_CARDS_PROXY_REQUEST, [
+        $this->trace->debug(TraceCode::CAPITAL_CARDS_PROXY_REQUEST, [
             'url'     => $url,
             'method'  => $method,
         ]);
