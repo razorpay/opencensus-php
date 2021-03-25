@@ -14,7 +14,7 @@ jobs:
     steps:
     - name: checkout
       uses: razorpay/checkout-action@v2
-     # Applying label approved here to use the same in other workflow - pr_workflow to run the back-merge action when 
+     # Applying label approved here to use the same in other workflow - pr_workflow to run the back-merge action when
      # any commits pushed post PR approval
     - name: Apply approved label
       uses: actions/github-script@v3
@@ -36,7 +36,7 @@ jobs:
         from_branch: master
         target_branch: ${{ github.event.pull_request.head.ref }}
         github_token: ${{ secrets.CI_BOT_TOKEN }}
-    # If Backmerge failed, then comment in PR to resolve manually    
+    # If Backmerge failed, then comment in PR to resolve manually
     - name: Comments
       if: ${{failure()}}
       uses: mshick/add-pr-comment@v1
@@ -63,14 +63,109 @@ jobs:
           const regex = /skiproast.*true/i;
           skipFlag = regex.test(context.payload.pull_request.body.toLowerCase())
           return Boolean(skipFlag)
+     # Validate existence of Roast PR NUmber Field
+    - name: Validate existence of roastPRNumber Field
+      uses: actions/github-script@0.9.0
+      id: roast-pr-number
+      with:
+        result-encoding: string
+        script: |
+                const regex = /roastprnumber.*/i;
+                roastPRNumberFlag = regex.test(context.payload.pull_request.body.toLowerCase())
+                return Boolean(roastPRNumberFlag)
+      # Fetch PR Number for Roast mentioned in description
+    - name: Fetch PR Number for Roast
+      uses: actions/github-script@0.9.0
+      if: ${{steps.roast-pr-number.outputs.result == 'true'}}
+      id: roastPRNumber
+      with:
+        result-encoding: string
+        script: |
+          roastPRNumberStr = context.payload.pull_request.body.toLowerCase()
+          var roastPRNumberValue = roastPRNumberStr.substring(roastPRNumberStr.indexOf("roastprnumber"))
+          var prNumber = roastPRNumberValue.substring(16)
+          return prNumber
+      # Get Roast PR State if its approved or not
+    - name: Run Roast API PR flow if value is not null
+      id: get_pr_state
+      if: ${{steps.roastPRNumber.outputs.result != null }}
+      uses: actions/github-script@v3.1.0
+      with:
+        result-encoding: string
+        github-token: ${{ secrets.CI_BOT_TOKEN }}
+        script: |
+          pullnumber = parseInt(${{steps.roastPRNumber.outputs.result}})
+          const result = await github.pulls.listReviews({
+            owner: context.payload.repository.owner.login,
+            repo: 'roast',
+            pull_number: pullnumber,
+            per_page: 100
+          })
+          const prState = result.data.filter(f => f.state.toLowerCase().includes("approved")).length > 0
+          return Boolean(prState)
+      # Get Target Branch for Roast Repo
+    - name: Get Roast Branch for PR
+      id: roast-branch
+      if: |
+        steps.roastPRNumber.outputs.result != null  && steps.get_pr_state.outputs.result == 'true'
+      uses: actions/github-script@v2
+      with:
+        result-encoding: string
+        github-token: ${{ secrets.CI_BOT_TOKEN }}
+        script: |
+          const response = await github.pulls.get({
+            owner: context.payload.repository.owner.login,
+            repo: 'roast',
+            pull_number: ${{steps.roastPRNumber.outputs.result}},
+          })
+          const roastBranch = response.data.head.ref
+          return String(roastBranch)
+      # Rebase Master to a roast branch in Roast Repo
+    - name: Rebase master to a branch
+      id: rebase-branch
+      if: |
+        steps.roastPRNumber.outputs.result != null  && steps.get_pr_state.outputs.result == 'true'
+      uses: linhbn123/rebase-pull-requests@v1.0.1
+      with:
+        repository: 'razorpay/roast'
+        head: 'razorpay:${{ steps.roast-branch.outputs.result }}'
+        base: 'master'
+        token: ${{ secrets.CI_BOT_TOKEN }}
+    - name: Comments
+      if: ${{failure()}}
+      uses: mshick/add-pr-comment@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        message: |
+          **Conflict Error Please rebase manually**
+          allow-repeats: true
+      # Fetch the latest commit of the Roast Repo
+    - name: Fetch latest Commit of the PR in Roast after rebase
+      id: latest-commit
+      if: |
+        steps.roastPRNumber.outputs.result != null  && steps.get_pr_state.outputs.result == 'true'
+      uses: actions/github-script@v3
+      with:
+        result-encoding: string
+        github-token: ${{ secrets.CI_BOT_TOKEN }}
+        script: |
+          const response = await github.pulls.get({
+            owner: context.payload.repository.owner.login,
+            repo: 'roast',
+            pull_number: ${{steps.roastPRNumber.outputs.result}},
+            })
+            const latestCommit = response.data.head.sha
+            return String(latestCommit)
     - name: Run bvt suite if PR submitted as approved
       # checking if the commit_id post backmerge is same then run BVT on it. Otherwise it invoke PR_workflow and run BVT
-      if : env.GIT_NEW_COMMIT_AFTER_MERGE == env.commit_id
+      if: env.GIT_NEW_COMMIT_AFTER_MERGE == env.commit_id
       env:
         SPINNAKER_PASSWORD: ${{ secrets.SPINNAKER_PASSWORD }}
-        WEBHOOK_TRIGGER : bvt-api-approval
-        GITHUB_TOKEN:  ${{ github.token }}
-        SKIP_ROAST :  ${{steps.skip-roast.outputs.result}}
-        GIT_TOKEN :  ${{ secrets.CI_BOT_TOKEN }}
+        WEBHOOK_TRIGGER: bvt-api-approval
+        GITHUB_TOKEN: ${{ github.token }}
+        SKIP_ROAST: ${{steps.skip-roast.outputs.result}}
+        ROAST_PR_COMMIT: ${{steps.latest-commit.outputs.result}}
+        GIT_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
       run: |
         sh ./.github/actions/triggerBvtSuite.sh

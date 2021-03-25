@@ -4,6 +4,7 @@ run_bvt_suite_when_approved() {
   PRNumber=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
   commitId=$(jq --raw-output .pull_request.head.sha "$GITHUB_EVENT_PATH")
   skipRoast=${SKIP_ROAST}
+  roastPRCommit=${ROAST_PR_COMMIT}
   statusCode=$(curl -c /tmp/cookies -o -s -w "%{http_code}" --location --request GET 'https://deploy-api.razorpay.com/login' \
     --header "Authorization: Bearer ${GIT_TOKEN}")
   cookies="$(cat /tmp/cookies | awk '/SESSION/ { print $NF }')"
@@ -12,6 +13,9 @@ run_bvt_suite_when_approved() {
   PIPELINE_ID="20ca36ae-948c-4a7f-8c72-97cb45768c24"
   # https://developer.github.com/v3/pulls/reviews/#list-reviews-on-a-pull-request
   echo "Status Code for fetching spinnaker cookie $statusCode"
+  if [ -z "$roastPRCommit"]; then
+    roastPRCommit="latest"
+  fi
   if [ "$skipRoast" = "true" ]; then
     if [ "$statusCode" = 200 ]; then
       spinnakerBody=$(curl --location --request GET "https://deploy-api.razorpay.com/executions?pipelineConfigIds=${PIPELINE_ID}&limit=50" \
@@ -40,7 +44,7 @@ run_bvt_suite_when_approved() {
       -u github-actions:"$SPINNAKER_PASSWORD" \
       https://deploy-github-actions.razorpay.com/webhooks/webhook/"$WEBHOOK_TRIGGER" \
       -H "content-type: application/json" \
-      -d "{\"review\":{\"state\":\"approved\", \"skip_roast\":\"$skipRoast\"},\"pull_request\":{\"head\":{ \"sha\":\"$commitId\"},\"number\":\"$PRNumber\",\"state\":\"approved\"} }"
+      -d "{\"review\":{\"state\":\"approved\", \"skip_roast\":\"$skipRoast\", \"roast_commit_id\":\"$roastPRCommit\"},\"pull_request\":{\"head\":{ \"sha\":\"$commitId\"},\"number\":\"$PRNumber\",\"state\":\"approved\"} }"
     exit 0
   fi
   URI="https://api.github.com"
@@ -93,12 +97,12 @@ run_bvt_suite_when_approved() {
     done
   fi
   echo "Triggering webhook for bvt testing execution for :" + "$commitId"
+  echo "Triggering webhook for bvt testing execution for Roast PR :" + "$roastPRCommit"
   curl -X POST \
     -u github-actions:"$SPINNAKER_PASSWORD" \
     https://deploy-github-actions.razorpay.com/webhooks/webhook/"$WEBHOOK_TRIGGER" \
     -H "content-type: application/json" \
-    -d "{\"review\":{\"state\":\"approved\", \"skip_roast\":\"$skipRoast\"},\"pull_request\":{\"head\":{ \"sha\":\"$commitId\"},\"number\":\"$PRNumber\",\"state\":\"approved\"} }"
-
+    -d "{\"review\":{\"state\":\"approved\", \"skip_roast\":\"$skipRoast\", \"roast_commit_id\":\"$roastPRCommit\"},\"pull_request\":{\"head\":{ \"sha\":\"$commitId\"},\"number\":\"$PRNumber\",\"state\":\"approved\"} }"
 }
 
 run_bvt_suite_when_approved

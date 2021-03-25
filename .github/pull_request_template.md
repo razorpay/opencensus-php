@@ -1,4 +1,4 @@
-| Details       | Description 
+| Details       | Description
 | --- | ---
 | Desc          | PR Description
 | Issue         | Link to Github issue
@@ -6,4 +6,5 @@
 | SQL Queries   | [ ]
 | Checklist     | - [ ] Post on Slack <br> - [ ] Label PR
 | SkipUTworkflow| false -(change boolean to skip workflow)
-| SkipRoast     | false -(change boolean to skip regression suite execution)  
+| SkipRoast     | false -(change boolean to skip regression suite execution)
+| RoastPRNumber |
