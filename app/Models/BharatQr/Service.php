@@ -10,6 +10,7 @@ use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\QrPaymentRequest;
 use RZP\Models\Mpan\Entity as MpanEntity;
 
 class Service extends Base\Service
@@ -49,6 +50,8 @@ class Service extends Base\Service
 
         $gatewayClass = $this->app['gateway']->gateway($gateway);
 
+        $qrPaymentRequest = null;
+
         try
         {
             $terminalDetails = null;
@@ -82,6 +85,8 @@ class Service extends Base\Service
 
             $gatewayResponse['qr_data'][GatewayResponseParams::GATEWAY] = $gateway;
 
+            $qrPaymentRequest = (new QrPaymentRequest\Service())->create($gatewayResponse, QrPaymentRequest\Type::BHARAT_QR);
+
             $terminal = $terminal ?: $this->getTerminal($gatewayResponse['qr_data']);
 
             $gatewayClass->setGatewayParams($gatewayResponse, $this->mode, $terminal);
@@ -99,10 +104,13 @@ class Service extends Base\Service
         {
             $this->trace->traceException($ex);
 
+            (new QrPaymentRequest\Service())->update($qrPaymentRequest, null, null,
+                                                     $ex->getMessage(), QrPaymentRequest\Type::BHARAT_QR);
+
             return $gatewayClass->getBharatQrResponse(false, $input, $ex);
         }
 
-        $valid = $this->core->processPayment($gatewayResponse, $terminal);
+        $valid = $this->core->processPayment($gatewayResponse, $terminal, $qrPaymentRequest);
 
         $response = $gatewayClass->getBharatQrResponse($valid, $input);
 

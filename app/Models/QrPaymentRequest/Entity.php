@@ -2,7 +2,10 @@
 
 namespace RZP\Models\QrPaymentRequest;
 
+use App;
+
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 
 class Entity extends Base\PublicEntity
 {
@@ -67,4 +70,116 @@ class Entity extends Base\PublicEntity
         self::REQUEST_PAYLOAD,
         self::IS_CREATED,
     ];
+
+    public function getTransactionReference()
+    {
+        return $this->getAttribute(self::TRANSACTION_REFERENCE);
+    }
+
+    public function getQrCodeId()
+    {
+        return $this->getAttribute(self::QR_CODE_ID);
+    }
+
+    public function setRequestSource($requestSource)
+    {
+        $this->setAttribute(self::REQUEST_SOURCE, $requestSource);
+    }
+
+    public function setRequestPayload($requestPayload)
+    {
+        $this->setAttribute(self::REQUEST_PAYLOAD, json_encode($requestPayload));
+    }
+
+    public function setFailureReason($failureReason)
+    {
+        $this->setAttribute(self::FAILURE_REASON, $failureReason);
+    }
+
+    public function setCreated($qrPaymentEntity)
+    {
+        if ($qrPaymentEntity === null)
+        {
+            return;
+        }
+
+        $this->setAttribute(self::IS_CREATED, $qrPaymentEntity->payment !== null);
+    }
+
+    public function setExpected($isExpected)
+    {
+        $this->setAttribute(self::EXPECTED, $isExpected);
+    }
+
+    public function setQrPaymentEntity($entity, $type)
+    {
+        if ($entity === null)
+        {
+            return;
+        }
+
+        switch ($type)
+        {
+            case Type::BHARAT_QR:
+                $this->setBharatQrId($entity->getId());
+                break;
+
+            case Type::UPI_QR:
+                $this->setUpiId($entity->getId());
+                break;
+        }
+    }
+
+    public function setBharatQrId($id)
+    {
+        $this->setAttribute(self::BHARAT_QR_ID, $id);
+    }
+
+    public function setUpiId($id)
+    {
+        $this->setAttribute(self::UPI_ID, $id);
+    }
+
+    public function findAndSetRequestSource()
+    {
+        $app = App::getFacadeRoot();
+
+        $routeName = $app['api.route']->getCurrentRouteName();
+
+        $requestSource = [];
+
+        switch ($routeName)
+        {
+            case 'gateway_payment_callback_get':
+            case 'gateway_payment_callback_post':
+            case 'gateway_payment_callback_bharatqr':
+                $requestSource = [
+                    'source'        => 'callback',
+                    'request_from'  => 'bank',
+                ];
+
+                break;
+
+            case 'reconciliate_via_batch_service':
+                $requestSource = [
+                    'source'        => 'file',
+                    'request_from'  => 'bank',
+                ];
+
+                break;
+
+            default:
+                $app['trace']->info(
+                    TraceCode::UNTRACKED_ENDPOINT_QR_CODE_PAYMENT,
+                    [
+                        'route_name'    => $routeName,
+                        'utr'           => $this->getTransactionReference(),
+                    ]
+                );
+
+                break;
+        }
+
+        $this->setRequestSource(json_encode($requestSource));
+    }
 }

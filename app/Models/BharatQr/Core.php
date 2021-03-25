@@ -9,6 +9,7 @@ use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\VirtualAccount;
+use RZP\Models\QrPaymentRequest;
 use Razorpay\Trace\Logger as Trace;
 
 class Core extends Base\Core
@@ -22,7 +23,7 @@ class Core extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
-    public function processPayment(array $gatewayResponse, $terminal)
+    public function processPayment(array $gatewayResponse, $terminal, $qrPaymentRequest)
     {
         $input = $this->getBharatQrInputParams($gatewayResponse['qr_data']);
 
@@ -88,6 +89,8 @@ class Core extends Base\Core
         finally
         {
             $isExpected = $bharatQr === null ? null : $bharatQr->isExpected();
+
+            (new QrPaymentRequest\Service())->update($qrPaymentRequest, $isExpected, $bharatQr, $errorMessage, QrPaymentRequest\Type::BHARAT_QR);
 
             $methodDimension = ['bqr_method' => $gatewayResponse['qr_data']['method']];
 
