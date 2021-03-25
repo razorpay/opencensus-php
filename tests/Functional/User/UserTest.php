@@ -380,6 +380,19 @@ class UserTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function testOauthLoginForDifferentSource()
+    {
+        // user already exists with confirmed password
+        $this->fixtures->create('user', [
+            'id'    => "FL0nl7kME8j3Dd",
+            'email' => 'hello123@gmail.com',
+            'password' => 'hello123']);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
     /**
      * As oauth valid it will get precedence and give the user details
      * as oauth payload is coming from dashboard backend

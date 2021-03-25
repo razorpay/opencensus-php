@@ -393,11 +393,24 @@ class Core extends Base\Core
         unset($input[Constants::ID_TOKEN]);
     }
 
+    protected function traceLoginRoute(array $input)
+    {
+        $keysToTrace = [Entity::EMAIL, Entity::APP, Entity::OAUTH_PROVIDER, Constants::OAUTH_SOURCE];
+
+        $data = [];
+        foreach ($keysToTrace as $key)
+        {
+            $data[$key] = $input[$key] ?? null;
+        }
+
+        $this->trace->info(TraceCode::USER_LOGIN, $data);
+    }
+
     public function login(array $input, $validate2fa = true)
     {
         $this->getUserEntity()->getValidator()->validateInput('login', $input);
 
-        $this->trace->info(TraceCode::USER_LOGIN, ['email' => $input[Entity::EMAIL]]);
+        $this->traceLoginRoute($input);
 
         if (empty($input[Entity::OAUTH_PROVIDER]) === true)
         {

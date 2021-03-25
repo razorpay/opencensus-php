@@ -82,6 +82,7 @@ class Validator extends Base\Validator
         Entity::APP                   => 'sometimes|string',
         Entity::OAUTH_PROVIDER        => 'required_without:password|string|custom',
         Constants::ID_TOKEN           => 'sometimes|string',
+        Constants::OAUTH_SOURCE       => 'sometimes|string',
     ];
 
     protected static $verifyUserSecondFactorRules = [
