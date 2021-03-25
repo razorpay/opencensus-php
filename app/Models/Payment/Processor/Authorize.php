@@ -1123,7 +1123,7 @@ trait Authorize
 
         $id = $payment->getPublicId();
 
-        $request['url'] = $this->route->getUrlWithPublicAuthInQueryParam('payment_get_status', ['id' => $id]);
+        $request['url'] = $this->route->getUrlWithPublicAuthInQueryParam('payment_get_status', ['x_entity_id' => $id]);
 
         $response = [
             'version'               => 1,
@@ -4976,7 +4976,7 @@ trait Authorize
             'gateway'       => $this->getEncryptedGatewayText($payment->getGateway()),
             'data'          => $request['data'],
             'request'       => [
-                'url'    => $this->route->getUrlWithPublicAuthInQueryParam('payment_get_status', ['id' => $id]),
+                'url'    => $this->route->getUrlWithPublicAuthInQueryParam('payment_get_status', ['x_entity_id' => $id]),
                 'method' => 'GET',
             ]
         ];
@@ -4997,7 +4997,7 @@ trait Authorize
             'gateway'       => $this->getEncryptedGatewayText($payment->getGateway()),
             'data'          => $request['data'],
             'request'       => [
-                'url'    => $this->route->getUrlWithPublicAuthInQueryParam('payment_get_status', ['id' => $id]),
+                'url'    => $this->route->getUrlWithPublicAuthInQueryParam('payment_get_status', ['x_entity_id' => $id]),
                 'method' => 'GET',
             ]
         ];
@@ -7997,7 +7997,7 @@ trait Authorize
             {
                $data['request']['otp_generate_url'] = $this->route->getUrlWithPublicAuthInQueryParam('payment_otp_generate',
                 [
-                        'id' => $payment->getPublicId(),
+                        'x_entity_id' => $payment->getPublicId(),
                         'track_id' => $trackId,
                 ]);
             }

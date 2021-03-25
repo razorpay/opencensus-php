@@ -118,7 +118,7 @@ class Server extends Base\Mock\Server
 
         $hash = $this->getHashOf($publicId);
 
-        return ['id' => $publicId, 'hash' => $hash];
+        return ['x_entity_id' => $publicId, 'hash' => $hash];
     }
 
     protected function getHashOf(string $string): string

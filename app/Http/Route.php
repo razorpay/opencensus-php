@@ -86,12 +86,12 @@ class Route
         'payment_mandate_hq_redirect_authenticate' => ['get',      'payments/{id}/mandate_hq/authenticate/{hash}',   'PaymentCreateController@redirectToAuthorizeFromMandateHQ'          ],
         'payment_get_authentication_entity'        => ['get',      'payments/authentication/{id}',                   'PaymentController@getPaymentAuthenticationEntity'                  ],
         'payment_get_authorization_entity'         => ['get',      'payments/authorization/{id}',                    'PaymentController@getPaymentAuthorizationEntity'                   ],
-        'payment_callback_ajax_with_key_get'       => ['get',      'payments/{id}/callback/ajax/{hash}/{key}',       'PaymentCreateController@postAJAXCallback'                          ],
+        'payment_callback_ajax_with_key_get'       => ['get',      'payments/{x_entity_id}/callback/ajax/{hash}/{key_id}',   'PaymentCreateController@postAJAXCallback'                  ],
         'payment_callback_post'                    => ['post',     'payments/{x_entity_id}/callback/{hash}',         'PaymentCreateController@postCallback'                              ],
         'payment_callback_get'                     => ['get',      'payments/{x_entity_id}/callback/{hash}',         'PaymentCreateController@postCallback'                              ],
         'payment_callback_ajax_get'                => ['get',      'payments/{x_entity_id}/callback/ajax/{hash}',    'PaymentCreateController@postAJAXCallback'                          ],
-        'payment_callback_with_key_post'           => ['post',     'payments/{id}/callback/{hash}/{key}',            'PaymentCreateController@postCallback'                              ],
-        'payment_callback_with_key_get'            => ['get',      'payments/{id}/callback/{hash}/{key}',            'PaymentCreateController@postCallback'                              ],
+        'payment_callback_with_key_post'           => ['post',     'payments/{x_entity_id}/callback/{hash}/{key_id}',      'PaymentCreateController@postCallback'                        ],
+        'payment_callback_with_key_get'            => ['get',      'payments/{x_entity_id}/callback/{hash}/{key_id}',      'PaymentCreateController@postCallback'                        ],
         'payment_get_status'                       => ['get',      'payments/{x_entity_id}/status',                  'PaymentController@getPaymentStatusForAsyncPayments'                ],
         'payment_otp_submit'                       => ['post',     'payments/{x_entity_id}/otp_submit/{hash}',       'PaymentCreateController@postOtpSubmit'                             ],
         'payment_otp_submit_private'               => ['post',     'payments/{x_entity_id}/otp/submit',              'PaymentCreateController@postOtpSubmitPrivate'                      ],
@@ -7404,7 +7404,7 @@ class Route
     {
         $hash = $this->getHashOf($pid);
 
-        $parameters = ['id' => $pid, 'hash' => $hash];
+        $parameters = ['x_entity_id' => $pid, 'hash' => $hash];
 
         return $this->getUrlWithPublicCallbackAuth($parameters, $key, $route);
     }

@@ -454,7 +454,7 @@ final class RequestContext
         // For callback routes, attempt getting key from route parameter first.
         if ($isPublicCallbackRoute === true)
         {
-            $key = $this->request->route()->parameter('key');
+            $key = $this->request->route()->parameter('key_id');
         }
         // Else check key_id first, else fallback to auth user.
         if (empty($key) === true)

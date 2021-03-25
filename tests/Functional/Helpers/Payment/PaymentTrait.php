@@ -2046,7 +2046,7 @@ trait PaymentTrait
         $hash = hash_hmac('sha1', $payment->getPublicId(), $secret);
 
         $params = [
-            'id' => $payment->getPublicId(),
+            'x_entity_id' => $payment->getPublicId(),
             'hash' => $hash,
             'key_id' => $this->ba->getKey()
         ];
@@ -2063,7 +2063,7 @@ trait PaymentTrait
     public function getPaymentRedirectTo3dsUrl($paymentId)
     {
         $params = [
-            'id' => $paymentId,
+            'x_entity_id' => $paymentId,
             'key_id' => $this->ba->getKey()
         ];
 
@@ -2091,7 +2091,7 @@ trait PaymentTrait
     public function getOtpResendUrl($paymentId)
     {
         $params = [
-            'id' => $paymentId,
+            'x_entity_id' => $paymentId,
             'key_id' => $this->ba->getKey()
         ];
 

@@ -1034,7 +1034,7 @@ class BasicAuth
     {
         $this->setType(Type::PUBLIC_AUTH);
 
-        $key = $this->router->current()->parameter(self::KEY);
+        $key = $this->router->current()->parameter(self::KEY_ID);
 
         if ($key === null)
         {
@@ -2496,7 +2496,7 @@ class BasicAuth
         $route = $this->router->currentRouteName();
         if ((empty($key) === true) and (in_array($route, Route::$publicCallback, true) === true))
         {
-            $key = $this->router->current()->parameter(self::KEY);
+            $key = $this->router->current()->parameter(self::KEY_ID);
         }
 
         return $key;
