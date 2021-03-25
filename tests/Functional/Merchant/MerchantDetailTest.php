@@ -3019,6 +3019,16 @@ class MerchantDetailTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testGetBusinessDetailsWithEmptyString()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id']);
+
+        $this->startTest();
+    }
+
+
     public function testGetMerchantDetailsShopEstbVerifiableZone()
     {
         $this->fixtures->create('merchant_detail',['merchant_id' => '10000000000000', 'business_type' => '1']);

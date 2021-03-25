@@ -1062,6 +1062,11 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         return $this->getAttribute(self::BUSINESS_CATEGORY);
     }
 
+    public function setBusinessCategory($category)
+    {
+        return $this->setAttribute(self::BUSINESS_CATEGORY, $category);
+    }
+
     public function getBusinessSubcategory()
     {
         return $this->getAttribute(self::BUSINESS_SUBCATEGORY);

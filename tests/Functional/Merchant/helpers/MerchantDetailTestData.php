@@ -1921,6 +1921,20 @@ return [
         ],
     ],
 
+    'testGetBusinessDetailsWithEmptyString' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/merchant/activation/business_details',
+            'content' => [
+                'search_string' => ''
+            ]
+        ],
+        'response' => [
+            'status_code'   => 200,
+            'content'   =>[]
+        ]
+    ],
+
     'testGetBusinessDetails' => [
         'request'  => [
             'method'  => 'GET',
@@ -1933,7 +1947,7 @@ return [
             'content'     =>
                 [
                     [
-                        "group_name" => "ecommerce",
+                        "group_name" => "Ecommerce",
                         "matches"    => [
                             [
                                 "subcategory_value" => "computer_software_stores",
@@ -1953,7 +1967,7 @@ return [
                         ]
                     ],
                     [
-                        "group_name" => "services",
+                        "group_name" => "Services",
                         "matches"    => [
                             [
                                 "subcategory_value" => "internet_service_providers",
@@ -1965,7 +1979,7 @@ return [
                         ]
                     ],
                     [
-                        "group_name" => "computer_programming_data_processing",
+                        "group_name" => "Computer Programming/Data Processing",
                         "matches"    => [
                             [
                                 "subcategory_value" => "computer_programming_data_processing",
@@ -1977,7 +1991,7 @@ return [
                         ]
                     ],
                     [
-                        "group_name" => "housing",
+                        "group_name" => "Housing and Real Estate",
                         "matches"    => [
                             [
                                 "subcategory_value" => "facility_management",
@@ -1989,7 +2003,7 @@ return [
                         ]
                     ],
                     [
-                        "group_name" => "it_and_software",
+                        "group_name" => "IT and Software",
                         "matches"    => [
                             [
                                 "subcategory_value" => "technical_support",
@@ -2001,7 +2015,7 @@ return [
                         ]
                     ],
                     [
-                        "group_name" => "tours_and_travel",
+                        "group_name" => "Tours and Travel",
                         "matches"    => [
                             [
                                 "subcategory_value" => "aviation",

@@ -476,7 +476,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $searchBusinessDetailsRules = [
-      Constants::SEARCH_STRING  => 'required|string|max:25'
+      Constants::SEARCH_STRING  => 'sometimes|string|max:25'
     ];
 
     protected static $companySearchRules = [
@@ -689,6 +689,20 @@ class Validator extends Base\Validator
         }
     }
 
+    private function extractBusinessCategory(array $input, $subCategory)
+    {
+        if(array_key_exists(Entity::BUSINESS_CATEGORY, $input))
+        {
+            return $input[Entity::BUSINESS_CATEGORY];
+        }
+        if(empty($subCategory) === false)
+        {
+            return BusinessCategory::getCategoryFromSubCategory($subCategory);
+        }
+
+        return $this->entity->getBusinessCategory();
+    }
+
     public function validateBusinessSubcategoryForCategory(array $input)
     {
         // If category and subcategory are not set
@@ -698,11 +712,10 @@ class Validator extends Base\Validator
             return;
         }
 
-        $category    = array_key_exists(Entity::BUSINESS_CATEGORY, $input) ?
-                        $input[Entity::BUSINESS_CATEGORY] : $this->entity->getBusinessCategory();
-
         $subcategory = array_key_exists(Entity::BUSINESS_SUBCATEGORY, $input) ?
                         $input[Entity::BUSINESS_SUBCATEGORY] : $this->entity->getBusinessSubcategory();
+
+        $category = $this->extractBusinessCategory($input, $subcategory);
 
         // If category is `null`
         if (isset($category) === false)
@@ -721,9 +734,10 @@ class Validator extends Base\Validator
 
         $isError            = false;
 
-        // If category is `others` and subcategory is not `null`
+        // If category is `others` and subcategory is not `null` and not equal to `others`
         if (($category === BusinessCategory::OTHERS) and
-            (empty($subcategory) === false))
+            (empty($subcategory) === false) and
+            ($subcategory !== BusinessSubcategory::OTHERS))
         {
             $isError = true;
         }

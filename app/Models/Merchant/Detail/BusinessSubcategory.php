@@ -4,6 +4,8 @@ namespace RZP\Models\Merchant\Detail;
 
 class BusinessSubcategory
 {
+    const OTHERS = 'others';
+
     // Business Subcategory Codes
     const ACCOMMODATION                   = 'accommodation';
     const ACCOUNTING                      = 'accounting';

@@ -2,9 +2,11 @@
 
 namespace RZP\Models\Merchant\Detail\BusinessDetailSearch;
 
+use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Detail\BusinessCategory;
 use RZP\Models\Merchant\Detail\BusinessSubcategory;
 use RZP\Models\Merchant\Detail\BusinessPickerMetaData;
+use RZP\Models\Merchant\Detail\BusinessSubCategoryMetaData as MetaData;
 
 class InMemoryBusinessSearch extends Base
 {
@@ -22,13 +24,33 @@ class InMemoryBusinessSearch extends Base
      */
     public function searchString(): array
     {
-        $this->findStringInSubCategoryScope();
+        if(empty($this->searchString) === true)
+        {
+            $this->fetchAllCategorySubCategory();
+        }
+        else
+        {
+            $this->findStringInSubCategoryScope();
 
-        $this->findStringInMccDescriptor();
+            $this->findStringInMccDescriptor();
 
-        $this->findStringInCategoryScope();
+            $this->findStringInCategoryScope();
+        }
 
         return $this->searchResponse;
+    }
+
+    private function fetchAllCategorySubCategory()
+    {
+        foreach (BusinessCategory::SUBCATEGORY_MAP as $category => $subCategories)
+        {
+            foreach ($subCategories as $subCategory)
+            {
+                $subCategoryDescription = BusinessSubcategory::DESCRIPTIONS[$subCategory];
+
+                $this->createSearchResponse([], $category, $subCategory, $subCategoryDescription);
+            }
+        }
     }
 
     /**
@@ -135,10 +157,14 @@ class InMemoryBusinessSearch extends Base
                                           string $subCategory,
                                           string $subCategoryDescription)
     {
+        $subcategoryMetaData = MetaData::getSubCategoryMetaData($category, $subCategory);
+
         $match = [
             self::SUBCATEGORY_VALUE => $subCategory,
             self::SUBCATEGORY_NAME  => $subCategoryDescription,
             self::TAGS              => $tags,
+            Entity::ACTIVATION_FLOW                  => $subcategoryMetaData[Entity::ACTIVATION_FLOW],
+            MetaData::NON_REGISTERED_ACTIVATION_FLOW => $subcategoryMetaData[MetaData::NON_REGISTERED_ACTIVATION_FLOW]
         ];
 
         $responseCategoryPosition = array_search($category,
@@ -176,7 +202,7 @@ class InMemoryBusinessSearch extends Base
     private function createSearchResponseForNewCategory(string $category, array $match)
     {
         $currentResponse = [
-            self::GROUP_NAME => $category,
+            self::GROUP_NAME => BusinessCategory::DESCRIPTIONS[$category],
             self::MATCHES    => [],
         ];
 

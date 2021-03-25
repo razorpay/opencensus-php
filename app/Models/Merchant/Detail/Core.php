@@ -1289,6 +1289,8 @@ class Core extends Base\Core
             $merchantDetails->setKycClarificationReasons($kycClarificationReasons);
         }
 
+        $this->updateBusinessCategory($merchantDetails, $input);
+
         $this->autoUpdateMerchantCategoryDetailsIfApplicable($merchantDetails, $merchant);
 
         $this->repo->saveOrFail($merchantDetails);
@@ -1317,6 +1319,22 @@ class Core extends Base\Core
         return $merchantDetails;
     }
 
+    protected function updateBusinessCategory($merchantDetails, array $input)
+    {
+        // If category and subcategory are not set
+        if ((isset($input[Entity::BUSINESS_CATEGORY]) === false) and
+            (isset($input[Entity::BUSINESS_SUBCATEGORY]) === false))
+        {
+            return;
+        }
+
+        if ((isset($input[Entity::BUSINESS_CATEGORY]) === false) and
+            (isset($input[Entity::BUSINESS_SUBCATEGORY]) === true))
+        {
+            $category = BusinessCategory::getCategoryFromSubCategory($input[Entity::BUSINESS_SUBCATEGORY]);
+            $merchantDetails->setBusinessCategory($category);
+        }
+    }
 
     /**
      * Fills up dummy file IDs, required fields for merchant activation.
@@ -3541,6 +3559,11 @@ class Core extends Base\Core
     public function getBusinessDetails(array $input) : array
     {
         (new Validator())->validateInput('search_business_details', $input);
+
+        if(isset($input[DEConstants::SEARCH_STRING]) === false)
+        {
+            $input[DEConstants::SEARCH_STRING] = "";
+        }
 
         $inMemorySearch = new InMemoryBusinessSearch($input[DEConstants::SEARCH_STRING]);
 
