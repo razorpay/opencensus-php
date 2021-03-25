@@ -79,7 +79,7 @@ class CardPaymentService
     public function fetchAuthorizationData(array $input)
     {
         $request = [
-            'url'     => 'entities/authorization',
+            'url'     => $this->getBaseUrl() . 'entities/authorization',
             'method'  => 'POST',
             'content' => $input,
             'headers' => [
@@ -100,7 +100,7 @@ class CardPaymentService
         foreach (array_chunk($input, self::CPS_BULK_LIMIT) as $chunk)
         {
             $request = [
-                'url'     => 'entities/all',
+                'url'     => $this->getBaseUrl() . 'entities/all',
                 'method'  => 'POST',
                 'content' => [
                     'authorization' => [
