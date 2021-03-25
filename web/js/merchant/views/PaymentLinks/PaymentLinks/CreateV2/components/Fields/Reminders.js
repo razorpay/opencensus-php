@@ -32,7 +32,10 @@ const Reminders = ({ config, hasNoExpiry, ...extraProps }) => {
       label="Reminders"
       description={description}
       class="Input--vTop"
-      onBlur={track.lj.fields.reminders}
+      onBlur={() => {
+        track.lj.fields.reminders();
+        track.segment.fields.reminders();
+      }}
       {...extraProps}
     />
   );

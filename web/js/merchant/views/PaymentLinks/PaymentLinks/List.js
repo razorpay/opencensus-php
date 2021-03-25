@@ -7,7 +7,12 @@ import HeaderAction from 'common/ui/HeaderAction';
 import Pager from 'common/ui/Pager';
 import Alert from 'common/ui/Forms/Alert';
 import { RZPFeatures } from 'merchant/helpers/data';
-import { getKeysSeparatedByPipe, findBy } from 'common/utils/rzp-utils';
+import {
+  getKeysSeparatedByPipe,
+  findBy,
+  getCommonAnalyticsProperties,
+} from 'common/utils/rzp-utils';
+import { analyticsTrack } from 'common/utils/analytics';
 
 import { fetchPaymentLinks } from 'merchant/reducers/paymentlinks/list';
 import { fetchReminders } from 'merchant/reducers/reminders';
@@ -174,13 +179,21 @@ export default class PaymentLinksContainer extends ListContainer {
               <NavLink class="btn btn-primary" to="/paymentlinks/new">
                 <i class="i i-plus" />
                 <span
-                  onClick={() =>
+                  onClick={() => {
                     tracking.trackEvent(
                       window.rzpQ.onbr().success('dash.pl_action', {
                         action: 'Initiate_PL_Creation',
                       }),
-                    )
-                  }
+                    );
+                    analyticsTrack({
+                      objectName: 'create payment link',
+                      actionName: 'clicked',
+                      screen: 'create payment link',
+                      properties: {
+                        ...getCommonAnalyticsProperties(window.rzp_user),
+                      },
+                    });
+                  }}
                 >
                   Create Payment Link
                 </span>

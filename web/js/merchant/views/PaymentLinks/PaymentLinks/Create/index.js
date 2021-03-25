@@ -26,25 +26,15 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 
 import { updatePLInReduxList } from 'merchant/reducers/paymentlinks/list';
 import { fetchPaymentLinkDetails } from 'merchant/reducers/paymentlinks/details';
-import {
-  fetchReminders,
-  fetchRemindersMerchantConfigs,
-} from 'merchant/reducers/reminders';
+import { fetchReminders, fetchRemindersMerchantConfigs } from 'merchant/reducers/reminders';
 import { luminateRow } from 'merchant/reducers/app';
 
 import Spinner from 'common/ui/Spinner';
 
-import {
-  getURLQueryParams,
-  paiseToRupees,
-  findBy,
-} from 'common/utils/rzp-utils';
-import {
-  trackOpenCreateForm,
-  closePaymentLinkForm,
-  trackSaveDuplicatePaymentLink,
-} from '../ga';
+import { getURLQueryParams, paiseToRupees, findBy } from 'common/utils/rzp-utils';
+import { trackOpenCreateForm, closePaymentLinkForm, trackSaveDuplicatePaymentLink } from '../ga';
 import { generateField } from './Utils';
+import track from './track';
 
 import { transformPLDetails_NewToOld } from 'merchant/views/PaymentLinks/PaymentLinks/js/transformer';
 
@@ -61,10 +51,7 @@ function defaultFieldProps(f) {
 
   if (Array.isArray(f)) {
     return f.forEach(defaultFieldProps.bind(self));
-  } else if (
-    f.hasOwnProperty('inlineFields') &&
-    Array.isArray(f.inlineFields)
-  ) {
+  } else if (f.hasOwnProperty('inlineFields') && Array.isArray(f.inlineFields)) {
     return f.inlineFields.forEach(defaultFieldProps.bind(self));
   }
 
@@ -162,7 +149,7 @@ function WizardFields(field) {
 
 @withRouter
 @connect(
-  state => {
+  (state) => {
     const namespace = state.session.user.isPaymentlinksV2Enabled
       ? 'payment_link_v2'
       : 'payment_link';
@@ -173,7 +160,7 @@ function WizardFields(field) {
     let withExpireRemindersCount = 0,
       withOutExpireRemindersCount = 0;
 
-    state.reminders.merchant_config.items.forEach(ele => {
+    state.reminders.merchant_config.items.forEach((ele) => {
       if (ele.reminder_config.config_template.attr_key === 'expire_by') {
         withExpireRemindersCount += 1;
 
@@ -204,7 +191,7 @@ function WizardFields(field) {
     openModal,
     closeModal,
     luminateRow,
-  }
+  },
 )
 @RTracking(() => window.rzpQ.component('CreateNewContainer'))
 export default class CreateNewContainer extends React.Component {
@@ -225,15 +212,14 @@ export default class CreateNewContainer extends React.Component {
 
     this.state = {
       dirty: {
-        reminder_enable: props.paymentLinksRemindersSettings.isEnabled
-          ? '1'
-          : '0', // 1 => selected
+        reminder_enable: props.paymentLinksRemindersSettings.isEnabled ? '1' : '0', // 1 => selected
       }, // Initialize with no edits in dirty. Object is maintained to keep dirty data of each tab separately.
       _name: {
         // Object, cuz dirty is also object
         hasNoExpiry: props.user.isExpireByRequired ? '0' : '1', // 1 => selected
       },
       isLoading: true,
+      prevFocus: null,
     };
 
     // recording new payments links creation UI form in hotjar
@@ -262,18 +248,16 @@ export default class CreateNewContainer extends React.Component {
         origin: 'dashboard',
         clone: this.isIntentDuplicate ? 1 : 0,
         uuid: this.UUID,
-      })
+      }),
     );
   };
 
   fetchIfIntentDuplicate(invoiceId) {
     return this.props
       .fetchPaymentLinkDetails(invoiceId)
-      .then(data => {
+      .then((data) => {
         // Transform data from new format to old as per
-        data = this.props.user.isPaymentlinksV2Enabled
-          ? transformPLDetails_NewToOld(data)
-          : data;
+        data = this.props.user.isPaymentlinksV2Enabled ? transformPLDetails_NewToOld(data) : data;
 
         this.isIntentDuplicate = true;
         let expire_by = data.expire_by && moment(data.expire_by * 1000);
@@ -283,7 +267,7 @@ export default class CreateNewContainer extends React.Component {
           expire_by = '';
         }
 
-        const defaultValueNotes = Object.keys(data.notes).map(key => ({
+        const defaultValueNotes = Object.keys(data.notes).map((key) => ({
           key,
           value: data.notes[key],
         }));
@@ -301,8 +285,7 @@ export default class CreateNewContainer extends React.Component {
             customer_name: data.customer_details.name,
             expire_by,
             notes: defaultValueNotes,
-            reminder_enable:
-              data.reminder_status && !(data.reminder_status === 'disabled'),
+            reminder_enable: data.reminder_status && !(data.reminder_status === 'disabled'),
           },
           _name: {
             hasNoExpiry: expire_by ? '0' : '1',
@@ -313,10 +296,7 @@ export default class CreateNewContainer extends React.Component {
         const defaultPLExpiryByTime = this.props.user.plDefaultExpiryTime;
 
         if (defaultPLExpiryByTime) {
-          const nextDate = moment(new Date()).add(
-            defaultPLExpiryByTime,
-            'hours'
-          );
+          const nextDate = moment(new Date()).add(defaultPLExpiryByTime, 'hours');
 
           newState.dirty.expire_by = nextDate;
           newState._name.expire_by_date = nextDate;
@@ -326,9 +306,9 @@ export default class CreateNewContainer extends React.Component {
         this.setState(newState);
 
         // state.dirty.notes of this component has different structure than defaultValue of notes component. So, after defaultValue is set, updating notes value in state.dirty
-        setTimeout(_ => this.onChangeNotes(defaultValueNotes), 0);
+        setTimeout((_) => this.onChangeNotes(defaultValueNotes), 0);
       })
-      .catch(err => {
+      .catch((err) => {
         this.props.showNotification({
           type: 'error',
           message: err,
@@ -345,7 +325,7 @@ export default class CreateNewContainer extends React.Component {
       this.props.tracking.trackEvent(
         window.rzpQ.paymentLinks().interaction('pl.clone.start', {
           origin: 'dashboard',
-        })
+        }),
       );
     }
 
@@ -355,9 +335,7 @@ export default class CreateNewContainer extends React.Component {
           isLoading: false,
           dirty: {
             ...this.state.dirty,
-            reminder_enable: this.props.paymentLinksRemindersSettings.isEnabled
-              ? '1'
-              : '0', // 1 => selected
+            reminder_enable: this.props.paymentLinksRemindersSettings.isEnabled ? '1' : '0', // 1 => selected
           },
         });
       })
@@ -393,13 +371,11 @@ export default class CreateNewContainer extends React.Component {
 
   toggleDisableState() {
     /*
-    * Fields like: 'Time Payable' is required on checkbox. So, if value not selected, html marks it as ':invalid' which is tehnically valid in our case.
-    * Hence, relying on is-invalid.
-    * */
+     * Fields like: 'Time Payable' is required on checkbox. So, if value not selected, html marks it as ':invalid' which is tehnically valid in our case.
+     * Hence, relying on is-invalid.
+     * */
     // const invalidFields = document.querySelectorAll('.PaymentLinks--Create-Form :invalid');
-    const invalidFields = document.querySelectorAll(
-      '.PaymentLinks--Create-Form .Input.is-invalid'
-    );
+    const invalidFields = document.querySelectorAll('.PaymentLinks--Create-Form .Input.is-invalid');
     const disableSubmit = invalidFields.length;
 
     if (this.state.disableSubmit !== disableSubmit) {
@@ -464,7 +440,7 @@ export default class CreateNewContainer extends React.Component {
     }
   };
 
-  onBlur = event => {
+  onBlur = (event) => {
     if (!event) return;
 
     const fieldName = event.target.name;
@@ -474,6 +450,8 @@ export default class CreateNewContainer extends React.Component {
     this.trackPaymentLinkCreation(`pl.create.${fieldName}`, {
       modified: this.isIntentDuplicate ? 1 : 0,
     });
+
+    track.segment.fields(fieldName, this.isIntentDuplicate ? true : false);
   };
 
   /* Handle change of time from time picker */
@@ -491,7 +469,7 @@ export default class CreateNewContainer extends React.Component {
   }
 
   /* Handle change of date from calendar */
-  updateDate = ts => {
+  updateDate = (ts) => {
     const newDate = moment(ts);
 
     this.setState({
@@ -509,7 +487,7 @@ export default class CreateNewContainer extends React.Component {
   };
 
   /* Handle change of notes */
-  onChangeNotes = pairs => {
+  onChangeNotes = (pairs) => {
     if (this.props.user.isCustomNotesDropdownEnabled) {
       this.onChange(pairs);
 
@@ -589,7 +567,7 @@ export default class CreateNewContainer extends React.Component {
 
     const extraFields = this.props.user.paymentLinkCreationFormExtraFields;
 
-    extraFields.forEach(field => {
+    extraFields.forEach((field) => {
       if (field.addAt.as === 'prefix') {
         reqPayload[field.addAt.fieldName] = `${reqPayload[field.name]} : ${
           reqPayload[field.addAt.fieldName]
@@ -602,7 +580,7 @@ export default class CreateNewContainer extends React.Component {
     this.trackPaymentLinkCreation('pl.create.issue');
 
     return FORM_FIELDS.onCreate(reqPayload)
-      .then(resp => {
+      .then((resp) => {
         this.setState({
           parentFormLock: false,
         });
@@ -626,16 +604,18 @@ export default class CreateNewContainer extends React.Component {
           tracking.trackEvent(
             window.rzpQ.onbr().success('dash.pl_action', {
               action: 'PL_Creation_Successful',
-            })
+            }),
           );
 
           if (this.isIntentDuplicate) {
             this.props.tracking.trackEvent(
               window.rzpQ.paymentLinks().interaction('pl.clone.complete', {
                 origin: 'dashboard',
-              })
+              }),
             );
           }
+
+          track.segment.form.success(resp, this.isIntentDuplicate ? true : false);
 
           const entityId = resp.data.id;
 
@@ -653,7 +633,7 @@ export default class CreateNewContainer extends React.Component {
           tracking.trackEvent(
             window.rzpQ.onbr().success('dash.pl_action', {
               action: 'PL_Creation_Failed',
-            })
+            }),
           );
 
           throw new Error(resp.errors);
@@ -665,7 +645,7 @@ export default class CreateNewContainer extends React.Component {
           err = [];
 
           errors.length &&
-            errors.forEach(e => {
+            errors.forEach((e) => {
               if (e && e.toLowerCase().indexOf('status code') === -1) {
                 err.push(e);
 
@@ -687,6 +667,8 @@ export default class CreateNewContainer extends React.Component {
           message: err,
         });
 
+        track.segment.form.fail(errors, this.isIntentDuplicate ? true : false);
+
         this.setState({
           parentFormLock: false,
         });
@@ -701,10 +683,7 @@ export default class CreateNewContainer extends React.Component {
             {f.map(WizardFields, this)}
           </Input.Group>
         );
-      } else if (
-        f.hasOwnProperty('inlineFields') &&
-        Array.isArray(f.inlineFields)
-      ) {
+      } else if (f.hasOwnProperty('inlineFields') && Array.isArray(f.inlineFields)) {
         let label = f.label;
         if (typeof label === 'function') {
           label = f.label(this);
@@ -728,9 +707,7 @@ export default class CreateNewContainer extends React.Component {
             disabled={this.state.parentFormLock}
             required={!!isRequired}
           >
-            <div class="Input-content">
-              {f.inlineFields.map(WizardFields, this)}
-            </div>
+            <div class="Input-content">{f.inlineFields.map(WizardFields, this)}</div>
           </Input.Group>
         );
       }
@@ -754,13 +731,11 @@ export default class CreateNewContainer extends React.Component {
     });
 
     if (this.props.user.paymentLinkCreationFormExtraFields.length) {
-      const extraFields = this.props.user.paymentLinkCreationFormExtraFields.map(
-        meta => {
-          const newField = generateField(meta);
+      const extraFields = this.props.user.paymentLinkCreationFormExtraFields.map((meta) => {
+        const newField = generateField(meta);
 
-          return WizardFields.call(this, newField);
-        }
-      );
+        return WizardFields.call(this, newField);
+      });
 
       formFields.push(extraFields);
     }
@@ -768,14 +743,14 @@ export default class CreateNewContainer extends React.Component {
     return formFields;
   }
 
-  onFormAbruptClose = e => {
+  onFormAbruptClose = (e) => {
     const curDirty = this.state.dirty;
     const dirtyFields = Object.keys(curDirty);
 
     let formUnsaved = false;
 
     let count = 0;
-    dirtyFields.forEach(k => {
+    dirtyFields.forEach((k) => {
       if (typeof curDirty[k] !== 'undefined') {
         count++;
       }
@@ -794,7 +769,7 @@ export default class CreateNewContainer extends React.Component {
       this.props.tracking.trackEvent(
         window.rzpQ.paymentLinks().interaction('pl.clone.close', {
           origin: 'dashboard',
-        })
+        }),
       );
     }
 
@@ -826,7 +801,7 @@ export default class CreateNewContainer extends React.Component {
 
     const content = (
       <CreateWizard
-        ref={refId => (this.wizardContent = refId)}
+        ref={(refId) => (this.wizardContent = refId)}
         submitForm={this.submitForm}
         history={this.props.history}
         mode={this.props.mode}
@@ -834,8 +809,9 @@ export default class CreateNewContainer extends React.Component {
         onChange={this.onChange}
         onCreate={this.onCreate}
         isModalView={IS_MODAL_VIEW}
-        onFormAbruptClose={e => {
+        onFormAbruptClose={(e) => {
           this.onFormAbruptClose(e);
+          track.segment.form.close('cancel');
           closePaymentLinkForm('Cancel');
         }}
         disableSubmit={this.state.disableSubmit}
@@ -846,8 +822,9 @@ export default class CreateNewContainer extends React.Component {
     return IS_MODAL_VIEW ? (
       <Modal
         class={classList('PaymentLinks', content && 'animate-down')}
-        onClose={e => {
+        onClose={(e) => {
           this.onFormAbruptClose(e);
+          track.segment.form.close('close');
           closePaymentLinkForm('Cross');
         }}
       >
@@ -860,7 +837,7 @@ export default class CreateNewContainer extends React.Component {
 }
 
 class CreateWizard extends React.Component {
-  closeModal = e => {
+  closeModal = (e) => {
     this.props.onClose();
   };
 
@@ -875,8 +852,8 @@ class CreateWizard extends React.Component {
           {/* ALERTS */}
           {mode === 'test' && (
             <Alert.Warning>
-              You are creating the link in <b>Test Mode</b>. So, only test
-              payments can be made for it.
+              You are creating the link in <b>Test Mode</b>. So, only test payments can be made for
+              it.
             </Alert.Warning>
           )}
 

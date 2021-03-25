@@ -106,7 +106,10 @@ class LinkExpiry extends React.Component {
               onChange={this.onDateChange}
               addonAfter={<i class="i i-date-range" />}
               ref={this.ref}
-              onBlur={track.lj.fields.expiryDate}
+              onBlur={() => {
+                track.lj.fields.expiryDate();
+                track.segment.fields.expiryDate();
+              }}
             />
             {!!state.value && (
               <Input.TimePicker
@@ -115,7 +118,10 @@ class LinkExpiry extends React.Component {
                 defaultValue={props.defaultValue}
                 onChange={this.onTimeChange}
                 addonAfter={<i class="i i-time" />}
-                onBlur={track.lj.fields.expiryTime}
+                onBlur={() => {
+                  track.lj.fields.expiryTime();
+                  track.segment.fields.expiryTime();
+                }}
               />
             )}
           </div>

@@ -9,6 +9,7 @@ export default class Notify extends React.Component {
     document.querySelector('[name=email]').focus();
 
     track.lj.fields.notifyEmail();
+    track.segment.fields.notifyEmail();
   };
 
   handleSmsNotify = (event) => {
@@ -18,6 +19,7 @@ export default class Notify extends React.Component {
     document.querySelector('[name=contact]').focus();
 
     track.lj.fields.notifySms();
+    track.segment.fields.notifySms();
   };
 
   render() {

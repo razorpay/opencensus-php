@@ -11,7 +11,10 @@ const ReferenceId = (props) => (
     class="Input--vTop"
     required={props.required}
     disabled={props.disabled}
-    onBlur={track.lj.fields.receipt}
+    onBlur={() => {
+      track.lj.fields.receipt();
+      track.segment.fields.receipt();
+    }}
   />
 );
 

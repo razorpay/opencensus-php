@@ -243,6 +243,7 @@ export default class PaymentLinkCreateV2 extends React.Component {
         });
 
         track.lj.form.success();
+        track.segment.form.success(resp, this.isIntentDuplicate ? true : false);
 
         this.setState({
           isFormLocked: false,
@@ -270,6 +271,7 @@ export default class PaymentLinkCreateV2 extends React.Component {
         });
 
         track.lj.form.fail({ response: error });
+        track.segment.form.fail(error, this.isIntentDuplicate ? true : false);
 
         this.setState({
           isFormLocked: false,
@@ -354,10 +356,16 @@ export default class PaymentLinkCreateV2 extends React.Component {
             track.lj.form.cancelConfirm({
               status: 'stay',
             });
+            track.segment.form.cancelConfirm({
+              status: 'stay',
+            });
           },
         })
         .catch(() => {
           track.lj.form.cancelConfirm({
+            status: 'leave',
+          });
+          track.segment.form.cancelConfirm({
             status: 'leave',
           });
         });
@@ -365,6 +373,7 @@ export default class PaymentLinkCreateV2 extends React.Component {
       this.props.onClose();
 
       track.lj.form.cancel();
+      track.segment.form.close();
     }
   };
 

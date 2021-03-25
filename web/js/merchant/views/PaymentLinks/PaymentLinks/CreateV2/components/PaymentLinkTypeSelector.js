@@ -42,6 +42,7 @@ export default class PaymentLinkSelector extends React.PureComponent {
     this.props.selectTemplate(linkType);
 
     track.lj.linkTypeSelection.select(linkType);
+    track.segment.linkTypeSelection.select(linkType);
   };
 
   render() {

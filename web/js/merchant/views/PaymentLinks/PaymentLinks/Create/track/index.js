@@ -1,7 +1,5 @@
-import lumberjackEvents from './lumberjack';
 import segmentEvents from './segment';
 
 export default {
-  lj: lumberjackEvents,
   segment: segmentEvents,
 };

@@ -7,7 +7,10 @@ const PaymentFor = (props) => (
     label="Payment For"
     class="Input--vTop"
     placeholder="Payment description"
-    onBlur={track.lj.fields.paymentFor}
+    onBlur={() => {
+      track.lj.fields.paymentFor();
+      track.segment.fields.paymentFor();
+    }}
     {...props}
   />
 );

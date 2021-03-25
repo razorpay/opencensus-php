@@ -19,7 +19,10 @@ const PartialPayments = (props) => (
       class="Input--vTop"
       disabled={props.disabled}
       defaultValue={props.defaultValue}
-      onBlur={track.lj.fields.partialPayment}
+      onBlur={() => {
+        track.lj.fields.partialPayment();
+        track.segment.fields.partialPayment();
+      }}
     />
 
     {props.showFirstPaymentMinAmount && props.defaultValue === '1' && (
