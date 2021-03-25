@@ -370,6 +370,8 @@ export default class WhatsNew extends Component {
       'projectNitro-hyderabad',
       'whats-new-mar21-credpay-gtm',
       'whats-new-mar21-upiintentios-gtm',
+      'trusted-badge-mar2021',
+      'trusted-badge-enabled',
     ];
     const hasUnread = !!this.state.totalUnread;
 

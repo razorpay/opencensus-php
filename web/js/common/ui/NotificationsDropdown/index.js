@@ -297,6 +297,8 @@ export default class NotificationsDropdown extends Component {
       'Feb20-ES1-PILOT',
       'Feb20-ES1-PILOT_V2',
       'projectNitro-hyderabad',
+      'trusted-badge-mar2021',
+      'trusted-badge-enabled',
     ];
     let cardsList = this.state.notifications.map((card, idx) => (
       <div className="media media-action" key={idx}>

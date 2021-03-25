@@ -14,7 +14,7 @@ class Constants
             'end_ts'      => 1622505599,
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/rtb_announcement.svg',
             'track_event' => true,
-            'id'          => 'rtb-before-enabled',
+            'id'          => 'trusted-badge-mar2021',
             'buttons'     => [
                 [
                     'type'  => 'primary-inverted',
@@ -34,7 +34,7 @@ class Constants
             'end_ts'      => 1622505599,
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/rtb_announcement.svg',
             'track_event' => true,
-            'id'          => 'rtb-after-enabled',
+            'id'          => 'trusted-badge-enabled',
             'buttons'     => [
                 [
                     'type'  => 'primary-inverted',
