@@ -279,10 +279,10 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             {
                 throw new ReconciliationException(Base\InfoCode::RECON_PAYMENT_GATEWAY_MISMATCH,
                     [
-                        'recon_gateway' => $this->gateway,
-                        'payment_gateway' => $paymentGateway,
-                        'payment_id' => $this->payment->getId(),
-                        'batch_id' => $this->batch->getId(),
+                        'recon_gateway'     => $this->gateway,
+                        'payment_gateway'   => $paymentGateway,
+                        'payment_id'        => $this->payment->getId(),
+                        'batch_id'          => $this->batchId,
                     ]);
             }
         }
