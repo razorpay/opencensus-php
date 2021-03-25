@@ -167,17 +167,29 @@ export default class App extends Component {
       const kycStatus = user.activated ? 'activated' : 'not activated';
       const activatedAt = user.activated_at;
 
-      analytics.identify({
-        id: user.user.id,
-        userId: user.user.id,
-        emailId: user.email,
-        activatedAt,
-        mode,
-        userRole: user.role,
-        kycStatus,
-        merchantId: user.current,
-        businessCategory: user.businessCategory,
-      });
+      const segmentIdentiyCall = (dataFromAPI) =>
+        analytics.identify({
+          id: user.user.id,
+          userId: user.user.id,
+          emailId: user.email,
+          activatedAt,
+          mode,
+          userRole: user.role,
+          kycStatus,
+          merchantId: user.current,
+          businessCategory: user.businessCategory,
+          ...dataFromAPI,
+        });
+
+      let dataFromAPI = {};
+      merchantFetch('merchant/data_for_segment')
+        .then((res) => {
+          if (res.data) {
+            dataFromAPI = res.data;
+          }
+          segmentIdentiyCall(dataFromAPI);
+        })
+        .catch(() => segmentIdentiyCall(dataFromAPI));
     }
     const self = this;
     window.addEventListener('NOT_AUTHENTICATED', function (e) {
