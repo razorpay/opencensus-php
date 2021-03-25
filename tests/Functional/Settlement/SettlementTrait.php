@@ -121,7 +121,7 @@ trait SettlementTrait
             'content' => $content,
         ];
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 

@@ -835,6 +835,15 @@ class Authorization
         $this->appAuth('rzp_' . $mode, $pwd);
     }
 
+    public function settlementsAuth($mode = 'test')
+    {
+        $settlementConfig = \Config::get('applications.settlements_service');
+
+        $pwd = $settlementConfig['secret'];
+
+        $this->appAuth('rzp_' . $mode, $pwd);
+    }
+
     public function setMerchant($merchant)
     {
         $this->merchant = $merchant;

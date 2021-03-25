@@ -136,8 +136,6 @@ class SettlementTest extends TestCase
 
         Carbon::setTestNow($now);
 
-        $this->ba->appAuth();
-
         // Generate settlements for above transactions
         $content = $this->initiateSettlements(Channel::AXIS);
 
@@ -152,8 +150,6 @@ class SettlementTest extends TestCase
         Carbon::setTestNow($now);
 
         $this->createPaymentEntities(2);
-
-        $this->ba->appAuth();
 
         $channel = Channel::AXIS;
         // Generate settlements for above transactions
@@ -213,7 +209,6 @@ class SettlementTest extends TestCase
 
     public function testMerchantSettlementForCreditTransaction()
     {
-        $this->ba->appAuth();
 
         $this->fixtures->create('credits',
             [
@@ -999,8 +994,6 @@ class SettlementTest extends TestCase
 
         $this->assertEquals($expectedResult, $results);
 
-        $this->ba->appAuth();
-
         $amount = 10000;
 
         $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
@@ -1107,8 +1100,6 @@ class SettlementTest extends TestCase
         ];
 
         $this->assertEquals($expectedResult, $results);
-
-        $this->ba->appAuth();
 
         $amount = 10000;
 
@@ -1257,8 +1248,6 @@ class SettlementTest extends TestCase
 
         $this->assertEquals($expectedResult, $results);
 
-        $this->ba->appAuth();
-
         $amount = 10000;
 
         $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
@@ -1341,8 +1330,6 @@ class SettlementTest extends TestCase
 
     public function testSettlementForMultipleMerchants()
     {
-        $this->ba->appAuth();
-
         $merchants = $this->fixtures->times(2)->create('merchant');
 
         $firstMerchant = $merchants[0]->getId();
@@ -1400,7 +1387,6 @@ class SettlementTest extends TestCase
 
     public function testSettlementIgnoredTxns()
     {
-        $this->ba->appAuth();
 
         $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
 
@@ -1443,7 +1429,7 @@ class SettlementTest extends TestCase
 
     public function testNodalTransferWithGateway()
     {
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_first_data_terminal');
 
@@ -1487,7 +1473,7 @@ class SettlementTest extends TestCase
 
     public function testNodalTransferWithAmount()
     {
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request = [
             'url'     => '/nodal/transfer',
@@ -2460,7 +2446,7 @@ class SettlementTest extends TestCase
             null,
             [PartnerConfig\Entity::SETTLE_TO_PARTNER => true]);
 
-        $this->ba->appAuth('rzp_test', Config::get('applications.settlements_service')['secret']);
+        $this->ba->settlementsAuth();
 
         $this->fixtures->edit('merchant', Partner\Constants::DEFAULT_NON_PLATFORM_SUBMERCHANT_ID, [
             'activated'    => 1,
@@ -2494,7 +2480,7 @@ class SettlementTest extends TestCase
             'activated_at' => Carbon::now(Timezone::IST)->timestamp,
         ]);
 
-        $this->ba->appAuth('rzp_test', Config::get('applications.settlements_service')['secret']);
+        $this->ba->settlementsAuth();
 
         $result = $this->getGlobalConfig(Partner\Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID);
 

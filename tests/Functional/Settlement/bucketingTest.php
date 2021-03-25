@@ -37,7 +37,7 @@ class BucketingTest extends TestCase
 
         $this->setTestTime($timestamp);
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $this->mockSettlementServiceRamp(false);
 
@@ -372,8 +372,6 @@ class BucketingTest extends TestCase
     protected function createPayment($mid = 10000000000000, bool $capture = true)
     {
         $this->createTerminal();
-
-        $this->ba->appAuth();
 
         $payment = $this->defaultAuthPayment();
 
