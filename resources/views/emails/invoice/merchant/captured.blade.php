@@ -7,10 +7,10 @@
     </p>
 <div class="text-center" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121; text-align: center;">
          <h2 style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; margin: 0; font-size: 20px; line-height: 24px; color: {{ $merchant['brand_text_color'] }};">
-            {{ $invoice['type_label'] }}: {{ $invoice['receipt'] or $invoice['id'] }} paid successfully
+            {{ $invoice['type_label'] }}: {{ $invoice['receipt'] ?? $invoice['id'] }} paid successfully
         </h2>
         <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: {{ $merchant['brand_text_color'] }}; margin-top: 8px;">
-            {{ $invoice['receipt'] or $invoice['id'] }} issued on {{ $invoice['issued_at_formatted'] }} has been paid
+            {{ $invoice['receipt'] ?? $invoice['id'] }} issued on {{ $invoice['issued_at_formatted'] }} has been paid
         </div>
     </div>
   @endsection
