@@ -1408,7 +1408,7 @@ export default class ActivationWizard extends React.Component {
      * */
     if (stateName === 'has_gstin' && fieldValue === '1') {
       sideEffectFieldsToUpdate.gstin = '';
-    } else if (stateName === 'has_url' && fieldValue === '1') {
+    } else if (stateName === 'has_url' && fieldValue === '0') {
       sideEffectFieldsToUpdate.business_website = '';
     }
 
