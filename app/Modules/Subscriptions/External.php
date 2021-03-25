@@ -25,8 +25,6 @@ class External extends Base
 
     protected $getsEntityResponse;
 
-    const REQUEST_TIMEOUT = 10;      // In seconds
-
     const MERCHANT_HEADER_KEY = 'X-Razorpay-MerchantId';
     const MODE_HEADER_KEY     = 'X-Razorpay-Mode';
 
@@ -58,7 +56,7 @@ class External extends Base
         ];
 
         $defaultOptions = [
-            'timeout' => self::REQUEST_TIMEOUT,
+            'timeout' => $this->config['timeout'],
             'auth'    => [$username, $password],
         ];
 

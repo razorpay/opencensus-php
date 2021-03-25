@@ -577,6 +577,7 @@ return [
         'url'      => env('APP_SUBSCRIPTIONS_URL'),
         'username' => 'rzp',
         'secret'   => env('APP_SUBSCRIPTIONS_SECRET'),
+        'timeout'  => env('SUBSCRIPTION_SERVICE_TIMEOUT', 10),
     ],
 
     'mandate_hq' => [
