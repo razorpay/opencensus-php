@@ -447,7 +447,6 @@ app
         });
       };
 
-
       const utmData = readUTMsCookie();
 
       function fireInitGauthType(type, onetapHideReason) {
@@ -704,7 +703,7 @@ app
             return cookie.substring(cookieName.length, cookie.length);
         }
         return false;
-      };
+      }
 
       /**
        * util function to set cookie
@@ -718,7 +717,7 @@ app
         const expires = date.toUTCString();
         const domain = isProd ? 'razorpay.com' : 'razorpay.in';
         document.cookie = `${name}=${value};domain=${domain};expires=${expires};`;
-      };
+      }
 
       function readUTMsCookie() {
         const rzpUtmCookie = getCookie('rzp_utm');
@@ -2464,7 +2463,10 @@ app
         if (!$scope.isSignupDisplayEventFired) {
           window.rzpQ &&
             window.rzpQ.push(
-              window.rzpQ.now().onbr().success('signup.display_signup_page', {
+              window.rzpQ
+                .now()
+                .onbr()
+                .success('signup.display_signup_page', {
                   mode: $scope.eventsMode,
                   version: 1,
                   service: $scope.currentService,
@@ -2475,7 +2477,7 @@ app
                   first_page: utmData.firstPage,
                   final_page: utmData.finalPage,
                   website: utmData.website,
-              }),
+                }),
             );
           $scope.isSignupDisplayEventFired = true;
         }

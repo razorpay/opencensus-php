@@ -93,6 +93,17 @@ export default class WhatsNew extends Component {
     document.removeEventListener('click', this.handleDocumentClick, true);
   }
 
+  getNotificationTrackingProperties(notification) {
+    return {
+      id: notification.id,
+      version: notification.version,
+      campaign: notification.campaign,
+      version_description: notification.version_description,
+      target_product_feature: notification.target_product_feature,
+      target_metric: notification.target_metric,
+    };
+  }
+
   setUnreadMsgs() {
     const lastReadTS = this.state.lastReadTS;
     const { notifications } = this.state;
@@ -110,12 +121,12 @@ export default class WhatsNew extends Component {
         (notifID && notifID.length >= 9 && notifID.substring(0, 9) === 'whats-new') ||
         this.whatsNew;
 
-      if (notifID) ID.push(notifID);
+      if (notifID) ID.push(this.getNotificationTrackingProperties(notifications[i]));
       if (lastReadTS < notifStartTS && moment().unix() < notifEndTS) {
         totalUnread++;
 
-        if (notifID) unreadID.push(notifID);
-      } else if (notifID) readID.push(notifID);
+        if (notifID) unreadID.push(this.getNotificationTrackingProperties(notifications[i]));
+      } else if (notifID) readID.push(this.getNotificationTrackingProperties(notifications[i]));
     }
 
     trackLoad(totalUnread);
@@ -217,8 +228,8 @@ export default class WhatsNew extends Component {
       const notifID = notification.id;
 
       if (notifID) {
-        ID.push(notifID);
-        readID.push(notifID);
+        ID.push(this.getNotificationTrackingProperties(notification));
+        readID.push(this.getNotificationTrackingProperties(notification));
       }
     });
 
@@ -250,7 +261,7 @@ export default class WhatsNew extends Component {
     });
   };
 
-  trackEvents = (value, url, type, id) => {
+  trackEvents = (value, url, type, id, notification) => {
     const tracking = this.props.tracking;
     const whatsNew = id && id.length >= 9 && id.substring(0, 9) === 'whats-new';
 
@@ -262,6 +273,7 @@ export default class WhatsNew extends Component {
       window.rzpQ.merchantActions().initiated(eventName, {
         CTAValue: value,
         url: url,
+        ...this.getNotificationTrackingProperties(notification),
         id: id,
         ...(whatsNew && { whats_new: true }),
       }),
@@ -454,6 +466,7 @@ const NotificationCard = ({
   onCTAClick,
   history,
   tracking,
+  ...notification
 }) => {
   const isUnread = _isUnreadNotification(start_ts, end_ts, lastReadTS);
   const [isLoading, setIsLoading] = useState(true);
@@ -512,7 +525,7 @@ const NotificationCard = ({
       ga ? ga.action : title,
       `CTA Click - ${btn.label} - ${isUnread ? 'unread' : 'read'}`,
     );
-    trackEvents && trackEvents(btn.label, urlPath, btn.type, id);
+    trackEvents && trackEvents(btn.label, urlPath, btn.type, id, notification);
     // distinguish between links and buttons that open modals
     if (btn.id === 'announcement-details-l2') {
       e.preventDefault();

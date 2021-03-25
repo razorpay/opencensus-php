@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
-import RazorpayXNitroAnnouncement from 'common/ui/NotificationsDropdown/RazorpayXNitroAnnouncement';
+import RazorpayXNitroAnnouncement, {
+  nitroCampaignId,
+} from 'common/ui/NotificationsDropdown/RazorpayXNitroAnnouncement';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 
 @connect(
@@ -23,7 +25,7 @@ export default class ScheduledNitroBanner extends Component {
     const tracking = this.props.tracking;
     tracking.trackEvent(
       window.rzpQ.merchantActions().success(`${this.props.fromWhere}_display_promo_notification1`, {
-        campaignId: this.props.user.nitroCampaignId,
+        ...nitroCampaignId(),
       }),
     );
   }
@@ -33,7 +35,7 @@ export default class ScheduledNitroBanner extends Component {
 
     tracking.trackEvent(
       window.rzpQ.merchantActions().initiated(`${fromWhere}_click_promo_notification1_cta1`, {
-        campaignId: this.props.user.nitroCampaignId,
+        ...nitroCampaignId(),
       }),
     );
   };

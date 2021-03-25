@@ -35,6 +35,71 @@ const fields = [
   MONTHLY_PAYMENTS_RECEIVED,
 ];
 
+const BENEFITS = {
+  other: [
+    'Make rule based payouts seamlessly',
+    'Transact 24*7 even on bank holidays',
+    'Get a consolidated view of your finances',
+    'Make Payouts via NEFT/IMPS/RTGS',
+    'Process thousands of payouts at once',
+    'Track & automate all your finances',
+  ],
+  nitro_hyderabad_v2: [
+    '500 Free Payouts every months',
+    'Make Payouts via IMPS/NEFT/RTGS/UP',
+    'Make TDS & GST payments with 1 click',
+    'Fully automated vendor payments',
+    'Integrations with Tally & more tools',
+    'Get a consolidated view of your finances',
+  ],
+};
+
+export const nitroCampaignId = () => {
+  const map = {
+    nitro_hyderabad_v2: {
+      version: 'nitro_hyderabad_v2',
+      version_description: 'Nitro for hyderabad',
+    },
+    nitro_hyderabad_v3: {
+      version: 'nitro_hyderabad_v3',
+      version_description: 'Nitro for hyderabad',
+    },
+    project_nitro: {
+      version: 'nitro_bangalore_v1',
+      version_description: 'Nitro for bangalore',
+    },
+    project_nitro_1: {
+      version: 'nitro_bangalore_v1',
+      version_description: 'Nitro for bangalore',
+    },
+    project_nitro_feb_2021: {
+      version: 'nitro_bangalore_v1',
+      version_description: 'Nitro for bangalore',
+    },
+    project_nitro_feb_2021_1: {
+      version: 'nitro_bangalore_v1',
+      version_description: 'Nitro for bangalore',
+    },
+    nitro_midmarket_mumbai_v1: {
+      version: 'nitro_midmarket_mumbai_v1',
+      version_description: 'Nitro for mumbai mid market',
+    },
+  };
+
+  const getExpStatus = (name) => {
+    return ((window.rzp_user.experiments || {})[name] || {}).result === 'on';
+  };
+
+  const featureId = Object.keys(map).find((feature) => getExpStatus(feature));
+
+  return {
+    ...map[featureId],
+    campaign: 'nitro',
+    target_product_feature: 'XCA',
+    target_metric: 'MTU',
+  };
+};
+
 const selector = formValueSelector('customerDetails');
 
 const SubmissionSuccessfull = () => (
@@ -51,6 +116,7 @@ const SubmissionSuccessfull = () => (
 class DetailView extends React.Component {
   render() {
     const { onOfferAccept } = this.props;
+    const content = BENEFITS[nitroCampaignId().version] || BENEFITS.other;
 
     return (
       <div className="razorpayx-announcement-details">
@@ -60,30 +126,12 @@ class DetailView extends React.Component {
               Get 1.65% pricing when you switch to a RazorpayX Current Account
             </h3>
             <ul className="list">
-              <li>
-                <img src="https://razorpay.com/assets/payouts/footer/footer-pointer.png" />
-                Make rule based payouts seamlessly
-              </li>
-              <li>
-                <img src="https://razorpay.com/assets/payouts/footer/footer-pointer.png" />
-                Transact 24*7 even on bank holidays
-              </li>
-              <li>
-                <img src="https://razorpay.com/assets/payouts/footer/footer-pointer.png" />
-                Get a consolidated view of your finances
-              </li>
-              <li>
-                <img src="https://razorpay.com/assets/payouts/footer/footer-pointer.png" />
-                Make Payouts via NEFT/IMPS/RTGS
-              </li>
-              <li>
-                <img src="https://razorpay.com/assets/payouts/footer/footer-pointer.png" />
-                Process thousands of payouts at once
-              </li>
-              <li>
-                <img src="https://razorpay.com/assets/payouts/footer/footer-pointer.png" />
-                Track & automate all your finances
-              </li>
+              {content.map((data) => (
+                <li key={data}>
+                  <img src="https://razorpay.com/assets/payouts/footer/footer-pointer.png" />
+                  {data}
+                </li>
+              ))}
             </ul>
             <div className="btn-wrapper">
               <button class="btn btn-primary logout-btn" onClick={onOfferAccept}>
@@ -131,8 +179,8 @@ class InfoForm extends React.Component {
         cta_text: 'Request for a Current Account',
         pageUrl: window.location.href,
         formId: 'NitroV1-Bangalore-v1',
-        campaignId: this.props.user.nitroCampaignId,
         status,
+        ...nitroCampaignId(),
       }),
     );
   };
@@ -166,7 +214,7 @@ class InfoForm extends React.Component {
           })),
           {
             name: 'campaignid',
-            value: this.props.user.nitroCampaignId || '',
+            value: nitroCampaignId().version,
           },
         ],
         context: {
@@ -192,7 +240,7 @@ class InfoForm extends React.Component {
         interested_in_current_account: 1,
         product_name: 'Current_Account',
         source: 'Project Nitro',
-        Campaign_ID: this.props.user.nitroCampaignId,
+        Campaign_ID: nitroCampaignId().version,
         contact_name: data[NAME],
         business_name: data[NAME],
         contact_email: data[EMAIL],
@@ -436,7 +484,7 @@ const RazorpayXNitroAnnouncement = ({ hideModal, fromWhere, tracking, user }) =>
 
     tracking.trackEvent(
       window.rzpQ.merchantActions().initiated(`${fromWhere}_click_popup_screen1_cta`, {
-        campaignId: user.nitroCampaignId,
+        ...nitroCampaignId(),
       }),
     );
   };

@@ -1478,13 +1478,15 @@ class Service extends Base\Service
             'es_ondeman_restricted_cohorts',
             'project_nitro_feb_2021',
             'project_nitro_feb_2021_1',
-            'nitro_hyderabad_v1',
             'pl_swith_v2',
             'dashboard_show_nps_survey',
             'cred_pay_amex_notification',
             'caw_recurring_charge_axis',
             'rx_enable_amazonpay_wallet_payout',
-            'upi_intent_notification'
+            'nitro_hyderabad_v2',
+            'nitro_hyderabad_v3',
+            'nitro_midmarket_mumbai_v1',
+            'upi_intent_notification',
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);

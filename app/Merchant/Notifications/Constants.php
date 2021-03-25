@@ -138,6 +138,11 @@ class Constants
             'end_ts'      => 1617167373,
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro.svg',
             'id'          => 'projectNitro',
+            'campaign'    => 'nitro',
+            'version'     =>  'nitro_bangalore_v1',
+            "version_description" => 'Nitro for bangalore',
+            "target_product_feature" => 'XCA',
+            "target_metric" => 'MTU',
             'buttons'     => [
                 [
                     'type'  => 'button',
@@ -156,17 +161,70 @@ class Constants
             'start_ts'    => 1612788789,
             'end_ts'      => 1617167373,
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro.svg',
-            'id'          => 'projectNitro-hyderabad',
+            'id'          => 'projectNitro',
+            'campaign'    => 'nitro',
+            'version'     =>  'nitro_hyderabad_v2',
+            "version_description" => 'Nitro for hyderabad',
+            "target_product_feature" => 'XCA',
+            "target_metric" => 'MTU',
             'buttons'     => [
                 [
                     'type'  => 'button',
                     'label' => 'Learn More',
                     'url'   => '',
-                    'id'    => 'announcement-projectNitro-hyderabad-cta1',
+                    'id'    => 'announcement-projectNitro-cta1',
                 ],
             ],
             'filters'     => [
-                'experiments'         => ['nitro_hyderabad_v1'],
+                'experiments'         => ['nitro_hyderabad_v2'],
+            ],
+        ],
+        [
+            'title'       => 'Get 1.65% pricing with RazorpayX',
+            'description' => 'Open a current account with RazorpayX & reduce your transaction fee to 1.65%.',
+            'start_ts'    => 1612788789,
+            'end_ts'      => 1617167373,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro.svg',
+            'id'          => 'projectNitro',
+            'campaign'    => 'nitro',
+            'version'     =>  'nitro_hyderabad_v3',
+            "version_description" => 'Nitro for hyderabad',
+            "target_product_feature" => 'XCA',
+            "target_metric" => 'MTU',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Learn More',
+                    'url'   => '',
+                    'id'    => 'announcement-projectNitro-cta1',
+                ],
+            ],
+            'filters'     => [
+                'experiments'         => ['nitro_hyderabad_v3'],
+            ],
+        ],
+        [
+            'title'       => 'Get 1.65% pricing with RazorpayX',
+            'description' => 'Open a current account with RazorpayX & reduce your transaction fee to 1.65%.',
+            'start_ts'    => 1612788789,
+            'end_ts'      => 1617167373,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro.svg',
+            'id'          => 'projectNitro',
+            'campaign'    => 'nitro',
+            'version'     =>  'nitro_midmarket_mumbai_v1',
+            "version_description" => 'Nitro for mumbai mid market',
+            "target_product_feature" => 'XCA',
+            "target_metric" => 'MTU',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Learn More',
+                    'url'   => '',
+                    'id'    => 'announcement-projectNitro-cta1',
+                ],
+            ],
+            'filters'     => [
+                'experiments'         => ['nitro_midmarket_mumbai_v1'],
             ],
         ],
         [
@@ -701,7 +759,7 @@ class Constants
             'start_ts'    => 1616544000,
             'end_ts'      => 1624492800,
             'filters'     => [
-                'experiments'         => ['whats-new-dec-2020', 'upi_intent_notification'],
+                'experiments'         => ['upi_intent_notification'],
             ],
             'l2_content'  => [
                 'content'     => "<div><div class='title'> <img src='https://cdn.razorpay.com/static/assets/notifs/upi_intent.svg' width='32px' /><p>Unlock 200% growth for your UPI Payments</p></div><div> <p> We’re thrilled to announce that Razorpay is the first payment gateway to launch <b>UPI Intent for iOS.</b></p><div class='paragraph'><p> ‘UPI Intent’ enables your customers to seamlessly complete the payment from their favourite UPI app like GPay or PhonePe instead of typing in their UPI ID. This results in a far superior payment experience and <b>5-10% increase in success rates.</b></p></div><div class='image'> <img src='https://cdn.razorpay.com/static/assets/whats-new/upi-app-intent.gif' /></div><p> Until recently, UPI Intent was available <b>only</b> on Android Apps.</p><div class='paragraph'> Now, with a few lines of code, you can enable UPI Intent payments on your iOS App.</div><p> Click <a href='https://razorpay.com/docs/payment-gateway/payment-methods/upi-intent/ios/' target='_blank' >here</a>, or on the <b>‘Get iOS SDK’</b> below for details on how to integrate UPI Intent on your iOS App.</p><div class='paragraph'> Go ahead and provide the best payment experience to your customers.</div></div></div>",
