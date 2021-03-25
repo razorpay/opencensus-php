@@ -401,6 +401,9 @@ return [
             Permission::VIEW_ACTIVATION_FORM                => [
                 'assignable' => true,
             ],
+            Permission::RESET_WEBHOOK_DATA                => [
+                'assignable' => true,
+            ],
             Permission::EDIT_MERCHANT_LOCK_ACTIVATION       => [
                 'assignable' => true,
                 'workflow'   => true

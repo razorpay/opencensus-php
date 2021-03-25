@@ -48,6 +48,11 @@ abstract class Processor extends Base\Core
         return [];
     }
 
+    public function getWebhookDataToReset(Entity $bankingAccount, \RZP\Models\BankingAccount\State\Entity $stateChangeLogBeforeProcessedState): array
+    {
+        return [];
+    }
+
     public function postProcessAccountInfoNotificationResponse(array $input, string $status)
     {
         return [];

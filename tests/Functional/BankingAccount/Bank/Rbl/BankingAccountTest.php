@@ -395,6 +395,64 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
     }
 
+    public function testResetWebhookDataCase()
+    {
+        $this->testUpdatedStatusFromInitiatedToProcessing();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->updateBankingAccount($bankingAccount, [
+            Entity::STATUS                         => Status::PROCESSED,
+            Entity::SUB_STATUS                     => Status::API_ONBOARDING_IN_PROGRESS,
+            Entity::BANK_INTERNAL_STATUS           => Rbl\Status::API_ONBOARDING_IN_PROGRESS,
+            Entity::ACCOUNT_IFSC                   => 'RATN0000156',
+            Entity::ACCOUNT_NUMBER                 => '309002180853',
+            Entity::BENEFICIARY_NAME               => 'INTERNET BANKING CA',
+            Entity::BANK_INTERNAL_REFERENCE_NUMBER => 'random',
+            Entity::BANK_REFERENCE_NUMBER          => '12345',
+            Entity::BENEFICIARY_ADDRESS1           => 'RAM NAGAR',
+            Entity::BENEFICIARY_ADDRESS2           => 'ADARSHA LANE',
+            Entity::BENEFICIARY_ADDRESS3           => '.',
+            Entity::ACCOUNT_ACTIVATION_DATE        => '1571119612',
+            Entity::BENEFICIARY_CITY               => 'MUMBAI',
+            Entity::BENEFICIARY_STATE              => 'MAHARASH',
+            Entity::BENEFICIARY_COUNTRY            => 'INDIA',
+            Entity::BENEFICIARY_MOBILE             => '1231231231',
+            Entity::BENEFICIARY_EMAIL              => 'test@razorpay.com',
+            Entity::BENEFICIARY_PIN                => '560030',
+        ]);
+
+        $this->addNewPermissionToExistingRole('reset_webhook_data');
+
+        $this->ba->adminAuth();
+
+        $resetWebhookDataToReplace = [
+            'request' => [
+                'url' => '/banking_accounts/' . $bankingAccount->getPublicId() . '/webhooks/account_info/reset'
+            ]
+        ];
+
+        $this->startTest($resetWebhookDataToReplace);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $statusChangeLogs = $this->getStatusChangeLog($bankingAccount);
+
+        $this->assertNull($bankingAccount->getAccountNumber());
+
+        $this->assertNull($bankingAccount->getBeneficiaryName());
+
+        $this->assertEquals(RZP\Models\BankingAccount\Status::PROCESSING, $bankingAccount->getStatus());
+
+        $statusChangeLogsArray = $statusChangeLogs['items'];
+
+        $this->assertEquals($statusChangeLogsArray[count($statusChangeLogsArray) - 1]['status'], $bankingAccount->getStatus());
+
+        $this->assertEquals($statusChangeLogsArray[count($statusChangeLogsArray) - 1]['sub_status'], $bankingAccount->getSubStatus());
+
+        $this->assertEquals($statusChangeLogsArray[count($statusChangeLogsArray) - 1]['bank_status'], $bankingAccount->getBankInternalStatus());
+    }
+
     public function testAccountInfoWebhookWithIncorrectAndThenCorrectDetails()
     {
         $response = $this->testFailedBankAccountInfoNotification();
@@ -3257,5 +3315,18 @@ class BankingAccountTest extends TestCase
             'Access Denied');
 
         $this->testCreateBankingAccountActivationComment();
+    }
+
+    public function addNewPermissionToExistingRole(string $permissionName)
+    {
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $permission = $this->fixtures->on('test')->create('permission', [
+            'name' => $permissionName
+        ]);
+
+        $role->permissions()->attach($permission->getId());
     }
 }

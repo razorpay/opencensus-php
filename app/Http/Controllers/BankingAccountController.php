@@ -154,4 +154,11 @@ class BankingAccountController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function resetWebhookData(string $id)
+    {
+        $response = $this->service()->resetWebhookData($id);
+
+        return ApiResponse::json($response);
+    }
 }

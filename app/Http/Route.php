@@ -2007,6 +2007,8 @@ class Route
         'banking_account_webhook_account_info'
          . '_internal'                            => ['post',     '/banking_accounts/internal/webhooks/account_info/{channel}','BankingAccountController@processAccountInfoWebhook'        ],
 
+        'banking_account_webhook_data_reset'      => ['post',     'banking_accounts/{id}/webhooks/account_info/reset',         'BankingAccountController@resetWebhookData'                 ],
+
         'banking_account_activation_status_'
         . 'change_log'                            => ['get',      'banking_accounts/activation/{id}/status_change_log',        'BankingAccountController@getActivationStatusChangeLog'   ],
         'banking_account_comments_create'         => ['post',     'banking_accounts/activation/{id}/comments',                 'BankingAccountController@createActivationComment'        ],
@@ -4156,6 +4158,7 @@ class Route
         'payment_on_hold_bulk_update',
         'banking_serviceable_pincodes',
         'banking_account_update',
+        'banking_account_webhook_data_reset',
         'banking_account_activate',
         'banking_account_webhook_account_info_internal',
         'banking_account_activation_status_change_log',
@@ -5076,6 +5079,7 @@ class Route
         'payment_card_vault_migrate'               => Permission::VAULT_TOKEN_CREATE,
         'vault_token_renewal'                      => Permission::VAULT_TOKEN_CREATE,
         'banking_account_update'                   => Permission::VIEW_ACTIVATION_FORM, // Internal entity updates are behind stricter permissions.
+        'banking_account_webhook_data_reset'       => Permission::RESET_WEBHOOK_DATA,
         'banking_account_activate'                 => Permission::BANKING_UPDATE_ACCOUNT,
         'banking_account_webhook_account'
         . '_info_internal'                        => Permission::BANKING_UPDATE_ACCOUNT,

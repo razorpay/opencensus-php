@@ -535,4 +535,55 @@ class Service extends Base\Service
 
         return multidim_array_unique($admins, Admin\Entity::ID);
     }
+
+    public function resetWebhookData(string $id)
+    {
+        $bankingAccount = $this->repo->banking_account->findByPublicId($id);
+
+        $channel = $bankingAccount->getChannel();
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_WEBHOOK_DATA_RESET,
+            [
+                'id' => $bankingAccount->getId(),
+                'channel' => $channel,
+            ]);
+
+        if($bankingAccount->getStatus() !== Status::PROCESSED)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_WEBHOOK_RESET_NOT_ALLOWED_FOR_CURRENT_STATUS);
+        }
+
+        $stateChangeLogBeforeProcessedState = $this->getStatusChangeLogBeforeProcessedState($bankingAccount);
+
+        $admin = $this->app['basicauth']->getAdmin();
+
+        $account = $this->core->resetAccountInfoWebhookData($bankingAccount, $stateChangeLogBeforeProcessedState, $admin);
+
+        return $account->toArrayPublic();
+    }
+
+    /**
+     * @param $bankingAccount
+     * @return mixed
+     */
+    public function getStatusChangeLogBeforeProcessedState(Entity $bankingAccount)
+    {
+        $stateChangeLogArray = $this->core->getActivationStatusChangeLog($bankingAccount);
+
+        $totalStateChangeLogsCount = count($stateChangeLogArray);
+
+        $stateChangeLogBeforeProcessedState = $stateChangeLogArray[$totalStateChangeLogsCount - 2];
+
+        $currentStatus =  $stateChangeLogArray[$totalStateChangeLogsCount - 1]['status'];
+
+        for ($i = $totalStateChangeLogsCount - 2; $i >= 0; $i--) {
+            if ($stateChangeLogArray[$i]['status'] != $currentStatus) {
+                $stateChangeLogBeforeProcessedState = $stateChangeLogArray[$i];
+                break;
+            }
+        }
+        return $stateChangeLogBeforeProcessedState;
+    }
 }

@@ -468,6 +468,19 @@ return [
         ],
     ],
 
+    'testResetWebhookDataCase' => [
+        'request'  => [
+            'url'     => 'banking_accounts/{id}/webhooks/account_info/reset',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'channel'       => 'rbl'
+            ]
+        ],
+    ],
+
     'testUpdateBankingAccountToInitiated' => [
         'request'  => [
             'url'     => '/banking_account',

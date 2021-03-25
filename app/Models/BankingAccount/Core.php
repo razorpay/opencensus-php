@@ -655,6 +655,60 @@ class Core extends Base\Core
         return $bankingAccount;
     }
 
+    public function resetAccountInfoWebhookData(Entity $bankingAccount, State\Entity $stateChangeLogBeforeProcessedState, Base\PublicEntity $entity = null)
+    {
+        $channel = $bankingAccount->getChannel();
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_WEBHOOK_DATA_RESET,
+            [
+                'id'      => $bankingAccount->getId(),
+                'channel' => $channel
+            ]);
+
+        $processor = $this->getProcessor($channel);
+
+        $inputToUpdate = $processor->getWebhookDataToReset($bankingAccount, $stateChangeLogBeforeProcessedState);
+
+        // We need activation detail input too here, as when we are resetting the webhook data we are -
+        // -> adding a system generated comment
+        // -> updating the assignee_team
+        //So Logging this step will be useful for auditing purposes.
+        $activationDetailInput = $this->extractAndValidateActivationDetailInput($inputToUpdate, $entity);
+
+        $bankingAccount->fill($inputToUpdate);
+
+        // Validating Bank Internal Status
+        if (empty($input[Entity::BANK_INTERNAL_STATUS]) === false)
+        {
+            $processor->validateStatusMapping($input[Entity::BANK_INTERNAL_STATUS], $bankingAccount->getStatus(), $bankingAccount->getSubStatus());
+
+            $bankingAccount->setBankInternalStatus($input[Entity::BANK_INTERNAL_STATUS]);
+        }
+
+        $this->repo->transaction(function()
+            use ($bankingAccount,
+                $activationDetailInput,
+                $entity)
+        {
+            $this->repo->saveOrFail($bankingAccount);
+
+            // storing state change
+            $stateCore = new State\Core;
+
+            $stateCore->captureNewBankingAccountState($bankingAccount, $entity);
+
+            if (empty($activationDetailInput) === false) {
+                // if ActivationDetail is passed with comment in input, entity will always be admin, not merchant.
+                $this->activationDetailService->updateForBankingAccount($bankingAccount->getPublicId(), $activationDetailInput,false, $entity);
+            }
+        });
+
+        $bankingAccount->load('bankingAccountDetails');
+
+        return $bankingAccount;
+    }
+
     public function updateBankingAccountWithFtsId(Entity $bankingAccount, $ftsFundAccountId)
     {
         $bankingAccount->setFtsFundAccountId($ftsFundAccountId);

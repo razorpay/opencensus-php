@@ -16,6 +16,9 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankingAccount\Entity;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\GatewayErrorException;
+use RZP\Models\BankingAccount\Activation\Comment;
+use RZP\Models\BankingAccount\Constants;
+use RZP\Models\Base\PublicEntity;
 
 class Processor extends BankingAccount\Gateway\Processor
 {
@@ -105,6 +108,40 @@ class Processor extends BankingAccount\Gateway\Processor
         $attributes['activation_detail'][BankingAccount\Activation\Detail\Entity::ASSIGNEE_TEAM] = 'ops';
 
         return $attributes;
+    }
+
+    public function getWebhookDataToReset(Entity $bankingAccount, BankingAccount\State\Entity $stateChangeLogBeforeProcessedState): array
+    {
+        return [
+            Entity::ACCOUNT_NUMBER => null,
+            Entity::BENEFICIARY_NAME => null,
+            Entity::BANK_INTERNAL_REFERENCE_NUMBER => null,
+            Entity::ACCOUNT_ACTIVATION_DATE => null,
+            Entity::BANK_REFERENCE_NUMBER => $bankingAccount->getBankReferenceNumber(),
+            Entity::ACCOUNT_IFSC => null,
+            Entity::BENEFICIARY_ADDRESS1 => null,
+            Entity::BENEFICIARY_ADDRESS2 => null,
+            Entity::BENEFICIARY_ADDRESS3 => null,
+            Entity::BENEFICIARY_CITY => null,
+            Entity::BENEFICIARY_STATE => null,
+            Entity::BENEFICIARY_COUNTRY => null,
+            Entity::BENEFICIARY_PIN => null,
+            Entity::BENEFICIARY_MOBILE=> null,
+            Entity::BENEFICIARY_EMAIL => null,
+            Entity::STATUS=> $stateChangeLogBeforeProcessedState['status'],
+            Entity::SUB_STATUS=> $stateChangeLogBeforeProcessedState['sub_status'],
+            Entity::BANK_INTERNAL_STATUS=> $stateChangeLogBeforeProcessedState['bank_status'],
+            Entity::ACTIVATION_DETAIL => [
+                Entity::ASSIGNEE_TEAM => $stateChangeLogBeforeProcessedState['assignee_team'],
+                Comment\Entity::COMMENT => [
+                    Comment\Entity::COMMENT            => Constants::BANKING_ACCOUNT_RESET_WEBHOOK_COMMENT,
+                    Comment\Entity::SOURCE_TEAM_TYPE   => Constants::BANKING_ACCOUNT_SOURCE_TEAM_OR_TYPE_AS_INTERNAL,
+                    Comment\Entity::SOURCE_TEAM        => Constants::X_OPS_TEAM,
+                    Comment\Entity::ADDED_AT           => time(),
+                    Comment\Entity::TYPE               => Constants::BANKING_ACCOUNT_SOURCE_TEAM_OR_TYPE_AS_INTERNAL
+                ]
+            ]
+        ];
     }
 
     public function postProcessAccountInfoNotificationResponse(array $input, string $status)

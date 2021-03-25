@@ -1166,6 +1166,7 @@ class PublicErrorDescription
     const BAD_REQUEST_ERROR_WRONG_BANKING_ACCOUNT_CREDENTIALS                       = 'Account details are incorrect. Please try again';
     const BAD_REQUEST_BANKING_ACCOUNT_ALREADY_ACTIVATED                             = 'Operation failed, your account is already activated';
     const BAD_REQUEST_BANKING_ACCOUNT_ACTIVATION_PERMITTED_ONLY_ON_ADMIN_AUTH       = 'Access forbidden for requested resource';
+    const BAD_REQUEST_BANKING_ACCOUNT_WEBHOOK_RESET_NOT_ALLOWED_FOR_CURRENT_STATUS  = 'Webhook data reset not allowed for current status';
 
     // stork
     const BAD_REQUEST_STORK_WEBHOOK_ALREADY_CREATED                                 = 'Webhook setting already exists';
