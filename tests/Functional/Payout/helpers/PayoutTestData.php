@@ -5341,7 +5341,7 @@ return [
         ],
     ],
 
-    'testAdd101CustomPayoutPurposes' => [
+    'testAdd201CustomPayoutPurposes' => [
         'request' => [
             'method'  => 'POST',
             'url'     => '/payouts/purposes',
@@ -5354,7 +5354,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'You have reached the maximum limit (100) of custom payout purposes that can be created.',
+                    'description' => 'You have reached the maximum limit (200) of custom payout purposes that can be created.',
                 ],
             ],
             'status_code' => 400,

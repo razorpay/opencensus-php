@@ -29,7 +29,10 @@ use RZP\Models\Workflow\Action\Checker\Entity as ActionChecker;
 class Validator extends Base\Validator
 {
 
-    const MAX_PURPOSES_ALLOWED = 100;
+    // We are increasing this from 100 to 200. Slack thread for reference:
+    // https://razorpay.slack.com/archives/C013868TRK4/p1615796447155300?thread_ts=1615544530.147100&cid=C013868TRK4
+    // TODO: Finalize on some final number that we wish to support in the long run
+    const MAX_PURPOSES_ALLOWED = 200;
 
     /**
      * Rate limit on items sending for bulk payout create.

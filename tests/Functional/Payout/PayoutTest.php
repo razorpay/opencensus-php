@@ -4103,9 +4103,9 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
-    public function testAdd101CustomPayoutPurposes()
+    public function testAdd201CustomPayoutPurposes()
     {
-        for ($count = 0; $count<100; $count++)
+        for ($count = 0; $count < Payout\Validator::MAX_PURPOSES_ALLOWED; $count++)
         {
             $this->addCustomPayoutPurpose('Give Bonus To Mehul '. $count, 'settlement');
         }
