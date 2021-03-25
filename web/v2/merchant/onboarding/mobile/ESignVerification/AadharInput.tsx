@@ -10,7 +10,7 @@ import Link from '@commander/shield/src/shared/Link';
 import Checkbox from '@razorpay/blade/src/atoms/Checkbox';
 import useActivation from '../hooks/useActivation';
 import { Divider, StyledView } from './Styled';
-import { analyticsTrack, getCommonSegmentProperties } from '../../../../services/tracking/segment';
+import { analyticsTrack } from '../../../../services/tracking/segment';
 import { useApp } from 'v2/context/App';
 
 interface AadharInputPropsT {
@@ -44,7 +44,6 @@ const AadharInput: React.FC<AadharInputPropsT> = ({
       screen: 'home page',
       properties: {
         userId: user.id,
-        ...getCommonSegmentProperties(),
       },
     });
   };
@@ -68,7 +67,7 @@ const AadharInput: React.FC<AadharInputPropsT> = ({
     >
       {(formikProps) => (
         <Form>
-          <Space margin={[0, 0, 5, 0]}>
+          <Space>
             <View>
               <Text size="medium" weight="bold" color="shade.970">
                 Aadhar Verification
@@ -104,7 +103,6 @@ const AadharInput: React.FC<AadharInputPropsT> = ({
                         screen: 'home page',
                         properties: {
                           userId: user.id,
-                          ...getCommonSegmentProperties(),
                         },
                       });
                     }}
@@ -116,12 +114,14 @@ const AadharInput: React.FC<AadharInputPropsT> = ({
                         size="small"
                         type="submit"
                         disabled={!isAadharLinkedToMobile || disabled}
+                        icon="chevronRight"
+                        iconAlign="right"
                       >
                         Verify with OTP
                       </Button>
                     </View>
                   </Space>
-                  <Space padding={[0, 0, 4]}>
+                  <Space padding={[0, 0, 2]}>
                     <View>
                       <Text size="small" color="shade.960">
                         By verifying, you consent to share your aadhar details with us and agree to{' '}

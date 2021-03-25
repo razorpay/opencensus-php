@@ -11,7 +11,7 @@ exports[`Storyshots Onboarding/ESignVerification Default 1`] = `
           action="#"
         >
           <div
-            class="Viewweb__View-sc-1i53gcl-0 iLSGsw Spaceweb__Space-sc-1gh69p2-0 ZKiRt"
+            class="Viewweb__View-sc-1i53gcl-0 iLSGsw Spaceweb__Space-sc-1gh69p2-0 cwrkNt"
           >
             <div
               class="Textweb__Text-dvo2dp-0 bMeUFS"
@@ -93,10 +93,24 @@ exports[`Storyshots Onboarding/ESignVerification Default 1`] = `
                   >
                     Verify with OTP
                   </div>
+                  <svg
+                    fill="none"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    width="16"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      clip-rule="evenodd"
+                      d="M8.29289 5.29289C8.68342 4.90237 9.31658 4.90237 9.70711 5.29289L15.7071 11.2929C16.0976 11.6834 16.0976 12.3166 15.7071 12.7071L9.70711 18.7071C9.31658 19.0976 8.68342 19.0976 8.29289 18.7071C7.90237 18.3166 7.90237 17.6834 8.29289 17.2929L13.5858 12L8.29289 6.70711C7.90237 6.31658 7.90237 5.68342 8.29289 5.29289Z"
+                      fill="rgba(43, 131, 234, 1.0 )"
+                      fill-rule="evenodd"
+                    />
+                  </svg>
                 </button>
               </div>
               <div
-                class="Viewweb__View-sc-1i53gcl-0 iLSGsw Spaceweb__Space-sc-1gh69p2-0 kDmLGn"
+                class="Viewweb__View-sc-1i53gcl-0 iLSGsw Spaceweb__Space-sc-1gh69p2-0 ecUaFp"
               >
                 <div
                   class="Textweb__Text-dvo2dp-0 dMKfEI"
@@ -119,7 +133,7 @@ exports[`Storyshots Onboarding/ESignVerification Default 1`] = `
               </div>
             </div>
             <div
-              class="Styled__Divider-cgqkio-0 ddRNYc Spaceweb__Space-sc-1gh69p2-0 dZliiW"
+              class="Styled__Divider-cgqkio-0 kjEHCV Spaceweb__Space-sc-1gh69p2-0 dZliiW"
             />
             <div
               class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 hRPkye"

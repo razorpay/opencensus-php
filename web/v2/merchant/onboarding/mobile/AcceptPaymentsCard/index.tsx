@@ -5,15 +5,11 @@ import { fetch } from 'v2/services/rest/rest-fetch';
 import Space from '@razorpay/blade/src/atoms/Space';
 import Text from '@razorpay/blade/src/atoms/Text';
 import View from '@razorpay/blade/src/atoms/View';
-// import Button from '@razorpay/blade/src/atoms/Button';
-// import Flex from '@razorpay/blade/src/atoms/Flex';
-// import Link from '@commander/shield/src/shared/Link';
 import { useSnackbar } from 'v2/components/SnackBar/SnackbarContext';
 import useActivation from '../hooks/useActivation';
 import { isUnregisteredBusiness } from '../services/utils';
 import AcceptPaymentsIcon from './Icons/AcceptPaymentsIcon.svg';
 import * as Messages from './Constants';
-import AcceptPaymentCardShimmer from './AcceptPaymentCardShimmer';
 
 const ViewWithBackground = styled(View)`
   background: url("${AcceptPaymentsIcon}") right no-repeat;
@@ -37,18 +33,6 @@ const Description = ({ content }) => (
   </Space>
 );
 
-// const LinkButton = ({ content }) => (
-//   <Link size="xsmall" weight="bold" color="primary.800">
-//     {content}
-//   </Link>
-// );
-
-// const SecondaryButton = ({ content }) => (
-//   <Button variant="secondary" size="small">
-//     {content}
-//   </Button>
-// );
-
 const getCardContent = (activationData, isWebsiteInWorkflow, internationalWorkflowData) => {
   const isAccepted = activationData.activation_status === 'activated';
   const businessWebsite = activationData.business_website;
@@ -69,7 +53,6 @@ const getCardContent = (activationData, isWebsiteInWorkflow, internationalWorkfl
         <>
           <Title content={Messages.INTERNATIONAL_REQUEST.in_review.title} />
           <Description content={Messages.INTERNATIONAL_REQUEST.in_review.description} />
-          {/* <LinkButton content="Okay, Got it" /> */}
         </>
       );
     }
@@ -79,7 +62,6 @@ const getCardContent = (activationData, isWebsiteInWorkflow, internationalWorkfl
         <>
           <Title content={Messages.INTERNATIONAL_REQUEST.rejected.title} />
           <Description content={Messages.INTERNATIONAL_REQUEST.rejected.description} />
-          {/* <LinkButton content="Know More" /> */}
         </>
       );
     }
@@ -91,17 +73,10 @@ const getCardContent = (activationData, isWebsiteInWorkflow, internationalWorkfl
         <>
           <Title content={Messages.INTERNATIONAL_FLOW.unreg.account_activated.title} />
           <Description content={Messages.INTERNATIONAL_FLOW.unreg.account_activated.description} />
-          {/* <LinkButton content="Know more" /> */}
         </>
       );
     }
-    return (
-      <>
-        <Title content={Messages.INTERNATIONAL_FLOW.unreg.l1_submitted.title} />
-        <Description content={Messages.INTERNATIONAL_FLOW.unreg.l1_submitted.description} />
-        {/* <LinkButton content="Ok, Got it" /> */}
-      </>
-    );
+    return null;
   }
 
   if (isAccepted && activationData.international_activation_flow === 'blacklist') {
@@ -109,7 +84,6 @@ const getCardContent = (activationData, isWebsiteInWorkflow, internationalWorkfl
       <>
         <Title content={Messages.INTERNATIONAL_BLACKLIST.title} />
         <Description content={Messages.INTERNATIONAL_BLACKLIST.description} />
-        {/* <LinkButton content="Know More" /> */}
       </>
     );
   }
@@ -123,16 +97,6 @@ const getCardContent = (activationData, isWebsiteInWorkflow, internationalWorkfl
             <Description
               content={Messages.INTERNATIONAL_FLOW.af_wl_iaf_gl.account_activated.description}
             />
-            {/* <Flex alignItems="center">
-              <View>
-                <Space margin={[0, 1.5, 0, 0]}>
-                  <View>
-                    <SecondaryButton content="Enable" />
-                  </View>
-                </Space>
-                <LinkButton content="Okay, Got it" />
-              </View>
-            </Flex> */}
           </>
         );
       }
@@ -142,7 +106,6 @@ const getCardContent = (activationData, isWebsiteInWorkflow, internationalWorkfl
           <Description
             content={Messages.INTERNATIONAL_FLOW.af_wl_iaf_gl.l1_submitted.description}
           />
-          {/* <LinkButton content="Okay, Got it" /> */}
         </>
       );
     } else if (activationData.international_activation_flow === 'whitelist') {
@@ -154,7 +117,6 @@ const getCardContent = (activationData, isWebsiteInWorkflow, internationalWorkfl
               <Description
                 content={Messages.INTERNATIONAL_FLOW.af_wl_iaf_wl.l1_submitted.no_website}
               />
-              {/* <LinkButton content="Ok, Got it" /> */}
             </>
           );
         }
@@ -162,16 +124,6 @@ const getCardContent = (activationData, isWebsiteInWorkflow, internationalWorkfl
           <>
             <Title content="Accept Live Payments!" />
             <Description content="You can accept domestic payments. To accept international payments update your website." />
-            {/* <Flex alignItems="center">
-              <View>
-                <Space margin={[0, 1.5, 0, 0]}>
-                  <View>
-                    <SecondaryButton content="Update Website" />
-                  </View>
-                </Space>
-                <LinkButton content="Not Now" />
-              </View>
-            </Flex> */}
           </>
         );
       }
@@ -186,16 +138,6 @@ const getCardContent = (activationData, isWebsiteInWorkflow, internationalWorkfl
                 Messages.INTERNATIONAL_FLOW.af_wl_iaf_wl.account_activated.has_website.description
               }
             />
-            {/* <Flex alignItems="center">
-              <View>
-                <Space margin={[0, 1.5, 0, 0]}>
-                  <View>
-                    <SecondaryButton content="Enable" />
-                  </View>
-                </Space>
-                <LinkButton content="Not Now" />
-              </View>
-            </Flex> */}
           </>
         );
       }
@@ -210,7 +152,6 @@ const getCardContent = (activationData, isWebsiteInWorkflow, internationalWorkfl
                 Messages.INTERNATIONAL_FLOW.af_wl_iaf_wl.l1_submitted.has_website.description
               }
             />
-            {/* <LinkButton content="Okay, Got it" /> */}
           </>
         );
       }
@@ -218,7 +159,6 @@ const getCardContent = (activationData, isWebsiteInWorkflow, internationalWorkfl
         <>
           <Title content="Accept Live Payments!" />
           <Description content="You can accept domestic payments. Complete account activation to enable international payments." />
-          {/* <LinkButton content="Okay, Got it" /> */}
         </>
       );
     }
@@ -232,16 +172,6 @@ const getCardContent = (activationData, isWebsiteInWorkflow, internationalWorkfl
       <>
         <Title content={Messages.INTERNATIONAL_FLOW.af_gl_iaf_gl.title} />
         <Description content={Messages.INTERNATIONAL_FLOW.af_gl_iaf_gl.description} />
-        {/* <Flex alignItems="center">
-          <View>
-            <Space margin={[0, 1.5, 0, 0]}>
-              <View>
-                <SecondaryButton content="Enable International Payments" />
-              </View>
-            </Space>
-            <LinkButton content="Not Now" />
-          </View>
-        </Flex> */}
       </>
     );
   }
@@ -262,7 +192,7 @@ const fetchWebsiteWorkflowStatus = () =>
 const AcceptPaymentsCard: React.FC = () => {
   const snackbar = useSnackbar();
   const { status: activationQueryStatus, data: activationData } = useActivation();
-  const { status: internationalWorkflowQueryStatus, data: internationalWorkflowData } = useQuery(
+  const { data: internationalWorkflowData } = useQuery(
     'internationalWorkflowStatus',
     fetchInternationalProductStatus,
     {
@@ -281,28 +211,19 @@ const AcceptPaymentsCard: React.FC = () => {
     },
   );
 
-  const isLoading =
-    activationQueryStatus === 'loading' ||
-    internationalWorkflowQueryStatus === 'loading' ||
-    websiteWorkflowQueryStatus === 'loading';
-
   const isError = activationQueryStatus === 'error' || websiteWorkflowQueryStatus === 'error';
-
-  if (isLoading) {
-    return <AcceptPaymentCardShimmer />;
-  }
-
   if (isError) {
     return <div>Something Went Wrong</div>;
   }
-  const content = getCardContent(activationData, isWebsiteInWorkflow, internationalWorkflowData);
-
-  if ((activationData.onboarding_milestone === 'L1' || activationData.submitted) && content) {
-    return (
-      <Space padding={[2, 6, 2, 2]}>
-        <ViewWithBackground>{content}</ViewWithBackground>
-      </Space>
-    );
+  if (activationData) {
+    const content = getCardContent(activationData, isWebsiteInWorkflow, internationalWorkflowData);
+    if ((activationData.onboarding_milestone === 'L1' || activationData.submitted) && content) {
+      return (
+        <Space padding={[2, 6, 2, 2]}>
+          <ViewWithBackground>{content}</ViewWithBackground>
+        </Space>
+      );
+    }
   }
 
   return null;

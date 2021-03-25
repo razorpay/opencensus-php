@@ -6,10 +6,7 @@ import OnboardingStepCard from '../../OnboardingStepCard';
 import { useActivationFormState } from '../../context/store';
 import useActivation from '../../hooks/useActivation';
 import { getMerchantFlow, checkIfEAadharStepCompleted } from '../../services/utils';
-import {
-  analyticsTrack,
-  getCommonSegmentProperties,
-} from '../../../../../services/tracking/segment';
+import { analyticsTrack } from '../../../../../services/tracking/segment';
 import { SubmitForm as SubmitFormModal } from '../../ActivationModals';
 import { useApp } from 'v2/context/App';
 
@@ -51,7 +48,6 @@ const GreylistedSteps: React.FC<RouteComponentProps> = ({ history }) => {
         screen: 'home page',
         properties: {
           userId: user.id,
-          ...getCommonSegmentProperties(),
         },
       });
     });

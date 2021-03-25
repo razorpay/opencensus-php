@@ -30,9 +30,6 @@ exports[`Storyshots Modal Bottom Sheet 1`] = `
             style="transform: translateY(100%);"
           >
             <div
-              class="Styled__BottomSheetHandle-sc-1kl130u-4 cZTaqx"
-            />
-            <div
               class="Textweb__Text-dvo2dp-0 Styled__BodyText-sc-1kl130u-6 bXvHYx"
               color="shade.980"
               data-testid="ds-text"

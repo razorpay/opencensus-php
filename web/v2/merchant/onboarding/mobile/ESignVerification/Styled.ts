@@ -5,6 +5,7 @@ export const Divider = styled.div`
   background: rgba(22, 47, 86, 0.24);
   width: 100%;
   height: 1px;
+  opacity: 0.3;
 `;
 
 export const StyledView = styled(View)`

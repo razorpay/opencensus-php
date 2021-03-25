@@ -27,6 +27,7 @@ export interface SelectPropsT {
   filterOptions?: boolean;
   loading?: boolean;
   helpText?: string;
+  bottomSheetHeaderText?: string;
 }
 
 const Select: React.FC<SelectPropsT> = ({
@@ -43,6 +44,7 @@ const Select: React.FC<SelectPropsT> = ({
   helpText,
   onChange,
   onInputChange,
+  bottomSheetHeaderText,
 }) => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [selectedValue, setSelectedValue] = useState(value);
@@ -174,9 +176,16 @@ const Select: React.FC<SelectPropsT> = ({
           disabled={disabled || isSelectInputDisabled}
           errorText={errorText}
           helpText={helpText}
+          onBlur={onChange}
         />
       </View>
-      <Modal isOpen={isModalOpen} onClose={onModalClose} bottomsheet={true} bottomSheetHeight="90%">
+      <Modal
+        isOpen={isModalOpen}
+        bottomSheetHeaderText={bottomSheetHeaderText}
+        onClose={onModalClose}
+        bottomsheet={true}
+        bottomSheetHeight="90%"
+      >
         <ModalBody>
           <Space margin={[0, 0, 2, 0]}>
             <Text weight="bold" size="xsmall" color="shade.960">

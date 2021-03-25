@@ -16,7 +16,7 @@ import { useActivationFormState, isVisible, isTabComplete } from '../context/sto
 import useActivation, { getRequestData } from '../hooks/useActivation';
 import { getLabel, getHelpText } from '../services/utils';
 import { states } from '../Constants/OnboardingConstants';
-import { analyticsTrack, getCommonSegmentProperties } from '../../../../services/tracking/segment';
+import { analyticsTrack } from '../../../../services/tracking/segment';
 import { useApp } from 'v2/context/App';
 
 const StyledSeparator = styled(View)`
@@ -140,7 +140,6 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
       screen: 'home page',
       properties: {
         userId: user.id,
-        ...getCommonSegmentProperties(),
       },
     });
   };
@@ -208,7 +207,7 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
               <TextInput
                 width="auto"
                 name="company_pan"
-                label="Busines PAN"
+                label="Business PAN"
                 helpText="PAN of the Company"
                 value={formikProps.values.company_pan}
                 errorText={formikProps.touched.company_pan && formikProps.errors.company_pan}
@@ -220,7 +219,6 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                     screen: 'home page',
                     properties: {
                       userId: user.id,
-                      ...getCommonSegmentProperties(),
                     },
                   });
                 }}
@@ -242,7 +240,6 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                     screen: 'home page',
                     properties: {
                       userId: user.id,
-                      ...getCommonSegmentProperties(),
                     },
                   });
                 }}
@@ -264,7 +261,6 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                     screen: 'home page',
                     properties: {
                       userId: user.id,
-                      ...getCommonSegmentProperties(),
                     },
                   });
                 }}
@@ -288,7 +284,6 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                     screen: 'home page',
                     properties: {
                       userId: user.id,
-                      ...getCommonSegmentProperties(),
                     },
                   });
                 }}
@@ -319,7 +314,6 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                     screen: 'home page',
                     properties: {
                       userId: user.id,
-                      ...getCommonSegmentProperties(),
                     },
                   });
                 }}
@@ -343,7 +337,6 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                     screen: 'home page',
                     properties: {
                       userId: user.id,
-                      ...getCommonSegmentProperties(),
                     },
                   });
                 }}
@@ -360,14 +353,15 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                   formikProps.errors.business_registered_city
                 }
                 disabled={isFormLocked}
-                onBlur={() => {
+                onBlur={(value) => {
+                  formikProps.setFieldTouched('business_registered_city');
+                  formikProps.setFieldValue('business_registered_city', value);
                   analyticsTrack({
                     objectName: 'SignUp',
                     actionName: 'business registered city success',
                     screen: 'home page',
                     properties: {
                       userId: user.id,
-                      ...getCommonSegmentProperties(),
                     },
                   });
                 }}
@@ -394,7 +388,6 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                     screen: 'home page',
                     properties: {
                       userId: user.id,
-                      ...getCommonSegmentProperties(),
                     },
                   });
                 }}
@@ -438,7 +431,6 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                       screen: 'home page',
                       properties: {
                         userId: user.id,
-                        ...getCommonSegmentProperties(),
                       },
                     });
                   }}
@@ -455,14 +447,15 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                     formikProps.errors.business_operation_pin
                   }
                   disabled={isFormLocked}
-                  onBlur={() => {
+                  onBlur={(value) => {
+                    formikProps.setFieldTouched('business_operation_pin');
+                    formikProps.setFieldValue('business_operation_pin', value);
                     analyticsTrack({
                       objectName: 'SignUp',
                       actionName: 'business operation pin success',
                       screen: 'home page',
                       properties: {
                         userId: user.id,
-                        ...getCommonSegmentProperties(),
                       },
                     });
                   }}
@@ -486,7 +479,6 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                       screen: 'home page',
                       properties: {
                         userId: user.id,
-                        ...getCommonSegmentProperties(),
                       },
                     });
                   }}
@@ -513,7 +505,6 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                       screen: 'home page',
                       properties: {
                         userId: user.id,
-                        ...getCommonSegmentProperties(),
                       },
                     });
                   }}

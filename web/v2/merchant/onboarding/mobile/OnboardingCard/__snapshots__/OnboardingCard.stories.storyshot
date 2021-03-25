@@ -25,7 +25,7 @@ exports[`Storyshots Onboarding/OnboardingCard Default 1`] = `
                   color="shade.980"
                   data-testid="ds-text"
                 >
-                  Activate Your Account
+                  Activate Details
                 </div>
               </div>
               <div

@@ -35,6 +35,7 @@ const BusinessCategory: React.FC<BusinessCategoryPropsT> = ({
       onInputChange={onInputChange}
       onChange={onChange}
       disabled={disabled}
+      bottomSheetHeaderText="SELECT BUSINESS CATEGORY"
     >
       {businessCategoriesData
         ? businessCategoriesData.map((item, index) => (

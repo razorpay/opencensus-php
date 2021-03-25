@@ -35,7 +35,7 @@ const OnboardingCardShimmer: React.FC = () => {
               <Space margin={[0, 0, 0.5, 0]}>
                 <HeadingContainer>
                   <Text size="large" weight="bold">
-                    Activate Your Account
+                    Activate Details
                   </Text>
                 </HeadingContainer>
               </Space>

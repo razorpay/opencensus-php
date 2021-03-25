@@ -30,10 +30,7 @@ import SaveAndExitModal from '../../SaveAndExitModal';
 import FAQs from '../../FAQs/FAQs';
 import { checkIfEAadharStepCompleted, checkIfDedupe } from '../../services/utils';
 // import { L1_FORM_FIELD_NAMES } from '../../Constants/OnboardingConstants';
-import {
-  analyticsTrack,
-  getCommonSegmentProperties,
-} from '../../../../../services/tracking/segment';
+import { analyticsTrack } from '../../../../../services/tracking/segment';
 
 import { useApp } from 'v2/context/App';
 type NextTextT = 'Submit And Verify' | 'Save And Verify' | 'Next';
@@ -161,7 +158,6 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
           screen: 'home page',
           properties: {
             userId: user.id,
-            ...getCommonSegmentProperties(),
           },
         });
         break;
@@ -173,7 +169,6 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
           screen: 'home page',
           properties: {
             userId: user.id,
-            ...getCommonSegmentProperties(),
           },
         });
         break;
@@ -193,7 +188,6 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
           screen: 'home page',
           properties: {
             userId: user.id,
-            ...getCommonSegmentProperties(),
           },
         });
         break;
@@ -205,7 +199,6 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
           screen: 'home page',
           properties: {
             userId: user.id,
-            ...getCommonSegmentProperties(),
           },
         });
         break;
@@ -217,7 +210,6 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
           screen: 'home page',
           properties: {
             userId: user.id,
-            ...getCommonSegmentProperties(),
           },
         });
         break;
@@ -359,7 +351,6 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
                 screen: 'home page',
                 properties: {
                   userId: user.id,
-                  ...getCommonSegmentProperties(),
                 },
               });
             }}
@@ -377,6 +368,8 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
               //     !isL1Submitted(onboarding_milestone)) ||
               //   isUnregPoiStatus
             }
+            icon="chevronRight"
+            iconAlign="right"
           >
             {getNextText()}
           </Button>

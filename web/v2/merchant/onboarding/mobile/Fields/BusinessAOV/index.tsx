@@ -30,6 +30,7 @@ const BusinessAOV: React.FC<BusinessAOVPropsT> = ({
       onChange={onChange}
       disabled={disabled}
       helpText="Range in which most of your payments would fall in"
+      bottomSheetHeaderText="SELECT AVERAGE ORDER VALUE"
     >
       {aovRangeData
         ? aovRangeData.config.map((item, index) => {

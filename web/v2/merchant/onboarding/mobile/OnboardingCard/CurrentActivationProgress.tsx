@@ -162,7 +162,7 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; pay
     );
   }
 
-  if (data.activation_progress > 24) {
+  if (data.activation_progress >= 24) {
     return (
       <>
         <Info

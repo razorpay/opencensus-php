@@ -30,9 +30,11 @@ const Info: React.FC<InfoPropsT> = ({
             </Text>
             {hasError ? (
               <Space margin={[0, 0, 0, 1.25]}>
-                <View>
-                  <img src={ErrorIcon} alt="error" />
-                </View>
+                <Flex alignItems="center">
+                  <View>
+                    <img src={ErrorIcon} alt="error" />
+                  </View>
+                </Flex>
               </Space>
             ) : null}
           </View>

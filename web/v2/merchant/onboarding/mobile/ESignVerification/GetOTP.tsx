@@ -9,8 +9,9 @@ import Flex from '@razorpay/blade/src/atoms/Flex';
 import Button from '@razorpay/blade/src/atoms/Button';
 import { useMutation } from 'react-query';
 import { fetch } from 'v2/services/rest/rest-fetch';
-import { analyticsTrack, getCommonSegmentProperties } from '../../../../services/tracking/segment';
+import { analyticsTrack } from '../../../../services/tracking/segment';
 import { useApp } from 'v2/context/App';
+import { Divider } from './Styled';
 
 const generateCaptcha = async () => {
   const fetchData = await fetch<any>({
@@ -73,7 +74,6 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
           screen: 'home page',
           properties: {
             userId: user.id,
-            ...getCommonSegmentProperties(),
           },
         });
       } else if (response.error_code) {
@@ -83,7 +83,6 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
           screen: 'home page',
           properties: {
             userId: user.id,
-            ...getCommonSegmentProperties(),
           },
         });
         if (response.error_code === 'MOBILE_NOT_LINKED') {
@@ -192,7 +191,6 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
                         screen: 'home page',
                         properties: {
                           userId: user.id,
-                          ...getCommonSegmentProperties(),
                         },
                       });
                     }}
@@ -246,7 +244,6 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
                         screen: 'home page',
                         properties: {
                           userId: user.id,
-                          ...getCommonSegmentProperties(),
                         },
                       });
                     }}
@@ -271,7 +268,6 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
                         screen: 'home page',
                         properties: {
                           userId: user.id,
-                          ...getCommonSegmentProperties(),
                         },
                       });
                     }}
@@ -279,32 +275,33 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
                   />
                 </View>
               </Space>
+              <Space margin={[4, 0, 0]}>
+                <Divider />
+              </Space>
               <Flex alignItems="center">
-                <Space padding={[1, 0, 0]}>
-                  <View>
-                    <Space padding={[0, 1, 0, 0]}>
-                      <View>
-                        <Button
-                          variant="tertiary"
-                          size="small"
-                          onClick={() => {
-                            const nextScreen = 'AadharInput';
-                            goToNextScreen({ nextScreen });
-                          }}
-                        >
-                          Back
-                        </Button>
-                      </View>
-                    </Space>
-                    <Space padding={[1.5, 0]}>
-                      <View>
-                        <Button variant="secondary" size="small" type="submit">
-                          Get OTP
-                        </Button>
-                      </View>
-                    </Space>
-                  </View>
-                </Space>
+                <View>
+                  <Space padding={[0, 1, 0, 0]}>
+                    <View>
+                      <Button
+                        variant="tertiary"
+                        size="small"
+                        onClick={() => {
+                          const nextScreen = 'AadharInput';
+                          goToNextScreen({ nextScreen });
+                        }}
+                      >
+                        Back
+                      </Button>
+                    </View>
+                  </Space>
+                  <Space padding={[1.5, 0]}>
+                    <View>
+                      <Button variant="secondary" size="small" type="submit">
+                        Get OTP
+                      </Button>
+                    </View>
+                  </Space>
+                </View>
               </Flex>
             </View>
           </Space>

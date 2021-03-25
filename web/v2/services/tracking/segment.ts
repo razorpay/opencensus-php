@@ -28,19 +28,16 @@ export const analyticsTrack = ({ objectName, actionName, screen, properties = {}
   }
 
   const eventTimestamp = new Date().toISOString();
+  const segmentProperties = {
+    pageUrl: window.location.href,
+    ...properties,
+  };
   const eventName = titleCase(`${objectName} ${actionName}`);
   if (window.analytics) {
     window.analytics.track(eventName, {
-      ...properties,
+      ...segmentProperties,
       screen,
       eventTimestamp,
     });
   }
-};
-
-export const getCommonSegmentProperties = () => {
-  const properties = {
-    pageUrl: window.location.href,
-  };
-  return properties;
 };

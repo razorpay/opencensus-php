@@ -26,6 +26,7 @@ const BusinessType: React.FC<BusinessTypePropsT> = ({
       value={value}
       onChange={onChange}
       disabled={disabled}
+      bottomSheetHeaderText="SELECT BUSINESS TYPE"
     >
       {Object.keys(BusinessTypes)
         .map((business_type) => {

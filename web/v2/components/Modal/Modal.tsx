@@ -7,7 +7,6 @@ import {
   DialogContainer,
   Dialog,
   BottomSheet,
-  BottomSheetHandle,
   CloseIconContainer,
   BottomSheetTextHeader,
 } from './Styled';
@@ -73,7 +72,6 @@ const Modal: React.FC<ModalPropsT> = ({
           >
             {bottomsheet ? (
               <BottomSheet $y={styles.sheetY} $bottomSheetHeight={bottomSheetHeight}>
-                <BottomSheetHandle />
                 {bottomSheetHeaderText ? (
                   <Space padding={[1.5, 0, 1, 0]} margin={[0, 1.25, 0, 3]}>
                     <BottomSheetTextHeader size="xsmall" color="shade.960" weight="bold">

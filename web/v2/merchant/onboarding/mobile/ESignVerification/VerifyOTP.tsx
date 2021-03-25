@@ -9,8 +9,9 @@ import Button from '@razorpay/blade/src/atoms/Button';
 import Flex from '@razorpay/blade/src/atoms/Flex';
 import { useMutation } from 'react-query';
 import { fetch } from 'v2/services/rest/rest-fetch';
-import { analyticsTrack, getCommonSegmentProperties } from '../../../../services/tracking/segment';
+import { analyticsTrack } from '../../../../services/tracking/segment';
 import { useApp } from 'v2/context/App';
+import { Divider } from './Styled';
 
 interface VerifyOtpPropsT {
   goToNextScreen: ({ nextScreen: string }) => void;
@@ -42,7 +43,7 @@ const VerifyOTP: React.FC<VerifyOtpPropsT> = ({
 
   const [fetchOTP] = useMutation(verifyAadhar, {
     onSuccess: (response) => {
-      if (response.is_success) {
+      if (response.is_valid) {
         setOtpVerified(response.is_valid);
         analyticsTrack({
           objectName: 'SignUp',
@@ -50,7 +51,6 @@ const VerifyOTP: React.FC<VerifyOtpPropsT> = ({
           screen: 'home page',
           properties: {
             userId: user.id,
-            ...getCommonSegmentProperties(),
           },
         });
       } else if (response.error_code) {
@@ -60,7 +60,6 @@ const VerifyOTP: React.FC<VerifyOtpPropsT> = ({
           screen: 'home page',
           properties: {
             userId: user.id,
-            ...getCommonSegmentProperties(),
           },
         });
         setApiError(response.error_code);
@@ -138,6 +137,7 @@ const VerifyOTP: React.FC<VerifyOtpPropsT> = ({
                 type="text"
                 label="Enter OTP"
                 value={formikProps.values.enteredOTP}
+                helpText="An OTP has been sent to mobile number linked with your Aadhar"
                 errorText={
                   apiError === 'INCORRECT_OTP'
                     ? 'Invalid OTP. Try again'
@@ -157,11 +157,14 @@ const VerifyOTP: React.FC<VerifyOtpPropsT> = ({
                     screen: 'home page',
                     properties: {
                       userId: user.id,
-                      ...getCommonSegmentProperties(),
                     },
                   });
                 }}
               />
+
+              <Space margin={[4, 0, 0]}>
+                <Divider />
+              </Space>
 
               <Space padding={[1.5, 0]}>
                 <View>

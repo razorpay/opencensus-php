@@ -5,7 +5,7 @@ import VerifyOTP from './VerifyOTP';
 import AadharSuccess from './AadharSuccess';
 import Card from '../../../../components/Card';
 import useActivation from '../hooks/useActivation';
-import { analyticsTrack, getCommonSegmentProperties } from '../../../../services/tracking/segment';
+import { analyticsTrack } from '../../../../services/tracking/segment';
 import { useApp } from 'v2/context/App';
 
 interface ESignPropsT {
@@ -35,7 +35,6 @@ const ESignVerification: React.FC<ESignPropsT> = ({ disabled = false }) => {
       screen: 'home page',
       properties: {
         userId: user.id,
-        ...getCommonSegmentProperties(),
       },
     });
     setNextStep(nextScreen);

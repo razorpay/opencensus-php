@@ -17,7 +17,7 @@ import BusinessCategory from '../Fields/BusinessCategory';
 import BusinessAOV from '../Fields/BusinessAOV';
 import useBusinessCategory from '../hooks/useBusinessCategory';
 import { autoPrefixUrls, hasSelectedBlacklistCategory } from '../services/utils';
-import { analyticsTrack, getCommonSegmentProperties } from '../../../../services/tracking/segment';
+import { analyticsTrack } from '../../../../services/tracking/segment';
 import { useApp } from 'v2/context/App';
 
 interface BusinessOverviewProps {
@@ -184,7 +184,6 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
                       screen: 'home page',
                       properties: {
                         userId: user.id,
-                        ...getCommonSegmentProperties(),
                       },
                     });
                   }}
@@ -209,7 +208,6 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
                       screen: 'home page',
                       properties: {
                         userId: user.id,
-                        ...getCommonSegmentProperties(),
                       },
                     });
                   }}
@@ -230,7 +228,7 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
                     width="auto"
                     name="business_dba"
                     label="Billing Label"
-                    helpText="Something that your customers are familiar with"
+                    helpText="Your brand name that your customers are familiar with"
                     value={formikProps.values.business_dba}
                     errorText={formikProps.touched.business_dba && formikProps.errors.business_dba}
                     disabled={isFormLocked}
@@ -244,7 +242,6 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
                         screen: 'home page',
                         properties: {
                           userId: user.id,
-                          ...getCommonSegmentProperties(),
                         },
                       });
                     }}
@@ -278,6 +275,7 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
                       onChange={(value) => {
                         formikProps.setFieldValue('business_model', value);
                       }}
+                      maxLength={200}
                       disabled={isFormLocked}
                       onBlur={() => {
                         analyticsTrack({
@@ -286,7 +284,6 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
                           screen: 'home page',
                           properties: {
                             userId: user.id,
-                            ...getCommonSegmentProperties(),
                           },
                         });
                       }}
@@ -318,7 +315,6 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
                           screen: 'home page',
                           properties: {
                             userId: user.id,
-                            ...getCommonSegmentProperties(),
                           },
                         });
                       }}
@@ -346,7 +342,6 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
                         screen: 'home page',
                         properties: {
                           userId: user.id,
-                          ...getCommonSegmentProperties(),
                         },
                       });
                     }
@@ -358,7 +353,6 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
                         screen: 'home page',
                         properties: {
                           userId: user.id,
-                          ...getCommonSegmentProperties(),
                         },
                       });
                     }

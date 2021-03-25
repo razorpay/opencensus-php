@@ -5,7 +5,7 @@ import Space from '@razorpay/blade/src/atoms/Space';
 import Button from '@razorpay/blade/src/atoms/Button';
 import Text from '@razorpay/blade/src/atoms/Text';
 import { Modal, ModalBody } from 'v2/components/Modal';
-import { analyticsTrack, getCommonSegmentProperties } from '../../../../services/tracking/segment';
+import { analyticsTrack } from '../../../../services/tracking/segment';
 import { useApp } from 'v2/context/App';
 
 export interface DedupePropsT {
@@ -30,7 +30,6 @@ const Dedupe: React.FC<DedupePropsT> = ({ isOpen }) => {
       screen: 'home page',
       properties: {
         userId: user.id,
-        ...getCommonSegmentProperties(),
       },
     });
     window.rzpTicketSystem.openModal('#ticket');

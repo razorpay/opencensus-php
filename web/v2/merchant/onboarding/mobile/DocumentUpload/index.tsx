@@ -30,7 +30,7 @@ import {
   getDocumentTitle,
   checkIfEAadharStepCompleted,
 } from '../services/utils';
-import { analyticsTrack, getCommonSegmentProperties } from '../../../../services/tracking/segment';
+import { analyticsTrack } from '../../../../services/tracking/segment';
 import ShopEstablishmentNumber from './ShopEstablishmentNumber';
 import { useApp } from 'v2/context/App';
 
@@ -76,7 +76,6 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
       screen: 'home page',
       properties: {
         userId: user.id,
-        ...getCommonSegmentProperties(),
       },
     });
     const formData = new FormData();
@@ -97,7 +96,6 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
         screen: 'home page',
         properties: {
           userId: user.id,
-          ...getCommonSegmentProperties(),
         },
       });
     }
@@ -117,7 +115,6 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
       screen: 'home page',
       properties: {
         userId: user.id,
-        ...getCommonSegmentProperties(),
       },
     });
   };
@@ -130,7 +127,6 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
       screen: 'home page',
       properties: {
         userId: user.id,
-        ...getCommonSegmentProperties(),
       },
     });
 
@@ -153,7 +149,6 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
         screen: 'home page',
         properties: {
           userId: user.id,
-          ...getCommonSegmentProperties(),
         },
       });
     }
@@ -181,9 +176,11 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
     setDocumentUploadCompleted(isComplete && isAadharFilled);
   }, [addressDoc, businessDoc, bankDoc, additionalDoc, isAadharFilled]);
 
+  const shouldShowEsignFlow =
+    data.business_type === '11' || data.business_type === '1' || data.business_type === '3';
   return (
     <>
-      <ESignVerification disabled={isFormLocked} />
+      {shouldShowEsignFlow && <ESignVerification disabled={isFormLocked} />}
       <Card padding={[2]} margin={[0, 0, 2, 0]}>
         <Flex>
           <View>

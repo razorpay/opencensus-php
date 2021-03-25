@@ -10,7 +10,7 @@ import { useActivationFormState, isVisible, isTabComplete } from '../context/sto
 import useActivation, { getRequestData } from '../hooks/useActivation';
 import { CIN_BusinessTypes } from '../Constants/OnboardingConstants';
 import { getLabel, isUnregisteredBusiness, getDetailsForIFSC } from '../services/utils';
-import { analyticsTrack, getCommonSegmentProperties } from '../../../../services/tracking/segment';
+import { analyticsTrack } from '../../../../services/tracking/segment';
 import { useApp } from 'v2/context/App';
 
 interface BankDetailsProps {
@@ -152,7 +152,6 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                     screen: 'home page',
                     properties: {
                       userId: user.id,
-                      ...getCommonSegmentProperties(),
                     },
                   });
                 }}
@@ -175,7 +174,6 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                     screen: 'home page',
                     properties: {
                       userId: user.id,
-                      ...getCommonSegmentProperties(),
                     },
                   });
                 }}
@@ -207,7 +205,6 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                     screen: 'home page',
                     properties: {
                       userId: user.id,
-                      ...getCommonSegmentProperties(),
                     },
                   });
                 }}
@@ -232,7 +229,6 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                       screen: 'home page',
                       properties: {
                         userId: user.id,
-                        ...getCommonSegmentProperties(),
                       },
                     });
                   }}
@@ -255,7 +251,6 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                         screen: 'home page',
                         properties: {
                           userId: user.id,
-                          ...getCommonSegmentProperties(),
                         },
                       });
                     }}
@@ -283,7 +278,6 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                           screen: 'home page',
                           properties: {
                             userId: user.id,
-                            ...getCommonSegmentProperties(),
                           },
                         });
                       }}

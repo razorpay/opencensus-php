@@ -7,7 +7,7 @@ import { withRouter, RouteComponentProps } from 'react-router-dom';
 import useActivation from '../hooks/useActivation';
 import useBusinessCategory from '../hooks/useBusinessCategory';
 import { hasSelectedBlacklistCategory } from '../services/utils';
-import { analyticsTrack, getCommonSegmentProperties } from '../../../../services/tracking/segment';
+import { analyticsTrack } from '../../../../services/tracking/segment';
 import { useApp } from 'v2/context/App';
 
 interface BusinessModelDetailsI {
@@ -38,7 +38,6 @@ const BusinessModelDetails: React.FC<RouteComponentProps> = (props) => {
       screen: 'home page',
       properties: {
         userId: user.id,
-        ...getCommonSegmentProperties(),
       },
     });
 
@@ -53,7 +52,6 @@ const BusinessModelDetails: React.FC<RouteComponentProps> = (props) => {
     //       screen: 'home page',
     //       properties: {
     //          userId: user.id,
-    //...getCommonSegmentProperties(),
     //       },
     //     });
     //   })
@@ -65,7 +63,6 @@ const BusinessModelDetails: React.FC<RouteComponentProps> = (props) => {
     //       screen: 'home page',
     //       properties: {
     //          userId: user.id,
-    //...getCommonSegmentProperties(),
     //       },
     //     });
     //   });
