@@ -3165,10 +3165,21 @@ class Processor
 
         $orderNotes = $this->order->getNotes()->toArray();
 
-        if($payment->isBankTransfer() === true)
-        {
-            $payment->setNotes($orderNotes);
-        }
+        $paymentNotes = $payment->getNotes()->toArray();
+
+        $notes = array_merge($orderNotes, $paymentNotes);
+
+        // copying order notes in payment notes for all payments
+        $payment->setNotes($notes);
+
+        $this->trace->info(
+            TraceCode::SMART_ROUTING_NOTES_PROCESSING,
+            [
+                'notes'               => $notes,
+                'payment'             => $payment,
+                'order_notes'         => $orderNotes,
+                'payments_notes'      => $paymentNotes,
+            ]);
 
         $payment->setIntegrationMetadataUsingNotes($orderNotes);
     }
