@@ -10,7 +10,6 @@ use RZP\Services\DruidService;
 use Razorpay\OAuth\Application;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Database\Connection;
-use Http\Mock\Client as MockHttplug;
 use Http\Discovery\Psr17FactoryDiscovery;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use RZP\Services\Mock\DruidService as MockDruidService;
@@ -391,8 +390,6 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerSns();
 
         $this->registerWorkflow();
-
-        $this->registerHttplugMockClient();
 
         $this->registerGeolocation();
 
@@ -933,14 +930,6 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->singleton('workflow', function ($app)
         {
             return new Workflow\Service($app);
-        });
-    }
-
-    protected function registerHttplugMockClient()
-    {
-        $this->app['httplug']->extend('mock', function()
-        {
-            return new MockHttplug;
         });
     }
 

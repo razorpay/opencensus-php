@@ -30,7 +30,6 @@
         "guzzlehttp/promises": "1.2.0",
         "mikehaertl/phpwkhtmltopdf": "^2.2",
         "mustache/mustache": "^2.11",
-        "php-http/laravel-httplug": "^0.1.0",
         "maxmind/minfraud": "^1.3",
         "php-http/discovery": "^1.7",
         "ext-gmp": "*",

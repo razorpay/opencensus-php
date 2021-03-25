@@ -163,7 +163,6 @@ return array(
          */
         Aws\Laravel\AwsServiceProvider::class,
         Razorpay\Slack\Laravel\ServiceProvider::class,
-        Http\Httplug\HttplugServiceProvider::class,
         Schuppo\PasswordStrength\PasswordStrengthServiceProvider::class,
         anlutro\LaravelSettings\ServiceProvider::class,
         Sentry\SentryLaravel\SentryLaravelServiceProvider::class,
@@ -227,7 +226,6 @@ return array(
         'File'            => Illuminate\Support\Facades\File::class,
         'Gate'            => Illuminate\Support\Facades\Gate::class,
         'Hash'            => Illuminate\Support\Facades\Hash::class,
-        'Httplug'         => Http\Httplug\Facade\Httplug::class,
         'Lang'            => Illuminate\Support\Facades\Lang::class,
         'Log'             => Illuminate\Support\Facades\Log::class,
         'Password'        => Illuminate\Support\Facades\Password::class,
