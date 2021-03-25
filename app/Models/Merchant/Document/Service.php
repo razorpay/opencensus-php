@@ -6,11 +6,9 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
-use RZP\Constants\Entity;
-use RZP\Models\GenericDocument;
+use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Stakeholder;
-use RZP\Error\PublicErrorDescription;
 
 
 class Service extends Base\Service
@@ -65,6 +63,22 @@ class Service extends Base\Service
             Merchant\Constants::MERCHANT_MUTEX_RETRY_COUNT);
     }
 
+    protected function uploadActivationFileByPartner(Merchant\Entity $account, Base\PublicEntity $entity, array $input)
+    {
+        return $this->mutex->acquireAndRelease(
+
+            $account->getId(),
+
+            function() use ($account, $input, $entity) {
+
+                return $this->core->uploadActivationFile($account, $input, 'true', 'uploadDocument', $entity);
+            },
+
+            Merchant\Constants::MERCHANT_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
+            Merchant\Constants::MERCHANT_MUTEX_RETRY_COUNT);
+    }
+
     public function fetchActivationFilesFromDocument(string $mid = null)
     {
         $mid = $mid ?? $this->merchant->getId();
@@ -84,113 +98,37 @@ class Service extends Base\Service
 
     public function getDocuments(string $accountId, string $entityType, string $entityId)
     {
-        Account\Entity::verifyIdAndStripSign($accountId);
-        $account = $this->repo->merchant->findOrFailPublic($accountId);
-        [$entity, $merchant] = $this->validateAndGetDocumentRequest($account, $entityType, $entityId);
+        [$entity, $merchant] = $this->validateAndGetDocumentRequest($accountId, $entityType, $entityId);
 
-        return (new DocumentResponse)->linkDocumentsResponse($merchant, $entityType, $entity->getId());
+        return (new DocumentResponse)->documentsResponse($merchant, $entityType, $entity->getId());
     }
 
-    public function linkDocuments(string $accountId, string $entityType, string $entityId, array $input)
+    public function postDocumentsByPartner(string $accountId, string $entityType, string $entityId, array $input)
     {
-        [$entity, $merchant] = $this->validateDocumentLinkRequestAndGetEntities($input, $entityId, $entityType, $accountId);
+        [$entity, $merchant] = $this->validateAndGetDocumentRequest($accountId, $entityType, $entityId);
 
-        $entityId = $entity->getId();
+        (new Validator)->validateInput('uploadDocument', $input);
 
-        $lockId = 'DOCUMENT_LINK_' . $entityId;
+        $documents = Type::getValidDocumentForEntity($entity->getEntity());
 
-        $this->mutex->acquireAndRelease($lockId, function() use ($entity, $merchant, $input) {
-            $this->repo->transaction(function() use ($entity, $merchant, $input) {
+        if (in_array($input[Entity::DOCUMENT_TYPE], $documents) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('invalid document type:'. $input[Entity::DOCUMENT_TYPE] . ' for '. $entity->getEntity());
+        }
 
-                foreach ($input as $proofType => $filesArr)
-                {
-                    foreach ($filesArr as $file)
-                    {
-                        $fileId = GenericDocument\ResponseHelper::getDocumentId($file[GenericDocument\Constants::DOCUMENT_ID], GenericDocument\Constants::DOCUMENT_ID_SIGN, GenericDocument\Constants::FILE_ID_SIGN);
-                        $fileAttributes = [
-                            Constants::FILE_ID => $fileId,
-                            Constants::SOURCE  => Source::UFH,
-                        ];
+        $this->uploadActivationFileByPartner($merchant, $entity, $input);
 
-                        $this->core->saveMerchantDocument($merchant, $file[Constants::TYPE], $fileAttributes, $entity);
-                    }
-                }
-            });
-        },
-            Merchant\Constants::MERCHANT_MUTEX_LOCK_TIMEOUT,
-            ErrorCode::BAD_REQUEST_DOCUMENT_LINK_OPERATION_IN_PROGRESS,
-            Merchant\Constants::MERCHANT_MUTEX_RETRY_COUNT
-        );
-
-        return (new DocumentResponse)->linkDocumentsResponse($merchant, $entityType, $entityId);
+        return (new DocumentResponse)->documentsResponse($merchant, $entity->getEntity(), $entity->getId());
     }
 
-    /**
-     * Upon successful validation, return an array of entity and account associated to the entity
-     * stakeholder request
-     *   $entity   -> stakeholderEntity
-     *   $account  -> merchant to which stakeholder is associated with
-     *
-     * Account request
-     *   $entity   -> accountEntity
-     *   $merchant -> accountEntity itself
-     *
-     * @param array $input
-     * @param string $entityId
-     * @param string $entityType
-     *
-     * @param string $accountId
-     *
-     * @return array
-     * @throws Exception\BadRequestValidationFailureException
-     * @throws Exception\ServerErrorException
-     */
-    protected function validateDocumentLinkRequestAndGetEntities(array $input, string $entityId, string $entityType, string $accountId): array
+    protected function validateAndGetDocumentRequest(string $accountId, string $entityType, string $entityId)
     {
         Account\Entity::verifyIdAndStripSign($accountId);
         $account   = $this->repo->merchant->findOrFailPublic($accountId);
-        $validator = new Validator;
 
-        $documentResponse = new DocumentResponse;
-        $accountDetails = $documentResponse->getMerchantDetails($account);
-        $proofDocumentMapping = $documentResponse->getDocumentsGroupedAndMergedByProofType($accountDetails, $entityType);
-
-        $genericDocumentService = new GenericDocument\Service();
-
-        $fileIds = [];
-
-        foreach ($input as $proofType => $files)
-        {
-            $validator->validateProofType($proofType, $entityType);
-
-            foreach ($files as $file)
-            {
-                $validator->validateInput('document_link', $file);
-
-                if (isset($proofDocumentMapping[$proofType]) === false)
-                {
-                    throw new Exception\BadRequestValidationFailureException('Extra document '. $file[Constants::TYPE]. ' sent');
-                }
-
-                if (in_array($file[Constants::TYPE], $proofDocumentMapping[$proofType]) === false)
-                {
-                    throw new Exception\BadRequestValidationFailureException('Incorrect Document '. $file[Constants::TYPE]. ' sent for proof type '. $proofType);
-                }
-
-                array_push($fileIds, $file[Constants::DOCUMENT_ID]);
-            }
-        }
-
-        $genericDocumentService->fetchFiles($fileIds, $accountId);
-
-        return $this->validateAndGetDocumentRequest($account, $entityType, $entityId);
-    }
-
-    protected function validateAndGetDocumentRequest(Merchant\Entity $account, string $entityType, string $entityId)
-    {
         (new Account\Core)->validatePartnerAccess($this->merchant, $account->getId());
 
-        if (Entity::MERCHANT === $entityType)
+        if (E::MERCHANT === $entityType)
         {
             return [$account, $account];
         }

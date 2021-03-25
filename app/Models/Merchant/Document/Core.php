@@ -93,13 +93,14 @@ class Core extends Base\Core
      * @param bool $validateLock
      *
      * @param string $rule
+     * @param Base\PublicEntity|null $entity
      * @return array
      * @throws BadRequestException
      * @throws \RZP\Exception\BadRequestValidationFailureException
      * @throws \RZP\Exception\LogicException
      */
     public function uploadActivationFile(
-        Merchant\Entity $merchant, array $input, bool $validateLock = true, $rule = 'uploadDocument')
+        Merchant\Entity $merchant, array $input, bool $validateLock = true, $rule = 'uploadDocument', Base\PublicEntity $entity = null)
     {
         (new Validator)->validateInput($rule, $input);
 
@@ -126,7 +127,9 @@ class Core extends Base\Core
 
         $fileAttributes = (new Detail\Service())->storeActivationFile($document, $param);
 
-        $this->saveMerchantDocument($merchant, $documentType, $fileAttributes[$documentType], $merchant, $validateLock, $document);
+        $entity = $entity ?? $merchant;
+
+        $this->saveMerchantDocument($merchant, $documentType, $fileAttributes[$documentType], $entity, $validateLock, $document);
 
         return $merchantDetailCore->createResponse($merchantDetails);
     }

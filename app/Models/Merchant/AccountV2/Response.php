@@ -44,7 +44,7 @@ class Response extends Core
 
         if (empty($accountCode) === false)
         {
-            $data[Constants::ACCOUNT_CODE] = $accountCode;
+            $data[Constants::REFERENCE_ID] = $accountCode;
         }
 
         $businessType = $accountDetails->getBusinessType();
@@ -62,7 +62,7 @@ class Response extends Core
 
         if (empty($billingLabel) === false)
         {
-            $data[Constants::DOING_BUSINESS_AS] = $billingLabel;
+            $data[Constants::CUSTOMER_FACING_BUSINESS_NAME] = $billingLabel;
         }
 
         $data = $this->getLegalInfoData($accountDetails, $data);

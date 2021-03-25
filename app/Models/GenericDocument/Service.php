@@ -136,14 +136,14 @@ class Service extends Base\Service
     /**
      * The function returns the downloadable url in case the document belong to the merchant or its stakeholder from UFH
      *
-     * @param array  $input
+     * @param array $input
      * @param string $fileStoreId
-     * @param string $merchantId
+     * @param string|null $merchantId
      *
      * @return array|null
      * @throws Exception\BadRequestException
      */
-    public function getDocumentDownloadLinkFromUFH(array $input, string $fileStoreId, string $merchantId): array
+    public function getDocumentDownloadLinkFromUFH(array $input, string $fileStoreId, string $merchantId = null): array
     {
         try
         {

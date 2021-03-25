@@ -212,4 +212,30 @@ class Type
     {
         return (in_array($value, self::PROOF_TYPES) === true);
     }
+
+    public static function getValidDocumentForEntity(string $entityType)
+    {
+        $proofMappings = [];
+
+        foreach (self::DOCUMENT_TYPE_TO_PROOF_TYPE_MAPPING as $documentType => $proofType)
+        {
+            $proofMappings[$proofType][] = $documentType;
+        }
+
+        $proofs = [];
+        foreach (self::PROOF_TYPE_ENTITY_MAPPING as $proofType => $entity)
+        {
+            if ($entity === $entityType)
+            {
+                $proofs[$proofType] = $entity;
+            }
+        }
+
+        $validMappings = array_intersect_key($proofMappings, $proofs);
+
+        return array_reduce($validMappings, function ($array, $item){
+            return array_merge($array, $item);
+        }, []);
+
+    }
 }

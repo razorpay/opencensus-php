@@ -23,6 +23,7 @@ class Constants
     const SOURCE      = 'source';
     const ENTITY      = 'entity';
     const MERCHANT    = 'merchant';
+    const URL         = 'url';
 
 
     const OCR_MATCH_TYPE = 'ocr_match_type';

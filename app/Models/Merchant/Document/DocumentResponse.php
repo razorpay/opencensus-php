@@ -11,7 +11,7 @@ use RZP\Models\GenericDocument\ResponseHelper;
 
 class DocumentResponse extends Detail\Core
 {
-    public function linkDocumentsResponse(Merchant\Entity $merchant, string $entityType, string $entityId)
+    public function documentsResponse(Merchant\Entity $merchant, string $entityType, string $entityId)
     {
         $merchantDetails = $this->getMerchantDetails($merchant);
 
@@ -22,12 +22,11 @@ class DocumentResponse extends Detail\Core
         $documentsArr = [];
         $documents = $this->repo->merchant_document->findDocumentsForEntityTypeAndEntityId($entityType, $entityId);
 
+        $documentService = new GenericDocument\Service;
+
         foreach ($documents as $document)
         {
-            $documentsArr[$document->getDocumentType()] = [
-                Constants::TYPE        => $document->getDocumentType(),
-                Constants::DOCUMENT_ID => ResponseHelper::getDocumentId($document->getPublicFileStoreId(), GenericDocument\Constants::FILE_ID_SIGN, GenericDocument\Constants::DOCUMENT_ID_SIGN),
-            ];
+            $documentsArr[$document->getDocumentType()] = $document;
         }
 
         // construct documents as per required docs and uploaded docs
@@ -44,7 +43,12 @@ class DocumentResponse extends Detail\Core
                         $returnData[$proofType] = [];
                     }
 
-                    $returnData[$proofType][] = $documentsArr[$field];
+                    $signedUrlResponse = $documentService->getDocumentDownloadLinkFromUFH([], $documentsArr[$field]->getPublicFileStoreId());
+
+                    $returnData[$proofType][] = [
+                        Constants::TYPE        => $documentsArr[$field]->getDocumentType(),
+                        Constants::URL         => $signedUrlResponse['signed_url'],
+                    ];
                 }
             }
         }

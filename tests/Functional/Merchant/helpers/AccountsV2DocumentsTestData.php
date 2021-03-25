@@ -98,44 +98,12 @@ return [
         ],
     ],
 
-    'testInvalidProofTypeDocumentLink'    => [
+    'testInvalidDocumentTypeForDocumentPost' => [
         'request'   => [
             'url'     => '/v2/accounts/{accountId}/documents',
             'method'  => 'POST',
             'content' => [
-                'wrong_proof_type' => [
-                    [
-                        'type'        => 'shop_establishment_certificate',
-                        'document_id' => 'file_abc'
-                    ]
-                ]
-            ]
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => 'BAD_REQUEST_ERROR',
-                    'description' => 'invalid proof type: wrong_proof_type',
-                ]
-            ],
-            'status_code' => 400
-        ],
-        'exception' => [
-            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
-    ],
-    'testInvalidDocumentTypeDocumentLink' => [
-        'request'   => [
-            'url'     => '/v2/accounts/{accountId}/documents',
-            'method'  => 'POST',
-            'content' => [
-                'business_proof_of_identification' => [
-                    [
-                        'type'        => 'abcd',
-                        'document_id' => 'file_abc'
-                    ]
-                ]
+                'document_type' => 'abcd',
             ]
         ],
         'response'  => [
@@ -153,24 +121,19 @@ return [
         ],
     ],
 
-    'testSendIncorrectDocumentForProofType' => [
+    'testSendStakeholderDocsForAccount' => [
         'request'   => [
             'url'     => '/v2/accounts/{accountId}/documents',
             'method'  => 'POST',
             'content' => [
-                'business_proof_of_identification' => [
-                    [
-                        'type'        => 'nbfc_registration_certificate',
-                        'document_id' => 'doc_asdf1234567890'
-                    ]
-                ]
+                'document_type'        => 'aadhar_front',
             ]
         ],
         'response'  => [
             'content'     => [
                 'error' => [
                     'code'        => 'BAD_REQUEST_ERROR',
-                    'description' => 'Incorrect Document nbfc_registration_certificate sent for proof type business_proof_of_identification',
+                    'description' => 'invalid document type:aadhar_front for merchant',
                 ]
             ],
             'status_code' => 400
@@ -181,45 +144,12 @@ return [
         ],
     ],
 
-    'testSendStakeholderDocsForAccountLink' => [
-        'request'   => [
-            'url'     => '/v2/accounts/{accountId}/documents',
-            'method'  => 'POST',
-            'content' => [
-                'individual_proof_of_address' => [
-                    [
-                        'type'        => 'aadhar_front',
-                        'document_id' => 'doc_1cXSLlUU8V9sXl'
-                    ]
-                ]
-            ]
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => 'BAD_REQUEST_ERROR',
-                    'description' => 'proof type not supported: individual_proof_of_address',
-                ]
-            ],
-            'status_code' => 400
-        ],
-        'exception' => [
-            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
-    ],
-
-    'testStakeholderDoesnotBelongToMerchantDocumentLink' => [
+    'testStakeholderDoesnotBelongToMerchantDocumentPost' => [
         'request'   => [
             'url'     => '/v2/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
             'method'  => 'POST',
             'content' => [
-                'individual_proof_of_address' => [
-                    [
-                        'type'        => 'aadhar_front',
-                        'document_id' => 'doc_1cXSLlUU8V9sXl'
-                    ]
-                ]
+                'document_type'   => 'aadhar_front',
             ]
         ],
         'response'  => [
@@ -236,21 +166,13 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_STAKEHOLDER_DOES_NOT_BELONG_TO_MERCHANT,
         ],
     ],
-    'testStakeholderDocumentLink'                        => [
+
+    'testPostStakeholderDocument'   => [
         'request'  => [
             'url'     => '/v2/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
             'method'  => 'POST',
             'content' => [
-                'individual_proof_of_address' => [
-                    [
-                        'type'        => 'aadhar_front',
-                        'document_id' => 'doc_1cXSLlUU8V9sXl'
-                    ],
-                    [
-                        'type'        => 'aadhar_back',
-                        'document_id' => 'doc_1cXSLlUU8V9sXm',
-                    ]
-                ]
+                'document_type'        => 'aadhar_front',
             ]
         ],
         'response' => [
@@ -258,16 +180,13 @@ return [
                 'individual_proof_of_address' => [
                     [
                         'type'        => 'aadhar_front',
-                        'document_id' => 'doc_1cXSLlUU8V9sXl'
+                        'url'         => 'paper-mandate/generated/ppm_DczOAf1V7oqaDA_DczOEhobMkq2Do.pdf',
                     ],
-                    [
-                        'type'        => 'aadhar_back',
-                        'document_id' => 'doc_1cXSLlUU8V9sXm',
-                    ]
                 ]
             ],
         ]
     ],
+
     'testStakeholderDocumentFetch'                       => [
         'request'  => [
             'url'     => '/v2/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
@@ -279,31 +198,19 @@ return [
                 'individual_proof_of_address' => [
                     [
                         'type'        => 'aadhar_front',
-                        'document_id' => 'doc_1cXSLlUU8V9sXl'
+                        'url'         => 'paper-mandate/generated/ppm_DczOAf1V7oqaDA_DczOEhobMkq2Do.pdf',
                     ],
-                    [
-                        'type'        => 'aadhar_back',
-                        'document_id' => 'doc_1cXSLlUU8V9sXm',
-                    ]
                 ]
             ],
         ]
     ],
-    'testAccountDocumentLink'                            => [
+
+    'testPostAccountDocument'                            => [
         'request'  => [
             'url'     => '/v2/accounts/{accountId}/documents',
             'method'  => 'POST',
             'content' => [
-                'business_proof_of_identification' => [
-                    [
-                        'type'        => 'shop_establishment_certificate',
-                        'document_id' => 'doc_1cXSLlUU8V9sXl'
-                    ],
-                    [
-                        'type'        => 'gst_certificate',
-                        'document_id' => 'doc_1cXSLlUU8V9sXm'
-                    ],
-                ]
+                'document_type'        => 'shop_establishment_certificate',
             ]
         ],
         'response' => [
@@ -311,16 +218,13 @@ return [
                 'business_proof_of_identification' => [
                     [
                         'type'        => 'shop_establishment_certificate',
-                        'document_id' => 'doc_1cXSLlUU8V9sXl'
-                    ],
-                    [
-                        'type'        => 'gst_certificate',
-                        'document_id' => 'doc_1cXSLlUU8V9sXm'
+                        'url'         => 'paper-mandate/generated/ppm_DczOAf1V7oqaDA_DczOEhobMkq2Do.pdf',
                     ],
                 ]
             ],
         ]
     ],
+
     'testAccountDocumentFetch'                           => [
         'request'  => [
             'url'     => '/v2/accounts/{accountId}/documents',
@@ -332,11 +236,7 @@ return [
                 'business_proof_of_identification' => [
                     [
                         'type'        => 'shop_establishment_certificate',
-                        'document_id' => 'doc_1cXSLlUU8V9sXl'
-                    ],
-                    [
-                        'type'        => 'gst_certificate',
-                        'document_id' => 'doc_1cXSLlUU8V9sXm'
+                        'url'         => 'paper-mandate/generated/ppm_DczOAf1V7oqaDA_DczOEhobMkq2Do.pdf',
                     ],
                 ]
             ],

@@ -73,14 +73,10 @@ class AccountV2DocumentsTest extends OAuthTestCase
     {
         $subMerchant = $this->setupPrivateAuthForPartner();
 
-        $testData                   = $this->testData['testInvalidProofTypeDocumentLink'];
+        $this->updateUploadDocumentData('testInvalidDocumentTypeForDocumentPost');
+        $testData = $this->testData['testInvalidDocumentTypeForDocumentPost'];
         $testData['request']['url'] = '/v2/accounts/acc_' . $subMerchant->getId() . '/documents';
         $this->runRequestResponseFlow($testData);
-
-        $testData                   = $this->testData['testInvalidDocumentTypeDocumentLink'];
-        $testData['request']['url'] = '/v2/accounts/acc_' . $subMerchant->getId() . '/documents';
-        $this->runRequestResponseFlow($testData);
-
     }
 
     public function testValidationsForInvalidEntityData()
@@ -91,26 +87,22 @@ class AccountV2DocumentsTest extends OAuthTestCase
             'merchant_id' => Constants::DEFAULT_MERCHANT_ID
         ]);
 
-        $testData                   = $this->testData['testStakeholderDoesnotBelongToMerchantDocumentLink'];
+        $this->updateUploadDocumentData('testStakeholderDoesnotBelongToMerchantDocumentPost');
+        $testData                   = $this->testData['testStakeholderDoesnotBelongToMerchantDocumentPost'];
         $testData['request']['url'] = '/v2/accounts/acc_'.$subMerchant->getId() . '/stakeholders/sth_'. $stakeholder->getId() . '/documents';
         $this->runRequestResponseFlow($testData);
 
-        $stakeholder = $this->fixtures->create('stakeholder', [
-            'merchant_id' => $subMerchant->getId(),
-        ]);
-
-        $testData = $this->testData['testSendStakeholderDocsForAccountLink'];
+        $this->updateUploadDocumentData('testSendStakeholderDocsForAccount');
+        $testData = $this->testData['testSendStakeholderDocsForAccount'];
         $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() . '/documents';
-        $this->runRequestResponseFlow($testData);
-
-        $testData = $this->testData['testSendIncorrectDocumentForProofType'];
-        $testData['request']['url'] = '/v2/accounts/acc_'.$subMerchant->getId() . '/documents';
         $this->runRequestResponseFlow($testData);
     }
 
-    public function testAccountDocumentLink()
+    public function testPostAccountDocument()
     {
         $subMerchant = $this->setupPrivateAuthForPartner();
+        $this->updateUploadDocumentData(__FUNCTION__);
+
         $testData    = $this->testData[__FUNCTION__];
 
         $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() . '/documents';
@@ -128,9 +120,11 @@ class AccountV2DocumentsTest extends OAuthTestCase
         $this->runRequestResponseFlow($testData);
     }
 
-    public function testStakeholderDocumentLink()
+    public function testPostStakeholderDocument()
     {
         $subMerchant = $this->setupPrivateAuthForPartner();
+        $this->updateUploadDocumentData(__FUNCTION__);
+
         $testData    = $this->testData[__FUNCTION__];
 
         $stakeholder = $this->fixtures->create('stakeholder', [

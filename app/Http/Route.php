@@ -2052,9 +2052,9 @@ class Route
         'document_upload_v2'                         => ['post',      'documents',                                                          'GenericDocumentController@uploadDocument'                  ],
         'document_get_v2'                            => ['get',       'documents/{fileStoreId}',                                            'GenericDocumentController@getDocument'                     ],
         'document_download_v2'                       => ['get',       'documents/{fileStoreId}/content',                                    'GenericDocumentController@getDocumentContent'              ],
-        'link_account_documents_v2'                  => ['post',      'accounts/{accountId}/documents',                                     'DocumentControllerV2@linkAccountDocuments'                 ],
+        'link_account_documents_v2'                  => ['post',      'accounts/{accountId}/documents',                                     'DocumentControllerV2@postAccountDocumentsByPartner'        ],
         'get_account_documents_v2'                   => ['get',       'accounts/{accountId}/documents',                                     'DocumentControllerV2@getAccountDocuments'                  ],
-        'link_stakeholder_documents_v2'              => ['post',      'accounts/{accountId}/stakeholders/{stakeholderId}/documents',        'DocumentControllerV2@linkStakeHolderDocuments'             ],
+        'link_stakeholder_documents_v2'              => ['post',      'accounts/{accountId}/stakeholders/{stakeholderId}/documents',        'DocumentControllerV2@postStakeHolderDocumentsByPartner'    ],
         'get_stakeholder_documents_v2'               => ['get',       'accounts/{accountId}/stakeholders/{stakeholderId}/documents',        'DocumentControllerV2@getStakeHolderDocuments'              ],
 
         // Excel Store Proxy APIs

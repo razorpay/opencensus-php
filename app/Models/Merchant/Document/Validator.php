@@ -27,11 +27,6 @@ class Validator extends Base\Validator
         Entity::FILE          => 'required|file|mimes:pdf,jpeg,jpg,png',
     ];
 
-    protected static $documentLinkRules = [
-        Constants::DOCUMENT_ID   => 'required|string|min:14|max:19',
-        Constants::TYPE      => 'required|string|max:255|custom:document_type'
-    ];
-
     protected static $aadharUploadRules = [
         Entity::DOCUMENT_TYPE => 'required|string|max:255|custom',
         Entity::FILE          => 'required|file',

@@ -103,9 +103,8 @@ class Constants
     const B2C  = 'B2C';
     const B2BC = 'B2B+B2C';
 
-    const ACCOUNT_CODE        = 'account_code';
+    const REFERENCE_ID        = 'reference_id';
     const LEGAL_BUSINESS_NAME = 'legal_business_name';
-    const DOING_BUSINESS_AS   = 'doing_business_as';
     const BUSINESS_TYPE       = 'business_type';
     const LEGAL_INFO          = 'legal_info';
     const TOS_ACCEPTANCE      = 'tos_acceptance';
@@ -122,6 +121,8 @@ class Constants
     const POLICY_URL          = 'policy_url';
     const WEBSITES            = 'websites';
     const STANDARD            = 'standard';
+
+    const CUSTOMER_FACING_BUSINESS_NAME = 'customer_facing_business_name';
 
 
     // bank account statuses

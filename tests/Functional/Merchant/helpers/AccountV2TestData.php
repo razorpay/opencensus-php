@@ -14,7 +14,7 @@ return [
                 'email'           => 'testcreateaccountaa@razorpay.com',
                 'phone'           => '9999999999',
                 'legal_business_name' => 'Acme Corp Pvt Ltd',
-                'doing_business_as'   => 'Acme',
+                'customer_facing_business_name'   => 'Acme',
                 'business_type'       => 'individual',
                 'profile' => [
                     'category'       => 'healthcare',
@@ -100,7 +100,7 @@ return [
                 'email'               => 'testcreateaccountaa@razorpay.com',
                 'phone'               => '9999999999',
                 'legal_business_name' => 'Acme Corp Pvt Ltd',
-                'doing_business_as'   => 'Acme',
+                'customer_facing_business_name'   => 'Acme',
                 'business_type'       => 'individual',
                 'profile'             => [
                     'category'       => 'healthcare',
@@ -189,7 +189,7 @@ return [
                 'email'           => 'testcreateaccountaa@razorpay.com',
                 'phone'           => '9999999999',
                 'legal_business_name' => 'Acme Corp Pvt Ltd',
-                'doing_business_as'   => 'Acme',
+                'customer_facing_business_name'   => 'Acme',
                 'business_type'       => 'partnership',
                 'profile' => [
                     'category'       => 'healthcare',
@@ -275,7 +275,7 @@ return [
                 'email'               => 'testcreateaccountaa@razorpay.com',
                 'phone'               => '9999999999',
                 'legal_business_name' => 'Acme Corp Pvt Ltd',
-                'doing_business_as'   => 'Acme',
+                'customer_facing_business_name'   => 'Acme',
                 'business_type'       => 'partnership',
                 'profile'             => [
                     'category'       => 'healthcare',
@@ -386,7 +386,7 @@ return [
                 'status'              => 'created',
                 'email'               => 'testcreateaccountaa@razorpay.com',
                 'legal_business_name' => 'Acme Corp Pvt Ltd',
-                'doing_business_as'   => 'Acme Corp Pvt Ltd',
+                'customer_facing_business_name'   => 'Acme Corp Pvt Ltd',
                 'business_type'       => 'partnership',
                 'profile'             => [
                     'category'       => 'healthcare',
@@ -431,7 +431,7 @@ return [
                 'status'              => 'created',
                 'email'               => 'testcreateaccountaa@razorpay.com',
                 'legal_business_name' => 'Acme Corp Pvt Ltd',
-                'doing_business_as'   => 'Acme',
+                'customer_facing_business_name'   => 'Acme',
                 'business_type'       => 'individual',
                 'profile'             => [
                     'category'       => 'healthcare',
@@ -515,7 +515,7 @@ return [
                 'email'               => 'testcreateaccountaa@razorpay.com',
                 'phone'               => '9999999999',
                 'legal_business_name' => 'Acme Corp Pvt Ltd',
-                'doing_business_as'   => 'Acme',
+                'customer_facing_business_name'   => 'Acme',
                 'business_type'       => 'individual',
                 'profile'             => [
                     'category'       => 'healthcare',
@@ -607,7 +607,7 @@ return [
                 'email'               => 'testcreateaccountaa@razorpay.com',
                 'phone'               => '9999999999',
                 'legal_business_name' => 'Acme Corp Pvt Ltd',
-                'doing_business_as'   => 'Acme',
+                'customer_facing_business_name'   => 'Acme',
                 'business_type'       => 'individual',
                 'profile'             => [
                     'category'       => 'healthcare',
@@ -649,7 +649,7 @@ return [
                 'email'               => 'testcreateaccountaa@razorpay.com',
                 'phone'               => '9999999999',
                 'legal_business_name' => 'Acme Corp Pvt Ltd',
-                'doing_business_as'   => 'Acme',
+                'customer_facing_business_name'   => 'Acme',
                 'business_type'       => 'individual',
                 'profile'             => [
                     'category'       => 'healthcare',

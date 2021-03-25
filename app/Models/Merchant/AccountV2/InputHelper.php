@@ -21,9 +21,9 @@ class InputHelper
             Merchant\Entity::EMAIL => $input[Constants::EMAIL]
         ];
 
-        if (isset($input[Constants::ACCOUNT_CODE]) === true)
+        if (isset($input[Constants::REFERENCE_ID]) === true)
         {
-            $data[Merchant\Entity::CODE] = $input[Constants::ACCOUNT_CODE];
+            $data[Merchant\Entity::CODE] = $input[Constants::REFERENCE_ID];
         }
 
         return $data;
@@ -85,9 +85,9 @@ class InputHelper
             $detailInput[Detail\Entity::CUSTOM_FIELDS] = $customFields;
         }
 
-        if (isset($input[Constants::DOING_BUSINESS_AS]) === true)
+        if (isset($input[Constants::CUSTOMER_FACING_BUSINESS_NAME]) === true)
         {
-            $detailInput[Detail\Entity::BUSINESS_DBA] = $input[Constants::DOING_BUSINESS_AS];
+            $detailInput[Detail\Entity::BUSINESS_DBA] = $input[Constants::CUSTOMER_FACING_BUSINESS_NAME];
         }
 
         if (isset($input[Constants::LEGAL_BUSINESS_NAME]) === true)
