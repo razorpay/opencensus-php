@@ -95,6 +95,8 @@ class BankingAccountTpvTest extends TestCase
 
         $attributes[Entity::REMARKS] = 'Invalid docs';
 
+        $attributes[Entity::PAYER_ACCOUNT_NUMBER] = '8927398273';
+
         $this->fixtures->create('banking_account_tpv', $attributes);
 
         $this->ba->proxyAuth();
@@ -204,6 +206,9 @@ class BankingAccountTpvTest extends TestCase
         for ($i = 0; $i < 10; $i++)
         {
             $attributes = $this->getTpvInput([Entity::STATUS => rand(0, 1) ? Status::APPROVED : Status::PENDING]);
+
+            // Modify payer account number for each request cause payer account number + mid is unique.
+            $attributes[Entity::PAYER_ACCOUNT_NUMBER] = (string) ((int) $attributes[Entity::PAYER_ACCOUNT_NUMBER] + $i);
 
             $fav = $this->getFundAccountValidationInput();
 
@@ -467,7 +472,7 @@ class BankingAccountTpvTest extends TestCase
 
         $request['content'][Entity::FUND_ACCOUNT_VALIDATION_ID] = $fav['id'];
 
-        $response = &$this->testData[__FUNCTION__]['response'];
+        $response = & $this->testData[__FUNCTION__]['response'];
 
         $response['content'][Entity::FUND_ACCOUNT_VALIDATION_ID] =
             FundAccountValidation::verifyIdAndSilentlyStripSign($fav['id']);
@@ -585,6 +590,17 @@ class BankingAccountTpvTest extends TestCase
         $trimmedPayerAccountNumber = $tpv->getTrimmedPayerAccountNumber();
 
         $this->assertEquals(ltrim($payerAccountNumber, '0'), $trimmedPayerAccountNumber);
+    }
+
+    // This test checks that if a duplicate tpv account is added with extra zeros in the payer account column, the tpv
+    // creation will fail.
+    public function testAdminTpvCreateDuplicateWithPrependedZerosException()
+    {
+        $this->testAdminTpvCreateWithPrependedZerosInPayerAccountNumber();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
     }
 
     public function getFundAccountValidationInput()

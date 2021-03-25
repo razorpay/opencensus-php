@@ -18,7 +18,8 @@ class Repository extends Base\Repository
 
         $balanceIdColumn = $this->repo->banking_account_tpv->dbColumn(Entity::BALANCE_ID);
 
-        $payerAccountNumberColumn = $this->repo->banking_account_tpv->dbColumn(Entity::PAYER_ACCOUNT_NUMBER);
+        $trimmedPayerAccountNumberColumn =
+            $this->repo->banking_account_tpv->dbColumn(Entity::TRIMMED_PAYER_ACCOUNT_NUMBER);
 
         $payerIfscColumn = $this->repo->banking_account_tpv->dbColumn(Entity::PAYER_IFSC);
 
@@ -26,10 +27,12 @@ class Repository extends Base\Repository
 
         $isActiveColumn = $this->repo->banking_account_tpv->dbColumn(Entity::IS_ACTIVE);
 
+        $trimmedPayerAccountNumber = ltrim($payerAccountNumber, '0');
+
         return $this->newQuery()
                     ->where($merchantIdColumn, $merchantId)
                     ->where($balanceIdColumn, $balanceId)
-                    ->where($payerAccountNumberColumn, $payerAccountNumber)
+                    ->where($trimmedPayerAccountNumberColumn, $trimmedPayerAccountNumber)
                     ->where($payerIfscColumn, 'like', $payerBankCode . '%')
                     ->where($statusColumn, Status::APPROVED)
                     ->where($isActiveColumn, 1)
@@ -48,10 +51,12 @@ class Repository extends Base\Repository
     {
         $ifsc = substr($input[Entity::PAYER_IFSC], 0, 4);
 
+        $trimmedPayerAccountNumber = ltrim($input[Entity::PAYER_ACCOUNT_NUMBER], '0');
+
         return $this->newQuery()
                     ->where(Entity::MERCHANT_ID, $input[Entity::MERCHANT_ID])
                     ->where(Entity::BALANCE_ID, $input[Entity::BALANCE_ID])
-                    ->where(Entity::PAYER_ACCOUNT_NUMBER, $input[Entity::PAYER_ACCOUNT_NUMBER])
+                    ->where(Entity::TRIMMED_PAYER_ACCOUNT_NUMBER, $trimmedPayerAccountNumber)
                     ->where(Entity::PAYER_IFSC, 'like', $ifsc . '%')
                     ->first();
     }

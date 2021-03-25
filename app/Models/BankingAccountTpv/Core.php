@@ -46,9 +46,7 @@ class Core extends Base\Core
             $tpv->setIsActive(true);
         }
 
-        $trimmedPayerAccountNumber = $this->trimPayerAccountNumber($tpv->getPayerAccountNumber());
-
-        $tpv->setTrimmedPayerAccountNumber($trimmedPayerAccountNumber);
+        $tpv->trimPayerAccountNumber();
 
         $this->repo->saveOrFail($tpv);
 
@@ -67,9 +65,7 @@ class Core extends Base\Core
 
         // We don't update the payer bank account number in this api but technically we can do that via this route so
         // updating the trimmed payer account number here as well.
-        $trimmedPayerAccountNumber = $this->trimPayerAccountNumber($tpv->getPayerAccountNumber());
-
-        $tpv->setTrimmedPayerAccountNumber($trimmedPayerAccountNumber);
+        $tpv->trimPayerAccountNumber();
 
         if (isset($input[Entity::STATUS]) === true)
         {
@@ -312,10 +308,5 @@ class Core extends Base\Core
             FundAccountValidation::CURRENCY     => 'INR',
             FundAccountValidation::NOTES        => []
         ];
-    }
-
-    protected function trimPayerAccountNumber(string $payerAccountNumber)
-    {
-        return ltrim($payerAccountNumber, '0');
     }
 }

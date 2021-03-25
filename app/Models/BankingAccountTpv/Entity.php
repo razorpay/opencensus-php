@@ -176,6 +176,19 @@ class Entity extends Base\PublicEntity
 
     // -------------------- End Relations --------------------------
 
+    // -------------------- Helpers -----------------------------
+
+    public function trimPayerAccountNumber()
+    {
+        $payerAccountNumber = (string) $this->getPayerAccountNumber();
+
+        $trimmedPayerAccountNumber = ltrim($payerAccountNumber, '0');
+
+        $this->setTrimmedPayerAccountNumber($trimmedPayerAccountNumber);
+    }
+
+    // -------------------- End Helpers --------------------------
+
     // -------------------- Public Setters --------------------------
 
     public function setPublicFundAccountValidationAttribute(array & $attributes)

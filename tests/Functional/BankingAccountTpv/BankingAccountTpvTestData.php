@@ -94,7 +94,7 @@ return [
                         'balance_id'           => '10000000000000',
                         'status'               => Status::REJECTED,
                         'payer_name'           => 'Razorpay',
-                        'payer_account_number' => '98711120003344',
+                        'payer_account_number' => '8927398273',
                         'payer_ifsc'           => 'CITI0000006',
                         'created_by'           => 'OPS_A',
                         'bank_name'            => 'CITI Bank',
@@ -361,6 +361,35 @@ return [
                 'type'                 => 'bank_account',
                 'remarks'              => 'Morphed docs'
             ],
+        ],
+    ],
+
+    'testAdminTpvCreateDuplicateWithPrependedZerosException' => [
+        'request'   => [
+            'url'     => '/admin/tpv/create',
+            'method'  => 'post',
+            'content' => [
+                'merchant_id'          => '10000000000000',
+                'balance_id'           => '10000000000000',
+                'status'               => Status::APPROVED,
+                'payer_name'           => 'Razorpay',
+                'payer_account_number' => '0000098711120003344',
+                'payer_ifsc'           => 'CITI0000006',
+                'created_by'           => 'OPS_A',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_DUPLICATE_TPV,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_DUPLICATE_TPV,
         ],
     ],
 ];
