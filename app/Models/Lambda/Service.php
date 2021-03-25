@@ -105,11 +105,17 @@ class Service extends Base\Service
                 if(empty($input['bucket']) === false)
                 {
                     $bucketConfig = $input['bucket'];
+                    // doing this because the batch file creation will require this to be unset
+                    // else in validation it will fail
+                    unset($input['bucket']);
                 }
 
                 if (empty($input['region']) === false)
                 {
                     $bucketRegion = $input['region'];
+                    // doing this because the batch file creation will require this to be unset
+                    // else in validation it will fail
+                    unset($input['region']);
                 }
 
                 $filePath = $this->getH2HFileFromAws($key, true, $bucketConfig, $bucketRegion);
