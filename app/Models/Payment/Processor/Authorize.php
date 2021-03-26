@@ -7615,7 +7615,7 @@ trait Authorize
     protected function getOtpSubmitUrlPrivate(): string
     {
         $params = [
-            'id' => $this->payment->getPublicId()
+            'x_entity_id' => $this->payment->getPublicId()
         ];
 
         $otpSubmitUrl = $this->route->getUrl('payment_otp_submit_private', $params);
@@ -7626,7 +7626,7 @@ trait Authorize
     protected function getPaymentRedirectTo3dsUrl(): string
     {
         $params = [
-            'id' => $this->payment->getPublicId()
+            'x_entity_id' => $this->payment->getPublicId()
         ];
 
         $otpFallbackUrl = $this->route->getUrlWithPublicAuth('payment_redirect_3ds', $params);
@@ -7637,7 +7637,7 @@ trait Authorize
     protected function getOtpResendUrl(): string
     {
         $params = [
-            'id' => $this->payment->getPublicId()
+            'x_entity_id' => $this->payment->getPublicId()
         ];
 
         $otpResendUrl = $this->route->getUrlWithPublicAuth('payment_otp_resend', $params);
@@ -7649,7 +7649,7 @@ trait Authorize
     protected function getOtpResendUrlPrivate(): string
     {
         $params = [
-            'id' => $this->payment->getPublicId()
+            'x_entity_id' => $this->payment->getPublicId()
         ];
 
         $otpResendUrl = $this->route->getUrl('payment_otp_resend_private', $params);
@@ -7660,7 +7660,7 @@ trait Authorize
     protected function getOtpResendUrlJson(): string
     {
         $params = [
-            'id' => $this->payment->getPublicId()
+            'x_entity_id' => $this->payment->getPublicId()
         ];
 
         $otpResendUrl = $this->route->getUrlWithPublicAuth('payment_otp_resend_json', $params);
@@ -7674,7 +7674,7 @@ trait Authorize
 
         $hash = $this->getHashOf($publicId);
 
-        return ['id' => $publicId, 'hash' => $hash];
+        return ['x_entity_id' => $publicId, 'hash' => $hash];
     }
 
     /**
