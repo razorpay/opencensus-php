@@ -262,6 +262,12 @@ class Shield
 
         $paArray = $paymentAnalytics->toArray();
         $payloadDetails[ShieldConstants::RZP_CHECKOUT_LIBRARY] = $paArray[Payment\Analytics\Entity::LIBRARY] ?? null;
+
+        $packageName = $payment->getMetadata(ShieldConstants::PACKAGE_NAME);
+        if (empty($packageName) === false)
+        {
+            $payloadDetails[ShieldConstants::PACKAGE_NAME] = $packageName;
+        }
     }
 
     protected function populateWhiteListedDomains(Merchant\Entity $merchant, array & $payloadDetails)

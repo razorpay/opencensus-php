@@ -690,4 +690,71 @@ class FraudDetectionTest extends TestCase
         $this->assertEquals(ErrorCode::BAD_REQUEST_ERROR, $payment['error_code']);
         $this->assertEquals(ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD, $payment['internal_error_code']);
     }
+
+    protected function runFraudDetectionTestWithPackageName($value)
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '341111111111111';
+
+        $payment['card']['cvv'] = '1234';
+
+        $payment['_'] = ['package_name' => $value];
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->mockRazorx();
+
+        $shieldClient = Mockery::mock('RZP\Services\Mock\ShieldClient');
+
+        $shieldClient->shouldReceive('evaluateRules')
+            ->andReturnUsing(function ($payload) use ($value) {
+                $action = 'block';
+
+                if ((empty($value) === true) and
+                    (isset($payload['input']['package_name']) === false))
+                {
+                    $action = 'allow';
+                }
+
+                if ((empty($value) === false) and
+                    (isset($payload['input']['package_name']) === true) and
+                    ($payload['input']['package_name'] === $value))
+                {
+                    $action = 'allow';
+                }
+
+                return [
+                    "action" => $action,
+                    "max_rule_weight" => 0,
+                    "maxmind_score" => null,
+                    "triggered_rule_weight" => 0,
+                ];
+            });
+
+        $this->app->instance('shield', $shieldClient);
+
+        $response = $this->doAuthPayment($payment);
+
+        $paymentId = $response['razorpay_payment_id'];
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertEquals($payment['status'], 'authorized');
+    }
+
+    public function testFraudDetectionWithNonEmptyPackageName()
+    {
+        $this->runFraudDetectionTestWithPackageName('com.licious');
+    }
+
+    public function testFraudDetectionWithNullPackageName()
+    {
+        $this->runFraudDetectionTestWithPackageName(null);
+    }
+
+    public function testFraudDetectionWithEmptyPackageName()
+    {
+        $this->runFraudDetectionTestWithPackageName('');
+    }
 }

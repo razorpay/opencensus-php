@@ -81,6 +81,7 @@ final class Shield
     const INVOICE_ENTITY_TYPE          = 'invoice_entity_type';
     const INTEGRATION                  = 'integration';
     const RZP_CHECKOUT_LIBRARY         = 'rzp_checkout_library';
+    const PACKAGE_NAME                 = 'package_name';
 
     const IS_PARTNER_INITIATED_PAYMENT = 'is_partner_initiated_payment';
 
