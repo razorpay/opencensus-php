@@ -2535,6 +2535,7 @@ class Route
         // Routes webhook_create and webhook_edit exist in this list as exception, a merchant i.e. Limetray uses it.
         'webhook_create',
         'webhook_edit',
+        'webhook_fetch_multiple',
         'setl_amount',
         'setl_fetch_by_id',
         'setl_fetch_multiple',

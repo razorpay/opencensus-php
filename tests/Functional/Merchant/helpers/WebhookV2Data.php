@@ -689,6 +689,48 @@ return [
         ],
     ],
 
+    'testListWebhookWithPrivateAuth' => [
+        'request' => [
+            'url'  => '/v1/webhooks',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content'  => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    $sampleApiWebhookResponse,
+                    array_merge($sampleApiWebhookResponse, [
+                        'id'  => 'webhook0000002',
+                        'url' => 'http://webhook.com/v1/dummy/route/2',
+                    ]),
+                ],
+            ],
+        ],
+    ],
+
+    'listWebhookWithPrivateAuthStorkExpectations' => [
+        'expected_request' => [
+            'path'    => '/twirp/rzp.stork.webhook.v1.WebhookAPI/List',
+            'payload' => [
+                'service'  => 'api-test',
+                'owner_id' => '10000000000000',
+            ],
+        ],
+        'mocked_response' => [
+            'code' => 200,
+            'body' => [
+                'webhooks' => [
+                    $sampleStorkWebhookResponse,
+                     array_merge($sampleStorkWebhookResponse, [
+                        'id'  => 'webhook0000002',
+                        'url' => 'http://webhook.com/v1/dummy/route/2',
+                    ]),
+                ],
+            ],
+        ],
+    ],
+
     'testListWebhookForPrimary' => [
         'request' => [
             'url'  => '/v1/webhooks',

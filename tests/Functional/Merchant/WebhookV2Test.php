@@ -263,6 +263,14 @@ class WebhookV2Test extends TestCase
         $this->startTest();
     }
 
+    public function testListWebhookWithPrivateAuth()
+    {
+        $this->expectStorkServiceRequestForAction('listWebhookWithPrivateAuth');
+
+        $this->ba->privateAuth();
+        $this->startTest();
+    }
+
     public function testListWebhookForBanking()
     {
         $this->fixtures->create('merchant_detail',[
