@@ -8,6 +8,7 @@ use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Base\RuntimeManager;
 use RZP\Exception\LogicException;
 use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\Settlement\SlackNotification;
@@ -77,6 +78,8 @@ abstract class FileProcessor extends Processor
 
     protected function processReconciliation(array $input)
     {
+        $this->increaseAllowedSystemLimits();
+
         $reconcileFile = $this->getReconciliationFile($input);
 
         $this->trace->info(
@@ -194,5 +197,15 @@ abstract class FileProcessor extends Processor
     protected function verifySettlements(array $input)
     {
         return;
+    }
+
+    // Adding this to increase the allowed system time limit of 60 sec
+    // because the bank started sending the file of more than 2MB size recently
+    // which started taking more than 60s and we are observing termination of the
+    // request
+    // ref: https://razorpay.slack.com/archives/CAW3Z5Y6P/p1615802018055000
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setTimeLimit(240);
     }
 }
