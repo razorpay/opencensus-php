@@ -137,6 +137,13 @@ class Core extends Base\Core
 
         $internationalEnablementRequestId = Constants::INTERNATIONAL_ENABLEMENT_REQUEST_ID_PREFIX . $this->app['request']->getId();
 
+        $workflowRequestTags = [$internationalEnablementRequestId];
+
+        if (count($productCategoriesRequested) > 1)
+        {
+            $workflowRequestTags[] = Constants::INTERNATIONAL_ENABLEMENT_REQUEST_HAS_SIBLINGS;
+        }
+
         foreach ($productCategoriesRequested as $index => $productCategoryRequested)
         {
             $nextWorkflowPresent = false ? ($index === count($productCategoryRequested) - 1) : true;
@@ -148,7 +155,7 @@ class Core extends Base\Core
             $this->app['workflow']
                 ->setEntityAndId($merchant->getEntity(), $merchant->getId())
                 ->setPermission($permission)
-                ->setTags([$internationalEnablementRequestId])
+                ->setTags($workflowRequestTags)
                 ->handle(null, $typeformWorkflowData, $nextWorkflowPresent);
         }
         //To be removed (post final testing)

@@ -6,9 +6,10 @@ use RZP\Models\Admin\Permission;
 
 class Constants
 {
-    const REJECTION_TAG_PREFIX                       = 'ie_rejection_tag_';
-    const REJECTION_REASON_PREFIX                    = 'ie_rejection_reason_';
-    const INTERNATIONAL_ENABLEMENT_REQUEST_ID_PREFIX = 'ie_request_id_';
+    const REJECTION_TAG_PREFIX                          = 'ie_rejection_tag_';
+    const REJECTION_REASON_PREFIX                       = 'ie_rejection_reason_';
+    const INTERNATIONAL_ENABLEMENT_REQUEST_ID_PREFIX    = 'ie_request_id_';
+    const INTERNATIONAL_ENABLEMENT_REQUEST_HAS_SIBLINGS = 'ie_request_has_siblings';
 
     const CSV_SEPERATOR = ',';
 
@@ -19,13 +20,14 @@ class Constants
     const REJECT_REASON_MERCHANT_LOOKS_SAFE     = 'merchant_looks_safe';
     const REJECT_REASON_MERCHANT_NOT_REGISTERED = 'merchant_not_registered';
 
-    const REJECTION_TAG_CHARGEBACK_PRESENT                = 'merchant_high_chargebacks_present';
+    const REJECTION_TAG_CHARGEBACK_FRAUD_PRESENT          = 'merchant_high_chargebacks_fraud_present';
     const REJECTION_TAG_WEBSITE_INCOMPLETE                = 'website_incomplete';
     const REJECTION_TAG_INADEQUATE_DOCUMENTS              = 'inadequate_documents';
     const REJECTION_TAG_BUSINESS_USE_CASE_UNDEFINED       = 'business_use_case_undefined';
     const REJECTION_TAG_GOODS_LOGISTICS_PARTNER_MISSING   = 'goods_logistics_partner_missing';
     const REJECTION_TAG_WEBSITE_QUICKLINKS_UNSATISFACTORY = 'website_quicklinks_unsatisfactory';
     const REJECTION_TAG_CATEGORY_INTERNATIONAL_INELIGIBLE = 'merchant_category_international_ineligible';
+    const REJECTION_TAG_BUSINESS_MODEL_MISMATCH           = 'business_model_mismatch';
 
     const REJECTION_REASONS = [
         self::REJECT_REASON_MERCHANT_LOOKS_RISKY,
@@ -34,13 +36,14 @@ class Constants
     ];
 
     const REJECTION_TAGS = [
-        self::REJECTION_TAG_CHARGEBACK_PRESENT,
+        self::REJECTION_TAG_CHARGEBACK_FRAUD_PRESENT,
         self::REJECTION_TAG_WEBSITE_INCOMPLETE,
         self::REJECTION_TAG_INADEQUATE_DOCUMENTS,
         self::REJECTION_TAG_BUSINESS_USE_CASE_UNDEFINED,
         self::REJECTION_TAG_GOODS_LOGISTICS_PARTNER_MISSING,
         self::REJECTION_TAG_WEBSITE_QUICKLINKS_UNSATISFACTORY,
         self::REJECTION_TAG_CATEGORY_INTERNATIONAL_INELIGIBLE,
+        self::REJECTION_TAG_BUSINESS_MODEL_MISMATCH,
     ];
 
     const INTERNATIONAL_ENABLEMENT_NOTIFICATION_FEATURE_FLAG                = 'international_enablement_notification';

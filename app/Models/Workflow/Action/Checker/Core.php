@@ -238,6 +238,8 @@ class Core extends Base\Core
 
         $checker->generateId();
 
+        $this->skipStrictValidationIfApplicable($checker, $permissionName);
+
         $checker->build($input);
 
         // Legacy, fix
@@ -340,6 +342,14 @@ class Core extends Base\Core
                     ['id' => $action->getId()]
                 );
             }
+        }
+    }
+
+    protected function skipStrictValidationIfApplicable(Entity $checker, string $permissionName)
+    {
+        if (in_array($permissionName, Constants::SKIP_CHECKER_STRICT_VALIDATION_FOR_PERMISSIONS) === true)
+        {
+            $checker->getValidator()->setStrictFalse();
         }
     }
 }
