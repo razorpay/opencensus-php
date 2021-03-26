@@ -34,6 +34,16 @@ class Gateway extends BaseProcessor
 
     const DEFAULT_RBL_STATEMENT_FETCH_RETRY_LIMIT = 3;
 
+    // regex to fetch utr from description
+    const CREDIT_REGEX = '/^(RTGS\/|NEFT\/|R-)(.*?)(\/|-)/';
+
+    // sample IMPS - 010617021414-QCREDIT 234412
+    const IMPS_DEBIT_REGEX = '/^(.*?)-/';
+
+    // sample NEFT - NEFT/000119662132/maYANK SHARMA
+    // sample RTGS - RTGS/UTIBH20106341692/RAZORPAY SOFTWARE PRIVATE LI
+    const NEFT_RTGS_DEBIT_REGEX = '/^(RTGS\/|NEFT\/)(.*?)(\/)/';
+
     public function __construct(string $channel, string $accountNumber)
     {
         $this->setSource(Source::FETCH_API);
@@ -528,5 +538,54 @@ class Gateway extends BaseProcessor
         $hasMoreData = $responseBody[Fields::HAS_MORE_DATA];
 
         return ($hasMoreData === 'Y');
+    }
+
+    public function getUtrForChannel(Entity $basEntity)
+    {
+        $description = $basEntity->getDescription();
+
+        if ($basEntity->isTypeCredit() === true)
+        {
+            $regex = self::CREDIT_REGEX;
+        }
+        else
+        {
+            $regex = self::IMPS_DEBIT_REGEX;
+
+            if ($this->isNeftOrRtgs($description) === true)
+            {
+                $regex = self::NEFT_RTGS_DEBIT_REGEX;
+            }
+        }
+
+        $match = preg_match($regex, $description, $matches);
+
+        if ($match === 1)
+        {
+            $match = (($regex === self::CREDIT_REGEX) or
+                      ($regex === self::NEFT_RTGS_DEBIT_REGEX)) ? $matches[2] : $matches[1];
+        }
+
+        // Could be an empty string match
+        if (empty($match) === false)
+        {
+            return $match;
+        }
+
+        return null;
+    }
+
+    protected function isNeftOrRtgs(string  $description)
+    {
+        $regex = self::NEFT_RTGS_DEBIT_REGEX;
+
+        $match = preg_match($regex, $description, $matches);
+
+        if ($match === 1)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

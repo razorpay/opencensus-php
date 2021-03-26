@@ -25,6 +25,8 @@ abstract class Base extends BaseCore
 
     abstract protected function sendRequestAndGetResponse(array $input);
 
+    abstract public function getUtrForChannel(Entity $basEntity);
+
     public function __construct(string $channel, string $accountNumber)
     {
         parent::__construct();

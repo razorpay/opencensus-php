@@ -239,11 +239,6 @@ class Entity extends Base\PublicEntity
 
     public function setUtr($utr = null)
     {
-        if (empty($utr) === true)
-        {
-            $utr = $this->getUtrFromDescription();
-        }
-
         $this->setAttribute(self::UTR, $utr);
     }
 
@@ -327,54 +322,5 @@ class Entity extends Base\PublicEntity
     public function isTypeDebit()
     {
         return ($this->getType() === Type::DEBIT);
-    }
-
-    protected function getUtrFromDescription()
-    {
-        $description = $this->getDescription();
-
-        if ($this->isTypeCredit() === true)
-        {
-            $regex = self::CREDIT_REGEX;
-        }
-        else
-        {
-            $regex = self::IMPS_DEBIT_REGEX;
-
-            if ($this->isNeftOrRtgs($description) === true)
-            {
-                $regex = self::NEFT_RTGS_DEBIT_REGEX;
-            }
-        }
-
-        $match = preg_match($regex, $description, $matches);
-
-        if ($match === 1)
-        {
-            $match = (($regex === self::CREDIT_REGEX) or
-                     ($regex === self::NEFT_RTGS_DEBIT_REGEX)) ? $matches[2] : $matches[1];
-        }
-
-        // Could be an empty string match
-        if (empty($match) === false)
-        {
-            return $match;
-        }
-
-        return null;
-    }
-
-    protected function isNeftOrRtgs(string  $description)
-    {
-        $regex = self::NEFT_RTGS_DEBIT_REGEX;
-
-        $match = preg_match($regex, $description, $matches);
-
-        if ($match === 1)
-        {
-            return true;
-        }
-
-        return false;
     }
 }

@@ -119,7 +119,7 @@ class Core extends Base\Core
 
                     $accountStatementDetails = $processor->fetchAccountStatementDetails($input);
 
-                    $this->processAccountStatement($accountStatementDetails, $accountNumber, $merchant);
+                    $this->processAccountStatement($accountStatementDetails, $accountNumber, $merchant, $processor);
 
                     $bankingAccount->balance->updateLastFetchedAt();
                 },
@@ -326,10 +326,21 @@ class Core extends Base\Core
         return new $processor($channel, $accountNumber);
     }
 
+    /**
+     * @param array           $bankTransactions
+     * @param string          $accountNumber
+     * @param Merchant\Entity $merchant
+     *
+     * $processor is gateway depending on channel.
+     * @param                 $processor
+     *
+     * @throws Exception\BadRequestException
+     */
     protected function processAccountStatement(
         array $bankTransactions,
         string $accountNumber,
-        Merchant\Entity $merchant)
+        Merchant\Entity $merchant,
+        $processor)
     {
         $bankTxnCount = count($bankTransactions);
         $skippedCount = 0;
@@ -369,7 +380,7 @@ class Core extends Base\Core
                 continue;
             }
 
-            $this->saveAccountStatement($bankTransaction, $merchant);
+            $this->saveAccountStatement($bankTransaction, $merchant, $processor);
 
             $closingBalance = $bankTransaction[Entity::BALANCE];
         }
@@ -401,7 +412,13 @@ class Core extends Base\Core
         }
     }
 
-    protected function saveAccountStatement(array $bankTransaction, Merchant\Entity $merchant)
+    /**
+     * @param array           $bankTransaction
+     * @param Merchant\Entity $merchant
+     * $processor is gateway depending on channel.
+     * @param                 $processor
+     */
+    protected function saveAccountStatement(array $bankTransaction, Merchant\Entity $merchant, $processor)
     {
         $bankPostedDate = $bankTransaction[Entity::POSTED_DATE];
         $bankTxnChannel = $bankTransaction[Entity::CHANNEL];
@@ -414,7 +431,7 @@ class Core extends Base\Core
                 'bank_txn_channel'      => $bankTxnChannel,
             ]);
 
-        list($sourceEntity, $isSourceAlreadyCreated) = $this->repo->transaction(function () use ($bankTransaction, $merchant) {
+        list($sourceEntity, $isSourceAlreadyCreated) = $this->repo->transaction(function () use ($bankTransaction, $merchant, $processor) {
 
             $basEntity = (new Entity)->build($bankTransaction);
 
@@ -433,7 +450,9 @@ class Core extends Base\Core
             //
             if (empty($basEntity->getUtr()) === true)
             {
-                $basEntity->setUtr();
+                $utr = $processor->getUtrForChannel($basEntity);
+
+                $basEntity->setUtr($utr);
             }
 
             $basEntity->merchant()->associate($merchant);
