@@ -43,6 +43,7 @@ final class Metric
     const PAYOUT_BATCH_SUBMITTED_TO_CREATED_DURATION_SECONDS             = 'payout_batch_submitted_to_created_duration_seconds.histogram';
     const PAYOUT_BATCH_SUBMITTED_TO_FAILED_DURATION_SECONDS              = 'payout_batch_submitted_to_failed_duration_seconds.histogram';
     const PAYOUT_SCHEDULED_TO_CREATED_DURATION_SECONDS                   = 'payout_scheduled_to_created_duration_seconds.histogram';
+    const PAYOUT_SCHEDULED_TO_CANCELLED_DURATION_SECONDS                 = 'payout_scheduled_to_cancelled_duration_seconds.histogram';
     const PAYOUT_SCHEDULED_TO_FAILED_DURATION_SECONDS                    = 'payout_scheduled_to_failed_duration_seconds.histogram';
     const PAYOUT_SCHEDULED_TO_REJECTED_DURATION_SECONDS                  = 'payout_scheduled_to_rejected_duration_seconds.histogram';
     const PAYOUT_SCHEDULED_TO_BATCH_SUBMITTED_DURATION_SECONDS           = 'payout_scheduled_to_batch_submitted_duration_seconds.histogram';
@@ -338,6 +339,17 @@ final class Metric
 
         app('trace')->histogram(
             self::PAYOUT_SCHEDULED_TO_FAILED_DURATION_SECONDS,
+            $timeDuration,
+            $metricDimensions);
+    }
+
+    protected static function pushScheduledToCancelledMetrics(Entity $payout)
+    {
+        $metricDimensions = self::getMetricDimensions($payout);
+        $timeDuration     = $payout->getCancelledAt() - $payout->getScheduledAt();
+
+        app('trace')->histogram(
+            self::PAYOUT_SCHEDULED_TO_CANCELLED_DURATION_SECONDS,
             $timeDuration,
             $metricDimensions);
     }
