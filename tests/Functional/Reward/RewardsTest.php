@@ -269,4 +269,25 @@ class RewardsTest extends TestCase
 
         $this->assertEquals('live', $fetchResponse[1]['status']);
     }
+
+    public function testGetNullAdvertiserLogo()
+    {
+        $this->ba->adminAuth();
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/advertiser/logo/'.$merchant->id;
+
+        $this->startTest();
+    }
+    public function testGetAdvertiserLogo()
+    {
+        $this->ba->adminAuth();
+
+        $merchant = $this->fixtures->create('merchant',['logo_url' => "/advertiser_logo_url"]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/advertiser/logo/'.$merchant->id;
+
+        $this->startTest();
+    }
 }

@@ -2290,6 +2290,7 @@ class Route
         'checkout_rewards'                        => ['get',     'checkout/rewards',                                        'MerchantController@getRewardsForCheckout'                     ],
         'reward_terms'                            => ['get',     'reward/{id}/{payment_id}/terms',                          'RewardController@getRewardTerms'                              ],
         'reward_expire_cron'                      => ['post',    'rewards/expire',                                          'RewardController@expireRewards'                               ],
+        'advertiser_logo'                         => ['get',     'advertiser/logo/{id}',                                    'RewardController@getAdvertiserLogo'                           ],
 
         // pagination operations routes
         'fix_merchant_data_cron'                  => ['post',    'pagination/trim_space/start',                             'PaginationController@trimSpacesForMerchant'                   ],
@@ -3702,6 +3703,7 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'advertiser_logo',
         'partner_activation_migrate',
         'mir_instrument_set',
         'virtual_account_debug',
@@ -5275,7 +5277,7 @@ class Route
         'reward_update'                               => Permission::UPDATE_REWARD,
         'reward_create'                               => Permission::CREATE_REWARD,
         'reward_delete'                               => Permission::DELETE_REWARD,
-
+        'advertiser_logo'                             => Permission::GET_ADVERTISER_LOGO  ,
         // Admin merchant notification configs
         'create_merchant_notification_config_admin'           => Permission::MERCHANT_NOTIFICATION_CONFIG_ADMIN,
         'update_merchant_notification_config_admin'           => Permission::MERCHANT_NOTIFICATION_CONFIG_ADMIN,

@@ -186,4 +186,25 @@ class Service extends Base\Service
     {
         return (new MerchantReward\Core())->expireRewards();
     }
+
+    public function getAdvertiserLogo($id)
+    {
+        $response["logo_url"] = null;
+
+        try
+        {
+            $merchant = $this->repo->merchant->find($id);
+
+            if(isset($merchant) === true)
+            {
+                $response["logo_url"] = $merchant->getFullLogoUrlWithSize();
+            }
+            return $response;
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e);
+        }
+        return $response;
+    }
 }

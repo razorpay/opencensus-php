@@ -55,7 +55,7 @@ class RewardController extends Controller
 
         if (isset($data) === false)
         {
-            return View::make('reward.terms_error');;
+            return View::make('reward.terms_error');
         }
 
         return View::make('reward.terms')->with('data', $data);
@@ -63,6 +63,12 @@ class RewardController extends Controller
     public function expireRewards()
     {
         $data = $this->service()->expireRewards();
+
+        return ApiResponse::json($data);
+    }
+    public function getAdvertiserLogo($id)
+    {
+        $data = $this->service()->getAdvertiserLogo($id);
 
         return ApiResponse::json($data);
     }

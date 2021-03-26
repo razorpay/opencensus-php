@@ -135,7 +135,28 @@ return [
             ]
         ]
     ],
-
+    'testGetNullAdvertiserLogo' => [
+        'request' => [
+            'content' => [],
+            'method'  => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'logo_url' => null
+            ]
+        ]
+    ],
+    'testGetAdvertiserLogo' => [
+        'request' => [
+            'content' => [],
+            'method'  => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'logo_url' => 'https://dummycdn.razorpay_original.com/advertiser_logo_url'
+            ]
+        ]
+    ],
     'testActivateRewardWithWrongStatus' => [
         'request' => [
             'content' => [

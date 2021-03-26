@@ -591,6 +591,11 @@ return [
                 'description' => 'Delete existing reward',
                 'assignable'  => true
             ],
+            Permission::GET_ADVERTISER_LOGO => [
+                'description' => 'Get Advertiser Logo',
+                'assignable'  => true
+            ]
+            ,
             Permission::ADMIN_FETCH_FUND_ACCOUNT_VALIDATION => [
                 'assignable' => true,
             ],
