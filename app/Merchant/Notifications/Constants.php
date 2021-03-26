@@ -139,8 +139,6 @@ class Constants
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro.svg',
             'id'          => 'projectNitro',
             'campaign'    => 'nitro',
-            'version'     =>  'nitro_bangalore_v1',
-            "version_description" => 'Nitro for bangalore',
             "target_product_feature" => 'XCA',
             "target_metric" => 'MTU',
             'buttons'     => [
@@ -152,79 +150,7 @@ class Constants
                 ],
             ],
             'filters'     => [
-                'experiments'         => ['project_nitro', 'project_nitro_1', 'project_nitro_feb_2021', 'project_nitro_feb_2021_1'],
-            ],
-        ],
-        [
-            'title'       => 'Get 1.65% pricing with RazorpayX',
-            'description' => 'Open a current account with RazorpayX & reduce your transaction fee to 1.65%.',
-            'start_ts'    => 1612788789,
-            'end_ts'      => 1617167373,
-            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro.svg',
-            'id'          => 'projectNitro',
-            'campaign'    => 'nitro',
-            'version'     =>  'nitro_hyderabad_v2',
-            "version_description" => 'Nitro for hyderabad',
-            "target_product_feature" => 'XCA',
-            "target_metric" => 'MTU',
-            'buttons'     => [
-                [
-                    'type'  => 'button',
-                    'label' => 'Learn More',
-                    'url'   => '',
-                    'id'    => 'announcement-projectNitro-cta1',
-                ],
-            ],
-            'filters'     => [
-                'experiments'         => ['nitro_hyderabad_v2'],
-            ],
-        ],
-        [
-            'title'       => 'Get 1.65% pricing with RazorpayX',
-            'description' => 'Open a current account with RazorpayX & reduce your transaction fee to 1.65%.',
-            'start_ts'    => 1612788789,
-            'end_ts'      => 1617167373,
-            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro.svg',
-            'id'          => 'projectNitro',
-            'campaign'    => 'nitro',
-            'version'     =>  'nitro_hyderabad_v3',
-            "version_description" => 'Nitro for hyderabad',
-            "target_product_feature" => 'XCA',
-            "target_metric" => 'MTU',
-            'buttons'     => [
-                [
-                    'type'  => 'button',
-                    'label' => 'Learn More',
-                    'url'   => '',
-                    'id'    => 'announcement-projectNitro-cta1',
-                ],
-            ],
-            'filters'     => [
-                'experiments'         => ['nitro_hyderabad_v3'],
-            ],
-        ],
-        [
-            'title'       => 'Get 1.65% pricing with RazorpayX',
-            'description' => 'Open a current account with RazorpayX & reduce your transaction fee to 1.65%.',
-            'start_ts'    => 1612788789,
-            'end_ts'      => 1617167373,
-            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro.svg',
-            'id'          => 'projectNitro',
-            'campaign'    => 'nitro',
-            'version'     =>  'nitro_midmarket_mumbai_v1',
-            "version_description" => 'Nitro for mumbai mid market',
-            "target_product_feature" => 'XCA',
-            "target_metric" => 'MTU',
-            'buttons'     => [
-                [
-                    'type'  => 'button',
-                    'label' => 'Learn More',
-                    'url'   => '',
-                    'id'    => 'announcement-projectNitro-cta1',
-                ],
-            ],
-            'filters'     => [
-                'experiments'         => ['nitro_midmarket_mumbai_v1'],
+                'experiments'         => ['project_nitro', 'project_nitro_1', 'project_nitro_feb_2021', 'project_nitro_feb_2021_1','nitro_hyderabad_v1','nitro_hyderabad_v2','nitro_hyderabad_v3','nitro_midmarket_mumbai_v1'],
             ],
         ],
         [
@@ -779,8 +705,54 @@ class Constants
         ],
     ];
 
+    //insert data in data field, that is dynamically loaded based on the sub-campaign
+    const ANNOUNCEMENT_ID_TO_SUB_CAMPAIGN_DETAIL_MAPPING = [
+        'projectNitro'=>[
+            [
+                'data'  => [
+                    'version'             =>  'nitro_bangalore_v1',
+                    'version_description' => 'Nitro for bangalore',
+                    ],
+                'experiments'         => ['project_nitro', 'project_nitro_1', 'project_nitro_feb_2021', 'project_nitro_feb_2021_1'],
+            ],
+            [
+                'data'  => [
+                    'version'             =>  'nitro_hyderabad_v1',
+                    'version_description' => 'Nitro for hyderabad',
+                ],
+                'experiments'         => ['nitro_hyderabad_v1'],
+            ],
+            [
+                'data'  => [
+                    'version'     =>  'nitro_hyderabad_v2',
+                    "version_description" => 'Nitro for hyderabad',
+                ],
+                'experiments'         => ['nitro_hyderabad_v2'],
+            ],
+            [
+                'data'  => [
+                    'version'     =>  'nitro_hyderabad_v3',
+                    "version_description" => 'Nitro for hyderabad',
+                ],
+                'experiments'         => ['nitro_hyderabad_v3'],
+            ],
+            [
+                'data'  => [
+                    'version'     =>  'nitro_midmarket_mumbai_v1',
+                    "version_description" => 'Nitro for mumbai mid market',
+                ],
+                'experiments'         => ['nitro_midmarket_mumbai_v1'],
+            ],
+        ]
+    ];
+
     public static function getNotifications(): array
     {
         return self::NOTIFICATIONS;
+    }
+
+    public static function getAnnouncementToSubCampaignDetailsMapping(): array
+    {
+        return self::ANNOUNCEMENT_ID_TO_SUB_CAMPAIGN_DETAIL_MAPPING;
     }
 }

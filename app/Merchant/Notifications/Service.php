@@ -40,6 +40,7 @@ class Service extends Base\Service
                 (empty($value['filters']) === true) or
                 ($this->userEligibleForNotification($value['filters'], $user, false) === true))
             {
+                $this->populateCampaignDetailsBasedOnFilters($value,$user['experiments']);
                 unset($value['filters']);
                 $isUserEligible = true;
             }
@@ -125,7 +126,7 @@ class Service extends Base\Service
 
                     break;
 
-                case 'activation_status':   
+                case 'activation_status':
                 case 'role':
 
                     if (isset($user[$key]) === false)
@@ -238,7 +239,7 @@ class Service extends Base\Service
                             unset($userFilterValue[$key]);
                         }
                     }
-                    
+
                     foreach ($value as $key => $subValue)
                     {
                         $value[strtolower($key)] = strtolower($value[$key]);
@@ -247,7 +248,7 @@ class Service extends Base\Service
                             unset($value[$key]);
                         }
                     }
-                    
+
                     $isUserEligible = (empty(array_intersect_assoc($userFilterValue, $value)) === false);
 
                     break;
@@ -260,5 +261,50 @@ class Service extends Base\Service
         }
 
         return true;
+    }
+
+    /**
+     * @param $value
+     * @param $experiments
+     */
+    private function populateCampaignDetailsBasedOnFilters(&$value,$experiments)
+    {
+        $announcementToCampaignDetailMap = Constants::getAnnouncementToSubCampaignDetailsMapping();
+
+        if (!isset($value['filters']) || !array_key_exists($value['id'],$announcementToCampaignDetailMap))
+            return;
+
+        $campaignDetails = $announcementToCampaignDetailMap[$value['id']];
+
+        //getting filtered campaign details based on the experiments result on and control variant
+        $filteredCampaignDetail = $this->getFilteredCampaignDetails($campaignDetails, $experiments);
+
+        if(!isset($filteredCampaignDetail))
+            return;
+
+        //adding campaign details in the value object
+        foreach ($filteredCampaignDetail as $key => $val) {
+            $value[$key] = $val;
+        }
+    }
+
+    /**
+     * @param array $campaignDetails
+     * @param $experiments
+     * @return array|mixed
+     */
+    private function getFilteredCampaignDetails(array $campaignDetails, $experiments)
+    {
+        $filteredCampaignDetail = [];
+        foreach ($campaignDetails as $detail) {
+            array_walk($experiments, function ($experiment, $key) use ($detail, &$filteredCampaignDetail) {
+                if ((in_array($key, $detail['experiments']) && (array_key_exists('result', $experiment)) &&
+                    (($experiment['result'] == "on") || ($experiment['result'] == "control")))) {
+                    $filteredCampaignDetail = $detail['data'];
+                    return;
+                }
+            });
+        }
+        return $filteredCampaignDetail;
     }
 }
