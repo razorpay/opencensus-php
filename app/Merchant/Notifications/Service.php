@@ -271,13 +271,13 @@ class Service extends Base\Service
     {
         $announcementToCampaignDetailMap = Constants::getAnnouncementToSubCampaignDetailsMapping();
 
-        if (!isset($value['filters']) || !array_key_exists($value['id'],$announcementToCampaignDetailMap))
+        if (!isset($value['filters']) || !isset($value['filters']['experiments']) || !array_key_exists($value['id'],$announcementToCampaignDetailMap))
             return;
 
         $campaignDetails = $announcementToCampaignDetailMap[$value['id']];
 
         //getting filtered campaign details based on the experiments result on and control variant
-        $filteredCampaignDetail = $this->getFilteredCampaignDetails($campaignDetails, $experiments);
+        $filteredCampaignDetail = $this->getFilteredCampaignDetails($campaignDetails, $experiments, $value['filters']['experiments']);
 
         if(!isset($filteredCampaignDetail))
             return;
@@ -291,15 +291,16 @@ class Service extends Base\Service
     /**
      * @param array $campaignDetails
      * @param $experiments
+     * @param $announcementExperiments
      * @return array|mixed
      */
-    private function getFilteredCampaignDetails(array $campaignDetails, $experiments)
+    private function getFilteredCampaignDetails(array $campaignDetails, $experiments, $announcementExperiments)
     {
         $filteredCampaignDetail = [];
         foreach ($campaignDetails as $detail) {
-            array_walk($experiments, function ($experiment, $key) use ($detail, &$filteredCampaignDetail) {
+            array_walk($experiments, function ($experiment, $key) use ($detail, &$filteredCampaignDetail,$announcementExperiments) {
                 if ((in_array($key, $detail['experiments']) && (array_key_exists('result', $experiment)) &&
-                    (($experiment['result'] == "on") || ($experiment['result'] == "control")))) {
+                    ($experiment['result'] == "on")) && in_array($key, $announcementExperiments)) {
                     $filteredCampaignDetail = $detail['data'];
                     return;
                 }

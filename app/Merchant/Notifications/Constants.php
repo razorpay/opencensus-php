@@ -150,7 +150,7 @@ class Constants
                 ],
             ],
             'filters'     => [
-                'experiments'         => ['project_nitro', 'project_nitro_1', 'project_nitro_feb_2021', 'project_nitro_feb_2021_1','nitro_hyderabad_v1','nitro_hyderabad_v2','nitro_hyderabad_v3','nitro_midmarket_mumbai_v1'],
+                'experiments'         => ['project_nitro', 'project_nitro_1', 'project_nitro_feb_2021', 'project_nitro_feb_2021_1','nitro_hyderabad_v2','nitro_hyderabad_v3','nitro_midmarket_mumbai_v1'],
             ],
         ],
         [
@@ -714,13 +714,6 @@ class Constants
                     'version_description' => 'Nitro for bangalore',
                     ],
                 'experiments'         => ['project_nitro', 'project_nitro_1', 'project_nitro_feb_2021', 'project_nitro_feb_2021_1'],
-            ],
-            [
-                'data'  => [
-                    'version'             =>  'nitro_hyderabad_v1',
-                    'version_description' => 'Nitro for hyderabad',
-                ],
-                'experiments'         => ['nitro_hyderabad_v1'],
             ],
             [
                 'data'  => [
