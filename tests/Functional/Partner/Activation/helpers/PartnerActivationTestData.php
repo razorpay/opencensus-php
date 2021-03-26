@@ -187,8 +187,6 @@ return [
                 'partner_activation' => [
                     'merchant_id'       => '1cXSLlUU8V9sXl',
                     'hold_funds'        => false,
-                    'submitted'         => false,
-                    'activation_status' => null,
                     'verification'      => [
                         'activation_progress' => 100,
                         'status'              => 'pending',
@@ -224,7 +222,7 @@ return [
         ],
     ],
 
-    'testActivatePartnerFromUnderReview'              => [
+    'testActivatePartnerFromUnderReview' => [
         'request'  => [
             'url'     => '/partner/activation/{id}/status',
             'method'  => 'PATCH',
@@ -234,11 +232,10 @@ return [
         ],
         'response' => [
             'content' => [
-                'merchant_id'                      => '1cXSLlUU8V9sXl',
-                'hold_funds'                       => false,
-                'submitted'                        => true,
-                'activation_status'                => 'activated',
-                'allowed_next_activation_statuses' => []
+                'entity_id'   => '1cXSLlUU8V9sXl',
+                'entity_name' => 'partner_activation',
+                'state'       => 'open',
+                'maker_type'  => 'admin'
             ],
         ],
     ],

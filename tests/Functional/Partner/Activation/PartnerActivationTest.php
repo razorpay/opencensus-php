@@ -4,14 +4,20 @@ namespace Functional\Partner\Activation;
 
 use DB;
 use Mail;
-use RZP\Tests\Functional\Batch\BatchTestTrait;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
+use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Tests\Functional\Partner\PartnerTrait;
+use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
+use RZP\Models\Admin\Permission\Repository as PermissionRepository;
 
 class PartnerActivationTest extends OAuthTestCase
 {
     use PartnerTrait;
     use BatchTestTrait;
+    use HeimdallTrait;
+    use WorkflowTrait;
 
     const MERCHANT_ID = '1cXSLlUU8V9sXl';
 
@@ -24,6 +30,18 @@ class PartnerActivationTest extends OAuthTestCase
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
         $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
+
+        $this->createWorkflowForPartnerActivation();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('on');
 
         $this->ba->privateAuth();
     }
@@ -123,34 +141,6 @@ class PartnerActivationTest extends OAuthTestCase
 
     public function testActivatePartnerFromUnderReview()
     {
-        $this->createMerchant(self::MERCHANT_ID, false, null);
-
-        $this->ba->proxyAuth('rzp_test_' . self::MERCHANT_ID);
-        $testData = $this->testData['saveAllPartnerActivationDetails'];
-        $this->runRequestResponseFlow($testData);
-
-        $this->ba->proxyAuth('rzp_test_' . self::MERCHANT_ID);
-        $testData = $this->testData['submitActivationDataForUnVerifiedDetails'];
-        $this->runRequestResponseFlow($testData);
-
-        $this->ba->adminAuth();
-        $testData                   = $this->testData['testActivatePartnerFromUnderReview'];
-        $testData['request']['url'] = '/partner/activation/' . self::MERCHANT_ID . '/status';
-        $this->runRequestResponseFlow($testData);
-
-        $partnerActivation = $this->getDbEntity('partner_activation');
-        $this->assertNotNull($partnerActivation['submitted_at']);
-        $this->assertNotNull($partnerActivation['activated_at']);
-
-        $actionStates = $this->getDbEntities('action_state');
-        $this->assertEquals(2, count($actionStates));
-        $this->assertEquals('under_review', $actionStates->get(0)['name']);
-        $this->assertEquals('activated', $actionStates->get(1)['name']);
-
-    }
-
-    public function testPartnerNeedsClarification()
-    {
         Mail::fake();
 
         $this->createMerchant(self::MERCHANT_ID, false, null);
@@ -164,15 +154,24 @@ class PartnerActivationTest extends OAuthTestCase
         $this->runRequestResponseFlow($testData);
 
         $this->ba->adminAuth();
-        $testData                   = $this->testData['testPartnerNeedsClarification'];
-        $testData['request']['url'] = '/partner/activation/' . self::MERCHANT_ID;
+        $testData = $this->testData['testActivatePartnerFromUnderReview'];
+        $testData['request']['url'] = '/partner/activation/'. self::MERCHANT_ID . '/status';
         $this->runRequestResponseFlow($testData);
 
-        $this->ba->adminAuth();
-        $testData                   = $this->testData['testUpdatePartnerActivationToNeedsClarification'];
-        $testData['request']['url'] = '/partner/activation/' . self::MERCHANT_ID. '/status';
-        $this->runRequestResponseFlow($testData);
+        $actionStates = $this->getDbEntities('action_state');
+        $this->assertEquals(2, count($actionStates));
+        $this->assertEquals('under_review', $actionStates->get(0)['name']); // for partner_activation entity
+        $this->assertEquals('partner_activation', $actionStates->get(0)['entity_type']); // for partner_activation entity
+        $this->assertEquals('open', $actionStates->get(1)['name']); // for workflow_action entity
+        $this->assertEquals('workflow_action', $actionStates->get(1)['entity_type']); // for workflow_action entity
 
+    }
+
+    public function testPartnerNeedsClarification()
+    {
+        Mail::fake();
+
+        $this->updatePartnerActivationToNeedsClarification();
 
         $partnerActivation = $this->getDbEntity('partner_activation');
         $this->assertNotNull($partnerActivation['submitted_at']);
@@ -182,6 +181,28 @@ class PartnerActivationTest extends OAuthTestCase
         $this->assertEquals(2, count($actionStates));
         $this->assertEquals('under_review', $actionStates->get(0)['name']);
         $this->assertEquals('needs_clarification', $actionStates->get(1)['name']);
+
+    }
+
+    public function testPartnerNeedsClarificationResponded()
+    {
+        Mail::fake();
+
+        $this->updatePartnerActivationToNeedsClarification();
+
+        $this->ba->proxyAuth('rzp_test_' . self::MERCHANT_ID);
+        $testData = $this->testData['saveAllPartnerActivationDetails'];
+        $response = $this->runRequestResponseFlow($testData);
+        $this->assertTrue($response['partner_activation']['submitted']);
+
+        $this->ba->proxyAuth('rzp_test_' . self::MERCHANT_ID);
+        $testData = $this->testData['submitActivationDataForUnVerifiedDetails'];
+        $this->runRequestResponseFlow($testData);
+        $this->assertTrue($response['partner_activation']['submitted']);
+
+        $workflowAction = $this->getDbEntity('workflow_action');
+        $this->assertEquals('partner_activation', $workflowAction['entity_name']);
+        $this->assertEquals(self::MERCHANT_ID, $workflowAction['entity_id']);
 
     }
 
@@ -248,6 +269,50 @@ class PartnerActivationTest extends OAuthTestCase
         $testData['request']['url'] = '/partner/activation/' . self::MERCHANT_ID. '/status';
         $this->runRequestResponseFlow($testData);
 
+    }
+
+    private function updatePartnerActivationToNeedsClarification()
+    {
+        $this->createMerchant(self::MERCHANT_ID, false, null);
+
+        $this->ba->proxyAuth('rzp_test_' . self::MERCHANT_ID);
+        $testData = $this->testData['saveAllPartnerActivationDetails'];
+        $response = $this->runRequestResponseFlow($testData);
+        $this->assertFalse($response['partner_activation']['submitted']);
+
+        $this->ba->proxyAuth('rzp_test_' . self::MERCHANT_ID);
+        $testData = $this->testData['submitActivationDataForUnVerifiedDetails'];
+        $this->runRequestResponseFlow($testData);
+
+        $this->ba->adminAuth();
+        $testData                   = $this->testData['testPartnerNeedsClarification'];
+        $testData['request']['url'] = '/partner/activation/' . self::MERCHANT_ID;
+        $this->runRequestResponseFlow($testData);
+
+        $this->ba->adminAuth();
+        $testData                   = $this->testData['testUpdatePartnerActivationToNeedsClarification'];
+        $testData['request']['url'] = '/partner/activation/' . self::MERCHANT_ID. '/status';
+        $this->runRequestResponseFlow($testData);
+
+    }
+
+    private function createWorkflowForPartnerActivation()
+    {
+        $permission = $this->getPermission();
+
+        $workflow = $this->fixtures->create('workflow', [
+            'name'   => 'Activate partner',
+            'org_id' => '100000razorpay',
+        ]);
+
+        $workflow->permissions()->attach($permission);
+    }
+
+    private function getPermission()
+    {
+        return (new PermissionRepository)->findByOrgIdAndPermission(
+            '100000razorpay', 'edit_activate_partner'
+        );
     }
 
     private function createMerchant(string $merchantId, bool $registeredBusinessType, $activationStatus, bool $isPartner = true)

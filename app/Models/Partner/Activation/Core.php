@@ -4,11 +4,13 @@ namespace RZP\Models\Partner\Activation;
 
 use Mail;
 use Carbon\Carbon;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\State;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\State\Reason;
+use RZP\Models\Workflow\Action;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Partner\Activation;
 use RZP\Mail\Merchant\NeedsClarificationEmail as ClarificationEmail;
@@ -170,8 +172,6 @@ class Core extends Base\Core
      * Case 1: Partner activation entity has not been created (old partners or new partners who got created when merchant is not activated)
      *      - Create partner activation and auto activate partner activation.
      *      - This would become an invalid case after back fill job is completed
-     *  TODO: Once partner KYC goes live and partner activation creation is independent of merchant activation,
-     *        need to consider updating partner activation entity accordingly
      *
      * @param Merchant\Entity $merchant
      * @param Detail\Entity   $merchantDetails
@@ -182,7 +182,20 @@ class Core extends Base\Core
         {
             if ($merchantDetails->getActivationStatus() === Constants::ACTIVATED and $merchant->isPartner())
             {
-                $this->createOrFetchPartnerActivationForMerchant($merchant);
+                $partnerActivation = $this->createOrFetchPartnerActivationForMerchant($merchant);
+
+                if ($partnerActivation->getActivationStatus() !== Constants::ACTIVATED)
+                {
+                    $commonFields = $this->populateCommonActivationFields($merchant, $merchantDetails);
+
+                    $partnerActivation->edit($commonFields);
+
+                    $this->repo->partner_activation->saveOrFail($partnerActivation);
+
+                    $this->trace->info(TraceCode::PARTNER_AUTO_ACTIVATION_FROM_MERCHANT_SUCCESS, [
+                        'merchant_id' => $merchant->getId()
+                    ]);
+                }
             }
         }
         catch (\Exception $e)
@@ -199,7 +212,6 @@ class Core extends Base\Core
      * 2. Maintains the state transition for the partner_activation status
      * 3. In case of needs clarification status change, sends a needs clarification email
      * @param Merchant\Entity   $merchant
-     * @param Detail\Entity     $oldMerchantDetails
      * @param Entity            $partnerActivation
      * @param Base\PublicEntity $maker
      * @param array             $input
@@ -207,7 +219,7 @@ class Core extends Base\Core
      * @return array
      * @throws \Throwable
      */
-    public function updatePartnerActivationStatus(Merchant\Entity $merchant, Detail\Entity $oldMerchantDetails, Entity $partnerActivation, Base\PublicEntity $maker, array $input)
+    public function updatePartnerActivationStatus(Merchant\Entity $merchant, Entity $partnerActivation, Base\PublicEntity $maker, array $input)
     {
         $partnerActivation->getValidator()->validateInput('activationStatus', $input);
 
@@ -231,18 +243,41 @@ class Core extends Base\Core
             unset($input[Entity::REJECTION_REASONS]);
         }
 
+        $oldPartnerActivation = clone $partnerActivation;
+
+        $partnerActivation->edit($input);
+
+        $newPartnerActivation = clone $partnerActivation;
+
         $partnerActivation->edit($input);
 
         $this->repo->transactionOnLiveAndTest(function() use (
             $partnerActivation,
             $input,
-            $maker, $merchant, $rejectionReasons
+            $maker, $merchant, $rejectionReasons,
+            $oldPartnerActivation, $newPartnerActivation
         ) {
 
             $detailCore = (new Detail\Core());
 
             if ($input[Entity::ACTIVATION_STATUS] === Constants::ACTIVATED)
             {
+                /*
+                 * Setup workflow for activation_status change in partner_activation entity,
+                 * which will be triggered once all the validations are checked in the activate method.
+                 */
+                $original = $oldPartnerActivation->toArrayPublic();
+                $dirty    = $newPartnerActivation->toArrayPublic();
+
+                unset($original[Activation\Entity::ALLOWED_NEXT_ACTIVATION_STATUSES]);
+                unset($dirty[Activation\Entity::ALLOWED_NEXT_ACTIVATION_STATUSES]);
+
+                $this->app['workflow']
+                    ->setEntity($partnerActivation->getEntity())
+                    ->setEntityId($partnerActivation->getMerchantId())
+                    ->setOriginal($original)
+                    ->setDirty($dirty);
+
                 $this->activate($partnerActivation, $merchant);
             }
 
@@ -255,11 +290,15 @@ class Core extends Base\Core
 
             if ($input[Entity::ACTIVATION_STATUS] === Constants::NEEDS_CLARIFICATION)
             {
+                (new Action\Core)->autoCloseActivationWorkflowActionIfOpen(
+                    $merchant->getId(), 'partner_activation');
+
                 if (empty($partnerActivation->getKycClarificationReasons()) === false)
                 {
                     $partnerActivation->setLocked(false);
 
-                    $this->sendNeedsClarificationEmail($merchant, $partnerActivation);
+                    //TODO - once notifications are finalized, use the below function for needs clarification email
+                    //$this->sendNeedsClarificationEmail($merchant, $partnerActivation);
                 }
             }
 
@@ -284,6 +323,7 @@ class Core extends Base\Core
     /**
      * The following function activates the requirements needed for a partner to earn commissions
      * It does creating bankaccount, release funds, setting activatedAt and creating balance config for the partner
+     *
      * @param Entity          $partnerActivation
      * @param Merchant\Entity $merchant
      *
@@ -305,6 +345,11 @@ class Core extends Base\Core
 
         $partnerActivation->setActivatedAt(time());
 
+        // Triggering workflow for the activation_status change in partner_activation entity
+        $this->app['workflow']
+            ->handle();
+
+
         $merchantCore = new Merchant\Core;
 
         $merchantBalance = $merchantCore->createBalance($merchant, 'live');
@@ -319,6 +364,8 @@ class Core extends Base\Core
             $this->repo->saveOrFail($partnerActivation);
 
         });
+
+        $this->sendPartnerActivationEvents($merchant);
 
         return $partnerActivation;
     }
@@ -337,7 +384,7 @@ class Core extends Base\Core
     {
         $org = $merchant->org ?: $this->repo->org->getRazorpayOrg();
 
-        $clarificationCore = New Detail\NeedsClarification\Core();
+        $clarificationCore = new Detail\NeedsClarification\Core();
 
         $clarificationReasons = $clarificationCore->getFormattedKycClarificationReasons(
             $partnerActivation->getKycClarificationReasons());
@@ -347,6 +394,19 @@ class Core extends Base\Core
         $email = new ClarificationEmail($data, $org->toArray());
 
         Mail::queue($email);
+    }
+
+    /**
+     * TODO:
+     * 1. Add events specific to partner activation
+     * 2. Send notifications to partner when partner gets activated.
+     *    Once template text is finalized, will use the PartnerActivationMail accordingly
+     *
+     * @param Merchant\Entity $merchant
+     */
+    private function sendPartnerActivationEvents(Merchant\Entity $merchant)
+    {
+        //Mail::queue(new PartnerActivationMail($merchant->getId()));
     }
 }
 

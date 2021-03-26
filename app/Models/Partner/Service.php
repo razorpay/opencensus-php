@@ -32,11 +32,13 @@ class Service extends Base\Service
 
     public function savePartnerDetailsForActivation(array $input)
     {
-        $this->validatePartnerFormSaveAndSubmit($this->merchant);
+        $submit = $input[Detail\Entity::SUBMIT] ?? "0";
+
+        $isFormSubmit = ($submit === "1") and count($input) === 1; // input should contain only submit in it
+
+        $this->validatePartnerFormSaveAndSubmit($this->merchant, $isFormSubmit);
 
         $this->partnerActivationValidator->validateInput('savePartnerActivation', $input);
-
-        $oldMerchantDetail = clone $this->merchant->merchantDetail;
 
         $response = (new Detail\Core())->saveMerchantDetails($input, $this->merchant);
 
@@ -44,7 +46,7 @@ class Service extends Base\Service
 
         $merchantDetail = $this->merchant->merchantDetail;
 
-        return $this->core->processPartnerActivation($input, $merchantDetail, $this->merchant, $oldMerchantDetail);
+        return $this->core->processPartnerActivation($input, $merchantDetail, $this->merchant);
 
     }
 
@@ -65,13 +67,11 @@ class Service extends Base\Service
 
         $this->merchantValidator->validateIsPartner($merchant);
 
-        $merchantDetail = $merchant->merchantDetail;
-
         $partnerActivation = $activationCore->createOrFetchPartnerActivationForMerchant($merchant, false);
 
         $admin = $this->app['basicauth']->getAdmin();
 
-        return $this->activationCore->updatePartnerActivationStatus($merchant, $merchantDetail, $partnerActivation, $admin, $input);
+        return $this->activationCore->updatePartnerActivationStatus($merchant, $partnerActivation, $admin, $input);
     }
 
 
@@ -86,13 +86,14 @@ class Service extends Base\Service
         return $this->core->createPartnerResponse($merchant->merchantDetail);
     }
 
-    private function validatePartnerFormSaveAndSubmit(Merchant\Entity $merchant)
+    private function validatePartnerFormSaveAndSubmit(Merchant\Entity $merchant, bool $isPartnerFormSubmit)
     {
         $this->merchantValidator->validateIsPartner($merchant);
 
         $merchantDetails = $merchant->merchantDetail;
 
-        if($merchantDetails->isLocked() === true)
+        // partner can submit the form even merchant activation is locked.
+        if($merchantDetails->isLocked() === true and $isPartnerFormSubmit == false)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED);
         }

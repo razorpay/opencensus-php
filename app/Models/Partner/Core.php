@@ -5,12 +5,14 @@ namespace RZP\Models\Partner;
 use Razorpay\OAuth;
 
 use Carbon\Carbon;
+use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Base\RuntimeManager;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\AutoKyc;
 use RZP\Models\Merchant\Constants;
 use RZP\Models\Partner\Activation;
@@ -29,11 +31,18 @@ class Core extends Detail\Core
      */
     protected $appRepo;
 
+    /**
+     * @var Activation\Core
+     */
+    private $activationCore;
+
     public function __construct()
     {
         parent::__construct();
 
         $this->appRepo = new OAuth\Application\Repository;
+        
+        $this->activationCore = new Activation\Core;
     }
 
     /**
@@ -236,21 +245,19 @@ class Core extends Detail\Core
      * @param array           $input
      * @param Entity          $merchantDetails
      * @param Merchant\Entity $merchant
-     * @param Entity          $oldMerchantDetails
      *
      * @return mixed
      * @throws \RZP\Exception\LogicException
      * @throws \Throwable
      */
-    public function processPartnerActivation(array $input, Detail\Entity $merchantDetails, Merchant\Entity $merchant, Detail\Entity $oldMerchantDetails)
+    public function processPartnerActivation(array $input, Detail\Entity $merchantDetails, Merchant\Entity $merchant)
     {
         return $this->mutex->acquireAndRelease(
             $merchant->getId(),
-            function() use ($input, $merchantDetails, $oldMerchantDetails, $merchant) {
+            function() use ($input, $merchantDetails, $merchant) {
 
                 return $this->repo->transactionOnLiveAndTest(function() use (
                     $input,
-                    $oldMerchantDetails,
                     $merchantDetails,
                     $merchant
                 ) {
@@ -260,13 +267,20 @@ class Core extends Detail\Core
 
                     $this->repo->partner_activation->lockForUpdate($merchant->getId());
 
+                    $oldPartnerActivationStatus = $partnerActivation->getActivationStatus();
+
                     $response = $this->createPartnerResponse($merchantDetails);
 
                     if ($this->canSubmit($input, $verificationResponse) === true)
                     {
-                        $response = $this->submitPartnerActivationForm($merchant, $merchantDetails, $oldMerchantDetails, $partnerActivation);
+                        $response = $this->submitPartnerActivationForm($merchant, $merchantDetails, $partnerActivation);
 
-                       //TODO handle NC status change to under_review workflow
+                        $newPartnerActivationStatus = $response[E::PARTNER_ACTIVATION][Activation\Entity::ACTIVATION_STATUS];
+
+                        if($this->isNcResponded($oldPartnerActivationStatus, $newPartnerActivationStatus))
+                        {
+                            $this->triggerActivationWorkflowForNCResponded($merchant, $merchantDetails, $partnerActivation);
+                        }
                     }
 
                     return $response;
@@ -282,13 +296,12 @@ class Core extends Detail\Core
      * This function is used to lock and submit the partner activation form and update the partner with relevant activation status
      * @param Merchant\Entity   $merchant
      * @param Entity            $merchantDetails
-     * @param Entity            $oldMerchantDetails
      * @param Activation\Entity $partnerActivation
      *
      * @return array
      * @throws \Throwable
      */
-    public function submitPartnerActivationForm(Merchant\Entity $merchant, Entity $merchantDetails, Entity $oldMerchantDetails, Activation\Entity $partnerActivation)
+    public function submitPartnerActivationForm(Merchant\Entity $merchant, Entity $merchantDetails, Activation\Entity $partnerActivation)
     {
         $activationStatus = $this->getApplicablePartnerActivationStatus($merchantDetails);
 
@@ -300,7 +313,7 @@ class Core extends Detail\Core
 
         $input = [Activation\Entity::ACTIVATION_STATUS => $activationStatus];
 
-        (new Activation\Core)->updatePartnerActivationStatus($merchant, $oldMerchantDetails, $partnerActivation, $merchant, $input);
+        $this->activationCore->updatePartnerActivationStatus($merchant, $partnerActivation, $merchant, $input);
 
         $this->trace->info(TraceCode::PARTNER_ACTIVATION_SUBMITTED,
                            [
@@ -373,7 +386,7 @@ class Core extends Detail\Core
 
         if (empty($partnerActivation) === true)
         {
-            $partnerActivation = (new Activation\Core)->createOrFetchPartnerActivationForMerchant($merchant, false);
+            $partnerActivation = $this->activationCore->createOrFetchPartnerActivationForMerchant($merchant, false);
         }
 
         return $partnerActivation;
@@ -532,5 +545,42 @@ class Core extends Detail\Core
                     return $this->verifyStakeHolderCondition($merchantDetails, $key, $in);
             }
         });
+    }
+
+    private function triggerActivationWorkflowForNCResponded(Merchant\Entity $merchant, Detail\Entity $merchantDetails, Activation\Entity $partnerActivation)
+    {
+        $statusChangeLogs = $partnerActivation->getActivationStatusChangeLog();
+
+        // agent who marked NC will be the maker of activation workflow
+        $maker = $this->getNcMarkedAgent($statusChangeLogs);
+
+        if (empty($maker))
+        {
+            return;
+        }
+
+        $input = [Entity::ACTIVATION_STATUS => Activation\Constants::ACTIVATED];
+
+        // The reason routeName and Controller is set here because
+        // the workflow being triggered is associated with the different route.
+        $this->app['workflow']
+            ->setPermission(Permission\Name::EDIT_ACTIVATE_PARTNER)
+            ->setRouteName(Activation\Constants::ACTIVATION_ROUTE_NAME)
+            ->setController(Activation\Constants::ACTIVATION_CONTROLLER)
+            ->setWorkflowMaker($maker)
+            ->setMakerFromAuth(false)
+            ->setRouteParams([Entity::ID => $merchant->getId()])
+            ->setInput($input);
+
+        try
+        {
+            $this->activationCore->updatePartnerActivationStatus($merchant, $partnerActivation, $maker, $input);
+        }
+        catch (Exception\EarlyWorkflowResponse $e)
+        {
+            // Catching exception because we do not want to abort the code flow
+            $workflowActionData = json_decode($e->getMessage(), true);
+            $this->app['workflow']->saveActionIfTransactionFailed($workflowActionData);
+        }
     }
 }

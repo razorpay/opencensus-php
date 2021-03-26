@@ -30,6 +30,7 @@ class Workflow
         Permission::ADD_MERCHANT_CREDITS,
         Permission::EDIT_MERCHANT_PRICING,
         Permission::EDIT_ACTIVATE_MERCHANT,
+        Permission::EDIT_ACTIVATE_PARTNER,
         Permission::EDIT_MERCHANT_KEY_ACCESS,
         Permission::ADD_MERCHANT_ADJUSTMENT,
         Permission::SCHEDULE_ASSIGN,

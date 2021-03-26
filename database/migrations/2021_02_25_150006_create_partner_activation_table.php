@@ -66,6 +66,6 @@ class CreatePartnerActivationTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists(Table::PARTNER_KYC);
+        Schema::dropIfExists(Table::PARTNER_ACTIVATION);
     }
 }

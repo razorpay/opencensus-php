@@ -43,7 +43,6 @@ class Constants
 
     const COMMON_ACTIVATION_FIELDS_MERCHANT_DETAILS = [
         Entity::ACTIVATION_STATUS => Detail\Entity::ACTIVATION_STATUS,
-        Entity::SUBMITTED_AT      => Detail\Entity::SUBMITTED_AT,
         Entity::LOCKED            => Detail\Entity::LOCKED,
         Entity::SUBMITTED         => Detail\Entity::SUBMITTED
     ];
@@ -51,4 +50,7 @@ class Constants
     const COMMON_ACTIVATION_FIELDS_MERCHANT = [
         Entity::HOLD_FUNDS        => Merchant\Entity::HOLD_FUNDS,
     ];
+
+    const ACTIVATION_ROUTE_NAME     = 'partner_activation_status';
+    const ACTIVATION_CONTROLLER     = 'RZP\Http\Controllers\PartnerActivationController@updatePartnerActivationStatus';
 }
