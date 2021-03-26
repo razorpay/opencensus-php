@@ -343,6 +343,16 @@ class UpiIciciGatewayTest extends TestCase
             ]
         ];
 
+        $cases['vara_missing_zeroes'] = [
+            [
+                'account_number'    => '135791208642',
+                'ifsc'              => 'VARA0289011',
+            ],
+            [
+                'payerAccount'      => '0000000135791208642', // Leading zeroes padding for 19 chars
+            ]
+        ];
+
         return $cases;
     }
 
