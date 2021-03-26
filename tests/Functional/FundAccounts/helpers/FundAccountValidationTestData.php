@@ -1155,7 +1155,9 @@ return [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'The fees calculated for fund account validation is greater than available fee credits or balance.',
                     'reason'      => 'insufficient_funds',
-                    'source'      => 'business'
+                    'source'      => 'business',
+                    'step'        => null,
+                    'metadata'    => []
                 ],
             ],
             'status_code' => 400,

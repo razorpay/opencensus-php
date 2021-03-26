@@ -88,9 +88,12 @@ class PayoutError extends Error
     public function toPublicErrorResponse()
     {
         return [
-            self::SOURCE      => $this->getAttribute(self::SOURCE),
-            self::REASON      => $this->getAttribute(self::REASON),
-            self::DESCRIPTION => $this->getAttribute(self::DESCRIPTION),
+            self::SOURCE            => $this->getAttribute(self::SOURCE),
+            self::REASON            => $this->getAttribute(self::REASON),
+            self::DESCRIPTION       => $this->getAttribute(self::DESCRIPTION),
+            self::PUBLIC_ERROR_CODE => null,
+            self::STEP              => null,
+            self::METADATA          => null
         ];
     }
 }

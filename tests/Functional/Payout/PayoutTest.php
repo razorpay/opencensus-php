@@ -9637,11 +9637,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->ba->privateAuth();
 
-        $response = $this->startTest();
-
-        $this->assertArrayNotHasKey(Error::STEP, $response['error']);
-
-        $this->assertArrayNotHasKey(Error::METADATA, $response['error']);
+        $this->startTest();
     }
 
     public function testCreatePayoutWithIfQueueLowBalanceFalseNewApiError()
@@ -9650,11 +9646,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->ba->privateAuth();
 
-        $response = $this->startTest();
-
-        $this->assertArrayNotHasKey(Error::STEP, $response['error']);
-
-        $this->assertArrayNotHasKey(Error::METADATA, $response['error']);
+        $this->startTest();
     }
 
     public function testPayoutRejectWhenWorkflowEditNewApiError()
@@ -9671,11 +9663,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
-        $response = $this->startTest();
-
-        $this->assertArrayNotHasKey(Error::STEP, $response['error']);
-
-        $this->assertArrayNotHasKey(Error::METADATA, $response['error']);
+        $this->startTest();
     }
 
     public function testFiringOfWebhookPayoutResponseForReversedPayoutDefaultErrorObject()

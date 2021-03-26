@@ -10563,7 +10563,9 @@ return [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'The id provided does not exist',
                     'reason'      => 'input_validation_failed',
-                    'source'      => 'business'
+                    'source'      => 'business',
+                    'step'        => null,
+                    'metadata'    => []
                 ],
             ],
             'status_code' => 400,
@@ -10598,7 +10600,9 @@ return [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Your account does not have enough balance to carry out the payout operation.',
                     'reason'      => 'insufficient_funds',
-                    'source'      => 'business'
+                    'source'      => 'business',
+                    'step'        => null,
+                    'metadata'    => []
                 ],
             ],
             'status_code' => 400,
@@ -10630,7 +10634,9 @@ return [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Workflow edit on the same payout rule is active',
                     'reason'      => 'server_error',
-                    'source'      => 'internal'
+                    'source'      => 'internal',
+                    'step'        => null,
+                    'metadata'    => []
                 ],
             ],
             'status_code' => 400,

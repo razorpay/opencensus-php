@@ -1242,11 +1242,7 @@ class FundAccountValidationTest extends TestCase
 
         $this->fixtures->merchant->editBalance('0');
 
-        $response = $this->startTest();
-
-        $this->assertArrayNotHasKey(Error::STEP, $response['error']);
-
-        $this->assertArrayNotHasKey(Error::METADATA, $response['error']);
+        $this->startTest();
     }
 
     public function testMutexRetryForFundAccountValidationStatusUpdate()

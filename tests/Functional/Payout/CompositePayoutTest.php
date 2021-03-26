@@ -523,11 +523,7 @@ class CompositePayoutTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
 
-        $response = $this->startTest();
-
-        $this->assertArrayNotHasKey(Error::STEP, $response['error']);
-
-        $this->assertArrayNotHasKey(Error::METADATA, $response['error']);
+        $this->startTest();
 
         $payouts = $this->getDbEntities('payout');
 

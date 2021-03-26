@@ -770,10 +770,6 @@ class Error extends Support\Fluent
 
         if ($this->shouldModifyForNewBankingErrorCode() === true)
         {
-            unset($error[self::STEP]);
-
-            unset($error[self::METADATA]);
-
             $this->trace->info(TraceCode::NEW_BANKING_ERROR_RESPONSE_DATA,
                 [
                     'new_error_response' => $error

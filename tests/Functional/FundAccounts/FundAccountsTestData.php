@@ -2558,7 +2558,9 @@ return [
                     'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description'   => 'The bank account field is required.',
                     'reason'        => 'input_validation_failed',
-                    'source'        => 'business'
+                    'source'        => 'business',
+                    'step'          => null,
+                    'metadata'      => []
                 ],
             ],
             'status_code'   => 400,
@@ -2589,7 +2591,9 @@ return [
                     'code'  => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description'   =>  'The name must be between 4 and 120 characters.',
                     'reason'        => 'input_validation_failed',
-                    'source'        => 'business'
+                    'source'        => 'business',
+                    'step'          => null,
+                    'metadata'      => []
                 ],
             ],
             'status_code'   => 400,

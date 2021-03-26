@@ -1347,7 +1347,9 @@ return [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'The fund account id field is required when fund account is not present.',
                     'reason'      => 'input_validation_failed',
-                    'source'      => 'business'
+                    'source'      => 'business',
+                    'step'        => null,
+                    'metadata'    => []
                 ],
             ],
             'status_code' => 400,

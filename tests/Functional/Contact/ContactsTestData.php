@@ -2166,7 +2166,9 @@ return [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'The name field is required.',
                     'reason'      => 'input_validation_failed',
-                    'source'      => 'business'
+                    'source'      => 'business',
+                    'step'        => null,
+                    'metadata'    => []
                 ],
             ],
             'status_code' => 400,
@@ -2198,7 +2200,9 @@ return [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => PublicErrorDescription::BAD_REQUEST_INTERNAL_CONTACT_CREATE_UPDATE_NOT_PERMITTED,
                     'reason'      => 'server_error',
-                    'source'      => 'internal'
+                    'source'      => 'internal',
+                    'step'        => null,
+                    'metadata'    => []
                 ],
             ],
             'status_code' => 400,

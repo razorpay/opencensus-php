@@ -1026,11 +1026,7 @@ class FundAccountsTest extends TestCase
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
-        $response = $this->startTest();
-
-        $this->assertArrayNotHasKey(Error::STEP, $response['error']);
-
-        $this->assertArrayNotHasKey(Error::METADATA, $response['error']);
+        $this->startTest();
     }
 
     public function testCreateFundAccountBankAccountWithInvalidNameNewApiError()
@@ -1039,11 +1035,7 @@ class FundAccountsTest extends TestCase
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
-        $response = $this->startTest();
-
-        $this->assertArrayNotHasKey(Error::STEP, $response['error']);
-
-        $this->assertArrayNotHasKey(Error::METADATA, $response['error']);
+        $this->startTest();
     }
 
     public function testCreateFundAccountInvalidVpaArray()
