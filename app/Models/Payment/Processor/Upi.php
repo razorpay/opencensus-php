@@ -53,6 +53,7 @@ class Upi
     const BRGX = 'BRGX';
     const BUGX = 'BUGX';
     const CBIN = 'CBIN';
+    const CCBL = 'CCBL';
     const CCBX = 'CCBX';
     const CGBX = 'CGBX';
     const CGGX = 'CGGX';
@@ -82,6 +83,7 @@ class Upi
     const FGCB = 'FGCB';
     const FINO = 'FINO';
     const FSFB = 'FSFB';
+    const GBCB = 'GBCD';
     const GCUX = 'GCUX';
     const GDCB = 'GDCB';
     const GSCB = 'GSCB';
@@ -105,6 +107,7 @@ class Upi
     const JIOP = 'JIOP';
     const JJSB = 'JJSB';
     const JMCX = 'JMCX';
+    const JSBL = 'JSBL';
     const JSBP = 'JSBP';
     const JSFB = 'JSFB';
     const JVCX = 'JVCX';
@@ -121,6 +124,7 @@ class Upi
     const KLGB = 'KLGB';
     const KMCB = 'KMCB';
     const KPCX = 'KPCX';
+    const KSCB = 'KSCB';
     const KVBL = 'KVBL';
     const KVGB = 'KVGB';
     const LAVB_R = 'LAVB_R';
@@ -131,6 +135,7 @@ class Upi
     const MBGX = 'MBGX';
     const MCBL = 'MCBL';
     const MDBK = 'MDBK';
+    const MDCB = 'MDCB';
     const MDGX = 'MDGX';
     const MERX = 'MERX';
     const MGRB = 'MGRB';
@@ -171,6 +176,7 @@ class Upi
     const RJTX = 'RJTX';
     const RMGB = 'RMGB';
     const RNSB = 'RNSB';
+    const RSBL = 'RSBL';
     const SACB = 'SACB';
     const SADX = 'SADX';
     const SAGX = 'SAGX';
@@ -192,6 +198,7 @@ class Upi
     const STCB = 'STCB';
     const STRX = 'STRX';
     const SUBX = 'SUBX';
+    const SUNB = 'SUNB';
     const SURY = 'SURY';
     const SUTB = 'SUTB';
     const SUVX = 'SUVX';
@@ -215,6 +222,7 @@ class Upi
     const UTBI = 'UTBI';
     const UTGX = 'UTGX';
     const UTIB = 'UTIB';
+    const UTKS = 'UTKS';
     const UUCB = 'UUCB';
     const UUCX = 'UUCX';
     const VARA = 'VARA';
@@ -273,6 +281,7 @@ class Upi
         self::BUGX,
         self::CBIN,
         self::CCBX,
+        self::CCBL,
         self::CGBX,
         self::CGGX,
         self::CITI,
@@ -301,6 +310,7 @@ class Upi
         self::FGCB,
         self::FINO,
         self::FSFB,
+        self::GBCB,
         self::GCUX,
         self::GDCB,
         self::GSCB,
@@ -325,6 +335,7 @@ class Upi
         self::JJSB,
         self::JMCX,
         self::JSBP,
+        self::JSBL,
         self::JSFB,
         self::JVCX,
         self::KAIJ,
@@ -339,6 +350,7 @@ class Upi
         self::KKBK,
         self::KLGB,
         self::KMCB,
+        self::KSCB,
         self::KPCX,
         self::KVBL,
         self::KVGB,
@@ -350,6 +362,7 @@ class Upi
         self::MBGX,
         self::MCBL,
         self::MDBK,
+        self::MDCB,
         self::MDGX,
         self::MERX,
         self::MGRB,
@@ -390,6 +403,7 @@ class Upi
         self::RJTX,
         self::RMGB,
         self::RNSB,
+        self::RSBL,
         self::SACB,
         self::SADX,
         self::SAGX,
@@ -411,6 +425,7 @@ class Upi
         self::STCB,
         self::STRX,
         self::SUBX,
+        self::SUNB,
         self::SURY,
         self::SUTB,
         self::SUVX,
@@ -432,6 +447,7 @@ class Upi
         self::UJVN,
         self::UMSX,
         self::UTBI,
+        self::UTKS,
         self::UTGX,
         self::UTIB,
         self::UUCB,
