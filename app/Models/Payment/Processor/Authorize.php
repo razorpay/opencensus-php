@@ -3222,9 +3222,10 @@ trait Authorize
 
         $merchant = $payment->merchant;
 
-        if ($currency !== Currency\Currency::INR &&
+        // For non-card method payments, check only if currency != INR
+        if ($currency !== Currency\Currency::INR && (($payment->getMethod() != Method::CARD) ||
             ($merchant->isDCCEnabledInternationalMerchant() === false ||
-             $payment->isInternational() === false))
+             $payment->isInternational() === false)))
         {
             // mcc is supported only for merchants where this flag is set to true or false
             // or merchant is not fee bearer
@@ -3276,7 +3277,8 @@ trait Authorize
         // if gateway is doing currency conversions, actual rate used by gateway
         // will use lower than current rates hence we also use 1 percentage lower
         // values
-        if ($payment->getConvertCurrency() === false)
+        if ($payment->getConvertCurrency() === false ||
+            ($currency !== Currency\Currency::INR && $payment->getConvertCurrency() === null))
         {
             $baseAmount = (int) ceil($baseAmount * 0.99);
         }

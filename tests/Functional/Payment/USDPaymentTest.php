@@ -75,6 +75,7 @@ class USDPaymentTest extends TestCase
         $payment['order_id'] = $order['id'];
         $payment['amount'] = $order['amount'];
         $payment['currency'] = $order['currency'];
+        //International card
         $payment['card']['number'] = '4012 0111 1111 1113';
 
         $this->doAuthAndCapturePayment($payment, $payment['amount'], $payment['currency']);
@@ -82,7 +83,7 @@ class USDPaymentTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals($payment['convert_currency'], null);
-        $this->assertEquals($payment['base_amount'], 50000);
+        $this->assertEquals($payment['base_amount'], 49500);
     }
 
     public function testUsdPaymentInternationalCardOnGatewayWithOrder()
@@ -105,7 +106,7 @@ class USDPaymentTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals($payment['convert_currency'], null);
-        $this->assertEquals($payment['base_amount'], 50000);
+        $this->assertEquals($payment['base_amount'], 49500);
     }
 
     public function testUsdPaymentInternationalCardOnApiWithOrderAndDccDisabled()
