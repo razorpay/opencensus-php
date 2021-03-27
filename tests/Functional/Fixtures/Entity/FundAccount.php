@@ -28,4 +28,16 @@ class FundAccount extends Base
 
         return parent::create(array_merge($attributes, $defaultAttrs));
     }
+
+    public function createWalletAccount(array $attributes = [])
+    {
+        $walletAccount = $this->fixtures->create('wallet_account');
+
+        $defaultAttrs = [
+            'account_id'   => $walletAccount['id'],
+            'account_type' => 'wallet_account',
+        ];
+
+        return parent::create(array_merge($attributes, $defaultAttrs));
+    }
 }

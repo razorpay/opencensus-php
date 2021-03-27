@@ -2,15 +2,19 @@
 
 namespace RZP\Models\FundAccount;
 
+use Lib\PhoneBook;
+
 use RZP\Exception;
 use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Contact;
+use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
+use RZP\Models\WalletAccount;
 use RZP\Constants\Entity as E;
 use RZP\Services\FTS\Constants;
 use RZP\Exception\LogicException;
@@ -19,6 +23,7 @@ use RZP\Services\FTS\CreateAccount;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Contact\Entity as ContactEntity;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\WalletAccount\Validator as WalletAccountValidator;
 
 /**
  * Class Core
@@ -27,6 +32,8 @@ use RZP\Exception\BadRequestValidationFailureException;
  */
 class Core extends Base\Core
 {
+    const DEFAULT_COUNTRY_CODE = '+91';
+
     /**
      * @param array $input
      * @param Merchant\Entity $merchant
@@ -49,6 +56,12 @@ class Core extends Base\Core
         $traceRequest = $this->unsetSensitiveCardDetails($input);
 
         $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, $traceRequest);
+
+        if ((isset($input[Entity::ACCOUNT_TYPE]) === true) and 
+            (strtolower($input[Entity::ACCOUNT_TYPE]) ===  Entity::WALLET)) 
+        {
+            $input = $this->constructWalletAccountFundAccountRequest($input);
+        }
 
         if (isset($input[Entity::IDEMPOTENCY_KEY]) === true)
         {
@@ -235,6 +248,10 @@ class Core extends Base\Core
                 $account = (new Card\Core)->createForFundAccount($accountInput, $merchant);
                 break;
 
+            case Type::WALLET_ACCOUNT:
+                $account = (new WalletAccount\Core)->createForSource($accountInput, $source);
+                break;
+
             default:
                 throw new LogicException('Creation logic not defined for fund account type: ' . $accountType);
         }
@@ -396,5 +413,49 @@ class Core extends Base\Core
                     'input'      => $traceRequest
                 ]);
         }
+    }
+
+    public function constructWalletAccountFundAccountRequest(array $input)
+    {
+        $variant = $this->app['razorx']->getTreatment($this->merchant->getId(),
+            Merchant\RazorxTreatment::ENABLE_WALLET_ACCOUNT_AMAZON_PAYOUT,
+            Mode::LIVE
+        );
+
+        if ($variant === 'on')
+        {
+                $input[Entity::ACCOUNT_TYPE] = Entity::WALLET_ACCOUNT;
+
+                $input[Entity::WALLET_ACCOUNT] = array_pull($input, Entity::WALLET);
+
+                (new WalletAccountValidator)->setStrictFalse()
+                                ->validateInput(WalletAccountValidator::BEFORE_CREATE_FUND_ACCOUNT_WALLET_ACCOUNT, $input[Entity::WALLET_ACCOUNT]);
+
+                $input[Entity::WALLET_ACCOUNT][WalletAccount\Entity::PHONE] = $this->reformatPhoneNo($input[Entity::WALLET_ACCOUNT][WalletAccount\Entity::PHONE]);
+               
+                unset($input[Entity::WALLET]);
+    
+                return $input;
+        }
+        else
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_WALLET_ACCOUNT_FUND_ACCOUNT_CREATION_NOT_PERMITTED, null,
+            [
+                Entity::MERCHANT_ID => $this->merchant->getId(),
+                'input' => $input,
+            ]);
+        }  
+    }
+
+    public function reformatPhoneNo(string $phone)
+    {
+        $phonebook = new PhoneBook($phone, true);
+
+            $phoneNumber = $phonebook->getPhoneNumber();
+            $code        = $phoneNumber->getCountryCode();
+            $code        = (($code === null) or ($code === 91)) ? self::DEFAULT_COUNTRY_CODE : (string) $code;
+            $number      = $phoneNumber->getNationalNumber();
+
+        return $code . strval($number);
     }
 }

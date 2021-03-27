@@ -611,6 +611,9 @@ class Constants
     // Used to enable alternate failure reason in payout for status code.
     const ALTERNATE_PAYOUT_FR = 'alternate_payout_fr';
 
+    // Used to enable fund account of type wallet account (provider: amazonpay) for merchants for business banking (Razorpay X).
+    const DISABLE_X_AMAZONPAY = 'disable_x_amazonpay';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -905,6 +908,7 @@ class Constants
         self::CAW_UPI                         => true,
         self::SUBSCRIPTION_UPI                => true,
         self::ALTERNATE_PAYOUT_FR             => true,
+        self::DISABLE_X_AMAZONPAY             => true,
         self::CAW_RECURRING_CHARGE_AXIS       => true,
     ];
 

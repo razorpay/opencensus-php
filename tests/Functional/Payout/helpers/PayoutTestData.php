@@ -5064,6 +5064,37 @@ return [
         ],
     ],
 
+    'testCreatePayoutAmazonPayMoreThanMaxAmount' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 30000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'amazonpay',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Given method / mode cannot be used for the payout amount specified',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_AMOUNT_MODE_MISMATCH,
+        ],
+    ],
+
     'testCreatePayoutUPIMoreThanMaxAmount' => [
         'request'  => [
             'method'  => 'POST',
@@ -10448,6 +10479,40 @@ return [
                 'mode'            => 'UPI',
                 'tax'             => 162,
                 'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
+    'testCreatePayoutViaAmazonPay' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 5000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'amazonpay',
+                'fund_account_id' => 'fa_100000000003fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 5000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000003fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'amazonpay',
                 'notes'           => [
                     'abc' => 'xyz',
                 ],

@@ -11,16 +11,18 @@ use RZP\Models\Contact;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
+use RZP\Models\WalletAccount;
 use RZP\Models\VirtualAccount\Provider;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
- * @property Card\Entity|BankAccount\Entity|Vpa\Entity account
+ * @property Card\Entity|BankAccount\Entity|Vpa\Entity|WalletAccount\Entity account
  * @property Merchant\Entity merchant
  */
 class Entity extends Base\PublicEntity
 {
+
     use SoftDeletes;
 
     // Attributes
@@ -51,6 +53,11 @@ class Entity extends Base\PublicEntity
     // Card is basically publicly exposed underlying account
     // when account type is card
     const CARD          = 'card';
+    // Wallet_account is basically publicly exposed underlying account
+    // when account type is wallet
+    const WALLET        = 'wallet';
+
+    const WALLET_ACCOUNT = 'wallet_account';
 
     const IDEMPOTENCY_KEY = 'idempotency_key';
 
@@ -100,6 +107,7 @@ class Entity extends Base\PublicEntity
         self::VPA,
         self::ACTIVE,
         self::CREATED_AT,
+        self::WALLET,
     ];
 
     protected $publicSetters = [
@@ -112,6 +120,8 @@ class Entity extends Base\PublicEntity
         self::VPA,
         self::CARD,
         self::DETAILS,
+        self::WALLET,
+        self::ACCOUNT_TYPE,
     ];
 
     protected $publicAuth = [
@@ -120,6 +130,7 @@ class Entity extends Base\PublicEntity
         self::CARD,
         self::VPA,
         self::BANK_ACCOUNT,
+        self::WALLET,
     ];
 
     protected $defaults = [
@@ -195,6 +206,9 @@ class Entity extends Base\PublicEntity
 
             case Type::CARD:
                 return $this->account->getFormatted();
+
+            case Type::WALLET_ACCOUNT:
+                return $this->account->getPhone();
         }
     }
 
@@ -207,6 +221,7 @@ class Entity extends Base\PublicEntity
 
             // Generic format for all other types, but be explicit.
             case Type::BANK_ACCOUNT:
+            case Type::WALLET_ACCOUNT:
             case Type::CARD:
                 return ucfirst(str_replace('_', ' ', $this->getAccountType()));
         }
@@ -305,6 +320,18 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function setPublicWalletAttribute(array & $array)
+    {
+        $accountType = array_get($array, self::ACCOUNT_TYPE);
+
+        if (in_array($accountType, [self::WALLET_ACCOUNT, self::WALLET], true) === true)
+        {
+            $accountAttributes = $this->getAccountDetails(self::WALLET_ACCOUNT);
+
+            $array[self::WALLET] = $accountAttributes;
+        }
+    }
+
     public function setPublicCardAttribute(array & $array)
     {
         if (array_get($array, self::ACCOUNT_TYPE) === self::CARD)
@@ -312,6 +339,14 @@ class Entity extends Base\PublicEntity
             $accountAttributes = $this->getAccountDetails(self::CARD);
 
             $array[self::CARD] = $accountAttributes;
+        }
+    }
+
+    public function setPublicAccountTypeAttribute(array & $array)
+    {
+        if (array_get($array, self::ACCOUNT_TYPE) === self::WALLET_ACCOUNT)
+        {
+            $array[self::ACCOUNT_TYPE] = self::WALLET;  
         }
     }
 

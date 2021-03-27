@@ -77,6 +77,10 @@ class Base extends BaseCore
                 $ftaCore->createWithCard($payout, $ftaAccount, $ftaInput);
                 break;
 
+            case Constants\Entity::WALLET_ACCOUNT:
+                $ftaCore->createWithWalletAccount($payout, $ftaAccount, $ftaInput);
+                break;
+
             default:
                 throw new Exception\InvalidArgumentException(
                     'Payout fta destination entity is invalid. '. $ftaAccount->getEntity(),

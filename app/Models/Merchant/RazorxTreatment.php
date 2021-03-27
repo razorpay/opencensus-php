@@ -81,6 +81,12 @@ final class RazorxTreatment
     // Decides payout channel based on UPI mode
     const UPI_MODE_PAYOUT_FILTER = 'upi_mode_payout_filter';
 
+    // Decides payout channel based on amazonpay mode
+    const AMAZONPAY_MODE_PAYOUT_FILTER = 'amazonpay_mode_payout_filter';
+
+    // For whitelisting merchants that can access amazon pay wallet payouts in X
+    const ENABLE_WALLET_ACCOUNT_AMAZON_PAYOUT = 'rx_enable_amazonpay_wallet_payout';
+
     // Decides payout channel based on IFT mode
     const IFT_MODE_PAYOUT_FILTER = 'ift_mode_payout_filter';
 

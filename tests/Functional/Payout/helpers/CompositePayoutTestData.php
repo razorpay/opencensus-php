@@ -81,6 +81,79 @@ return [
         ],
     ],
 
+    'testCreateCompositePayoutForWalletAccountTypeAmazonpay' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number' => '2224440041626905',
+                'amount'         => 2000,
+                'currency'       => 'INR',
+                'purpose'        => 'refund',
+                'narration'      => 'Batman',
+                'mode'           => 'amazonpay',
+                'notes'          => [
+                    'abc' => 'xyz',
+                ],
+                'fund_account'   => [
+                    'account_type' => 'wallet',
+                    'wallet' => [
+                        'provider' => 'amazonpay',
+                        'phone'    => '+918124632237',  
+                    ],
+                    'contact'      => [
+                        'name'    => 'Prashanth YV',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'payout',
+                'amount'       => 2000,
+                'currency'     => 'INR',
+                'narration'    => 'Batman',
+                'purpose'      => 'refund',
+                'status'       => 'processing',
+                'mode'         => 'amazonpay',
+                'tax'          => 90,
+                'fees'         => 590,
+                'notes'        => [
+                    'abc' => 'xyz',
+                ],
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'account_type' => 'wallet',
+                    'wallet' => [
+                        'provider' => 'amazonpay',
+                        'phone'    => '+918124632237'
+                    ],
+                    'batch_id'     => null,
+                    'active'       => true,
+                    'contact'      => [
+                        'entity'       => 'contact',
+                        'name'         => 'Prashanth YV',
+                        'contact'      => '9999999999',
+                        'email'        => 'prashanth@razorpay.com',
+                        'type'         => 'employee',
+                        'reference_id' => null,
+                        'batch_id'     => null,
+                        'active'       => true,
+                        'notes'        => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testCreateCompositePayoutWithOldNewIfsc' => [
         'request'  => [
             'method'  => 'POST',

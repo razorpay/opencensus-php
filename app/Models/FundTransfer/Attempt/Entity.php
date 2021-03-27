@@ -9,6 +9,7 @@ use RZP\Constants\Entity as E;
 use RZP\Exception\LogicException;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Models\Settlement\Channel;
+use RZP\Services\FTS\Constants as FTSConstants;
 use RZP\Models\FundTransfer\Yesbank\NodalAccount;
 use RZP\Trace\TraceCode;
 
@@ -28,6 +29,7 @@ class Entity extends Base\PublicEntity
     const BANK_ACCOUNT_ID        = 'bank_account_id';
     const VPA_ID                 = 'vpa_id';
     const CARD_ID                = 'card_id';
+    const WALLET_ACCOUNT_ID      = 'wallet_account_id';
     const BATCH_FUND_TRANSFER_ID = 'batch_fund_transfer_id';
     const CHANNEL                = 'channel';
     const VERSION                = 'version';
@@ -98,6 +100,7 @@ class Entity extends Base\PublicEntity
         self::BANK_ACCOUNT_ID,
         self::VPA_ID,
         self::CARD_ID,
+        self::WALLET_ACCOUNT_ID,
         self::BATCH_FUND_TRANSFER_ID,
         self::CHANNEL,
         self::VERSION,
@@ -195,6 +198,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\FundTransfer\Batch\Entity');
     }
 
+    public function walletAccount()
+    {
+        return $this->belongsTo('RZP\Models\WalletAccount\Entity');
+    }
+
     // ------------------------------- getters ---------------------------------
 
     public function getVpaId()
@@ -210,6 +218,11 @@ class Entity extends Base\PublicEntity
     public function getBankAccountId()
     {
         return $this->getAttribute(self::BANK_ACCOUNT_ID);
+    }
+
+    public function getWalletAccountId()
+    {
+        return $this->getAttribute(self::WALLET_ACCOUNT_ID);
     }
 
     public function getChannel()
@@ -326,6 +339,10 @@ class Entity extends Base\PublicEntity
         {
             return E::CARD;
         }
+        else if ($this->hasWalletAccount() === true)
+        {
+            return E::WALLET_ACCOUNT;
+        }
         else
         {
             return null;
@@ -362,10 +379,20 @@ class Entity extends Base\PublicEntity
         return ($this->isAttributeNotNull(self::CARD_ID));
     }
 
+    public function hasWalletAccount()
+    {
+        return ($this->isAttributeNotNull(self::WALLET_ACCOUNT_ID));
+    }
+
     // ------------------------------- setters ---------------------------------
 
     public function setChannel($channel)
     {
+        if (strcasecmp($channel, FTSConstants::FTS_AMAZON_PAY_CHANNEL) === 0)
+        {
+            $channel = Channel::AMAZONPAY;
+        }
+
         $this->setAttribute(self::CHANNEL, $channel);
     }
 
@@ -661,5 +688,10 @@ class Entity extends Base\PublicEntity
     public function setCardId($cardID)
     {
         $this->setAttribute(self::CARD_ID, $cardID);
+    }
+
+    public function setWalletAccountId($walletAccountId)
+    {
+        $this->setAttribute(self::WALLET_ACCOUNT_ID, $walletAccountId);
     }
 }

@@ -349,6 +349,9 @@ class Table
     const SURVEY            = 'survey';
     const SURVEY_TRACKER    = 'survey_tracker';
 
+    // X WalletAccounts
+    const WALLET_ACCOUNT    = 'wallet_accounts';
+
     protected static $entityToTableMap = [
         Entity::AXIS_MIGS                          => self::MIGS,
         Entity::AXIS_GENIUS                        => self::MIGS,

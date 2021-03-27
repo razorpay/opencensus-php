@@ -1346,4 +1346,7 @@ class PublicErrorDescription
 
     // Templating Service
     const BAD_REQUEST_ERROR_IN_TEMPLATING_RESPONSE                                  = 'Received an Error Response from templating service';
+
+    // Wallet Account AMazon Pay for X
+    const BAD_REQUEST_WALLET_ACCOUNT_FUND_ACCOUNT_CREATION_NOT_PERMITTED            = 'Creating a Fund Account of wallet type is not permitted';
 }

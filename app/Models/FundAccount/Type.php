@@ -7,9 +7,10 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Type
 {
-    const VPA          = Entity::VPA;
-    const BANK_ACCOUNT = Entity::BANK_ACCOUNT;
-    const CARD         = Entity::CARD;
+    const VPA            = Entity::VPA;
+    const BANK_ACCOUNT   = Entity::BANK_ACCOUNT;
+    const CARD           = Entity::CARD;
+    const WALLET_ACCOUNT = Entity::WALLET_ACCOUNT;
 
     public static function isValid(string $type): bool
     {

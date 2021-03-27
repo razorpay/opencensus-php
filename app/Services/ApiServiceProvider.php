@@ -46,6 +46,7 @@ use RZP\Models\FundTransfer;
 use RZP\Models\BankTransfer;
 use RZP\Models\PaperMandate;
 use RZP\Models\EntityOrigin;
+use RZP\Models\WalletAccount;
 use RZP\Services\Settlements;
 use RZP\Constants\Entity as E;
 use RZP\Models\Admin as Admin;
@@ -824,6 +825,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'external'                  => External\Entity::class,
 
             'bank_account'              => BankAccount\Entity::class,
+            'wallet_account'            => WalletAccount\Entity::class,
             'vpa'                       => Vpa\Entity::class,
             'virtual_account'           => VirtualAccount\Entity::class,
             'bank_transfer'             => BankTransfer\Entity::class,

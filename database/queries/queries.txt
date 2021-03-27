@@ -3913,6 +3913,9 @@ ALTER TABLE vpa DROP FOREIGN KEY vpa_customer_id_foreign;
 ALTER TABLE wallet DROP FOREIGN KEY wallet_payment_id_foreign;
 ALTER TABLE webhooks DROP FOREIGN KEY webhooks_merchant_id_foreign;
 
+#Need this to be executed for Razorpay X payouts
+ALTER TABLE fund_transfer_attempts 
+    ADD COLUMN wallet_account_id CHAR(14) DEFAULT NULL;
 
 # Disable read_only flag on redash db and run these
 SET SESSION foreign_key_checks = 0;

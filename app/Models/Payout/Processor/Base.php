@@ -23,6 +23,7 @@ use RZP\Models\FundTransfer;
 use RZP\Models\PayoutSource;
 use RZP\Models\Payout\Status;
 use RZP\Models\Payout\Metric;
+use RZP\Models\WalletAccount;
 use RZP\Models\Payout\Entity;
 use RZP\Models\BankingAccount;
 use RZP\Models\Admin\ConfigKey;
@@ -104,7 +105,7 @@ class Base extends BaseCore
     protected $isInternal = false;
 
     /**
-     * @var BankAccount\Entity|Vpa\Entity|Card\Entity
+     * @var BankAccount\Entity|Vpa\Entity|Card\Entity|WalletAccount\Entity
      */
     protected $fundTransferDestination;
 

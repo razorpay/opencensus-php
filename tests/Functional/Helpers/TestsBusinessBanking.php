@@ -321,7 +321,8 @@ trait TestsBusinessBanking
                                            string $oldToNewIfscForMergedBank = 'on',
                                            string $rejectCommentInWebhook = 'off',
                                            string $allowVAToVAPayouts = 'control',
-                                           string $registeredNameInPayoutsResponse = 'control')
+                                           string $registeredNameInPayoutsResponse = 'control',
+                                           string $allowWalletAccountAmazonPay = 'on')
     {
         // Mock Razorx
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
@@ -348,7 +349,8 @@ trait TestsBusinessBanking
                     $oldToNewIfscForMergedBank,
                     $rejectCommentInWebhook,
                     $allowVAToVAPayouts,
-                    $registeredNameInPayoutsResponse
+                    $registeredNameInPayoutsResponse,
+                    $allowWalletAccountAmazonPay
                 )
                 {
                     if (ends_with($feature, 'mode_payout_filter'))
@@ -425,6 +427,11 @@ trait TestsBusinessBanking
                     if (($feature === 'registered_name_in_payouts_response'))
                     {
                         return strtolower($registeredNameInPayoutsResponse);
+                    }
+
+                    if (($feature === 'rx_enable_amazonpay_wallet_payout'))
+                    {
+                        return strtolower($allowWalletAccountAmazonPay);
                     }
 
                     return strtolower($defaultBehaviour);

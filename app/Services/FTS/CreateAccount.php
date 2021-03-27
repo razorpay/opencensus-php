@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Country;
 use RZP\Models\BankAccount;
+use RZP\Models\WalletAccount;
 use RZP\Http\Request\Requests;
 use RZP\Models\BankingAccount;
 use RZP\Constants\IndianStates;
@@ -179,6 +180,13 @@ class CreateAccount extends Base
 
                 break;
 
+            case Constants::WALLET:
+                $this->account = $this->walletCore->getWalletEntity($id);
+
+                $request[Constants::WALLET] = $this->getWalletDetails($this->account);
+
+                break;
+
             default:
                 throw new LogicException('Account Type is not supported ' . $type);
         }
@@ -259,6 +267,23 @@ class CreateAccount extends Base
         return [
             Constants::HANDLE       => $vpa->getHandle(),
             Constants::USERNAME     => $vpa->getUsername(),
+        ];
+    }
+
+    /**
+     * Method to Populate wallet details
+     * in an array using entity
+     *
+     * @param $wallet/$walletAccount
+     * @return array
+     */
+    public function getWalletAccountDetails(WalletAccount\Entity $walletAccount):array
+    {
+        return [
+            Constants::PROVIDER             => $walletAccount->getProvider(),
+            Constants::BENEFICIARY_MOBILE   => $walletAccount->getPhone(),
+            Constants::BENEFICIARY_EMAIL    => $walletAccount->getNumber(),
+            Constants::BENEFICIARY_NAME     => $walletAccount->getName(),
         ];
     }
 
@@ -361,6 +386,11 @@ class CreateAccount extends Base
 
             case Constants::CARD:
                 $this->account = $this->cardCore->getCardEntity($this->accountId);
+
+                break;
+
+            case Constants::WALLET:
+                $this->account = $this->walletCore->getWalletEntity($this->accountId);
 
                 break;
 

@@ -218,6 +218,19 @@ final class FactoryData
             ]
         );
 
+        $factory(\RZP\Models\WalletAccount\Entity::class, [
+            'id'                        => $faker->uniqueid,
+            'merchant_id'               => '10000000000000',
+            'entity_id'                 => '10000000000000',
+            'phone'                     => '+918124632237',
+            'provider'                  => 'amazonpay',
+            'email'                     => 'test@gmail.com',
+            'name'                      => 'test',
+            'created_at'                => $faker->timestamp,
+            'updated_at'                => $faker->timestamp,
+            ]
+        );
+
         $factory(\RZP\Models\Card\Entity::class, [
             'id'                => $faker->uniqueid,
             'merchant_id'       => '10000000000000',

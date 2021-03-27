@@ -22,6 +22,7 @@ class Channel
     const ICICI2    = 'icici2';
     const CITI      = 'citi';
     const M2P       = 'm2p';
+    const AMAZONPAY = 'amz_pay';
 
     public static $gateways = [
         self::KOTAK => [
@@ -71,6 +72,7 @@ class Channel
             self::ICICI2,
             self::CITI,
             self::M2P,
+            self::AMAZONPAY,
         ];
     }
 
@@ -302,6 +304,9 @@ class Channel
                     Mode::IMPS,
                     Mode::UPI,
                     Mode::NEFT,
+                ],
+                Constants\Entity::WALLET_ACCOUNT  =>  [
+                    Mode::FTS_WALLET_TRANSFERS_MODE,
                 ]
             ],
             self::CITI      => [
@@ -314,6 +319,9 @@ class Channel
                 Constants\Entity::CARD          =>  [
                     Mode::IMPS,
                     Mode::NEFT,
+                ],
+                Constants\Entity::WALLET_ACCOUNT  =>  [
+                    Mode::FTS_WALLET_TRANSFERS_MODE,
                 ]
             ],
             self::ICICI     => [
@@ -329,6 +337,9 @@ class Channel
                     Mode::IMPS,
                     Mode::UPI,
                     Mode::NEFT,
+                ],
+                Constants\Entity::WALLET_ACCOUNT  =>  [
+                    Mode::FTS_WALLET_TRANSFERS_MODE,
                 ]
             ],
             self::RBL       => [
@@ -341,6 +352,9 @@ class Channel
                 Constants\Entity::CARD          =>  [
                     Mode::IMPS,
                     Mode::NEFT,
+                ],
+                Constants\Entity::WALLET_ACCOUNT  =>  [
+                    Mode::FTS_WALLET_TRANSFERS_MODE,
                 ]
             ],
             self::M2P       => [

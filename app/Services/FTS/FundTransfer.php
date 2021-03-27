@@ -206,6 +206,10 @@ class FundTransfer extends Base
         {
             return Constants::CARD;
         }
+        else if ($this->fta->hasWalletAccount())
+        {
+            return Constants::WALLET;
+        }
         else
         {
             throw new LogicException('Account Type is not supported ');
@@ -279,6 +283,11 @@ class FundTransfer extends Base
             case Constants::CARD:
                 $request = $this->addCardDetails($request);
 
+                break;
+
+            case Constants::WALLET:
+                $request = $this->addWalletAccountDetails($request);
+    
                 break;
 
             default:
@@ -408,6 +417,24 @@ class FundTransfer extends Base
                 Constants::VPA => [
                         Constants::HANDLE       => $this->fta->vpa->getHandle(),
                         Constants::USERNAME     => $this->fta->vpa->getUsername(),
+                ],
+        ];
+
+        return $request;
+    }
+
+     /**
+     * @param array $request
+     * @return array
+     */
+    protected function addWalletAccountDetails(array $request):array
+    {
+        $request[Constants::ACCOUNT] = [
+                Constants::WALLET => [
+                        Constants::BENEFICIARY_MOBILE => $this->fta->walletAccount->getPhone(),
+                        Constants::PROVIDER           => $this->fta->walletAccount->getProvider(),
+                        Constants::BENEFICIARY_EMAIL  => $this->fta->walletAccount->getEmail(),
+                        Constants::BENEFICIARY_NAME   => $this->fta->walletAccount->getName(),
                 ],
         ];
 
@@ -602,6 +629,11 @@ class FundTransfer extends Base
      */
     protected function getFTSFundTransferMode()
     {
+        if ($this->accountType === Constants::WALLET)
+        {
+            return [Constants::WALLET_TRANSFER_MODE_FTS, true];
+        }
+        
         if ($this->fta->hasMode() === true)
         {
             return [$this->fta->getMode(), false];

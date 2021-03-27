@@ -473,24 +473,27 @@ class Validator extends Base\Validator
 
         $amount = $input[Entity::AMOUNT];
 
-        $minRtgsAmount = NodalAccount::MIN_RTGS_AMOUNT * 100;
-        $maxImpsAmount = NodalAccount::MAX_IMPS_AMOUNT * 100;
-        $maxUpiAmount  = FundAccount\Validator::MAX_UPI_AMOUNT;
+        $minRtgsAmount       = NodalAccount::MIN_RTGS_AMOUNT * 100;
+        $maxImpsAmount       = NodalAccount::MAX_IMPS_AMOUNT * 100;
+        $maxUpiAmount        = FundAccount\Validator::MAX_UPI_AMOUNT;
+        $maxAmazonPayAmount  = FundAccount\Validator::MAX_WALLET_ACCOUNT_AMAZON_PAY_AMOUNT;
 
         if ((($mode === Mode::RTGS) and ($amount < $minRtgsAmount)) or
             (($mode === Mode::IMPS) and ($amount > $maxImpsAmount)) or
-            (($mode === Mode::UPI) and ($amount > $maxUpiAmount)))
+            (($mode === Mode::UPI) and ($amount > $maxUpiAmount)) or
+            (($mode === Mode::AMAZONPAY) and ($amount > $maxAmazonPayAmount)))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYOUT_AMOUNT_MODE_MISMATCH,
                 null,
                 [
-                    'amount'          => $amount,
-                    'mode'            => $mode,
-                    'min_rtgs_amount' => $minRtgsAmount,
-                    'max_imps_amount' => $maxImpsAmount,
-                    'fund_account_id' => $fundAccount->getId(),
-                    'account_type'    => $fundAccount->getAccountType(),
+                    'amount'                          => $amount,
+                    'mode'                            => $mode,
+                    'min_rtgs_amount'                 => $minRtgsAmount,
+                    'max_imps_amount'                 => $maxImpsAmount,
+                    'maxWalletAccountAmazonPayAmount' => $maxAmazonPayAmount,
+                    'fund_account_id'                 => $fundAccount->getId(),
+                    'account_type'                    => $fundAccount->getAccountType(),
                 ]);
         }
     }

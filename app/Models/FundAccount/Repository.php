@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Models\Contact;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
+use RZP\Models\WalletAccount;
 use RZP\Constants\Entity as E;
 
 /**
@@ -44,6 +45,11 @@ class Repository extends Base\Repository
 
             case Type::VPA:
                 $account = $this->fetchFundAccountOfTypeVpaForContact($merchant, $contact, $input);
+
+                break;
+
+            case Type::WALLET_ACCOUNT:
+                $account = $this->fetchFundAccountOfTypeWalletAccountForContact($merchant, $contact, $input);
 
                 break;
 
@@ -166,6 +172,41 @@ class Repository extends Base\Repository
                     ->where(Entity::SOURCE_ID, $contactId)
                     ->merchantId($merchantId)
                     ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->first();
+    }
+
+    public function fetchFundAccountOfTypeWalletAccountForContact(Merchant\Entity $merchant,
+                                                                  Contact\Entity $contact,
+                                                                  array $input)
+    {
+        $walletAccount = $input[Type::WALLET_ACCOUNT];
+
+        $allFundAccountAttributes = $this->dbColumn('*');
+
+        $faAccountIdColumn = $this->dbColumn(Entity::ACCOUNT_ID);
+
+        $faSourceIdColumn = $this->dbColumn(Entity::SOURCE_ID);
+
+        $walletAccountTable = $this->repo->wallet_account->getTableName();
+
+        $walletAccountIdColumn = $this->repo->wallet_account->dbColumn(WalletAccount\Entity::ID);
+
+        $walletAccountTypeColumn = $this->repo->wallet_account->dbColumn(WalletAccount\Entity::ENTITY_TYPE);
+
+        $walletAccountProviderColumn = $this->repo->wallet_account->dbColumn(WalletAccount\Entity::PROVIDER);
+
+        $walletAccountPhoneNoColumn = $this->repo->wallet_account->dbColumn(WalletAccount\Entity::PHONE);
+
+        $walletAccountMerchantIdColumn = $this->repo->wallet_account->dbColumn(WalletAccount\Entity::MERCHANT_ID);
+
+        return $this->newQuery()
+                    ->select($allFundAccountAttributes)
+                    ->join($walletAccountTable, $faAccountIdColumn, '=', $walletAccountIdColumn)
+                    ->where($faSourceIdColumn, '=', $contact->getId())
+                    ->where($walletAccountTypeColumn, '=', E::CONTACT)
+                    ->where($walletAccountPhoneNoColumn, '=', $walletAccount[WalletAccount\Entity::PHONE])
+                    ->where($walletAccountProviderColumn, '=', $walletAccount[WalletAccount\Entity::PROVIDER])
+                    ->where($walletAccountMerchantIdColumn, '=', $merchant->getId())
                     ->first();
     }
 }

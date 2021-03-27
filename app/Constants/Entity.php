@@ -477,6 +477,9 @@ class Entity
     // Merchant Risk Alert
     const MERCHANT_RISK_ALERT = 'merchant_risk_alert';
 
+    //X Wallet Account payouts
+    const WALLET_ACCOUNT = 'wallet_account';
+
     const SEGMENTATION = 'segmentation';
 
     /**
@@ -565,6 +568,7 @@ class Entity
         self::IIN                       => \RZP\Models\Card\IIN::class,
         self::P2P                       => \RZP\Models\P2p::class,
         self::VPA                       => \RZP\Models\Vpa::class,
+        self::WALLET_ACCOUNT            => \RZP\Models\WalletAccount::class,
         self::UPI                       => \RZP\Gateway\Upi\Base::class,
         self::IIN                       => \RZP\Models\Card\IIN::class,
         self::EBS                       => \RZP\Gateway\Ebs::class,

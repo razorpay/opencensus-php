@@ -46,13 +46,18 @@ class Mode extends Core
     const BLACKLISTED = 'blacklisted';
     const ERROR_CODE  = 'error_code';
 
+    // Amazon Pay mode for Wallet account Integrations via FTS
+    const AMAZONPAY = 'amazonpay';
+    const FTS_WALLET_TRANSFERS_MODE = 'WALLET_TRANSFER';
+
     protected static $modeMap = [
-        self::RTGS => self::RTGS,
-        self::IMPS => self::IMPS,
-        self::NEFT => self::NEFT,
-        self::IFT  => self::IFT,
-        self::UPI  => self::UPI,
-        self::CT   => self::CT,
+        self::RTGS      => self::RTGS,
+        self::IMPS      => self::IMPS,
+        self::NEFT      => self::NEFT,
+        self::IFT       => self::IFT,
+        self::UPI       => self::UPI,
+        self::CT        => self::CT,
+        self::AMAZONPAY => self::AMAZONPAY,
     ];
 
     protected static $modeAccountTypeMap = [
@@ -71,7 +76,10 @@ class Mode extends Core
             self::NEFT,
             self::CT,
             self::CARD,
-        ]
+        ],
+        Type::WALLET_ACCOUNT => [
+            self::AMAZONPAY,
+        ],
     ];
 
     /**
@@ -349,6 +357,7 @@ class Mode extends Core
             self::IFT,
             self::UPI,
             self::CT,
+            self::AMAZONPAY,
         ];
     }
 

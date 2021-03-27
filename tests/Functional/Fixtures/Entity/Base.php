@@ -93,6 +93,8 @@ class Base
 
         'application'                      => \RZP\Models\Application\Entity::class,
         'application_mapping'              => \RZP\Models\Application\ApplicationTags\Entity::class,
+
+        'wallet_account'                   => \RZP\Models\WalletAccount\Entity::class,
     ];
 
     protected static $liveAndTest = [

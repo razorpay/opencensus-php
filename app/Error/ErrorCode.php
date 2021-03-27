@@ -2098,6 +2098,9 @@ class ErrorCode
     // Aadhar E-sign error codes
     const BAD_REQUEST_INVALID_SESSION_ID        = "BAD_REQUEST_INVALID_SESSION_ID";
 
+    // X Amazon Pay wallet account payouts errorcodes
+    const BAD_REQUEST_WALLET_ACCOUNT_FUND_ACCOUNT_CREATION_NOT_PERMITTED            = 'BAD_REQUEST_WALLET_ACCOUNT_FUND_ACCOUNT_CREATION_NOT_PERMITTED';
+
     static function getConstants()
     {
         $oClass = new \ReflectionClass(__CLASS__);

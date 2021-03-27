@@ -172,6 +172,214 @@ class FundAccountsTest extends TestCase
         Queue::assertPushed(CreateAccount::class);
     }
 
+    public function testCreateWalletAccountFundAccount()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('on');
+
+        Queue::fake();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->startTest();
+
+        $walletAccount = $this->getLastEntity('wallet_account', true);
+
+        $expectedWalletAccountAttrs = [
+            'entity_type'   => 'contact',
+            'entity_id'     => '1000000contact',
+            'phone'         => '+918124632237',
+            'provider'      => 'amazonpay',
+            'email'         => 'test@gmail.com',
+            'name'          => 'test',
+            'merchant_id'   => '10000000000000',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedWalletAccountAttrs, $walletAccount);
+
+        Queue::assertPushed(CreateAccount::class);
+    }
+
+    public function testCreateWalletAccountFundAccountPhoneNull()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('on');
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->startTest();
+    }
+
+    public function testCreateWalletAccountFundAccountPhoneEmpty()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('on');
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->startTest();
+    }
+
+    public function testCreateWalletAccountFundAccountModeCapital()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('on');
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->startTest();
+    }
+
+    public function testCreateWalletAccountFundAccountForNonwhitelistedMerchant()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('control');
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->startTest();
+    }
+
+    public function testCreateWalletAccountFundAccountPhoneFormat1()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('on');
+
+        Queue::fake();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->startTest();
+
+        $walletAccount = $this->getLastEntity('wallet_account', true);
+
+        $expectedWalletAccountAttrs = [
+            'entity_type'   => 'contact',
+            'entity_id'     => '1000000contact',
+            'phone'         => '+918124632237',
+            'provider'      => 'amazonpay',
+            'email'         => 'test@gmail.com',
+            'name'          => 'test',
+            'merchant_id'   => '10000000000000',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedWalletAccountAttrs, $walletAccount);
+
+        Queue::assertPushed(CreateAccount::class);
+    }
+
+    public function testCreateWalletAccountFundAccountPhoneFormat2()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('on');
+
+        Queue::fake();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->startTest();
+
+        $walletAccount = $this->getLastEntity('wallet_account', true);
+
+        $expectedWalletAccountAttrs = [
+            'entity_type'   => 'contact',
+            'entity_id'     => '1000000contact',
+            'phone'         => '+918124632237',
+            'provider'      => 'amazonpay',
+            'email'         => 'test@gmail.com',
+            'name'          => 'test',
+            'merchant_id'   => '10000000000000',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedWalletAccountAttrs, $walletAccount);
+
+        Queue::assertPushed(CreateAccount::class);
+    }
+
+    public function testCreateWalletAccountFundAccountPhoneFormat3()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('on');
+                          
+        Queue::fake();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->startTest();
+
+        $walletAccount = $this->getLastEntity('wallet_account', true);
+
+        $expectedWalletAccountAttrs = [
+            'entity_type'   => 'contact',
+            'entity_id'     => '1000000contact',
+            'phone'         => '+918124632237',
+            'provider'      => 'amazonpay',
+            'email'         => 'test@gmail.com',
+            'name'          => 'test',
+            'merchant_id'   => '10000000000000',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedWalletAccountAttrs, $walletAccount);
+
+        Queue::assertPushed(CreateAccount::class);
+    }
+
     public function testCreateCard()
     {
         Queue::fake();

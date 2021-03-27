@@ -706,4 +706,30 @@ class CompositePayoutTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testCreateCompositePayoutForWalletAccountTypeAmazonpay()
+    {
+        $this->mockRazorxTreatment();
+
+        $response = $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $contact = $this->getDbLastEntity('contact');
+
+        // Assert that the last entities in db are created by the composite payout request
+        $this->assertEquals('pout_' . $payout['id'], $response['id']);
+        $this->assertEquals('fa_' . $fundAccount['id'], $response['fund_account_id']);
+        $this->assertEquals('cont_' . $contact['id'], $response['fund_account']['contact_id']);
+
+        // Assert that contact, fund_account and payout in db are related to each other
+        $this->assertEquals($payout['fund_account_id'], $fundAccount['id']);
+        $this->assertEquals($fundAccount['source_id'], $contact['id']);
+
+        // Assert that the response payout, fund_account and contact are also related to each other
+        $this->assertEquals($response['fund_account_id'], $response['fund_account']['id']);
+        $this->assertEquals($response['fund_account']['contact_id'], $response['fund_account']['contact']['id']);
+    }
 }

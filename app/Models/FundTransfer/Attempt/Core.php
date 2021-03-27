@@ -28,6 +28,7 @@ use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Models\Payment\Refund\Status as RefundStatus;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
 use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
+use RZP\Models\WalletAccount\Entity as WalletAccountEntity;
 use RZP\Models\FundTransfer\Attempt\Status as AttemptStatus;
 use RZP\Models\FundTransfer\Attempt\Constants as AttemptConstants;
 
@@ -166,6 +167,39 @@ class Core extends Base\Core
 
         // TODO: Make this polymorphic instead of having bankAccount and vpa separately
         $fundTransferAttempt->vpa()->associate($vpa);
+
+        // This needs to be done after filling FTA since it uses getters on the entity.
+        // Also, this needs to be done after associating vpa or bank_account only
+        // because it needs the association to figure out the destination type.
+        $fundTransferAttempt->getValidator()->validateModeIfSet($values);
+
+        $this->repo->saveOrFail($fundTransferAttempt);
+
+        if ($fundTransferAttempt->getIsFTS() === true)
+        {
+            (new Initiator)->sendFTSFundTransferRequest($fundTransferAttempt);
+        }
+        else if ($instantDispatch === true)
+        {
+            $this->dispatchForTransfer($fundTransferAttempt);
+        }
+
+        return $fundTransferAttempt;
+    }
+
+    public function createWithWalletAccount(
+        Base\PublicEntity $source,
+        WalletAccountEntity $walletAccount,
+        array $values = [],
+        $instantDispatch = false): Entity
+    {
+        $values[Entity::MODE] = Mode::FTS_WALLET_TRANSFERS_MODE;
+
+        $fundTransferAttempt = $this->create($source, $values, E::WALLET_ACCOUNT);
+
+
+        // TODO: Make this polymorphic instead of having bankAccount and vpa separately
+        $fundTransferAttempt->walletAccount()->associate($walletAccount);
 
         // This needs to be done after filling FTA since it uses getters on the entity.
         // Also, this needs to be done after associating vpa or bank_account only

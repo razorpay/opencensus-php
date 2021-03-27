@@ -3975,6 +3975,29 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testCreatePayoutAmazonPayMoreThanMaxAmount()
+    {
+        $contactId = $this->getDbLastEntity('contact')->getId();
+
+        $this->fixtures->create('fund_account:wallet_account', [
+            'id'            => '100000000003fb',
+            'source_type'   => 'contact',
+            'source_id'     => $contactId,
+        ]);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = 'fa_' . $fundAccount['id'];
+   
+        $balance = $this->getDbLastEntity('balance');
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '200000000']);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function testCreatePayoutRTGSLessThanMinAmount()
     {
         $this->ba->privateAuth();
@@ -9505,6 +9528,19 @@ class PayoutTest extends OAuthTestCase
         $contact = $this->getDbLastEntity('contact');
 
         $this->fixtures->create('fund_account:vpa', [
+            'id'            => '100000000003fa',
+            'source_type'   => 'contact',
+            'source_id'     => $contact->getId(),
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutViaAmazonPay()
+    {
+        $contact = $this->getDbLastEntity('contact');
+
+        $this->fixtures->create('fund_account:wallet_account', [
             'id'            => '100000000003fa',
             'source_type'   => 'contact',
             'source_id'     => $contact->getId(),

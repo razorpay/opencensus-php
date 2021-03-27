@@ -339,6 +339,250 @@ return [
         ],
     ],
 
+    'testCreateWalletAccountFundAccount' => [
+        'request'  => [
+            'content' => [
+                'account_type'  => 'wallet',
+                'contact_id'    => 'cont_1000000contact',
+                'wallet'  => [
+                    'provider' => 'amazonpay',
+                    'phone'    => '+918124632237',
+                    'email'    => 'test@gmail.com',
+                    'name'     => 'test',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'wallet',
+                'contact_id'   => 'cont_1000000contact',
+                'wallet'  => [
+                    'provider' => 'amazonpay',
+                    'phone'    => '+918124632237',
+                    'email'    => 'test@gmail.com',
+                    'name'     => 'test',
+                ],
+            ],
+            'status_code' => 201
+        ],
+    ],
+
+    'testCreateWalletAccountFundAccountPhoneNull' => [
+        'request'  => [
+            'content' => [
+                'account_type'  => 'wallet',
+                'contact_id'    => 'cont_1000000contact',
+                'wallet'  => [
+                    'provider' => 'amazonpay',
+                    'phone'    => null,
+                    'email'    => 'test@gmail.com',
+                    'name'     => 'test',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The phone field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateWalletAccountFundAccountPhoneEmpty' => [
+        'request'  => [
+            'content' => [
+                'account_type'  => 'wallet',
+                'contact_id'    => 'cont_1000000contact',
+                'wallet'  => [
+                    'provider' => 'amazonpay',
+                    'phone'    => '',
+                    'email'    => 'test@gmail.com',
+                    'name'     => 'test',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The phone field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateWalletAccountFundAccountModeCapital' => [
+        'request'  => [
+            'content' => [
+                'account_type'  => 'wallet',
+                'contact_id'    => 'cont_1000000contact',
+                'wallet'  => [
+                    'provider' => 'AMAZONPAY',
+                    'phone'    => '+918124632237',
+                    'email'    => 'test@gmail.com',
+                    'name'     => 'test',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The selected provider is invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateWalletAccountFundAccountForNonwhitelistedMerchant' => [
+        'request'  => [
+            'content' => [
+                'account_type'  => 'wallet',
+                'contact_id'    => 'cont_1000000contact',
+                'wallet'  => [
+                    'provider' => 'amazonpay',
+                    'phone'    => null,
+                    'email'    => 'test@gmail.com',
+                    'name'     => 'test',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Creating a Fund Account of wallet type is not permitted',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_WALLET_ACCOUNT_FUND_ACCOUNT_CREATION_NOT_PERMITTED,
+        ],
+    ],
+
+    'testCreateWalletAccountFundAccountPhoneFormat1' => [
+        'request'  => [
+            'content' => [
+                'account_type'  => 'wallet',
+                'contact_id'    => 'cont_1000000contact',
+                'wallet'  => [
+                    'provider' => 'amazonpay',
+                    'phone'    => '+91-8124632237',
+                    'email'    => 'test@gmail.com',
+                    'name'     => 'test',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'wallet',
+                'contact_id'   => 'cont_1000000contact',
+                'wallet'  => [
+                    'provider' => 'amazonpay',
+                    'phone'    => '+918124632237',
+                    'email'    => 'test@gmail.com',
+                    'name'     => 'test',
+                ],
+            ],
+            'status_code' => 201
+        ],
+    ],
+
+    'testCreateWalletAccountFundAccountPhoneFormat2' => [
+        'request'  => [
+            'content' => [
+                'account_type'  => 'wallet',
+                'contact_id'    => 'cont_1000000contact',
+                'wallet'  => [
+                    'provider' => 'amazonpay',
+                    'phone'    => '08124632237',
+                    'email'    => 'test@gmail.com',
+                    'name'     => 'test',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'wallet',
+                'contact_id'   => 'cont_1000000contact',
+                'wallet'  => [
+                    'provider' => 'amazonpay',
+                    'phone'    => '+918124632237',
+                    'email'    => 'test@gmail.com',
+                    'name'     => 'test',
+                ],
+            ],
+            'status_code' => 201
+        ],
+    ],
+
+    'testCreateWalletAccountFundAccountPhoneFormat3' => [
+        'request'  => [
+            'content' => [
+                'account_type'  => 'wallet',
+                'contact_id'    => 'cont_1000000contact',
+                'wallet'  => [
+                    'provider' => 'amazonpay',
+                    'phone'    => '8124632237',
+                    'email'    => 'test@gmail.com',
+                    'name'     => 'test',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'wallet',
+                'contact_id'   => 'cont_1000000contact',
+                'wallet'  => [
+                    'provider' => 'amazonpay',
+                    'phone'    => '+918124632237',
+                    'email'    => 'test@gmail.com',
+                    'name'     => 'test',
+                ],
+            ],
+            'status_code' => 201
+        ],
+    ],
+
     'testCreateCard' => [
         'request'  => [
             'content' => [
@@ -470,7 +714,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Only one of card, vpa or bank_account can be present'
+                    'description' => 'Only one of card, vpa, bank_account or wallet can be present'
                 ],
             ],
             'status_code' => 400,

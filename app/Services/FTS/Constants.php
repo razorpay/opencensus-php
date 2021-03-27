@@ -184,6 +184,16 @@ final class Constants
 
     const PAYOUT_DOWNTIME_PREFIX         = 'poutdown_';
 
+    const COUNTRY_CODE                   = 'country_code';
+
+    const WALLET                         = 'wallet';
+
+    const PROVIDER                       = 'provider';
+
+    const WALLET_TRANSFER_MODE_FTS       = 'WALLET_TRANSFER';
+
+    const FTS_AMAZON_PAY_CHANNEL         = 'amazon_pay';
+
     public static function getProducts(): array
     {
         return [

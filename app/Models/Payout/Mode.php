@@ -9,11 +9,12 @@ use RZP\Exception\BadRequestException;
 
 class Mode
 {
-    const RTGS  = 'RTGS';
-    const IMPS  = 'IMPS';
-    const NEFT  = 'NEFT';
-    const IFT   = 'IFT';
-    const UPI   = 'UPI';
+    const RTGS      = 'RTGS';
+    const IMPS      = 'IMPS';
+    const NEFT      = 'NEFT';
+    const IFT       = 'IFT';
+    const UPI       = 'UPI';
+    const AMAZONPAY = 'amazonpay';
 
     // We will be storing mode 'card' for payouts through
     // M2P, but we will be supporting 'Card', 'cArd', 'CaRD' etc in request body
@@ -25,6 +26,7 @@ class Mode
         self::NEFT,
         self::IFT,
         self::UPI,
+        self::AMAZONPAY,
         self::CARD,
     ];
 
@@ -58,6 +60,9 @@ class Mode
                     self::IMPS,
                     self::UPI,
                     self::NEFT,
+                ],
+                Constants\Entity::WALLET_ACCOUNT  =>  [
+                    self::AMAZONPAY,
                 ]
             ],
             Settlement\Channel::CITI      => [
@@ -70,6 +75,9 @@ class Mode
                 Constants\Entity::CARD          =>  [
                     self::IMPS,
                     self::NEFT,
+                ],
+                Constants\Entity::WALLET_ACCOUNT  =>  [
+                    self::AMAZONPAY,
                 ]
             ],
             Settlement\Channel::ICICI     => [
@@ -85,6 +93,9 @@ class Mode
                     self::IMPS,
                     self::UPI,
                     self::NEFT,
+                ],
+                Constants\Entity::WALLET_ACCOUNT  =>  [
+                    self::AMAZONPAY,
                 ]
             ],
             Settlement\Channel::RBL       => [
@@ -97,6 +108,9 @@ class Mode
                 Constants\Entity::CARD          =>  [
                     self::IMPS,
                     self::NEFT,
+                ],
+                Constants\Entity::WALLET_ACCOUNT  =>  [
+                    self::AMAZONPAY,
                 ]
             ],
             Settlement\Channel::M2P       => [

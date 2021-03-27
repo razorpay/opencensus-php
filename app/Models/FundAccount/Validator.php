@@ -8,6 +8,7 @@ use RZP\Models\Vpa;
 use RZP\Models\Card;
 use RZP\Models\Feature;
 use RZP\Models\BankAccount;
+use RZP\Models\WalletAccount;
 use RZP\Exception\BadRequestValidationFailureException;
 
 /**
@@ -30,6 +31,11 @@ class Validator extends Base\Validator
      */
     const MAX_BULK_FUND_ACCOUNT_LIMIT = 15;
 
+    /**
+     * Rs 10k in paise
+     */
+    const MAX_WALLET_ACCOUNT_AMAZON_PAY_AMOUNT = 1000000;
+
     protected static $createRules = [
         Entity::CUSTOMER_ID                         => 'sometimes|public_id',
         Entity::CONTACT_ID                          => 'sometimes|public_id',
@@ -37,6 +43,7 @@ class Validator extends Base\Validator
         Entity::VPA                                 => 'filled|associative_array|custom',
         Entity::BANK_ACCOUNT                        => 'filled|associative_array|custom',
         Entity::CARD                                => 'filled|associative_array|custom',
+        Entity::WALLET_ACCOUNT                      => 'filled|associative_array|custom',
         // This is required to even create the card because we need to fill a
         // dummy cvv and that requires network and that requires card number.
         // The other card details are validated as part of card creation.
@@ -65,16 +72,17 @@ class Validator extends Base\Validator
 
     protected function validateAccountAttribute($input)
     {
-        // Only one of card, vpa and bank_account can be present.
+        // Only one of card, vpa, bank_account or wallet_account can be present.
 
         $correctPresence = ((isset($input[Entity::CARD]) === true) xor
                             (isset($input[Entity::VPA]) === true) xor
-                            (isset($input[Entity::BANK_ACCOUNT]) === true));
+                            (isset($input[Entity::BANK_ACCOUNT]) === true) xor
+                            (isset($input[Entity::WALLET_ACCOUNT]) === true));
 
         if ($correctPresence === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Only one of card, vpa or bank_account can be present',
+                'Only one of card, vpa, bank_account or wallet can be present',
                 null,
                 [
                     'input' => $input,
@@ -159,5 +167,10 @@ class Validator extends Base\Validator
     public function validateBankAccount($attribute, $value)
     {
         (new BankAccount\Validator())->setStrictFalse()->validateInput('addFundAccountBankAccount', $value);
+    }
+
+    public function validateWalletAccount($attribute, $value)
+    {
+        (new WalletAccount\Validator())->setStrictFalse()->validateInput('create', $value);
     }
 }
