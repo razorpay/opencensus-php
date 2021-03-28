@@ -49,27 +49,17 @@ class UpdateSyncedOrderPgRouter extends Job
     {
         parent::handle();
 
-        $traceRequest = $this->data;
-
-        unset($traceRequest['account_number']);
-
-        $this->trace->info(TraceCode::ORDER_UPDATE_DATA_SYNC_TO_PG_ROUTER,
-            [
-                'data' => $traceRequest
-            ]
-        );
-
         try
         {
             $this->trace->count(Metric::PG_ROUTER_UPDATE_ORDER_SYNC_QUEUE_PUSH_COUNT);
 
             App::getFacadeRoot()['pg_router']->updateSyncedOrderToPgRouter($this->data, true);
 
-            $this->trace->info(TraceCode::ORDER_UPDATE_DATA_SYNC_TO_PG_ROUTER_SUCCESS,
-                [
-                    'id' => $this->data['id']
-                ]
-            );
+//            $this->trace->info(TraceCode::ORDER_UPDATE_DATA_SYNC_TO_PG_ROUTER_SUCCESS,
+//                [
+//                    'id' => $this->data['id']
+//                ]
+//            );
 
             $this->trace->count(Metric::PG_ROUTER_UPDATE_ORDER_SYNC_QUEUE_CONSUME_COUNT);
 

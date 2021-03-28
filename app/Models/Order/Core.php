@@ -411,9 +411,9 @@ class Core extends Base\Core
 
     public function dispatchOrderToPGRouter($data)
     {
-        $traceData = $data;
-
-        unset($traceData['account_number'], $traceData['payer_name']);
+//        $traceData = $data;
+//
+//        unset($traceData['account_number'], $traceData['payer_name']);
 
 
         if ((isset($data['notes']) === false) or
@@ -422,24 +422,24 @@ class Core extends Base\Core
             $data['notes'] = null;
         }
 
-        $this->trace->info(
-            TraceCode::ORDER_QUEUE_PG_ROUTER_DISPATCH,
-            $traceData
-        );
+//        $this->trace->info(
+//            TraceCode::ORDER_QUEUE_PG_ROUTER_DISPATCH,
+//            $traceData
+//        );
 
         SyncOrderPgRouter::dispatch($data);
     }
 
     public function dispatchUpdatedOrderToPGRouter($data)
     {
-        $traceData = $data;
-
-        unset($traceData['order_sync_request']['account_number'], $traceData['order_sync_request']['payer_name']);
-
-        $this->trace->info(
-            TraceCode::ORDER_QUEUE_PG_ROUTER_DISPATCH,
-            $traceData
-        );
+//        $traceData = $data;
+//
+//        unset($traceData['order_sync_request']['account_number'], $traceData['order_sync_request']['payer_name']);
+//
+//        $this->trace->info(
+//            TraceCode::ORDER_QUEUE_PG_ROUTER_DISPATCH,
+//            $traceData
+//        );
 
         UpdateSyncedOrderPgRouter::dispatch($data);
     }
