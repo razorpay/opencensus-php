@@ -755,6 +755,10 @@ return [
         'secret'        => env('MTU_LAMBDA_SECRET'),
     ],
 
+    'spinnaker'  => [
+        'secret'        => env('SPINNAKER_SECRET'),
+    ],
+
     'card_payment_service' => [
         'mock'      => env('CARD_PAYMENT_SERVICE_MOCK', false),
         'secret'    => env('CARD_PAYMENT_SERVICE_SECRET'),

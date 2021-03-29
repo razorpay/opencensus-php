@@ -2036,6 +2036,7 @@ class Route
         'bootstrap_key_cache'                     => ['post',     'throttle/bootstrap_key_cache',                              'ThrottleController@bootstrapKeyCache'                      ],
         'throttle_migrate_redis'                  => ['post',     'throttle/throttle_migrate_redis',                           'ThrottleController@migrateThrottleKeysFromRedisLabs'        ],
         'throttle_create_config'                  => ['post',     'throttle/config',                                           'ThrottleController@createConfig'                           ],
+        'throttle_create_config_spinnaker'        => ['post',     'spinnaker/throttle/config',                                 'ThrottleController@createConfig'                           ],
         'throttle_get_config'                     => ['get',      'throttle/config',                                           'ThrottleController@fetchConfig'                            ],
         'throttle_delete_config'                  => ['delete',   'throttle/config',                                           'ThrottleController@deleteConfig'                           ],
 
@@ -3121,6 +3122,9 @@ class Route
         'myoperator_v2_proxy_post',
         'care_service_myoperator_webhook_proxy',
         'segment_create_update',
+
+        // IPL bot
+        'throttle_create_config_spinnaker',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -6352,6 +6356,9 @@ class Route
             'internal_merchant_auto_disabled_methods',
             'terminal_edit_internal',
             'internal_send_merchant_email'
+        ],
+        'spinnaker' => [
+            'throttle_create_config_spinnaker'
         ],
 
         'mozart' => [
