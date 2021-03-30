@@ -231,7 +231,14 @@
                                             <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
 
                                                 <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="card highlight" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; border-top: 2px solid #528FF0; padding-top: 20px; padding-bottom: 20px; margin-top: 8px;"><p class="para-normal font-size-medium" style="font-size: 14px; line-height: 1.5; color: #515978;"> Dear Razorpay Seller,
+                                                    <div class="card highlight" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; border-top: 2px solid #528FF0; padding-top: 20px; padding-bottom: 20px; margin-top: 8px;"><p class="para-normal font-size-medium" style="font-size: 14px; line-height: 1.5; color: #515978;">
+
+                                                            @if($type == 'merchant')
+                                                                Dear Razorpay Seller({{ $merchant_id }}),
+                                                            @else
+                                                                Dear Razorpay Seller,
+                                                            @endif
+
                                                             <br> <br>
 
                                                             @if($dimension == null || $dimension == 'All UPI instruments')
