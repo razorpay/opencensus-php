@@ -147,10 +147,20 @@ class Base extends BaseCore
         /** @var Payout\Entity $payout */
         $payout = $this->repo->transaction(function () use ($input, $skipWorkflow)
         {
+            // Workflow can be enabled for internal contacts by passing enable_workflow_for_internal_contact field in input.
+            $enableWorkflowForInternalContact = false;
+
+            if (array_key_exists(Entity::ENABLE_WORKFLOW_FOR_INTERNAL_CONTACT, $input))
+            {
+                $enableWorkflowForInternalContact = filter_var($input[Entity::ENABLE_WORKFLOW_FOR_INTERNAL_CONTACT], FILTER_VALIDATE_BOOLEAN);
+
+                unset($input[Entity::ENABLE_WORKFLOW_FOR_INTERNAL_CONTACT]);
+            }
+
             $payout = $this->handleWorkflowsIfApplicable(function() use ($input)
             {
                 return $this->createPayoutEntity($input);
-            }, $skipWorkflow, $input);
+            }, $skipWorkflow, $input, $enableWorkflowForInternalContact);
 
             $sourceDetails = $payout->getInputSourceDetails();
 
@@ -768,6 +778,7 @@ class Base extends BaseCore
 
     /**
      * @param callable $createPayoutCallback The callable is expected to create and return a payout entity.
+     * @param bool $enableWorkflowForInternalContact
      * @param null $skipWorkflow
      * @param array $input
      * @return Entity
@@ -775,12 +786,17 @@ class Base extends BaseCore
      * @throws Exception\BadRequestValidationFailureException
      * @throws \Exception
      */
-    protected function handleWorkflowsIfApplicable(callable $createPayoutCallback, $skipWorkflow = null, array $input = [])
+    protected function handleWorkflowsIfApplicable(callable $createPayoutCallback,
+                                                   $skipWorkflow = null,
+                                                   array $input = [],
+                                                   bool $enableWorkflowForInternalContact = false)
     {
         //
         // Skip workflow for internally created payouts
+        // Workflow can be enabled for internal contacts by passing enable_workflow_for_internal_contact field in input.
         //
-        if ($this->isInternal === true)
+        if (($this->isInternal === true) and
+            ($enableWorkflowForInternalContact === false))
         {
             $this->workflowFeature = Payout\WorkflowFeature::SKIP_FOR_INTERNAL_PAYOUT;
 

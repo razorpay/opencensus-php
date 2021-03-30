@@ -157,7 +157,8 @@ class Validator extends Base\Validator
         Entity::SOURCE_DETAILS                                     => 'sometimes|filled|array',
         Entity::SOURCE_DETAILS . '.*.' . PayoutSource::SOURCE_ID   => 'required|string',
         Entity::SOURCE_DETAILS . '.*.' . PayoutSource::SOURCE_TYPE => 'required|string|',
-        Entity::SOURCE_DETAILS . '.*.' . PayoutSource::PRIORITY    => 'required|integer|min:1'
+        Entity::SOURCE_DETAILS . '.*.' . PayoutSource::PRIORITY    => 'required|integer|min:1',
+        Entity::ENABLE_WORKFLOW_FOR_INTERNAL_CONTACT               => 'sometimes|boolean'
     ];
 
     protected static $beforeCreateFundAccountPayoutWithOtpRules = [

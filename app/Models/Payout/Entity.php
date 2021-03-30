@@ -179,6 +179,9 @@ class Entity extends Base\PublicEntity
     const SKIP_WORKFLOW        = 'skip_workflow';
     const FORCE_REJECT         = 'force_reject';
 
+    // Workflow can be enabled for internal contacts by passing enable_workflow_for_internal_contact field in input.
+    const ENABLE_WORKFLOW_FOR_INTERNAL_CONTACT = 'enable_workflow_for_internal_contact';
+
     // Output keys
     const WORKFLOW_HISTORY   = 'workflow_history';
     const BANKING_ACCOUNT_ID = 'banking_account_id';

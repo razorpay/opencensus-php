@@ -8891,6 +8891,56 @@ class PayoutTest extends OAuthTestCase
         $this->assertArraySelectiveEquals($sourceDetails, $response);
     }
 
+    public function testEnableWorkflowForInternalContactPayoutCreatedByVendorPayments()
+    {
+        $this->liveSetUp();
+
+        $this->setupWorkflowForLiveMode();
+
+        $this->disableWorkflowMocks();
+
+        $this->ba->appAuthLive($this->config['applications.vendor_payments.secret']);
+
+        $this->fixtures->on('live')->edit('contact', '1000001contact', ['type' => 'rzp_tax_pay']);
+
+        $response = $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $sourceDetails = [Payout\Entity::SOURCE_DETAILS => $payout->getSourceDetails()->toArray()];
+
+        $this->assertArraySelectiveEquals($sourceDetails, $response);
+
+        $this->assertEquals(Payout\Status::PENDING, $payout->getStatus());
+    }
+
+    public function testDisableWorkflowForInternalContactPayoutCreatedByVendorPayments()
+    {
+        $this->liveSetUp();
+
+        $this->setupWorkflowForLiveMode();
+
+        $this->disableWorkflowMocks();
+
+        $this->ba->appAuthLive($this->config['applications.vendor_payments.secret']);
+
+        $this->fixtures->on('live')->edit('contact', '1000001contact', ['type' => 'rzp_tax_pay']);
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $this->assertEquals(Payout\Status::CREATED, $payout->getStatus());
+    }
+
+    public function testDefaultFlowForInternalContactPayoutCreatedByVendorPayments()
+    {
+        unset($this->testData['testDisableWorkflowForInternalContactPayoutCreatedByVendorPayments']
+                             ['request']['content']['enable_workflow_for_internal_contact']);
+
+        $this->testDisableWorkflowForInternalContactPayoutCreatedByVendorPayments();
+    }
+
     public function testSourceCreationInCaseOfQueuedPayoutCreatedByVendorPayments()
     {
         $balance = $this->bankingBalance;
