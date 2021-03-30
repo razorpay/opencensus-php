@@ -146,6 +146,13 @@ class CredcaseSigner
                     $redisGetStartAt = microtime(true);
                     $encryptedSecret = $this->redis->get($cacheKey);
                     $this->trace->histogram(self::METRIC_SIGN_REDIS_GET_LATENCY_SECS, microtime(true) - $redisGetStartAt);
+
+                    if ($encryptedSecret === null)
+                    {
+                        $this->trace->count(self::METRIC_SIGN_REDIS_KEY_NOT_FOUND_TOTAL);
+                        throw new RuntimeException('Encrypted secret not found in redis');
+                    }
+
                     break;
                 }
                 catch (Throwable $e)
@@ -154,12 +161,6 @@ class CredcaseSigner
                     $this->trace->traceException(
                         $e, Logger::ERROR, TraceCode::CREDCASE_SIGNER_REDIS_ERROR, ['key' => $publicKey]);
                 }
-            }
-
-            if ($encryptedSecret === null)
-            {
-                $this->trace->count(self::METRIC_SIGN_REDIS_KEY_NOT_FOUND_TOTAL);
-                throw new RuntimeException('Encrypted secret not found in redis');
             }
 
             $secret = decrypt(hex2bin($encryptedSecret), $this->config['private_key']);
