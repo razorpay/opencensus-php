@@ -20,6 +20,7 @@ use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
 use RZP\Services\UfhService;
 use RZP\Constants\IndianStates;
+use RZP\Models\Merchant\FeeModel;
 use RZP\Models\Pricing\Calculator;
 use RZP\Models\Merchant\Balance;
 use RZP\Jobs\EInvoice\XEInvoice;
@@ -566,6 +567,13 @@ class Core extends Base\Core
         }
 
         $data['einvoice_data'] = $eInvoiceData;
+
+        $feeModel = $merchant->getFeeModel();
+
+        if(empty($feeModel) === false)
+        {
+            $data['is_postpaid'] = ($feeModel === FeeModel::POSTPAID);
+        }
 
         return $data;
     }
