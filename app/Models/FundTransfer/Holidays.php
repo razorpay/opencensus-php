@@ -71,6 +71,31 @@ class Holidays
                 25 => 'Christmas',
             ],
         ],
+
+        2021 => [
+           4  => [
+               1  => 'Annual closing of banks',
+               2  => 'Good Friday',
+               14 => 'Dr.Babasaheb Ambedkar Jayanti',
+           ],
+           5  => [
+               14 => 'Ramzan Id (Id-Ul-Fitr) (Shawal-1)',
+           ],
+           7  => [
+               21 => 'Bakri ID (Id-Ul-Zuha)',
+           ],
+           8  => [
+               15 => 'Independence Day',
+           ],
+           10 => [
+               2  => 'Mahatma Gandhi Jayanti',
+               15 => 'Vijaya Dashami',
+               19 => 'Id-E-Milad (Milad-un-Nabi)/Baravafat/Lakshmi Puja',
+           ],
+           12 => [
+               25 => 'Christmas',
+           ],
+       ],
     ];
 
     /**
