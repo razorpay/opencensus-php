@@ -4201,6 +4201,35 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals($payment['internal_error_code'], 'BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_INVOICES');
     }
 
+    public function testCreatePaymentWithForceTerminalIdWithFeatureEnabled()
+    {
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $paymentArray['force_terminal_id'] = 'term_1000SharpTrmnl';
+
+        $this->fixtures->merchant->addFeatures(['allow_force_terminal_id']);
+
+        $paymentFromResponse = $this->doAuthPayment($paymentArray);
+
+        // fetching payment in admin auth.
+        $paymentEntity = $this->getLastPayment(true);
+
+        $this->assertEquals($paymentFromResponse['razorpay_payment_id'], $paymentEntity['id']);
+    }
+
+    public function testCreatePaymentWithForceTerminalIdWithoutFeatureEnabled()
+    {
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $paymentArray['force_terminal_id'] = 'term_10000000000000';
+
+        $this->expectException(Exception\BadRequestException::class);
+
+        $this->expectExceptionMessage('The feature force_terminal_id is not enabled for the merchant');
+
+        $paymentFromResponse = $this->doAuthPayment($paymentArray);
+    }
+    
     public function testPaymentCreateWithMetaInfo()
     {
         $this->ba->privateAuth();

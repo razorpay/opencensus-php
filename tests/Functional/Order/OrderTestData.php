@@ -29,6 +29,53 @@ return [
         ],
     ],
 
+    'testCreateOrderAdminAuthRoute' => [
+        'request' => [
+            'content' => [
+                'amount'        => 50000,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42',
+                // 'method'     => 'netbanking',
+                // 'account_id' => '0040304030403040',
+            ],
+            'method'    => 'POST',
+            'url'       => '/admin/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'        => 50000,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42',
+                // 'method'     => 'netbanking',
+                // 'account_id' => '0040304030403040',
+            ],
+        ],
+    ],
+
+    'testCreateOrderAdminAuthRouteMerchantNotHavingFeature' => [
+        'request' => [
+            'content' => [
+                'amount'        => 50000,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42',
+                // 'method'     => 'netbanking',
+                // 'account_id' => '0040304030403040',
+            ],
+            'method'    => 'POST',
+            'url'       => '/admin/orders',
+        ],
+        'response' => [
+            'content'  => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'The requested URL was not found on the server.',
+                ],
+            ],
+            'status_code' => 400
+        ],
+    ],
+
+
     'testCreateOrderForNonRegisteredBusinessLessThanMaxAmount' => [
         'request' => [
             'content' => [

@@ -50,6 +50,7 @@ class Category
     const VIRTUAL_ACCOUNT              = 'virtual_account';
     const MERCHANT_NOTIFICATION_CONFIG = 'merchant_notification_config';
     const PAYMENT_LINK_V2              = 'payment_links_v2';
+    const TERMINAL_TESTING              = 'terminal_testing';
     const BANKING_ACCOUNT_TPV_CONFIG   = 'banking_account_tpv_config';
     const TRANSACTIONS                 = 'transactions';
     const SUBSCRIPTION_REGISTRATIONS   = 'subscription_registrations';

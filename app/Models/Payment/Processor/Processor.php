@@ -2819,6 +2819,8 @@ class Processor
 
         $this->setApplicationIfApplicable($payment, $input);
 
+        $this->setForceTerminalIdIfApplicable($payment, $input);
+
         $metadata = $payment->getMetadata();
 
         $this->trace->info(
@@ -4588,6 +4590,18 @@ class Processor
     protected function shouldSaveVpaForUpiPayments():bool
     {
         return (($this->payment->isUpi() === true) and ($this->merchant->shouldSaveVpa() === true));
+    }
+
+    protected function setForceTerminalIdIfApplicable(Payment\Entity $payment, $input)
+    {
+        if (isset($input[Payment\Entity::FORCE_TERMINAL_ID]) === true)
+        {        
+            $forceTerminalId = $input[Payment\Entity::FORCE_TERMINAL_ID];
+        
+            Terminal\Entity::verifyIdAndSilentlyStripSign($forceTerminalId);
+
+            $payment->setForceTerminalId($forceTerminalId);
+        }
     }
 
     protected function getCardCacheTtl($input)

@@ -271,6 +271,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const FOREX_RATE_RECEIVED               = 'forex_rate_received';
     const FOREX_RATE_APPLIED                = 'forex_rate_applied';
 
+    const FORCE_TERMINAL_ID                 = 'force_terminal_id';
+    
     const FILE        = 'file';
     const SIGNED_FORM = 'signed_form';
     const NACH        = 'nach';
@@ -285,6 +287,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     protected $metadata         = [];
 
     protected $generateIdOnCreate = true;
+
+    protected $forceTerminalId    = null;
 
     protected $fillable = [
         self::ID,
@@ -1178,6 +1182,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function setBank($bank)
     {
         $this->setAttribute(self::BANK, $bank);
+    }
+
+    public function setForceTerminalId(string $terminalId)
+    {
+        $this->forceTerminalId = $terminalId;
     }
 
     /**
@@ -2899,6 +2908,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
 
         return $token;
+    }
+
+    public function getForceTerminalId()
+    {
+        return $this->forceTerminalId;
     }
 
     /**

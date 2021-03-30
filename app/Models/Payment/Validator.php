@@ -125,6 +125,7 @@ class Validator extends Base\Validator
         'dcc_currency'                  => 'required_with:currency_request_id|string|max:3|custom',
         'charge_account'                => 'sometimes|string',
         'app_present'                   => 'sometimes_if:method,app|boolean',
+        'force_terminal_id'             => 'sometimes|string|size:19|custom', // term_<14digitid>
         'language_code'                 => 'sometimes|string',
         'meta'                          => 'sometimes|array',
         'authentication'                => 'required_if:application,visasafeclick|array',
@@ -1525,6 +1526,19 @@ class Validator extends Base\Validator
                 'upi.end_time',
                 ['input' => $input]
             );
+        }
+    }
+
+    protected function validateForceTerminalId($input)
+    {
+        $merchant = $this->entity->merchant;
+
+        $feature = Feature\Constants::ALLOW_FORCE_TERMINAL_ID;
+
+        if ($merchant->isFeatureEnabled($feature) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED_FEATURE_FORCE_TERMINAL_ID_NOT_ENABLED);
         }
     }
 }

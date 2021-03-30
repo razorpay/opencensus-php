@@ -543,6 +543,11 @@ class Constants
     // google imali auth split feature
     const AUTH_SPLIT                     = 'auth_split';
 
+    /*
+    * This feature is used to allow forcing terminal_id in terminal selection during payment.
+    * Its only used for terminal testing and will be enabled only on our test merchants
+    */
+    const ALLOW_FORCE_TERMINAL_ID = 'allow_force_terminal_id';
     /**
      * Disables card scan
      */
@@ -878,6 +883,7 @@ class Constants
         self::NPCI_SPID                       => true,
         self::ROUTE_CODE_SUPPORT              => true,
         self::AUTH_SPLIT                      => true,
+        self::ALLOW_FORCE_TERMINAL_ID         => true,
         self::VISA_SAFE_CLICK                 => true,
         self::RECURRING_AUTO                  => true,
         self::CHECKOUT_DISABLE_CARDSCAN       => true,

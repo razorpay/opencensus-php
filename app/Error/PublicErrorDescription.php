@@ -178,6 +178,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_AMOUNT_GREATER_THAN_TOKEN_MAX_AMOUNT              = 'Payment amount exceeds the maximum amount allowed.';
     const BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD                              = 'Payment was blocked because of fraud';
     const BAD_REQUEST_PAYMENT_FAILED_BECAUSE_SESSION_EXPIRED                    = 'Payment processing failed because session expired due to taking too much time. Please try the payment again.';
+    const BAD_REQUEST_PAYMENT_FAILED_FEATURE_FORCE_TERMINAL_ID_NOT_ENABLED      = 'The feature force_terminal_id is not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_CARD_MANDATE_NOTIFICATION_NOT_SENT                = 'Payment debit notification failed to deliver to customer';
     const BAD_REQUEST_PAYMENT_CARD_MANDATE_NOTIFICATION_VERIFY_FAILED           = 'Payment debit notification failed to verify';
     const BAD_REQUEST_PAYMENT_TIMED_OUT                                         = 'Payment was not completed on time.';

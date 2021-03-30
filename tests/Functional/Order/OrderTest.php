@@ -14,6 +14,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Tests\Functional\Helpers\RazorxTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -53,6 +54,34 @@ class OrderTest extends TestCase
         $order = $this->startTest();
 
         return $order;
+    }
+
+    public function testCreateOrderAdminAuthRoute()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->merchant->addFeatures(FeatureConstants::ALLOW_FORCE_TERMINAL_ID, $merchant->getId());
+
+        // Allow admin to access the merchant
+        $admin = $this->ba->getAdmin();
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->adminProxyAuth($merchant->getId());
+
+        $this->startTest();
+    }
+
+    public function testCreateOrderAdminAuthRouteMerchantNotHavingFeature()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        // Allow admin to access the merchant
+        $admin = $this->ba->getAdmin();
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->adminProxyAuth($merchant->getId());
+
+        $this->startTest();
     }
 
     public function testCreateOrderWithPhonepeSwitchContext()

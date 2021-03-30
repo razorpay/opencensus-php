@@ -1288,6 +1288,13 @@ return [
             ],
         ],
 
+        PermissionCategory::TERMINAL_TESTING => [
+            Permission::MANAGE_TERMINAL_TESTING => [
+                'description'   => 'Allow terminal testing from admin dashboard',
+                'assignable'    => true,
+            ],
+        ],
+
         PermissionCategory::GATEWAY_CREDENTIAL => [
             Permission::VIEW_GATEWAY_CREDENTIAL => [
                 'description'   => 'View gateway level credentials',

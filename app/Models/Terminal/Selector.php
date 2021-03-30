@@ -143,28 +143,40 @@ class Selector extends Base\Core
 
     public function select()
     {
-        $allTerminals = $this->repo->useSlave(function ()
+        $payment = $this->input['payment'];
+
+        // force_terminal_id is sent in the payment request in manual terminal testing flow, force_terminal_id is forcefully selected for payment inorder to test that terminal
+        $forceTerminalId = $payment->getForceTerminalId();
+
+        if (empty($forceTerminalId) === false)
         {
-            return $this->getTerminals();
-        });
+            $allTerminals = [];
 
-        $this->addMswipeTerminals($allTerminals);
-
-        $this->processHitachiOnboarding($allTerminals);
-
-        $allTerminals = array_filter($allTerminals, function ($terminal)
+            array_push($allTerminals, $this->repo->terminal->getById($forceTerminalId));
+        }
+        else
         {
-            $status = $terminal->getStatus();
+            $allTerminals = $this->repo->useSlave(function ()
+            {
+                return $this->getTerminals();
+            });
 
-            return (($terminal->isEnabled() === true) and
-                    ($status === Status::ACTIVATED));
-        });
+            $this->addMswipeTerminals($allTerminals);
+
+            $this->processHitachiOnboarding($allTerminals);
+
+            $allTerminals = array_filter($allTerminals, function ($terminal)
+            {
+                $status = $terminal->getStatus();
+
+                return (($terminal->isEnabled() === true) and
+                        ($status === Status::ACTIVATED));
+            });
+        }
 
         $verbose = $this->isVerboseLogEnabled();
 
         $this->traceTerminals($allTerminals, 'Terminals fetched from db', $verbose);
-
-        $payment = $this->input['payment'];
 
         $sortedTerminals = [];
 
@@ -548,6 +560,16 @@ class Selector extends Base\Core
 
     protected function filterAndSortTerminals(array $allTerminals,  bool $verbose = false): array
     {
+        $payment = $this->input['payment'];
+
+        $forceTerminalId = $payment->getForceTerminalId();
+
+        // For terminal testing, allTerminals will have only forced terminal here
+        if (empty($forceTerminalId) === false)
+        {
+            return $allTerminals;
+        }
+
         $applicableRules = $this->repo->useSlave(function ()
         {
             return (new Rule\Core)->fetchApplicableRulesForPayment($this->input);
@@ -762,6 +784,8 @@ class Selector extends Base\Core
             $paymentData['application'] = $payment->getApplication();
 
             $paymentData['meta_data'] = $this->getPaymentMetadataArray($payment);
+
+            $paymentData['force_terminal_id'] = $payment->getForceTerminalId();
 
             if ((in_array($paymentData['method'], [Method::CARD, Method::UPI, Method::EMI]) === true ) and
                 ($payment->isGooglePayCard() === false))

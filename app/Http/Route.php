@@ -777,6 +777,7 @@ class Route
         'internal_order_update'                    => ['patch',    'internal/orders/{id}',                                    'OrderController@internalOrderUpdate'                                            ],
         'fetch_order_line_items'                   => ['get',      'orders/{id}/line_items',                         'OrderController@fetchLineItems'                                    ],
         'fetch_product_details_for_order'          => ['get',      'orders/{id}/product_details',                    'OrderController@fetchProductDetailsForOrder'                       ],
+        'order_create_admin'                       => ['post',     'admin/orders',                                   'OrderController@createOrder'                                       ],
 
         'reports_transaction_broking'              => ['get',      'reports/transaction/broking',                    'MerchantController@getBrokerTransactionReport'                     ],
         'reports_transaction_dsp'                  => ['get',      'reports/transaction/dsp',                        'MerchantController@getDSPTransactionReport'                        ],
@@ -2531,6 +2532,7 @@ class Route
         'iin_list_by_flow',
         'balance_fetch',
         'order_create',
+        'order_create_admin',
         'order_fetch',
         'order_fetch_by_id',
         'order_edit',
@@ -4542,6 +4544,7 @@ class Route
         'admin_create'                             => Permission::CREATE_ADMIN,
         'group_get'                                => Permission::VIEW_GROUP,
         'group_get_multiple'                       => Permission::VIEW_ALL_GROUP,
+        'order_create_admin'                       => Permission::MANAGE_TERMINAL_TESTING,
         'org_create'                               => Permission::CREATE_ORG,
         'org_get_multiple'                         => Permission::VIEW_ALL_ORG,
         'org_edit'                                 => Permission::EDIT_ORG,
@@ -6572,6 +6575,7 @@ class Route
         'enable_es_scheduled'                  => [Feature::ES_ON_DEMAND],
         'create_virtual_account_from_order'    => [Feature::OFFLINE_PAYMENTS],
         'payment_status_count'                 => [Feature::PAYMENT_STATUS_AGGREGATE],
+        'order_create_admin'                   => [Feature::ALLOW_FORCE_TERMINAL_ID],
         'merchant_gstin_self_serve_status'     => [Feature::GSTIN_SELF_SERVE],
         'merchant_gstin_self_serve_update'     => [Feature::GSTIN_SELF_SERVE],
     ];
