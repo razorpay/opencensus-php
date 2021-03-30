@@ -133,6 +133,11 @@ class Server extends Base\Mock\Server
             $response[ResponseFields::BANK_PAYMENT_ID] = 9999999999;
         }
 
+        if ((isset($input[RequestFields::AMOUNT]) === true) and ($input[RequestFields::AMOUNT] === '600'))
+        {
+            $response[ResponseFields::BANK_PAYMENT_ID] = 'CFL-000001118877-PRO';
+        }
+
         if ((isset($input[RequestFields::SI]) === true) and
             ($input[RequestFields::SI] === Confirmation::YES))
         {

@@ -52,6 +52,31 @@ class NetbankingIciciGatewayTest extends TestCase
         $this->assertEquals(9999999999, $gatewayPayment['bank_payment_id']);
     }
 
+    public function testEmiPayment()
+    {
+        $this->payment['amount'] = '60000';
+
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $data = $this->testData['testPayment'];
+
+        $data['amount'] = 60000;
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $gatewayData = $this->testData['testPaymentNetbankingEntity'];
+
+        $gatewayData['amount'] = 600;
+
+        $this->assertArraySelectiveEquals($gatewayData, $gatewayPayment);
+
+        $this->assertEquals('CFL-000001118877-PRO', $gatewayPayment['bank_payment_id']);
+    }
+
     public function testCallbackFailedDueDateMismatch()
     {
         $boundaryTime = Carbon::create(2018, 6, 21, 23, 58, 00,Timezone::IST);

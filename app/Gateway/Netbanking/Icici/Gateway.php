@@ -605,6 +605,13 @@ class Gateway extends Base\Gateway
             $data[RequestFields::SI_REFERENCE_NUMBER] = $gatewayPayment->getSIToken();
         }
 
+        $bankRef = $gatewayPayment->getBankPaymentId();
+
+        if ((empty($bankRef) === false) and (strpos($bankRef, 'CFL-') !== false))
+        {
+            $data[RequestFields::BID] = $bankRef;
+        }
+
         return $data;
     }
 

@@ -61,4 +61,6 @@ class RequestFields
     const SI_END_DATE           = 'SI_END_DATE';
 
     const SI_REFERENCE_NUMBER   = 'RID';
+
+    const BID                   = 'BID';
 }
