@@ -14,23 +14,31 @@ class Validator extends Base\Validator
         Entity::NAME                => 'required|string|max:255',
         Entity::DESCRIPTION         => 'required|string|max:255',
         Entity::SURVEY_TTL          => 'required|integer',
+        Entity::SURVEY_URL          => 'required|url',
+        Entity::TYPE                => 'required|string',
     ];
 
     protected static $beforeEditRules = [
         Entity::NAME                => 'sometimes|string|max:255',
         Entity::DESCRIPTION         => 'sometimes|string|max:255',
         Entity::SURVEY_TTL          => 'sometimes|integer',
+        Entity::SURVEY_URL          => 'sometimes|string',
+        Entity::TYPE                => 'sometimes|string',
     ];
 
     protected static $createRules = [
         Entity::NAME                => 'required|string|max:255',
         Entity::DESCRIPTION         => 'required|string|max:255',
         Entity::SURVEY_TTL          => 'required|integer',
+        Entity::SURVEY_URL          => 'required|string',
+        Entity::TYPE                => 'required|string',
     ];
 
     protected static $editRules = [
         Entity::NAME                => 'sometimes|string|max:255',
         Entity::DESCRIPTION         => 'sometimes|string|max:255',
         Entity::SURVEY_TTL          => 'sometimes|integer',
+        Entity::SURVEY_URL          => 'sometimes|string',
+        Entity::TYPE                => 'sometimes|string',
     ];
 }

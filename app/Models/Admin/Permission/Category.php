@@ -4,6 +4,7 @@ namespace RZP\Models\Admin\Permission;
 
 class Category
 {
+    const NPS                          = 'nps';
     const ORG                          = 'org';
     const ROLE                         = 'role';
     const ADMIN                        = 'admin';

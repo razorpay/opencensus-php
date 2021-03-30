@@ -32,6 +32,8 @@ class CreateSurveyTrackerTable extends Migration
 
             $table->integer(Entity::ATTEMPTS);
 
+            $table->tinyInteger(Entity::SKIP_IN_APP)->default(0);
+
             $table->integer(Entity::CREATED_AT);
 
             $table->integer(Entity::UPDATED_AT);

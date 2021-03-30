@@ -2300,6 +2300,9 @@ class Route
         'nps_survey_process_scheduled'            => ['post',    'survey/scheduled/process',                                'NPSSurveyController@initiateSurvey'                           ],
         'survey_create'                           => ['post',    'survey',                                                  'NPSSurveyController@createSurvey'                             ],
         'survey_edit'                             => ['patch',   'survey/{id}',                                             'NPSSurveyController@editSurvey'                               ],
+        'pending_survey_get'                      => ['get',     'survey/pending',                                          'NPSSurveyController@getPendingSurvey'                         ],
+        'update_survey_tracker'                   => ['patch',   'survey/tracker/{id}',                                     'NPSSurveyController@editSurveyTracker'                        ],
+        'consume_survey_typeform_webhook'         => ['post',    'survey/typeform/nps/webhook',                             'NPSSurveyController@consumeTypeformWebhook'                   ],
 
         // merchant risk alerts
         'merchant_risk_alerts_foh_workflow' => [
@@ -2735,7 +2738,7 @@ class Route
         'link_account_documents_v2',
         'link_stakeholder_documents_v2',
         'get_account_documents_v2',
-        'get_stakeholder_documents_v2'
+        'get_stakeholder_documents_v2',
     ];
 
     // Only routes defined in internalApps go here
@@ -3698,6 +3701,11 @@ class Route
         'merchant_tpv_create',
 
         'care_service_dashboard_proxy',
+
+
+        // NPS survey routes
+        'pending_survey_get',
+        'update_survey_tracker',
 
         //Partner Activation routes
         'partner_activation_details',
@@ -5589,6 +5597,10 @@ class Route
         //- validations on source accounts through which money gets loaded to va.
         'merchant_fetch_tpvs'                          => '*',
         'merchant_tpv_create'                          => '*',
+
+        //NPS
+        'pending_survey_get'                           => '*',
+        'update_survey_tracker'                        => '*',
     ];
 
     public static $direct = [
@@ -5709,6 +5721,9 @@ class Route
         //Accounting Payouts Callback
         'accounting_payouts_callback',
         'reward_terms',
+
+        // NPS webhook
+        'consume_survey_typeform_webhook',
     ];
 
     /**
@@ -6782,6 +6797,7 @@ class Route
 
     const TYPEFORM_SECURITY = [
         'consume_typeform_webhook',
+        'consume_survey_typeform_webhook',
     ];
 
     //
@@ -6951,6 +6967,9 @@ class Route
         'survey_create',
         'survey_edit',
         'nps_survey_process_scheduled',
+        'pending_survey_get',
+        'update_survey_tracker',
+        'consume_survey_typeform_webhook',
 
         //TPV - Third party validation
         //- validations on source accounts through which money gets loaded to va.

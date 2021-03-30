@@ -348,6 +348,7 @@ class Table
     // NPS Survey
     const SURVEY            = 'survey';
     const SURVEY_TRACKER    = 'survey_tracker';
+    const SURVEY_RESPONSE   = 'survey_response';
 
     // X WalletAccounts
     const WALLET_ACCOUNT    = 'wallet_accounts';

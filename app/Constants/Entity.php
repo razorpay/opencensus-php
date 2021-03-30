@@ -478,6 +478,7 @@ class Entity
     // NPS Survey
     const SURVEY = 'survey';
     const SURVEY_TRACKER = 'survey_tracker';
+    const SURVEY_RESPONSE = 'survey_response';
 
     // Merchant Risk Alert
     const MERCHANT_RISK_ALERT = 'merchant_risk_alert';
@@ -877,6 +878,7 @@ class Entity
 
         self::SURVEY_TRACKER    => \RZP\Models\Survey\Tracker::class,
         self::SURVEY            => \RZP\Models\Survey::class,
+        self::SURVEY_RESPONSE   => \RZP\Models\Survey\Response::class,
 
         self::MERCHANT_RISK_ALERT => \RZP\Models\MerchantRiskAlert::class,
 

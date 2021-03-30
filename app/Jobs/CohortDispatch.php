@@ -45,21 +45,20 @@ class CohortDispatch extends Job
             {
                 $user = (new Tracker\Core)->dispatchForSurveyWithUserId($userId, $merchantId, $surveyId);
 
+                //TODO: log all the user ids
                 $this->trace->info(
                     TraceCode::COHORT_USER_PROCESS_SUCCESS,
-                    $traceData + [
-                        'user_id' => $user[User\Entity::ID],
-                    ]);
+                    $traceData );
             }
             else
             {
                 $user = (new Tracker\Core)->dispatchForSurveyWithMerchantId($type, $merchantId, $surveyId);
 
+                //TODO: log all the user ids
                 $this->trace->info(
                     TraceCode::COHORT_MERCHANT_PROCESS_SUCCESS,
-                    $traceData + [
-                        'user_id' => $user[User\Entity::ID],
-                    ]);
+                    $traceData
+                    );
             }
         }
         catch (\Throwable $ex)

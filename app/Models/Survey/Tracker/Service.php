@@ -4,6 +4,13 @@ namespace RZP\Models\Survey\Tracker;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\User;
+use RZP\Models\Survey;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
+use RZP\Error\PublicErrorDescription;
+use RZP\Models\Merchant\MerchantUser;
+use RZP\Exception\BadRequestException;
 
 class Service extends Base\Service
 {
@@ -23,17 +30,26 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput(Validator::BEFORE_COHORT_SELECT, $input);
 
-        $type = $input[Entity::SURVEY_TYPE];
+        $this->trace->info(TraceCode::SURVEY_TRIGGER_INPUT, $input);
 
-        $surveyId = $input[Entity::SURVEY_ID];
+        $surveyType = $input[Entity::SURVEY_TYPE];
+
+        $survey = $this->repo->survey->get($surveyType);
+
+        if (empty($survey) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_SURVEY_TYPE,
+                null,
+                null,
+                PublicErrorDescription::BAD_REQUEST_INVALID_SURVEY_TYPE);
+        }
 
         $cohorts = $input[Entity::COHORT_LIST] ?? [];
 
-        $this->repo->survey->findOrFailPublic($surveyId);
-
         if (empty($cohorts) === true)
         {
-            $cohorts = $this->core->getSurveyClient($type)
+            $cohorts = $this->core->getSurveyClient($surveyType)
                                   ->getCohorts();
         }
 
@@ -41,7 +57,7 @@ class Service extends Base\Service
 
         foreach ($cohorts as $cohort)
         {
-            $this->core->dispatchCohortForSurvey($type, $cohort, $surveyId);
+            $this->core->dispatchCohortForSurvey($surveyType, $cohort, $survey[Survey\Entity::ID]);
 
             $dispatchedCohortCount += 1;
         }
@@ -49,5 +65,73 @@ class Service extends Base\Service
         return [
             'dispatched_cohort_count' => $dispatchedCohortCount
         ];
+    }
+
+    /**
+     * @param array $input
+     * @return array
+     * @throws BadRequestException
+     */
+    public function getPendingSurvey(array $input)
+    {
+        (new Validator)->validateInput(Validator::BEFORE_PENDING_SURVEY_GET, $input);
+
+        $survey[Survey\Entity::SURVEY_URL] = $input[Entity::USER_ID];
+
+        $userId = $input[Entity::USER_ID];
+
+        $user = $this->repo->user->findOrFailPublic($userId);
+
+        $userEmail = $user[User\Entity::EMAIL];
+
+        $lastTriggeredSurvey = $this->repo->survey_tracker->getTrackersByUserEmail($userEmail);
+
+        // No pending survey, or the last survey is skipped then return null
+        if (($lastTriggeredSurvey[Entity::SKIP_IN_APP] === 1) or
+            (empty($lastTriggeredSurvey) === true))
+        {
+            return null;
+        }
+
+        $surveyResponse = $this->repo->survey_response->getSurveyResponseByTrackerId($lastTriggeredSurvey[Entity::ID]);
+
+        $surveyId = $lastTriggeredSurvey[Entity::SURVEY_ID];
+
+        $survey = $this->repo->survey->findOrFailPublic($surveyId);
+
+        $merchantIds = (new MerchantUser\Repository)->returnMerchantIdsForUserId($userId, 1);
+
+        $merchantId = $merchantIds[0];
+
+        // Adding survey URL and survey type, to open from dashboard
+        $fullUrl = $this->createSurveyUrl($survey[Survey\Entity::SURVEY_URL], $userId,
+                                         $merchantId, $lastTriggeredSurvey[Entity::ID]);
+
+        $lastTriggeredSurvey[Entity::SURVEY_URL] = $fullUrl;
+
+        $lastTriggeredSurvey[Entity::SURVEY_TYPE] = $survey[Survey\Entity::TYPE];
+
+        return (empty($surveyResponse) === true) ? $lastTriggeredSurvey->toArrayPublic() : null;
+    }
+
+    private function createSurveyUrl(string $baseUrl, string $uid, string $mid, string $strackerId)
+    {
+        return $baseUrl . "?mid=" . $mid . "&uid=" . $uid . "&tracker_id=" . $strackerId;
+    }
+
+    /**
+     * @param string $id
+     * @param array $input
+     * @return array
+     */
+    public function update(string $id, array $input)
+    {
+        (new Validator)->validateInput(Validator::BEFORE_TRACKER_UPDATE, $input);
+
+        $surveyTracker = $this->repo->survey_tracker->findOrFailPublic($id);
+
+        $surveyTracker = $this->core->edit($surveyTracker, $input);
+
+        return $surveyTracker->toArrayPublic();
     }
 }

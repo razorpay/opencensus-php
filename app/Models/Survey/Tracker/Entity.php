@@ -18,11 +18,13 @@ class Entity extends Base\PublicEntity
     const SURVEY_SENT_AT         = 'survey_sent_at';
     const SURVEY_FILLED_AT       = 'survey_filled_at';
     const ATTEMPTS               = 'attempts';
-    const NPS_SURVEY             = 'nps_survey';
-    const SURVEY_TYPE            = 'survey_type';
+    const SKIP_IN_APP            = 'skip_in_app';
 
     // Constants
-    const NPS_RAZORPAYX          = 'nps_razorpay_x';
+    const NPS_CSAT               = 'nps_csat';
+    const NPS_PAYOUTS            = 'nps_payouts';
+    const NPS_SURVEY             = 'nps_survey';
+    const SURVEY_TYPE            = 'survey_type';
     const MID                    = 'mid';
     const X_UID                  = 'x_uid';
     const START_TIME             = 'start_time';
@@ -30,6 +32,8 @@ class Entity extends Base\PublicEntity
     const COHORT                 = 'cohort';
     const COHORT_LIST            = 'cohort_list';
     const BASE_MODEL_DIR         = 'RZP\Models';
+    const USER_ID                = 'user_id';
+    const SURVEY_URL             = 'survey_url';
 
     protected $fillable = [
         self::ID,
@@ -38,6 +42,7 @@ class Entity extends Base\PublicEntity
         self::SURVEY_SENT_AT,
         self::SURVEY_FILLED_AT,
         self::ATTEMPTS,
+        self::SKIP_IN_APP,
     ];
 
     protected $visible = [
@@ -47,6 +52,9 @@ class Entity extends Base\PublicEntity
         self::SURVEY_SENT_AT,
         self::SURVEY_FILLED_AT,
         self::ATTEMPTS,
+        self::SKIP_IN_APP,
+        self::SURVEY_TYPE,
+        self::SURVEY_URL,
     ];
 
     protected $public = [
@@ -56,6 +64,9 @@ class Entity extends Base\PublicEntity
         self::SURVEY_SENT_AT,
         self::SURVEY_FILLED_AT,
         self::ATTEMPTS,
+        self::SKIP_IN_APP,
+        self::SURVEY_TYPE,
+        self::SURVEY_URL,
     ];
 
     protected $dates = [
@@ -65,22 +76,22 @@ class Entity extends Base\PublicEntity
 
     // ============================= GETTERS =============================
 
-    public function getId()
+    public function getId() : string
     {
         return $this->getAttribute(self::ID);
     }
 
-    public function getSurveyId()
+    public function getSurveyId() : string
     {
         return $this->getAttribute(self::SURVEY_ID);
     }
 
-    public function getSurveyEmail()
+    public function getSurveyEmail() : string
     {
         return $this->getAttribute(self::SURVEY_EMAIL);
     }
 
-    public function getSurveySentAt()
+    public function getSurveySentAt() : int
     {
         return $this->getAttribute(self::SURVEY_SENT_AT);
     }
@@ -90,26 +101,31 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SURVEY_FILLED_AT);
     }
 
-    public function getAttempts()
+    public function getAttempts() : int
     {
         return $this->getAttribute(self::ATTEMPTS);
+    }
+
+    public function getSkipInApp() : bool
+    {
+        return $this->getAttribute(self::SKIP_IN_APP);
     }
 
     // ============================= END GETTERS =============================
 
     // ============================= SETTERS =============================
 
-    public function setSurveyId($surveyId)
+    public function setSurveyId(string $surveyId)
     {
         $this->setAttribute(self::SURVEY_ID, $surveyId);
     }
 
-    public function setSurveyEmail($email)
+    public function setSurveyEmail(string $email)
     {
         $this->setAttribute(self::SURVEY_EMAIL, $email);
     }
 
-    public function setSurveySentAt($surveySentAt)
+    public function setSurveySentAt(int $surveySentAt)
     {
         $this->setAttribute(self::SURVEY_SENT_AT, $surveySentAt);
     }
@@ -119,9 +135,14 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SURVEY_FILLED_AT, $surveyFilledAt);
     }
 
-    public function setAttempts($attempts)
+    public function setAttempts(int $attempts)
     {
         $this->setAttribute(self::ATTEMPTS, $attempts);
+    }
+
+    public function setSkipInApp(bool $skipInApp)
+    {
+        $this->setAttribute(self::SKIP_IN_APP, $skipInApp);
     }
 
     // ============================= END SETTERS =============================

@@ -444,4 +444,26 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function getCAOnboardCohortList(int $startTime, int $endTime)
+    {
+        $balanceIdColumn                    = $this->repo->balance->dbColumn(Entity::ID);
+        $balanceCreatedColumn               = $this->repo->balance->dbColumn(Entity::CREATED_AT);
+        $bankingAccountsBalanceIdColumn     = $this->dbColumn(Entity::BALANCE_ID);
+        $activationStatus                   = $this->dbColumn(Entity::STATUS);
+        $accountTypeColumn                  = $this->dbColumn(Entity::ACCOUNT_TYPE);
+
+        $selectAttr                 = [
+            $this->dbColumn(Entity::MERCHANT_ID),
+        ];
+
+        return $this->newQuery()
+            ->select($selectAttr)
+            ->join(Table::BALANCE, $balanceIdColumn, '=', $bankingAccountsBalanceIdColumn)
+            ->where($accountTypeColumn, '=', AccountType::CURRENT)
+            ->where($activationStatus, '=', Status::ACTIVATED)
+            ->whereBetween($balanceCreatedColumn, [$startTime, $endTime])
+            ->groupBy(Entity::MERCHANT_ID)
+            ->get();
+    }
+
 }

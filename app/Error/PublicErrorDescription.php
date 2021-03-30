@@ -1347,6 +1347,11 @@ class PublicErrorDescription
     // Templating Service
     const BAD_REQUEST_ERROR_IN_TEMPLATING_RESPONSE                                  = 'Received an Error Response from templating service';
 
+    // NPS Survey
+    const BAD_REQUEST_ERROR_DUPLICATE_SURVEY_TYPE                                   = 'Survey with same type already exists';
+    const BAD_REQUEST_INVALID_SURVEY_TYPE                                           = 'Invalid survey type';
+    const BAD_REQUEST_NPS_SURVEY_NOT_APPLICABLE_IN_TEST_MODE                        = 'Nps survey not applicable in test mode';
+
     // Wallet Account AMazon Pay for X
     const BAD_REQUEST_WALLET_ACCOUNT_FUND_ACCOUNT_CREATION_NOT_PERMITTED            = 'Creating a Fund Account of wallet type is not permitted';
 }

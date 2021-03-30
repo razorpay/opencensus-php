@@ -5,9 +5,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use RZP\Models\Survey\Entity;
+use RZP\Models\Survey\Response\Entity;
 
-class CreateSurveyTable extends Migration
+class CreateSurveyResponseTable extends Migration
 {
     /**
      * Run the migrations.
@@ -16,27 +16,21 @@ class CreateSurveyTable extends Migration
      */
     public function up()
     {
-        Schema::create(Table::SURVEY, function(Blueprint $table)
+        Schema::create(Table::SURVEY_RESPONSE, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
             $table->char(Entity::ID, Entity::ID_LENGTH)->primary();
 
-            $table->string(Entity::NAME, 255);
+            $table->char(Entity::TRACKER_ID, Entity::ID_LENGTH);
 
-            $table->text(Entity::DESCRIPTION)->nullable();
-
-            $table->integer(Entity::SURVEY_TTL);
-
-            $table->string(Entity::TYPE, 255);
-
-            $table->string(Entity::SURVEY_URL, 255);
+            $table->char(Entity::SURVEY_ID, Entity::ID_LENGTH);
 
             $table->integer(Entity::CREATED_AT);
 
             $table->integer(Entity::UPDATED_AT);
 
-            $table->index(Entity::NAME);
+            $table->index(Entity::TRACKER_ID);
 
             $table->index(Entity::CREATED_AT);
         });
@@ -49,6 +43,6 @@ class CreateSurveyTable extends Migration
      */
     public function down()
     {
-        Schema::drop(Table::SURVEY);
+        Schema::drop(Table::SURVEY_RESPONSE);
     }
 }

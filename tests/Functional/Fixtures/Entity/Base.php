@@ -90,6 +90,7 @@ class Base
 
         'survey'                           => \RZP\Models\Survey\Entity::class,
         'survey_tracker'                   => \RZP\Models\Survey\Tracker\Entity::class,
+        'survey_response'                  => \RZP\Models\Survey\Response\Entity::class,
 
         'application'                      => \RZP\Models\Application\Entity::class,
         'application_mapping'              => \RZP\Models\Application\ApplicationTags\Entity::class,

@@ -13,9 +13,11 @@ use RZP\Constants\Timezone;
 use RZP\Jobs\CohortDispatch;
 use RZP\Services\HubspotClient;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\User\Entity as UserEntity;
 use RZP\Models\Survey\Entity as SurveyEntity;
 use RZP\Models\Payout\Entity as PayoutEntity;
+use RZP\Models\Survey\Response\Entity as SurveyResponseEntity;
 use RZP\Models\Merchant\MerchantUser\Entity as MerchantUserEntity;
 
 class Core extends Base\Core
@@ -34,7 +36,8 @@ class Core extends Base\Core
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_NPS_SURVEY_NOT_APPLICABLE_IN_TEST_MODE,
                 null,
-                $traceInfo);
+                $traceInfo,
+                PublicErrorDescription::BAD_REQUEST_NPS_SURVEY_NOT_APPLICABLE_IN_TEST_MODE);
         }
 
         try
@@ -43,7 +46,7 @@ class Core extends Base\Core
 
             $input = [
                 PayoutEntity::MERCHANT_ID   => $cohort[PayoutEntity::MERCHANT_ID],
-                PayoutEntity::USER_ID       => $cohort[PayoutEntity::USER_ID],
+                PayoutEntity::USER_ID       => $cohort[PayoutEntity::USER_ID] ?? null,
                 Entity::SURVEY_ID           => $surveyId,
                 Entity::SURVEY_TYPE         => $type,
             ];
@@ -81,6 +84,8 @@ class Core extends Base\Core
 
             $this->dispatchForSurvey($user, $merchantId, $survey);
         }
+
+        return $merchantUsers->toArray();
     }
 
     public function dispatchForSurveyWithUserId(string $userId, string $merchantId, string $surveyId)
@@ -98,12 +103,13 @@ class Core extends Base\Core
 
         $currentTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
 
-        $surveyTrackerEntity = $this->repo->survey_tracker->getLastSurveySent($user[UserEntity::EMAIL], $survey[Entity::ID]);
+        //Current logic is to not sent a survey if any survey was sent to the same email within the buffer time. Hence only checking with email id for across surveys.
+        $surveyTrackerEntity = $this->repo->survey_tracker->getLastSurveySent($user[UserEntity::EMAIL]);
 
         // $surveyTrackerEntity is not null, means a survey email for this user has already been sent
         if (empty($surveyTrackerEntity) === false)
         {
-            $surveyLastSentTimestamp = $surveyTrackerEntity[Entity::SURVEY_SENT_AT];
+            $surveyLastSentTimestamp = $surveyTrackerEntity[Entity::CREATED_AT];
 
             $snoozePeriod = Carbon::createFromTimestamp($surveyLastSentTimestamp, Timezone::IST)->addHour($surveyTimeWindow)->getTimestamp();
 
@@ -115,21 +121,7 @@ class Core extends Base\Core
 
                 return;
             }
-
-            $this->trace->info(TraceCode::COHORT_EMAIL_TO_HUBSPOT, [Entity::X_UID => $user[UserEntity::ID]]);
-
-            $this->sendToHubspot($user[UserEntity::EMAIL], $merchantId, $user[UserEntity::ID], $survey[Entity::ID]);
-
-            $surveyTrackerEntity->setSurveySentAt($currentTimeStamp);
-
-            $this->repo->saveorFail($surveyTrackerEntity);
-
-            return;
         }
-
-        $this->trace->info(TraceCode::COHORT_EMAIL_TO_HUBSPOT, [Entity::X_UID => $user[UserEntity::ID]]);
-
-        $this->sendToHubspot($user[UserEntity::EMAIL], $merchantId, $user[UserEntity::ID], $survey[Entity::ID]);
 
         $surveyTrackerEntityInput = [
             Entity::SURVEY_ID       => $survey[Entity::ID],
@@ -141,6 +133,19 @@ class Core extends Base\Core
         $surveyTrackerEntity = (new Entity)->build($surveyTrackerEntityInput);
 
         $this->repo->saveorFail($surveyTrackerEntity);
+
+        $this->trace->info(TraceCode::COHORT_EMAIL_TO_HUBSPOT, [Entity::X_UID => $user[UserEntity::ID]]);
+
+        $hubspotInput = [
+            Entity::SURVEY_EMAIL        => $user[UserEntity::EMAIL],
+            Entity::MID                 => $merchantId,
+            Entity::USER_ID             => $user[UserEntity::ID],
+            Entity::SURVEY_ID           => $survey[Entity::ID],
+            SurveyEntity::SURVEY_URL    => $survey[SurveyEntity::SURVEY_URL],
+            Entity::ID                  => $surveyTrackerEntity->getId()
+        ];
+
+        $this->sendToHubspot($hubspotInput);
     }
 
     public function getSurveyClient(string $type)
@@ -150,15 +155,26 @@ class Core extends Base\Core
         return new $cohortSelectorService();
     }
 
-    private function sendToHubspot(string $userEmail, string $mid, string $uid, $surveyId)
+    private function sendToHubspot(array $hubspotInput)
     {
         /** @var HubspotClient $hubspotClient */
         $hubspotClient = $this->app->hubspot;
 
-        $hubspotClient->trackHubspotEvent($userEmail, [
-            Entity::NPS_SURVEY => $surveyId,
-            Entity::MID        => $mid,
-            Entity::X_UID      => $uid
+        $hubspotClient->trackHubspotEvent($hubspotInput[Entity::SURVEY_EMAIL], [
+            Entity::NPS_SURVEY                  => $hubspotInput[Entity::SURVEY_ID],
+            Entity::MID                         => $hubspotInput[Entity::MID],
+            Entity::X_UID                       => $hubspotInput[Entity::USER_ID],
+            SurveyEntity::SURVEY_URL            => $hubspotInput[SurveyEntity::SURVEY_URL],
+            SurveyResponseEntity::TRACKER_ID    => $hubspotInput[Entity::ID]
         ]);
+    }
+
+    public function edit(Entity $surveyTracker, array $input): Entity
+    {
+        $surveyTracker->edit($input);
+
+        $this->repo->saveOrFail($surveyTracker);
+
+        return $surveyTracker;
     }
 }

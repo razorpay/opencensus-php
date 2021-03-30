@@ -4,11 +4,13 @@ namespace RZP\Models\Survey\Tracker;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
 
 class SurveyServiceMapper
 {
     private static $surveyClientMap = [
-        Entity::NPS_RAZORPAYX   => 'Payout\NpsClient'
+        Entity::NPS_PAYOUTS     => 'Payout\NpsClient',
+        Entity::NPS_CSAT        => 'BankingAccount\NpsClient'
     ];
 
     /**
@@ -23,7 +25,8 @@ class SurveyServiceMapper
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_SURVEY_TYPE,
                 null,
-                null);
+                null,
+                PublicErrorDescription::BAD_REQUEST_INVALID_SURVEY_TYPE);
         }
 
         return SurveyServiceMapper::$surveyClientMap[$type];

@@ -1062,6 +1062,13 @@ return [
             ]
         ],
 
+        PermissionCategory::NPS => [
+            Permission::NPS_SURVEY => [
+                'description' => 'To be used for creating or editing nps',
+                'assignable'  => true,
+            ],
+        ],
+
         // RazorpayX
         PermissionCategory::RAZORPAYX_BANKING => [
             Permission::BANKING_UPDATE_ACCOUNT => [

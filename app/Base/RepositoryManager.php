@@ -127,6 +127,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\AppStore\Repository                            $app_store;
  * @property Models\Survey\Tracker\Repository                      $survey_tracker;
  * @property Models\Survey\Repository                              $survey;
+ * @property Models\Survey\Response\Repository                     $survey_response;
  * @property Models\Pricing\Repository                             $pricing;
  * @property Models\Partner\Commission\Component\Repository        $commission_component;
  * @property Models\BankingAccountTpv\Repository                   $banking_account_tpv;

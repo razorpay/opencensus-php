@@ -16,12 +16,16 @@ class Entity extends Base\PublicEntity
     const NAME                   = 'name';
     const DESCRIPTION            = 'description';
     const SURVEY_TTL             = 'survey_ttl'; // In hours
+    const TYPE                   = 'type';
+    const SURVEY_URL             = 'survey_url';
 
     protected $fillable = [
         self::ID,
         self::NAME,
         self::DESCRIPTION,
         self::SURVEY_TTL,
+        self::TYPE,
+        self::SURVEY_URL,
     ];
 
     protected $visible = [
@@ -29,6 +33,8 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::DESCRIPTION,
         self::SURVEY_TTL,
+        self::TYPE,
+        self::SURVEY_URL,
     ];
 
     protected $public = [
@@ -36,6 +42,8 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::DESCRIPTION,
         self::SURVEY_TTL,
+        self::TYPE,
+        self::SURVEY_URL,
     ];
 
     protected $dates = [
@@ -65,6 +73,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SURVEY_TTL);
     }
 
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
+    }
+
+    public function getSurveyUrl()
+    {
+        return $this->getAttribute(self::SURVEY_URL);
+    }
+
     // ============================= END GETTERS =============================
 
     // ============================= SETTERS =============================
@@ -82,6 +100,16 @@ class Entity extends Base\PublicEntity
     public function setSurveyTtl($surveyTtl)
     {
         $this->setAttribute(self::SURVEY_TTL, $surveyTtl);
+    }
+
+    public function setType($type)
+    {
+        $this->setAttribute(self::TYPE, $type);
+    }
+
+    public function setSurveyUrl($url)
+    {
+        $this->setAttribute(self::SURVEY_URL, $url);
     }
 
     // ============================= END SETTERS =============================

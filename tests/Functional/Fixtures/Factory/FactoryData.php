@@ -1650,6 +1650,12 @@ final class FactoryData
             'attempts'            => 1
         ]);
 
+        $factory(\RZP\Models\Survey\Response\Entity::class, [
+            'id'                  => 'PAX5zcOdI0Y663',
+            'tracker_id'          => 'GAX5zcOdI0Y663',
+            'survey_id'           => 'GAX5zcOdI0Y664',
+        ]);
+
         $factory(\RZP\Models\Application\Entity::class, [
             'id'                  => 'GAX5zcOdI0Y664',
             'name'                => 'Factory App',
