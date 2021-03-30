@@ -160,56 +160,6 @@ class AnalyticsDesktop extends Component {
     );
   };
 
-  renderWhatsappNotification = () => {
-    if (this.state.whatsappNotificationStatus === 'off')
-      return (
-        <AnnouncementBanner title="WhatsApp Notifications" theme="success" canBeClosed={true}>
-          Receive account-related notifications on WhatsApp. &nbsp;
-          <Link
-            onClick={() => {
-              analyticsTrack({
-                objectName: 'banner',
-                actionName: 'clicked',
-                screen: 'home page',
-                properties: {
-                  hyperlinkClicked: 'Enable Notifications',
-                  title: 'WhatsApp Notifications',
-                  ...getCommonAnalyticsProperties(window.rzp_user),
-                },
-              });
-            }}
-            to="/config#whatsapp_enable_on"
-          >
-            Enable Notifications
-          </Link>
-        </AnnouncementBanner>
-      );
-    else {
-      return (
-        <AnnouncementBanner title="WhatsApp Notifications" theme="success" canBeClosed={true}>
-          You will now receive account-related notifications on WhatsApp. &nbsp;
-          <Link
-            onClick={() => {
-              analyticsTrack({
-                objectName: 'banner',
-                actionName: 'clicked',
-                screen: 'home page',
-                properties: {
-                  hyperlinkClicked: 'Manage settings here',
-                  title: 'WhatsApp Notifications',
-                  ...getCommonAnalyticsProperties(window.rzp_user),
-                },
-              });
-            }}
-            to="/config#whatsapp_enable_control"
-          >
-            Manage settings here
-          </Link>
-        </AnnouncementBanner>
-      );
-    }
-  };
-
   showGSTOptOutFlow = () => {
     if (this.props.user.features) {
       const show = this.props.user.features.filter((f) => f.feature === `suggested_address_opt_in`);
@@ -408,36 +358,6 @@ class AnalyticsDesktop extends Component {
               </Link>
             </AnnouncementBanner>
           )}
-          {hasMinTransactionSD && !isValueFilled && roleToShowSupportDetailForm && (
-            <AnnouncementBanner title="Add Support Details" theme="primary" canBeClosed={true}>
-              <span className="support-tagline">
-                Let your customers know how to reach you for any queries.
-              </span>
-              <Link
-                onClick={() => {
-                  analyticsTrack({
-                    objectName: 'banner',
-                    actionName: 'clicked',
-                    screen: 'home page',
-                    properties: {
-                      hyperlinkClicked: 'Add Details',
-                      title: 'Add Support Details',
-                      ...getCommonAnalyticsProperties(window.rzp_user),
-                    },
-                  });
-                }}
-                to="/profile"
-              >
-                <button
-                  className="pull-right primary btn-support"
-                  type="button"
-                  onClick={() => openSupportDetailModal(false)}
-                >
-                  Add Details
-                </button>
-              </Link>
-            </AnnouncementBanner>
-          )}
 
           {!LocalStorageService.getItem('rtb_page_visited') && (
             <AnnouncementBanner title="Get the trusted badge" theme="warning">
@@ -462,8 +382,6 @@ class AnalyticsDesktop extends Component {
               </Link>
             </AnnouncementBanner>
           )}
-
-          {this.isWhatsappNotificationEnabled(user) && this.renderWhatsappNotification()}
 
           <Fragment>
             {/* capital banner*/}
