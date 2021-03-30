@@ -1337,6 +1337,11 @@ class Constants
             'display_name'  => 'Custom Recurring Charge Batch for Axis',
             'documentation' => '',
         ],
+        self::CAPITAL_CARDS_COLLECTIONS => [
+            'feature'       => self::CAPITAL_CARDS_COLLECTIONS,
+            'display_name'  => 'Autocollection for credit cards',
+            'documentation' => '',
+        ]
     ];
 
     /**
