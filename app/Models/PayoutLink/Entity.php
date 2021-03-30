@@ -80,6 +80,7 @@ class Entity extends Base\PublicEntity
     const IMPS                 = 'IMPS';
     const NEFT                 = 'NEFT';
     const UPI                  = 'UPI';
+    const AMAZON_PAY           = "AMAZONPAY";
     const SUPPORT_URL          = 'support_url';
     const SUPPORT_CONTACT      = 'support_contact';
     const SUPPORT_EMAIL        = 'support_email';

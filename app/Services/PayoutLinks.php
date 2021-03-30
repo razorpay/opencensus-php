@@ -10,6 +10,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Environment;
 use RZP\Models\FundAccount\Type;
+use RZP\Models\Merchant;
 use RZP\Http\Response\StatusCode;
 use RZP\Models\PayoutLink\Entity;
 use Razorpay\Trace\Logger as Trace;
@@ -17,7 +18,6 @@ use RZP\Models\PayoutLink\Validator;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Vpa\Entity as VpaEntity;
 use RZP\Models\BankingAccount\Channel;
-use RZP\Exception\ServerErrorException;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\FundAccount\Entity as FundAccountEntity;
 
@@ -100,6 +100,8 @@ class PayoutLinks
 
     protected $app;
 
+    protected $walletService;
+
     public function __construct($app)
     {
         $this->trace = $app['trace'];
@@ -122,7 +124,7 @@ class PayoutLinks
         $this->rzpModeCheck($merchant->getId());
 
         $this->trace->info(TraceCode::PAYOUT_LINK_CREATE_REQUEST,
-                           $input);
+            $input);
 
         $url = sprintf('%s/%s', $this->baseUrl, self::CREATE_PAYOUT_LINK_PATH);
 
@@ -158,9 +160,9 @@ class PayoutLinks
     public function getSettings(string $merchantId)
     {
         $this->trace->info(TraceCode::PAYOUT_LINK_SETTINGS_GET,
-                           [
-                               $merchantId
-                           ]);
+            [
+                $merchantId
+            ]);
 
         $url = $this->getConstructedUrl(self::GET_SETTINGS_PAYOUT_LINK_PATH);
 
@@ -180,9 +182,9 @@ class PayoutLinks
     public function updateSettings(string $merchantId, array $input)
     {
         $this->trace->info(TraceCode::PAYOUT_LINK_SETTINGS_GET,
-                           [
-                               $merchantId
-                           ]);
+            [
+                $merchantId
+            ]);
 
         $url = $this->getConstructedUrl(self::UPDATE_SETTINGS_PAYOUT_LINK_PATH);
 
@@ -209,9 +211,9 @@ class PayoutLinks
         $this->rzpModeCheck($merchantId);
 
         $this->trace->info(TraceCode::PAYOUT_LINK_CANCEL_REQUEST,
-                           [
-                               $payoutLinkId
-                           ]);
+            [
+                $payoutLinkId
+            ]);
 
         $url = $this->getConstructedUrl(self::CANCEL_PAYOUT_LINK_PATH);
 
@@ -290,9 +292,9 @@ class PayoutLinks
     public function getModeAndMerchant(string $payoutLinkId)
     {
         $this->trace->info(TraceCode::PAYOUT_LINK_GET_HOSTED_PAGE_DATA,
-                           [
-                               $payoutLinkId
-                           ]);
+            [
+                $payoutLinkId
+            ]);
 
         $url = sprintf('%s/%s', $this->baseUrl, self::GET_HOSTED_PAGE_DATA);
 
@@ -308,7 +310,7 @@ class PayoutLinks
     public function initiate(MerchantEntity $merchant, array $input, string $payoutLinkId): array
     {
         $this->trace->info(TraceCode::PAYOUT_LINK_INITIATE_REQUEST,
-                           $input);
+            $input);
 
         $url = sprintf('%s/%s', $this->baseUrl, self::INITIATE_PAYOUT_LINK_PATH);
 
@@ -322,7 +324,7 @@ class PayoutLinks
     public function generateAndSendCustomerOtp(string $payoutLinkId, array $input): array
     {
         $this->trace->info(TraceCode::PAYOUT_LINK_CUSTOMER_OTP_GENERATE,
-                           $input);
+            $input);
 
         $url = $this->getConstructedUrl(self::PAYOUT_LINK_GENERATE_OTP_PATH);
 
@@ -381,7 +383,10 @@ class PayoutLinks
 
         $allowUpi = $this->allowUpi($payoutLinkInfo, $settings, $merchant);
 
-        $isProduction = $this->app->environment() === Environment::PRODUCTION;
+        // allow amazon pay
+        $allowAmazonPay = $this->allowAmazonPay($payoutLinkInfo, $settings, $merchant);
+
+        $isProduction = $this->getEnvironment() === Environment::PRODUCTION;
 
         $fundAccountDetails = $this->extractFundAccountDetails($payoutLinkInfo, $merchant);
 
@@ -402,6 +407,7 @@ class PayoutLinks
             'primary_color'               => $merchant->getBrandColorElseDefault(),
             'merchant_name'               => $merchant->getBillingLabel(),
             'allow_upi'                   => $allowUpi,
+            'allow_amazon_pay'            => $allowAmazonPay,
             'banking_url'                 => $this->config['applications.banking_service_url'],
             'is_production'               => $isProduction,
             'fund_account_details'        => json_encode($fundAccountDetails),
@@ -417,14 +423,18 @@ class PayoutLinks
         return $data;
     }
 
+    protected function getEnvironment() {
+        return $this->app->environment();
+    }
+
     public function pushPayoutStatus($payoutLinkId, $payoutId, $payoutStatus)
     {
         $this->rzpModeCheck();
 
         $input = [
-          'payout_link_id'  => $payoutLinkId,
-          'payout_id'       => $payoutId,
-          'payout_status'   => strtoupper($payoutStatus)
+            'payout_link_id'  => $payoutLinkId,
+            'payout_id'       => $payoutId,
+            'payout_status'   => strtoupper($payoutStatus)
         ];
 
         $url = $this->getConstructedUrl(self::PAYOUT_STATUS_UPDATE);
@@ -435,7 +445,7 @@ class PayoutLinks
     public function verifyCustomerOtp(string $payoutLinkId, array $input): array
     {
         $this->trace->info(TraceCode::PAYOUT_LINK_CUSTOMER_OTP_VERIFY,
-                           $input);
+            $input);
 
         $url = $this->getConstructedUrl(self::PAYOUT_LINK_VERIFY_OTP_PATH);
 
@@ -589,11 +599,9 @@ class PayoutLinks
         $channelSupportsUpi = true;
 
         $upiEnabledInSettings = ((key_exists('UPI', $settings) === true) and
-                                (boolval($settings['UPI']) === true));
+            (boolval($settings['UPI']) === true));
 
-        $bankingAccount = $this->repo
-                               ->banking_account
-                               ->findByMerchantAndAccountNumberPublic($merchant, $payoutLinkInfo['account_number']);
+        $bankingAccount = $this->getBankingAccountInfo($merchant, $payoutLinkInfo);
 
         if ($bankingAccount->getChannel() === Channel::RBL)
         {
@@ -603,6 +611,42 @@ class PayoutLinks
         $amountLessThanLac = $payoutLinkInfo['amount'] <= Validator::MAX_UPI_AMOUNT ? true : false;
 
         return $upiEnabledInSettings and $channelSupportsUpi and $amountLessThanLac;
+    }
+
+    protected function allowAmazonPay(array $payoutLinkInfo, array $settings, MerchantEntity $merchant) {
+        // Amazon pay will only be enabled for merchants that have the experiment enabled
+        if($this->getAmazonPayWalletExperienceEnabled($merchant)) {
+            $channelSupportsAmazonPay = true;
+
+            $amazonPayEnabledInSettings = ((key_exists(Entity::AMAZON_PAY, $settings) === true) and
+                (boolval($settings[Entity::AMAZON_PAY]) === true));
+
+            $bankingAccount = $this->getBankingAccountInfo($merchant, $payoutLinkInfo);
+
+            if ($bankingAccount->getChannel() === Channel::RBL)
+            {
+                $channelSupportsAmazonPay = false;
+            }
+
+            $amountLessThanEqualTenThousand = $payoutLinkInfo['amount'] <= Validator::MAX_AMAZON_PAY_AMOUNT;
+
+            return $amazonPayEnabledInSettings and $channelSupportsAmazonPay and $amountLessThanEqualTenThousand;
+        }
+        return false;
+    }
+
+    protected function getBankingAccountInfo(MerchantEntity $merchant, array $payoutLinkInfo) {
+        return $this->repo
+            ->banking_account
+            ->findByMerchantAndAccountNumberPublic($merchant, $payoutLinkInfo['account_number']);
+    }
+
+    protected function getAmazonPayWalletExperienceEnabled(MerchantEntity $merchant) {
+        $variant = $this->app['razorx']->getTreatment($merchant->getId(),
+            Merchant\RazorxTreatment::ENABLE_WALLET_ACCOUNT_AMAZON_PAYOUT,
+            Mode::LIVE
+        );
+        return $variant === 'on';
     }
 
     protected function extractFundAccountDetails(array $payoutLinkInfo, MerchantEntity $merchant)
@@ -655,10 +699,10 @@ class PayoutLinks
                 $lengthOfAddressToMask = ceil($addressLen * $percentageToMask);
 
                 $maskedAddress = substr($address, 0, $addressLen - $lengthOfAddressToMask) .
-                                 str_repeat('*', $lengthOfAddressToMask);
+                    str_repeat('*', $lengthOfAddressToMask);
 
                 $maskedHandle = substr($handle, 0, $handleLen - $lengthOfHandleToMask) .
-                                str_repeat('*', $lengthOfHandleToMask);
+                    str_repeat('*', $lengthOfHandleToMask);
 
                 $details[Type::VPA][VpaEntity::ADDRESS] = sprintf('%s@%s', $maskedAddress, $maskedHandle);
 
@@ -838,6 +882,10 @@ class PayoutLinks
         $upiValue = array_pull($settings, Entity::UPI, "true");
 
         $settings[Entity::UPI] = boolval($upiValue);
+
+        $amazonPayValue = array_pull($settings, Entity::AMAZON_PAY, "true");
+
+        $settings[Entity::AMAZON_PAY] = boolval($amazonPayValue);
     }
 
     protected function appendPublicSignForPayoutLink(string $payoutlinkid) : string
@@ -854,7 +902,7 @@ class PayoutLinks
 
     protected function notifySettingsChangeOnSlack(string $merchantId, array $oldSettings, array $newSettings)
     {
-        $validKeysForSlackNotification = [Entity::IMPS, Entity::UPI];
+        $validKeysForSlackNotification = [Entity::IMPS, Entity::UPI, Entity::AMAZON_PAY];
 
         foreach ($validKeysForSlackNotification as $key)
         {
@@ -970,3 +1018,4 @@ class PayoutLinks
     }
 
 }
+

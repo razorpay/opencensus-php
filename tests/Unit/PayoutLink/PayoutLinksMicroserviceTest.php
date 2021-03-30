@@ -3,6 +3,8 @@
 namespace RZP\Tests\Unit\PayoutLink;
 
 use Mockery;
+use RZP\Constants\Environment;
+use RZP\Models\BankingAccount\Channel;
 use RZP\Models\Merchant;
 use RZP\Exception;
 use RZP\Services\RazorXClient;
@@ -340,4 +342,214 @@ class PayoutLinkMicroserviceTest extends TestCase
         // assert that the microservice method was called when feature was enabled
         $result['mock']->shouldHaveReceived('getBatchSummary');
     }
+
+    /**
+     * test amazon pay is enabled when
+     * 1. settings enabled
+     * 2. amount <10000
+     * 3. channel != RBL
+     */
+    public function testGetHostedPageDataForAmazonPay()
+    {
+        $merchant = new Merchant\Entity();
+        $merchant["billing_label"] = "abc";
+
+        $mode["AMAZONPAY"] = 1;
+        $mode["UPI"] = 1;
+        $response = $this->mockSettingsResponse($mode, 100);
+
+        $bankingAccountMock = $this->mockBankingAccount(Channel::YESBANK);
+
+        $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
+            ->disableOriginalConstructor()
+            ->setMethods(array("makeRequest", "getBankingAccountInfo", "getAmazonPayWalletExperienceEnabled", "getEnvironment"))
+            ->getMock();
+        $mock->method("makeRequest")
+            ->willReturn($response);
+        $mock->method("getEnvironment")
+            ->willReturn(Environment::TESTING);
+        $mock->method("getBankingAccountInfo")
+            ->willReturn($bankingAccountMock);
+        $mock->method("getAmazonPayWalletExperienceEnabled")
+            ->willReturn(true);
+
+        $data = $mock->getHostedPageData("poutlk_1000000000", $merchant);
+        $this->assertTrue($data['allow_upi']);
+        $this->assertTrue($data['allow_amazon_pay']);
+    }
+
+    /**
+     * test amazon pay is disabled when
+     * 1. settings disabled
+     * 2. amount <10000
+     * 3. channel != RBL
+     */
+    public function testGetHostedPageDataForAmazonPaySettingsDisabled()
+    {
+        $merchant = new Merchant\Entity();
+        $merchant["billing_label"] = "abc";
+
+        $mode["AMAZONPAY"] = 0;
+        $mode["UPI"] = 1;
+        $response = $this->mockSettingsResponse($mode,100);
+
+        $bankingAccountMock = $this->mockBankingAccount(Channel::YESBANK);
+
+        $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
+            ->disableOriginalConstructor()
+            ->setMethods(array("makeRequest", "getBankingAccountInfo", "getEnvironment", "getAmazonPayWalletExperienceEnabled"))
+            ->getMock();
+        $mock->method("makeRequest")
+            ->willReturn($response);
+        $mock->method("getEnvironment")
+            ->willReturn(Environment::TESTING);
+        $mock->method("getBankingAccountInfo")
+            ->willReturn($bankingAccountMock);
+        $mock->method("getAmazonPayWalletExperienceEnabled")
+            ->willReturn(true);
+
+        $data = $mock->getHostedPageData("poutlk_1000000000", $merchant);
+        $this->assertFalse($data['allow_amazon_pay']);
+    }
+
+    /**
+     * test amazon pay is disabled when
+     * 1. settings enabled
+     * 2. amount >10000
+     * 3. channel != RBL
+     */
+    public function testGetHostedPageDataForAmazonPayAmountInvalid()
+    {
+        $merchant = new Merchant\Entity();
+        $merchant["billing_label"] = "abc";
+
+        $mode["AMAZONPAY"] = 0;
+        $mode["UPI"] = 1;
+        $response = $this->mockSettingsResponse($mode, 1000000);
+
+        $bankingAccountMock = $this->mockBankingAccount(Channel::YESBANK);
+
+        $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
+            ->disableOriginalConstructor()
+            ->setMethods(array("makeRequest", "getBankingAccountInfo", "getEnvironment", "getAmazonPayWalletExperienceEnabled"))
+            ->getMock();
+        $mock->method("makeRequest")
+            ->willReturn($response);
+        $mock->method("getEnvironment")
+            ->willReturn(Environment::TESTING);
+        $mock->method("getBankingAccountInfo")
+            ->willReturn($bankingAccountMock);
+        $mock->method("getAmazonPayWalletExperienceEnabled")
+            ->willReturn(true);
+
+        $data = $mock->getHostedPageData("poutlk_1000000000", $merchant);
+        $this->assertFalse($data['allow_amazon_pay']);
+    }
+
+    /**
+     * test amazon pay is disabled when
+     * 1. settings enabled
+     * 2. amount <10000
+     * 3. channel == RBL
+     */
+    public function testGetHostedPageDataForAmazonPayChannelRBL()
+    {
+        $merchant = new Merchant\Entity();
+        $merchant["billing_label"] = "abc";
+
+        $mode["AMAZONPAY"] = 0;
+        $mode["UPI"] = 1;
+        $response = $this->mockSettingsResponse($mode, 10000);
+
+        $bankingAccountMock = $this->mockBankingAccount(Channel::RBL);
+
+        $mock = $this->getMockBuilder('RZP\Services\PayoutLinks')
+            ->disableOriginalConstructor()
+            ->setMethods(array("makeRequest", "getBankingAccountInfo", "getEnvironment", "getAmazonPayWalletExperienceEnabled"))
+            ->getMock();
+        $mock->method("makeRequest")
+            ->willReturn($response);
+        $mock->method("getEnvironment")
+            ->willReturn(Environment::TESTING);
+        $mock->method("getBankingAccountInfo")
+            ->willReturn($bankingAccountMock);
+        $mock->method("getAmazonPayWalletExperienceEnabled")
+            ->willReturn(true);
+
+
+        $data = $mock->getHostedPageData("poutlk_1000000000", $merchant);
+        $this->assertFalse($data['allow_amazon_pay']);
+    }
+
+    public function testUpdateAmazonPaySettings()
+    {
+        $merchantID = "abcd";
+        $trace = \Mockery::mock('RZP\Trace\Trace');
+        $trace->shouldReceive("info");
+        $this->app->instance("trace", $trace);
+        $plMock = $this->getMockBuilder("RZP\Services\PayoutLinks")
+            ->enableOriginalConstructor()
+            ->setConstructorArgs([$this->app])
+            ->setMethods(array("makeRequest", "notifySettingsChangeOnSlack"))
+            ->getMock();
+
+        $mode["AMAZONPAY"] = "1";
+        $response = $this->mockSettingsResponse($mode, 1000);
+        $plMock->method("makeRequest")
+            ->willReturn($response);
+        $plMock->expects($this->exactly(1))
+            ->method("notifySettingsChangeOnSlack");
+        $input["AMAZONPAY"] = "0";
+        $plMock->updateSettings($merchantID, $input);
+
+    }
+
+    public function testUpdateAmazonPaySettingsNegative()
+    {
+        $merchantID = "abcd";
+        $trace = \Mockery::mock('RZP\Trace\Trace');
+        $trace->shouldReceive("info");
+        $this->app->instance("trace", $trace);
+        $plMock = $this->getMockBuilder("RZP\Services\PayoutLinks")
+            ->enableOriginalConstructor()
+            ->setConstructorArgs([$this->app])
+            ->setMethods(array("makeRequest", "sendSlackNotification"))
+            ->getMock();
+
+        $mode["AMAZONPAY"] = "1";
+        $response = $this->mockSettingsResponse($mode, 1000);
+        $plMock->method("makeRequest")
+            ->willReturn($response);
+        $plMock->expects($this->exactly(0))
+            ->method("sendSlackNotification");
+        $input["AMAZONPAY"] = "1";
+        $plMock->updateSettings($merchantID, $input);
+
+    }
+
+
+    private function mockSettingsResponse(array $mode, int $amount)
+    {
+        $response["settings"] = ["mode" => $mode];
+        $response["payout_link_response"]["amount"] = $amount;
+        $response["payout_link_response"]["id"] = "poutlk_123456";
+        $response["payout_link_response"]["status"] = "issued";
+        $response["payout_link_response"]["currency"] = "INR";
+        $response["payout_link_response"]["description"] = "testing";
+        $response["payout_link_response"]["contact"]["name"] = "ABC";
+        $response["payout_link_response"]["contact"]["email"] = "abc@abc.com";
+        $response["payout_link_response"]["contact"]["contact"] = "+918877665544";
+        return $response;
+    }
+
+    private function mockBankingAccount(string $channel)
+    {
+        $baMock = $this->getMockBuilder('RZP\Models\BankingAccount\Entity')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $baMock->method("getChannel")
+            ->willReturn($channel);
+        return $baMock;
+    }
 }
+

@@ -26,6 +26,7 @@ class Validator extends Base\Validator
     const SEND_FAILURE_EMAIL_INTERNAL_RULE    = 'send_failure_email_internal';
     const MAX_IMPS_AMOUNT                  = 20000000;
     const MAX_UPI_AMOUNT                   = 10000000;
+    const MAX_AMAZON_PAY_AMOUNT            = 1000000;
     const RESEND_NOTIFICATION_PARAMS       = 'resend_notification_params';
     const NOTIFICATION_SETTINGS            = 'notification_settings';
 
