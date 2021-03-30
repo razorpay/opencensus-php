@@ -34,6 +34,7 @@ class LOCController extends Controller
     const CREATE_WITHDRAWAL_CONFIG_REGEX         = 'CREATE_WITHDRAWAL_CONFIG_REGEX';
     const GET_WITHDRAWAL_CONFIG_REGEX            = 'GET_WITHDRAWAL_CONFIG_REGEX';
     const UPDATE_WITHDRAWAL_CONFIG_REGEX         = 'UPDATE_WITHDRAWAL_CONFIG_REGEX';
+    const GET_FUNCTIONAL_WITHDRAWAL_CONFIG_REGEX = 'GET_FUNCTIONAL_WITHDRAWAL_CONFIG_REGEX';
     const LIST_OR_SEARCH_WITHDRAWAL_CONFIG_REGEX = 'LIST_OR_SEARCH_WITHDRAWAL_CONFIG_REGEX';
     const CREATE_SOURCE_ACCOUNT_REGEX            = 'CREATE_SOURCE_ACCOUNT_REGEX';
     const GET_SOURCE_ACCOUNT_REGEX               = 'GET_SOURCE_ACCOUNT_REGEX';
@@ -59,6 +60,7 @@ class LOCController extends Controller
         self::ADD_REPAYMENT_REGEX                    => 'twirp/rzp.capital.loc.withdrawal.v1.RepaymentAPI/AddRepayment',
         self::CREATE_WITHDRAWAL_CONFIG_REGEX         => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalConfigAPI/CreateWithdrawalConfig',
         self::GET_WITHDRAWAL_CONFIG_REGEX            => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalConfigAPI/GetWithdrawalConfig',
+        self::GET_FUNCTIONAL_WITHDRAWAL_CONFIG_REGEX => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalConfigAPI/GetFunctionalWithdrawalConfig',
         self::UPDATE_WITHDRAWAL_CONFIG_REGEX         => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalConfigAPI/UpdateWithdrawalConfig',
         self::LIST_OR_SEARCH_WITHDRAWAL_CONFIG_REGEX => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalConfigAPI/ListOrSearchWithdrawalConfig',
         self::GET_AUTOMATED_LOC                      => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalConfigAPI/GetAutomatedLOC',
@@ -84,6 +86,7 @@ class LOCController extends Controller
         self::GET_WITHDRAWAL_REGEX,
         self::LIST_OR_SEARCH_WITHDRAWAL_REGEX,
         self::GET_WITHDRAWAL_CONFIG_REGEX,
+        self::GET_FUNCTIONAL_WITHDRAWAL_CONFIG_REGEX,
         self::LIST_OR_SEARCH_WITHDRAWAL_CONFIG_REGEX,
         self::GET_DESTINATION_ACCOUNT_REGEX,
         self::REPAYMENTS_SCHEDULE,
@@ -111,6 +114,7 @@ class LOCController extends Controller
         self::UPDATE_WITHDRAWAL_REGEX                => Name::LOC_WITHDRAWAL_EDIT,
         self::ADD_REPAYMENT_REGEX                    => Name::LOC_WITHDRAWAL_EDIT,
         self::GET_WITHDRAWAL_REGEX                   => Name::LOC_WITHDRAWAL_VIEW,
+        self::GET_FUNCTIONAL_WITHDRAWAL_CONFIG_REGEX => Name:: LOC_CONFIG_VIEW,
         self::LIST_OR_SEARCH_WITHDRAWAL_REGEX        => Name::LOC_WITHDRAWAL_VIEW,
         self::REPAYMENTS_SCHEDULE                    => Name::LOC_WITHDRAWAL_VIEW,
     ];
