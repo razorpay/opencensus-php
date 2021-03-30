@@ -227,7 +227,7 @@ class TerminalsService
 
         if (($path == $fetchTerminalsPath) && (isset($options[self::TIMEOUT]) == false))
         {
-            $options[self::TIMEOUT] = 200;
+            $options[self::TIMEOUT] = 500;
         }
 
         $response = $this->sendRequest($path, $input, $method, $options, $headers);

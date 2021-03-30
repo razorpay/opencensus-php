@@ -375,8 +375,10 @@ class Repository extends Base\Repository
                     // return from here only when in sync
                     $data["isTerminalNull"] = empty($terminal);
                     $data["isTsTerminalNull"] = empty($tsTerminal);
-
-                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+                    if ($terminal != $tsTerminal)
+                    {
+                        $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+                    }
                 }
                 elseif (Terminal\Service::compareTerminalEntity($terminal, $tsTerminal) === false)
                 {
@@ -776,6 +778,7 @@ class Repository extends Base\Repository
         // auth transaction and then subsequent recurring transactions.
         //
 
+
         $query = $this->newQuery()
                       ->enabled()
                       ->where(Entity::EMANDATE, true)
@@ -810,7 +813,14 @@ class Repository extends Base\Repository
 
                 $path = "v1/merchants/terminals";
 
-                $response = $this->app['terminals_service']->proxyTerminalService($content, "POST", $path);
+                if (count($gateways) > 0)
+                {
+                    $response = $this->app['terminals_service']->proxyTerminalService($content, "POST", $path);
+                }
+                else
+                {
+                    $response = [];
+                }
 
                 $tsTerminals = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response);
 

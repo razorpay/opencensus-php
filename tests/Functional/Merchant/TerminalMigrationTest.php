@@ -394,6 +394,7 @@ class TerminalMigrationTest extends TestCase
         $param["gateway_merchant_id2"] = "test2";
         $param["visa_mpan"]            = "visa_test";
         $param["mc_mpan"]              = "mc_test";
+        $param["vpa"]                  = null;
 
         $req = Terminal\Service::getTerminalServiceRequestFromParam($param);
 
@@ -405,6 +406,7 @@ class TerminalMigrationTest extends TestCase
         $identifiers = $req["identifiers"];
         $this->assertEquals("test1", $identifiers["gateway_merchant_id"]);
         $this->assertEquals("test2", $identifiers["gateway_merchant_id2"]);
+        $this->assertEquals(null, $identifiers["vpa"]);
 
         $mpans = $identifiers["mpans"];
         $this->assertEquals("visa_test", $mpans["visa_mpan"]);

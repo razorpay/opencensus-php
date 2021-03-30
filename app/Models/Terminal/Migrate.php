@@ -546,26 +546,26 @@ trait Migrate
             $content["gateway_acquirer"] = $terminalData["gateway_acquirer"];
         }
 
+
         $identifiers = [];
 
-        if (empty($terminalData["gateway_merchant_id"]) === false)
+        if (array_key_exists('gateway_merchant_id', $terminalData) === true)
         {
             $identifiers["gateway_merchant_id"] = $terminalData["gateway_merchant_id"];
         }
-        if (empty($terminalData["gateway_merchant_id2"]) === false)
+        if (array_key_exists('gateway_merchant_id2', $terminalData) === true)
         {
             $identifiers["gateway_merchant_id2"] = $terminalData["gateway_merchant_id2"];
         }
-        if (empty($terminalData["gateway_terminal_id"]) === false)
+        if (array_key_exists('gateway_terminal_id', $terminalData) === true)
         {
             $identifiers["gateway_terminal_id"] = $terminalData["gateway_terminal_id"];
         }
-        if (empty($terminalData["gateway_terminal_id2"]) === false)
+        if (array_key_exists('gateway_terminal_id2', $terminalData) === true)
         {
             $identifiers["gateway_terminal_id2"] = $terminalData["gateway_terminal_id2"];
         }
-
-        if (empty($terminalData["vpa"]) === false)
+        if (array_key_exists('vpa', $terminalData) === true)
         {
             $identifiers["vpa"] = $terminalData["vpa"];
         }

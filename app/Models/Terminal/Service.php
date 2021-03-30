@@ -131,6 +131,8 @@ class Service extends Base\Service
 
         $params[Entity::MERCHANT_ID] = $mid;
 
+        $params[Entity::STATUS] = Status::ACTIVATED;
+
         $terminals = $this->repo->terminal->getByParams($params);
 
         // If no terminal exist for wallet_paypal, fetch from terminals service
