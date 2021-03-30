@@ -168,6 +168,8 @@ class Constants
     const P2P_UPI                         = 'p2p_upi';
 
     const GSTIN_SELF_SERVE                = 'gstin_self_serve';
+
+    const CAPITAL_CARDS_AUTO_COLLECTIONS = 'capital_cards_auto_collections';
     /**
       Prevents user to switch to test mode from live mode
     */
@@ -910,6 +912,7 @@ class Constants
         self::ALTERNATE_PAYOUT_FR             => true,
         self::DISABLE_X_AMAZONPAY             => true,
         self::CAW_RECURRING_CHARGE_AXIS       => true,
+        self::CAPITAL_CARDS_AUTO_COLLECTIONS  => true,
     ];
 
     // Entity type constants
