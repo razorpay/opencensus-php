@@ -1250,6 +1250,37 @@ class TerminalTest extends TestCase
         $this->assertEquals( "2", $content['mode']);
     }
 
+    public function testEditCashfreeUpiTerminal()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460opVt',
+                'merchant_id' => '10000000000000',
+                'gateway' => 'cashfree',
+                'gateway_merchant_id' => '250000002',
+                'gateway_secure_secret' => "1231424",
+                'upi' => 1,
+                'card' => 0,
+                'mode' => 3,
+                'type'    => [
+                    'direct_settlement_with_refund' => '1'
+                ],
+            ]);
+        $tid = $terminal['id'];
+
+        $data = [
+            'upi' => "1",
+            'type'    => [
+                'non_recurring' => '1'
+            ],
+        ];
+
+        $content = $this->editTerminal($tid, $data);
+        $this->assertEquals( "1", $content['upi']);
+        $this->assertEquals( ["non_recurring", "direct_settlement_with_refund"], $content['type']);
+    }
+
     public function testTerminalModeDual()
     {
         $this->startTest();
@@ -2273,6 +2304,15 @@ class TerminalTest extends TestCase
     }
 
     public function testCreateUpiYesbankIntentTerminal()
+    {
+        $url = '/merchants/10000000000000/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateCashfreeUpiTerminal()
     {
         $url = '/merchants/10000000000000/terminals';
 

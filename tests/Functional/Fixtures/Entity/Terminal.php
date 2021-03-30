@@ -346,6 +346,7 @@ class Terminal extends Base
             'merchant_id'           => '10000000000000',
             'gateway'               => 'cashfree',
             'card'                  => 1,
+            'upi'                   => 1,
             'netbanking'            => 0,
             'gateway_merchant_id'   => 'abcd',
             'network_category'      => 'ecommerce',

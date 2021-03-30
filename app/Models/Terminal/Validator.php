@@ -250,6 +250,7 @@ class Validator extends Base\Validator
         Entity::TYPE . '.direct_settlement_with_refund' => 'required|in:1',
         Entity::PROCURER                                => 'sometimes|string|in:razorpay,merchant',
         Entity::MODE                                    => 'sometimes|in:2',
+        Entity::UPI                                     => 'sometimes|boolean|in:1',
         Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed'
     ];
 
@@ -575,6 +576,8 @@ class Validator extends Base\Validator
         Entity::MODE                       => 'sometimes|in:2',
         Entity::STATUS                     => 'sometimes|string|in:deactivated,activated',
         Entity::ENABLED                    => 'sometimes|in:0,1',
+        Entity::UPI                        => 'sometimes|boolean|in:0,1',
+        Entity::TYPE                       => 'sometimes|array',
     ];
 
     protected static $mpgsEditTerminalRules = [
