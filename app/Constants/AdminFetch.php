@@ -3468,7 +3468,41 @@ class AdminFetch
                         EInvoice\Status::STATUS_INITIATED,
                     ]
                 ]
-            ]
+            ],
+
+            Entity::CARE_CALLBACK => [
+                'merchant_id'  => [
+                    Fetch::LABEL => 'Merchant ID',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'admin_id'  => [
+                    Fetch::LABEL => 'Admin ID',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+                'status' => [
+                    Fetch::LABEL  => 'Status',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'requested',
+                        'connected',
+                        'failed_to_connect',
+                        'spillover',
+                        'cancelled',
+                        'in_queue',
+                    ],
+                ],
+            ],
+
+            Entity::CARE_CALLBACK_LOG => [
+                'callback_id'  => [
+                    Fetch::LABEL => 'Callback ID',
+                    Fetch::TYPE  => Fetch::TYPE_STRING,
+                ],
+            ],
+
+            Entity::CARE_CALLBACK_OPERATOR => [
+
+            ],
         ];
 
         //

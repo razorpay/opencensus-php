@@ -624,6 +624,7 @@ class Name
     const PG_ROUTER_ORDER_SYNC                         = 'pg_router_order_sync';
     const GET_IRCTC_SETTLEMENT_FILE                    = 'get_irctc_settlement_file';
     const CREATE_TRANSACTION_FEE_BREAKUP               = 'create_transaction_fee_breakup';
+    const MANAGE_CARE_SERVICE_CALLBACK                 = 'manager_care_service_callback';
 
     const TOKEN_REGISTRATION_ACTIONS = 'token_registration_actions';
 

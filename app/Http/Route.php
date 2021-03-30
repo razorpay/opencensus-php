@@ -2323,6 +2323,7 @@ class Route
         'merchant_tpv_create'                     => ['post',    'merchant/tpv',                                            'BankingAccountTpvController@createTpvFromXDashboard'          ],
         'care_service_dashboard_proxy'            => ['post',    'care_service/merchant/{path?}',                           'CareProxyController@postDashboardProxyRequest'                ],
         'care_service_cron_proxy'                 => ['post',    'care_service/cron/{path?}',                               'CareProxyController@postCronProxyRequest'                     ],
+        'care_service_admin_proxy'                => ['post',    'care_service/admin/{path?}',                              'CareProxyController@postAdminProxyRequest',                   ],
         'myoperator_v1_proxy_get'                 => ['get',     'myoperator/{path?}',                                      'MyOperatorController@getProxyCallToMyOperatorV1'              ],
         'myoperator_v2_proxy_post'                => ['post',    'myoperator/campaign/{path?}',                             'MyOperatorController@postProxyCallToMyOperatorV2'              ],
 
@@ -4468,6 +4469,9 @@ class Route
         'templating_list_template_config',
         'templating_create_template_config',
         'templating_update_template_config',
+
+        // Care service
+        'care_service_admin_proxy',
     ];
 
     public static $routePermission = [
@@ -5325,6 +5329,8 @@ class Route
         'templating_list_template_config'                     => Permission::TEMPLATING_SERVICE_READ_TEMPLATE_CONFIGS,
         'templating_get_template_config'                      => Permission::TEMPLATING_SERVICE_READ_TEMPLATE_CONFIGS,
         'currency_fetch_all_proxy'                            => Permission::CURRENCY_FETCH_RATES,
+
+        'care_service_admin_proxy'                            => Permission::MANAGE_CARE_SERVICE_CALLBACK, // todo: have more fine grained permissions at route level
 
         //Partner Activation routes
         'partner_activation_details'               => '*',

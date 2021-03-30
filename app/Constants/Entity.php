@@ -420,6 +420,11 @@ class Entity
     const LINE_OF_CREDIT_SOURCE_ACCOUNTS                          = 'line_of_credit.source_accounts';
     const LINE_OF_CREDIT_WITHDRAWALS                              = 'line_of_credit.withdrawals';
 
+    // care service
+    const CARE_CALLBACK                 = 'care.callback';
+    const CARE_CALLBACK_OPERATOR        = 'care.callback_operator';
+    const CARE_CALLBACK_LOG             = 'care.callback_log';
+
 
     const COMMISSION = 'commission';
     const COMMISSION_COMPONENT = 'commission_component';
@@ -1002,6 +1007,10 @@ class Entity
         self::CAPITAL_COLLECTIONS_CREDIT_REPAYMENT  => \RZP\Services\CapitalCollectionsClient::class,
         self::CAPITAL_COLLECTIONS_REPAYMENT         => \RZP\Services\CapitalCollectionsClient::class,
         self::CAPITAL_COLLECTIONS_REPAYMENT_BREAKUP => \RZP\Services\CapitalCollectionsClient::class,
+
+        self::CARE_CALLBACK                         => \RZP\Services\CareServiceClient::class,
+        self::CARE_CALLBACK_LOG                     => \RZP\Services\CareServiceClient::class,
+        self::CARE_CALLBACK_OPERATOR                => \RZP\Services\CareServiceClient::class,
 
         self::LINE_OF_CREDIT_ACCOUNT_BALANCES                       => \RZP\Services\CapitalLineOfCreditClient::class,
         self::LINE_OF_CREDIT_ONBOARDINGS                            => \RZP\Services\CapitalLineOfCreditClient::class,

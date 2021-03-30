@@ -24,6 +24,9 @@ class CareProxyController extends Controller
     const IN_CALL       = 'twirp/rzp.care.callback.v1.CallbackService/InCallWebhook';
     const AFTER_CALL    = 'twirp/rzp.care.callback.v1.CallbackService/AfterCallWebhook';
 
+    //admin
+    const UPSERT_OPERATOR = 'twirp/rzp.care.callback.v1.CallbackService/UpsertOperator';
+
     const MERCHANT_ROUTES = [
         self::CHECK_ELIGIBILITY,
         self::GET_SLOTS,
@@ -39,6 +42,10 @@ class CareProxyController extends Controller
     const MYOPERATOR_ROUTES = [
         self::IN_CALL,
         self::AFTER_CALL
+    ];
+
+    const ADMIN_ROUTES = [
+        self::UPSERT_OPERATOR,
     ];
 
     public function postDashboardProxyRequest($path)
@@ -70,6 +77,17 @@ class CareProxyController extends Controller
         $input = Request::all();
 
         $response = $this->app['care_service']->myOperatorWebhookProxyRequest($path, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postAdminProxyRequest($path)
+    {
+        $this->validatePathForRequest(self::ADMIN_ROUTES, $path);
+
+        $input = Request::all();
+
+        $response = $this->app['care_service']->adminProxyRequest($path, $input);
 
         return ApiResponse::json($response);
     }

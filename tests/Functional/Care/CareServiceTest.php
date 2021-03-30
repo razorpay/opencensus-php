@@ -8,6 +8,8 @@ use RZP\Trace\TraceCode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
+
 
 class CareServiceTest extends TestCase
 {
@@ -18,7 +20,9 @@ class CareServiceTest extends TestCase
     const ACTUAL_CARE_SERVICE_RESPONSE_BODY   = 'actual_care_service_response_body';
     const ACTUAL_CARE_SERVICE_RESPONSE_STATUS = 'actual_care_service_response_status';
     const API_REQUEST_BODY                    = 'API_REQUEST_BODY';
+    const METHOD                              = 'method';
 
+    use WorkflowTrait;
     use RequestResponseFlowTrait;
 
     protected $careServiceMock;
@@ -30,6 +34,8 @@ class CareServiceTest extends TestCase
         parent::setUp();
 
         $this->setUpCareServiceMock();
+
+        $this->addPermissionToBaAdmin('manager_care_service_callback');
     }
 
     public function testInternalMerchantFetch()
@@ -79,6 +85,20 @@ class CareServiceTest extends TestCase
     public function testCareProxy()
     {
         $testCases = [
+            [
+                self::AUTH                                => 'admin',
+                self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.callback.v1.CallbackService/UpsertOperator',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.callback.v1.CallbackService/UpsertOperator',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                    'admin' => [
+                        'id' => 'RzrpySprAdmnId',
+                    ],
+                ],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
             [
                 self::AUTH                                => 'proxy',
                 self::API_ROUTE                           => '/care_service/merchant/twirp/rzp.care.callback.v1.CallbackService/CheckEligibility',
@@ -204,6 +224,7 @@ class CareServiceTest extends TestCase
             }
 
             $this->testData[__FUNCTION__]['request']['url'] = $testCase[self::API_ROUTE];
+            $this->testData[__FUNCTION__]['request']['method'] = $testCase[self::METHOD] ?? 'POST';
 
             $this->testData[__FUNCTION__]['response']['content']     = $testCase[self::ACTUAL_CARE_SERVICE_RESPONSE_BODY];
             $this->testData[__FUNCTION__]['response']['status_code'] = $testCase[self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS];
@@ -219,6 +240,8 @@ class CareServiceTest extends TestCase
                 case 'myoperator':
                     $this->ba->myOperatorAuth();
                     break;
+                case 'admin':
+                    $this->ba->adminAuth();
             }
 
             $this->app['trace']->info(TraceCode::MISC_TRACE_CODE, $this->testData[__FUNCTION__]);

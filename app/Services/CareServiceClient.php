@@ -22,11 +22,54 @@ class CareServiceClient
     const DEFAULT_TIMEOUT_DURATION_SECONDS = 20;
 
 
-    public function __construct($app)
+    public function __construct($app = null)
     {
+        if ($app === null)
+        {
+            $app = App::getFacadeRoot();
+        }
+
         $this->app = $app;
 
         $this->setConfig();
+    }
+
+    public function fetch($type, $id)
+    {
+        $input = [
+            'id'    => $id,
+            'type'  => $type,
+        ];
+
+        $input = $this->addAdminDetails($input);
+
+        // this is due to 1 level nesting of same "type" parameter on account of using any of proto fields
+        $entity = $this->adminProxyRequest('/twirp/rzp.care.admin.v1.AdminService/GetById', $input)[$type];
+
+        return $this->processFetchEntity($entity);
+    }
+
+    public function fetchMultiple($type, $params)
+    {
+        $input = [
+            'type'      => $type,
+            'params'     => $params
+        ];
+
+        $input = $this->addAdminDetails($input);
+
+        // this is due to 2 level nesting of same "type" parameter on account of using any of + repeated proto fields
+        $entities = $this->adminProxyRequest('/twirp/rzp.care.admin.v1.AdminService/FetchByParams', $input)[$type][$type] ??  [];
+
+
+        $response = [];
+
+        foreach ($entities as $entity)
+        {
+            $response[] = $this->processFetchEntity($entity);
+        }
+
+        return $response;
     }
 
     public function dashboardProxyRequest($path, $input)
@@ -46,6 +89,13 @@ class CareServiceClient
         $this->app['trace']->info(TraceCode::MYOPERATOR_WEBHOOK, [
             'path'       => $path,
         ]);
+
+        return $this->sendRequestAndProcessResponse($path, Requests::POST, $input);
+    }
+
+    public function adminProxyRequest($path, $input)
+    {
+        $input = $this->addAdminDetails($input);
 
         return $this->sendRequestAndProcessResponse($path, Requests::POST, $input);
     }
@@ -162,10 +212,36 @@ class CareServiceClient
         return $input;
     }
 
+    protected function addAdminDetails($input)
+    {
+        $input['admin'] = [
+            'id' => $this->app['basicauth']->getAdmin()->getId(),
+        ];
+
+        return $input;
+    }
+
     protected function getOptions()
     {
         return [
             self::TIMEOUT => self::DEFAULT_TIMEOUT_DURATION_SECONDS,
         ];
+    }
+
+    protected function processFetchEntity($entity)
+    {
+        // twirp+protobuf serializes int fields to string. but this breaks display on dashboard for entity fetch
+        // hence manually casting these 2 fields till a workaround is found
+        if (isset($entity['created_at']) === true)
+        {
+            $entity['created_at'] = (int)$entity['created_at'];
+        }
+
+        if (isset($entity['updated_at']) === true)
+        {
+            $entity['updated_at'] = (int)$entity['updated_at'];
+        }
+
+        return $entity;
     }
 }
