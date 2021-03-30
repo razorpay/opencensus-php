@@ -11,7 +11,6 @@ use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Partner\Commission\Invoice;
-use RZP\Models\Partner\Commission\Constants;
 
 class CommissionTdsSettlement extends Job
 {
@@ -35,6 +34,10 @@ class CommissionTdsSettlement extends Job
 
     protected $partnerId;
 
+    protected $updateInvoiceStatus = true;
+
+    protected $createTds = true;
+
     protected $toTimestamp;
 
     public    $timeout        = 1800;
@@ -53,7 +56,10 @@ class CommissionTdsSettlement extends Job
 
         $this->fromTimestamp = $input['from'] ?? null;
 
-        $this->invoiceId = $input[Constants::INVOICE_ID];
+        $this->invoiceId = $input[Invoice\Constants::INVOICE_ID];
+
+        $this->updateInvoiceStatus = $input[Invoice\Constants::UPDATE_INVOICE_STATUS] ?? true;
+        $this->createTds = $input[Invoice\Constants::CREATE_TDS] ?? true;
     }
 
     public function handle()
@@ -101,12 +107,6 @@ class CommissionTdsSettlement extends Job
 
             $partner = $this->repoManager->merchant->findOrFail($this->partnerId);
 
-            $summary = [
-                'failed_ids'    => [],
-                'failed_count'  => 0,
-                'success_count' => 0,
-            ];
-
             while (true)
             {
                 // fetch txns in batches and process
@@ -127,27 +127,34 @@ class CommissionTdsSettlement extends Job
                 CommissionOnHoldClear::dispatch($this->mode, $transactions->getIds());
             }
 
-            $totalCommission = $invoice->getGrossAmount() - $invoice->getTaxAmount();
-            $totalTax        = $invoice->getTaxAmount();
-
-            list($totalTds) = $core->calculateTds($partner, $totalCommission);
-
-            $summary['total_tax']        = $totalTax;
-            $summary['total_commission'] = $totalCommission;
-            $summary['total_tds']        = $totalTds;
-
-            $this->trace->info(TraceCode::COMMISSION_TDS_SETTLEMENT_SUMMARY, $summary);
-
-            if ($totalTds > 0)
+            if ($this->createTds === true)
             {
-                $core->createCommissionTds($partner, $totalTds);
+                $totalCommission = $invoice->getGrossAmount() - $invoice->getTaxAmount();
+                $totalTax        = $invoice->getTaxAmount();
+
+                list($totalTds, $tdsPercentage) = $core->calculateTds($partner, $totalCommission);
+
+                $summary['total_tax']        = $totalTax;
+                $summary['total_commission'] = $totalCommission;
+                $summary['total_tds']        = $totalTds;
+                $summary['tds_percentage']   = $tdsPercentage;
+
+                $this->trace->info(TraceCode::COMMISSION_TDS_SETTLEMENT_SUMMARY, $summary);
+
+                if ($totalTds > 0)
+                {
+                    $core->createCommissionTds($partner, $totalTds);
+                }
             }
 
-            $invoice->setStatus(Invoice\Status::PROCESSED);
+            if ($this->updateInvoiceStatus === true)
+            {
+                $invoice->setStatus(Invoice\Status::PROCESSED);
 
-            $this->repoManager->saveOrFail($invoice);
+                $this->repoManager->saveOrFail($invoice);
 
-            CommissionInvoiceAction::dispatch($this->mode, $invoice->getStatus(), $invoice->getId());
+                CommissionInvoiceAction::dispatch($this->mode, $invoice->getStatus(), $invoice->getId());
+            }
 
             $this->delete();
         }

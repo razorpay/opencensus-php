@@ -25,6 +25,15 @@ class CommissionInvoiceController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function clearOnHoldForInvoiceBulk()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->clearOnHoldForInvoiceBulk($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function fetch($id)
     {
         $input = Request::all();

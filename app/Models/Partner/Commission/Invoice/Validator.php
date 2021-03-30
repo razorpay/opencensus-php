@@ -28,6 +28,12 @@ class Validator extends Base\Validator
         Entity::YEAR  => 'required|digits:4',
     ];
 
+    protected static $bulkOnHoldClearRules = [
+        Constants::INVOICE_IDS           => 'required|array',
+        Constants::CREATE_TDS            => 'sometimes|boolean',
+        Constants::UPDATE_INVOICE_STATUS => 'sometimes|boolean',
+    ];
+
     public function validateAction($attribute, $key)
     {
         Status::validateStatus($key);

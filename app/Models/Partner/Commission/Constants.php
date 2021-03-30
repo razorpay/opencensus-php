@@ -51,7 +51,7 @@ class Constants
      */
     const PARTNER_IDS = 'partner_ids';
 
-    const INVOICE_ID = 'invoice_id';
+    const INVOICE_ID  = 'invoice_id';
 
     /**
      * List of entities for which the commission can be rolled out.

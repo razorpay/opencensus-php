@@ -16,7 +16,6 @@ use RZP\Models\Merchant\Balance;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Settlement\Channel;
 use RZP\Jobs\CommissionTdsSettlement;
-use RZP\Models\Partner\Commission\Tds;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Jobs\CommissionFinanceTriggeredOnHoldClear;
 use RZP\Models\Partner\Commission\Invoice as CommissionInvoice;
@@ -24,6 +23,8 @@ use RZP\Models\Partner\Commission\Invoice as CommissionInvoice;
 class Core extends Base\Core
 {
     const COMMISSIONS_BULK_CAPTURE_LIMIT = 200;
+
+    const COMMISSIONS_TRANSACTION_FETCH_LIMIT = 5000;
 
     public function build(
         Base\PublicEntity $source,

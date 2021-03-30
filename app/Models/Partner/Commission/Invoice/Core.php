@@ -18,6 +18,7 @@ use RZP\Models\Currency\Currency;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Pricing\Calculator;
 use RZP\Models\Tax\Gst\GstTaxIdMap;
+use RZP\Jobs\CommissionTdsSettlement;
 use RZP\Jobs\CommissionInvoiceAction;
 use RZP\Jobs\CommissionInvoiceGenerate;
 use RZP\Mail\Merchant\CommissionInvoice;
@@ -95,9 +96,11 @@ class Core extends Base\Core
     public function changeInvoiceStatus(Entity $invoice, $input)
     {
         $merchant = $invoice->merchant;
+        $env = $this->app->environment();
 
         // check for approved only for merchant request and not after workflow approval
-        if ($this->app['api.route']->isWorkflowExecuteOrApproveCall() === true)
+        if (($this->app['api.route']->isWorkflowExecuteOrApproveCall() === true) or
+            (($env === 'testing') and ($input[Entity::ACTION] === Status::APPROVED)))
         {
             $invoice->setStatus(Status::APPROVED);
 
@@ -487,6 +490,34 @@ class Core extends Base\Core
             Commission\Constants::FROM => $fromTimestamp,
             Commission\Constants::TO   => $endTimestamp,
         ];
+    }
+
+    public function clearOnHoldForInvoiceBulk(array $input)
+    {
+        if (empty($input[Constants::INVOICE_IDS]) === true)
+        {
+            return [];
+        }
+
+        $invoiceCore = new Core;
+
+        foreach ($input[Constants::INVOICE_IDS] as $invoiceId)
+        {
+            $invoice = $this->repo->commission_invoice->findOrFail($invoiceId);
+
+            $createTds           = (bool) ($input[Constants::CREATE_TDS] ?? false);
+            $updateInvoiceStatus = (bool) ($input[Constants::UPDATE_INVOICE_STATUS] ?? false);
+
+            $data = $invoiceCore->convertMonthAndYearToTimeStamp($invoice->getMonth(), $invoice->getYear());
+
+            $data[Constants::INVOICE_ID] = $invoice->getId();
+            $data[Constants::UPDATE_INVOICE_STATUS] = $updateInvoiceStatus;
+            $data[Constants::CREATE_TDS] = $createTds;
+
+            CommissionTdsSettlement::dispatch($this->mode, $invoice->getMerchantId(), $data);
+        }
+
+        return [];
     }
 
     protected function createLineItemsForInvoice(Merchant\Entity $partner, Entity $invoice, int $month, int $year): bool

@@ -18,6 +18,19 @@ return [
         ],
     ],
 
+    'testInvoiceCompleteFlow' => [
+        'request' => [
+            'method' => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'entity' => 'payment',
+            ],
+        ],
+    ],
+
     'testImplicitVariableOnHoldClearForHighTdsPercentage' => [
         'request' => [
             'method' => 'POST',
@@ -36,6 +49,35 @@ return [
             'method'  => 'PUT',
             'content' => [
                 'action' => 'under_review',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => 'true',
+            ],
+        ],
+    ],
+
+    'testInvoiceOnHoldClear' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'url' => '/commissions/invoice/on_hold_clear/bulk',
+            'content' => [
+                'invoice_ids' => ['a', 'b'],
+                'create_tds'  => false,
+                'update_invoice_status' => false,
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testInvoiceActionApproved' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'content' => [
+                'action' => 'approved',
             ],
         ],
         'response' => [

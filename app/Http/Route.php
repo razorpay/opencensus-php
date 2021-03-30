@@ -1790,6 +1790,7 @@ class Route
         'commissions_invoice_generate'             => ['post',     'commissions/invoice/create',                     'CommissionInvoiceController@postCreateInvoices'                    ],
         'commissions_invoice_status_change'        => ['put',      'commissions/invoice/{id}',                       'CommissionInvoiceController@changeStatus'                          ],
         'commissions_invoice_fetch'                => ['get',      'commissions/invoice/{id}',                       'CommissionInvoiceController@fetch'                                 ],
+        'invoice_on_hold_clear_bulk'               => ['put',      'commissions/invoice/on_hold_clear/bulk',         'CommissionInvoiceController@clearOnHoldForInvoiceBulk'             ],
 
         'submerchants_fetch'                       => ['get',      'submerchants/{id}',                              'MerchantController@getSubmerchant'                                 ],
         'submerchants_fetch_multiple'              => ['get',      'submerchants',                                   'MerchantController@listSubmerchants'                               ],
@@ -4263,6 +4264,7 @@ class Route
         'commissions_bulk_capture_by_partner',
         'commissions_get_aggregates',
         'commissions_mark_for_settlement',
+        'invoice_on_hold_clear_bulk',
 
         'merchant_restrict',
         'user_update_contact_admin',
@@ -5146,6 +5148,7 @@ class Route
         'commissions_bulk_capture_by_partner'      => Permission::COMMISSION_CAPTURE,
         'commissions_get_aggregates'               => Permission::COMMISSION_PAYOUT,
         'commissions_mark_for_settlement'          => Permission::COMMISSION_PAYOUT,
+        'invoice_on_hold_clear_bulk'               => Permission::ADMIN_MANAGE_PARTNERS,
 
         'merchant_restrict'                        => Permission::MERCHANT_RESTRICT,
         'user_account_lock_unlock_admin'           => Permission::USER_ACCOUNT_LOCK_UNLOCK,

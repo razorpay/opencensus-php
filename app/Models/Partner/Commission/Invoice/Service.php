@@ -21,6 +21,13 @@ class Service extends Base\Service
         return (new Core)->changeInvoiceStatus($invoice, $input);
     }
 
+    public function clearOnHoldForInvoiceBulk(array $input)
+    {
+        (new Validator)->validateInput('bulk_on_hold_clear', $input);
+
+        return (new Core)->clearOnHoldForInvoiceBulk($input);
+    }
+
     public function fetch($id)
     {
         $params = [

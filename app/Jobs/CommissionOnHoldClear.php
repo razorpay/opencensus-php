@@ -47,6 +47,8 @@ class CommissionOnHoldClear extends Job
                 'success_count' => 0,
             ];
 
+            $this->trace->info(TraceCode::COMMISSION_TRANSACTION_ON_HOLD_CLEAR_REQUEST, ['transactions' => $this->transactions]);
+
             foreach ($this->transactions as $transactionId)
             {
                 try
@@ -71,7 +73,12 @@ class CommissionOnHoldClear extends Job
                 }
             }
 
-            (new Commission\CommissionOnHoldUtility())->dispatchForSettlement($txn, $successTxnIds);
+            $this->trace->info(TraceCode::COMMISSION_TRANSACTION_ON_HOLD_CLEAR_SUMMARY, $summary);
+
+            if (empty($txn) === false)
+            {
+                (new Commission\CommissionOnHoldUtility())->dispatchForSettlement($txn, $successTxnIds);
+            }
 
             $this->delete();
         }

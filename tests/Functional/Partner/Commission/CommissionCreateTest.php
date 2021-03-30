@@ -70,6 +70,182 @@ class CommissionCreateTest extends TestCase
         $this->assertEquals($commission[Commission\Entity::FEE] - $commission[Commission\Entity::TAX], $commissionComponent->getMerchantPricingAmount() - $commissionComponent->getCommissionPricingAmount());
     }
 
+    public function testInvoiceOnHoldClear()
+    {
+        Mail::fake();
+
+        list($partner, $subMerchant, $payment, $config, $commission) = $this->createSampleCommission([],[],[],[
+            'credit' => 1770,
+            'debit'  => 0,
+            'fee'    => 1770,
+            'tax'    => 270,
+        ]);
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData['testCaptureCommission'];
+
+        $testData['request']['url'] = '/commissions/'.$commission->getPublicId().'/capture';
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testInvoiceGenerate'];
+
+        $now = Carbon::now(Timezone::IST);
+
+        $testData['request']['content']['month']        = $now->month;
+        $testData['request']['content']['year']         = $now->year;
+        $testData['request']['content']['merchant_ids'] = [$partner->getId()];
+
+        $this->createTaxes();
+
+        $this->runRequestResponseFlow($testData);
+
+        $invoice = $this->getDbLastEntity('commission_invoice');
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['content']['invoice_ids'] = [$invoice->getId()];
+        $this->runRequestResponseFlow($testData);
+
+        // check that invoice status isn't updated
+        $invoice = $this->getDbLastEntity('commission_invoice');
+        $this->assertEquals('issued', $invoice->getStatus());
+
+        // get commission transactions and verify on hold flag is cleared
+        $commission = $this->getDbEntityById('commission', $commission['id']);
+        $commTransaction = $this->getDbEntityById('transaction', $commission['transaction_id']);
+        $this->assertEquals(0, $commTransaction->getOnHold());
+
+        // check that no adjustment entries are created
+        $tdsAdjustment = $this->getDbLastEntity('adjustment');
+        $this->assertNull($tdsAdjustment);
+    }
+
+    private function createTaxes()
+    {
+        DB::connection('test')->table('taxes')->insert(
+            [
+                'id' => '9nDpYjuyZsOlMK',
+                'rate' => 90000,
+                'rate_type' => 'percentage',
+                'name' => 'CGST 9%',
+                'merchant_id' => '100000Razorpay',
+                'created_at' => '1548745646',
+                'updated_at' => '1548745646',
+            ]
+        );
+        DB::connection('test')->table('taxes')->insert(
+            [
+                'id' => '9nDpYqgYcqpr8q',
+                'rate' => 90000,
+                'rate_type' => 'percentage',
+                'name' => 'SGST 9%',
+                'merchant_id' => '100000Razorpay',
+                'created_at' => '1548745646',
+                'updated_at' => '1548745646',
+            ]
+        );
+
+        DB::connection('test')->table('taxes')->insert(
+            [
+                'id' => '9nDpYf1tTUs2Vh',
+                'rate' => 180000,
+                'rate_type' => 'percentage',
+                'name' => 'IGST 18%',
+                'merchant_id' => '100000Razorpay',
+                'created_at' => '1548745646',
+                'updated_at' => '1548745646',
+            ]
+        );
+    }
+
+    public function testInvoiceCompleteFlow()
+    {
+        Mail::fake();
+
+        $testData = $this->setUpCommissionCreate();
+
+        $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
+
+        $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_PLATFORM_APP_ID,
+            null,
+            [
+                'implicit_plan_id'    => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
+            ]);
+
+        $this->runRequestResponseFlow($testData);
+
+        list($payment, $commission) = $this->assertAndGetCommissionByType(CommissionType::IMPLICIT);
+
+        $testData = $this->testData['testInvoiceGenerate'];
+
+        $now = Carbon::now(Timezone::IST);
+
+        $testData['request']['content']['month']        = $now->month;
+        $testData['request']['content']['year']         = $now->year;
+        $testData['request']['content']['merchant_ids'] = [Constants::DEFAULT_PLATFORM_MERCHANT_ID];
+
+        $this->createTaxes();
+
+        $this->runRequestResponseFlow($testData);
+
+        // check that invoice is created with line items and amounts
+        $invoice = $this->getDbLastEntity('commission_invoice');
+
+        $invoiceExpectedData = [
+            'merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+            'month' => $now->month,
+            'year' => $now->year,
+            'status' => 'issued',
+            'gross_amount' => 944,
+            'tax_amount' => 144,
+        ];
+
+        $this->assertArraySelectiveEquals($invoiceExpectedData, $invoice->toArray());
+
+        $lineItemExpectedData = [
+            [
+                'amount' => 944,
+                'gross_amount' => 944,
+                'tax_amount' => 144,
+                'net_amount' => 944,
+                'tax_inclusive' => true,
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($lineItemExpectedData, $invoice->lineItems->toArray());
+
+        $this->fixtures->merchant->addFeatures('automated_comm_payout', Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $testData = $this->testData['testInvoiceAction'];
+
+        $testData['request']['url'] = '/commissions/invoice/' . $invoice->getId();
+
+        $this->ba->proxyAuth('rzp_test_' . Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->runRequestResponseFlow($testData);
+
+        $invoice = $this->getDbLastEntity('commission_invoice');
+
+        $this->assertEquals('under_review', $invoice['status']);
+
+        $testData = $this->testData['testInvoiceActionApproved'];
+
+        $testData['request']['url'] = '/commissions/invoice/' . $invoice->getId();
+
+        $this->ba->proxyAuth('rzp_test_' . Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->runRequestResponseFlow($testData);
+
+        $invoice = $this->getDbLastEntity('commission_invoice');
+
+        $this->assertEquals('processed', $invoice['status']);
+    }
+
     public function testImplicitVariableOnHoldClearForHighTdsPercentage()
     {
         $testData = $this->setUpCommissionCreate();
@@ -117,28 +293,7 @@ class CommissionCreateTest extends TestCase
         $testData['request']['content']['year']         = $now->year;
         $testData['request']['content']['merchant_ids'] = [$partner->getId()];
 
-        DB::connection('test')->table('taxes')->insert(
-            [
-                'id' => '9nDpYjuyZsOlMK',
-                'rate' => 90000,
-                'rate_type' => 'percentage',
-                'name' => 'CGST 9%',
-                'merchant_id' => '100000Razorpay',
-                'created_at' => '1548745646',
-                'updated_at' => '1548745646',
-            ]
-        );
-        DB::connection('test')->table('taxes')->insert(
-            [
-                'id' => '9nDpYqgYcqpr8q',
-                'rate' => 90000,
-                'rate_type' => 'percentage',
-                'name' => 'SGST 9%',
-                'merchant_id' => '100000Razorpay',
-                'created_at' => '1548745646',
-                'updated_at' => '1548745646',
-            ]
-        );
+        $this->createTaxes();
 
         $this->startTest($testData);
 
@@ -219,28 +374,7 @@ class CommissionCreateTest extends TestCase
         $testData['request']['content']['year']         = $now->year;
         $testData['request']['content']['merchant_ids'] = [$partner->getId()];
 
-        DB::connection('test')->table('taxes')->insert(
-            [
-                'id' => '9nDpYjuyZsOlMK',
-                'rate' => 90000,
-                'rate_type' => 'percentage',
-                'name' => 'CGST 9%',
-                'merchant_id' => '100000Razorpay',
-                'created_at' => '1548745646',
-                'updated_at' => '1548745646',
-            ]
-        );
-        DB::connection('test')->table('taxes')->insert(
-            [
-                'id' => '9nDpYqgYcqpr8q',
-                'rate' => 90000,
-                'rate_type' => 'percentage',
-                'name' => 'SGST 9%',
-                'merchant_id' => '100000Razorpay',
-                'created_at' => '1548745646',
-                'updated_at' => '1548745646',
-            ]
-        );
+        $this->createTaxes();
 
         $this->runRequestResponseFlow($testData);
 
