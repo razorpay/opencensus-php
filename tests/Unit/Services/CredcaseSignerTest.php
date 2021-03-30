@@ -3,7 +3,7 @@
 namespace RZP\Tests\Unit\Services;
 
 use Exception;
-use Illuminate\Support\Facades\Redis;
+use Illuminate\Redis\Connections\PredisConnection;
 
 use RZP\Tests\TestCase;
 use RZP\Tests\Traits\MocksRazorx;
@@ -45,7 +45,7 @@ class CredcaseSignerTest extends TestCase
             ->with(self::PAYLOAD_1, self::PUBLIC_KEY_1)
             ->willReturn(self::EXPECTED_SIGNATURE_1);
 
-        $signature = (new CredcaseSigner)->sign(self::PAYLOAD_1, self::PUBLIC_KEY_1);
+        $signature = (new CredcaseSigner($this->redis))->sign(self::PAYLOAD_1, self::PUBLIC_KEY_1);
 
         $this->assertEquals(self::EXPECTED_SIGNATURE_1, $signature);
     }
@@ -61,7 +61,7 @@ class CredcaseSignerTest extends TestCase
             ->with('credcase:ks:v1:rzp_test_1DP5mmOlF5G5ag')
             ->willReturn(self::PUBLIC_KEY_1_ENCRYPTED_SECRET);
 
-        $signature = (new CredcaseSigner)->sign(self::PAYLOAD_1, self::PUBLIC_KEY_1);
+        $signature = (new CredcaseSigner($this->redis))->sign(self::PAYLOAD_1, self::PUBLIC_KEY_1);
 
         $this->assertEquals(self::EXPECTED_SIGNATURE_1, $signature);
     }
@@ -82,7 +82,7 @@ class CredcaseSignerTest extends TestCase
             ->with(self::PAYLOAD_1, self::PUBLIC_KEY_1)
             ->willReturn(self::EXPECTED_SIGNATURE_1);
 
-        $signature = (new CredcaseSigner)->sign(self::PAYLOAD_1, self::PUBLIC_KEY_1);
+        $signature = (new CredcaseSigner($this->redis))->sign(self::PAYLOAD_1, self::PUBLIC_KEY_1);
 
         $this->assertEquals(self::EXPECTED_SIGNATURE_1, $signature);
     }
@@ -102,11 +102,9 @@ class CredcaseSignerTest extends TestCase
 
     protected function mockRedis()
     {
-        $this->redis = $this->getMockBuilder(Redis::class)
+        $this->redis = $this->getMockBuilder(PredisConnection::class)
+            ->setConstructorArgs([null])
             ->setMethods(['get'])
             ->getMock();
-        Redis::shouldReceive('connection')
-            ->with('credcase_signer')
-            ->andReturn($this->redis);
     }
 }

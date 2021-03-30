@@ -4,6 +4,8 @@ namespace RZP\Services;
 
 use Throwable;
 use Socket\Raw\Factory;
+use Illuminate\Redis\Connections\Connection;
+use Illuminate\Redis\Connectors\PredisConnector;
 
 use Razorpay\Trace\Logger;
 
@@ -39,18 +41,39 @@ class CredcaseSigner
     protected $trace;
 
     /** @var \Illuminate\Redis\Connections\Connection */
-    protected $redis;
+    protected static $redis;
 
     /** @var array */
     protected $config;
 
-    public function __construct()
+    public function __construct(Connection $redis = null)
     {
         $this->razorx = app('razorx');
         $this->ba     = app('basicauth');
         $this->trace  = app('trace');
-        $this->redis  = app('redis')->connection('credcase_signer');
+        static::$redis  = $redis ?: $this->instantiatePredisConnectionOnce();
         $this->config = app('config')->get('services.credcase_signer');
+    }
+
+    /**
+     * Instantiates predis connection object once and sets as static property.
+     *
+     * Why? Fixes predis instantiation for credcase signer wrt 6.x upgrade. It
+     * can be reverted if laravel/framework#36762 gets accepted. Version 6.x
+     * stopped supporting `username` in redis connection config after
+     * laravel/framework#33892 which got fixed later in 8.x with laravel/framework#36299.
+     *
+     * @return Connection
+     */
+    protected function instantiatePredisConnectionOnce(): Connection
+    {
+        if (static::$redis === null)
+        {
+            $config = app('config')->get('database.redis');
+            static::$redis = (new PredisConnector)->connect($config['credcase_signer'], $config['options'] ?? []);
+        }
+
+        return static::$redis;
     }
 
     /**
@@ -144,7 +167,7 @@ class CredcaseSigner
                 try
                 {
                     $redisGetStartAt = microtime(true);
-                    $encryptedSecret = $this->redis->get($cacheKey);
+                    $encryptedSecret = static::$redis->get($cacheKey);
                     $this->trace->histogram(self::METRIC_SIGN_REDIS_GET_LATENCY_SECS, microtime(true) - $redisGetStartAt);
 
                     if ($encryptedSecret === null)
