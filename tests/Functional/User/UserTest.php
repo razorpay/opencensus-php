@@ -181,7 +181,7 @@ class UserTest extends TestCase
         $this->assertArrayHasKey('token', $response);
     }
 
-    protected function mockHubSpotClient($methodName)
+    protected function mockHubSpotClient($methodName, $times = 1)
     {
         $hubSpotMock = $this->getMockBuilder(HubspotClient::class)
                             ->setConstructorArgs([$this->app])
@@ -190,7 +190,7 @@ class UserTest extends TestCase
 
         $this->app->instance('hubspot', $hubSpotMock);
 
-        $hubSpotMock->expects($this->exactly(1))
+        $hubSpotMock->expects($this->exactly($times))
                     ->method($methodName);
     }
 
@@ -330,15 +330,21 @@ class UserTest extends TestCase
 
         $adminLead = $this->fixtures->create('admin_lead', ['admin_id' => $adminId, 'form_data' => $formData]);
 
-        $testData = & $this->testData[__FUNCTION__];
-
-        $testData['request']['content']['merchant_invitation'] = $adminLead['token'];
-
         $this->ba->appAuth();
 
-        $this->mockHubSpotClient('trackSignupEvent');
+        $this->mockHubSpotClient('trackSignupEvent', 3);
 
-        $this->startTest();
+        $testData = $this->testData['testOauthCreateWithMissingIdToken'];
+        $this->runRequestResponseFlow($testData);
+
+        $this->app['config']->set('oauth.merchant_oauth_mock', false);
+        $testData = $this->testData['testOauthCreateWithInvalidIdToken'];
+        $this->runRequestResponseFlow($testData);
+
+        $this->app['config']->set('oauth.merchant_oauth_mock', true);
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['content']['merchant_invitation'] = $adminLead['token'];
+        $this->runRequestResponseFlow($testData);
 
         $merchant = $this->getLastEntity('merchant', true);
 
@@ -351,15 +357,6 @@ class UserTest extends TestCase
         $this->assertNotNull($row);
     }
 
-    public function testOauthCreateWithIdToken()
-    {
-        $this->ba->appAuth();
-
-        $this->mockHubSpotClient('trackSignupEvent');
-
-        $this->startTest();
-    }
-
     public function testOauthLogin()
     {
         // user already exists with confirmed password
@@ -370,9 +367,11 @@ class UserTest extends TestCase
 
         $this->ba->appAuth();
 
-        $this->startTest();
+        $testData = $this->testData[__FUNCTION__];
+        $this->runRequestResponseFlow($testData);
 
-        $testData = $this->testData['testOauthLoginWithIdToken'];
+        $testData = $this->testData['testOauthLoginWithMissingIdToken'];
+
         $this->runRequestResponseFlow($testData);
 
         $this->app['config']->set('oauth.merchant_oauth_mock', false);

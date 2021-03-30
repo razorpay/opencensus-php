@@ -628,7 +628,8 @@ class UserTest extends TestCase
                 'email'                 => 'dummy@example.com',
                 'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
                 'app'                   => '',
-                'oauth_provider'        => '{"oauth_provider": "google"}',
+                'oauth_provider'        => '["google"]',
+                'id_token'              => 'valid id token',
             ],
             'userDetails' => [
                 'id'                    => '100002Razorpay',
@@ -1465,7 +1466,8 @@ class UserTest extends TestCase
                 'email'                 => 'dummy@example.com',
                 'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
                 'app'                   => '',
-                'oauth_provider'        => '{"oauth_provider": "google"}',
+                'oauth_provider'        => '["google"]',
+                'id_token'              => 'valid id token',
             ],
             'userDetails' => [
                 'id'                    => '100002Razorpay',

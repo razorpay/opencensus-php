@@ -274,6 +274,7 @@ return [
             'content' => [
                 'email'          => 'hello123@gmail.com',
                 'oauth_provider' => "[\"google\"]",
+                'id_token'       => 'valid id token'
             ],
         ],
         'response' => [
@@ -321,30 +322,27 @@ return [
         ],
     ],
 
-    'testOauthLoginWithIdToken' => [
+    'testOauthLoginWithMissingIdToken' => [
         'request'  => [
             'url'     => '/users/oauth-login',
             'method'  => 'POST',
             'content' => [
                 'email'          => 'hello123@gmail.com',
                 'oauth_provider' => "[\"google\"]",
-                'id_token'       => 'valid id token'
             ],
         ],
         'response' => [
             'content' => [
-                'contact_mobile'          => null,
-                'contact_mobile_verified' => false,
-                'confirmed'               => true,
-                'merchants'               => [
-                    [
-                        'activated'    => false,
-                        'archived_at'  => null,
-                        'suspended_at' => null,
-                        'role'         => 'owner'
-                    ]
-                ]
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The id token field is required.',
+                ],
             ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
 
@@ -379,6 +377,7 @@ return [
             'content' => [
                 'email'          => 'hello123@gmail.com',
                 'oauth_provider' => "[\"facebook\"]",
+                'id_token'       => 'valid id token',
             ],
         ],
         'response' => [
@@ -425,7 +424,8 @@ return [
             'content' => [
                 'email'          => 'hello123@gmail.com',
                 'oauth_provider' => "[\"google\"]",
-                'password'       => 'hello123'
+                'password'       => 'hello123',
+                'id_token'       => 'valid id token',
             ],
         ],
         'response' => [
@@ -452,6 +452,7 @@ return [
             'content' => [
                 'email'          => 'hello123@gmail.com',
                 'oauth_provider' => "[\"google\"]",
+                'id_token'       => 'valid id token',
             ],
         ],
         'response' => [
@@ -478,6 +479,7 @@ return [
             'content' => [
                 'email'          => 'hello123@gmail.com',
                 'oauth_provider' => "[\"google\"]",
+                'id_token'       => 'valid id token',
             ],
         ],
         'response' => [
@@ -504,6 +506,7 @@ return [
             'content' => [
                 'email'          => 'hello123@gmail.com',
                 'oauth_provider' => "[\"google\"]",
+                'id_token'       => 'valid id token',
             ],
         ],
         'response' => [
@@ -513,20 +516,51 @@ return [
         ],
     ],
 
-    'testOauthCreateWithIdToken' => [
+    'testOauthCreateWithInvalidIdToken' => [
         'request'  => [
             'url'     => '/users/oauth-register',
             'method'  => 'POST',
             'content' => [
                 'email'          => 'hello123@gmail.com',
                 'oauth_provider' => "[\"google\"]",
-                'id_token'       => 'valid id token',
+                'id_token'       => 'invalid id token',
             ],
         ],
         'response' => [
             'content' => [
-                'email' => 'hello123@gmail.com',
+                'error' => [
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_ID_TOKEN,
+                ],
             ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID_TOKEN,
+        ],
+    ],
+
+    'testOauthCreateWithMissingIdToken' => [
+        'request'  => [
+            'url'     => '/users/oauth-register',
+            'method'  => 'POST',
+            'content' => [
+                'email'          => 'hello123@gmail.com',
+                'oauth_provider' => "[\"google\"]",
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The id token field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
 

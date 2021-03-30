@@ -420,11 +420,7 @@ class Core extends Base\Core
         {
             $user = $this->repo->user->getUserFromEmailOrFail($input[Entity::EMAIL]);
 
-            // todo: make id_token mandatory once all clients start sending the id token
-            if (empty($input[Constants::ID_TOKEN]) === false)
-            {
-                $this->verifyOauthIdToken($input);
-            }
+            $this->verifyOauthIdToken($input);
 
             if ($user !== null)
             {
