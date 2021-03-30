@@ -149,6 +149,7 @@ return [
                 "Cardless EMI",
                 "Paylater",
                 "Enabled",
+                "Status",
                 "Capability",
             ],
             [
@@ -189,6 +190,7 @@ return [
                 "",
                 "",
                 "9c93de1726e152d34794751fb8d95700", // encrypted A/c no.
+                "",
                 "",
                 "",
                 "",
@@ -246,6 +248,7 @@ return [
                     Header::TERMINAL_CREATION_CARDLESS_EMI         => null,
                     Header::TERMINAL_CREATION_PAYLATER             => null,
                     Header::TERMINAL_CREATION_ENABLED              => null,
+                    Header::TERMINAL_CREATION_STATUS               => null,
                     Header::TERMINAL_CREATION_CAPABILITY           => null,
                 ],
             ]
@@ -320,6 +323,7 @@ return [
                     Header::TERMINAL_CREATION_CARDLESS_EMI         => null,
                     Header::TERMINAL_CREATION_PAYLATER             => null,
                     Header::TERMINAL_CREATION_ENABLED              => null,
+                    Header::TERMINAL_CREATION_STATUS               => null,
                     Header::TERMINAL_CREATION_CAPABILITY           => null,
                 ],
             ]
@@ -394,6 +398,7 @@ return [
                     Header::TERMINAL_CREATION_CARDLESS_EMI         => null,
                     Header::TERMINAL_CREATION_PAYLATER             => null,
                     Header::TERMINAL_CREATION_ENABLED              => null,
+                    Header::TERMINAL_CREATION_STATUS               => null,
                     Header::TERMINAL_CREATION_CAPABILITY           => null,
                 ],
             ]
@@ -451,6 +456,7 @@ return [
                         Header::TERMINAL_CREATION_CARDLESS_EMI         => null,
                         Header::TERMINAL_CREATION_PAYLATER             => null,
                         Header::TERMINAL_CREATION_ENABLED              => null,
+                        Header::TERMINAL_CREATION_STATUS               => null,
                         Header::TERMINAL_CREATION_CAPABILITY           => null,
                     ]
                 ]
@@ -506,6 +512,7 @@ return [
                     Header::TERMINAL_CREATION_CARDLESS_EMI         => null,
                     Header::TERMINAL_CREATION_PAYLATER             => null,
                     Header::TERMINAL_CREATION_ENABLED              => null,
+                    Header::TERMINAL_CREATION_STATUS               => null,
                     Header::TERMINAL_CREATION_CAPABILITY           => null,
                 ],
             ]
@@ -563,6 +570,7 @@ return [
                             Header::TERMINAL_CREATION_CARDLESS_EMI         => null,
                             Header::TERMINAL_CREATION_PAYLATER             => null,
                             Header::TERMINAL_CREATION_ENABLED              => null,
+                            Header::TERMINAL_CREATION_STATUS               => null,
                             Header::TERMINAL_CREATION_CAPABILITY           => null,
                         ]
                     ]
@@ -619,6 +627,7 @@ return [
                     Header::TERMINAL_CREATION_CARDLESS_EMI         => null,
                     Header::TERMINAL_CREATION_PAYLATER             => null,
                     Header::TERMINAL_CREATION_ENABLED              => null,
+                    Header::TERMINAL_CREATION_STATUS               => null,
                     Header::TERMINAL_CREATION_CAPABILITY           => null,
                 ],
             ]
@@ -676,6 +685,7 @@ return [
                         Header::TERMINAL_CREATION_CARDLESS_EMI         => null,
                         Header::TERMINAL_CREATION_PAYLATER             => null,
                         Header::TERMINAL_CREATION_ENABLED              => null,
+                        Header::TERMINAL_CREATION_STATUS               => null,
                         Header::TERMINAL_CREATION_CAPABILITY           => null,
                     ]
                 ]
@@ -731,6 +741,7 @@ return [
                     Header::TERMINAL_CREATION_CARDLESS_EMI         => null,
                     Header::TERMINAL_CREATION_PAYLATER             => null,
                     Header::TERMINAL_CREATION_ENABLED              => null,
+                    Header::TERMINAL_CREATION_STATUS               => null,
                     Header::TERMINAL_CREATION_CAPABILITY           => null,
                 ],
             ]
@@ -788,6 +799,7 @@ return [
                         Header::TERMINAL_CREATION_CARDLESS_EMI         => null,
                         Header::TERMINAL_CREATION_PAYLATER             => null,
                         Header::TERMINAL_CREATION_ENABLED              => null,
+                        Header::TERMINAL_CREATION_STATUS               => null,
                         Header::TERMINAL_CREATION_CAPABILITY           => null,
                     ]
                 ]
@@ -843,6 +855,7 @@ return [
                     Header::TERMINAL_CREATION_CARDLESS_EMI         => null,
                     Header::TERMINAL_CREATION_PAYLATER             => null,
                     Header::TERMINAL_CREATION_ENABLED              => null,
+                    Header::TERMINAL_CREATION_STATUS               => null,
                     Header::TERMINAL_CREATION_CAPABILITY           => null,
                 ],
                 [
@@ -888,6 +901,7 @@ return [
                     Header::TERMINAL_CREATION_CARDLESS_EMI         => null,
                     Header::TERMINAL_CREATION_PAYLATER             => null,
                     Header::TERMINAL_CREATION_ENABLED              => null,
+                    Header::TERMINAL_CREATION_STATUS               => null,
                     Header::TERMINAL_CREATION_CAPABILITY           => null,
                 ],
 

@@ -117,6 +117,7 @@ class TerminalCreationBulkTest extends TestCase
                 Batch\Header::TERMINAL_CREATION_CARDLESS_EMI         => null,
                 Batch\Header::TERMINAL_CREATION_PAYLATER             => null,
                 Batch\Header::TERMINAL_CREATION_ENABLED              => null,
+                Batch\Header::TERMINAL_CREATION_STATUS               => null,
                 Batch\Header::TERMINAL_CREATION_CAPABILITY           => null,
             ],
         ];

@@ -904,6 +904,32 @@ return [
         ]
     ],
 
+    'testCreateTerminalWithPendingStatus' => [
+        'request' => [
+            'content' => [
+                'gateway' => 'netbanking_hdfc',
+                'gateway_merchant_id' => '12345',
+                'gateway_terminal_id' => '12345678',
+                'gateway_terminal_password' => '12345678',
+                'category'  => '4567',
+                'netbanking'   => '1',
+                'network_category' => 'govt_education',
+                'status' => 'pending'
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway_merchant_id' => '12345',
+                'gateway_terminal_id' => '12345678',
+                'category'            => '4567',
+                'enabled'             => true,
+                'enabled_banks'       => ['HDFC'],
+                'status'              => 'pending',
+            ]
+        ]
+    ],
+
     'testCreateHitachiDebitRecurringTerminal' => [
         'request'  => [
             'content' => [
@@ -933,6 +959,39 @@ return [
             ],
         ],
     ],
+
+    'testCreateTerminalPendingStatus' => [
+        'request'  => [
+            'content' => [
+                'gateway'             => 'hitachi',
+                'gateway_acquirer'    => 'ratn',
+                'card'                => 1,
+                'type'                => [
+                    'recurring_non_3ds' => '1',
+                    'recurring_3ds'     => '1',
+                    'debit_recurring'   => '1',
+                ],
+                'gateway_merchant_id' => 'random',
+                'gateway_terminal_id' => '12345678',
+                'status'              => 'pending',
+            ],
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway' => 'hitachi',
+                'card'    => true,
+                'type'    => [
+                    'recurring_3ds',
+                    'recurring_non_3ds',
+                    'debit_recurring',
+                ],
+                'enabled' => true,
+                'status'              => 'pending',
+            ],
+        ],
+    ],
+
 
     'testCreateUpiCollectTerminal' => [
         'request'  => [

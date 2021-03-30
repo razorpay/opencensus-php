@@ -74,6 +74,7 @@ class TerminalCreation extends Base
         $cardlessEMI        = $entry[Batch\Header::TERMINAL_CREATION_CARDLESS_EMI];
         $payLater           = $entry[Batch\Header::TERMINAL_CREATION_PAYLATER];
         $enabled            = $entry[Batch\Header::TERMINAL_CREATION_ENABLED];
+        $status             = $entry[Batch\Header::TERMINAL_CREATION_STATUS];
         $capability         = $entry[Batch\Header::TERMINAL_CREATION_CAPABILITY];
 
         $currency = empty($currency) ? null : explode(', ', trim($currency));
@@ -122,6 +123,7 @@ class TerminalCreation extends Base
             Terminal\Entity::CARDLESS_EMI               => $cardlessEMI,
             Terminal\Entity::PAYLATER                   => $payLater,
             Terminal\Entity::ENABLED                    => $enabled,
+            Terminal\Entity::STATUS                     => empty($status) ? "activated" : $status,
             Terminal\Entity::CAPABILITY                 => $capability,
         ];
 

@@ -446,6 +446,19 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateTerminalWithPendingStatus()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $terminal = $this->getLastEntity('terminal', true);
+
+        $this->assertEquals('pending', $terminal['status']);
+    }
+
     public function testCreateHitachiDebitRecurringTerminal()
     {
         $url = '/merchants/100000Razorpay/terminals';
@@ -453,6 +466,19 @@ class TerminalTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
+    }
+
+    public function testCreateTerminalPendingStatus()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $terminal = $this->getLastEntity('terminal', true);
+
+        $this->assertEquals('pending', $terminal['status']);
     }
 
     public function testCreateUpiCollectTerminal()
@@ -1287,6 +1313,47 @@ class TerminalTest extends TestCase
     public function testTerminalTypeIvr()
     {
         $this->startTest();
+    }
+
+    // should be able to test status update even if terminal editing not defined for the gateway
+    public function testEditTerminalStatus()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal:ebs_terminal');
+
+        $tid = $terminal['id'];
+
+        $data = [
+            'status' => 'pending'
+        ];
+
+        $content = $this->editTerminal($tid, $data);
+
+        $this->assertEquals('pending', $content['status']);
+
+        $data = [
+            'status' => 'activated'
+        ];
+
+        $content = $this->editTerminal($tid, $data);
+
+        $this->assertEquals('activated', $content['status']);
+
+        $data = [
+            'status' => 'deactivated'
+        ];
+
+        $content = $this->editTerminal($tid, $data);
+
+        $this->assertEquals('deactivated', $content['status']);
+
+        $data = [
+            'status' => 'failed'
+        ];
+
+        $content = $this->editTerminal($tid, $data);
+
+        $this->assertEquals('failed', $content['status']);
     }
 
     public function testEditTerminalTypeRecurringBoth()

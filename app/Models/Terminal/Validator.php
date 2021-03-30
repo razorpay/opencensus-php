@@ -180,6 +180,7 @@ class Validator extends Base\Validator
         Entity::VIRTUAL_UPI_HANDLE         => 'required_if:type.upi_transfer,1|string',
         Entity::VIRTUAL_UPI_ROOT           => 'required_if:type.upi_transfer,1|string',
         Entity::VIRTUAL_UPI_MERCHANT_PREFIX=> 'sometimes_if:type.upi_transfer,1|string',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::TPV                        => 'sometimes|in:0,1,2',
     ];
 
@@ -190,6 +191,7 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $upiCitiTerminalRules = [
@@ -200,6 +202,7 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER             => 'sometimes|string',
         Entity::TYPE                       => 'sometimes|array',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $upiJuspayTerminalRules = [
@@ -212,6 +215,7 @@ class Validator extends Base\Validator
         Entity::UPI                        => 'required|boolean|in:1',
         Entity::TYPE                       => 'sometimes|array',
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::EXPECTED                   => 'sometimes_if:type.pay,1|boolean|in:1',
     ];
 
@@ -224,6 +228,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE        => 'required|string',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'required',
         Entity::GATEWAY_TERMINAL_PASSWORD2 => 'required',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $payuTerminalRules = [
@@ -232,6 +237,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET                   => 'required|string',
         Entity::TYPE                                    => 'required|array',
         Entity::TYPE . '.direct_settlement_with_refund' => 'required|in:1',
+        Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::PROCURER                                => 'sometimes|string|in:razorpay,merchant',
         Entity::MODE                                    => 'sometimes|in:2'
     ];
@@ -243,7 +249,8 @@ class Validator extends Base\Validator
         Entity::TYPE                                    => 'required|array',
         Entity::TYPE . '.direct_settlement_with_refund' => 'required|in:1',
         Entity::PROCURER                                => 'sometimes|string|in:razorpay,merchant',
-        Entity::MODE                                    => 'sometimes|in:2'
+        Entity::MODE                                    => 'sometimes|in:2',
+        Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed'
     ];
 
     protected static $hdfcTerminalRules = [
@@ -259,6 +266,7 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::CURRENCY                   => 'sometimes|array',
         Entity::CAPABILITY                 => 'sometimes|in:0,2',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $hitachiTerminalRules = [
@@ -273,7 +281,8 @@ class Validator extends Base\Validator
         Entity::RUPAY_MPAN                 => 'required_if:type.bharat_qr,1|string',
         Entity::EXPECTED                   => 'sometimes_if:type.bharat_qr,1|boolean',
         Entity::ACCOUNT_NUMBER             => 'sometimes_if:type.bharat_qr,1|string|max:50',
-        Entity::IFSC_CODE                  => 'sometimes_if:type.bharat_qr,1|string|size:11'
+        Entity::IFSC_CODE                  => 'sometimes_if:type.bharat_qr,1|string|size:11',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $mpgsTerminalRules = [
@@ -284,6 +293,7 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::CURRENCY                   => 'sometimes',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $isgTerminalRules = [
@@ -303,13 +313,15 @@ class Validator extends Base\Validator
         Entity::IFSC_CODE                  => 'sometimes_if:type.bharat_qr,1|string|size:11',
         Entity::GATEWAY_ACCESS_CODE        => 'required_without:mc_mpan|string',
         Entity::GATEWAY_SECURE_SECRET      => 'required_without:mc_mpan|string',
-        Entity::GATEWAY_ACQUIRER           => 'sometimes|string|in:kotak'
+        Entity::GATEWAY_ACQUIRER           => 'sometimes|string|in:kotak',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
 
     protected static $aepsIciciTerminalRules = [
         Entity::GATEWAY                    => 'required|in:aeps_icici',
         Entity::GATEWAY_MERCHANT_ID        => 'required|alpha_num',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $billdeskTerminalRules = [
@@ -319,13 +331,15 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::TYPE . '.non_recurring'    => 'sometimes|in:0,1',
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
-        Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string'
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $ebsTerminalRules = [
         Entity::GATEWAY                    => 'required|in:ebs',
         Entity::GATEWAY_MERCHANT_ID        => 'required|alpha_num|max:5',
         Entity::GATEWAY_SECURE_SECRET      => 'required|alpha_num|max:32',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $axisGeniusTerminalRules = [
@@ -333,6 +347,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'required|alpha_num|size:15',
         Entity::GATEWAY_SECURE_SECRET      => 'required|alpha_num|size:32',
         Entity::GATEWAY_ACCESS_CODE        => 'required|alhpa_num|size:8',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $firstDataTerminalRules = [
@@ -350,6 +365,7 @@ class Validator extends Base\Validator
         Entity::EMI_DURATION               => 'required_only_if:emi,1|integer|in:3,6,9,12',
         Entity::EMI_SUBVENTION             => 'sometimes|in:customer,merchant',
         Entity::CURRENCY                   => 'sometimes|array|max:1',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $fulcrumTerminalRules = [
@@ -377,6 +393,7 @@ class Validator extends Base\Validator
         Entity::EMI_SUBVENTION             => 'sometimes|in:customer,merchant',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::TYPE                       => 'sometimes|array',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $axisMigsTerminalRules = [
@@ -389,6 +406,7 @@ class Validator extends Base\Validator
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::TYPE                       => 'sometimes|array',
         Entity::CAPABILITY                 => 'sometimes|in:0,2',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::CURRENCY                   => 'sometimes|array',
     ];
 
@@ -403,6 +421,7 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::GATEWAY_RECON_PASSWORD     => 'sometimes|alpha_num',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::CURRENCY                   => 'sometimes_if:gateway_acquirer,axis|array',
     ];
 
@@ -411,11 +430,13 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'required|string|size:9',
         Entity::GATEWAY_TERMINAL_ID        => 'required|string|size:8',
         Entity::ENABLED                    => 'required|in:0,1',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $emiSbiEditTerminalRules = [
         Entity::ENABLED                    => 'required|in:0,1',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $axisMigsEditTerminalRules = [
@@ -428,6 +449,7 @@ class Validator extends Base\Validator
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::CAPABILITY                 => 'sometimes|in:0,2',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::CURRENCY                   => 'sometimes|array',
     ];
 
@@ -449,6 +471,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE        => 'required_without:mc_mpan|string',
         Entity::GATEWAY_SECURE_SECRET      => 'required_without:mc_mpan|string',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $atomEditTerminalRules = [
@@ -461,10 +484,10 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
         Entity::GATEWAY_SECURE_SECRET2      => 'sometimes|string',
         Entity::PROCURER                    => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                     =>  'sometimes|in:deactivated,pending,activated',
         Entity::TPV                         => 'sometimes|in:0,1,2',
         Entity::TYPE                        => 'sometimes|array',
         Entity::TYPE . '.non_recurring'     => 'sometimes|in:1',
-        Entity::STATUS                      => 'sometimes|string|in:deactivated,activated',
     ];
 
     protected static $bajajfinservEditTerminalRules = [
@@ -484,6 +507,7 @@ class Validator extends Base\Validator
         Entity::CATEGORY                    => 'sometimes|string|numeric|digits:4',
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $billdeskEditTerminalRules = [
@@ -494,6 +518,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $hdfcEditTerminalRules = [
@@ -507,6 +532,7 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
         Entity::CAPABILITY                 => 'sometimes',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $hitachiEditTerminalRules = [
@@ -521,7 +547,7 @@ class Validator extends Base\Validator
         Entity::RUPAY_MPAN                 => 'sometimes|string',
         Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
         Entity::IFSC_CODE                  => 'sometimes|string|size:11',
-        Entity::STATUS                     => 'sometimes|string|in:deactivated,activated',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
         Entity::MODE                       => 'sometimes|in:2,3',
     ];
@@ -535,7 +561,7 @@ class Validator extends Base\Validator
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
         Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
         Entity::IFSC_CODE                  => 'sometimes|string|size:11',
-        Entity::STATUS                     => 'sometimes|string|in:deactivated,activated',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::MODE                       => 'sometimes|in:1,2', // mode can be edited to auth_capture(1) or purchase(2)
     ];
 
@@ -562,6 +588,7 @@ class Validator extends Base\Validator
         Entity::CAPABILITY                 => 'sometimes',
         Entity::GATEWAY_ACQUIRER           => 'sometimes|string',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::CURRENCY                   => 'sometimes|array',
     ];
 
@@ -573,6 +600,7 @@ class Validator extends Base\Validator
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
         Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $paysecureTerminalRules = [
@@ -602,6 +630,7 @@ class Validator extends Base\Validator
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
         Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::CURRENCY                   => 'sometimes_if:gateway_acquirer,axis|array',
     ];
 
@@ -615,6 +644,7 @@ class Validator extends Base\Validator
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
         Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::TPV                        => 'sometimes|in:0,1,2',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
     ];
@@ -631,6 +661,7 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
      ];
 
     protected static $upiAirtelEditTerminalRules = [
@@ -641,6 +672,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $upiCitiEditTerminalRules = [
@@ -649,6 +681,7 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $upiJuspayEditTerminalRules = [
@@ -657,6 +690,7 @@ class Validator extends Base\Validator
         Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4',
         Entity::VPA                        => 'sometimes|string',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::EXPECTED                   => 'sometimes|boolean|in:0,1',
     ];
 
@@ -671,6 +705,7 @@ class Validator extends Base\Validator
         Entity::TYPE                    => 'sometimes|array',
         Entity::CORPORATE               => 'sometimes|int|in:0,1,2',
         Entity::PROCURER                => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingIndusindEditTerminalRules = [
@@ -678,6 +713,7 @@ class Validator extends Base\Validator
         Entity::NETWORK_CATEGORY        => 'sometimes|string|max:30',
         Entity::ACCOUNT_NUMBER          => 'sometimes|string|max:50',
         Entity::PROCURER                => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                  => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $walletPayzappTerminalRules = [
@@ -689,6 +725,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE        => 'required|integer|digits:4',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|alpha_num|size:16',
         Entity::TYPE                       => 'sometimes|array',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $walletPayzappEditTerminalRules = [
@@ -700,6 +737,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|alpha_num|size:16',
         Entity::TYPE                       => 'sometimes|array',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $walletPayumoneyTerminalRules = [
@@ -708,6 +746,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
         Entity::GATEWAY_SECURE_SECRET      => 'required|string',
         Entity::GATEWAY_ACCESS_CODE        => 'required|string',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $walletOlamoneyTerminalRules = [
@@ -717,6 +756,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string|in:v2',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $walletPhonepeTerminalRules = [
@@ -724,6 +764,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET      => 'required|string',
         Entity::GATEWAY_ACCESS_CODE        => 'required|string',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $walletPhonepeswitchTerminalRules = [
@@ -731,6 +772,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET      => 'required|string',
         Entity::GATEWAY_SECURE_SECRET2     => 'required|string',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $walletPaypalTerminalRules = [
@@ -742,6 +784,7 @@ class Validator extends Base\Validator
         Entity::CATEGORY                                => 'sometimes|string|numeric|digits:4',
         Entity::TYPE                                    => 'required|array',
         Entity::TYPE . '.direct_settlement_with_refund' => 'required|in:1',
+        Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $walletPaypalEditTerminalRules = [
@@ -752,6 +795,7 @@ class Validator extends Base\Validator
         Entity::TYPE                                    => 'sometimes|array',
         Entity::TYPE . '.direct_settlement_with_refund' => 'sometimes|in:1',
         Entity::PROCURER                                => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $walletPhonepeEditTerminalRules = [
@@ -759,6 +803,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::NETWORK_CATEGORY           => 'sometimes|string',
     ];
 
@@ -767,17 +812,20 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET2     => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $walletOlamoneyEditTerminalRules = [
         Entity::TYPE                       => 'sometimes|array',
         Entity::TYPE . '.ivr'              => 'required_with:type|in:1,0',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $walletAirtelmoneyTerminalRules = [
         Entity::GATEWAY                    => 'required|in:wallet_airtelmoney',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $walletFreechargeTerminalRules = [
@@ -785,6 +833,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::GATEWAY_SECURE_SECRET      => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2       => 'sometimes',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $walletFreechargeEditTerminalRules = [
@@ -800,18 +849,21 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2    => 'required|string',
         Entity::TYPE                    => 'sometimes|array',
         Entity::GATEWAY_SECURE_SECRET   => 'sometimes|alpha_num|size:16',
+        Entity::STATUS                  => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingCanaraTerminalRules = [
         Entity::GATEWAY                 => 'required|in:netbanking_canara',
         Entity::GATEWAY_MERCHANT_ID     => 'required|string',
         Entity::TYPE                    => 'sometimes|array',
+        Entity::STATUS                  => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingCanaraEditTerminalRules = [
         Entity::GATEWAY_MERCHANT_ID     => 'required|string',
         Entity::TYPE                    => 'sometimes|array',
         Entity::PROCURER                => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                  => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingEquitasTerminalRules = [
@@ -819,6 +871,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID     => 'required|string',
         Entity::TYPE                    => 'sometimes|array',
         Entity::GATEWAY_SECURE_SECRET   => 'sometimes|alpha_num|size:16',
+        Entity::STATUS                  => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingEquitasEditTerminalRules = [
@@ -830,12 +883,14 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::TYPE                       => 'sometimes|array',
         Entity::GATEWAY_ACCESS_CODE        => 'required|string',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
     protected static $netbankingCbiTerminalRules = [
         Entity::GATEWAY                    => 'required|in:netbanking_cbi',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::TYPE                       => 'sometimes|array',
         Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingIbkTerminalRules = [
@@ -843,6 +898,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::TYPE                       => 'sometimes|array',
         Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingKvbTerminalRules = [
@@ -850,6 +906,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,1',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingSvcTerminalRules = [
@@ -857,6 +914,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,1,2',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingDcbTerminalRules = [
@@ -871,6 +929,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY                    => 'required|in:netbanking_jsb',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::TYPE                       => 'sometimes|array',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingIobTerminalRules = [
@@ -879,6 +938,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,1,2',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingAusfTerminalRules = [
@@ -909,6 +969,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD2 => 'sometimes|string',
         Entity::TPV                        => 'sometimes|in:0,2',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingIdbiTerminalRules = [
@@ -917,15 +978,18 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::GATEWAY_ACCESS_CODE        => 'required|string',
         Entity::TPV                        => 'sometimes|in:0,1,2',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingVijayaTerminalRules = [
         Entity::GATEWAY                 => 'required|in:netbanking_vijaya',
         Entity::GATEWAY_MERCHANT_ID     => 'required|string',
+        Entity::STATUS                  => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingVijayaEditTerminalRules = [
         Entity::GATEWAY_MERCHANT_ID     => 'required|string',
+        Entity::STATUS                  => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingYesbTerminalRules = [
@@ -933,6 +997,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID     => 'required|string',
         Entity::TYPE                    => 'sometimes|array',
         Entity::GATEWAY_SECURE_SECRET   => 'required|string',
+        Entity::STATUS                  => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $walletJiomoneyTerminalRules = [
@@ -940,12 +1005,14 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::GATEWAY_ACCESS_CODE        => 'required|string',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $walletSbibuddyTerminalRules = [
         Entity::GATEWAY                    => 'required|in:wallet_sbibuddy',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $walletMpesaTerminalRules = [
@@ -953,6 +1020,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
         Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $upiMindgateTerminalRules = [
@@ -971,6 +1039,7 @@ class Validator extends Base\Validator
         Entity::VIRTUAL_UPI_HANDLE         => 'required_if:type.upi_transfer,1|string',
         Entity::VIRTUAL_UPI_ROOT           => 'required_if:type.upi_transfer,1|string',
         Entity::VIRTUAL_UPI_MERCHANT_PREFIX=> 'sometimes_if:type.upi_transfer,1|string',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $upiAxisTerminalRules = [
@@ -983,6 +1052,7 @@ class Validator extends Base\Validator
         Entity::UPI                        => 'required|boolean|in:1',
         Entity::TPV                        => 'sometimes|in:0,2',
         Entity::TYPE                       => 'sometimes|array',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $upiAxisEditTerminalRules = [
@@ -996,6 +1066,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_ID        => 'sometimes|string',
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $upiHulkTerminalRules = [
@@ -1007,7 +1078,8 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,2',
         Entity::VPA                        => 'sometimes|string',
-        Entity::EXPECTED                   => 'sometimes_if:type.bharat_qr,1|boolean'
+        Entity::EXPECTED                   => 'sometimes_if:type.bharat_qr,1|boolean',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $upiSbiTerminalRules = [
@@ -1016,12 +1088,14 @@ class Validator extends Base\Validator
         Entity::UPI                        => 'sometimes|boolean|in:1',
         Entity::VPA                        => 'required|string',
         Entity::TYPE                       => 'sometimes|array',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $upiSbiEditTerminalRules = [
         Entity::VPA                        => 'sometimes|string',
         Entity::TYPE                       => 'sometimes|array',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $upiYesbankTerminalRules = [
@@ -1030,6 +1104,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::TYPE                       => 'sometimes|array',
         Entity::TYPE . '.pay'              => 'sometimes|in:1',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::VPA                        => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
     ];
@@ -1044,6 +1119,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::GATEWAY_SECURE_SECRET      => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingAxisTerminalRules = [
@@ -1054,6 +1130,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,1,2',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingAxisEditTerminalRules = [
@@ -1062,6 +1139,7 @@ class Validator extends Base\Validator
         Entity::CORPORATE                  => 'sometimes|int|in:0,1,2',
         Entity::GATEWAY_ACQUIRER           => 'sometimes|string',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $nachCitiTerminalRules = [
@@ -1074,6 +1152,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
         Entity::TYPE                       => 'sometimes|array',
         Entity::GATEWAY_ACQUIRER           => 'sometimes|string',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $nachCitiEditTerminalRules = [
@@ -1082,6 +1161,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string|alpha_num|max:11',
         Entity::TYPE                       => 'sometimes|array',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $nachIciciTerminalRules = [
@@ -1111,11 +1191,13 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE        => 'required|string',
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,1,2',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingSibEditTerminalRules = [
         Entity::TPV                        => 'sometimes|in:0,1,2',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingUbiTerminalRules = [
@@ -1123,6 +1205,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
         Entity::TYPE                       => 'sometimes|array',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingUbiEditTerminalRules = [
@@ -1140,6 +1223,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET2     => 'required|string',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
         Entity::TYPE                       => 'sometimes|array',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::TPV                        => 'sometimes|in:0,1,2',
     ];
 
@@ -1153,6 +1237,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,1,2',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingFederalTerminalRules = [
@@ -1163,10 +1248,12 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET2     => 'required|string',
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,1,2',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingFederalEditTerminalRules = [
         Entity::TPV                        => 'sometimes|in:0,1,2',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingRblTerminalRules = [
@@ -1175,27 +1262,32 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE        => 'required|string',
         Entity::GATEWAY_SECURE_SECRET      => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingIndusindTerminalRules = [
         Entity::GATEWAY                    => 'required|in:netbanking_indusind',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingPnbTerminalRules = [
         Entity::GATEWAY                    => 'required|in:netbanking_pnb',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingCorporationTerminalRules = [
         Entity::GATEWAY                     => 'required|in:netbanking_corporation',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingCorporationEditTerminalRules = [
         Entity::TPV                         => 'sometimes|in:0,1,2',
         Entity::PROCURER                    => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingCsbTerminalRules = [
@@ -1206,7 +1298,8 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string',
         Entity::GATEWAY_TERMINAL_PASSWORD2  => 'required|string',
         Entity::GATEWAY_SECURE_SECRET2      => 'required|string',
-        Entity::TPV                         => 'sometimes|in:0,1,2'
+        Entity::TPV                         => 'sometimes|in:0,1,2',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingCsbEditTerminalRules = [
@@ -1220,6 +1313,7 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
         Entity::TPV                         => 'sometimes|in:0,1,2',
         Entity::PROCURER                    => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingBobEditTerminalRules = [
@@ -1228,6 +1322,7 @@ class Validator extends Base\Validator
         Entity::CORPORATE                   => 'sometimes|int|in:0,1,2',
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
         Entity::PROCURER                    => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::TPV                         => 'sometimes|in:0,1,2',
     ];
 
@@ -1237,6 +1332,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
         Entity::TYPE                        => 'sometimes|array',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingKotakTerminalRules = [
@@ -1247,6 +1343,7 @@ class Validator extends Base\Validator
         Entity::TPV                     => 'sometimes|in:0,1,2',
         Entity::CORPORATE               => 'sometimes|in:0,1,2',
         Entity::ACCOUNT_TYPE            => 'sometimes|string',
+        Entity::STATUS                  => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingKotakEditTerminalRules = [
@@ -1258,6 +1355,7 @@ class Validator extends Base\Validator
         Entity::TYPE                    => 'sometimes|array',
         Entity::ACCOUNT_TYPE            => 'sometimes|string',
         Entity::PROCURER                => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                  => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingSbiEditTerminalRules = [
@@ -1268,6 +1366,7 @@ class Validator extends Base\Validator
         Entity::PROCURER                    => 'sometimes|string|in:razorpay,merchant',
         Entity::CORPORATE                   => 'sometimes|int|in:0,1,2',
         Entity::TYPE                        => 'sometimes|array',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingAllahabadTerminalRules = [
@@ -1276,18 +1375,21 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2        => 'required|string',
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingAllahabadEditTerminalRules = [
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
         Entity::PROCURER                    => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingIdfcEditTerminalRules = [
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
         Entity::TPV                         => 'sometimes|in:0,1,2',
         Entity::PROCURER                    => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::TYPE                        => 'sometimes|array',
     ];
 
@@ -1312,6 +1414,7 @@ class Validator extends Base\Validator
         Entity::MODE                        => 'sometimes|integer|in:2,3',
         Entity::CATEGORY                    => 'sometimes|string|numeric|digits:4',
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $cardFssEditTerminalRules = [
@@ -1327,6 +1430,7 @@ class Validator extends Base\Validator
         Entity::CATEGORY                    => 'sometimes|string|numeric|digits:4',
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
         Entity::PROCURER                    => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
     ];
 
@@ -1339,6 +1443,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string|in:proxy,app',
         Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $paytmTerminalRules = [
@@ -1348,6 +1453,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'required',
         Entity::GATEWAY_SECURE_SECRET      => 'required',
         Entity::TYPE                       => 'sometimes',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
     ];
 
@@ -1358,6 +1464,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes',
         Entity::TYPE                       => 'sometimes',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::NETBANKING                 => 'sometimes|boolean',
         Entity::CARD                       => 'sometimes|boolean',
     ];
@@ -1369,6 +1476,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_ID         => 'required|string',
         Entity::GATEWAY_ACCESS_CODE         => 'required|size:11',
         Entity::TYPE                        => 'required|array',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $enachRblEditTerminalRules = [
@@ -1378,6 +1486,7 @@ class Validator extends Base\Validator
         Entity::TYPE                        => 'sometimes|array',
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
         Entity::PROCURER                    => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $enachNpciNetbankingTerminalRules = [
@@ -1388,6 +1497,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_ID         => 'sometimes|string',
         Entity::TYPE                        => 'required|array',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|string',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $enachNpciNetbankingEditTerminalRules = [
@@ -1395,6 +1505,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::GATEWAY_TERMINAL_ID         => 'sometimes|string',
         Entity::TYPE                        => 'sometimes|array',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $editWalletAirtelmoneyTerminalRules = [
@@ -1404,6 +1515,7 @@ class Validator extends Base\Validator
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
         Entity::ACCOUNT_NUMBER              => 'sometimes|string|max:50',
         Entity::PROCURER                    => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $walletAmazonpayTerminalRules = [
@@ -1411,6 +1523,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
         Entity::GATEWAY_ACCESS_CODE         => 'required|string',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $btYesbankTerminalRules = [
@@ -1420,6 +1533,7 @@ class Validator extends Base\Validator
         Entity::TYPE                        => 'required|array',
         Entity::BANK_TRANSFER               => 'required|boolean|in:1',
         Entity::ACCOUNT_TYPE                => 'sometimes|string',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $btKotakTerminalRules = [
@@ -1428,6 +1542,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::TYPE                        => 'required|array',
         Entity::BANK_TRANSFER               => 'bail|required|boolean|in:1',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $btIciciTerminalRules = [
@@ -1437,6 +1552,7 @@ class Validator extends Base\Validator
         Entity::TYPE                        => 'required|array',
         Entity::BANK_TRANSFER               => 'bail|required|boolean|in:1',
         Entity::ACCOUNT_TYPE                => 'sometimes|string',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $btRblTerminalRules = [
@@ -1445,6 +1561,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::TYPE                        => 'required|array',
         Entity::BANK_TRANSFER               => 'bail|required|boolean|in:1',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $btHdfcEcmsTerminalRules = [
@@ -1453,6 +1570,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::TYPE                        => 'required|array',
         Entity::BANK_TRANSFER               => 'bail|required|boolean|in:1',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $btRblEditTerminalRules = [
@@ -1462,6 +1580,7 @@ class Validator extends Base\Validator
         Entity::TYPE                        => 'sometimes|array',
         Entity::BANK_TRANSFER               => 'bail|sometimes|boolean|in:1',
         Entity::PROCURER                    => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $btHdfcEcmsEditTerminalRules = [
@@ -1479,6 +1598,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string',
         Entity::TYPE                        => 'required|array',
         Entity::BANK_TRANSFER               => 'required|boolean|in:1',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $cardlessEmiTerminalRules = [
@@ -1488,6 +1608,7 @@ class Validator extends Base\Validator
         Entity::CARDLESS_EMI                => 'required|boolean|in:1',
         Entity::TYPE                        => 'sometimes|array',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $cardlessEmiEditTerminalRules = [
@@ -1496,6 +1617,7 @@ class Validator extends Base\Validator
         Entity::TYPE                        => 'sometimes|array',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
         Entity::PROCURER                    => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::ENABLED                     => 'sometimes|in:0,1',
         Entity::CATEGORY                    => 'sometimes|string|numeric|digits:4',
     ];
@@ -1507,6 +1629,7 @@ class Validator extends Base\Validator
         Entity::CRED                        => 'required|boolean|in:1',
         Entity::TYPE                        => 'sometimes|array',
         Entity::GATEWAY_SECURE_SECRET       => 'required',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $credEditTerminalRules = [
@@ -1516,6 +1639,7 @@ class Validator extends Base\Validator
         Entity::TYPE                        => 'sometimes|array',
         Entity::GATEWAY_SECURE_SECRET       => 'required',
         Entity::PROCURER                    => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $paylaterTerminalRules = [
@@ -1526,6 +1650,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string',
         Entity::MODE                        => 'sometimes',
         Entity::TYPE                        => 'sometimes|array',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $paylaterEditTerminalRules = [
@@ -1536,6 +1661,7 @@ class Validator extends Base\Validator
         Entity::MODE                        => 'sometimes',
         Entity::TYPE                        => 'sometimes|array',
         Entity::PROCURER                    => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $updateTerminalsBankRules = [
@@ -1543,6 +1669,7 @@ class Validator extends Base\Validator
         Entity::ACTION                      => 'required|string|in:add,remove',
         Entity::BANK                        => 'required_without:banks|string|custom',
         'banks'                             => 'required_without:bank|array|custom',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $bajajfinservTerminalRules = [
@@ -1554,6 +1681,7 @@ class Validator extends Base\Validator
         Entity::EMI                        => 'required|boolean|in:1',
         Entity::EMI_SUBVENTION             => 'required|string|in:merchant,customer',
         Entity::TYPE                       => 'sometimes|array',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $googlePayTerminalRules = [
@@ -1562,7 +1690,8 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
         Entity::VPA                        => 'required|string',
         Entity::OMNICHANNEL                => 'required|boolean|in:1',
-        Entity::CAPABILITY                 => 'required|in:1'
+        Entity::CAPABILITY                 => 'required|in:1',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $worldlineTerminalRules = [
@@ -1586,6 +1715,7 @@ class Validator extends Base\Validator
         Entity::IFSC_CODE                               => 'sometimes',
         Entity::GATEWAY_ACQUIRER                        => 'sometimes|string|in:axis',
         Entity::PROCURER                                => 'sometimes|string',
+        Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $worldlineEditTerminalRules = [
@@ -1610,6 +1740,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2 => 'required|string',
         Entity::EMI                  => 'required|boolean',
         Entity::EMI_SUBVENTION       => 'sometimes|in:customer,merchant',
+        Entity::STATUS               => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $hdfcDebitEmiEditTerminalRules = [
@@ -1618,7 +1749,7 @@ class Validator extends Base\Validator
         Entity::EMI                  => 'sometimes|boolean',
         Entity::EMI_SUBVENTION       => 'sometimes|in:customer,merchant',
         Entity::PROCURER             => 'sometimes|string|in:razorpay,merchant',
-
+        Entity::STATUS               => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $updateTerminalsBulkRules = [
@@ -1634,6 +1765,7 @@ class Validator extends Base\Validator
     protected static $netbankingFsbTerminalRules = [
         Entity::GATEWAY                     => 'required|in:netbanking_fsb',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     // A gateway is automatic iff terminals for this gateway are created
@@ -1685,6 +1817,10 @@ class Validator extends Base\Validator
     protected static $tokenizeExistingMpansRules = [
         'count'         => 'sometimes|numeric|min:1|max:500',
         'terminal_ids'  => 'sometimes|array',
+    ];
+
+    protected static $editTerminalStatusRules = [
+        Entity::STATUS  => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     public function validateType()
@@ -2057,6 +2193,13 @@ class Validator extends Base\Validator
         }
         else
         {
+            if (isset($input[Entity::STATUS]) === true)
+            {
+                $this->validateInput('edit_terminal_status', $input);
+                
+                return;
+            }
+
             throw new Exception\BadRequestValidationFailureException(
                 'Editing not defined for terminal of gateway: ' . $terminal->getGateway());
         }

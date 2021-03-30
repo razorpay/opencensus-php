@@ -862,6 +862,7 @@ class Header
     const TERMINAL_CREATION_CARDLESS_EMI         = 'Cardless EMI';
     const TERMINAL_CREATION_PAYLATER             = 'Paylater';
     const TERMINAL_CREATION_ENABLED              = 'Enabled';
+    const TERMINAL_CREATION_STATUS               = 'Status';
     const TERMINAL_CREATION_CAPABILITY           = 'Capability';
 
     // Pricing Rules Addition Headers
@@ -1179,6 +1180,7 @@ class Header
                 self::TERMINAL_CREATION_CARDLESS_EMI,
                 self::TERMINAL_CREATION_PAYLATER,
                 self::TERMINAL_CREATION_ENABLED,
+                self::TERMINAL_CREATION_STATUS,
                 self::TERMINAL_CREATION_CAPABILITY,
             ],
             self::OUTPUT => [
@@ -1217,6 +1219,7 @@ class Header
                 self::TERMINAL_CREATION_CARDLESS_EMI,
                 self::TERMINAL_CREATION_PAYLATER,
                 self::TERMINAL_CREATION_ENABLED,
+                self::TERMINAL_CREATION_STATUS,
                 self::TERMINAL_CREATION_CAPABILITY,
                 self::STATUS,
                 self::ERROR_CODE,
