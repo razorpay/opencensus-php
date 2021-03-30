@@ -63,6 +63,7 @@ use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Transfer\Core as TransferCore;
 use RZP\Services\NbPlus as NbPlusPaymentService;
+use RZP\Models\UpiMandate\Frequency as UPIMandateFrequency;
 
 use Razorpay\Trace\Logger as Trace;
 
@@ -2854,9 +2855,7 @@ class Processor
         {
             $upitoken = [
                 'max_amount'        => $this->subscription->getCurrentInvoiceAmount(),
-                'frequency'         => $this->subscription->schedule['period'],
-                'recurring_type'    => 'before',
-                'recurring_value'   => $this->subscription->schedule['anchor'],
+                'frequency'         => UPIMandateFrequency::AS_PRESENTED,
                 'start_time'        => Carbon::now()->addMinute(1)->getTimestamp(),
                 'end_time'          => $this->subscription->getEndAt(),
             ];
