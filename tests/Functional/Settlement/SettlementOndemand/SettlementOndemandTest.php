@@ -593,7 +593,7 @@ class SettlementOndemandTest extends TestCase
         $this->assertArraySelectiveEquals([
             'merchant_id' => '10000000000000',
             'amount'      => 19557292,
-            'description' => 'ondemand settlement for OndemandID - '.substr($settlementOndemand['id'],7),
+            'description' => 'ondemand settlement - '.$settlementOndemand['id'],
             'currency'    => 'INR',
         ], $adjustment);
 
@@ -746,7 +746,7 @@ class SettlementOndemandTest extends TestCase
         $this->assertArraySelectiveEquals([
             'merchant_id' => '10000000000000',
             'amount'      => 29292000,
-            'description' => 'ondemand settlement for OndemandID - '.substr($settlementOndemand['id'],7),
+            'description' => 'ondemand settlement - '.$settlementOndemand['id'],
             'currency'    => 'INR',
         ], $adjustment);
 
@@ -906,7 +906,7 @@ class SettlementOndemandTest extends TestCase
         $this->assertArraySelectiveEquals([
             'merchant_id' => '10000000000000',
             'amount'      => 5858,
-            'description' => 'ondemand settlement for OndemandID - '.substr($settlementOndemand['id'],7),
+            'description' => 'ondemand settlement - '.$settlementOndemand['id'],
             'currency'    => 'INR',
         ], $adjustment);
 

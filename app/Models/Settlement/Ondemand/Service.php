@@ -61,63 +61,63 @@ class Service extends Base\Service
         'settlement_ondemand'.$this->merchant->getId(),
         function() use ($input)
         {
-            $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_CREATE, [
-                'merchant_id'   => $this->merchant->getId(),
-                'user_id'       => isset($this->user) ? ($this->user->getId()) : null,
-                'input'         => $input,
-            ]);
-
-            (new Validator)->validateInput(Validator::SETTLEMENT_ONDEMAND_INPUT, $input);
-
-            $this->validateIfOndemandMerchant();
-
-            $amount = $this->core()->getSettlementAmount($input, $this->merchant);
-
-            $input[Entity::AMOUNT] = $amount;
-
-            //If es_on_demand_restricted feature is enabled for the merchant
-            //additional checks will be done based on config values
-            if($this->merchant->isFeatureEnabled(Feature\Constants::ES_ON_DEMAND_RESTRICTED) === true)
+            return $this->repo->transaction(function () use ($input)
             {
-                $this->configCheck($amount);
-            }
+                $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_CREATE, [
+                    'merchant_id' => $this->merchant->getId(),
+                    'user_id'     => isset($this->user) ? ($this->user->getId()) : null,
+                    'input'       => $input,
+                ]);
 
-            [$settlementOndemand, $settlementOndemandPayouts, $txn] = $this->repo->transaction(function() use ($input, $amount)
-            {
-                return $this->core()->createSettlementOndemand($input, $this->merchant, $this->user);
-            });
+                (new Validator)->validateInput(Validator::SETTLEMENT_ONDEMAND_INPUT, $input);
 
-            if($this->mode === 'live')
-            {
-                $ondemandXMerchantId = Config::get('applications.razorpayx_client.live.ondemand_x_merchant.id');
+                $this->validateIfOndemandMerchant();
 
-                $adjInput = [
-                    Adjustment\Entity::MERCHANT_ID  => $ondemandXMerchantId,
-                    Adjustment\Entity::AMOUNT       => $settlementOndemand->getAmountToBeSettled(),
-                    Adjustment\Entity::DESCRIPTION  => 'adding funds to Ondemand-X merchant for OndemandID - ' .
-                        $settlementOndemand->getId(),
-                    Adjustment\Entity::CURRENCY     => 'INR',
-                    Adjustment\Entity::TYPE         => Merchant\Balance\Type::BANKING,
-                ];
+                $amount = $this->core()->getSettlementAmount($input, $this->merchant);
 
-                (new Adjustment\Service)->addAdjustment($adjInput);
-            }
+                $input[Entity::AMOUNT] = $amount;
 
-            if ($this->isMerchantWithXSettlementAccount($this->merchant->getId()) === true)
-            {
-                $merchantAdjInput = [
-                    Adjustment\Entity::MERCHANT_ID  => $this->merchant->getId(),
-                    Adjustment\Entity::AMOUNT       => $settlementOndemand->getAmountToBeSettled(),
-                    Adjustment\Entity::DESCRIPTION  => 'ondemand settlement for OndemandID - ' .
-                        $settlementOndemand->getId(),
-                    Adjustment\Entity::CURRENCY     => 'INR',
-                    Adjustment\Entity::TYPE         => Merchant\Balance\Type::BANKING,
-                ];
-
-                $settlementOndemand->setStatus(Status::INITIATED);
-
-                $this->repo->transaction(function () use ($merchantAdjInput, $settlementOndemandPayouts, $settlementOndemand)
+                //If es_on_demand_restricted feature is enabled for the merchant
+                //additional checks will be done based on config values
+                if($this->merchant->isFeatureEnabled(Feature\Constants::ES_ON_DEMAND_RESTRICTED) === true)
                 {
+                    $this->configCheck($amount);
+                }
+
+                [$settlementOndemand, $settlementOndemandPayouts, $txn] = $this->core()->createSettlementOndemand(
+                                                                                            $input,
+                                                                                            $this->merchant,
+                                                                                            $this->user);
+
+                if($this->mode === 'live')
+                {
+                    $ondemandXMerchantId = Config::get('applications.razorpayx_client.live.ondemand_x_merchant.id');
+
+                    $adjInput = [
+                        Adjustment\Entity::MERCHANT_ID => $ondemandXMerchantId,
+                        Adjustment\Entity::AMOUNT      => $settlementOndemand->getAmountToBeSettled(),
+                        Adjustment\Entity::DESCRIPTION => 'adding funds to Ondemand-X merchant for OndemandID - ' .
+                            $settlementOndemand->getId(),
+                        Adjustment\Entity::CURRENCY    => 'INR',
+                        Adjustment\Entity::TYPE        => Merchant\Balance\Type::BANKING,
+                    ];
+
+                    (new Adjustment\Service)->addAdjustment($adjInput);
+                }
+
+                if ($this->isMerchantWithXSettlementAccount($this->merchant->getId()) === true)
+                {
+                    $merchantAdjInput = [
+                        Adjustment\Entity::MERCHANT_ID  => $this->merchant->getId(),
+                        Adjustment\Entity::AMOUNT       => $settlementOndemand->getAmountToBeSettled(),
+                        Adjustment\Entity::DESCRIPTION  => 'ondemand settlement - ' .
+                            $settlementOndemand->getPublicId(),
+                        Adjustment\Entity::CURRENCY     => 'INR',
+                        Adjustment\Entity::TYPE         => Merchant\Balance\Type::BANKING,
+                    ];
+
+                    $settlementOndemand->setStatus(Status::INITIATED);
+
                     $adj = (new Adjustment\Service)->addAdjustment($merchantAdjInput);
 
                     (new OndemandPayout\Core)->setAdjustmentId($settlementOndemandPayouts, $adj['id']);
@@ -126,45 +126,47 @@ class Service extends Base\Service
                     {
                         $this->core()->handleOndemandPayoutProcessed($settlementOndemand, $settlementOndemandPayout);
                     }
-                });
 
-                if((new OndemandPayout\Core)->isOutsideBankingHoursWithBufferTime())
-                {
-                    (new Transfer\Service)->processXSettlementTransfer($settlementOndemand);
+
+                    if ((new OndemandPayout\Core)->isOutsideBankingHoursWithBufferTime())
+                    {
+                        (new Transfer\Service)->processXSettlementTransfer($settlementOndemand);
+                    }
+                    else
+                    {
+                        (new Bulk\Core)->createSettlementOndemandBulk($settlementOndemand, $settlementOndemand->getAmountToBeSettled());
+                    }
                 }
                 else
                 {
-                    (new Bulk\Core)->createSettlementOndemandBulk($settlementOndemand, $settlementOndemand->getAmountToBeSettled());
-                }
-            }
-            else
-            {
-                CreateSettlementOndemandPayoutJobs::dispatch($this->mode, $settlementOndemand->getId(),
-                    $settlementOndemand->getMerchantId());
+                    CreateSettlementOndemandPayoutJobs::dispatch($this->mode, $settlementOndemand->getId(),
+                        $settlementOndemand->getMerchantId());
 
-                $settlementOndemand->setStatus(Status::INITIATED);
+                    $settlementOndemand->setStatus(Status::INITIATED);
 
-                $this->repo->saveOrFail($settlementOndemand);
+                    $this->repo->saveOrFail($settlementOndemand);
 
-                $mockRazorpayX = Config::get('applications.razorpayx_client.' . $this->mode . '.mock_webhook');
+                    $mockRazorpayX = Config::get('applications.razorpayx_client.' . $this->mode . '.mock_webhook');
 
-                if ($mockRazorpayX === true)
-                {
-                    foreach($settlementOndemandPayouts as $settlementOndemandPayout)
+                    if ($mockRazorpayX === true)
                     {
-                        MockPayoutOndemandWebhook::dispatch($this->mode, $settlementOndemandPayout);
+                        foreach ($settlementOndemandPayouts as $settlementOndemandPayout)
+                        {
+                            MockPayoutOndemandWebhook::dispatch($this->mode, $settlementOndemandPayout);
+                        }
                     }
                 }
-            }
 
-            if (isset($input['expand']) === true && boolval($input['expand']) === true)
-            {
-                return $this->getResponse($settlementOndemand, $settlementOndemandPayouts);
-            }
-            else
-            {
-                return $this->getResponse($settlementOndemand);
-            }
+                if (isset($input['expand']) === true && boolval($input['expand']) === true)
+                {
+                    return $this->getResponse($settlementOndemand, $settlementOndemandPayouts);
+                }
+                else
+                {
+                    return $this->getResponse($settlementOndemand);
+                }
+
+            });
 
         });
 
