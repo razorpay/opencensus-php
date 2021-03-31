@@ -20,6 +20,7 @@ use RZP\Jobs\Settlement\Create;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Settlement\Bucket;
 use RZP\Jobs\Transfers\TransferRecon;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant as MerchantModel;
 use RZP\Models\Settlement\Merchant as SetlMerchant;
 
@@ -364,8 +365,13 @@ class Processor extends Base\Core
     {
         $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENT_FETCHING_ENTITIES);
 
-        $txns = $this->repo->transaction->fetchUnsettledTransactions(
-                    $settledAtCutOff, $channel, $inMids, $notInMids, true, $useLimit, $params);
+        // fetch all the valid transactions from the slave
+        $txns = $this->repo->useSlave( function() use
+                        ($settledAtCutOff, $channel, $inMids, $notInMids, $useLimit, $params)
+        {
+            return $this->repo->transaction->fetchUnsettledTransactions(
+                $settledAtCutOff, $channel, $inMids, $notInMids, true, $useLimit, $params);
+        });
 
         $mids = $txns->pluck(Transaction\Entity::MERCHANT_ID)->toArray();
 
@@ -880,10 +886,25 @@ class Processor extends Base\Core
             ];
         }
 
-        // fetch all the valid transactions from all channels for a given merchant
-        $txns = $this->repo
-                     ->transaction
-                     ->fetchUnsettledTransactionsForProcessing($merchant->getId(), $balance, $params);
+        $useSlaveReplica = $this->isTransactionFetchToSlave($merchant->getId());
+
+        if ($useSlaveReplica === true)
+        {
+            // fetch all the valid transactions from the slave
+            $txns = $this->repo->useSlave( function() use ($merchant, $balance, $params)
+            {
+                return $this->repo
+                            ->transaction
+                            ->fetchUnsettledTransactionsForProcessing($merchant->getId(), $balance, $params);
+            });
+        }
+        else
+        {
+            // fetch all the valid transactions from all channels for a given merchant
+            $txns = $this->repo
+                         ->transaction
+                         ->fetchUnsettledTransactionsForProcessing($merchant->getId(), $balance, $params);
+        }
 
         // If there are no transactions to settle then return
         if ($txns->isEmpty() === true)
@@ -1191,5 +1212,26 @@ class Processor extends Base\Core
         return [
             'error' => null,
         ];
+    }
+
+    /**
+     * This will be used to identify weather to fetch transactions from slave or master
+     * @param $merchantId
+     * @return bool
+     */
+    public function isTransactionFetchToSlave($merchantId)
+    {
+        $variant = $this->app->razorx->getTreatment($merchantId,
+            RazorxTreatment::SETTLEMENT_TXN_FETCH_TO_SLAVE,
+            $this->mode);
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_QUERY_TO_SLAVE_REPLICA_DEBUG,
+            [
+                'merchant_id' => $merchantId,
+                'variant'     => $variant,
+            ]);
+
+        return (strtolower($variant) === 'on');
     }
 }

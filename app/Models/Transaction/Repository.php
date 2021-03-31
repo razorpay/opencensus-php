@@ -1988,7 +1988,7 @@ class Repository extends Base\Repository
         $txnCreatedAt       = $this->dbColumn(Entity::CREATED_AT);
         $txnType            = $this->dbColumn(Entity::TYPE);
 
-        $query = $this->newQuery()
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
             ->select($txnId, $txnBalanceId, $txnMerchantId, $txnEntityId, $txnType,
                 $txnCurrency, $txnCredit, $txnDebit, $txnFee, $txnTax, $txnOnHold, $txnCreatedAt)
             ->where($txnBalanceId, $balance->getId())

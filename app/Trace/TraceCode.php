@@ -1223,6 +1223,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTLEMENT_TRANSACTION_FETCH                          = 'SETTLEMENT_TRANSACTION_FETCH';
     const SETTLEMENT_TRANSACTIONS_VERIFY                        = 'SETTLEMENT_TRANSACTIONS_VERIFY';
     const SETTLEMENT_SMS_NOTIFY_TOGGLE_FAILED                   = 'SETTLEMENT_SMS_NOTIFY_TOGGLE_FAILED';
+    const SETTLEMENT_QUERY_TO_SLAVE_REPLICA_DEBUG               = 'SETTLEMENT_QUERY_TO_SLAVE_REPLICA_DEBUG';
 
     const VPA_CREATE_REQUEST                                    = 'VPA_CREATE_REQUEST';
     const VPA_CREATED                                           = 'VPA_CREATED';
