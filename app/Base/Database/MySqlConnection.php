@@ -141,7 +141,8 @@ class MySqlConnection extends BaseMySqlConnection
             return false;
        }
 
-      return (in_array($slaveRoutes, $routeName, true) === true);
+
+       return (in_array($routeName, $slaveRoutes, true) === true);
     }
 
     protected function tryAgainIfCausedByLostConnection(QueryException $e, $query, $bindings, Closure $callback)
