@@ -125,6 +125,13 @@ class SettlementOndemandController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function enqueueJob(string $id)
+    {
+        $data = $this->service(Entity::SETTLEMENT_ONDEMAND)->enqueueJob($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function markAsProcessed(string $id)
     {
         $input = Request::all();

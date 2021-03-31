@@ -1228,6 +1228,20 @@ return [
         'response' => [
             'content' => [],
         ],
-    ]
+    ],
 
+    'testEnqueueJob' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/enqueue/12345678910234',
+            'method'  => 'post',
+            'content' => [
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+                ],
+            ],
+        ]
 ];

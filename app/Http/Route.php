@@ -1598,7 +1598,9 @@ class Route
         'settlement_ondemand_process'              => ['post',      'settlements/ondemand/process',                  'SettlementOndemandController@processXSettlementBulkTransfer'       ],
         'settlement_ondemand_feature_enable'       => ['post',      'settlements/ondemand/feature',                  'SettlementOndemandController@enableFeature'                        ],
         'settlement_ondemand_feature_validate'     => ['get',       'settlements/ondemand/feature/validate',         'SettlementOndemandController@validateWithFeatureConfig'            ],
-        'setl_ondemand_transfer_processed'         => ['post',      'settlements/ondemand/transfer/{id}/processed',  'SettlementOndemandController@markAsProcessed'                       ],
+        'settlement_ondemand_enqueue'              => ['post',      'settlements/ondemand/enqueue/{id}',             'SettlementOndemandController@enqueueJob'                           ],
+        'setl_ondemand_transfer_processed'         => ['post',      'settlements/ondemand/transfer/{id}/processed',  'SettlementOndemandController@markAsProcessed'                      ],
+
         // OAuth routes
         'oauth_token_create'                       => ['post',     'oauth/tokens',                                   'OAuthTokenController@create'                                       ],
         'oauth_token_fetch_multiple'               => ['get',      'oauth/tokens',                                   'OAuthTokenController@getAll'                                       ],
@@ -3732,6 +3734,7 @@ class Route
         'transfer_debug',
         'setl_ondemand_pricing',
         'setl_ondemand_fund_accounts',
+        'settlement_ondemand_enqueue',
         'setl_ondemand_transfer_processed',
         'banking_account_statement_process_admin',
         'd2c_bureau_report_delete',
@@ -4505,6 +4508,7 @@ class Route
         'merchants_risk_admin'                     => Permission::VIEW_MERCHANT_DEDUPE,
         'setl_ondemand_pricing'                    => Permission::CAPITAL_DEVELOPER,
         'setl_ondemand_fund_accounts'              => Permission::CAPITAL_DEVELOPER,
+        'settlement_ondemand_enqueue'              => Permission::CAPITAL_DEVELOPER,
         'setl_ondemand_transfer_processed'         => Permission::CAPITAL_DEVELOPER,
         'd2c_bureau_report_delete'                 => Permission::CAPITAL_DEVELOPER,
         'merchant_balance_create'                  => Permission::CAPITAL_DEVELOPER,

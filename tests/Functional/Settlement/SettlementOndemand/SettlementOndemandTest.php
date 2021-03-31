@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\SettlementOndemand;
 
+use Queue;
 use Config;
 
 use Carbon\Carbon;
@@ -18,6 +19,7 @@ use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Jobs\SettlementOndemand\RequestOndemandPayout;
+use RZP\Jobs\SettlementOndemand\CreateSettlementOndemandPayoutJobs;
 
 class SettlementOndemandTest extends TestCase
 {
@@ -262,6 +264,27 @@ class SettlementOndemandTest extends TestCase
         $headers =['x-razorpay-signature' => [$signature]];
 
         (new OndemandPayout\Service)->statusUpdate($input, $headers, $rawContent);
+    }
+
+    public function testEnqueueJob()
+    {
+        Queue::fake();
+
+        $request = [
+            'method'    => 'POST',
+            'url'       => 'settlements/ondemand/enqueue/12345678910234',
+        ];
+
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand',[
+            'id'     => '12345678910234',
+            'status' => 'created',
+        ]);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        Queue::assertPushed(CreateSettlementOndemandPayoutJobs::class, 1);
     }
 
     public function testProcessXSettlementBulkTransferNull()

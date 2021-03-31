@@ -338,4 +338,18 @@ class Service extends Base\Service
             'Maximum amount that can be settled(in paisa) is '.$settlableAmount);
         }
     }
+
+    public function enqueueJob(string $id)
+    {
+        $settlementOndemand = (new Repository)->findOrFail($id);
+
+        CreateSettlementOndemandPayoutJobs::dispatch($this->mode, $settlementOndemand->getId(),
+            $settlementOndemand->getMerchantId());
+
+        $settlementOndemand->setStatus(Status::INITIATED);
+
+        $this->repo->saveOrFail($settlementOndemand);
+
+        return [];
+    }
 }
