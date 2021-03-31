@@ -415,6 +415,15 @@ class Authorization
         $this->appAuth('rzp_'.$mode, 'put dashboard pass here');
     }
 
+    public function frontendGraphqlAuth($mode = 'test')
+    {
+        $config = \Config::get('applications.frontend_graphql');
+
+        $pwd = $config['secret'];
+
+        $this->appAuth('rzp_' . $mode, $pwd);
+    }
+
     public function cronAuth($mode = 'test', $hostname = null)
     {
         $cronConfig = \Config::get('applications.cron');

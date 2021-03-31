@@ -18,6 +18,10 @@ return [
         'secret'   => env('APP_DASHBOARD_INTERNAL_SECRET'),
     ],
 
+    'frontend_graphql' => [
+        'secret'   => env('APP_FRONTEND_GRAPHQL_SECRET'),
+    ],
+
     'mock_gateways' => [
         'secret'    => env('MOCK_GATEWAY_SECRET'),
     ],

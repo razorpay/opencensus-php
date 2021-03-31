@@ -253,6 +253,28 @@ class BasicAuthTest extends TestCase
         $this->assertEquals($publicOrgID, $result['id']);
     }
 
+    public function testGraphqlAppAuth()
+    {
+        $user = $this->fixtures->create('user');
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/users/' . $user['id'];
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+
+        $this->ba->frontendGraphqlAuth();
+
+        $this->startTest();
+    }
+
+    public function testGraphqlAppAuthOnProxyRoute()
+    {
+        $this->ba->frontendGraphqlAuth();
+
+        $this->startTest();
+    }
+
     public function testAdminAuthWithAccount()
     {
         $this->ba->adminAuth();

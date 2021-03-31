@@ -1515,6 +1515,7 @@ class BasicAuth
     public function isInternalApp(): bool
     {
         return (($this->isDashboardApp() === true) or
+                ($this->isFrontendGraphqlApp() === true) or
                 ($this->isVendorPaymentApp() === true) or
                 ($this->isCapitalCardsApp() === true) or
                 ($this->isCapitalLOCApp() === true) or
@@ -1543,6 +1544,11 @@ class BasicAuth
     public function isExpress()
     {
         return ($this->getInternalApp() === 'express');
+    }
+
+    public function isFrontendGraphqlApp(): bool
+    {
+        return ($this->getInternalApp() === 'frontend_graphql');
     }
 
     public function isSubscriptionsApp()

@@ -329,6 +329,54 @@ return [
         ],
     ],
 
+    'testGraphqlAppAuth' => [
+        'request'  => [
+            'url'    => '/users/id',
+            'method' => 'GET',
+            'server' => [
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'          => null,
+                'contact_mobile_verified' => false,
+                'confirmed'               => true,
+                'merchants'               => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner',
+                    ],
+                ],
+                'invitations'             => [
+                ],
+                'settings'                => [
+                ],
+            ],
+        ],
+    ],
+
+    'testGraphqlAppAuthOnProxyRoute' => [
+        'request'  => [
+            'url'    => '/primary_balance',
+            'method' => 'GET',
+            'server' => [
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_URL_NOT_FOUND
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
     'testAdminAuthWithAccount' => [
         'request' => [
             'method' => 'GET',

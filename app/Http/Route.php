@@ -5812,6 +5812,15 @@ class Route
             '*'
         ],
 
+        //
+        // frontend_graphql app is being whitelisted for all routes, since it currently acts
+        // similar to dashboard backend. This will change soon, follow details in this link:
+        // https://razorpay.slack.com/archives/C6QPQKVLZ/p1616487712140000
+        //
+        'frontend_graphql' => [
+            '*'
+        ],
+
         'salesforce' => [
             'fd_create_ticket',
             'fd_fetch_tickets'
