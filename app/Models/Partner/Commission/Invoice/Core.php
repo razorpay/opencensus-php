@@ -507,6 +507,7 @@ class Core extends Base\Core
 
             $createTds           = (bool) ($input[Constants::CREATE_TDS] ?? false);
             $updateInvoiceStatus = (bool) ($input[Constants::UPDATE_INVOICE_STATUS] ?? false);
+            $skipProcessed       = (bool) ($input[Constants::SKIP_PROCESSED] ?? true);
 
             $data = $invoiceCore->convertMonthAndYearToTimeStamp($invoice->getMonth(), $invoice->getYear());
 

@@ -66,6 +66,7 @@ return [
                 'invoice_ids' => ['a', 'b'],
                 'create_tds'  => false,
                 'update_invoice_status' => false,
+                'skip_processed' => false,
             ],
         ],
         'response' => [

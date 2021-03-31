@@ -32,6 +32,7 @@ class Validator extends Base\Validator
         Constants::INVOICE_IDS           => 'required|array',
         Constants::CREATE_TDS            => 'sometimes|boolean',
         Constants::UPDATE_INVOICE_STATUS => 'sometimes|boolean',
+        Constants::SKIP_PROCESSED        => 'sometimes|boolean',
     ];
 
     public function validateAction($attribute, $key)

@@ -36,6 +36,8 @@ class CommissionTdsSettlement extends Job
 
     protected $updateInvoiceStatus = true;
 
+    protected $skipProcessed = false;
+
     protected $createTds = true;
 
     protected $toTimestamp;
@@ -60,6 +62,7 @@ class CommissionTdsSettlement extends Job
 
         $this->updateInvoiceStatus = $input[Invoice\Constants::UPDATE_INVOICE_STATUS] ?? true;
         $this->createTds = $input[Invoice\Constants::CREATE_TDS] ?? true;
+        $this->skipProcessed = $input[Invoice\Constants::SKIP_PROCESSED] ?? false;
     }
 
     public function handle()
@@ -96,8 +99,10 @@ class CommissionTdsSettlement extends Job
                     'invoice_id'    => $this->invoiceId,
                 ]);
 
-            if ($invoice->getStatus() === Invoice\Status::PROCESSED)
+            if (($this->skipProcessed === false) and ($invoice->getStatus() === Invoice\Status::PROCESSED))
             {
+                $this->delete();
+
                 return;
             }
 
