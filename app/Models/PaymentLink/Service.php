@@ -66,7 +66,8 @@ class Service extends Base\Service
         $this->fetchSettingForPPI($data);
 
         $extra[Entity::SLUG] = $entity->getSlugFromShortUrl();
-        $extra[Entity::CAPTURED_PAYMENTS_COUNT] = $entity->getCapturedPaymentsCount();
+
+        $extra[Entity::CAPTURED_PAYMENTS_COUNT] = $this->repo->payment->getCapturedPaymentsForPaymentPage($entity);
 
         $extra[Entity::SETTINGS] = (new ViewSerializer($entity))->serializeSettingsWithDefaults();
 

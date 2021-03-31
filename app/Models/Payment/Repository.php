@@ -2397,4 +2397,16 @@ class Repository extends Base\Repository
                        ->get();
         });
     }
+
+    public function getCapturedPaymentsForPaymentPage(PaymentLink\Entity $paymentPage)
+    {
+        return $this->repo->useSlave( function() use ($paymentPage)
+        {
+            return $this->newQuery()
+                        ->where(Entity::PAYMENT_LINK_ID, $paymentPage->getId())
+                        ->where(Entity::MERCHANT_ID, $paymentPage->getMerchantId())
+                        ->whereIn(Entity::STATUS, [Status::CAPTURED, Status::REFUNDED])
+                        ->count();
+        });
+    }
 }
