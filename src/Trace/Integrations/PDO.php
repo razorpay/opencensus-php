@@ -32,10 +32,11 @@ use OpenCensus\Trace\Span;
 class PDO implements IntegrationInterface
 {
     static $db_host = "";
+    static $db_system = "";
     /**
      * Static method to add instrumentation to the PDO requests
      */
-    public static function load($db_host="")
+    public static function load($db_host="", $db_system="")
     {
         if (!extension_loaded('opencensus')) {
             trigger_error('opencensus extension required to load PDO integrations.', E_USER_WARNING);
@@ -43,6 +44,8 @@ class PDO implements IntegrationInterface
         }
 
         PDO::$db_host = $db_host;
+        PDO::$db_system = $db_system;
+
         // public int PDO::exec(string $query)
         opencensus_trace_method('PDO', 'exec', [static::class, 'handleQuery']);
 
@@ -53,7 +56,7 @@ class PDO implements IntegrationInterface
         opencensus_trace_method('PDO', 'query', [static::class, 'handleQuery']);
 
         // public bool PDO::commit ( void )
-        opencensus_trace_method('PDO', 'commit');
+        opencensus_trace_method('PDO', 'commit', [static::class, 'handleCommit']);
 
         // public PDO::__construct(string $dsn [, string $username [, string $password [, array $options]]])
         opencensus_trace_method('PDO', '__construct', [static::class, 'handleConnect']);
@@ -75,7 +78,29 @@ class PDO implements IntegrationInterface
         return [
             'attributes' => [
                 'db.statement' => $query,
-                'span.kind' => 'client'
+                'span.kind' => 'client',
+                'db.system' => PDO::$db_system,
+                'net.peer.name' => PDO::$db_host
+            ],
+            'kind' => 'client',
+            'sameProcessAsParentSpan' => false
+        ];
+    }
+
+    /**
+     * Handle commit
+     *
+     * @internal
+     * @param PDO $pdo The connection
+     * @return array
+     */
+    public static function handleCommit($pdo)
+    {
+        return [
+            'attributes' => [
+                'span.kind' => 'client',
+                'db.system' => PDO::$db_system,
+                'net.peer.name' => PDO::$db_host
             ],
             'kind' => 'client',
             'sameProcessAsParentSpan' => false
@@ -96,7 +121,7 @@ class PDO implements IntegrationInterface
         // example $dsn: mysql:host=localhost;dbname=testdb
         // example $dsn: mysql:unix_socket=/tmp/mysql.sock;dbname=testdb
 
-        $db_system = '';
+        $db_system = PDO::$db_system;
         $connection_params = [];
         $attributes = [];
 
@@ -131,7 +156,8 @@ class PDO implements IntegrationInterface
                         'dsn' => $dsn,
                         'db.type' => 'sql',
                         'db.connection_string' => $dsn,
-                        'span.kind' => 'client'
+                        'span.kind' => 'client',
+                        'net.peer.name' => PDO::$db_host
                     ];
 
         return [
@@ -212,7 +238,9 @@ class PDO implements IntegrationInterface
             'db.operation' => $operation,
             'db.table' => $tableName,
             'db.sql.table' => $tableName,
-            'span.kind' => 'client'
+            'span.kind' => 'client',
+            'net.peer.name' => PDO::$db_host,
+            'db.system' => PDO::$db_system
         ];
 
         return [

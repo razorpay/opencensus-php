@@ -41,15 +41,18 @@ const CMD_MAX_LEN = 256;
 
 class Redis implements IntegrationInterface
 {
+    static $host = "";
 
     /**
      * Static method to add instrumentation to redis requests
      */
-    public static function load()
+    public static function load($host="")
     {
         if (!extension_loaded('opencensus')) {
             trigger_error('opencensus extension required to load Redis integrations.', E_USER_WARNING);
         }
+
+        Redis::$host = $host;
 
         opencensus_trace_method('Predis\Client', '__construct', function ($predis, $params) {
             $connection_str = sprintf("%s:%s", $params[0]['host'], $params[0]['port']);
@@ -64,7 +67,7 @@ class Redis implements IntegrationInterface
                     'span.kind' => 'client'
                 ],
                 'kind' => 'client',
-                'name' => 'Predis connect',
+                'name' => 'Redis connect',
                 'sameProcessAsParentSpan' => false
             ];
         });
@@ -74,25 +77,27 @@ class Redis implements IntegrationInterface
             $arguments = $command->getArguments();
             array_unshift($arguments, $command->getId());
             $query = Redis::formatArguments($arguments);
+            $attrs = [
+                'db.type' => 'redis',
+                'db.system' => 'redis',
+                'db.operation' => $command->getId(),
+                'command' => $command->getId(),
+                'service.name' => 'redis',
+                'redis.args_length' => count($arguments),
+                'span.kind' => 'client',
+            ];
 
-            return ['attributes' => [
-                        'db.type' => 'redis',
-                        'db.system' => 'redis',
-                        'db.statement' => $query,
-                        'db.operation' => $command->getId(),
-                        'command' => $command->getId(),
-                        'service.name' => 'redis',
-                        'redis.raw_command' => $query,
-                        'redis.args_length' => count($arguments),
-                        'span.kind' => 'client'
-                    ],
+            if (Redis::$host){
+                $attrs['net.peer.name'] = Redis::$host;
+            }
+
+            return ['attributes' => $attrs,
                     'kind' => 'client',
-                    'name' => 'Predis ' . $command->getId(),
+                    'name' => 'Redis ' . $command->getId(),
                     'sameProcessAsParentSpan' => false
                 ];
         });
     }
-
 
     public static function formatArguments($arguments)
     {
