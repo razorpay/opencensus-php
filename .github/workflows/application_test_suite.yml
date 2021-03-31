@@ -31,7 +31,7 @@ jobs:
     steps:
       - name: checkout
         id: checkout
-        uses: razorpay/checkout-action@v2
+        uses: razorpay/checkout-action@08eef2bd6ada50786812e7351457a762856a532f
         env:
           ACTIONS_STEP_DEBUG: true
       - name: prepare_test
