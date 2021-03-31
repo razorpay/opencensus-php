@@ -51,7 +51,26 @@ class Lambda extends Base
 
         $this->setGatewayReconciliatorObject();
 
-        $file = $this->downloadFileFromAws($key);
+        // Adding this to support the migration of the lambda to new indian bucket {recon_sftp_input_bucket}
+        // In older lambda the input does not have the bucket and region passed thus
+        // it was taking the default bucket
+        // following code can be removed once the migration to the new lambda is complete
+        // post that only adding the gateway to the SFTP_BUCKET_GATEWAYS array will suffice
+        // the requirement
+        $bucketConfigKey = self::RECON_INPUT_BUCKET;
+        $bucketRegion = self::DEFAULT_REGION;
+
+        if (empty($input['bucket']) === false)
+        {
+            $bucketConfigKey = $input['bucket'];
+        }
+
+        if (empty($input['region']) === false)
+        {
+            $bucketRegion = $input['region'];
+        }
+
+        $file = $this->downloadFileFromAws($key, $bucketConfigKey, $bucketRegion);
 
         //
         // For lambda request since there will only be one file always, we form
@@ -91,7 +110,26 @@ class Lambda extends Base
 
         $this->gateway = $this->getGatewayFromKey($key);
 
-        $file = $this->downloadFileFromAws($key);
+        // Adding this to support the migration of the lambda to new indian bucket {recon_sftp_input_bucket}
+        // In older lambda the input does not have the bucket and region passed thus
+        // it was taking the default bucket
+        // following code can be removed once the migration to the new lambda is complete
+        // post that only adding the gateway to the SFTP_BUCKET_GATEWAYS array will suffice
+        // the requirement
+        $bucketConfigKey = self::RECON_INPUT_BUCKET;
+        $bucketRegion    = self::DEFAULT_REGION;
+
+        if (empty($input['bucket']) === false)
+        {
+            $bucketConfigKey = $input['bucket'];
+        }
+
+        if (empty($input['region']) === false)
+        {
+            $bucketRegion = $input['region'];
+        }
+
+        $file = $this->downloadFileFromAws($key, $bucketConfigKey, $bucketRegion);
 
         $input = [
             self::ATTACHMENT_HYPHEN_ONE => $file
@@ -114,13 +152,13 @@ class Lambda extends Base
     /**
      * Based on gateway, returns bucket config key and region
      * @param string $gateway
+     * @param string $bucketConfigKey
+     * @param string $region
+     *
      * @return array
      */
-    protected function getBucketConfigDetails(string $gateway)
+    protected function getBucketConfigDetails(string $gateway, $bucketConfigKey = self::RECON_INPUT_BUCKET, $region = self::DEFAULT_REGION)
     {
-        $bucketConfigKey = self::RECON_INPUT_BUCKET;
-        $region = self::DEFAULT_REGION;
-
         if (in_array($gateway, self::SFTP_BUCKET_GATEWAYS, true) === true)
         {
             $bucketConfigKey = self::RECON_SFTP_INPUT_BUCKET;
@@ -194,13 +232,15 @@ class Lambda extends Base
      * path and converts that to a File object
      *
      * @param string $key s3 key
+     * @param string $bucketConfigKey
+     * @param string $bucketRegion
      *
      * @return File
      * @throws \Throwable
      */
-    protected function downloadFileFromAws(string $key): File
+    protected function downloadFileFromAws(string $key, $bucketConfigKey = self::RECON_INPUT_BUCKET, $bucketRegion = self::DEFAULT_REGION): File
     {
-        $bucketConfig = $this->getBucketConfigDetails($this->gateway);
+        $bucketConfig = $this->getBucketConfigDetails($this->gateway, $bucketConfigKey, $bucketRegion);
 
         $filePath = storage_path('files/filestore') . '/' . $key;
 
