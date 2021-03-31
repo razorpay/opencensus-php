@@ -573,10 +573,11 @@ class Name
 
     const UPDATE_BULK_PAYOUT_AMOUNT_TYPE      = 'update_bulk_payout_amount_type';
 
-    const ACCOUNTING_PAYOUTS_INTEGRATION_STATUS         = 'accounting_payouts_integration_status';
-    const ACCOUNTING_PAYOUTS_INTEGRATION_CONFIGURE      = 'accounting_payouts_integration_configure';
-    const ACCOUNTING_PAYOUTS_SYNC                       = 'accounting_payouts_sync';
-    const ACCOUNTING_PAYOUTS_WAITLIST                   = 'accounting_payouts_waitlist';
+    const CREATE_ACCOUNTING_INTEGRATION     = 'create_accounting_integration';
+    const DELETE_ACCOUNTING_INTEGRATION     = 'delete_accounting_integration';
+    const VIEW_ACCOUNTING_INTEGRATION       = 'view_accounting_integration';
+    const SYNC_ACCOUNTING_INTEGRATION       = 'sync_accounting_integration';
+    const WAITLIST_ACCOUNTING_INTEGRATION   = 'waitlist_accounting_integration';
 
     const ADMIN_FETCH_FUND_ACCOUNT_VALIDATION           = 'admin_fetch_fund_account_validation';
 

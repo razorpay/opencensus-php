@@ -105,4 +105,23 @@ return [
          ]
     ],
 
+    'testIntegrationStatusForViewOnlyUsers'  => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/accounting-payouts/integration/status',
+         ],
+        'response' => [
+            'content' => []
+         ]
+    ],
+
+    'testSyncStatusForViewOnlyUsers'  => [
+         'request'  => [
+           'method' => 'GET',
+           'url'    => '/accounting-payouts/sync/quickbooks',
+         ],
+         'response' => [
+           'content' => []
+         ]
+    ],
 ];

@@ -118,10 +118,11 @@ class UserRolePermissionsMap
                  Permission::UPDATE_MERCHANT_PREFERENCE,
                  Permission::VIEW_MERCHANT_PREFERENCE,
 
-                 Permission::ACCOUNTING_PAYOUTS_INTEGRATION_CONFIGURE,
-                 Permission::ACCOUNTING_PAYOUTS_INTEGRATION_STATUS,
-                 Permission::ACCOUNTING_PAYOUTS_SYNC,
-                 Permission::ACCOUNTING_PAYOUTS_WAITLIST,
+                 Permission::CREATE_ACCOUNTING_INTEGRATION,
+                 Permission::DELETE_ACCOUNTING_INTEGRATION,
+                 Permission::SYNC_ACCOUNTING_INTEGRATION,
+                 Permission::VIEW_ACCOUNTING_INTEGRATION,
+                 Permission::WAITLIST_ACCOUNTING_INTEGRATION,
 
              ],
 
@@ -203,10 +204,11 @@ class UserRolePermissionsMap
                  Permission::CANCEL_VENDOR_PAYMENTS,
                  Permission::PROCESS_PAYOUT_SCHEDULED,
 
-                 Permission::ACCOUNTING_PAYOUTS_INTEGRATION_CONFIGURE,
-                 Permission::ACCOUNTING_PAYOUTS_INTEGRATION_STATUS,
-                 Permission::ACCOUNTING_PAYOUTS_SYNC,
-                 Permission::ACCOUNTING_PAYOUTS_WAITLIST,
+                 Permission::CREATE_ACCOUNTING_INTEGRATION,
+                 Permission::DELETE_ACCOUNTING_INTEGRATION,
+                 Permission::SYNC_ACCOUNTING_INTEGRATION,
+                 Permission::VIEW_ACCOUNTING_INTEGRATION,
+                 Permission::WAITLIST_ACCOUNTING_INTEGRATION,
 
                  Permission::PAY_TAX_PAYMENTS,
                  Permission::CREATE_TAX_PAYMENTS,
@@ -289,9 +291,9 @@ class UserRolePermissionsMap
                  Permission::CREATE_TAX_PAYMENTS,
                  Permission::VIEW_TAX_PAYMENTS,
 
-                 Permission::ACCOUNTING_PAYOUTS_INTEGRATION_STATUS,
-                 Permission::ACCOUNTING_PAYOUTS_SYNC,
-                 Permission::ACCOUNTING_PAYOUTS_WAITLIST,
+                 Permission::SYNC_ACCOUNTING_INTEGRATION,
+                 Permission::VIEW_ACCOUNTING_INTEGRATION,
+                 Permission::WAITLIST_ACCOUNTING_INTEGRATION,
              ],
 
              BankingRole::OPERATIONS => [
@@ -333,6 +335,10 @@ class UserRolePermissionsMap
 
                  Permission::VIEW_TAX_PAYMENTS,
                  Permission::CREATE_TAX_PAYMENTS,
+
+                 Permission::SYNC_ACCOUNTING_INTEGRATION,
+                 Permission::VIEW_ACCOUNTING_INTEGRATION,
+                 Permission::WAITLIST_ACCOUNTING_INTEGRATION,
              ],
 
              BankingRole::VIEW_ONLY => [
@@ -366,6 +372,8 @@ class UserRolePermissionsMap
                  Permission::SUMMARY_PAYOUT_LINKS,
                  Permission::VIEW_VENDOR_PAYMENTS,
                  Permission::VIEW_TAX_PAYMENTS,
+                 Permission::VIEW_ACCOUNTING_INTEGRATION,
+                 Permission::WAITLIST_ACCOUNTING_INTEGRATION,
              ],
         ];
 
