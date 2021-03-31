@@ -2001,6 +2001,17 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function getCapturedPaymentsForInvoice(string $invoiceId)
+    {
+        return $this->repo->useSlave( function() use ($invoiceId)
+        {
+            return $this->newQuery()
+                        ->where(Entity::INVOICE_ID, $invoiceId)
+                        ->where(Entity::STATUS, '=', Status::CAPTURED)
+                        ->get();
+        });
+    }
+
     public function fetchCreatedPaymentsBetween(string $gateway, int $from, int $to)
     {
         return $this->newQuery()

@@ -445,14 +445,11 @@ class ViewDataSerializer extends Base\Core
     protected function addDerivedAttributesForInvoice(array & $serialized)
     {
         // In view, we show only captured(successful, not refunded) payments
-        $serializedPayments = $this->invoice
-                                   ->payments()
-                                   ->status(Payment\Status::CAPTURED)
-                                   ->get()
-                                   ->toArrayHosted();
+        $serializedPayments = $this->repo->payment->getCapturedPaymentsForInvoice($this->invoice->getId());
+
 
         $serialized[Entity::IS_PAID]            = $this->invoice->isPaid();
-        $serialized[Entity::PAYMENTS]           = $serializedPayments;
+        $serialized[Entity::PAYMENTS]           = $serializedPayments->toArrayHosted();
         $serialized[Entity::CALLBACK_URL]       = $this->invoice->getCallbackUrl();
         $serialized[Entity::CALLBACK_METHOD]    = $this->invoice->getCallbackMethod();
         $serialized[Entity::MERCHANT_GSTIN]     = $this->invoice->getMerchantGstin();
