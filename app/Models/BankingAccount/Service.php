@@ -17,20 +17,28 @@ use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Permission;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\IntegrationException;
 use RZP\Mail\BankingAccount\UpdatesForAuditor;
 use RZP\Models\BankingAccount\Activation\Comment;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
 
 
 class Service extends Base\Service
 {
+    protected $pincodeSearch;
+
+    protected $config;
+
     protected $core;
 
-    public function __construct()
+    public function __construct($pincodeSearch = null, $core = null)
     {
         parent::__construct();
 
-        $this->core = new Core;
+        $this->core = $core ?? new Core();
+
+        $this->pincodeSearch = $pincodeSearch ?? $this->app['pincodesearch'];
     }
 
     public function create(array $input): array
@@ -534,6 +542,50 @@ class Service extends Base\Service
         }
 
         return multidim_array_unique($admins, Admin\Entity::ID);
+    }
+
+    public function CheckServiceableByRBL($pinCode): array
+    {
+        $errorMessage = "PINCODE is not valid";
+
+        try
+        {
+            $this->pincodeSearch->fetchCityAndStateFromPincode($pinCode);
+        }
+        catch (BadRequestException | BadRequestValidationFailureException | IntegrationException $e)
+        {
+            if ($e->getMessage() == 'Third Party Error' or $e->getMessage() == 'Something Went Wrong')
+            {
+                $this->trace->error(TraceCode::PINCODE_SEARCH_ERROR, [$pinCode, $e->getMessage()]);
+
+                throw $e;
+            }
+            else
+            {
+                return ['serviceability' => false,
+                        'errorMessage'   => $errorMessage];
+            }
+        }
+
+        try
+        {
+            [$lat1, $lng1, $er] = $this->core->getLocationFromPincode($pinCode);
+        }
+        catch (BadRequestException | IntegrationException | Exception\RuntimeException $e)
+        {
+            $this->trace->error(TraceCode::GOOGLE_MAP_REQUEST_FAILED, [$pinCode, $e->getMessage()]);
+
+            throw $e;
+        }
+
+        if ($er != null)
+        {
+            return ['serviceability' => false,
+                    'errorMessage'   => $er];
+        }
+
+        return ['serviceability' => $this->core->checkIfServiceableByRBL($lat1, $lng1),
+                'errorMessage'   => null];
     }
 
     public function resetWebhookData(string $id)

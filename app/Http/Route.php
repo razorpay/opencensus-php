@@ -2033,6 +2033,7 @@ class Route
 
         'banking_account_activation_spocs'        => ['get',      'banking_accounts/activation/spocs',                          'BankingAccountController@getBankingAccountSalesPOCs'       ],
         'banking_accounts_auditor_daily_updates'  => ['post',     'banking_accounts/activation/{auditorType}/daily-updates',   'BankingAccountController@sendDailyUpdatesToAuditors'        ],
+        'rbl_current_account_serviceability_get'  => ['get',      'banking_accounts/serviceability/rbl/pincode/{pincode}',      'BankingAccountController@checkPincodeServiceabilityByRBL'       ],
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
         'bootstrap_key_cache'                     => ['post',     'throttle/bootstrap_key_cache',                              'ThrottleController@bootstrapKeyCache'                      ],
@@ -3228,6 +3229,7 @@ class Route
     ];
 
     public static $proxy = [
+        'rbl_current_account_serviceability_get',
         'merchant_primary_balance_fetch',
         'virtual_account_expiry_setting_upsert',
         'virtual_account_expiry_setting_get',
@@ -4489,6 +4491,7 @@ class Route
     public static $routePermission = [
         'bvs_service_dashboard'                    => Permission::EDIT_MERCHANT,
         'bvs_Service_admin'                        => Permission::EDIT_MERCHANT,
+        'rbl_current_account_serviceability_get'   => '*',
         'transfer_debug'                           => Permission::DEBUG_TRANSFERS_ROUTES,
         'virtual_account_debug'                    => Permission::DEBUG_VIRTUAL_ACCOUNT,
         'payment_links_v2_admin'                   => Permission::PAYMENT_LINKS_V2_ADMIN,
@@ -5514,6 +5517,7 @@ class Route
         'user_2fa_change_setting'                      => '*',
         'user_opt_in_whatsapp'                         => '*',
         'banking_account_create'                       => '*',
+        'rbl_current_account_serviceability_get'       => '*',
         'merchant_activation_upload_file'              => '*',
         'user_verify_contact'                          => '*',
         'user_merchant_mapping_action'                 => '*',

@@ -516,6 +516,10 @@ return [
         'api_key' => env('PINCODE_SEARCH_API_KEY')
     ],
 
+    'banking_account' => [
+        'apiKey' => env('GOOGLE_MAP_API_KEY')
+    ],
+
     'shield' => [
         'mock'     => env('SHIELD_MOCK', false),
         'url'      => env('SHIELD_BASE_URL'),

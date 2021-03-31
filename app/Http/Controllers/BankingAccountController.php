@@ -155,6 +155,13 @@ class BankingAccountController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function checkPincodeServiceabilityByRBL($pincode)
+    {
+        $data =  $this->service()->CheckServiceableByRBL($pincode);
+
+        return ApiResponse::json($data);
+    }
+
     public function resetWebhookData(string $id)
     {
         $response = $this->service()->resetWebhookData($id);

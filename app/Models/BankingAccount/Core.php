@@ -4,7 +4,7 @@ namespace RZP\Models\BankingAccount;
 
 use Mail;
 use Carbon\Carbon;
-
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Contact;
 use RZP\Models\Counter;
@@ -19,6 +19,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Schedule\Type;
 use RZP\Models\Schedule\Task;
 use RZP\Models\VirtualAccount;
+use RZP\Http\Request\Requests;
 use RZP\Models\Schedule\Period;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Detail;
@@ -30,6 +31,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankingAccount\State;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccount\Gateway;
+use RZP\Exception\IntegrationException;
 use RZP\Mail\BankingAccount\XProActivation;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
@@ -53,7 +55,6 @@ class Core extends Base\Core
     // Values for default Fee Recovery Schedule
     const DEFAULT_SCHEDULE_PERIOD   = Period::DAILY;
     const DEFAULT_SCHEDULE_INTERVAL = 7;
-
 
     /** @var ActivationDetail\Service $activationDetailService */
     protected $activationDetailService;
@@ -1482,5 +1483,47 @@ class Core extends Base\Core
     protected function sendSlackAlert($operation, $data)
     {
         (new SlackNotification)->send($operation, $data, null, 1, Entity::RX_CA_RBL_ALERTS);
+    }
+
+    // Haversine formula
+    protected function distanceBetweenLocation($lat1, $lon1, $lat2, $lon2)
+    {
+        $dLat = ($lat2 - $lat1) * M_PI / 180.0;
+        $dLon = ($lon2 - $lon1) * M_PI / 180.0;
+
+        // convert to radians
+        $lat1 = ($lat1) * M_PI / 180.0;
+        $lat2 = ($lat2) * M_PI / 180.0;
+
+        // apply formulae
+        $a = pow(sin($dLat / 2), 2) + pow(sin($dLon / 2), 2) * cos($lat1) * cos($lat2);
+
+        // Radius of earth
+        $rad = 6371;
+
+        $c = 2 * asin(sqrt($a));
+
+        return $rad * $c;
+    }
+
+    public function checkIfServiceableByRBL($lat1, $lng1): bool
+    {
+        $location = BankLocation::$rblBankLocation;
+
+        foreach ($location as $co_ordinate)
+        {
+            $lat2 = $co_ordinate[0];
+            $lng2 = $co_ordinate[1];
+            if ($this->distanceBetweenLocation($lat1, $lng1, $lat2, $lng2) < 29.9)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function getLocationFromPincode($pincode): array
+    {
+        return (new GoogleMapApi())->getLocationFromPincode($pincode);
     }
 }

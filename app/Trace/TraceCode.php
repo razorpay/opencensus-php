@@ -1680,6 +1680,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ADD_SERVICEABLE_PINCODES                              = 'ADD_SERVICEABLE_PINCODES';
     const REMOVE_SERVICEABLE_PINCODES                           = 'REMOVE_SERVICEABLE_PINCODES';
 
+    // Pincode Serviceability
+
+    const GOOGLE_MAP_REQUEST_FAILED                             = 'GOOGLE_MAP_REQUEST_FAILED';
+    const PINCODE_SEARCH_ERROR                                  = 'PINCODE_SEARCH_ERROR';
+
     const HARVESTER_REQUEST                                     = 'HARVESTER_REQUEST';
     const HARVESTER_RETRY                                       = 'HARVESTER_RETRY';
     const HARVESTER_FAILURE                                     = 'HARVESTER_FAILURE';
