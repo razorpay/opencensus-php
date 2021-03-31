@@ -86,4 +86,24 @@ class BankAccountTransformer extends Transformer
             return $this->input[Fields::TYPE];
         }
     }
+
+    public function transformBanks($handle) : array
+    {
+        return [
+            Bank\Entity::NAME               => $this->input[Fields::NAME],
+            Bank\Entity::HANDLE             => $handle,
+            BANK\Entity::GATEWAY_DATA       => $this->transformBankGatewayData(),
+            BANK\Entity::UPI_IIN            => $this->input[Fields::CODE],
+            BANK\Entity::ACTIVE             => true,
+        ];
+    }
+
+    public function transformBankGatewayData()
+    {
+        $gatewayData = [];
+
+        $gatewayData[Entity::ID] = $this->input[Fields::REFERENCE_ID];
+
+        return $gatewayData;
+    }
 }

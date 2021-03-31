@@ -7,8 +7,8 @@ use RZP\Models\P2p\Base;
 
 class Action extends Base\Action
 {
-    const FETCH_ALL         = 'fetchAll';
+    const FETCH_ALL                 = 'fetchAll';
 
-    const RETRIEVE          = 'retrieve';
-    const RETRIEVE_SUCCESS  = 'retrieveSuccess';
+    const RETRIEVE_BANKS            = 'retrieveBanks';
+    const RETRIEVE_BANKS_SUCCESS    = 'retrieveBanksSuccess';
 }

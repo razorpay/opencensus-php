@@ -129,5 +129,28 @@ class BankAccountGateway extends Gateway implements Contracts\BankAccountGateway
             ]
         ]);
     }
+
+    public function retrieveBanks(Response $response)
+    {
+        $request = $this->initiateS2sRequest(Action::RETRIEVE_BANKS);
+
+        $request->merge([]);
+
+        $s2s = $this->sendS2sRequest($request);
+
+        $output[Bank\Entity::BANKS] = [];
+
+        foreach ($s2s[Fields::BANKS] as $bank)
+        {
+            $transformer = new BankAccountTransformer($bank, $this->action);
+
+            $output[Bank\Entity::BANKS][] = $transformer->transformBanks($this->context->handleCode());
+        }
+
+        $response->setData($output);
+
+        return $response;
+    }
+
 }
 

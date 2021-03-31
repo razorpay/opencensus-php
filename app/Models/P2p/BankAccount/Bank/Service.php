@@ -19,6 +19,13 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function retrieveBanks(array $input): array
+    {
+        $response = $this->processor->retrieveBanks($input);
+
+        return $response;
+    }
+
     public function manageBulk(array $input): array
     {
         $response = $this->processor->manageBulk($input);

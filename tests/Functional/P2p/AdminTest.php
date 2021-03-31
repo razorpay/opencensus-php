@@ -7,6 +7,7 @@ use RZP\Models\P2p\Vpa\Handle;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\P2p\Service\Base\Constants;
+use RZP\Models\P2p\Base\Libraries\ContextMap;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\P2p\Service\Base\Traits\DbEntityFetchTrait;
@@ -127,6 +128,7 @@ class AdminTest extends TestCase
                 'active'        => 1
             ],
             [
+                'handle'        => $bank->getHandle(),
                 'upi_iin'       => $bank->getUpiIin(),
                 'ifsc'          => 'RSRT',
                 'active'        => 0
@@ -242,5 +244,29 @@ class AdminTest extends TestCase
         ];
 
         return array_merge($client, $attributes);
+    }
+
+    public function testRetrieveBanks()
+    {
+        $this->ba->cronAuth();
+
+        $existingBanks = $this->getDbEntities('p2p_bank',['handle' => 'razoraxis']);
+
+        $this->assertTrue($existingBanks->first()->isActive());
+
+        $content = [
+            'handle' => Constants::RAZOR_AXIS
+        ];
+        $request = [
+            'url'       => '/p2p/bank/retrieve',
+            'method'    => 'POST',
+            'content'   => $content,
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertFalse($existingBanks->first()->refresh()->isActive());
+
+        $this->assertCount(3, $response['items']);
     }
 }

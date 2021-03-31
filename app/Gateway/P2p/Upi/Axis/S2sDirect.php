@@ -3,6 +3,7 @@
 namespace RZP\Gateway\P2p\Upi\Axis;
 
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
+use RZP\Gateway\P2p\Upi\Axis\Actions\Action;
 
 class S2sDirect extends S2s
 {
@@ -15,6 +16,10 @@ class S2sDirect extends S2s
     const CONTENT_TYPE                      = 'Content-Type';
 
     const X_MERCHANT_SIGNATURE              = 'X-Merchant-Signature';
+
+    const SKIP_STATUS_CHECK                 = 'skip_status_check';
+
+    const SKIP_AUTH_HEADERS                 = 'skip_auth_headers';
 
     /**
      * @var callable
@@ -32,15 +37,35 @@ class S2sDirect extends S2s
         ];
     }
 
+    public function skipStatusCheck()
+    {
+        return $this->actionMap[Action::DIRECT][self::SKIP_STATUS_CHECK] ?? false;
+    }
+
+    public function skipAuthHeaders(array $map)
+    {
+        return $map[Action::DIRECT][self::SKIP_AUTH_HEADERS] ?? false;
+    }
+
     public function finish()
     {
         $this->request['method'] = $this->actionMap['direct']['method'];
 
         $this->content->put(Fields::UDF_PARAMETERS, json_encode($this->udf));
 
-        $this->request['content'] = $this->content->toJson();
+        $this->request['content'] = $this->request['method'] === 'get' ? $this->content :
+                                                                         $this->content->toJson();
 
-        $this->request['headers'] = $this->getHeaders();
+        if($this->skipAuthHeaders($this->actionMap) === false)
+        {
+            $this->setHeaders([
+                S2sDirect::X_MERCHANT_ID            => call_user_func($this->accessor, 'getMerchantId'),
+                S2sDirect::X_MERCHANT_CHANNEL_ID    => call_user_func($this->accessor, 'getMerchantChannelId'),
+                S2sDirect::X_TIMESTAMP              => call_user_func($this->accessor, 'getTimeStamp'),
+            ]);
+
+            $this->request['headers'] = $this->getHeaders();
+        }
 
         return parent::finish();
     }

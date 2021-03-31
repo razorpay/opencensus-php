@@ -27,4 +27,6 @@ class Url
     const UNBLOCK_VPA          = '/api/b2/merchants/vpas/unblock';
 
     const GET_BLOCKED          = '/api/b2/merchants/vpas/block/list';
+
+    const RETRIEVE_BANKS       = '/api/b2/merchants/banks';
 }

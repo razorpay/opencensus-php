@@ -28,6 +28,15 @@ class BankAccountController extends Controller
         return $this->response($response);
     }
 
+    public function retrieveBanks()
+    {
+        $input = $this->request()->all();
+
+        $response = (new P2p\BankAccount\Bank\Service)->retrieveBanks($input);
+
+        return $this->response($response);
+    }
+
     public function initiateRetrieve()
     {
         $input = $this->request()->all();

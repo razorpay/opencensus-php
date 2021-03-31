@@ -2,7 +2,6 @@
 
 namespace RZP\Tests\P2p\Service\UpiAxis\BankAccount;
 
-use RZP\Models\BankAccount\Type;
 use RZP\Tests\P2p\Service\Base;
 use RZP\Models\P2p\BankAccount;
 use RZP\Models\P2p\BankAccount\Entity;

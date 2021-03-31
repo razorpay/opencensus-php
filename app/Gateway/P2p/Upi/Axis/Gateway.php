@@ -207,6 +207,7 @@ class Gateway extends Upi\Gateway
 
         $accessor = function(string $method)
         {
+            // getMerchantId(),getMerchantChannelId(),getTimeStamp() is being called
             return $this->{$method}();
         };
 
@@ -216,12 +217,6 @@ class Gateway extends Upi\Gateway
                 $request = new S2sDirect($accessor, $this->getUrl($action));
 
                 $request->setSigner($this->getMerchantSigner());
-
-                $request->setHeaders([
-                    S2sDirect::X_MERCHANT_ID            => $this->getMerchantId(),
-                    S2sDirect::X_MERCHANT_CHANNEL_ID    => $this->getMerchantChannelId(),
-                    S2sDirect::X_TIMESTAMP              => $this->getTimeStamp(),
-                ]);
         }
 
         $request->setActionMap($action, $this->actionMap[$action], $this->getRequestId());
@@ -262,6 +257,11 @@ class Gateway extends Upi\Gateway
             'source'    => $s2sRequest->source(),
             'mock'      => $this->mock,
         ]);
+
+        if($s2sRequest->skipStatusCheck() === true)
+        {
+            return $response;
+        }
 
         if ($this->isS2sFailure($response))
         {

@@ -3,6 +3,7 @@
 namespace RZP\Gateway\P2p\Upi\Axis\Actions;
 
 use RZP\Gateway\P2p\Upi\Axis\Fields;
+use RZP\Gateway\P2p\Upi\Axis\S2sDirect;
 
 class BankAccountAction extends Action
 {
@@ -13,6 +14,8 @@ class BankAccountAction extends Action
     const CHANGE_MPIN                   = 'CHANGE_MPIN';
 
     const CHECK_BALANCE                 = 'CHECK_BALANCE';
+
+    const RETRIEVE_BANKS                = 'RETRIEVE_BANKS';
 
     const MAP = [
         self::GET_ACCOUNTS => [
@@ -40,6 +43,14 @@ class BankAccountAction extends Action
                 Fields::ACCOUNT_REFERENCE_ID => 'required',
                 Fields::UPI_REQUEST_ID       => 'required'
             ]
-        ]
+        ],
+        self::RETRIEVE_BANKS     => [
+            self::SOURCE  => self::DIRECT,
+            self::DIRECT  => [
+                S2sDirect::METHOD               => 'get',
+                S2sDirect::SKIP_STATUS_CHECK    => true,
+                S2sDirect::SKIP_AUTH_HEADERS    => true,
+            ],
+        ],
     ];
 }

@@ -52,6 +52,28 @@ class Core extends Base\Core
         return new PublicCollection($entities);
     }
 
+    public function disableBanksNotInListWithHandle(array $ids, string $handle)
+    {
+        $banks = $this->repo->newP2pQuery()
+                            ->where(Entity::HANDLE, '=', $handle)
+                            ->whereNotIn('id',$ids)
+                            ->get();
+
+        return $this->disableBanks($banks);
+    }
+
+    public function disableBanks(PublicCollection $banks)
+    {
+        foreach($banks as $bank)
+        {
+            $bank->setActive(false);
+
+            $this->repo->saveOrFail($bank);
+        }
+
+        return $banks;
+    }
+
     public function create(array $input): Entity
     {
         $bank = $this->repo->getEntityObject();
@@ -76,8 +98,8 @@ class Core extends Base\Core
     {
         foreach ($allBanks as $bank)
         {
-            // Current Logic is on UPI IIN
-            if ($bank->getUpiIin() === $input[Entity::UPI_IIN])
+            // Current Logic is on UPI IIN and handle
+            if ($bank->getUpiIin() === $input[Entity::UPI_IIN] and $bank->getHandle() === $input['handle'])
             {
                 return $bank;
             }

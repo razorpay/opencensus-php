@@ -9,7 +9,8 @@ class Validator extends Base\Validator
 {
     protected static $editRules;
     protected static $fetchAllRules;
-    protected static $retrieveSuccessRules;
+    protected static $retrieveBanksSuccessRules;
+    protected static $retrieveBanksRules;
 
     public function rules()
     {
@@ -74,7 +75,7 @@ class Validator extends Base\Validator
         return $rules;
     }
 
-    public function makeRetrieveSuccessRules()
+    public function makeRetrieveBanksSuccessRules()
     {
         $rules = $this->makeRules([
             Entity::UPI_IIN          => 'required',
@@ -88,4 +89,14 @@ class Validator extends Base\Validator
 
         return $rules;
     }
+
+    public function makeRetrieveBanksRules()
+    {
+        $rules = $this->makeRules([
+            Entity::HANDLE           => 'required',
+        ]);
+
+        return $rules;
+    }
+
 }

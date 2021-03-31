@@ -3,6 +3,7 @@
 namespace RZP\Gateway\P2p\Upi\Axis\Mock;
 
 use RZP\Gateway\P2p\Base\Mock;
+use RZP\Models\P2p\BankAccount;
 use RZP\Gateway\P2p\Upi\Axis\Fields;
 
 class Server extends Mock\Server
@@ -259,6 +260,40 @@ class Server extends Mock\Server
         ];
 
         $this->content($response, 'get_blocked');
+
+        $response = $this->makeResponse($response);
+
+        return $response;
+    }
+
+    public function bankAccountRetrieveBanks($request)
+    {
+        $bankIin = (new BankAccount\Bank\Core)->fetchAll([])->last()->getUpiIin();
+
+        $response = [
+            Fields::BANKS      => [
+                [
+                    Fields::NAME            => 'ABC Bank',
+                    Fields::CODE            => '123456',
+                    Fields::UPI_ENABLED     => true,
+                    Fields::REFERENCE_ID    => str_random(16),
+                ],
+                [
+                    Fields::NAME            => 'XYZ Bank',
+                    Fields::CODE            => '567890',
+                    Fields::UPI_ENABLED     => true,
+                    Fields::REFERENCE_ID    => str_random(16),
+                ],
+                [
+                    Fields::NAME            => 'Misael Marquardt',
+                    Fields::CODE            => $bankIin,
+                    Fields::UPI_ENABLED     => true,
+                    Fields::REFERENCE_ID    => str_random(16),
+                ],
+            ],
+        ];
+
+        $this->content($response, 'retrieveBanks');
 
         $response = $this->makeResponse($response);
 

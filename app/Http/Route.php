@@ -2076,6 +2076,7 @@ class Route
         'p2p_admin_update_handle'                 => ['put',      'p2p/handles/{code}',                                        'P2p\VpaController@updateHandle'],
         'p2p_admin_manage_banks'                  => ['post',     'p2p/banks/bulk/manage',                                     'P2p\BankAccountController@manageBulkBanks'],
         'p2p_reminder_send'                       => ['post',     'p2p/reminders/send/{handle}/{entity}/{id}/{action}',        'P2p\UpiController@sendReminder'],
+        'p2p_retrieve_banks_cron'                 => ['post',      'p2p/bank/retrieve',                                         'P2p\BankAccountController@retrieveBanks'],
 
         // Mpan related routes
         'mpans_issue'                             => ['post',     'mpans/issue',                                               'MpanController@issueMpans'                                ],
@@ -3133,6 +3134,7 @@ class Route
 
         // IPL bot
         'throttle_create_config_spinnaker',
+        'p2p_retrieve_banks_cron',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -6053,7 +6055,8 @@ class Route
             'freshchat_extract_report_cron',
             'freshchat_retrieve_report_cron',
             'loc_cron',
-            'care_service_cron_proxy'
+            'care_service_cron_proxy',
+            'p2p_retrieve_banks_cron',
         ],
 
         'subscriptions' => [

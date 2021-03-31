@@ -71,6 +71,10 @@ class Fields
     const EXPIRY                        = 'expiry';
     const BALANCE                       = 'balance';
 
+    const BANKS                         = 'banks';
+    const CODE                          = 'code';
+    const UPI_ENABLED                   = 'upiEnabled';
+
     // --------------------- VPA -------------------- //
     const VPA                           = 'vpa';
     const CUSTOMER_VPA                  = 'customerVpa';

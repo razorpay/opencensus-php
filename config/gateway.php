@@ -226,6 +226,7 @@ return [
         'merchant_id'               => env('P2P_UPI_AXIS_MERCHANT_ID'),
         'merchant_channel_id'       => env('P2P_UPI_AXIS_MERCHANT_CHANNEL_ID'),
         'merchant_category_code'    => env('P2P_UPI_AXIS_MERCHANT_CATEGORY_CODE'),
+        'bank_count_threshold'      => env('P2P_UPI_AXIS_BANK_COUNT_THREASHOLD'),
     ],
 
     'hdfc' => [
