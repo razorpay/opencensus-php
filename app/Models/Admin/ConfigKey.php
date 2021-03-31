@@ -174,6 +174,8 @@ class ConfigKey
 
     const REQUEST_LOG_STATE = self::PREFIX . 'request_log_state';
 
+    const SLAVE_ROUTES = self::PREFIX.'slave_routes';
+
     const PUBLIC_KEYS = [
         self::TERMINAL_SELECTION_LOG_VERBOSE,
         self::PRICING_RULE_SELECTION_LOG_VERBOSE,
@@ -253,6 +255,7 @@ class ConfigKey
         self::RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS_FOR_FUND_LOADING,
         self::RBL_STATEMENT_CLOSING_BALANCE_DIFF,
         self::REQUEST_LOG_STATE,
+        self::SLAVE_ROUTES,
     ];
 
     const REDIS_CONFIG_MAP = [

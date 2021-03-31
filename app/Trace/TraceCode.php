@@ -2418,6 +2418,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LAMBDA_BATCH_FAILURE                                  = 'LAMBDA_BATCH_FAILURE';
 
     const REDIS_LAG_CHECK_FAILED                                = 'REDIS_LAG_CHECK_FAILED';
+    const SLAVE_ROUTES_FETCH_FAILED                             = 'SLAVE_ROUTES_FETCH_FAILED';
     const HEARTBEAT_CHECK_FAILED                                = 'HEARTBEAT_CHECK_FAILED';
     const HEARTBEAT_CONFIG_FETCH_FAILED                         = 'HEARTBEAT_CONFIG_FETCH_FAILED';
     const HEARTBEAT_CHECK_COMPLETED                             = 'HEARTBEAT_CHECK_COMPLETED';

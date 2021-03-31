@@ -137,6 +137,7 @@ class Validator extends Base\Validator
         ConfigKey::RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_MERCHANTS => 'filled|array',
         ConfigKey::RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS_FOR_FUND_LOADING => 'filled|array',
         ConfigKey::REQUEST_LOG_STATE                      => 'filled|string',
+        ConfigKey::SLAVE_ROUTES                           => 'filled|array',
     ];
 
     protected static $setRedisKeysRules = [

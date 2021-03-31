@@ -11,6 +11,7 @@ use Razorpay\Trace\Facades\Trace as TraceFacade;
 use Illuminate\Database\MySqlConnection as BaseMySqlConnection;
 
 use RZP\Trace\TraceCode;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Exception\LogicException;
 use RZP\Base\Database\LagChecker;
 
@@ -72,6 +73,8 @@ class MySqlConnection extends BaseMySqlConnection
      */
     protected $previousReadPdo;
 
+    protected $isSlaveRoute;
+
     public function __construct($pdo, $database = '', $tablePrefix = '', array $config = [])
     {
         parent::__construct($pdo, $database, $tablePrefix, $config);
@@ -93,6 +96,52 @@ class MySqlConnection extends BaseMySqlConnection
         $this->forceCheckReplicaLag = false;
 
         $this->previousReadPdo = null;
+
+        $this->isSlaveRoute = $this->validateSlaveConnectionRoute();
+    }
+
+    /*
+     * validateSlaveConnectionRoute checks whether to use slave connection irrespective of
+     * lag in slave instance.
+     */
+    protected function validateSlaveConnectionRoute()
+    {
+        $isSlaveRoute = false;
+
+        try
+        {
+            $isSlaveRoute = $this->canRouteToSlave();
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::CRITICAL,
+                TraceCode::SLAVE_ROUTES_FETCH_FAILED);
+        }
+
+        return $isSlaveRoute;
+    }
+
+    protected function canRouteToSlave()
+    {
+       $slaveRoutes = Cache::get(ConfigKey::SLAVE_ROUTES);
+
+       if (empty($slaveRoutes) === true)
+       {
+            return false;
+       }
+
+       $app = App::getFacadeRoot();
+
+       $routeName = $app['request.ctx']->getRoute() ?? null;
+
+       if (empty($routeName) === true)
+       {
+            return false;
+       }
+
+      return (in_array($slaveRoutes, $routeName, true) === true);
     }
 
     protected function tryAgainIfCausedByLostConnection(QueryException $e, $query, $bindings, Closure $callback)
@@ -185,12 +234,13 @@ class MySqlConnection extends BaseMySqlConnection
 
             //
             // If a DML query has been executed in the request and 'sticky' config
-            // is true and we are not force using the read pdo, then always use
-            // the master connection
+            // is true and we are not force using the read pdo and request path is not a slaveRoute,
+            // then always use the master connection
             //
             if (($this->getConfig('sticky') === true) and
                 ($this->recordsModified === true) and
-                ($this->forceReadPdo === false))
+                ($this->forceReadPdo === false) and
+                ($this->isSlaveRoute === false))
             {
                 return $this->getPdo();
             }
@@ -297,7 +347,9 @@ class MySqlConnection extends BaseMySqlConnection
         // If true then use write PDO object and move all traffic to master.
         $result = $this->lagChecker->useReadPdoIfApplicable($readPdo);
 
-        if (($result === null) and ($this->heartbeatForceRun === false))
+        if (($result === null) and
+            ($this->heartbeatForceRun === false) and
+            ($this->isSlaveRoute === false))
         {
             return null;
         }
@@ -305,9 +357,11 @@ class MySqlConnection extends BaseMySqlConnection
         /**
          * foceReadPdo is set to true in case of useSlave(callable $callback), if it's true then
          * queries has to be run on slave. Since skip slave condition is evaluated
-         * above we can safely route queries to slave.
+         * above we can safely route queries to slave. OR for certain router we want to ensure that all the read
+         * queries goes to slave irrespective of lag in this case isSlaveRoute will be set to true.
          */
-        if ($this->forceReadPdo === true)
+        if (($this->forceReadPdo === true) or
+            ($this->isSlaveRoute === true))
         {
             return $readPdo;
         }
