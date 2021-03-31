@@ -71,7 +71,8 @@
                   page_title: data.payment_link.title,
                   form_title: 'Payment Details'
                 },
-                requestParams: requestParams
+                requestParams: requestParams,
+                view_preferences: data.view_preferences
               };
         </script>
 
