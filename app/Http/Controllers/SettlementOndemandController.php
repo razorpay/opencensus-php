@@ -124,4 +124,13 @@ class SettlementOndemandController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function markAsProcessed(string $id)
+    {
+        $input = Request::all();
+
+        $data = $this->service(Entity::SETTLEMENT_ONDEMAND_TRANSFER)->markAsProcessed($id);
+
+        return ApiResponse::json($data);
+    }
 }

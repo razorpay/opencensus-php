@@ -49,4 +49,13 @@ class Service extends Base\Service
         }
     }
 
+    public function markAsProcessed(string $id)
+    {
+        $settlementOndemandTransfer = (new Repository)->findById($id);
+
+        $this->core()->markAsProcessed($settlementOndemandTransfer);
+
+        return [];
+    }
+
 }

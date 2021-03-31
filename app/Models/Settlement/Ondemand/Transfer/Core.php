@@ -192,4 +192,27 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($settlementOndemandTransfer);
     }
+
+    public function markAsProcessed($settlementOndemandTransfer)
+    {
+        if($settlementOndemandTransfer->getStatus() === Status::REVERSED)
+        {
+            $this->repo->transaction(function () use ($settlementOndemandTransfer)
+            {
+                $attempt = (new Attempt\Core)->createAttempt($settlementOndemandTransfer);
+
+                $attempt->setStatus(Status::PROCESSED);
+
+                $this->repo->saveOrFail($attempt);
+
+                $settlementOndemandTransfer->setPayoutId(null);
+
+                $settlementOndemandTransfer->setStatus(Status::PROCESSED);
+
+                $settlementOndemandTransfer->setAttempts($settlementOndemandTransfer->getAttempts() + 1);
+
+                $this->repo->saveOrFail($settlementOndemandTransfer);
+            });
+        }
+    }
 }

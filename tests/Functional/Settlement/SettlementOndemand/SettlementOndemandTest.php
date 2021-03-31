@@ -621,6 +621,37 @@ class SettlementOndemandTest extends TestCase
         ], $settlementOndemandBulk);
     }
 
+    public function testOndemandTransferMarkAsProcessed()
+    {
+        $this->ba->adminAuth(MODE::TEST);
+
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand.transfer', [
+            'id'       => '12345678910111',
+            'status'   => 'reversed',
+            'mode'     => 'IMPS',
+            'attempts' => 1,
+        ]);
+
+        $this->startTest();
+
+        $settlementOndemandTransfer = $this->getLastEntity(EntityConstants::SETTLEMENT_ONDEMAND_TRANSFER,true);
+
+        $settlementOndemandAttempt = $this->getLastEntity(EntityConstants::SETTLEMENT_ONDEMAND_ATTEMPT,true);
+
+        $this->assertArraySelectiveEquals([
+            'id'                              => '12345678910111',
+            'status'                          => 'processed',
+            'payout_id'                       => null,
+            'attempts'                        => 2,
+        ], $settlementOndemandTransfer);
+
+        $this->assertArraySelectiveEquals([
+            'settlement_ondemand_transfer_id' => '12345678910111',
+            'status'                          => 'processed',
+            'payout_id'                       => null,
+        ], $settlementOndemandAttempt);
+    }
+
     public function testOndemandCreationForMerchantWithXSettlementAccountNonBankingHoursGreaterThanIMPSLimit()
     {
         $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());

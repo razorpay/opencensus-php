@@ -44,7 +44,7 @@ class Status
             self::REVERSED,
         ],
         self::REVERSED => [
-            // this is empty because it's the final status
+            self::PROCESSED,
         ],
     ];
 

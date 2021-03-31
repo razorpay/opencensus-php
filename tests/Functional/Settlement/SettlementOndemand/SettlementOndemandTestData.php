@@ -1218,6 +1218,16 @@ return [
                 ],
             ],
         ]
+    ],
+
+    'testOndemandTransferMarkAsProcessed' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/transfer/12345678910111/processed',
+            'method'  => 'post',
+        ],
+        'response' => [
+            'content' => [],
+        ],
     ]
 
 ];
