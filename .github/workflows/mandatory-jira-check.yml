@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: razorpay/checkout-action@master
+        uses: razorpay/checkout-action@08eef2bd6ada50786812e7351457a762856a532f
 
       - name: Checkout GitHub Action Repo
         uses: razorpay/checkout-action@08eef2bd6ada50786812e7351457a762856a532f

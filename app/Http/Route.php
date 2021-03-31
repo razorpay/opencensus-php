@@ -6172,6 +6172,7 @@ class Route
 
         'capital_cards_client' => [
             'user_fetch',
+            'user_fetch_internal',
         ],
 
         'capital_collections_client' => [

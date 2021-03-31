@@ -13,7 +13,7 @@ jobs:
     runs-on: [self-hosted]
     steps:
     - name: checkout
-      uses: razorpay/checkout-action@v2
+      uses: razorpay/checkout-action@08eef2bd6ada50786812e7351457a762856a532f
      # Applying label approved here to use the same in other workflow - pr_workflow to run the back-merge action when
      # any commits pushed post PR approval
     - name: Apply approved label
@@ -47,7 +47,7 @@ jobs:
           **Conflict Error Please back-merge manually**
         allow-repeats: true
     # checkout the festure branch post back-merge of master
-    - uses: razorpay/checkout-action@v2
+    - uses: razorpay/checkout-action@08eef2bd6ada50786812e7351457a762856a532f
       with:
         ref: ${{ github.event.pull_request.head.ref }}
     # set the new commit id in Github env
