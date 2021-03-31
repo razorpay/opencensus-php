@@ -222,7 +222,14 @@ class Gateway extends Mindgate\Gateway
 
             $this->updateGatewayPaymentEntity($gatewayPayment, $responseArray);
 
-            $formattedResponse = $this->generateResponse($responseArray, $gatewayPayment);
+            if ($responseArray[Fields::RESPONSE_CODE] === 'DT'){
+                return $this->generateResponseForDuplicatePayout($gatewayPayment,
+                    'RZP_DUPLICATE_REFERENCE_RECEIVED',
+                    $input,
+                    Status::PENDING);
+            } else {
+                $formattedResponse = $this->generateResponse($responseArray, $gatewayPayment);
+            }
         }
         catch (Exception\GatewayTimeoutException $e)
         {
@@ -353,7 +360,14 @@ class Gateway extends Mindgate\Gateway
 
             $responseArray = $this->checkAndUpdateForVerifyStatus($responseArray);
 
-            $formattedResponse = $this->generateResponse($responseArray, $gatewayPayment);
+            if ($responseArray[Fields::RESPONSE_CODE] === 'DT'){
+                return $this->generateResponseForDuplicatePayout($gatewayPayment,
+                    'RZP_DUPLICATE_REFERENCE_RECEIVED',
+                    $input,
+                    Status::PENDING);
+            } else {
+                $formattedResponse = $this->generateResponse($responseArray, $gatewayPayment);
+            }
         }
         catch (Exception\GatewayTimeoutException $e)
         {
