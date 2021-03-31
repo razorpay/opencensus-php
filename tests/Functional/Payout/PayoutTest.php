@@ -419,7 +419,7 @@ class PayoutTest extends OAuthTestCase
         $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
 
         $this->assertEquals($updatedPayout[Payout\Entity::FAILURE_REASON],
-            'Payout failed. Contact support for help');
+            'Payout failed. Contact support for help.');
         $this->assertEquals($updatedPayout[Payout\Entity::STATUS],Payout\Status::REVERSED);
         $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
 
@@ -487,7 +487,7 @@ class PayoutTest extends OAuthTestCase
         $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
 
         $this->assertEquals($updatedPayout[Payout\Entity::FAILURE_REASON],
-            'Payout failed. Contact support for help');
+            'Payout failed. Contact support for help.');
         $this->assertEquals($updatedPayout[Payout\Entity::STATUS],Payout\Status::REVERSED);
         $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
 
@@ -571,7 +571,7 @@ class PayoutTest extends OAuthTestCase
         $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
 
         $this->assertEquals($updatedPayout[Payout\Entity::FAILURE_REASON],
-            'Payout failed. Contact support for help');
+            'Payout failed. Contact support for help.');
         $this->assertEquals($updatedPayout[Payout\Entity::STATUS],Payout\Status::REVERSED);
         $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
 
@@ -636,7 +636,7 @@ class PayoutTest extends OAuthTestCase
         $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
 
         $this->assertEquals($updatedPayout[Payout\Entity::FAILURE_REASON],
-            'Payout failed. Contact support for help');
+            'Payout failed. Contact support for help.');
         $this->assertEquals($updatedPayout[Payout\Entity::STATUS],Payout\Status::REVERSED);
         $this->assertNotNull($updatedPayout[Payout\Entity::REVERSED_AT]);
 

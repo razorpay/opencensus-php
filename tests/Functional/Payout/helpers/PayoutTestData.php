@@ -10857,7 +10857,7 @@ return [
                 'entity' => [
                     'entity' => 'payout',
                     'status' => 'reversed',
-                    'failure_reason' => 'Payout failed. Contact support for help',
+                    'failure_reason' => 'Payout failed. Contact support for help.',
                     'error'  => [
                         'source' => 'internal',
                         'reason' =>  'server_error',
