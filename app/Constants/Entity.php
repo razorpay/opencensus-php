@@ -53,6 +53,7 @@ class Entity
     const PRODUCT                    = 'product';
     const WEBHOOK                    = 'webhook';
     const QR_CODE                    = 'qr_code';
+    const QR_CODE_CONFIG             = 'qr_code_config';
     const QR_PAYMENT_REQUEST         = 'qr_payment_request';
     const OPTIONS                    = 'options';
     const ACCOUNT                    = 'account';
