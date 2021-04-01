@@ -530,9 +530,12 @@ class Repository extends Base\Repository
 
     public function findDuplicateInvoiceByInternalRefForMerchant(Entity $invoice, string $merchantId)
     {
+        $nowMinus5days = Carbon::now(Timezone::IST)->addDays(-5)->getTimestamp();
+
         return $this->newQuery()
-                    ->where(Entity::INTERNAL_REF, $invoice->getInternalRef())
                     ->merchantId($merchantId)
+                    ->where(Entity::CREATED_AT, '>=', $nowMinus5days)
+                    ->where(Entity::INTERNAL_REF, $invoice->getInternalRef())
                     ->where(Entity::ID, '!=', $invoice->getId())
                     ->first();
     }
