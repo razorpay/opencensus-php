@@ -374,6 +374,19 @@ function isDedupe(activation) {
   return false;
 }
 
+function showAadharDoc(activation) {
+  const currentBusinessType =
+    activation.state.dirty.business_type || activation.props.data.business_type;
+  if (
+    E_SIGN_AADHAR.includes(Number(currentBusinessType)) &&
+    activation.props.user.canSkipPOADocument &&
+    activation.state.isAadharDocVisible
+  ) {
+    return false;
+  }
+  return true;
+}
+
 export {
   differentAddress,
   isUnregisteredBusiness,
@@ -410,4 +423,5 @@ export {
   hasUploadedBusinessProofTypeDoc,
   isBusinessProofTypeDocFieldVisible,
   canShowEAadharComponent,
+  showAadharDoc,
 };

@@ -43,6 +43,7 @@ import {
   hasUploadedBusinessProofTypeDoc,
   isBusinessProofTypeDocFieldVisible,
   canShowEAadharComponent,
+  showAadharDoc,
 } from './ActivationUtils';
 
 import { ADDITIONAL_DOCS_LABEL_VALUE_MAP, BUSINESS_PROOF_TYPE_DOCS } from './Constants';
@@ -706,7 +707,10 @@ const uploadFields = [
       return { label: ADDRESS_PROOF_TYPES[type].label, name: type };
     }),
     _when: (activation) => {
-      return _showForIndiv(activation) || activation.props.user.isRegAutoKYCEnabled;
+      return (
+        (_showForIndiv(activation) || activation.props.user.isRegAutoKYCEnabled) &&
+        showAadharDoc(activation)
+      );
     },
   },
   {
@@ -722,7 +726,10 @@ const uploadFields = [
     className: 'document-group',
     _type: 'address_proof_doc_upload',
     _when: (activation) => {
-      return _showForIndiv(activation) || activation.props.user.isRegAutoKYCEnabled;
+      return (
+        (_showForIndiv(activation) || activation.props.user.isRegAutoKYCEnabled) &&
+        showAadharDoc(activation)
+      );
     },
   },
   {
@@ -737,8 +744,13 @@ const uploadFields = [
     _cmp: Input.File,
     className: 'document-group',
     _type: 'address_proof_doc_upload',
+    description: (activation) =>
+      isUnregisteredBusiness(activation) ? 'JPG/PNG of max. size 2MB or PDF of max. size 4MB' : '',
     _when: (activation) => {
-      return _showForIndiv(activation) || activation.props.user.isRegAutoKYCEnabled;
+      return (
+        (_showForIndiv(activation) || activation.props.user.isRegAutoKYCEnabled) &&
+        showAadharDoc(activation)
+      );
     },
   },
   {
@@ -1016,7 +1028,7 @@ export const mainFormTabs = [
   'Business Overview',
   'Business Details',
   bankAccountTabName,
-  'Documents Upload',
+  'Documents Verification',
 ];
 
 export const tabToEventNames = [

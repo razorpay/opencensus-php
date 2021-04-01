@@ -1474,6 +1474,7 @@ class Service extends Base\Service
             'whats-new-dec-2020',
             'esign_aadhar_functionality',
             'aov_functionality',
+            'SKIP_POA_DOCUMENT_FUNCTIONALITY',
             'rx_opfin_sso_announcement',
             'AnnouncementIconJan2021',
             'TicketSystemSupport',

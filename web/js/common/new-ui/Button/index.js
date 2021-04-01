@@ -59,7 +59,7 @@ export class AsyncBtn extends React.PureComponent {
      * */
     let { children, pendingState, onClick, showLoader = true, ...rest } = this.props;
 
-    if (this.state.isPending) {
+    if (this.state.isPending || this.props.isApiCalling) {
       children = (
         <span class="btn-pending">
           {pendingState}

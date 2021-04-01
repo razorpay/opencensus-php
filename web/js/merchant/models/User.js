@@ -865,6 +865,10 @@ export default class User {
   get isAppStoreEnabled() {
     return this.getExpStatus('partner_app_store');
   }
+
+  get canSkipPOADocument() {
+    return this.getExpStatus('SKIP_POA_DOCUMENT_FUNCTIONALITY');
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

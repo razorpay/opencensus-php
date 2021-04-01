@@ -742,11 +742,13 @@ TODO: Display aside on top of form as expandable slider OR else show PREV button
   color: rgba(22, 47, 86, 0.38);
 
 .e-aadhar
+  margin-bottom: 45px; 
+  position: relative;
   &__seprator
     height: 1px;
     border-top: 1px solid #162f560d;
-    max-width: 310px;
-    margin: 10px 0;
+    max-width: 280px;
+    margin: 12px 0;
 
   .Button.Button--secondary.e-aadhar__btn
     color: #497fd6;
@@ -764,21 +766,20 @@ TODO: Display aside on top of form as expandable slider OR else show PREV button
   
   &__error
     color: #d12d2d;
-    max-width: 300px;
+    max-width: 280px;
     font-size: 13px;
     margin: 6px 0;
 
+  .otp-label
+    position: absolute;
   .Input-desc.e-aadhar__consent
     color: #162f5661;
 
-  &__otp-helptext
-    font-weight: 700;
-
   .Input-desc.e-aadhar__not-linked-text
-    max-width: 310px;
+    max-width: 290px;
     padding-left: 25px;
     font-size: 12px;
-    color: #ec2525;
+    color: #CD8214;
 
   .Input--checkbox.e-aadhar__not-linked-checkbox
     margin: 0 0 4px;
@@ -787,21 +788,18 @@ TODO: Display aside on top of form as expandable slider OR else show PREV button
     margin-top: 16px;
 
     &__captcha-img
-      height: 32px;
-      width: 93px;
+      height: 38px;
+      width: 131px;
       pointer-events: none;
 
     &__resend
       display: inline-block;
       margin-left: 20px;
-      cursor: pointer; 
+      cursor: pointer;
 
-    &__pin
-      max-width: 145px;
-      margin-top: 24px;
-
-    &__pin-desc
-      max-width: 270px;
+    &__resend-disabled
+      pointer-events: none;
+      cursor: initial;
 
     .Input
       margin-top: 8px;
@@ -813,6 +811,9 @@ TODO: Display aside on top of form as expandable slider OR else show PREV button
         color: #2B83EA;
         margin-right: 16px;
         cursor: pointer;
+    .reload-icon
+      margin-left: 20px;
+      cursor: initial;
 
   .otp-screen
     margin-top: 24px;
@@ -831,7 +832,7 @@ TODO: Display aside on top of form as expandable slider OR else show PREV button
   margin-bottom: 45px;
 
 .e-aadhar-provider-error
-  color: rgba(22, 47, 86, 0.87);
+  color: #838383
   max-width: 330px;
   margin: 6px 0;
-  font-size: 12px;
+  font-size: 13px;

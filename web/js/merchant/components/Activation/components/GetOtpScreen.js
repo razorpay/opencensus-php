@@ -1,0 +1,353 @@
+import React, { useState, useEffect } from 'react';
+import Input, { Description } from 'common/new-ui/Input';
+import { AsyncBtn } from 'common/new-ui/Button';
+import { merchantFetch } from 'merchant/utils/ajax';
+import { classList } from 'common/utils/rzp-utils';
+import { analyticsTrack } from 'common/utils/analytics';
+
+const GetOtpScreen = ({
+  analyticsProperties,
+  isAadharLinked,
+  mobileLinkedOnChange,
+  activeTab,
+  aadharNumber,
+  captcha,
+  setError,
+  error,
+  onChange,
+  setScreen,
+  setAadharNumber,
+  setCaptchaValue,
+  trackEvent,
+  isStartAgain,
+  setIsStartAgain,
+}) => {
+  const [captchaImg, setCaptchaImg] = useState('');
+  const [hasMobileLinked, setHasMobileLinked] = useState(isAadharLinked);
+
+  const handleMoblieLinkedOnChange = () => {
+    setHasMobileLinked(!hasMobileLinked);
+    setError('');
+    setAadharNumber('');
+    setCaptchaValue('');
+    mobileLinkedOnChange(!hasMobileLinked);
+    trackEvent(
+      window.rzpQ.onbr().initiated('kyc.mobile_not_linked', {
+        checked: hasMobileLinked,
+      }),
+    );
+    analyticsTrack({
+      objectName: 'kyc.mobile not linked',
+      actionName: 'click on checkbox',
+      screen: 'KYC on Activation page',
+      ...analyticsProperties,
+    });
+  };
+
+  const getAadharFieldErrorMsg = () => {
+    switch (error) {
+      case 'MOBILE_NOT_LINKED':
+        return 'Aadhar is not linked to any mobile number';
+      case 'INVALID_AADHAAR_NUMBER':
+        return 'Aadhar number is invalid';
+      case 'empty_aadhar_value':
+        return 'Please enter your Aadhar Number';
+      case 'invalid_aadhar_length':
+        return 'Aadhar number should be of 12 digits';
+      default:
+        return '';
+    }
+  };
+
+  const getCaptchaFieldMsg = () => {
+    switch (error) {
+      case 'empty_captcha_value':
+        return 'Please enter the code';
+      case 'INVALID_CAPTCHA':
+        return "Code didn't match, please enter the new code";
+      default:
+        return '';
+    }
+  };
+
+  const getApiErrorMsg = () => {
+    switch (error) {
+      case 'OTP_LIMIT_EXCEEDED':
+        return 'You have exceeded the maximum attempts to submit OTP. Please try again';
+      case 'invalid_argument':
+      case 'INTERNAL_SERVER_ERROR':
+      case 'INVALID_SESSION_ID':
+      case 'INPUT_DATA_ISSUE':
+      case error.includes('Internal Server Error'):
+        return 'Something went wrong . Please try again';
+      default:
+        return '';
+    }
+  };
+
+  const generateCaptcha = () => {
+    setCaptchaImg('');
+    setIsStartAgain(false);
+    return merchantFetch({
+      url: 'bvs/dashboard/twirp/platform.bvs.probe.v1.ProbeAPI/AadhaarGetCaptcha',
+      method: 'POST',
+      data: JSON.stringify({}),
+    })
+      .then((res) => {
+        if (res.success && res.data.captcha_image) {
+          setCaptchaImg(res.data.captcha_image);
+        }
+        if (res.data.error_code) {
+          setError(res.data.error_code);
+          if (res.data.error_code === 'NO_PROVIDER_ERROR') {
+            mobileLinkedOnChange(false);
+            setScreen('ProviderError');
+          }
+        }
+        trackEvent(
+          window.rzpQ.onbr().initiated('kyc.e-aadhar_get_code', {
+            trigger: true,
+            error_code: res.data?.error_code ? res.data?.error_code : null,
+          }),
+        );
+        analyticsTrack({
+          objectName: 'kyc.e-aadhar get code',
+          actionName: 'generate captcha',
+          screen: 'Verify with OTP on Activation page',
+          ...analyticsProperties,
+        });
+      })
+      .catch((err) => {
+        if (!err.success) {
+          setError(err.errors[0]);
+        }
+        trackEvent(
+          window.rzpQ.onbr().initiated('kyc.e-aadhar_get_code', {
+            trigger: true,
+            error_code: err.errors[0],
+          }),
+        );
+        analyticsTrack({
+          objectName: 'kyc.e-aadhar get code',
+          actionName: 'generate captcha Error',
+          screen: 'Verify with OTP on Activation page',
+          ...analyticsProperties,
+        });
+      });
+  };
+
+  const generateOTP = (btnStyle) => {
+    const body = {
+      aadhaar_number: aadharNumber,
+      captcha: captcha,
+    };
+    return merchantFetch({
+      url: 'bvs/dashboard/twirp/platform.bvs.probe.v1.ProbeAPI/AadhaarVerifyCaptchaAndSendOtp',
+      method: 'POST',
+      data: body,
+    })
+      .then((res) => {
+        btnStyle.style.pointerEvents = 'initial';
+        if (res.success && res.data.is_success) {
+          setScreen('VerifyOTP');
+          trackEvent(
+            window.rzpQ.onbr().initiated('kyc.e-aadhar_send_otp', {
+              trigger: true,
+            }),
+          );
+        }
+        if (res.data.error_code) {
+          const errorCode = res.data.error_code;
+          setError(errorCode);
+          if (
+            errorCode === 'INVALID_AADHAAR_NUMBER' ||
+            errorCode === 'INVALID_CAPTCHA' ||
+            errorCode === 'INTERNAL_SERVER_ERROR'
+          ) {
+            setCaptchaValue('');
+          }
+
+          if (errorCode === 'NO_PROVIDER_ERROR') {
+            mobileLinkedOnChange(false);
+            setScreen('ProviderError');
+          }
+        }
+        if (res.data.code) {
+          setError(res.data.code);
+          resetState();
+          if (res.data.code === 'invalid_argument') {
+            setCaptchaValue('');
+          }
+          trackEvent(
+            window.rzpQ.onbr().initiated('kyc.e-aadhar_send_otp', {
+              error_code: res.data.code,
+              trigger: true,
+            }),
+          );
+        } else {
+          trackEvent(
+            window.rzpQ.onbr().initiated('kyc.e-aadhar_send_otp', {
+              error_code: res.data?.error_code ? res.data.error_code : null,
+              trigger: true,
+            }),
+          );
+        }
+        analyticsTrack({
+          objectName: 'kyc.e-aadhar send otp',
+          actionName: 'send OTP',
+          screen: 'Send OTP button on Activation page',
+          ...analyticsProperties,
+        });
+      })
+      .catch((err) => {
+        btnStyle.style.pointerEvents = 'initial';
+        if (!err.success) {
+          setError(err.errors[0]);
+          if (err.errors[0] === 'INVALID_SESSION_ID') {
+            setCaptchaValue('');
+          }
+        }
+        trackEvent(
+          window.rzpQ.onbr().initiated('kyc.e-aadhar_send_otp', {
+            error_code: err.errors[0],
+            trigger: true,
+          }),
+        );
+      });
+  };
+
+  useEffect(() => {
+    if (activeTab === 4 || isStartAgain) {
+      generateCaptcha();
+    }
+  }, [activeTab, isStartAgain]);
+
+  return (
+    <>
+      <Input
+        name="aadhar_number"
+        type="text"
+        value={aadharNumber}
+        class="Input--small Input--vTop is-mature"
+        label={() => (
+          <>
+            Aadhar Verification <br /> ( via OTP )
+          </>
+        )}
+        placeholder="Enter 12 digit Aadhar Number"
+        onChange={onChange}
+        disabled={!hasMobileLinked}
+        propagatedError={getAadharFieldErrorMsg()}
+        onFocus={() => {
+          trackEvent(
+            window.rzpQ.onbr().initiated('kyc.e-aadhar', {
+              interaction_aadhar: true,
+            }),
+          );
+          analyticsTrack({
+            objectName: 'kyc.e-aadhar',
+            actionName: 'focus',
+            screen: 'Activation page',
+            ...analyticsProperties,
+          });
+        }}
+      />
+
+      <div className="captcha-screen">
+        <div className={classList('Input-content', !hasMobileLinked ? 'Input--disabled' : '')}>
+          {!!captchaImg ? (
+            <>
+              <img
+                src={`data:image/jpeg;base64,${captchaImg}`}
+                alt="E-Aadhar captcha"
+                className="captcha-screen__captcha-img"
+              />
+              <img
+                src="/dist/css/assets/onboarding/resend.svg"
+                className={classList(
+                  'captcha-screen__resend',
+                  !hasMobileLinked ? 'captcha-screen__resend-disabled' : '',
+                )}
+                onClick={generateCaptcha}
+              />
+            </>
+          ) : (
+            <>
+              <span className="spin-btn white medium visible" style={{ margin: '0 53px 13px' }} />
+              <img src="/dist/css/assets/onboarding/disable-resend.svg" className="reload-icon" />
+            </>
+          )}
+        </div>
+        <Input
+          name="captcha"
+          type="text"
+          value={captcha}
+          class="Input--small Input--vTop is-mature"
+          placeholder="Enter the captcha shown above"
+          onChange={onChange}
+          propagatedError={getCaptchaFieldMsg()}
+          disabled={!hasMobileLinked}
+          onFocus={() => {
+            trackEvent(window.rzpQ.onbr().initiated('kyc.e-aadhar_code'));
+            analyticsTrack({
+              objectName: 'kyc.e-aadhar code',
+              actionName: 'focus on enter captcha',
+              screen: 'Entering captch on Activation page',
+              ...analyticsProperties,
+            });
+          }}
+        />
+
+        <div className="Input-content" style={{ marginTop: '10px' }}>
+          <div className="captcha-screen__btn-container">
+            <AsyncBtn.Secondary
+              type="button"
+              className={hasMobileLinked ? 'e-aadhar__btn' : ''}
+              children="Submit & Get OTP >"
+              onClick={(e) => {
+                if (!aadharNumber) {
+                  return setError('empty_aadhar_value');
+                } else if (!captcha) {
+                  return setError('empty_captcha_value');
+                } else if (aadharNumber && aadharNumber.length !== 12) {
+                  return setError('invalid_aadhar_length');
+                }
+                e.target.style.pointerEvents = 'none';
+                return generateOTP(e.target);
+              }}
+              disabled={!hasMobileLinked}
+              style={{ boxShadow: 'none' }}
+              pendingState="Sending OTP"
+            />
+          </div>
+          <div className="e-aadhar__seprator" />
+        </div>
+      </div>
+
+      <div className="Input-content">
+        {!!getApiErrorMsg() ? (
+          <div className="e-aadhar__error">{getApiErrorMsg()}</div>
+        ) : (
+          <Description text="OTP will be sent to the number linked to your Aadhar. Enter it on the next step to verify." />
+        )}
+      </div>
+
+      <div style={{ marginTop: '10px' }}>
+        <Input.Check
+          onChange={handleMoblieLinkedOnChange}
+          defaultValue={hasMobileLinked ? '0' : '1'}
+          fieldLabel="My Aadhar is not linked to my number"
+          className="e-aadhar__not-linked-checkbox"
+        />
+        {!hasMobileLinked && (
+          <Description
+            className="Input-content e-aadhar__not-linked-text"
+            text="You can continue without verification via OTP but KYC may get delayed by 2 weeks. Usually it takes 3-4 days"
+          />
+        )}
+      </div>
+    </>
+  );
+};
+
+export default GetOtpScreen;

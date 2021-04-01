@@ -171,6 +171,9 @@ export default class ActivationWizard extends React.Component {
     commentlist: {},
     bank_proof: 'cancelled_cheque',
     selected_aov: '',
+    isAadharDocVisible:
+      !this.props.data.stakeholder ||
+      (this.props.data.stakeholder && !!this.props.data.stakeholder.aadhaar_linked),
   };
 
   constructor(props) {
@@ -1628,6 +1631,7 @@ export default class ActivationWizard extends React.Component {
     this.props.save({ stakeholder: { aadhaar_linked: isChecked } }).then(() => {
       this.markTabIfActive(DOCUMENT_UPLOAD_STEP);
     });
+    this.setState({ isAadharDocVisible: isChecked });
   };
 
   /* Find if all tabs are valid */
@@ -1847,9 +1851,11 @@ export default class ActivationWizard extends React.Component {
 
             <span className="device--desktop">
               {FORM_TABS[activeTab]}
-              {FORM_TABS[activeTab] === 'Documents Upload' && (
+              {FORM_TABS[activeTab] === 'Documents Verification' && (
                 <div className="file-limit-label">
-                  You can upload JPG/PNG of max. size 4MB or PDF of max. size 2 MB
+                  {this.isUnregBiz
+                    ? ''
+                    : 'You can upload JPG/PNG of max. size 4MB or PDF of max. size 2 MB'}
                 </div>
               )}
             </span>
@@ -2137,6 +2143,7 @@ function ActivationField(field) {
       ? !!this.props.data.stakeholder.aadhaar_linked
       : true;
     rest.mobileLinkedOnChange = this.onEAadharCheckboxChange;
+    rest.activeTab = this.state.activeTab;
   }
 
   if (rest.getName) {

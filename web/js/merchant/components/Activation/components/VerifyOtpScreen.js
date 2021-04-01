@@ -1,0 +1,213 @@
+import React, { useState, useEffect } from 'react';
+import Input, { Description } from 'common/new-ui/Input';
+import { AsyncBtn } from 'common/new-ui/Button';
+import { merchantFetch } from 'merchant/utils/ajax';
+import OtpInput from 'common/new-ui/Input/OtpInput';
+import { analyticsTrack } from 'common/utils/analytics';
+
+const Error = ({ text }) => {
+  return <div className="e-aadhar__error">{text}</div>;
+};
+
+const VerifyOtp = ({
+  analyticsProperties,
+  mobileLinkedOnChange,
+  trackEvent,
+  aadharNumber,
+  setCaptchaValue,
+  setScreen,
+  captcha,
+  setError,
+  setIsStartAgain,
+}) => {
+  const [otp, setOtp] = useState('');
+  const [wrongOtp, setWrongOtp] = useState(false);
+  const [isApiCall, setIsApiCall] = useState(false);
+
+  const updateOtpValue = (otpValue) => {
+    setOtp(otpValue);
+    setError('');
+    setWrongOtp(false);
+    trackEvent(window.rzpQ.onbr().initiated('kyc.e-aadhar_OTP'));
+    analyticsTrack({
+      objectName: 'kyc.e-aadhar OTP',
+      actionName: 'Type',
+      screen: 'Type OTP on Activation page',
+      ...analyticsProperties,
+    });
+  };
+
+  const verifyOTP = () => {
+    const randomPin = Math.floor(1000 + Math.random() * 9000).toString();
+    const body = {
+      otp: otp,
+      captcha: captcha,
+      file_password: randomPin,
+    };
+    return merchantFetch({
+      url: 'bvs/dashboard/twirp/platform.bvs.probe.v1.ProbeAPI/AadhaarSubmitOtp',
+      method: 'POST',
+      data: body,
+    })
+      .then((res) => {
+        if (res.success && res.data.is_valid) {
+          mobileLinkedOnChange(true);
+          setScreen('Success');
+        }
+        if (res.data.error_code) {
+          const errorCode = res.data.error_code;
+          setError(errorCode);
+          setIsApiCall(false);
+
+          if (errorCode === 'INCORRECT_OTP') {
+            setWrongOtp(true);
+            setOtp('');
+          } else if (
+            errorCode === 'OTP_LIMIT_EXCEEDED' ||
+            errorCode === 'INTERNAL_SERVER_ERROR' ||
+            errorCode === 'INPUT_DATA_ISSUE'
+          ) {
+            setCaptchaValue('');
+            setScreen('');
+          } else if (errorCode === 'NO_PROVIDER_ERROR') {
+            mobileLinkedOnChange(false);
+            setScreen('ProviderError');
+          }
+        }
+        if (res.data.code) {
+          setError(res.data.code);
+          setIsApiCall(false);
+          if (res.data.code === 'invalid_argument') {
+            setScreen('');
+            setCaptchaValue('');
+          }
+          trackEvent(
+            window.rzpQ.onbr().initiated('kyc.e-aadhar_OTP_submit', {
+              error_code: res.data.code,
+              trigger: true,
+            }),
+          );
+        } else {
+          trackEvent(
+            window.rzpQ.onbr().initiated('kyc.e-aadhar_OTP_submit', {
+              error_code: res.data?.error_code ? res.data.error_code : null,
+              trigger: true,
+            }),
+          );
+        }
+        analyticsTrack({
+          objectName: 'kyc.e-aadhar OTP submit',
+          actionName: 'OTP verified successfully',
+          screen: 'Submit OTP on Activation page',
+          ...analyticsProperties,
+        });
+      })
+      .catch((err) => {
+        if (!err.success) {
+          setError(err.errors[0]);
+          setIsApiCall(false);
+          if (err.errors[0] === 'INVALID_SESSION_ID') {
+            setScreen('');
+          }
+        }
+        trackEvent(
+          window.rzpQ.onbr().initiated('kyc.e-aadhar_OTP_submit', {
+            error_code: err.errors[0],
+            trigger: true,
+          }),
+        );
+        analyticsTrack({
+          objectName: 'kyc.e-aadhar OTP submit',
+          actionName: 'OTP verify failed',
+          screen: 'Submit OTP on Activation page',
+          ...analyticsProperties,
+        });
+      });
+  };
+
+  useEffect(() => {
+    if (otp.length === 6) {
+      verifyOTP();
+      setIsApiCall(true);
+    }
+  }, [otp]);
+
+  return (
+    <>
+      <div class="Input-label otp-label" style={{ textAlign: 'right' }}>
+        Aadhar Verification <br /> ( via OTP )
+      </div>
+      <Input
+        type="text"
+        class="Input--small Input--vTop is-mature"
+        disabled={true}
+        defaultValue={aadharNumber}
+      />
+
+      <div className="otp-screen">
+        <div className="Input-content otp-screen__otp">
+          <OtpInput
+            heading="OTP has been sent to the number linked with Aadhar"
+            onComplete={updateOtpValue}
+            onChange={updateOtpValue}
+            wrong={wrongOtp}
+          />
+          {wrongOtp && <div className="e-aadhar__error">Invalid OTP. Try again</div>}
+          <p className="m-t m-b resend-otp">
+            Didn’t receive an OTP?{' '}
+            <AsyncBtn.Transparent
+              pendingState="Sending OTP..."
+              onClick={() => {
+                setIsStartAgain(true);
+                setCaptchaValue('');
+                setScreen('');
+              }}
+              showLoader={false}
+            >
+              Start again
+            </AsyncBtn.Transparent>
+          </p>
+        </div>
+
+        <div className="Input-content">
+          <AsyncBtn.Secondary
+            type="button"
+            className={otp.length === 6 ? 'e-aadhar__btn' : ''}
+            children="Submit & Verify >"
+            isApiCalling={isApiCall}
+            disabled={otp.length !== 6}
+            style={{ boxShadow: 'none' }}
+            pendingState="Verifying"
+          />
+          <div className="e-aadhar__seprator" />
+          <Description
+            className="e-aadhar__desc e-aadhar__consent"
+            text={
+              <>
+                By verifying, you consent to share your Aadhar details with Razorpay for KYC and you
+                agree with the{' '}
+                <a
+                  href="https://razorpay.com/privacy/"
+                  target="_blank"
+                  onClick={() => {
+                    trackEvent(window.rzpQ.onbr().initiated('kyc.e-aadhar_consent_link'));
+                    analyticsTrack({
+                      objectName: 'kyc.e-aadhar consent link',
+                      actionName: 'click on privacy policy (e-aadhar)',
+                      screen: 'KYC on Activation page',
+                      ...analyticsProperties,
+                    });
+                  }}
+                >
+                  privacy policy
+                </a>
+              </>
+            }
+          />
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default VerifyOtp;
