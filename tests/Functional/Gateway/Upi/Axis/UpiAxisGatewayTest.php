@@ -114,8 +114,6 @@ class UpiAxisGatewayTest extends TestCase
 
         $payment['amount'] = $order['amount'];
 
-        $payment['bank'] = $order['bank'];
-
         $payment['order_id'] = $order['id'];
 
         $this->doAuthPayment($payment);
@@ -148,8 +146,6 @@ class UpiAxisGatewayTest extends TestCase
         $payment = $this->getDefaultUpiPaymentArray();
 
         $payment['amount'] = $order['amount'];
-
-        $payment['bank'] = $order['bank'];
 
         $payment['order_id'] = $order['id'];
 
@@ -585,7 +581,6 @@ class UpiAxisGatewayTest extends TestCase
 
         $this->payment['_']['flow'] = 'intent';
         $this->payment['order_id'] = $order->getPublicId();
-        $this->payment['bank'] = $order->getBank();
 
         $this->doAuthPaymentViaAjaxRoute($this->payment);
 

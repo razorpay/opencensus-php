@@ -505,7 +505,6 @@ class HulkGatewayTest extends TestCase
 
         $this->payment['_']['flow'] = 'intent';
         $this->payment['order_id'] = $order->getPublicId();
-        $this->payment['bank'] = $order->getBank();
 
         $this->mockServerRequestFunction(
             function($content, $action) use ($order, $merchant)

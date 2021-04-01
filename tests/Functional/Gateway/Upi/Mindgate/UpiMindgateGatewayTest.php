@@ -495,7 +495,6 @@ class UpiMindgateGatewayTest extends TestCase
 
         $payment = $this->getDefaultUpiPaymentArray();
         $payment['amount'] = $order['amount'];
-        $payment['bank'] = $order['bank'];
         $payment['order_id'] = $order['id'];
 
         $this->doAuthPayment($payment);
@@ -1398,7 +1397,6 @@ class UpiMindgateGatewayTest extends TestCase
 
         $this->payment['_']['flow'] = 'intent';
         $this->payment['order_id'] = $order->getPublicId();
-        $this->payment['bank'] = $order->getBank();
 
         $this->doAuthPaymentViaAjaxRoute($this->payment);
 
@@ -1469,7 +1467,6 @@ class UpiMindgateGatewayTest extends TestCase
 
         $this->payment['_']['flow'] = 'intent';
         $this->payment['order_id'] = $order->getPublicId();
-        $this->payment['bank'] = $order->getBank();
 
         $this->mockServerContentFunction(function (& $content, $action = null)
         {

@@ -76,7 +76,6 @@ class UpiIciciGatewayTest extends TestCase
 
         $payment = $this->getDefaultUpiPaymentArray();
         $payment['amount'] = $order['amount'];
-        $payment['bank'] = $order['bank'];
         $payment['order_id'] = $order['id'];
 
         $this->doAuthPayment($payment);
@@ -125,7 +124,6 @@ class UpiIciciGatewayTest extends TestCase
         $payment['_']['flow'] = 'intent';
 
         $payment['amount'] = $order['amount'];
-        $payment['bank'] = $order['bank'];
         $payment['order_id'] = $order['id'];
 
         $this->doAuthPayment($payment);
@@ -173,7 +171,6 @@ class UpiIciciGatewayTest extends TestCase
         $payment['_']['flow'] = 'intent';
 
         $payment['amount']   = $order['amount'];
-        $payment['bank']     = $order['bank'];
         $payment['order_id'] = $order['id'];
 
         $this->doAuthPayment($payment);
@@ -183,7 +180,6 @@ class UpiIciciGatewayTest extends TestCase
 
         //olf ifsc : CORP0001471, new ifsc : UBIN0914711
         $this->assertEquals('UBIN', $order['bank']);
-        $this->assertEquals($payment['bank'], $order['bank']);
 
         $this->assertEquals('1UpiIntICICTml', $payment['terminal_id']);
 
@@ -383,7 +379,6 @@ class UpiIciciGatewayTest extends TestCase
         $payment = $this->getDefaultUpiBlockPaymentArray();
 
         $payment['amount']      = $order->getAmount();
-        $payment['bank']        = $order->getBank();
         $payment['order_id']    = $order->getPublicId();
 
         // Set assertion

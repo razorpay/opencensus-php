@@ -8460,9 +8460,10 @@ trait Authorize
     protected function modifyAccountNumberForSpecificBanks($payment, array & $gatewayInput)
     {
         $accountNumber = $gatewayInput['order']['account_number'];
+        $bank          = $gatewayInput['order']['bank'];
 
         // prepend required zeroes in the account number based on bank
-        switch ($payment->getBank())
+        switch ($bank)
         {
             case IFSC::SBIN:
                 $accountNumber = str_pad($accountNumber, 17, '0', STR_PAD_LEFT );
