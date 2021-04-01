@@ -63,6 +63,8 @@ class Service extends Base\Service
 
     protected $mutex;
 
+    protected $redis;
+
     public function __construct()
     {
         parent::__construct();
@@ -72,6 +74,8 @@ class Service extends Base\Service
         $this->slack = $this->app['slack'];
 
         $this->mutex = $this->app['api.mutex'];
+
+        $this->redis = $this->app['redis']->connection('mutex_redis');
     }
 
     /**
@@ -3397,5 +3401,24 @@ class Service extends Base\Service
         $payment->merchant()->associate($merchant);
 
         (new Notify($payment))->trigger($event);
+    }
+
+    public function addVerifyDisabledGateway(array $input)
+    {
+        $gateways = $input['gateways'];
+
+        $ttl = $input['ttl'] ?? 30;
+
+        $expireTime = Carbon::now()->getTimestamp() + ($ttl * 60);
+
+        foreach ($gateways as $gateway)
+        {
+            $this->redis->hSet(
+                Verify::GATEWAY_BLOCK_CACHE_KEY,
+                $gateway,
+                $expireTime
+            );
+        }
+        return true;
     }
 }

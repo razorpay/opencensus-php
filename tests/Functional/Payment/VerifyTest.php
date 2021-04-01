@@ -1330,7 +1330,7 @@ class VerifyTest extends TestCase
         $redisMock->expects($this->once())
                   ->method('hSet')
                   ->with("verify:gateway_block_cache", "upi_icici", $now->getTimestamp() + 300);
-        
+
         $this->makeRequestAndGetContent($request);
 
         Carbon::setTestNow();
@@ -1476,5 +1476,28 @@ class VerifyTest extends TestCase
         $order = $this->getDbLastEntityPublic('order');
 
         $this->assertEquals('attempted', $order['status']);
+    }
+
+    public function testVerifyBlockGatewayRoute()
+    {
+        $redisMock = $this->setupRedisMockWithOptions();
+
+        $this->ba->appAuth();
+
+        $request = [
+            'url'    => '/payments/verify/disabled/gateway',
+            'method' => 'post',
+            'content' => ["gateways" => ["upi_icici"],
+                "ttl" => 45]
+        ];
+
+        // should block upi icici for exactly 45 minutes
+        $redisMock->expects($this->once())
+            ->method('hSet')
+            ->with("verify:gateway_block_cache", "upi_icici");
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(true, $response);
     }
 }

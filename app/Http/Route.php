@@ -169,6 +169,7 @@ class Route
         'payment_auto_capture'                     => ['post',     'payments/autocapture',                           'PaymentController@postAutoCapture'                                 ],
         'payment_auto_capture_email'               => ['get',      'payments/autocapture/email',                     'PaymentController@getAutoCaptureEmail'                             ],
         'payment_verify_all'                       => ['post',     'payments/verify/all',                            'PaymentController@postVerifyAllPayments'                           ],
+        'add_verify_disabled_gateway'              => ['post',     'payments/verify/disabled/gateway',               'PaymentController@postVerifyDisabledGateway'                           ],
         'payment_new_verify_all'                   => ['post',     'payments/verify/new_cron',                       'PaymentController@postVerifyAllPaymentsNewRoute'                  ],
         'payment_new_verify_bulk'                  => ['post',     'payments/verify/new_bulk',                       'PaymentController@postVerifyPaymentsBulkNewRoute'                 ],
         'payment_verify_bulk'                      => ['post',     'payments/verify/bulk',                           'PaymentController@postVerifyPaymentsBulk'                          ],
@@ -3140,9 +3141,9 @@ class Route
         'myoperator_v2_proxy_post',
         'care_service_myoperator_webhook_proxy',
         'segment_create_update',
-
         // IPL bot
         'throttle_create_config_spinnaker',
+        'add_verify_disabled_gateway',
         'p2p_retrieve_banks_cron',
     ];
 
@@ -6422,7 +6423,8 @@ class Route
             'internal_send_merchant_email'
         ],
         'spinnaker' => [
-            'throttle_create_config_spinnaker'
+            'throttle_create_config_spinnaker',
+            'add_verify_disabled_gateway'
         ],
 
         'mozart' => [

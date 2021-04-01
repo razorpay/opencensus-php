@@ -601,4 +601,13 @@ class PaymentController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function postVerifyDisabledGateway()
+    {
+        $input = Request::all();
+
+        $success =  $this->service()->addVerifyDisabledGateway($input);
+
+        return ApiResponse::json($success);
+    }
 }
