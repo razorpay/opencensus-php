@@ -649,4 +649,49 @@ class TaxPaymentsTest extends TestCase
 
         $tpMock->shouldHaveReceived('cancel');
     }
+
+    public function testCreateDirectTaxPaymentCallsServiceMethod()
+    {
+        $this->ba->directAuth();
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments');
+
+        $tpMock->shouldReceive('createDirectTaxPayment')->andReturn([]);
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        $tpMock->shouldHaveReceived('createDirectTaxPayment');
+    }
+
+    public function testGetTdsCategoriesCallsServiceMethod()
+    {
+        $this->ba->directAuth();
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments');
+
+        $tpMock->shouldReceive('getTdsCategories')->andReturn([]);
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        $tpMock->shouldHaveReceived('getTdsCategories');
+    }
+
+    public function testWebHookHandlerCallsServiceMethod()
+    {
+        $this->ba->directAuth();
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments');
+
+        $tpMock->shouldReceive('webHookHandler')->andReturn([]);
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        $tpMock->shouldHaveReceived('webHookHandler');
+    }
 }

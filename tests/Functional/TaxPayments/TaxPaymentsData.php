@@ -731,4 +731,31 @@ return [
             'content' => []
         ]
     ],
+    'testCreateDirectTaxPaymentCallsServiceMethod'                         => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/tax-payments/direct',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+    'testGetTdsCategoriesCallsServiceMethod'                         => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/tax-payments/direct/tds-categories',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+    'testWebHookHandlerCallsServiceMethod'                         => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/tax-payments/direct/pg-webhook',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
 ];

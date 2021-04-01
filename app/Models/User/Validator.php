@@ -225,6 +225,10 @@ class Validator extends Base\Validator
         Entity::TOKEN           => 'sometimes|unsigned_id',
     ];
 
+    protected static $getUserByEmailRules = [
+        Entity::EMAIL           => 'required|email',
+    ];
+
     protected static $getDetailsRules = [
         Entity::EMAIL           => 'required|email',
     ];

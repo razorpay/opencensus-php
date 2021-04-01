@@ -14,6 +14,73 @@ class TaxPaymentController extends Controller
         $this->service = $this->app['tax-payments'];
     }
 
+    public function webHookHandler()
+    {
+        try
+        {
+            $response = $this->service->webHookHandler($this->input);
+
+            $code = 200;
+
+        }
+        catch (\Exception $e)
+        {
+            $response = $e->getError()->toPublicArray();
+
+            $code = 400;
+        }
+
+        $response = ApiResponse::json($response, $code);
+
+        return $response;
+    }
+
+    public function createDirectTaxPayment()
+    {
+        try
+        {
+            $response = $this->service->createDirectTaxPayment($this->input);
+
+            $code = 200;
+
+        }
+        catch (\Exception $e)
+        {
+            $response = $e->getError()->toPublicArray();
+
+            $code = 400;
+        }
+
+        $response = ApiResponse::json($response, $code);
+
+        $this->addCorsHeaders($response);
+
+        return $response;
+    }
+
+    public function getTdsCategories()
+    {
+        try
+        {
+            $response = $this->service->getTdsCategories();
+
+            $code = 200;
+
+        }
+        catch (\Exception $e)
+        {
+            $response = $e->getError()->toPublicArray();
+
+            $code = 400;
+        }
+
+        $response = ApiResponse::json($response, $code);
+
+        $this->addCorsHeaders($response);
+
+        return $response;
+    }
+
     public function cancelQueuedPayouts()
     {
         return $this->service->cancelQueuedPayouts();
@@ -108,6 +175,7 @@ class TaxPaymentController extends Controller
 
     public function getTaxPayment(string $taxPaymentId)
     {
+
         return $this->service->getTaxPayment($this->ba->getMerchant(), $taxPaymentId, $this->input);
     }
 
@@ -129,6 +197,24 @@ class TaxPaymentController extends Controller
     public function edit(string $taxPaymentId)
     {
         return $this->service->edit($this->ba->getMerchant(),$taxPaymentId, $this->input, $this->ba->getUser());
+    }
+
+    public function allowCors()
+    {
+        $response = ApiResponse::json([]);
+
+        $this->addCorsHeaders($response);
+
+        return $response;
+    }
+
+    private function addCorsHeaders(& $response)
+    {
+        $response->headers->set('Access-Control-Allow-Origin', $this->config['applications.vendor_payments.tax_payment_lite_fe_endpoint']);
+
+        $response->headers->set('Access-Control-Allow-Credentials' , 'true');
+
+        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type');
     }
 
 }

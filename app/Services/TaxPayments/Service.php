@@ -44,24 +44,28 @@ class Service
     const ADMIN_ACTIONS             = 'AdminActions';
     const EMAIL_CRON                = 'EmailCron';
     const CREATE_MANUAL_TAX_PAYMENT = 'CreateManualTaxPayment';
+    const CREATE_DIRECT_TAX_PAYMENT = 'CreateDirectTaxPayment';
+    const PG_WEBHOOK_HANDLER        = 'WebHookHandler';
     const EDIT_MANUAL_TAX_PAYMENT   = 'EditManualTaxPayment';
     const CANCEL_MANUAL_TAX_PAYMENT = 'CancelManualTaxPayment';
+    const GET_TDS_CATEGORIES        = 'GetTdsCategories';
 
     // general constants
-    const DATA                      = 'data';
-    const TEMPLATE_NAME             = 'template_name';
-    const SUBJECT                   = 'subject';
-    const NAME                      = 'name';
-    const TYPE                      = 'type';
-    const ACCOUNT_NUMBER            = 'account_number';
-    const BALANCE                   = 'balance';
-    const MERCHANT_ID               = 'merchant_id';
-    const SETTINGS                  = 'settings';
-    const BANKING_ACCOUNT           = 'banking_account';
-    const MERCHANT_EMAIL            = 'merchant_email';
-    const CONTENT_TYPE              = 'Content-Type';
-    const X_TASK_ID                 = 'X-Task-ID';
-    const X_APP_MODE                = 'X-App-Mode';
+    const DATA             = 'data';
+    const TEMPLATE_NAME    = 'template_name';
+    const SUBJECT          = 'subject';
+    const NAME             = 'name';
+    const TYPE             = 'type';
+    const ACCOUNT_NUMBER   = 'account_number';
+    const BALANCE          = 'balance';
+    const MERCHANT_ID      = 'merchant_id';
+    const SETTINGS         = 'settings';
+    const BANKING_ACCOUNT  = 'banking_account';
+    const MERCHANT_EMAIL   = 'merchant_email';
+    const CONTENT_TYPE     = 'Content-Type';
+    const X_TASK_ID        = 'X-Task-ID';
+    const X_APP_MODE       = 'X-App-Mode';
+    const DROPPING_REQUEST = 0;
 
     protected $app;
 
@@ -354,6 +358,13 @@ class Service
         return $this->makeRequest($merchant, $url, $input);
     }
 
+    public function getTdsCategories()
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_TDS_CATEGORIES);
+
+        return $this->makeRequest(null, $url, ['timestamp' => now()]);
+    }
+
     public function getTaxPayment(MerchantEntity $merchant, string $taxPaymentId, array $input)
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_TAX_PAYMENT_BY_ID);
@@ -362,6 +373,7 @@ class Service
 
         return $this->makeRequest($merchant, $url, $input);
     }
+
 
     public function markAsPaid(MerchantEntity $merchant,
                                array $input,
@@ -392,6 +404,36 @@ class Service
 
         return $this->makeRequest($merchant, $url, $input);
 
+    }
+
+    public function webHookHandler(array $input)
+    {
+        $secret = array_get(getallheaders(), 'X-Razorpay-Signature', '');
+
+        if ($secret == '')
+        {
+            return self::DROPPING_REQUEST;
+        }
+
+        $input['whole_request_payload'] = json_encode($input);
+
+        $input['secret'] = $secret;
+
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::PG_WEBHOOK_HANDLER);
+
+        return $this->makeRequest(null, $url, $input);
+    }
+
+    public function createDirectTaxPayment(array $input)
+    {
+        // validate recaptcha
+        (new Validator())
+            ->setStrictFalse()
+            ->validateInput(Validator::CREATE_DIRECT_TAX_PAYMENT, $input);
+
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::CREATE_DIRECT_TAX_PAYMENT);
+
+        return $this->makeRequest(null, $url, $input);
     }
 
     public function updateChallanFileId(MerchantEntity $merchant,
@@ -425,7 +467,12 @@ class Service
             'timeout' => $this->config['timeout']
         ];
 
-        $headers[self::X_APP_MODE] = $this->app['rzp.mode'] ? $this->app['rzp.mode'] : Mode::LIVE;
+        $rzpMode = array_get($this->app, 'rzp.mode', null);
+
+        if ($rzpMode)
+        {
+            $headers[self::X_APP_MODE] = $this->app['rzp.mode'] ? $this->app['rzp.mode'] : Mode::LIVE;
+        }
 
         $dataLogged = $data;
 

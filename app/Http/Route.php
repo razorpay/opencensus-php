@@ -1262,7 +1262,14 @@ class Route
         'tax_payments_challan_upload'              => ['post',    'tax-payments/upload-challan',                     'TaxPaymentController@uploadChallan'                                ],
         'tax_payments_update_challan_file_id'      => ['post',    'tax-payments/{id}/edit',                          'TaxPaymentController@updateChallanFileId'                          ],
         'tax_payments_edit'                        => ['patch',   'tax-payments/{id}',                               'TaxPaymentController@edit'                                         ],
-        'tax_payments_cancel'                      => ['post',    'tax-payments/{id}/cancel',                         'TaxPaymentController@cancel'                                      ],
+        'tax_payments_cancel'                      => ['post',    'tax-payments/{id}/cancel',                        'TaxPaymentController@cancel'                                       ],
+
+        // Direct Tax Payment
+        'direct_tax_payments_tds_category_public'  => ['get',    'tax-payments/direct/tds-categories',               'TaxPaymentController@getTdsCategories'                             ],
+        'direct_tax_payments_tds_category_opt'     => ['options','tax-payments/direct/tds-categories',               'TaxPaymentController@allowCors'                                   ],
+        'direct_tax_payments_create'               => ['post',   'tax-payments/direct',                              'TaxPaymentController@createDirectTaxPayment'                       ],
+        'direct_tax_payments_create_options'       => ['options','tax-payments/direct',                              'TaxPaymentController@allowCors'                                   ],
+        'direct_tax_payments_pg_webhook'           => ['post',   'tax-payments/direct/pg-webhook',                   'TaxPaymentController@webHookHandler'                               ],
 
 
         // Payout Links
@@ -5739,6 +5746,13 @@ class Route
         //Accounting Payouts Callback
         'accounting_payouts_callback',
         'reward_terms',
+
+        // Direct Tax-Payment
+        'direct_tax_payments_tds_category_public',
+        'direct_tax_payments_create',
+        'direct_tax_payments_tds_category_opt',
+        'direct_tax_payments_create_options',
+        'direct_tax_payments_pg_webhook',
 
         // NPS webhook
         'consume_survey_typeform_webhook',

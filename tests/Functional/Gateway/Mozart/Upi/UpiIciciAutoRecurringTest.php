@@ -49,7 +49,8 @@ class UpiIciciAutoRecurringTest extends TestCase
     public function testAutoRecurringPaymentSuccess()
     {
         // TODO: Debug and unskip
-        $this->markTestSkipped('intermittent failures, need to debug');
+        // https://razorpay.slack.com/archives/C6QPQKVLZ/p1617172379335700?thread_ts=1617169808.331600&cid=C6QPQKVLZ
+        self::markTestSkipped("skipping due to some data-time issue.");
 
         $this->createDbUpiMandate();
 
