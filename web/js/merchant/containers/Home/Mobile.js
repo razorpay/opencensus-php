@@ -116,10 +116,10 @@ class AnalyticsMobile extends Component {
             !showOnboardingBanner && hasSecondaryBanner ? ' has-secondary-banner' : ''
           }`}
         >
-          {showInstantActivation && !query.onboarding_v2 ? (
+          {showInstantActivation && !user.isOnboardingV2Enabled ? (
             <Announcement mode={mode} user={user} payments={payments} />
           ) : null}
-          {!query.onboarding_v2 ? (
+          {!user.isOnboardingV2Enabled ? (
             <div className={`v2-onboarding-card${expandOnboardingBanner ? ' expand' : ''}`}>
               {showOnboardingBanner && (
                 <NewUserOnboardingCard
@@ -133,7 +133,7 @@ class AnalyticsMobile extends Component {
             </div>
           ) : null}
 
-          {query.onboarding_v2 ? <OnboardingCard /> : null}
+          {user.isOnboardingV2Enabled ? <OnboardingCard /> : null}
           {hasSecondaryBanner && (
             <div className="secondary-announcement-banner">
               <PersonaliseBanner track={trackPersonaliseBanner} />

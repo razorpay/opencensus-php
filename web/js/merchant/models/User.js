@@ -706,6 +706,10 @@ export default class User {
     return this.getExpStatus('esign_aadhar_functionality');
   }
 
+  get isOnboardingV2Enabled() {
+    return this.getExpStatus('onboarding_v2');
+  }
+
   get isBDAndAovEnabled() {
     return this.getExpStatus('aov_functionality');
   }

@@ -1494,7 +1494,8 @@ class Service extends Base\Service
             'nitro_hyderabad_v3',
             'nitro_midmarket_mumbai_v1',
             'upi_intent_notification',
-            'rx_disable_taxpayment_payoutflow'
+            'rx_disable_taxpayment_payoutflow',
+            'onboarding_v2',
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
