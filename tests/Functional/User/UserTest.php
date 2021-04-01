@@ -7,6 +7,7 @@ use Mail;
 use Hash;
 use Carbon\Carbon;
 
+use RZP\Models\BankingAccount\Channel;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Http\RequestHeader;
@@ -21,6 +22,7 @@ use RZP\Mail\User\PasswordReset;
 use RZP\Models\Admin\Permission;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\User\Entity as UserEntity;
+use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Mail\User\AccountVerification;
@@ -2372,6 +2374,57 @@ class UserTest extends TestCase
         ];
 
         $this->createBankingAccount($bankingAccountAttributes);
+
+        $this->fixtures->user->createBankingUserForMerchant('10000000000000',
+                                                            $attributes = ['id' => '30000000000000'],
+                                                            $role = 'owner',
+                                                            $mode = 'test');
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        Carbon::setTestNow();
+    }
+
+    public function testGetForUsersWithBusinessBankingEnabledForRblCA()
+    {
+        $oldDateTime = Carbon::create(2019, 7, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $this->setUpMerchantForBusinessBanking(false, 1000000, AccountType::DIRECT,
+        Channel::RBL);
+
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  '2224440041626998',
+            'balance_id'            =>  $this->bankingBalance->getId(),
+            'account_type'          =>  'nodal',
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes);
+
+        $this->fixtures->user->createBankingUserForMerchant('10000000000000',
+                                                            $attributes = ['id' => '30000000000000'],
+                                                            $role = 'owner',
+                                                            $mode = 'test');
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        Carbon::setTestNow();
+    }
+
+    public function testGetForUsersWithNoBankingAccountForIciciCA()
+    {
+        $oldDateTime = Carbon::create(2019, 7, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $this->setUpMerchantForBusinessBanking(false, 1000000, AccountType::DIRECT,
+                                               Channel::ICICI);
 
         $this->fixtures->user->createBankingUserForMerchant('10000000000000',
                                                             $attributes = ['id' => '30000000000000'],

@@ -1871,6 +1871,62 @@ return [
         ],
     ],
 
+    'testGetForUsersWithBusinessBankingEnabledForRblCA' => [
+        'request'  => [
+            'url'     => '/users/30000000000000',
+            'method'  => 'GET',
+            'content' => [],
+            'server'  => [
+                'HTTP_X_DASHBOARD_USER_ID' => '30000000000000',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'          => null,
+                'contact_mobile_verified' => false,
+                'confirmed'               => true,
+                'merchants'               => [
+                    [
+                        'activated'            => true,
+                        'ca_activation_status' => 'activated',
+                    ],
+                ],
+                'invitations' => [
+                ],
+                'settings'    => [
+                ],
+            ],
+        ],
+    ],
+
+    'testGetForUsersWithNoBankingAccountForIciciCA' => [
+        'request'  => [
+            'url'     => '/users/30000000000000',
+            'method'  => 'GET',
+            'content' => [],
+            'server'  => [
+                'HTTP_X_DASHBOARD_USER_ID' => '30000000000000',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'          => null,
+                'contact_mobile_verified' => false,
+                'confirmed'               => true,
+                'merchants'               => [
+                    [
+                        'activated'            => true,
+                        'ca_activation_status' => null,
+                    ],
+                ],
+                'invitations' => [
+                ],
+                'settings'    => [
+                ],
+            ],
+        ],
+    ],
+
     'testGetBankingUserWithPermissions'   => [
         'response'      => [
             'content'     => [

@@ -940,8 +940,9 @@ class Core extends Base\Core
                 if (empty($balance_CA) === false)
                 {
                     $bankingAccountCA = $this->repo->banking_account->getFromBalanceId($balance_CA->getId());
-
-                    $activationStatusCA = $bankingAccountCA->getStatus();
+                    // For ICICI there is no banking_account entity created in api DB, after bankingAccount Service
+                    // is up call that to get ICICI current account status.
+                    $activationStatusCA = optional($bankingAccountCA)->getStatus();
                 }
 
                 // If Only CA is there
