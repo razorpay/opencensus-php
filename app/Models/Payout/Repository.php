@@ -223,7 +223,7 @@ class Repository extends Base\Repository
         // select(payouts.*) because if we don't restrict to payouts table columns,
         // collection_item->balance will return the balance field from joined table
         // as opposed to the expected eager-loaded balance entity
-        $query = $this->newQuery()
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
                       ->select($this->getTableName() . ".*")
                       ->with(['balance', 'merchant', 'merchant.org'])
                       ->status(Status::QUEUED);
