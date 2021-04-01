@@ -4,6 +4,7 @@ namespace RZP\Tests\Unit\PayoutLink;
 
 use Mockery;
 use RZP\Constants\Environment;
+use RZP\Constants\Mode;
 use RZP\Models\BankingAccount\Channel;
 use RZP\Models\Merchant;
 use RZP\Exception;
@@ -525,6 +526,39 @@ class PayoutLinkMicroserviceTest extends TestCase
         $input["AMAZONPAY"] = "1";
         $plMock->updateSettings($merchantID, $input);
 
+    }
+
+    public function testFetchMultiplePL() {
+        $input['id'] = 'abc';
+        $this->app->instance("rzp.mode", Mode::LIVE);
+        $plMock = $this->getMockBuilder("RZP\Services\PayoutLinks")
+            ->enableOriginalConstructor()
+            ->setConstructorArgs([$this->app])
+            ->setMethods(array("makeRequest"))
+            ->getMock();
+        $response['count'] = 1;
+        $response['items'] = [];
+        $plMock->method('makeRequest')
+            ->willReturn($response);
+        $output = $plMock->fetchMultiple($input);
+        $this->assertEquals($response['count'], $output['count']);
+        $this->assertEquals($response['items'], $output['items']);
+    }
+
+    public function testFetchMultiplePLWithNoItems() {
+        $input['id'] = 'abc';
+        $this->app->instance("rzp.mode", Mode::LIVE);
+        $plMock = $this->getMockBuilder("RZP\Services\PayoutLinks")
+            ->enableOriginalConstructor()
+            ->setConstructorArgs([$this->app])
+            ->setMethods(array("makeRequest"))
+            ->getMock();
+        $response = array();
+        $plMock->method('makeRequest')
+            ->willReturn($response);
+        $output = $plMock->fetchMultiple($input);
+        $this->assertEquals(0, $output['count']);
+        $this->assertEquals([], $output['items']);
     }
 
 

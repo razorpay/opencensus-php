@@ -279,6 +279,10 @@ class PayoutLinks
 
         $response = $this->makeRequest($url, $input);
 
+        $response[self::COUNT] = array_pull($response, self::COUNT, 0);
+
+        $response[self::ITEMS] = array_pull($response, self::ITEMS, []);
+
         $payoutlinks = &$response["items"];
 
         foreach ($payoutlinks as &$value)
