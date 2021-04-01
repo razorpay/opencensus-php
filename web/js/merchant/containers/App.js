@@ -143,8 +143,8 @@ export default class App extends Component {
 
     this.state = {
       isLoading: true,
-      npsSurveyPopup: false,
-      marchNPSSurveyPopup: false,
+      goLiveNPSSurveyPopup: false,
+      nonGoLiveNPSSurveyPopup: false,
     };
 
     this.handleResize = debounce(this.handleResize.bind(this), 200);
@@ -298,28 +298,27 @@ export default class App extends Component {
     window.addEventListener('resize', this.handleResize);
     const user = window.rzp_user;
     if (user) {
-      // the first survey we will be using again in next month so just comenting out the part as of now.
-      // const NPSEnableTypeForm = makePopup(
-      //   `https://razorpay.typeform.com/to/ndlvP2XX?mid=${user.current}&source=dashboard&email=${user.email}`,
-      //   {
-      //     mode: 'popup',
-      //     hideHeaders: true,
-      //     hideFooters: true,
-      //     onSubmit: this.closeSurvey,
-      //   },
-      // );
-      // this.state.NPSEnableTypeForm = NPSEnableTypeForm; // saving reference typeform
-
-      const MarchNPSEnableTypeForm = makePopup(
-        `https://razorpay.typeform.com/to/YFrkZOZp?mid=${user.current}&source=dashboard&email=${user.email}`,
+      const GoLiveNPSEnableTypeForm = makePopup(
+        `https://razorpay.typeform.com/to/eJ8e5AQb?mid=${user.current}&source=dashboard&email=${user.email}`, // go live survey
         {
           mode: 'popup',
           hideHeaders: true,
           hideFooters: true,
-          onSubmit: this.closeMarchSurvey,
+          onSubmit: this.closeGoLiveSurvey,
         },
       );
-      this.state.MarchNPSEnableTypeForm = MarchNPSEnableTypeForm; // saving reference typeform
+      this.state.GoLiveNPSEnableTypeForm = GoLiveNPSEnableTypeForm; // saving reference typeform
+
+      const NonGoLiveNPSEnableTypeForm = makePopup(
+        `https://razorpay.typeform.com/to/cgDsNYSY?mid=${user.current}&source=dashboard&email=${user.email}`, // non go live survey
+        {
+          mode: 'popup',
+          hideHeaders: true,
+          hideFooters: true,
+          onSubmit: this.closeNonGoLiveSurvey,
+        },
+      );
+      this.state.NonGoLiveNPSEnableTypeForm = NonGoLiveNPSEnableTypeForm; // saving reference typeform
     }
   }
 
@@ -331,37 +330,42 @@ export default class App extends Component {
       this.renderFullPageView = this.getFPView(baseLocation || location);
     }
     if (org && user) {
-      // the first survey we will be using again in next month so just comenting out the part as of now.
-      // const surveyShowed = !!LocalStorageService.getItem('razorpay_nps_survey_showed');
-      // if (
-      //   org &&
-      //   org.custom_code &&
-      //   org.custom_code.toLowerCase() === 'rzp' && // only for razorpay org
-      //   user.showNPSSurvey() && // experiment check
-      //   !surveyShowed &&
-      //   !isMobileDevice() &&
-      //   this.state.NPSEnableTypeForm
-      // ) {
-      //   const takeNPSSurvey = this.dateIsInRange(user.created_at, [['2021-01-31', '2021-03-01']]);
-      //   this.setState({ npsSurveyPopup: takeNPSSurvey });
-      // }
-
-      const marchSurveyShowed = !!LocalStorageService.getItem('razorpay_march_nps_survey_showed');
+      const goLiveSurveyShowed = !!LocalStorageService.getItem(
+        'razorpay_go_live_nps_survey_showed',
+      );
       if (
         org &&
         org.custom_code &&
         org.custom_code.toLowerCase() === 'rzp' && // only for razorpay org
         user.showNPSSurvey() && // experiment check
-        !marchSurveyShowed &&
+        !goLiveSurveyShowed &&
         !isMobileDevice() &&
-        this.state.MarchNPSEnableTypeForm
+        this.state.GoLiveNPSEnableTypeForm
       ) {
-        const takeMarchNPSSurvey = this.dateIsInRange(user.created_at, [
-          ['2020-01-31', '2020-03-01'],
-          ['2020-07-31', '2020-09-01'],
-          ['2020-10-31', '2020-12-01'],
+        const takeGoLiveNPSSurvey = this.dateIsInRange(user.created_at, [
+          ['2021-02-28', '2021-04-01'],
         ]);
-        this.setState({ marchNPSSurveyPopup: takeMarchNPSSurvey });
+        this.setState({ goLiveNPSSurveyPopup: takeGoLiveNPSSurvey });
+      }
+
+      const nonGoLiveSurveyShowed = !!LocalStorageService.getItem(
+        'razorpay_non_go_live_nps_survey_showed',
+      );
+      if (
+        org &&
+        org.custom_code &&
+        org.custom_code.toLowerCase() === 'rzp' && // only for razorpay org
+        user.showNPSSurvey() && // experiment check
+        !nonGoLiveSurveyShowed &&
+        !isMobileDevice() &&
+        this.state.NonGoLiveNPSEnableTypeForm
+      ) {
+        const takeNonGoLiveNPSSurvey = this.dateIsInRange(user.created_at, [
+          ['2020-02-29', '2020-04-01'],
+          ['2020-08-31', '2020-10-01'],
+          ['2020-11-30', '2021-01-01'],
+        ]);
+        this.setState({ nonGoLiveNPSSurveyPopup: takeNonGoLiveNPSSurvey });
       }
     }
   }
@@ -386,14 +390,14 @@ export default class App extends Component {
     return false;
   };
 
-  closeSurvey = () => {
-    this.setState({ npsSurveyPopup: false });
-    this.state.NPSEnableTypeForm.close();
+  closeGoLiveSurvey = () => {
+    this.setState({ goLiveNPSSurveyPopup: false });
+    this.state.GoLiveNPSEnableTypeForm.close();
   };
 
-  closeMarchSurvey = () => {
-    this.setState({ marchNPSSurveyPopup: false });
-    this.state.MarchNPSEnableTypeForm.close();
+  closeNonGoLiveSurvey = () => {
+    this.setState({ nonGoLiveNPSSurveyPopup: false });
+    this.state.NonGoLiveNPSEnableTypeForm.close();
   };
 
   fetchSupportedCurrencies() {
@@ -681,22 +685,23 @@ export default class App extends Component {
   };
 
   getSurveyForm = () => {
-    const { npsSurveyPopup, marchNPSSurveyPopup } = this.state;
-    // the first survey we will be using again in next month so just comenting out the part as of now.
+    const { goLiveNPSSurveyPopup, nonGoLiveNPSSurveyPopup } = this.state;
     return (
       <>
-        {/* {npsSurveyPopup && !LocalStorageService.getItem('razorpay_nps_survey_showed') && (
-          <>
-            {LocalStorageService.setItem('razorpay_nps_survey_showed', 1)}
-            {this.state.NPSEnableTypeForm.open()}
-          </>
-        )} */}
-        {marchNPSSurveyPopup && !LocalStorageService.getItem('razorpay_march_nps_survey_showed') && (
-          <>
-            {LocalStorageService.setItem('razorpay_march_nps_survey_showed', 1)}
-            {this.state.MarchNPSEnableTypeForm.open()}
-          </>
-        )}
+        {goLiveNPSSurveyPopup &&
+          !LocalStorageService.getItem('razorpay_go_live_nps_survey_showed') && (
+            <>
+              {LocalStorageService.setItem('razorpay_go_live_nps_survey_showed', 1)}
+              {this.state.GoLiveNPSEnableTypeForm.open()}
+            </>
+          )}
+        {nonGoLiveNPSSurveyPopup &&
+          !LocalStorageService.getItem('razorpay_non_go_live_nps_survey_showed') && (
+            <>
+              {LocalStorageService.setItem('razorpay_non_go_live_nps_survey_showed', 1)}
+              {this.state.NonGoLiveNPSEnableTypeForm.open()}
+            </>
+          )}
       </>
     );
   };
