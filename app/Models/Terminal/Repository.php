@@ -1646,7 +1646,7 @@ class Repository extends Base\Repository
 
         $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
-        $variantFlag = $this->app->razorx->getTreatment($ids[0], "ROUTE_PROXY_TS", $mode);
+        $variantFlag = $this->app->razorx->getTreatment($ids[0], "ROUTE_PROXY_TS_3", $mode);
 
         if ($variantFlag === 'proxy')
         {
@@ -1672,6 +1672,7 @@ class Repository extends Base\Repository
                 {
                     $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
                 }
+                return $terminals;
             }
             catch (\Throwable $ex)
             {
@@ -1709,7 +1710,7 @@ class Repository extends Base\Repository
 
         $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
-        $variantFlag = $this->app->razorx->getTreatment($merchantId, "ROUTE_PROXY_TS", $mode);
+        $variantFlag = $this->app->razorx->getTreatment($merchantId, "ROUTE_PROXY_TS_3", $mode);
 
         if ($variantFlag === 'proxy')
         {
@@ -1730,15 +1731,16 @@ class Repository extends Base\Repository
 
                 $response = $this->app['terminals_service']->proxyTerminalService($input, "POST", $path);
 
-                if (count($response) > 0)
-                {
-                    $terminal2 = Terminal\Service::getEntityFromTerminalServiceResponse($response[0]);
+                $tsTerminals = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response);
 
-                    if (Terminal\Service::compareTerminalEntity($terminal, $terminal2) === false)
-                    {
-                        $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
-                    }
+                $terminal2 = $tsTerminals->first();
+
+                if (Terminal\Service::compareTerminalEntity($terminal, $terminal2) === false)
+                {
+                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
                 }
+
+                return $terminal2;
             }
             catch (\Throwable $ex)
             {
@@ -1788,6 +1790,8 @@ class Repository extends Base\Repository
                 {
                     $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
                 }
+
+                return $terminals;
             }
             catch (\Throwable $ex)
             {
