@@ -3443,7 +3443,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SMART_ROUTING_AUTH_FILTER                             = 'SMART_ROUTING_AUTH_FILTER';
     const SMART_ROUTING_RESPONSE                                = 'SMART_ROUTING_RESPONSE';
     const SMART_ROUTING_REQUEST                                 = 'SMART_ROUTING_REQUEST';
-    const SMART_ROUTING_NOTES_PROCESSING                        = 'SMART_ROUTING_NOTES_PROCESSING';
     const SMART_ROUTING_TERMINALS_COUNT_IS_ZERO                 = 'SMART_ROUTING_TERMINALS_COUNT_IS_ZERO';
     const SMART_ROUTING_TERMINALS_MISMATCH                      = 'SMART_ROUTING_TERMINALS_MISMATCH';
     const SMART_ROUTING_AUTHN_RESPONSE                          = 'SMART_ROUTING_AUTHN_RESPONSE';
