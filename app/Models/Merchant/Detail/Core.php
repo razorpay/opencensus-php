@@ -2009,6 +2009,11 @@ class Core extends Base\Core
             $validationFields = array_diff($validationFields, RequiredFields::BANK_ACCOUNT_FIELDS);
         }
 
+        if($this->shouldSkipPOADocuments($merchantDetails) === true)
+        {
+            unset($validationSelectiveRequiredFields[SelectiveRequiredFields::POA_DOCUMENTS]);
+        }
+
         $merchant = $merchantDetails->merchant;
 
         if ($merchant->isLinkedAccount() === true)
@@ -2313,6 +2318,31 @@ class Core extends Base\Core
         $skipBankAccountRegistration = $batchContext['data'][Merchant\Entity::SKIP_BA_REGISTRATION] ?? false;
 
         return (($batchName === Type::SUB_MERCHANT) and ($skipBankAccountRegistration === true));
+    }
+
+    protected function shouldSkipPOADocuments(Entity $merchantDetails): bool
+    {
+        if($this->isAadhaarEsignVerificationRequired($merchantDetails) === false)
+        {
+            return false;
+        }
+
+        $stakeholder = $merchantDetails->stakeholder;
+
+        if(empty($stakeholder) === true)
+        {
+            return false;
+        }
+
+        $experimentEnabled = $this->mcore->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
+            RazorxTreatment::SKIP_POA_DOCUMENT_FUNCTIONALITY);
+
+        if($experimentEnabled === false)
+        {
+            return false;
+        }
+
+        return $stakeholder->getAadhaarEsignStatus() === 'verified';
     }
 
     /**

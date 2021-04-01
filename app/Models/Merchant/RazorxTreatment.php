@@ -185,6 +185,9 @@ final class RazorxTreatment
     // experiment to enable esign aadhar functionality
     const ESIGN_AADHAR_FUNCTIONALITY = 'esign_aadhar_functionality';
 
+    // experiment to skip poa documents if aadhaar esign is done
+    const SKIP_POA_DOCUMENT_FUNCTIONALITY = "SKIP_POA_DOCUMENT_FUNCTIONALITY";
+
     const AADHAAR_WITH_PAN_VERIFICATION = 'aadhaar_with_pan_verification';
 
     // experiment to enable dedupe functionality
