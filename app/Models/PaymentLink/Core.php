@@ -1101,6 +1101,19 @@ class Core extends Base\Core
     {
         $lineItems = $order->lineItems()->get();
 
+        $shouldCheckForPayments = $this->shouldCheckForPayments($lineItems);
+
+        if ($shouldCheckForPayments === false)
+        {
+            return true;
+        }
+
+        $this->trace->info(
+            TraceCode::PAYMENT_PAGE_VALIDATE_EXISTING_PAYMENTS,
+            [
+                'id'     => $paymentLink->getId(),
+            ]);
+
         $succeedingPayments = $this->repo->payment->getValidatePaymentsForPaymentPages($paymentLink);
 
         $paymentPageItemQuantity = $this->getActivePaymentQuantityCount($succeedingPayments);
@@ -1154,6 +1167,21 @@ class Core extends Base\Core
         $paymentPageItem = $lineItem->ref;
 
          return (int) ($paymentPageItemQuantity[$paymentPageItem->getId()] ?? 0);
+    }
+
+    protected function shouldCheckForPayments(Base\Collection $lineItems): bool
+    {
+        foreach ($lineItems as $lineItem)
+        {
+            $paymentPageItem = $lineItem->ref;
+
+            if (is_null($paymentPageItem->getStock()) === false)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
