@@ -126,8 +126,8 @@ class CareServiceTest extends TestCase
             ],
             [
                 self::AUTH                                => 'cron',
-                self::API_ROUTE                           => '/care_service/cron/twirp/rzp.care.callback.v1.CallbackService/PushCallbackToQueue',
-                self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.callback.v1.CallbackService/PushCallbackToQueue',
+                self::API_ROUTE                           => '/care_service/cron/twirp/rzp.care.callback.v1.CallbackService/PushCallbacksToQueue',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.callback.v1.CallbackService/PushCallbacksToQueue',
                 self::EXPECTED_CARE_SERVICE_REQUEST       => [],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
                     'key' => 'value',

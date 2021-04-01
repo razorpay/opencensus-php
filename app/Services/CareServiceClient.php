@@ -204,7 +204,7 @@ class CareServiceClient
             'id'        => $this->app['basicauth']->getMerchantId(),
         ];
 
-        if (empty($user->getId()) === false)
+        if (empty($user) === false && empty($user->getId()) === false)
         {
             $input['merchant']['user_id']  = $user->getId();
         }
