@@ -133,4 +133,4 @@ export const RZPFeatures = {
   QR_CODES: 'qr_codes',
 };
 
-export const UPI_AVL_LIMIT = 200000;
+export const UPI_AVL_LIMIT = 500000;

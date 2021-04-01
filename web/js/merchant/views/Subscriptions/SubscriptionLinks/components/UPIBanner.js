@@ -7,8 +7,6 @@ import { getFormattedAmount } from 'common/utils/rzp-utils';
 }))
 export default class UPIBanner extends React.Component {
   render() {
-    if (!this.props.user.isUPISubscriptionEnabled) return null;
-
     return (
       <div class="upi-banner">
         <i class="i i-info-circle m-r" />

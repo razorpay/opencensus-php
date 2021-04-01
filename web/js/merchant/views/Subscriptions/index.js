@@ -154,7 +154,7 @@ export default class SubscriptionsController extends React.Component {
               <NavLink to="/plans">Plans</NavLink>
               <ShowWhen
                 additionalCondition={(user) =>
-                  !user.isChargeAtWillEnabled && user.isUPISubscriptionEnabled
+                  !user.isChargeAtWillEnabled
                 }
               >
                 <NavLink to="/subscriptions/settings">
@@ -201,7 +201,7 @@ export default class SubscriptionsController extends React.Component {
                 path="/subscriptions/settings"
                 component={SubscriptionSettings}
                 additionalCondition={(user) =>
-                  !user.isChargeAtWillEnabled && user.isUPISubscriptionEnabled
+                  !user.isChargeAtWillEnabled
                 }
               />
 

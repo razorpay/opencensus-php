@@ -612,10 +612,6 @@ export default class User {
     return this.getExpStatus('emandate_nonzero_amount');
   }
 
-  get isUPISubscriptionEnabled() {
-    return this.isFeatureEnabled('subscription_upi') || this.getExpStatus('upi_subscription');
-  }
-
   get isSubscriptionOffersEnabled() {
     return this.getExpStatus('offer_on_subscription') && !this.isChargeAtWillEnabled;
   }
