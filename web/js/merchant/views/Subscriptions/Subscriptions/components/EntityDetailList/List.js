@@ -65,9 +65,7 @@ export default class EntityDetailList extends React.Component {
 
       if (item.subscription_status === 'halted' && item.status === 'issued') {
         isInvoiceWithAttemptsFailed =
-          index < items.length - 1 && items[index + 1].status === 'paid'
-            ? 1
-            : 2;
+          index < items.length - 1 && items[index + 1].status === 'paid' ? 1 : 2;
       } else if (totalHaltedInvoiceToCheck) {
         if (item.subscription_status === 'halted') {
           isInvoiceWithAttemptsFailed = totalHaltedInvoiceToCheck === 1 ? 1 : 2;
@@ -96,16 +94,11 @@ export default class EntityDetailList extends React.Component {
       }
 
       // Check if 1st(last in array) invoice is upfront invoice
-      let isUpfrontInvoice =
-        index === items.length - 1 ? isFirstInvoiceUpfront : false; // Set true for 1st invoice if it's upfront
+      let isUpfrontInvoice = index === items.length - 1 ? isFirstInvoiceUpfront : false; // Set true for 1st invoice if it's upfront
 
       // Check for the latest invoice with status 'issued' and if any attempts failed
       // (To set authAttempts only for latest invoice for now)
-      if (
-        item.status === 'issued' &&
-        this.props.authAttempts > 0 &&
-        !isChargeAttemptFailed
-      ) {
+      if (item.status === 'issued' && this.props.authAttempts > 0 && !isChargeAttemptFailed) {
         isChargeAttemptFailed = true;
       }
 
@@ -132,7 +125,7 @@ export default class EntityDetailList extends React.Component {
           subscriptionchargeAt={subscriptionchargeAt}
           isInvoiceWithAttemptsFailed={isInvoiceWithAttemptsFailed}
           authAttempts={isChargeAttemptFailed ? this.props.authAttempts : null}
-        />
+        />,
       );
     }
 
@@ -158,16 +151,11 @@ export default class EntityDetailList extends React.Component {
                   <Time value={creditNote.created_at} format="MMM DD, YYYY" />
                 </div>
                 <span class="row-element right">
-                  <Amount
-                    currency={creditNote.currency}
-                    value={creditNote.amount}
-                  />
+                  <Amount currency={creditNote.currency} value={creditNote.amount} />
                 </span>
               </div>
               <div class="detail-row">
-                <span class="label--secondary">
-                  Refund due to subscription update.
-                </span>
+                <span class="label--secondary">Refund due to subscription update.</span>
               </div>
             </div>
           </div>
@@ -186,7 +174,7 @@ export default class EntityDetailList extends React.Component {
     }
 
     const createdAtList = [...creditNotes, ...items]
-      .map(note => note.created_at)
+      .map((note) => note.created_at)
       .sort()
       .reverse();
 
@@ -199,7 +187,7 @@ export default class EntityDetailList extends React.Component {
       delete this.INVOICE_MAP['upcoming'];
     }
 
-    createdAtList.forEach(id => {
+    createdAtList.forEach((id) => {
       const creditNoteLoc = this.CREDIT_NOTE_MAP[id],
         invoiceLoc = this.INVOICE_MAP[id];
 

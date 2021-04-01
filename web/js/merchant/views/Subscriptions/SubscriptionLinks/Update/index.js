@@ -7,8 +7,9 @@ import { ModalAsideNav } from 'common/new-ui/Wizard';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { Modal, ModalContent } from 'common/new-ui/Modal';
 
-import { findBy, stringToObj } from 'common/utils/rzp-utils';
+import { findBy, stringToObj, classList } from 'common/utils/rzp-utils';
 import { merchantFetch } from 'merchant/utils/ajax';
+import DocsLink from 'merchant/components/DocsLink';
 
 import Plan from 'merchant/models/Plan';
 import { fetchPlan, fetchPlans, updatePlans } from 'merchant/reducers/plans';
@@ -19,6 +20,8 @@ import {
   fetchScheduledChanges,
 } from 'merchant/reducers/subscriptions';
 import { fetchSettings } from 'merchant/reducers/subscriptions';
+import { UPI_AVL_LIMIT } from 'merchant/helpers/data';
+import UPIBanner from '../components/UPIBanner';
 
 import { showNotification } from 'merchant_common/reducers/notifications';
 
@@ -145,6 +148,7 @@ export default class UpdateSubscription extends React.Component {
       internals: {
         _startsImmediately: !subscription.start_at,
       },
+      _selectedPlanAmount: selectedPlan.item.amount,
     });
   };
 
@@ -239,11 +243,14 @@ export default class UpdateSubscription extends React.Component {
   };
 
   handleChangeInPlan = ({ option }) => {
+    const currSelectedPlan = findBy(this.props.plans.items, 'id', option.id);
+
     this.setState({
       fields: {
         ...this.state.fields,
         plan_id: option.id,
       },
+      _selectedPlanAmount: currSelectedPlan.item.amount,
     });
   };
 
@@ -430,13 +437,19 @@ export default class UpdateSubscription extends React.Component {
   };
 
   renderWizard() {
-    const { currentTab } = this.state;
+    const { currentTab, _selectedPlanAmount } = this.state;
     const isLastTab = currentTab === tabs.length - 1;
     const currentTabMeta = tabsMeta[tabs[currentTab]];
 
+    const showUPIUnAvlBanner = _selectedPlanAmount > UPI_AVL_LIMIT;
     return (
       // need to improve this css styling
-      <div class="PaymentLinks--Create SubscriptionLinks--update Wizard">
+      <div
+        class={classList(
+          'PaymentLinks--Create SubscriptionLinks--update Wizard',
+          'upi-banner-visible',
+        )}
+      >
         <ModalAsideNav
           activeTab={currentTab}
           disableTabCondition={this.disableTabCondition}
@@ -456,6 +469,15 @@ export default class UpdateSubscription extends React.Component {
           </Form>
         </main>
         <footer>
+          <div class={classList('card-blocked-banner', showUPIUnAvlBanner && 'upi-banner-visible')}>
+            <i class="i i-info-circle" /> Cards issued by Indian banks are temporarily disabled for
+            new subscriptions.{' '}
+            <DocsLink
+              url="https://razorpay.com/docs/announcements/rbi-card-mandate-guidelines/recurring-payments"
+              title="Learn more"
+            />
+          </div>
+          {showUPIUnAvlBanner && <UPIBanner />}
           {currentTab > 0 && (
             <Button onClick={this.changeTab(-1)} type="button">
               Previous

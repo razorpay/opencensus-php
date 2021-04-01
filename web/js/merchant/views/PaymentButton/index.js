@@ -20,6 +20,7 @@ import OnBoarding, {
   getIsAllowedResetPaymentButtonsOnBoarding,
 } from './OnBoarding';
 import QuickGuide, { getPaymentButtonsQuickGuideIsClosed } from './QuickGuide';
+import CardPaymentsBlockedBanner from 'merchant/views/Subscriptions/components/CardPaymentsBlocked/Banner';
 
 @connect(
   (state) => {
@@ -98,6 +99,7 @@ export default class PaymentButtonsContainer extends React.Component {
   };
 
   render() {
+    const { user } = this.props;
     const { showOnboarding, isQuickGuideOpen } = this.props.paymentButtonsProductOnBoarding;
 
     if (showOnboarding) {
@@ -105,32 +107,38 @@ export default class PaymentButtonsContainer extends React.Component {
     }
 
     return (
-      <tabbed-container>
-        {isQuickGuideOpen && <QuickGuide mid={this.props.user.current} mode={this.props.mode} />}
+      <>
+        {user.isSubscriptionButtonEnabled && user.isCardRecurringPaymentsBlocked && (
+          <CardPaymentsBlockedBanner />
+        )}
 
-        <header id="link-header">
-          {this.props.user.isPaymentButtonEnabledByRazorX && (
-            <NavLink exact to="/paymentbuttons">
-              Payment Buttons
-            </NavLink>
-          )}
+        <tabbed-container>
+          {isQuickGuideOpen && <QuickGuide mid={this.props.user.current} mode={this.props.mode} />}
 
-          {this.props.user.isSubscriptionButtonEnabled && (
-            <NavLink exact to="/subscription_buttons">
-              Subscription Buttons <span class="badge bg-primary m-r">beta</span>
-            </NavLink>
-          )}
-        </header>
+          <header id="link-header">
+            {this.props.user.isPaymentButtonEnabledByRazorX && (
+              <NavLink exact to="/paymentbuttons">
+                Payment Buttons
+              </NavLink>
+            )}
 
-        <TestModeBanner />
+            {this.props.user.isSubscriptionButtonEnabled && (
+              <NavLink exact to="/subscription_buttons">
+                Subscription Buttons <span class="badge bg-primary m-r">beta</span>
+              </NavLink>
+            )}
+          </header>
 
-        <content>
-          <Switch>
-            <Route path="/paymentbuttons" component={PaymentButtonList} />
-            <Route path="/subscription_buttons" component={SubscriptionButtonList} />
-          </Switch>
-        </content>
-      </tabbed-container>
+          <TestModeBanner />
+
+          <content>
+            <Switch>
+              <Route path="/paymentbuttons" component={PaymentButtonList} />
+              <Route path="/subscription_buttons" component={SubscriptionButtonList} />
+            </Switch>
+          </content>
+        </tabbed-container>
+      </>
     );
   }
 }

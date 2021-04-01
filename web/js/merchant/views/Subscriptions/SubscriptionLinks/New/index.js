@@ -13,6 +13,7 @@ import { fetchAddOns } from 'merchant/reducers/addons';
 import { fetchCustomer } from 'merchant/reducers/customers';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { fetchSettings } from 'merchant/reducers/subscriptions';
+import DocsLink from 'merchant/components/DocsLink';
 
 import { ModalAsideNav } from 'common/new-ui/Wizard';
 import { Modal, ModalContent } from 'common/new-ui/Modal';
@@ -25,16 +26,20 @@ import {
   getURLQueryParams,
   stringToObj,
   deepClone,
+  classList,
 } from 'common/utils/rzp-utils';
+import { UPI_AVL_LIMIT } from 'merchant/helpers/data';
 
 import AddOnDetails from './AddOnDetails';
 import LinkDetails from './LinkDetails';
 import PlanDetails from '../components/PlanDetails';
 import Review from './Review';
+import UPIBanner from '../components/UPIBanner';
 import Spinner from 'common/ui/Spinner';
 import moment from 'moment';
 
 import { trackSaveDuplicateSubscription, trackAddAddon, trackAddPlans } from '../ga';
+import React from 'react';
 
 @withRouter
 @connect(
@@ -282,6 +287,7 @@ export default class NewSubscriptionLink extends Component {
             plan_id: option.id,
             addons: [{}],
           },
+          _selectedPlanAmount: currSelectedPlan.item.amount,
         });
 
         return;
@@ -293,6 +299,7 @@ export default class NewSubscriptionLink extends Component {
           ...fields,
           plan_id: option.id,
         },
+        _selectedPlanAmount: currSelectedPlan.item.amount,
       });
 
       return;
@@ -304,6 +311,7 @@ export default class NewSubscriptionLink extends Component {
         ...fields,
         plan_id: option.id,
       },
+      _selectedPlanAmount: currSelectedPlan.item.amount,
     });
   };
 
@@ -322,6 +330,8 @@ export default class NewSubscriptionLink extends Component {
       item_id: option.id,
       quantity: 1,
     };
+
+
     this.setState({
       fields,
     });
@@ -505,12 +515,26 @@ export default class NewSubscriptionLink extends Component {
   }
 
   renderWizard() {
-    const { isFetchingSubscription, currentTab } = this.state;
+    const { isFetchingSubscription, currentTab, _selectedPlanAmount, fields } = this.state;
     const isLastTab = currentTab === tabs.length - 1;
+
+
+    const sumOfAddons = fields.addons.reduce((previous, addonItem) => {
+      const totalAmount = addonItem.item && addonItem.item.amount * addonItem.quantity;
+
+      return totalAmount + previous;
+    }, 0);
+
+    const showUPIUnAvlBanner = _selectedPlanAmount > UPI_AVL_LIMIT || sumOfAddons > UPI_AVL_LIMIT;
 
     return (
       // need to improve this css styling
-      <div class="PaymentLinks--Create SubscriptionLinks--new Wizard">
+      <div
+        class={classList(
+          'PaymentLinks--Create SubscriptionLinks--new Wizard',
+          'upi-banner-visible',
+        )}
+      >
         {/* create subscription link tabs */}
         <ModalAsideNav
           title="Create Subscription"
@@ -538,6 +562,24 @@ export default class NewSubscriptionLink extends Component {
               </Form>
             </main>
             <footer>
+              {this.props.user.isCardRecurringPaymentsBlocked && (
+                <div
+                  class={classList(
+                    'card-blocked-banner',
+                    showUPIUnAvlBanner && 'upi-banner-visible',
+                  )}
+                >
+                  <i class="i i-info-circle" /> Cards issued by Indian banks are temporarily
+                  disabled for new subscriptions.{' '}
+                  <DocsLink
+                    url="https://razorpay.com/docs/announcements/rbi-card-mandate-guidelines/recurring-payments"
+                    title="Learn more"
+                  />
+                </div>
+              )}
+
+              {showUPIUnAvlBanner && <UPIBanner />}
+
               {currentTab > 0 && (
                 <Button onClick={this.changeTab(-1)} type="button">
                   Previous

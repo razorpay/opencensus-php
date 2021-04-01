@@ -57,6 +57,9 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import RTracking from 'react-tracking';
 import { fetchVirtualAccounts } from 'merchant/reducers/virtualaccounts';
 import MerchantDataCollectionModal from 'merchant/views/Settings/SupportDetails/MerchantDataCollectionModal';
+import CardPaymentsBlockedModal from 'merchant/views/Subscriptions/components/CardPaymentsBlocked/Modal';
+import CardPaymentsBlockedBanner from 'merchant/views/Subscriptions/components/CardPaymentsBlocked/Banner';
+
 import { fetchSupportDetail } from 'merchant/reducers/support_detail';
 
 const dateRangePresets = [
@@ -875,42 +878,51 @@ export default class HomeContainer extends Component {
 
     return (
       <div class="react-root dashboard-home">
-        {/* Lakshmi Vilas Bank Moratorium */}
-        {user.isAccepted && hasLakhmiVilasBankAcc && <LakshmiVilasBankBanner />}
+        {user.isCardRecurringPaymentsBlocked && user.isAccepted ? (
+          <CardPaymentsBlockedBanner isCAW={user.isChargeAtWillEnabled} />
+        ) : (
+          <>
+            {/* Lakshmi Vilas Bank Moratorium */}
+            {user.isAccepted && hasLakhmiVilasBankAcc && <LakshmiVilasBankBanner />}
+
+            {this.props.user.isDiwaliPromoEnabled && !hideDiwaliPromotion && (
+              <div
+                className={`diwali-promotion-banner v2-tour-banner${
+                  dismissDiwaliPromotion ? ' dismiss' : ''
+                }`}
+              >
+                <div className="banner-content">
+                  <Banner cta="View T&Cs">
+                    <span class="badge m-r">SPECIAL OFFER</span>
+                    <span>
+                      {this.props.user.transaction_value
+                        ? 'You are currently active at a slashed pricing of 1.75%! Make the most of it, benefits last till 31st January, 2019'
+                        : 'Start transacting with us and enjoy our slashed pricing - 1.75%. Valid on payments till 31st January, 2019'}
+                    </span>
+                    <span class="m-l btn-link">
+                      <ShowWhen
+                        additionalCondition={(user) =>
+                          user.isOrgAllowedFunctionality('external_links')
+                        }
+                      >
+                        <a href="https://razorpay.com/pricing" target="_blank">
+                          <b>View T&Cs</b>
+                        </a>
+                      </ShowWhen>
+                    </span>
+                  </Banner>
+                </div>
+                <div className="banner-close">
+                  <a className="banner-close-icon" onClick={this.onHideDiwaliPromotion}>
+                    <i className="i i-close" />
+                  </a>
+                </div>
+              </div>
+            )}
+          </>
+        )}
 
         {/* Show Diwali Promotional Banner */}
-        {this.props.user.isDiwaliPromoEnabled && !hideDiwaliPromotion && (
-          <div
-            className={`diwali-promotion-banner v2-tour-banner${
-              dismissDiwaliPromotion ? ' dismiss' : ''
-            }`}
-          >
-            <div className="banner-content">
-              <Banner cta="View T&Cs">
-                <span class="badge m-r">SPECIAL OFFER</span>
-                <span>
-                  {this.props.user.transaction_value
-                    ? 'You are currently active at a slashed pricing of 1.75%! Make the most of it, benefits last till 31st January, 2019'
-                    : 'Start transacting with us and enjoy our slashed pricing - 1.75%. Valid on payments till 31st January, 2019'}
-                </span>
-                <span class="m-l btn-link">
-                  <ShowWhen
-                    additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
-                  >
-                    <a href="https://razorpay.com/pricing" target="_blank">
-                      <b>View T&Cs</b>
-                    </a>
-                  </ShowWhen>
-                </span>
-              </Banner>
-            </div>
-            <div className="banner-close">
-              <a className="banner-close-icon" onClick={this.onHideDiwaliPromotion}>
-                <i className="i i-close" />
-              </a>
-            </div>
-          </div>
-        )}
 
         {user.showInstantActivation &&
           !user.submitted &&
@@ -1060,6 +1072,8 @@ export default class HomeContainer extends Component {
           <FraudDetectionModal onClose={() => this.props.hideFraudDetectionModal()} />
         )}
         {isMobile ? <Mobile {...commonProps} /> : <Desktop {...commonProps} />}
+
+        {user.isCardRecurringPaymentsBlocked && user.isAccepted && <CardPaymentsBlockedModal />}
       </div>
     );
   }

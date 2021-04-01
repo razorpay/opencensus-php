@@ -32,6 +32,7 @@ import QuickGuide, {
 } from 'merchant/views/Subscriptions/QuickGuide';
 import SubscriptionSettings from 'merchant/views/Subscriptions/Settings';
 import SubscriptionOffersLaunchBanner from 'merchant/components/Announcements/SubscriptionOffers';
+import CardPaymentsBlockedBanner from './components/CardPaymentsBlocked/Banner';
 
 @connect(
   (state) => ({
@@ -133,7 +134,7 @@ export default class SubscriptionsController extends React.Component {
   };
 
   render() {
-    const { subscriptionProductOnBoarding } = this.props;
+    const { subscriptionProductOnBoarding, user } = this.props;
 
     if (subscriptionProductOnBoarding.showOnboarding) {
       return <OnBoarding />;
@@ -142,6 +143,10 @@ export default class SubscriptionsController extends React.Component {
     return (
       <div class={classList('Subscriptions-Container')}>
         {!this.props.user.isChargeAtWillEnabled && <SubscriptionOffersLaunchBanner />}
+
+        {user.isCardRecurringPaymentsBlocked && (
+          <CardPaymentsBlockedBanner isCAW={user.isChargeAtWillEnabled} />
+        )}
 
         <tabbed-container>
           {subscriptionProductOnBoarding.isQuickGuideOpen && <QuickGuide />}

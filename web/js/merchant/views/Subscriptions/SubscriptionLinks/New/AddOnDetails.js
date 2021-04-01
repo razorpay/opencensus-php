@@ -1,9 +1,7 @@
 import Input from 'common/new-ui/Input';
-import { UPI_AVL_LIMIT } from 'merchant/helpers/data';
 import { isPresent } from 'common/utils/rzp-utils';
 
 import AddOnItem from './AddOnItem';
-import UPIBanner from '../components/UPIBanner';
 
 export default function NewSubscriptionLinkAddOnDetails({
   items,
@@ -15,14 +13,6 @@ export default function NewSubscriptionLinkAddOnDetails({
 }) {
   const filteredAddOns = items.items.filter(item => item.currency === currency);
 
-  const sumOfAddons = addons.reduce((previous, addonItem) => {
-    const totalAmount =
-      addonItem.item && addonItem.item.amount * addonItem.quantity;
-
-    return totalAmount + previous;
-  }, 0);
-
-  const showUPIUnAvlBanner = sumOfAddons > UPI_AVL_LIMIT;
   return (
     <>
       <div class="Subscription--New-addons">
@@ -59,8 +49,6 @@ export default function NewSubscriptionLinkAddOnDetails({
             )}
         </ol>
       </div>
-
-      {showUPIUnAvlBanner && <UPIBanner />}
     </>
   );
 }

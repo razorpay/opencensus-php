@@ -16,6 +16,7 @@ import Spinner from 'common/ui/Spinner';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { ModalAsideNav } from 'common/new-ui/Wizard';
 import { Modal, ModalContent } from 'common/new-ui/Modal';
+import DocsLink from 'merchant/components/DocsLink';
 
 import CustomerDetailsForm from 'merchant/views/Subscriptions/RegistrationLinks/components/RegistrationLinksForm/CustomerDetails';
 import { isEmail, isPhone, isAmount, validateBeneficiaryName } from 'common/utils/validators';
@@ -636,6 +637,16 @@ export default class CreateNewRegistrationLinkContainer extends React.Component 
               </Form>
             </main>
             <footer>
+              {this.props.user.isCardRecurringPaymentsBlocked && (
+                <div class="card-blocked-banner">
+                  <i class="i i-info-circle" /> Cards issued by Indian banks are temporarily
+                  disabled for new registration links.{' '}
+                  <DocsLink
+                    url="https://razorpay.com/docs/announcements/rbi-card-mandate-guidelines/recurring-payments"
+                    title="Learn more"
+                  />
+                </div>
+              )}
               {currentTab > 0 && (
                 <Button onClick={this.changeTab(-1)} type="button">
                   Previous

@@ -5,7 +5,7 @@ import Time from 'common/ui/Time';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 
 //TODO: Make this component generalized as per requirement later. Currently only used for subscriptions details view(invoice list)
-export default props => {
+export default (props) => {
   let {
     goToLink,
     item,
@@ -32,16 +32,14 @@ export default props => {
     if (subscriptionStatus === 'pending') {
       if (!item.subscription_status) {
         // Retrying info for pending state subscription
-        let timeDiff =
-          subscriptionchargeAt - Math.round(new Date().getTime() / 1000);
+        let timeDiff = subscriptionchargeAt - Math.round(new Date().getTime() / 1000);
         timeDiff = Math.ceil(timeDiff / 3600);
         retryingInfo = `Retrying in ${timeDiff} hrs. `;
       }
       if (item.subscription_status !== 'halted') {
         chargeAttemptsFailedText = (
           <span>
-            {authAttempts}{' '}
-            {authAttempts > 1 ? 'charge attempts' : 'charge attempt'} failed.
+            {authAttempts} {authAttempts > 1 ? 'charge attempts' : 'charge attempt'} failed.
           </span>
         );
       }
@@ -88,8 +86,7 @@ export default props => {
     classNames.push('clickable');
   }
 
-  let isChargedInvoice =
-    item.notes && item.notes.type && item.notes.type == 'upgrade';
+  let isChargedInvoice = item.notes && item.notes.type && item.notes.type == 'upgrade';
 
   return (
     <div
@@ -108,12 +105,7 @@ export default props => {
             ) : item.billing_start ? (
               <span class="label--primary">
                 <Time value={item.billing_start} format="MMM DD, YYYY" />
-                {timeDiff > 0 && (
-                  <span>
-                    {' '}
-                    (due in {Math.ceil(timeDiff / (3600 * 24))} days)
-                  </span>
-                )}
+                {timeDiff > 0 && <span> (due in {Math.ceil(timeDiff / (3600 * 24))} days)</span>}
               </span>
             ) : isChargedInvoice ? (
               'Updated Invoice'
@@ -168,12 +160,9 @@ export default props => {
           {do {
             if (
               item.status === 'issued' &&
-              (['active', 'pending', 'halted', 'completed'].indexOf(
-                subscriptionStatus
-              ) > -1 ||
+              (['active', 'pending', 'halted', 'completed'].indexOf(subscriptionStatus) > -1 ||
                 (subscriptionStatus === 'cancelled' &&
-                  (index > 1 ||
-                    (subscriptionType !== 3 && subscriptionType !== 1))))
+                  (index > 1 || (subscriptionType !== 3 && subscriptionType !== 1))))
             ) {
               <AsyncButton
                 class="btn-link no-padding"
@@ -188,10 +177,7 @@ export default props => {
 
       {do {
         if (isRowClickable) {
-          <span
-            class="row-item i i-chevron-right"
-            onClick={() => goToLink(item.id, index)}
-          />;
+          <span class="row-item i i-chevron-right" onClick={() => goToLink(item.id, index)} />;
         }
       }}
     </div>

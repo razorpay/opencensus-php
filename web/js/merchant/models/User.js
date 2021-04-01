@@ -612,6 +612,10 @@ export default class User {
     return this.getExpStatus('emandate_nonzero_amount');
   }
 
+  get isCardRecurringPaymentsBlocked() {
+    return this.getExpStatus('card_recurring_payments_blocked');
+  }
+
   get isSubscriptionOffersEnabled() {
     return this.getExpStatus('offer_on_subscription') && !this.isChargeAtWillEnabled;
   }

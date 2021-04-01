@@ -2,7 +2,6 @@ import moment from 'moment';
 import { TypeAhead } from 'react-power-select';
 
 import QuantitySelector from '../New/QuantitySelector';
-import UPIBanner from './UPIBanner';
 
 import { UPI_AVL_LIMIT } from 'merchant/helpers/data';
 
@@ -202,8 +201,6 @@ export default class NewSubscriptionLinkPlanDetails extends React.Component {
             </div>
           </div>
         )}
-
-        {showUPIUnAvlBanner && <UPIBanner />}
       </>
     );
   }
