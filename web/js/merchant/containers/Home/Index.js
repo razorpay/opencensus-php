@@ -876,9 +876,13 @@ export default class HomeContainer extends Component {
     const hasLakhmiVilasBankAcc =
       user && user.bank_branch_ifsc && user.bank_branch_ifsc.substring(0, 4) === 'LAVB';
 
+    const showRBIChangesBanners =
+      user.isCardRecurringPaymentsBlocked &&
+      user.isAccepted &&
+      (user.isSubscriptionsEnabled || user.isChargeAtWillEnabled);
     return (
       <div class="react-root dashboard-home">
-        {user.isCardRecurringPaymentsBlocked && user.isAccepted ? (
+        {showRBIChangesBanners ? (
           <CardPaymentsBlockedBanner isCAW={user.isChargeAtWillEnabled} />
         ) : (
           <>
@@ -1073,7 +1077,7 @@ export default class HomeContainer extends Component {
         )}
         {isMobile ? <Mobile {...commonProps} /> : <Desktop {...commonProps} />}
 
-        {user.isCardRecurringPaymentsBlocked && user.isAccepted && <CardPaymentsBlockedModal />}
+        {showRBIChangesBanners && <CardPaymentsBlockedModal />}
       </div>
     );
   }
