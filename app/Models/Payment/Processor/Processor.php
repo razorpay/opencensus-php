@@ -405,6 +405,12 @@ class Processor
 
                 $this->preProcessForSubscriptionsIfApplicable($input, $payment);
 
+                // adding this here instead of inside createPaymentEntity.
+                // Since that is inside a transaction, not possible to move certain validation query of payment pages
+                // to slave. so moving out that particular validation here.
+                // Rest of the validations will continue inside createPaymentEntity
+                $this->preProcessAndValidateForPaymentPagesIfApplicable($input);
+
                 $ret = $this->preProcessPaymentInputs($input, $payment);
 
                 if ($ret !== null)
@@ -3224,11 +3230,17 @@ class Processor
         }
 
         $paymentLinkId = $input[Payment\Entity::PAYMENT_LINK_ID];
+
         $paymentLink   = $this->repo->payment_link->findByPublicIdAndMerchant($paymentLinkId, $this->merchant);
 
         (new PaymentLink\Core)->validateIsPaymentInitiatable($paymentLink, $payment);
 
         $payment->paymentLink()->associate($paymentLink);
+    }
+
+    protected function preProcessAndValidateForPaymentPagesIfApplicable(array $input)
+    {
+        (new PaymentLink\Core)->validatePaymentPagePaymentFromInput($input);
     }
 
     protected function validateAndSetInvoiceDetailsIfApplicable(Payment\Entity $payment)
@@ -4584,9 +4596,9 @@ class Processor
     protected function setForceTerminalIdIfApplicable(Payment\Entity $payment, $input)
     {
         if (isset($input[Payment\Entity::FORCE_TERMINAL_ID]) === true)
-        {        
+        {
             $forceTerminalId = $input[Payment\Entity::FORCE_TERMINAL_ID];
-        
+
             Terminal\Entity::verifyIdAndSilentlyStripSign($forceTerminalId);
 
             $payment->setForceTerminalId($forceTerminalId);

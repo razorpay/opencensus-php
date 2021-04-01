@@ -317,8 +317,61 @@ class Core extends Base\Core
 
     /**
      * Validates if new payment initiation should be allowed or not.
+     * Note : Only quantity validations are done here because it is being called early in the flow of
+     * create payment
+     *
+     * @param array $input
+     *
+     * @throws BadRequestException
+     * @throws BadRequestValidationFailureException
+     */
+
+    public function validatePaymentPagePaymentFromInput(array $input)
+    {
+        if (array_key_exists(Payment\Entity::PAYMENT_LINK_ID, $input) === false)
+        {
+            return;
+        }
+
+        if (empty($input[Payment\Entity::ORDER_ID]) === true)
+        {
+            throw new BadRequestValidationFailureException(
+                'order_id is required to create payment for payment page'
+            );
+        }
+
+        $order = $this->repo->order->findByPublicIdAndMerchant(
+                $input[Payment\Entity::ORDER_ID],
+                $this->merchant);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_PAGE_PAYMENT_VALIDATION,
+            [
+                'input'     => $input,
+            ]);
+
+        $paymentLinkId = $input[Payment\Entity::PAYMENT_LINK_ID];
+
+        $paymentLink   = $this->repo->payment_link->findByPublicIdAndMerchant($paymentLinkId, $this->merchant);
+
+        // 3. Validates payment link is active and has payment slots available
+        if (($paymentLink->isPayable() === false) or
+            ($this->hasPaymentSlots($paymentLink, $order) === false))
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_LINK_NOT_PAYABLE,
+                null,
+                [
+                    E::PAYMENT_LINK => $paymentLink->toArrayPublic(),
+                ]);
+        }
+    }
+    /**
+     * Validates if new payment initiation should be allowed or not.
      * Note: This is intentionally not in Validator class, because there is much logic(probably more very soon) and it
      * accesses repository as well.
+     * quantity validations has been moved to separate function because that is being called early in the flow of
+     * create payment
      *
      * @param Entity         $paymentLink
      * @param Payment\Entity $payment
@@ -377,18 +430,6 @@ class Core extends Base\Core
                     'order does not belongs to the given payment page'
                 );
             }
-        }
-
-        // 3. Validates payment link is active and has payment slots available
-        if (($paymentLink->isPayable() === false) or
-            ($this->hasPaymentSlots($paymentLink, $payment) === false))
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_LINK_NOT_PAYABLE,
-                null,
-                [
-                    E::PAYMENT_LINK => $paymentLink->toArrayPublic(),
-                ]);
         }
     }
 
@@ -1051,15 +1092,13 @@ class Core extends Base\Core
      * Given payment link is payable(i.e. active and not expired etc), checks if a new payment can be accepted by
      * counting existing succeeding payments (i.e. payments in created/authorized statuses).
      *
-     * @param  Entity         $paymentLink
-     * @param  Payment\Entity $payment
+     * @param  Entity       $paymentLink
+     * @param  Order\Entity $order
      *
      * @return boolean
      */
-    protected function hasPaymentSlots(Entity $paymentLink, Payment\Entity $payment): bool
+    protected function hasPaymentSlots(Entity $paymentLink, Order\Entity $order): bool
     {
-        $order = $payment->order;
-
         $lineItems = $order->lineItems()->get();
 
         $succeedingPayments = $this->repo->payment->getValidatePaymentsForPaymentPages($paymentLink);
