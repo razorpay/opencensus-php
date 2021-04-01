@@ -11,6 +11,7 @@ use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Merchant\RazorxTreatment;
 
 /**
  * @property Merchant\Entity $merchant
@@ -771,6 +772,22 @@ class Entity extends Base\PublicEntity
         if ($iin->isRecurring() === false)
         {
             return false;
+        }
+
+        // allow international IIN
+        // allow domestic card if razorX is disabled
+        // for fail safety, razorX retry count is 3
+        if ($iin->isInternational() === false)
+        {
+            $variant  = app('razorx')->getTreatment($merchant->getId(),
+                RazorxTreatment::RECURRING_CARD_NOT_ENABLED,
+                app('rzp.mode'),
+                3);
+
+            if (strtolower($variant) !== 'control')
+            {
+                return false;
+            }
         }
 
         $type = $this->getType() ?? $iin->getType();

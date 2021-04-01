@@ -9,6 +9,7 @@ use Illuminate\Cache\Events\CacheMissed;
 use Illuminate\Cache\Events\KeyForgotten;
 
 use RZP\Models\Card\IIN;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -351,6 +352,22 @@ class IinTest extends TestCase
         $this->ba->publicAuth();
 
         $this->fixtures->edit('iin', 401200, ['emi' => false]);
+
+        $this->startTest();
+    }
+
+    public function testGetCardPaymentDomesticIinNA()
+    {
+        $this->ba->publicAuth();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                            ->setCOnstructorArgs([$this->app])
+                            ->setMethods(['getTreatment'])
+                            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')->willReturn('on');
 
         $this->startTest();
     }

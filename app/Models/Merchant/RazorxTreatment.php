@@ -202,6 +202,9 @@ final class RazorxTreatment
     // Check if Offers is enabled for subscription
     const OFFER_ON_SUBSCRIPTION = 'offer_on_subscription';
 
+    // Check if Offers is enabled for subscription
+    const RECURRING_CARD_NOT_ENABLED = 'recurring_card_not_enabled';
+
     const SYSTEM_BASED_NEEDS_CLARIFICATION = 'system_based_needs_clarification';
 
     // experiment to enable self serving of auto kyc registered merchants

@@ -51,6 +51,11 @@ class HdfcGatewayTest extends TestCase
                             return 'v2';
                         }
 
+                        if ($feature === 'recurring_card_not_enabled')
+                        {
+                            return 'control';
+                        }
+
                         return 'v1';
                     }));
 
