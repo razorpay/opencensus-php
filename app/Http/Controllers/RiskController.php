@@ -41,6 +41,12 @@ class RiskController extends Controller
 
     public function allowCors()
     {
-        return ApiResponse::json([]);
+        $response = ApiResponse::json([]);
+
+        $response->headers->set('Access-Control-Allow-Origin', $this->app['config']->get('app.razorpay_website_url'));
+
+        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type');
+
+        return $response;
     }
 }
