@@ -334,6 +334,19 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
+    protected function deleteCustomerToken(string $tokenId, $customerId = 'cust_100000customer')
+    {
+        $this->ba->privateAuth();
+
+        $request = [
+            'url'     => '/customers/' . $customerId . '/tokens/' . $tokenId,
+            'method'  => 'delete',
+            'content' => []
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function getTokenById(string $id)
     {
         $this->ba->privateAuth();

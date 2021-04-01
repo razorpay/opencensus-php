@@ -761,6 +761,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TOKEN_REGISTRATION_AUTO_CHARGE_FAILED                 = 'TOKEN_REGISTRATION_AUTO_CHARGE_FAILED';
 
     const EMANDATE_DEBIT_REQUEST                                = 'EMANDATE_DEBIT_REQUEST';
+    const EMANDATE_CANCEL_REQUEST                               = 'EMANDATE_CANCEL_REQUEST';
     const EMANDATE_DEBIT_RECON_REQUEST                          = 'EMANDATE_DEBIT_RECON_REQUEST';
     const EMANDATE_DEBIT_RECON_FAILED                           = 'EMANDATE_DEBIT_RECON_FAILED';
     const EMANDATE_DEBIT_RECON_ROW                              = 'EMANDATE_DEBIT_RECON_ROW';

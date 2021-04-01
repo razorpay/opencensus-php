@@ -325,6 +325,103 @@ class EnachNetbankingNpciYesbTest extends EnachNetbankingNpciGatewayTest
         $this->assertEquals('refund', $bankAccount['type']);
     }
 
+    public function testCancelEmandateToken()
+    {
+        $this->makeDebitPayment();
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $fileStatuses = [
+            'status'     => 'ACCEPTED',
+            'error_code' => '',
+            'error_desc' => '',
+        ];
+
+        $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
+
+        $this->assertEquals('emandate', $batch['type']);
+        $this->assertEquals('processed', $batch['status']);
+
+        $payment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $transaction = $payment->transaction;
+
+        $this->assertNotNull($transaction['reconciled_at']);
+
+        $enach = $this->getDbEntities('enach', ['payment_id' => $payment['id']])->first()->toArray();
+
+        $this->assertArraySelectiveEquals(['status' => 'ACCEPTED'], $enach);
+
+        $response = $this->deleteCustomerToken('token_' . $payment['token_id'], 'cust_' . $payment['customer_id']);
+
+        $this->assertEquals(true, $response['deleted']);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testCancelEmandateTokenWithMutipleUtilityCode()
+    {
+        $this->makeDebitPayment();
+
+        $payment1 = $this->getDbLastEntity('payment');
+
+        $this->fixtures->create('terminal:direct_enach_npci_netbanking_terminal',
+            [Terminal\Entity::GATEWAY_ACQUIRER => Payment\Gateway::ACQUIRER_YESB]);
+
+        $this->makeDebitPayment();
+
+        $payment2 = $this->getDbLastEntity('payment');
+
+        $fileStatuses = [
+            'status'     => 'ACCEPTED',
+            'error_code' => '',
+            'error_desc' => '',
+        ];
+
+        $batch1 = $this->makeBatchDebitPayment($payment1, $fileStatuses);
+        $batch2 = $this->makeBatchDebitPayment($payment2, $fileStatuses);
+
+        $this->assertEquals('emandate', $batch1['type']);
+        $this->assertEquals('processed', $batch1['status']);
+
+        $this->assertEquals('emandate', $batch2['type']);
+        $this->assertEquals('processed', $batch2['status']);
+
+        $payment1 = $this->getDbEntityById('payment', $payment1['id']);
+        $payment2 = $this->getDbEntityById('payment', $payment2['id']);
+
+        $this->assertEquals('captured', $payment1['status']);
+        $this->assertEquals('captured', $payment2['status']);
+
+        $transaction1 = $payment1->transaction;
+        $transaction2 = $payment2->transaction;
+
+        $this->assertNotNull($transaction1['reconciled_at']);
+        $this->assertNotNull($transaction2['reconciled_at']);
+
+        $enach1 = $this->getDbEntities('enach', ['payment_id' => $payment1['id']])->first()->toArray();
+        $enach2 = $this->getDbEntities('enach', ['payment_id' => $payment2['id']])->first()->toArray();
+
+        $this->assertArraySelectiveEquals(['status' => 'ACCEPTED'], $enach1);
+        $this->assertArraySelectiveEquals(['status' => 'ACCEPTED'], $enach2);
+
+        $response1 = $this->deleteCustomerToken('token_' . $payment1['token_id'], 'cust_' . $payment1['customer_id']);
+        $response2 = $this->deleteCustomerToken('token_' . $payment2['token_id'], 'cust_' . $payment2['customer_id']);
+
+        $this->assertEquals(true, $response1['deleted']);
+        $this->assertEquals(true, $response2['deleted']);
+
+        $this->ba->adminAuth();
+
+        $data = $this->testData['testCancelEmandateToken'];
+
+        $this->startTest($data);
+    }
+
     protected function runPaymentCallbackFlowNetbanking($response, &$callback = null)
     {
         $mock = $this->isGatewayMocked();

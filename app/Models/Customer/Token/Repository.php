@@ -273,6 +273,33 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    // TODO: need to optimize the query futher
+    public function fetchEmandateDeletedTokens(string $from, $to): Base\PublicCollection
+    {
+        $selectCols = $this->dbColumn('*');
+
+        $tokenIdColumn = $this->repo->token->dbColumn(Entity::ID);
+
+        $tokenMethodColumn = $this->repo->token->dbColumn(Entity::METHOD);
+
+        $tokenRecurringColumn = $this->repo->token->dbColumn(Entity::RECURRING);
+
+        $tokenDeletedAtColumn = $this->repo->token->dbColumn(Entity::DELETED_AT);
+
+        return $this->newQueryWithConnection($this->getReportingReplicaConnection())
+                    ->select($selectCols,
+                        'payments.id as payment_id',
+                        'payments.recurring_type as recurring_type')
+                    ->from(\DB::raw('`tokens`, `payments`'))
+                    ->where($tokenIdColumn, '=', \DB::raw('`payments`.`token_id`'))
+                    ->whereBetween($tokenDeletedAtColumn, [$from, $to])
+                    ->where($tokenMethodColumn, '=', Method::EMANDATE)
+                    ->where(Entity::RECURRING_STATUS, '=', RecurringStatus::CONFIRMED)
+                    ->where($tokenRecurringColumn, '=', 1)
+                    ->withTrashed()
+                    ->get();
+    }
+
     public function fetchPendingEMandateDebitWithGatewayAcquirer(string $gateway, $from, $to, $acquirer)
     {
         $paymentRecurringTypeColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING_TYPE);

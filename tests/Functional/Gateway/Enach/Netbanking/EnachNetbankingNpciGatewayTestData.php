@@ -172,6 +172,40 @@ return [
         ]
     ],
 
+    'testCancelEmandateToken' => [
+        'request' => [
+            'url' => '/gateway/files',
+            'method' => 'POST',
+            'content' => [
+                'type'    => 'emandate_cancel',
+                'targets' => ['enach_npci_netbanking'],
+                'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp() - 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'recipients'          => [''],
+                        'status'              => 'file_generated',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'emandate@razorpay.com',
+                        'type'                => 'emandate_cancel',
+                        'target'              => 'enach_npci_netbanking',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true
+                    ],
+                ],
+            ]
+        ]
+    ],
+
     'testDebitFileGenerationIcici' => [
         'request' => [
             'content' => [

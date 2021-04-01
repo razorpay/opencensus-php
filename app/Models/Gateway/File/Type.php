@@ -10,6 +10,7 @@ class Type
     const COMBINED          = 'combined';
     const EMANDATE_REGISTER = 'emandate_register';
     const EMANDATE_DEBIT    = 'emandate_debit';
+    const EMANDATE_CANCEL   = 'emandate_cancel';
     const NACH_DEBIT        = 'nach_debit';
     const NACH_REGISTER     = 'nach_register';
     const REFUND_FAILED     = 'refund_failed';

@@ -136,6 +136,9 @@ class Constants
             self::AUBL,
             self::KOTAK_CORP,
         ],
+        Type::EMANDATE_CANCEL => [
+            self::ENACH_NPCI_NETBANKING,
+        ],
         Type::EMANDATE_REGISTER => [
             self::HDFC,
             self::ENACH_RBL,
@@ -181,6 +184,7 @@ class Constants
         Type::EMI               => MailConstants::MAIL_ADDRESSES[MailConstants::EMI],
         Type::EMANDATE_REGISTER => MailConstants::MAIL_ADDRESSES[MailConstants::EMANDATE],
         Type::EMANDATE_DEBIT    => MailConstants::MAIL_ADDRESSES[MailConstants::EMANDATE],
+        Type::EMANDATE_CANCEL   => MailConstants::MAIL_ADDRESSES[MailConstants::EMANDATE],
         Type::NACH_DEBIT        => MailConstants::MAIL_ADDRESSES[MailConstants::EMANDATE],
         Type::NACH_REGISTER     => MailConstants::MAIL_ADDRESSES[MailConstants::EMANDATE],
         Type::REFUND_FAILED     => MailConstants::MAIL_ADDRESSES[MailConstants::REFUNDS],
@@ -240,6 +244,10 @@ class Constants
         Type::EMANDATE_REGISTER => [
             self::HDFC      => ['hdfc.emandate@razorpay.com', 'amit.salvi@hdfcbank.com'],
             self::ENACH_RBL => ['rbl.emandate@razorpay.com'],
+        ],
+
+        Type::EMANDATE_CANCEL => [
+            self::ENACH_NPCI_NETBANKING => [''],
         ],
 
         Type::EMANDATE_DEBIT => [
