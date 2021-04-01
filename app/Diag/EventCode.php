@@ -686,4 +686,14 @@ class EventCode
         'group' => 'onboarding',
         'name'  => 'partnerships.appstore.wa.pl.failed'
     ];
+
+    const PAYMENT_ELIGIBILITY_CHECK_INITIATED = [
+        'group' => 'eligibility',
+        'name'  => 'payment.eligibility_check.initiated'
+    ];
+
+    const PAYMENT_ELIGIBILITY_CHECK_PROCESSED = [
+        'group' => 'eligibility',
+        'name'  => 'payment.eligibility_check.processed'
+    ];
 }

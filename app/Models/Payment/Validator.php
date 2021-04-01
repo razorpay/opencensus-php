@@ -259,10 +259,16 @@ class Validator extends Base\Validator
         'vpa' => 'required|string|filled|max:100|custom',
     ];
 
+    protected static $validateCredRules = [
+        'contact' => 'required|string|contact_syntax',
+        'id'      => 'sometimes|nullable|string|max:100',
+    ];
+
     protected static $validateEntityRules = [
-        'entity'           => 'required|string|in:vpa',
+        'entity'           => 'required|string|in:vpa,cred',
         'value'            => 'required',
         'language_code'    => 'sometimes|string',
+        '_'                => 'sometimes|array',
     ];
 
     protected static $callbackUrlValidationRules = [

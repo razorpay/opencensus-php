@@ -168,6 +168,9 @@ class ConfigKey
     // This will be the cutoff based on which we shall decide which flow to show for bulk payouts.
     const BULK_PAYOUTS_NEW_MERCHANT_CUTOFF_TIMESTAMP = self::PREFIX . 'bulk_payouts_new_merchant_cutoff_timestamp';
 
+    // Acts as a kill switch for cred eligibility call from /preferences api
+    const ENABLE_CRED_ELIGIBILITY_CALL = self::PREFIX . 'enable_cred_eligibility_call';
+    
     const RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_MERCHANTS = self::PREFIX . 'rx_va_to_va_payouts_whitelisted_destination_merchants';
 
     const RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS_FOR_FUND_LOADING = self::PREFIX . 'rx_globally_whitelisted_payer_accounts_for_fund_loading';
@@ -251,6 +254,7 @@ class ConfigKey
         self::DELAY_RUPAY_CAPTURE,
         self::PAGINATION_ATTRIBUTES_FOR_TRIM_SPACE,
         self::BULK_PAYOUTS_NEW_MERCHANT_CUTOFF_TIMESTAMP,
+        self::ENABLE_CRED_ELIGIBILITY_CALL,
         self::RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_MERCHANTS,
         self::RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS_FOR_FUND_LOADING,
         self::RBL_STATEMENT_CLOSING_BALANCE_DIFF,

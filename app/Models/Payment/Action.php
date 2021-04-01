@@ -50,6 +50,8 @@ class Action
     const OMNI_PAY                      = 'omni_pay';
     const MANDATE_UPDATE                = 'mandate_update';
     const MANDATE_CANCEL                = 'mandate_cancel';
+    const VALIDATE_APP                  = 'validate_app';
+    const VALIDATE_CRED                 = 'validate_cred';
 
     protected $merchant;
 

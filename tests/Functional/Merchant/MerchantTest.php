@@ -80,6 +80,8 @@ use RZP\Models\Merchant\Methods\Repository as MethodRepo;
 use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
 use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
 use RZP\Mail\InstrumentRequest\StatusNotify as StatusNotifyMail;
+use RZP\Exception\GatewayErrorException;
+use RZP\Exception\GatewayTimeoutException;
 
 use function Clue\StreamFilter\fun;
 use function foo\func;
@@ -9116,5 +9118,153 @@ class MerchantTest extends TestCase
         else if (empty($testCase[self::ACTIVATE_MERCHANT]) === false) {
             $this->fixtures->merchant->activate();
         }
+    }
+
+    private function mockCredEligibilityResponse($gatewayResponse = null, \Throwable $gatewayException = null, array $pRequest = null)
+    {
+        $this->fixtures->customer->create(
+            [
+                'id'            => '1000ggcustomer',
+                'name'          => 'test123',
+                'email'         => 'test@razorpay.com',
+                'contact'       => '+919671967980',
+                'merchant_id'   => '10000000000000'
+            ]
+        );
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->fixtures->merchant->enableApp('10000000000000', 'cred');
+
+        $this->fixtures->merchant->addFeatures(['cred_merchant_consent']);
+
+        $this->fixtures->create('terminal:direct_cred_terminal');
+
+        $order = $this->fixtures->order->create(['receipt' => 'check123', 'amount' => '100', 'app_offer' => true]);
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::ENABLE_CRED_ELIGIBILITY_CALL => true]);
+
+        $defaultRequest = [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+                'currency' => [
+                    'INR'
+                ],
+                'customer_id' => 'cust_1000ggcustomer',
+                'order_id'    => $order->getPublicId(),
+            ],
+        ];
+
+        $request = $pRequest ?? $defaultRequest;
+
+        $gateway = Mockery::mock('RZP\Gateway\GatewayManager');
+
+        $gateway->shouldReceive('call')
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'),
+                Mockery::type('string'), Mockery::type('RZP\Models\Terminal\Entity'))->andReturnUsing
+            (function ($gateway, $action, $input, $mode, $terminal) use ($gatewayResponse, $gatewayException)
+            {
+                if (is_null($gatewayException) === false)
+                {
+                    throw $gatewayException;
+                }
+
+                return $gatewayResponse;
+            });
+
+        $this->app->instance('gateway', $gateway);
+
+        $this->ba->publicAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    public function testGetCheckoutPreferencesAfterCredEligibility()
+    {
+        $response = $this->mockCredEligibilityResponse(
+            null,
+            new GatewayErrorException(ErrorCode::BAD_REQUEST_CRED_CUSTOMER_NOT_ELIGIBLE)
+        );
+
+        $this->assertEquals(1, $response['methods']['app']['cred']);
+        $this->assertEquals(false, $response['methods']['app_meta']['cred']['hit_eligibility']);
+        $this->assertEquals(false, $response['methods']['app_meta']['cred']['user_eligible']);
+    }
+
+    public function testGetCheckoutPreferencesAfterCredEligibilityTimeout()
+    {
+        $response = $this->mockCredEligibilityResponse(
+            null,
+            new GatewayTimeoutException(ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT)
+        );
+
+        $this->assertEquals(1, $response['methods']['app']['cred']);
+        $this->assertEquals(true, $response['methods']['app_meta']['cred']['hit_eligibility']);
+        $this->assertArrayNotHasKey('offer', $response['methods']['app_meta']['cred']);
+        $this->assertArrayNotHasKey('user_eligible', $response['methods']['app_meta']['cred']);
+    }
+
+    public function testGetCheckoutPreferencesAfterCredEligibilityOffersSubtext()
+    {
+        $this->enableRazorXTreatmentForFeature(
+            Merchant\RazorxTreatment::CRED_OFFER_SUBTEXT,
+            'sub_text'
+        );
+
+        $credOffer = 'pay seamlessly using your CRED coins. #killthebill';
+
+        $gatewayResponse = [
+            'data'    => [
+                'state'       => 'ELIGIBLE',
+                'tracking_id' => 'rand10001',
+                'layout'      => [
+                    'sub_text' => $credOffer,
+                ],
+            ]
+        ];
+
+        $response = $this->mockCredEligibilityResponse($gatewayResponse);
+
+        $this->assertEquals(1, $response['methods']['app']['cred']);
+        $this->assertEquals($credOffer, $response['methods']['custom_text']['cred']);
+        $this->assertEquals(false, $response['methods']['app_meta']['cred']['hit_eligibility']);
+        $this->assertArrayNotHasKey('offer', $response['methods']['app_meta']['cred']);
+        $this->assertEquals(true, $response['methods']['app_meta']['cred']['user_eligible']);
+    }
+
+    public function testGetCheckoutPreferencesAfterCredEligibilityStickyOffersSubtext()
+    {
+        $credOffer = 'pay seamlessly using your CRED coins. #killthebill';
+
+        $gatewayResponse = [
+            'data'    => [
+                'state'       => 'ELIGIBLE',
+                'tracking_id' => 'rand10001',
+                'layout'      => [
+                    'sub_text' => $credOffer,
+                ],
+            ]
+        ];
+
+        $request = [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+                'currency' => [
+                    'INR'
+                ],
+                'customer_id'           => 'cust_1000ggcustomer',
+                'cred_offer_experiment' => 'subtext',
+            ],
+        ];
+
+        $response = $this->mockCredEligibilityResponse($gatewayResponse, null, $request);
+
+        $this->assertEquals(1, $response['methods']['app']['cred']);
+        $this->assertEquals($credOffer, $response['methods']['custom_text']['cred']);
+        $this->assertEquals(false, $response['methods']['app_meta']['cred']['hit_eligibility']);
+        $this->assertArrayNotHasKey('offer', $response['methods']['app_meta']['cred']);
+        $this->assertEquals(true, $response['methods']['app_meta']['cred']['user_eligible']);
     }
 }

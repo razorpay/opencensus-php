@@ -53,5 +53,7 @@ class Action
 
     const NOTIFY                = 'notify';
 
+    const VALIDATE              = 'validate';
+    
     const PRE_PROCESS           = 'pre_process';
 }

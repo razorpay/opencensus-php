@@ -1487,7 +1487,32 @@ class Gateway extends Base\Gateway
 
         $url = $this->getUrlForMozartRequest($input, 'payments', $mode);
 
-        return $this->getAuthenticatedMozartRequestArray($url, $content, $mode);
+        $mozartRequest = $this->getAuthenticatedMozartRequestArray($url, $content, $mode);
+
+        $this->addMozartTimeoutIfApplicable($input, $mozartRequest);
+
+        return $mozartRequest;
+    }
+
+    protected function addMozartTimeoutIfApplicable($input, &$mozartRequest)
+    {
+        $gateway = $this->getGateway($input);
+        $timeout = null;
+
+        if (($gateway === Payment\Gateway::CRED) and
+            ($this->action === Action::VALIDATE) and
+            (empty($input['options']['override_timeout']) === false))
+        {
+            $credTimeoutConfig = 'applications.mozart.cred_eligibility_request_timeout';
+
+            $timeout = $this->app['config']->get($credTimeoutConfig);
+        }
+
+        if ((is_null($timeout) === false) and
+            (is_numeric($timeout) === true))
+        {
+            $mozartRequest['options']['timeout'] = $timeout;
+        }
     }
 
     protected function getTerminalOnboardingMozartRequestArray($input)
@@ -1830,6 +1855,7 @@ class Gateway extends Base\Gateway
                 Action::VERIFY          => null,
                 Action::REFUND          => null,
                 Action::VERIFY_REFUND   => null,
+                Action::VALIDATE        => null,
             ],
             Payment\Gateway::NETBANKING_JSB =>  [
                 Action::PAY_INIT    =>  null,
@@ -1996,6 +2022,7 @@ class Gateway extends Base\Gateway
                 Action::VERIFY          => null,
                 Action::REFUND          => null,
                 Action::VERIFY_REFUND   => null,
+                Action::VALIDATE        => null,
             ],
             Payment\Gateway::NETBANKING_JSB =>  [
                 Action::PAY_INIT    =>  null,
@@ -3006,5 +3033,40 @@ class Gateway extends Base\Gateway
         ];
 
         return in_array($input['payment'][Payment\Entity::GATEWAY], $forceAuthMozartGateways, true);
+    }
+
+    public function validateApp(array $input)
+    {
+        parent::action($input, Action::VALIDATE);
+
+        if (is_null($this->terminal) === false)
+        {
+            switch ($this->terminal->getGateway())
+            {
+                case Payment\Gateway::CRED:
+                    $input['terminal'] = $this->terminal->toArrayWithPassword();
+
+                    // to prevent code breaking while sending mozart request
+                    $input['payment']['id'] = 'NA';
+                    break;
+
+                default:
+                    break;
+            }
+        }
+        else
+        {
+            throw new Exception\LogicException(
+                'Terminal should not be null.'
+            );
+        }
+
+        list($response, $attributes) = $this->sendMozartRequestAndGetResponse(
+            $input,
+            TraceCode::GATEWAY_VALIDATE_REQUEST,
+            TraceCode::GATEWAY_VALIDATE_RESPONSE
+        );
+
+        return $response;
     }
 }

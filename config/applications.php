@@ -101,11 +101,12 @@ return [
     ],
 
     'mozart' => [
-        'mock'      => env('MOZART_MOCK', false),
-        'url'       => env('MOZART_URL'),
-        'secret'    => env('MOZART_PASSWORD'),
-        'password'  => env('MOZART_PASSWORD'),
-        'username'  => env('MOZART_USERNAME'),
+        'mock'                             => env('MOZART_MOCK', false),
+        'url'                              => env('MOZART_URL'),
+        'secret'                           => env('MOZART_PASSWORD'),
+        'password'                         => env('MOZART_PASSWORD'),
+        'username'                         => env('MOZART_USERNAME'),
+        'cred_eligibility_request_timeout' => env('CRED_ELIGIBILITY_REQUEST_TIMEOUT', .18),
 
         'test' => [
             'mock'      => env('MOZART_TEST_MOCK', false),

@@ -19,6 +19,7 @@ use RZP\Models\Contact;
 use RZP\Models\Payment;
 use RZP\Models\Invoice;
 use RZP\Models\Feature;
+use RZP\Models\Admin;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
@@ -120,6 +121,8 @@ class Checkout
 
         $this->checkAndFillOrgDetails($merchant, $data);
 
+        $this->checkAndFillAppDetails($input, $merchant, $data, $mode);
+
         if ((isset($input['personalisation']) === true) and
             (($input['personalisation'] === true) or
               ($input['personalisation'] === '1')))
@@ -128,6 +131,81 @@ class Checkout
         }
 
         return $data;
+    }
+
+    protected function checkAndFillAppDetails(array $input, Entity $merchant, array &$data, $mode)
+    {
+        $data['methods']['app_meta'] = [];
+
+        if ((empty($data[Entity::METHODS][Payment\Method::APP][Payment\Gateway::CRED]) === false) and
+            (empty($data['customer']['contact']) === false) and
+            ($merchant->isFeatureEnabled(Feature\Constants::CRED_MERCHANT_CONSENT) === true) and
+            ($this->isCredEligibilityConfigEnabled() === true))
+        {
+            $hit_eligibility = true;
+
+            $cred_meta = [];
+
+            try {
+                list($credInput, $options) = $this->getInputAndOptionsForCred($input, $data, $merchant);
+
+                $response = (new Payment\Validation\Cred())->processValidation($credInput, $options);
+
+                if (($response['success'] === true) and
+                    (empty($response['data']['offer']) === false))
+                {
+                    if (isset($input['cred_offer_experiment']) === true)
+                    {
+                        $experimentResult = $input['cred_offer_experiment'];
+                    }
+                    else
+                    {
+                        $experimentResult = $this->app->razorx->getTreatment(
+                            $merchant->getId(),
+                            Merchant\RazorxTreatment::CRED_OFFER_SUBTEXT,
+                            $mode
+                        );
+                    }
+
+                    if ($experimentResult === 'offer_tile')
+                    {
+                        // need to unset the previously set custom_text for cred
+                        unset($data['methods']['custom_text']['cred']);
+
+                        $cred_meta['offer'] = $response['data']['offer'];
+                    }
+                    else
+                    {
+                        $data['methods']['custom_text']['cred'] = $response['data']['offer']['description'];
+                    }
+
+                }
+
+                $hit_eligibility = false;
+
+                $cred_meta['user_eligible'] = true;
+            }
+            catch (Exception\GatewayTimeoutException $timeoutException)
+            {
+                // do nothing, just logging
+                $this->trace->traceException($timeoutException, Trace::WARNING);
+            }
+            catch (Exception\GatewayErrorException $ex)
+            {
+                $cred_meta['user_eligible'] = false;
+
+                $hit_eligibility = false;
+            }
+            catch (\Exception $exception)
+            {
+                $this->trace->traceException(
+                    $exception, Trace::WARNING, TraceCode::CHECKOUT_PREFERENCES_EXCEPTION, $input);
+            }
+
+            $cred_meta['hit_eligibility'] = $hit_eligibility;
+
+            $data['methods']['app_meta']['cred'] = $cred_meta;
+        }
     }
 
     protected function checkAndFillOrgDetails(Entity $merchant, array &$data)
@@ -1385,5 +1463,45 @@ class Checkout
         }
 
         return;
+    }
+
+    protected function isCredEligibilityConfigEnabled() : bool
+    {
+        $credEligibilityEnabled = (new Admin\Service)->getConfigKey(
+            [
+                'key' => Admin\ConfigKey::ENABLE_CRED_ELIGIBILITY_CALL
+            ]
+        );
+
+        return ((empty($credEligibilityEnabled) === false) and (((bool) $credEligibilityEnabled) === true));
+    }
+
+    protected function getInputAndOptionsForCred(array $input, array $data, Entity $merchant)
+    {
+        $credInput = [
+            'value' => $data['customer']['contact'],
+            '_'     => $input['_'] ?? null,
+        ];
+
+        $credOptions = [
+            'override_timeout' => true,
+        ];
+
+        if (empty($input[Payment\Entity::ORDER_ID]) === false)
+        {
+            $order = $this->setOrGetOrder($input[Payment\Entity::ORDER_ID], $merchant);
+
+            if (is_null($order) === false)
+            {
+                $credOptions['order'] = [
+                    Order\Entity::ID        => $order->getId(),
+                    Order\Entity::CURRENCY  => $order->getCurrency() ?? 'INR',
+                    Order\Entity::APP_OFFER => $order->getAppOffer() ?? false,
+                    Order\Entity::AMOUNT    => (int) ($order->getAmount() / 100),
+                ];
+            }
+        }
+
+        return [$credInput, $credOptions];
     }
 }

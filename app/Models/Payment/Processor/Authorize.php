@@ -2398,6 +2398,7 @@ trait Authorize
         $gatewayInput['cred']['os'] = $paymentAnalytics->getOs() ?? null;
         $gatewayInput['cred']['platform'] = $paymentAnalytics->getPlatform() ?? null;
         $gatewayInput['cred']['device'] = $paymentAnalytics->getDevice() ?? null;
+        $gatewayInput['cred']['session_id'] = $paymentAnalytics->getCheckoutId() ?? null;
 
         if ($payment->hasOrder() === true) {
             $order = $payment->order;

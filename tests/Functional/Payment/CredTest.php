@@ -21,6 +21,73 @@ class CredTest extends TestCase
         $this->fixtures->merchant->enableApp('10000000000000', 'cred');
     }
 
+    public function mockGatewayManager($response = null, $exception = null)
+    {
+        $gateway = Mockery::mock('RZP\Gateway\GatewayManager');
+
+        $gateway->shouldReceive('call')
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'),
+                Mockery::type('string'), Mockery::type('RZP\Models\Terminal\Entity'))->andReturnUsing
+            (function ($gateway, $action, $input, $mode, $terminal) use ($response, $exception)
+            {
+                $this->assertEquals($this->gateway, $gateway);
+                $this->assertEquals($this->gateway, $terminal->getGateway());
+
+                if (is_null($exception) === false)
+                {
+                    throw $exception;
+                }
+
+                return $response;
+
+            });
+
+        $this->app->instance('gateway', $gateway);
+    }
+
+    public function testCredValidateSuccess()
+    {
+        $request = [
+            'method'  => 'post',
+            'url'     => '/payments/validate/account',
+            'content' => [
+                'entity' => 'cred',
+                'value'  => '+919111111111',
+                '_'      => [
+                    'agent' => [
+                        'os' => 'android',
+                        'platform' => 'web',
+                        'device'   => 'android'
+                    ],
+                    'checkout_id'  => '53454453f'
+                ]
+            ]
+        ];
+
+        $credOffer = 'pay seamlessly using your CRED coins. #killthebill';
+
+        $expectedResponse = [
+            'success' => true,
+            'data'    => [
+                'state'       => 'ELIGIBLE',
+                'tracking_id' => 'rand10001',
+                'layout'      => [
+                    'sub_text' => $credOffer,
+                ],
+            ]
+        ];
+
+        $this->mockGatewayManager($expectedResponse);
+
+        $this->ba->publicAuth();
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(true, $response['success']);
+        $this->assertEquals($expectedResponse['data']['state'], $response['data']['state']);
+        $this->assertEquals($expectedResponse['data']['tracking_id'], $response['data']['tracking_id']);
+        $this->assertEquals($expectedResponse['data']['layout']['sub_text'], $response['data']['offer']['description']);
+    }
+
     public function testCredGetPayment()
     {
         $payment = $this->getDefaultCredPayment();

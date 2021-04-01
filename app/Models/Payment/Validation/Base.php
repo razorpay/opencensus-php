@@ -14,6 +14,8 @@ abstract class Base
 
     protected $repo;
 
+    protected $merchant;
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -23,6 +25,8 @@ abstract class Base
         $this->trace = $this->app['trace'];
 
         $this->repo = $this->app['repo'];
+
+        $this->merchant = $this->app['basicauth']->getMerchant();
     }
 
     public abstract function processValidation($input);

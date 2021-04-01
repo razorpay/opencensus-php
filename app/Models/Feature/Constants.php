@@ -604,6 +604,11 @@ class Constants
      */
     const APPS_EXTEMPT_RISK_CHECK ='apps_exempt_risk_check';
 
+    /*
+     * Cred merchant consent for sharing contact details
+     */
+    const CRED_MERCHANT_CONSENT = 'cred_merchant_consent';
+    
     /**
      * Skips customer flagging link in email and hosted page
      */
@@ -910,6 +915,7 @@ class Constants
         self::APPS_EXTEMPT_RISK_CHECK         => true,
         self::APPS_EXEMPT_CUSTOMER_FLAGGING   => true,
         self::EARLY_MANDATE_PRESENTMENT       => true,
+        self::CRED_MERCHANT_CONSENT           => true,
         self::DISABLE_TPV_FLOW                => true,
         self::ENABLE_TPV_FLOW                 => true,
         self::CAW_IGNORE_CUSTOMER_CHECK       => true,
