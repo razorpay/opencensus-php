@@ -708,6 +708,7 @@ class Entity
         self::BILLDESK               => \RZP\Gateway\Billdesk::class,
         self::MOBIKWIK               => \RZP\Gateway\Mobikwik::class,
         self::UPI_NPCI               => \RZP\Gateway\Upi\Npci::class,
+        self::CASHFREE               => \RZP\Gateway\Upi\Cashfree::class,
         self::UPI_MINDGATE           => \RZP\Gateway\Upi\Mindgate::class,
         self::UPI_JUSPAY             => \RZP\Gateway\Upi\Juspay::class,
         self::UPI_SBI                => \RZP\Gateway\Upi\Sbi::class,
@@ -927,6 +928,7 @@ class Entity
         self::UPI_YESBANK            => \RZP\Gateway\Upi\Base::class,
         self::UPI_MOZART             => \RZP\Gateway\Mozart::class,
         self::UPI_JUSPAY             => \RZP\Gateway\Upi\Base::class,
+        self::CASHFREE               => \RZP\Gateway\Upi\Base::class,
 
         self::AEPS_ICICI             => \RZP\Gateway\Aeps\Base::class,
 

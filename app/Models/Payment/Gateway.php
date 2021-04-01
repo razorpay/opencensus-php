@@ -1210,6 +1210,7 @@ class Gateway
             self::UPI_AIRTEL,
             self::UPI_CITI,
             self::UPI_JUSPAY,
+            self::CASHFREE,
         ],
 
         Method::AEPS => [
@@ -1366,6 +1367,7 @@ class Gateway
         self::UPI_JUSPAY,
         self::WALLET_PHONEPE,
         self::CRED,
+        self::CASHFREE,
     ];
 
     public static $immediateVerifyGateways = [
