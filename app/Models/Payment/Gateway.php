@@ -407,6 +407,7 @@ class Gateway
         Payment\Gateway::PAYTM,
         Payment\Gateway::PAYSECURE,
         Payment\Gateway::CRED,
+        Payment\Gateway::UPI_YESBANK
     ];
 
     // Bank such as Netbanking Canara enforces to send fee in request.
@@ -1010,6 +1011,7 @@ class Gateway
         Payment\Gateway::PAYU,
         Payment\Gateway::NETBANKING_PNB,
         Payment\Gateway::NETBANKING_AUSF,
+        Payment\Gateway::UPI_YESBANK
     ];
 
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [
