@@ -899,6 +899,27 @@ return [
         ],
     ],
 
+    'testEditMerchantEmailWithUpdateObserverData' => [
+        'request' => [
+            'content' => [
+                'email' => 'shake@razorpay.com'
+            ],
+            'url' => '/merchants/10000000000044/email',
+            'method' => 'put',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'workflow' => [
+                    'name' => "Edit Email",
+                ],
+            ]
+        ]
+    ],
+
     'testEditMerchantEmail' => [
         'request' => [
             'content' => [
@@ -4424,6 +4445,27 @@ return [
         ]
     ],
 
+    'testPutPaytmMethodWithUpdateObserverData'=> [
+        'request' => [
+            'url' => '/merchants/10000000000000/methods',
+            'method' => 'put',
+            'content' => [
+                'paytm' => true,
+
+            ],
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity_id'    =>  "10000000000000",
+                'entity_name'  =>  "methods"
+            ]
+        ]
+    ],
+
     'testGetKeySecret' => [
         'request' => [
             'url' => '/keys/rzp_test_TheTestAuthKey/secret',
@@ -7767,6 +7809,40 @@ return [
                         "user_aggregates_available" => false
                     ],
                 ]
+            ],
+        ],
+    ],
+
+    'testHoldFundsWithUpdateObserverData' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/action',
+            'method' => 'PUT',
+            'content' => [
+                'action' => 'hold_funds',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'workflow' => [
+                    'name' => "Hold Funds",
+                ],
+            ],
+        ],
+    ],
+
+    'testReleaseFundsWithUpdateObserverData' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/action',
+            'method' => 'PUT',
+            'content' => [
+                'action' => 'release_funds',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'workflow' => [
+                    'name' => "Release Funds",
+                ],
             ],
         ],
     ]

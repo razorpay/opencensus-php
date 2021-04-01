@@ -22,14 +22,22 @@ use Illuminate\Cache\Events\KeyWritten;
 use Illuminate\Cache\Events\CacheMissed;
 use Illuminate\Cache\Events\KeyForgotten;
 use Illuminate\Database\Eloquent\Factory;
+use RZP\Models\Workflow\Action\Differ\Entity;
 use Rzp\Credcase\Migrate\V1\RotateApiKeyRequest;
 use Rzp\Credcase\Migrate\V1\MigrateApiKeyRequest;
+use RZP\Models\Workflow\Observer\EmailChangeObserver;
 use RZP\Models\Admin\Org\Repository as OrgRepository;
 use RZP\Services\Mock\DruidService as MockDruidService;
+use RZP\Models\Admin\Permission\Name as PermissionName;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
+use RZP\Models\Workflow\Observer\MerchantActionObserver;
 use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
+use RZP\Tests\Functional\Helpers\Freshdesk\FreshdeskTrait;
+use RZP\Models\Workflow\Observer\PaymentMethodChangeObserver;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
+use \RZP\Models\Workflow\Observer\Constants as ObserverConstants;
+
 
 use RZP\Models\Key;
 use RZP\Jobs\EsSync;
@@ -101,6 +109,7 @@ class MerchantTest extends TestCase
     use EventsTrait;
     use TestsBusinessBanking;
     use CustomBrandingTrait;
+    use FreshdeskTrait;
 
     const CAPITAL_SUPPORT_EMAIL = 'capital.support@razorpay.com';
 
@@ -123,6 +132,22 @@ class MerchantTest extends TestCase
     const EDIT_MERCHANT_DETAILS_VALID_FIELDS                    = 'edit_merchant_detail_valid_fields';
     const ACTIVATE_MERCHANT                                     = 'activate_merchant';
 
+    const EMAIL_EXPECTED_WORKFLOW_ES_DATA_WITH_OBSERVER               = 'EMAIL_EXPECTED_WORKFLOW_ES_DATA_WITH_OBSERVER';
+
+    const METHODS_EXPECTED_WORKFLOW_ES_DATA_WITH_OBSERVER             = 'METHODS_EXPECTED_WORKFLOW_ES_DATA_WITH_OBSERVER';
+
+    const METHODS_EXPECTED_WORKFLOW_ES_DATA_WITHOUT_OBSERVER          = 'METHODS_EXPECTED_WORKFLOW_ES_DATA_WITHOUT_OBSERVER';
+
+    const EDIT_EMAIL_EXPECTED_WORKFLOW_CREATE_WITH_OBSERVER_DATA_RESPONSE   = 'EDIT_EMAIL_EXPECTED_WORKFLOW_CREATE_WITH_OBSERVER_DATA_RESPONSE';
+
+    const HOLD_FUNDS_WORKFLOW_CREATE_WITH_OBSERVER_DATA_RESPONSE    = 'HOLD_FUNDS_WORKFLOW_CREATE_WITH_OBSERVER_DATA_RESPONSE';
+
+    const HOLD_FUNDS_WORKFLOW_ES_DATA_WITH_OBSERVER                 = 'HOLD_FUNDS_WORKFLOW_ES_DATA_WITH_OBSERVER';
+
+    const RELEASE_FUNDS_WORKFLOW_CREATE_WITH_OBSERVER_DATA_RESPONSE    = 'RELEASE_FUNDS_WORKFLOW_CREATE_WITH_OBSERVER_DATA_RESPONSE';
+
+    const RELEASE_FUNDS_WORKFLOW_ES_DATA_WITH_OBSERVER                 = 'RELEASE_FUNDS_WORKFLOW_ES_DATA_WITH_OBSERVER';
+
     protected $esDao;
 
     protected $esClient;
@@ -144,6 +169,13 @@ class MerchantTest extends TestCase
         $this->esDao = new EsDao();
 
         $this->esClient =  $this->esDao->getEsClient()->getClient();
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
     }
 
     public function testCreateKey()
@@ -1497,6 +1529,222 @@ class MerchantTest extends TestCase
         $this->assertEquals('shake@razorpay.com', $merchant->primaryOwner('primary')->getEmail());
 
         $this->assertEquals('shake@razorpay.com', $merchant->primaryOwner('banking')->getEmail());
+    }
+
+    public function testHoldFundsWithUpdateObserverData()
+    {
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($actionId, $feature, $mode)
+                {
+                    return 'on';
+                }) );
+
+
+        $this->ba->adminAuth();
+
+        $this->setupWorkflow('Hold Funds',PermissionName::$actionMap["hold_funds"], "test");
+
+        $response = $this->startTest();
+
+        $this->assertStringStartsWith('w_action_', $response['id']);
+
+        $this->esClient->indices()->refresh();
+
+        $this->updateObserverData($response['id'],  [
+            'ticket_id'     => '123',
+            'fd_instance'   => 'rzp'
+        ]);
+
+        $this->esClient->indices()->refresh();
+
+        $this->fixtures->create('merchant_freshdesk_tickets', $this->getDefaultFreshdeskArray());
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->setUpFreshdeskClientMock();
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123/reply', 'post',
+            [
+                'body' => implode("<br><br>",(new MerchantActionObserver(
+                    [
+                        Entity::PAYLOAD => [
+                            "action" => 'hold_funds'
+                        ],
+                        Entity::ENTITY_ID => '10000000000000']))
+                    ->getTicketReplyContent(ObserverConstants::APPROVE,'10000000000000')),
+            ],
+            []);
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123?include=requester', 'GET',
+            [],
+            [
+                'id'        => '123',
+                'tags'      => null
+            ]);
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123', 'PUT',
+            [
+                'status'    => 4,
+                'tags'      => ['automated_workflow_response']
+            ],
+            [
+                'id'            => '123',
+            ]);
+
+        $this->performWorkflowAction($workflowAction['id'], true);
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        $this->assertEquals(true, $merchant->getHoldFunds());;
+
+    }
+
+    public function testReleaseFundsWithUpdateObserverData()
+    {
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($actionId, $feature, $mode)
+                {
+                    return 'on';
+
+                }) );
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->merchant->edit('10000000000000', ['hold_funds' => 1]);
+
+        $this->setupWorkflow('Release Funds',PermissionName::$actionMap["release_funds"], "test");
+
+        $response = $this->startTest();
+
+        $this->assertStringStartsWith('w_action_', $response['id']);
+
+        $this->esClient->indices()->refresh();
+
+        $this->updateObserverData($response['id'],  [
+            'ticket_id'     => '123',
+            'fd_instance'   => 'rzp'
+        ]);
+
+        $this->esClient->indices()->refresh();
+
+        $this->fixtures->create('merchant_freshdesk_tickets', $this->getDefaultFreshdeskArray());
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->setUpFreshdeskClientMock();
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123/reply', 'post',
+            [
+                'body' => implode("<br><br>",(new MerchantActionObserver(
+                    [
+                        Entity::PAYLOAD => [
+                            "action" => 'release_funds'
+                        ],
+                        Entity::ENTITY_ID => '10000000000000']))
+                    ->getTicketReplyContent(ObserverConstants::APPROVE, '10000000000000')),
+            ],
+            []);
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123?include=requester', 'GET',
+            [],
+            [
+                'id'        => '123',
+                'tags'      => ['xyz']
+            ]);
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123', 'PUT',
+            [
+                'status'    => 4,
+                'tags'      => ['xyz','automated_workflow_response']
+            ],
+            [
+                'id'            => '123',
+            ]);
+
+        $this->performWorkflowAction($workflowAction['id'], true);
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        $this->assertEquals(false, $merchant->isFundsOnHold());;
+
+    }
+
+    public function testEditMerchantEmailWithUpdateObserverData()
+    {
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($actionId, $feature, $mode)
+                {
+                    return 'on';
+
+                }) );
+
+        $this->fixtures->create('merchant',[
+            'id'     => '10000000000044',
+            'name'   => 'Submerchant',
+            'org_id' => '100000razorpay',
+            'email'  => 'test@razorpay.com',
+        ]);
+
+        $this->ba->adminAuth('live');
+
+        Event::fake(false);
+
+        $this->setupWorkflow('Edit Email',PermissionName::MERCHANT_EMAIL_EDIT);
+
+        $response = $this->startTest();
+
+        $this->assertStringStartsWith('w_action_', $response['id']);
+
+        $this->assertArrayNotHaskey('observer_data', $response);
+
+        $this->esClient->indices()->refresh();
+
+        $this->updateObserverData($response['id'],  [
+            'ticket_id'     => '123',
+            'fd_instance'   => 'rzp'
+        ],'live');
+
+        $this->fixtures->create('merchant_freshdesk_tickets', $this->getDefaultFreshdeskArray('10000000000044'));
+
+        $workflowAction = $this->getLastEntity('workflow_action', true,'live');
+
+        $this->esClient->indices()->refresh();
+
+        $this->setUpFreshdeskClientMock();
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123/reply', 'post',
+            [
+                'body' => implode("<br><br>",(new EmailChangeObserver([
+                    Entity::ENTITY_ID => '10000000000044',
+                ]))->getTicketReplyContent(ObserverConstants::APPROVE, '10000000000044')),
+            ],
+            [
+            ]);
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123?include=requester', 'GET',
+            [],
+            [
+                'id'        => '123',
+                'tags'      => ['xyz']
+            ]);
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123', 'PUT',
+            [
+                'status'    => 4,
+                'tags'      => ['xyz','automated_workflow_response']
+            ],
+            [
+                'id'            => '123',
+            ]);
+
+        $this->performWorkflowAction($workflowAction['id'], true,'live');
+
+        $merchant = (new Merchant\Repository)->findOrFail('10000000000044');
+
+        $this->assertEquals('shake@razorpay.com', $merchant->getEmail());
     }
 
     public function testEditMerchantEmailUserExists()
@@ -4351,6 +4599,103 @@ class MerchantTest extends TestCase
         $this->ba->adminAuth();
 
         $this->startTest();
+    }
+
+    public function testPutPaytmMethodWithUpdateObserverData()
+    {
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($actionId, $feature, $mode)
+                {
+                    if($feature == "perform_action_on_workflow_observer_data")
+                    {
+                        return 'on';
+                    }
+                    else
+                    {
+                        return 'control';
+                    }
+                }) );
+
+        $this->fixtures->create('pricing:emi_pricing_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $this->setupWorkflow('Payment Method Workflow', PermissionName::EDIT_MERCHANT_METHODS, "test");
+
+        $response = $this->startTest();
+
+        $this->assertStringStartsWith('w_action_', $response['id']);
+
+        $this->esClient->indices()->refresh();
+
+        $this->updateObserverData($response['id'],  [
+            'ticket_id'     => '123',
+            'fd_instance'   => 'rzp'
+        ]);
+
+        $this->fixtures->create('merchant_freshdesk_tickets', $this->getDefaultFreshdeskArray());
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->esClient->indices()->refresh();
+
+        $this->setUpFreshdeskClientMock();
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123/reply', 'post',
+            [
+                'body' => implode("<br><br>",(new PaymentMethodChangeObserver([
+                    Entity::ENTITY_ID => '10000000000000',
+                    Entity::PAYLOAD=>[
+                        'paytm'     =>  1,
+                    ]]))->getTicketReplyContent(ObserverConstants::APPROVE,'10000000000000')),
+            ],
+            []);
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123?include=requester', 'GET',
+            [],
+            [
+                'id'        => '123',
+                'tags'      => ['xyz']
+            ]);
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123', 'PUT',
+            [
+                'status'    => 4,
+                'tags'      => ['xyz','automated_workflow_response']
+            ],
+            [
+                'id'            => '123',
+            ]);
+
+        $this->performWorkflowAction($workflowAction['id'], true);
+
+        $request = [
+            'url' => '/merchant/methods',
+            'method' => 'get',
+        ];
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'business_registered_address'   => 'ksjdnfk akejnffn',
+                'business_registered_state'     => 'karnanata',
+                'business_registered_city'      => 'bengaluru',
+                'business_registered_pin'       => '12345457',
+                'contact_mobile'                => '124098598978',
+            ]);
+
+        $this->ba->proxyAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertArraySelectiveEquals(['wallet' =>['paytm' => true ]], $response);
     }
 
     public function testGetKeySecret()
@@ -9118,6 +9463,127 @@ class MerchantTest extends TestCase
         else if (empty($testCase[self::ACTIVATE_MERCHANT]) === false) {
             $this->fixtures->merchant->activate();
         }
+    }
+
+    protected function setupWorkflow($workflowName, $permissionName, $mode ='live'): void
+    {
+        $this->fixtures->on('live')->create('org:admin_for_razorpay_org');
+
+        $permission = $this->getDbEntity('permission', ['name' => $permissionName], 'live');
+
+        DB::connection('live')->table('permission_map')->insert(
+            [
+                'entity_id' => Org::RZP_ORG,
+                'entity_type' => 'org',
+                'permission_id' => $permission->getId(),
+            ]);
+
+        $org = (new OrgRepository)->getRazorpayOrg();
+
+        $this->fixtures->on('live')->create('org:workflow_users', ['org' => $org]);
+
+        $workflow = $this->createWorkflow([
+            'org_id' => '100000razorpay',
+            'name' => $workflowName,
+            'permissions' => [ $permissionName ],
+            'levels' => [
+                [
+                    'level' => 1,
+                    'op_type' => 'or',
+                    'steps' => [
+                        [
+                            'reviewer_count' => 1,
+                            'role_id' => Org::ADMIN_ROLE,
+                        ],
+                    ],
+                ],
+            ],
+        ],$mode);
+
+    }
+
+    protected function getExpectedArraysForWorkflowObserverTestCases($arrayType) : array
+    {
+        if ($arrayType === self::METHODS_EXPECTED_WORKFLOW_ES_DATA_WITH_OBSERVER)
+        {
+            return [
+                'url' => "https://api.razorpay.com/v1/merchants/10000000000000/methods",
+                'method' => "PUT",
+                'payload' => [
+                    'workflow_observer_data' =>  [
+                        'ticket_id' => 123,
+                        'fd_instance' => "rzp"
+                    ],
+
+                ],
+                'state' => "open",
+                'route' => "merchant_put_payment_methods"
+            ];
+        }
+
+        if ($arrayType === self::EMAIL_EXPECTED_WORKFLOW_ES_DATA_WITH_OBSERVER)
+        {
+            return [
+                'url' => "https://api.razorpay.com/v1/merchants/10000000000044/email",
+                'method' => "PUT",
+                'payload' => [
+                    'workflow_observer_data' =>  [
+                        'ticket_id' => 123,
+                        'fd_instance' => "rzp"
+                    ],
+
+                ],
+                'state' => "open",
+                'route' => "merchant_edit_email"
+            ];
+        }
+
+        if ($arrayType === self::HOLD_FUNDS_WORKFLOW_ES_DATA_WITH_OBSERVER)
+        {
+            return [
+                'url' => "https://api.razorpay.com/v1/merchants/10000000000000/action",
+                'method' => "PUT",
+                'payload' => [
+                    'workflow_observer_data' =>  [
+                        'ticket_id' => 123,
+                        'fd_instance' => "rzp"
+                    ],
+
+                ],
+                'state' => "open",
+                'route' => "merchant_actions"
+            ];
+        }
+
+        if ($arrayType === self::RELEASE_FUNDS_WORKFLOW_ES_DATA_WITH_OBSERVER)
+        {
+            return [
+                'url' => "https://api.razorpay.com/v1/merchants/10000000000000/action",
+                'method' => "PUT",
+                'payload' => [
+                    'workflow_observer_data' =>  [
+                        'ticket_id' => 123,
+                        'fd_instance' => "rzp"
+                    ],
+
+                ],
+                'state' => "open",
+                'route' => "merchant_actions"
+            ];
+        }
+
+        if ($arrayType === self::METHODS_EXPECTED_WORKFLOW_ES_DATA_WITHOUT_OBSERVER)
+        {
+            return [
+                'url' => "https://api.razorpay.com/v1/merchants/10000000000000/methods",
+                'method' => "PUT",
+                'payload' => [
+                ],
+                'state' => "open",
+                'route' => "merchant_put_payment_methods"
+            ];
+        }
+
     }
 
     private function mockCredEligibilityResponse($gatewayResponse = null, \Throwable $gatewayException = null, array $pRequest = null)

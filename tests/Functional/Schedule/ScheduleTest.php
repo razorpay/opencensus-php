@@ -287,12 +287,20 @@ class ScheduleTest extends TestCase
 
             ]);
 
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123?include=requester', 'GET',
+            [],
+            [
+                'id'        => '123',
+                'tags'      => ['xyz']
+            ]);
+
         $this->expectFreshdeskRequestAndRespondWith('tickets/123', 'PUT',
             [
-                'status'    => 4
+                'status'    => 4,
+                'tags'      => ['xyz','automated_workflow_response']
             ],
             [
-                'id'            => '123',
+                'id'        => '123',
             ]);
 
         $this->performWorkflowAction($workflowAction['id'], true);

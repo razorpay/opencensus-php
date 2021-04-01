@@ -1047,15 +1047,29 @@ class Service extends Base\Service
         return $this->app['freshdesk_client']->updateTicketV2($ticket->getTicketId(), $content, $url);
     }
 
-    public function resolveTicket($fdInstance , $ticketId) : array
+    public function resolveAndAddAutomatedResolvedTagToTicket($fdInstance , $ticketId) : array
     {
         if (empty($ticketId) === true || empty($fdInstance) === true)
         {
             return [];
         }
 
+        $url = self::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][$fdInstance];
+
+        $ticket = $this->app[Constants::FRESHDESK_CLIENT]->fetchTicketById($ticketId, $url);
+
+        if (empty($ticket['id']) === true)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_NOT_FOUND);
+        }
+
+        $tags = $ticket[Constants::TICKET_TAGS] ?? [];
+
+        $tags = array_merge($tags,Constants::AUTOMATED_WORKFLOW_RESOLVE_TAGS);
+
         $content = [
-            'status'  => TicketStatus::getStatusMappingForStatusString(TicketStatus::RESOLVED)
+            Constants::STATUS       => TicketStatus::getStatusMappingForStatusString(TicketStatus::RESOLVED),
+            Constants::TICKET_TAGS  => $tags
         ];
 
         $url = self::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][$fdInstance];

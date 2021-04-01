@@ -1,22 +1,21 @@
 <?php
 
+
 namespace RZP\Models\Workflow\Observer;
 
 use App;
+use RZP\Models\Workflow\Service;
 use RZP\Models\Workflow\Action\Differ\Entity;
-use \RZP\Models\Schedule\Task\Entity as ScheduleEntity;
 use RZP\Models\Merchant\FreshdeskTicket\Service as FDService;
 use RZP\Models\Merchant\FreshdeskTicket\Constants as FDConstants;
 
-class ScheduleSettlementObserver implements WorkflowObserverInterface
+class EmailChangeObserver implements WorkflowObserverInterface
 {
+    protected $fdService;
+
     protected $entityId;
 
-    protected $payload;
-
     protected $repo;
-
-    protected $fdService;
 
     public function __construct($input)
     {
@@ -24,19 +23,17 @@ class ScheduleSettlementObserver implements WorkflowObserverInterface
 
         $this->repo = $app['repo'];
 
-        $this->fdService  = new FDService();
-
         $this->entityId         = $input[Entity::ENTITY_ID];
 
-        $this->payload         = $input[Entity::PAYLOAD];
+        $this->fdService        = new FDService();
     }
 
     public function onApprove(array $observerData)
     {
         $merchantId = $this->getMerchantId();
 
-        if (key_exists(FDConstants::TICKET_ID, $observerData) === true &&
-            key_exists(FDConstants::FD_INSTANCE, $observerData) === true)
+        if (key_exists(FDConstants::TICKET_ID, $observerData) &&
+            key_exists(FDConstants::FD_INSTANCE, $observerData))
         {
             $fdInstance = $observerData[FDConstants::FD_INSTANCE];
 
@@ -72,30 +69,20 @@ class ScheduleSettlementObserver implements WorkflowObserverInterface
 
     public function getTicketReplyContent(string $workflowAction, string $merchantId) : array
     {
-        if ($workflowAction === Constants::APPROVE)
+        $merchantName = $this->repo->merchant->findOrFailPublic($merchantId)->getName() ?? "";
+
+        if($workflowAction === Constants::APPROVE)
         {
-            $scheduleName = $this->getScheduleName();
-
-            $merchantName = $this->repo->merchant->findOrFailPublic($merchantId)->getName() ?? "";
-
             return [
                 "Hi {$merchantName},",
                 "Thank you for raising a request with us.",
-                "We have successfully updated the schedule to {$scheduleName} for your account as per your request. Do reach out to us in case of any further queries and we will be glad to assist you.",
+                "We have successfully updated the registered email id for your account as per your request.",
+                " Do reach out to us in case of any further queries and we will be glad to assist you.",
                 "Please do take up the satisfaction survey and share your valuable feedback. Your feedback will help us serve you better ",
                 "We have enhanced our support options, please visit our Support page for more details: https://razorpay.com/support.",
                 "Regards,<br>Razorpay Team."
             ];
         }
-        return [];
-    }
-
-    public function getScheduleName() : string
-    {
-        $scheduleId = $this->payload[ScheduleEntity::SCHEDULE_ID];
-
-        $schedule = $this->repo->schedule->find($scheduleId);
-
-        return $schedule->getName();
+        return array();
     }
 }

@@ -82,14 +82,14 @@ trait FreshdeskTrait
         return true;
     }
 
-    public function getDefaultFreshdeskArray()
+    public function getDefaultFreshdeskArray($merchantId="10000000000000")
         {
             $ticketDetails["fd_instance"] = "rzp";
 
             return [
             'id'             => 'razorpayid0012',
             'ticket_id'      => '123',
-            'merchant_id'    => '10000000000000',
+            'merchant_id'    => $merchantId,
             'type'           => 'support_dashboard',
             'ticket_details' => $ticketDetails,
             'created_at'     => '1600000000',

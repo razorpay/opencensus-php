@@ -116,9 +116,9 @@ trait WorkflowTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    public function performWorkflowAction($workflowActionId, bool $shouldApprove = true)
+    public function performWorkflowAction($workflowActionId, bool $shouldApprove = true, $mode= 'test')
     {
-        $this->ba->adminAuth('test');
+        $this->ba->adminAuth($mode);
 
         $this->addPermissionToBaAdmin(Permission\Name::EDIT_ACTION);
 
@@ -133,9 +133,9 @@ trait WorkflowTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    public function updateObserverData($workflowActionId, array $observerData)
+    public function updateObserverData($workflowActionId, array $observerData, $mode = 'test')
     {
-        $this->ba->adminAuth('test');
+        $this->ba->adminAuth($mode);
 
         $request = [
             'method' => 'PUT',

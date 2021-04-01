@@ -80,7 +80,9 @@ class Constants
     const FRESHDESK_TIME_FORMAT = '%Y-%m-%dT%H:%I:%SZ';
 
     // Grievance related constants
-    const GRIEVANCE_TAGS = ['new_grievance_raised'];
+    const GRIEVANCE_TAGS                    = ['new_grievance_raised'];
+    // workflow constant
+    const AUTOMATED_WORKFLOW_RESOLVE_TAGS   = ['automated_workflow_response'];
 
     //Freshdesk  Ticket Fields
     const TICKET_PRIORITY   = 'priority';
