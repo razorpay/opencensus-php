@@ -13,6 +13,8 @@ import { getIcon } from './components/paymentMethodIcons';
 const languageOptions = [
   { name: 'English', code: 'en' },
   { name: 'Hindi', code: 'hi' },
+  { name: 'Marathi', code: 'mar' },
+  { name: 'Gujarati', code: 'guj' },
 ];
 
 @connect((state) => ({ ...state.config, user: state.session.user }), {
