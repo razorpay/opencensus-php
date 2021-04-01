@@ -1531,6 +1531,29 @@ return [
         ],
     ],
 
+    'testBankingAccountSPOCDetailsOnBankingAccountFetch' => [
+        'request'  => [
+            'url'     => '/banking_accounts',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'account_number'    => '1234567890',
+                        'status'            => 'created',
+                        'balance'           => [
+                            'balance'       => 90000,
+                            'currency'      => 'INR',
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testBulkAssignReviewersToBankingAccounts' => [
         'request'  => [
             'url'     => '/banking_accounts/reviewers',
@@ -1670,6 +1693,8 @@ return [
                 'account_type' => 'zero_balance',
                 'is_documents_walkthrough_complete' => true,
                 'sales_poc_id' => 'admin_'. Org::SUPER_ADMIN,
+                'rm_name' => 'Test RM',
+                'rm_phone_number' => '9234567890'
                 ],
         ],
         'response' => [

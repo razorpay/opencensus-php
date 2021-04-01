@@ -128,6 +128,8 @@ class Entity extends Base\PublicEntity
     const REVIEWERS                          = 'reviewers';
     const SPOCS                              = 'spocs';
     const FEE_RECOVERY_DETAILS               = 'fee_recovery_details';
+    const BANKING_ACCOUNT_CA_SPOC_DETAILS    = 'banking_account_ca_spoc_details';
+
 
     // Constants for reviewers() and spocs relation
     const REVIEWER_ID             = 'reviewer_id';
@@ -271,7 +273,8 @@ class Entity extends Base\PublicEntity
         self::BALANCE,
         self::FEE_RECOVERY_DETAILS,
         self::ACCOUNT_STATEMENT_LAST_UPDATED_AT,
-        self::STATUS_LAST_UPDATED_AT
+        self::STATUS_LAST_UPDATED_AT,
+        self::BANKING_ACCOUNT_CA_SPOC_DETAILS
     ];
 
     protected $relations = [
@@ -285,7 +288,8 @@ class Entity extends Base\PublicEntity
         self::BANKING_ACCOUNT_DETAILS,
         self::FEE_RECOVERY_DETAILS,
         self::ACCOUNT_STATEMENT_LAST_UPDATED_AT,
-        self::STATUS_LAST_UPDATED_AT
+        self::STATUS_LAST_UPDATED_AT,
+        self::BANKING_ACCOUNT_ACTIVATION_DETAILS
     ];
 
     // ---------------------------- Setters ----------------------------------- //
@@ -671,6 +675,28 @@ class Entity extends Base\PublicEntity
         if (app('basicauth')->isAdminAuth() === false)
         {
             unset($array[self::BANKING_ACCOUNT_DETAILS]);
+        }
+    }
+
+    public function setPublicBankingAccountActivationDetailsAttribute(array & $array)
+    {
+        if(app('basicauth')->isProxyAuth() === true && $array[self::ACCOUNT_TYPE] === AccountType::CURRENT)
+        {
+            if($this->bankingAccountActivationDetails !== null && $this->spocs()->first() !== null)
+            {
+                $bankingAccountActivationDetails = $this->bankingAccountActivationDetails;
+
+                $salesSpoc = $this->spocs()->first()->toArrayPublic();
+
+                $array[self::BANKING_ACCOUNT_CA_SPOC_DETAILS] =
+                    [
+                        Activation\Detail\Entity::RM_NAME                  => $bankingAccountActivationDetails[Activation\Detail\Entity::RM_NAME],
+                        Activation\Detail\Entity::RM_PHONE_NUMBER          => $bankingAccountActivationDetails[Activation\Detail\Entity::RM_PHONE_NUMBER],
+                        Activation\Detail\Entity::SALES_POC_PHONE_NUMBER   => $bankingAccountActivationDetails[Activation\Detail\Entity::SALES_POC_PHONE_NUMBER],
+                        Activation\Detail\Entity::SALES_POC_NAME           => $salesSpoc['name'],
+                        Activation\Detail\Entity::SALES_POC_EMAIL          => $salesSpoc['email']
+                    ];
+            }
         }
     }
 

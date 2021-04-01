@@ -91,6 +91,11 @@ class Entity extends Base\PublicEntity
     // admin_audit_map is used here
     const SALES_POC_ID = 'sales_poc_id';
 
+    //sales_poc_name and sales_poc_email are not part of entity, these are just constants needed for ToArrayPublic
+    const SALES_POC_NAME = 'sales_poc_name';
+
+    const SALES_POC_EMAIL = 'sales_poc_email';
+
     protected $entity = 'banking_account_activation_detail';
 
     protected $table  = Table::BANKING_ACCOUNT_ACTIVATION_DETAIL;
