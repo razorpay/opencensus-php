@@ -755,14 +755,14 @@ class Entity extends Base\PublicEntity
         return ($this->getType() === Type::PREPAID);
     }
 
-    public function isRecurringSupported()
+    public function isRecurringSupported(bool $isInitial = true)
     {
         $iin = $this->iinRelation;
 
-        return $this->isRecurringSupportedOnIIN($this->merchant, $iin);
+        return $this->isRecurringSupportedOnIIN($this->merchant, $iin, $isInitial);
     }
 
-    public function isRecurringSupportedOnIIN(Merchant\Entity $merchant, IIN\Entity $iin = null)
+    public function isRecurringSupportedOnIIN(Merchant\Entity $merchant, IIN\Entity $iin = null, bool $isInitial = true)
     {
         if($iin === null)
         {
@@ -777,7 +777,7 @@ class Entity extends Base\PublicEntity
         // allow international IIN
         // allow domestic card if razorX is disabled
         // for fail safety, razorX retry count is 3
-        if ($iin->isInternational() === false)
+        if ($iin->isInternational() === false && $isInitial === true)
         {
             $variant  = app('razorx')->getTreatment($merchant->getId(),
                 RazorxTreatment::RECURRING_CARD_NOT_ENABLED,

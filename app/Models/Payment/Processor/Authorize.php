@@ -1905,7 +1905,7 @@ trait Authorize
 
     protected function validateRecurringForCard(Payment\Entity $payment, $token)
     {
-        if ($payment->card->isRecurringSupported() === false)
+        if ($payment->card->isRecurringSupported($payment->isRecurringTypeInitial()) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_RECURRING_NOT_SUPPORTED);
@@ -3707,7 +3707,7 @@ trait Authorize
 
             if (($payment->isCard() === true) and
                 ($payment->hasCard() === true) and
-                ($payment->card->isRecurringSupported() === true))
+                ($payment->card->isRecurringSupported($payment->isRecurringTypeInitial()) === true))
             {
                 $recurring = true;
             }
@@ -3718,7 +3718,7 @@ trait Authorize
         {
             if (($payment->isCard() === true) and
                 ($payment->hasCard() === true) and
-                ($payment->card->isRecurringSupported() === true))
+                ($payment->card->isRecurringSupported($payment->isRecurringTypeInitial()) === true))
             {
                 $payment->setRecurring(true);
             }
