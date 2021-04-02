@@ -252,6 +252,8 @@ class Core extends Base\Core
             $this->app['diag']->trackOnboardingEvent(EventCode::PARTNERSHIP_SUBMERCHANT_SIGNUP,
                 $partner, null,
                 $data);
+
+            $this->app->hubspot->trackSubmerchantSignUp($data, $merchant->getEmail());
         }
     }
 }

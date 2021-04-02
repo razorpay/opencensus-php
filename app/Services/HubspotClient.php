@@ -198,6 +198,16 @@ class HubspotClient
         $this->dispatchRequestJob($payload);
     }
 
+    public function trackSubmerchantSignUp(array $data, string $submerchantEmail)
+    {
+        $payload = [];
+
+        $payload['new_submerchant_added'] = $data['source'] ?? '';
+        $payload['partner_id']            = $data['partner_id'];
+
+        $this->trackHubspotEvent($submerchantEmail, $payload);
+    }
+
     protected function appendPrefixToArray(array & $payloadData, $prefix)
     {
         $prefix_array = array_fill(0, count($payloadData), $prefix);

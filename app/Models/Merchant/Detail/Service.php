@@ -1045,6 +1045,8 @@ class Service extends Base\Service
             $this->app['diag']->trackOnboardingEvent(EventCode::PARTNERSHIP_SUBMERCHANT_SIGNUP,
                 $partner, null,
                 $data);
+
+            $this->app->hubspot->trackSubmerchantSignUp($data, $subMerchant->getEmail());
         }
 
         unset($input[Entity::REFERRAL_CODE]);
