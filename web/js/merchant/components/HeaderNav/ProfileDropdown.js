@@ -23,6 +23,7 @@ import rolesList from 'merchant/helpers/permissions/roles-list';
 import logoutGoogleAccount from '../../../common/utils/logoutGoogle';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import RTracking from 'react-tracking';
 
 @withRouter
 @connect(
@@ -35,6 +36,7 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
   },
   { logout, closeModal, openModal, updateSession },
 )
+@RTracking(() => window.rzpQ.component('ProfileDropdown'))
 export default class ProfileDropdown extends Component {
   state = {
     showRazorpayxToolTip: false,
@@ -107,6 +109,20 @@ export default class ProfileDropdown extends Component {
       disableClose: false,
       component: <PartnerOnbr closeModal={this.props.closeModal} disableClose={false} />,
     });
+
+    window.trackHubs({
+      name: 'update_property',
+      data: {
+        partner_signup_start: true,
+      },
+    });
+
+    this.props.tracking.trackEvent(
+      window.rzpQ.onbr().clicked('partnerships.partner_signup.start', {
+        merchantId: this.props.user.merchant.id,
+        clickSource: 'merchant_dashboard',
+      }),
+    );
   };
 
   openTicketModal = () => {

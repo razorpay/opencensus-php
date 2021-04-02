@@ -34,6 +34,19 @@ export default class BaseScreen extends React.Component {
 
   onRoleSelect = (role) => {
     this.setState({ role });
+    this.props.tracking.trackEvent(
+      window.rzpQ.onbr().interaction('partnerships.partner_type.selected', {
+        merchantId: this.props.user.merchant.id,
+        partnerType: role,
+      }),
+    );
+
+    window.trackHubs({
+      name: 'update_property',
+      data: {
+        partner_type_selection: role,
+      },
+    });
   };
 
   closeTransaction = (url, data) => {
@@ -83,6 +96,19 @@ export default class BaseScreen extends React.Component {
         pagePath: window.location.pathname,
       }),
     );
+
+    this.props.tracking.trackEvent(
+      window.rzpQ.onbr().clicked('partnerships.partner_signup.completed', {
+        merchantId: this.props.user.merchant.id,
+      }),
+    );
+
+    window.trackHubs({
+      name: 'update_property',
+      data: {
+        partner_signup_complete: true,
+      },
+    });
   };
 
   onNotIntrestedClick = () => {
@@ -110,7 +136,14 @@ export default class BaseScreen extends React.Component {
       <div className="partner-onboarding-base-screen">
         <Slider>
           {!this.props.disableClose
-            ? (sliderProps) => <S0 key={0} sliderProps={sliderProps} />
+            ? (sliderProps) => (
+                <S0
+                  key={0}
+                  sliderProps={sliderProps}
+                  tracking={this.props.tracking}
+                  merchantId={this.props.user.merchant.id}
+                />
+              )
             : null}
           {(sliderProps) => (
             <S1 key={1} sliderProps={sliderProps} onNext={this.handleNewUserGetStarted} />
