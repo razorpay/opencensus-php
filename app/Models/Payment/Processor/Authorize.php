@@ -3707,7 +3707,7 @@ trait Authorize
 
             if (($payment->isCard() === true) and
                 ($payment->hasCard() === true) and
-                ($payment->card->isRecurringSupported($payment->isRecurringTypeInitial()) === true))
+                ($payment->card->isRecurringSupported(true) === true))
             {
                 $recurring = true;
             }
