@@ -116,7 +116,7 @@ class Repository extends Base\Repository
     {
         Entity::verifyIdAndStripSign($id);
 
-        $query = $this->getQueryForFindWithParams($input);
+        $query = $this->getQueryForFindWithParams($input, $this->getSlaveConnection());
 
         $query = $query->merchantId($merchant->getId());
 
@@ -143,13 +143,19 @@ class Repository extends Base\Repository
         return $invoice;
     }
 
+    /**
+     * @deprecated
+     */
     public function findByPublicIdAndSubscription(string $invoiceId, Subscription\Entity $subscription)
     {
-        Entity::verifyIdAndStripSign($invoiceId);
+        return $this->repo->useSlave( function() use ($invoiceId, $subscription)
+        {
+            Entity::verifyIdAndStripSign($invoiceId);
 
-        return $this->newQuery()
-                    ->where(Entity::SUBSCRIPTION_ID, '=', $subscription->getId())
-                    ->findOrFailPublic($invoiceId);
+            return $this->newQuery()
+                        ->where(Entity::SUBSCRIPTION_ID, '=', $subscription->getId())
+                        ->findOrFailPublic($invoiceId);
+        });
     }
 
     protected function validateInvoicesCountParams(array $params)
@@ -164,29 +170,35 @@ class Repository extends Base\Repository
 
     public function getInvoicesCount(array $params)
     {
-        $this->validateInvoicesCountParams($params);
-
-        $query = $this->newQuery();
-
-        $merchantId = optional($this->merchant)->getId();
-
-        $this->buildQueryWithParams($query, $params);
-
-        if ($merchantId !== null)
+        return $this->repo->useSlave( function() use ($params)
         {
-            $query = $query->merchantId($merchantId);
-        }
+            $this->validateInvoicesCountParams($params);
 
-        $invoiceCount = $query->count();
+            $query = $this->newQuery();
 
-        return ['count' => $invoiceCount];
+            $merchantId = optional($this->merchant)->getId();
+
+            $this->buildQueryWithParams($query, $params);
+
+            if ($merchantId !== null)
+            {
+                $query = $query->merchantId($merchantId);
+            }
+
+            $invoiceCount = $query->count();
+
+            return ['count' => $invoiceCount];
+        });
     }
 
+    /**
+     * @deprecated
+     */
     public function getInvoicesForIssuedNotificationToCustomer($medium)
     {
         $currentTime = Carbon::now()->getTimestamp();
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
                     ->where($medium . '_status', '=', NotifyStatus::PENDING)
                     ->where(Entity::STATUS, '=', Status::ISSUED)
                     ->where(Entity::SCHEDULED_AT, '<=', $currentTime)
@@ -211,15 +223,18 @@ class Repository extends Base\Repository
      */
     public function getIssuedAndPastExpiredByInvoices(int $limit = 5000): Base\PublicCollection
     {
-        $now = Carbon::now(Timezone::IST)->getTimestamp();
+        return $this->repo->useSlave( function() use ($limit)
+        {
+            $now = Carbon::now(Timezone::IST)->getTimestamp();
 
-        $nowMinus14days = Carbon::now(Timezone::IST)->addDays(-14)->getTimestamp();
+            $nowMinus14days = Carbon::now(Timezone::IST)->addDays(-14)->getTimestamp();
 
-        return $this->newQuery()
-                    ->where(Entity::STATUS, '=', Status::ISSUED)
-                    ->whereBetween(Entity::EXPIRE_BY, array($nowMinus14days, $now))
-                    ->limit($limit)
-                    ->get();
+            return $this->newQuery()
+                        ->where(Entity::STATUS, '=', Status::ISSUED)
+                        ->whereBetween(Entity::EXPIRE_BY, array($nowMinus14days, $now))
+                        ->limit($limit)
+                        ->get();
+        });
     }
 
 
@@ -230,21 +245,26 @@ class Repository extends Base\Repository
         int $limit = 500,
         string $type = Type::LINK): Base\PublicCollection
     {
+        return $this->repo->useSlave( function() use ($pastTime, $statuses, $merchantIds, $limit, $type)
+        {
+            $pastTimeMinus14days = Carbon::createFromTimestamp($pastTime, Timezone::IST)->addDays(-14)->getTimestamp();
 
-        $pastTimeMinus14days = Carbon::createFromTimestamp($pastTime, Timezone::IST)->addDays(-14)->getTimestamp();
-
-        return $this->newQuery()
-                    ->where(Entity::TYPE, '=' ,$type)
-                    ->whereIn(Entity::MERCHANT_ID, $merchantIds)
-                    ->whereIn(Entity::STATUS, $statuses)
-                    ->whereBetween(Entity::UPDATED_AT, array($pastTimeMinus14days, $pastTime))
-                    ->limit($limit)
-                    ->get();
+            return $this->newQuery()
+                        ->where(Entity::TYPE, '=' ,$type)
+                        ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+                        ->whereIn(Entity::STATUS, $statuses)
+                        ->whereBetween(Entity::UPDATED_AT, array($pastTimeMinus14days, $pastTime))
+                        ->limit($limit)
+                        ->get();
+        });
     }
 
+    /**
+     * @deprecated
+     */
     public function fetchIssuedInvoicesOfSubscription(Subscription\Entity $subscription)
     {
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
                     ->where(Entity::SUBSCRIPTION_ID, '=', $subscription->getId())
                     ->where(Entity::STATUS, '=', Status::ISSUED)
                     ->with(Entity::ORDER)
@@ -253,13 +273,19 @@ class Repository extends Base\Repository
 
     public function fetchIssuedInvoicesOfSubscriptionId(string $subscriptionId)
     {
-        return $this->newQuery()
-                    ->where(Entity::SUBSCRIPTION_ID, '=', $subscriptionId)
-                    ->where(Entity::STATUS, '=', Status::ISSUED)
-                    ->with(Entity::ORDER)
-                    ->first();
+        return $this->repo->useSlave( function() use ($subscriptionId)
+        {
+            return $this->newQuery()
+                        ->where(Entity::SUBSCRIPTION_ID, '=', $subscriptionId)
+                        ->where(Entity::STATUS, '=', Status::ISSUED)
+                        ->with(Entity::ORDER)
+                        ->first();
+        });
     }
 
+    /**
+     * @deprecated
+     */
     public function fetchIssuedAndNotHaltedInvoiceForSubscription(Subscription\Entity $subscription)
     {
         $invoices = $this->newQuery()
@@ -290,6 +316,7 @@ class Repository extends Base\Repository
     }
 
     /**
+     * @deprecated
      * @param Subscription\Entity $subscription
      *
      * @return Entity
@@ -348,6 +375,7 @@ class Repository extends Base\Repository
     }
 
     /**
+     * @deprecated
      * Currently reporting is only available for link type.
      * This query is used in reporting and here we're adding where type=link
      * condition.
@@ -393,7 +421,7 @@ class Repository extends Base\Repository
      * Gets list of draft invoices of given batch ids. If a non-empty array of
      * ids are passed only those out of total invoices of batch are returned.
      * This method is used in BatchIssue job.
-     *
+     * @deprecated
      * @param  string $batchId
      * @param  array  $ids
      *
@@ -403,42 +431,54 @@ class Repository extends Base\Repository
         string $batchId,
         array $ids = []): Base\PublicCollection
     {
-        $query = $this->newQuery()
-                      ->where(Entity::BATCH_ID, $batchId)
-                      ->where(Entity::STATUS, Status::DRAFT);
-
-        if (empty($ids) === false)
+        return $this->repo->useSlave( function() use ($batchId)
         {
-            Entity::verifyIdAndSilentlyStripSignMultiple($ids);
+            $query = $this->newQuery()
+                          ->where(Entity::BATCH_ID, $batchId)
+                          ->where(Entity::STATUS, Status::DRAFT);
 
-            $query->whereIn(Entity::ID, $ids);
-        }
+            if (empty($ids) === false)
+            {
+                Entity::verifyIdAndSilentlyStripSignMultiple($ids);
 
-        return $query->get();
+                $query->whereIn(Entity::ID, $ids);
+            }
+
+            return $query->get();
+        });
     }
 
     public function findIssuedByBatchId(string $batchId): Base\PublicCollection
     {
-        return $this->newQuery()
-                    ->where(Entity::BATCH_ID, $batchId)
-                    ->where(Entity::STATUS, Status::ISSUED)
-                    ->get();
+        return $this->repo->useSlave( function() use ($batchId)
+        {
+            return $this->newQuery()
+                        ->where(Entity::BATCH_ID, $batchId)
+                        ->where(Entity::STATUS, Status::ISSUED)
+                        ->get();
+        });
     }
 
     public function findIssuedByBatchIdWithLimit(string $batchId, int $limit = 1000): Base\PublicCollection
     {
-        return $this->newQuery()
-                    ->where(Entity::BATCH_ID, $batchId)
-                    ->where(Entity::STATUS, Status::ISSUED)
-                    ->limit($limit)
-                    ->get();
+        return $this->repo->useSlave( function() use ($batchId, $limit)
+        {
+            return $this->newQuery()
+                        ->where(Entity::BATCH_ID, $batchId)
+                        ->where(Entity::STATUS, Status::ISSUED)
+                        ->limit($limit)
+                        ->get();
+        });
     }
 
+    /**
+     * @deprecated
+     */
     public function findByBatchIdAndReceipts(
         string $batchId,
         array $receipts = []): Base\PublicCollection
     {
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
                     ->where(Entity::BATCH_ID, $batchId)
                     ->whereIn(Entity::RECEIPT, $receipts)
                     ->get();
@@ -451,14 +491,20 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    /**
+     * @deprecated
+     */
     public function getNonDraftInvoiceCountByBatchId(string $batchId): int
     {
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
                     ->where(Entity::BATCH_ID, $batchId)
                     ->where(Entity::STATUS, '!=', Status::DRAFT)
                     ->count();
     }
 
+    /**
+     * @deprecated
+     */
     public function getNonDraftInvoiceCountByBatchIds(array $batchIds): array
     {
         $collection = $this->newQueryWithConnection($this->getSlaveConnection())
@@ -503,7 +549,7 @@ class Repository extends Base\Repository
     public function getInvoiceStatsForBatch(Batch\Entity $batch): array
     {
         /** @var Base\PublicCollection $collection */
-        $collection = $this->newQuery()
+        $collection = $this->newQueryWithConnection($this->getDataWarehouseConnection())
                            ->selectRaw(Entity::STATUS . ', COUNT(*) AS count')
                            ->where(Entity::BATCH_ID, '=', $batch->getId())
                            ->groupBy(Entity::STATUS)
@@ -520,44 +566,53 @@ class Repository extends Base\Repository
      */
     public function isDuplicateReceipt(Entity $invoice, string $receipt): bool
     {
-        return $this->newQuery()
-                    ->merchantId($invoice->getMerchantId())
-                    ->where(Entity::RECEIPT, $receipt)
-                    ->whereNotIn(Entity::STATUS, [Status::CANCELLED, Status::EXPIRED])
-                    ->where(Entity::ID, '!=', $invoice->getId())
-                    ->count() > 0;
+        return $this->repo->useSlave( function() use ($invoice, $receipt)
+        {
+            return $this->newQuery()
+                        ->merchantId($invoice->getMerchantId())
+                        ->where(Entity::RECEIPT, $receipt)
+                        ->whereNotIn(Entity::STATUS, [Status::CANCELLED, Status::EXPIRED])
+                        ->where(Entity::ID, '!=', $invoice->getId())
+                        ->count() > 0;
+        });
     }
 
     public function findDuplicateInvoiceByInternalRefForMerchant(Entity $invoice, string $merchantId)
     {
-        $nowMinus5days = Carbon::now(Timezone::IST)->addDays(-5)->getTimestamp();
+        return $this->repo->useSlave( function() use ($invoice, $merchantId)
+        {
+            $nowMinus5days = Carbon::now(Timezone::IST)->addDays(-5)->getTimestamp();
 
-        return $this->newQuery()
-                    ->merchantId($merchantId)
-                    ->where(Entity::CREATED_AT, '>=', $nowMinus5days)
-                    ->where(Entity::INTERNAL_REF, $invoice->getInternalRef())
-                    ->where(Entity::ID, '!=', $invoice->getId())
-                    ->first();
+            return $this->newQuery()
+                        ->merchantId($merchantId)
+                        ->where(Entity::CREATED_AT, '>=', $nowMinus5days)
+                        ->where(Entity::INTERNAL_REF, $invoice->getInternalRef())
+                        ->where(Entity::ID, '!=', $invoice->getId())
+                        ->first();
+        });
     }
 
     public function fetchForEntityType(array $input, string $merchantId, string $entityType = null)
     {
         $input[Entity::ENTITY_TYPE] = $entityType;
 
-        return $this->repo->invoice->fetch($input, $merchantId);
+        return $this->repo->invoice->fetch($input, $merchantId, $this->getDataWarehouseConnection());
     }
 
     public function findByMerchantAndTokenRegistration(
         Merchant\Entity $merchant,
         SubscriptionRegistration\Entity $tokenRegistration)
     {
-        $invoice = $this->newQuery()
-                        ->merchantId($merchant->getId())
-                        ->where(Entity::ENTITY_TYPE, E::SUBSCRIPTION_REGISTRATION)
-                        ->where(Entity::ENTITY_ID, $tokenRegistration->getId())
-                        ->first();
+        return $this->repo->useSlave( function() use ($merchant, $tokenRegistration)
+        {
+            $invoice = $this->newQuery()
+                            ->merchantId($merchant->getId())
+                            ->where(Entity::ENTITY_TYPE, E::SUBSCRIPTION_REGISTRATION)
+                            ->where(Entity::ENTITY_ID, $tokenRegistration->getId())
+                            ->first();
 
-        return $invoice;
+            return $invoice;
+        });
     }
 
     protected function addQueryParamPaymentId(BuilderEx $query, array $params)
