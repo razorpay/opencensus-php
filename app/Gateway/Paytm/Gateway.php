@@ -61,6 +61,23 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
+        /**
+         * Processing callback requests for upi payment method paytm with upi mozart entity.
+         * Checking method if upi then send to Mozart.
+         */
+        $method = $input['payment']['method'];
+
+        if ($method === Payment\Method::UPI)
+        {
+            $mozart=$this->getUpiMozartGatewayWithModeSet();
+
+            $response = $mozart->sendUpiMozartRequest($input,TraceCode::PAYMENT_CALLBACK_REQUEST, 'pay_verify');
+
+            $input['gateway']= $response;
+
+            return $this->upiCallback($input);
+        }
+
         $this->verifySecureHash($input['gateway']);
 
         // assert payment id
@@ -768,5 +785,52 @@ class Gateway extends Base\Gateway
         {
             $verify->gatewaySuccess = true;
         }
+    }
+
+    /**
+     * For Paytm UPI using static callback route to process callback response.
+     * Pre Process returning as it is because response is in plan text form.
+     * @param $input
+     * @return array
+     */
+
+    public function preProcessServerCallback($input): array
+    {
+        return $input;
+    }
+
+    /**
+     * Extracting paymentId from pre process server callback function's response.
+     * @param array $response
+     * @param $gateway
+     * @return string
+     */
+
+    public function getPaymentIdFromServerCallback(array $response, $gateway)
+    {
+        return $response['ORDERID'];
+    }
+
+    /**
+     * Function to post process the response of callback. In case of success, returns true.
+     * However in case of exception, suppress the error and returns failure response.
+     * @param $input
+     * @param null $exception
+     * @return bool[] - true or false
+     */
+
+    public function postProcessServerCallback($input, $exception = null)
+    {
+        if ($exception === null)
+        {
+            return [
+                'success' => true,
+            ];
+        }
+
+        return [
+            'success' => false,
+        ];
+
     }
 }

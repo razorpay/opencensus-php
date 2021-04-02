@@ -1985,6 +1985,7 @@ class Gateway
         Gateway::WALLET_PHONEPE,
         Gateway::UPI_CITI,
         Gateway::UPI_JUSPAY,
+        Gateway::PAYTM,
         // Cybersource does not make s2s callback, Google Pay makes s2s callback for payments
         // that went through tokenization gateways.
         Gateway::CYBERSOURCE,

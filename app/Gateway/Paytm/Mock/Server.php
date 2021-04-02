@@ -263,4 +263,85 @@ class Server extends Base\Mock\Server
         // Format - YYYY-MM-DD HH:MM:SS.U
         return Carbon::now(Timezone::IST)->format('Y-m-d H-i-s.0');
     }
+
+    /**
+     * For Paytm UPI get callback is being used to return callback response
+     * @param array $upiEntity
+     * @param array $payment
+     * @return array
+     */
+    public function getCallback(array $upiEntity, array $payment)
+    {
+        $this->action = Action::CALLBACK;
+
+        $content = $this->getCallbackData($upiEntity, $payment);
+
+        $this->content($content, 'callback');
+
+        return $this->getCallbackRequest($content);
+    }
+
+    public function getCallbackRequest($data)
+    {
+        $url = '/callback/paytm';
+        $method = 'post';
+
+        $server = [
+            'CONTENT_TYPE'                      => 'application/json',
+        ];
+
+        $raw = json_encode($data);
+
+        return [
+            'url'       => $url,
+            'method'    => $method,
+            'raw'       => $raw,
+            'server'    => $server,
+        ];
+    }
+
+    protected function getCallbackData(array $upiEntity, array $payment)
+    {
+        $status     = 'TXN_SUCCESS';
+        $amount     = $payment['amount'];
+        $responseCode = '01';
+        $responseMassage = 'Txn Success';
+
+        switch ($payment['description'])
+        {
+            case 'callback_failed_v2':
+                $responseCode = '0001';
+                $status     = 'TXN_FAILURE';
+                $responseMassage = 'FAILED';
+                break;
+
+            case 'callback_amount_mismatch_v2':
+                $amount = $payment['amount'] + 100;
+                break;
+
+        }
+
+        $content = [
+            "CURRENCY"      =>  "INR",
+            "GATEWAYNAME"   => "PPBLC",
+            "RESPMSG"       => $responseMassage,
+            "BANKNAME"      =>  "",
+            "PAYMENTMODE"   => "UPI",
+            "CUSTID"        => "yadav.gaurav@gamil.com",
+            "MID"           => "Brain-warmer890",
+            "MERC_UNQ_REF"  => "",
+            "RESPCODE"      => $responseCode,
+            "TXNID"         => "20210324111212800110168860592522268",
+            "TXNAMOUNT"     => $amount,
+            "ORDERID"       => $payment['id'],
+            "STATUS"        => $status,
+            "BANKTXNID"     => "108369275293",
+            "TXNDATETIME"   => "2021-03-24 23:33:35.0",
+            "TXNDATE"       => "2021-03-24",
+            "CHECKSUMHASH"  => "S3INfP0o5QGErO+/87IGZIfMZMyB5tDfQcN32xxaTxLKgnoB0rjIenH0u/gL4s3aevIyc5PjbDpYVAzQwuZelJDb9xikJme0hJVVO8w8dyU="
+        ];
+
+        return $content;
+    }
+
 }

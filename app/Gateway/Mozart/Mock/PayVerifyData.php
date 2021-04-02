@@ -485,6 +485,14 @@ class PayVerifyData extends Base\Mock\Server
         return $response;
     }
 
+    public function paytm($entities)
+    {
+        if ($this->isV2Mock($entities['payment']['description']))
+        {
+            return $this->upiMozartV2($entities);
+        }
+    }
+
     public function cred($entities)
     {
         $response = [
@@ -824,6 +832,17 @@ class PayVerifyData extends Base\Mock\Server
                 $response->setPayment([
                    'amount_authorized'  => $entities['payment']['amount'] + 10,
                    'currency'           => 'INR',
+                ]);
+                break;
+            case 'callback_failed':
+                $response->setSuccess(false);
+
+                $response->setError([
+                    'description'               => 'Debit has been failed',
+                    'gateway_error_code'        => 'U30',
+                    'gateway_error_description' => 'Debit has been failed',
+                    'gateway_status_code'       =>  200,
+                    'internal_error_code'       => 'GATEWAY_ERROR_DEBIT_FAILED',
                 ]);
                 break;
         }

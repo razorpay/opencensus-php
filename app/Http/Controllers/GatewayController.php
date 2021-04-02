@@ -444,6 +444,7 @@ class GatewayController extends Controller
             case Gateway::UPI_MINDGATE:
             case Gateway::UPI_SBI:
             case Gateway::UPI_AXIS:
+            case Gateway::PAYTM:
                 $data = $this->processServerCallbackWithGatewayResponse($input, $gateway);
                 break;
             // Need to whitelist upi_yesbank at bank end
