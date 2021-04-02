@@ -222,7 +222,7 @@ class Gateway extends Mindgate\Gateway
 
             $this->updateGatewayPaymentEntity($gatewayPayment, $responseArray);
 
-            if ($responseArray[Fields::RESPONSE_CODE] === 'DT'){
+            if ($responseArray[Fields::RESPCODE] === 'DT'){
                 return $this->generateResponseForDuplicatePayout($gatewayPayment,
                     'RZP_DUPLICATE_REFERENCE_RECEIVED',
                     $input,
@@ -360,7 +360,7 @@ class Gateway extends Mindgate\Gateway
 
             $responseArray = $this->checkAndUpdateForVerifyStatus($responseArray);
 
-            if ($responseArray[Fields::RESPONSE_CODE] === 'DT'){
+            if ($responseArray[Fields::RESPCODE] === 'DT'){
                 return $this->generateResponseForDuplicatePayout($gatewayPayment,
                     'RZP_DUPLICATE_REFERENCE_RECEIVED',
                     $input,
