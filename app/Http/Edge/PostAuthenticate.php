@@ -59,9 +59,9 @@ final class PostAuthenticate
     public function handle(bool $authenticated, Request $request)
     {
         $funcStartedAt = millitime();
-
-        $this->ensureRequestContextPassport($authenticated);
+        
         $this->ensureRequestContextAdditionalAttrs();
+        $this->ensureRequestContextPassport($authenticated);
         $this->reportAuthorizationEnforcementMismatches($authenticated, $request);
 
         $this->trace->histogram(Metric::MIDDLEWARE_POSTAUTH_DURATION_MS, millitime() - $funcStartedAt);
