@@ -2086,6 +2086,18 @@ class Processor
 
         $gateway = $payment->getGateway();
 
+        /**
+         * As async processing approach is not applicable to paytm card,netbanking and wallet
+         * Checking method if not upi returning an Exceptions
+         */
+        $method = $payment->getMethod();
+
+        if (($gateway === Payment\Gateway::PAYTM) and ($method !== Payment\Method::UPI))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ID);
+        }
+
         // If the gateway is not async we just give a generic
         // error to not leak information
         if ((Payment\Gateway::supportsAsync($gateway) === false) and

@@ -929,6 +929,7 @@ class Entity
         self::UPI_MOZART             => \RZP\Gateway\Mozart::class,
         self::UPI_JUSPAY             => \RZP\Gateway\Upi\Base::class,
         self::CASHFREE               => \RZP\Gateway\Upi\Base::class,
+        self::PAYTM                  => \RZP\Gateway\Upi\Base::class,
 
         self::AEPS_ICICI             => \RZP\Gateway\Aeps\Base::class,
 

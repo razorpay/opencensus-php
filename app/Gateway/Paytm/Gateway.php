@@ -11,6 +11,7 @@ use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Upi\Base\CommonGatewayTrait;
 
 class Gateway extends Base\Gateway
 {
@@ -18,9 +19,24 @@ class Gateway extends Base\Gateway
 
     protected $gateway = 'paytm';
 
+    use CommonGatewayTrait;
+
+    const ACQUIRER = 'paytm';
+
     public function authorize(array $input)
     {
         parent::authorize($input);
+
+        /**
+         * Processing authorize requests for upi payment method paytm with upi common trait.
+         * Checking method if upi then send to Mozart.
+         */
+        $method = $input['payment']['method'];
+
+        if ($method === Payment\Method::UPI)
+        {
+            return $this->upiAuthorize($input);
+        }
 
         $content = $this->getAuthRequestContentArray($input);
 

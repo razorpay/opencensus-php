@@ -4066,4 +4066,27 @@ class Terminal extends Base
         return $this->create($attributes);
 
     }
+
+    public function createUpiPaytmTerminal(array $attributes = [])
+    {
+
+        $default = [
+            'id'                        => '1000PaytmTrmnl',
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'paytm',
+            'upi'                       => 1,
+            'gateway_merchant_id'       => 'test_merchant_id',
+            'gateway_secure_secret'     => 'test_secure_secret',
+            'gateway_terminal_id'       => 'test_terminal_id',
+            'gateway_access_code'       => 'test_access_code',
+            'type'                      => [
+                Type::NON_RECURRING => '1',
+                Type::DIRECT_SETTLEMENT_WITH_REFUND => '1',
+            ],
+        ];
+
+        $attributes = array_merge($default, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
 }
