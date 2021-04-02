@@ -745,7 +745,7 @@ class Repository extends Base\Repository
 
     public function fetchBySettlementIdAndSource($settlementId, $source, $skip, $limit, $sourceId)
     {
-        $result = $this->newQuery()
+        $result = $this->newQueryWithConnection($this->getSlaveConnection())
                        ->where(Transaction\Entity::SETTLEMENT_ID, '=', $settlementId)
                        ->where(Transaction\Entity::TYPE, '=', $source);
 
@@ -793,7 +793,7 @@ class Repository extends Base\Repository
 
         $transactionData = $this->dbColumn('*');
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->select($transactionData)
                     ->join(Table::PAYMENT, $paymentId, '=', $transactionEntityId)
                     ->join(Table::BILLDESK, $billdeskPaymentId, '=', $paymentId)
@@ -1386,7 +1386,7 @@ class Repository extends Base\Repository
 
         $dateCol = 'FROM_UNIXTIME(' . $timestampColumn . ' + 19800,"%D %M, %Y") AS date';
 
-        $query = $this->newQuery()
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
                       ->selectRaw($dateCol . ',' . $params);
 
         return $query;
@@ -1423,7 +1423,7 @@ class Repository extends Base\Repository
 
         $dateCol = 'FROM_UNIXTIME(' . $timestampColumn . ' + 19800,"%D %M, %Y") AS date';
 
-        $query = $this->newQuery()
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
                 ->selectRaw($dateCol . ',' . $params);
 
         return $query;
@@ -1611,7 +1611,7 @@ class Repository extends Base\Repository
 
         $selectParams .= implode(',', [$paymentParams, $gatewayCol, $gatewayTerminalIdColumn]);
 
-        $query = $this->newQuery()
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
                       ->selectRaw($selectParams);
 
         return $query;
