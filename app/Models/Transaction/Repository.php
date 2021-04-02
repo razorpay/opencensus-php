@@ -1851,7 +1851,7 @@ class Repository extends Base\Repository
             return new Base\PublicCollection;
         }
 
-        $query = $this->newQuery()
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
                       ->where(Entity::MERCHANT_ID, $partner->getId())
                       ->where(Entity::BALANCE_ID, $commissionBalance->getId())
                       ->where(Entity::SETTLED_AT, '<=', $toTimestamp)
