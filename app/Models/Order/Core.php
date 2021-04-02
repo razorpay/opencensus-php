@@ -4,6 +4,7 @@ namespace RZP\Models\Order;
 
 use App;
 use Illuminate\Support\Arr;
+use RZP\Base\ConnectionType;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Offer;
@@ -22,6 +23,8 @@ use RZP\Models\Feature\Constants as FeatureConstants;
 
 class Core extends Base\Core
 {
+    const RECEIPT_MUTEX_TIMEOUT  = 10; // 10 seconds timeout
+
     /**
      * @param array           $input
      * @param Merchant\Entity $merchant
@@ -384,9 +387,22 @@ class Core extends Base\Core
                 Entity::RECEIPT);
         }
 
+        $mutex =  App::getFacadeRoot()['api.mutex'];
+
+        $mutexAcquired = $mutex->acquire($merchant->getId()."-".$receipt, self::RECEIPT_MUTEX_TIMEOUT);
+
+        if ($mutexAcquired === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ORDER_RECEIPT_ANOTHER_OPERATION_IN_PROGRESS,
+                null,
+                ['resource' => $merchant->getId()."-".$receipt]
+            );
+        }
+
         $params = [Entity::RECEIPT => $receipt];
 
-        $duplicateOrders = $this->repo->order->fetch($params, $merchant->getId());
+        $duplicateOrders = $this->repo->order->fetch($params, $merchant->getId(), ConnectionType::SLAVE);
 
         if (count($duplicateOrders) > 0)
         {

@@ -2105,6 +2105,8 @@ class ErrorCode
     // X Amazon Pay wallet account payouts errorcodes
     const BAD_REQUEST_WALLET_ACCOUNT_FUND_ACCOUNT_CREATION_NOT_PERMITTED            = 'BAD_REQUEST_WALLET_ACCOUNT_FUND_ACCOUNT_CREATION_NOT_PERMITTED';
 
+    const BAD_REQUEST_ORDER_RECEIPT_ANOTHER_OPERATION_IN_PROGRESS                   = 'BAD_REQUEST_ORDER_RECEIPT_ANOTHER_OPERATION_IN_PROGRESS';
+
     static function getConstants()
     {
         $oClass = new \ReflectionClass(__CLASS__);
