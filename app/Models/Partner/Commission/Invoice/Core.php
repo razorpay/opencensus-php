@@ -514,6 +514,7 @@ class Core extends Base\Core
             $data[Constants::INVOICE_ID] = $invoice->getId();
             $data[Constants::UPDATE_INVOICE_STATUS] = $updateInvoiceStatus;
             $data[Constants::CREATE_TDS] = $createTds;
+            $data[Constants::SKIP_PROCESSED] = $skipProcessed;
 
             CommissionTdsSettlement::dispatch($this->mode, $invoice->getMerchantId(), $data);
         }
