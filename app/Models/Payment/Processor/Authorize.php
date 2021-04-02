@@ -3156,6 +3156,8 @@ trait Authorize
             }
         }
 
+        $this->repo->saveOrFail($payment);
+
         try
         {
             $this->autoCapturePaymentIfApplicable($payment);
@@ -3168,8 +3170,6 @@ trait Authorize
                     'payment_id' => $payment->getPublicId(),
                 ]);
         }
-
-        $this->repo->saveOrFail($payment);
 
         $this->setPayment($payment);
     }
