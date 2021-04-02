@@ -31,20 +31,18 @@ use OpenCensus\Trace\Span;
  */
 class PDO implements IntegrationInterface
 {
-    static $db_host = "";
-    static $db_system = "";
+    static $dsn = "";
     /**
      * Static method to add instrumentation to the PDO requests
      */
-    public static function load($db_host="", $db_system="")
+    public static function load($dsn="")
     {
         if (!extension_loaded('opencensus')) {
             trigger_error('opencensus extension required to load PDO integrations.', E_USER_WARNING);
             return;
         }
 
-        PDO::$db_host = $db_host;
-        PDO::$db_system = $db_system;
+        PDO::$dsn = $dsn;
 
         // public int PDO::exec(string $query)
         opencensus_trace_method('PDO', 'exec', [static::class, 'handleQuery']);
@@ -76,13 +74,13 @@ class PDO implements IntegrationInterface
     public static function handleQuery($pdo, $query)
     {
         return [
-            'attributes' => [
-                'db.statement' => $query,
-                'span.kind' => 'client',
-                'db.system' => PDO::$db_system,
+            'attributes'        => [
+                'db.statement'  => $query,
+                'span.kind'     => 'client',
+                'db.system'     => PDO::$db_system,
                 'net.peer.name' => PDO::$db_host
             ],
-            'kind' => 'client',
+            'kind'              => 'client',
             'sameProcessAsParentSpan' => false
         ];
     }
@@ -98,12 +96,12 @@ class PDO implements IntegrationInterface
     {
         return [
             'attributes' => [
-                'span.kind' => 'client',
-                'db.system' => PDO::$db_system,
+                'span.kind'     => 'client',
+                'db.system'     => PDO::$db_system,
                 'net.peer.name' => PDO::$db_host
             ],
-            'kind' => 'client',
-            'sameProcessAsParentSpan' => false
+            'kind'                      => 'client',
+            'sameProcessAsParentSpan'   => false
         ];
     }
 
@@ -117,11 +115,101 @@ class PDO implements IntegrationInterface
      */
     public static function handleConnect($pdo, $dsn)
     {
+        $attributes = PDO::getTagsFromDSN($dsn);
+        $attributes['span.kind'] = 'client';
+        return [
+            'attributes'                => $attributes,
+            'kind'                      => 'client',
+            'sameProcessAsParentSpan'   => false,
+            'name'                      => 'PDO connect'
+        ];
+    }
+
+    /**
+     * Handle extracting the SQL query from a PDOStatement instance
+     *
+     * @internal
+     * @param PDOStatement $statement The prepared statement
+     * @return array
+     */
+    public static function handleStatementExecute($statement)
+    {
+        /*
+            refer following for SQL return codes
+            https://docstore.mik.ua/orelly/java-ent/jenut/ch08_06.htm
+        */
+
+        $rowCount = $statement->rowCount();
+        $errorCode = $statement->errorCode();
+        $errorTags = PDO::getErrorTags($errorCode);
+
+        $query = $statement->queryString;
+        $operation = PDO::getOperationName($query);
+        $tableName = PDO::getTableName($query, $operation);
+
+        $tags = [
+            'db.statement' => $query,
+            'db.row_count' => $rowCount,
+            'db.operation' => $operation,
+            'db.table' => $tableName,
+            'db.sql.table' => $tableName,
+            'span.kind' => 'client'
+        ];
+
+        $connectionTags = PDO::getTagsFromDSN(PDO::$dsn);
+
+        return [
+            'attributes' => $tags + $errorTags + $connectionTags,
+            'kind'       => 'client',
+            'sameProcessAsParentSpan' => false,
+            'name'       => sprintf("PDO %s %s", $operation, $tableName)
+        ];
+    }
+
+    public static function getOperationName($query){
+        // select/insert/update/delete
+
+        // some queries are enclosed in (). trim them before figuring out operation.
+        $operation = explode(" ", trim($query, "( "))[0];
+        return $operation;
+    }
+
+    public static function getTableName($query, $operation){
+        $tableName = "";
+        $operation = strtolower($operation);
+        $query = strtolower(trim($query));
+        $query_parts = explode(" ", $query);
+
+        if (($operation === 'select') or ($operation === 'delete')){
+            // select <...> from <tablename> where ...
+            // delete from <table_name> where ...
+            $from_index = array_search('from', $query_parts);
+            if (($from_index) and ($from_index+1 < count($query_parts))){
+                $tableName = $query_parts[$from_index+1];
+            }
+        }
+        else if (strtolower($operation) === 'update'){
+            // update <table_name> set ... where ...
+            $tableName = $query_parts[1];
+        }
+        else if (strtolower($operation) === 'insert'){
+            // insert into <tablename> ...
+            $into_index = array_search('into', $query_parts);
+            if (($into_index) and ($into_index+1 < count($query_parts))){
+                $tableName = $query_parts[$into_index+1];
+            }
+        }
+
+        return trim($tableName, " \n\r\t\v\0`");
+    }
+
+    public static function getTagsFromDSN($dsn)
+    {
         // https://www.php.net/manual/en/ref.pdo-mysql.connection.php
         // example $dsn: mysql:host=localhost;dbname=testdb
         // example $dsn: mysql:unix_socket=/tmp/mysql.sock;dbname=testdb
 
-        $db_system = PDO::$db_system;
+        $db_system = "";
         $connection_params = [];
         $attributes = [];
 
@@ -148,42 +236,16 @@ class PDO implements IntegrationInterface
         if (array_key_exists('host', $connection_params)){
             $attributes['net.peer.name'] =  $connection_params['host'];
         }
-        else if (array_key_exists('unix_socket', $connection_params)){
-            $attributes['net.peer.name'] = PDO::$db_host;
-        }
 
-        $attributes += [
-                        'dsn' => $dsn,
-                        'db.type' => 'sql',
-                        'db.connection_string' => $dsn,
-                        'span.kind' => 'client',
-                        'net.peer.name' => PDO::$db_host
-                    ];
+        $attributes['dsn'] = $dsn;
+        $attributes['db.type'] = 'sql';
+        $attributes['db.connection_string'] = $dsn;
 
-        return [
-            'attributes' => $attributes,
-            'kind' => 'client',
-            'sameProcessAsParentSpan' => false,
-            'name' => 'PDO connect'
-        ];
+        return $attributes;
     }
 
-    /**
-     * Handle extracting the SQL query from a PDOStatement instance
-     *
-     * @internal
-     * @param PDOStatement $statement The prepared statement
-     * @return array
-     */
-    public static function handleStatementExecute($statement)
+    public static function getErrorTags($errorCode)
     {
-        /*
-            refer following for SQL return codes
-            https://docstore.mik.ua/orelly/java-ent/jenut/ch08_06.htm
-        */
-
-        $rowCount = $statement->rowCount();
-        $errorCode = $statement->errorCode();
         $error =  substr($errorCode, 0, 2);
         $errorTags = [];
 
@@ -227,64 +289,6 @@ class PDO implements IntegrationInterface
             $errorTags['error.code'] = $errorCode;
             $errorTags['error.message'] = $errorCodeMsgArray[$error] ?? '';
         }
-
-        $query = $statement->queryString;
-        $operation = PDO::getOperationName($query);
-        $tableName = PDO::getTableName($query, $operation);
-
-        $tags = [
-            'db.statement' => $query,
-            'db.row_count' => $rowCount,
-            'db.operation' => $operation,
-            'db.table' => $tableName,
-            'db.sql.table' => $tableName,
-            'span.kind' => 'client',
-            'net.peer.name' => PDO::$db_host,
-            'db.system' => PDO::$db_system
-        ];
-
-        return [
-            'attributes' => $tags + $errorTags,
-            'kind' => 'client',
-            'sameProcessAsParentSpan' => false,
-            'name' => sprintf("PDO %s %s", $operation, $tableName)
-        ];
-    }
-
-    public static function getOperationName($query){
-        // select/insert/update/delete
-
-        // some queries are enclosed in (). trim them before figuring out operation.
-        $operation = explode(" ", trim($query, "( "))[0];
-        return $operation;
-    }
-
-    public static function getTableName($query, $operation){
-        $tableName = "";
-        $operation = strtolower($operation);
-        $query = strtolower(trim($query));
-        $query_parts = explode(" ", $query);
-
-        if (($operation === 'select') or ($operation === 'delete')){
-            // select <...> from <tablename> where ...
-            // delete from <table_name> where ...
-            $from_index = array_search('from', $query_parts);
-            if (($from_index) and ($from_index+1 < count($query_parts))){
-                $tableName = $query_parts[$from_index+1];
-            }
-        }
-        else if (strtolower($operation) === 'update'){
-            // update <table_name> set ... where ...
-            $tableName = $query_parts[1];
-        }
-        else if (strtolower($operation) === 'insert'){
-            // insert into <tablename> ...
-            $into_index = array_search('into', $query_parts);
-            if (($into_index) and ($into_index+1 < count($query_parts))){
-                $tableName = $query_parts[$into_index+1];
-            }
-        }
-
-        return trim($tableName, " \n\r\t\v\0`");
+        return $errorTags;
     }
 }
