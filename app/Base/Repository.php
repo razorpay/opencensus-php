@@ -6,21 +6,22 @@ use DB;
 use App;
 use Config;
 
-use Database\Connection;
-use Razorpay\Trace\Logger as Trace;
-use RZP\Base\Database\ConnectionHeartbeatLagChecker;
 use RZP\Models;
 use RZP\Exception;
 use RZP\Jobs\EsSync;
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use Database\Connection;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Entity as E;
 use RZP\Constants\Environment;
 use RZP\Models\Base\Collection;
 use RZP\Models\Base\EsRepository;
 use RZP\Models\Base\PublicEntity;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Base\Database\ConnectionHeartbeatLagChecker;
 
 class Repository extends \Razorpay\Spine\Repository
 {
@@ -394,6 +395,39 @@ class Repository extends \Razorpay\Spine\Repository
         $entity->timestamps = false;
 
         return $entity->setConnection($this->connection)->newQuery();
+    }
+
+    /**
+     * This gives the connection to slave with a feature of `lagThreshold`. If the current
+     * lag is more than the threshold provided, we will fail the query immediately with a
+     * ServerError. If no lagThreshold is provided, it will return back the slave connection
+     * irrespective of what the current lag is.
+     *
+     * @param null $lagThreshold To be give in Milliseconds.
+     *                           For example, 5 minutes lag threshold is 300000 milliseconds
+     *
+     * @return mixed
+     * @throws Exception\ServerErrorException
+     */
+    public function newQueryOnSlave($lagThreshold = null)
+    {
+        $slaveConnection = $this->getSlaveConnection();
+
+        $replicationLagInMilli = $this->app['db.connector.mysql']->getReplicationLagInMilli($slaveConnection);
+
+        if (($lagThreshold !== null) and
+            ($replicationLagInMilli > $lagThreshold))
+        {
+            throw new Exception\ServerErrorException(
+                'Replication lag greater than the defined threshold',
+                ErrorCode::SERVER_ERROR_SLAVE_LAG_THRESHOLD_BREACHED,
+                [
+                    'lag_threshold'     => $lagThreshold,
+                    'actual_lag_in_ms'  => $replicationLagInMilli
+                ]);
+        }
+
+        return $this->newQueryWithConnection($slaveConnection);
     }
 
     /**

@@ -1273,6 +1273,8 @@ class ErrorCode
 
     const SERVER_ERROR_SPLITZ_FAILURE                                               = 'SERVER_ERROR_SPLITZ_FAILURE';
 
+    const SERVER_ERROR_SLAVE_LAG_THRESHOLD_BREACHED                                 = 'SERVER_ERROR_SLAVE_LAG_THRESHOLD_BREACHED';
+
     const SERVER_ERROR_UFH_SERVICE_FAILURE                                          = 'SERVER_ERROR_UFH_SERVICE_FAILURE';
     const SERVER_ERROR_UFH_DELETE_SERVICE_FAILURE                                   = 'SERVER_ERROR_UFH_DELETE_SERVICE_FAILURE';
     const SERVER_ERROR_UFH_FETCH_SERVICE_FAILURE                                    = 'SERVER_ERROR_UFH_FETCH_SERVICE_FAILURE';
