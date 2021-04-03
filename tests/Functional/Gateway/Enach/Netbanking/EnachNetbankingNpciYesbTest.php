@@ -419,6 +419,14 @@ class EnachNetbankingNpciYesbTest extends EnachNetbankingNpciGatewayTest
 
         $data = $this->testData['testCancelEmandateToken'];
 
+        $this->mockBeam(function ($pushData, $intervalInfo, $mailInfo, $synchronous)
+        {
+            return [
+                'failed'  => null,
+                'success' => $pushData['files'],
+            ];
+        });
+
         $this->startTest($data);
     }
 

@@ -5,16 +5,13 @@ namespace RZP\Models\Gateway\File\Processor;
 use App;
 
 use RZP\Exception;
-use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base\Core;
 use RZP\Models\FileStore;
 use RZP\Models\Gateway\File;
 use RZP\Base\RuntimeManager;
-use RZP\Constants\Entity as E;
 use RZP\Models\Payment\Refund;
-use RZP\Models\Payment\Gateway;
 use RZP\Models\Gateway\File\Type;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Gateway\File\Status;
@@ -322,5 +319,26 @@ abstract class Base extends Core
         }
 
         return [$gatewayData, $fetchSuccess];
+    }
+
+    protected function sendBeamRequest(array $data, array $interval, array $mailInfo, bool $synchronous)
+    {
+        $beamResponse = $this->app['beam']->beamPush($data, $interval, $mailInfo, $synchronous);
+
+        if ((isset($beamResponse['success']) === false) or
+            ($beamResponse['success'] === null) or
+            ($beamResponse['failed'] !== null))
+        {
+            throw new Exception\GatewayFileException(ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE,
+                [
+                    'beam_response' => $beamResponse,
+                    'gateway_file'  => $this->gatewayFile->getId(),
+                    'target'        => $this->gatewayFile->getTarget(),
+                ]);
+        }
+
+        $this->gatewayFile->setStatus(Status::FILE_SENT);
+
+        $this->gatewayFile->setFileSentAt(time());
     }
 }

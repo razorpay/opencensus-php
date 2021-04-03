@@ -5,7 +5,6 @@ namespace RZP\Models\Gateway\File\Processor\Nach\Register;
 use Mail;
 use Storage;
 use Imagick;
-use ZipArchive;
 use DOMDocument;
 use Carbon\Carbon;
 
@@ -15,9 +14,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
-use RZP\Models\FileStore\Utility;
 use RZP\Models\Gateway\File\Status;
-use RZP\Exception\RuntimeException;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\FundTransfer\Holidays;
 use RZP\Exception\GatewayFileException;
@@ -29,11 +26,14 @@ use RZP\Services\Beam\Service as BeamService;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Models\Gateway\File\Processor\Nach\Base;
 use RZP\Services\Beam\Constants as BeamConstants;
+use RZP\Models\Gateway\File\Processor\FileHandler;
 use RZP\Gateway\Enach\Npci\Physical\Icici\Registration\Constants;
 use RZP\Gateway\Enach\Npci\Physical\Icici\Registration\RequestFields;
 
 class PaperNachIcici extends Base
 {
+    use FileHandler;
+
     const STEP          = 'register';
     //TODO Raise BAD ticket to get this renamed
     const S3_PATH       = 'icici/nach/debit/';
@@ -118,10 +118,6 @@ class PaperNachIcici extends Base
         try
         {
             $count = 0;
-
-            $this->fileStore = [];
-
-            $this->mailData = [];
 
             foreach ($data as $token)
             {
@@ -209,23 +205,6 @@ class PaperNachIcici extends Base
         Mail::queue($mailable);
     }
 
-    protected function getZipFileToWriteName($path)
-    {
-        return basename($path);
-    }
-
-    protected function getLocalSaveDir(): string
-    {
-        $dirPath = storage_path('files/nach');
-
-        if (file_exists($dirPath) === false)
-        {
-            (new Utility)->callFileOperation('mkdir', [$dirPath, 0777, true]);
-        }
-
-        return $dirPath;
-    }
-
     protected function deleteGeneratedFiles($folderPath)
     {
         try
@@ -259,12 +238,12 @@ class PaperNachIcici extends Base
         }
     }
 
-    protected function getFormattedAmount($amount)
+    protected function getFormattedAmount($amount): string
     {
         return number_format($amount / 100, 2, '.', '');
     }
 
-    protected function prepareFilesForToken($token, $count)
+    protected function prepareFilesForToken($token, $count): string
     {
         $fileNo = ($count % self::ZIP_FILE_SIZE) + 1;
 
@@ -478,57 +457,5 @@ class PaperNachIcici extends Base
         $pad_str = str_pad($value, $size, $padString, $padType);
 
         return substr($pad_str, 0, $size);
-    }
-
-    protected function generateZipFile($zipFileTarget)
-    {
-        $files = Storage::files($zipFileTarget);
-
-        $zipFileLocalName = basename($zipFileTarget);
-
-        $zipFileLocalPath = $this->getLocalSaveDir() . DIRECTORY_SEPARATOR . $zipFileLocalName . '.zip';
-
-        $zipFileS3Name = self::S3_PATH . basename($zipFileTarget);
-
-        $zip = new ZipArchive();
-
-        if ($zip->open($zipFileLocalPath, ZipArchive::CREATE) !== true) {
-            throw new RuntimeException(
-                'Could not create Papernach zip file',
-                [
-                    'filename' => $zipFileLocalPath
-                ]);
-        }
-
-        $basePath = storage_path('app') . '/';
-
-        foreach ($files as $file)
-        {
-            $filePath = $basePath . $file;
-
-            $zip->addFile($filePath, basename($file));
-        }
-
-        $zip->close();
-
-        $zipCreator = new FileStore\Creator;
-
-        $zipCreator->extension(static::EXTENSION)
-                   ->localFilePath($zipFileLocalPath)
-                   ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[static::EXTENSION][0])
-                   ->name($zipFileS3Name)
-                   ->store(FileStore\Store::S3)
-                   ->type(static::FILE_TYPE)
-                   ->entity($this->gatewayFile)
-                   ->metadata(static::FILE_METADATA)
-                   ->save();
-
-        $file = $zipCreator->getFileInstance();
-
-        $this->fileStore[] = $file->getId();
-
-        $this->gatewayFile->setFileGeneratedAt($file->getCreatedAt());
-
-        unlink($zipFileLocalPath);
     }
 }

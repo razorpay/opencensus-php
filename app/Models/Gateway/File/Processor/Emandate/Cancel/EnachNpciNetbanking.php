@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Gateway\File\Processor\Emandate\Cancel;
 
-Use Config;
 use Storage;
 use DOMDocument;
 use Carbon\Carbon;
@@ -13,19 +12,20 @@ use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
-use RZP\Models\FileStore\Utility;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
 use RZP\Gateway\Enach\Base\CategoryCode;
-use RZP\Exception\GatewayErrorException;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Services\Beam\Service as BeamService;
 use RZP\Services\Beam\Constants as BeamConstants;
+use RZP\Models\Gateway\File\Processor\FileHandler;
 use RZP\Gateway\Enach\Npci\Netbanking\CancelRequestTags;
 
 class EnachNpciNetbanking extends Base
 {
+    use FileHandler;
+
     const ACQUIRER  = Payment\Gateway::ACQUIRER_YESB;
 
     const GATEWAY   = Payment\Gateway::ENACH_NPCI_NETBANKING;
@@ -42,11 +42,7 @@ class EnachNpciNetbanking extends Base
 
     const ZIP_FILE  = 'MMS-CANCEL-YESB-{$utilityCode}-{$date}-API000001-INP';
 
-    const STEP = 'cancel';
-
     protected $fileStore = [];
-
-    protected $mailData = [];
 
     public function createFile($data)
     {
@@ -194,33 +190,6 @@ class EnachNpciNetbanking extends Base
             'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::NBPLUS_TECH]
         ];
 
-        $beamResponse = $this->app['beam']->beamPush($data, [], $mailInfo, true);
-
-        if ((isset($beamResponse['success']) === false) or
-            ($beamResponse['success'] === null) or
-            ((isset($beamResponse['failed']) === true) and
-            ($beamResponse['failed'] !== null)))
-        {
-            throw new GatewayErrorException(ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-                null,
-                null,
-                [
-                    'beam_response' => $beamResponse,
-                    'gateway_file'  => $this->gatewayFile->getId(),
-                    'target'        => 'enach_npci_netbanking',
-                ]);
-        }
-    }
-
-    protected function getLocalSaveDir(): string
-    {
-        $dirPath = storage_path('files/emandate');
-
-        if (file_exists($dirPath) === false)
-        {
-            (new Utility)->callFileOperation('mkdir', [$dirPath, 0777, true]);
-        }
-
-        return $dirPath;
+        $this->sendBeamRequest($data, [], $mailInfo, true);
     }
 }

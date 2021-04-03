@@ -40,8 +40,8 @@ abstract class Base extends EMandate\Base
         return $tokens;
     }
 
-    public function generateData(PublicCollection $entites): PublicCollection
+    public function generateData(PublicCollection $entities): PublicCollection
     {
-        return $entites;
+        return $entities;
     }
 }

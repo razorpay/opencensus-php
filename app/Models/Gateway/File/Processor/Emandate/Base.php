@@ -21,8 +21,6 @@ abstract class Base extends Processor\Base
 {
     const FILE_METADATA = [];
 
-    const S3_PATH = '';
-
     public function checkIfValidDataAvailable(PublicCollection $tokens)
     {
         if ($tokens->count() === 0)
@@ -140,56 +138,5 @@ abstract class Base extends Processor\Base
     protected function getFormattedAmount($amount)
     {
         return number_format($amount / 100, 2, '.', '');
-    }
-
-    protected function generateZipFile($zipFileTarget)
-    {
-        $files = Storage::files($zipFileTarget);
-
-        $zipFileLocalName = basename($zipFileTarget);
-
-        $zipFileLocalPath = $this->getLocalSaveDir() . DIRECTORY_SEPARATOR . $zipFileLocalName . '.zip';
-
-        $zipFileS3Name = self::S3_PATH . basename($zipFileTarget);
-
-        $zip = new ZipArchive();
-
-        if ($zip->open($zipFileLocalPath, ZipArchive::CREATE) !== true) {
-            throw new RuntimeException(
-                'Could not create Papernach zip file',
-                [
-                    'filename' => $zipFileLocalPath
-                ]);
-        }
-
-        $basePath = storage_path('app') . '/';
-
-        foreach ($files as $file)
-        {
-            $filePath = $basePath . $file;
-
-            $zip->addFile($filePath, basename($file));
-        }
-
-        $zip->close();
-
-        $zipCreator = new FileStore\Creator;
-
-        $zipCreator->extension(static::EXTENSION)
-                   ->localFilePath($zipFileLocalPath)
-                   ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[static::EXTENSION][0])
-                   ->name($zipFileS3Name)
-                   ->store(FileStore\Store::S3)
-                   ->type(static::FILE_TYPE)
-                   ->entity($this->gatewayFile)
-                   ->save();
-
-        $file = $zipCreator->getFileInstance();
-
-        $this->fileStore[] = $file->getId();
-
-        $this->gatewayFile->setFileGeneratedAt($file->getCreatedAt());
-
-        unlink($zipFileLocalPath);
     }
 }

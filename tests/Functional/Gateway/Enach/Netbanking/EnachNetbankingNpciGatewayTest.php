@@ -7,7 +7,6 @@ use Excel;
 use Queue;
 Use Carbon\Carbon;
 
-use RZP\Jobs\BeamJob;
 use RZP\Models\Feature;
 use RZP\Models\Terminal;
 use RZP\Constants\Entity;
@@ -15,11 +14,8 @@ use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Method;
-use RZP\Models\Payment\Refund;
-use RZP\Models\Settlement\Channel;
 use RZP\Services\Mock\BeamService;
 use RZP\Tests\Functional\TestCase;
-use RZP\Models\FundTransfer\Attempt;
 use RZP\Excel\Export as ExcelExport;
 use RZP\Models\Order\Entity as Order;
 use RZP\Models\Payment\Entity as Payment;
@@ -419,7 +415,13 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         Queue::fake();
 
-        $this->mockBeam();
+        $this->mockBeam(function ($pushData, $intervalInfo, $mailInfo, $synchronous)
+        {
+            return [
+                'failed' => null,
+                'success' => $pushData['files'],
+            ];
+        });
 
         $content = $this->startTest();
 
@@ -599,7 +601,13 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         Queue::fake();
 
-        $this->mockBeam();
+        $this->mockBeam(function ($pushData, $intervalInfo, $mailInfo, $synchronous)
+        {
+            return [
+                'failed' => null,
+                'success' => $pushData['files'],
+            ];
+        });
 
         $this->testData[__FUNCTION__] = $this->testData['testDebitFileGeneration'];
 
@@ -690,7 +698,13 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         Queue::fake();
 
-        $this->mockBeam();
+        $this->mockBeam(function ($pushData, $intervalInfo, $mailInfo, $synchronous)
+        {
+            return [
+                'failed' => null,
+                'success' => $pushData['files'],
+            ];
+        });
 
         $content = $this->startTest($this->testData['testDebitFileGeneration']);
 
@@ -1124,28 +1138,15 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         });
     }
 
-    public function mockBeam()
+    public function mockBeam(callable $callback)
     {
         $beamServiceMock = $this->getMockBuilder(BeamService::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['beamPush'])
-            ->getMock();
+                                ->setConstructorArgs([$this->app])
+                                ->setMethods(['beamPush'])
+                                ->getMock();
 
-        $beamServiceMock->method('beamPush')
-            ->will($this->returnCallback(
-                function ($pushData, $intervalInfo, $mailInfo, $synchronous)
-                {
-//                    $this->assertEquals('firstdata_pares_data_push', $pushData['job_name']);
-//
-//                    $this->assertEquals(2, count($pushData['files']));
-
-                    return [
-                        'failed' => null,
-                        'success' => $pushData['files'],
-                    ];
-                }));
+        $beamServiceMock->method('beamPush')->will($this->returnCallback($callback));
 
         $this->app['beam']->setMockService($beamServiceMock);
-
     }
 }
