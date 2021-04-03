@@ -277,8 +277,9 @@ abstract class NodalAccount extends Base\Core
 
         switch ($sourceType)
         {
-            case Attempt\Type::SETTLEMENT:
-                return $this->repo->transaction->fetchTransactionCountForSettlementId($attempt->getSourceId());
+//            Slack Ref : https://razorpay.slack.com/archives/C01FCB94K6V/p1617418029324200
+//            case Attempt\Type::SETTLEMENT:
+//                return $this->repo->transaction->fetchTransactionCountForSettlementId($attempt->getSourceId());
 
             default:
                 return 1;

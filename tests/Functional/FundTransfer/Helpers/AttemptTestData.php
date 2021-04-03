@@ -20,7 +20,7 @@ return [
         'processed_amount'  => 0,
         'processed_count'   => 0,
         'total_count'       => 1,
-        'transaction_count' => 4,
+        'transaction_count' => 1,
         'type'              => 'settlement',
     ],
 
@@ -31,7 +31,7 @@ return [
         'processed_amount'  => 1952600,
         'processed_count'   => 1,
         'total_count'       => 1,
-        'transaction_count' => 4,
+        'transaction_count' => 1,
         'type'              => 'settlement',
     ],
 
@@ -42,7 +42,7 @@ return [
         'processed_amount'  => 0,
         'processed_count'   => 0,
         'total_count'       => 1,
-        'transaction_count' => 4,
+        'transaction_count' => 1,
         'type'              => 'settlement',
     ],
 
