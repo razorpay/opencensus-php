@@ -1981,6 +1981,7 @@ class Gateway
         Gateway::UPI_AXIS,
         Gateway::UPI_RBL,
         Gateway::UPI_YESBANK,
+        Gateway::CASHFREE,
         Gateway::UPI_AIRTEL,
         Gateway::WALLET_PHONEPE,
         Gateway::UPI_CITI,
