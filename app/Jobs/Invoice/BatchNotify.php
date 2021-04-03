@@ -59,10 +59,12 @@ class BatchNotify extends Job
             $smsNotify   = (bool) ($this->input[InvoiceModel\Entity::SMS_NOTIFY] ?? '1');
             $emailNotify = (bool) ($this->input[InvoiceModel\Entity::EMAIL_NOTIFY] ?? '1');
 
-            $invoices = $this->repoManager->invoice->findIssuedByBatchId($this->batchId);
+            $invoiceIds = $this->repoManager->invoice->findIssuedByBatchId($this->batchId);
 
-            foreach ($invoices as $invoice)
+            foreach ($invoiceIds as $invoiceId)
             {
+                $invoice = $this->repoManager->invoice->findOrFail($invoiceId);
+
                 $this->notify($invoice, $smsNotify, $emailNotify);
             }
 

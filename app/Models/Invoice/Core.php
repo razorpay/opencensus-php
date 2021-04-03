@@ -679,17 +679,19 @@ class Core extends Base\Core
 
         $time = time();
 
-        $invoices = $this->repo->invoice->getIssuedAndPastExpiredByInvoices();
+        $invoiceIds = $this->repo->invoice->getIssuedAndPastExpiredByInvoices();
 
         $summary = [
-            'total_invoices_count' => $invoices->count(),
+            'total_invoices_count' => $invoiceIds->count(),
             'failed_invoice_ids'   => [],
         ];
 
-        foreach ($invoices as $invoice)
+        foreach ($invoiceIds as $invoiceId)
         {
             try
             {
+                $invoice = $this->repo->invoice->findOrFail($invoiceId);
+
                 $this->expireInvoice($invoice);
             }
             catch (\Exception $e)
@@ -767,21 +769,23 @@ class Core extends Base\Core
 
         $time = time();
 
-        $invoices = $this->repo->invoice->getPastInvoicesByStatusAndMerchatId(
+        $invoiceIds = $this->repo->invoice->getPastInvoicesByStatusAndMerchatId(
             $pastTime,
             Entity::DELETE_ALLOWED_STATUSES,
             $merchantIds,
             $limit);
 
         $summary = [
-            'total_invoices_count' => $invoices->count(),
+            'total_invoices_count' => $invoiceIds->count(),
             'failed_invoice_ids'   => [],
         ];
 
-        foreach ($invoices as $invoice)
+        foreach ($invoiceIds as $invoiceId)
         {
             try
             {
+                $invoice = $this->repo->invoice->findOrFail($invoiceId);
+
                 $this->deleteInvoice($invoice);
             }
             catch (\Exception $e)
