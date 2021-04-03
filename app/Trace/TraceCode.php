@@ -4267,6 +4267,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     //Segmentation trigger trace codes
     const SEGMENT_CREATE_UPDATE_ERROR                        = 'SEGMENT_CREATE_UPDATE_ERROR';
 
+    // DB Query Event Listners
+    const DB_QUERY_EXECUTION_LOG                                = 'DB_QUERY_EXECUTION_LOG';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
@@ -4432,6 +4435,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::PERFORM_ACTION_OBSERVER_DATA                          => 'Perform Action on Observer Data',
         self::UPDATE_OBSERVER_DATA                                  => 'Update Observer Data',
         self::GET_OBSERVER_DATA                                     => 'Get Observer Data',
+        self::DB_QUERY_EXECUTION_LOG                                => 'db query executed'
         ];
 
     public static $fileBasedReconTraceCodes = [

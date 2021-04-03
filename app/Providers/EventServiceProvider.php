@@ -6,6 +6,7 @@ use Illuminate\Queue\Jobs\SyncJob;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Cache\Events as CacheEvents;
 use Illuminate\Queue\Events as QueueEvents;
+use Illuminate\Database\Events as DatabaseEvents;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 use RZP\Events;
@@ -103,6 +104,9 @@ class EventServiceProvider extends ServiceProvider
         AccessMap\EventDeleted::class => [
             Listeners\AccessMapListener::class . '@onDeleted',
         ],
+        DatabaseEvents\QueryExecuted::class => [
+            Listeners\DatabaseEventListener::class,
+        ]
     ];
 
     public function boot()
