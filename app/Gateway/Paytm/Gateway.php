@@ -299,6 +299,17 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
+        /**
+         * Processing verify requests for upi payment method paytm with upi common trait.
+         * Checking method if upi then send to Mozart.
+         */
+        $method = $input['payment']['method'];
+
+        if ($method === Payment\Method::UPI)
+        {
+            return $this->upiSendPaymentVerifyRequest($verify);
+        }
+
         $content = array(
             'MID'       => $input['terminal']['gateway_merchant_id'],
             'ORDERID'  => $input['payment']['id']);
@@ -326,6 +337,17 @@ class Gateway extends Base\Gateway
 
     protected function verifyPayment($verify)
     {
+        /**
+         * Verifying payments for upi payment method paytm with upi common trait.
+         * Checking method if upi then send to Mozart.
+         */
+        $method = $verify->input['payment']['method'];
+
+        if ($method === Payment\Method::UPI)
+        {
+            return $this->upiVerifyPayment($verify);
+        }
+
         $payment = $verify->payment;
         $content = $verify->verifyResponseContent;
         $input = $verify->input;
@@ -832,5 +854,27 @@ class Gateway extends Base\Gateway
             'success' => false,
         ];
 
+    }
+
+    /**
+     * If payment method upi then using upi repository to fetch payments details
+     * Else parent repository to fetch payments details
+     * @param Verify $verify
+     * @return string
+     */
+
+    public function getPaymentToVerify(Verify $verify)
+    {
+        if ($verify->input['payment']['method'] === Payment\Method::UPI)
+        {
+            $gatewayPayment = $this->upiGetRepository()->findByPaymentIdAndActionOrFail(
+                              $verify->input['payment']['id'], Action::AUTHORIZE);
+
+            $verify->payment = $gatewayPayment;
+
+            return $gatewayPayment;
+        }
+
+        return parent::getPaymentToVerify($verify);
     }
 }
