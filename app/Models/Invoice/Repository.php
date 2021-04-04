@@ -2,19 +2,23 @@
 
 namespace RZP\Models\Invoice;
 
+use Config;
 use Carbon\Carbon;
-
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Batch;
+use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Base\BuilderEx;
+use Database\Connection;
 use RZP\Models\Merchant;
 use RZP\Models\LineItem;
 use RZP\Error\ErrorCode;
 use RZP\Models\User\Role;
 use RZP\Base\JitValidator;
 use RZP\Constants\Timezone;
+use RZP\Base\ConnectionType;
+use RZP\Constants\Environment;
 use RZP\Constants\Entity as E;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Plan\Subscription;
@@ -116,7 +120,7 @@ class Repository extends Base\Repository
     {
         Entity::verifyIdAndStripSign($id);
 
-        $query = $this->getQueryForFindWithParams($input, $this->getSlaveConnection());
+        $query = $this->getQueryForFindWithParams($input, ConnectionType::SLAVE);
 
         $query = $query->merchantId($merchant->getId());
 
@@ -172,7 +176,7 @@ class Repository extends Base\Repository
     {
         $this->validateInvoicesCountParams($params);
 
-        $query = $this->newQueryWithConnection($this->getDataWarehouseConnection());
+        $query = $this->newQueryWithConnection($this->getDataWarehouseConnectionForInvoiceRepo());
 
         $merchantId = optional($this->merchant)->getId();
 
@@ -195,7 +199,7 @@ class Repository extends Base\Repository
     {
         $currentTime = Carbon::now()->getTimestamp();
 
-        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+        return $this->newQueryWithConnection($this->getDataWarehouseConnectionForInvoiceRepo())
                     ->where($medium . '_status', '=', NotifyStatus::PENDING)
                     ->where(Entity::STATUS, '=', Status::ISSUED)
                     ->where(Entity::SCHEDULED_AT, '<=', $currentTime)
@@ -224,7 +228,7 @@ class Repository extends Base\Repository
 
         $nowMinus14days = Carbon::now(Timezone::IST)->addDays(-14)->getTimestamp();
 
-        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+        return $this->newQueryWithConnection($this->getDataWarehouseConnectionForInvoiceRepo())
                     ->select(Entity::ID)
                     ->where(Entity::STATUS, '=', Status::ISSUED)
                     ->whereBetween(Entity::EXPIRE_BY, array($nowMinus14days, $now))
@@ -242,7 +246,7 @@ class Repository extends Base\Repository
     {
         $pastTimeMinus14days = Carbon::createFromTimestamp($pastTime, Timezone::IST)->addDays(-14)->getTimestamp();
 
-        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+        return $this->newQueryWithConnection($this->getDataWarehouseConnectionForInvoiceRepo())
                     ->select(Entity::ID)
                     ->where(Entity::TYPE, '=' ,$type)
                     ->whereIn(Entity::MERCHANT_ID, $merchantIds)
@@ -257,7 +261,7 @@ class Repository extends Base\Repository
      */
     public function fetchIssuedInvoicesOfSubscription(Subscription\Entity $subscription)
     {
-        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+        return $this->newQueryWithConnection($this->getDataWarehouseConnectionForInvoiceRepo())
                     ->where(Entity::SUBSCRIPTION_ID, '=', $subscription->getId())
                     ->where(Entity::STATUS, '=', Status::ISSUED)
                     ->with(Entity::ORDER)
@@ -440,7 +444,7 @@ class Repository extends Base\Repository
 
     public function findIssuedByBatchId(string $batchId)
     {
-        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+        return $this->newQueryWithConnection($this->getDataWarehouseConnectionForInvoiceRepo())
             ->select(Entity::ID)
             ->where(Entity::BATCH_ID, $batchId)
             ->where(Entity::STATUS, Status::ISSUED)
@@ -463,7 +467,7 @@ class Repository extends Base\Repository
         string $batchId,
         array $receipts = []): Base\PublicCollection
     {
-        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+        return $this->newQueryWithConnection($this->getDataWarehouseConnectionForInvoiceRepo())
                     ->where(Entity::BATCH_ID, $batchId)
                     ->whereIn(Entity::RECEIPT, $receipts)
                     ->get();
@@ -481,7 +485,7 @@ class Repository extends Base\Repository
      */
     public function getNonDraftInvoiceCountByBatchId(string $batchId): int
     {
-        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+        return $this->newQueryWithConnection($this->getDataWarehouseConnectionForInvoiceRepo())
                     ->where(Entity::BATCH_ID, $batchId)
                     ->where(Entity::STATUS, '!=', Status::DRAFT)
                     ->count();
@@ -534,7 +538,7 @@ class Repository extends Base\Repository
     public function getInvoiceStatsForBatch(Batch\Entity $batch): array
     {
         /** @var Base\PublicCollection $collection */
-        $collection = $this->newQueryWithConnection($this->getDataWarehouseConnection())
+        $collection = $this->newQueryWithConnection($this->getDataWarehouseConnectionForInvoiceRepo())
                            ->selectRaw(Entity::STATUS . ', COUNT(*) AS count')
                            ->where(Entity::BATCH_ID, '=', $batch->getId())
                            ->groupBy(Entity::STATUS)
@@ -578,7 +582,7 @@ class Repository extends Base\Repository
     {
         $input[Entity::ENTITY_TYPE] = $entityType;
 
-        return $this->repo->invoice->fetch($input, $merchantId, $this->getDataWarehouseConnection());
+        return $this->repo->invoice->fetch($input, $merchantId, ConnectionType::DATA_WAREHOUSE);
     }
 
     public function findByMerchantAndTokenRegistration(
@@ -679,5 +683,17 @@ class Repository extends Base\Repository
         $operator = ($subscriptions === '1') ? '!=' : '=';
 
         $query->where($subscriptionsAttribute, $operator, null);
+    }
+
+    protected function getDataWarehouseConnectionForInvoiceRepo()
+    {
+        if ($this->app['env'] === Environment::TESTING)
+        {
+            return Config::get('database.default');
+        }
+
+        $mode = $mode ?? $this->app['rzp.mode'];
+
+        return ($mode === Mode::TEST) ? Connection::SLAVE_TEST : Connection::DATA_WAREHOUSE_LIVE;
     }
 }
