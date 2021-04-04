@@ -23,6 +23,7 @@ class Cbi extends Base
     const GATEWAY                = Payment\Gateway::NETBANKING_CBI;
     const GATEWAY_CODE           = IFSC::CBIN;
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
+    const BASE_STORAGE_DIRECTORY = 'Cbi/Refund/Netbanking/';
 
     protected $type = Payment\Entity::BANK;
 
@@ -93,7 +94,7 @@ class Cbi extends Base
     {
         $dateTime = Carbon::now(Timezone::IST)->format('dmY');
 
-        return static::FILE_NAME . $dateTime;
+        return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . $dateTime;
     }
 
     protected function collectPaymentData(Payment\Entity $payment): array

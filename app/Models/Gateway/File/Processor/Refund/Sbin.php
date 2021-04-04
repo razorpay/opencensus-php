@@ -26,6 +26,7 @@ class Sbin extends Base
     const GATEWAY                = Payment\Gateway::NETBANKING_SBI;
     const GATEWAY_CODE           = [IFSC::SBIN, IFSC::SBBJ, IFSC::SBHY, IFSC::SBMY, IFSC::STBP, IFSC::SBTR];
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
+    const BASE_STORAGE_DIRECTORY = 'Sbi/Refund/Netbanking/';
 
     const BANK_CODE              = 'sbin';
     const DATE_FORMAT            = 'ymd';
@@ -111,6 +112,6 @@ class Sbin extends Base
     {
         $date = Carbon::now(Timezone::IST)->format('d.m.Y');
 
-        return self::FILE_NAME . '_' . $date;
+        return static::BASE_STORAGE_DIRECTORY . self::FILE_NAME . '_' . $date;
     }
 }

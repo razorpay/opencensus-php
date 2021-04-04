@@ -24,6 +24,7 @@ class Isg extends Base
     const FILE_TYPE_REFUND              = FileStore\Type::ISG_REFUND;
     const FILE_TYPE_SUMMARY             = FileStore\Type::ISG_SUMMARY;
     const GATEWAY                       = Payment\Gateway::ISG;
+    const BASE_STORAGE_DIRECTORY        = 'Isg/Refund/';
 
     const REFUND_ID                     = 'RFD_TXN_ID';
     const MERCHANT_PAN                  = 'MERCHANT_PAN';
@@ -161,7 +162,7 @@ class Isg extends Base
             $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
 
             $mailData[] = [
-                'file_name'  => $file->getLocation(),
+                'file_name'  => basename($file->getLocation()),
                 'signed_url' => $signedUrl,
             ];
         }
@@ -173,7 +174,7 @@ class Isg extends Base
     {
         $date = Carbon::now(Timezone::IST)->format('dmY');
 
-        return $name . '_' . $date;
+        return static::BASE_STORAGE_DIRECTORY . $name . '_' . $date;
     }
 
     protected function formatAmount($amount)

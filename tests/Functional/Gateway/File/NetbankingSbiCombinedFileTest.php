@@ -107,7 +107,7 @@ class NetbankingSbiCombinedFileTest extends TestCase
             'items'  => [
                 [
                     'type'     => 'sbi_netbanking_refund',
-                    'location' => 'RZPY_SBI_Refund' . '_' . $rfDate . '.txt'
+                    'location' => 'Sbi/Refund/Netbanking/RZPY_SBI_Refund' . '_' . $rfDate . '.txt'
                 ],
             ],
         ];
@@ -312,7 +312,7 @@ class NetbankingSbiCombinedFileTest extends TestCase
                 ],
                 [
                     'type' => 'sbi_netbanking_refund',
-                    'location' => 'RZPY_SBI_Refund' . '_' . $rfDate . '.txt'
+                    'location' => 'Sbi/Refund/Netbanking/RZPY_SBI_Refund' . '_' . $rfDate . '.txt'
                 ],
             ],
         ];

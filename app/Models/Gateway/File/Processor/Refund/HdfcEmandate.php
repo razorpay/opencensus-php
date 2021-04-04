@@ -18,6 +18,7 @@ class HdfcEmandate extends Hdfc
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
     const GATEWAY                = Payment\Gateway::NETBANKING_HDFC;
     const GATEWAY_CODE           = IFSC::HDFC;
+    const BASE_STORAGE_DIRECTORY = 'Hdfc/Refund/Emandate/';
 
     protected function formatDataForFile(array $data)
     {
@@ -96,5 +97,12 @@ class HdfcEmandate extends Hdfc
         }
 
         return $input;
+    }
+
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now(Timezone::IST)->format('Ymd');
+
+        return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . $time . '-0';
     }
 }

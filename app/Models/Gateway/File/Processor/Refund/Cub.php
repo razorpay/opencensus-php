@@ -22,6 +22,7 @@ class Cub extends Base
     const GATEWAY                = Payment\Gateway::NETBANKING_CUB;
     const GATEWAY_CODE           = IFSC::CIUB;
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
+    const BASE_STORAGE_DIRECTORY = 'Cub/Refund/Netbanking/';
 
     protected $type = Payment\Entity::BANK;
 
@@ -54,7 +55,7 @@ class Cub extends Base
     {
         $dateTime = Carbon::now(Timezone::IST)->format('YdmHis');
 
-        return static::FILE_NAME . $dateTime;
+        return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . $dateTime;
     }
 
     protected function fetchBankPaymentId($data)

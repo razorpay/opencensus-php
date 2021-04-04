@@ -21,6 +21,7 @@ class PaylaterIcici extends Base
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::WALLET;
     const ACQUIRER               = Payment\Processor\PayLater::ICICI;
     const PAYLATER               = Payment\Gateway::PAYLATER;
+    const BASE_STORAGE_DIRECTORY = 'Icici/Refund/Paylater/';
 
     protected function formatDataForFile(array $data)
     {
@@ -69,7 +70,7 @@ class PaylaterIcici extends Base
         $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
 
         $mailData = [
-            'file_name'  => $file->getLocation(),
+            'file_name'  => basename($file->getLocation()),
             'signed_url' => $signedUrl,
             'count'      => count($data),
             'amount'     => $totalAmount,
@@ -84,7 +85,7 @@ class PaylaterIcici extends Base
         $date = Carbon::now(Timezone::IST)->format('d-m-Y');
 
         // the serial no is hardcoded as the file is generated only once
-        return self::FILE_NAME . $date;
+        return static::BASE_STORAGE_DIRECTORY . self::FILE_NAME . $date;
     }
 
     protected function fetchRefundsFromAPI(int $begin, int $end): PublicCollection

@@ -28,6 +28,7 @@ class Csb extends Base
     const GATEWAY                = Payment\Gateway::NETBANKING_CSB;
     const GATEWAY_CODE           = IFSC::CSBK;
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
+    const BASE_STORAGE_DIRECTORY = 'Csb/Refund/Netbanking/';
 
     const BANK_CODE              = 'CSB';
     const DATE_FORMAT            = 'd-m-y';
@@ -87,7 +88,7 @@ class Csb extends Base
     {
         $date = Carbon::now(Timezone::IST)->format('d_m_Y');
 
-        return self::FILE_NAME . '_' . $date;
+        return static::BASE_STORAGE_DIRECTORY . self::FILE_NAME . '_' . $date;
     }
 
     protected function formatDataForMail(array $data)
@@ -116,7 +117,7 @@ class Csb extends Base
         $today = Carbon::now(Timezone::IST)->format('jS F Y');
 
         $mailData = [
-            'file_name'  => $file->getLocation(),
+            'file_name'  => basename($file->getLocation()),
             'signed_url' => $signedUrl,
             'amount'     => $totalAmount,
             'count'      => count($data),

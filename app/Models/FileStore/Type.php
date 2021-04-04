@@ -512,7 +512,6 @@ class Type
         self::SETTLEMENT_BUCKET_CONFIG => [
             self::KOTAK_NETBANKING_REFUND,
             self::HDFC_NETBANKING_REFUND,
-            self::HDFC_EMANDATE_REFUND,
             self::HDFC_EMANDATE_REGISTER,
             self::HDFC_EMANDATE_DEBIT,
             self::BOB_NETBANKING_REFUND,
@@ -521,7 +520,6 @@ class Type
             self::CANARA_NETBANKING_REFUND,
             self::AXIS_NETBANKING_REFUND,
             self::AXIS_NETBANKING_CLAIMS,
-            self::CSB_NETBANKING_REFUND,
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
             self::ICICI_UPI_REFUND,
@@ -541,10 +539,8 @@ class Type
             self::HDFC_CYBERSOURCE_FAILED_REFUND,
             self::AXIS_CYBERSOURCE_FAILED_REFUND,
             self::HDFC_FSS_FAILED_REFUND,
-            self::OBC_NETBANKING_REFUND,
             self::SVC_NETBANKING_REFUND,
             self::JKB_NETBANKING_REFUND,
-            self::DCB_NETBANKING_REFUND,
             self::UBI_NETBANKING_REFUND,
         ],
 
@@ -613,6 +609,17 @@ class Type
 
         self::RECON_SFTP_INPUT_BUCKET_CONFIG => [
             self::FSB_NETBANKING_REFUND,
+            self::HDFC_EMANDATE_REFUND,
+            self::ICICI_PAYLATER_REFUND,
+            self::OBC_NETBANKING_REFUND,
+            self::ISG_REFUND,
+            self::ISG_SUMMARY,
+            self::CSB_NETBANKING_REFUND,
+            self::SBI_NETBANKING_REFUND,
+            self::CBI_NETBANKING_REFUND,
+            self::CUB_NETBANKING_REFUND,
+            self::IDBI_NETBANKING_REFUND,
+            self::DCB_NETBANKING_REFUND,
         ],
 
         self::DATA_LAKE_SEGMENTS_BUCKET_CONFIG => [

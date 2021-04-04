@@ -26,6 +26,7 @@ class Obc extends Base
     const GATEWAY                = Payment\Gateway::NETBANKING_OBC;
     const GATEWAY_CODE           = IFSC::ORBC;
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
+    const BASE_STORAGE_DIRECTORY = 'Obc/Refund/Netbanking/';
 
     protected $type = Payment\Entity::BANK;
 
@@ -78,7 +79,7 @@ class Obc extends Base
 
     protected function getFileToWriteNameWithoutExt()
     {
-       return self::FILE_NAME . '_' . $this->claimDate;
+       return static::BASE_STORAGE_DIRECTORY . self::FILE_NAME . '_' . $this->claimDate;
     }
 
     protected function getFormattedAmount($amount)

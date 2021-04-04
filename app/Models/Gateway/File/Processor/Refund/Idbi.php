@@ -24,6 +24,7 @@ class Idbi extends Base
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
     const BANK_CODE              = 'IDB';
     const MERCHANT_NAME          = 'RAZORPAY';
+    const BASE_STORAGE_DIRECTORY = 'Idbi/Refund/Netbanking/';
 
     protected function formatDataForFile(array $data)
     {
@@ -58,5 +59,12 @@ class Idbi extends Base
     protected function getFormattedAmount($amount)
     {
         return number_format($amount / 100, 2, '.', '');
+    }
+
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . '_' . $this->mode . '_' . $time;
     }
 }
