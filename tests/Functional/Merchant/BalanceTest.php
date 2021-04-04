@@ -38,6 +38,47 @@ class BalanceTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetBalanceMultiple()
+    {
+        $collectionsServiceConfig = \Config::get('applications.capital_collections_client');
+        $pwd = $collectionsServiceConfig['secret'];
+
+        $principal = $this->fixtures->create('balance', [
+            Balance::MERCHANT_ID => '10000000000000',
+            Balance::TYPE        => Type::PRINCIPAL,
+            Balance::BALANCE     => 100000,
+        ]);
+
+        $interest = $this->fixtures->create('balance', [
+            Balance::MERCHANT_ID => '10000000000000',
+            Balance::TYPE        => Type::INTEREST,
+            Balance::BALANCE     => 900,
+        ]);
+
+        $this->ba->appAuth('rzp_'.'test', $pwd);
+
+        $this->testData[__FUNCTION__]['request']['content']['ids'] = [$principal['id'], $interest['id']];
+
+        $response = $this->startTest();
+
+        $balances = $response['items'];
+
+        $firstBalance = $balances[0];
+
+        if ($firstBalance[Balance::TYPE] === Type::INTEREST)
+        {
+            $this->assertEquals(900, $firstBalance[Balance::BALANCE]);
+            $this->assertEquals(100000, $balances[1][Balance::BALANCE]);
+            $this->assertEquals(Type::PRINCIPAL, $balances[1][Balance::TYPE]);
+        }
+        else
+        {
+            $this->assertEquals(100000, $firstBalance[Balance::BALANCE]);
+            $this->assertEquals(900, $balances[1][Balance::BALANCE]);
+            $this->assertEquals(Type::INTEREST, $balances[1][Balance::TYPE]);
+        }
+    }
+
     public function testCreateCapitalBalance()
     {
         $collectionsServiceConfig = \Config::get('applications.capital_collections_client');

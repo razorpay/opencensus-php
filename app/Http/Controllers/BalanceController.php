@@ -33,4 +33,13 @@ class BalanceController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function fetchBalanceMultiple()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->fetchBalanceMultiple($input);
+
+        return ApiResponse::json($response);
+    }
 }

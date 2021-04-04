@@ -99,6 +99,25 @@ return [
         ],
     ],
 
+    'testGetBalanceMultiple' => [
+        'request' => [
+            'url'     => '/internal_balances_multiple',
+            'method'  => 'get',
+            'content' => [
+                'ids' => [], // filled while running the test
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 2,
+                'items'     => [
+                    // asserted in test
+                ]
+            ],
+        ],
+    ],
+
     'testUpdateFreePayoutsCount' => [
         'request'  => [
             'url'     => '/balance/{id}/free_payout',

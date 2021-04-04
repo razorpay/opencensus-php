@@ -42,6 +42,20 @@ class Service extends Base\Service
         return $balance->toArrayPublic();
     }
 
+    public function fetchBalanceMultiple($input)
+    {
+        $this->trace->info(TraceCode::FETCH_MULTIPLE_BALANCE_REQUEST, [
+            'input'     => $input,
+        ]);
+
+        (new JitValidator)->rules([
+            'ids'   => 'required|array',
+            'ids.*' => 'required|string|size:14',
+        ])->validate($input);
+
+        return $this->repo->balance->findMany($input['ids'])->toArrayPublic();
+    }
+
     public function updateFreePayout($id, $input)
     {
         Base\UniqueIdEntity::verifyUniqueId($id, true);

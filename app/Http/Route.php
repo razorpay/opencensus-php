@@ -353,6 +353,7 @@ class Route
         'merchant_primary_balance_fetch'           => ['get',      'primary_balance',                                'MerchantController@getPrimaryBalance'                              ],
         'internal_balance_fetch_by_merchant_id'    => ['get',      'balances/{id}',                                  'MerchantController@getBalance'                                     ],
         'internal_balance_fetch_by_id'             => ['get',      'internal_balances/{id}',                         'BalanceController@fetchBalanceById'                                ],
+        'internal_balance_fetch_multiple_by_ids'   => ['get',      'internal_balances_multiple',                     'BalanceController@fetchBalanceMultiple'                            ],
         'merchant_balance_create'                  => ['post',     'capital_balances',                               'BalanceController@createCapitalBalance'                            ],
         'merchant_balance_fetch_admin'             => ['get',      'admin_balances',                                 'MerchantController@getAccountBalances'                             ],
         'credits_create'                           => ['post',     'merchants/{id}/credits_log',                     'MerchantController@postCreateCreditsLog'                           ],
@@ -2772,6 +2773,7 @@ class Route
         'internal_balance_fetch_by_merchant_id',
         'merchant_balance_create',
         'internal_balance_fetch_by_id',
+        'internal_balance_fetch_multiple_by_ids',
         'credit_repayment_transaction_create',
         'capital_transaction_create',
         'capital_multiple_transaction_create',
@@ -6206,6 +6208,7 @@ class Route
             'capital_transaction_create',
             'capital_multiple_transaction_create',
             'internal_balance_fetch_by_id',
+            'internal_balance_fetch_multiple_by_ids',
         ],
 
         'loc'  => [
