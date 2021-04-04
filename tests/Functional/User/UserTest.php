@@ -2815,4 +2815,20 @@ class UserTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testGetUserEntity()
+    {
+        $user = $this->fixtures->create('user', [
+            'contact_mobile'    => '9876543210',
+        ]);
+
+        $cardsServiceConfig = \Config::get('applications.capital_cards_client');
+        $pwd = $cardsServiceConfig['secret'];
+
+        $this->ba->appAuth('rzp_'.'test', $pwd);
+
+        $this->testData[__FUNCTION__]['request']['url'] .= $user['id'];
+
+        $this->startTest();
+    }
 }

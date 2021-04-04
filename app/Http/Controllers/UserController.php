@@ -174,6 +174,13 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getUserEntity(string $id)
+    {
+        $data = $this->service()->getUserEntity($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function postUpgradeUserToMerchant()
     {
         $input = Request::all();

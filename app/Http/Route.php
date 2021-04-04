@@ -1364,6 +1364,7 @@ class Route
         'user_edit_self'                           => ['patch',    'users',                                          'UserController@editSelf'                                           ],
         'user_fetch'                               => ['get',      'users/{id}',                                     'UserController@getUser'                                            ],
         'user_fetch_internal'                      => ['get',      'users_internal/{id}',                            'UserController@getUser'                                            ],
+        'user_fetch_entity'                        => ['get',      'users_entity/{id}',                              'UserController@getUserEntity'                                      ],
         'user_access'                              => ['get',      'users/access',                                   'UserController@checkUserAccess'                                    ],
         'user_verify_second_factor_auth'           => ['post',     'users/2fa/verify',                               'UserController@verifyUserSecondFactorAuth'                         ],
         'user_resend_otp_2fa'                      => ['post',     'users/2fa/otp_resend',                           'UserController@resendOtp'                                          ],
@@ -3145,6 +3146,8 @@ class Route
         'throttle_create_config_spinnaker',
         'add_verify_disabled_gateway',
         'p2p_retrieve_banks_cron',
+
+        'user_fetch_entity',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -6193,7 +6196,7 @@ class Route
 
         'capital_cards_client' => [
             'user_fetch',
-            'user_fetch_internal',
+            'user_fetch_entity',
         ],
 
         'capital_collections_client' => [
@@ -7350,6 +7353,7 @@ class Route
         'reward_expire_cron'                                => HeartbeatLagChecker::MASTER,
         'get_merchant_data_for_segment'                     => HeartbeatLagChecker::SLAVE,
         'user_access'                                       => HeartbeatLagChecker::MASTER,
+        'user_fetch_entity'                                 => HeartbeatLagChecker::SLAVE,
     ];
 
     /**

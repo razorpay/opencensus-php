@@ -2163,4 +2163,22 @@ return [
                 'content'     => [],
         ],
     ],
+
+    'testGetUserEntity'  => [
+        'request' => [
+            'url'       => '/users_entity/',
+            'method'    => 'GET',
+            'content'   => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                // 'name'                    => 'repellat',
+                // 'email'                   => 'hello123@c.com',
+                'contact_mobile'          => '9876543210',
+                // 'contact_mobile_verified' => false,
+                // 'confirmed'               => false
+            ],
+        ],
+    ],
 ];

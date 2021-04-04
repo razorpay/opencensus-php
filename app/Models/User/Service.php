@@ -6,6 +6,7 @@ use Mail;
 use Hash;
 use Config;
 use Carbon\Carbon;
+use RZP\Models\Base\PublicEntity;
 use Illuminate\Hashing\BcryptHasher;
 
 use RZP\Exception;
@@ -542,6 +543,16 @@ class Service extends Base\Service
         $response = $this->core->get($user);
 
         return $response;
+    }
+
+    public function getUserEntity(string $id): array
+    {
+        if ($this->auth->isPrivilegeAuth() === true)
+        {
+            return $this->repo->user->findOrFailPublic($id)->toArrayPublic();
+        }
+
+        return [];
     }
 
     public function updateMerchantManageTeam(string $userId, array $input): array
