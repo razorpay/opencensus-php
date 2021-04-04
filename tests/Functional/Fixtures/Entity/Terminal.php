@@ -340,7 +340,19 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
-    public function createCashfreeTerminal()
+    public function createCashfreeIntentTerminal()
+    {
+        $attributes = [
+            'type'                      => [
+                'non_recurring' => '1',
+                'pay'           => '1',
+            ]
+        ];
+
+        return $this->createCashfreeTerminal($attributes);
+    }
+
+    public function createCashfreeTerminal(array $override)
     {
         $attributes = [
             'merchant_id'           => '10000000000000',
@@ -352,7 +364,7 @@ class Terminal extends Base
             'network_category'      => 'ecommerce',
             'gateway_secure_secret' => 'secret',
         ];
-
+        $attributes = array_merge($attributes, $override);
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
