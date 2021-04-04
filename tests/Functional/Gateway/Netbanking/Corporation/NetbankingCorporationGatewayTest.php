@@ -27,7 +27,7 @@ class NetbankingCorporationGatewayTest extends TestCase
     const CUSTOMER_ACCOUNT_TYPE     = 'SB';
     const CUSTOMER_ACCOUNT_SUB_TYPE = '01';
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->markTestSkipped();
 

@@ -15,7 +15,7 @@ use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
 
 class NetbankingIdbiCombinedFileTest extends NbPlusPaymentServiceNetbankingTest
 {
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/NetbankingIdbiCombinedFileTestData.php';
 

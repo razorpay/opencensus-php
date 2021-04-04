@@ -17,7 +17,7 @@ class AuthPolicyTest extends TestCase
     use RequestResponseFlowTrait;
     use HeimdallTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/AuthPolicyData.php';
 

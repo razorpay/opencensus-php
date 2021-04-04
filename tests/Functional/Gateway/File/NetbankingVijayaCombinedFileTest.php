@@ -21,7 +21,7 @@ class NetbankingVijayaCombinedFileTest extends TestCase
 
     protected $bank = 'VIJB';
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->markTestSkipped();
 

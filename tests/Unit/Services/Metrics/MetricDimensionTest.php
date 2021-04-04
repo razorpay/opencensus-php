@@ -9,7 +9,7 @@ use RZP\Trace\Metrics\DimensionsProcessor;
 
 class MetricDimensionTest extends TestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

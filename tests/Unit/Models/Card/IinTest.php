@@ -8,7 +8,7 @@ use RZP\Models\Card\IIN;
 
 class IinTest extends TestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

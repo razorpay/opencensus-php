@@ -17,7 +17,7 @@ class ThrottleTest extends TestCase
     use TestsThrottle { setUp as baseSetUp; }
     use RequestResponseFlowTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/ThrottleTestData.php';
 

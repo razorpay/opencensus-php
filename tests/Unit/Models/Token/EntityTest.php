@@ -6,7 +6,7 @@ use RZP\Tests\Functional\TestCase;
 
 class EntityTest extends TestCase
 {
-    function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

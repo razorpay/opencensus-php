@@ -22,7 +22,7 @@ class FreechargeGatewayTest extends TestCase
 
     protected $merchantId = '10000000000000';
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/FreechargeGatewayTestData.php';
 

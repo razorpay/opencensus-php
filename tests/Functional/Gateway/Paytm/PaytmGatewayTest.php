@@ -10,7 +10,7 @@ class PaytmGatewayTest extends TestCase
 {
     use PaymentTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         // Paytm codebase is no longer used anywhere
         // PayTM has stopped working with aggregators since March 2016.

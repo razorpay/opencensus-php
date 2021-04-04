@@ -14,7 +14,7 @@ class SalesForceServiceTest extends TestCase {
     private $salesForceService;
     private $salesForceClient;
 
-    protected function setUp() {
+    protected function setUp(): void {
         parent::setUp();
         $this->salesForceClient = $this->createMock(SalesForceClient::class);
         $this->salesForceService = new SalesForceService($this->salesForceClient);

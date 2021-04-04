@@ -47,7 +47,7 @@ class NbPlusPaymentServiceNetbankingTest extends TestCase
         'gateway_data'
     ];
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

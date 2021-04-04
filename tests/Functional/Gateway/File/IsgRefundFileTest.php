@@ -19,7 +19,7 @@ class IsgRefundFileTest extends TestCase
     use PaymentTrait;
     use PaymentIsgTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         Carbon::setTestNow();
 

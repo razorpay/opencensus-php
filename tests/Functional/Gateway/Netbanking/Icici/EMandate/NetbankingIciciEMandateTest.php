@@ -35,7 +35,7 @@ class NetbankingIciciEMandateTest extends TestCase
 
     // TODO: Test global customer / token flow
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/NetbankingIciciEMandateTestData.php';
 

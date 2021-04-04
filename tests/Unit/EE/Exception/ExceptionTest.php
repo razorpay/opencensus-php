@@ -16,7 +16,7 @@ class ExceptionTest extends TestCase
 {
     protected $testDataFilePath;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
     }

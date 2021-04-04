@@ -34,7 +34,7 @@ class TerminalSelectionTest extends TestCase
     use PaymentTrait;
     use TerminalTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/TerminalSelectionTestData.php';
 

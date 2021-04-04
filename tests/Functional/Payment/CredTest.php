@@ -10,7 +10,7 @@ class CredTest extends TestCase
 {
     use PaymentTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

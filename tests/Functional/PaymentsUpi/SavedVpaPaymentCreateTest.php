@@ -21,7 +21,7 @@ class SavedVpaPaymentCreateTest extends TestCase
     use DbEntityFetchTrait;
     use InteractsWithSession;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

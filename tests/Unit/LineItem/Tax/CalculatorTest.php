@@ -14,7 +14,7 @@ use RZP\Models\LineItem\Tax\Calculator;
  */
 class CalculatorTest extends TestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/CalculatorTestData.php';
 
@@ -68,11 +68,11 @@ class CalculatorTest extends TestCase
             {
                 $actualTaxAmount = Calculator::getTaxAmount($lineItem, $actualTaxableAmount, $tax);
 
-                $this->assertEquals(
+                $this->assertEqualsWithDelta(
                     $testData['taxes'][$j]['tax_amount'],
                     $actualTaxAmount,
-                    "Tax amount for {$i}th line item's {$j}th tax doesn't match",
-                    0.0001);
+                    0.0001,
+                    "Tax amount for {$i}th line item's {$j}th tax doesn't match");
             }
         }
     }

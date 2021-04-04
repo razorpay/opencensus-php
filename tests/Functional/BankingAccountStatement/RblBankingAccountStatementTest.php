@@ -59,7 +59,7 @@ class RblBankingAccountStatementTest extends TestCase
     /* @var Entity */
     private $balance;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/RblBankingAccountStatementTestData.php';
 

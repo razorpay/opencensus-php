@@ -28,7 +28,7 @@ class AccountingPayoutsTest extends TestCase
 
     private $opsRoleUser;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/AccountingPayoutsData.php';
 

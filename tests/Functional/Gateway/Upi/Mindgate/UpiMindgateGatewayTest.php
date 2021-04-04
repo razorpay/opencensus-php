@@ -43,7 +43,7 @@ class UpiMindgateGatewayTest extends TestCase
      */
     protected $payment;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/MindgateGatewayTestData.php';
 
@@ -350,8 +350,8 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertTrue($secure->verifyIntent($response['data']['intent_url']));
         $this->assertTrue($secure->verifyIntent($response['data']['qr_code_url']));
 
-        $this->assertContains('&url=', $response['data']['intent_url']);
-        $this->assertContains('&url=', $response['data']['qr_code_url']);
+        $this->assertStringContainsString('&url=', $response['data']['intent_url']);
+        $this->assertStringContainsString('&url=', $response['data']['qr_code_url']);
     }
 
     public function testUpiAmountCap()

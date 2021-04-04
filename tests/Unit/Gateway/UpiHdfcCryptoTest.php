@@ -9,7 +9,7 @@ class UpiMindgateCryptoTest extends TestCase
 {
     const CIPHERTEXT = '8F3574160C3FD2AE704E5A9412FCB387';
     const PLAINTEXT  = 'HELLO WORLD';
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         $this->gateway = new Gateway;

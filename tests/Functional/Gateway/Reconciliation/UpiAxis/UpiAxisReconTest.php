@@ -27,7 +27,7 @@ class UpiAxisReconTest extends TestCase
     private $refund;
     private $sharedTerminal;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/UpiAxisReconTestData.php';
 

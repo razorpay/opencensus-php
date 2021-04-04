@@ -9,7 +9,7 @@ class EntityTest extends TestCase
 {
     use CustomAssertions;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/Helpers/EntityTestData.php';
 

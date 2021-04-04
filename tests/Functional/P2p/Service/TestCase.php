@@ -41,7 +41,7 @@ class TestCase extends Functional\TestCase
      */
     protected $testCurrentTime;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -58,7 +58,7 @@ class TestCase extends Functional\TestCase
         MorphMap::boot();
     }
 
-    public function tearDown()
+    protected function tearDown(): void
     {
         $this->now($this->testCurrentTime);
 

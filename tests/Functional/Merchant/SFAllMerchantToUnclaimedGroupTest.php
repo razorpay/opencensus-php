@@ -15,7 +15,7 @@ class SFAllMerchantToUnclaimedGroupTest extends TestCase
 
     protected $unclaimedGroup;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/SFAllMerchantToUnclaimedGroupTestData.php';
 

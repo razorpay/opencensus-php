@@ -35,7 +35,7 @@ class InvoiceTest extends TestCase
 
     const TEST_INV_ID = 'inv_1000000invoice';
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/Helpers/InvoiceTestData.php';
 
@@ -2398,11 +2398,11 @@ class InvoiceTest extends TestCase
 
         if (empty($errorMessage) === false)
         {
-            $this->assertContains($errorMessage, $response->getContent());
+            $this->assertStringContainsString($errorMessage, $response->getContent());
         }
         else
         {
-            $this->assertNotContains('<h2>Error</h2>', $response->getContent());
+            $this->assertStringNotContainsString('<h2>Error</h2>', $response->getContent());
         }
     }
 
@@ -3141,7 +3141,7 @@ class InvoiceTest extends TestCase
         $this->assertEquals($order['id'], $response['order_id']);
         $this->assertEquals($order['payment_capture'], true);
         $this->assertEquals($invoice['id'], 'inv_' . $lineItem['entity_id']);
-        $this->assertContains('http://dwarf.razorpay.in/', $invoice['short_url']);
+        $this->assertStringContainsString('http://dwarf.razorpay.in/', $invoice['short_url']);
         $this->assertEquals('10000000000000', $invoice['merchant_id']);
     }
 

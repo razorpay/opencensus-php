@@ -19,7 +19,7 @@ class OrderTransferTest extends TestCase
     use DbEntityFetchTrait;
     use TestsWebhookEvents;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/OrderTransferTestData.php';
 

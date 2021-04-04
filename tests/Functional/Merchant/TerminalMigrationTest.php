@@ -38,7 +38,7 @@ class TerminalMigrationTest extends TestCase
 
     //TODO add guide to tests
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/TerminalMigrationTestData.php';
 

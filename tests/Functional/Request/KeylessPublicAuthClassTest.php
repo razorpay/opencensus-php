@@ -26,7 +26,7 @@ class KeylessPublicAuthClassTest extends TestCase
     const DEFAULT_CUSTOMER_ID     = 'cust_110000customer';
     const DEFAULT_MERCHANT_ID     = '10000000000000';
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/KeylessPublicAuthClassTestData.php';
 

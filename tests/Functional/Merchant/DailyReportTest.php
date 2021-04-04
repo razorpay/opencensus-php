@@ -22,7 +22,7 @@ class DailyReportTest extends TestCase
 
     protected $settleAtTimestamp;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
     }

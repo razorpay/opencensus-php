@@ -6,7 +6,7 @@ use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
 
 class NbplusNetbankingIbkGatewayTest extends NbPlusPaymentServiceNetbankingTest
 {
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/NetbankingIbkGatewayTestData.php';
 

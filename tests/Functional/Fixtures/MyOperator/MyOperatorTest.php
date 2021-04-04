@@ -24,7 +24,7 @@ class MyOperatorTest extends TestCase
 
     protected $myOperatorMock;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/MyOperatorsTestData.php';
 

@@ -320,7 +320,7 @@ class Gateway extends Base\Gateway
 
         if ($input['token']->getExpiredAt() !== null)
         {
-            $finalCollection = Carbon::createFromTimestamp($input['token']->getExpiredAt(), Timezone::IST);
+            $finalCollection = Carbon::now(Timezone::IST)->setTimestamp($input['token']->getExpiredAt());
 
             $content[RequestFields::FINAL_COLLECTION_DATE] = $finalCollection->format('Y-m-d');
             unset($content[RequestFields::IS_UNTIL_CANCELLED]);

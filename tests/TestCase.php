@@ -50,7 +50,7 @@ class TestCase extends IlluminateTestCase
         return $app;
     }
 
-    public function setUp()
+    protected function setUp(): void
     {
         //     $this->markTestSkippedForWercker();
         parent::setUp();
@@ -67,7 +67,7 @@ class TestCase extends IlluminateTestCase
         $this->disbaleCpsConfig();
     }
 
-    public function tearDown()
+    protected function tearDown(): void
     {
         parent::tearDown();
 

@@ -20,7 +20,7 @@ class NetbankingVijayaGatewayTest extends TestCase
 
     protected $payment = null;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->markTestSkipped();
 

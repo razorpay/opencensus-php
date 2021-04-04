@@ -7,7 +7,7 @@ use RZP\Tests\TestCase;
 
 class GstinTest extends TestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/GstinTestData.php';
 

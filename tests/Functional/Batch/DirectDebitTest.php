@@ -15,7 +15,7 @@ class DirectDebitTest extends TestCase
 {
     use BatchTestTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/DirectDebitTestData.php';
 

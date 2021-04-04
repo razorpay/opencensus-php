@@ -22,7 +22,7 @@ class GroupEsTest extends TestCase
     use RequestResponseFlowTrait;
     use MakesEsDocumentAssertions;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/GroupEsTestData.php';
 

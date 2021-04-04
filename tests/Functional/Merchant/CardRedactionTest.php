@@ -23,7 +23,7 @@ class CardRedactionTest extends TestCase
     use RequestResponseFlowTrait;
     use MocksRequest;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
     }

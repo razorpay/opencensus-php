@@ -17,7 +17,7 @@ class MerchantIpFilterTest extends TestCase
     protected $mid;
     protected $merchant;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/MerchantIpFilterTestData.php';
 

@@ -41,7 +41,7 @@ class FeeRecoveryTest extends TestCase
      */
     private $fundAccount;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/FeeRecoveryTestData.php';
 
@@ -285,7 +285,7 @@ class FeeRecoveryTest extends TestCase
 
     public function testCreateFeeRecoveryPayout()
     {
-        $oldTime = Carbon::create(2020, 1,3);
+        $oldTime = Carbon::create(2020, 1, 3, null, null, null);
 
         Carbon::setTestNow($oldTime);
 
@@ -333,8 +333,8 @@ class FeeRecoveryTest extends TestCase
 
         $balanceId = $this->balance->getId();
 
-        $startTime = Carbon::create(2020,1,1)->getTimestamp();
-        $endTime   = Carbon::create(2020,1,8)->getTimestamp();
+        $startTime = Carbon::create(2020, 1, 1, null, null, null)->getTimestamp();
+        $endTime   = Carbon::create(2020, 1, 8, null, null, null)->getTimestamp();
 
         $data = & $this->testData[__FUNCTION__];
 
@@ -514,7 +514,7 @@ class FeeRecoveryTest extends TestCase
 
     public function testFeeRecoveryPayoutCron()
     {
-        $oldTime = Carbon::create(2020, 1,3);
+        $oldTime = Carbon::create(2020, 1, 3, null, null, null);
 
         Carbon::setTestNow($oldTime);
 
@@ -562,7 +562,7 @@ class FeeRecoveryTest extends TestCase
 
         $this->fixtures->edit('contact', '1010101contact', ['type' => 'rzp_fees']);
 
-        $newTime = Carbon::create(2020, 1,10);
+        $newTime = Carbon::create(2020, 1, 10, null, null, null);
 
         Carbon::setTestNow($newTime);
 
@@ -1313,7 +1313,7 @@ class FeeRecoveryTest extends TestCase
 
     public function testCreateFeeRecoveryPayoutWithFailedToReversedCase()
     {
-        $oldTime = Carbon::create(2020, 1,3);
+        $oldTime = Carbon::create(2020, 1, 3, null, null, null);
 
         Carbon::setTestNow($oldTime);
 
@@ -1371,8 +1371,8 @@ class FeeRecoveryTest extends TestCase
 
         $balanceId = $this->balance->getId();
 
-        $startTime = Carbon::create(2020,1,1)->getTimestamp();
-        $endTime   = Carbon::create(2020,1,8)->getTimestamp();
+        $startTime = Carbon::create(2020, 1, 1, null, null, null)->getTimestamp();
+        $endTime   = Carbon::create(2020, 1, 8, null, null, null)->getTimestamp();
 
         $data = & $this->testData[__FUNCTION__];
 
@@ -1613,7 +1613,7 @@ class FeeRecoveryTest extends TestCase
 
         $feeRecoveryPayout = $this->getDbLastEntity('payout');
 
-        $oldTime =  Carbon::create(2020, 9,3);
+        $oldTime =  Carbon::create(2020, 9, 3, null, null, null);
 
         Carbon::setTestNow($oldTime);
 
@@ -1673,7 +1673,7 @@ class FeeRecoveryTest extends TestCase
         $this->updateFtaAndSource($feeRecoveryPayout, Payout\Status::PROCESSED, '933818903814');
 
         // create a new payout
-        $newTime =  Carbon::create(2020, 10,3);
+        $newTime =  Carbon::create(2020, 10, 3, null, null, null);
 
         Carbon::setTestNow($newTime);
 
@@ -2644,7 +2644,7 @@ class FeeRecoveryTest extends TestCase
 
     public function testUpdateFeeRecoveryAfterPayoutFTAReconSuccessAndExcludeRewardFeePayout()
     {
-        $oldTime = Carbon::create(2020, 1,3);
+        $oldTime = Carbon::create(2020, 1, 3, null, null, null);
 
         Carbon::setTestNow($oldTime);
 

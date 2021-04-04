@@ -55,7 +55,7 @@ class MerchantDetailTest extends OAuthTestCase
     const DEFAULT_MERCHANT_ID    = '10000000000000';
     const DEFAULT_SUBMERCHANT_ID = '10000000000009';
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/MerchantDetailTestData.php';
 

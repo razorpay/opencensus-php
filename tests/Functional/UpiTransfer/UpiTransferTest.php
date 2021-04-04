@@ -19,7 +19,7 @@ class UpiTransferTest extends TestCase
 
     protected $virtualAccountId;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/UpiTransferTestData.php';
 
@@ -228,7 +228,7 @@ class UpiTransferTest extends TestCase
         $this->assertEquals('vpa', $payment['receiver_type']);
 
         $this->assertEquals($upiTransfer['payment_id'], $payment['id']);
-        $this->assertEquals($this->vpa['address'], $upiTransfer['payee_vpa'], '', 0.0, 10, false, true);
+        $this->assertEqualsIgnoringCase($this->vpa['address'], $upiTransfer['payee_vpa'], '');
 
         $this->assertNotNull($upi['payment_id']);
         $this->assertTrue(isset($upi['type']));
@@ -562,7 +562,7 @@ class UpiTransferTest extends TestCase
         $this->assertEquals('vpa', $payment['receiver_type']);
 
         $this->assertEquals($upiTransfer['payment_id'], $payment['id']);
-        $this->assertEquals($this->vpa['address'], $upiTransfer['payee_vpa'], '', 0.0, 10, false, true);
+        $this->assertEqualsIgnoringCase($this->vpa['address'], $upiTransfer['payee_vpa'], '');
 
         $this->assertTrue(isset($upi['type']));
         $this->assertEquals($upi['type'], 'pay');

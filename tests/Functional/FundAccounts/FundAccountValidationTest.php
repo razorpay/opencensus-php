@@ -38,7 +38,7 @@ class FundAccountValidationTest extends TestCase
 
     const VALIDATION_UPDATE_MUTEX = "FUND_ACCOUNT_VALIDATION_BEING_UPDATED";
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/FundAccountValidationTestData.php';
 

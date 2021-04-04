@@ -18,7 +18,7 @@ class BladeGatewayTest extends TestCase
     use PaymentTrait;
     use TransactionTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/BladeGatewayTestData.php';
 

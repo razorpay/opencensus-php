@@ -42,7 +42,7 @@ class NetbankingSbiEmandateTest extends TestCase
     const NAME              = 'Test account';
     const ACCOUNT_TYPE      = 'savings';
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->gateway = Payment\Gateway::NETBANKING_SBI;
 

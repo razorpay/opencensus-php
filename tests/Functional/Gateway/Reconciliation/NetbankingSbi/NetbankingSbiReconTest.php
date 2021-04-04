@@ -26,7 +26,7 @@ class NetbankingSbiReconTest extends TestCase
 
     protected $bank = IFSC::SBIN;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

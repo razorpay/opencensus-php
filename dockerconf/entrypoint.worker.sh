@@ -140,7 +140,7 @@ main() {
     else
       echo "starting sqs listener"
       create_kafka_credentials_dir
-      php artisan queue:work "${app_type}" --sleep="${sleep_time}"
+      php artisan queue:work "${app_type}" --tries=0 --sleep="${sleep_time}"
     fi
   elif [[ "${app_type}" == "sqs_multi_default" ]]; then
     change_db_user_for_workers
@@ -154,7 +154,7 @@ main() {
     else
       echo "starting sqs listener"
       create_kafka_credentials_dir
-      php artisan queue:work "${app_type}" --queue="${APP_MODE}-${queue_name}" --sleep="${sleep_time}"
+      php artisan queue:work "${app_type}" --tries=0 --queue="${APP_MODE}-${queue_name}" --sleep="${sleep_time}"
     fi
   elif [[ "${app_type}" == "sqs-raw" ]]; then
     change_db_user_for_workers
@@ -168,7 +168,7 @@ main() {
     else
       echo "starting sqs-raw listener"
       create_kafka_credentials_dir
-      php artisan queue:work "${app_type}" --queue="${APP_MODE}-${queue_name}" --sleep="${sleep_time}"
+      php artisan queue:work "${app_type}" --tries=0 --queue="${APP_MODE}-${queue_name}" --sleep="${sleep_time}"
     fi
   else
     echo "Invalid entrypoint arguments in worker container."

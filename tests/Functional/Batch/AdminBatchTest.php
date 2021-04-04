@@ -15,7 +15,7 @@ class AdminBatchTest extends TestCase
     use BatchTestTrait;
     use HeimdallTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/AdminBatchTestData.php';
 

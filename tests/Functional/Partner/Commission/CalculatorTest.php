@@ -15,7 +15,7 @@ class CalculatorTest extends OAuthTestCase
      */
     private $ruleEngine;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

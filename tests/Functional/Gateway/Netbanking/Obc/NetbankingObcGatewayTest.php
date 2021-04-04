@@ -20,7 +20,7 @@ class NetbankingObcGatewayTest extends TestCase
 
     protected $bank = IFSC::ORBC;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->markTestSkipped();
 

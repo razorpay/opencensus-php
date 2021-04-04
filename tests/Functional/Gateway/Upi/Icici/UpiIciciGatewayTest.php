@@ -26,7 +26,7 @@ class UpiIciciGatewayTest extends TestCase
     use DbEntityFetchTrait;
     use UpiCustomAmountTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/UpiIciciGatewayTestData.php';
 

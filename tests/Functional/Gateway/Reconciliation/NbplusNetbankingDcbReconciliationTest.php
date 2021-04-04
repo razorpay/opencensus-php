@@ -24,7 +24,7 @@ class NbplusNetbankingDcbReconciliationTest extends NbPlusPaymentServiceNetbanki
     use ReconTrait;
     use FileUploadTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/NbplusNetbankingReconciliationTestData.php';
 

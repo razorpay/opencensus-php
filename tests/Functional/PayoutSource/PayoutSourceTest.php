@@ -18,7 +18,7 @@ class PayoutSourceTest extends TestCase
     use TestsBusinessBanking;
     use RequestResponseFlowTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/PayoutSourceTestData.php';
 

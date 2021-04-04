@@ -21,7 +21,7 @@ class CybersourceGatewayTest extends TestCase
     use TransactionTrait;
     use DbEntityFetchTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

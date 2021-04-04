@@ -1,7 +1,8 @@
 cp ./environment/.env.drone ./environment/.env.testing
-touch /etc/php7/conf.d/assertion.ini
+touch /etc/php7/conf.d/assertion.ini /etc/php7/conf.d/memory.ini
 echo "zend.assertions=1" >> /etc/php7/conf.d/assertion.ini
 echo "assert.exception=1" >> /etc/php7/conf.d/assertion.ini
+echo "memory_limit = 4096M" >> /etc/php7/conf.d/memory.ini
 php -m
 chmod 777 -R storage
 git config --global user.name $GIT_USERNAME

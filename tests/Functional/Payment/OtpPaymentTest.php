@@ -33,7 +33,7 @@ class OtpPaymentTest extends TestCase
 
     protected $otpFlow = null;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/OtpPaymentTestData.php';
 
@@ -5096,7 +5096,7 @@ class OtpPaymentTest extends TestCase
 
         $data =  Crypt::encrypt(['test_data']);;
 
-        Cache::put($key, $data, 2);
+        Cache::put($key, $data, 120);
 
         $response = $this->makeRequestParent($request);
 

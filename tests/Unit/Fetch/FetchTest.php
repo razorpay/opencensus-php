@@ -42,7 +42,7 @@ class FetchTest extends TestCase
      */
     protected $entityList;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/FetchTestData.php';
 

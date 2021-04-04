@@ -26,7 +26,7 @@ class EmandateDebitReconciliationTest extends TestCase
 
     protected $bank;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

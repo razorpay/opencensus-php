@@ -19,7 +19,7 @@ class FtsTest extends TestCase
     use TestsBusinessBanking;
     use RequestResponseFlowTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/FtsTestData.php';
 
@@ -30,7 +30,7 @@ class FtsTest extends TestCase
         $this->setUpMerchantForBusinessBanking(false, 10000000);
     }
 
-    public function tearDown()
+    protected function tearDown(): void
     {
         parent::tearDown();
 

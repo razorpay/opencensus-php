@@ -13,7 +13,7 @@ use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
 class NbplusNetbankingObcCombinedFileTest extends NbPlusPaymentServiceNetbankingTest
 {
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->markTestSkipped();
 

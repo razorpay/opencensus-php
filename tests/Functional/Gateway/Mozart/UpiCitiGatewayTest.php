@@ -19,7 +19,7 @@ class UpiCitiGatewayTest extends TestCase
 
     protected $payment;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

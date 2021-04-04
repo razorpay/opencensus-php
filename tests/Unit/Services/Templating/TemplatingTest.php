@@ -9,7 +9,7 @@ use RZP\Services\Templating;
 
 class TemplatingTest extends TestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
     }

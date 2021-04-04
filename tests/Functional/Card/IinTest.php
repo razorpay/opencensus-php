@@ -20,7 +20,7 @@ class IinTest extends TestCase
     use IinTrait;
     use DbEntityFetchTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/IinTestData.php';
 

@@ -8,7 +8,7 @@ use RZP\Exception;
 
 class ServiceTest extends TestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -111,15 +111,13 @@ class ServiceTest extends TestCase
         $this->assertEquals('https://bitly.dev/xyz', $shortUrl);
     }
 
-    /**
-     * @expectedException        \RZP\Exception\RuntimeException
-     * @expectedExceptionMessage url not valid.
-     */
     public function testShortenFailWithSingleService()
     {
         //
         // Tests when fisrt of the service fails and second returns the short url.
         //
+        $this->expectException('\RZP\Exception\RuntimeException');
+        $this->expectExceptionMessage('url not valid.');
 
         $this->service->setServices(['bitly']);
 
@@ -142,15 +140,14 @@ class ServiceTest extends TestCase
         $this->assertEquals('https://bitly.dev/xyz', $shortUrl);
     }
 
-    /**
-     * @expectedException        \RZP\Exception\RuntimeException
-     * @expectedExceptionMessage Unexpected response code received from Gimli/Bitly service.
-     */
     public function testShortenFailAll()
     {
         //
         // Tests when all implementations fail
         //
+        //
+        $this->expectException('\RZP\Exception\RuntimeException');
+        $this->expectExceptionMessage('Unexpected response code received from Gimli/Bitly service.');
 
         $this->service->expects($this->exactly(2))
                       ->method('createDriver')

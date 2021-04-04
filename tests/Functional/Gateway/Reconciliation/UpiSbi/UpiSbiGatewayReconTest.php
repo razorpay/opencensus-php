@@ -31,7 +31,7 @@ class UpiSbiGatewayReconTest extends TestCase
      */
     private $payment;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/UpiSbiGatewayReconTestData.php';
 

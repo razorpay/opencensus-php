@@ -34,7 +34,7 @@ class DeviceTest extends TestCase
 
     protected $gatewayInput;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

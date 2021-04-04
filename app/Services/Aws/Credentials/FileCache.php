@@ -32,7 +32,7 @@ final class FileCache implements CacheInterface
         //
         // Aws's sdk calls this method with ttl value(creds expiry time) in seconds.
         // (Ref: vendor/aws/aws-sdk-php/src/Credentials/CredentialProvider.php)
-        // Laravel's cache interface expects ttl in minutes & hence following conversion.
+        // Laravel's cache interface (our custom interface) expects ttl in minutes & hence following conversion.
         //
         $ttl = (int) floor($ttl/60);
 

@@ -31,7 +31,7 @@ class PaysecureGatewayTest extends TestCase
 
     protected $terminal;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/PaysecureGatewayTestData.php';
 

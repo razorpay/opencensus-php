@@ -50,7 +50,7 @@ class NbplusPaymentServiceEmandateTest extends TestCase
         'token',
     ];
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = 'Functional/Gateway/Netbanking/Icici/EMandate/NetbankingIciciEMandateTestData.php';
 

@@ -17,7 +17,7 @@ use RZP\Models\FundTransfer\Attempt;
 
 class EnachNetbankingCitiGatewayTest extends EnachNetbankingNpciGatewayTest
 {
-    public function setUp()
+    protected function setUp(): void
     {
 
         parent::setUp();

@@ -8,7 +8,7 @@ use RZP\Exception\GatewayErrorException;
 
 class UpiIciciRecurringTest extends UpiInitialRecurringTestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

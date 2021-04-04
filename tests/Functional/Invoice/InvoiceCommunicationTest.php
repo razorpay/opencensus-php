@@ -11,7 +11,7 @@ class InvoiceCommunicationTest extends TestCase
     use TestsMetrics;
     use RequestResponseFlowTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/Helpers/InvoiceCommunicationTestData.php';
 

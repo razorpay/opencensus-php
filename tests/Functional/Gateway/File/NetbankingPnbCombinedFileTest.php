@@ -26,7 +26,7 @@ class NetbankingPnbCombinedFileTest extends TestCase
 
     protected $terminal;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/NetbankingPnbCombinedFileTestData.php';
 

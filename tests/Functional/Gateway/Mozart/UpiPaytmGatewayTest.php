@@ -18,7 +18,7 @@ class UpiPaytmGatewayTest extends TestCase
 
     use UpiPaymentTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

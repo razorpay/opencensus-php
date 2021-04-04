@@ -6,9 +6,12 @@ use ReflectionClass;
 use ReflectionMethod;
 use RZP\Tests\TestCase;
 use RZP\Gateway\Upi\Mindgate\Gateway;
+use DMS\PHPUnitExtensions\ArraySubset\ArraySubsetAsserts;
 
 class TraceUpiDataTest extends TestCase
 {
+    use ArraySubsetAsserts;
+
     public function maskUpiDataForTracing()
     {
         $class = new ReflectionClass(Gateway::class);

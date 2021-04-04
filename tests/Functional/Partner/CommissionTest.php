@@ -14,7 +14,7 @@ class CommissionTest extends OAuthTestCase
 {
     use CommissionTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/CommissionTestData.php';
 

@@ -32,7 +32,7 @@ class PaylaterIciciReconciliationTest extends TestCase
 
     protected $method = Payment\Method::PAYLATER;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

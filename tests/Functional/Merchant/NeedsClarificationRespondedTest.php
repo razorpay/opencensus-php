@@ -25,7 +25,7 @@ class NeedsClarificationRespondedTest extends OAuthTestCase
     use RequestResponseFlowTrait;
     use FundAccountValidationTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/NeedsClarificationRespondedTestData.php';
 

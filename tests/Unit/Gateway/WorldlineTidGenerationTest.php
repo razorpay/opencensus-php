@@ -16,7 +16,7 @@ class WorldlineTidGenerationTest extends TestCase
 
     protected $redis;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -87,7 +87,7 @@ class WorldlineTidGenerationTest extends TestCase
     //     $this->generator->generateTid();
     // }
 
-    public function tearDown()
+    protected function tearDown(): void
     {
         parent::tearDown();
     }

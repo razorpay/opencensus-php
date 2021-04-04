@@ -8,7 +8,7 @@ use RZP\Tests\Functional\TestCase;
 
 class ValidationTest extends TestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -54,7 +54,7 @@ class ValidationTest extends TestCase
 
         $card = $this->card->build($this->input);
 
-        $this->assertInternalType('int', $card['expiry_month']);
+        $this->assertIsInt($card['expiry_month']);
         $this->assertEquals($card['expiry_year'], 2035);
     }
 
@@ -64,7 +64,7 @@ class ValidationTest extends TestCase
 
         $card = $this->card->build($this->input);
 
-        $this->assertInternalType('int', $card['expiry_month']);
+        $this->assertIsInt($card['expiry_month']);
         $this->assertEquals($card['expiry_month'], 1);
     }
 

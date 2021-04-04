@@ -29,7 +29,7 @@ class TransferTest extends TestCase
      */
     protected $linkedAccountId;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/TransferTestData.php';
 

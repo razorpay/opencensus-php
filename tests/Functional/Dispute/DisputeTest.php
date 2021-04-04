@@ -43,7 +43,7 @@ class DisputeTest extends TestCase
 
     protected $repo = null;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/DisputeTestData.php';
 
@@ -1213,7 +1213,7 @@ class DisputeTest extends TestCase
 
             $this->assertArrayHasKey('options', $mail->rawAttachments[0]);
 
-            $this->assertInternalType('string', $mail->rawAttachments[0]['data']);
+            $this->assertIsString($mail->rawAttachments[0]['data']);
 
             $this->assertEquals('application/csv', $mail->rawAttachments[0]['options']['mime']);
 

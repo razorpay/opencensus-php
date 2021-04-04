@@ -9,7 +9,7 @@ use RZP\Encryption\Type;
 
 class FileStoreTest extends TestCase
 {
-    function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

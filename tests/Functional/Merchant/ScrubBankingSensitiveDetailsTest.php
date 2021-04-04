@@ -14,7 +14,7 @@ class ScrubBankingSensitiveDetailsTest extends TestCase
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
     }

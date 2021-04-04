@@ -47,7 +47,7 @@ class BankTransferTest extends TestCase
 
     protected $virtualAccountId;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/BankTransferTestData.php';
 

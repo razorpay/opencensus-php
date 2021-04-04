@@ -242,8 +242,7 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $finalCollection = Carbon::createFromTimestamp($tokenExpiry, Timezone::IST)
-                                   ->format('Y-m-d+05:30');
+            $finalCollection = Carbon::now(Timezone::IST)->setTimestamp($tokenExpiry)->format('Y-m-d+05:30');
         }
 
         return [
@@ -985,7 +984,7 @@ class Gateway extends Base\Gateway
         }
 
         $startDate = Carbon::createFromTimestamp($payment['created_at'], Timezone::IST)->format('d/m/Y');
-        $endDate   = Carbon::createFromTimestamp($expiry, Timezone::IST)->format('d/m/Y');
+        $endDate   = Carbon::now(Timezone::IST)->setTimestamp($expiry)->format('d/m/Y');
 
         if ($expiry === null)
         {

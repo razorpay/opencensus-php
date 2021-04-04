@@ -16,7 +16,7 @@ class HolidayNotificationTest extends TestCase
 {
     use RequestResponseFlowTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
     }

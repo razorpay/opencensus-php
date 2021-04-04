@@ -10,7 +10,7 @@ class EccCryptoTest extends TestCase
 {
     protected $pair;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/EccCryptoData.php';
 

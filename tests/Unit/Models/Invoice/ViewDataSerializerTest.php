@@ -13,7 +13,7 @@ class ViewDataSerializerTest extends TestCase
     use DbEntityFetchTrait;
     use Traits\CreatesInvoice;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/Helpers/ViewDataSerializerTestData.php';
 

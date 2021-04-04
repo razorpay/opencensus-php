@@ -23,7 +23,7 @@ class UpiIciciAutoRecurringTest extends TestCase
     protected $payment;
     protected $terminal;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

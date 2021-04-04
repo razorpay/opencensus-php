@@ -27,7 +27,7 @@ class CareServiceTest extends TestCase
 
     protected $careServiceMock;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/CareServiceTestData.php';
 

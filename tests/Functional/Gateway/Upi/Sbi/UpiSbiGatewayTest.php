@@ -48,7 +48,7 @@ class UpiSbiGatewayTest extends TestCase
      */
     protected $sharedTerminal;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = Constants::MINDGATE_SBI_GATEWAY_TEST_DATA_FILE;
 

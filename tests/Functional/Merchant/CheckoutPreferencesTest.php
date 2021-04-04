@@ -88,7 +88,7 @@ class CheckoutPreferencesTest extends TestCase
     use PaymentTrait;
     use CreatesInvoice;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/MerchantTestData.php';
 

@@ -78,7 +78,7 @@ class BladeSignatureTest extends TestCase
      */
     public function testXmlSecLibAdapterVerify()
     {
-        $knownDate = Carbon::create(2017, 3, 25, 12);
+        $knownDate = Carbon::create(2017, 3, 25, 12, null, null);
 
         Carbon::setTestNow($knownDate);
 
@@ -91,7 +91,7 @@ class BladeSignatureTest extends TestCase
 
     public function testXmlSecLibAdapterVerifyWithCurrentDate()
     {
-        Carbon::create(2017, 9, 35, 12);
+        Carbon::create(2017, 9, 35, 12, null, null);
 
         $ret = $this->runVerifyOnXml('PARes.xml');
 
@@ -122,12 +122,12 @@ class BladeSignatureTest extends TestCase
 
     public function testParesWithInvertedChain()
     {
-        $this->validateSignatue('WlpAcsPares.txt', Carbon::create(2018, 6, 28, 12));
+        $this->validateSignatue('WlpAcsPares.txt', Carbon::create(2018, 6, 28, 12, null, null));
     }
 
     protected function validateSignatue($file, $dt = null)
     {
-        $knownDate = $dt ?: Carbon::create(2017, 3, 25, 12);
+        $knownDate = $dt ?: Carbon::create(2017, 3, 25, 12, null, null);
 
         Carbon::setTestNow($knownDate);
 

@@ -302,8 +302,7 @@ class Gateway extends Base\Gateway
         $startDate = Carbon::createFromTimestamp($payment[Payment\Entity::CREATED_AT], Timezone::IST)
                              ->format('d/m/Y');
 
-        $finalCollection = Carbon::createFromTimestamp($token->getExpiredAt(), Timezone::IST)
-                                   ->format('d/m/Y');
+        $finalCollection = Carbon::now(Timezone::IST)->setTimestamp($token->getExpiredAt())->format('d/m/Y');
 
         return [
             RequestFields::MANDATE_HOLDER_NAME     => $token->getBeneficiaryName(),

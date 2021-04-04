@@ -11,7 +11,7 @@ class GroupTest extends TestCase
     use RequestResponseFlowTrait;
     use HeimdallTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/GroupData.php';
 

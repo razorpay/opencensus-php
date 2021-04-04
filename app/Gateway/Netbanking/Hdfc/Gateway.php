@@ -288,7 +288,7 @@ class Gateway extends Base\Gateway
 
             $startDate = Carbon::createFromTimestamp($emData[Fields::START_TIMESTAMP], Timezone::IST);
 
-            $endDate = Carbon::createFromTimestamp($emData[Fields::END_TIMESTAMP], Timezone::IST);
+            $endDate = Carbon::now(Timezone::IST)->setTimestamp($emData[Fields::END_TIMESTAMP]);
 
             $amount = number_format($token->getMaxAmount() / 100, 2, '.', '');
 

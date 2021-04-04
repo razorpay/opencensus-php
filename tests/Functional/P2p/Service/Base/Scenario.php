@@ -9,6 +9,7 @@ use PHPUnit\Framework\Assert;
 use RZP\Error\PublicErrorCode as Code;
 use Illuminate\Foundation\Testing\TestResponse;
 use RZP\Error\P2p\PublicErrorDescription as Description;
+use DMS\PHPUnitExtensions\ArraySubset\Assert as ArraySubsetAssert;
 
 class Scenario extends Mock\Scenario
 {
@@ -29,7 +30,7 @@ class Scenario extends Mock\Scenario
 
         $wrapper = function(TestResponse $response) use ($expected)
         {
-            Assert::assertArraySubset($expected, $response->json(), true, $this->getId());
+            ArraySubsetAssert::assertArraySubset($expected, $response->json(), true, $this->getId());
         };
 
         return $wrapper;

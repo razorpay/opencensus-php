@@ -12,7 +12,7 @@ use RZP\Models\Merchant\Detail\NeedsClarification\Constants;
 class NeedsClarificationTest extends TestCase
 {
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/NeedsClarificationTestData.php';
 

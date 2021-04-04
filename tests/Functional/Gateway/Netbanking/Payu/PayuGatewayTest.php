@@ -7,7 +7,7 @@ use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
 
 class PayuGatewayTest extends NbPlusPaymentServiceNetbankingTest
 {
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

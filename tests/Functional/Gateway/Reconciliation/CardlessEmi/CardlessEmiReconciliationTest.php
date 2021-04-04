@@ -25,7 +25,7 @@ class CardlessEmiReconciliationTest extends TestCase
 
     private $method = 'cardless_emi';
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

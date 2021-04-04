@@ -42,7 +42,7 @@ class NetbankingJsbCombinedFileTest extends TestCase
         ClaimFields::MERCHANT_NAME,
     ];
 
-    public function setUp()
+    protected function setUp(): void
     {
         Carbon::setTestNow();
 

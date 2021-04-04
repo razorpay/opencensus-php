@@ -42,7 +42,7 @@ class FeaturesTest extends TestCase
     const ONBOARDING_MERCHANT_ID = '10000000001017';
     const LIVE_AUTH_KEY          = 'rzp_live_TheLiveAuthKey';
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/FeaturesTestData.php';
 
@@ -1733,7 +1733,7 @@ class FeaturesTest extends TestCase
                 }
                 else if (starts_with($tag, 'feature_merchant_10000000000000') === true)
                 {
-                    $this->assertContains(
+                    $this->assertStringContainsString(
                         implode(':', [
                                        CacheConstants::QUERY_CACHE_PREFIX,
                                        CacheConstants::DEFAULT_QUERY_CACHE_VERSION,
@@ -1788,7 +1788,7 @@ class FeaturesTest extends TestCase
             {
                 if (starts_with($tag, 'feature_names_merchant_10000000000000') === true)
                 {
-                    $this->assertContains(
+                    $this->assertStringContainsString(
                         implode(':', [
                                        CacheConstants::QUERY_CACHE_PREFIX,
                                        CacheConstants::DEFAULT_QUERY_CACHE_VERSION,

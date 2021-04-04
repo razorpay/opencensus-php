@@ -30,7 +30,7 @@ class JioMoneyReconciliationTest extends TestCase
 
     protected $method = Payment\Method::WALLET;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

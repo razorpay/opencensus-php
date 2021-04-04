@@ -19,7 +19,7 @@ class UpiRblGatewayTest extends TestCase
     protected $collectTerminal;
     protected $intentTerminal;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/UpiRblGatewayTestData.php';
 

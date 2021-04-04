@@ -46,7 +46,7 @@ class UserTest extends TestCase
 
     protected $merchantDetailRepoMock;
 
-    public function setUp()
+    protected function setUp(): void
     {
 
         parent::setUp();

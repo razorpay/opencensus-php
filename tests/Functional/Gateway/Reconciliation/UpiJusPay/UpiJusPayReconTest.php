@@ -23,7 +23,7 @@ class UpiJusPayReconTest extends TestCase
 
     private $terminal;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

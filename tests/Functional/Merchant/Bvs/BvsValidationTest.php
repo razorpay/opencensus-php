@@ -26,7 +26,7 @@ class BvsValidationTest extends TestCase
     use RequestResponseFlowTrait;
     use DbEntityFetchTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/BvsValidationTestData.php';
 
@@ -561,7 +561,7 @@ class BvsValidationTest extends TestCase
     {
         $countkey = 'bvs_validation_processing_attempt_count_' . $capturedBvsValidation->getValidationId();
 
-        $this->app['cache']->put($countkey, 0, 180);
+        $this->app['cache']->put($countkey, 0, 10800);
 
         $bvsResponse = $this->getBvsResponse(
             $capturedBvsValidation->getValidationId(),

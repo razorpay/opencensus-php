@@ -13,7 +13,7 @@ use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
 class NbplusNetbankingFederalCombinedFileTest extends NbPlusPaymentServiceNetbankingTest
 {
 
-    public function setUp()
+    protected function setUp(): void
     {
         Carbon::setTestNow();
 

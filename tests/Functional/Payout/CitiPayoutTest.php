@@ -18,7 +18,7 @@ class CitiPayoutTest extends TestCase
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/PayoutTestData.php';
 
@@ -876,7 +876,7 @@ class CitiPayoutTest extends TestCase
         $this->startTest();
     }
 
-    public function tearDown()
+    protected function tearDown(): void
     {
         $this->flushCache();
 

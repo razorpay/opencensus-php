@@ -434,7 +434,7 @@ class Context extends ArrayObject
         MorphMap::boot();
 
         // We only want to register the P2P Trace Processor within P2P requests
-        app('trace')->pushProcessor(new P2pTraceProcessor($this));
+        app('trace')->pushNamedProcessor(new P2pTraceProcessor($this));
     }
 
     /**

@@ -26,7 +26,7 @@ class HdfcGatewayAuthTest extends TestCase
         '4012001037490014',
     );
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/cards.php';
 

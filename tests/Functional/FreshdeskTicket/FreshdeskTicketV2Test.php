@@ -28,7 +28,7 @@ class FreshdeskTicketV2Test extends TestCase
 
     const RZP_FETCH_TICKET  = 'rzp_fetch_ticket';
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/FreshdeskTicketV2TestData.php';
 

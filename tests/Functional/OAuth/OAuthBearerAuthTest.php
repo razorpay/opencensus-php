@@ -28,7 +28,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
     use PaymentTrait;
     use TestsStorkServiceRequests;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/OAuthBearerAuthTestData.php';
 

@@ -10,7 +10,7 @@ class HarvesterClientTest extends TestCase
 
     protected $classname;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

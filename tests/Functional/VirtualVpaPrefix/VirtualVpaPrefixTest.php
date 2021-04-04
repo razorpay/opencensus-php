@@ -12,7 +12,7 @@ class VirtualVpaPrefixTest extends TestCase
     use RequestResponseFlowTrait;
     use DbEntityFetchTrait;
 
-    public function setup()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/VirtualVpaPrefixTestData.php';
 

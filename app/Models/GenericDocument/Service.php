@@ -130,7 +130,7 @@ class Service extends Base\Service
     {
         $response = $this->getDocument($input, $fileStoreId);
 
-        return Redirect($response[Constants::URL], 302, Request::header(), true);
+        return redirect($response[Constants::URL], 302, Request::header(), true);
     }
 
     /**

@@ -34,7 +34,7 @@ class WorkflowTest extends TestCase
     protected $workflowPermissionIds = [];
     private $ownerRoleUser;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/WorkflowTestData.php';
 

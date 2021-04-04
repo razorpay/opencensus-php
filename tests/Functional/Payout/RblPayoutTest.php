@@ -35,7 +35,7 @@ class RblPayoutTest extends TestCase
 
     private $finL3RoleUser;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/PayoutTestData.php';
 
@@ -497,7 +497,7 @@ class RblPayoutTest extends TestCase
 
         $this->setupRblDispatchGatewayBalanceUpdateForMerchants();
 
-        Queue::assertPushedTimes(RblBankingAccountGatewayBalanceUpdate::class, 1);
+        Queue::assertPushed(RblBankingAccountGatewayBalanceUpdate::class, 1);
 
         Queue::assertPushed(RblBankingAccountGatewayBalanceUpdate::class, function($job)
         {

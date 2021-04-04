@@ -28,7 +28,7 @@ class SettlementOndemandTest extends TestCase
 
     protected $reportUrl;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/SettlementOndemandTestData.php';
 

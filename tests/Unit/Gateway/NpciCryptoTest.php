@@ -9,7 +9,7 @@ class NpciCryptoTest extends TestCase
 {
     const DOC = '<upi:ReqHbt xmlns:upi="http://npci.org/upi/schema/"><Head ver="1.0" ts="2016-11-16T21:26:27+05:30" orgId="RAZOR" msgId="RAZC703F59B87D04619853C2003342564E6"/><Txn id="RAZBE13D697336B4930B6AF5E8F6F5964D9" note="HELLO WORLD" refId="RAZ928ACE686F214D3FBE634ED793E428F1" refUrl="http://www.npci.org.in/" ts="2016-11-16T21:26:27+05:30" type="Hbt" /><HbtMsg type="ALIVE" value="NA"/></upi:ReqHbt>';
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         $config = config('gateway.upi_npci');

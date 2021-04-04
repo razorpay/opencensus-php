@@ -24,7 +24,7 @@ class BatchTest extends TestCase
     use BatchTestTrait;
     use TestsBusinessBanking;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/BatchTestData.php';
 

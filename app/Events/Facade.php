@@ -2,6 +2,7 @@
 
 namespace RZP\Events;
 
+use Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Testing\Fakes\EventFake;
@@ -25,6 +26,8 @@ class Facade extends BaseFacade
         {
             Model::setEventDispatcher($fake);
         }
+
+        Cache::refreshEventDispatcher();
     }
 
     /**

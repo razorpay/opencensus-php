@@ -15,7 +15,7 @@ class UpiRecurringPaymentCreateTest extends TestCase
     use InteractsWithSession;
     use PaymentsUpiRecurringTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/UpiRecurringPaymentTestData.php';
 

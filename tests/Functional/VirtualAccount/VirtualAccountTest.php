@@ -37,7 +37,7 @@ class VirtualAccountTest extends TestCase
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/VirtualAccountTestData.php';
 

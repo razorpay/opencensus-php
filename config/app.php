@@ -136,7 +136,8 @@ return array(
         Illuminate\Auth\AuthServiceProvider::class,
         Illuminate\Broadcasting\BroadcastServiceProvider::class,
         Illuminate\Bus\BusServiceProvider::class,
-        Illuminate\Cache\CacheServiceProvider::class,
+        // We use custom cache service provider
+        // Illuminate\Cache\CacheServiceProvider::class,
         Illuminate\Foundation\Providers\ConsoleSupportServiceProvider::class,
         Illuminate\Cookie\CookieServiceProvider::class,
         Illuminate\Database\DatabaseServiceProvider::class,
@@ -165,7 +166,7 @@ return array(
         Razorpay\Slack\Laravel\ServiceProvider::class,
         Schuppo\PasswordStrength\PasswordStrengthServiceProvider::class,
         anlutro\LaravelSettings\ServiceProvider::class,
-        Sentry\SentryLaravel\SentryLaravelServiceProvider::class,
+        Sentry\Laravel\ServiceProvider::class,
 
         /**
          * Application Service Providers...
@@ -237,7 +238,7 @@ return array(
         'Route'           => Illuminate\Support\Facades\Route::class,
         'Schema'          => Illuminate\Support\Facades\Schema::class,
         'Session'         => Illuminate\Support\Facades\Session::class,
-        'Sentry'          => Sentry\SentryLaravel\SentryFacade::class,
+        'Sentry'          => Sentry\Laravel\Facade::class,
         'Storage'         => Illuminate\Support\Facades\Storage::class,
         'Str'             => Illuminate\Support\Str::class,
         'URL'             => Illuminate\Support\Facades\URL::class,
@@ -283,6 +284,8 @@ return array(
     'throw_exception_in_testing'          => env('THROW_EXCEPTION_IN_TESTING', true),
 
     'financial_data_service_proxy_timeout'  => env('FINANCIAL_DATA_SERVICE_PROXY_TIMEOUT', 10),
+
+    'sentry_mock'                         => env('SENTRY_MOCK', true),
 
     'data_store' => [
         'mock' => env('DATA_STORE_MOCK', false)

@@ -31,7 +31,7 @@ class BobGatewayTest extends TestCase
 
     protected $acquirer = 'barb';
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/FssGatewayTestData.php';
 

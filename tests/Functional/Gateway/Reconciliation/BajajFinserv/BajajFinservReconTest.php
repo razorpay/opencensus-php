@@ -17,7 +17,7 @@ class BajajFinservReconTest extends TestCase
 
     protected $payment = null;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

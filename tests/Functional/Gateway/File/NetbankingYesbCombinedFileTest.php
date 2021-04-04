@@ -21,7 +21,7 @@ class NetbankingYesbCombinedFileTest extends TestCase
 
     protected $terminal;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/NetbankingYesbCombinedFileTestData.php';
 

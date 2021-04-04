@@ -13,7 +13,7 @@ class BalanceConfigTest extends TestCase
     use RequestResponseFlowTrait;
     use DbEntityFetchTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/BalanceConfigTestData.php';
 

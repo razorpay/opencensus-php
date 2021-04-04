@@ -28,7 +28,7 @@ class HitachiOnboardTest extends TestCase
 
     protected $terminalsServiceMock;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
     }

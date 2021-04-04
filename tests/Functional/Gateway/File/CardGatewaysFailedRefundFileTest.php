@@ -20,7 +20,7 @@ class CardGatewaysFailedRefundFileTest extends TestCase
 
     protected $payment;
 
-    public function setUp()
+    protected function setUp(): void
     {
         Carbon::setTestNow();
 

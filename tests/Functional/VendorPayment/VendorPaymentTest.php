@@ -21,7 +21,7 @@ class VendorPaymentTest extends TestCase
 
     protected $config;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/VendorPaymentTestData.php';
 

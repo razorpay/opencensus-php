@@ -56,7 +56,7 @@ class BankingAccountMailTest extends TestCase
 
         $method->setAccessible(true);
 
-        $payload =  $method->invokeArgs($sqsQueueInstance, [$mailableObj]);
+        $payload =  $method->invokeArgs($sqsQueueInstance, [$mailableObj, '']);
 
         $payloadSize = $this->getStringSizeinBytes($payload);
 

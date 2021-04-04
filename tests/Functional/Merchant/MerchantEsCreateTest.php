@@ -10,7 +10,7 @@ class MerchantEsCreateTest extends TestCase
     use RequestResponseFlowTrait;
     use Traits\MakesEsDocumentAssertions;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/MerchantEsCreateTestData.php';
 

@@ -15,7 +15,7 @@ class PayoutLinkBulkTest extends TestCase
 
     protected $merchant;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/PayoutLinkBulkTestData.php';
 

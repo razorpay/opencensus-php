@@ -26,7 +26,7 @@ class WorkflowPayoutAmountRulesTest extends TestCase
     protected $permissionId = null;
     protected $makerRole = null;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/WorkflowPayoutAmountRulesTestData.php';
 

@@ -13,7 +13,7 @@ class VendorPaymentTest extends TestCase
 {
     use TestsBusinessBanking;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

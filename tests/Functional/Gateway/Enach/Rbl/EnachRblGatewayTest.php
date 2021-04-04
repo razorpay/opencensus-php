@@ -41,7 +41,7 @@ class EnachRblGatewayTest extends TestCase
     use DbEntityFetchTrait;
     use AttemptReconcileTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/EnachRblGatewayTestData.php';
 
@@ -55,7 +55,7 @@ class EnachRblGatewayTest extends TestCase
 
         $this->gateway = 'enach_rbl';
 
-        Cache::put('merchant_enach_configs', '{"auth_gateway":{"10000000000000": "esigner_legaldesk"}}', 2);
+        Cache::put('merchant_enach_configs', '{"auth_gateway":{"10000000000000": "esigner_legaldesk"}}', 120);
     }
 
     public function testSuccessfulEsignGeneration()
@@ -99,7 +99,7 @@ class EnachRblGatewayTest extends TestCase
             ]
         ];
 
-        Cache::put('config:merchant_enach_configs', $config, 2);
+        Cache::put('config:merchant_enach_configs', $config, 120);
 
         $enach = $this->testSuccessfulEsignGeneration();
 
@@ -114,7 +114,7 @@ class EnachRblGatewayTest extends TestCase
             ]
         ];
 
-        Cache::put('config:merchant_enach_configs', $config, 2);
+        Cache::put('config:merchant_enach_configs', $config, 120);
 
         $this->testSuccessfulEsignGeneration();
 
@@ -138,7 +138,7 @@ class EnachRblGatewayTest extends TestCase
             ]
         ];
 
-        Cache::put('config:merchant_enach_configs', $config, 2);
+        Cache::put('config:merchant_enach_configs', $config, 120);
 
         $payment = $this->getEmandatePaymentArray('HDFC', 'aadhaar', 0);
 

@@ -12,7 +12,7 @@ class  RequestContextHandlerTest extends TestCase
 {
     use RequestResponseFlowTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/RequestContextHandlerTestData.php';
 

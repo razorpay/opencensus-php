@@ -16,7 +16,7 @@ use RZP\Mail\Gateway\RefundFile\Constants as RefundFileMailConstants;
 
 class NbplusNetbankingIciciRefundFileTest extends NbPlusPaymentServiceNetbankingTest
 {
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/NetbankingIciciRefundFileTestData.php';
 

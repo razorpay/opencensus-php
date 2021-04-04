@@ -39,7 +39,7 @@ class IciciGatewayTest extends TestCase
     // 10-02-2020 Tuesday
     const FIXED_WORKING_DAY_AFTER_WORKING_DAY_TIME = 1581385905;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $fixedTime = (new Carbon())->timestamp(self::FIXED_WORKING_DAY_AFTER_WORKING_DAY_TIME);
 

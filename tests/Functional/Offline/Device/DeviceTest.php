@@ -11,7 +11,7 @@ class DeviceTest extends TestCase
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/DeviceTestData.php';
 

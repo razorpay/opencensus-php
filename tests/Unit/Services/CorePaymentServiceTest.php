@@ -8,7 +8,7 @@ use RZP\Exception\ServerErrorException;
 
 class CorePaymentServiceTest extends TestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

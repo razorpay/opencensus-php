@@ -6,7 +6,7 @@ use RZP\Tests\Functional\TestCase;
 
 class NotesTest extends TestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

@@ -61,7 +61,6 @@ use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
 class PayoutTest extends OAuthTestCase
 {
-
     use PayoutTrait;
     use WebhookTrait;
     use PaymentTrait;
@@ -83,7 +82,7 @@ class PayoutTest extends OAuthTestCase
 
     private $finL3RoleUser;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/PayoutTestData.php';
 
@@ -1737,7 +1736,7 @@ class PayoutTest extends OAuthTestCase
         $mock = $this->createMetricsMock();
 
         $mock->method('histogram')
-             ->will($this->returnCallback(function (string $metric, int $times, array $dimensions = []) {
+             ->will($this->returnCallback(function (string $metric, float $times, array $dimensions = []) {
                  if ($metric === WorkflowService::WORKFLOW_SERVICE_REQUEST_MILLISECONDS)
                  {
                      $this->assertEquals(100, $times);
@@ -9207,7 +9206,7 @@ class PayoutTest extends OAuthTestCase
         $this->createPayoutWorkflowWithBankingUsersLiveMode();
 
         // Timestamp of 2010 (random). So that any merchant created after that will be considered a new merchant.
-        $pastTime = Carbon::create(2010,1,1)->getTimestamp();
+        $pastTime = Carbon::create(2010, 1, 1, null, null, null)->getTimestamp();
 
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::BULK_PAYOUTS_NEW_MERCHANT_CUTOFF_TIMESTAMP => $pastTime]);
 
@@ -9244,7 +9243,7 @@ class PayoutTest extends OAuthTestCase
         $this->makeRequestAndGetContent($request);
 
         // Timestamp of 2010 (random). So that any merchant created after that will be considered a new merchant.
-        $pastTime = Carbon::create(2010,1,1)->getTimestamp();
+        $pastTime = Carbon::create(2010, 1, 1, null, null, null)->getTimestamp();
 
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::BULK_PAYOUTS_NEW_MERCHANT_CUTOFF_TIMESTAMP => $pastTime]);
 
@@ -9297,7 +9296,7 @@ class PayoutTest extends OAuthTestCase
         $this->makeRequestAndGetContent($request);
 
         // Timestamp of 2010 (random). So that any merchant created after that will be considered a new merchant.
-        $pastTime = Carbon::create(2010,1,1)->getTimestamp();
+        $pastTime = Carbon::create(2010, 1, 1, null, null, null)->getTimestamp();
 
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::BULK_PAYOUTS_NEW_MERCHANT_CUTOFF_TIMESTAMP => $pastTime]);
 
@@ -9899,7 +9898,7 @@ class PayoutTest extends OAuthTestCase
 
         $mock->expects($this->atLeastOnce())
             ->method('count')
-            ->will($this->returnCallback(function (string $metric, int $times, array $dimensions) {
+            ->will($this->returnCallback(function (string $metric, float $times, array $dimensions) {
                 if ($metric === Constants\Metric::HTTP_REQUESTS_TOTAL)
                 {
                     if (isset($dimensions[Constants\Metric::LABEL_RZP_PRODUCT]) and ($dimensions[Constants\Metric::LABEL_RZP_PRODUCT] === 'banking'))

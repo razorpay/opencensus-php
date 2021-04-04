@@ -70,7 +70,7 @@ class VpaTest extends TestCase
         /**
          * Asserting that the vpa suffix is there in the suggested vpa
          */
-        $this->assertContains('suf', $request['request']['content']['customerVpa']);
+        $this->assertStringContainsString('suf', $request['request']['content']['customerVpa']);
     }
 
     public function testCreateVpaWithUppercaseUsername()

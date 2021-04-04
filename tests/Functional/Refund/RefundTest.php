@@ -51,7 +51,7 @@ class RefundTest extends TestCase
 
     protected $sharedTerminal;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/RefundTestData.php';
 

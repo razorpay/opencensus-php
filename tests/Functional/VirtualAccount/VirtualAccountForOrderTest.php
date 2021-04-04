@@ -16,7 +16,7 @@ class VirtualAccountForOrderTest extends TestCase
     use VirtualAccountTrait;
     use DbEntityFetchTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/VirtualAccountTestData.php';
 

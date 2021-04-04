@@ -40,7 +40,7 @@ class MpanTest extends TestCase
         $this->insertIntoMpanTable($mpanData);
     }
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/MpanTestData.php';
 
@@ -169,7 +169,7 @@ class MpanTest extends TestCase
 
         $row = $response['items']['2'];
 
-        $this->assertContains("SQLSTATE[23000]: Integrity constraint violation", $row['error']['description']);
+        $this->assertStringContainsString("SQLSTATE[23000]: Integrity constraint violation", $row['error']['description']);
     }
 
     public function testMpanTokenizeExistingMpans()

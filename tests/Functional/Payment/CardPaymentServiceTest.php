@@ -40,7 +40,7 @@ class CardPaymentServiceTest extends TestCase
 
     protected $razorxValue = 'on';
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/CardPaymentServiceTestData.php';
 

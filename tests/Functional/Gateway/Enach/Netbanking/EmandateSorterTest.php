@@ -12,7 +12,7 @@ class EmandateSorterTest extends TestCase
 {
     use AttemptTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

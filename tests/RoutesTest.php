@@ -7,7 +7,7 @@ use RZP\Http\Route;
 
 class RoutesTest extends TestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

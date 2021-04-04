@@ -21,7 +21,7 @@ class NetbankingBobCombinedFileTest extends TestCase
 
     protected $bank = 'BARB_R';
 
-    public function setUp()
+    protected function setUp(): void
     {
         Carbon::setTestNow();
 

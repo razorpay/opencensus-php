@@ -30,7 +30,7 @@ class CommissionCreateTest extends TestCase
     use CommissionTrait;
     use DbEntityFetchTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/CommissionCreateTestData.php';
 
@@ -1148,7 +1148,7 @@ class CommissionCreateTest extends TestCase
         $this->assertEquals('NEFT', $attempt->getMode());
     }
 
-    public function tearDown()
+    protected function tearDown(): void
     {
         parent::tearDown();
 

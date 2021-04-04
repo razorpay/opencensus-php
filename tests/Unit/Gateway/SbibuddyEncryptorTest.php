@@ -18,7 +18,7 @@ class SbibuddyEncryptorTest extends TestCase
         'amount'                => '500.00'
     ];
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

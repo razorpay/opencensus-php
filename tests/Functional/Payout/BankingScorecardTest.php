@@ -21,7 +21,7 @@ class BankingScorecardTest extends TestCase
 
     private $merchantId = '10000000100001';
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/BankingScorecardTestData.php';
 

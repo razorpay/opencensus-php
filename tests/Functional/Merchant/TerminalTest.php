@@ -32,7 +32,7 @@ class TerminalTest extends TestCase
 
     protected $terminalsServiceMock;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/TerminalData.php';
 

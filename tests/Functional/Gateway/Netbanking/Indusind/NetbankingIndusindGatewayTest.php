@@ -16,7 +16,7 @@ class NetbankingIndusindGatewayTest extends TestCase
     use PaymentTrait;
     use DbEntityFetchTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/NetbankingIndusindGatewayTestData.php';
 

@@ -22,7 +22,7 @@ class GatewayErrorThrottlerTest extends TestCase
 
     protected $redis;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->markTestSkipped('not being used now.');
 
@@ -37,7 +37,7 @@ class GatewayErrorThrottlerTest extends TestCase
         $this->fixtures->create('terminal:shared_sharp_terminal');
     }
 
-    public function tearDown()
+    protected function tearDown(): void
     {
         $this->flushCache();
 

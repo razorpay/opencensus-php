@@ -47,7 +47,7 @@ class MerchantFeeTest extends TestCase
         ],
     ];
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/MerchantFeeTestData.php';
 

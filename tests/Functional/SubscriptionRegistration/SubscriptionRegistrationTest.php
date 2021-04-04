@@ -25,7 +25,7 @@ class SubscriptionRegistrationTest extends TestCase
 
     const TEST_INV_ID = 'inv_1000000invoice';
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/Helpers/SubscriptionRegistrationTestData.php';
 
@@ -124,7 +124,7 @@ class SubscriptionRegistrationTest extends TestCase
 
         $testData = '"order":{"status":"created"}}';
 
-        $this->assertContains($testData, $response->getContent());
+        $this->assertStringContainsString($testData, $response->getContent());
     }
 
     public function testCreateAuthLinkWithIncompleteBankData()

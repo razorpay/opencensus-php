@@ -23,7 +23,7 @@ class NachRegisterS2SPaymentTest extends TestCase
 
     const ORDER_ID = '100000000order';
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/Helpers/NachRegisterS2SPaymentTestData.php';
 

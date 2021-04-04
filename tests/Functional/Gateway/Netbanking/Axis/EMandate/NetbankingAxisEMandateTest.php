@@ -39,7 +39,7 @@ class NetbankingAxisEMandateTest extends TestCase
     const NAME              = 'Test account';
     const ACCOUNT_TYPE      = 'savings';
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->gateway = 'netbanking_axis';
 

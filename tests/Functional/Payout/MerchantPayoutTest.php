@@ -33,7 +33,7 @@ class MerchantPayoutTest extends TestCase
     use PayoutTrait;
     use WorkflowTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/PayoutTestData.php';
 

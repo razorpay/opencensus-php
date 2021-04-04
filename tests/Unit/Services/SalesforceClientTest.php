@@ -13,7 +13,7 @@ class SalesforceClientTest extends TestCase
     /** @var $salesforceClient SalesForceClient  */
     protected $salesforceClient;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -30,7 +30,7 @@ class SalesforceClientTest extends TestCase
         {
             if (isset($payload[$field]))
             {
-                $this->assertInternalType("int", $payload[$field]);
+                $this->assertIsInt($payload[$field]);
             }
         }
     }

@@ -9,7 +9,7 @@ use RZP\Constants\Timezone;
 
 class ScheduleLibraryTest extends TestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/ScheduleLibraryTestData.php';
 

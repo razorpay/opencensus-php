@@ -23,7 +23,7 @@ class UpiJuspayGatewayTest extends TestCase
 
     use DbEntityFetchTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

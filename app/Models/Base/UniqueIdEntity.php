@@ -108,6 +108,13 @@ class UniqueIdEntity extends Entity
 
     protected $secureUid = false;
 
+    /**
+     * The "type" of the primary key ID.
+     *
+     * @var string
+     */
+    protected $keyType = 'string';
+
     public function getId()
     {
         return $this->getAttribute(self::ID);

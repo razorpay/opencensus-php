@@ -8,7 +8,7 @@ class FlexMoneyGatewayTest extends CardlessEmiGatewayTest
 {
     protected $provider = 'flexmoney';
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

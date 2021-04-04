@@ -11,7 +11,7 @@ class AnalyticsTest extends TestCase
      */
     protected $core;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/AnalyticsTestData.php';
 

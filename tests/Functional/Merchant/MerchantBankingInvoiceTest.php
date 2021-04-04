@@ -21,7 +21,7 @@ class MerchantBankingInvoiceTest extends TestCase
 
     protected $eInvoiceClientMock;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/MerchantBankingInvoiceTestData.php';
 

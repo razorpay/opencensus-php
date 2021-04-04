@@ -644,8 +644,7 @@ class Gateway extends Base\Gateway
             $date = Carbon::createFromTimestamp($input['payment']['created_at'], Timezone::IST)->format('Y-m-d');
         }
 
-        $endDate = Carbon::createFromTimestamp($input['token']->getExpiredAt(), Timezone::IST)
-                         ->format('Y-m-d');
+        $endDate = Carbon::now(Timezone::IST)->setTimestamp($input['token']->getExpiredAt())->format('Y-m-d');
 
         $data = [
             RequestFields::SI                  => Confirmation::YES,

@@ -10,7 +10,7 @@ class RepositoryTest extends TestCase
     /** @var  Repository */
     protected $pricingRepo;
 
-    function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

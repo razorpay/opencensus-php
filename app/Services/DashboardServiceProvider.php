@@ -2,18 +2,12 @@
 
 namespace RZP\Services;
 
+use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use RZP\Dashboard\Dashboard;
 
-class DashboardServiceProvider extends BaseServiceProvider
+class DashboardServiceProvider extends BaseServiceProvider implements DeferrableProvider
 {
-    /**
-     * Indicates if loading of the provider is deferred.
-     *
-     * @var bool
-     */
-    protected $defer = true;
-
     /**
      * Register the service provider.
      *

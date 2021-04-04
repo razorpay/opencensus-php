@@ -13,7 +13,7 @@ class MobikwikGatewayTest extends TestCase
 
     protected $payment;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/MobikwikGatewayTestData.php';
 

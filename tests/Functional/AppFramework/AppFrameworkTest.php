@@ -18,7 +18,11 @@ class AppFrameworkTest extends TestCase
 {
     use PaymentTrait;
 
-    public function setUp()
+    private $ownerRoleUser;
+
+    private $merchant;
+
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/AppFrameworkTestData.php';
 

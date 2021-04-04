@@ -21,7 +21,7 @@ class PaymentMarketplaceTransferTest extends TestCase
 
     const STANDARD_PRICING_PLAN_ID  = '1A0Fkd38fGZPVC';
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/PaymentMarketplaceTransferTestData.php';
 

@@ -10,7 +10,7 @@ class CoreTest extends TestCase
 {
     use Traits\CreatesInvoice;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/Helpers/CoreTestData.php';
 

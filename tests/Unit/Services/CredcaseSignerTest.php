@@ -26,7 +26,7 @@ class CredcaseSignerTest extends TestCase
     /** @var mixed Mocked Redis connection */
     protected $redis;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

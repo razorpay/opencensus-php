@@ -12,7 +12,7 @@ use RZP\Tests\Functional\TestCase;
 class ErrorTest extends TestCase
 {
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
     }

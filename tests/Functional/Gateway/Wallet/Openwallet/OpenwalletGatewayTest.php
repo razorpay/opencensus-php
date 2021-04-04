@@ -14,7 +14,7 @@ class OpenwalletGatewayTest extends TestCase
 
     const WALLET = 'openwallet';
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/OpenwalletGatewayTestData.php';
 

@@ -56,7 +56,7 @@ class ReconciliationFileTest extends TestCase
     protected $payment;
     protected $recurringPayment;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/ReconciliationFileTestData.php';
 

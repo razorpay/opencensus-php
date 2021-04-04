@@ -26,7 +26,7 @@ class AttemptReconcileTest extends TestCase
     use AttemptTrait;
     use AttemptReconcileTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/Helpers/AttemptTestData.php';
 

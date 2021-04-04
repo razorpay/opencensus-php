@@ -24,7 +24,7 @@ class NetbankingCbiCombinedFileTest extends TestCase
 
     const REFUND_FIELDS = RefundFields::REFUND_FIELDS;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/NetbankingCbiCombinedFileTestData.php';
 

@@ -32,7 +32,7 @@ class FirstDataGatewayTest extends TestCase
      * This file covers testing on the old flow that is supported by firstdata.
      * Currently rupay cards will go through old flow.
      */
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/FirstDataGatewayTestData.php';
 

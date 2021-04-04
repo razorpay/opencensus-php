@@ -38,7 +38,7 @@ class PaymentLinkTest extends TestCase
     const TEST_PPI_ID_2 = '10000000001ppi';
     const TEST_ORDER_ID = '10000000000ord';
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/Helpers/PaymentLinkTestData.php';
 
@@ -483,7 +483,7 @@ class PaymentLinkTest extends TestCase
 
         $response->assertStatus(200);
 
-        $this->assertContains($id, $response->getContent());
+        $this->assertStringContainsString($id, $response->getContent());
     }
 
     public function testOptionalFeatureInHostedPage()
@@ -496,7 +496,7 @@ class PaymentLinkTest extends TestCase
 
         $response->assertStatus(200);
 
-        $this->assertContains('contact_optional', $response->getContent());
+        $this->assertStringContainsString('contact_optional', $response->getContent());
     }
 
     public function testFetchPostButtonHostedView()
@@ -513,11 +513,11 @@ class PaymentLinkTest extends TestCase
 
         $response->assertStatus(200);
 
-        $this->assertContains($id, $response->getContent());
+        $this->assertStringContainsString($id, $response->getContent());
 
-        $this->assertContains("udf_schema", $response->getContent());
+        $this->assertStringContainsString("udf_schema", $response->getContent());
 
-        $this->assertContains("payment_button_text", $response->getContent());
+        $this->assertStringContainsString("payment_button_text", $response->getContent());
     }
 
     public function testFetchPublicButtonDetails()

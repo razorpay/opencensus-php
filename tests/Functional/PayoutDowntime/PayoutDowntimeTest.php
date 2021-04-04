@@ -27,7 +27,7 @@ class PayoutDowntimeTest extends TestCase
     /* @var \RZP\Models\Merchant\Balance\Entity */
     private $balance;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/PayoutDowntimeTestData.php';
 

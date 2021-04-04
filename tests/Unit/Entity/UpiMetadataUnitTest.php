@@ -19,7 +19,7 @@ class UpiMetadataUnitTest extends TestCase
 
     protected $demoPaymentId = 'fourteendigit1';
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
     }

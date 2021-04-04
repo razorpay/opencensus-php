@@ -56,7 +56,7 @@ class ActivationTest extends OAuthTestCase
     const DEFAULT_MERCHANT_ID = '10000000000000';
     const RZP_ORG                   = '100000razorpay';
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/ActivationTestData.php';
 

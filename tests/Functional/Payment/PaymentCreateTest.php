@@ -38,7 +38,7 @@ class PaymentCreateTest extends TestCase
     use PaymentTrait;
     use DbEntityFetchTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/PaymentCreateTestData.php';
 
@@ -111,7 +111,7 @@ class PaymentCreateTest extends TestCase
             }
             catch(Exception\BadRequestValidationFailureException $exception)
             {
-                $this->assertContains($mandatoryField, $exception->getMessage());
+                $this->assertStringContainsString($mandatoryField, $exception->getMessage());
             }
         }
     }

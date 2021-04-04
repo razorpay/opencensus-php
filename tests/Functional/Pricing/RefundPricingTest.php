@@ -22,7 +22,7 @@ class RefundPricingTest extends TestCase
 
     protected $org = null;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/RefundPricingTestData.php';
 

@@ -29,7 +29,7 @@ class MutexTest extends TestCase
 
     protected $payment = null;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/MutexTestData.php';
 

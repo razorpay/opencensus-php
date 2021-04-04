@@ -12,7 +12,7 @@ class RazorXTest extends TestCase
 
     protected $razorX;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/RazorXTestData.php';
 

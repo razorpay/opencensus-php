@@ -18,7 +18,7 @@ class PaperMandatePaymentTest extends TestCase
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/Helpers/PaperMandateTestData.php';
 

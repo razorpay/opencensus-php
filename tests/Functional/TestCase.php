@@ -15,10 +15,11 @@ use Illuminate\Support\Facades\Redis;
 
 use RZP\Services\EsClient;
 use RZP\Tests\TestCase as ParentTestCase;
+use DMS\PHPUnitExtensions\ArraySubset\ArraySubsetAsserts;
 
 class TestCase extends ParentTestCase
 {
-    use CustomAssertions;
+    use CustomAssertions, ArraySubsetAsserts;
 
     /**
      * @var Fixtures\Fixtures
@@ -48,7 +49,7 @@ class TestCase extends ParentTestCase
      */
     protected $cloud = true;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -112,7 +113,7 @@ class TestCase extends ParentTestCase
         }
     }
 
-    public function tearDown()
+    protected function tearDown(): void
     {
         if ($this->db !== null)
         {

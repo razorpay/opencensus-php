@@ -29,7 +29,7 @@ class SFMerchantPOCUpdateTest extends TestCase
 
     protected $otherGroup;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/SFMerchantPOCUpdateTestData.php';
 

@@ -20,7 +20,7 @@ class RoleAccessTest extends TestCase
      */
     private $routePermissions;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/RoleAccessTestData.php';
 

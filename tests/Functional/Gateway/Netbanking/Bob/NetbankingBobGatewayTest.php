@@ -24,7 +24,7 @@ class NetbankingBobGatewayTest extends TestCase
 
     protected $payment = null;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/NetbankingBobGatewayTestData.php';
 

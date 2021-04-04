@@ -24,7 +24,7 @@ class OrderTest extends TestCase
     use PaymentTrait;
     use DbEntityFetchTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/OrderTestData.php';
 
@@ -276,7 +276,7 @@ class OrderTest extends TestCase
         // Account number and payer name will be updated in both the places
         // until on gateways we start using account number from bank accounts.
         $this->assertEquals($bankAccount->getAccountNumber(),$orderRequest['account_number']);
-        $this->assertContains($orderRequest['bank'], $bankAccount->getIfscCode());
+        $this->assertStringContainsString($orderRequest['bank'], $bankAccount->getIfscCode());
 
         $this->assertEquals($order->getAccountNumber(),$orderRequest['account_number']);
         $this->assertEquals($order->getBank(), $orderRequest['bank']);
@@ -333,7 +333,7 @@ class OrderTest extends TestCase
         // Account number and payer name will be updated in both the places
         // until on gateways we start using account number from bank accounts.
         $this->assertEquals($bankAccount->getAccountNumber(),$orderRequest['account_number']);
-        $this->assertContains($orderRequest['bank'], $bankAccount->getIfscCode());
+        $this->assertStringContainsString($orderRequest['bank'], $bankAccount->getIfscCode());
 
         $this->assertEquals($order->getAccountNumber(),$orderRequest['account_number']);
         $this->assertEquals($order->getBank(), $orderRequest['bank']);

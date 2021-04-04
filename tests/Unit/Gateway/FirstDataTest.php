@@ -8,7 +8,7 @@ use RZP\Constants\Mode;
 
 class FirstDataTest extends TestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

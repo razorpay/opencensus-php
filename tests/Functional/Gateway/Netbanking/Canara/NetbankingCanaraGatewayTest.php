@@ -24,7 +24,7 @@ class NetbankingCanaraGatewayTest extends TestCase
 
     protected $bank;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/NetbankingCanaraGatewayTestData.php';
 

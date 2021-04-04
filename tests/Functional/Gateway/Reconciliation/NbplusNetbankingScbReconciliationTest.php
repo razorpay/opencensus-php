@@ -20,7 +20,7 @@ class NbplusNetbankingScbReconciliationTest extends NbPlusPaymentServiceNetbanki
 {
     use ReconTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/NbplusNetbankingReconciliationTestData.php';
 

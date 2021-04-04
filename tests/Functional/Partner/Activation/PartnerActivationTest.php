@@ -21,7 +21,7 @@ class PartnerActivationTest extends OAuthTestCase
 
     const MERCHANT_ID = '1cXSLlUU8V9sXl';
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/PartnerActivationTestData.php';
 

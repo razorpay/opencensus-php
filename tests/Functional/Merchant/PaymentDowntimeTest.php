@@ -21,7 +21,7 @@ class PaymentDowntimeTest extends TestCase
     use DowntimeTrait;
     use TestsWebhookEvents;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/PaymentDowntimeTestData.php';
 
@@ -703,7 +703,7 @@ class PaymentDowntimeTest extends TestCase
 
     public function testWebhookForPaymentDowntimeStartedEvent()
     {
-        Carbon::setTestNow(Carbon::create(2019, 14, 01));
+        Carbon::setTestNow(Carbon::create(2019, 14, 01, null, null, null));
 
         $this->ba->adminAuth();
 
@@ -740,7 +740,7 @@ class PaymentDowntimeTest extends TestCase
 
     public function testWebhookForPaymentDowntimeResolvedEvent()
     {
-        Carbon::setTestNow(Carbon::create(2019, 14, 01));
+        Carbon::setTestNow(Carbon::create(2019, 14, 01, null, null, null));
 
         $this->ba->adminAuth();
 

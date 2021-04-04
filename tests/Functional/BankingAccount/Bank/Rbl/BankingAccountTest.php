@@ -37,7 +37,7 @@ class BankingAccountTest extends TestCase
     use DbEntityFetchTrait;
     use EventsTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/Helpers/BankingAccountTestData.php';
 

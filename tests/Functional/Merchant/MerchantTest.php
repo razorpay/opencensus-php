@@ -152,7 +152,7 @@ class MerchantTest extends TestCase
 
     protected $esClient;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/MerchantTestData.php';
 
@@ -3423,7 +3423,7 @@ class MerchantTest extends TestCase
         $response = $this->call('GET', '/v1/checkout/public');
 
         $response->assertStatus(200);
-        $this->assertContains('<title>Razorpay Checkout</title>', $response->getContent());
+        $this->assertStringContainsString('<title>Razorpay Checkout</title>', $response->getContent());
     }
 
     public function testGetNetbankingDowntimeInfoForDirectNetbankingGateway()
@@ -5210,7 +5210,7 @@ class MerchantTest extends TestCase
 
         $response = $this->runRequestResponseFlow($testData);
 
-        $this->assertContains('/logos/', $response['logo_url']);
+        $this->assertStringContainsString('/logos/', $response['logo_url']);
         $this->assertStringStartsWith('http', $response['logo_url']);
     }
 
@@ -5275,7 +5275,7 @@ class MerchantTest extends TestCase
 
         $merchant = $this->fixtures->merchant->setLogoUrl($defaultImgPath);
 
-        $this->assertContains($defaultImgPath, $merchant->getLogoUrl());
+        $this->assertStringContainsString($defaultImgPath, $merchant->getLogoUrl());
 
         $testData = $this->testData['testDeleteLogoUrl'];
 

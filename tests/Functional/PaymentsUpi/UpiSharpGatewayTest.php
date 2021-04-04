@@ -15,7 +15,7 @@ class UpiSharpGatewayTest extends TestCase
     use PaymentsUpiTrait;
     use DbEntityFetchTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

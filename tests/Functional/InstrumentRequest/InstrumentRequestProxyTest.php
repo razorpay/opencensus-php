@@ -21,7 +21,7 @@ class InstrumentRequestProxyTest extends TestCase
     const EXPECTED_REQUEST_HEADERS_TERMINALS_SERVICE   = 'expected_request_headers_terminals_service';
     const REQUEST                                      = 'request';
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/InstrumentRequestProxyTestData.php';
 

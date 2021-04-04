@@ -43,7 +43,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
     const FIXED_WORKING_DAY_TIME     = 1583548200;  // 07-03-2020 8:00 AM
     const FIXED_NON_WORKING_DAY_TIME = 1583634600;  // 08-03-2020 8:00 AM (sunday)
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/EnachNetbankingNpciGatewayTestData.php';
 

@@ -36,7 +36,7 @@ class GatewayDowntimeDetectionV2Test extends TestCase
 
     protected $redis;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/GatewayDowntimeDetectionV2TestData.php';
 
@@ -87,7 +87,7 @@ class GatewayDowntimeDetectionV2Test extends TestCase
         $this->app->instance('db.connector.mysql', $connector);
     }
 
-    public function tearDown()
+    protected function tearDown(): void
     {
         $this->flushCache();
 

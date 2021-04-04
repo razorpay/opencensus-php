@@ -20,7 +20,7 @@ class ProcessorTest extends TestCase
 
     protected $input;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

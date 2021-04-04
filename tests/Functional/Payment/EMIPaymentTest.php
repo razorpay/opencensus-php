@@ -24,7 +24,7 @@ class EMIPaymentTest extends TestCase
 
     protected $emiPlan;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

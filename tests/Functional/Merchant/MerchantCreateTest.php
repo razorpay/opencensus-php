@@ -43,7 +43,7 @@ class MerchantCreateTest extends TestCase
     use TerminalTrait;
     use BatchTestTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/MerchantCreateTestData.php';
 

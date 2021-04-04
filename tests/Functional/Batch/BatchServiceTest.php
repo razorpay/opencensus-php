@@ -16,7 +16,7 @@ class BatchServiceTest extends TestCase
     use BatchTestTrait;
     use CreatesInvoice;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/BatchServiceTestData.php';
 

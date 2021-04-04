@@ -23,7 +23,7 @@ class MerchantAttributeTest extends TestCase
     use TestsBusinessBanking;
     use HeimdallTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/MerchantAttributeTestData.php';
 

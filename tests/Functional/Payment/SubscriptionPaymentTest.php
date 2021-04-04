@@ -49,7 +49,7 @@ class SubscriptionPaymentTest extends TestCase
      */
     protected $offer;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/SubscriptionPaymentTestData.php';
 

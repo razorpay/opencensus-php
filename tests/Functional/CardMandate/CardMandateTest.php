@@ -27,7 +27,7 @@ class CardMandateTest extends TestCase
 
     protected $mandateConfirm;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/CardMandateTestData.php';
 

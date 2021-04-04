@@ -14,7 +14,7 @@ class UpiHulkReconTest extends TestCase
 
     protected $payment;
 
-    public function setup()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/UpiHulkReconTestData.php';
 

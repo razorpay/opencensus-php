@@ -10,7 +10,7 @@ class NetbankingSynbGatewayMigrationTest extends NetbankingCanaraGatewayTest
     use PaymentTrait;
     use PartnerTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

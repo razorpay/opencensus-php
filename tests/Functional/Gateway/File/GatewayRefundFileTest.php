@@ -22,7 +22,7 @@ class GatewayRefundFileTest extends TestCase
     use PaymentTrait;
     use DbEntityFetchTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         Carbon::setTestNow();
 

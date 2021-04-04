@@ -244,7 +244,7 @@ class Gateway extends Base\Gateway
 
         if ($input['token']->getExpiredAt() !== null)
         {
-            $finalCollection = Carbon::createFromTimestamp($input['token']->getExpiredAt(), Timezone::IST);
+            $finalCollection = Carbon::now(Timezone::IST)->setTimestamp($input['token']->getExpiredAt());
 
             $content['final_collection_date'] = $finalCollection->format('Y-m-d');
         }

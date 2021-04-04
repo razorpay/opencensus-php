@@ -17,7 +17,7 @@ class MerchantReferralTest extends OAuthTestCase
     use PaymentTrait;
     use DbEntityFetchTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/MerchantReferralTestData.php';
 

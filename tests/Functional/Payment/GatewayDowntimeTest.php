@@ -34,7 +34,7 @@ class GatewayDowntimeTest extends TestCase
 
     protected $dopplerToken;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/GatewayDowntimeTestData.php';
 

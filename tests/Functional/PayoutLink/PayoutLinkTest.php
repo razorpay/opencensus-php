@@ -84,7 +84,7 @@ class PayoutLinkTest extends TestCase
 
     const SKIP_REASON = 'Skipping this since moved to microservice';
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/PayoutLinkTestData.php';
 

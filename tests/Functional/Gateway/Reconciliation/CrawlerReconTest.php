@@ -12,7 +12,7 @@ class CrawlerReconTest extends TestCase
 {
     use BatchTestTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
 
         parent::setUp();

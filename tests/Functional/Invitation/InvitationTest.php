@@ -23,7 +23,7 @@ class InvitationTest extends TestCase
 
     protected $merchantUser;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/InvitationTestData.php';
 

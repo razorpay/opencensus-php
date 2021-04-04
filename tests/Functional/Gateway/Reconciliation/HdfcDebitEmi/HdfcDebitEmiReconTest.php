@@ -16,7 +16,7 @@ class HdfcDebitEmiReconTest extends TestCase
     protected $terminal = null;
     protected $card     = null;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

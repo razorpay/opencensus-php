@@ -19,7 +19,7 @@ class DigioGatewayTest extends TestCase
     use PaymentTrait;
     use TransactionTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/DigioGatewayTestData.php';
 

@@ -11,11 +11,12 @@ use Razorpay\OAuth\Application;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Database\Connection;
 use Http\Discovery\Psr17FactoryDiscovery;
+use Symfony\Component\Cache\Adapter\Psr16Adapter;
+use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use RZP\Services\Mock\DruidService as MockDruidService;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Illuminate\Database\MySqlConnection as IlluminateMySqlConnection;
-
 
 use RZP\Models\Vpa;
 use RZP\Models\Card;
@@ -55,6 +56,7 @@ use RZP\Models\BankingAccount;
 use RZP\Gateway\GatewayManager;
 use RZP\Models\Workflow\Action;
 use RZP\Models\CreditRepayment;
+use RZP\Base\Cache\CacheManager;
 use RZP\Models\VirtualAccountTpv;
 use RZP\Models\Plan\Subscription;
 use RZP\Base\Http\Psr18ClientMock;
@@ -71,15 +73,9 @@ use RZP\Base\Database\Connectors\MySqlConnector;
 use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Services\VendorPayments\Service as VendorPaymentService;
 
-class ApiServiceProvider extends BaseServiceProvider
+class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvider
 {
-    /**
-     * Indicates if loading of the provider is deferred.
-     *
-     * @var bool
-     */
-    protected $defer = true;
-    protected $env ;
+    protected $env;
 
     /**
      * Registering observers for eloquent events here.
@@ -455,6 +451,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerMerchantRiskAlertClient();
 
         $this->registerPhonepeDowntimeService();
+
+        $this->registerCacheManager();
     }
 
     /**
@@ -512,7 +510,10 @@ class ApiServiceProvider extends BaseServiceProvider
             'credcase_http_client',
             'pg_router',
             'bvs_http_client',
-            'error_mapper'
+            'error_mapper',
+            'cache',
+            'cache.store',
+            'cache.psr6',
         ];
     }
 
@@ -947,14 +948,14 @@ class ApiServiceProvider extends BaseServiceProvider
     {
         $apiProcessor = new RZP\Trace\ApiTraceProcessor($this->app);
 
-        $this->app['trace']->pushProcessor($apiProcessor);
+        $this->app['trace']->pushNamedProcessor($apiProcessor);
     }
 
     protected function registerGatewayProcessors()
     {
         $apiProcessor = new RZP\Trace\GatewayTraceProcessor($this->app);
 
-        $this->app['trace']->pushProcessor($apiProcessor, 'gateway');
+        $this->app['trace']->pushNamedProcessor($apiProcessor, 'gateway');
     }
 
     protected function registerPincodeSearch()
@@ -1310,4 +1311,18 @@ class ApiServiceProvider extends BaseServiceProvider
         });
     }
 
+    protected function registerCacheManager()
+    {
+        $this->app->singleton('cache', function ($app) {
+            return new CacheManager($app);
+        });
+
+        $this->app->singleton('cache.store', function ($app) {
+            return $app['cache']->driver();
+        });
+
+        $this->app->singleton('cache.psr6', function ($app) {
+            return new Psr16Adapter($app['cache.store']);
+        });
+    }
 }

@@ -26,14 +26,14 @@ class AttemptTest extends TestCase
     use AttemptTrait;
     use TestsBusinessBanking;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/Helpers/AttemptTestData.php';
 
         parent::setUp();
     }
 
-    public function tearDown()
+    protected function tearDown(): void
     {
         parent::tearDown();
 

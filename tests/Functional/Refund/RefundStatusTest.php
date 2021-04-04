@@ -20,7 +20,7 @@ class RefundStatusTest extends TestCase
     const TIMESTAMP_PROCESSED_AT      = '2082738599';
     const TIMESTAMP_SPEED_CHANGE_TIME = '2082738598';
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/RefundStatusTestData.php';
 

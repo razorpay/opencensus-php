@@ -21,7 +21,7 @@ class WebhookV2Test extends TestCase
     use TestsBusinessBanking;
     use TestsWebhookEvents;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/WebhookV2Data.php';
 

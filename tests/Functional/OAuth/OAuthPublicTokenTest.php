@@ -17,7 +17,7 @@ class OAuthPublicTokenTest extends OAuthTestCase
      */
     protected $publicToken;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/OAuthPublicTokenTestData.php';
 

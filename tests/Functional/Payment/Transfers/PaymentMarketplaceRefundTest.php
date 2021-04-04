@@ -16,7 +16,7 @@ class PaymentMarketplaceRefundTest extends TestCase
     use DbEntityFetchTrait;
 
     // @todo: Clean up all test cases
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/PaymentMarketplaceRefundTestData.php';
 

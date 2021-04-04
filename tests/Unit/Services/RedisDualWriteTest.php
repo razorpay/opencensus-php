@@ -11,7 +11,7 @@ class RedisDualWriteTest extends TestCase
 {
     protected $mutex = null;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

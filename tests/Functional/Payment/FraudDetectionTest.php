@@ -21,7 +21,7 @@ class FraudDetectionTest extends TestCase
     use PaymentTrait;
     use EventsTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/FraudDetectionTestData.php';
 

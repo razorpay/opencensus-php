@@ -11,7 +11,7 @@ class PaymentRelatedEntitiesTest extends TestCase
 
     protected $emiPlan;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/PaymentRelatedEntitiesTestData.php';
 

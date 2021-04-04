@@ -27,7 +27,7 @@ class MerchantNotificationConfigTest extends TestCase
     use TestsBusinessBanking;
     use TestsWebhookEvents;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/MerchantNotificationConfigTestData.php';
 
@@ -446,7 +446,7 @@ class MerchantNotificationConfigTest extends TestCase
     {
         Mail::fake();
 
-        $testDate = Carbon::create(2021, 01, 01, 12);
+        $testDate = Carbon::create(2021, 01, 01, 12, null, null);
 
         Carbon::setTestNow($testDate);
 

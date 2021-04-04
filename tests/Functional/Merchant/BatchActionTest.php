@@ -11,7 +11,7 @@ class BatchActionTest extends OAuthTestCase
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/BatchActionTestData.php';
 

@@ -8,7 +8,7 @@ use RZP\Tests\Functional\TestCase;
 
 class OAuthTestCase extends TestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

@@ -11,7 +11,7 @@ class ItemTest extends TestCase
 
     use \Illuminate\Foundation\Testing\DatabaseMigrations;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/Helpers/ItemTestData.php';
 

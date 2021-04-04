@@ -4,7 +4,7 @@ namespace RZP\Tests\Functional\Gateway\Mozart\Upi;
 
 class UpiMindgateRecurringTest extends UpiInitialRecurringTestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

@@ -17,14 +17,14 @@ class BucketingTest extends TestCase
     use PaymentTrait;
     use ScheduleTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
         $this->ba->publicAuth();
     }
 
-    public function tearDown()
+    protected function tearDown(): void
     {
         parent::tearDown();
 

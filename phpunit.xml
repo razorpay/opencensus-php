@@ -7,7 +7,8 @@
          convertNoticesToExceptions="true"
          convertWarningsToExceptions="true"
          processIsolation="false"
-         stopOnFailure="false">
+         stopOnFailure="false"
+         cacheResult="false">
   <testsuites>
       <testsuite name="Application Test Suite">
           <directory>./tests/Functional/</directory>
@@ -216,6 +217,6 @@
     </whitelist>
   </filter>
   <php>
-    <ini name="memory_limit" value="512M"/>
+    <ini name="memory_limit" value="4096M"/>
   </php>
 </phpunit>

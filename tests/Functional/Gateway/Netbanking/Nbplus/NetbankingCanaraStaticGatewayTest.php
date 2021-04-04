@@ -7,7 +7,7 @@ use RZP\Tests\Functional\Payment\StaticCallbackNbplusGatewayTest;
 
 class NetbankingCanaraStaticGatewayTest extends StaticCallbackNbplusGatewayTest
 {
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/NetbankingCanaraStaticGatewayTestData.php';
 

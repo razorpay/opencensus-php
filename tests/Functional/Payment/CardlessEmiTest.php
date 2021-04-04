@@ -22,7 +22,7 @@ class CardlessEmiTest extends TestCase
         'CREDIT_LMT_EXHAUSTED',
     ];
 
-    public function setUp()
+    protected function setUp(): void
     {
         // $this->testDataFilePath = __DIR__.'/CardlessEmiGatewayTestData.php';
 
@@ -114,7 +114,7 @@ class CardlessEmiTest extends TestCase
             'provider' => 'EARLYSALARY',
         ];
 
-        $emiPlans = $this->app['cache']->set($key, $data, 15);
+        $emiPlans = $this->app['cache']->set($key, $data, 15 * 60);
 
         $this->makeRequestAndCatchException(
             function() use ($payment)

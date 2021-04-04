@@ -534,8 +534,7 @@ class Gateway extends Base\Gateway
 
     protected function getFormattedDate($input):string
     {
-        $date = Carbon::createFromTimestamp($input, Timezone::IST)
-                      ->format(Constants::TIME_FORMAT);
+        $date = Carbon::now(Timezone::IST)->setTimestamp($input)->format(Constants::TIME_FORMAT);
 
         return $date;
     }

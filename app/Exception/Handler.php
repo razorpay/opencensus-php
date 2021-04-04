@@ -47,7 +47,7 @@ class Handler extends ExceptionHandler
 
         $this->ba = $this->app['basicauth'];
 
-        if (($this->app['config']['sentry.mock'] === false) and
+        if (($this->app['config']['app.sentry_mock'] === false) and
             ($this->app->bound('sentry') === true))
         {
             $this->sentry = $this->app['sentry'];

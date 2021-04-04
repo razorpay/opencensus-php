@@ -5,7 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Ibk;
 class NetbankingAllaGatewayMigrationTest extends NbplusNetbankingIbkGatewayTest
 {
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

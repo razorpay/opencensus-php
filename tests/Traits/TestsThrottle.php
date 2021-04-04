@@ -24,7 +24,7 @@ trait TestsThrottle
      * - Initialize redis
      * - Set default global settings
      */
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -38,7 +38,7 @@ trait TestsThrottle
      * - Enables local skip flag
      * - Flushes redis
      */
-    public function tearDown()
+    protected function tearDown(): void
     {
         $this->app['config']->set('throttle.skip', true);
         $this->flushRedis();

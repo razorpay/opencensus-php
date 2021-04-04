@@ -7,7 +7,7 @@ use RZP\Services\Elfin;
 
 class BitlyTest extends TestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

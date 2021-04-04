@@ -31,7 +31,7 @@ class PartnerAccountTest extends TestCase
 
     const RZP_ORG = '100000razorpay';
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/PartnerAccountTestData.php';
 

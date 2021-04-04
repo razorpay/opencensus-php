@@ -21,7 +21,7 @@ class FreshchatTest extends TestCase
 
     protected $cache;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/FreshchatTestData.php';
 

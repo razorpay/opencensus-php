@@ -8,7 +8,7 @@ use RZP\Services\Geolocation\Service;
 
 class GeolocationTest extends TestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

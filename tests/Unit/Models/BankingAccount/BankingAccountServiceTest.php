@@ -14,7 +14,7 @@ class BankingAccountServiceTest extends TestCase
 
     protected $bankingAccountCoreMock;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

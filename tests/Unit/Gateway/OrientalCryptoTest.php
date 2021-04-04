@@ -14,7 +14,7 @@ class OrientalCryptoTest extends TestCase
     const PLAINTEXT  = 'ABC';
     const KEY = 'ABC';
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         $this->crypto = new AESCrypto(AES::MODE_ECB, self::KEY);

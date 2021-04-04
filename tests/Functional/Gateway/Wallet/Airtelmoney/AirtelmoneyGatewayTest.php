@@ -17,7 +17,7 @@ class AirtelmoneyGatewayTest extends TestCase
 
     protected $payment;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/AirtelmoneyGatewayTestData.php';
 
@@ -269,7 +269,7 @@ class AirtelmoneyGatewayTest extends TestCase
 
     public function testRefundExcelFileForAParticularMonth()
     {
-        $knownDate = Carbon::create(2016, 5, 21);
+        $knownDate = Carbon::create(2016, 5, 21, null, null, null);
 
         Carbon::setTestNow($knownDate);
 

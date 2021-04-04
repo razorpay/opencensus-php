@@ -82,7 +82,7 @@ if (! function_exists('read_env_file'))
             return;
         }
 
-        $dotenv = new Dotenv($envDir, $fileName);
+        $dotenv = Dotenv::create($envDir, $fileName);
 
         $dotenv->load();
     }

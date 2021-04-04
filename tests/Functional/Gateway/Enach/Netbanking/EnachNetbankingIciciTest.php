@@ -15,7 +15,7 @@ use Illuminate\Http\Testing\File as TestingFile;
 
 class EnachNetbankingNpciIciciTest extends EnachNetbankingNpciGatewayTest
 {
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

@@ -16,7 +16,7 @@ class PaymentCreateDCCTest extends TestCase
     use PaymentTrait;
     use DbEntityFetchTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/PaymentCreateDCCTestData.php';
 

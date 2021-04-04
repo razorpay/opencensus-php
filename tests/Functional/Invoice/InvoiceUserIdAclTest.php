@@ -12,7 +12,7 @@ class InvoiceUserIdAclTest extends TestCase
 
     protected $merchantUser = null;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/Helpers/InvoiceUserIdAclTestData.php';
 

@@ -18,7 +18,7 @@ class UpiHdfcReconTest extends TestCase
     use ReconTrait;
     use BatchTestTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/UpiHdfcReconTestData.php';
 

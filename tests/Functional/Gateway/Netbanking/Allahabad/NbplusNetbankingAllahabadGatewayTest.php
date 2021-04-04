@@ -14,7 +14,7 @@ use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
 
 class NbplusNetbankingAllahabadGatewayTest extends NbPlusPaymentServiceNetbankingTest
 {
-    public function setUp()
+    protected function setUp(): void
     {
         $this->markTestSkipped("Bank merged with Indian bank");
 

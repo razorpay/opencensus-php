@@ -23,7 +23,7 @@ class MpesaGatewayTest extends TestCase
 
     protected $sharedTerminal;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->markTestSkipped();
         

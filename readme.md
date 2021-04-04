@@ -47,7 +47,7 @@ There are 3 Ways to set up, you can choose either:
 
 *PHP*: Please make sure you have the `gmp`, `bcmath` extensions installed. This is on top of what [laravel requires](https://laravel.com/docs/5.5/installation#server-requirements):
 
-- PHP >= 7.1.3 and PHP<= 7.3
+- PHP >= 7.2 and PHP<= 7.3
 - OpenSSL PHP Extension
 - PDO PHP Extension
 - Mbstring PHP Extension

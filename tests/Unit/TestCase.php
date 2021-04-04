@@ -19,7 +19,7 @@ class TestCase extends PHPUnitTestCase
 
     protected $diagClientMock;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -72,7 +72,7 @@ class TestCase extends PHPUnitTestCase
 
     }
 
-    public function tearDown()
+    protected function tearDown(): void
     {
         parent::tearDown();
 

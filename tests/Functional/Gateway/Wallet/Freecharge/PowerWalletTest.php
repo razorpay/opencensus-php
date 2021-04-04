@@ -16,7 +16,7 @@ class PowerWalletTest extends TestCase
     const LOCAL_CUSTOMER = '100000customer';
     const GLOBAL_CUSTOMER = '10000gcustomer';
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/FreechargeGatewayTestData.php';
 

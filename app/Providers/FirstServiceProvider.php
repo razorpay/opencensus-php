@@ -17,13 +17,6 @@ use RZP\Trace\ApiTraceProcessor;
 class FirstServiceProvider extends ServiceProvider
 {
     /**
-     * Indicates if loading of the provider is deferred.
-     *
-     * @var bool
-     */
-    protected $defer = false;
-
-    /**
      * Register the application services.
      *
      * @return void

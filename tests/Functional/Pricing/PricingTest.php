@@ -31,7 +31,7 @@ class PricingTest extends TestCase
 
     protected $org = null;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/PricingData.php';
 
@@ -399,7 +399,7 @@ class PricingTest extends TestCase
 
         $response = $this->startTest($testData);
 
-        $this->assertContains('Unable to add rule to plan', $response['error']['description']);
+        $this->assertStringContainsString('Unable to add rule to plan', $response['error']['description']);
     }
 
     public function testAddPricingRuleEarlySalary()
@@ -1511,7 +1511,7 @@ class PricingTest extends TestCase
             {
                 if (starts_with($tag, E::PRICING) === true)
                 {
-                    $this->assertContains(E::PRICING, $tag);
+                    $this->assertStringContainsString(E::PRICING, $tag);
                 }
             }
             return true;
@@ -1525,7 +1525,7 @@ class PricingTest extends TestCase
             {
                 if (starts_with($tag, E::PRICING) === true)
                 {
-                    $this->assertContains(E::PRICING, $tag);
+                    $this->assertStringContainsString(E::PRICING, $tag);
                 }
             }
             return true;
@@ -1546,7 +1546,7 @@ class PricingTest extends TestCase
             {
                 if (starts_with($tag, E::PRICING) === true)
                 {
-                    $this->assertContains(
+                    $this->assertStringContainsString(
                         implode(':', [
                             CacheConstants::QUERY_CACHE_PREFIX,
                             CacheConstants::DEFAULT_QUERY_CACHE_VERSION,

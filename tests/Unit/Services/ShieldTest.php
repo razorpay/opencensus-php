@@ -7,7 +7,7 @@ use RZP\Tests\TestCase;
 
 class ShieldTest extends TestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

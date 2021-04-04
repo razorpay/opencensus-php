@@ -17,7 +17,7 @@ class NetbankingReconciliationTest extends TestCase
 
     const ACCOUNT_NUMBER = '309002069863';
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/NetbankingReconciliationTestData.php';
 

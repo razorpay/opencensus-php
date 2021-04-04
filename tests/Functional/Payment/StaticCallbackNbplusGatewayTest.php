@@ -4,7 +4,7 @@ namespace RZP\Tests\Functional\Payment;
 
 class StaticCallbackNbplusGatewayTest extends NbPlusPaymentServiceNetbankingTest
 {
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath =  'Functional/Gateway/Mozart/NetbankingKvbGatewayTestData.php';
 

@@ -10,7 +10,7 @@ class FlexMoneyBulkTerminalTest extends TestCase
 {
     use BatchTestTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/FlexMoneyBulkTerminalTestData.php';
 

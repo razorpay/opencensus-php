@@ -25,7 +25,7 @@ class DetailServiceTest extends TestCase
     protected $merchantAccountCore;
     protected $adminEntityMock;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         $this->createTestDependencyMocks();

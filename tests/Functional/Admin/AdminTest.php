@@ -39,7 +39,7 @@ class AdminTest extends TestCase
 
     protected $esClient;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/AdminData.php';
 

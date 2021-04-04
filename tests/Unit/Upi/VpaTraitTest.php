@@ -42,7 +42,7 @@ class VpaTraitTest extends TestCase
      */
     protected $terminalIds;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

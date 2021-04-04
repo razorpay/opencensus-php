@@ -26,7 +26,7 @@ class NetbankingAirtelReconTest extends TestCase
 
     protected $bank = IFSC::AIRP;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

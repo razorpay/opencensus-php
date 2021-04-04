@@ -16,7 +16,7 @@ class NetbankingPnbGatewayTest extends TestCase
 {
     use PaymentTrait;
 
-    public function setup()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/NetbankingPnbGatewayTestData.php';
 

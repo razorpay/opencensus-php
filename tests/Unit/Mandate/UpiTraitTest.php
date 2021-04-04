@@ -13,7 +13,7 @@ class UpiTraitTest extends TestCase
 {
     use UpiTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

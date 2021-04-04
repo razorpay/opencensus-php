@@ -6,7 +6,7 @@ class ZestMoneyGatewayTest extends CardlessEmiGatewayTest
 {
     protected $provider = 'zestmoney';
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

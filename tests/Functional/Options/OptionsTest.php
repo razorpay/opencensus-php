@@ -20,7 +20,7 @@ class OptionsTest extends TestCase
     const TEST_OPTIONS_JSON    = '{"checkout":{"label":{"min_amount":"Some first amount"}}}';
     const TEST_MERCHANT_ID     = '100DemoAccount';
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/Helpers/OptionsTestData.php';
 

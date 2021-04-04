@@ -8,7 +8,7 @@ class ConfigTest extends \RZP\Tests\TestCase
 {
     protected $config;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

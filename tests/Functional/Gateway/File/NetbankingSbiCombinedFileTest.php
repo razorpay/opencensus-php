@@ -27,7 +27,7 @@ class NetbankingSbiCombinedFileTest extends TestCase
 
     protected $terminal;
 
-    public function setUp()
+    protected function setUp(): void
     {
         Carbon::setTestNow();
 

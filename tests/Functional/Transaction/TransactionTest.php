@@ -18,7 +18,7 @@ class TransactionTest extends TestCase
     use HeimdallTrait;
     use DbEntityFetchTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/TransactionData.php';
 

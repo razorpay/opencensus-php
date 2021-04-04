@@ -15,7 +15,7 @@ class FileStoreTest extends TestCase
 {
     use PaymentTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/FileStoreTestData.php';
 

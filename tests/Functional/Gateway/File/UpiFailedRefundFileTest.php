@@ -14,7 +14,7 @@ class UpiFailedRefundFileTest extends TestCase
 {
     use PaymentTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         Carbon::setTestNow();
 

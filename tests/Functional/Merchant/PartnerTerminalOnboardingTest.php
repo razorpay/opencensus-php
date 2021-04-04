@@ -19,7 +19,7 @@ class PartnerTerminalOnboardingTest extends TestCase
     use PartnerTrait;
     use MpanTrait;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/PartnerTerminalOnboardingTestData.php';
 

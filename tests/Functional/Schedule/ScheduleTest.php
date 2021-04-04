@@ -40,7 +40,7 @@ class ScheduleTest extends TestCase
 
     const EXPECTED_WORKFLOW_ES_DATA_WITH_OBSERVER               = 'EXPECTED_WORKFLOW_ES_DATA_WITH_OBSERVER';
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/ScheduleTestData.php';
 

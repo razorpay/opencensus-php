@@ -19,7 +19,7 @@ class OauthMigrationTokenBatchTest extends TestCase
 
     protected $authServiceMock;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/OauthMigrationTokenBatchTestData.php';
 

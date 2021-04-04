@@ -9,7 +9,7 @@ use RZP\Models\Base\PublicCollection;
 
 class EntityTest extends TestCase
 {
-    function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

@@ -7,7 +7,7 @@ use RZP\Services\Elfin;
 
 class GimliTest extends TestCase
 {
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -53,6 +53,6 @@ class GimliTest extends TestCase
 
         $shortUrl = $this->gimli->shorten($url);
 
-        $this->assertContains('http://dwarf.razorpay.in/', $shortUrl);
+        $this->assertStringContainsString('http://dwarf.razorpay.in/', $shortUrl);
     }
 }

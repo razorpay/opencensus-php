@@ -22,7 +22,7 @@ class UpiAirtelReconTest extends TestCase
     private $refund;
     private $sharedTerminal;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

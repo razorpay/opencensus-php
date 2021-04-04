@@ -26,7 +26,7 @@ class D2cBureauDetailsTest extends TestCase
 
     protected $reportUrl;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/D2cBureauDetailsTestData.php';
 

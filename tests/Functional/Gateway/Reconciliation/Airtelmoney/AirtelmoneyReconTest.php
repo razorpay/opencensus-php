@@ -29,7 +29,7 @@ class AirtelmoneyReconTest extends TestCase
 
     protected $wallet = Wallet::AIRTELMONEY;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

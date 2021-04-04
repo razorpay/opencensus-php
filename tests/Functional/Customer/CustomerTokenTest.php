@@ -12,7 +12,7 @@ class CustomerTokenTest extends TestCase
     use PaymentTrait;
     use InteractsWithSession;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/CustomerTestData.php';
 

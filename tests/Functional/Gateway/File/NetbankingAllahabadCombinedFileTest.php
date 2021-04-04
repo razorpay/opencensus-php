@@ -18,7 +18,7 @@ class NetbankingAllahabadCombinedFileTest extends TestCase
 
     protected $terminal;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->markTestSkipped("Bank merged with Indian bank");
 

@@ -29,7 +29,7 @@ class SurveyTest extends TestCase
 
     private $user2;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/SurveyTestData.php';
 

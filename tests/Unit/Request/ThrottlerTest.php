@@ -13,7 +13,7 @@ class ThrottlerTest extends TestCase
     use TestsThrottle { setUp as baseSetUp; }
     use Traits\HasRequestCases;
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/Helpers/ThrottlerTestData.php';
 
@@ -240,7 +240,7 @@ class ThrottlerTest extends TestCase
     protected function createThrottlerMock(array $methods = []): Throttler
     {
         return $this->getMockBuilder(Throttler::class)
-                    ->setMethods($methods)
+                    ->onlyMethods($methods)
                     ->getMock();
     }
 }

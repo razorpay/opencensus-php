@@ -25,7 +25,7 @@ class WorkflowRequestListingTest extends TestCase
     protected $org = null;
     protected $workflowPermissionIds = [];
 
-    public function setUp()
+    protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/WorkflowRequestListingTestData.php';
 

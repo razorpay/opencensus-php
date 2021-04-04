@@ -25,7 +25,7 @@ class PhonepeSwitchReconciliationTest extends PhonepeReconciliationTest
 
     protected $method = Payment\Method::WALLET;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
