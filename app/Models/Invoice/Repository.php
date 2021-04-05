@@ -120,7 +120,7 @@ class Repository extends Base\Repository
     {
         Entity::verifyIdAndStripSign($id);
 
-        $query = $this->getQueryForFindWithParams($input, ConnectionType::SLAVE);
+        $query = $this->getQueryForFindWithParams($input);
 
         $query = $query->merchantId($merchant->getId());
 
