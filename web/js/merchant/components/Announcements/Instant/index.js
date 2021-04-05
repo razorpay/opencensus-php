@@ -28,7 +28,7 @@ export default class InstantActivationAnnouncements extends Component {
       theme: 'success',
       title: 'Account Activated',
       content:
-        'You can start accepting payments now. Payments will be settled to your bank account according to your settlement schedule',
+        'You can start accepting payments now. Payments will be settled to your bank account according to your settlement schedule. Please note we may ask you for more clarifications later as part of routine checks.',
     };
     let theme = 'warning',
       title,
@@ -148,10 +148,10 @@ export default class InstantActivationAnnouncements extends Component {
           title = 'KYC Clarification';
           content = (
             <React.Fragment>
-              Your KYC details require further clarifications. For quick resolution, update required
-              details &nbsp;
+              Your KYC details require further clarifications. Update required details within 2 days, otherwise your settlements might get paused.
+              &nbsp;
               <Link to="/activation" style={{ 'font-weight': 'bold' }}>
-                here
+                Update Details
               </Link>
               .
             </React.Fragment>

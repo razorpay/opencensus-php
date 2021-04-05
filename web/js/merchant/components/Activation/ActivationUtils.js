@@ -12,18 +12,23 @@ import {
 } from './Constants';
 import { E_SIGN_AADHAR } from './ActivationFormMap';
 
-const NOT_REGISTERED = 11; // 'Unregistered Businesses
-const INDIVIDUAL = 2; // Legacy Type, Now combined under Unregistered Type
-const PROPRIETORSHIP = 1;
-const NGO = 7; // 'NGO'
-const TRUST = 9; // 'Trust'
-const SOCIETY = 10; // 'Society'
-const LLP = 6; // 'LLP'
-const ORG_BusinessTypes = [NGO, TRUST, SOCIETY];
-const UNREGISTERED_TYPES = {
-  11: true,
-  2: true,
-};
+const
+  PRIVATE_LIMITED = 4,
+  PUBLIC_LIMITED = 5,
+  LLP = 6,
+  PARTNERSHIP = 3,
+  NOT_REGISTERED = 11, // 'Unregistered Businesses
+  INDIVIDUAL = 2, // Legacy Type, Now combined under Unregistered Type
+  PROPRIETORSHIP = 1,
+  NGO = 7, // 'NGO'
+  TRUST = 9, // 'Trust'
+  SOCIETY = 10, // 'Society'
+  ORG_BusinessTypes = [NGO, TRUST, SOCIETY],
+  UNREGISTERED_TYPES = {
+    11: true,
+    2: true,
+  },
+  BusinessTypes = [PRIVATE_LIMITED, PUBLIC_LIMITED, LLP, PARTNERSHIP];
 
 function differentAddress(activation) {
   return activation.state.same_address === '0';
@@ -98,14 +103,15 @@ function getPANDescription(data) {
 
 function getBeneficiaryInfo(value) {
   const currentBusinessType = this.state.dirty.business_type || this.props.data.business_type;
-
   if (currentBusinessType == PROPRIETORSHIP) {
     return 'Bank A/C Beneficiary Name should be the same as the name on Authorised Signatory PAN or Business PAN.';
   }
   if (isUnregisteredBusiness(this)) {
     return 'Bank Account beneficiary name should be same as the name on your PAN Card.';
   }
-
+  if (BusinessTypes.includes(Number(currentBusinessType))){
+    return 'Bank A/c Beneficiary Name should be the same as Business Pan Name.';
+  }
   return 'Bank A/C Beneficiary Name should be the same as the name on Authorised Signatory PAN or Business PAN.';
 }
 
