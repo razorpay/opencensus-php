@@ -1635,6 +1635,11 @@ class Core extends Base\Core
     {
         try
         {
+            if ($this->mode === Mode::TEST)
+            {
+                return;
+            }
+
             $riskAovInput = $this->getAovRiskCallInput($paymentLink, $payment);
 
             $this->merchantRiskService->createAlertRequest($riskAovInput);
@@ -1705,6 +1710,12 @@ class Core extends Base\Core
                     'config_key' => 'description',
                 ],
                 [
+                    'key'        => 'description',
+                    'value'      => $paymentLink->getDescription(),
+                    'list'       => 'brand_list',
+                    'config_key' => 'description',
+                ],
+                [
                     'key'        => 'title',
                     'value'      => $paymentLink->getTitle(),
                     'list'       => 'high_risk_list',
@@ -1714,6 +1725,12 @@ class Core extends Base\Core
                     'key'        => 'title',
                     'value'      => $paymentLink->getTitle(),
                     'list'       => 'authorities_list',
+                    'config_key' => 'title',
+                ],
+                [
+                    'key'        => 'title',
+                    'value'      => $paymentLink->getTitle(),
+                    'list'       => 'brand_list',
                     'config_key' => 'title',
                 ],
                 [
@@ -1726,6 +1743,12 @@ class Core extends Base\Core
                     'key'        => 'terms',
                     'value'      => $paymentLink->getTerms(),
                     'list'       => 'authorities_list',
+                    'config_key' => 'terms',
+                ],
+                [
+                    'key'        => 'terms',
+                    'value'      => $paymentLink->getTerms(),
+                    'list'       => 'brand_list',
                     'config_key' => 'terms',
                 ]
             ]
