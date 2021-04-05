@@ -141,8 +141,8 @@ jobs:
 #      - name: Guzzle 6 test
 #        run: tests/integration/guzzle6/test.sh
 
-      - name: Laravel test
-        run: tests/integration/laravel/test.sh
+#      - name: Laravel test
+#        run: tests/integration/laravel/test.sh
 
       - name: Memcached test
         run: tests/integration/memcached/test.sh
