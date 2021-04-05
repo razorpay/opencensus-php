@@ -614,7 +614,7 @@ class UserTest extends TestCase
 
         $mailMock->shouldReceive('queue')->withAnyArgs()->andReturn([]);
 
-        $response = $this->userService->oAuthSignup($content['userData']);
+        $response = $this->userService->register($content['userData']);
 
         $this->assertEquals($content['userData']['name'], $response['name']);
 

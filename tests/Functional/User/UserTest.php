@@ -98,6 +98,13 @@ class UserTest extends TestCase
         $this->assertNotNull($row);
     }
 
+    public function testRegisterWithOauthPayload()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
     public function testSignupSourceShowingUpInMerchantAfterRegistration()
     {
         //Given
@@ -309,6 +316,13 @@ class UserTest extends TestCase
 
         $testData['request']['content'] = $content;
 
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testOauthCreateWithUserRegisterPayload()
+    {
         $this->ba->appAuth();
 
         $this->startTest();

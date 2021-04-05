@@ -167,6 +167,23 @@ class Entity extends Base\PublicEntity
 
     // --------------------- Modifiers Ends ----------------------------------------
 
+    public function build(array $input = [], string $operation = 'create')
+    {
+        $this->input = $input;
+
+        $this->modify($input);
+
+        $this->validateInput($operation, $input);
+
+        $this->generate($input);
+
+        $this->unsetInput($operation, $input);
+
+        $this->fill($input);
+
+        return $this;
+    }
+
     /**
      * Generates a one time use token of the given length
      */

@@ -35,9 +35,9 @@ use RZP\Mail\User\AccountLockedWrongAttempt as AccountLockedWrongAttemptMail;
 
 class Core extends Base\Core
 {
-    public function create(array $input): Entity
+    public function create(array $input, string $operation = 'create'): Entity
     {
-        $user = $this->getUserEntity()->build($input);
+        $user = $this->getUserEntity()->build($input, $operation);
 
         $this->repo->transactionOnLiveAndTest(function() use ($user, $input)
         {

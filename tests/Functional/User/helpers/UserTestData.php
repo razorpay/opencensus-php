@@ -121,6 +121,31 @@ return [
         ],
     ],
 
+    'testRegisterWithOauthPayload'  => [
+        'request'  => [
+            'url'     => '/users/register',
+            'method'  => 'POST',
+            'content' => [
+                'email'          => 'hello123@gmail.com',
+                'oauth_provider' => "[\"google\"]",
+                'id_token'       => 'valid id token',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'oauth_provider is/are not required and should not be sent',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\ExtraFieldsException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ]
+    ],
+
     'testGet' => [
         'request' => [
             'url'    => '/users/id',
@@ -497,6 +522,32 @@ return [
                 ]
             ],
         ],
+    ],
+
+    'testOauthCreateWithUserRegisterPayload' => [
+        'request'   => [
+            'url'     => '/users/oauth-register',
+            'method'  => 'POST',
+            'content' => [
+                'email'          => 'hello123@gmail.com',
+                'oauth_provider' => "[\"google\"]",
+                'password'       => 'hello123',
+                'id_token'       => 'valid id token',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'password is/are not required and should not be sent',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\ExtraFieldsException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ]
     ],
 
     'testOauthCreate' => [

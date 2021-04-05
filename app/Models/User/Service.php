@@ -46,7 +46,7 @@ class Service extends Base\Service
         $this->merchantService = $merchantService ?? new Merchant\Service();
     }
 
-    public function register(array $input): array
+    public function register(array $input, string $operation = 'create'): array
     {
         $this->traceRegisterInput($input);
 
@@ -131,7 +131,7 @@ class Service extends Base\Service
 
             unset($input['business_name']);
 
-            $user = $this->create($input);
+            $user = $this->create($input, $operation);
         }
 
         /**
@@ -375,9 +375,9 @@ class Service extends Base\Service
         return ['success' => true];
     }
 
-    public function create(array $input): array
+    public function create(array $input, string $operation = 'create'): array
     {
-        $user = $this->core->create($input);
+        $user = $this->core->create($input, $operation);
 
         return $user->toArrayPublic();
     }
@@ -1157,7 +1157,8 @@ class Service extends Base\Service
 
     public function oAuthSignup($input, $validate2fa = true): array
     {
-        $data = $this->register($input);
+        // should accept only email / oauth_provider.
+        $data = $this->register($input, 'createOauth');
 
         $this->core->trackOnboardingEvent($input[Entity::EMAIL], EventCode::SIGNUP_CREATE_ACCOUNT_SUCCESS_WITH_GOOGLE);
 

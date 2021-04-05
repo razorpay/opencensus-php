@@ -31,17 +31,27 @@ class Validator extends Base\Validator
         Entity::ID                              => 'sometimes|max:14',
         Entity::NAME                            => 'sometimes|string|max:200',
         Entity::EMAIL                           => 'required|email|unique:users,email',
-        Entity::PASSWORD                        => 'required_without:oauth_provider|between:8,50|confirmed|numbers|letters',
-        Entity::PASSWORD_CONFIRMATION           => 'required_without:oauth_provider|between:8,50',
+        Entity::PASSWORD                        => 'required|between:8,50|confirmed|numbers|letters',
+        Entity::PASSWORD_CONFIRMATION           => 'required|between:8,50',
         Entity::CONTACT_MOBILE                  => 'sometimes|nullable|max:15|contact_syntax',
         Entity::REMEMBER_TOKEN                  => 'sometimes',
         Entity::CONFIRM_TOKEN                   => 'sometimes',
-        Entity::CAPTCHA                         => 'required_without_all:captcha_disable,oauth_provider',
+        Entity::CAPTCHA                         => 'required_without_all:captcha_disable',
         Entity::CAPTCHA_DISABLE                 => 'sometimes|string',
         Entity::SETTINGS                        => 'nullable|associative_array',
         Merchant\Constants::PARTNER_INTENT      => 'sometimes|boolean',
         Entity::APP                             => 'sometimes|string',
-        Entity::OAUTH_PROVIDER                  => 'required_without:password|string|custom',
+    ];
+
+    protected static $createOauthRules = [
+        Entity::ID                              => 'sometimes|max:14',
+        Entity::NAME                            => 'sometimes|string|max:200',
+        Entity::EMAIL                           => 'required|email|unique:users,email',
+        Entity::CONTACT_MOBILE                  => 'sometimes|nullable|max:15|contact_syntax',
+        Entity::SETTINGS                        => 'nullable|associative_array',
+        Merchant\Constants::PARTNER_INTENT      => 'sometimes|boolean',
+        Entity::APP                             => 'sometimes|string',
+        Entity::OAUTH_PROVIDER                  => 'required|string|custom',
     ];
 
     protected static $editRules = [
