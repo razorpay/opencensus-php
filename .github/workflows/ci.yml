@@ -81,31 +81,6 @@ jobs:
 
   integration:
     runs-on: ubuntu-latest
-
-    env:
-      DB_HOST: 127.0.0.1
-      DB_USERNAME: mysql
-      DB_PASSWORD: mysql
-      DB_DATABASE: mysqldb
-      TEST_HOST: localhost
-      TEST_PORT: 9999
-      TEST_URL: http://localhost:9999
-
-    services:
-      mysql:
-        image: mysql:5.7
-        env:
-          MYSQL_USER: mysql
-          MYSQL_PASSWORD: mysql
-          MYSQL_DATABASE: mysqldb
-          MYSQL_RANDOM_ROOT_PASSWORD: yes
-
-      postgres:
-        image: postgres:9.6
-        env:
-          POSTGRES_PASSWORD: pgsql
-          POSTGRES_USER: postgres
-
     continue-on-error: true
     steps:
       - uses: actions/checkout@v2
@@ -157,4 +132,17 @@ jobs:
 
       - name: Wordpress test
         run: tests/integration/wordpress/test.sh
-
+        
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_USER: mysql
+          MYSQL_PASSWORD: mysql
+          MYSQL_DATABASE: mysqldb
+          MYSQL_RANDOM_ROOT_PASSWORD: yes
+      postgres:
+        image: postgres:9.6
+        env:
+          POSTGRES_PASSWORD: pgsql
+          POSTGRES_USER: postgres
