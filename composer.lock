@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5bcf737cdafd93c22438415f1553c20f",
+    "content-hash": "16af9faa5cf60fc901b3d8df74482efc",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -5582,16 +5582,16 @@
         },
         {
             "name": "opencensus/opencensus",
-            "version": "v0.7.5.1",
+            "version": "v0.7.5.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/opencensus-php.git",
-                "reference": "1ffd9ded0a728802308d3c405f6fbed55244bc82"
+                "reference": "9a78e6d2c2d4090e97b470586b905f8ce79ce9eb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/opencensus-php/zipball/1ffd9ded0a728802308d3c405f6fbed55244bc82",
-                "reference": "1ffd9ded0a728802308d3c405f6fbed55244bc82",
+                "url": "https://api.github.com/repos/razorpay/opencensus-php/zipball/9a78e6d2c2d4090e97b470586b905f8ce79ce9eb",
+                "reference": "9a78e6d2c2d4090e97b470586b905f8ce79ce9eb",
                 "shasum": ""
             },
             "archive": {
@@ -5653,10 +5653,10 @@
             ],
             "description": "OpenCensus Trace Client for PHP",
             "support": {
-                "source": "https://github.com/razorpay/opencensus-php/tree/v0.7.5.1",
+                "source": "https://github.com/razorpay/opencensus-php/tree/v0.7.5.2",
                 "issues": "https://github.com/razorpay/opencensus-php/issues"
             },
-            "time": "2021-03-04T15:54:40+00:00"
+            "time": "2021-04-01T10:31:00+00:00"
         },
         {
             "name": "opencensus/opencensus-exporter-jaeger",
