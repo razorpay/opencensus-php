@@ -169,11 +169,25 @@ class Service extends Base\Service
 
     public function fetchMultiple(array $input)
     {
+        $this->trace->info(
+            TraceCode::TRANSFER_FETCH_MULTIPLE_REQUEST,
+            [
+                'input' => $input,
+            ]
+        );
+
         $merchantId = $this->merchant->getId();
 
         $input[Entity::STATUS] = Constant::FETCH_STATUS;
 
         $transfers = $this->repo->transfer->fetch($input, $merchantId, ConnectionType::DATA_WAREHOUSE);
+
+        $this->trace->info(
+            TraceCode::TRANSFER_FETCH_MULTIPLE_RESPONSE,
+            [
+                'transfers' => $transfers->toArrayPublic(),
+            ]
+        );
 
         return $transfers->toArrayPublic();
     }

@@ -1928,6 +1928,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Trace for Payment/Transfers
 
+    const TRANSFER_FETCH_MULTIPLE_REQUEST                       = 'TRANSFER_FETCH_MULTIPLE_REQUEST';
+    const TRANSFER_FETCH_MULTIPLE_RESPONSE                      = 'TRANSFER_FETCH_MULTIPLE_RESPONSE';
     const PAYMENT_TRANSFER_REQUEST                              = 'PAYMENT_TRANSFER_REQUEST';
     const PAYMENT_UPDATE_AMOUNT_TRANSFERRED                     = 'PAYMENT_UPDATE_AMOUNT_TRANSFERRED';
     const PAYMENT_TRANSFER_SUCCESS                              = 'PAYMENT_TRANSFER_SUCCESS';
