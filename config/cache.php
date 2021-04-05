@@ -62,7 +62,7 @@ return [
 
         'redis' => [
             'driver' => 'redis',
-            'connection' => 'query_cache_redis',
+            'connection' => 'mutex_redis',
         ],
 
         'throttle' => [
@@ -89,7 +89,7 @@ return [
 
         'session' => [
             'driver'     => 'redis',
-            'connection' => 'query_cache_redis',
+            'connection' => 'mutex_redis',
             'prefix'     => 'session:laravel',
         ],
     ],
