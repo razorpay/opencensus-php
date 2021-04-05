@@ -13,6 +13,7 @@ use PDO;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Base\Database\DetectsLostConnections;
+use OpenCensus\Trace\Integrations\PDO as PDOTracer;
 
 class MySqlConnector extends BaseMySqlConnector
 {
@@ -74,6 +75,17 @@ class MySqlConnector extends BaseMySqlConnector
 
             throw $e;
         }
+
+        // Load PDO tracer here for automatically trace all db calls
+        // It is placed here to be able to trace queries on multiple dbs separately
+        if ((php_sapi_name() !== 'cli') and
+            ($this->app['config']->get('applications.jaeger.enabled') === true)
+        )
+        {
+            $hostDSN = $this->getHostDsn($config);
+            PDOTracer::load($hostDSN);
+        }
+
 
         $this->initializeWaitTimeout($connection, $config);
 
