@@ -47,6 +47,8 @@ class Guzzle5Test extends TestCase
 
     public function testGuzzleRequest()
     {
+        $this->markTestSkipped();
+
         $server = HttpTestServer::create(
             function (RequestInterface $request, ResponseInterface &$response) {
                 /* Assert the HTTP call includes the expected values */
@@ -82,6 +84,8 @@ class Guzzle5Test extends TestCase
 
     public function testPersistsTraceContext()
     {
+        $this->markTestSkipped();
+
         $server = HttpTestServer::create(
             function (RequestInterface $request, ResponseInterface &$response) {
                 /* Assert the HTTP call includes the expected values */
