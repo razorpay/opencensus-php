@@ -80,7 +80,7 @@ jobs:
           fi
 
   integration:
-    runs-on: [self-hosted]
+    runs-on: ubuntu-latest
 
     env:
       DB_HOST: 127.0.0.1
