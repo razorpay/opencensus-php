@@ -146,3 +146,5 @@ jobs:
         env:
           POSTGRES_PASSWORD: pgsql
           POSTGRES_USER: postgres
+        ports:
+          - "5432:5432"
