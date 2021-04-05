@@ -4265,6 +4265,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TEMPLATING_RESPONSE                                   = 'TEMPLATING_RESPONSE';
     const TEMPLATING_REQUEST                                    = 'TEMPLATING_REQUEST';
 
+    const PAYMENT_CAPTURE_FAILED_MYSQL_HAS_GONE_AWAY            = 'PAYMENT_CAPTURE_FAILED_MYSQL_HAS_GONE_AWAY';
     //Segmentation trigger trace codes
     const SEGMENT_CREATE_UPDATE_ERROR                        = 'SEGMENT_CREATE_UPDATE_ERROR';
 

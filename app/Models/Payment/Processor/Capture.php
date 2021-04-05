@@ -19,6 +19,7 @@ use RZP\Models\Transfer;
 use RZP\Trace\TraceCode;
 use RZP\Trace\Tracer;
 use RZP\Models\Transaction;
+use Illuminate\Support\Str;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Partner\Commission;
 use Razorpay\Trace\Logger as Trace;
@@ -27,6 +28,7 @@ use RZP\Models\Merchant\Preferences;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Offer;
+use RZP\Base\Database\DetectsLostConnections;
 use RZP\Models\Merchant\Balance\BalanceConfig;
 
 trait Capture
@@ -400,7 +402,20 @@ trait Capture
 
             (new Payment\Metric)->pushExceptionMetrics($e, Payment\Metric::PAYMENT_CAPTURE_FAILED);
 
-            throw $e;
+            if ($this->causedByLostConnection($e))
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::PAYMENT_CAPTURE_FAILED_MYSQL_HAS_GONE_AWAY
+                );
+
+                return $this->retryCapture($payment);
+            }
+            else
+            {
+                throw $e;
+            }
         }
     }
 
@@ -1498,5 +1513,64 @@ trait Capture
         }
 
         return true;
+    }
+
+    /**
+     * @param Payment\Entity $payment
+     * @param $e
+     * @return Payment\Entity
+     * retrying capture for lost connect issue
+     */
+    protected function retryCapture(Payment\Entity $payment): Payment\Entity
+    {
+        //setting this to avoid lock on balance table
+        $payment->setLateBalanceUpdate();
+
+        //calling record capture to retry the capture
+        $this->recordCapture(true);
+
+        $this->triggerPaymentCapturedEvents();
+
+        $this->notifyPaymentCaptured();
+
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CAPTURE_PROCESSED, $payment);
+
+        return $payment;
+    }
+
+    protected function causedByLostConnection(\Exception $e)
+    {
+        $message = $e->getMessage();
+
+        return Str::contains($message, [
+            'server has gone away',
+            'no connection to the server',
+            'Lost connection',
+            'is dead or not enabled',
+            'Error while sending',
+            'decryption failed or bad record mac',
+            'server closed the connection unexpectedly',
+            'SSL connection has been closed unexpectedly',
+            'Error writing data to the connection',
+            'Resource deadlock avoided',
+            'Transaction() on null',
+            'child connection forced to terminate due to client_idle_limit',
+            'query_wait_timeout',
+            'reset by peer',
+            'Physical connection is not usable',
+            'TCP Provider: Error code 0x68',
+            'ORA-03114',
+            'Packets out of order. Expected',
+            'Adaptive Server connection failed',
+            'Communication link failure',
+            'connection is no longer usable',
+            'Login timeout expired',
+            'Connection refused',
+            'running with the --read-only option so it cannot execute this statement',
+            'The connection is broken and recovery is not possible. The connection is marked by the client driver as unrecoverable. No attempt was made to restore the connection.',
+            'SQLSTATE[HY000] [2002] php_network_getaddresses: getaddrinfo failed: Try again',
+            'No such file or directory',
+            'Lock wait timeout exceeded'
+        ]);
     }
 }
