@@ -65,8 +65,8 @@ jobs:
       - name: Enable E_ALL error reporting for strict testing
         run: $SUDO_CMD cp config/php.ini /usr/local/etc/php
 
-      - name: PHP Code Style
-        run: vendor/bin/phpcs --standard=./phpcs.xml
+#      - name: PHP Code Style
+#        run: vendor/bin/phpcs --standard=./phpcs.xml
 
       - name: PHP unit tests
         run: vendor/bin/phpunit
@@ -82,7 +82,7 @@ jobs:
   integration:
     runs-on: ubuntu-latest
 
-    env: 
+    env:
       DB_HOST: 127.0.0.1
       DB_USERNAME: mysql
       DB_PASSWORD: mysql

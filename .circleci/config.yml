@@ -60,6 +60,10 @@ unit-config: &unit-config
         command: $SUDO_CMD cp config/php.ini /usr/local/etc/php
 
     - run:
+        name: PHP Code Style
+        command: vendor/bin/phpcs --standard=./phpcs.xml
+
+    - run:
         name: PHP unit tests
         command: vendor/bin/phpunit
 
