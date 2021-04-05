@@ -90,6 +90,7 @@ Route::group(['middleware' => ['web']], function () {
 
         // This returns all the needed information
         Route::get('/', 'UserController@getUserDetailsV2'); //ePOS
+        Route::get('/mobile', 'UserController@getUserDetailsForMobile');
         Route::get('/details', 'UserController@getUserDetailsV2');
 
         Route::post('/coupons/validate', 'MerchantController@validateCoupon');

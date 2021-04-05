@@ -996,6 +996,104 @@ class Service extends Base\Service
     }
 
     /**
+     * It fetches all the user info, user details and pre-signup information
+     * specifically for mobile app. Since the latency is high for getUserDetails.
+     * This route is being used by mobile app.
+     *
+     * @return array
+     */
+    public function getUserDetailsForMobile()
+    {
+        $data = [];
+
+        $user = Auth::user();
+
+        if (!$user)
+        {
+            return [['Not logged in'], null];
+        }
+
+        list($error, $genericUser) = $this->getUserFromApi($user->id);
+
+        if (empty($error) === false)
+        {
+            return [$error, $data];
+        }
+
+        $userDetails = $genericUser->toArray();
+
+        $userDetails[Constants::TWO_FA_VERIFIED] = Session::get(
+            Constants::TWO_FA_VERIFIED,
+            false); //default value is false
+
+        //default value is false
+        $userDetails[Constants::OAUTH_LOGIN] = Session::get(Constants::OAUTH_LOGIN, false);
+
+        $data['user'] = $userDetails;
+
+        $currentMerchant = (new Helper)->getCurrentMerchant($genericUser);
+
+        if ($currentMerchant === null)
+        {
+            return [[], $data];
+        }
+
+        if ($currentMerchant->role === 'owner')
+        {
+            $data['primaryOwner'] = true;
+        }
+        else
+        {
+            $data['primaryOwner'] = false;
+        }
+
+        $currentMerchantId = $currentMerchant->id;
+
+        // Default values in case no merchant is associated
+        // with the user account
+        $data['pre_signup']          = [];
+        $data['pre_signup_complete'] = true;
+
+        // If the user is logged in as someone
+        if ($currentMerchantId)
+        {
+            $merchantService = new Merchant\Service;
+
+            $data["pre_signup"] = $merchantService->getPreSignupDetails($currentMerchantId);
+
+            $preSignupValues = array_values($data['pre_signup']);
+
+            // This is same as on UserController
+            $data['pre_signup_complete'] = array_reduce($preSignupValues, function($carry, $item) {
+                return $carry and !empty($item);
+            }, true);
+
+            // for non-registered check if pre_signup_complete done or not;
+
+            if ($this->isExperimentOnAndIsUnregisteredBusinessType($data) === true)
+            {
+                if ((((new MerchantDetails\Service))->isPreSignupDetailsSetForNotRegisteredBusiness($data['pre_signup'])) === true)
+                {
+                    $data['pre_signup_complete'] = true;
+                }
+            }
+
+            if ((isset($data['activation_status']) === true) and ($data['activation_status'] !== null))
+            {
+                $data['pre_signup_complete'] = true;
+            }
+
+            if (($currentMerchant->role !== 'owner') and
+                ($currentMerchant->banking_role !== 'owner'))
+            {
+                $data['pre_signup_complete'] = true;
+            }
+        }
+
+        return [[], $data];
+    }
+
+    /**
      * On Page load when a user doens't have role for a particular product which he is trying to access.
      * User Product sync will sync the roles and roles need to be updated on html view.
      *

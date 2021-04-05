@@ -480,6 +480,13 @@ class UserController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function getUserDetailsForMobile()
+    {
+        list($error, $data) = (new User\Service)->getUserDetailsForMobile();
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function postUpgradeUserToMerchant()
     {
         $input = Input::all();
