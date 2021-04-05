@@ -80,7 +80,7 @@ jobs:
           fi
 
   integration:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted]
 
     env:
       DB_HOST: 127.0.0.1
@@ -136,14 +136,14 @@ jobs:
           phpize
           ./configure --enable-opencensus
           sudo make install
-          sudo docker-php-ext-install opencensus
+          sudo docker-php-ext-enable opencensus
 
       - name: Install memcached extension
         run: |
           sudo apt-get install -y -q --no-install-recommends \
             libmemcached11 libmemcached-dev zlib1g-dev zlib1g
           sudo pecl install memcached <<<''
-          sudo docker-php-ext-install memcached
+          sudo docker-php-ext-enable memcached
 
       - name: Install pdo_mysql extension
         run: sudo docker-php-ext-install pdo_mysql
