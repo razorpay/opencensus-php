@@ -83,6 +83,7 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
+      - continue-on-error: true
       - uses: actions/checkout@v2
 
       - name: Set up PHP
@@ -125,10 +126,10 @@ jobs:
       - name: Pgsql test
         run: tests/integration/pgsql/test.sh
 
-      - name: Symfony 4 test
-        run: tests/integration/symfony4/test.sh
-        env:
-          DATABASE_URL: mysql://mysql:mysql@127.0.0.1:3306/mysqldb
+#      - name: Symfony 4 test
+#        run: tests/integration/symfony4/test.sh
+#        env:
+#          DATABASE_URL: mysql://mysql:mysql@127.0.0.1:3306/mysqldb
 
       - name: Wordpress test
         run: tests/integration/wordpress/test.sh
