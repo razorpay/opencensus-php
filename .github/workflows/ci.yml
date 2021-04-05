@@ -130,32 +130,32 @@ jobs:
             git \
             unzip
 
-      - name: Install opencensus extension
-        run: |
-          cd ext
-          phpize
-          ./configure --enable-opencensus
-          sudo make install
-          sudo docker-php-ext-enable opencensus
-
-      - name: Install memcached extension
-        run: |
-          sudo apt-get install -y -q --no-install-recommends \
-            libmemcached11 libmemcached-dev zlib1g-dev zlib1g
-          sudo pecl install memcached <<<''
-          sudo docker-php-ext-enable memcached
-
-      - name: Install pdo_mysql extension
-        run: sudo docker-php-ext-install pdo_mysql
-
-      - name: Install mysqli extension
-        run: sudo docker-php-ext-install mysqli
-
-      - name: Install pgsql extension
-        run: sudo docker-php-ext-install pgsql
-
-      - name: Install pcntl extension
-        run: sudo docker-php-ext-install pcntl
+#      - name: Install opencensus extension
+#        run: |
+#          cd ext
+#          phpize
+#          ./configure --enable-opencensus
+#          sudo make install
+#          sudo docker-php-ext-enable opencensus
+#
+#      - name: Install memcached extension
+#        run: |
+#          sudo apt-get install -y -q --no-install-recommends \
+#            libmemcached11 libmemcached-dev zlib1g-dev zlib1g
+#          sudo pecl install memcached <<<''
+#          sudo docker-php-ext-enable memcached
+#
+#      - name: Install pdo_mysql extension
+#        run: sudo docker-php-ext-install pdo_mysql
+#
+#      - name: Install mysqli extension
+#        run: sudo docker-php-ext-install mysqli
+#
+#      - name: Install pgsql extension
+#        run: sudo docker-php-ext-install pgsql
+#
+#      - name: Install pcntl extension
+#        run: sudo docker-php-ext-install pcntl
 
       - name: Curl test
         run: tests/integration/curl/test.sh
