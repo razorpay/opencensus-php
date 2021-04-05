@@ -87,4 +87,47 @@ class Gateway extends Base\Gateway
         ];
 
     }
+
+    protected function sendPaymentVerifyRequest($verify)
+    {
+        $method = $input = $verify->input['payment']['method'];
+
+        if ($method === Payment\Method::UPI)
+        {
+            return $this->upiSendPaymentVerifyRequest($verify);
+        }
+    }
+
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        $this->runPaymentVerifyFlow($verify);
+    }
+
+    protected function verifyPayment($verify)
+    {
+        $method = $verify->input['payment']['method'];
+
+        if ($method === Payment\Method::UPI)
+        {
+            $this->upiVerifyPayment($verify);
+        }
+    }
+
+    public function getPaymentToVerify(Verify $verify)
+    {
+        if ($verify->input['payment']['method'] === Payment\Method::UPI)
+        {
+            $gatewayPayment = $this->upiGetRepository()->findByPaymentIdAndActionOrFail(
+                $verify->input['payment']['id'], Action::AUTHORIZE);
+
+            $verify->payment = $gatewayPayment;
+
+            return $gatewayPayment;
+        }
+        return parent::getPaymentToVerify($verify);
+    }
 }

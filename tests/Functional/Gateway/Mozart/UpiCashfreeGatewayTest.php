@@ -41,19 +41,4 @@ class UpiCashfreeGatewayTest extends TestCase
 
         $this->fixtures->merchant->activate();
     }
-
-    public function testUpiVerifyPayment()
-    {
-        $this->markTestSkipped('Skipping Not implemented right now will remove once implement');
-    }
-
-    public function testUpiLateAuthPayment()
-    {
-        $this->markTestSkipped('Skipping Not implemented right now will remove once implement');
-    }
-
-    public function testVerifyPaymentAmountMismatch()
-    {
-        $this->markTestSkipped('Skipping Not implemented right now will remove once implement');
-    }
 }

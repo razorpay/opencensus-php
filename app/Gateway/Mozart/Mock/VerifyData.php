@@ -302,6 +302,14 @@ class VerifyData extends Base\Mock\Server
         return $response;
     }
 
+    public function cashfree($entities)
+    {
+        if ($this->isV2Mock($entities['payment']['description']))
+        {
+            return $this->upiMozartV2($entities);
+        }
+    }
+
     public function paytm($entities)
     {
         if ($this->isV2Mock($entities['payment']['description']))
