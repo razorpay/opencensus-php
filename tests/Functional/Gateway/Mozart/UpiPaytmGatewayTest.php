@@ -38,16 +38,6 @@ class UpiPaytmGatewayTest extends TestCase
 
     }
 
-    public function testUpiIntentPaymentCreateSuccess()
-    {
-        $this->markTestSkipped('Skipping Not implemented right now will remove once implement');
-    }
-
-    public function testCallbackAmountMismatch()
-    {
-        $this->markTestSkipped('Skipping Not implemented right now will remove once implement');
-    }
-
     protected function createTestTerminal()
     {
         $this->terminal = $this->fixtures->create('terminal:upi_paytm_terminal', [

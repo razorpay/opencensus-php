@@ -4101,4 +4101,19 @@ class Terminal extends Base
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
+
+    public function createPaytmIntentTerminal()
+    {
+        $attributes = [
+            'id'                        => '1UPIPaytmTrmnl',
+            'type'                      => [
+                Type::NON_RECURRING     => '1',
+                Type::DIRECT_SETTLEMENT_WITH_REFUND => '0',
+                Type::PAY                => '1',
+            ],
+        ];
+        
+        return $this->createUpiPaytmTerminal($attributes);
+        
+    }
 }
