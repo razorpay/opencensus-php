@@ -4,8 +4,10 @@ namespace RZP\Models\Dispute;
 
 use Carbon\Carbon;
 use RZP\Models\Base;
+use RZP\Constants\Table;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Entity as Payment;
+use RZP\Models\Payment\Method as Method;
 
 class Repository extends Base\Repository
 {
@@ -63,5 +65,105 @@ class Repository extends Base\Repository
             ->whereIn(Entity::ID, $disputeIds)
             ->where(Entity::STATUS, Status::OPEN)
             ->update([Entity::EMAIL_NOTIFICATION_STATUS => EmailNotificationStatus::NOTIFIED]);
+    }
+
+    public function getMerchantIdsForRiskAnalysis(int $fromTimestamp, int $toTimestamp)
+    {
+        $disputeMerchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+        $disputePaymentIdColumn = $this->dbColumn(Entity::PAYMENT_ID);
+        $disputeCreatedAtColumn = $this->dbColumn(Entity::CREATED_AT);
+        $disputePhaseColumn = $this->dbColumn(Entity::PHASE);
+
+        $paymentIdColumn = $this->repo->payment->dbColumn(Entity::ID);
+        $paymentMethodColumn = $this->repo->payment->dbColumn(Payment::METHOD);
+
+        return $this->newQuery()
+            ->select($disputeMerchantIdColumn)
+            ->join(Table::PAYMENT, $disputePaymentIdColumn, '=', $paymentIdColumn)
+            ->where(function ($q) use ($paymentMethodColumn, $disputePhaseColumn)
+            {
+                $q->where(function ($qq) use ($paymentMethodColumn, $disputePhaseColumn)
+                {
+                    $qq->where($paymentMethodColumn, '=', Method::CARD)
+                        ->where($disputePhaseColumn, '!=', Phase::RETRIEVAL);
+                })
+                ->orWhere($paymentMethodColumn, '!=', Method::CARD);
+            })
+            ->where($disputeCreatedAtColumn, '>=', $fromTimestamp)
+            ->where($disputeCreatedAtColumn, '<', $toTimestamp)
+            ->distinct()
+            ->pluck(Entity::MERCHANT_ID)
+            ->toArray();
+    }
+
+    private function getMerchantDisputedPaymentsQueryForRiskAnalysis(string $merchantId, int $fromTimestamp, int $toTimestamp, $query)
+    {
+        $disputeMerchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+        $disputePaymentIdColumn = $this->dbColumn(Entity::PAYMENT_ID);
+        $disputeCreatedAtColumn = $this->dbColumn(Entity::CREATED_AT);
+        $disputePhaseColumn = $this->dbColumn(Entity::PHASE);
+
+        $paymentIdColumn = $this->repo->payment->dbColumn(Entity::ID);
+        $paymentMethodColumn = $this->repo->payment->dbColumn(Payment::METHOD);
+
+        return $query->select($disputePaymentIdColumn)
+            ->from(Table::DISPUTE)
+            ->join(Table::PAYMENT, $disputePaymentIdColumn, '=', $paymentIdColumn)
+            ->where(function ($q) use ($paymentMethodColumn, $disputePhaseColumn)
+            {
+                $q->where(function ($qq) use ($paymentMethodColumn, $disputePhaseColumn)
+                {
+                    $qq->where($paymentMethodColumn, '=', Method::CARD)
+                        ->where($disputePhaseColumn, '!=', Phase::RETRIEVAL);
+                })
+                ->orWhere($paymentMethodColumn, '!=', Method::CARD);
+            })
+            ->where($disputeMerchantIdColumn, '=', $merchantId)
+            ->where($disputeCreatedAtColumn, '>=', $fromTimestamp)
+            ->where($disputeCreatedAtColumn, '<', $toTimestamp)
+            ->distinct();
+    }
+
+    public function getMerchantDisputedPaymentsCountForRiskAnalysis(string $merchantId, int $fromTimestamp, int $toTimestamp)
+    {
+        $disputePaymentIdColumn = $this->dbColumn(Entity::PAYMENT_ID);
+
+        $query = $this->newQuery();
+
+        $this->getMerchantDisputedPaymentsQueryForRiskAnalysis($merchantId, $fromTimestamp, $toTimestamp, $query);
+
+        return $query->count($disputePaymentIdColumn);
+    }
+
+    public function getMerchantDisputedPaymentsGmvForRiskAnalysis(string $merchantId, int $fromTimestamp, int $toTimestamp)
+    {
+        $paymentIdColumn = $this->repo->payment->dbColumn(Entity::ID);
+        $paymentBaseAmountColumn = $this->repo->payment->dbColumn(Payment::BASE_AMOUNT);
+
+        $disputeRepo = $this;
+
+        return $this->repo->payment->newQuery()
+            ->whereIn($paymentIdColumn, function($query) use ($merchantId, $fromTimestamp, $toTimestamp, $disputeRepo)
+            {
+                $disputeRepo->getMerchantDisputedPaymentsQueryForRiskAnalysis($merchantId, $fromTimestamp, $toTimestamp, $query);
+            })
+            ->sum($paymentBaseAmountColumn);
+    }
+
+    public function getMerchantDisputedPaymentsCountbyPhaseForRiskAnalysis(string $merchantId, int $fromTimestamp, int $toTimestamp, array $phases = [])
+    {
+        if (empty($phases) === true)
+        {
+            return 0;
+        }
+
+        return $this->newQuery()
+            ->select(Entity::PAYMENT_ID)
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->whereIn(Entity::PHASE, $phases)
+            ->where(Entity::CREATED_AT, '>=', $fromTimestamp)
+            ->where(Entity::CREATED_AT, '<', $toTimestamp)
+            ->distinct()
+            ->count(Entity::PAYMENT_ID);
     }
 }

@@ -354,6 +354,11 @@ return [
         'test'       => env('AWS_APPS_RISK_CHECK_TEST_QUEUE'),
         'live'       => env('AWS_APPS_RISK_CHECK_LIVE_QUEUE'),
     ],
+
+    'notify_ras' => [
+        'test'       => env('AWS_NOTIFY_RAS_TEST_QUEUE'),
+        'live'       => env('AWS_NOTIFY_RAS_LIVE_QUEUE'),
+    ],
     /*
     |--------------------------------------------------------------------------
     | Raw SQS Mappings

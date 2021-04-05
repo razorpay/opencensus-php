@@ -7,6 +7,8 @@ use Mail;
 use Carbon\Carbon;
 
 use RZP\Exception;
+use RZP\Jobs\NotifyRas;
+use RZP\Models\Feature;
 use RZP\Services\Mutex;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
@@ -36,6 +38,10 @@ class Core extends Base\Core
     // NOTE: Going forward if the no of disputes increases, instead of taking a lock for 30 mins
     // change it so that the entire process runs async and for every merchant+phase we have an independent job.
     const DISPUTE_BULK_EMAIL_MUTEX_TTL = 1800;
+
+    const DISPUTE_RISK_ASSESSMENT_MUTEX = 'DISPUTE_RISK_ASSESSMENT_MUTEX';
+
+    const DISPUTE_RISK_ASSESSMENT_MUTEX_TTL = 300;
 
     const DISPUTE_BULK_UPDATE_LIMIT = 100;
 
@@ -918,5 +924,98 @@ class Core extends Base\Core
         }
 
         $dispute->payment->refundAmount($refundAmount, $refundBaseAmount);
+    }
+
+    public function initiateRiskAssessment()
+    {
+        return $this->mutex->acquireAndRelease(
+            self::DISPUTE_RISK_ASSESSMENT_MUTEX,
+            function() {
+                $this->trace->info(TraceCode::DISPUTE_RISK_ASSESSMENT_CRON_START);
+
+                $result = $this->doRiskAnalysisAndNotifyRas();
+
+                $this->trace->info(TraceCode::DISPUTE_RISK_ASSESSMENT_CRON_END);
+
+                $result['success'] = true;
+
+                return $result;
+            },
+            self::DISPUTE_RISK_ASSESSMENT_MUTEX_TTL,
+            ErrorCode::BAD_REQUEST_DISPUTE_RISK_ASSESSMENT_OPERATION_IN_PROGRESS);
+    }
+
+    private function doRiskAnalysisAndNotifyRas()
+    {
+        $yesterdayTimestamp = Carbon::yesterday(Timezone::IST)->getTimestamp();
+
+        $todayTimestamp = Carbon::today(Timezone::IST)->getTimestamp();
+
+        $merchantIds = $this->repo->dispute->getMerchantIdsForRiskAnalysis($yesterdayTimestamp, $todayTimestamp);
+
+        $this->trace->info(
+            TraceCode::DISPUTE_RISK_ASSESSMENT_MERCHANTS_TO_PROCESS,
+            [
+                'count' => count($merchantIds),
+            ]
+        );
+
+        $totalMerchantsWithDisputesNotifiedToRas = 0;
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                $this->trace->info(
+                    TraceCode::DISPUTE_RISK_ASSESSMENT_NOTIFY_RAS_INITIATED,
+                    [
+                        'count' => count($merchantIds),
+                        'from'  => $yesterdayTimestamp,
+                        'to'    => $todayTimestamp,
+                    ]
+                );
+
+                $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+                $merchantAppsExemptFromRiskCheck = $merchant->isFeatureEnabled(Feature\Constants::APPS_EXTEMPT_RISK_CHECK);
+
+                $rasAlertRequest = [
+                    'merchant_id'     => $merchantId,
+                    'entity_type'     => 'dispute_raised',
+                    'entity_id'       => $merchantId,
+                    'category'        => 'dispute',
+                    'source'          => 'api_service',
+                    'event_type'      => 'daily_notification',
+                    'event_timestamp' => $todayTimestamp - 1,
+                    'data'            => [
+                        'apps_exempt_risk_check' => ($merchantAppsExemptFromRiskCheck === true ? '1' : '0'),
+                    ],
+                ];
+
+                NotifyRas::dispatch($this->mode, $rasAlertRequest);
+
+                $totalMerchantsWithDisputesNotifiedToRas++;
+            }
+            catch(\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::DISPUTE_RISK_ASSESSMENT_NOTIFY_RAS_FAILED,
+                    [
+                        'merchant_id' => $merchantId,
+                        'from'        => $yesterdayTimestamp,
+                        'to'          => $todayTimestamp,
+                    ]
+                );
+            }
+        }
+
+        $result = [
+            'total_merchants_identified'          => count($merchantIds),
+            'total_merchant_notifications_to_ras' => $totalMerchantsWithDisputesNotifiedToRas,
+        ];
+
+        return $result;
     }
 }

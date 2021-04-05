@@ -33,4 +33,13 @@ class MerchantRiskAlertController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function getMerchantDisputeDetails(string $mid)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->getMerchantDisputeDetails($mid, $input);
+
+        return ApiResponse::json($response);
+    }
 }

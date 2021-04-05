@@ -1575,6 +1575,7 @@ class Route
         'dispute_files_fetch'                      => ['get',      'disputes/{id}/files',                            'DisputeController@getFiles'                                        ],
         'dispute_poc_mails'                        => ['get',      'disputes/{merchantId}/poc-emails',               'DisputeController@getDefaultCreationEmails'                        ],
         'dispute_merchant_emails_initiate'         => ['post',     'disputes/merchant_emails/initiate',              'DisputeController@initiateMerchantEmails'                          ],
+        'dispute_initiate_risk_assessment'         => ['post',     'disputes/merchant_risk/initiate',              'DisputeController@initiateRiskAssessment'                          ],
         'fd_customer_dispute'                      => ['post',     'fd/disputes',                                    'FreshdeskTicketController@postCustomerDispute'                     ],
         'dispute_reason_fetch_internal'            => ['get',      'dispute_reasons_internal/{disputeReasonId}',     'DisputeController@getReasonInternal'                               ],
 
@@ -2330,6 +2331,11 @@ class Route
             'get',
             'merchant_risk_alerts/merchant/{mid}/details',
             'MerchantRiskAlertController@getMerchantDetails'
+        ],
+        'merchant_risk_alerts_dispute_details' => [
+            'get',
+            'merchant_risk_alerts/merchant/{mid}/dispute_details',
+            'MerchantRiskAlertController@getMerchantDisputeDetails'
         ],
 
         //TPV - Third party validation
@@ -3089,6 +3095,7 @@ class Route
         'banking_accounts_auditor_daily_updates',
         'gateway_payment_upi_data_cron',
         'dispute_merchant_emails_initiate',
+        'dispute_initiate_risk_assessment',
         'fd_customer_dispute',
         'fd_consume_webhook',
         'fts_channel_notification',
@@ -3125,6 +3132,7 @@ class Route
         // merchant risk alerts
         'merchant_risk_alerts_foh_workflow',
         'merchant_risk_alerts_details',
+        'merchant_risk_alerts_dispute_details',
 
         // Mandate HQ
         'get_issuer_from_iin',
@@ -5623,6 +5631,7 @@ class Route
 
         'merchant_risk_alerts_foh_workflow'            => Permission::MERCHANT_RISK_ALERT_FOH,
         'merchant_risk_alerts_details'                 => '*',
+        'merchant_risk_alerts_dispute_details'         => '*',
 
         //TPV - Third party validation
         //- validations on source accounts through which money gets loaded to va.
@@ -6085,6 +6094,7 @@ class Route
             'banking_accounts_auditor_daily_updates',
             'gateway_payment_upi_data_cron',
             'dispute_merchant_emails_initiate',
+            'dispute_initiate_risk_assessment',
             'reward_expire_cron',
             'nps_survey_process_scheduled',
             'freshchat_extract_report_cron',
@@ -6483,6 +6493,7 @@ class Route
         'merchant_risk_alerts' => [
             'merchant_risk_alerts_foh_workflow',
             'merchant_risk_alerts_details',
+            'merchant_risk_alerts_dispute_details',
         ],
 
         'care' => [

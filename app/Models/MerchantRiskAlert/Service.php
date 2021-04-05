@@ -14,6 +14,8 @@ use RZP\Mail\Merchant\Risk as MerchantRiskEmailer;
 use RZP\Models\Workflow\Action\MakerType;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Admin\Org;
+use RZP\Models\Dispute\Phase;
+use RZP\Exception\BadRequestValidationFailureException;
 
 // TODO: add traces
 
@@ -321,7 +323,7 @@ class Service extends Base\Service
 
         if ($action === Constants::ACTION_MANUAL_FOH)
         {
-            $workflowTags[] = Constants::MANUAL_FOH_TAG;;
+            $workflowTags[] = Constants::MANUAL_FOH_TAG;
         }
         else
         {
@@ -329,5 +331,59 @@ class Service extends Base\Service
         }
 
         return $workflowTags;
+    }
+
+    public function getMerchantDisputeDetails(string $merchantId, array $input)
+    {
+        // checking if merchantId exists
+        $this->repo->merchant->findOrFail($merchantId);
+
+        // we can add a range limit, but as its used by ras, an acceptable range will be sent
+        // the retrieval if details from api is temporary.. once the use case of disputes in ras
+        // is finalized, this code can be removed..
+
+        if (isset($input['from']) === false ||
+            is_string($input['from']) === false ||
+            $input['from'] != intval($input['from']) ||
+            intval($input['from']) < 1)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'invalid start timestamp', 'from', $input);
+        }
+
+        if (isset($input['to']) === false ||
+            is_string($input['to']) === false ||
+            $input['to'] != intval($input['to']) ||
+            intval($input['to']) < 1)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'invalid end timestamp', 'to', $input);
+        }
+
+        $fromTimestamp = intval($input['from']);
+        $toTimestamp   = intval($input['to']);
+
+        if ($fromTimestamp > $toTimestamp)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'invalid range specified', null, $input);
+        }
+
+        $paymentDisputedGmv = $this->repo->dispute->getMerchantDisputedPaymentsGmvForRiskAnalysis(
+            $merchantId, $fromTimestamp, $toTimestamp);
+
+        $paymentDisputedCount = $this->repo->dispute->getMerchantDisputedPaymentsCountForRiskAnalysis(
+            $merchantId, $fromTimestamp, $toTimestamp);
+
+        $paymentHigherDisputedCount = $this->repo->dispute->getMerchantDisputedPaymentsCountbyPhaseForRiskAnalysis(
+            $merchantId, $fromTimestamp, $toTimestamp, [Phase::PRE_ARBITRATION, Phase::ARBITRATION]);
+
+        $details = [
+            Constants::MERCHANT_PAYMENTS_DISPUTED_GMV          => intval($paymentDisputedGmv),
+            Constants::MERCHANT_PAYMENTS_DISPUTED_COUNT        => intval($paymentDisputedCount),
+            Constants::MERCHANT_PAYMENTS_HIGHER_DISPUTED_COUNT => intval($paymentHigherDisputedCount),
+        ];
+
+        return $details;
     }
 }

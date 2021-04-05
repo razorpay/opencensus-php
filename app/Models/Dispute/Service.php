@@ -809,4 +809,9 @@ class Service extends Base\Service
 
         return $disputeReason->toArrayAdmin();
     }
+
+    public function initiateRiskAssessment()
+    {
+        return $this->core()->initiateRiskAssessment();
+    }
 }

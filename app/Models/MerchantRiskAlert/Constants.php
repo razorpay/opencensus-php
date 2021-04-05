@@ -11,6 +11,10 @@ class Constants
     const MERCHANT_MAX_AOV          = 'merchant_max_aov';
     const MERCHANT_HAS_AOV          = 'merchant_has_aov';
 
+    const MERCHANT_PAYMENTS_DISPUTED_GMV          = 'merchant_payments_disputed_gmv';
+    const MERCHANT_PAYMENTS_DISPUTED_COUNT        = 'merchant_payments_disputed_count';
+    const MERCHANT_PAYMENTS_HIGHER_DISPUTED_COUNT = 'merchant_payments_higher_disputed_count';
+
     const ACTION_MANUAL_FOH      = 'manual';
     const ACTION_AUTO_FOH        = 'auto';
     const ACTION_AUTO_REVIEW_FOH = 'auto_review';
