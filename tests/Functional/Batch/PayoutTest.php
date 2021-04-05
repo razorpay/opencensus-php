@@ -62,16 +62,16 @@ class PayoutTest extends TestCase
                 Batch\Header::PAYOUT_CURRENCY           => 'INR',
                 Batch\Header::PAYOUT_MODE               => 'NEFT',
                 Batch\Header::PAYOUT_PURPOSE            => 'refund',
-                Batch\Header::PAYOUT_NARRATION          => 'test123',
-                Batch\Header::PAYOUT_REFERENCE_ID       => '',
                 Batch\Header::FUND_ACCOUNT_ID           => '',
                 Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
                 Batch\Header::FUND_ACCOUNT_NAME         => 'Mehul Kaushik',
                 Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
                 Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
                 Batch\Header::FUND_ACCOUNT_VPA          => '',
-                Batch\Header::CONTACT_TYPE              => 'employee',
                 Batch\Header::CONTACT_NAME_2            => 'Mehul Kaushik',
+                Batch\Header::PAYOUT_NARRATION          => 'test123',
+                Batch\Header::PAYOUT_REFERENCE_ID       => '',
+                Batch\Header::CONTACT_TYPE              => 'employee',
                 Batch\Header::CONTACT_EMAIL_2           => 'mehul.kaushik@razorpay.com',
                 Batch\Header::CONTACT_MOBILE_2          => '',
                 Batch\Header::CONTACT_REFERENCE_ID      => '',
@@ -88,13 +88,13 @@ class PayoutTest extends TestCase
 
         $fileContent = file($response['signed_url']);
 
-        $expectedHeaderRow =  'RazorpayX Account Number,Payout Amount (in Rupees),Payout Currency,Payout Mode,'.
+        $expectedHeaderRow =  'Error Description,RazorpayX Account Number,Payout Amount (in Rupees),Payout Currency,Payout Mode,'.
             'Payout Purpose,Fund Account Id,Fund Account Type,Fund Account Name,Fund Account Ifsc,Fund Account Number,'.
             'Fund Account Vpa,Contact Name,Payout Narration,Payout Reference Id,Contact Type,Contact Email,' .
-            'Contact Mobile,Contact Reference Id,Error Code,Error Description';
+            'Contact Mobile,Contact Reference Id';
 
-        $expectedDataRow = '2323230041626905,10,INR,NEFT,refund,,bank_account,Mehul Kaushik,SBIN0010720,100200300400,' .
-            ',Mehul Kaushik,test123,,employee,mehul.kaushik@razorpay.com,,,,';
+        $expectedDataRow = ',2323230041626905,10,INR,NEFT,refund,,bank_account,Mehul Kaushik,SBIN0010720,100200300400,' .
+            ',Mehul Kaushik,test123,,employee,mehul.kaushik@razorpay.com,,';
 
         $this->assertEquals($expectedHeaderRow, trim($fileContent[0]));
         $this->assertEquals($expectedDataRow, trim($fileContent[1]));
@@ -171,6 +171,7 @@ class PayoutTest extends TestCase
 
         $expectedData = [
             [
+                'Error Description',
                 'RazorpayX Account Number',
                 'Payout Amount (in Rupees)',
                 'Payout Currency',
@@ -191,10 +192,9 @@ class PayoutTest extends TestCase
                 'Contact Reference Id',
                 'notes[code]',
                 'notes[place]',
-                'Error Code',
-                'Error Description',
             ],
             [
+                null,
                 // NOTE : Account number is set as a merchant's banking balance's account number : 2224440041626905
                 2323230041626905,
                 10.23,
@@ -214,8 +214,6 @@ class PayoutTest extends TestCase
                 'mehul.kaushik@razorpay.com',
                 null,
                 null,
-                'test',
-                'test',
                 null,
                 null,
             ]
@@ -223,7 +221,7 @@ class PayoutTest extends TestCase
 
         for ($row = 1; $row <= 2; $row++)
         {
-            for ($col = 1; $col <= 22; $col++)
+            for ($col = 1; $col <= 21; $col++)
             {
                 try
                 {
@@ -291,6 +289,7 @@ class PayoutTest extends TestCase
 
         $expectedData = [
             [
+                'Error Description',
                 'RazorpayX Account Number',
                 'Payout Amount (in Rupees)',
                 'Payout Currency',
@@ -303,16 +302,9 @@ class PayoutTest extends TestCase
                 'Fund Account Number',
                 'Fund Account Vpa',
                 'Contact Name',
-                'Payout Narration',
-                'Payout Reference Id',
-                'Contact Type',
-                'Contact Email',
-                'Contact Mobile',
-                'Contact Reference Id',
-                'Error Code',
-                'Error Description',
             ],
             [
+                null,
                 // NOTE : Account number is set as a merchant's banking balance's account number : 2224440041626905
                 2323230041626905,
                 10,
@@ -326,20 +318,12 @@ class PayoutTest extends TestCase
                 100200300400,
                 null,
                 'Mehul Kaushik',
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
             ]
         ];
 
         for ($row = 1; $row <= 2; $row++)
         {
-            for ($col = 1; $col <= 20; $col++)
+            for ($col = 1; $col <= 13; $col++)
             {
                 try
                 {
@@ -383,13 +367,12 @@ class PayoutTest extends TestCase
 
         $fileContent = file($response['signed_url']);
 
-        $expectedHeaderRow =  'RazorpayX Account Number,Payout Amount (in Rupees),Payout Currency,Payout Mode,'.
+        $expectedHeaderRow =  'Error Description,RazorpayX Account Number,Payout Amount (in Rupees),Payout Currency,Payout Mode,'.
             'Payout Purpose,Fund Account Id,Fund Account Type,Fund Account Name,Fund Account Ifsc,Fund Account Number,'.
-            'Fund Account Vpa,Contact Name,Payout Narration,Payout Reference Id,Contact Type,Contact Email,' .
-            'Contact Mobile,Contact Reference Id,Error Code,Error Description';
+            'Fund Account Vpa,Contact Name';
 
-        $expectedDataRow = '2323230041626905,10,INR,NEFT,refund,,bank_account,Mehul Kaushik,SBIN0010720,100200300400,' .
-                            ',Mehul Kaushik,,,,,,,,';
+        $expectedDataRow = ',2323230041626905,10,INR,NEFT,refund,,bank_account,Mehul Kaushik,SBIN0010720,100200300400,' .
+                            ',Mehul Kaushik';
 
         $this->assertEquals($expectedHeaderRow, trim($fileContent[0]));
         $this->assertEquals($expectedDataRow, trim($fileContent[1]));
@@ -861,16 +844,16 @@ class PayoutTest extends TestCase
                 // Changed mode to an incorrect value
                 Batch\Header::PAYOUT_MODE               => 'ABCD',
                 Batch\Header::PAYOUT_PURPOSE            => 'refund',
-                Batch\Header::PAYOUT_NARRATION          => 'test123',
-                Batch\Header::PAYOUT_REFERENCE_ID       => '',
                 Batch\Header::FUND_ACCOUNT_ID           => '',
                 Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
                 Batch\Header::FUND_ACCOUNT_NAME         => 'Mehul Kaushik',
                 Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
                 Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
                 Batch\Header::FUND_ACCOUNT_VPA          => '',
-                Batch\Header::CONTACT_TYPE              => 'employee',
                 Batch\Header::CONTACT_NAME_2            => 'Mehul Kaushik',
+                Batch\Header::PAYOUT_NARRATION          => 'test123',
+                Batch\Header::PAYOUT_REFERENCE_ID       => '',
+                Batch\Header::CONTACT_TYPE              => 'employee',
                 Batch\Header::CONTACT_EMAIL_2           => 'mehul.kaushik@razorpay.com',
                 Batch\Header::CONTACT_MOBILE_2          => '',
                 Batch\Header::CONTACT_REFERENCE_ID      => '',
@@ -885,13 +868,13 @@ class PayoutTest extends TestCase
 
         $fileContent = file($response['signed_url']);
 
-        $expectedHeaderRow =  'RazorpayX Account Number,Payout Amount (in Rupees),Payout Currency,Payout Mode,'.
+        $expectedHeaderRow =  'Error Description,RazorpayX Account Number,Payout Amount (in Rupees),Payout Currency,Payout Mode,'.
             'Payout Purpose,Fund Account Id,Fund Account Type,Fund Account Name,Fund Account Ifsc,Fund Account Number,'.
             'Fund Account Vpa,Contact Name,Payout Narration,Payout Reference Id,Contact Type,Contact Email,' .
-            'Contact Mobile,Contact Reference Id,Error Code,Error Description';
+            'Contact Mobile,Contact Reference Id';
 
-        $expectedDataRow = '2323230041626905,10,INR,ABCD,refund,,bank_account,Mehul Kaushik,SBIN0010720,100200300400,' .
-            ',Mehul Kaushik,test123,,employee,mehul.kaushik@razorpay.com,,,BAD_REQUEST_ERROR,Payout mode is invalid';
+        $expectedDataRow = 'Payout mode is invalid,2323230041626905,10,INR,ABCD,refund,,bank_account,Mehul Kaushik,SBIN0010720,100200300400,' .
+            ',Mehul Kaushik,test123,,employee,mehul.kaushik@razorpay.com,,';
 
         $this->assertEquals($expectedHeaderRow, trim($fileContent[0]));
         $this->assertEquals($expectedDataRow, trim($fileContent[1]));
@@ -909,16 +892,16 @@ class PayoutTest extends TestCase
                 // Changed mode to an incorrect value
                 Batch\Header::PAYOUT_MODE               => 'ABCD',
                 Batch\Header::PAYOUT_PURPOSE            => 'refund',
-                Batch\Header::PAYOUT_NARRATION          => 'test123',
-                Batch\Header::PAYOUT_REFERENCE_ID       => '',
                 Batch\Header::FUND_ACCOUNT_ID           => '',
                 Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
                 Batch\Header::FUND_ACCOUNT_NAME         => 'Mehul Kaushik',
                 Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
                 Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
                 Batch\Header::FUND_ACCOUNT_VPA          => '',
-                Batch\Header::CONTACT_TYPE              => 'employee',
                 Batch\Header::CONTACT_NAME_2            => 'Mehul Kaushik',
+                Batch\Header::PAYOUT_NARRATION          => 'test123',
+                Batch\Header::PAYOUT_REFERENCE_ID       => '',
+                Batch\Header::CONTACT_TYPE              => 'employee',
                 Batch\Header::CONTACT_EMAIL_2           => 'mehul.kaushik@razorpay.com',
                 Batch\Header::CONTACT_MOBILE_2          => '',
                 Batch\Header::CONTACT_REFERENCE_ID      => '',
@@ -933,13 +916,13 @@ class PayoutTest extends TestCase
 
         $fileContent = file($response['signed_url']);
 
-        $expectedHeaderRow =  'RazorpayX Account Number,Payout Amount,Payout Currency,Payout Mode,'.
+        $expectedHeaderRow =  'Error Description,RazorpayX Account Number,Payout Amount,Payout Currency,Payout Mode,'.
             'Payout Purpose,Fund Account Id,Fund Account Type,Fund Account Name,Fund Account Ifsc,Fund Account Number,'.
             'Fund Account Vpa,Contact Name,Payout Narration,Payout Reference Id,Contact Type,Contact Email,' .
-            'Contact Mobile,Contact Reference Id,Error Code,Error Description';
+            'Contact Mobile,Contact Reference Id';
 
-        $expectedDataRow = '2323230041626905,1000,INR,ABCD,refund,,bank_account,Mehul Kaushik,SBIN0010720,100200300400,' .
-            ',Mehul Kaushik,test123,,employee,mehul.kaushik@razorpay.com,,,BAD_REQUEST_ERROR,Payout mode is invalid';
+        $expectedDataRow = 'Payout mode is invalid,2323230041626905,1000,INR,ABCD,refund,,bank_account,Mehul Kaushik,SBIN0010720,100200300400,' .
+            ',Mehul Kaushik,test123,,employee,mehul.kaushik@razorpay.com,,';
 
         $this->assertEquals($expectedHeaderRow, trim($fileContent[0]));
         $this->assertEquals($expectedDataRow, trim($fileContent[1]));
@@ -957,16 +940,16 @@ class PayoutTest extends TestCase
                 // Changed mode to an incorrect value
                 Batch\Header::PAYOUT_MODE               => 'ABCD',
                 Batch\Header::PAYOUT_PURPOSE            => 'refund',
-                Batch\Header::PAYOUT_NARRATION          => 'test123',
-                Batch\Header::PAYOUT_REFERENCE_ID       => '',
                 Batch\Header::FUND_ACCOUNT_ID           => '',
                 Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
                 Batch\Header::FUND_ACCOUNT_NAME         => 'Mehul Kaushik',
                 Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
                 Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
                 Batch\Header::FUND_ACCOUNT_VPA          => '',
-                Batch\Header::CONTACT_TYPE              => 'employee',
                 Batch\Header::CONTACT_NAME_2            => 'Mehul Kaushik',
+                Batch\Header::PAYOUT_NARRATION          => 'test123',
+                Batch\Header::PAYOUT_REFERENCE_ID       => '',
+                Batch\Header::CONTACT_TYPE              => 'employee',
                 Batch\Header::CONTACT_EMAIL_2           => 'mehul.kaushik@razorpay.com',
                 Batch\Header::CONTACT_MOBILE_2          => '',
                 Batch\Header::CONTACT_REFERENCE_ID      => '',
@@ -983,13 +966,13 @@ class PayoutTest extends TestCase
 
         $fileContent = file($response['signed_url']);
 
-        $expectedHeaderRow =  'RazorpayX Account Number,Payout Amount (in Rupees),Payout Currency,Payout Mode,'.
+        $expectedHeaderRow =  'Error Description,RazorpayX Account Number,Payout Amount (in Rupees),Payout Currency,Payout Mode,'.
             'Payout Purpose,Fund Account Id,Fund Account Type,Fund Account Name,Fund Account Ifsc,Fund Account Number,'.
             'Fund Account Vpa,Contact Name,Payout Narration,Payout Reference Id,Contact Type,Contact Email,' .
-            'Contact Mobile,Contact Reference Id,Error Code,Error Description';
+            'Contact Mobile,Contact Reference Id';
 
-        $expectedDataRow = '2323230041626905,10.23,INR,ABCD,refund,,bank_account,Mehul Kaushik,SBIN0010720,100200300400,' .
-            ',Mehul Kaushik,test123,,employee,mehul.kaushik@razorpay.com,,,BAD_REQUEST_ERROR,Payout mode is invalid';
+        $expectedDataRow = 'Payout mode is invalid,2323230041626905,10.23,INR,ABCD,refund,,bank_account,Mehul Kaushik,SBIN0010720,100200300400,' .
+            ',Mehul Kaushik,test123,,employee,mehul.kaushik@razorpay.com,,';
 
         $this->assertEquals($expectedHeaderRow, trim($fileContent[0]));
         $this->assertEquals($expectedDataRow, trim($fileContent[1]));
@@ -1064,6 +1047,7 @@ class PayoutTest extends TestCase
 
         $expectedData = [
             [
+                null,
                 'Mandatory Fields',
                 null,
                 null,
@@ -1085,9 +1069,9 @@ class PayoutTest extends TestCase
                 null,
                 null,
                 null,
-                null,
             ],
             [
+                'Error Description',
                 'RazorpayX Account Number',
                 'Payout Amount (in Rupees)',
                 'Payout Currency',
@@ -1108,10 +1092,9 @@ class PayoutTest extends TestCase
                 'Contact Reference Id',
                 'notes[code]',
                 'notes[place]',
-                'Error Code',
-                'Error Description',
             ],
             [
+                'Payout mode is invalid',
                 // NOTE : Account number is set as a merchant's banking balance's account number : 2224440041626905
                 // The trailing whitespace makes sure that the account number is displayed correctly
                 '2323230041626905 ',
@@ -1132,16 +1115,14 @@ class PayoutTest extends TestCase
                 'mehul.kaushik@razorpay.com',
                 ' ',
                 null,
-                'test',
-                'test',
-                'BAD_REQUEST_ERROR',
-                'Payout mode is invalid',
+                null,
+                null,
             ]
         ];
 
         for ($row = 1; $row <= 3; $row++)
         {
-            for ($col = 1; $col <= 22; $col++)
+            for ($col = 1; $col <= 21; $col++)
             {
                 try
                 {
@@ -1228,6 +1209,7 @@ class PayoutTest extends TestCase
 
         $expectedData = [
             [
+                null,
                 'Mandatory Fields',
                 null,
                 null,
@@ -1249,9 +1231,9 @@ class PayoutTest extends TestCase
                 null,
                 null,
                 null,
-                null,
             ],
             [
+                'Error Description',
                 'RazorpayX Account Number',
                 'Payout Amount (in Rupees)',
                 'Payout Currency',
@@ -1272,10 +1254,9 @@ class PayoutTest extends TestCase
                 'Contact Reference Id',
                 'notes[code]',
                 'notes[place]',
-                'Error Code',
-                'Error Description',
             ],
             [
+                'Payout mode is invalid',
                 // NOTE : Account number is set as a merchant's banking balance's account number : 2224440041626905
                 // The trailing whitespace makes sure that the account number is displayed correctly
                 '2323230041626905 ',
@@ -1296,16 +1277,14 @@ class PayoutTest extends TestCase
                 'mehul.kaushik@razorpay.com',
                 ' ',
                 null,
-                'test',
-                'test',
-                'BAD_REQUEST_ERROR',
-                'Payout mode is invalid',
+                null,
+                null,
             ]
         ];
 
         for ($row = 1; $row <= 3; $row++)
         {
-            for ($col = 1; $col <= 22; $col++)
+            for ($col = 1; $col <= 21; $col++)
             {
                 try
                 {
@@ -1364,16 +1343,16 @@ class PayoutTest extends TestCase
                 Batch\Header::PAYOUT_CURRENCY           => 'INR',
                 Batch\Header::PAYOUT_MODE               => 'NEFT',
                 Batch\Header::PAYOUT_PURPOSE            => 'refund',
-                Batch\Header::PAYOUT_NARRATION          => 'test123',
-                Batch\Header::PAYOUT_REFERENCE_ID       => '',
                 Batch\Header::FUND_ACCOUNT_ID           => '',
                 Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
                 Batch\Header::FUND_ACCOUNT_NAME         => 'Mehul Kaushik',
                 Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
                 Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
                 Batch\Header::FUND_ACCOUNT_VPA          => '',
-                Batch\Header::CONTACT_TYPE              => 'employee',
                 Batch\Header::CONTACT_NAME_2            => 'Mehul Kaushik',
+                Batch\Header::PAYOUT_NARRATION          => 'test123',
+                Batch\Header::PAYOUT_REFERENCE_ID       => '',
+                Batch\Header::CONTACT_TYPE              => 'employee',
                 Batch\Header::CONTACT_EMAIL_2           => 'mehul.kaushik@razorpay.com',
                 Batch\Header::CONTACT_MOBILE_2          => '',
                 Batch\Header::CONTACT_REFERENCE_ID      => '',
@@ -1388,13 +1367,13 @@ class PayoutTest extends TestCase
 
         $fileContent = file($response['signed_url']);
 
-        $expectedHeaderRow =  'RazorpayX Account Number,Payout Amount (in Rupees),Payout Currency,Payout Mode,'.
+        $expectedHeaderRow =  'Error Description,RazorpayX Account Number,Payout Amount (in Rupees),Payout Currency,Payout Mode,'.
             'Payout Purpose,Fund Account Id,Fund Account Type,Fund Account Name,Fund Account Ifsc,Fund Account Number,'.
             'Fund Account Vpa,Contact Name,Payout Narration,Payout Reference Id,Contact Type,Contact Email,' .
-            'Contact Mobile,Contact Reference Id,Error Code,Error Description';
+            'Contact Mobile,Contact Reference Id';
 
-        $expectedDataRow = '2323230041626905,10.333,INR,NEFT,refund,,bank_account,Mehul Kaushik,SBIN0010720,100200300400,' .
-            ',Mehul Kaushik,test123,,employee,mehul.kaushik@razorpay.com,,,BAD_REQUEST_ERROR,The payout amount(in rupees) format is invalid.';
+        $expectedDataRow = 'The payout amount(in rupees) format is invalid.,2323230041626905,10.333,INR,NEFT,refund,,bank_account,Mehul Kaushik,SBIN0010720,100200300400,' .
+            ',Mehul Kaushik,test123,,employee,mehul.kaushik@razorpay.com,,';
 
         $this->assertEquals($expectedHeaderRow, trim($fileContent[0]));
         $this->assertEquals($expectedDataRow, trim($fileContent[1]));
@@ -1553,16 +1532,16 @@ class PayoutTest extends TestCase
                 // Changed mode to an incorrect value
                 Batch\Header::PAYOUT_MODE               => 'ABCD',
                 Batch\Header::PAYOUT_PURPOSE            => 'refund',
-                Batch\Header::PAYOUT_NARRATION          => 'test123',
-                Batch\Header::PAYOUT_REFERENCE_ID       => '',
                 Batch\Header::FUND_ACCOUNT_ID           => '',
                 Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
                 Batch\Header::FUND_ACCOUNT_NAME         => 'Mehul Kaushik',
                 Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
                 Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
                 Batch\Header::FUND_ACCOUNT_VPA          => '',
-                Batch\Header::CONTACT_TYPE              => 'employee',
                 Batch\Header::CONTACT_NAME_2            => 'Mehul Kaushik',
+                Batch\Header::PAYOUT_NARRATION          => 'test123',
+                Batch\Header::PAYOUT_REFERENCE_ID       => '',
+                Batch\Header::CONTACT_TYPE              => 'employee',
                 Batch\Header::CONTACT_EMAIL_2           => 'mehul.kaushik@razorpay.com',
                 Batch\Header::CONTACT_MOBILE_2          => '',
                 Batch\Header::CONTACT_REFERENCE_ID      => '',
@@ -1577,13 +1556,13 @@ class PayoutTest extends TestCase
 
         $fileContent = file($response['signed_url']);
 
-        $expectedHeaderRow =  'RazorpayX Account Number,Payout Amount,Payout Currency,Payout Mode,'.
+        $expectedHeaderRow =  'Error Description,RazorpayX Account Number,Payout Amount,Payout Currency,Payout Mode,'.
             'Payout Purpose,Fund Account Id,Fund Account Type,Fund Account Name,Fund Account Ifsc,Fund Account Number,'.
             'Fund Account Vpa,Contact Name,Payout Narration,Payout Reference Id,Contact Type,Contact Email,' .
-            'Contact Mobile,Contact Reference Id,Error Code,Error Description';
+            'Contact Mobile,Contact Reference Id';
 
-        $expectedDataRow = '2323230041626905,1000,INR,ABCD,refund,,bank_account,Mehul Kaushik,SBIN0010720,100200300400,' .
-            ',Mehul Kaushik,test123,,employee,mehul.kaushik@razorpay.com,,,BAD_REQUEST_ERROR,Payout mode is invalid';
+        $expectedDataRow = 'Payout mode is invalid,2323230041626905,1000,INR,ABCD,refund,,bank_account,Mehul Kaushik,SBIN0010720,100200300400,' .
+            ',Mehul Kaushik,test123,,employee,mehul.kaushik@razorpay.com,,';
 
         $this->assertEquals($expectedHeaderRow, trim($fileContent[0]));
         $this->assertEquals($expectedDataRow, trim($fileContent[1]));
@@ -1603,16 +1582,16 @@ class PayoutTest extends TestCase
                 // Changed mode to an incorrect value
                 Batch\Header::PAYOUT_MODE               => 'ABCD',
                 Batch\Header::PAYOUT_PURPOSE            => 'refund',
-                Batch\Header::PAYOUT_NARRATION          => 'test123',
-                Batch\Header::PAYOUT_REFERENCE_ID       => '',
                 Batch\Header::FUND_ACCOUNT_ID           => '',
                 Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
                 Batch\Header::FUND_ACCOUNT_NAME         => 'Mehul Kaushik',
                 Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
                 Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
                 Batch\Header::FUND_ACCOUNT_VPA          => '',
-                Batch\Header::CONTACT_TYPE              => 'employee',
                 Batch\Header::CONTACT_NAME_2            => 'Mehul Kaushik',
+                Batch\Header::PAYOUT_NARRATION          => 'test123',
+                Batch\Header::PAYOUT_REFERENCE_ID       => '',
+                Batch\Header::CONTACT_TYPE              => 'employee',
                 Batch\Header::CONTACT_EMAIL_2           => 'mehul.kaushik@razorpay.com',
                 Batch\Header::CONTACT_MOBILE_2          => '',
                 Batch\Header::CONTACT_REFERENCE_ID      => '',
@@ -1627,13 +1606,13 @@ class PayoutTest extends TestCase
 
         $fileContent = file($response['signed_url']);
 
-        $expectedHeaderRow =  'RazorpayX Account Number,Payout Amount,Payout Currency,Payout Mode,'.
+        $expectedHeaderRow = 'Error Description,RazorpayX Account Number,Payout Amount,Payout Currency,Payout Mode,'.
             'Payout Purpose,Fund Account Id,Fund Account Type,Fund Account Name,Fund Account Ifsc,Fund Account Number,'.
             'Fund Account Vpa,Contact Name,Payout Narration,Payout Reference Id,Contact Type,Contact Email,' .
-            'Contact Mobile,Contact Reference Id,Error Code,Error Description';
+            'Contact Mobile,Contact Reference Id';
 
-        $expectedDataRow = '2323230041626905,1000,INR,ABCD,refund,,bank_account,Mehul Kaushik,SBIN0010720,100200300400,' .
-            ',Mehul Kaushik,test123,,employee,mehul.kaushik@razorpay.com,,,BAD_REQUEST_ERROR,Payout mode is invalid';
+        $expectedDataRow = 'Payout mode is invalid,2323230041626905,1000,INR,ABCD,refund,,bank_account,Mehul Kaushik,SBIN0010720,100200300400,' .
+            ',Mehul Kaushik,test123,,employee,mehul.kaushik@razorpay.com,,';
 
         $this->assertEquals($expectedHeaderRow, trim($fileContent[0]));
         $this->assertEquals($expectedDataRow, trim($fileContent[1]));
@@ -1653,16 +1632,16 @@ class PayoutTest extends TestCase
                 // Changed mode to an incorrect value
                 Batch\Header::PAYOUT_MODE               => 'ABCD',
                 Batch\Header::PAYOUT_PURPOSE            => 'refund',
-                Batch\Header::PAYOUT_NARRATION          => 'test123',
-                Batch\Header::PAYOUT_REFERENCE_ID       => '',
                 Batch\Header::FUND_ACCOUNT_ID           => '',
                 Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
                 Batch\Header::FUND_ACCOUNT_NAME         => 'Mehul Kaushik',
                 Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
                 Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
                 Batch\Header::FUND_ACCOUNT_VPA          => '',
-                Batch\Header::CONTACT_TYPE              => 'employee',
                 Batch\Header::CONTACT_NAME_2            => 'Mehul Kaushik',
+                Batch\Header::PAYOUT_NARRATION          => 'test123',
+                Batch\Header::PAYOUT_REFERENCE_ID       => '',
+                Batch\Header::CONTACT_TYPE              => 'employee',
                 Batch\Header::CONTACT_EMAIL_2           => 'mehul.kaushik@razorpay.com',
                 Batch\Header::CONTACT_MOBILE_2          => '',
                 Batch\Header::CONTACT_REFERENCE_ID      => '',
@@ -1677,13 +1656,13 @@ class PayoutTest extends TestCase
 
         $fileContent = file($response['signed_url']);
 
-        $expectedHeaderRow =  'RazorpayX Account Number,Payout Amount,Payout Currency,Payout Mode,'.
+        $expectedHeaderRow =  'Error Description,RazorpayX Account Number,Payout Amount,Payout Currency,Payout Mode,'.
             'Payout Purpose,Fund Account Id,Fund Account Type,Fund Account Name,Fund Account Ifsc,Fund Account Number,'.
             'Fund Account Vpa,Contact Name,Payout Narration,Payout Reference Id,Contact Type,Contact Email,' .
-            'Contact Mobile,Contact Reference Id,Error Code,Error Description';
+            'Contact Mobile,Contact Reference Id';
 
-        $expectedDataRow = '2323230041626905,1000,INR,ABCD,refund,,bank_account,Mehul Kaushik,SBIN0010720,100200300400,' .
-            ',Mehul Kaushik,test123,,employee,mehul.kaushik@razorpay.com,,,BAD_REQUEST_ERROR,Payout mode is invalid';
+        $expectedDataRow = 'Payout mode is invalid,2323230041626905,1000,INR,ABCD,refund,,bank_account,Mehul Kaushik,SBIN0010720,100200300400,' .
+            ',Mehul Kaushik,test123,,employee,mehul.kaushik@razorpay.com,,';
 
         $this->assertEquals($expectedHeaderRow, trim($fileContent[0]));
         $this->assertEquals($expectedDataRow, trim($fileContent[1]));
@@ -1737,16 +1716,16 @@ class PayoutTest extends TestCase
                 Batch\Header::PAYOUT_CURRENCY           => 'INR',
                 Batch\Header::PAYOUT_MODE               => 'NEFT',
                 Batch\Header::PAYOUT_PURPOSE            => 'refund',
-                Batch\Header::PAYOUT_NARRATION          => 'test123',
-                Batch\Header::PAYOUT_REFERENCE_ID       => '',
                 Batch\Header::FUND_ACCOUNT_ID           => '',
                 Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
                 Batch\Header::FUND_ACCOUNT_NAME         => 'Mehul Kaushik',
                 Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
                 Batch\Header::FUND_ACCOUNT_NUMBER       => '00100200300400',
                 Batch\Header::FUND_ACCOUNT_VPA          => '',
-                Batch\Header::CONTACT_TYPE              => 'employee',
                 Batch\Header::CONTACT_NAME_2            => 'Mehul Kaushik',
+                Batch\Header::PAYOUT_NARRATION          => 'test123',
+                Batch\Header::PAYOUT_REFERENCE_ID       => '',
+                Batch\Header::CONTACT_TYPE              => 'employee',
                 Batch\Header::CONTACT_EMAIL_2           => 'mehul.kaushik@razorpay.com',
                 Batch\Header::CONTACT_MOBILE_2          => '',
                 Batch\Header::CONTACT_REFERENCE_ID      => '',
@@ -1763,13 +1742,13 @@ class PayoutTest extends TestCase
 
         $fileContent = file($response['signed_url']);
 
-        $expectedHeaderRow =  'RazorpayX Account Number,Payout Amount (in Rupees),Payout Currency,Payout Mode,'.
+        $expectedHeaderRow =  'Error Description,RazorpayX Account Number,Payout Amount (in Rupees),Payout Currency,Payout Mode,'.
             'Payout Purpose,Fund Account Id,Fund Account Type,Fund Account Name,Fund Account Ifsc,Fund Account Number,'.
             'Fund Account Vpa,Contact Name,Payout Narration,Payout Reference Id,Contact Type,Contact Email,' .
-            'Contact Mobile,Contact Reference Id,Error Code,Error Description';
+            'Contact Mobile,Contact Reference Id';
 
-        $expectedDataRow = '2323230041626905,10,INR,NEFT,refund,,bank_account,Mehul Kaushik,SBIN0010720,00100200300400,' .
-            ',Mehul Kaushik,test123,,employee,mehul.kaushik@razorpay.com,,,,';
+        $expectedDataRow = ',2323230041626905,10,INR,NEFT,refund,,bank_account,Mehul Kaushik,SBIN0010720,00100200300400,' .
+            ',Mehul Kaushik,test123,,employee,mehul.kaushik@razorpay.com,,';
 
         $this->assertEquals($expectedHeaderRow, trim($fileContent[0]));
         $this->assertEquals($expectedDataRow, trim($fileContent[1]));

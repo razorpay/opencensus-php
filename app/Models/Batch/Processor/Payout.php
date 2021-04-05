@@ -2,12 +2,17 @@
 
 namespace RZP\Models\Batch\Processor;
 
+use PhpOffice\PhpSpreadsheet\IOFactory as SpreadsheetIOFactory;
+use PhpOffice\PhpSpreadsheet\Cell\DefaultValueBinder as PhpSpreadsheetDefaultValueBinder;
+
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 
 use RZP\Constants\Mode;
+use RZP\Models\Batch\Entity;
 use RZP\Models\Batch\Header;
 use RZP\Models\FileStore\Type;
+use RZP\Models\Batch\Constants;
 use RZP\Models\Payout\BatchHelper;
 use RZP\Models\Payout as PayoutModel;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -34,7 +39,24 @@ class Payout extends Base
      */
     protected function getValidatedEntriesStatsAndPreview(array $entries): array
     {
-        $response = parent::getValidatedEntriesStatsAndPreview($entries);
+        // Rather than using the parent function, we have to now write this function ourselves so that we do not rely
+        // on the error code column of the file. This way, we can simply rely on the error message
+        $correctEntries = array_filter($entries, function($entry)
+        {
+            return (isset($entry[Header::ERROR_DESCRIPTION]) === false);
+        });
+
+        $maxRowsToParse = self::MAX_PARSED_ROWS;
+
+        $previewData = array_slice($correctEntries, 0, $maxRowsToParse);
+
+        $this->removeErrorColumnsFromEntries($previewData);
+
+        $response = [
+            Constants::PROCESSABLE_COUNT => count($correctEntries),
+            Constants::ERROR_COUNT       => count($entries) - count($correctEntries),
+            Constants::PARSED_ENTRIES    => $previewData,
+        ];
 
         if ($this->amountType === BatchHelper::PAISE)
         {
@@ -81,6 +103,54 @@ class Payout extends Base
         return $this->headers;
     }
 
+    /**
+     * We have now overloaded this function rather than using the base function, so that we can store the initial
+     * headers provided to us in the input file. We later use the same headers to create the output file.
+     *
+     * Parses excel sheets at given path and returns array content.
+     * Uses new phpoffice/phpspreadsheet package instead of maatwebsite/excel.
+     *
+     * @param  string $filePath
+     * @param int $numRowsToSkip
+     * @return array
+     */
+    protected function parseExcelSheetsUsingPhpSpreadSheet($filePath, $numRowsToSkip = 0): array
+    {
+        $fileType = SpreadsheetIOFactory::identify($filePath);
+
+        $reader = SpreadsheetIOFactory::createReader($fileType);
+
+        \PhpOffice\PhpSpreadsheet\Cell\Cell::setValueBinder(new PhpSpreadsheetDefaultValueBinder);
+
+        $reader->setReadDataOnly(true);
+
+        $spreadsheet = $reader->load($filePath);
+
+        assertTrue($spreadsheet->getSheetCount() === 1);
+
+        $rows = $spreadsheet->getActiveSheet()->toArray();
+
+        $rows = array_slice($rows, $numRowsToSkip);
+
+        $headers = array_values(array_shift($rows) ?? []);
+
+        $this->headers = $headers;
+
+        // No rows exists
+        if (empty($headers) === true)
+        {
+            return [];
+        }
+
+        // Format rows as "heading key => value" kind of associative array
+        foreach ($rows as & $row)
+        {
+            $row = array_combine($headers, array_values($row));
+        }
+
+        return $rows;
+    }
+
     protected  function setBatchPayoutsAmountType(string $headerRow)
     {
         if (empty(strpos($headerRow, Header::PAYOUT_AMOUNT_RUPEES)) === false)
@@ -104,24 +174,9 @@ class Payout extends Base
 
     protected function updateBatchHeadersIfApplicable(array &$headers, array $entries)
     {
-        $variant  = $this->app['razorx']->getTreatment($this->merchant->getId(),
-                                                       RazorxTreatment::BULK_PAYOUTS_IMPROVEMENTS_ROLLOUT,
-                                                       Mode::LIVE,
-                                                       3);
+        $currentHeaders = $this->headers;
 
-        if (strtolower($variant) === 'control')
-        {
-            $this->amountType = BatchHelper::PAISE;
-        }
-
-        if ($this->amountType === BatchHelper::PAISE)
-        {
-            $headers = array_diff($headers, [Header::PAYOUT_AMOUNT_RUPEES]);
-        }
-        else
-        {
-            $headers = array_diff($headers, [Header::PAYOUT_AMOUNT]);
-        }
+        $headers = array_merge([Header::ERROR_DESCRIPTION], $currentHeaders);
     }
 
     /**
@@ -143,7 +198,7 @@ class Payout extends Base
 
         foreach ($data as $row)
         {
-            if (empty($row[Header::ERROR_CODE]) === false)
+            if (empty($row[Header::ERROR_DESCRIPTION]) === false)
             {
                 $errorFlag = true;
 
@@ -153,7 +208,7 @@ class Payout extends Base
 
         if ($errorFlag === true)
         {
-            return (new PayoutModel\Bulk\Base)->createExcelObject($data, $dir, $name, $extension, $columnFormat, $sheetNames);
+            return (new PayoutModel\Bulk\ErrorFile)->createExcelObject($data, $dir, $name, $extension, $columnFormat, $sheetNames);
         }
         else
         {

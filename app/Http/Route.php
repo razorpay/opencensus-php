@@ -5305,7 +5305,7 @@ class Route
 
         'update_payout_status'                     => Permission::PAYOUT_STATUS_UPDATE_MANUALLY,
         'update_payout_status_batch'               => Permission::PAYOUT_STATUS_UPDATE_MANUALLY,
-        'payouts_bulk_amount_type'                 => Permission::RX_ADMIN_ACTION_PERMISSION,
+        'payouts_bulk_amount_type'                 => Permission::MANAGE_BULK_FEATURE_MAPPING,
 
         'admin_key_migrate_to_credcase'            => Permission::EDGE_WRITE_OPERATION,
 

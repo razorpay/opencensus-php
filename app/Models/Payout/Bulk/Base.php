@@ -27,6 +27,10 @@ class Base
     const SIGNED_URL    = 'signed_url';
     const FILE_NAME     = 'sample_batch_payouts';
 
+    // Constants used for styling
+    const START_COLUMN = 'A';
+    const END_COLUMN = 'T';
+
     const EXCEL_HEADERS_FOR_PAYOUT_FILE = [
             'Mandatory Fields',
             'Mandatory Fields',
@@ -124,7 +128,6 @@ class Base
 
     public function createExcelObject($data, $dir, $name, $extension, $columnFormat = [], $sheetNames = ['Sheet 1'])
     {
-
         // The extra space in the end is being added so that the number doesn't get converted to scientific notation
         foreach ($data as &$rows)
         {
@@ -134,7 +137,7 @@ class Base
         }
 
         // Forcing all columns to store data as text.
-        for ($columnNumber = 'A'; $columnNumber <= 'T'; $columnNumber++)
+        for ($columnNumber = self::START_COLUMN; $columnNumber <= self::END_COLUMN; $columnNumber++)
         {
             $columnFormat[$columnNumber] = NumberFormat::FORMAT_TEXT;
         }
