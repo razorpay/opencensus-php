@@ -857,7 +857,7 @@ class MerchantInvoiceTest extends TestCase
                     'merchant_id' => '10000000000000',
                     'gstin' => '29kjsngjk213922',
                     'business_registered_pin' => '123456',
-                    'business_registered_address'   => 'abc street',
+                    'business_registered_address'   => 'FILM CENTRE BUILDING, MUMBAI, 68, TARDEO ROAD, 2B ii, Mumbai City, Maharashtra, GROUND FLOOR, 400034,',
                     'business_registered_city'      => 'abcdef',
                     'business_name'                 => 'abcd',
                 ]);

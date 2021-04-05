@@ -288,7 +288,7 @@ return [
                 'pincode' => 123456,
                 'place_of_supply' => '29',
                 'state_code' => '29',
-                'address1' => 'abc street',
+                'address1' => 'FILM CENTRE BUILDING, MUMBAI, 68, TARDEO ROAD, 2B ii, Mumbai City, Maharashtra, GROUND FLOOR, 400034',
             ],
             'value_details' => [
                 'total_assessable_value' => '64.90',
@@ -374,7 +374,7 @@ return [
                 'pincode' => 123456,
                 'place_of_supply' => '29',
                 'state_code' => '29',
-                'address1' => 'abc street',
+                'address1' => 'FILM CENTRE BUILDING, MUMBAI, 68, TARDEO ROAD, 2B ii, Mumbai City, Maharashtra, GROUND FLOOR, 400034',
             ],
             'value_details' => [
                 'total_assessable_value' => '13.00',
@@ -428,7 +428,7 @@ return [
                 'pincode' => 123456,
                 'place_of_supply' => '29',
                 'state_code' => '29',
-                'address1' => 'abc street',
+                'address1' => 'FILM CENTRE BUILDING, MUMBAI, 68, TARDEO ROAD, 2B ii, Mumbai City, Maharashtra, GROUND FLOOR, 400034',
             ],
             'value_details' => [
                 'total_assessable_value' => '13.00',

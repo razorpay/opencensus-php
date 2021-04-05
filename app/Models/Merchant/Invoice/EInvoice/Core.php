@@ -205,7 +205,7 @@ class Core extends Base\Core
             Constants::ADDRESS_1 => $address1,
         ];
 
-        if(empty($address2) === false)
+        if((empty($address2) === false) and (strlen($address2) >= 3))
         {
             $buyerDetails[Constants::ADDRESS_2] = $address2;
         }
