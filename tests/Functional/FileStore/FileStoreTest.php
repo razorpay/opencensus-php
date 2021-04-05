@@ -28,6 +28,9 @@ class FileStoreTest extends TestCase
 
     public function testRefundFile()
     {
+        // this route is deprecated. files are now generated using 'gateway/files'
+        $this->markTestSkipped();
+
         Mail::fake();
         // Make 3 test payments
         $this->createTestPayment();

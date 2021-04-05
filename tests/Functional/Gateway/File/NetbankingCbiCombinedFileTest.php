@@ -33,6 +33,10 @@ class NetbankingCbiCombinedFileTest extends TestCase
         $this->bank = 'CBIN';
 
         $this->terminal = $this->fixtures->create('terminal:shared_netbanking_cbi_terminal');
+
+        $connector = $this->mockSqlConnectorWithReplicaLag(0);
+
+        $this->app->instance('db.connector.mysql', $connector);
     }
 
     public function testNetbankingCbiCombinedFile()

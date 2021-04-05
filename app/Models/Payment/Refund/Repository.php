@@ -418,7 +418,8 @@ class Repository extends Base\Repository
     {
         $attrs = $this->dbColumn('*');
 
-        $query = $this->newQuery();
+        // replication lag threshold of 5 minutes
+        $query = $this->newQueryOnSlave(300000);
 
         $refunds = $query->select($attrs)->join(
             $this->repo->payment->getTableName(),

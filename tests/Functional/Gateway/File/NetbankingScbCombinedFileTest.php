@@ -31,6 +31,10 @@ class NetbankingScbCombinedFileTest extends TestCase
         $this->bank = 'SCBL';
 
         $this->terminal = $this->fixtures->create('terminal:shared_netbanking_scb_terminal');
+
+        $connector = $this->mockSqlConnectorWithReplicaLag(0);
+
+        $this->app->instance('db.connector.mysql', $connector);
     }
 
     public function testNetbankingScbCombinedFile()

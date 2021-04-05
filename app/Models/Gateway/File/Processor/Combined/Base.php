@@ -27,21 +27,34 @@ class Base extends BaseProcessor
 
     public function fetchEntities(): PublicCollection
     {
-        $entities = new PublicCollection;
+        try
+        {
+            $entities = new PublicCollection;
 
-        $refundFileProcessor = $this->getFileProcessor(Type::REFUND);
+            $refundFileProcessor = $this->getFileProcessor(Type::REFUND);
 
-        $claimFileProcessor = $this->getFileProcessor(Type::CLAIM);
+            $claimFileProcessor = $this->getFileProcessor(Type::CLAIM);
 
-        $refunds = $refundFileProcessor->fetchEntities();
+            $refunds = $refundFileProcessor->fetchEntities();
 
-        $claims = $claimFileProcessor->fetchEntities();
+            $claims = $claimFileProcessor->fetchEntities();
 
-        $entities->put('refunds', $refunds);
+            $entities->put('refunds', $refunds);
 
-        $entities->put('claims', $claims);
+            $entities->put('claims', $claims);
 
-        return $entities;
+            return $entities;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e);
+
+            throw new GatewayFileException(
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
+                [
+                    'id' => $this->gatewayFile->getId(),
+                ]);
+        }
     }
 
     public function checkIfValidDataAvailable(PublicCollection $entities)

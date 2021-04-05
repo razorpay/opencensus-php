@@ -88,6 +88,10 @@ class NbPlusPaymentServiceNetbankingTest extends TestCase
         $this->app->instance('nbplus.payments', $this->nbPlusService);
 
         $this->payment = $this->getDefaultNetbankingPaymentArray($this->bank);
+
+        $connector = $this->mockSqlConnectorWithReplicaLag(0);
+
+        $this->app->instance('db.connector.mysql', $connector);
     }
 
     public function testAuthorize()

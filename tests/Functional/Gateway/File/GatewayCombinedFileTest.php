@@ -27,6 +27,10 @@ class GatewayCombinedFileTest extends TestCase
         parent::setUp();
 
         $this->fixtures->create('terminal:shared_netbanking_axis_terminal');
+
+        $connector = $this->mockSqlConnectorWithReplicaLag(0);
+
+        $this->app->instance('db.connector.mysql', $connector);
     }
 
     public function testGenerateCombinedFile()
@@ -243,5 +247,50 @@ class GatewayCombinedFileTest extends TestCase
         $this->assertNull($content[File\Entity::SENT_AT]);
         $this->assertNotNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+    }
+
+    public function testGenerateCombinedFileWithReplicationLagError()
+    {
+        $connector = $this->mockSqlConnectorWithReplicaLag(400000);
+
+        $this->app->instance('db.connector.mysql', $connector);
+
+        $this->fixtures->create('terminal:shared_netbanking_rbl_terminal');
+
+        Mail::fake();
+
+        $payment = $this->getDefaultNetbankingPaymentArray('RATN');
+
+        $payment['amount'] = 10000012;
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->fixtures->edit('transaction', $transaction['id'], [
+            'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
+        ]);
+
+        $this->refundPayment($payment['id']);
+
+        $refundEntity = $this->getDbLastEntity('refund');
+
+        // Netbanking Rbl refunds have moved to scrooge
+        $this->assertEquals(1, $refundEntity['is_scrooge']);
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refundEntity]);
+
+        $this->ba->adminAuth();
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $this->assertNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNull($content[File\Entity::SENT_AT]);
+        $this->assertNotNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        Mail::assertNotSent(DailyFileMail::class);
     }
 }

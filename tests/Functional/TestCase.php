@@ -216,4 +216,18 @@ class TestCase extends ParentTestCase
 
         return $mock;
     }
+
+    protected function mockSqlConnectorWithReplicaLag($replicaLag)
+    {
+        $connector = \Mockery::mock('RZP\Base\Database\Connectors\MySqlConnector', [$this->app])->makePartial();
+
+        $connector->shouldReceive('getReplicationLagInMilli')
+            ->with(\Mockery::type('string'))
+            ->andReturnUsing(function () use ($replicaLag)
+            {
+                return $replicaLag;
+            });
+
+        return $connector;
+    }
 }

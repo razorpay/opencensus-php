@@ -873,7 +873,8 @@ class Repository extends Base\Repository
 
         $transactionReconciledAt = $txnRepo->dbColumn(Transaction\Entity::RECONCILED_AT);
 
-        return $this->newQueryWithConnection($this->getSlaveConnection())
+        // replication lag threshold of 5 minutes
+        return $this->newQueryOnSlave(300000)
                     ->select($paymentAttrs)
                     ->from(\DB::raw('`payments`, `transactions` USE INDEX (transactions_reconciled_at_index)'))
                     ->where($paymentId, '=', \DB::raw('`transactions`.`entity_id`'))
@@ -957,7 +958,8 @@ class Repository extends Base\Repository
 
         $pAuthorizedAt = $this->dbColumn(Entity::AUTHORIZED_AT);
 
-        return $this->newQuery()
+        // replication lag threshold of 5 minutes
+        return $this->newQueryOnSlave(300000)
                     ->select($paymentAttrs)
                     ->join($tTablename, $pTerminalId, '=', $tId)
                     ->where($pAuthorizedAt, '>=', $from)
@@ -999,7 +1001,8 @@ class Repository extends Base\Repository
         $terminalId = $tRepo->dbColumn(Terminal\Entity::ID);
         $terminalTpv = $tRepo->dbColumn(Terminal\Entity::TPV);
 
-        return $this->newQuery()
+        // replication lag threshold of 5 minutes
+        return $this->newQueryOnSlave(300000)
                     ->select($paymentAttrs)
                     ->join($txnRepo->getTableName(), $paymentId, '=', $transactionPaymentId)
                     ->join($tRepo->getTableName(), $paymentTerminalId, '=', $terminalId)

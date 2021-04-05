@@ -35,6 +35,10 @@ class NetbankingPnbCombinedFileTest extends TestCase
         $this->bank = 'PUNB_R';
 
         $this->terminal = $this->fixtures->create('terminal:shared_netbanking_pnb_terminal');
+
+        $connector = $this->mockSqlConnectorWithReplicaLag(0);
+
+        $this->app->instance('db.connector.mysql', $connector);
     }
 
     public function testNetbankingPnbCombinedFile()

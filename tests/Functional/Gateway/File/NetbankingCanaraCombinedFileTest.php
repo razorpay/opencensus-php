@@ -30,6 +30,10 @@ class NetbankingCanaraCombinedFileTest extends TestCase
         $this->bank = 'CNRB';
 
         $this->terminal = $this->fixtures->create('terminal:shared_netbanking_canara_terminal');
+
+        $connector = $this->mockSqlConnectorWithReplicaLag(0);
+
+        $this->app->instance('db.connector.mysql', $connector);
     }
 
     public function testNetbankingCanaraCombinedFile()

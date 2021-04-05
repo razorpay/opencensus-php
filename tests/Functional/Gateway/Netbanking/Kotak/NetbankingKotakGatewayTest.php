@@ -205,6 +205,9 @@ class NetbankingKotakGatewayTest extends TestCase
 
     public function testRefundsFileGeneration()
     {
+        // this route is deprecated. This has been moved to 'gateway/files'
+        $this->markTestSkipped();
+
         Mail::fake();
 
         // Make 6 payments
