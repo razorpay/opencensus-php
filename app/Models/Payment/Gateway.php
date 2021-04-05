@@ -506,6 +506,7 @@ class Gateway
         IFSC::ORBC,
         IFSC::ANDB,
         IFSC::USFB,
+        IFSC::SYNB,
     ];
 
     const EMANDATE_NB_DIRECT_BANKS = [
