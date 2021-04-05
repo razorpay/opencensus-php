@@ -140,7 +140,7 @@ jobs:
           MYSQL_USER: mysql
           MYSQL_PASSWORD: mysql
           MYSQL_DATABASE: mysqldb
-          MYSQL_RANDOM_ROOT_PASSWORD: yes
+          MYSQL_ROOT_PASSWORD: root
       postgres:
         image: postgres:9.6
         env:
