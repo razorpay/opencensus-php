@@ -10,6 +10,7 @@ use RZP\Exception;
 use RZP\Models\Merchant;
 use RZP\Services\Mozart;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Currency\Currency;
 use RZP\Models\BankingAccountStatement\Type;
@@ -43,6 +44,8 @@ class Gateway extends BaseProcessor
     // sample NEFT - NEFT/000119662132/maYANK SHARMA
     // sample RTGS - RTGS/UTIBH20106341692/RAZORPAY SOFTWARE PRIVATE LI
     const NEFT_RTGS_DEBIT_REGEX = '/^(RTGS\/|NEFT\/)(.*?)(\/)/';
+
+    const OFFSET_FOR_SAVING_RECORD = 60;
 
     public function __construct(string $channel, string $accountNumber)
     {
@@ -126,6 +129,8 @@ class Gateway extends BaseProcessor
 
             $requestData = $this->getRequestDataForMozart($input, $lastFormattedResponse);
 
+            $requestTime = Carbon::now();
+
             try
             {
                 $bankResponse = $this->app->mozart->sendMozartRequest(self::MOZART_NAMESPACE,
@@ -176,7 +181,7 @@ class Gateway extends BaseProcessor
                 throw $ex;
             }
 
-            $formattedResponse = $this->getFormattedResponse($bankResponse['data'], $recordNumber);
+            $formattedResponse = $this->getFormattedResponse($bankResponse['data'], $recordNumber, $requestTime);
 
             $finalFormattedResponse = array_merge($finalFormattedResponse, $formattedResponse);
 
@@ -234,7 +239,7 @@ class Gateway extends BaseProcessor
             Fields::ATTEMPT => [
                 Fields::ID                          => (string) Carbon::now()->timestamp,
                 Fields::FROM_DATE                   => $this->getStatementStartTime($bankingAccount),
-                Fields::TO_DATE                     => Carbon::today()->toDateString(),
+                Fields::TO_DATE                     => Carbon::today(Timezone::IST)->toDateString(),
                 Fields::TRANSACTION_TYPE            => TransactionType::BOTH,
             ],
             Fields::SOURCE_ACCOUNT => [
@@ -270,9 +275,15 @@ class Gateway extends BaseProcessor
         // TODO: fetch bank opening time from BankingAccount array
         $startTime = 1;
 
+        $secondsInDay = Carbon::SECONDS_PER_MINUTE * Carbon::MINUTES_PER_HOUR * Carbon::HOURS_PER_DAY;
+
         if (empty($bankTransaction) === false)
         {
             $startTime = $bankTransaction->getTransactionDate();
+
+            // from date should be one day before the txn date of the last record.
+            // This came up in rbl incident: https://razorpay.slack.com/archives/CM9230B5Y/p1615457898201700
+            $startTime -= $secondsInDay;
         }
 
         $startTime = $this->getDateTimeStringFromTimestamp($startTime, self::STATEMENT_START_TIME_DATE_FORMAT);
@@ -362,13 +373,15 @@ class Gateway extends BaseProcessor
         return $formattedData;
     }
 
-    public function getFormattedResponse(array $responseData, int & $recordNumber)
+    public function getFormattedResponse(array $responseData, int & $recordNumber, Carbon $requestTime)
     {
         $responseBody = $responseData[Fields::PAYMENT_GENERIC_RESPONSE][Fields::BODY];
 
         $transactionsData = $responseBody[Fields::TRANSACTION_DETAILS] ?? [];
 
         $transactions = [];
+
+        $offset = $this->getOffsetForSavingRecords();
 
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_STATEMENT_RESPONSE_COUNT,
@@ -389,6 +402,11 @@ class Gateway extends BaseProcessor
 
         foreach ($transactionsData as $transactionData)
         {
+            // Due to discrepancies on bank side where new records can appear in few seconds, we prefer not to save
+            // latest records within time range set using $offset to maintain order.
+            // This came up in rbl incident: https://razorpay.slack.com/archives/CM9230B5Y/p1615457898201700
+            $allowRecordToSave = $this->allowRecordToSave($requestTime, $offset, $transactionData);
+
             //
             // Logging it here even though it's logged in Mozart Service since that
             // log is most probably going to be truncated due to large amount of data.
@@ -396,12 +414,18 @@ class Gateway extends BaseProcessor
             $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_TRANSACTION_DATA,
                                [
                                    'record_no'            => $recordNumber,
+                                   'record_saved'         => $allowRecordToSave,
                                    Entity::CHANNEL        => $this->getChannel(),
                                    Entity::ACCOUNT_NUMBER => $this->accountNumber
                                ] + $transactionData
             );
 
             $recordNumber++;
+
+            if ($allowRecordToSave === false)
+            {
+                continue;
+            }
 
             $transactions[] = [
                 Entity::CHANNEL             => $this->getChannel(),
@@ -422,6 +446,28 @@ class Gateway extends BaseProcessor
         }
 
         return $transactions;
+    }
+
+    protected function allowRecordToSave(Carbon $requestTime, int $offset, array $transactionData)
+    {
+        If ($requestTime->subSeconds($offset)->getTimestamp() > $this->getPostedDateFromResponse($transactionData))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function getOffsetForSavingRecords()
+    {
+        $offset = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_BANKING_ACCOUNT_STATEMENT_CRON_ATTEMPT_DELAY]);
+
+        if (empty($offset) === true)
+        {
+            $offset = self::OFFSET_FOR_SAVING_RECORD;
+        }
+
+        return $offset;
     }
 
     protected function getBankTransactionIdFromResponse(array $transaction): string

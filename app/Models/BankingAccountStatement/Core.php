@@ -1522,6 +1522,8 @@ class Core extends Base\Core
 
         $accountNumbersDispatched = [];
 
+        $cronDispatchDelay = $this->getCronDispatchDelayByChannel($channel);
+
         foreach ($accountNumbersToDispatch as $accountNumberDetails)
         {
             $this->trace->info(
@@ -1535,7 +1537,7 @@ class Core extends Base\Core
 
             array_push($accountNumbersDispatched, $accountNumberDetails['account_number']);
 
-            $this->dispatchBankingAccountStatementJob($channel, $accountNumberDetails['account_number']);
+            $this->dispatchBankingAccountStatementJob($channel, $accountNumberDetails['account_number'], $cronDispatchDelay);
         }
 
         return ['accounts_processed' => $accountNumbersDispatched];
@@ -1551,6 +1553,7 @@ class Core extends Base\Core
             [
                 'channel'        => $channel,
                 'accountNumber'  => $accountNumber,
+                'delay'          => $delay,
             ]);
 
         BankingAccountStatementJob::dispatch($this->mode,
@@ -1558,6 +1561,26 @@ class Core extends Base\Core
                                                  'channel'       => $channel,
                                                  'account_number' => $accountNumber
                                              ])->delay($delay);
+    }
+
+    public function getCronDispatchDelayByChannel(string $channel)
+    {
+        switch ($channel)
+        {
+            case Channel::RBL:
+                $delay = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_BANKING_ACCOUNT_STATEMENT_CRON_ATTEMPT_DELAY]);
+                break;
+
+            default:
+                $delay = 0;
+        }
+
+        if (empty($delay) === true)
+        {
+            $delay = 0;
+        }
+
+        return $delay;
     }
 
     protected function linkPayoutToDebitBas($payout, $debit_bas)

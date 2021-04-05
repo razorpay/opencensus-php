@@ -8058,4 +8058,84 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertEquals(0, $basDetail[0][BasDetails\Entity::STATEMENT_CLOSING_BALANCE]);
     }
+
+    // Due to discrepancies on bank side where new records can appear in few seconds, we prefer not to save
+    // latest records within time range set using $offset to maintain order.
+    // Ref. rbl incident: https://razorpay.slack.com/archives/CM9230B5Y/p1615457898201700
+    public function testRblAccountStatementWithDelayAddedInSavingRecords()
+    {
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RBL_BANKING_ACCOUNT_STATEMENT_CRON_ATTEMPT_DELAY => 60]);
+
+        $mockedResponse = $this->getRblDataResponse();
+
+        $txns = $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'];
+
+        $txns[1]['pstdDate'] = Carbon::now(Timezone::IST)->format('Y-m-d\TH:i:s.000');
+
+        $txns[0]['pstdDate'] = Carbon::now(Timezone::IST)->subSeconds(90)->format('Y-m-d\TH:i:s.000');
+
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'] = $txns;
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $baBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
+
+        $this->assertNull($baBeforeTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $basdBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->assertNull($basdBeforeTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $this->ba->cronAuth();
+
+        $this->setupForRblAccountStatement();
+
+        $testData = $this->testData['testRblAccountStatementCase1'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+
+        $basRecords = $this->getDbEntities(EntityConstants::BANKING_ACCOUNT_STATEMENT);
+
+        $this->assertEquals(1, count($basRecords));
+
+        $basActual = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT, true);
+
+        $externalActual = $this->getLastEntity(EntityConstants::EXTERNAL, true);
+
+        $externalId = str_after($externalActual[ExternalEntity::ID], 'ext_');
+
+        $externalTxnId = $externalActual[ExternalEntity::TRANSACTION_ID];
+
+        $this->txnEntity = $this->getDbEntityById(EntityConstants::TRANSACTION, $externalTxnId);
+
+        $txnActual = $this->txnEntity->toArray();
+
+        $baAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
+
+        $this->assertNotNull($baAfterTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $basdAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->assertNotNull($basdAfterTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $this->assertEquals($txnActual[TransactionEntity::POSTED_AT], $basActual[BasEntity::POSTED_DATE]);
+
+        $basExpected = [
+            BasEntity::MERCHANT_ID           => $txnActual[TransactionEntity::MERCHANT_ID],
+            BasEntity::BANK_TRANSACTION_ID   => 'S429655',
+            BasEntity::TYPE                  => 'credit',
+            BasEntity::AMOUNT                => 11450,
+            BasEntity::BALANCE               => 21450,
+            BasEntity::TRANSACTION_DATE      => 1451327400,
+            BasEntity::DESCRIPTION           => 'DEBIT CARD ANNUAL FEE 2635',
+            BasEntity::CHANNEL               => 'rbl',
+            BasEntity::ENTITY_ID             => $externalId,
+            BasEntity::ENTITY_TYPE           => $externalActual[ExternalEntity::ENTITY],
+            BasEntity::TRANSACTION_ID        => $txnActual[TransactionEntity::ID],
+        ];
+
+        $this->assertArraySubset($basExpected, $basActual, true);
+    }
 }

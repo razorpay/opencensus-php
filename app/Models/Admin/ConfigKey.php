@@ -90,6 +90,8 @@ class ConfigKey
     //Banking account current accounts statement fetch for merchants limit on number of merchants for which to update in one run.
     const BANKING_ACCOUNT_STATEMENT_RATE_LIMIT  = self::PREFIX . 'banking_account_statement_rate_limit';
 
+    const RBL_BANKING_ACCOUNT_STATEMENT_CRON_ATTEMPT_DELAY = self::PREFIX . 'rbl_banking_account_statement_cron_attempt_delay';
+
     CONST RX_BAS_FORCED_FETCH_TIME_IN_HOURS               = self::PREFIX . 'rx_bas_forced_fetch_time_in_hours';
 
     // while creating payouts we fetch balance from gateway at a frequency decided in SLA.
@@ -259,6 +261,7 @@ class ConfigKey
         self::RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS_FOR_FUND_LOADING,
         self::RBL_STATEMENT_CLOSING_BALANCE_DIFF,
         self::REQUEST_LOG_STATE,
+        self::RBL_BANKING_ACCOUNT_STATEMENT_CRON_ATTEMPT_DELAY,
         self::SLAVE_ROUTES,
     ];
 
