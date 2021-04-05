@@ -8,6 +8,8 @@ use RZP\Error\PublicErrorDescription;
 
 class Validator extends Base\Validator
 {
+    const MAXIMUM_FILE_SIZE = 4 * 1024 * 1024; // 4MB
+
     protected static $createRules = [
         Entity::DOCUMENT_TYPE => 'required|string|max:255|custom',
         Entity::FILE          => 'required|file|mimes:pdf,jpeg,jpg,png',
@@ -72,6 +74,23 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 PublicErrorDescription::BAD_REQUEST_PROOF_TYPE_NOT_SUPPORTED . ': ' . $value
+            );
+        }
+    }
+
+    public function validateFileSize($file)
+    {
+        $fileSize = filesize($file);
+
+        if ($fileSize === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('Error occurred while validating file');
+        }
+
+        if ($fileSize > self::MAXIMUM_FILE_SIZE)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Maximum file size supported : ' . (self::MAXIMUM_FILE_SIZE) / (1024 * 1024) . 'MB'
             );
         }
     }

@@ -107,7 +107,11 @@ class Service extends Base\Service
     {
         [$entity, $merchant] = $this->validateAndGetDocumentRequest($accountId, $entityType, $entityId);
 
-        (new Validator)->validateInput('uploadDocument', $input);
+        $validator = (new Validator);
+
+        $validator->validateInput('uploadDocument', $input);
+
+        $validator->validateFileSize($input[Entity::FILE]);
 
         $documents = Type::getValidDocumentForEntity($entity->getEntity());
 
