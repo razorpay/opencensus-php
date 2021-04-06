@@ -42,7 +42,7 @@ class WordpressTest extends TestCase
     public function testReportsTraceToFile()
     {
         $rand = mt_rand();
-        $client = new Client(['base_uri' => getenv('TESTURL') ?: 'http://localhost:9000']);
+        $client = new Client(['base_uri' => 'http://localhost:9000']);
         $response = $client->request('GET', '/', [
             'query' => [
                 'rand' => $rand

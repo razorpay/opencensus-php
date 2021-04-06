@@ -125,6 +125,9 @@ jobs:
 #      - name: Guzzle 6 test
 #        run: tests/integration/guzzle6/test.sh
 #        continue-on-error: true
+      - name: Wordpress test
+        run: tests/integration/wordpress/test.sh
+        continue-on-error: true
 
       - name: Laravel test
         run: tests/integration/laravel/test.sh
@@ -140,9 +143,6 @@ jobs:
         run: tests/integration/symfony4/test.sh
         env:
           DATABASE_URL: mysql://mysql:mysql@127.0.0.1:3306/mysqldb
-
-      - name: Wordpress test
-        run: tests/integration/wordpress/test.sh
 
     services:
       mysql:
