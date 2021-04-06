@@ -152,7 +152,7 @@ class Repository extends Base\Repository
         $statusColumn   = $this->dbColumn(Entity::STATUS);
         $typeColumn     = $this->dbColumn(Entity::TYPE);
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->selectRaw(
                         'SUM(' . $feesColumn .') AS fees')
                     ->join(Table::PAYOUT, $idColumn, '=', $entityIdColumn)
@@ -176,7 +176,7 @@ class Repository extends Base\Repository
         $statusColumn     = $this->dbColumn(Entity::STATUS);
         $typeColumn       = $this->dbColumn(Entity::TYPE);
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->selectRaw(
                         'SUM(' . $feesColumn .') AS fees')
                     ->join(Table::PAYOUT, $idColumn, '=', $entityIdColumn)
@@ -204,7 +204,7 @@ class Repository extends Base\Repository
         $statusColumn     = $this->dbColumn(Entity::STATUS);
         $typeColumn       = $this->dbColumn(Entity::TYPE);
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->selectRaw(
                         'SUM(' . $feesColumn .') AS fees')
                     ->join(Table::REVERSAL, $reversalIdColumn, '=', $entityIdColumn)
