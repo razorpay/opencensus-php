@@ -128,7 +128,7 @@ jobs:
 
       - name: Laravel test
         run: tests/integration/laravel/test.sh
-        continue-on-error: true
+#        continue-on-error: true
 
       - name: Memcached test
         run: tests/integration/memcached/test.sh
