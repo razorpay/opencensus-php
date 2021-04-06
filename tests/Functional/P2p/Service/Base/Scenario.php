@@ -182,6 +182,24 @@ class Scenario extends Mock\Scenario
             ],
             self::BA404 => [
             ],
+            self::BB101 => [
+                self::ERROR => [
+                    Error::PUBLIC_ERROR_CODE    => Code::GATEWAY_ERROR,
+                    Error::DESCRIPTION          => Description::GATEWAY_ERROR_REQUEST_TIMEOUT,
+                ],
+            ],
+            self::BB102 => [
+                self::ERROR => [
+                    Error::PUBLIC_ERROR_CODE    => Code::GATEWAY_ERROR,
+                    Error::DESCRIPTION          => Description::GATEWAY_ERROR_TECHNICAL_ERROR,
+                ],
+            ],
+            self::BB103 => [
+
+            ],
+            self::BB104 => [
+
+            ],
             self::VA101 => [
 
             ],

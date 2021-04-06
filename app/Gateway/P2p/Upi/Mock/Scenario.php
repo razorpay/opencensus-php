@@ -46,6 +46,12 @@ class Scenario
     const BA403     = 'BA403';
     const BA404     = 'BA404';
 
+    // Bank Scenarios
+    const BB101      = 'BB101';
+    const BB102      = 'BB102';
+    const BB103      = 'BB103';
+    const BB104      = 'BB104';
+
     // VPA Scenarios
     const VA101     = 'VA101';
     const VA201     = 'VA201';
@@ -313,6 +319,31 @@ class Scenario
             'sub'       => '102',
         ],
 
+        self::BB101 => [
+            'entity'    => 'bank',
+            'action'    => 'retrieveBanks',
+            'success'   => false,
+            'desc'      => 'Beneficiary Bank Down',
+            'code'      => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
+        ],
+        self::BB102 => [
+            'entity'    => 'bank',
+            'action'    => 'retrieveBanks',
+            'success'   => false,
+            'desc'      => 'Invalid response from bank',
+            'code'      => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+        ],
+        self::BB103 => [
+            'entity'    => 'bank',
+            'action'    => 'retrieveBanks',
+            'success'   => true,
+            'desc'      => 'N number of bank lists found',
+            'code'      => null,
+            'sub'       => '104',
+        ],
+        self::BB104 => [
+
+        ],
         self::VA101 => [
             'entity'    => 'vpa',
             'action'    => 'fetchHandles',

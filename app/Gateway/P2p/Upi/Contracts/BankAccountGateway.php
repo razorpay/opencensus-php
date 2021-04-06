@@ -18,4 +18,6 @@ interface BankAccountGateway extends GatewayInterface
     public function initiateFetchBalance(Response $response);
 
     public function fetchBalance(Response $response);
+
+    public function retrieveBanks(Response $response);
 }

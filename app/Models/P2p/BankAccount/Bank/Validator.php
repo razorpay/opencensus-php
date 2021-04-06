@@ -4,6 +4,7 @@ namespace RZP\Models\P2p\BankAccount\Bank;
 
 use RZP\Exception;
 use RZP\Models\P2p\Base;
+use RZP\Models\P2p\Base\Libraries\Context;
 
 class Validator extends Base\Validator
 {
@@ -93,7 +94,8 @@ class Validator extends Base\Validator
     public function makeRetrieveBanksRules()
     {
         $rules = $this->makeRules([
-            Entity::HANDLE           => 'required',
+            Entity::HANDLE          => 'required',
+            Context::REQUEST_ID     => 'sometimes',
         ]);
 
         return $rules;

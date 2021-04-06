@@ -165,6 +165,37 @@ class BankAccountGateway extends Gateway implements Contracts\BankAccountGateway
         ]);
     }
 
+    public function retrieveBanks(Response $response)
+    {
+        if ($this->handleFailureScenarios($response, [Scenario::BB101, Scenario::BB102]))
+        {
+            return;
+        }
+
+        if ($this->scenario->is(Scenario::BB104))
+        {
+            $response->setData([
+                'banks' => [],
+            ]);
+
+            return;
+        }
+
+        $sub = (int) $this->scenario->getParsedSub(Scenario::BB103);
+        $count = ($sub % 100);
+
+        $banks = [];
+
+        for ($i = 1; $i <= $count; $i++)
+        {
+            $banks[] = $this->createMockBank($i);
+        }
+
+        $response->setData([
+            'banks' => $banks,
+        ]);
+    }
+
     private function createMockBankAccount($ifsc, $index, $mask)
     {
         $last4 = (1000 + ($index * 10));
@@ -210,5 +241,22 @@ class BankAccountGateway extends Gateway implements Contracts\BankAccountGateway
         }
 
         return $bankAccount;
+    }
+
+    private function createMockBank($index)
+    {
+        $last4 = (1000 + ($index * 10));
+
+        $bank = [
+            'name'              => 'Sharp bank' . $last4,
+            'handle'            => $this->context->handleCode(),
+            'gateway_data'      => [
+                'id'            => 'SRP' . $last4,
+                ],
+            'upi_iin'           => '12'.$last4,
+            'active'            => true,
+        ];
+
+        return $bank;
     }
 }

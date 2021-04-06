@@ -26,6 +26,11 @@ class Processor extends Base\Processor
 
         $this->context()->setHandleAndMode($input[Entity::HANDLE]);
 
+        if(isset($input[Base\Libraries\Context::REQUEST_ID]) === true)
+        {
+            $this->context()->setOptions(new Base\Libraries\ArrayBag($input));
+        }
+
         return $this->callGateway();
     }
 

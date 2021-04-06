@@ -229,6 +229,10 @@ return [
         'bank_count_threshold'      => env('P2P_UPI_AXIS_BANK_COUNT_THREASHOLD'),
     ],
 
+    'p2p_upi_sharp' => [
+        'bank_count_threshold'      => env('P2P_UPI_SHARP_BANK_COUNT_THREASHOLD'),
+    ],
+
     'hdfc' => [
         'test_terminal_id'                 => env('HDFC_GATEWAY_TEST_TERMINAL_ID'),
         'test_terminal_pwd'                => env('HDFC_GATEWAY_TEST_TERMINAL_PASSWORD'),
