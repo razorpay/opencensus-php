@@ -1149,4 +1149,46 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $this->app['beam']->setMockService($beamServiceMock);
     }
+
+    public function testFailureDebitFileGeneration()
+    {
+        $response = $this->makeDebitPayment();
+
+        $this->fixtures->stripSign($response['razorpay_payment_id']);
+
+        $this->ba->adminAuth();
+
+        Queue::fake();
+
+        $this->mockBeam(function ($pushData, $intervalInfo, $mailInfo, $synchronous)
+        {
+            return [
+                'failed' => $pushData['files'],
+                'success' => null,
+            ];
+        });
+
+        $this->startTest();
+    }
+
+    public function testPartialDebitFileGeneration()
+    {
+        $response = $this->makeDebitPayment();
+
+        $this->fixtures->stripSign($response['razorpay_payment_id']);
+
+        $this->ba->adminAuth();
+
+        Queue::fake();
+
+        $this->mockBeam(function ($pushData, $intervalInfo, $mailInfo, $synchronous)
+        {
+            return [
+                'failed'  => $pushData['files'][0],
+                'success' => $pushData['files'][1],
+            ];
+        });
+
+        $this->startTest();
+    }
 }

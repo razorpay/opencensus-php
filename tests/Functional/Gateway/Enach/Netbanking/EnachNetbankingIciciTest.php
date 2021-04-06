@@ -286,4 +286,15 @@ class EnachNetbankingNpciIciciTest extends EnachNetbankingNpciGatewayTest
 
         return $this->makeRequestAndGetContent($request);
     }
+
+    public function testFailureDebitFileGeneration()
+    {
+        $this->markTestSkipped('not applicable');
+    }
+
+    public function testPartialDebitFileGeneration()
+    {
+        $this->markTestSkipped('not applicable');
+    }
+
 }

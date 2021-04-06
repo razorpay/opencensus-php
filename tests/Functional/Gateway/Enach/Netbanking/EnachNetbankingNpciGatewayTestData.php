@@ -330,4 +330,56 @@ return [
             'internal_error_code'   => ErrorCode::BAD_REQUEST_ORDER_BANK_INVALID,
         ],
     ],
+
+    'testFailureDebitFileGeneration' => [
+        'request' => [
+            'content' => [
+                'type'    => 'nach_debit',
+                'targets' => ['paper_nach_citi'],
+                'begin'   => Carbon::yesterday(Timezone::IST)->getTimestamp(),
+                'end'     => Carbon::today(Timezone::IST)->getTimestamp() - 1,
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+        ],
+    ],
+
+    'testPartialDebitFileGeneration' => [
+        'request' => [
+            'content' => [
+                'type'    => 'nach_debit',
+                'targets' => ['paper_nach_citi'],
+                'begin'   => Carbon::yesterday(Timezone::IST)->getTimestamp(),
+                'end'     => Carbon::today(Timezone::IST)->getTimestamp() - 1,
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+        ],
+    ],
 ];

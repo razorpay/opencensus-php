@@ -184,7 +184,8 @@ class PaperNachIcici extends Base
         $beamResponse = $this->app['beam']->beamPush($data, $timelines, $mailInfo, true);
 
         if ((isset($beamResponse['success']) === false) or
-            ($beamResponse['success'] === null))
+            ($beamResponse['success'] === null) or
+            ($beamResponse['failed'] !== null))
         {
             throw new GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,

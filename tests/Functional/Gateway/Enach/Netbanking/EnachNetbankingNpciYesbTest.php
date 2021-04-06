@@ -637,4 +637,15 @@ class EnachNetbankingNpciYesbTest extends EnachNetbankingNpciGatewayTest
     {
         $this->markTestSkipped('not applicable');
     }
+
+    public function testFailureDebitFileGeneration()
+    {
+        $this->markTestSkipped('not applicable');
+    }
+
+    public function testPartialDebitFileGeneration()
+    {
+        $this->markTestSkipped('not applicable');
+    }
+
 }
