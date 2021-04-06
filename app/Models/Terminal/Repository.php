@@ -844,8 +844,7 @@ class Repository extends Base\Repository
     {
         $query = $this->newQuery()
                       ->where(Entity::BANK_TRANSFER, true)
-                      ->where(Entity::GATEWAY, $gateway)
-                      ->withTrashed();
+                      ->where(Entity::GATEWAY, $gateway);
 
         $apiTerminals = $query->get();
 
