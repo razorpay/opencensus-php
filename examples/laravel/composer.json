@@ -16,8 +16,7 @@
         "filp/whoops": "~2.0",
         "fzaninotto/faker": "~1.4",
         "mockery/mockery": "0.9.*",
-        "phpunit/phpunit": "~6.0",
-        "ramsey/uuid": "4.1.1"
+        "phpunit/phpunit": "~6.0"
     },
     "autoload": {
         "classmap": [
