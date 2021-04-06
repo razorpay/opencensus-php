@@ -63,6 +63,13 @@ class Service extends Base\Service
         $requestPayload = null
     )
     {
+        $response = $this->validateDuplicateRequest($input);
+
+        if (empty($response) === false)
+        {
+            return $response;
+        }
+
         $bankTransferRequest = null;
 
         try
@@ -560,5 +567,29 @@ class Service extends Base\Service
         {
             $bankTransferInput->setPayeeAccount($input[Entity::PAYEE_ACCOUNT]);
         }
+    }
+
+    private function validateDuplicateRequest(array $input)
+    {
+        $routeName = $this->app['api.route']->getCurrentRouteName();
+
+        if (($routeName === 'bank_transfer_process_rbl_internal') or
+            ($routeName === 'bank_transfer_process_icici_internal'))
+        {
+            $duplicateBankTransfer = $this->repo
+                                          ->bank_transfer
+                                          ->findByUtrAndPayeeAccount($input[Entity::REQ_UTR],
+                                                                     $input[Entity::PAYEE_ACCOUNT]);
+
+            if ($duplicateBankTransfer !== null)
+            {
+                return [
+                    'valid'          => true,
+                    'message'        => null,
+                    'transaction_id' => $input[Entity::REQ_UTR] ?? '',
+                ];
+            }
+        }
+        return  [];
     }
 }
