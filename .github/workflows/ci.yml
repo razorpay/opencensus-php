@@ -67,7 +67,6 @@ jobs:
 
       - name: PHP Code Style
         run: vendor/bin/phpcs --standard=./phpcs.xml
-        continue-on-error: true
 
       - name: PHP unit tests
         run: vendor/bin/phpunit
@@ -127,11 +126,9 @@ jobs:
 #        continue-on-error: true
       - name: Wordpress test
         run: tests/integration/wordpress/test.sh
-        continue-on-error: true
 
       - name: Laravel test
         run: tests/integration/laravel/test.sh
-#        continue-on-error: true
 
       - name: Memcached test
         run: tests/integration/memcached/test.sh

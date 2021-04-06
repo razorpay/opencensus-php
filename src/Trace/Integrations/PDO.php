@@ -36,7 +36,7 @@ class PDO implements IntegrationInterface
     /**
      * Static method to add instrumentation to the PDO requests
      */
-    public static function load($db_host="")
+    public static function load($db_host = "")
     {
         if (!extension_loaded('opencensus')) {
             trigger_error('opencensus extension required to load PDO integrations.', E_USER_WARNING);
@@ -129,21 +129,21 @@ class PDO implements IntegrationInterface
             $attributes['db.name'] = $connection_params['dbname'];
         }
         if (array_key_exists('port', $connection_params)) {
-            $attributes['net.peer.port'] =  $connection_params['port'];
+            $attributes['net.peer.port'] = $connection_params['port'];
         }
 
         if (array_key_exists('host', $connection_params)) {
-            $attributes['net.peer.name'] =  $connection_params['host'];
+            $attributes['net.peer.name'] = $connection_params['host'];
         } elseif (array_key_exists('unix_socket', $connection_params)) {
             $attributes['net.peer.name'] = PDO::$db_host;
         }
 
         $attributes += [
-                        'dsn' => $dsn,
-                        'db.type' => 'sql',
-                        'db.connection_string' => $dsn,
-                        'span.kind' => 'client'
-                    ];
+            'dsn' => $dsn,
+            'db.type' => 'sql',
+            'db.connection_string' => $dsn,
+            'span.kind' => 'client'
+        ];
 
         return [
             'attributes' => $attributes,
@@ -174,11 +174,11 @@ class PDO implements IntegrationInterface
 
         $rowCount = $statement->rowCount();
         $errorCode = $statement->errorCode();
-        $error =  substr($errorCode, 0, 2);
+        $error = substr($errorCode, 0, 2);
         $errorTags = [];
 
         switch ($error) {
-            case (string) '01':
+            case (string)'01':
                 $errorTags = ['warning' => 'true', 'warning.code' => $errorCode];
                 break;
         };
@@ -239,7 +239,8 @@ class PDO implements IntegrationInterface
         ];
     }
 
-    public static function getOperationName($query){
+    public static function getOperationName($query)
+    {
         // select/insert/update/delete
 
         // some queries are enclosed in (). trim them before figuring out operation.
@@ -247,29 +248,28 @@ class PDO implements IntegrationInterface
         return $operation;
     }
 
-    public static function getTableName($query, $operation){
+    public static function getTableName($query, $operation)
+    {
         $tableName = "";
         $operation = strtolower($operation);
         $query = strtolower(trim($query));
         $query_parts = explode(" ", $query);
 
-        if (($operation === 'select') or ($operation === 'delete')){
+        if (($operation === 'select') or ($operation === 'delete')) {
             // select <...> from <tablename> where ...
             // delete from <table_name> where ...
             $from_index = array_search('from', $query_parts);
-            if (($from_index) and ($from_index+1 < count($query_parts))){
-                $tableName = $query_parts[$from_index+1];
+            if (($from_index) and ($from_index + 1 < count($query_parts))) {
+                $tableName = $query_parts[$from_index + 1];
             }
-        }
-        else if (strtolower($operation) === 'update'){
+        } else if (strtolower($operation) === 'update') {
             // update <table_name> set ... where ...
             $tableName = $query_parts[1];
-        }
-        else if (strtolower($operation) === 'insert'){
+        } else if (strtolower($operation) === 'insert') {
             // insert into <tablename> ...
             $into_index = array_search('into', $query_parts);
-            if (($into_index) and ($into_index+1 < count($query_parts))){
-                $tableName = $query_parts[$into_index+1];
+            if (($into_index) and ($into_index + 1 < count($query_parts))) {
+                $tableName = $query_parts[$into_index + 1];
             }
         }
 
