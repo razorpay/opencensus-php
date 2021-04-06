@@ -25,7 +25,7 @@ pushd laravel
 
 composer config repositories.opencensus git ${REPO}
 composer require opencensus/opencensus:dev-${BRANCH}
-composer require --dev ramsey/uuid:4.1.1
+composer require ramsey/uuid:4.1.1
 composer require --dev guzzlehttp/guzzle:~6.0
 
 php artisan migrate
