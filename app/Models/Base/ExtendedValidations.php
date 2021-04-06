@@ -9,8 +9,11 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Currency\Currency;
 use RZP\Exception\BadRequestException;
 use libphonenumber\NumberParseException;
+use Egulias\EmailValidator\EmailValidator;
 use RZP\Models\Base\Traits\CustomReplacesAttributes;
 use RZP\Exception\BadRequestValidationFailureException;
+use Illuminate\Validation\Concerns\FilterEmailValidation;
+use Egulias\EmailValidator\Validation as EmailValidation;
 
 class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
 {
@@ -585,5 +588,40 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
     public function validateCurrency($attribute, $currency)
     {
         return Currency::isSupportedCurrency($currency);
+    }
+
+    /**
+     * Validate that an attribute is a valid e-mail address.
+     *
+     * @param  string  $attribute
+     * @param  mixed  $value
+     * @param  array  $parameters
+     * @return bool
+     */
+    public function validateEmail($attribute, $value, $parameters)
+    {
+        if (! is_string($value) && ! (is_object($value) && method_exists($value, '__toString'))) {
+            return false;
+        }
+
+        $validations = collect($parameters)
+            ->unique()
+            ->map(function ($validation) {
+                if ($validation === 'rfc') {
+                    return new EmailValidation\RFCValidation();
+                } elseif ($validation === 'strict') {
+                    return new EmailValidation\NoRFCWarningsValidation();
+                } elseif ($validation === 'dns') {
+                    return new EmailValidation\DNSCheckValidation();
+                } elseif ($validation === 'spoof') {
+                    return new EmailValidation\SpoofCheckValidation();
+                } elseif ($validation === 'filter') {
+                    return new FilterEmailValidation();
+                }
+            })
+            ->values()
+            ->all() ?: [new FilterEmailValidation()];
+
+        return (new EmailValidator)->isValid($value, new EmailValidation\MultipleValidationWithAnd($validations));
     }
 }
