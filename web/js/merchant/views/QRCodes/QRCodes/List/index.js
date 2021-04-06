@@ -5,8 +5,8 @@ import HeaderAction from 'common/ui/HeaderAction';
 import DataTable from 'common/ui/Table/DataTable';
 import { RZPFeatures } from 'merchant/helpers/data';
 import { QRCodeStatusLabel } from 'merchant/components/StatusLabel';
-import { fetchQRCodes as fetchAll } from 'merchant/reducers/qr_codes/list';
-import { qrCodeId, name, qrUsage, amountReceived, createdAt } from 'common/ui/item/pair';
+import { fetchQRCodes as fetchAll } from 'merchant/reducers/qrCodes/list';
+import { qrCodeId, description, qrUsage, amountReceived, createdAt } from 'common/ui/item/pair';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import DocsLink from 'merchant/components/DocsLink';
@@ -50,7 +50,7 @@ export default class QRCodesListContainer extends ListContainer {
 
         <DataTable
           title="QR Codes"
-          columns={[qrCodeId, name, qrUsage, amountReceived, createdAt, status]}
+          columns={[qrCodeId, description, qrUsage, amountReceived, createdAt, status]}
           {...this.props}
           EmptyComponent={EmptyComponent}
         />

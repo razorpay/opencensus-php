@@ -203,24 +203,30 @@ export default class CreationForm extends React.Component {
               />
 
               {formData.fixed_amount === '1' && (
-                <Input.Group class="InputGroup--inline InputGroup--vTop amount" required>
-                  <div class="Input-content">
-                    <Input.CurrencySelect
-                      autoRender
-                      disabled
-                      name="currency"
-                      parentQuerySelector=".Modal-body"
-                    />
-                    <Input
-                      autoRender
-                      required
-                      name="payment_amount"
-                      placeholder="0.00"
-                      validator={amountValidator}
-                      disabled={isSubmitting}
-                    />
-                  </div>
-                </Input.Group>
+                <div class="Input--custom">
+                  <Input.Group
+                    class="InputGroup--inline"
+                    required
+                    label={<small class="help-content">Enter the amount</small>}
+                  >
+                    <div class="Input-content">
+                      <Input.CurrencySelect
+                        autoRender
+                        disabled
+                        name="currency"
+                        parentQuerySelector=".Modal-body"
+                      />
+                      <Input
+                        autoRender
+                        required
+                        name="payment_amount"
+                        placeholder="0.00"
+                        validator={amountValidator}
+                        disabled={isSubmitting}
+                      />
+                    </div>
+                  </Input.Group>
+                </div>
               )}
 
               <Input

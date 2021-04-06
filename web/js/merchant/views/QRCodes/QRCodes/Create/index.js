@@ -5,7 +5,7 @@ import { Modal, ModalContent } from 'common/new-ui/Modal';
 import { classList } from 'common/utils/rzp-utils';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { saveQRCode } from 'merchant/reducers/qr_codes/list';
+import { saveQRCode } from 'merchant/reducers/qrCodes/list';
 import { luminateRow } from 'merchant/reducers/app';
 import Form from './Form';
 

@@ -69,6 +69,9 @@ const VirtualAccountCreate = lazy(() =>
 const QRCodeCreate = lazy(() =>
   import(/* webpackChunkName: "QRCodeCreate" */ 'merchant/views/QRCodes/QRCodes/Create'),
 );
+const QRCodeDetails = lazy(() =>
+  import(/* webpackChunkName: "QRCodeCreate" */ 'merchant/views/QRCodes/QRCodes/Details'),
+);
 const OffersNew = lazy(() =>
   import(/* webpackChunkName: "OffersNew" */ 'merchant/views/Offers/New'),
 );
@@ -284,6 +287,11 @@ const entityDetailsMap = {
   '/route/accounts/:id': { component: AccountDetailsNew },
   '/smartcollect/virtualaccounts/:id': { component: VirtualAccountDetails },
   '/virtualaccounts/:id': { component: VirtualAccountDetails },
+  // QR Code
+  '/qr_codes/:id': {
+    component: QRCodeDetails,
+    additionalCondition: (user) => user.isQRCodeEnabled,
+  },
   '/plans/new': { component: PlanNew },
   '/plans/:id': { component: PlanDetails },
   '/registration_links/:id(inv_.+)': {

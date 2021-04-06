@@ -19,7 +19,7 @@ import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import Tooltip from 'common/ui/Tooltip';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 
-import CustomerDetails from './CustomerDetails';
+import CustomerDetails from 'merchant/components/CustomerDetails';
 import ReminderStepsDetails from './ReminderStepsDetails';
 import PaymentDetails from './PaymentDetails';
 
@@ -232,7 +232,14 @@ export default (props) => {
                   )}
                 />
                 <EntityDetailRow label="Customer Details">
-                  <CustomerDetails paymentlink={paymentlink} />
+                  <CustomerDetails
+                    name={paymentlink.customer_details.customer_name}
+                    email={paymentlink.customer_details.customer_email}
+                    emailStatus={paymentlink.customer_details.email_status}
+                    customerId={paymentlink.customer_id}
+                    contact={paymentlink.customer_details.contact}
+                    smsStatus={paymentlink.customer_details.sms_status}
+                  />
                 </EntityDetailRow>
 
                 {isPaymentLinksRemindersEnabled && (

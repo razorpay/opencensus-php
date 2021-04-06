@@ -258,14 +258,9 @@ export const qrCodeId = {
   value: makeIdLink('virtual_account'),
 };
 
-export const name = {
-  title: 'Name',
-  value: (item) => item.name,
-};
-
-export const qrType = {
-  title: 'QR Type',
-  value: (item) => item.type,
+export const description = {
+  title: 'Description',
+  value: (item) => item.description,
 };
 
 export const qrUsage = {

@@ -12,7 +12,7 @@ import AcceptPaymentsIcon from './Icons/AcceptPaymentsIcon.svg';
 import * as Messages from './Constants';
 
 const ViewWithBackground = styled(View)`
-  background: url("${AcceptPaymentsIcon}") right no-repeat;
+  background: url('${AcceptPaymentsIcon}') right no-repeat;
   box-shadow: 0px 4px 5px rgba(11, 112, 231, 0.05);
   background-color: #ffffff;
 `;

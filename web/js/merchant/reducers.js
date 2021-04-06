@@ -14,7 +14,7 @@ import paymentButtonsReducer from 'merchant/reducers/paymentbuttons/list';
 import paymentButtonCreateReducer from 'merchant/reducers/paymentbuttons/create';
 import subscriptionButtonsReducer from 'merchant/reducers/subscriptionButtons/list';
 import subscriptionButtonCreateReducer from 'merchant/reducers/subscriptionButtons/create';
-import qrCodesReducer from 'merchant/reducers/qr_codes/list';
+import qrCodesReducer from 'merchant/reducers/qrCodes/list';
 import invoiceDetailsReducer from 'merchant/reducers/invoices/details';
 import profileReducer from 'merchant/reducers/profile';
 import customersReducer from 'merchant/reducers/customers';
