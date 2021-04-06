@@ -63,7 +63,9 @@ class Guzzle5Test extends TestCase
             ['skipReporting' => true]
         );
 
-        $this->client->getEmitter()->attach(new EventSubscriber($tracer->tracer(), null, true));
+        $eventSubscriber = new EventSubscriber($tracer->tracer());
+
+        $this->client->getEmitter()->attach($eventSubscriber);
 
         $server->start();
         $response = $this->client->get($server->getUrl());
@@ -106,7 +108,9 @@ class Guzzle5Test extends TestCase
             ]
         );
 
-        $this->client->getEmitter()->attach(new EventSubscriber($tracer->tracer(), null, true));
+        $eventSubscriber = new EventSubscriber($tracer->tracer());
+
+        $this->client->getEmitter()->attach($eventSubscriber);
 
         $server->start();
         $response = $this->client->get($server->getUrl());
