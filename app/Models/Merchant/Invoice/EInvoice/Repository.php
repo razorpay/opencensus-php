@@ -33,6 +33,17 @@ class Repository extends Base\Repository
             ->get();
     }
 
+    public function fetchByInvoiceNumberAndDocumentType(string $merchantId, string $invoiceNo, string $documentType)
+    {
+        return $this->newQuery()
+            ->merchantId($merchantId)
+            ->where(Entity::INVOICE_NUMBER, '=', $invoiceNo)
+            ->where(Entity::STATUS, '=', Status::STATUS_GENERATED)
+            ->where(Entity::DOCUMENT_TYPE, '=', $documentType)
+            ->orderBy(Entity::UPDATED_AT, 'DESC')
+            ->first();
+    }
+
     public function getInvoiceNumber(string $merchantId, int $month, int $year, string $type)
     {
         return $this->newQuery()

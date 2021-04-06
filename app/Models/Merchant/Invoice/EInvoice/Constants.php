@@ -58,4 +58,12 @@ final class Constants
     const RZP_LOCATION = 'Bangalore';
     const RZP_PINCODE = 560030;
     const RZP_STATE_CODE = "29";
+
+    const REFERENCE_DETAILS = 'reference_details';
+    const INVOICE_REMARKS = 'invoice_remarks';
+    const INVOICE_PERIOD_START_DATE = 'invoice_period_start_date';
+    const INVOICE_PERIOD_END_DATE = 'invoice_period_end_date';
+    const PRECEDING_DOCUMENT_DETAILS = 'preceding_document_details';
+    const REFERENCE_OF_ORIGINAL_INVOICE = 'reference_of_original_invoice';
+    const PRECEDING_INVOICE_DATE = 'preceding_invoice_date';
 }

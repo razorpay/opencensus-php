@@ -34,6 +34,7 @@ class PdfGenerator extends Base\Core
     const GSTIN              = 'gstin';
     const BILLING_PERIOD     = 'billing_period';
     const E_INVOICE_DETAILS  = 'e_invoice_details';
+    const PAGE_NAME           = 'pageName';
 
     const MERCHANT_INVOICE_PG_PDF_PREFIX = 'merchant_pg_invoices';
 
@@ -70,15 +71,6 @@ class PdfGenerator extends Base\Core
 
     protected function getPdfContentForBankingInvoice($data)
     {
-        $html = View::make(self::TEMPLATE_FILE_NAME)
-                    ->with(self::ISSUED_TO, $data[BankingInvoiceReport::ISSUED_TO])
-                    ->with(self::ROWS, $data[BankingInvoiceReport::ROWS])
-                    ->with(self::INVOICE_NUMBER, $data[BankingInvoiceReport::INVOICE_NUMBER])
-                    ->with(self::INVOICE_DATE, $data[BankingInvoiceReport::INVOICE_DATE])
-                    ->with(self::GSTIN, $data[BankingInvoiceReport::GSTIN])
-                    ->with(self::BILLING_PERIOD, $data[BankingInvoiceReport::BILLING_PERIOD])
-                    ->with(self::E_INVOICE_DETAILS, $data[BankingInvoiceReport::E_INVOICE_DETAILS]);
-
         $options = [
             'print-media-type',
             'header-html'      => new File(self::HEADER_FILE_NAME, '.html'),
@@ -96,7 +88,24 @@ class PdfGenerator extends Base\Core
 
         $pdf = new Pdf($options);
 
-        $pdf->addPage($html);
+        foreach($data[BankingInvoiceReport::ROWS] as $page => $rows)
+        {
+            $html = View::make(self::TEMPLATE_FILE_NAME)
+                ->with(self::ISSUED_TO, $data[BankingInvoiceReport::ISSUED_TO])
+                ->with(self::INVOICE_NUMBER, $data[BankingInvoiceReport::INVOICE_NUMBER])
+                ->with(self::INVOICE_DATE, $data[BankingInvoiceReport::INVOICE_DATE])
+                ->with(self::GSTIN, $data[BankingInvoiceReport::GSTIN])
+                ->with(self::BILLING_PERIOD, $data[BankingInvoiceReport::BILLING_PERIOD])
+                ->with(self::ROWS, $data[BankingInvoiceReport::ROWS][$page])
+                ->with(self::PAGE_NAME, $page);
+
+            if(isset($data[BankingInvoiceReport::E_INVOICE_DETAILS][$page]))
+            {
+                $html = $html->with(self::E_INVOICE_DETAILS, $data[BankingInvoiceReport::E_INVOICE_DETAILS][$page]);
+            }
+
+            $pdf->addPage($html);
+        }
 
         $pdfContent = $pdf->toString();
 

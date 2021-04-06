@@ -571,7 +571,6 @@ class Repository extends Base\Repository
                     ->whereBetween($payoutsFailedAtColumn, [$startTime, $endTime])
                     ->where($payoutsStatusColumn, '=', Status::FAILED)
                     ->first();
-
     }
 
     /**

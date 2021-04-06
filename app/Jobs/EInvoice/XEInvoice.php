@@ -21,18 +21,23 @@ class XEInvoice extends Job
 
     protected $params;
 
+    protected $documentTypeData;
+
     /**
      * @var string
      */
     protected $queueConfigKey = 'pg_einvoice';
 
-    public function __construct(string $mode, string $merchantId, array $params = [])
+    public function __construct(string $mode, string $merchantId,array $documentTypeData,
+                                array $params = [])
     {
         parent::__construct($mode);
 
         $this->merchantId   = $merchantId;
 
         $this->type         =  EInvoice\Types::BANKING;
+
+        $this->documentTypeData = $documentTypeData;
 
         $this->params       = $params;
     }
@@ -51,7 +56,7 @@ class XEInvoice extends Job
 
             return;
         }
-        
+
         try
         {
             $input = $this->params;
@@ -65,18 +70,21 @@ class XEInvoice extends Job
             [$count, $entityMap] = $this->XEInvoiceCore->getEInvoiceData($this->merchantId,
                 $input[EInvoice\Entity::MONTH], $input[EInvoice\Entity::YEAR], $this->type);
 
-            if(isset($entityMap[EInvoice\DocumentTypes::INV]) === false)
+            foreach($this->documentTypeData as $documentType => $data)
             {
-                $input[EInvoice\Entity::DOCUMENT_TYPE] = EInvoice\DocumentTypes::INV;
+                if(isset($entityMap[$documentType]) === false)
+                {
+                    $input[EInvoice\Entity::DOCUMENT_TYPE] = $documentType;
 
-                $eInvoiceEntity = $this->XEInvoiceCore->create($input, $merchant);
-            }
-            else
-            {
-                $eInvoiceEntity = $entityMap[EInvoice\DocumentTypes::INV];
-            }
+                    $eInvoiceEntity = $this->XEInvoiceCore->create($input, $merchant);
+                }
+                else
+                {
+                    $eInvoiceEntity = $entityMap[$documentType];
+                }
 
-            $this->processEInvoice($eInvoiceEntity);
+                $this->processEInvoice($eInvoiceEntity);
+            }
         }
         catch (\Throwable $e)
         {
@@ -92,16 +100,25 @@ class XEInvoice extends Job
 
     protected function processEInvoice(EInvoice\Entity $eInvoiceEntity)
     {
-        if($eInvoiceEntity->getStatus() === EInvoice\Status::STATUS_GENERATED)
+        if ($eInvoiceEntity->getStatus() === EInvoice\Status::STATUS_GENERATED)
         {
             return;
         }
 
-        if($eInvoiceEntity->getStatus() !== EInvoice\Status::STATUS_GENERATED)
+        if ($eInvoiceEntity->getStatus() !== EInvoice\Status::STATUS_GENERATED)
         {
+            if ($eInvoiceEntity->getDocumentType() === EInvoice\DocumentTypes::CRN)
+            {
+                $isCorrectInvoiceNumber = $this->XEInvoiceCore->correctInvoiceNumberForCreditNote($eInvoiceEntity);
+
+                if ($isCorrectInvoiceNumber === false)
+                {
+                    return;
+                }
+            }
             [$response, $failure] = $this->XEInvoiceCore->generateEInvoice($eInvoiceEntity);
 
-            if($failure === false) {
+            if ($failure === false) {
 
                 $result = $response[EInvoice\Core::BODY][EInvoice\Core::RESULTS];
 

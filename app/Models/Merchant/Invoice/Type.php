@@ -16,6 +16,9 @@ class Type
     // Commission on Razorpay-X Transactions
     const RX_TRANSACTIONS       = 'rx_transactions';
 
+    // Adjustment on Razorpay-X Transactions
+    const RX_ADJUSTMENTS        = 'rx_adjustments';
+
     // Commission on All Validations
     const VALIDATION            = 'validation';
 
@@ -46,6 +49,7 @@ class Type
         self::ADJUSTMENT    => 997158,
         self::VALIDATION    => 997158,
         self::RX_TRANSACTIONS      => 997158,
+        self::RX_ADJUSTMENTS       => 997158,
         self::INSTANT_REFUNDS      => 997158,
         // This is kept to support older invoice
         self::NON_CARD             => 997158,
@@ -63,6 +67,7 @@ class Type
     const CARD_GT_2K_DESCRIPTION            = 'Commission on Card Payments > INR 2,000';
     const OTHERS_DESCRIPTION                = 'Commission on All Methods Except Cards';
     const RX_TRANSACTIONS_DESCRIPTION       = 'RazorpayX Transactions Fees';
+    const RX_ADJUSTMENTS_DESCRIPTION        = 'RazorpayX Adjustments';
     const VALIDATION_DESCRIPTION            = 'Commission on All Validations';
     const INSTANT_REFUNDS_DESCRIPTION       = 'Fee on Instant Refunds';
     const REFUND_LTE_1K_DESCRIPTION         = 'Fee on Instant Refund <= INR 1,000';
@@ -75,6 +80,7 @@ class Type
         self::OTHERS                 => self::OTHERS_DESCRIPTION,
         self::VALIDATION             => self::VALIDATION_DESCRIPTION,
         self::RX_TRANSACTIONS        => self::RX_TRANSACTIONS_DESCRIPTION,
+        self::RX_ADJUSTMENTS         => self::RX_ADJUSTMENTS_DESCRIPTION,
         self::INSTANT_REFUNDS        => self::INSTANT_REFUNDS_DESCRIPTION,
         // This is kept to support older invoice
         self::NON_CARD               => self::OTHERS_DESCRIPTION,
@@ -110,6 +116,7 @@ class Type
     {
         return [
             self::RX_TRANSACTIONS,
+            self::RX_ADJUSTMENTS,
         ];
     }
 

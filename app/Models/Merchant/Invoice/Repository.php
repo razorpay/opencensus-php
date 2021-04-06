@@ -51,7 +51,7 @@ class Repository extends Base\Repository
 
         return $this->newQuery()
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)
-                    ->where($typeColumn, '=', Type::RX_TRANSACTIONS)
+                    ->whereIn($typeColumn, [Type::RX_TRANSACTIONS, Type::RX_ADJUSTMENTS])
                     ->where(Entity::MONTH, '=', $month)
                     ->where(Entity::YEAR, '=', $year)
                     ->get();
@@ -93,6 +93,17 @@ class Repository extends Base\Repository
                     ->merchantId($merchantId)
                     ->where(Entity::INVOICE_NUMBER, '=', $invoiceNo)
                     ->get();
+    }
+
+    public function getInvoiceNumber(string $merchantId, int $month, int $year, string $type)
+    {
+        return $this->newQuery()
+            ->select([$this->dbColumn(Entity::INVOICE_NUMBER)])
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->where(Entity::YEAR, '=', $year)
+            ->where(Entity::MONTH, '=', $month)
+            ->where(Entity::TYPE, '=', $type)
+            ->first();
     }
 
     /**

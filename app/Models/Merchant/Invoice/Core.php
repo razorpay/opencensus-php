@@ -34,6 +34,7 @@ use RZP\Jobs\MerchantInvoice as MerchantInvoiceJob;
 use RZP\Models\Merchant\Invoice\EInvoice\PgEInvoice;
 use RZP\Mail\Report\RazorpayX\MerchantBankingInvoice;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use RZP\Models\Merchant\Invoice\EInvoice\DocumentTypes;
 use RZP\Models\Merchant\Preferences as MerchantPreferences;
 use RZP\Mail\Merchant\MerchantInvoiceExecutionReport as MerchantInvoiceExecutionReport;
 
@@ -224,6 +225,29 @@ class Core extends Base\Core
         {
             $data[BankingInvoiceReport::E_INVOICE_DETAILS] = $XEInvoiceCore->getEInvoiceDataForPdf($this->merchant->getId(),
                 $input[Entity::MONTH], $input[Entity::YEAR], EInvoice\Types::BANKING);
+        }
+
+        $hasTaxInvoice = isset($data[BankingInvoiceReport::ROWS][EInvoice\DocumentTypes::INV]);
+
+        $hasCreditNote = isset($data[BankingInvoiceReport::ROWS][EInvoice\DocumentTypes::CRN]);
+
+        if ($hasCreditNote && $hasTaxInvoice)
+        {
+           $hasEInvoiceData = !empty($data[BankingInvoiceReport::E_INVOICE_DETAILS][DocumentTypes::CRN]);
+
+           if ($hasEInvoiceData === false)
+           {
+               $invoiceAmount = $data[BankingInvoiceReport::ROWS][DocumentTypes::INV]
+               [BankingInvoiceReport::COMBINED][BankingInvoiceReport::GRAND_TOTAL];
+
+               $creditNoteAmount = $data[BankingInvoiceReport::ROWS][DocumentTypes::CRN]
+               [BankingInvoiceReport::COMBINED][BankingInvoiceReport::GRAND_TOTAL];
+
+               if ($creditNoteAmount > $invoiceAmount)
+               {
+                  unset($data[BankingInvoiceReport::ROWS][EInvoice\DocumentTypes::CRN]);
+               }
+           }
         }
 
         $pathToTemporaryFile = (new PdfGenerator)->generateBankingInvoice($data);
@@ -492,7 +516,25 @@ class Core extends Base\Core
             Einvoice\Entity::INVOICE_NUMBER => $data['invoice_number'],
         ];
 
-        XEInvoice::dispatch($this->mode, $merchantId, $params);
+        foreach($data[BankingInvoiceReport::ROWS] as $type => $lineItems)
+        {
+            if(!$this->hasNonzeroLineItem($lineItems))
+            {
+                unset($data[BankingInvoiceReport::ROWS][$type]);
+            }
+        }
+
+        XEInvoice::dispatch($this->mode, $merchantId,$data[BankingInvoiceReport::ROWS], $params);
+    }
+
+    public function hasNonzeroLineItem($lineItems)
+    {
+        if($lineItems[BankingInvoiceReport::COMBINED][BankingInvoiceReport::AMOUNT] === 0 and
+            $lineItems[BankingInvoiceReport::COMBINED][BankingInvoiceReport::TAX_TOTAL] === 0)
+        {
+            return false;
+        }
+        return true;
     }
 
     public function getPgInvoiceData($merchant, $month, $year, $invoiceBreakup) : array

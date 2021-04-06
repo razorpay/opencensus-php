@@ -10,12 +10,14 @@ use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Invoice;
 use RZP\Models\Pricing\Calculator;
+use RZP\Models\Merchant\Invoice\Type;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Merchant\Invoice\EInvoice\DocumentTypes;
 use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
 
 class BankingInvoiceReport extends BaseReport
 {
-    const DATE_FORMAT                = 'd/m/Y h:i A';
+    const DATE_FORMAT                = 'd/m/Y';
     const BILLING_PERIOD_DATE_FORMAT = 'd/m/Y';
 
     const TAX                       = 'tax';
@@ -51,6 +53,11 @@ class BankingInvoiceReport extends BaseReport
     const VALIDATION_RULES          = [
         'year'           => 'required|digits:4',
         'month'          => 'required|digits_between:1,2',
+    ];
+
+    public $documentTypeMap         = [
+        Type::RX_TRANSACTIONS   =>    DocumentTypes::INV,
+        Type::RX_ADJUSTMENTS    =>    DocumentTypes::CRN
     ];
 
     protected $month;
@@ -93,7 +100,7 @@ class BankingInvoiceReport extends BaseReport
         {
             $reportData = $this->getInvoiceReportDataForEInvoice($invoice);
 
-            $combinedData[$reportData[self::ACCOUNT_NUMBER]] = array_except($reportData, self::ACCOUNT_NUMBER);
+            $combinedData[$this->documentTypeMap[$invoice->getType()]][$reportData[self::ACCOUNT_NUMBER]] = array_except($reportData, self::ACCOUNT_NUMBER);
         }
 
         $invoiceReport = $this->groupDataForInvoice($invoice, $combinedData);
@@ -180,7 +187,7 @@ class BankingInvoiceReport extends BaseReport
         {
             $reportData = $this->getInvoiceReportData($invoice);
 
-            $combinedData[$reportData[self::ACCOUNT_NUMBER]] = array_except($reportData, self::ACCOUNT_NUMBER);
+            $combinedData[$this->documentTypeMap[$invoice->getType()]][$reportData[self::ACCOUNT_NUMBER]] = array_except($reportData, self::ACCOUNT_NUMBER);
         }
 
         $invoiceReport = $this->groupDataForInvoice($invoice, $combinedData);
@@ -292,18 +299,23 @@ class BankingInvoiceReport extends BaseReport
 
     protected function groupDataForInvoice(Invoice\Entity $invoice, array $allRows)
     {
-        if (empty($allRows) === true)
+        foreach($allRows as $type => & $allRow)
         {
-            return [];
+            if (empty($allRow) === true)
+            {
+                return [];
+            }
+
+            $finalRow = $this->getNewRow();
+
+            $finalRow[self::DESCRIPTION] = self::TOTAL;
+
+            $this->constructFinalRow($allRow, $finalRow);
+
+            $allRow[self::COMBINED] = $finalRow;
+
+            $data[$type] = $allRow;
         }
-
-        $finalRow = $this->getNewRow();
-
-        $finalRow[self::DESCRIPTION] = self::TOTAL;
-
-        $this->constructFinalRow($allRows, $finalRow);
-
-        $allRows[self::COMBINED] = $finalRow;
 
         $invoiceReport = [
             self::TITLE              => self::TAX_INVOICE,
@@ -313,7 +325,7 @@ class BankingInvoiceReport extends BaseReport
             self::BILLING_PERIOD     => $this->getBillingPeriod(),
             self::INVOICE_DATE       => $this->getInvoiceDate($invoice->getCreatedAt()),
             self::GSTIN              => $invoice->getGstin(),
-            self::ROWS               => $allRows,
+            self::ROWS               => $data,
             self::E_INVOICE_DETAILS  => [],
         ];
 

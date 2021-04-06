@@ -118,6 +118,49 @@ class Processor extends Base\Core
                     ]);
              }
         }
+
+        foreach ($this->invoiceBreakup as $balanceId => & $details)
+        {
+            $balance = $this->repo->balance->findByIdAndMerchantId($balanceId, $this->merchantId);
+
+            $invoiceBreakup = $this->repo->merchant_invoice->fetchBankingInvoiceReportData($this->merchantId, $this->month, $this->year);
+
+            if (($balance->isTypeBanking() === true) and ($this->checkInvalidLineItems($invoiceBreakup) === true))
+            {
+              try
+               {
+                   $xEInvoiceCore = new Merchant\Invoice\EInvoice\XEInvoice;
+
+                   $merchant = $this->repo->merchant->findOrFailPublicWithRelations($this->merchantId, ['merchantDetail']);
+
+                   $date = Carbon::createFromDate($this->year, $this->month, 1, Timezone::IST);
+
+                   $shouldGenerateEInvoice = $xEInvoiceCore->shouldGenerateEInvoice($merchant, $date->getTimestamp());
+
+                    if (($shouldGenerateEInvoice === true))
+                    {
+                      $invoiceCore = new Core;
+
+                      $data = $invoiceCore->getXEInvoiceData($this->month, $this->year, $merchant);
+
+                      $invoiceCore->dispatchForXEInvoice($data, $this->month, $this->year, $merchant->getId());
+                    }
+               }
+               catch (\Throwable $e)
+               {
+                  $this->trace->traceException(
+                      $e,
+                      Trace::ERROR,
+                      TraceCode::EINVOICE_CREATION_FAILED_FOR_X,
+                        [
+                           'merchant_id' => $this->merchant->getId(),
+                           'year'        => $this->year,
+                           'month'       => $this->month,
+                       ]);
+               }
+               break;
+            }
+        }
     }
 
     protected function checkInvoiceExists(string $merchantId , string $balanceId): Base\PublicCollection
@@ -221,35 +264,6 @@ class Processor extends Base\Core
                     ]);
             }
         }
-        else if (($balance->isTypeBanking() === true) and ($this->checkInvalidLineItems($invoiceBreakup) === true))
-        {
-            try
-            {
-                $XEInvoiceCore = (new Merchant\Invoice\EInvoice\XEInvoice());
-                $merchant = $this->repo->merchant->findOrFailPublicWithRelations($this->merchantId, ['merchantDetail']);
-                $date = Carbon::createFromDate($this->year, $this->month, 1, Timezone::IST);
-
-                if(($XEInvoiceCore->shouldGenerateEInvoice($merchant, $date->getTimestamp()) === true))
-                {
-                    $invoiceCore = (new Core());
-                    $data = $invoiceCore->getXEInvoiceData($this->month, $this->year, $merchant);
-
-                    $invoiceCore->dispatchForXEInvoice($data, $this->month, $this->year, $merchant->getId());
-                }
-            }
-            catch (\Throwable $e)
-            {
-                $this->trace->traceException(
-                    $e,
-                    Trace::ERROR,
-                    TraceCode::EINVOICE_CREATION_FAILED_FOR_X,
-                    [
-                        'merchant_id' => $this->merchant->getId(),
-                        'year'        => $this->year,
-                        'month'       => $this->month,
-                    ]);
-            }
-        }
     }
 
     public static function hasTaxableLineItem($invoiceBreakup) : bool
@@ -269,28 +283,15 @@ class Processor extends Base\Core
 
     protected function checkInvalidLineItems($invoiceBreakup) : bool
     {
-        //if multiple line items and any one of them is negative then E invoice generation will fail
-        $hasPositiveLineItem = false;
-        $hasNegativeLineItem = false;
         foreach ($invoiceBreakup as $index => $entity)
         {
             $tax = $entity->getTax();
-
             if($tax > 0)
             {
-                $hasPositiveLineItem = true;
-            }
-            else if($tax < 0)
-            {
-                $hasNegativeLineItem = true;
+                return true;
             }
         }
-        if($hasPositiveLineItem and $hasNegativeLineItem) {
-            $this->trace->info(TraceCode::EINVOICE_MANUAL_INVOICE_REQUIRED_FOR_X, $invoiceBreakup);
-            return false;
-        }
-
-        return $hasPositiveLineItem;
+        return false;
     }
 
     protected function calculateFeesForPrimaryBalance($balanceId, array & $details)
@@ -338,22 +339,6 @@ class Processor extends Base\Core
                 $balanceId
             );
 
-            $bankingFailedPayoutsFeeAmount = $this->repo
-                                                  ->payout
-                                                  ->fetchFeesAndTaxForFailedPayoutsForGivenBalanceId(
-                                                      $this->merchantId,
-                                                      $balanceId,
-                                                      $this->beginTimestamp,
-                                                      $this->endTimestamp
-                                                  );
-
-            $this->logMerchantInvoiceResult(
-                'banking_invoice_' . $type,
-                'banking_failed_payout_fee_amount',
-                $bankingFailedPayoutsFeeAmount,
-                $balanceId
-            );
-
             $bankingFAVsFeeAmount = $this->repo
                                          ->fund_account_validation
                                          ->fetchFeesAndTaxForFAVsForGivenBalanceId(
@@ -370,13 +355,35 @@ class Processor extends Base\Core
                 $balanceId
             );
 
+            $formattedFeesForTypeAndBalance = $this->formatFeesForBankingInvoiceTransaction($bankingPayoutsFeeAmount,
+                                                                                            $bankingFAVsFeeAmount);
+        }
+
+        if ($type === Type::RX_ADJUSTMENTS)
+        {
+            $bankingFailedPayoutsFeeAmount = $this->repo
+                ->payout
+                ->fetchFeesAndTaxForFailedPayoutsForGivenBalanceId(
+                    $this->merchantId,
+                    $balanceId,
+                    $this->beginTimestamp,
+                    $this->endTimestamp
+                );
+
+            $this->logMerchantInvoiceResult(
+                'banking_invoice_' . $type,
+                'banking_failed_payout_fee_amount',
+                $bankingFailedPayoutsFeeAmount,
+                $balanceId
+            );
+
             $bankingReversalsFeeAmount = $this->repo
-                                              ->reversal
-                                              ->fetchSumOfFeesAndTaxForReversalPayoutsForGivenBalanceId(
-                                                  $this->merchantId,
-                                                  $balanceId,
-                                                  $this->beginTimestamp,
-                                                  $this->endTimestamp);
+                ->reversal
+                ->fetchSumOfFeesAndTaxForReversalPayoutsForGivenBalanceId(
+                    $this->merchantId,
+                    $balanceId,
+                    $this->beginTimestamp,
+                    $this->endTimestamp);
 
             $this->logMerchantInvoiceResult(
                 'banking_invoice_' . $type,
@@ -384,11 +391,8 @@ class Processor extends Base\Core
                 $bankingReversalsFeeAmount,
                 $balanceId
             );
-
-            $formattedFeesForTypeAndBalance = $this->formatFeesForBankingInvoice($bankingPayoutsFeeAmount,
-                                                                                 $bankingFailedPayoutsFeeAmount,
-                                                                                 $bankingFAVsFeeAmount,
-                                                                                 $bankingReversalsFeeAmount);
+            $formattedFeesForTypeAndBalance = $this->formatFeesForBankingInvoiceAdjustment($bankingFailedPayoutsFeeAmount,
+                                                                                           $bankingReversalsFeeAmount);
         }
 
         return $formattedFeesForTypeAndBalance;
@@ -597,15 +601,11 @@ class Processor extends Base\Core
      *
      * @return array
      */
-    protected function formatFeesForBankingInvoice(PayoutEntity $bankingPayoutsFeeDetails,
-                                                   PayoutEntity $bankingFailedPayoutsFeeDetails,
-                                                   FAVEntity $bankingFAVsFeeDetails,
-                                                   ReversalEntity $bankingReversalsFeeDetails)
+    protected function formatFeesForBankingInvoiceTransaction(PayoutEntity $bankingPayoutsFeeDetails,
+                                                              FAVEntity $bankingFAVsFeeDetails)
     {
         if ((empty($bankingPayoutsFeeDetails) === true) and
-            (empty($bankingFailedPayoutsFeeDetails) === true) and
-            (empty($bankingFAVsFeeDetails) === true) and
-            (empty($bankingReversalsFeeDetails) === true))
+            (empty($bankingFAVsFeeDetails) === true))
         {
             return [
                 Entity::TAX     => 0,
@@ -614,18 +614,45 @@ class Processor extends Base\Core
         }
 
         $bankingPayoutsFeeAmount       = $bankingPayoutsFeeDetails->getAttributes();
-        $bankingFailedPayoutsFeeAmount = $bankingFailedPayoutsFeeDetails->getAttributes();
         $bankingFAVsFeeAmount          = $bankingFAVsFeeDetails->getAttributes();
-        $bankingReversalsFeeAmount     = $bankingReversalsFeeDetails->getAttributes();
 
         $bankingPayoutsFees = $bankingPayoutsFeeAmount['fee'];
         $bankingPayoutsTax  = $bankingPayoutsFeeAmount['tax'];
 
-        $bankingFailedPayoutsFees = $bankingFailedPayoutsFeeAmount['fee'];
-        $bankingFailedPayoutsTax  = $bankingFailedPayoutsFeeAmount['tax'];
 
         $bankingFAVsFees = $bankingFAVsFeeAmount['fee'];
         $bankingFAVsTax  = $bankingFAVsFeeAmount['tax'];
+
+        // The Finance come up with the requirement that we should have the merchant Invoice to be GST compliant
+        // That mean they want the Tax should always be equal to 18% of the fees(amount) that we
+        // charge from the Merchant
+
+        $amount = ($bankingPayoutsFees - $bankingPayoutsTax) + ($bankingFAVsFees - $bankingFAVsTax);
+
+        return [
+            // This is to round the TAX as per the GST Compliance i.e Normal rounding (PHP_ROUND_HALF_UP)
+            Entity::TAX     => (int) round($amount * Constants::GST_PERCENTAGE),
+            Entity::AMOUNT  => $amount
+        ];
+    }
+
+    protected function formatFeesForBankingInvoiceAdjustment(PayoutEntity $bankingFailedPayoutsFeeDetails,
+                                                             ReversalEntity $bankingReversalsFeeDetails)
+    {
+        if ((empty($bankingFailedPayoutsFeeDetails) === true) and
+            (empty($bankingReversalsFeeDetails) === true))
+        {
+            return [
+                Entity::TAX     => 0,
+                Entity::AMOUNT  => 0
+            ];
+        }
+
+        $bankingFailedPayoutsFeeAmount = $bankingFailedPayoutsFeeDetails->getAttributes();
+        $bankingReversalsFeeAmount     = $bankingReversalsFeeDetails->getAttributes();
+
+        $bankingFailedPayoutsFees = $bankingFailedPayoutsFeeAmount['fee'];
+        $bankingFailedPayoutsTax  = $bankingFailedPayoutsFeeAmount['tax'];
 
         $reversalFees = $bankingReversalsFeeAmount['fee'];
         $reversalTax  = $bankingReversalsFeeAmount['tax'];
@@ -634,9 +661,7 @@ class Processor extends Base\Core
         // That mean they want the Tax should always be equal to 18% of the fees(amount) that we
         // charge from the Merchant
 
-        $amount = ($bankingPayoutsFees + $bankingFAVsFees - $bankingPayoutsTax - $bankingFAVsTax)
-                  - ($reversalFees - $reversalTax)
-                  - ($bankingFailedPayoutsFees - $bankingFailedPayoutsTax);
+        $amount = ($reversalFees - $reversalTax) + ($bankingFailedPayoutsFees - $bankingFailedPayoutsTax);
 
         return [
             // This is to round the TAX as per the GST Compliance i.e Normal rounding (PHP_ROUND_HALF_UP)

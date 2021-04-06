@@ -17,6 +17,8 @@ class Core extends Base\Core
     const MESSAGE = 'message';
     const IRN = 'Irn';
     const SIGNED_INVOICE = 'SignedInvoice';
+    const INVOICE_NUMBER = 'InvoiceNumber';
+    const INVOICE_NUMBER_ISSUE_DATE = 'InvoiceNumberIssueDate';
     const SIGNED_QR_CODE = 'SignedQRCode';
     const QR_CODE_URL = 'QRCodeUrl';
     const E_INVOICE_PDF_URL = 'EinvoicePdf';
@@ -121,7 +123,7 @@ class Core extends Base\Core
     {
         [$itemList, $valueDetails] = $this->getItemList($eInvoiceEntity);
 
-        return [
+        $data = [
             Constants::ACCESS_TOKEN         => $this->getAccessToken(),
             Constants::USER_GSTIN           => $this->getUserGstin(),
             Constants::TRANSACTION_DETAILS  => [
@@ -133,6 +135,17 @@ class Core extends Base\Core
             Constants::VALUE_DETAILS    => $valueDetails,
             Constants::ITEM_LIST        => $itemList,
         ];
+
+        if($eInvoiceEntity->getType() === Types::BANKING && $eInvoiceEntity->getDocumentType() === DocumentTypes::CRN)
+        {
+            $data[Constants::DOCUMENT_DETAILS][Constants::DOCUMENT_NUMBER] =
+                $this->repo->merchant_invoice->getInvoiceNumber($eInvoiceEntity->getMerchantId(),
+                    $eInvoiceEntity->getMonth(), $eInvoiceEntity->getYear(),
+                    Merchant\Invoice\Type::RX_TRANSACTIONS)->getInvoiceNumber();
+
+            $data[Constants::REFERENCE_DETAILS] = $this->getReferenceDetails($eInvoiceEntity);
+        }
+        return $data;
     }
 
     protected function getAccessToken()
@@ -377,5 +390,26 @@ class Core extends Base\Core
     {
         return $this->repo->merchant_e_invoice->fetchLatestGeneratedEInvoiceFromMonthAndType($merchantId, $month, $year,
             $type, $documentType);
+    }
+
+    public function getReferenceDetails(Entity $eInvoiceEntity)
+    {
+        $invoiceEntity = $this->repo->merchant_e_invoice->fetchByInvoiceNumberAndDocumentType($eInvoiceEntity->getMerchantId(),
+            $eInvoiceEntity->getInvoiceNumber(), DocumentTypes::INV);
+        $referenceInvoiceDate = Carbon::createFromTimestamp($invoiceEntity->getCreatedAt(), Timezone::IST)
+            ->format('d/m/Y');
+        $invoiceDate = Carbon::createFromTimestamp($eInvoiceEntity->getCreatedAt(), Timezone::IST)
+            ->format('d/m/Y');
+        $precedingDocumentDetails = [
+            Constants::REFERENCE_OF_ORIGINAL_INVOICE     => $eInvoiceEntity->getInvoiceNumber(),
+            Constants::PRECEDING_INVOICE_DATE            => $referenceInvoiceDate,
+        ];
+
+        return [
+            Constants::INVOICE_REMARKS              =>   "Reference of Credit Note",
+            Constants::INVOICE_PERIOD_START_DATE    =>   $invoiceDate,
+            Constants::INVOICE_PERIOD_END_DATE      =>   $invoiceDate,
+            Constants::PRECEDING_DOCUMENT_DETAILS   =>   $precedingDocumentDetails,
+        ];
     }
 }

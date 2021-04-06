@@ -25,8 +25,8 @@ return [
     ],
     'testBankingInvoiceEntityCreateWithEInvoiceForNegativeAmountLineItem' => [
         'rx_transactions' => [
-            'amount' => -500,
-            'tax'    => -90,
+            'amount' => 0,
+            'tax'    => 0,
         ],
     ],
     'testBankingInvoiceEntityCreateWithEInvoiceForNegativeAndPositiveAmountLineItem' => [
@@ -92,13 +92,25 @@ return [
         'rx_transactions' => [
             [
                 'type'   => "rx_transactions",
-                'amount' => 0,
-                'tax'    => 0,
+                'amount' => 500,
+                'tax'    => 90,
             ],
             [
                 'type'   => "rx_transactions",
                 'amount' => 500,
                 'tax'    => 90,
+            ],
+        ],
+        'rx_adjustments' => [
+            [
+                'type'   => "rx_adjustments",
+                'amount' => 500,
+                'tax'    => 90,
+            ],
+            [
+                'type'   => "rx_adjustments",
+                'amount' => 0,
+                'tax'    => 0,
             ],
         ],
     ],
@@ -107,8 +119,8 @@ return [
             [
                 'month'  => 8,
                 'year'   => 2019,
-                'amount' => -900,
-                'tax'    => -162,
+                'amount' => 0,
+                'tax'    => 0,
             ],
             [
                 'month'  => 8,
@@ -129,14 +141,40 @@ return [
                 'tax'    => 90,
             ],
         ],
+        'rx_adjustments' => [
+            [
+                'month'  => 8,
+                'year'   => 2019,
+                'amount' => 900,
+                'tax'    => 162,
+            ],
+            [
+                'month'  => 8,
+                'year'   => 2019,
+                'amount' => 0,
+                'tax'    => 0,
+            ],
+            [
+                'month'  => 7,
+                'year'   => 2019,
+                'amount' => 0,
+                'tax'    => 0,
+            ],
+            [
+                'month'  => 7,
+                'year'   => 2019,
+                'amount' => 0,
+                'tax'    => 0,
+            ],
+        ],
     ],
     'testBankingInvoiceEntityCreateForMultipleAccountsWithPayoutReversalInNextMonthAndSomePayoutsNextMonthFromAnotherBankingBalance' => [
         'rx_transactions' => [
             [
                 'month'  => 8,
                 'year'   => 2019,
-                'amount' => -900,
-                'tax'    => -162,
+                'amount' => 0,
+                'tax'    => 0,
             ],
             [
                 'month'  => 8,
@@ -155,6 +193,32 @@ return [
                 'year'   => 2019,
                 'amount' => 500,
                 'tax'    => 90,
+            ],
+        ],
+        'rx_adjustments' => [
+            [
+                'month'  => 8,
+                'year'   => 2019,
+                'amount' => 900,
+                'tax'    => 162,
+            ],
+            [
+                'month'  => 8,
+                'year'   => 2019,
+                'amount' => 0,
+                'tax'    => 0,
+            ],
+            [
+                'month'  => 7,
+                'year'   => 2019,
+                'amount' => 0,
+                'tax'    => 0,
+            ],
+            [
+                'month'  => 7,
+                'year'   => 2019,
+                'amount' => 0,
+                'tax'    => 0,
             ],
         ],
     ],
@@ -322,15 +386,23 @@ return [
 
     'testBankingInvoiceWithFailedPayoutsInGivenMonthAndYear' => [
         'rx_transactions' => [
-            'amount' => 1509,
-            'tax'    => 272,
+            'amount' => 2009,
+            'tax'    => 362,
+        ],
+        'rx_adjustments' => [
+            'amount' => 500,
+            'tax'    => 90,
         ],
     ],
 
     'testBankingInvoiceWithFailedPayoutsInGivenMonthButInitiatedPreviousMonthAndNoPayoutsInGivenMonth' => [
         'rx_transactions' => [
-            'amount' => -500,
-            'tax'    => -90,
+            'amount' => 0,
+            'tax'    => 0,
+        ],
+        'rx_adjustments' => [
+            'amount' => 500,
+            'tax'    => 90,
         ],
     ],
 

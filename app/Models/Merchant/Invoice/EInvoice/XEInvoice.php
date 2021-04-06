@@ -3,7 +3,10 @@
 namespace RZP\Models\Merchant\Invoice\EInvoice;
 
 
+use Carbon\Carbon;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Invoice;
 use RZP\Models\Report\Types\BankingInvoiceReport;
 use RZP\Models\Pricing\Calculator as PricingCalculator;
@@ -12,6 +15,11 @@ use RZP\Models\Pricing\Calculator as PricingCalculator;
 
 class XEInvoice extends Core
 {
+
+    protected $xDocumentTypes = [
+        DocumentTypes::INV,
+        DocumentTypes::CRN
+    ];
 
     public function getItemList(Entity $eInvoiceEntity)
     {
@@ -27,7 +35,7 @@ class XEInvoice extends Core
 
         $items = [];
 
-        foreach ($invoiceData[BankingInvoiceReport::ROWS] as $invoiceItem)
+        foreach ($invoiceData[BankingInvoiceReport::ROWS][$eInvoiceEntity->getDocumentType()] as $invoiceItem)
         {
             if ($this->shouldIgnoreLineItem($invoiceItem) === true)
             {
@@ -124,15 +132,26 @@ class XEInvoice extends Core
     {
         $eInvoiceData = [];
 
-        $eInvoiceEntity = $this->getLatestGeneratedEInvoiceData($merchantId, $month, $year, $type, DocumentTypes::INV);
-
-        if (isset($eInvoiceEntity) === true)
+        foreach($this->xDocumentTypes as $documentType)
         {
-            $eInvoiceData = [
-                self::IRN             => $eInvoiceEntity->getGspIrn(),
-                self::SIGNED_QR_CODE  => $eInvoiceEntity->getGspSignedQrCode(),
-                self::QR_CODE_URL     => $eInvoiceEntity->getGspQRCodeUrl(),
-            ];
+            $eInvoiceEntity = $this->getLatestGeneratedEInvoiceData($merchantId, $month, $year, $type, $documentType);
+
+            if (isset($eInvoiceEntity) === true)
+            {
+                $invoiceEntity = $this->repo->merchant_e_invoice->fetchByInvoiceNumberAndDocumentType(
+                    $eInvoiceEntity->getMerchantId(), $eInvoiceEntity->getInvoiceNumber(), DocumentTypes::INV);
+
+                $invoiceIssueTime = Carbon::createFromTimestamp($invoiceEntity->getCreatedAt(), Timezone::IST)
+                    ->format('d/m/Y');
+
+                $eInvoiceData[$documentType] = [
+                    self::IRN                         => $eInvoiceEntity->getGspIrn(),
+                    self::SIGNED_QR_CODE              => $eInvoiceEntity->getGspSignedQrCode(),
+                    self::QR_CODE_URL                 => $eInvoiceEntity->getGspQRCodeUrl(),
+                    self::INVOICE_NUMBER              => $eInvoiceEntity->getInvoiceNumber(),
+                    self::INVOICE_NUMBER_ISSUE_DATE   => $invoiceIssueTime,
+                ];
+            }
         }
 
         return $eInvoiceData;
@@ -151,5 +170,84 @@ class XEInvoice extends Core
         }
 
         return ($fromTimestamp >= self::EINVOICE_START_TIMESTAMP);
+    }
+
+    public function correctInvoiceNumberForCreditNote(Entity $eInvoiceEntity) : bool
+    {
+        $input = [
+            Entity::MONTH          => $eInvoiceEntity->getMonth(),
+            Entity::YEAR           => $eInvoiceEntity->getYear(),
+        ];
+
+        $data = (new BankingInvoiceReport())->getInvoiceReportForEInvoice($input, $eInvoiceEntity->merchant);
+
+        $invoiceAmount = $data[BankingInvoiceReport::ROWS][DocumentTypes::INV]
+        [BankingInvoiceReport::COMBINED][BankingInvoiceReport::GRAND_TOTAL];
+
+        $creditNoteAmount = $data[BankingInvoiceReport::ROWS][DocumentTypes::CRN]
+        [BankingInvoiceReport::COMBINED][BankingInvoiceReport::GRAND_TOTAL];
+
+        if ($creditNoteAmount > $invoiceAmount)
+        {
+            $this->trace->info(TraceCode::EINVOICE_CRN_AMOUNT_GREATER_THAN_INV_FOR_X, [
+                'merchantID' => $eInvoiceEntity->getMerchantId(),
+                'month'      => $eInvoiceEntity->getMonth(),
+                'year'       => $eInvoiceEntity->getYear(),
+            ]);
+
+            $invoiceTime = Carbon::createFromDate($input[Entity::YEAR],
+                $input[Entity::MONTH], 1, Timezone::IST)->subMonth()->startOfMonth();
+
+            $invoiceNumber = $this->getInvoiceNumberGreaterThanAmountAndRegisteredOnGSPPortal($creditNoteAmount,
+                $invoiceTime, $eInvoiceEntity);
+
+            if (empty($invoiceNumber))
+            {
+                return false;
+            }
+
+            $eInvoiceEntity->invoice_number = $invoiceNumber;
+
+            $eInvoiceEntity->save();
+        }
+        return true;
+    }
+
+    protected function getInvoiceNumberGreaterThanAmountAndRegisteredOnGSPPortal($creditNoteAmount, $invoiceTime, $eInvoiceEntity)
+    {
+        $activatedAt = $eInvoiceEntity->merchant->getActivatedAt();
+        do
+        {
+            $input = [
+                Entity::MONTH          => $invoiceTime->month,
+                Entity::YEAR           => $invoiceTime->year,
+            ];
+
+            $data = (new BankingInvoiceReport())->getInvoiceReportForEInvoice($input, $eInvoiceEntity->merchant);
+
+            $invoiceAmount = $data[BankingInvoiceReport::ROWS][DocumentTypes::INV]
+            [BankingInvoiceReport::COMBINED][BankingInvoiceReport::GRAND_TOTAL];
+
+            if ($creditNoteAmount < $invoiceAmount)
+            {
+                $isRegisteredOnGspPortal = $this->repo->merchant_e_invoice->fetchByInvoiceNumberAndDocumentType($eInvoiceEntity->getMerchantId(),
+                    $data[BankingInvoiceReport::INVOICE_NUMBER], DocumentTypes::INV);
+
+                if (empty($isRegisteredOnGspPortal) === false)
+                {
+                    return $data[BankingInvoiceReport::INVOICE_NUMBER];
+                }
+            }
+
+            $invoiceTime = Carbon::createFromTimestamp($invoiceTime->getTimestamp())->subMonth();
+
+        } while($invoiceTime->getTimestamp() >= self::EINVOICE_START_TIMESTAMP && $invoiceTime->getTimestamp() > $activatedAt);
+
+        $this->trace->info(TraceCode::EINVOICE_MANUAL_CREDIT_NOTE_REQUIRED_FOR_X, [
+            'merchantID' => $eInvoiceEntity->getMerchantId(),
+            'month'      => $eInvoiceEntity->getMonth(),
+            'year'       => $eInvoiceEntity->getYear(),
+        ]);
+        return null;
     }
 }
