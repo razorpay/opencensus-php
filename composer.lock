@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "939608e0c4379d626dea5c8d94518a1e",
+    "content-hash": "6d0c6754a5d8c4dddffdf3b500742df4",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -5656,7 +5656,7 @@
                 "source": "https://github.com/razorpay/opencensus-php/tree/v0.7.5.1",
                 "issues": "https://github.com/razorpay/opencensus-php/issues"
             },
-            "time": "2021-03-04T15:54:40+00:00"
+            "time": "2021-03-03T11:23:13+00:00"
         },
         {
             "name": "opencensus/opencensus-exporter-jaeger",
@@ -6766,12 +6766,6 @@
                 "predis",
                 "redis"
             ],
-            "funding": [
-                {
-                    "url": "https://github.com/sponsors/tillkruss",
-                    "type": "github"
-                }
-            ],
             "time": "2020-09-11T19:18:05+00:00"
         },
         {
@@ -7566,7 +7560,7 @@
         },
         {
             "name": "razorpay/edge-passport-php",
-            "version": "dev-master",
+            "version": "v1.0.1",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/edge-passport-php.git",
@@ -14395,7 +14389,6 @@
         "razorpay/upi-clients": 20,
         "razorpay/ufh-sdk-php": 20,
         "razorpay/hodor": 20,
-        "razorpay/edge-passport-php": 20,
         "opencensus/opencensus-exporter-jaeger": 15,
         "codacy/coverage": 20
     },
