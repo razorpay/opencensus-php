@@ -537,6 +537,25 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testTpvValidationRule()
+    {
+        $validator = new Terminal\Validator();
+
+        $input = [
+            'gateway'                   => 'upi_mindgate',
+            'gateway_merchant_id'       => '12345',
+            'gateway_merchant_id2'      => '12345678',
+            'gateway_terminal_password' => '12345678',
+            'upi'                       => 1,
+            'tpv'                       => '2',
+            'merchant_id'               => '10000000000000'
+        ];
+
+        $ret = $validator->validateInput('create', $input);
+
+        $this->assertNull($ret);
+    }
+
     public function testCreatePaytmTerminal()
     {
         $url = '/merchants/100000Razorpay/terminals';

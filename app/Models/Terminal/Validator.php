@@ -1911,8 +1911,8 @@ class Validator extends Base\Validator
         $netbanking = $input[Entity::NETBANKING] ?? '0';
         $upi = $input[Entity::UPI] ?? '0';
 
-        if (($netbanking !== '1') and
-            ($upi !== '1'))
+        if (($netbanking != '1') and
+            ($upi != '1'))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'tpv is not required and shouldn\'t be sent',
@@ -2200,7 +2200,7 @@ class Validator extends Base\Validator
             if (isset($input[Entity::STATUS]) === true)
             {
                 $this->validateInput('edit_terminal_status', $input);
-                
+
                 return;
             }
 
