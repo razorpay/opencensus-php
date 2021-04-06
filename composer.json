@@ -54,5 +54,11 @@
     },
     "scripts": {
         "tests": "scripts/run_local_tests.sh"
-    }
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "git@github.com:nenad/opencensus-php.git"
+        }
+    ]
 }
