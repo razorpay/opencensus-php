@@ -28,8 +28,6 @@ class PDOTest extends TestCase
 {
     public function testHandleQuery()
     {
-        $this->markTestSkipped();
-
         $scope = null;
         $query = 'select * from users';
 
@@ -46,8 +44,6 @@ class PDOTest extends TestCase
 
     public function testHandleConnect()
     {
-        $this->markTestSkipped();
-
         $dsn = 'mysql:host=localhost;dbname=testdb';
         $spanOptions = PDO::handleConnect(null, $dsn);
         $expected = [
