@@ -65,8 +65,9 @@ jobs:
       - name: Enable E_ALL error reporting for strict testing
         run: $SUDO_CMD cp config/php.ini /usr/local/etc/php
 
-#      - name: PHP Code Style
-#        run: vendor/bin/phpcs --standard=./phpcs.xml
+      - name: PHP Code Style
+        run: vendor/bin/phpcs --standard=./phpcs.xml
+        continue-on-error: true
 
       - name: PHP unit tests
         run: vendor/bin/phpunit
@@ -81,8 +82,6 @@ jobs:
 
   integration:
     runs-on: ubuntu-latest
-    continue-on-error: true
-
     env:
       DB_HOST: 127.0.0.1
       DB_USERNAME: mysql
@@ -123,11 +122,13 @@ jobs:
       - name: Guzzle 5 test
         run: tests/integration/guzzle5/test.sh
 
-#      - name: Guzzle 6 test
-#        run: tests/integration/guzzle6/test.sh
+      - name: Guzzle 6 test
+        run: tests/integration/guzzle6/test.sh
+        continue-on-error: true
 
       - name: Laravel test
         run: tests/integration/laravel/test.sh
+        continue-on-error: true
 
       - name: Memcached test
         run: tests/integration/memcached/test.sh
