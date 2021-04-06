@@ -3,8 +3,12 @@
 namespace RZP\Tests\Functional\Payment;
 
 use Redis;
+
 use RZP\Exception;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
+use RZP\Error\PublicErrorDescription;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Customer\Token\Entity as Token;
@@ -59,6 +63,73 @@ class RecurringPaymentTest extends TestCase
         $payment = $this->getLastPayment(true);
 
         $this->assertEquals('initial', $payment['recurring_type']);
+    }
+
+    public function testRecurringInitialPaymentBlocked()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $this->mockRazorx(RazorxTreatment::RECURRING_CARD_NOT_ENABLED, 'on');
+
+        $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_PAYMENT_CARD_RECURRING_NOT_SUPPORTED);
+
+        $this->doAuthAndCapturePayment($payment);
+    }
+
+    public function testRecurringPreferredInitialPaymentAllowed()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $payment['recurring'] = "preferred";
+
+        $this->mockRazorx(RazorxTreatment::RECURRING_CARD_NOT_ENABLED, 'on');
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertEquals(0, $payment['recurring']);
+        $this->assertEquals('captured', $payment['status']);
+    }
+
+    public function testRecurringAutoPaymentAllowed()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertEquals('initial', $payment['recurring_type']);
+
+        // Set payment for second recurring payment
+        $autoPayment = $this->getDefaultRecurringPaymentArray();
+
+        unset($autoPayment['card']);
+
+        $autoPayment['token'] = $payment['token_id'];
+
+        $this->mockRazorx(RazorxTreatment::RECURRING_CARD_NOT_ENABLED, 'on');
+
+        $response = $this->doS2sRecurringPayment($autoPayment);
+
+        $paymentId = $response['razorpay_payment_id'];
+
+        $paymentEntity = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertEquals('auto', $paymentEntity['recurring_type']);
     }
 
     public function testDebitCardRecurringFirstPaymentCreatePublicAuth()
@@ -1216,5 +1287,27 @@ class RecurringPaymentTest extends TestCase
         $this->ba->getAdmin()->merchants()->attach('10000000000000');
 
         return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function mockRazorx($param, $value)
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode) use($param, $value)
+                {
+                    if ($feature === $param)
+                    {
+                        return $value;
+                    }
+
+                    return 'control';
+                }));
     }
 }
