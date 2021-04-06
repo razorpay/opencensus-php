@@ -36,11 +36,15 @@ class Guzzle6Test extends TestCase
 
     public function setUp()
     {
+        echo "setUp for guzzle6Test";
+
         parent::setUp();
         $stack = new HandlerStack();
         $stack->setHandler(\GuzzleHttp\choose_handler());
         $stack->push(new Middleware());
         $this->client = new Client(['handler' => $stack]);
+
+        echo "setUp for guzzle6Test complete";
     }
 
     /**
