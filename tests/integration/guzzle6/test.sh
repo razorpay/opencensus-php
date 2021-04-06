@@ -22,6 +22,10 @@ sed -i "s|dev-master|dev-${BRANCH}|" composer.json
 sed -i "s|https://github.com/census-instrumentation/opencensus-php|${REPO}|" composer.json
 composer install -n --prefer-dist
 
+echo "executing tests for guzzle6"
+
 vendor/bin/phpunit
+
+echo "executed tests for guzzle6"
 
 popd
