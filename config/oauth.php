@@ -8,9 +8,4 @@ return [
     // Used for CORS validation
     'auth_service_url'         => env('AUTH_SERVICE_URL'),
     'auth_service_url_cde'     => env('AUTH_SERVICE_URL_CDE'),
-
-    'merchant_oauth_client_id'         => env('MERCHANT_OAUTH_CLIENT_ID'),
-    'merchant_oauth_client_id_epos'    => env('MERCHANT_OAUTH_CLIENT_ID_EPOS'),
-    'merchant_oauth_client_id_android' => env('MERCHANT_OAUTH_CLIENT_ID_ANDROID'),
-    'merchant_oauth_client_id_ios'     => env('MERCHANT_OAUTH_CLIENT_ID_IOS'),
 ];

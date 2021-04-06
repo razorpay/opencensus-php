@@ -25,8 +25,6 @@ class Constants
 
     const INTERNAL = '_internal';
 
-    const CLIENT_ID = 'client_id';
-
     const DESCRIPTION = 'description';
 
     const MERCHANT_ID = 'merchant_id';
@@ -35,34 +33,13 @@ class Constants
 
     const USER_DETAILS = 'user_details';
 
-    const OAUTH_PROVIDER_GOOGLE = 'google';
-
     const OAUTH_PROVIDER = 'oauth_provider';
 
     const OAUTH_SOURCE = 'oauth_source';
 
     const RZP_USER_EMAIL = 'rzp_user_email';
 
-    const EMAIL_VERIFIED = 'email_verified';
-
     const OAUTH_LOGIN = 'oauth_login';
-
-    const OAUTH_MERCHANT_OAUTH_CLIENT_ID = 'oauth.merchant_oauth_client_id';
-
-    /**
-     *  Different Google Oauth Client Ids for epos, android, ios applications
-     */
-    const OAUTH_MERCHANT_OAUTH_CLIENT_ID_EPOS = 'oauth.merchant_oauth_client_id_epos';
-
-    const OAUTH_MERCHANT_OAUTH_CLIENT_ID_ANDROID = 'oauth.merchant_oauth_client_id_android';
-
-    const OAUTH_MERCHANT_OAUTH_CLIENT_ID_IOS = 'oauth.merchant_oauth_client_id_ios';
-
-    const IOS = 'ios';
-
-    const EPOS = 'epos';
-
-    const ANDROID = 'android';
 
     const DASHBOARD = 'dashboard';
 

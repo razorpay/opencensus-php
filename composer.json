@@ -28,7 +28,6 @@
     "predis/predis": "^1.1",
     "php-http/guzzle5-adapter": "^1.0",
     "lcobucci/jwt": "^3.2",
-    "google/apiclient": "^2.7",
     "razorpay/metrics-php": "^2.1"
   },
   "require-dev": {

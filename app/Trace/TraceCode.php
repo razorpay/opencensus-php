@@ -40,7 +40,6 @@ class TraceCode
     const USER_RETRIEVE_CREDS                       = 'USER_RETRIEVE_CREDS';
     const USER_OAUTH_UNLOCK_RESPONSE                = 'USER_OAUTH_UNLOCK_RESPONSE';
     const ENABLE_INSTANT_ACTIVATIONS                = 'ENABLE_INSTANT_ACTIVATIONS';
-    const GOOGLE_OAUTH_SIGN_IN_FAILURE              = 'GOOGLE_OAUTH_SIGN_IN_FAILURE';
 
 
     const USER_UNAUTHORIZED                         = 'USER_UNAUTHORIZED';

@@ -145,6 +145,9 @@ class Service extends Base\Service
      */
     public function oauthRegisterAndSignIn($input): array
     {
+        $input[Constants::OAUTH_SOURCE] = Request::header(Headers::OAUTH_SOURCE) ?? Constants::DASHBOARD;
+        $input[Constants::OAUTH_PROVIDER] = json_encode(array($input[Constants::OAUTH_PROVIDER]));
+
         list($error, $data) = $this->oauthRegister($input);
 
         //
@@ -153,12 +156,11 @@ class Service extends Base\Service
         //
         if ((empty($error) === true))
         {
-            $oauthSource = Request::header(Headers::OAUTH_SOURCE) ?? Constants::DASHBOARD;
             $credentials = [
                 Constants::EMAIL          => $input[Constants::EMAIL],
                 Constants::ID_TOKEN       => $input[Constants::ID_TOKEN],
                 Constants::OAUTH_PROVIDER => $input[Constants::OAUTH_PROVIDER],
-                Constants::OAUTH_SOURCE   => $oauthSource,
+                Constants::OAUTH_SOURCE   => $input[Constants::OAUTH_SOURCE],
             ];
 
             list($error, $data) = $this->oauthSignIn($credentials);
@@ -177,20 +179,6 @@ class Service extends Base\Service
     {
         $request = new ApiRequestAny();
 
-        // this adds oauth_source key to the input aray
-        $tokenVerified = (new OauthHelper)->oauthProviderVerification($input);
-
-        if ($tokenVerified === false)
-        {
-            throw new BadRequestError(
-                Constants::GOOGLE_SIGN_IN_ERROR,
-                ErrorCode::BAD_REQUEST_ERROR,
-                400
-            );
-        }
-
-        Session::put(Constants::OAUTH_LOGIN, true);
-
         list($error, $data) = $request->processInput($input)->send(
             Constants::OAUTH_REGISTER_ROUTE, Constants::POST_METHOD);
 
@@ -202,6 +190,8 @@ class Service extends Base\Service
                 400
             );
         }
+
+        Session::put(Constants::OAUTH_LOGIN, true);
 
         return [$error, $data];
     }
@@ -1158,25 +1148,13 @@ class Service extends Base\Service
      * @param string $httpVerb
      *
      * @return array
-     * @throws BadRequestError
      */
     public function oauthLoginOnApiOnRoute(array $input, string $route, string $httpVerb): array
     {
+        $input[Constants::OAUTH_SOURCE] = Request::header(Headers::OAUTH_SOURCE) ?? Constants::DASHBOARD;
+        $input[Constants::OAUTH_PROVIDER] = json_encode(array($input[Constants::OAUTH_PROVIDER]));
+
         $request = new ApiRequestAny();
-
-        // this step also adds oauth_source to the input array
-        $tokenVerified = (new OauthHelper)->oauthProviderVerification($input);
-
-        if ($tokenVerified === false)
-        {
-            throw new BadRequestError(
-                Constants::GOOGLE_SIGN_IN_ERROR,
-                ErrorCode::BAD_REQUEST_ERROR,
-                400
-            );
-        }
-
-        Session::put(Constants::OAUTH_LOGIN, true);
 
         $genericUser = null;
 
@@ -1192,6 +1170,8 @@ class Service extends Base\Service
         if (empty($error) === true)
         {
             $genericUser = (new Helper)->createdGenericUser($data);
+
+            Session::put(Constants::OAUTH_LOGIN, true);
         }
         else
         {
