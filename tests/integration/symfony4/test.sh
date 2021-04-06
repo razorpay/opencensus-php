@@ -41,7 +41,7 @@ else
     composer dumpautoload
 fi
 
-bin/console doctrine:migrations:migrate -n
+bin/console doctrine:migrations:migrate -n --allow-no-migration
 
 echo "Running PHP server at ${TEST_HOST}:${TEST_PORT}"
 php -S ${TEST_HOST}:${TEST_PORT} -t public &
