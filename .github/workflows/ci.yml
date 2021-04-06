@@ -130,9 +130,9 @@ jobs:
         continue-on-error: true
         run: tests/integration/guzzle5/test.sh
 
-      - name: Guzzle 6 test
-        continue-on-error: true
-        run: tests/integration/guzzle6/test.sh
+#      - name: Guzzle 6 test
+#        continue-on-error: true
+#        run: tests/integration/guzzle6/test.sh
 
       - name: Memcached test
         run: tests/integration/memcached/test.sh
