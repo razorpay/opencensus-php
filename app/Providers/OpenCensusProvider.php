@@ -6,6 +6,7 @@
 namespace RZP\Providers;
 
 use RZP\Constants\Tracing;
+use RZP\Constants\Mode;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Route;
@@ -15,6 +16,7 @@ use OpenCensus\Trace\Exporter\JaegerExporter;
 use OpenCensus\Trace\Tracer;
 use OpenCensus\Trace\Span;
 use OpenCensus\Trace\Integrations\Laravel;
+use OpenCensus\Trace\Integrations\PDO;
 use OpenCensus\Trace\Integrations\Redis;
 use OpenCensus\Trace\Integrations\Curl;
 use OpenCensus\Trace\Propagator\JaegerPropagator;
@@ -44,9 +46,19 @@ class OpenCensusProvider extends ServiceProvider
                 return;
             }
 
-            // Load all useful extensions
-            // PDO is loaded while connecting in MySqlConnector.php
+            $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+            $db_host = $this->app['config']->get('applications.jaeger.db_host')[$mode];
 
+            // add the default port to the db host, if port is missing
+            // this is to avoid showing up as 2 different db hosts
+            // one with default port and other without it.
+
+            if ($db_host && (strpos($db_host, ':') === false)){
+                $mysql_default_port = '3306';
+                $db_host = $db_host . ':' . $mysql_default_port;
+            }
+
+            PDO::load($db_host);
             Redis::load();
             Curl::load();
 
