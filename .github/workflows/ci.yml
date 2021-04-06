@@ -82,6 +82,16 @@ jobs:
   integration:
     runs-on: ubuntu-latest
     continue-on-error: true
+
+    env:
+      DB_HOST: 127.0.0.1
+      DB_USERNAME: mysql
+      DB_PASSWORD: mysql
+      DB_DATABASE: mysqldb
+      TEST_HOST: localhost
+      TEST_PORT: 9999
+      TEST_URL: http://localhost:9999
+
     steps:
       - uses: actions/checkout@v2
 
@@ -125,26 +135,28 @@ jobs:
       - name: Pgsql test
         run: tests/integration/pgsql/test.sh
 
-#      - name: Symfony 4 test
-#        run: tests/integration/symfony4/test.sh
-#        env:
-#          DATABASE_URL: mysql://mysql:mysql@127.0.0.1:3306/mysqldb
+      - name: Symfony 4 test
+        run: tests/integration/symfony4/test.sh
+        env:
+          DATABASE_URL: mysql://mysql:mysql@127.0.0.1:3306/mysqldb
 
       - name: Wordpress test
         run: tests/integration/wordpress/test.sh
-        
+
     services:
       mysql:
         image: mysql:5.7
+        ports:
+          - 3306:3306
         env:
           MYSQL_USER: mysql
           MYSQL_PASSWORD: mysql
           MYSQL_DATABASE: mysqldb
-          MYSQL_ROOT_PASSWORD: root
+          MYSQL_RANDOM_ROOT_PASSWORD: yes
       postgres:
         image: postgres:9.6
         env:
           POSTGRES_PASSWORD: pgsql
           POSTGRES_USER: postgres
         ports:
-          - "5432:5432"
+          - 5432:5432
