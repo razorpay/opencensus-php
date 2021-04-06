@@ -120,19 +120,19 @@ jobs:
       - name: Curl test
         run: tests/integration/curl/test.sh
 
-#      - name: Guzzle 6 test
-#        continue-on-error: true
-#        run: tests/integration/guzzle6/test.sh
-
-      - name: Guzzle 5 test
-        continue-on-error: true
-        run: tests/integration/guzzle5/test.sh
-
       - name: Wordpress test
         run: tests/integration/wordpress/test.sh
 
       - name: Laravel test
         run: tests/integration/laravel/test.sh
+
+      - name: Guzzle 5 test
+        continue-on-error: true
+        run: tests/integration/guzzle5/test.sh
+
+#      - name: Guzzle 6 test
+#        continue-on-error: true
+#        run: tests/integration/guzzle6/test.sh
 
       - name: Memcached test
         run: tests/integration/memcached/test.sh
