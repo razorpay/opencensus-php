@@ -202,8 +202,9 @@ class InMemoryBusinessSearch extends Base
     private function createSearchResponseForNewCategory(string $category, array $match)
     {
         $currentResponse = [
-            self::GROUP_NAME => BusinessCategory::DESCRIPTIONS[$category],
-            self::MATCHES    => [],
+            self::GROUP_NAME    => BusinessCategory::DESCRIPTIONS[$category],
+            self::GROUP_VALUE   => $category,
+            self::MATCHES       => [],
         ];
 
         array_push($currentResponse[self::MATCHES], $match);

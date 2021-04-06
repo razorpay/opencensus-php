@@ -18,6 +18,7 @@ abstract class Base
     const TAGS = "tags";
 
     const GROUP_NAME = "group_name";
+    const GROUP_VALUE = "group_value";
 
     protected $searchString;
 

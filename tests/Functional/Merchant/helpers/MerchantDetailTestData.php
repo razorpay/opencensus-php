@@ -1948,6 +1948,7 @@ return [
                 [
                     [
                         "group_name" => "Ecommerce",
+                        "group_value" => "ecommerce",
                         "matches"    => [
                             [
                                 "subcategory_value" => "computer_software_stores",
@@ -1968,6 +1969,7 @@ return [
                     ],
                     [
                         "group_name" => "Services",
+                        "group_value"=> "services",
                         "matches"    => [
                             [
                                 "subcategory_value" => "internet_service_providers",
@@ -1980,6 +1982,7 @@ return [
                     ],
                     [
                         "group_name" => "Computer Programming/Data Processing",
+                        "group_value"=> "computer_programming_data_processing",
                         "matches"    => [
                             [
                                 "subcategory_value" => "computer_programming_data_processing",
@@ -1992,6 +1995,7 @@ return [
                     ],
                     [
                         "group_name" => "Housing and Real Estate",
+                        "group_value"=> "housing",
                         "matches"    => [
                             [
                                 "subcategory_value" => "facility_management",
@@ -2004,6 +2008,7 @@ return [
                     ],
                     [
                         "group_name" => "IT and Software",
+                        "group_value" => "it_and_software",
                         "matches"    => [
                             [
                                 "subcategory_value" => "technical_support",
@@ -2016,6 +2021,7 @@ return [
                     ],
                     [
                         "group_name" => "Tours and Travel",
+                        "group_value" => "tours_and_travel",
                         "matches"    => [
                             [
                                 "subcategory_value" => "aviation",
