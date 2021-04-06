@@ -32,7 +32,7 @@ use OpenCensus\Trace\Tracer;
  */
 class PDO implements IntegrationInterface
 {
-    static $db_host = "";
+    private static $db_host = "";
     /**
      * Static method to add instrumentation to the PDO requests
      */
@@ -262,10 +262,10 @@ class PDO implements IntegrationInterface
             if (($from_index) and ($from_index + 1 < count($query_parts))) {
                 $tableName = $query_parts[$from_index + 1];
             }
-        } else if (strtolower($operation) === 'update') {
+        } elseif (strtolower($operation) === 'update') {
             // update <table_name> set ... where ...
             $tableName = $query_parts[1];
-        } else if (strtolower($operation) === 'insert') {
+        } elseif (strtolower($operation) === 'insert') {
             // insert into <tablename> ...
             $into_index = array_search('into', $query_parts);
             if (($into_index) and ($into_index + 1 < count($query_parts))) {

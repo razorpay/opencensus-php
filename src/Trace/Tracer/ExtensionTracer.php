@@ -71,7 +71,6 @@ class ExtensionTracer implements TracerInterface, SpanEventHandlerInterface
         if (isset($options['span_buffer_limit'])) {
             $this->spanBufferLimit = $options['span_buffer_limit'];
         }
-
     }
 
     public function inSpan(array $spanOptions, callable $callable, array $arguments = [])
@@ -138,14 +137,13 @@ class ExtensionTracer implements TracerInterface, SpanEventHandlerInterface
     }
 
     /* This checks the numbet of spans in memory and if the count is more than the set limit, it exports all
-    the closed span present in memory, to free up the memory. We are only exporting closed spans as only those
-    spans use is over, the open ones stop time along with other attributes might not have been set yet.*/
+    the closed span present in memory, to free up the memory. We are only exporting closed spans as only those spans use is over,
+    the open ones stop time along with other attributes might not have been set yet.*/
     public function checkSpanLimit()
     {
         $count = opencensus_trace_count();
 
         if ($count >= $this->spanBufferLimit) {
-
             $closedSpans = [];
             $spans = $this->spans();
 
