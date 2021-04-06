@@ -69,8 +69,8 @@ jobs:
         run: vendor/bin/phpcs --standard=./phpcs.xml
 
       - name: PHP unit tests
-        run: vendor/bin/phpunit
         continue-on-error: true
+        run: vendor/bin/phpunit
 
       - name: PHP unit tests with extension
         run: |
@@ -119,13 +119,13 @@ jobs:
       - name: Curl test
         run: tests/integration/curl/test.sh
 
-      - name: Guzzle 6 test
-        run: tests/integration/guzzle6/test.sh
-        continue-on-error: true
+#      - name: Guzzle 6 test
+#        continue-on-error: true
+#        run: tests/integration/guzzle6/test.sh
 
       - name: Guzzle 5 test
-        run: tests/integration/guzzle5/test.sh
         continue-on-error: true
+        run: tests/integration/guzzle5/test.sh
 
       - name: Wordpress test
         run: tests/integration/wordpress/test.sh
@@ -140,8 +140,8 @@ jobs:
         run: tests/integration/pgsql/test.sh
 
       - name: Symfony 4 test
-        run: tests/integration/symfony4/test.sh
         continue-on-error: true
+        run: tests/integration/symfony4/test.sh
         env:
           DATABASE_URL: mysql://mysql:mysql@127.0.0.1:3306/mysqldb
 
