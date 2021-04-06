@@ -117,7 +117,7 @@ class Throttler
 
     protected function initRedisConnection()
     {
-        $this->redis = Redis::connection('throttle')->client();
+        $this->redis = Redis::connection('mutex_redis')->client();
     }
 
     protected function initThrottleSettings()

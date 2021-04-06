@@ -13,8 +13,8 @@ local fixed_window_script   = require("fixed_window")()
 -- https://docs.google.com/document/d/1y6pg6S4ofkspLiLTaOYJFbUdDu4EpdNWZ-FBXvflxu0/edit
 
 -- Settings Key Prefix
-local route_setting_prefix      = "throttle:{route}:"
-local merchant_setting_prefix   = "throttle:{merchant}:"
+local route_setting_prefix      = "throttle:{route:"
+local merchant_setting_prefix   = "throttle:{merchant:"
 
 -- Prefix for keys used as rate limit identifiers.
 local route_identifier_prefix       = "throttle:ri:"
@@ -124,10 +124,10 @@ local function get_rate_limit_args(redis, req_ctx, ngx)
     -- - Default route setting
     -- - Merchant setting
     redis:init_pipeline()
-    redis:hgetall(route_setting_prefix .. req_ctx.route)
-    redis:hgetall(route_setting_prefix .. default_route)
+    redis:hgetall(route_setting_prefix .. req_ctx.route .. "}")
+    redis:hgetall(route_setting_prefix .. default_route .. "}")
     if mid ~= nil then
-        redis:hgetall(merchant_setting_prefix .. mid)
+        redis:hgetall(merchant_setting_prefix .. mid .. "}")
     end
     local raw_settings, err = redis:commit_pipeline()
     if err then
