@@ -4251,6 +4251,7 @@ class RblBankingAccountStatementTest extends TestCase
      * case when status check is done first and followed by account statement processing.
      * in status check payout is reversed and we get return utr , in account statement we get debit and credit row.
      * credit row gets mapped to reversal because we find an existing payout via return utr
+     * This test no longer holds true as we have removed the dependency on return utr for getting credits
      */
     public function testRblReversalTxnCreationViaReturnUTR()
     {
@@ -4331,9 +4332,9 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals($transactions[1]['entity_id'],$payout['id']);
 
 
-        $this->assertEquals(EntityConstants::REVERSAL, $basEntries[2]['entity_type']);
-        $this->assertEquals($reversal['id'], $basEntries[2]['entity_id']);
-        $this->assertEquals($reversal['transaction_id'], $basEntries[2]['transaction_id']);
+        $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[2]['entity_type']);
+        $this->assertEquals($externalEntries[1]['id'], $basEntries[2]['entity_id']);
+        $this->assertEquals($externalEntries[1]['transaction_id'], $basEntries[2]['transaction_id']);
     }
 
 
@@ -4469,7 +4470,8 @@ class RblBankingAccountStatementTest extends TestCase
     /*
      * case when status check processed is received first and in first account stmt fetch we get debit row.
      * Later we get status reversed via status check and reversal is created on our end . in next stmt fetch
-     * we get a credit row corresponding to it and map that to reversal
+     * we get a credit row corresponding to it and map that to reversal. Note that return_utr gets saved as
+     * UTR of reversal and so the linking is happening using reversal's UTR
      */
     public function testRblReversalTxnCreationViaExistingReversal()
     {
@@ -4857,7 +4859,8 @@ class RblBankingAccountStatementTest extends TestCase
     /*
      * case when status check processed is received first and in first account stmt fetch we get debit row.
      * Later we get status reversed via status check and reversal is created on our end . in next stmt fetch
-     * we get a credit row corresponding to it and map that to reversal
+     * we get a credit row corresponding to it and map that to reversal. Note that return_utr gets saved as
+     * UTR of reversal and so the linking is happening using reversal's UTR
      */
     public function testWebhookEventForRblReversalTxnCreationViaExistingReversal()
     {
@@ -5925,7 +5928,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[2]['entity_type']);
         $this->assertEquals($externalEntries[1]['id'], $basEntries[2]['entity_id']);
-        $this->assertEquals($externalEntries[1]['remarks'], 'multiple payouts found with same return utr 143535 for credit mapping');
+        $this->assertNull($externalEntries[1]['remarks']);
         $this->assertEquals($externalEntries[1]['transaction_id'], $basEntries[2]['transaction_id']);
     }
 
@@ -7307,10 +7310,9 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals($payout[0]['transaction_id'], $basEntries[1]['transaction_id']);
         $this->assertEquals($transactions[1]['entity_id'],$payout[0]['id']);
 
-
         $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[2]['entity_type']);
         $this->assertEquals($externalEntries[1]['id'], $basEntries[2]['entity_id']);
-        $this->assertEquals($externalEntries[1]['remarks'], 'multiple payouts found with same return utr 143535 for credit mapping');
+        $this->assertNull($externalEntries[1]['remarks']);
         $this->assertEquals($externalEntries[1]['transaction_id'], $basEntries[2]['transaction_id']);
 
         $this->ba->adminAuth();
@@ -7917,7 +7919,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[2]['entity_type']);
         $this->assertEquals($externalEntries[1]['id'], $basEntries[2]['entity_id']);
-        $this->assertEquals($externalEntries[1]['remarks'], 'multiple payouts found with same return utr 143535 for credit mapping');
+        $this->assertNull($externalEntries[1]['remarks']);
         $this->assertEquals($externalEntries[1]['transaction_id'], $basEntries[2]['transaction_id']);
 
         $this->ba->adminAuth();

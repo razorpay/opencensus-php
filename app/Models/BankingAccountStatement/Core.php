@@ -950,7 +950,7 @@ class Core extends Base\Core
                 {
                     if ($payouts->count() > 1)
                     {
-                        $createExternalSource = true;
+                        $createExternalSource   = true;
                         $remarks                = 'multiple payouts found with same utr for credit mapping';
 
                         $data = [
@@ -984,9 +984,11 @@ class Core extends Base\Core
             $bankTxnId = $basEntity->getBankTransactionId();
 
             $bankTimeBeforePostedDate = Carbon::createFromTimestamp(
-                $basEntity->getPostedDate(), Timezone::IST)
+                                              $basEntity->getPostedDate(),
+                                          Timezone::IST)
                                               ->subHours(4)
                                               ->getTimestamp();
+
             $startTime = microtime(true);
 
             // we are checking both linked and unlinked payouts because debit row might have already been
@@ -1093,64 +1095,8 @@ class Core extends Base\Core
             return null;
 
         }
-
-        // check on return utr is done at the end as the query is consuming more time.
-        // Thread: https://razorpay.slack.com/archives/C01CX0EC34M/p1611572847006900
-        if ((empty($utr) === false) and ($basEntity->getType() === Type::CREDIT))
-        {
-            $startTime = microtime(true);
-
-            /** @var Base\Collection $payouts */
-            $payouts = $this->repo->payout->fetchFromReturnUtr($utr, $basEntity->getAmount(), $balance->getId());
-
-            $data = [
-                'return_utr' => $utr,
-                'payout_ids' => $payouts->getQueueableIds(),
-                'bas_id'     => $basEntity->getId(),
-                'account_no' => $basEntity->getAccountNumber(),
-                'payouts_fetched_via_return_utr_mapping_time' => (microtime(true) - $startTime ) * 1000,
-            ];
-
-            if($payouts->count() === 1)
-            {
-                $data['utr'] = $payouts->first()->getId();
-            }
-
-            $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_RETURN_UTR, $data);
-
-            // TODO: remove unique constraint from utr fields in db .
-            // https://razorpay.atlassian.net/browse/RX-2390
-            if ($payouts->count() > 1)
-            {
-                $createExternalSource = true;
-                $remarks                = 'multiple payouts found with same return utr '. $utr .
-                    ' for credit mapping';
-
-                $data = [
-                    'channel'    => $basEntity->getChannel(),
-                    'amount'     => $basEntity->getAmount(),
-                    'payout_ids' => $payouts->getQueueableIds(),
-                    'return_utr' => $utr
-                ];
-
-                $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_DUPLICATE_RETURN_UTR, [
-                    'data' => $data,
-                ]);
-
-                $operation = 'multiple payouts found with same return utr for credit mapping';
-
-                (new SlackNotification)->send(
-                    $operation,
-                    $data,
-                    null,
-                    1,
-                    'rx_ca_rbl_alerts');
-
-                return null;
-            }
-        }
-
-        return $payouts->first();
+        // we are removing the search on return_utr. The detailed reasoning is present here
+        // https://razorpay.slack.com/archives/C01CX0EC34M/p1613643176033700
     }
 
     /**
@@ -1313,7 +1259,6 @@ class Core extends Base\Core
                 'channel'    => $basEntity->getChannel(),
                 'amount'     => $basEntity->getAmount(),
                 'payout_ids' => $payouts->getQueueableIds(),
-                'return_utr' => $utr
             ];
 
             $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_DUPLICATE_PAYOUT_CMS_REF_NO_FOR_IFT_FOR_DEBIT_MAPPING, [
@@ -1359,7 +1304,6 @@ class Core extends Base\Core
                 'channel'    => $basEntity->getChannel(),
                 'amount'     => $basEntity->getAmount(),
                 'payout_ids' => $payouts->getQueueableIds(),
-                'return_utr' => $utr
             ];
 
             $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_DUPLICATE_PAYOUT_CMS_REF_NO_FOR_NON_IFT_FOR_CREDIT_MAPPING, [
