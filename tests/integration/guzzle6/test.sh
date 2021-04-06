@@ -18,9 +18,9 @@ set -e
 pushd $(dirname ${BASH_SOURCE[0]})
 source ../setup_test_repo.sh
 
-sed -i "s|dev-master|dev-${BRANCH}|" composer.json
-sed -i "s|https://github.com/census-instrumentation/opencensus-php|${REPO}|" composer.json
-composer install -n --prefer-dist
+#sed -i "s|dev-master|dev-${BRANCH}|" composer.json
+#sed -i "s|https://github.com/census-instrumentation/opencensus-php|${REPO}|" composer.json
+#composer install -n --prefer-dist
 composer require --update-with-all-dependencies guzzlehttp/guzzle:~6.0
 
 vendor/bin/phpunit --verbose
