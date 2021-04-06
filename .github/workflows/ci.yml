@@ -73,6 +73,7 @@ jobs:
         run: vendor/bin/phpunit
 
       - name: PHP unit tests with extension
+        continue-on-error: true
         run: |
           if [ $RUN_EXTENSION_TESTS -eq "1" ]; then
             php -d extension=opencensus.so vendor/bin/phpunit
