@@ -122,9 +122,9 @@ jobs:
       - name: Guzzle 5 test
         run: tests/integration/guzzle5/test.sh
 
-      - name: Guzzle 6 test
-        run: tests/integration/guzzle6/test.sh
-        continue-on-error: true
+#      - name: Guzzle 6 test
+#        run: tests/integration/guzzle6/test.sh
+#        continue-on-error: true
 
       - name: Laravel test
         run: tests/integration/laravel/test.sh
