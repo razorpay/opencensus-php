@@ -150,107 +150,6 @@ jobs:
              GIT_USERNAME=rzp
              ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.2-api-web
              OPENRESTY_IMAGE=c.rzp.io/razorpay/onggi:openresty-1.17.8.2-0-alpine-fat-nosse42
-
-  build-dockerhub-web:
-     runs-on: ubuntu-latest
-     needs: [ cancel ]
-     continue-on-error: false
-     name: Build Web Dockerhub
-     steps:
-       - name: Login to Dockerhub
-         uses: docker/login-action@v1
-         with:
-           username: ${{ secrets.DOCKER_USERNAME }}
-           password: ${{ secrets.DOCKER_PASSWORD }}
-       - name: Set up Docker Buildx
-         id: buildx
-         uses: docker/setup-buildx-action@v1
-       - name: build
-         uses: docker/build-push-action@v2
-         with:
-           tags: razorpay/api:${{ github.sha }}
-           push: true
-           file: ./Dockerfile.web
-           build-args: |
-             GIT_COMMIT_HASH=${{ github.sha }}
-             GIT_TOKEN=${{ secrets.GIT_TOKEN }}
-             GIT_USERNAME=rzp
-
-  build-dockerhub-worker:
-     runs-on: ubuntu-latest
-     needs: [ cancel ]
-     continue-on-error: false
-     name: Build Worker Dockerhub
-     steps:
-       - name: Login to Dockerhub
-         uses: docker/login-action@v1
-         with:
-           username: ${{ secrets.DOCKER_USERNAME }}
-           password: ${{ secrets.DOCKER_PASSWORD }}
-       - name: Set up Docker Buildx
-         id: buildx
-         uses: docker/setup-buildx-action@v1
-       - name: build
-         uses: docker/build-push-action@v2
-         with:
-           tags: razorpay/api:worker-${{ github.sha }}
-           push: true
-           file: ./Dockerfile.worker
-           build-args: |
-             GIT_COMMIT_HASH=${{ github.sha }}
-             GIT_TOKEN=${{ secrets.GIT_TOKEN }}
-             GIT_USERNAME=rzp
-
-  build-dockerhub-checkout:
-    runs-on: ubuntu-latest
-    needs: [ cancel ]
-    continue-on-error: false
-    name: Build Checkout Dockerhub
-    steps:
-      - name: Login to Dockerhub
-        uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v1
-      - name: build
-        uses: docker/build-push-action@v2
-        with:
-          tags: razorpay/api:checkout-${{ github.sha }}
-          push: true
-          file: ./Dockerfile.checkout
-          build-args: |
-            GIT_COMMIT_HASH=${{ github.sha }}
-            GIT_TOKEN=${{ secrets.GIT_TOKEN }}
-            GIT_USERNAME=rzp
-
-  build-dockerhub-openresty:
-   runs-on: ubuntu-latest
-   needs: [ cancel ]
-   continue-on-error: false
-   name: Build Openresty Dockerhub
-   steps:
-     - name: Login to Dockerhub
-       uses: docker/login-action@v1
-       with:
-         username: ${{ secrets.DOCKER_USERNAME }}
-         password: ${{ secrets.DOCKER_PASSWORD }}
-     - name: Set up Docker Buildx
-       id: buildx
-       uses: docker/setup-buildx-action@v1
-     - name: build
-       uses: docker/build-push-action@v2
-       with:
-         tags: razorpay/api:openresty-${{ github.sha }}
-         push: true
-         file: ./Dockerfile.openresty
-         build-args: |
-           GIT_COMMIT_HASH=${{ github.sha }}
-           GIT_TOKEN=${{ secrets.GIT_TOKEN }}
-           GIT_USERNAME=rzp
-
   workflow_status:
    runs-on: [self-hosted]
    continue-on-error: false
@@ -261,10 +160,6 @@ jobs:
      build-worker,
      build-checkout,
      build-openresty,
-     build-dockerhub-web,
-     build-dockerhub-worker,
-     build-dockerhub-checkout,
-     build-dockerhub-openresty
      ]
    if: always()
    steps:
