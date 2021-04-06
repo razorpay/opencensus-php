@@ -305,6 +305,7 @@ class Name
     const BATCH_API_CALL                      = 'batch_api_call';
     const EDIT_SCROOGE_REDIS_CONFIG           = 'edit_scrooge_redis_config';
     const EDIT_THROTTLE_SETTINGS              = 'edit_throttle_settings';
+    const VIEW_THROTTLE_SETTINGS              = 'view_throttle_settings';
     const ACCESS_EXCEL_STORE                  = 'access_excel_store';
     const CANCEL_BATCH                        = 'cancel_batch';
     const PAYMENT_CAPTURE_BULK                = 'payment_capture_bulk';

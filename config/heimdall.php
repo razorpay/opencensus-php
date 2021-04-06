@@ -824,6 +824,9 @@ return [
             Permission::EDIT_THROTTLE_SETTINGS       => [
                 'description'  => 'Edit throttle settings',
             ],
+            Permission::VIEW_THROTTLE_SETTINGS       => [
+                'description'  => 'View throttle settings',
+            ],
             Permission::STORK_WRITE_OPERATION        => [
                 'description' => 'Perform write operations around stork integration e.g. webhook migrations etc',
                 'assignable'  => true,
