@@ -44,6 +44,7 @@ use RZP\Reconciliator\BillDesk\SubReconciliator\RefundReconciliate as BilldeskRe
 use RZP\Reconciliator\Hitachi\SubReconciliator\PaymentReconciliate as HitachiPaymentRecon;
 use RZP\Reconciliator\VasAxis\SubReconciliator\PaymentReconciliate as VasAxisPaymentRecon;
 use RZP\Reconciliator\BillDesk\SubReconciliator\PaymentReconciliate as BilldeskPaymentRecon;
+use RZP\Reconciliator\VirtualAccIcici\SubReconciliator\ReconciliationFields as VirtualAccIcici;
 use RZP\Reconciliator\Freecharge\SubReconciliator\PaymentReconciliate as FreechargePaymentRecon;
 use RZP\Reconciliator\VirtualAccYesBank\SubReconciliator\PaymentReconciliate as VirtualAccYesBank;
 
@@ -2490,6 +2491,17 @@ class ReconciliationFileTest extends TestCase
         return $facade;
     }
 
+    private function overrideVirtualAccIciciPayment($account, $payment)
+    {
+        $facade = $this->testData['facades']['virtual_acc_icici'];
+
+        $facade[VirtualAccIcici::UTR] = $payment['transaction_id'];
+
+        $facade[VirtualAccIcici::VAN] = $account['receivers'][0]['account_number'];
+
+        return $facade;
+    }
+
     protected function runForFiles(array $files,
                                    string $gateway,
                                    array $forceUpdate = [],
@@ -4488,6 +4500,37 @@ class ReconciliationFileTest extends TestCase
 
         $this->assertNotNull($transaction['reconciled_at']);
         $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testVirtualAccIciciReconFile()
+    {
+        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal');
+
+        $this->fixtures->merchant->addFeatures(['virtual_accounts']);
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $account = $this->createVirtualAccount();
+
+        $payment = $this->payVirtualAccount($account['id']);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+        $transaction = $this->getDbEntityById('transaction', $paymentEntity['transaction_id']);
+        $this->assertNull($transaction['reconciled_at']);
+        $this->assertNull($transaction['reconciled_type']);
+
+        $entries[] = $this->overrideVirtualAccIciciPayment($account, $payment);
+
+        $file = $this->writeToExcelFile($entries, 'virtualAccIcici', 'files/settlement','Sheet1');
+
+        $this->runForFiles([$file], 'VirtualAccIcici');
+
+        $this->assertBatchStatus(Status::PROCESSED);
+
+        $updatedTransaction = $this->getDbEntityById('transaction', $paymentEntity['transaction_id']);
+
+        $this->assertNotNull($updatedTransaction['reconciled_at']);
+        $this->assertNotNull($updatedTransaction['reconciled_type']);
     }
 
     private function overrideIsgRecon($gatewayInput, $reconType = 'payment', $refundId = '')

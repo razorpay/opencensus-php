@@ -848,6 +848,23 @@ return [
                 'CARD NETWORK'              => 'Visa',
                 'Creation Time'             => '',
             ],
+
+        'virtual_acc_icici' =>
+            [
+                'Client Code'                    => 'ARNC',
+                'VAN'                            => '',
+                'Amount'                         => '100',
+                'Payment Mode'                   => 'N',
+                'UTR'                            => '',
+                'Remitter Name'                  => 'Gaurav Kumar',
+                'Remitter Account Number'        => '',
+                'Remitter IFSC Code'             => 'IFSC12345',
+                'Sender To Receiver Information' => '',
+                'Transaction Date'               => '22/02/2021',
+                'API Status'                     => '200',
+                'API Status Reason'              => 'Response Message Not Received',
+                'API Response Date And Time'     => '30-01-21 12:05:29',
+            ]
         ],
 
     'reconciliate' => [

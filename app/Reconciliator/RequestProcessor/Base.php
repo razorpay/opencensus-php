@@ -100,6 +100,7 @@ class Base extends Core
     const VIRTUAL_ACC_KOTAK      = 'VirtualAccKotak';
     const VIRTUAL_ACC_YESBANK    = 'VirtualAccYesBank';
     const VIRTUAL_ACC_RBL        = 'VirtualAccRbl';
+    const VIRTUAL_ACC_ICICI      = 'VirtualAccIcici';
     const JIOMONEY               = 'Jiomoney';
     const UPI_SBI                = 'UpiSbi';
     const PAYUMONEY              = 'PayuMoney';
@@ -219,6 +220,7 @@ class Base extends Core
         self::UPI_JUSPAY             => ['crs.upimerchantsettlement@axisbank.com'],
         self::UPI_AIRTEL             => [],
         self::CRED                   => [],
+        self::VIRTUAL_ACC_ICICI      => [],
         self::NETBANKING_DLB         => [],
 
         // Used when someone from the team needs to send the
