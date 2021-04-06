@@ -137,8 +137,8 @@ class ExtensionTracer implements TracerInterface, SpanEventHandlerInterface
     }
 
     /* This checks the numbet of spans in memory and if the count is more than the set limit, it exports all
-    the closed span present in memory, to free up the memory. We are only exporting closed spans as only those spans use is over,
-    the open ones stop time along with other attributes might not have been set yet.*/
+    the closed span present in memory, to free up the memory. We are only exporting closed spans as only those
+    spans use is over, the open ones stop time along with other attributes might not have been set yet.*/
     public function checkSpanLimit()
     {
         $count = opencensus_trace_count();
