@@ -118,6 +118,7 @@ return [
         'worldline',
         'paylater_icici',
         'hdfc_debit_emi',
+        'netbanking_dlb',
     ],
 
     'mock_amex'                   => env('AMEX_MOCK'),
@@ -176,6 +177,7 @@ return [
     'mock_netbanking_iob'         => env('NEBANKING_IOB_MOCK'),
     'mock_netbanking_fsb'         => env('NETBANKING_FSB_MOCK'),
     'mock_netbanking_ausf'        => env('NETBANKING_AUSF_MOCK'),
+    'mock_netbanking_dlb'         => env('NETBANKING_DLB_MOCK'),
     'mock_mpi_blade'              => env('BLADE_MOCK'),
     'mock_ebs'                    => env('EBS_MOCK'),
     'mock_wallet_olamoney'        => env('OLAMONEY_MOCK'),

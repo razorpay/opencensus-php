@@ -127,6 +127,7 @@ class Terminal extends Base
         $this->createSharedNetbankingIobTerminal();
         $this->createSharedNetbankingFsbTerminal();
         $this->createSharedNetbankingAusfTerminal();
+        $this->createSharedNetbankingDlbTerminal();
     }
 
     public function createBharatQrIsgTerminal()
@@ -4079,6 +4080,26 @@ class Terminal extends Base
 
     }
 
+    public function createSharedNetbankingDlbTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id' => '1ShrdNBDLXBTml',
+            'merchant_id' => $merchantId,
+            'gateway' => Gateway::NETBANKING_DLB,
+            'gateway_merchant_id' => 'netbanking_dlb_merchant_id',
+            'netbanking' => 1,
+            'shared' => 1,
+            'gateway_secure_secret'      => Crypt::encrypt('test_secure_secret'),
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+
+    }
+
     public function createUpiPaytmTerminal(array $attributes = [])
     {
 
@@ -4112,8 +4133,8 @@ class Terminal extends Base
                 Type::PAY                => '1',
             ],
         ];
-        
+
         return $this->createUpiPaytmTerminal($attributes);
-        
+
     }
 }

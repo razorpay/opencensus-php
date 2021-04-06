@@ -142,6 +142,7 @@ class Shared
     const CARDLESS_EMI_FLEXMONEY_MULTILENDER_TERMINAL    = '20CrdlsEmiMlTl';
     const CARDLESS_EMI_FLEXMONEY_EMPTY_ENABLED_BANKS     = '20CrdlsEmiEmTl';
     const NETBANKING_AUSF_TERMINAL           = '100NbAusfTrmnl';
+    const NETBANKING_DLB_TERMINAL            = '1000NbDlbTrmnl';
 
     protected static $shared = array(
         self::ATOM_RAZORPAY_TERMINAL,
@@ -211,6 +212,7 @@ class Shared
         self::WORLDLINE_TERMINAL,
         self::NACH_CITI_TERMINAL,
         self::NACH_ICICI_TERMINAL,
+        self::NETBANKING_DLB_TERMINAL,
     );
 
     // NOTE: No two shared terminal should be present for same gateway
@@ -287,6 +289,7 @@ class Shared
         self::WORLDLINE_TERMINAL                 => Gateway::WORLDLINE,
         self::NACH_CITI_TERMINAL                 => Gateway::NACH_CITI,
         self::NACH_ICICI_TERMINAL                => Gateway::NACH_ICICI,
+        self::NETBANKING_DLB_TERMINAL            => Gateway::NETBANKING_DLB,
     ];
 
     public static function getSharedTerminalMapping()

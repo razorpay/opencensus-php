@@ -268,7 +268,7 @@ return [
                         'scheduled'  => false,
                         'severity'   => 'low',
                         'instrument' => [
-                            'bank' => 'DLXB',
+                            'bank' => 'PSIB',
                         ],
                     ],
                 ],

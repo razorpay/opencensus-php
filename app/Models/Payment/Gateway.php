@@ -86,6 +86,7 @@ class Gateway
     const NETBANKING_FSB         = 'netbanking_fsb';
     const NETBANKING_DCB         = 'netbanking_dcb';
     const NETBANKING_AUSF        = 'netbanking_ausf';
+    const NETBANKING_DLB         = 'netbanking_dlb';
     const NACH_CITI              = 'nach_citi';
     const NACH_ICICI             = 'nach_icici';
     const PAYTM                  = 'paytm';
@@ -1012,7 +1013,8 @@ class Gateway
         Payment\Gateway::PAYU,
         Payment\Gateway::NETBANKING_PNB,
         Payment\Gateway::NETBANKING_AUSF,
-        Payment\Gateway::UPI_YESBANK
+        Payment\Gateway::UPI_YESBANK,
+        Payment\Gateway::NETBANKING_DLB,
     ];
 
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [
@@ -1049,6 +1051,7 @@ class Gateway
         Payment\Gateway::NETBANKING_DCB         => 1593907200,
         Payment\Gateway::NETBANKING_UBI         => 1607059163,
         Payment\Gateway::NETBANKING_PNB         => 1609936200,
+        Payment\Gateway::NETBANKING_DLB         => 1609936200,
     ];
 
     public static $channels = [
@@ -1157,6 +1160,7 @@ class Gateway
             self::NETBANKING_FSB,
             self::NETBANKING_DCB,
             self::NETBANKING_AUSF,
+            self::NETBANKING_DLB,
         ],
 
         //
@@ -2139,6 +2143,7 @@ class Gateway
         IFSC::ANDB         => Gateway::NETBANKING_UBI,
         IFSC::SYNB         => Gateway::NETBANKING_CANARA,
         IFSC::AUBL         => Gateway::NETBANKING_AUSF,
+        IFSC::DLXB         => Gateway::NETBANKING_DLB,
     ];
 
     /**
@@ -3181,6 +3186,7 @@ class Gateway
             self::NETBANKING_IBK,
             self::NETBANKING_UBI,
             self::NETBANKING_AUSF,
+            self::NETBANKING_DLB,
         ];
 
         $isRouted = in_array($gateway, $gateways, true);
@@ -3251,6 +3257,7 @@ class Gateway
             self::NETBANKING_CANARA,
             self::NETBANKING_KOTAK,
             self::NETBANKING_AUSF,
+            self::NETBANKING_DLB,
         ];
 
         return (in_array($gateway, $gateways, true));

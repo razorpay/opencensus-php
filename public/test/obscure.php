@@ -139,6 +139,7 @@ function disableEmptyInputs(form) {
                 <option value="KKBK_C">Kotak Mahindra Bank - Corporate</option>
                 <option value="DCBL">Development Credit Bank</option>
                 <option value="AUBL">AU Small Finance</option>
+                <option value="DLXB">DhanlaxmiBank</option>
             </select>
         </td>
     </tr>

@@ -95,6 +95,7 @@ class Base extends Core
     const NETBANKING_DCB         = 'NetbankingDcb';
     const NETBANKING_UBI         = 'NetbankingUbi';
     const NETBANKING_AUSF        = 'NetbankingAusf';
+    const NETBANKING_DLB         = 'NetbankingDlb';
     const NETBANKING_KOTAK_V2    = 'NetbankingKotakV2';
     const VIRTUAL_ACC_KOTAK      = 'VirtualAccKotak';
     const VIRTUAL_ACC_YESBANK    = 'VirtualAccYesBank';
@@ -218,6 +219,7 @@ class Base extends Core
         self::UPI_JUSPAY             => ['crs.upimerchantsettlement@axisbank.com'],
         self::UPI_AIRTEL             => [],
         self::CRED                   => [],
+        self::NETBANKING_DLB         => [],
 
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
@@ -294,6 +296,7 @@ class Base extends Core
         Gateway::EBS                    => self::EBS,
         Gateway::BT_YESBANK             => self::VIRTUAL_ACC_YESBANK,
         Gateway::WORLDLINE              => self::VAS_AXIS,
+        Gateway::NETBANKING_DLB         => self::NETBANKING_DLB,
 
         Gateway::AMEX                   => [
             Gateway::ACQUIRER_AMEX   => self::AMEX,
