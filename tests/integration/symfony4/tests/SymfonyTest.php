@@ -30,7 +30,7 @@ class SymfonyTest extends TestCase
     private static $outputFile;
     private static $client;
 
-    public static function setUpBeforeClass(): void
+    public static function setUpBeforeClass()
     {
         self::$outputFile = sys_get_temp_dir() . '/spans.json';
         self::$client = new Client([
@@ -38,7 +38,7 @@ class SymfonyTest extends TestCase
         ]);
     }
 
-    public function setUp(): void
+    public function setUp()
     {
         parent::setUp();
         $this->clearSpans();
