@@ -98,7 +98,7 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: 7.1
+          php-version: 7.2
           extensions: opencensus, memcached, pdo_mysql, mysqli, pgsql, pcntl
 
       - uses: niden/actions-memcached@v7
