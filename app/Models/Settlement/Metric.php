@@ -84,6 +84,7 @@ final class Metric
     const BANK_ACCOUNT_CREATED_YESTERDAY        = 'bank_account_created_yesterday';
     const BLOCK_MF_OUTSIDE_TIME_PERIOD          = 'block_mf_outside_time_period';
     const MIN_SETTLEMENT_AMOUNT_BLOCK           = 'min_settlement_amount_block';
+    const MAX_SETTLEMENT_AMOUNT_BLOCK           = 'max_settlement_amount_block';
     const SETTLEMENT_AMOUNT_LESS_THAN_BALANCE   = 'settlement_amount_less_than_balance';
     const BLOCK_OUTSIDE_ES_WINDOW               = 'block_outside_es_window';
     const BLOCK_OUTSIDE_ES_THREE_PM_WINDOW      = 'block_outside_es_three_pm_window';

@@ -624,6 +624,41 @@ class SettlementTest extends TestCase
         }
     }
 
+    /**
+     * Tests the case for settlement amount greater than max block that shouldn't create settlements
+     */
+    public function testMerchantSettlementSkipMaxBlock()
+    {
+        $channel = Channel::AXIS2;
+
+        $now = Carbon::create(2018, 8, 14, 15, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
+        $merchantId = '10000000000000';
+
+        $this->fixtures->merchant->edit(
+            $merchantId,
+            [
+                'channel'      => $channel,
+                'suspended_at' => null,
+                'activated'    => true
+            ]);
+
+        $this->createPaymentEntities(10, $merchantId, $now, 6000000000);
+
+        // setting the time stamp later so as to consider the previous dated transactions into the settlements
+        $now = Carbon::create(2018, 8, 20, 15, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($now);
+
+        $this->initiateSettlements($channel, null, true, [$merchantId]);
+
+        $settlement = $this->getLastEntity('settlement', true);
+
+        $this->assertNull($settlement);
+    }
+
     public function testMutualFundMarketplaceSettlementSchedule()
     {
         $channel = Channel::AXIS;

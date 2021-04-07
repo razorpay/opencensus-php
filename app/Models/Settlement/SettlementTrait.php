@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Settlement;
 
+use Config;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
@@ -759,9 +760,37 @@ trait SettlementTrait
 
         list($setlAmount, $setlFee, $setlApiFee, $tax) = $this->getSettlementAmountsForMerchant($txns);
 
-        if (($setlAmount < 100) or ($setlAmount > $balance->getBalance()))
+        if (($setlAmount < 100) or ($setlAmount > $balance->getBalance()) or ($setlAmount >= 50000000000))
         {
-            $skipReason = ($setlAmount < 100) ? Metric::MIN_SETTLEMENT_AMOUNT_BLOCK : Metric::SETTLEMENT_AMOUNT_LESS_THAN_BALANCE;
+            $skipReason = null;
+
+            if($setlAmount < 100)
+            {
+                $skipReason = Metric::MIN_SETTLEMENT_AMOUNT_BLOCK;
+            }
+            else if($setlAmount > $balance->getBalance())
+            {
+                $skipReason = Metric::SETTLEMENT_AMOUNT_LESS_THAN_BALANCE;
+            }
+            else if($setlAmount >= 50000000000)
+            {
+                $operation = 'Settlement skipped due to amount grater than 50 Cr';
+
+                $traceData = [
+                    'merchant_id' => $merchant->getId(),
+                    'balance'     => $balance->getBalance(),
+                    'setlAmount'  => $setlAmount,
+                ];
+
+                (new SlackNotification)->send(
+                    $operation,
+                    $traceData,
+                    null,
+                    1,
+                    Config::get('slack.channels.settlement_alerts'));
+
+                $skipReason = Metric::MAX_SETTLEMENT_AMOUNT_BLOCK;
+            }
 
             $this->trace->count(
                 Metric::MERCHANTS_SKIPPED_FOR_SETTLEMENT_TOTAL,
@@ -777,7 +806,7 @@ trait SettlementTrait
                     'balance'      => $balance->getBalance(),
                     'merchant'     => $merchant->getId(),
                     'setlAmount'   => $setlAmount,
-                    'reason'       => 'settlement amount less than 1rs or greater than balance',
+                    'reason'       => 'settlement amount less than 1rs or greater than balance or greater than 50Cr',
                 ]);
 
             return [null, null];
