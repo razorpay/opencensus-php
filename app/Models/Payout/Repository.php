@@ -255,7 +255,7 @@ class Repository extends Base\Repository
         $statusColumn       = $this->repo->payout->dbColumn(Entity::STATUS);
         $scheduledAtColumn  = $this->repo->payout->dbColumn(Entity::SCHEDULED_AT);
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->with(['balance', 'merchant'])
                     ->whereIn($statusColumn, [Status::SCHEDULED, Status::PENDING])
                     ->whereNotNull($scheduledAtColumn)
@@ -308,7 +308,7 @@ class Repository extends Base\Repository
         $statusColumn = $this->dbColumn(Entity::STATUS);
         $balanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->where($statusColumn, '=', Status::QUEUED)
                     ->where($balanceIdColumn, '=', $balanceId)
                     ->count();
