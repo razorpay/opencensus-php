@@ -1065,6 +1065,20 @@ class Repository extends \Razorpay\Spine\Repository
         }
     }
 
+    protected function getDataWarehouseConnectionWithSlaveForTestMode()
+    {
+        if ($this->app['env'] === Environment::TESTING)
+        {
+            return Config::get('database.default');
+        }
+
+        $mode = $mode ?? $this->app['rzp.mode'];
+
+        $connection = ($mode === Mode::TEST) ? Connection::SLAVE_TEST : Connection::DATA_WAREHOUSE_LIVE;
+
+        return $connection;
+    }
+
     public function getSlaveConnection(string $mode = null)
     {
         if ($this->app['env'] === 'testing')

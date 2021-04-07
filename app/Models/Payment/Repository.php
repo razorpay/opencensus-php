@@ -5,6 +5,7 @@ namespace RZP\Models\Payment;
 use DB;
 use Carbon\Carbon;
 
+use RZP\Base\ConnectionType;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
@@ -2384,32 +2385,22 @@ class Repository extends Base\Repository
 
     public function getValidatePaymentsForPaymentPages(PaymentLink\Entity $paymentPage)
     {
-        return $this->repo->useSlave( function() use ($paymentPage)
-        {
-            // Adding the 45 min check because we are checking only for created and authorized payments
-            // which are in progress.
-            // They are expected to change status within this time. otherwise we will refund the amount
-            // refund happens in payment pages post capture flow
-            $timeStamp = Carbon::today(Timezone::IST)->subMinutes(45)->getTimestamp();
+        $timeStamp = Carbon::today(Timezone::IST)->subMinutes(45)->getTimestamp();
 
-            return $this->newQuery()
-                       ->where(Entity::PAYMENT_LINK_ID, $paymentPage->getId())
-                       ->where(Entity::MERCHANT_ID, $paymentPage->getMerchantId())
-                       ->where(Entity::CREATED_AT, '>', $timeStamp)
-                       ->whereIn(Entity::STATUS,[Status::CREATED, Status::AUTHORIZED])
-                       ->get();
-        });
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->where(Entity::PAYMENT_LINK_ID, $paymentPage->getId())
+                    ->where(Entity::MERCHANT_ID, $paymentPage->getMerchantId())
+                    ->where(Entity::CREATED_AT, '>', $timeStamp)
+                    ->whereIn(Entity::STATUS,[Status::CREATED, Status::AUTHORIZED])
+                    ->get();
     }
 
     public function getCapturedPaymentsForPaymentPage(PaymentLink\Entity $paymentPage)
     {
-        return $this->repo->useSlave( function() use ($paymentPage)
-        {
-            return $this->newQuery()
-                        ->where(Entity::PAYMENT_LINK_ID, $paymentPage->getId())
-                        ->where(Entity::MERCHANT_ID, $paymentPage->getMerchantId())
-                        ->whereIn(Entity::STATUS, [Status::CAPTURED, Status::REFUNDED])
-                        ->count();
-        });
+        return $this->newQueryWithConnection($this->getDataWarehouseConnectionWithSlaveForTestMode())
+                    ->where(Entity::PAYMENT_LINK_ID, $paymentPage->getId())
+                    ->where(Entity::MERCHANT_ID, $paymentPage->getMerchantId())
+                    ->whereIn(Entity::STATUS, [Status::CAPTURED, Status::REFUNDED])
+                    ->count();
     }
 }
