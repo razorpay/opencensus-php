@@ -53,14 +53,14 @@ class SymfonyTest extends TestCase
             ]
         ]);
         $this->assertEquals(200, $response->getStatusCode());
-        $this->assertContains('Hello world!', $response->getBody()->getContents());
+        $this->assertStringContainsString('Hello world!', $response->getBody()->getContents());
 
         $spans = json_decode(file_get_contents(self::$outputFile), true);
         $this->assertNotEmpty($spans);
 
         $spansByName = $this->groupSpansByName($spans);
 
-//        $this->assertEquals('/?rand=' . $rand, $spans[0]['name']);
+//        $this->assertEquals('/?rand=' . $rand, $spans[0]['name']); assertion failing.
         $this->assertNotEmpty($spansByName[ControllerEvent::class]);
         $this->assertNotEmpty($spansByName[ControllerArgumentsEvent::class]);
         $this->assertNotEmpty($spansByName[ResponseEvent::class]);
