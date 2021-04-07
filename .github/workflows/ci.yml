@@ -129,6 +129,10 @@ jobs:
         continue-on-error: true
         env:
           DATABASE_URL: mysql://mysql:mysql@127.0.0.1:3306/mysqldb
+          POSTGRES_PASSWORD: pgsql
+          POSTGRES_USER: postgres
+          POSTGRES_DATABASE: postgres
+          POSTGRES_PORT: 5432
 
     services:
       mysql:

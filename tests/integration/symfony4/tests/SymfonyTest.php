@@ -18,6 +18,7 @@
 namespace App\Tests;
 
 use GuzzleHttp\Client;
+use OpenCensus\Trace\Integrations\Postgres;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpKernel\Event\ControllerArgumentsEvent;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
@@ -32,6 +33,7 @@ class SymfonyTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
+        Postgres::load();
         self::$outputFile = sys_get_temp_dir() . '/spans.json';
         self::$client = new Client([
             'base_uri' => getenv('TEST_URL') ?: 'http://localhost:9000'

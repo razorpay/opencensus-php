@@ -8,11 +8,11 @@
   <filter>
     <whitelist>
       <directory suffix=".php">src</directory>
-<!--      <exclude>-->
-<!--        <directory suffix=".php">src/*/V[!a-zA-Z]*</directory>-->
-<!--        <directory suffix=".php">src/*/*/V[!a-zA-Z]*</directory>-->
-<!--        <directory suffix=".php">src/*/*/*/V[!a-zA-Z]*</directory>-->
-<!--      </exclude>-->
+      <exclude>
+        <directory suffix=".php">src/*/V[!a-zA-Z]*</directory>
+        <directory suffix=".php">src/*/*/V[!a-zA-Z]*</directory>
+        <directory suffix=".php">src/*/*/*/V[!a-zA-Z]*</directory>
+      </exclude>
     </whitelist>
   </filter>
   <logging>
