@@ -1,12 +1,12 @@
 name: CI
-on: [push]
+on: [ push ]
 
 jobs:
   build:
     strategy:
       fail-fast: false
       matrix:
-        php: [7.0, 7.1, 7.2, 7.3, 7.4]
+        php: [ 7.0, 7.1, 7.2, 7.3, 7.4 ]
 
     runs-on: ubuntu-latest
 
@@ -116,6 +116,19 @@ jobs:
             autoconf \
             git \
             unzip
+
+      - name: Install opencensus extension
+        run: |
+          cd ext
+          phpize
+          ./configure --enable-opencensus
+          sudo make install
+
+      - name: Install memcached extension
+        run: |
+          sudo apt-get install -y -q --no-install-recommends \
+            libmemcached11 libmemcached-dev zlib1g-dev zlib1g
+          sudo pecl install memcached <<<''
 
       - name: Curl test
         run: tests/integration/curl/test.sh
