@@ -9,7 +9,7 @@ use Razorpay\Edge\Passport;
 
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestContextV2;
-use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Http\BasicAuth;
 
 /**
  * Class PostAuthenticate
@@ -59,7 +59,7 @@ final class PostAuthenticate
     public function handle(bool $authenticated, Request $request)
     {
         $funcStartedAt = millitime();
-        
+
         $this->ensureRequestContextAdditionalAttrs();
         $this->ensureRequestContextPassport($authenticated);
         $this->reportAuthorizationEnforcementMismatches($authenticated, $request);
@@ -106,13 +106,15 @@ final class PostAuthenticate
         if ($fromEdge and $errors)
         {
             $this->reqCtx->passportAttrsMismatch = true;
-            $this->trace->count(Metric::PASSPORT_ATTRS_MISMATCH_TOTAL, $this->ba->getRequestMetricDimensions());
 
-            // Ref: https://razorpay.slack.com/archives/C0ZJSSQSV/p1606207381147900?thread_ts=1605686668.448700&cid=C0ZJSSQSV
-            // It logs only for private + key auth type which is handled in Edge presently.
-            if (($this->reqCtx->authFlowType == BasicAuth::KEY) and
-                ($this->reqCtx->authType == BasicAuth\Type::PRIVATE_AUTH))
+            // It reports mismatches only for scenarios which are expected to be handled at edge presently.
+            $shouldReport = (($this->reqCtx->authFlowType == BasicAuth\BasicAuth::KEY)
+                && ($this->reqCtx->authType == BasicAuth\Type::PRIVATE_AUTH)
+                && ($this->reqCtx->proxy == false));
+
+            if ($shouldReport === true)
             {
+                $this->trace->count(Metric::PASSPORT_ATTRS_MISMATCH_TOTAL, $this->ba->getRequestMetricDimensions());
                 $this->trace->warning(TraceCode::PASSPORT_ATTRS_MISMATCH, compact('errors'));
             }
         }
@@ -128,6 +130,7 @@ final class PostAuthenticate
     {
         $this->reqCtx->authType = $this->ba->getAuthType();
         $this->reqCtx->proxy    = $this->ba->isProxyAuth();
+        $this->reqCtx->authFlowType = app('request.ctx')->getAuthFlowType();
     }
 
     /**
