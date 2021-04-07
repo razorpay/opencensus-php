@@ -45,6 +45,9 @@ class Notifier extends Base\Core
             Event::ASSIGNEE_CHANGE => [
                 $spocSubscriber,
                 $opsSubscriber
+            ],
+            Event::ACCOUNT_OPENING_WEBHOOK_DATA_AMBIGUITY => [
+                $opsSubscriber
             ]
         ];
     }

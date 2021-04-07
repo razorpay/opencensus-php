@@ -416,6 +416,22 @@ class Core extends Base\Core
 
             $bankingAccount = $this->fetchByBankReferenceAndChannel($channel, $attributes[Entity::BANK_REFERENCE_NUMBER]);
 
+            // if data validation of pincode or business beneficiary name failed, trigger the internal email
+            if($this->isDataValidForBankingAccount($bankingAccount) === false)
+            {
+                // trigger the internal email
+                $eventProperties = [
+                    Entity::BENEFICIARY_NAME            => $attributes[Entity::BENEFICIARY_NAME],
+                    Entity::BENEFICIARY_PIN             => $attributes[Entity::BENEFICIARY_PIN],
+                    Entity::BENEFICIARY_CITY            => $attributes[Entity::BENEFICIARY_CITY],
+                    Entity::BENEFICIARY_ADDRESS1        => $attributes[Entity::BENEFICIARY_ADDRESS1] . ' ' . $attributes[Entity::BENEFICIARY_ADDRESS2] . ' ' . $attributes[Entity::BENEFICIARY_ADDRESS3],
+                    Entity::BANK_REFERENCE_NUMBER       => $attributes[Entity::BANK_REFERENCE_NUMBER],
+                    Entity::BENEFICIARY_EMAIL           => $attributes[Entity::BENEFICIARY_EMAIL],
+                    Entity::BENEFICIARY_MOBILE          => $attributes[Entity::BENEFICIARY_MOBILE]
+                ];
+                $this->notifier->notify($bankingAccount, Event::ACCOUNT_OPENING_WEBHOOK_DATA_AMBIGUITY, Event::ALERT, $eventProperties);
+            }
+
             if ($this->isAccountInfoWebhookAlreadyProcessed($bankingAccount) === true)
             {
                 $this->handleDuplicateWebhook($input, $channel, $bankingAccount);
@@ -1311,6 +1327,23 @@ class Core extends Base\Core
         $bankingAccount->spocs()->attach($spoc, [Entity::AUDITOR_TYPE => 'spoc']);
 
         $this->repo->saveOrFail($bankingAccount);
+    }
+
+    /**
+     * @param Entity $bankingAccount
+     * @return bool
+     */
+    public function isDataValidForBankingAccount(Entity $bankingAccount): bool
+    {
+        //similar_text - returns the number of matching chars percentage in both strings.
+        //The number of matching characters is calculated by finding the longest first common substring, and
+        //then doing this for the prefixes and the suffixes, recursively. The lengths of all found common substrings are added.
+        similar_text($bankingAccount->getBeneficiaryName(), $bankingAccount->merchant->merchantDetail->getBusinessName(), $similarityPercent);
+        if($bankingAccount->getBeneficiaryPin() !== $bankingAccount->getPincode() || $similarityPercent < 75.00)
+        {
+            return false;
+        }
+        return true;
     }
 
     protected function redactSecrets(array $input)

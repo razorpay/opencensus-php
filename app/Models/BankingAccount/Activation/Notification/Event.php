@@ -23,6 +23,7 @@ class Event
     const STATUS_CHANGE = 'status_change';
     const SUBSTATUS_CHANGE = 'substatus_change';
     const ASSIGNEE_CHANGE = 'assignee_change';
+    const ACCOUNT_OPENING_WEBHOOK_DATA_AMBIGUITY = 'account_opening_webhook_data_ambiguity';
 
     public function __construct(string $name, string $type, array $properties)
     {

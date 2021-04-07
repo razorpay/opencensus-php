@@ -6,6 +6,7 @@ namespace RZP\Mail\BankingAccount\Activation;
 use App;
 
 use RZP\Mail\Base\Mailable;
+use RZP\Models\BankingAccount\Activation\Notification\Event;
 
 abstract class Base extends Mailable
 {

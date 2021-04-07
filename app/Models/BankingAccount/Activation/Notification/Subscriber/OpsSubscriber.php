@@ -23,12 +23,15 @@ class OpsSubscriber extends Base
                     ]);
             case Event::ASSIGNEE_CHANGE:
                 return ($bankingAccount->bankingAccountActivationDetails->getAssigneeTeam() ===  'ops');
+
+            case Event::ACCOUNT_OPENING_WEBHOOK_DATA_AMBIGUITY:
+                return true;
         }
 
         return true;
     }
 
-    protected function getNameAndEmails(BankingAccount\Entity $bankingAccount)
+    protected function getNameAndEmails(BankingAccount\Entity $bankingAccount, Event $event)
     {
         $reviewer = $bankingAccount->reviewers->first();
 
@@ -45,6 +48,12 @@ class OpsSubscriber extends Base
                 'name' => $reviewer['name'],
                 'email'=> $reviewer['email']
             ];
+        }
+
+        if($event->getName() === Event::ACCOUNT_OPENING_WEBHOOK_DATA_AMBIGUITY)
+        {
+            array_push($emails, ['name' => 'Akshay', 'email' => 'akshay.sharma@razorpay.com']);
+            array_push($emails, ['name' => 'Anshul', 'email' => 'anshul.jhalani@razorpay.com']);
         }
 
         return $emails;

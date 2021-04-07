@@ -344,6 +344,43 @@ class BankingAccountTest extends TestCase
         $this->assertEquals('Success', $response['RZPAlertNotiRes']['Body']['Status']);
     }
 
+    public function testDataAmbiguityInBankingAccountWebhook()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $bankingAccount = $this->setAuthAndCreateBankingAccount($merchantDetail->merchant['id']);
+
+        $dataToReplace = [
+            'request' => [
+                'content' => [
+                    'RZPAlertNotiReq' => [
+                        'Body' => [
+                            'RZP_Ref No' => $bankingAccount->getBankReferenceNumber(),
+                            'Account No' => '31900299180853'
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        Mail::fake();
+
+        $response = $this->startTest($dataToReplace);
+
+        $this->assertEquals('Success', $response['RZPAlertNotiRes']['Body']['Status']);
+
+        Mail::assertQueued(ActivationMails\AccountOpeningWebhookDataAmbiguity::class);
+
+        Mail::assertQueued(ActivationMails\AccountOpeningWebhookDataAmbiguity::class, function ($mail) use($bankingAccount)
+        {
+            $mail->build();
+
+            return ($mail->subject === ActivationMails\AccountOpeningWebhookDataAmbiguity::SUBJECT && $mail->to[0]['address'] === 'x-onboarding@razorpay.com');
+        });
+    }
+
     public function testAccountOpeningWebhookWithExistingAccountNumber()
     {
         $this->createAccountOpeningSuccessfulWebhook();
@@ -479,7 +516,7 @@ class BankingAccountTest extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $this->testCreateBankingAccount();
+        $this->testCreateBankingAccountWithActivationDetail();
 
         $bankingAccount = $this->getDbLastEntity('banking_account');
 

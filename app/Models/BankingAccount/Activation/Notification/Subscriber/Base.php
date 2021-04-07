@@ -32,14 +32,14 @@ abstract class Base extends Core
         return $mailable;
     }
 
-    protected function getNameAndEmails(BankingAccount\Entity $bankingAccount)
+    protected function getNameAndEmails(BankingAccount\Entity $bankingAccount, Event $event)
     {
         return [];
     }
 
-    protected function modifyMailable(Mailable & $mailable, BankingAccount\Entity $bankingAccount)
+    protected function modifyMailable(Mailable & $mailable, BankingAccount\Entity $bankingAccount, Event $event)
     {
-        $nameAndEmails = $this->getNameAndEmails($bankingAccount);
+        $nameAndEmails = $this->getNameAndEmails($bankingAccount, $event);
 
         foreach($nameAndEmails as $nameAndEmail)
         {
@@ -51,7 +51,7 @@ abstract class Base extends Core
     {
         $mailable = $this->getMailableForEvent($bankingAccount, $event);
 
-        $this->modifyMailable($mailable, $bankingAccount);
+        $this->modifyMailable($mailable, $bankingAccount, $event);
 
         $this->trace->info(TraceCode::BANKING_ACCOUNT_EVENT_SUBSCRIBER_NOTIFY,
             [

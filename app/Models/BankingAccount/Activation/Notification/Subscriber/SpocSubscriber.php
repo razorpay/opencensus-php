@@ -38,7 +38,7 @@ class SpocSubscriber extends Base
         return true;
     }
 
-    protected function getNameAndEmails(BankingAccount\Entity $bankingAccount)
+    protected function getNameAndEmails(BankingAccount\Entity $bankingAccount, Event $event)
     {
         $spoc = $bankingAccount->spocs->first();
 
