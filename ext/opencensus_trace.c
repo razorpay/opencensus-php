@@ -520,11 +520,6 @@ void opencensus_trace_clear(int reset TSRMLS_DC)
     }
 }
 
-static int opencensus_trace_count()
-{
-    return 0;
-}
-
 /**
  * Reset the list of spans
  *
