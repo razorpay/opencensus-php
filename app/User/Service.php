@@ -146,6 +146,9 @@ class Service extends Base\Service
     public function oauthRegisterAndSignIn($input): array
     {
         $input[Constants::OAUTH_SOURCE] = Request::header(Headers::OAUTH_SOURCE) ?? Constants::DASHBOARD;
+
+        $oauthProviderInput = $input[Constants::OAUTH_PROVIDER];
+
         $input[Constants::OAUTH_PROVIDER] = json_encode(array($input[Constants::OAUTH_PROVIDER]));
 
         list($error, $data) = $this->oauthRegister($input);
@@ -159,7 +162,7 @@ class Service extends Base\Service
             $credentials = [
                 Constants::EMAIL          => $input[Constants::EMAIL],
                 Constants::ID_TOKEN       => $input[Constants::ID_TOKEN],
-                Constants::OAUTH_PROVIDER => $input[Constants::OAUTH_PROVIDER],
+                Constants::OAUTH_PROVIDER => $oauthProviderInput,
                 Constants::OAUTH_SOURCE   => $input[Constants::OAUTH_SOURCE],
             ];
 
