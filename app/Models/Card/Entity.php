@@ -777,7 +777,7 @@ class Entity extends Base\PublicEntity
         // allow international IIN
         // allow domestic card if razorX is disabled
         // for fail safety, razorX retry count is 3
-        if ($iin->isInternational() === false && $isInitial === true)
+        if (($iin->isInternational() === false || $iin->isAmex() === true) && ($isInitial === true))
         {
             $variant  = app('razorx')->getTreatment($merchant->getId(),
                 RazorxTreatment::RECURRING_CARD_NOT_ENABLED,

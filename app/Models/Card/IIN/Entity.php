@@ -214,6 +214,13 @@ class Entity extends Base\PublicEntity
                 ($this->getMessageType() === 'SMS'));
     }
 
+    public function isAmex()
+    {
+        $network = $this->getNetwork();
+
+        return ($network === Card\Network::$fullName[Card\Network::AMEX]);
+    }
+
     public function setType($type)
     {
         Card\Type::checkType($type);

@@ -80,6 +80,32 @@ class RecurringPaymentTest extends TestCase
         $this->doAuthAndCapturePayment($payment);
     }
 
+    public function testRecurringInitialPaymentAxisInternationalBlocked()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
+
+        $this->fixtures->iin->create([
+            'iin'       => '514906',
+            'country'   => 'US',
+            'network'   => 'American Express',
+            'type'      => 'credit',
+            'recurring' => 1,
+        ]);
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $payment['card']['number'] = '5149066434045615';
+        $payment['card']['cvv']    = '1234';
+
+        $this->mockRazorx(RazorxTreatment::RECURRING_CARD_NOT_ENABLED, 'on');
+
+        $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_PAYMENT_CARD_RECURRING_NOT_SUPPORTED);
+
+        $this->doAuthAndCapturePayment($payment);
+    }
+
     public function testRecurringPreferredInitialPaymentAllowed()
     {
         $this->ba->privateAuth();
