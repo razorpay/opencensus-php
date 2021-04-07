@@ -117,16 +117,16 @@ jobs:
             git \
             unzip
 
-#      - name: Install opencensus extension
-#        run: |
-#          cd ext
-#          phpize
-#          ./configure --enable-opencensus
-#
-#      - name: Install memcached extension
-#        run: |
-#          sudo apt-get install -y -q --no-install-recommends \
-#            libmemcached11 libmemcached-dev zlib1g-dev zlib1g
+      - name: Install opencensus extension
+        run: |
+          cd ext
+          phpize
+          ./configure --enable-opencensus
+
+      - name: Install memcached extension
+        run: |
+          sudo apt-get install -y -q --no-install-recommends \
+            libmemcached11 libmemcached-dev zlib1g-dev zlib1g
 
       - name: Curl test
         continue-on-error: true
