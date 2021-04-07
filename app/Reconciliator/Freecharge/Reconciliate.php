@@ -32,32 +32,4 @@ class Reconciliate extends Base\Reconciliate
         return self::COMBINED;
     }
 
-    public function getNumLinesToSkip(array $fileDetails)
-    {
-        return [
-            FileProcessor::LINES_FROM_TOP    => 0,
-            FileProcessor::LINES_FROM_BOTTOM => 3
-        ];
-    }
-
-    public function getSettlementFileLink(string $html)
-    {
-        //
-        // The file link is hyperlink to VIEW REPORT
-        // Crawl the body-html, fetch the DomElement and
-        // extract 'href' attribute value
-        //
-        $crawler = new Crawler($html);
-        $filter = $crawler->filter('a');
-
-        foreach ($filter as $i => $content)
-        {
-            $element = new Crawler($content);
-
-            if ($element->html() === 'VIEW REPORT')
-            {
-                return $element->attr('href');
-            }
-        }
-    }
 }

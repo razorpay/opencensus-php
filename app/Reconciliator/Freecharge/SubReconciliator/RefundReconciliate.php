@@ -12,11 +12,7 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
     const COLUMN_REFUND_ID     = 'transaction_id';
     const COLUMN_PAYMENT_ID    = 'order_id';
-    const COLUMN_SETTLED_AT    = 'settlement_date';
-    const COLUMN_REFUND_AMOUNT = 'total_transaction_amount';
-
-    const SETTLEMENT_DATE_FORMAT = 'jS F Y';
-
+    const COLUMN_REFUND_AMOUNT = 'total_amount';
     // Refund id in MIS file is in the format
     // <merchant_id>_<refund_id>_<some number>. So we need to take the element at
     // index 1 after converting to an array.
@@ -47,40 +43,6 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
         return $paymentId;
     }
 
-    protected function getGatewaySettledAt(array $row)
-    {
-        if (empty($row[self::COLUMN_SETTLED_AT]) === true)
-        {
-            return null;
-        }
-
-        $gatewaySettledAt = null;
-
-        try
-        {
-            $gatewaySettledAt = Carbon::createFromFormat(
-                                    self::SETTLEMENT_DATE_FORMAT,
-                                    $row[self::COLUMN_SETTLED_AT],
-                                    Timezone::IST);
-
-            $gatewaySettledAt = $gatewaySettledAt->getTimestamp();
-        }
-        catch (\Exception $ex)
-        {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code'    => TraceCode::RECON_INFO_ALERT,
-                    'message'       => 'Unable to parse settlement date -> ' . $ex->getMessage(),
-                    'refund_id'     => $this->refund->getId(),
-                    'date'          => $row[self::COLUMN_SETTLED_AT],
-                    'gateway'       => $this->gateway
-                ]);
-
-            $this->app['trace']->traceException($ex);
-        }
-
-        return $gatewaySettledAt;
-    }
 
     protected function getReconRefundAmount(array $row)
     {

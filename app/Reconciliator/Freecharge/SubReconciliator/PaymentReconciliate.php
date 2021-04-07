@@ -14,13 +14,10 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      * Row Header Names
      *******************/
     const COLUMN_PAYMENT_ID      = 'order_id';
-    const COLUMN_SERVICE_TAX     = ['service_tax', 'gstservice_tax'];
-    const COLUMN_FEE             = 'net_deduction';
-    const COLUMN_PAYMENT_AMOUNT  = 'total_transaction_amount';
-    const COLUMN_SETTLED_AT      = 'settlement_date';
-    const COLUMN_IGST            = 'igst';
+    const COLUMN_SERVICE_TAX     = 'service_tax';
+    const COLUMN_FEE             = 'fee';
+    const COLUMN_PAYMENT_AMOUNT  = 'total_amount';
 
-    const SETTLEMENT_DATE_FORMAT = 'jS F Y';
 
     protected function getPaymentId(array $row)
     {
@@ -33,9 +30,9 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     protected function getGatewayServiceTax($row)
     {
-        $igstFee = $row[self::COLUMN_IGST] ?? null;
+        $serviceTax = $row[self::COLUMN_SERVICE_TAX] ?? null;
 
-        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($igstFee);
+        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($serviceTax);
     }
 
     protected function getGatewayFee($row)
@@ -68,40 +65,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_PAYMENT_AMOUNT]);
     }
 
-    protected function getGatewaySettledAt(array $row)
-    {
-        if (empty($row[self::COLUMN_SETTLED_AT]) === true)
-        {
-            return null;
-        }
-
-        $gatewaySettledAt = null;
-
-        try
-        {
-            $gatewaySettledAt = Carbon::createFromFormat(
-                                    self::SETTLEMENT_DATE_FORMAT,
-                                    $row[self::COLUMN_SETTLED_AT],
-                                    Timezone::IST);
-
-            $gatewaySettledAt = $gatewaySettledAt->getTimestamp();
-        }
-        catch (\Exception $ex)
-        {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code'    => TraceCode::RECON_INFO_ALERT,
-                    'message'       => 'Unable to parse settlement date -> ' . $ex->getMessage(),
-                    'payment_id'    => $this->payment->getId(),
-                    'date'          => $row[self::COLUMN_SETTLED_AT],
-                    'gateway'       => $this->gateway
-                ]);
-
-            $this->app['trace']->traceException($ex);
-        }
-
-        return $gatewaySettledAt;
-    }
 
     protected function validatePaymentAmountEqualsReconAmount(array $row)
     {

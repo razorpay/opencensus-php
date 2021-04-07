@@ -13,9 +13,9 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
      *******************/
     const COLUMN_TRANSACTION_TYPE = 'transaction_type';
 
-    const TXN_TYPE_PAYMENT = 'Payment';
+    const TXN_TYPE_PAYMENT = 'CREDIT';
 
-    const TXN_TYPE_PAYMENT_REVERSAL = 'Payment Reversal';
+    const TXN_TYPE_PAYMENT_REVERSAL = 'DEBIT';
 
     const TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP = [
         self::TXN_TYPE_PAYMENT          => BaseReconciliate::PAYMENT,

@@ -500,11 +500,10 @@ return [
         'freecharge' => [
             [
                 'Order Id'                  => 'pay_9LEuURhlBPVCxk',
-                'Total Transaction Amount'  => 500,
-                'Transaction Type'          => 'Payment',
-                'GST/Service Tax'           => 1.06272,
-                'Net Deduction'             => 4.5,
-                'IGST'                      => 2
+                'Total Amount'              => 500,
+                'Transaction Type'          => 'CREDIT',
+                'Fee'                       => 1,
+                'Service Tax'               => 2
             ],
             [
                 'Order Id' => str_random(14)
