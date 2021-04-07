@@ -1,7 +1,7 @@
 {
     "require": {
         "php": "^7.2",
-        "razorpay/opencensus": "dev-master",
+        "opencensus/opencensus": "dev-master",
         "guzzlehttp/guzzle": "^6.0",
         "ext-opencensus": "*"
     },

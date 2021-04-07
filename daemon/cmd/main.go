@@ -32,8 +32,8 @@ import (
 	"go.opencensus.io/trace"
 	"go.opencensus.io/zpages"
 
-	"github.com/census-instrumentation/opencensus-php/daemon"
-	"github.com/census-instrumentation/opencensus-php/daemon/processor/local"
+	"github.com/razorpay/opencensus-php/daemon"
+	"github.com/razorpay/opencensus-php/daemon/processor/local"
 )
 
 const (

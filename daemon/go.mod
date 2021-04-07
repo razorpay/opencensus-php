@@ -1,4 +1,4 @@
-module github.com/census-instrumentation/opencensus-php/daemon
+module github.com/razorpay/opencensus-php/daemon
 
 require (
 	contrib.go.opencensus.io/exporter/ocagent v0.4.3

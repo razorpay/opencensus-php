@@ -30,6 +30,6 @@ The PHP library and extension are released independently of each other.
 
 1. Upload the new release to PECL from the [admin console][pecl-upload].
 
-[version-file]: https://github.com/census-instrumentation/opencensus-php/tree/master/src/Version.php
+[version-file]: https://github.com/razorpay/opencensus-php/tree/master/src/Version.php
 [packagist]: https://packagist.org/packages/opencensus/opencensus
 [pecl-upload]: https://pecl.php.net/release-upload.php

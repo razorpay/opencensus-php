@@ -19,7 +19,7 @@ package namedpipe
 import (
 	"errors"
 
-	"github.com/census-instrumentation/opencensus-php/daemon"
+	"github.com/razorpay/opencensus-php/daemon"
 )
 
 // Server is a noop implementation in case we are not on a Windows platform.
