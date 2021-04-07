@@ -38,6 +38,7 @@ class Error extends Support\Fluent
         ErrorCode::BAD_REQUEST_REMINDER_NOT_APPLICABLE,
         ErrorCode::BAD_REQUEST_USER_2FA_VALIDATION_REQUIRED,
         ErrorCode::BAD_REQUEST_USER_2FA_SETUP_REQUIRED,
+        ErrorCode::BAD_REQUEST_USER_2FA_LOCKED,
     ];
 
     const INTERNAL_ERROR_CODE   = 'internal_error_code';
