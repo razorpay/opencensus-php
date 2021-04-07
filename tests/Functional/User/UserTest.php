@@ -328,6 +328,15 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testFailedLoginWithOauthPayload()
+    {
+        $user = $this->fixtures->create('user', ['email' => 'hello123@gmail.com', 'password' => 'hello123']);
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
     public function testOauthCreate()
     {
         Mail::fake();

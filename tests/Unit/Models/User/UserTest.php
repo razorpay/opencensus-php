@@ -1466,8 +1466,7 @@ class UserTest extends TestCase
                 'email'                 => 'dummy@example.com',
                 'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
                 'app'                   => '',
-                'oauth_provider'        => '["google"]',
-                'id_token'              => 'valid id token',
+                'password'              => 'blahblah123',
             ],
             'userDetails' => [
                 'id'                    => '100002Razorpay',
@@ -1487,6 +1486,8 @@ class UserTest extends TestCase
             ],
         ];
 
+        $hash = (new BcryptHasher())->make('blahblah123');
+
         $this->coreMock->shouldReceive('getUserEntity')->andReturn($this->userEntityMock);
 
         $this->userEntityMock->shouldReceive('getValidator')->andReturn($this->userValidator);
@@ -1496,6 +1497,10 @@ class UserTest extends TestCase
         $this->repoMock->shouldReceive('driver')->with('user')->andReturn($this->userRepoMock);
 
         $this->userRepoMock->shouldReceive('getUserFromEmailOrFail')->andReturn($this->userEntityMock);
+
+        $this->userRepoMock->shouldReceive('findByEmail')->andReturn($this->userEntityMock);
+
+        $this->userEntityMock->shouldReceive('getPassword')->andReturn($hash);
 
         $this->userEntityMock->shouldReceive('getOauthProvider')->andReturn('google');
 

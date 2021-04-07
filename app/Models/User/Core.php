@@ -412,38 +412,18 @@ class Core extends Base\Core
 
         $this->traceLoginRoute($input);
 
-        if (empty($input[Entity::OAUTH_PROVIDER]) === true)
-        {
-            $user = $this->getUserByEmailAndVerifyPassword($input[Entity::EMAIL], $input[Entity::PASSWORD]);
-        }
-        else
-        {
-            $user = $this->repo->user->getUserFromEmailOrFail($input[Entity::EMAIL]);
+        $user = $this->getUserByEmailAndVerifyPassword($input[Entity::EMAIL], $input[Entity::PASSWORD]);
 
-            $this->verifyOauthIdToken($input);
+        $this->checkSecondFactorAuthAndSendOtp($user, $validate2fa);
 
-            if ($user !== null)
-            {
-                $this->saveOauthProvider($user, $input[Entity::OAUTH_PROVIDER]);
+        (new Core)->trackOnboardingEvent($user->getEmail(),
+                                         EventCode::MERCHANT_ONBOARDING_LOGIN_SUCCESS);
 
-                // For this User signs up via email/password and drops off in the middle
-                // comes back and logs in via Google OAUth
-                // We will reset and invalidate user's password for security reasons.
-                if ($user->getConfirmedAttribute() === false)
-                {
-                    $this->confirm($user);
+        return $this->get($user);
+    }
 
-                    // reset the password of the user as well.
-                    $this->invalidatePassword($user);
-
-                    $this->repo->transactionOnLiveAndTest(function() use ($user)
-                    {
-                        $this->invalidateContactInfo($user);
-                    });
-                }
-            }
-        }
-
+    public function checkSecondFactorAuthAndSendOtp($user, $validate2fa)
+    {
         if ($validate2fa === false)
         {
             return $this->get($user);
@@ -461,6 +441,36 @@ class Core extends Base\Core
         }
 
         $this->trace->count(Metric::LOGIN_2FA_SUCCESS);
+    }
+
+    public function oauthLogin(array $input, $validate2fa = true)
+    {
+        $this->getUserEntity()->getValidator()->validateInput('loginOauth', $input);
+
+        $user = $this->repo->user->getUserFromEmailOrFail($input[Entity::EMAIL]);
+
+        $this->verifyOauthIdToken($input);
+
+        $this->saveOauthProvider($user, $input[Entity::OAUTH_PROVIDER]);
+
+        // For this User signs up via email/password and drops off in the middle
+        // comes back and logs in via Google OAUth
+        // We will reset and invalidate user's password for security reasons.
+        if ($user->getConfirmedAttribute() === false)
+        {
+            $this->confirm($user);
+
+            $this->trace->info(TraceCode::USER_CONFIRM_INVALIDATE_INFO, ['user_id' => $user->getId()]);
+
+            // reset the password of the user as well.
+            $this->invalidatePassword($user);
+
+            $this->repo->transactionOnLiveAndTest(function() use ($user) {
+                $this->invalidateContactInfo($user);
+            });
+        }
+
+        $this->checkSecondFactorAuthAndSendOtp($user, $validate2fa);
 
         (new Core)->trackOnboardingEvent($user->getEmail(),
                                          EventCode::MERCHANT_ONBOARDING_LOGIN_SUCCESS);

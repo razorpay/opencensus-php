@@ -292,6 +292,31 @@ return [
         ],
     ],
 
+    'testFailedLoginWithOauthPayload' => [
+        'request'   => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => [
+                'email'          => 'hello123@gmail.com',
+                'oauth_provider' => "[\"google\"]",
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'oauth_provider is/are not required and should not be sent',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\ExtraFieldsException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ]
+    ],
+
+
     'testOauthLogin' => [
         'request'  => [
             'url'     => '/users/oauth-login',
@@ -443,7 +468,7 @@ return [
     ],
 
     'testOauthLoginSuccessPasswordAndOauthBothPresent' => [
-        'request'  => [
+        'request'   => [
             'url'     => '/users/oauth-login',
             'method'  => 'POST',
             'content' => [
@@ -453,21 +478,19 @@ return [
                 'id_token'       => 'valid id token',
             ],
         ],
-        'response' => [
-            'content' => [
-                'contact_mobile'          => null,
-                'contact_mobile_verified' => false,
-                'confirmed'               => true,
-                'merchants'               => [
-                    [
-                        'activated'    => false,
-                        'archived_at'  => null,
-                        'suspended_at' => null,
-                        'role'         => 'owner'
-                    ]
-                ]
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'password is/are not required and should not be sent',
+                ],
             ],
+            'status_code' => 400,
         ],
+        'exception' => [
+            'class'               => 'RZP\Exception\ExtraFieldsException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ]
     ],
 
     'testOauthLoginInvalidatePassword' => [

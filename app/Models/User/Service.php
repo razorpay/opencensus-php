@@ -1167,7 +1167,7 @@ class Service extends Base\Service
 
     public function oAuthLogin($input,$validate2fa = true): array
     {
-        $data = $this->core->login($input, $validate2fa);
+        $data = $this->core->oauthLogin($input, $validate2fa);
 
         $this->core->trackOnboardingEvent($input[Entity::EMAIL], EventCode::LOGIN_SUCCESS_WITH_GOOGLE);
 

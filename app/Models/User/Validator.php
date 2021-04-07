@@ -85,14 +85,19 @@ class Validator extends Base\Validator
     ];
 
     protected static $loginRules = [
-        Entity::EMAIL                 => 'required|email',
-        Entity::PASSWORD              => 'required_without:oauth_provider|between:6,50',
-        Entity::CAPTCHA               => 'required_without_all:captcha_disable,oauth_provider',
-        Entity::CAPTCHA_DISABLE       => 'sometimes|string',
-        Entity::APP                   => 'sometimes|string',
-        Entity::OAUTH_PROVIDER        => 'required_without:password|string|custom',
-        Constants::ID_TOKEN           => 'sometimes|string',
-        Constants::OAUTH_SOURCE       => 'sometimes|string',
+        Entity::EMAIL           => 'required|email',
+        Entity::PASSWORD        => 'required|between:6,50',
+        Entity::CAPTCHA         => 'required_without:captcha_disable',
+        Entity::CAPTCHA_DISABLE => 'sometimes|string',
+        Entity::APP             => 'sometimes|string',
+    ];
+
+    protected static $loginOauthRules = [
+        Entity::EMAIL           => 'required|email',
+        Entity::OAUTH_PROVIDER  => 'required|string|custom',
+        Constants::ID_TOKEN     => 'sometimes|string',
+        Constants::OAUTH_SOURCE => 'sometimes|string',
+        Entity::APP             => 'sometimes|string',
     ];
 
     protected static $verifyUserSecondFactorRules = [
