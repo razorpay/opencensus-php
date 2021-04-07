@@ -138,7 +138,6 @@ class Entity
     const MERCHANT_EMI_PLANS         = 'merchant_emi_plans';
     const SETTING                    = 'setting';
     const COMMISSION_INVOICE         = 'commission_invoice';
-    const TERMINAL_ANALYTICS         = 'terminal_analytics';
     const SETTLEMENT_TRANSFER        = 'settlement_transfer';
     const MERCHANT_ACCESS_MAP        = 'merchant_access_map';
     const MERCHANT_APPLICATION       = 'merchant_application';
@@ -649,7 +648,6 @@ class Entity
         self::SETTLEMENT_BUCKET         => \RZP\Models\Settlement\Bucket::class,
         self::SETTLEMENT_DESTINATION    => \RZP\Models\Settlement\Destination::class,
         self::SETTLEMENT_TRANSFER       => \RZP\Models\Settlement\Transfer::class,
-        self::TERMINAL_ANALYTICS        => \RZP\Models\Payment\TerminalAnalytics::class,
         self::MERCHANT_ACCESS_MAP       => \RZP\Models\Merchant\AccessMap::class,
         self::MERCHANT_APPLICATION      => \RZP\Models\Merchant\MerchantApplications::class,
         self::MERCHANT_INHERITANCE_MAP  => \RZP\Models\Merchant\InheritanceMap::class,

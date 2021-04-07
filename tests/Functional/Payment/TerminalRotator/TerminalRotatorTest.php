@@ -46,6 +46,9 @@ class TerminalRotatorTest extends TestCase
 
     public function testTerminalRotatorForInvalidEnrollementStatus()
     {
+
+        $this->markTestSkipped();
+
         // fail the payment with a card that throws invalid enrollment status and
         // succeed wih another terminal and assert so.
 
@@ -66,6 +69,8 @@ class TerminalRotatorTest extends TestCase
 
     public function testCheckoutMultipleAttempts()
     {
+        $this->markTestSkipped();
+
         $this->mockCardVault();
 
         $this->fixtures->times(5)->create('terminal:dynamic_shared_hdfc_terminal');
@@ -100,6 +105,8 @@ class TerminalRotatorTest extends TestCase
 
     public function testOrderMultipleAttempts()
     {
+        $this->markTestSkipped();
+
         // first fail the payment and on next attempt with
         // only a order id, ensure the payment goes through
         // the other terminal
@@ -139,6 +146,7 @@ class TerminalRotatorTest extends TestCase
 
     public function testMultipleAttemptsFail()
     {
+        $this->markTestSkipped();
         // payment simply fails here since neither checkout id not order
         // id is provided here.
 
@@ -287,18 +295,6 @@ class TerminalRotatorTest extends TestCase
         return $payment;
     }
 
-    protected function fetchUsedTerminals($analytics)
-    {
-        $terminalsUsed = array();
-
-        foreach($analytics['items'] as $data)
-        {
-            $terminalsUsed[] = $data['terminal_id'];
-        }
-
-        return $terminalsUsed;
-    }
-
     protected function createTestOrder($amount = 50000)
     {
         $input = array(
@@ -308,41 +304,5 @@ class TerminalRotatorTest extends TestCase
             );
 
         return $this->createOrder($input);
-    }
-
-    protected function doValidPaymentAndFetchUsedTerminals($payment)
-    {
-        $this->doAuthPayment($payment);
-
-        $payment  = $this->getLastPayment(true);
-
-        Payment\Entity::verifyIdAndStripSign($payment['id']);
-
-        $analytics = $this->getEntities('terminal_analytics', array('payment_id' => $payment['id']), true);
-
-        $terminalsUsed = $this->fetchUsedTerminals($analytics);
-
-        return $terminalsUsed;
-    }
-    protected function doPaymentAndFetchUsedTerminals($payment)
-    {
-        $data = $this->testData['testMultipleFailAttemptsWithSameTerminals'];
-
-        $this->runRequestResponseFlow(
-            $data,
-            function() use ($payment)
-            {
-                $this->doAuthPayment($payment);
-            });
-
-        $payment  = $this->getLastPayment(true);
-
-        Payment\Entity::verifyIdAndStripSign($payment['id']);
-
-        $analytics = $this->getEntities('terminal_analytics', array('payment_id' => $payment['id']), true);
-
-        $terminalsUsed = $this->fetchUsedTerminals($analytics);
-
-        return $terminalsUsed;
     }
 }

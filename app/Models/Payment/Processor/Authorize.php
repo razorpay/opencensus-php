@@ -6220,18 +6220,18 @@ trait Authorize
         try
         {
             $log = [
-                TerminalAnalytics\Entity::PAYMENT_ID    => $terminalData['payment_id'],
-                TerminalAnalytics\Entity::TERMINAL_ID   => $terminalData['terminal_id']
+                TerminalAnalytics\Constants::PAYMENT_ID    => $terminalData['payment_id'],
+                TerminalAnalytics\Constants::TERMINAL_ID   => $terminalData['terminal_id']
             ];
 
             // convert difference to milliseconds to record as integer
             $responseTime = (int) (($terminalData['end'] - $terminalData['start']) * 1000);
 
-            $log[TerminalAnalytics\Entity::TERMINAL_RESPONSE_TIME] = $responseTime;
+            $log[TerminalAnalytics\Constants::TERMINAL_RESPONSE_TIME] = $responseTime;
 
-            $log[TerminalAnalytics\Entity::PAYMENT_TYPE] = 1;
+            $log[TerminalAnalytics\Constants::PAYMENT_TYPE] = 1;
 
-            $log[TerminalAnalytics\Entity::TERMINAL_STATUS] = 1;
+            $log[TerminalAnalytics\Constants::TERMINAL_STATUS] = 1;
 
             $errorCode = null;
 
@@ -6241,18 +6241,16 @@ trait Authorize
             {
                 $e = $terminalData['exception'];
 
-                $log[TerminalAnalytics\Entity::TERMINAL_STATUS] = 0;
+                $log[TerminalAnalytics\Constants::TERMINAL_STATUS] = 0;
 
                 // we care about this exception, since its an indicator of
                 // terminal failure
-                $log[TerminalAnalytics\Entity::TERMINAL_STATUS_CODE] = $e->getError()->getHttpStatusCode();
+                $log[TerminalAnalytics\Constants::TERMINAL_STATUS_CODE] = $e->getError()->getHttpStatusCode();
 
-                $log[TerminalAnalytics\Entity::TERMINAL_STATUS_MSG] = $e->getError()->getDescription();
+                $log[TerminalAnalytics\Constants::TERMINAL_STATUS_MSG] = $e->getError()->getDescription();
             }
 
-            (new TerminalAnalytics\Core)->create($log, $payment);
-
-            $tStatus = $log[TerminalAnalytics\Entity::TERMINAL_STATUS];
+            $tStatus = $log[TerminalAnalytics\Constants::TERMINAL_STATUS];
 
             $terminalStatus = ($tStatus === 1) ? TraceCode::TERMINAL_SUCCESS : TraceCode::TERMINAL_FAILURE;
 
@@ -6263,7 +6261,7 @@ trait Authorize
         catch(\Exception $e)
         {
             $this->trace->error(
-                TraceCode::TERMINAL_ANALYTICS_SAVE_FAILED,
+                TraceCode::RECORD_TERMINAL_AUDIT_FAILED,
                 ['terminalData' => $terminalData]
             );
 

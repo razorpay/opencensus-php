@@ -3891,9 +3891,9 @@ ALTER TABLE subscriptions DROP FOREIGN KEY subscriptions_token_id_foreign;
 ALTER TABLE tagging_tags DROP FOREIGN KEY tagging_tags_tag_group_id_foreign;
 ALTER TABLE tax_groups DROP FOREIGN KEY tax_groups_merchant_id_foreign;
 ALTER TABLE taxes DROP FOREIGN KEY taxes_merchant_id_foreign;
-ALTER TABLE terminal_analytics DROP FOREIGN KEY terminal_analytics_payment_id_foreign;
-ALTER TABLE terminal_analytics DROP FOREIGN KEY terminal_analytics_terminal_id_foreign;
 ALTER TABLE terminals DROP FOREIGN KEY terminals_merchant_id_foreign;
+ALTER TABLE terminal_analytics DROP FOREIGN KEY terminal_analytics_payment_id_foreign;
+ALTER TABLE terminal_analytics DROP FOREIGN KEY terminal_analytics_terminal_id_foreign
 ALTER TABLE tokens DROP FOREIGN KEY token_terminal_id_foreign;
 ALTER TABLE tokens DROP FOREIGN KEY tokens_card_id_foreign;
 ALTER TABLE tokens DROP FOREIGN KEY tokens_customer_id_foreign;
@@ -3914,7 +3914,7 @@ ALTER TABLE wallet DROP FOREIGN KEY wallet_payment_id_foreign;
 ALTER TABLE webhooks DROP FOREIGN KEY webhooks_merchant_id_foreign;
 
 #Need this to be executed for Razorpay X payouts
-ALTER TABLE fund_transfer_attempts 
+ALTER TABLE fund_transfer_attempts
     ADD COLUMN wallet_account_id CHAR(14) DEFAULT NULL;
 
 # Disable read_only flag on redash db and run these
@@ -4089,9 +4089,9 @@ ALTER TABLE subscriptions ADD CONSTRAINT subscriptions_token_id_foreign FOREIGN 
 ALTER TABLE tagging_tags ADD CONSTRAINT tagging_tags_tag_group_id_foreign FOREIGN KEY (tag_group_id) REFERENCES tagging_tag_groups (id);
 ALTER TABLE tax_groups ADD CONSTRAINT tax_groups_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
 ALTER TABLE taxes ADD CONSTRAINT taxes_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
+ALTER TABLE terminals ADD CONSTRAINT terminals_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
 ALTER TABLE terminal_analytics ADD CONSTRAINT terminal_analytics_payment_id_foreign FOREIGN KEY (payment_id) REFERENCES payments (id);
 ALTER TABLE terminal_analytics ADD CONSTRAINT terminal_analytics_terminal_id_foreign FOREIGN KEY (terminal_id) REFERENCES terminals (id);
-ALTER TABLE terminals ADD CONSTRAINT terminals_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
 ALTER TABLE tokens ADD CONSTRAINT token_terminal_id_foreign FOREIGN KEY (terminal_id) REFERENCES terminals (id);
 ALTER TABLE tokens ADD CONSTRAINT tokens_card_id_foreign FOREIGN KEY (card_id) REFERENCES cards (id);
 ALTER TABLE tokens ADD CONSTRAINT tokens_customer_id_foreign FOREIGN KEY (customer_id) REFERENCES customers (id);
@@ -6190,3 +6190,6 @@ ALTER TABLE rewards
 ALTER TABLE banking_account_tpvs
     ADD COLUMN trimmed_payer_account_number varchar(255) DEFAULT NULL,
     ADD UNIQUE INDEX banking_account_tpvs_merchant_id_account_number_uq_index (merchant_id, trimmed_payer_account_number);
+    
+DROP TABLE terminal_analytics;
+
