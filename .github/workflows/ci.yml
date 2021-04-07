@@ -107,6 +107,12 @@ jobs:
         continue-on-error: true
         run: tests/integration/curl/test.sh
 
+      - name: Symfony 4 test
+        continue-on-error: true
+        run: tests/integration/symfony4/test.sh
+        env:
+          DATABASE_URL: mysql://mysql:mysql@127.0.0.1:3306/mysqldb
+
       - name: Wordpress test
         continue-on-error: true
         run: tests/integration/wordpress/test.sh
@@ -130,12 +136,6 @@ jobs:
       - name: Pgsql test
         continue-on-error: true
         run: tests/integration/pgsql/test.sh
-
-      - name: Symfony 4 test
-        continue-on-error: true
-        run: tests/integration/symfony4/test.sh
-        env:
-          DATABASE_URL: mysql://mysql:mysql@127.0.0.1:3306/mysqldb
 
     services:
       mysql:
