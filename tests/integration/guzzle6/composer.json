@@ -2,7 +2,7 @@
     "require": {
         "php": "^7.2",
         "opencensus/opencensus": "dev-master",
-        "guzzlehttp/guzzle": "^6.0",
+        "guzzlehttp/guzzle": "6.3.3",
         "ext-opencensus": "*"
     },
     "require-dev": {
