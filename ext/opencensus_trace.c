@@ -520,7 +520,7 @@ void opencensus_trace_clear(int reset TSRMLS_DC)
     }
 }
 
-int opencensus_trace_count()
+static int opencensus_trace_count()
 {
     return 0;
 }
