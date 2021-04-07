@@ -106,12 +106,6 @@ jobs:
       - name: Curl test
         run: tests/integration/curl/test.sh
 
-      - name: Symfony 4 test
-        run: tests/integration/symfony4/test.sh
-        continue-on-error: true
-        env:
-          DATABASE_URL: mysql://mysql:mysql@127.0.0.1:3306/mysqldb
-
       - name: Wordpress test
         run: tests/integration/wordpress/test.sh
 
@@ -130,6 +124,12 @@ jobs:
       - name: Pgsql test
         run: tests/integration/pgsql/test.sh
 
+      - name: Symfony 4 test
+        run: tests/integration/symfony4/test.sh
+        continue-on-error: true
+        env:
+          DATABASE_URL: mysql://mysql:mysql@127.0.0.1:3306/mysqldb
+
     services:
       mysql:
         image: mysql:5.7
@@ -143,6 +143,7 @@ jobs:
       postgres:
         image: postgres:9.6
         env:
+          POSTGRES_PASSWORD: pgsql
           POSTGRES_USER: postgres
         ports:
           - 5432:5432
