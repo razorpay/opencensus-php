@@ -72,7 +72,7 @@ class SubmerchantBulkAssignTest extends TestCase
 
     public function testBulkSubmerchantAssignViaBatchService()
     {
-        $this->ba->batchAuth();
+        $this->ba->batchAppAuth();
 
         $headers = [
             'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
@@ -102,7 +102,7 @@ class SubmerchantBulkAssignTest extends TestCase
 
     public function testBulkSubmerchantAssignViaBatchServiceWithoutBatchId()
     {
-        $this->ba->batchAuth();
+        $this->ba->batchAppAuth();
 
         for ($index = 0; $index < 2; $index++)
         {
@@ -118,7 +118,7 @@ class SubmerchantBulkAssignTest extends TestCase
 
     public function testBulkSubmerchantAssignViaBatchServiceForExcessCount()
     {
-        $this->ba->batchAuth();
+        $this->ba->batchAppAuth();
 
         $headers = [
             'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',

@@ -3158,6 +3158,8 @@ class Route
         'p2p_retrieve_banks_cron',
 
         'user_fetch_entity',
+        'bulk_submerchant_assign',
+
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -3344,7 +3346,6 @@ class Route
         'batch_fetch_by_id',
         'batch_download_file',
         'batch_stats',
-        'bulk_submerchant_assign',
         'invoice_issue_by_batch',
         'invoice_notify_by_batch',
         'invoice_cancel_by_batch',
