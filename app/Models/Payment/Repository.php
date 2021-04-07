@@ -264,7 +264,7 @@ class Repository extends Base\Repository
 
         $paymentStatus = $this->dbColumn(Entity::STATUS);
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getDataWarehouseConnectionWithReplicationLagCheck())
                     ->join($tTableName, $paymentTerminalId, '=', $terminalId)
                     ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
                     ->where($paymentStatus, '=', Status::CAPTURED)
