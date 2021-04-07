@@ -517,6 +517,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_ACCOUNT_WITHDRAWAL_FROZEN                         = 'Payment failed because account withdrawal are frozen';
     const BAD_REQUEST_PAYMENT_INVALID_ACCOUNT                                   = 'Payment failed because of invalid account';
     const BAD_REQUEST_PAYMENT_CANCELLED_AT_EMANDATE_REGISTRATION                = 'E-Mandate registration cancelled by the customer';
+    const BAD_REQUEST_EMANDATE_REGISTRATION_FAILED_JOINT_ACCOUNT                = 'Mandate registration is not allowed for Joint Account';
     const BAD_REQUEST_INVALID_ACCOUNT_HOLDER_NAME                               = 'The account holder name is invalid';
     const BAD_REQUEST_PAYMENT_CANCELLED_BY_CUSTOMER                             = 'Payment cancelled by customer';
     const BAD_REQUEST_PAYMENT_ACCOUNT_MAX_LIMIT_EXCEEDED                        = 'Payment failed because account limit exceeded';
