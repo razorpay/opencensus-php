@@ -757,6 +757,13 @@ class Service extends Base\Service
             $response[Entity::ORG_ID] =  $this->merchant->getOrgId();
 
             $response['org_custom_code'] =  $this->merchant->org->getCustomCode();
+
+            if ($this->merchant->merchantDetail !== null)
+            {
+                $response['support_email'] = $this->merchant->merchantDetail->getContactEmail();
+
+                $response['support_mobile'] = $this->merchant->merchantDetail->getContactMobile();
+            }
         }
 
         $response += (new CheckoutView())->addOrgInformationInResponse($this->merchant);

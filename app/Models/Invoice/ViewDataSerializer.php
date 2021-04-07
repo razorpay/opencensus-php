@@ -340,6 +340,8 @@ class ViewDataSerializer extends Base\Core
 
         $brandImage = $this->getMerchantLogo($partner);
 
+        $supportDetails = $this->getMerchantSupportDetails();
+
         return [
             'id'                               => $this->merchant->getId(),
             'name'                             => $this->invoice->getMerchantLabel(),
@@ -354,6 +356,21 @@ class ViewDataSerializer extends Base\Core
             'gstin'                            => $gstin,
             'has_cin_or_gstin'                 => $hasCinOrGstin,
             'business_registered_address_text' => $this->merchant->getBusinessRegisteredAddressAsText(', '),
+            'support_email'                    => $supportDetails['support_email'],
+            'support_mobile'                   => $supportDetails['support_mobile'],
+        ];
+    }
+
+    protected function getMerchantSupportDetails()
+    {
+       if ($this->merchant->merchantDetail === null)
+       {
+           return ['support_email' => '', 'support_mobile' => ''];
+       }
+
+        return [
+            'support_email'  => $this->merchant->merchantDetail->getContactEmail(),
+            'support_mobile' => $this->merchant->merchantDetail->getContactMobile()
         ];
     }
 

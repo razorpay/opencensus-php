@@ -129,6 +129,8 @@ class ViewSerializer extends Base\Core
 
         $emailOptional  = $this->merchant->isFeatureEnabled(Feature\Constants::EMAIL_OPTIONAL);
 
+        $supportDetails = $this->getMerchantSupportDetails();
+
         return [
             'id'               => $this->merchant->getId(),
             'name'             => $this->merchant->getBillingLabel(),
@@ -139,6 +141,21 @@ class ViewSerializer extends Base\Core
             'asterix_variant'  => $asterixVariant,
             'contact_optional' => $contactOptional,
             'email_optional'   => $emailOptional,
+            'support_email'    => $supportDetails['support_email'],
+            'support_mobile'   => $supportDetails['support_mobile'],
+        ];
+    }
+
+    protected function getMerchantSupportDetails()
+    {
+        if ($this->merchant->merchantDetail === null)
+        {
+            return ['support_email' => '', 'support_mobile' => ''];
+        }
+
+        return [
+            'support_email'  => $this->merchant->merchantDetail->getContactEmail(),
+            'support_mobile' => $this->merchant->merchantDetail->getContactMobile(),
         ];
     }
 
