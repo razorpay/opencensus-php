@@ -210,7 +210,9 @@ class Constants
         "reshma.sultana@hdbfs.com",
         "annapurna.pal+008@razorpay.com",
         "annapurna.pal+007@razorpay.com",
-        "qa.testing+workflow@razorpay.com"
+        "qa.testing+workflow@razorpay.com",
+        "qa+uiautomation+1@razorpay.com",
+        "qa+uiautomation+2@razorpay.com"
     ];
 
     // Only in these environments we will verify the captcha repsonse with google
