@@ -110,6 +110,13 @@ class Entity extends Base\PublicEntity
     const PAYMENT_BUTTON_TEMPLATE_TYPE = 'payment_button_template_type';
     const DEFAULT_THEME                = 'light';
 
+    //Pixel Tracking
+    const PP_FB_PIXEL_TRACKING_ID              = 'pp_fb_pixel_tracking_id';
+    const PP_GA_PIXEL_TRACKING_ID              = 'pp_ga_pixel_tracking_id';
+    const PP_FB_EVENT_ADD_TO_CART_ENABLED      = 'pp_fb_event_add_to_cart_enabled';
+    const PP_FB_EVENT_INITIATE_PAYMENT_ENABLED = 'pp_fb_event_initiate_payment_enabled';
+    const PP_FB_EVENT_PAYMENT_COMPLETE         = 'pp_fb_event_payment_complete_enabled';
+
     const SETTINGS_KEYS                = [
         self::THEME,
         self::UDF_SCHEMA,
@@ -124,6 +131,11 @@ class Entity extends Base\PublicEntity
         self::PP_BUTTON_TEXT,
         self::PP_BUTTON_THEME,
         self::PAYMENT_BUTTON_TEMPLATE_TYPE,
+        self::PP_FB_PIXEL_TRACKING_ID,
+        self::PP_GA_PIXEL_TRACKING_ID,
+        self::PP_FB_EVENT_ADD_TO_CART_ENABLED,
+        self::PP_FB_EVENT_INITIATE_PAYMENT_ENABLED,
+        self::PP_FB_EVENT_PAYMENT_COMPLETE,
     ];
 
     const INVOICE_DETAILS_KEYS          = [
