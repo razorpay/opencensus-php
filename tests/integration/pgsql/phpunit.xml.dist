@@ -1,4 +1,4 @@
-<?xml version="2.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <phpunit bootstrap="./vendor/autoload.php" colors="true">
   <testsuites>
     <testsuite>
@@ -8,11 +8,11 @@
   <filter>
     <whitelist>
       <directory suffix=".php">src</directory>
-      <exclude>
-        <directory suffix=".php">src/*/V[!a-zA-Z]*</directory>
-        <directory suffix=".php">src/*/*/V[!a-zA-Z]*</directory>
-        <directory suffix=".php">src/*/*/*/V[!a-zA-Z]*</directory>
-      </exclude>
+<!--      <exclude>-->
+<!--        <directory suffix=".php">src/*/V[!a-zA-Z]*</directory>-->
+<!--        <directory suffix=".php">src/*/*/V[!a-zA-Z]*</directory>-->
+<!--        <directory suffix=".php">src/*/*/*/V[!a-zA-Z]*</directory>-->
+<!--      </exclude>-->
     </whitelist>
   </filter>
   <logging>
