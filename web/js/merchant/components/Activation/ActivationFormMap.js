@@ -239,6 +239,11 @@ const businessModel = [
         'Please give a brief description of the nature of your business. Please include examples of products you sell, the business category you operate under, your customers and the channels you primarily use to conduct your business(Website, offline retail etc).',
       placeholder: 'Minimum 200 characters',
       descriptionClass: 'Input--business-description',
+      validator: (value) => {
+        if (value.length < 250) {
+          return 'Business Description should be at least 250 Characters';
+        }
+      },
       showCharacterLength: (val) => {
         if (val && val.length) {
           return val.length;
