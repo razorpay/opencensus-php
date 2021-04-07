@@ -22,6 +22,6 @@ sed -i "s|dev-master|dev-${BRANCH}|" composer.json
 sed -i "s|https://github.com/razorpay/opencensus-php|${REPO}|" composer.json
 composer install -n --prefer-dist
 
-vendor/bin/phpunit
+php -d extension=opencensus.so vendor/bin/phpunit
 
 popd
