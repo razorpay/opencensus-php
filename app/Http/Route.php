@@ -6320,6 +6320,7 @@ class Route
 
         'reporting' => [
             'merchant_associated_accounts_fetch',
+            'internal_merchant_fetch'
         ],
 
         'vajra' => [
