@@ -141,6 +141,16 @@ class CapitalCardsController extends Controller
             'X-Auth-Type'   => 'admin'
         ];
 
+        if (isset($body['merchant_id']) === true)
+        {
+            $headers['x-merchant-id'] = $body['merchant_id'];
+        }
+
+        if (isset($body['user_id']) === true)
+        {
+            $headers['x-user-id'] = $body['user_id'];
+        }
+
         if ($request->getQueryString() !== null)
         {
             $url .= '?' . $request->getQueryString();
