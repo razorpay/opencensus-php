@@ -103,31 +103,6 @@ jobs:
 
       - uses: niden/actions-memcached@v7
 
-      - name: Install build tools
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y -q --no-install-recommends \
-            build-essential \
-            g++ \
-            gcc \
-            libc-dev \
-            libpqxx-dev \
-            make \
-            autoconf \
-            git \
-            unzip
-
-      - name: Install opencensus extension
-        run: |
-          cd ext
-          phpize
-          ./configure --enable-opencensus
-
-      - name: Install memcached extension
-        run: |
-          sudo apt-get install -y -q --no-install-recommends \
-            libmemcached11 libmemcached-dev zlib1g-dev zlib1g
-
       - name: Curl test
         continue-on-error: true
         run: tests/integration/curl/test.sh
