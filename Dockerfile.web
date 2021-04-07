@@ -1,4 +1,4 @@
-ARG ONGGI_IMAGE=razorpay/onggi:php-7.2-api-web
+ARG ONGGI_IMAGE=razorpay/onggi:php-7.2-api-web-v2
 ARG ARMORY_IMAGE=razorpay/armory:wkhtmltopdf-v182
 ARG OPENCENSUS_IMAGE=razorpay/opencensus-php:v2020.10.28
 

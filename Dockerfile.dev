@@ -2,7 +2,7 @@ FROM c.rzp.io/razorpay/armory:wkhtmltopdf-v182 as wkhtmltopdf
 
 FROM razorpay/opencensus-php:v2020.10.28 as opencensus-ext
 
-FROM c.rzp.io/razorpay/onggi:php-7.2-api-web
+FROM c.rzp.io/razorpay/onggi:php-7.2-api-web-v2
 
 COPY --from=wkhtmltopdf /bin/wkhtmltopdf /usr/bin/wkhtmltopdf
 
