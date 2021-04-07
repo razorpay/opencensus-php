@@ -15,5 +15,5 @@
 
 # A script for installing necessary software on CI systems.
 
-export BRANCH::$(echo ${GITHUB_HEAD_REF})
+export BRANCH=$(echo ${GITHUB_HEAD_REF})
 export REPO="https://github.com/razorpay/opencensus-php"
