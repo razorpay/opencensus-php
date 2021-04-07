@@ -104,37 +104,27 @@ jobs:
       - uses: niden/actions-memcached@v7
 
       - name: Curl test
-        continue-on-error: true
         run: tests/integration/curl/test.sh
 
       - name: Symfony 4 test
-        continue-on-error: true
         run: tests/integration/symfony4/test.sh
-        env:
-          DATABASE_URL: mysql://mysql:mysql@127.0.0.1:3306/mysqldb
 
       - name: Wordpress test
-        continue-on-error: true
         run: tests/integration/wordpress/test.sh
 
       - name: Laravel test
-        continue-on-error: true
         run: tests/integration/laravel/test.sh
 
       - name: Guzzle 5 test
-        continue-on-error: true
         run: tests/integration/guzzle5/test.sh
 
       - name: Guzzle 6 test
-        continue-on-error: true
         run: tests/integration/guzzle6/test.sh
 
       - name: Memcached test
-        continue-on-error: true
         run: tests/integration/memcached/test.sh
 
       - name: Pgsql test
-        continue-on-error: true
         run: tests/integration/pgsql/test.sh
 
     services:
