@@ -454,9 +454,11 @@ const fullPageViewsMap = {
   },
   '/onboarding/steps': {
     component: ActivationSteps,
+    additionalCondition: (user) => user.isOnboardingV2Enabled,
   },
   '/onboarding/form': {
     component: ActivationForm,
+    additionalCondition: (user) => user.isOnboardingV2Enabled,
   },
   '/app-store/:partner': {
     component: PartnerPage,

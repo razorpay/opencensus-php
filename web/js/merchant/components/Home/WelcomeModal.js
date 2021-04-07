@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
+import { isMobileDevice } from 'merchant/components/Home/data';
 
-const WelcomeModal = ({ onActivate, onClose, tracking, isFestive }) => {
+const WelcomeModal = ({ onActivate, onClose, tracking, isFestive, isOnboardingV2Enabled }) => {
   const handleActivationClick = () => {
     onActivate();
     analyticsTrack({
@@ -93,7 +94,11 @@ const WelcomeModal = ({ onActivate, onClose, tracking, isFestive }) => {
         </React.Fragment>
       )}
       <div className="welcome-modal-actions">
-        <Link to="/activation" onClick={handleActivationClick} className="btn btn-primary">
+        <Link
+          to={isOnboardingV2Enabled && isMobileDevice() ? '/onboarding/steps' : '/activation'}
+          onClick={handleActivationClick}
+          className="btn btn-primary"
+        >
           Activate your account
         </Link>
         <span className="btn-link m-l cursor-pointer" onClick={handleTryOutClick}>

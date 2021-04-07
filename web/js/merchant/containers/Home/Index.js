@@ -963,6 +963,7 @@ export default class HomeContainer extends Component {
                       onFirstStepClose();
                     }}
                     isFestive={this.isFestive}
+                    isOnboardingV2Enabled={user.isOnboardingV2Enabled}
                   />
                 </ModalContent>
               </Modal>
