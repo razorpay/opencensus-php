@@ -5,14 +5,24 @@ import RemainingStepsInfo from './RemainingStepsInfo';
 import Info from './Info';
 import Buttons from './Buttons';
 import * as Messages from './Constants';
+import { analyticsTrack } from '../../../../services/tracking/segment';
+import { useApp } from 'v2/context/App';
 
 const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; payments: any }> = ({
   data,
   payments,
   history,
 }) => {
+  const { user } = useApp();
   const onCTAClick = () => {
     history.push('/onboarding/steps');
+    analyticsTrack({
+      objectName: 'SignUp',
+      actionName: 'form fill',
+      screen: 'home page',
+      eventAction: 'initiated',
+      user,
+    });
   };
   const contactSupport = () => {
     window.rzpTicketSystem.openModal('#ticket');

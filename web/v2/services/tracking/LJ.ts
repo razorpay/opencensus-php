@@ -46,6 +46,12 @@ export default function pushEvents({
     case 'success':
       eventQ.success(eventName);
       break;
+    case 'failed':
+      eventQ.failed(eventName);
+      break;
+    case 'dropped':
+      eventQ.dropped(eventName);
+      break;
     default:
       break;
   }

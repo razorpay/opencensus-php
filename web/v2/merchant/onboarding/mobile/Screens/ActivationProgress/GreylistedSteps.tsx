@@ -44,11 +44,10 @@ const GreylistedSteps: React.FC<RouteComponentProps> = ({ history }) => {
       }
       analyticsTrack({
         objectName: 'SignUp',
-        actionName: 'submit and verify success',
+        actionName: 'submit and verify',
         screen: 'home page',
-        properties: {
-          userId: user.id,
-        },
+        eventAction: 'success',
+        user,
       });
     });
   };

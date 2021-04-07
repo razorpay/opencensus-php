@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Text from '@razorpay/blade/src/atoms/Text';
 import Icon from '@razorpay/blade/src/atoms/Icon';
 import { Select, GrpOption, Option } from 'v2/components/Select';
 import { FormikErrors } from 'formik';
 import { debounce } from '../../services/utils';
 import useBusinessCategory from '../../hooks/useBusinessCategory';
+import { analyticsTrack } from 'v2/services/tracking/segment';
+import { useApp } from 'v2/context/App';
 
 export interface BusinessCategoryPropsT {
   errorText?: string | false | string[] | FormikErrors<any> | FormikErrors<any>[] | undefined;
@@ -20,8 +22,27 @@ const BusinessCategory: React.FC<BusinessCategoryPropsT> = ({
   disabled = false,
 }) => {
   const [inputValue, setInputValue] = useState('');
+  const { user } = useApp();
   const onInputChange = debounce(setInputValue, 200);
   const [businessCategoriesStatus, businessCategoriesData] = useBusinessCategory(inputValue);
+  useEffect(() => {
+    analyticsTrack({
+      objectName: 'SignUp',
+      actionName: 'Business category search',
+      screen: 'home page',
+      eventAction: businessCategoriesData && businessCategoriesData.length ? 'success' : 'failure',
+      user,
+    });
+  }, [businessCategoriesData]);
+  useEffect(() => {
+    analyticsTrack({
+      objectName: 'SignUp',
+      actionName: 'Business category search',
+      screen: 'home page',
+      eventAction: 'initiated',
+      user,
+    });
+  }, [inputValue]);
   return (
     <Select
       label="Your Business Category"

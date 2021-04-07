@@ -31,11 +31,10 @@ const ESignVerification: React.FC<ESignPropsT> = ({ disabled = false }) => {
   const goToNextScreen = ({ nextScreen }) => {
     analyticsTrack({
       objectName: 'SignUp',
-      actionName: `EAdhar ${nextScreen} initiated`,
+      actionName: `EAdhar ${nextScreen}`,
       screen: 'home page',
-      properties: {
-        userId: user.id,
-      },
+      eventAction: 'initiated',
+      user,
     });
     setNextStep(nextScreen);
   };

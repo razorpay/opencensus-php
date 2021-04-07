@@ -28,6 +28,7 @@ export interface SelectPropsT {
   loading?: boolean;
   helpText?: string;
   bottomSheetHeaderText?: string;
+  onInputBlur?: (value: string, option?: ReactElement<OptionsPropsT>) => void;
 }
 
 const Select: React.FC<SelectPropsT> = ({
@@ -45,6 +46,7 @@ const Select: React.FC<SelectPropsT> = ({
   onChange,
   onInputChange,
   bottomSheetHeaderText,
+  onInputBlur = () => {},
 }) => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [selectedValue, setSelectedValue] = useState(value);
@@ -176,7 +178,7 @@ const Select: React.FC<SelectPropsT> = ({
           disabled={disabled || isSelectInputDisabled}
           errorText={errorText}
           helpText={helpText}
-          onBlur={onChange}
+          onBlur={onInputBlur}
         />
       </View>
       <Modal

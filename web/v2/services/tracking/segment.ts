@@ -6,7 +6,49 @@ export const titleCase = (sentence) => {
     .join(' ');
 };
 
-export const analyticsTrack = ({ objectName, actionName, screen, properties = {} }) => {
+const getCommonProperties = ({ screen, properties, user }) => {
+  const eventTimestamp = new Date().toISOString();
+  let utm = null;
+  let gclid = null; //Google click id, analytics will try to capture and save to cookie if present.
+  let browser_details = {};
+  const source = 'pg';
+  if (typeof window.razorpayAnalytics !== 'undefined') {
+    utm = window.razorpayAnalytics.utils.getLandingParams();
+    gclid = window.razorpayAnalytics.utils.getCookie('gclid');
+    if (typeof window.razorpayAnalytics.utils.getBrowserDetails !== 'undefined') {
+      browser_details = window.razorpayAnalytics.utils.getBrowserDetails();
+    }
+  }
+  const commonProperties = {
+    pageUrl: window.location.href,
+    screen,
+    eventTimestamp,
+    source,
+    utm_params: utm,
+    gclid,
+    email_id: user.email,
+    user_id: user.id,
+    mid: user.current,
+    user_role: user.role,
+    business_type: user.business_type,
+    activation_status: user.activated,
+    is_reg_auto_kyc_enabled: user.isRegAutoKYCEnabled,
+    is_esign_aadhar_enabled: user.isEsignAadharEnabled,
+    new_onboarding_flow: 'yes',
+    ...browser_details,
+    ...properties,
+  };
+  return commonProperties;
+};
+
+export const analyticsTrack = ({
+  objectName,
+  actionName,
+  screen,
+  properties = {},
+  eventAction,
+  user,
+}) => {
   if (!objectName) {
     throw new Error('[analytics]: objectName cannot be empty');
   }
@@ -27,17 +69,57 @@ export const analyticsTrack = ({ objectName, actionName, screen, properties = {}
     throw new Error(`[analytics]: expected actionName: ${actionName} to not have '_'`);
   }
 
-  const eventTimestamp = new Date().toISOString();
-  const segmentProperties = {
-    pageUrl: window.location.href,
-    ...properties,
-  };
-  const eventName = titleCase(`${objectName} ${actionName}`);
+  const eventName = titleCase(`${objectName} ${actionName} ${eventAction}`);
+  const dataLakeEventName = `kyc.${actionName.split(' ').join('_')}`;
+  const commonProperties = getCommonProperties({ screen, properties, user });
   if (window.analytics) {
     window.analytics.track(eventName, {
-      ...segmentProperties,
-      screen,
-      eventTimestamp,
+      ...commonProperties,
     });
+  }
+
+  switch (eventAction) {
+    case 'initiated':
+      window.rzpQ.push(
+        window.rzpQ
+          .now()
+          .onbr()
+          .initiated(dataLakeEventName, {
+            ...commonProperties,
+          }),
+      );
+      break;
+    case 'success':
+      window.rzpQ.push(
+        window.rzpQ
+          .now()
+          .onbr()
+          .success(dataLakeEventName, {
+            ...commonProperties,
+          }),
+      );
+      break;
+    case 'failed':
+      window.rzpQ.push(
+        window.rzpQ
+          .now()
+          .onbr()
+          .failed(dataLakeEventName, {
+            ...commonProperties,
+          }),
+      );
+      break;
+    case 'dropped':
+      window.rzpQ.push(
+        window.rzpQ
+          .now()
+          .onbr()
+          .dropped(dataLakeEventName, {
+            ...commonProperties,
+          }),
+      );
+      break;
+    default:
+      break;
   }
 };

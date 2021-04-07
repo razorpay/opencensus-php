@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import * as Yup from 'yup';
 import { Formik } from 'formik';
@@ -101,6 +101,18 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
     data.poi_verification_status === 'incorrect_details' ||
     data.poi_verification_status === 'not_matched';
 
+  useEffect(() => {
+    if (hasPoiStatus) {
+      analyticsTrack({
+        objectName: 'SignUp',
+        actionName: 'bank account',
+        screen: 'home page',
+        eventAction: 'failed',
+        user,
+      });
+    }
+  }, [hasPoiStatus]);
+
   const copySameAddress = (reqData, updatedDetails) => {
     let _reqData = { ...reqData };
     const addressFieldKeys = [
@@ -133,15 +145,7 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
   const handleSameAddress = (checked) => {
     setSameAddress(checked);
     setIsBlurCalled(true);
-    const checkboxStatus = checked ? 'select' : 'unselect';
-    analyticsTrack({
-      objectName: 'SignUp',
-      actionName: `Operational address is the same checkbox ${checkboxStatus} success`,
-      screen: 'home page',
-      properties: {
-        userId: user.id,
-      },
-    });
+    // const checkboxStatus = checked ? 'select' : 'unselect';
   };
 
   const handleBlur = (e, formikProps) => {
@@ -212,16 +216,6 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                 value={formikProps.values.company_pan}
                 errorText={formikProps.touched.company_pan && formikProps.errors.company_pan}
                 disabled={isFormLocked}
-                onBlur={() => {
-                  analyticsTrack({
-                    objectName: 'SignUp',
-                    actionName: 'Business PAN success',
-                    screen: 'home page',
-                    properties: {
-                      userId: user.id,
-                    },
-                  });
-                }}
               />
             </Field>
             <Field visible={isVisible('business_name', data)}>
@@ -233,16 +227,6 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                 value={formikProps.values.business_name}
                 errorText={formikProps.touched.business_name && formikProps.errors.business_name}
                 disabled={isFormLocked}
-                onBlur={() => {
-                  analyticsTrack({
-                    objectName: 'SignUp',
-                    actionName: 'Business Name success',
-                    screen: 'home page',
-                    properties: {
-                      userId: user.id,
-                    },
-                  });
-                }}
               />
             </Field>
             <Field>
@@ -254,16 +238,6 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                 value={formikProps.values.promoter_pan}
                 errorText={formikProps.touched.promoter_pan && formikProps.errors.promoter_pan}
                 disabled={isFormLocked}
-                onBlur={() => {
-                  analyticsTrack({
-                    objectName: 'SignUp',
-                    actionName: `${getLabel('promoter_pan', data)} success`,
-                    screen: 'home page',
-                    properties: {
-                      userId: user.id,
-                    },
-                  });
-                }}
               />
             </Field>
             <Field last>
@@ -277,16 +251,6 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                   formikProps.touched.promoter_pan_name && formikProps.errors.promoter_pan_name
                 }
                 disabled={isFormLocked}
-                onBlur={() => {
-                  analyticsTrack({
-                    objectName: 'SignUp',
-                    actionName: `${getLabel('promoter_pan_name', data)} success`,
-                    screen: 'home page',
-                    properties: {
-                      userId: user.id,
-                    },
-                  });
-                }}
               />
             </Field>
           </FormSection>
@@ -307,16 +271,6 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                   formikProps.errors.business_registered_address
                 }
                 disabled={isFormLocked}
-                onBlur={() => {
-                  analyticsTrack({
-                    objectName: 'SignUp',
-                    actionName: 'business registered address success',
-                    screen: 'home page',
-                    properties: {
-                      userId: user.id,
-                    },
-                  });
-                }}
               />
             </Field>
             <Field>
@@ -330,16 +284,6 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                   formikProps.errors.business_registered_pin
                 }
                 disabled={isFormLocked}
-                onBlur={() => {
-                  analyticsTrack({
-                    objectName: 'SignUp',
-                    actionName: 'business registered pin success',
-                    screen: 'home page',
-                    properties: {
-                      userId: user.id,
-                    },
-                  });
-                }}
               />
             </Field>
             <Field>
@@ -356,14 +300,6 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                 onBlur={(value) => {
                   formikProps.setFieldTouched('business_registered_city');
                   formikProps.setFieldValue('business_registered_city', value);
-                  analyticsTrack({
-                    objectName: 'SignUp',
-                    actionName: 'business registered city success',
-                    screen: 'home page',
-                    properties: {
-                      userId: user.id,
-                    },
-                  });
                 }}
               />
             </Field>
@@ -382,13 +318,17 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                   formikProps.setFieldTouched('business_registered_state');
                   formikProps.setFieldValue('business_registered_state', value);
                   setIsBlurCalled(true);
+                }}
+                onInputBlur={(value) => {
+                  formikProps.setFieldTouched('business_registered_state');
+                  formikProps.setFieldValue('business_registered_state', value);
+                  setIsBlurCalled(true);
                   analyticsTrack({
                     objectName: 'SignUp',
-                    actionName: 'business registered state success',
+                    actionName: 'bank account',
                     screen: 'home page',
-                    properties: {
-                      userId: user.id,
-                    },
+                    eventAction: 'failed',
+                    user,
                   });
                 }}
                 disabled={isFormLocked}
@@ -424,16 +364,6 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                     formikProps.errors.business_operation_address
                   }
                   disabled={isFormLocked}
-                  onBlur={() => {
-                    analyticsTrack({
-                      objectName: 'SignUp',
-                      actionName: 'Business Operational Address success',
-                      screen: 'home page',
-                      properties: {
-                        userId: user.id,
-                      },
-                    });
-                  }}
                 />
               </Field>
               <Field>
@@ -450,14 +380,6 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                   onBlur={(value) => {
                     formikProps.setFieldTouched('business_operation_pin');
                     formikProps.setFieldValue('business_operation_pin', value);
-                    analyticsTrack({
-                      objectName: 'SignUp',
-                      actionName: 'business operation pin success',
-                      screen: 'home page',
-                      properties: {
-                        userId: user.id,
-                      },
-                    });
                   }}
                 />
               </Field>
@@ -472,16 +394,6 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                     formikProps.errors.business_operation_city
                   }
                   disabled={isFormLocked}
-                  onBlur={() => {
-                    analyticsTrack({
-                      objectName: 'SignUp',
-                      actionName: 'business operation city success',
-                      screen: 'home page',
-                      properties: {
-                        userId: user.id,
-                      },
-                    });
-                  }}
                 />
               </Field>
               <Field last>
@@ -499,14 +411,6 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                     formikProps.setFieldTouched('business_operation_state');
                     formikProps.setFieldValue('business_operation_state', value);
                     setIsBlurCalled(true);
-                    analyticsTrack({
-                      objectName: 'SignUp',
-                      actionName: 'business operation state success',
-                      screen: 'home page',
-                      properties: {
-                        userId: user.id,
-                      },
-                    });
                   }}
                   disabled={isFormLocked}
                 >

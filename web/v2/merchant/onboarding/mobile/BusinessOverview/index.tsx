@@ -160,6 +160,16 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
           status === 'success' &&
           hasSelectedBlacklistCategory(formikProps.values, businessCategoriesData);
 
+        if (isBlackListed) {
+          analyticsTrack({
+            objectName: 'SignUp',
+            actionName: 'business overview',
+            screen: 'home page',
+            eventAction: 'failed',
+            user,
+          });
+        }
+
         return (
           <form
             onSubmit={formikProps.handleSubmit}
@@ -178,14 +188,6 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
                     formikProps.setFieldTouched('business_type');
                     formikProps.setFieldValue('business_type', value);
                     setIsBlurCalled(true);
-                    analyticsTrack({
-                      objectName: 'SignUp',
-                      actionName: 'Business type success',
-                      screen: 'home page',
-                      properties: {
-                        userId: user.id,
-                      },
-                    });
                   }}
                   disabled={isFormLocked}
                 />
@@ -204,11 +206,10 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
                     setIsBlurCalled(true);
                     analyticsTrack({
                       objectName: 'SignUp',
-                      actionName: 'Business category success',
+                      actionName: 'Business category',
                       screen: 'home page',
-                      properties: {
-                        userId: user.id,
-                      },
+                      eventAction: 'success',
+                      user,
                     });
                   }}
                   disabled={isFormLocked}
@@ -235,22 +236,22 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
                     onChange={(value) => {
                       formikProps.setFieldValue('business_dba', value);
                     }}
-                    onBlur={() => {
-                      analyticsTrack({
-                        objectName: 'SignUp',
-                        actionName: 'Business label success',
-                        screen: 'home page',
-                        properties: {
-                          userId: user.id,
-                        },
-                      });
-                    }}
                   />
                   <IconContainer
                     onClick={() => {
                       if (isFormLocked) {
                         return;
                       }
+                      analyticsTrack({
+                        objectName: 'SignUp',
+                        actionName: 'faq',
+                        screen: 'home page',
+                        user,
+                        eventAction: 'initiated',
+                        properties: {
+                          clickSource: 'billing label',
+                        },
+                      });
                       setFAQSection('Q1');
                       setIsOpen(true);
                     }}
@@ -277,16 +278,6 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
                       }}
                       maxLength={200}
                       disabled={isFormLocked}
-                      onBlur={() => {
-                        analyticsTrack({
-                          objectName: 'SignUp',
-                          actionName: 'Business model success',
-                          screen: 'home page',
-                          properties: {
-                            userId: user.id,
-                          },
-                        });
-                      }}
                       errorText={
                         formikProps.touched.business_model && formikProps.errors.business_model
                       }
@@ -309,14 +300,6 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
                         formikProps.setFieldTouched('merchant_avg_order_value');
                         formikProps.setFieldValue('merchant_avg_order_value', value);
                         setIsBlurCalled(true);
-                        analyticsTrack({
-                          objectName: 'SignUp',
-                          actionName: 'Business Aov success',
-                          screen: 'home page',
-                          properties: {
-                            userId: user.id,
-                          },
-                        });
                       }}
                     />
                   </View>
@@ -336,26 +319,8 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
                     if (!_hasWebsite) {
                       formikProps.setFieldTouched('business_website');
                       formikProps.setFieldValue('business_website', '');
-                      analyticsTrack({
-                        objectName: 'SignUp',
-                        actionName: 'no live website initiated',
-                        screen: 'home page',
-                        properties: {
-                          userId: user.id,
-                        },
-                      });
                     }
                     setIsBlurCalled(true);
-                    if (hasWebsite) {
-                      analyticsTrack({
-                        objectName: 'SignUp',
-                        actionName: 'live website initiated',
-                        screen: 'home page',
-                        properties: {
-                          userId: user.id,
-                        },
-                      });
-                    }
                   }}
                 >
                   <Radio.Option value="0" title="I have a live website/app" />
@@ -379,6 +344,16 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
                             if (isFormLocked) {
                               return;
                             }
+                            analyticsTrack({
+                              objectName: 'SignUp',
+                              actionName: 'faq',
+                              screen: 'home page',
+                              user,
+                              eventAction: 'initiated',
+                              properties: {
+                                clickSource: 'business website',
+                              },
+                            });
                             setFAQSection('Q2');
                             setIsOpen(true);
                           }}

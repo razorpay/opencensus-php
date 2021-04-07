@@ -148,11 +148,10 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                 onBlur={() => {
                   analyticsTrack({
                     objectName: 'SignUp',
-                    actionName: 'bank account name success',
+                    actionName: 'bank account name',
                     screen: 'home page',
-                    properties: {
-                      userId: user.id,
-                    },
+                    eventAction: 'initiated',
+                    user,
                   });
                 }}
                 disabled={isFormLocked}
@@ -170,11 +169,10 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                 onBlur={() => {
                   analyticsTrack({
                     objectName: 'SignUp',
-                    actionName: 'bank account number success',
+                    actionName: 'bank account number',
                     screen: 'home page',
-                    properties: {
-                      userId: user.id,
-                    },
+                    eventAction: 'initiated',
+                    user,
                   });
                 }}
                 disabled={isFormLocked}
@@ -201,11 +199,10 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                 onBlur={() => {
                   analyticsTrack({
                     objectName: 'SignUp',
-                    actionName: 'bank branch ifsc success',
+                    actionName: 'bank branch ifsc',
                     screen: 'home page',
-                    properties: {
-                      userId: user.id,
-                    },
+                    eventAction: 'initiated',
+                    user,
                   });
                 }}
                 disabled={isFormLocked}
@@ -225,11 +222,10 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                   onBlur={() => {
                     analyticsTrack({
                       objectName: 'SignUp',
-                      actionName: 'Company Cin success',
+                      actionName: 'Company Cin',
                       screen: 'home page',
-                      properties: {
-                        userId: user.id,
-                      },
+                      eventAction: 'initiated',
+                      user,
                     });
                   }}
                   disabled={isFormLocked}
@@ -247,11 +243,10 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                     onBlur={() => {
                       analyticsTrack({
                         objectName: 'SignUp',
-                        actionName: 'Gst Identification Number success',
+                        actionName: 'Gst Identification Number',
                         screen: 'home page',
-                        properties: {
-                          userId: user.id,
-                        },
+                        eventAction: 'initiated',
+                        user,
                       });
                     }}
                     disabled={isFormLocked}
@@ -274,11 +269,10 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                         setIsBlurCalled(true);
                         analyticsTrack({
                           objectName: 'SignUp',
-                          actionName: "I don't have a GSTIN checkbox success",
+                          actionName: "I don't have a GSTIN checkbox",
                           screen: 'home page',
-                          properties: {
-                            userId: user.id,
-                          },
+                          eventAction: 'initiated',
+                          user,
                         });
                       }}
                     />

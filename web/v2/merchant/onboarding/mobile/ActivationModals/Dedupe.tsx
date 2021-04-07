@@ -26,11 +26,10 @@ const Dedupe: React.FC<DedupePropsT> = ({ isOpen }) => {
   const openCustomerSupport = () => {
     analyticsTrack({
       objectName: 'SignUp',
-      actionName: 'contact support initiated',
+      actionName: 'contact support',
       screen: 'home page',
-      properties: {
-        userId: user.id,
-      },
+      eventAction: 'initiated',
+      user,
     });
     window.rzpTicketSystem.openModal('#ticket');
     setCloseModal(true);

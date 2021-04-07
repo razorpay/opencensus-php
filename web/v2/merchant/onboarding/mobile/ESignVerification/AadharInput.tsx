@@ -42,9 +42,8 @@ const AadharInput: React.FC<AadharInputPropsT> = ({
         isAadharLinkedToMobile ? 'Adhar not linked checkedBox' : 'Adhar linked checkedBox'
       } initiated`,
       screen: 'home page',
-      properties: {
-        userId: user.id,
-      },
+      eventAction: 'initiated',
+      user,
     });
   };
   return (
@@ -99,11 +98,10 @@ const AadharInput: React.FC<AadharInputPropsT> = ({
                       formikProps.setFieldTouched('aadharNumber', value.trim());
                       analyticsTrack({
                         objectName: 'SignUp',
-                        actionName: 'Aadhar number initiated',
+                        actionName: 'Aadhar number',
                         screen: 'home page',
-                        properties: {
-                          userId: user.id,
-                        },
+                        eventAction: 'initiated',
+                        user,
                       });
                     }}
                   />

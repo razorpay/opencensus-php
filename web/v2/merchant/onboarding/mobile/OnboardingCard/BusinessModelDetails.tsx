@@ -34,11 +34,10 @@ const BusinessModelDetails: React.FC<RouteComponentProps> = (props) => {
     // };
     analyticsTrack({
       objectName: 'SignUp',
-      actionName: 'activation flow initiated',
+      actionName: 'form fill',
       screen: 'home page',
-      properties: {
-        userId: user.id,
-      },
+      eventAction: 'initiated',
+      user,
     });
 
     // postData(body)
@@ -48,7 +47,7 @@ const BusinessModelDetails: React.FC<RouteComponentProps> = (props) => {
     //     }
     //     analyticsTrack({
     //       objectName: 'SignUp',
-    //       actionName: 'onboarding form activation form fill success',
+    //       actionName: 'onboarding form activation form fill',
     //       screen: 'home page',
     //       properties: {
     //          userId: user.id,
@@ -59,7 +58,7 @@ const BusinessModelDetails: React.FC<RouteComponentProps> = (props) => {
     //     console.log('error with the API', e);
     //     analyticsTrack({
     //       objectName: 'SignUp',
-    //       actionName: 'onboarding form activation form fill  failed',
+    //       actionName: 'onboarding form activation form fill',
     //       screen: 'home page',
     //       properties: {
     //          userId: user.id,

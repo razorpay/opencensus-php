@@ -47,20 +47,18 @@ const VerifyOTP: React.FC<VerifyOtpPropsT> = ({
         setOtpVerified(response.is_valid);
         analyticsTrack({
           objectName: 'SignUp',
-          actionName: 'otp success',
+          actionName: 'otp',
           screen: 'home page',
-          properties: {
-            userId: user.id,
-          },
+          eventAction: 'success',
+          user,
         });
       } else if (response.error_code) {
         analyticsTrack({
           objectName: 'SignUp',
-          actionName: 'otp failure',
+          actionName: 'otp',
           screen: 'home page',
-          properties: {
-            userId: user.id,
-          },
+          eventAction: 'failure',
+          user,
         });
         setApiError(response.error_code);
         if (
@@ -153,11 +151,10 @@ const VerifyOTP: React.FC<VerifyOtpPropsT> = ({
                   formikProps.setFieldTouched('enteredOTP', value.trim());
                   analyticsTrack({
                     objectName: 'SignUp',
-                    actionName: 'otp initiated',
+                    actionName: 'otp',
                     screen: 'home page',
-                    properties: {
-                      userId: user.id,
-                    },
+                    eventAction: 'initiated',
+                    user,
                   });
                 }}
               />

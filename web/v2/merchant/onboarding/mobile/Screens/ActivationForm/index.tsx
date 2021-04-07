@@ -123,9 +123,29 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
   //   });
   // };
   const submitL2 = () => {
+    analyticsTrack({
+      objectName: 'SignUp',
+      actionName: 'submit form',
+      screen: 'home page',
+      user,
+      eventAction: 'initiated',
+      properties: {
+        clickSource: 'submit-and-verify',
+      },
+    });
     postData({ submit: 1 }).then((res) => {
       const isDedupeState = checkIfDedupe(res);
       if (res && res.submitted && !isDedupeState) {
+        analyticsTrack({
+          objectName: 'SignUp',
+          actionName: 'submit form',
+          screen: 'home page',
+          eventAction: 'success',
+          user,
+          properties: {
+            clickSource: 'submit-and-verify',
+          },
+        });
         setIsSubmitFormModalOpen(true);
       }
       if (isDedupeState) {
@@ -151,28 +171,66 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
   const handleNextClick = () => {
     switch (activeTabId) {
       case 'contact_details':
-        setActiveTabId('business_overview');
         analyticsTrack({
           objectName: 'SignUp',
-          actionName: `${setActiveTabId('business_overview')} tab save and verify initiated`,
+          actionName: 'contact info',
           screen: 'home page',
+          user,
+          eventAction: 'initiated',
+        });
+        analyticsTrack({
+          objectName: 'SignUp',
+          actionName: 'save modifications',
+          screen: 'home page',
+          eventAction: 'initiated',
+          user,
           properties: {
-            userId: user.id,
+            clickSource: 'save-next',
+            currentTabName: 'contact details',
           },
         });
+        setActiveTabId('business_overview');
         break;
       case 'business_overview':
-        setActiveTabId('business_details');
         analyticsTrack({
           objectName: 'SignUp',
-          actionName: `${setActiveTabId('business_details')} tab save and verify initiated`,
+          actionName: 'business overview',
           screen: 'home page',
+          eventAction: 'initiated',
+          user,
+        });
+        analyticsTrack({
+          objectName: 'SignUp',
+          actionName: 'save modifications',
+          screen: 'home page',
+          eventAction: 'initiated',
+          user,
           properties: {
-            userId: user.id,
+            clickSource: 'save-next',
+            currentTabName: 'business overview',
           },
         });
+        setActiveTabId('business_details');
         break;
       case 'business_details':
+        analyticsTrack({
+          objectName: 'SignUp',
+          actionName: 'business details',
+          screen: 'home page',
+          eventAction: 'initiated',
+          user,
+        });
+        analyticsTrack({
+          objectName: 'SignUp',
+          actionName: 'save modifications',
+          screen: 'home page',
+          eventAction: 'initiated',
+          user,
+          properties: {
+            clickSource: 'save-next',
+            currentTabName: 'business details',
+          },
+        });
         // if (
         //   (isL1Submitted(onboarding_milestone) && !isUnregPoiStatus) ||
         //   merchantFlow === 'greylist'
@@ -182,36 +240,48 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
         // if (!isL1Submitted(onboarding_milestone) || isUnregPoiStatus) {
         //   submitL1();
         // }
-        analyticsTrack({
-          objectName: 'SignUp',
-          actionName: `${setActiveTabId('bank_details')} tab save and verify initiated`,
-          screen: 'home page',
-          properties: {
-            userId: user.id,
-          },
-        });
         break;
       case 'bank_details':
-        setActiveTabId('documents');
         analyticsTrack({
           objectName: 'SignUp',
-          actionName: `${setActiveTabId('documents')} tab save and verify initiated`,
+          actionName: 'bank details',
           screen: 'home page',
+          eventAction: 'initiated',
+          user,
+        });
+        analyticsTrack({
+          objectName: 'SignUp',
+          actionName: 'save modifications',
+          screen: 'home page',
+          eventAction: 'initiated',
+          user,
           properties: {
-            userId: user.id,
+            clickSource: 'save-next',
+            currentTabName: 'bank details',
           },
         });
+        setActiveTabId('documents');
         break;
       case 'documents':
-        submitL2();
         analyticsTrack({
           objectName: 'SignUp',
-          actionName: 'save and exit initiated',
+          actionName: 'documents',
           screen: 'home page',
+          eventAction: 'initiated',
+          user,
+        });
+        analyticsTrack({
+          objectName: 'SignUp',
+          actionName: 'save modifications',
+          screen: 'home page',
+          eventAction: 'initiated',
+          user,
           properties: {
-            userId: user.id,
+            clickSource: 'save-next',
+            currentTabName: 'document',
           },
         });
+        submitL2();
         break;
       default:
         break;
@@ -228,6 +298,72 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
     isBankAndCompanyDetailsCompleted &&
     isDocumentsUploadCompleted &&
     checkIfEAadharStepCompleted(data);
+
+  if (isContactDetailsCompleted) {
+    analyticsTrack({
+      objectName: 'SignUp',
+      actionName: 'tab filled',
+      screen: 'home page',
+      eventAction: 'success',
+      user,
+      properties: {
+        filed_tab_details: 'Contact Details',
+        tab_filled: 'yes',
+      },
+    });
+  }
+  if (isBusinessOverviewCompleted) {
+    analyticsTrack({
+      objectName: 'SignUp',
+      actionName: 'tab filled',
+      screen: 'home page',
+      eventAction: 'success',
+      user,
+      properties: {
+        filed_tab_details: 'Business Overview',
+        tab_filled: 'yes',
+      },
+    });
+  }
+  if (isBusinessDetailsCompleted) {
+    analyticsTrack({
+      objectName: 'SignUp',
+      actionName: 'tab filled',
+      screen: 'home page',
+      eventAction: 'success',
+      user,
+      properties: {
+        filed_tab_details: 'Business Details',
+        tab_filled: 'yes',
+      },
+    });
+  }
+  if (isBankAndCompanyDetailsCompleted) {
+    analyticsTrack({
+      objectName: 'SignUp',
+      actionName: 'tab filled',
+      screen: 'home page',
+      eventAction: 'success',
+      user,
+      properties: {
+        filed_tab_details: 'Bank Details',
+        tab_filled: 'yes',
+      },
+    });
+  }
+  if (isDocumentsUploadCompleted && checkIfEAadharStepCompleted(data)) {
+    analyticsTrack({
+      objectName: 'SignUp',
+      actionName: 'tab filled',
+      screen: 'home page',
+      eventAction: 'success',
+      user,
+      properties: {
+        filed_tab_details: 'Document',
+        tab_filled: 'yes',
+      },
+    });
+  }
 
   const getTabs = () => {
     const tabs = [
@@ -322,7 +458,20 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
                 </View>
               </View>
             </Flex>
-            <Link onClick={() => setIsSaveAndExitModalOpen(true)} size="xsmall" weight="bold">
+            <Link
+              onClick={() => {
+                setIsSaveAndExitModalOpen(true);
+                analyticsTrack({
+                  objectName: 'SignUp',
+                  actionName: 'form fill',
+                  screen: 'home page',
+                  eventAction: 'dropped',
+                  user,
+                });
+              }}
+              size="xsmall"
+              weight="bold"
+            >
               Save and Exit
             </Link>
           </StyledHeader>
@@ -333,7 +482,21 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
         <StyledActivationForm>
           <Tabs
             activeTabId={activeTabId}
-            onChange={(tabId) => typeof tabId === 'string' && setActiveTabId(tabId)}
+            onChange={(tabId) => {
+              if (typeof tabId === 'string') {
+                setActiveTabId(tabId);
+                analyticsTrack({
+                  objectName: 'SignUp',
+                  actionName: 'nav action',
+                  screen: 'home page',
+                  eventAction: 'initiated',
+                  user,
+                  properties: {
+                    currentTabName: tabId,
+                  },
+                });
+              }
+            }}
           >
             {getTabs()}
           </Tabs>
@@ -347,11 +510,10 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
               setIsOpen(true);
               analyticsTrack({
                 objectName: 'SignUp',
-                actionName: 'FAQ initiated',
+                actionName: 'faq',
                 screen: 'home page',
-                properties: {
-                  userId: user.id,
-                },
+                eventAction: 'initiated',
+                user,
               });
             }}
             variant="tertiary"

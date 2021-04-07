@@ -70,20 +70,18 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
         setIsCaptchaVerified(response.is_success);
         analyticsTrack({
           objectName: 'SignUp',
-          actionName: 'fetch otp success',
+          actionName: 'fetch otp',
           screen: 'home page',
-          properties: {
-            userId: user.id,
-          },
+          eventAction: 'success',
+          user,
         });
       } else if (response.error_code) {
         analyticsTrack({
           objectName: 'SignUp',
-          actionName: 'fetch otp failure',
+          actionName: 'fetch otp',
           screen: 'home page',
-          properties: {
-            userId: user.id,
-          },
+          eventAction: 'failure',
+          user,
         });
         if (response.error_code === 'MOBILE_NOT_LINKED') {
           const nextScreen = 'AadharInput';
@@ -187,11 +185,10 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
                       formikProps.setFieldTouched('aadharNumber', value.trim());
                       analyticsTrack({
                         objectName: 'SignUp',
-                        actionName: 'Aadhar number in get otp initiated',
+                        actionName: 'Aadhar number in get otp',
                         screen: 'home page',
-                        properties: {
-                          userId: user.id,
-                        },
+                        eventAction: 'initiated',
+                        user,
                       });
                     }}
                   />
@@ -240,11 +237,10 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
                       formikProps.setFieldTouched('captchaCode', value.trim());
                       analyticsTrack({
                         objectName: 'SignUp',
-                        actionName: 'captcha code initiated',
+                        actionName: 'captcha code',
                         screen: 'home page',
-                        properties: {
-                          userId: user.id,
-                        },
+                        eventAction: 'initiated',
+                        user,
                       });
                     }}
                   />
@@ -264,11 +260,10 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
                       formikProps.setFieldTouched('createdPin', value.trim());
                       analyticsTrack({
                         objectName: 'SignUp',
-                        actionName: 'create pin initiated',
+                        actionName: 'create pin',
                         screen: 'home page',
-                        properties: {
-                          userId: user.id,
-                        },
+                        eventAction: 'initiated',
+                        user,
                       });
                     }}
                     helpText="Create a 4 digit PIN to secure your aadhar details with us"

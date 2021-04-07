@@ -72,10 +72,12 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
     const documentType = docType.split('_').join(' '); // segment breaks if actionName has underscore
     analyticsTrack({
       objectName: 'SignUp',
-      actionName: `${documentType} upload initiated`,
+      actionName: 'document upload',
       screen: 'home page',
+      user,
+      eventAction: 'initiated',
       properties: {
-        userId: user.id,
+        document_type: documentType,
       },
     });
     const formData = new FormData();
@@ -92,10 +94,23 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
       formikProps.setFieldError(docType, 'something went wrong');
       analyticsTrack({
         objectName: 'SignUp',
-        actionName: `${documentType} upload failed`,
+        actionName: 'document upload',
         screen: 'home page',
+        user,
+        eventAction: 'failure',
         properties: {
-          userId: user.id,
+          document_type: documentType,
+        },
+      });
+    } else {
+      analyticsTrack({
+        objectName: 'SignUp',
+        actionName: 'document upload',
+        screen: 'home page',
+        user,
+        eventAction: 'success',
+        properties: {
+          document_type: documentType,
         },
       });
     }
@@ -109,26 +124,10 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
       additionalDoc,
     });
     setDocumentUploadCompleted(isComplete && isAadharFilled);
-    analyticsTrack({
-      objectName: 'SignUp',
-      actionName: `${documentType} Upload success`,
-      screen: 'home page',
-      properties: {
-        userId: user.id,
-      },
-    });
   };
 
   const onDeleteFile = async (fileName: string) => {
     const file = documents[fileName].value;
-    analyticsTrack({
-      objectName: 'SignUp',
-      actionName: `${file} delete initiated`,
-      screen: 'home page',
-      properties: {
-        userId: user.id,
-      },
-    });
 
     if (file && file.length) {
       const curDoc = file[file.length - 1];
@@ -145,10 +144,12 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
       setDocumentUploadCompleted(isComplete && isAadharFilled);
       analyticsTrack({
         objectName: 'SignUp',
-        actionName: `${file} delete success`,
+        actionName: `${file} delete`,
         screen: 'home page',
+        user,
+        eventAction: 'success',
         properties: {
-          userId: user.id,
+          document_type: file,
         },
       });
     }
