@@ -55,6 +55,15 @@ export const partnerProducts = {
     logo: 'wix.png',
     brandColor: '#3251B5',
   },
+  getvantage: {
+    slug: 'getvantage',
+    title: 'GetVantage',
+    url: 'https://www.getvantage.co/get-funded/registration',
+    category: 'Revenue-Based Financing',
+    description: 'Raise 20 L - 2 Cr in Growth Capital. Just One Flat Fee | No equity | 0% interest',
+    logo: 'getvantage.png',
+    brandColor: '#339999',
+  },
   prestashop: {
     slug: 'prestashop',
     title: 'Prestashop',
