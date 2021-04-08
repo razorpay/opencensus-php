@@ -71,6 +71,8 @@ class SymfonyTest extends TestCase
 
     public function testDoctrine()
     {
+        $this->markTestSkipped();
+
         // create a user
         $email = uniqid() . '@user.com';
         $response = self::$client->request('GET', '/user/create');
