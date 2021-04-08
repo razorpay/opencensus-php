@@ -52,6 +52,8 @@ class InstantSettlements extends ListContainer {
   }
 
   get settleNowRestrictionMsg() {
+    return 'Ondemand Settlements feature is temporarily disabled';
+
     if (!this.settlementRestricted) return;
     const {
       attempts_left,

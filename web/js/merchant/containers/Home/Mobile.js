@@ -44,6 +44,8 @@ class AnalyticsMobile extends Component {
   }
 
   showOndemandSettlementForm() {
+    return false;
+
     const { current_balance, ondemand_restrictions, openModal } = this.props;
     trackSettleNow();
     const balance = current_balance.data.balance;
@@ -158,7 +160,8 @@ class AnalyticsMobile extends Component {
                     disabled={
                       isSettleNowRestricted ||
                       current_balance.loading ||
-                      current_balance.data.balance < 100
+                      current_balance.data.balance < 100 ||
+                      true
                     }
                   >
                     Settle Now
