@@ -22,7 +22,7 @@ const VerifyOtp = ({
 }) => {
   const [otp, setOtp] = useState('');
   const [wrongOtp, setWrongOtp] = useState(false);
-  const [isApiCall, setIsApiCall] = useState(false);
+  const [isApiCalling, setIsApiCall] = useState(false);
 
   const updateOtpValue = (otpValue) => {
     setOtp(otpValue);
@@ -33,6 +33,19 @@ const VerifyOtp = ({
       objectName: 'kyc.e-aadhar OTP',
       actionName: 'Type',
       screen: 'Type OTP on Activation page',
+      ...analyticsProperties,
+    });
+  };
+
+  const startAgainEsignVerification = () => {
+    setIsStartAgain(true);
+    setCaptchaValue('');
+    setScreen('');
+    trackEvent(window.rzpQ.onbr().initiated('kyc.e-aadhar_restart'));
+    analyticsTrack({
+      objectName: 'kyc.e-aadhar restart',
+      actionName: 'esign steps',
+      screen: 'Submit OTP on Activation page',
       ...analyticsProperties,
     });
   };
@@ -157,11 +170,7 @@ const VerifyOtp = ({
             Didn’t receive an OTP?{' '}
             <AsyncBtn.Transparent
               pendingState="Sending OTP..."
-              onClick={() => {
-                setIsStartAgain(true);
-                setCaptchaValue('');
-                setScreen('');
-              }}
+              onClick={startAgainEsignVerification}
               showLoader={false}
             >
               Start again
@@ -174,7 +183,7 @@ const VerifyOtp = ({
             type="button"
             className={otp.length === 6 ? 'e-aadhar__btn' : ''}
             children="Submit & Verify >"
-            isApiCalling={isApiCall}
+            isPending={isApiCalling}
             disabled={otp.length !== 6}
             style={{ boxShadow: 'none' }}
             pendingState="Verifying"

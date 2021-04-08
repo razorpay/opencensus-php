@@ -105,13 +105,13 @@ const GetOtpScreen = ({
           }
         }
         trackEvent(
-          window.rzpQ.onbr().initiated('kyc.e-aadhar_get_code', {
+          window.rzpQ.onbr().initiated('kyc.e-aadhar_get_captcha', {
             trigger: true,
             error_code: res.data?.error_code ? res.data?.error_code : null,
           }),
         );
         analyticsTrack({
-          objectName: 'kyc.e-aadhar get code',
+          objectName: 'kyc.e-aadhar get captcha',
           actionName: 'generate captcha',
           screen: 'Verify with OTP on Activation page',
           ...analyticsProperties,
@@ -122,13 +122,13 @@ const GetOtpScreen = ({
           setError(err.errors[0]);
         }
         trackEvent(
-          window.rzpQ.onbr().initiated('kyc.e-aadhar_get_code', {
+          window.rzpQ.onbr().initiated('kyc.e-aadhar_get_captcha', {
             trigger: true,
             error_code: err.errors[0],
           }),
         );
         analyticsTrack({
-          objectName: 'kyc.e-aadhar get code',
+          objectName: 'kyc.e-aadhar get captcha',
           actionName: 'generate captcha Error',
           screen: 'Verify with OTP on Activation page',
           ...analyticsProperties,

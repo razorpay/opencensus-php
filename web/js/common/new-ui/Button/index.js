@@ -34,7 +34,16 @@ Button.Transparent = (props) => <Button {...props} class={TRANSPARENT_COLOR(prop
   - Other props are passed as it is to Button component
 * */
 export class AsyncBtn extends React.PureComponent {
-  state = { isPending: false };
+  state = { isPending: !!this.props.isPending };
+
+  static getDerivedStateFromProps(nextProps, prevState) {
+    if (typeof nextProps.isPending !== 'undefined' && nextProps.isPending !== prevState.isPending) {
+      return {
+        isPending: nextProps.isPending,
+      };
+    }
+    return null;
+  }
 
   onClick = (e) => {
     e.persist(); // e.prevenDefault makes synthetic even to get removed. Synthetic event is needed for performance reasons
@@ -59,7 +68,7 @@ export class AsyncBtn extends React.PureComponent {
      * */
     let { children, pendingState, onClick, showLoader = true, ...rest } = this.props;
 
-    if (this.state.isPending || this.props.isApiCalling) {
+    if (this.state.isPending) {
       children = (
         <span class="btn-pending">
           {pendingState}

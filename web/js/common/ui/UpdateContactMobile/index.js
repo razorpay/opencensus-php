@@ -105,7 +105,7 @@ export default class UpdateContactMobile extends React.Component {
     });
   };
 
-  triggerEmailVerificationOtp = (resend) => {
+  triggerEmailVerificationOtp = (resend = {}) => {
     analyticsTrack({
       objectName: '2fa email otp',
       actionName: 'sent',

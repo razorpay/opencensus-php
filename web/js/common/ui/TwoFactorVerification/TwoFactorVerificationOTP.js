@@ -94,7 +94,7 @@ export default class TwoFactorVerificationOTP extends React.Component {
             Didn’t receive an OTP?{' '}
             <AsyncBtn.Transparent
               pendingState="Sending OTP..."
-              onClick={(...e) => {
+              onClick={() => {
                 analyticsTrack({
                   objectName: '2fa setup popup',
                   actionName: 'clicked',
@@ -105,7 +105,7 @@ export default class TwoFactorVerificationOTP extends React.Component {
                     ...getCommonAnalyticsProperties(window.rzp_user),
                   },
                 });
-                this.props.onResend(...e);
+                return this.props.onResend();
               }}
               class="m-l"
               showLoader={false}
