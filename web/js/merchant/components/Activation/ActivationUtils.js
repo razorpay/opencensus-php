@@ -12,8 +12,7 @@ import {
 } from './Constants';
 import { E_SIGN_AADHAR } from './ActivationFormMap';
 
-const
-  PRIVATE_LIMITED = 4,
+const PRIVATE_LIMITED = 4,
   PUBLIC_LIMITED = 5,
   LLP = 6,
   PARTNERSHIP = 3,
@@ -109,7 +108,7 @@ function getBeneficiaryInfo(value) {
   if (isUnregisteredBusiness(this)) {
     return 'Bank Account beneficiary name should be same as the name on your PAN Card.';
   }
-  if (BusinessTypes.includes(Number(currentBusinessType))){
+  if (BusinessTypes.includes(Number(currentBusinessType))) {
     return 'Bank A/c Beneficiary Name should be the same as Business Pan Name.';
   }
   return 'Bank A/C Beneficiary Name should be the same as the name on Authorised Signatory PAN or Business PAN.';
@@ -386,7 +385,8 @@ function showAadharDoc(activation) {
   if (
     E_SIGN_AADHAR.includes(Number(currentBusinessType)) &&
     activation.props.user.canSkipPOADocument &&
-    activation.state.isAadharDocVisible
+    activation.state.isAadharDocVisible &&
+    !!activation.props.user.isOrgRZP
   ) {
     return false;
   }
