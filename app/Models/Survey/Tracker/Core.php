@@ -138,6 +138,7 @@ class Core extends Base\Core
 
         $hubspotInput = [
             Entity::SURVEY_EMAIL        => $user[UserEntity::EMAIL],
+            Entity::SURVEY_TYPE         => $survey[SurveyEntity::TYPE],
             Entity::MID                 => $merchantId,
             Entity::USER_ID             => $user[UserEntity::ID],
             Entity::SURVEY_ID           => $survey[Entity::ID],
@@ -162,6 +163,7 @@ class Core extends Base\Core
 
         $hubspotClient->trackHubspotEvent($hubspotInput[Entity::SURVEY_EMAIL], [
             Entity::NPS_SURVEY                  => $hubspotInput[Entity::SURVEY_ID],
+            Entity::SURVEY_TYPE                 => $hubspotInput[Entity::SURVEY_TYPE],
             Entity::MID                         => $hubspotInput[Entity::MID],
             Entity::X_UID                       => $hubspotInput[Entity::USER_ID],
             SurveyEntity::SURVEY_URL            => $hubspotInput[SurveyEntity::SURVEY_URL],
