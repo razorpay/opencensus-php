@@ -86,33 +86,29 @@ class FeatureAccess
 
         $merchantRouteFeatures = $this->getMerchantRouteFeatures($routeFeatures);
 
+        $appId = $this->ba->getOAuthApplicationId();
+
         //
-        // We want to allow aggrepay to have application features and hence we will check
-        // for them if it's aggrepay app (hardcoded below) in the auth context when oauth
-        // token is null (this means it would be partner auth). Eventually, we want all
-        // partners to have app features, once we do that we can remove the following app id check.
+        // If the merchant is directly accessing the resource, allow if it
+        // has any of the route features required to access the resource.
         //
-        if ((empty($bearerToken) === true) and ($this->ba->getOAuthApplicationId() !== 'AwtIC8XQqM0Wet'))
-        {
-            //
-            // If the merchant is directly accessing the resource, allow if it
-            // has any of the route features required to access the resource.
-            //
-            if (empty($merchantRouteFeatures) === false)
-            {
-                return null;
-            }
-
-            return ApiResponse::routeNotFound();
-        }
-
-        $allowAccess = $this->allowAppToAccessRoute($routeFeatures, $merchantRouteFeatures);
-
-        if ($allowAccess === true)
+        if ((empty($appId) === true) and (empty($merchantRouteFeatures) === false))
         {
             return null;
         }
+        else if(empty($appId) === false)
+        {
+            // if app is making the request
+            $allowAccess = $this->allowAppToAccessRoute($routeFeatures, $merchantRouteFeatures);
 
+            if ($allowAccess === true)
+            {
+                return null;
+            }
+        }
+
+        // if app shouldn't access the route on the merchant behalf or
+        // merchant is accessing the route directly and merchant doesn't have access
         return ApiResponse::routeNotFound();
     }
 

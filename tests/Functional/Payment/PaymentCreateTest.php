@@ -1258,46 +1258,6 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals($pay['status'], 'authorized');
     }
 
-    /**
-     * Tests S2S failure on partner auth with application feature(S2S) missing
-     */
-    public function testPaymentS2SOnPartnerAuthWrongApp()
-    {
-        $client = $this->createPartnerApplicationAndGetClientByEnv(
-            'dev',
-            [
-                'type' => 'partner',
-                'id'   => 'notAllowedPApp'
-            ]);
-
-        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
-
-        $sub = $this->fixtures->merchant->createWithBalance();
-
-        $this->fixtures->feature->create([
-            'entity_type' => 'application', 'entity_id'  => 'notAllowedPApp', 'name' => 's2s']);
-
-        $this->createMerchantApplication('10000000000000', 'aggregator', $client->getApplicationId());
-
-        $this->fixtures->create(
-            'merchant_access_map',
-            [
-                'entity_id'   => $client->getApplicationId(),
-                'merchant_id' => $sub->getId(),
-            ]
-        );
-
-        $payment = $this->getDefaultPaymentArray();
-
-        $this->fixtures->methods->createDefaultMethods(['merchant_id' => $sub->getId()]);
-
-        $response = $this->doS2SPartnerAuthPayment($payment, $client, 'acc_' . $sub->getId());
-
-        $error = $response['error'];
-        $this->assertEquals($error['code'], 'BAD_REQUEST_ERROR');
-        $this->assertEquals($error['description'], 'The requested URL was not found on the server.');
-    }
-
     public function testNotEnrolledCardPaymentS2SOnPrivateAuth()
     {
         $this->mockCardVault();
