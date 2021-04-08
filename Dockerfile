@@ -1,6 +1,6 @@
 # alpine:3.7
 # -> razorpay/ongii:php7.3 ->
-FROM razorpay/onggi:php-7.3-nginx
+FROM c.rzp.io/razorpay/onggi:php-7.3-nginx
 # -> razorpay/dashboard:{GIT_COMMIT_HASH}
 
 COPY composer.json composer.lock /app/

@@ -3,7 +3,7 @@ pipeline:
   # running this, since it is a simple templated
   # JSON file
   generate-composer-auth-file:
-    image: razorpay/pithos:rzp-php7.1
+    image: c.rzp.io/razorpay/pithos:rzp-php7.1
     secrets: [GIT_TOKEN]
     commands:
       - composer config -g "github-oauth.github.com" "$GIT_TOKEN"
@@ -145,7 +145,8 @@ pipeline:
   # This is not a deployment
 
   upload-javascript-to-s3:
-    image: razorpay/containers:drone-s3-cache
+    registry: c.rzp.io
+    image: c.rzp.io/razorpay/containers:drone-s3-cache
     endpoint: https://rzp-drone-cache.s3-ap-south-1.amazonaws.com
     path: '/rzp/dashboard/javascript/${DRONE_COMMIT_SHA}.tar'
     secrets:
@@ -159,10 +160,18 @@ pipeline:
     when:
       event: push
   build-docker:
+    registry: c.rzp.io
     group: build
     image: plugins/docker
-    repo: razorpay/dashboard
+    repo: c.rzp.io/razorpay/dashboard
     secrets: [docker_username, docker_password]
+    secrets:
+      - source: harbor_docker_username
+        target: docker_username
+      - source: harbor_docker_password
+        target: docker_password
+      - source: git_token
+        target: git_token
     environment:
       # Makes sure that the docker volume cache survives this run
       PLUGIN_STORAGE_PATH: /drone/src/github.com/razorpay/dashboard/docker_cache
@@ -177,7 +186,8 @@ pipeline:
       status: [success]
       event: push
   get-javascript-artifacts-from-cache:
-    image: razorpay/containers:drone-s3-cache
+    registry: c.rzp.io
+    image: c.rzp.io/razorpay/containers:drone-s3-cache
     restore: true
     mount:
       - public
