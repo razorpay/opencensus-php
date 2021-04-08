@@ -16,8 +16,6 @@ const CurrentBalance = ({
   settleNowRestrictionMsg,
 }) => {
   const handleSettleNowClick = (e) => {
-    return false;
-
     trackIS.clickCTASettleNow();
     showOndemandSettlementForm(e);
   };
@@ -42,7 +40,7 @@ const CurrentBalance = ({
           <Button.Primary
             className="current-balance--settle-btn settle-now"
             onClick={handleSettleNowClick}
-            disabled={isSettleNowRestricted || isBalanceLoading || balance < 100 || true}
+            disabled={isSettleNowRestricted || isBalanceLoading || balance < 100}
           >
             <i className="i i-early-settlement settle-now-early" />
             Settle Now

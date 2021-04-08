@@ -79,8 +79,6 @@ export default class SettlementsListContainer extends ListContainer {
   }
 
   get settleNowRestrictionMsg() {
-    return 'Ondemand Settlements feature is temporarily disabled';
-
     if (!this.settlementRestricted) return;
     const {
       attempts_left,
@@ -232,8 +230,6 @@ export default class SettlementsListContainer extends ListContainer {
   };
 
   showOndemandSettlementForm = (e) => {
-    return false;
-
     trackOndemand.trackSettleNow('Settlements');
     const { current_balance, ondemand_restrictions, openModal } = this.props;
     const balance = current_balance.data.balance;
@@ -450,10 +446,7 @@ export default class SettlementsListContainer extends ListContainer {
                           class="settle-btn settle-now--list"
                           onClick={this.showOndemandSettlementForm}
                           disabled={
-                            isSettleNowRestricted ||
-                            current_balance.loading ||
-                            balance < 100 ||
-                            true
+                            isSettleNowRestricted || current_balance.loading || balance < 100
                           }
                         >
                           <i class="i i-early-settlement settle-now-early" />

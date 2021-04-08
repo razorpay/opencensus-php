@@ -283,8 +283,6 @@ export default class HomeContainer extends Component {
   }
 
   get settleNowRestrictionMsg() {
-    return 'Ondemand Settlements feature is temporarily disabled';
-
     if (!this.settlementRestricted) return;
     const {
       attempts_left,
