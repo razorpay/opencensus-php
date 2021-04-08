@@ -122,7 +122,7 @@ export default function MerchantNavLinks(props) {
         icon="i i-offer text-success"
         type="general"
         to="/offers"
-        additionalCondition={(user) => user.isAllowedView('settlements')}
+        additionalCondition={(user) => user.isAllowedView('offers')}
       />
 
       <MainNavLink

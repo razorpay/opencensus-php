@@ -82,7 +82,7 @@ export default {
   webhooks: [OWNER, ADMIN, MANAGER],
   configuration: [OWNER, ADMIN, MANAGER],
   applications: [OWNER],
-  offers: [OWNER, ADMIN, MANAGER, OPERATIONS, SUPPORT, AGENT],
+  offers: [OWNER, ADMIN, MANAGER, OPERATIONS, SUPPORT, AGENT, SELLERAPP],
 
   // partner dashboard permissions
   submerchants: [OWNER, MANAGER, ADMIN],

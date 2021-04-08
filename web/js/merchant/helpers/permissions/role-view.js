@@ -119,7 +119,7 @@ export default {
   configuration: [OWNER, ADMIN, MANAGER],
   early_settlement: [OWNER, ADMIN],
   applications: [OWNER],
-  offers: [OWNER, ADMIN, MANAGER, OPERATIONS, SUPPORT, AGENT],
+  offers: [OWNER, ADMIN, MANAGER, OPERATIONS, FINANCE, SUPPORT, RBL_SUPERVISOR, AGENT, SELLERAPP],
   checkoutrewards: [OWNER, ADMIN, MANAGER, OPERATIONS, SUPPORT, AGENT],
 
   // partner dashboard permissions
