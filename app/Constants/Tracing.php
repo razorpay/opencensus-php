@@ -103,5 +103,27 @@ class Tracing
 
         return $attrs;
     }
+
+    public static function shouldTraceRoute($route): bool
+    {
+        if(!(in_array($route->getName(), self::getRoutesToInclude())) or
+            in_array($route->getName(), self::getRoutesToExclude()))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public static function isEnabled($app): bool
+    {
+        if ((php_sapi_name() == 'cli') or
+            ($app['config']->get('applications.jaeger.enabled') === false))
+        {
+            return false;
+        }
+
+        return true;
+    }
 }
 

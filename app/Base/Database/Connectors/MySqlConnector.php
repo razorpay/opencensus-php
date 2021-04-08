@@ -3,6 +3,7 @@
 namespace RZP\Base\Database\Connectors;
 
 use App;
+use Route;
 use Database\Connection;
 use Exception;
 use Illuminate\Support\Str;
@@ -11,8 +12,10 @@ use Illuminate\Database\Connectors\MySqlConnector as BaseMySqlConnector;
 
 use PDO;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Tracing;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Base\Database\DetectsLostConnections;
+use OpenCensus\Trace\Integrations\PDO as PDOTracer;
 
 class MySqlConnector extends BaseMySqlConnector
 {
@@ -73,6 +76,17 @@ class MySqlConnector extends BaseMySqlConnector
             }
 
             throw $e;
+        }
+
+
+
+        // Load PDO tracer here for automatically trace all db calls
+        // It is placed here to be able to trace queries on multiple dbs separately
+        if ((Tracing::isEnabled($this->app) === true) and
+            (Tracing::shouldTraceRoute(Route::current()) === true))
+        {
+            $hostDSN = $this->getHostDsn($config);
+            PDOTracer::load($hostDSN);
         }
 
         $this->initializeWaitTimeout($connection, $config);
