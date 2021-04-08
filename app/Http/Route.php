@@ -7164,7 +7164,7 @@ class Route
         'subscription_offer_preference'                     => HeartbeatLagChecker::SLAVE,
         'reports_fetch_multiple'                            => HeartbeatLagChecker::SLAVE,
         'p2p_fetch_multiple'                                => HeartbeatLagChecker::SLAVE,
-        'payout_fetch_multiple'                             => HeartbeatLagChecker::SLAVE,
+        'payout_fetch_multiple'                             => HeartbeatLagChecker::HEARTBEAT,
         'transfer_fetch_multiple'                           => HeartbeatLagChecker::SLAVE,
         'reversal_fetch_multiple'                           => HeartbeatLagChecker::SLAVE,
         'reversal_fetch_multiple_la'                        => HeartbeatLagChecker::SLAVE,
