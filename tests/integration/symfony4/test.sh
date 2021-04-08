@@ -28,20 +28,12 @@ pushd symfony_test
 composer require --no-interaction symfony/orm-pack
 composer require --no-interaction --dev phpunit guzzlehttp/guzzle:~6.0
 
-#if [[ ! -z ${CIRCLE_PR_NUMBER} ]]; then
 composer config repositories.opencensus git ${REPO}
 #composer remove symfony/flex # Necessary so that we can work with branches that have slash in them
 composer config repositories.opencensus git ${REPO}
 composer require --no-interaction opencensus/opencensus:dev-${BRANCH}
-#else
-#    mkdir -p vendor/opencensus/opencensus
-#    cp -r ../../../../src/ opencensus
-#    jq '.["autoload"]["psr-4"] += {"OpenCensus\\": "opencensus/"}' composer.json > composer.test
-#    mv composer.test composer.json
-#    composer dumpautoload
-#fi
 
-bin/console doctrine:migrations:migrate -n --allow-no-migration
+bin/console doctrine:migrations:migrate -n
 
 echo "Running PHP server at ${TEST_HOST}:${TEST_PORT}"
 php -S ${TEST_HOST}:${TEST_PORT} -t public &
