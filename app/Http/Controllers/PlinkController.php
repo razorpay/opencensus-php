@@ -359,7 +359,8 @@ class PlinkController extends Controller
     {
         $id = Entity::stripSignWithoutValidation($id);
 
-        $payment = $this->repo->payment->findOrFailPublic($id);
+        $merchant = $this->ba->getMerchant();
+        $payment  = $this->repo->payment->findByIdAndMerchant($id, $merchant);
 
         $response = [
             'payment'  => $payment->toArray(),
