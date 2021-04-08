@@ -56,9 +56,9 @@ class PDOTest extends TestCase
                 'db.name'   => 'testdb',
                 'net.peer.name' => 'localhost',
                 'db.connection_string' => 'mysql:host=localhost;dbname=testdb',
-                'span.kind' => Span::KIND_CLIENT
+                'span.kind' => strtolower(Span::KIND_CLIENT)
             ],
-            'kind' => Span::KIND_CLIENT,
+            'kind' => strtolower(Span::KIND_CLIENT),
             'sameProcessAsParentSpan' => false,
             'name' => 'PDO connect'
         ];
