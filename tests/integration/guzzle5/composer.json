@@ -12,7 +12,7 @@
     "repositories": {
         "opencensus": {
             "type": "git",
-            "url": "https://github.com/razorpay/opencensus"
+            "url": "https://github.com/razorpay/opencensus-php"
         }
     }
 }
