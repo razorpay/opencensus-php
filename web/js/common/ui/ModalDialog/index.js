@@ -21,7 +21,7 @@ Modal.defaultStyles.content = {
   borderRadius: '5px',
 };
 
-@connect(state => state.modal, ModalActions)
+@connect((state) => state.modal, ModalActions)
 export default class ModalDialog extends Component {
   render() {
     let props = this.props;

@@ -1,11 +1,10 @@
+import React, { Component } from 'react';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import CaptureSettingsModal from 'merchant/views/Settings/Configuration/PaymentCaptureComponents/CaptureSettingsModal';
 import AutomaticCaptureModal from 'merchant/views/Settings/Configuration/PaymentCaptureComponents/AutomaticCaptureModal';
 import PaymentsCaptureConfigurationModal from 'merchant/views/Settings/Configuration/PaymentCaptureComponents/PaymentsCaptureConfigurationModal';
 import Timeouts from 'merchant/views/Settings/Configuration/PaymentCaptureComponents/Timeouts';
 import moment from 'moment';
-
-import { Component } from 'react';
 import { connect } from 'react-redux';
 import {
   updateFeatures,
@@ -16,6 +15,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import CaptureMode from './CaptureSettingsComponents/CaptureMode';
 
 @connect(
   (state) => {
@@ -221,6 +221,13 @@ export default class PaymentSettings extends Component {
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
+
+    // New flow kicks in based off on rzpX experiment
+    if (this.props.user.iscaptureSettingsRevampEnabled) {
+      return this.changeSettings();
+    }
+
+    // Older flow
     this.props.closeModal();
     if (selectedLateAuthType === 'automatic') {
       this.props.openModal({
@@ -375,6 +382,13 @@ export default class PaymentSettings extends Component {
     else return false;
   };
 
+  changeSettings = () => {
+    this.props.openModal({
+      size: 'medium',
+      component: <CaptureMode />,
+    });
+  };
+
   render() {
     const {
       data: { items },
@@ -393,7 +407,7 @@ export default class PaymentSettings extends Component {
         return null;
       }
     }
-
+    const { user } = this.props;
     return (
       <div class="panel panel-default">
         <div class="panel-heading">
@@ -417,7 +431,7 @@ export default class PaymentSettings extends Component {
                 })
               }
             >
-              Know More <i class="i i-external-link" style={{ marginLeft: '5px' }} />
+              Know more <i class="i i-external-link" style={{ marginLeft: '5px' }} />
             </a>
           </span>
         </div>
@@ -440,115 +454,249 @@ export default class PaymentSettings extends Component {
                   will override these settings if there is any conflict.
                 </strong>
               </p>
-              <div class="panel-content">
-                <div
-                  class={`left-panel ${items[0].config.capture === 'automatic' ? 'is-active' : ''}`}
-                  style={{
-                    marginRight: '5px',
-                    height: this.computeHeight(items[0].config.capture, 'automatic'),
-                  }}
-                >
-                  <div class="panel-header">
-                    <h4>
-                      <b>Automatic Capture</b>
-                    </h4>
-                    {role === 'owner' && (
-                      <input
-                        type="radio"
-                        checked={items[0].config.capture === 'automatic'}
-                        onClick={() => {
-                          this.handleCaptureInitiationDone('automatic');
-                          triggerHotjarRecording(`Capture_Setting`);
-                          window.rzpAnalytics({
-                            eventCategory: 'Dashboard - Payments Capture Settings',
-                            eventAction: 'Configure Now',
-                            eventLabel: 'Configure now - Automatic Capture - Returning User',
-                          });
-                        }}
-                      />
-                    )}
-                  </div>
-                  <div class="panel-description">
-                    <p>Payments will be captured automatically</p>
-                  </div>
-                  {items[0].config.capture === 'automatic' &&
-                    !this.isConfigDefault(items[0].config.capture_options) && (
-                      <div style={{ paddingLeft: '15px' }}>
-                        <div
-                          class="text-primary timeoutview-toggler"
-                          onClick={this.handleContentToggle}
-                        >
-                          Timeouts{' '}
-                          <i className={'i i-chevron-' + (isToggleActive ? 'up' : 'down')} />
+              {!user.iscaptureSettingsRevampEnabled && (
+                <div class="panel-content">
+                  <div
+                    class={`left-panel ${
+                      items[0].config.capture === 'automatic' ? 'is-active' : ''
+                    }`}
+                    style={{
+                      marginRight: '5px',
+                      height: this.computeHeight(items[0].config.capture, 'automatic'),
+                    }}
+                  >
+                    <div class="panel-header">
+                      <h4>
+                        <b>Automatic Capture</b>
+                      </h4>
+                      {role === 'owner' && (
+                        <input
+                          type="radio"
+                          checked={items[0].config.capture === 'automatic'}
+                          onClick={() => {
+                            this.handleCaptureInitiationDone('automatic');
+                            triggerHotjarRecording(`Capture_Setting`);
+                            window.rzpAnalytics({
+                              eventCategory: 'Dashboard - Payments Capture Settings',
+                              eventAction: 'Configure Now',
+                              eventLabel: 'Configure now - Automatic Capture - Returning User',
+                            });
+                          }}
+                        />
+                      )}
+                    </div>
+                    <div class="panel-description">
+                      <p>Payments will be captured automatically</p>
+                    </div>
+                    {items[0].config.capture === 'automatic' &&
+                      !this.isConfigDefault(items[0].config.capture_options) && (
+                        <div style={{ paddingLeft: '15px' }}>
+                          <div
+                            class="text-primary timeoutview-toggler"
+                            onClick={this.handleContentToggle}
+                          >
+                            Timeouts{' '}
+                            <i className={'i i-chevron-' + (isToggleActive ? 'up' : 'down')} />
+                          </div>
+                          {isToggleActive && (
+                            <Timeouts
+                              config={items[0].config}
+                              onEditTimeoutClick={() => {
+                                this.handleCaptureInitiationDone('automatic');
+                              }}
+                              role={role}
+                            />
+                          )}
                         </div>
-                        {isToggleActive && (
-                          <Timeouts
-                            config={items[0].config}
-                            onEditTimeoutClick={() => {
+                      )}
+                  </div>
+
+                  <div
+                    class={`right-panel ${items[0].config.capture === 'manual' ? 'is-active' : ''}`}
+                    style={{
+                      height: this.computeHeight(items[0].config.capture, 'manual'),
+                    }}
+                  >
+                    <div class="panel-header">
+                      <h4>
+                        <b>Manual Capture</b>
+                      </h4>
+                      {role === 'owner' && (
+                        <input
+                          type="radio"
+                          checked={items[0].config.capture === 'manual'}
+                          onClick={() => {
+                            this.handleCaptureInitiationDone('manual');
+                            triggerHotjarRecording(`Capture_Setting`);
+                            window.rzpAnalytics({
+                              eventCategory: 'Dashboard - Payments Capture Settings',
+                              eventAction: 'Configure Now',
+                              eventLabel: 'Configure now - Manual Capture - Returning User',
+                            });
+                          }}
+                        />
+                      )}
+                    </div>
+                    <div class="panel-description">
+                      <p>You have to manually capture the payments via dashboard or API</p>
+                    </div>
+                    {items[0].config.capture === 'manual' &&
+                      !this.isConfigDefault(items[0].config.capture_options) && (
+                        <div style={{ paddingLeft: '15px' }}>
+                          <div
+                            class="text-primary timeoutview-toggler"
+                            onClick={this.handleContentToggle}
+                          >
+                            Timeouts{' '}
+                            <i className={'i i-chevron-' + (isToggleActive ? 'up' : 'down')} />
+                          </div>
+                          {isToggleActive && (
+                            <Timeouts
+                              config={items[0].config}
+                              onEditTimeoutClick={() => {
+                                this.handleCaptureInitiationDone('manual');
+                              }}
+                              role={role}
+                            />
+                          )}
+                        </div>
+                      )}
+                  </div>
+                </div>
+              )}
+              {user.iscaptureSettingsRevampEnabled && (
+                <div class="panel-content" style={{ flexDirection: 'column' }}>
+                  {items[0].config.capture === 'automatic' && (
+                    <div
+                      class={`left-panel ${
+                        items[0].config.capture === 'automatic' ? 'is-active' : ''
+                      }`}
+                      style={{
+                        marginRight: '5px',
+                        height: this.computeHeight(items[0].config.capture, 'automatic'),
+                      }}
+                    >
+                      <div class="panel-header">
+                        <h4>
+                          <b>Automatic Capture</b>
+                        </h4>
+                        {role === 'owner' && (
+                          <input
+                            type="radio"
+                            checked={items[0].config.capture === 'automatic'}
+                            onClick={() => {
                               this.handleCaptureInitiationDone('automatic');
+                              triggerHotjarRecording(`Capture_Setting`);
+                              window.rzpAnalytics({
+                                eventCategory: 'Dashboard - Payments Capture Settings',
+                                eventAction: 'Configure Now',
+                                eventLabel: 'Configure now - Automatic Capture - Returning User',
+                              });
                             }}
-                            role={role}
                           />
                         )}
                       </div>
-                    )}
-                </div>
-                <div
-                  class={`right-panel ${items[0].config.capture === 'manual' ? 'is-active' : ''}`}
-                  style={{
-                    marginLeft: '5px',
-                    height: this.computeHeight(items[0].config.capture, 'manual'),
-                  }}
-                >
-                  <div class="panel-header">
-                    <h4>
-                      <b>Manual Capture</b>
-                    </h4>
-                    {role === 'owner' && (
-                      <input
-                        type="radio"
-                        checked={items[0].config.capture === 'manual'}
-                        onClick={() => {
-                          this.handleCaptureInitiationDone('manual');
-                          triggerHotjarRecording(`Capture_Setting`);
-                          window.rzpAnalytics({
-                            eventCategory: 'Dashboard - Payments Capture Settings',
-                            eventAction: 'Configure Now',
-                            eventLabel: 'Configure now - Manual Capture - Returning User',
-                          });
-                        }}
-                      />
-                    )}
-                  </div>
-                  <div class="panel-description">
-                    <p>Capture the payments manually</p>
-                  </div>
-                  {items[0].config.capture === 'manual' &&
-                    !this.isConfigDefault(items[0].config.capture_options) && (
-                      <div style={{ paddingLeft: '15px' }}>
-                        <div
-                          class="text-primary timeoutview-toggler"
-                          onClick={this.handleContentToggle}
-                        >
-                          Timeouts{' '}
-                          <i className={'i i-chevron-' + (isToggleActive ? 'up' : 'down')} />
-                        </div>
-                        {isToggleActive && (
-                          <Timeouts
-                            config={items[0].config}
-                            onEditTimeoutClick={() => {
+                      <div class="panel-description">
+                        <p>Payments will be captured automatically</p>
+                      </div>
+                      {items[0].config.capture === 'automatic' &&
+                        !this.isConfigDefault(items[0].config.capture_options) && (
+                          <div style={{ paddingLeft: '15px' }}>
+                            <div
+                              class="text-primary timeoutview-toggler"
+                              onClick={this.handleContentToggle}
+                            >
+                              Timeouts{' '}
+                              <i className={'i i-chevron-' + (isToggleActive ? 'up' : 'down')} />
+                            </div>
+                            {isToggleActive && (
+                              <Timeouts
+                                config={items[0].config}
+                                onEditTimeoutClick={() => {
+                                  this.handleCaptureInitiationDone('automatic');
+                                }}
+                                role={role}
+                              />
+                            )}
+                          </div>
+                        )}
+                    </div>
+                  )}
+
+                  {items[0].config.capture === 'manual' && (
+                    <div
+                      class={`right-panel ${
+                        items[0].config.capture === 'manual' ? 'is-active' : ''
+                      }`}
+                      style={{
+                        height: this.computeHeight(items[0].config.capture, 'manual'),
+                      }}
+                    >
+                      <div class="panel-header">
+                        <h4>
+                          <b>Manual Capture</b>
+                        </h4>
+                        {role === 'owner' && (
+                          <input
+                            type="radio"
+                            checked={items[0].config.capture === 'manual'}
+                            onClick={() => {
                               this.handleCaptureInitiationDone('manual');
+                              triggerHotjarRecording(`Capture_Setting`);
+                              window.rzpAnalytics({
+                                eventCategory: 'Dashboard - Payments Capture Settings',
+                                eventAction: 'Configure Now',
+                                eventLabel: 'Configure now - Manual Capture - Returning User',
+                              });
                             }}
-                            role={role}
                           />
                         )}
                       </div>
-                    )}
+                      <div class="panel-description">
+                        <p>You have to manually capture the payments via dashboard or API</p>
+                      </div>
+                      {items[0].config.capture === 'manual' &&
+                        !this.isConfigDefault(items[0].config.capture_options) && (
+                          <div style={{ paddingLeft: '15px' }}>
+                            <div
+                              class="text-primary timeoutview-toggler"
+                              onClick={this.handleContentToggle}
+                            >
+                              Timeouts{' '}
+                              <i className={'i i-chevron-' + (isToggleActive ? 'up' : 'down')} />
+                            </div>
+                            {isToggleActive && (
+                              <Timeouts
+                                config={items[0].config}
+                                onEditTimeoutClick={() => {
+                                  this.handleCaptureInitiationDone('manual');
+                                }}
+                                role={role}
+                              />
+                            )}
+                          </div>
+                        )}
+                    </div>
+                  )}
                 </div>
-              </div>
+              )}
+              <button
+                class="btn btn-primary"
+                onClick={
+                  user.iscaptureSettingsRevampEnabled
+                    ? this.changeSettings
+                    : () => {
+                        this.handleCaptureInitiationDone(`${items[0].config.capture}`);
+                      }
+                }
+                style={{ marginTop: '15px' }}
+                disabled={role !== 'owner' ? true : false}
+              >
+                Change Settings
+              </button>
             </div>
           )}
-          {items.length === 0 && (
+          {items.length === 0 && !user.iscaptureSettingsRevampEnabled && (
             <>
               <div class="description">
                 <strong>
@@ -576,6 +724,28 @@ export default class PaymentSettings extends Component {
                 disabled={role !== 'owner' ? true : false}
               >
                 Configure Now
+              </button>
+            </>
+          )}
+          {items.length === 0 && user.iscaptureSettingsRevampEnabled && (
+            <>
+              <div class="description" style={{ marginBottom: '0px' }}>
+                <p class="payments-capture__help-text">
+                  Payments must be captured within 5 days of creation once they get authorised or
+                  else payments will be auto refunded to customers.
+                </p>
+                <img
+                  style={{ width: '100%' }}
+                  src="https://cdn.razorpay.com/static/assets/capture-settings/capture-settings-hero.png"
+                />
+              </div>
+              <button
+                class="btn btn-primary"
+                onClick={this.changeSettings}
+                style={{ marginTop: '15px' }}
+                disabled={role !== 'owner' ? true : false}
+              >
+                Change Settings
               </button>
             </>
           )}

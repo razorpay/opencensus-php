@@ -1,0 +1,177 @@
+.capture-mode-container
+  height 600px
+  display flex
+  flex-direction column
+
+  .modal-header
+    background-color white
+    padding-bottom 10px
+    padding-left 19px
+
+    .close
+      margin-right -8px
+
+  .content
+    display flex
+    flex .90
+    background-color white
+    flex-direction column
+
+    .info
+      padding 5px 0px 5px 20px
+
+      p{
+        font-size 12px
+        font-weight bold
+        color #7B8199
+        width 97%
+      }
+
+      .automatic-info, .manual-info
+        width 75%
+        padding 2px 2px 2px 0px
+        margin-bottom 4px
+        color #528FF0
+
+    .upper-panel
+      display flex
+      flex .5
+
+    .lower-panel
+      display flex
+      flex .5
+
+    .upper-panel
+      justify-content center
+      align-items center
+
+      img
+        width 270px
+        margin 10px 0px
+
+      .panel-rows
+        display flex
+        flex-direction column
+        border 1px solid rgba(173, 188, 201, 0.47)
+        height 90%
+        width 90%
+
+        &.highlight-box
+          background-color #f9fafb
+
+        .Input
+          width 80%
+          margin unset
+          padding 0px 0px 5px 0px
+
+        .Input-el
+          border none
+          border-bottom 1px solid #0B70E7;
+          padding 0px
+
+        >div
+          display flex
+          flex .5
+          flex-direction row
+          padding-top 10px
+
+          p:nth-child(3)
+            margin-top 30px
+
+          .left-col
+            display flex
+            flex-direction column
+            padding-top 5px
+            flex .1
+            align-items center
+
+          .right-col
+            display flex
+            flex-direction column
+            padding 5px
+            flex .9
+
+            .custom-pricing__contact-support
+              margin-top 20px
+              margin-bottom 40px
+
+              >div
+                padding 5px 0px
+
+              div:first-child
+                border-bottom 1px solid #adbcc978
+
+    .lower-panel
+      justify-content center
+      align-items flex-end
+      padding-bottom 15px
+
+      .note
+        width 90%
+        height 58px
+        background-color #F3F6F8
+
+        p{
+          padding-left 10px
+          border-left 3px solid #528FF0
+          margin 10px
+          font-size 14px
+          font-weight 400
+        }
+
+  .actions
+    display flex
+    flex .10
+    background-color #EBEFF0
+    justify-content flex-end
+    align-items center
+
+    .prev-btn
+      color #528FF0
+      font-weight bold
+      cursor pointer
+      margin-right 15px
+
+    >div
+      display flex
+      flex .5
+
+    div:last-child
+      justify-content flex-end
+      padding-right 17px
+      align-items center
+
+    .stepper
+      padding-left 20px
+
+      span
+        width 6px
+        height 6px
+        border-radius 3px
+        background-color #C4C4C4
+        margin 5px
+        justify-content flex-start
+
+        &.active
+          background-color #528FF0
+
+.flex-3
+  flex .3 !important
+
+.flex-7
+  flex .7 !important
+
+.flex-9
+  flex .9 !important
+
+.flex-1
+  flex .1 !important
+
+.highlight-border-top
+  border-top 1px solid rgba(173, 188, 201, 0.47)
+
+.highlight__subtext
+  color #7B8199
+  font-weight 400
+  font-size 12px
+  // padding 2px 0px

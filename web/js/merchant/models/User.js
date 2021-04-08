@@ -488,6 +488,11 @@ export default class User {
     return this.getExpStatus('settlement_ux_revamp_p2');
   }
 
+  get iscaptureSettingsRevampEnabled() {
+    // return this.getExpStatus('capture_settings_revamp');
+    return false;
+  }
+
   get isAutomaticSettlementEnabled() {
     return this.isFeatureEnabled('ES_AUTOMATIC');
   }
