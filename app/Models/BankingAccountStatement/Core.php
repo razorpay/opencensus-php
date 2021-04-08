@@ -1837,11 +1837,32 @@ class Core extends Base\Core
                 'delay'          => $delay,
             ]);
 
-        BankingAccountStatementJob::dispatch($this->mode,
-                                             [
-                                                 'channel'       => $channel,
-                                                 'account_number' => $accountNumber
-                                             ])->delay($delay);
+        $job = $this->getAccountStatementJobForChannel($channel, $accountNumber);
+
+        $job::dispatch($this->mode,
+                       [
+                           'channel'        => $channel,
+                           'account_number' => $accountNumber
+                       ])->delay($delay);
+    }
+
+    protected function getAccountStatementJobForChannel(string $channel, string $accountNumber)
+    {
+        $accountNumbers = (new AdminService)->getConfigKey(['key' => ConfigKey::BANKING_ACCOUNT_STATEMENT_FETCH_V2]);
+
+        if (in_array($accountNumber, $accountNumbers) === true)
+        {
+            $job = 'RZP\Jobs' . '\\' . studly_case($channel) . 'BankingAccountStatement';
+
+            if (class_exists($job) === true)
+            {
+                return $job;
+            }
+        }
+
+        $job = BankingAccountStatementJob::class;
+
+        return $job;
     }
 
     public function getCronDispatchDelayByChannel(string $channel)

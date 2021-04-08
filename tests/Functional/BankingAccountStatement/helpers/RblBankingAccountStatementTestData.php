@@ -40,6 +40,22 @@ return [
             ],
         ],
     ],
+    'testRblAccountStatementFetchV2' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/process',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'channel'         => 'rbl',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'account_number' => '2224440041626905',
+                'channel'        => 'rbl'
+            ],
+        ],
+    ],
 
     'testRblAccountStatementCase2' => [
         'request'  => [

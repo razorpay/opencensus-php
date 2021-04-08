@@ -10,9 +10,11 @@ use RZP\Constants\Timezone;
 use RZP\Models\Pricing\Fee;
 use RZP\Services\Mock\Mozart;
 use RZP\Models\BankingAccount;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\GatewayErrorException;
 use RZP\Models\BankingAccount\Gateway\Icici;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Models\BankingAccountStatement\Details;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
@@ -21,6 +23,7 @@ use RZP\Jobs\IciciBankingAccountGatewayBalanceUpdate;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
+use RZP\Jobs\IciciBankingAccountStatement as IciciBankingAccountStatementJob;
 
 class IciciCaPayoutTest extends TestCase
 {
@@ -56,13 +59,44 @@ class IciciCaPayoutTest extends TestCase
             'id'             => 'xba00000000002',
             'merchant_id'    => '10000000000000',
             'account_ifsc'   => 'ICIC0000047',
-            'account_number' => '2224440041626907',
+            'account_number' => '2224440041626905',
             'status'         => 'activated',
             'channel'        => 'icici',
             'balance_id'     => $this->bankingBalance->getId(),
         ];
 
         $this->createBankingAccount($bankingAccountParams);
+
+        $this->fixtures->create('banking_account_statement_details',[
+            Details\Entity::ID             => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $this->bankingBalance->getId(),
+            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
+            Details\Entity::CHANNEL        => Details\Channel::ICICI,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
+    }
+
+    public function testIciciAccountStatementFetchV2()
+    {
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'       => '/banking_account_statement/process/icici',
+            'method'    => 'POST'
+        ];
+
+        $this->flushCache();
+
+        (new AdminService)->setConfigKeys([ConfigKey::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT => 1]);
+
+        (new AdminService)->setConfigKeys([ConfigKey::BANKING_ACCOUNT_STATEMENT_FETCH_V2 => ["2224440041626905"]]);
+
+        Queue::fake();
+
+        $this->makeRequestAndGetContent($request);
+
+        Queue::assertPushed(IciciBankingAccountStatementJob::class, 1);
     }
 
     protected function liveSetUp()
@@ -163,7 +197,7 @@ class IciciCaPayoutTest extends TestCase
 
         /** @var Details\Entity $baAfterCronRuns */
         $basDetailsAfterCronRuns = $this->getDbEntity('banking_account_statement_details',
-                                                      ['account_number' => 2224440041626907]);
+                                                      ['account_number' => 2224440041626905]);
 
         $this->assertEquals(50000, $basDetailsAfterCronRuns->getGatewayBalance());
 

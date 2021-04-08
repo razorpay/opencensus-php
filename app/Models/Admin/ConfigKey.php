@@ -84,6 +84,8 @@ class ConfigKey
 
     const LOW_BALANCE_RX_EMAIL                  = self::PREFIX . 'low_balance_rx_email';
 
+    // Currently we are doing rearch of statement fetch and we will use this key to revamp traffic on new flow
+    const BANKING_ACCOUNT_STATEMENT_FETCH_V2  = self::PREFIX . 'banking_account_statement_fetch_v2';
 
     const OFFER_LOG_VERBOSE                     = self::PREFIX . 'offer_log_verbose';
 
@@ -172,7 +174,7 @@ class ConfigKey
 
     // Acts as a kill switch for cred eligibility call from /preferences api
     const ENABLE_CRED_ELIGIBILITY_CALL = self::PREFIX . 'enable_cred_eligibility_call';
-    
+
     const RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_MERCHANTS = self::PREFIX . 'rx_va_to_va_payouts_whitelisted_destination_merchants';
 
     const RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS_FOR_FUND_LOADING = self::PREFIX . 'rx_globally_whitelisted_payer_accounts_for_fund_loading';
@@ -229,6 +231,7 @@ class ConfigKey
         self::NB_PLUS_SERVICE_ENABLED,
         self::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT,
         self::LOW_BALANCE_RX_EMAIL,
+        self::BANKING_ACCOUNT_STATEMENT_FETCH_V2,
         self::GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING,
         self::RBL_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT,
         self::ICICI_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT,

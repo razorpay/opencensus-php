@@ -41,6 +41,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\BankingAccountStatement\Entity as BasEntity;
 use RZP\Models\BankingAccountStatement\Details as BasDetails;
 use RZP\Jobs\BankingAccountStatement as BankingAccountStatementJob;
+use RZP\Jobs\RblBankingAccountStatement as RblBankingAccountStatementJob;
 
 class RblBankingAccountStatementTest extends TestCase
 {
@@ -8258,6 +8259,28 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertArraySubset($basExpected, $basActual, true);
     }
 
+    public function testRblAccountStatementFetchV2Dispatch()
+    {
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'       => '/banking_account_statement/process/rbl',
+            'method'    => 'POST'
+        ];
+
+        $this->flushCache();
+
+        (new AdminService)->setConfigKeys([ConfigKey::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT => 1]);
+
+        (new AdminService)->setConfigKeys([ConfigKey::BANKING_ACCOUNT_STATEMENT_FETCH_V2 => ["2224440041626905"]]);
+
+        Queue::fake();
+
+        $this->makeRequestAndGetContent($request);
+
+        Queue::assertPushed(RblBankingAccountStatementJob::class, 1);
+    }
+  
     /**
      * @throws \RZP\Exception\BadRequestException
      * Here we are checking that merchant with ACCOUNT_STATEMENT_V2_FLOW feature enabled
