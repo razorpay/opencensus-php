@@ -109,6 +109,14 @@ jobs:
           phpize
           ./configure --enable-opencensus
           sudo make install
+          sudo docker-php-ext-enable opencensus
+
+#      - name: Install memcached extension
+#        run: |
+#          sudo apt-get install -y -q --no-install-recommends \
+#            libmemcached11 libmemcached-dev zlib1g-dev zlib1g
+#          sudo pecl install memcached <<<''
+#          sudo docker-php-ext-enable memcached
 
       - name: Curl test
         run: tests/integration/curl/test.sh
