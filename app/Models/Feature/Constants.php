@@ -636,6 +636,11 @@ class Constants
      */
     const PAYOUT_PROCESS_ASYNC = 'payout_process_async';
 
+    /**
+     * Used to enable new FAV forward flow, where FTA is deprecated.
+     */
+    const FAV_FTA_DPRCN_FWD = 'fav_fta_dprcn_fwd';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -937,6 +942,7 @@ class Constants
         self::CAPITAL_CARDS_COLLECTIONS       => true,
         self::PAYOUT_PROCESS_ASYNC_LP         => true,
         self::PAYOUT_PROCESS_ASYNC            => true,
+        self::FAV_FTA_DPRCN_FWD               => true,
     ];
 
     // Entity type constants

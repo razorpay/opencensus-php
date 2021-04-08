@@ -236,7 +236,7 @@ final class RazorxTreatment
 
     // to a/b test between offer tile vs subtext for cred
     const CRED_OFFER_SUBTEXT = 'cred_offer_subtext';
-    
+
     const PERFORM_ACTION_ON_WORKFLOW_OBSERVER_DATA = 'perform_action_on_workflow_observer_data';
 
     // will route the traffic slave or master based on the replica

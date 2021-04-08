@@ -4,6 +4,7 @@ namespace RZP\Models\FundAccount\Validation;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Services\FTS;
 use RZP\Models\Admin;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -14,6 +15,8 @@ use RZP\Models\Pricing\Fee;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\BadRequestException;
+use RZP\Services\FTS\Constants as FtsConstants;
+use RZP\Services\FTS\Transfer\RequestFields as FtsRequestFields;
 
 class Core extends Base\Core
 {
@@ -504,5 +507,208 @@ class Core extends Base\Core
             'processed'         => $processed,
             'failed'            => $recordsReceived - $processed,
         ];
+    }
+
+    /**
+     * This function does the following-
+     * 1. Fetch the FAV entity from the FAV ID.
+     * 2. Create the request body as per the API contract.
+     * 3. Create a new Services\FTS\Transfer\Client object, and set its $request using setRequest() method call.
+     * 4. Invoke Client object's doTransfer() method.
+     * 5. Update FAV if there's no exception thrown (doTransfer() will throw exceptions, halting this step)
+     * 6. Returns the response if no exception is thrown.
+     *
+     * @param  $favId string The FAV ID to be processed.
+     *
+     * @return mixed
+     */
+    public function sendFAVRequestToFTS(string $favId)
+    {
+        /**
+         * @var Entity
+         */
+        $this->trace->info(
+            TraceCode::FAV_QUEUE_FOR_FTS_JOB_HANDLER_INIT,
+            [
+                'fav_id'   => $favId,
+            ]
+        );
+
+        $fav = $this->repo->fund_account_validation->findOrFail($favId);
+
+        $request = $this->createRequestBodyFromFavForFTS($fav);
+
+        $ftsClient = new FTS\Transfer\Client($this->app);
+
+        $ftsClient->setRequest($request);
+
+        return $ftsClient->doTransfer();
+    }
+
+    /**
+     * This function creates the request array from an FAV entity.
+     *
+     * @param $fav Entity The FAV entity
+     *
+     * @return array[] Consisting of the request body
+     */
+    protected function createRequestBodyFromFavForFTS($fav)
+    {
+        $this->trace->info(
+            TraceCode::FAV_QUEUE_FOR_FTS_REQUEST_BODY_CREATION_INIT,
+            [
+                'fav_id' => $fav->getPublicId(),
+            ]
+        );
+
+        // Create the basic request body
+        $request = [
+            FtsRequestFields::TRANSFER => [
+                FtsRequestFields::SOURCE_ID             => $fav->getId(),
+                FtsRequestFields::SOURCE_TYPE           => FtsConstants::FUND_ACCOUNT_VALIDATION,
+                FtsRequestFields::AMOUNT                => $fav->getAmount(),
+                FtsRequestFields::MERCHANT_ID           => $fav->getMerchantId(),
+                FtsRequestFields::TRANSFER_ACCOUNT_TYPE => FtsConstants::BANK_ACCOUNT,
+                FtsRequestFields::PURPOSE               => FtsConstants::PENNY_TESTING,
+                FtsRequestFields::PREFERRED_MODE        => FtsConstants::MODE_IMPS,
+            ],
+        ];
+
+        // Add notes as narration if notes exist in the FAV.
+        $narration = $this->getNarration($fav);
+
+        // - Now fetch the bank account from the fund account associated with the FAV
+        // - We are assuming that the associated account is of the type bank account,
+        //   hence directly using the account relation
+        $bankAccount = $fav->fundAccount->account;
+
+        // Fill the request array further, by nesting bank_account sub-array, using the contents of $bankAccount var
+        $request[FtsRequestFields::BANK_ACCOUNT] = [
+            FtsRequestFields::ID             => $bankAccount->getId(),
+            FtsConstants::IFSC_CODE          => $bankAccount->getIfscCode(),
+            FtsRequestFields::ACCOUNT_TYPE   => $bankAccount->getAccountType(),
+            FtsRequestFields::ACCOUNT_NUMBER => $bankAccount->getAccountNumber(),
+            FtsConstants::BENEFICIARY_NAME   => $bankAccount->getBeneficiaryName(),
+        ];
+
+        if (is_null($bankAccount->getAccountType()) === true)
+        {
+            $request[FtsRequestFields::BANK_ACCOUNT][FtsRequestFields::ACCOUNT_TYPE] = FtsConstants::SAVING;
+        }
+
+        // Fill up optional fields in bank_account sub-array
+
+        if (is_null($bankAccount->isVirtual()) === false)
+        {
+            $request[FtsRequestFields::BANK_ACCOUNT][FtsConstants::IS_VIRTUAL_ACCOUNT] = $bankAccount->isVirtual();
+        }
+
+        if (empty($bankAccount->getBeneficiaryCity()) === false)
+        {
+            $request[FtsRequestFields::BANK_ACCOUNT][FtsRequestFields::BENEFICIARY_CITY] =
+                $bankAccount->getBeneficiaryCity();
+        }
+
+        if (empty($bankAccount->getBeneficiaryEmail()) === false)
+        {
+            $request[FtsRequestFields::BANK_ACCOUNT][FtsRequestFields::BENEFICIARY_EMAIL] =
+                $bankAccount->getBeneficiaryEmail();
+        }
+
+        if (empty($bankAccount->getBeneficiaryState()) === false)
+        {
+            $request[FtsRequestFields::BANK_ACCOUNT][FtsRequestFields::BENEFICIARY_STATE] =
+                $bankAccount->getBeneficiaryState();
+        }
+
+        if (empty($bankAccount->getBeneficiaryMobile()) === false)
+        {
+            $request[FtsRequestFields::BANK_ACCOUNT][FtsRequestFields::BENEFICIARY_MOBILE] =
+                $bankAccount->getBeneficiaryMobile();
+        }
+
+        if (empty($bankAccount->getBeneficiaryCountry()) === false)
+        {
+            $request[FtsRequestFields::BANK_ACCOUNT][FtsRequestFields::BENEFICIARY_COUNTRY] =
+                $bankAccount->getBeneficiaryCountry();
+        }
+
+        $address = $this->getAddressFromBankAccountEntity($bankAccount);
+
+        if (is_null($address) === false)
+        {
+            $request[FtsRequestFields::BANK_ACCOUNT][FtsRequestFields::BENEFICIARY_ADDRESS] = $address;
+        }
+
+        $this->trace->info(
+            TraceCode::FAV_QUEUE_FOR_FTS_REQUEST_CREATED,
+            [
+                'fav_id'       => $fav->getPublicId(),
+                'request_body' => $request,
+            ]
+        );
+
+        return $request;
+    }
+
+    public function setTransferId(string $favId, string $transferId)
+    {
+        $this->trace->info(
+            TraceCode::FAV_QUEUE_FOR_FTS_JOB_TRANSFER_ID_UPDATE_INIT,
+            [
+                'fav_id'   => $favId,
+                'transfer_id' => $transferId,
+            ]
+        );
+
+        $fav = $this->repo->fund_account_validation->findOrFail($favId);
+        $fav->setFTSTransferId($transferId);
+        $this->repo->fund_account_validation->saveOrFail($fav);
+    }
+
+    protected function getNarration(Entity $fav)
+    {
+        $merchant = $fav->merchant;
+
+        $merchantBillingLabel = $merchant->getBillingLabel();
+
+        // Remove all characters other than a-z, A-Z, 0-9 and space
+        $formattedLabel = preg_replace('/[^a-zA-Z0-9 ]+/', '', $merchantBillingLabel);
+
+        // If formattedLabel is non-empty, pick the first 30 chars, else fallback to 'Razorpay'
+        $formattedLabel = ($formattedLabel ? $formattedLabel : 'Razorpay');
+
+        $narration = $formattedLabel . ' FAV';
+
+        $narration = str_limit($narration, 30, '');
+
+        return $narration;
+    }
+
+    protected function getAddressFromBankAccountEntity($bankAccount)
+    {
+        $address = null;
+
+        if (empty($bankAccount->getBeneficiaryAddress1()) === false)
+        {
+            $address = $bankAccount->getBeneficiaryAddress1();
+        }
+
+        if (empty($bankAccount->getBeneficiaryAddress2()) === false)
+        {
+            $address = $address . ', ' . $bankAccount->getBeneficiaryAddress2();
+        }
+
+        if (empty($bankAccount->getBeneficiaryAddress3()) === false)
+        {
+            $address = $address . ', ' . $bankAccount->getBeneficiaryAddress3();
+        }
+
+        if (empty($bankAccount->getBeneficiaryAddress4()) === false)
+        {
+            $address = $address . ', ' . $bankAccount->getBeneficiaryAddress4();
+        }
+
+        return $address;
     }
 }

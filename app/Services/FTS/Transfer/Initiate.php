@@ -193,9 +193,19 @@ trait Initiate
 
         $accountType = $transfer[RequestFields::TRANSFER_ACCOUNT_TYPE];
 
-        $type = $transfer[RequestFields::TYPE];
+        $type = '';
 
-        $channel = $transfer[RequestFields::PREFERRED_CHANNEL];
+        if (array_key_exists(RequestFields::TYPE, $transfer))
+        {
+            $type = $transfer[RequestFields::TYPE];
+        }
+
+        $channel = null;
+
+        if (array_key_exists(RequestFields::PREFERRED_CHANNEL, $transfer))
+        {
+            $channel = $transfer[RequestFields::PREFERRED_CHANNEL];
+        }
 
         $account = $this->request[$accountType];
 

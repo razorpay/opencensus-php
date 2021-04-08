@@ -7,17 +7,19 @@ use Carbon\Carbon;
 use RZP\Exception;
 use Monolog\Logger;
 use RZP\Error\ErrorCode;
-use RZP\Models\FundAccount\Validation\ErrorCodesMapping;
 use RZP\Trace\TraceCode;
 use RZP\Models\Reversal;
+use RZP\Jobs\FavQueueForFTS;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\BadRequestException;
 use RZP\Models\FundAccount\Validation\Status;
 use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Models\BankAccount\OldNewIfscMapping;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Models\FundAccount\Validation\Constants;
 use RZP\Models\Feature\Constants as MerchantFeature;
 use RZP\Models\FundAccount\Validation\AccountStatus;
+use RZP\Models\FundAccount\Validation\ErrorCodesMapping;
 use RZP\Models\FundAccount\Validation\Entity as Validation;
 
 
@@ -115,7 +117,16 @@ class BankAccount extends Base
             }
         }
 
-        // initiate a fund transfer if this account number is new.
+        // Check if feature flag is enabled for the merchant
+        // If yes, directly queue the FAV for FTS transfer without creating the FTA
+        if ($this->validation->merchant->isFeatureEnabled(Features::FAV_FTA_DPRCN_FWD))
+        {
+            $this->dispatchFavToQueue();
+            return;
+        }
+
+        // If feature flag is disabled for the merchant
+        // initiate a fund transfer through the old flow
         $this->initiateFundTransfer();
     }
 
@@ -398,5 +409,17 @@ class BankAccount extends Base
         }
         return false;
 
+    }
+
+    // The function to push the FAV ID to the FAV queue for FTS
+    protected function dispatchFavToQueue()
+    {
+        $this->trace->info(
+            TraceCode::FAV_QUEUE_FOR_FTS_JOB_REQUEST,
+            [
+                'fav_id' => $this->validation->getId(),
+            ]
+        );
+        FavQueueForFTS::dispatch($this->mode, $this->validation->getId());
     }
 }

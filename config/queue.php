@@ -316,6 +316,11 @@ return [
         'live'       => env('AWS_PAYMENT_PAGE_GENERIC_QUEUE_LIVE'),
     ],
 
+    'fav_queue_for_fts' => [
+        'test'       =>  env('AWS_FAV_QUEUE_FOR_FTS_TEST_QUEUE'),
+        'live'       =>  env('AWS_FAV_QUEUE_FOR_FTS_LIVE_QUEUE'),
+    ],
+
     /*
      | Lists various queues to be used per mailable
      */
