@@ -22,6 +22,7 @@ const RewardsAnnouncment = ({ userId }) => {
         location: 'rewards',
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
+      toLumberjack: true,
     });
     closeAnnoucement();
   }, [closeAnnoucement]);
@@ -34,6 +35,7 @@ const RewardsAnnouncment = ({ userId }) => {
       properties: {
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
+      toLumberjack: true,
     });
   }, [userId]);
 

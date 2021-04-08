@@ -111,6 +111,7 @@ export default class Rewards extends Component {
         rewardId: id.replace('reward_', ''), // id value looks like "reward_kjJBDkjbmN"
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
+      toLumberjack: true,
     });
   };
 
@@ -209,6 +210,7 @@ export default class Rewards extends Component {
                   rewardId: response.live_reward_id,
                   ...getCommonAnalyticsProperties(window.rzp_user),
                 },
+                toLumberjack: true,
               });
               message = 'Reward added into queue successfully.';
             } else if (response.status === 'live') {
@@ -221,6 +223,7 @@ export default class Rewards extends Component {
                   rewardId: response.live_reward_id,
                   ...getCommonAnalyticsProperties(window.rzp_user),
                 },
+                toLumberjack: true,
               });
             }
 
@@ -347,6 +350,7 @@ export default class Rewards extends Component {
                       location: 'rewards',
                       ...getCommonAnalyticsProperties(window.rzp_user),
                     },
+                    toLumberjack: true,
                   });
                   return this.props.openModal({
                     size: 'xlarge',

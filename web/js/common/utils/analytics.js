@@ -1,6 +1,38 @@
 import { titleCase } from './rzp-utils';
 
-export const analyticsTrack = ({ objectName, actionName, screen, properties = {} }) => {
+const sendToLumberjack = ({ eventName, properties = {} }) => {
+  const body = {
+    mode: 'live',
+    key: window.LUMBERJACK_API_KEY,
+    events: [
+      {
+        event_type: 'pg-dashboard',
+        event: eventName,
+        event_version: 'v1',
+        timestamp: new Date().getTime(),
+        properties: {
+          ...properties,
+        },
+      },
+    ],
+  };
+
+  fetch(window.LUMBERJACK_API_URL, {
+    method: 'post',
+    body: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+export const analyticsTrack = ({
+  objectName,
+  actionName,
+  screen,
+  properties = {},
+  toLumberjack = false,
+}) => {
   if (!objectName) {
     throw new Error('[analytics]: objectName cannot be empty');
   }
@@ -28,6 +60,17 @@ export const analyticsTrack = ({ objectName, actionName, screen, properties = {}
       ...properties,
       screen,
       eventTimestamp,
+    });
+  }
+
+  if (toLumberjack) {
+    sendToLumberjack({
+      eventName,
+      properties: {
+        ...properties,
+        screen,
+        eventTimestamp,
+      },
     });
   }
 };

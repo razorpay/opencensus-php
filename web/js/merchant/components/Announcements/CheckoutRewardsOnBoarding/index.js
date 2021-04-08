@@ -21,6 +21,7 @@ const RewardsOnBoardingAnnouncment = ({ userId }) => {
       properties: {
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
+      toLumberjack: true,
     });
     closeAnnoucement();
   }, [closeAnnoucement]);
@@ -34,6 +35,7 @@ const RewardsOnBoardingAnnouncment = ({ userId }) => {
         location: 'onboarding',
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
+      toLumberjack: true,
     });
   }, [userId]);
 

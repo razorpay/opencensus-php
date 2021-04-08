@@ -86,6 +86,7 @@ export default class CheckoutRewardsIndex extends Component {
         location: 'rewards',
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
+      toLumberjack: true,
     });
   };
 
