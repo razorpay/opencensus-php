@@ -141,7 +141,7 @@ class ExtensionTracer implements TracerInterface, SpanEventHandlerInterface
     spans use is over, the open ones stop time along with other attributes might not have been set yet.*/
     public function checkSpanLimit()
     {
-        $count = 0; // to test
+        $count = opencensus_trace_count(); // to test
 
         if ($count >= $this->spanBufferLimit) {
             $closedSpans = [];
