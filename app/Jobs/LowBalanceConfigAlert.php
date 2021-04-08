@@ -3,6 +3,7 @@
 namespace RZP\Jobs;
 
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Merchant\Balance\LowBalanceConfig;
 
@@ -59,7 +60,7 @@ class LowBalanceConfigAlert extends Job
         {
             $this->trace->traceException(
                 $exception,
-                TraceCode::ERROR_EXCEPTION,
+                Trace::ERROR,
                 TraceCode::LOW_BALANCE_CONFIG_ALERTS_JOB_FAILED,
                 [
                     'params'  => $this->params,
