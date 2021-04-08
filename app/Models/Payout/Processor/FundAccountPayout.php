@@ -14,6 +14,7 @@ use RZP\Models\Payout\CounterHelper;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Models\FundTransfer\Mode as FundTransferMode;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -294,7 +295,13 @@ class FundAccountPayout extends Base
             Merchant\RazorxTreatment::QUEUE_PAYOUT_CREATE_REQUEST,
             $this->app['rzp.mode'] ?? 'live');
 
-        if ($variant === 'on')
+        if (($variant === 'on') or
+            ($this->merchant->isAtLeastOneFeatureEnabled(
+                    [
+                        Features::PAYOUT_PROCESS_ASYNC_LP,
+                        Features::PAYOUT_PROCESS_ASYNC
+                    ]) === true))
+
         {
             return true;
         }

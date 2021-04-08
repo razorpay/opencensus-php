@@ -41,6 +41,7 @@ use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Feature\Constants as Features;
+use RZP\Jobs\PayoutPostCreateProcessLowPriority;
 use RZP\Models\PayoutMeta\Core as PayoutMetaCore;
 use RZP\Models\FundTransfer\Metric as FundTransferMetric;
 use RZP\Models\Workflow\Service\Client as WorkflowServiceClient;
@@ -1430,14 +1431,26 @@ class Base extends BaseCore
     {
         try
         {
-            PayoutPostCreateProcess::dispatch($this->mode, $payout->getId(), $payout->toBeQueued());
+            if ($this->merchant->isFeatureEnabled(Features::PAYOUT_PROCESS_ASYNC_LP) === true)
+            {
+                PayoutPostCreateProcessLowPriority::dispatch($this->mode, $payout->getId(), $payout->toBeQueued());
 
-            $this->trace->info(
-                TraceCode::PAYOUT_CREATE_SUBMITTED_REQUEST_ENQUEUED,
-                [
-                    'payout_id' => $payout->getId(),
-                ]);
+                $this->trace->info(
+                    TraceCode::PAYOUT_CREATE_SUBMITTED_REQUEST_ENQUEUED_LOW_PRIORITY,
+                    [
+                        'payout_id' => $payout->getId(),
+                    ]);
+            }
+            else
+            {
+                PayoutPostCreateProcess::dispatch($this->mode, $payout->getId(), $payout->toBeQueued());
 
+                $this->trace->info(
+                    TraceCode::PAYOUT_CREATE_SUBMITTED_REQUEST_ENQUEUED,
+                    [
+                        'payout_id' => $payout->getId(),
+                    ]);
+            }
         }
         catch (\Throwable $e)
         {

@@ -383,12 +383,6 @@ trait TestsBusinessBanking
                         return strtolower($payoutToCardsViaRbl);
                     }
 
-                    if (($feature === 'queue_payout_create_request') and
-                        ($createPayoutWithoutTxn === 'on'))
-                    {
-                        return "on";
-                    }
-
                     if ($feature === 'forward_to_new_workflows_service')
                     {
                         return strtolower($useWorkflowMicroService);

@@ -608,7 +608,7 @@ class Constants
      * Cred merchant consent for sharing contact details
      */
     const CRED_MERCHANT_CONSENT = 'cred_merchant_consent';
-    
+
     /**
      * Skips customer flagging link in email and hosted page
      */
@@ -625,6 +625,16 @@ class Constants
 
     // Used to enable fund account of type wallet account (provider: amazonpay) for merchants for business banking (Razorpay X).
     const DISABLE_X_AMAZONPAY = 'disable_x_amazonpay';
+
+    /**
+     * Low priority queue feature in payout for ipl.
+     */
+    const PAYOUT_PROCESS_ASYNC_LP = 'payout_process_async_lp';
+
+    /**
+     * queue feature in payout for create_request_submitted.
+     */
+    const PAYOUT_PROCESS_ASYNC = 'payout_process_async';
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -925,6 +935,8 @@ class Constants
         self::DISABLE_X_AMAZONPAY             => true,
         self::CAW_RECURRING_CHARGE_AXIS       => true,
         self::CAPITAL_CARDS_COLLECTIONS       => true,
+        self::PAYOUT_PROCESS_ASYNC_LP         => true,
+        self::PAYOUT_PROCESS_ASYNC            => true,
     ];
 
     // Entity type constants

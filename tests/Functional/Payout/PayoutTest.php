@@ -51,6 +51,7 @@ use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Mail\Transaction\Payout as PayoutMail;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
+use RZP\Jobs\PayoutPostCreateProcessLowPriority;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -3987,7 +3988,7 @@ class PayoutTest extends OAuthTestCase
         $fundAccount = $this->getDbLastEntity('fund_account');
 
         $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = 'fa_' . $fundAccount['id'];
-   
+
         $balance = $this->getDbLastEntity('balance');
 
         $this->fixtures->edit('balance', $balance->getId(), ['balance' => '200000000']);
@@ -8281,7 +8282,7 @@ class PayoutTest extends OAuthTestCase
     }
 
 
-    public function testCreatePayoutForRequestSubmitted()
+    public function testCreatePayoutForRequestSubmitted($isLpQueue = false)
     {
         $this->ba->privateAuth();
 
@@ -8293,6 +8294,15 @@ class PayoutTest extends OAuthTestCase
                                             'on',
                                             'on',
                                             'on');
+
+        if ($isLpQueue === true)
+        {
+            $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_PROCESS_ASYNC_LP]);
+        }
+        else
+        {
+            $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_PROCESS_ASYNC]);
+        }
 
         $this->startTest();
 
@@ -10703,6 +10713,8 @@ class PayoutTest extends OAuthTestCase
                                    'on',
                                    'on');
 
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_PROCESS_ASYNC]);
+
         $response = $this->startTest();
 
         $payout = $this->getLastEntity('payout', true);
@@ -11224,5 +11236,56 @@ class PayoutTest extends OAuthTestCase
         $this->testData[__FUNCTION__] = $testData;
 
         $this->startTest();
+    }
+
+    /**
+     * In this test, we shall process a create_request_submitted payout via PayoutPostCreateProcessLowPriority
+     * ( create_request_submitted -> created )
+     */
+    public function testProcessingOfCreateRequestSubmittedPayoutViaLowPriorityQueue()
+    {
+        $this->testCreatePayoutForRequestSubmitted(true);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        // Manually pushing into the queue because this is the only way to do this.
+        // Keeping the queueFlag as false for this test.
+        // Payout should get processed since merchant has enough balance
+        PayoutPostCreateProcessLowPriority::dispatch('test', $payout->getId(), 'false');
+
+        $payout->reload();
+
+        $publicResponse = $payout->toArrayPublic();
+
+        $this->assertEquals('created', $payout['internal_status']);
+        $this->assertEquals('processing', $publicResponse['status']);
+        $this->assertNotNull($payout['initiated_at']);
+    }
+
+    /**
+     * In this test, we shall check if the queue used by merchant with feature PAYOUT_LP_MERCHANT is of job
+     * PayoutPostCreateProcessLowPriority
+     * ( create_request_submitted -> created )
+     */
+    public function testQueueDispatchToBePayoutPostCreateProcessLowPriority()
+    {
+        Queue::fake();
+
+        $this->testCreatePayoutForRequestSubmitted(true);
+
+        Queue::assertPushed(PayoutPostCreateProcessLowPriority::class);
+    }
+
+    /**
+     * In this test, we shall check if the queue used is of job PayoutPostCreateProcess
+     * ( create_request_submitted -> created )
+     */
+    public function testQueueDispatchToBePayoutPostCreateProcess()
+    {
+        Queue::fake();
+
+        $this->testCreatePayoutForRequestSubmitted();
+
+        Queue::assertPushed(PayoutPostCreateProcess::class);
     }
 }
