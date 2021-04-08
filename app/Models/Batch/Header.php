@@ -1077,6 +1077,10 @@ class Header
     const PAYOUT_LINK_BULK_NOTES_TITLE         = 'Internal notes(optional): Title';
     const PAYOUT_LINK_BULK_NOTES_DESC          = 'Internal notes(optional): Description';
 
+    // Website Checker
+    const WEBSITE_CHECKER_URL    = 'url';
+    const WEBSITE_CHECKER_RESULT = 'result';
+
     // Following is a list of columns that are mandatory headers in the payout batch file
     const MANDATORY_AND_CONDITIONALLY_MANDATORY_HEADERS_FOR_PAYOUTS = [
         Header::RAZORPAYX_ACCOUNT_NUMBER,
@@ -3527,6 +3531,16 @@ class Header
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
             ]
+        ],
+
+        Type::WEBSITE_CHECKER => [
+            self::INPUT => [
+                self::WEBSITE_CHECKER_URL,
+            ],
+            self::OUTPUT => [
+                self::WEBSITE_CHECKER_URL,
+                self::WEBSITE_CHECKER_RESULT,
+            ],
         ],
     ];
 

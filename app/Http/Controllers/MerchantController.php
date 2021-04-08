@@ -2050,4 +2050,13 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function websiteChecker()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_WEBSITE_CHECKER)->isLive($input);
+
+        return ApiResponse::json($response);
+    }
 }

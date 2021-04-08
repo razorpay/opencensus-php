@@ -488,6 +488,9 @@ class Entity
 
     const SEGMENTATION = 'segmentation';
 
+    // Merchant Fraud
+    const MERCHANT_WEBSITE_CHECKER = 'merchant_website_checker';
+
     /**
      * Defines a map of entites which are currently
      * being cached and associated cache version prefixes
@@ -885,6 +888,8 @@ class Entity
         self::BANKING_ACCOUNT_TPV   => \RZP\Models\BankingAccountTpv::class,
 
         self::SEGMENTATION   => \RZP\Models\Segmentation::class,
+
+        self::MERCHANT_WEBSITE_CHECKER   => \RZP\Models\Merchant\Fraud\WebsiteChecker::class,
     ];
 
     protected static $repository = [

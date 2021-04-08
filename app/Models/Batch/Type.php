@@ -152,6 +152,8 @@ class Type
 
     const CANCEL_DEBIT = 'cancel_debit';
 
+    const WEBSITE_CHECKER = 'website_checker';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
@@ -200,6 +202,7 @@ class Type
         self::SUBMERCHANT_PARTNER_CONFIG_UPSERT,
         self::SUBMERCHANT_TYPE_UPDATE,
         self::RETRY_REFUNDS_TO_BA,
+        self::WEBSITE_CHECKER,
     ];
 
     /**
@@ -422,6 +425,7 @@ class Type
         self::RETRY_REFUNDS_TO_BA,
         self::SUB_MERCHANT,
         self::RECURRING_CHARGE_AXIS,
+        self::WEBSITE_CHECKER,
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data

@@ -2360,6 +2360,9 @@ class Route
         'templating_get_template_config'          => ['get',     'templating/template_configs/{id}',                        'TemplatingServiceController@getTemplateConfig'                ],
         'templating_list_template_config'         => ['get',     'templating/template_configs',                             'TemplatingServiceController@listTemplateConfig'               ],
         'care_service_myoperator_webhook_proxy'   => ['post',    'care_service/myoperator_webhook/{path?}',                 'CareProxyController@postMyOperatorWebhookProxyRequest'        ],
+
+        // Merchant Fraud
+        'website_checker'                         => ['post',    'merchant/website/checker',                                'MerchantController@websiteChecker'                            ]
     ];
 
     public static $public = [
@@ -3160,6 +3163,8 @@ class Route
         'user_fetch_entity',
         'bulk_submerchant_assign',
 
+        // Merchant Fraud
+        'website_checker',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -6388,7 +6393,8 @@ class Route
             'scrooge_refunds_retry_custom_fund_transfers_batch',
             'partner_config_bulk_upsert',
             'payout_links_create_batch',
-            'nach_batch_process'
+            'nach_batch_process',
+            'website_checker',
         ],
 
         'stork' => [
