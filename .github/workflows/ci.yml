@@ -103,6 +103,13 @@ jobs:
 
       - uses: niden/actions-memcached@v7
 
+      - name: Install opencensus extension
+        run: |
+          cd ext
+          phpize
+          ./configure --enable-opencensus
+          sudo make install
+
       - name: Curl test
         run: tests/integration/curl/test.sh
 
