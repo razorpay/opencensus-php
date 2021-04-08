@@ -130,10 +130,6 @@ jobs:
         run: tests/integration/symfony4/test.sh
         env:
           DATABASE_URL: mysql://mysql:mysql@127.0.0.1:3306/mysqldb
-          POSTGRES_PASSWORD: pgsql
-          POSTGRES_USER: postgres
-          POSTGRES_DATABASE: postgres
-          POSTGRES_PORT: 5432
 
     services:
       mysql:

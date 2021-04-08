@@ -30,7 +30,7 @@ composer require --no-interaction --dev phpunit guzzlehttp/guzzle:~6.0
 
 #if [[ ! -z ${CIRCLE_PR_NUMBER} ]]; then
 composer config repositories.opencensus git ${REPO}
-composer remove symfony/flex # Necessary so that we can work with branches that have slash in them
+#composer remove symfony/flex # Necessary so that we can work with branches that have slash in them
 composer config repositories.opencensus git ${REPO}
 composer require --no-interaction opencensus/opencensus:dev-${BRANCH}
 #else
