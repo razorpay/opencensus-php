@@ -4,6 +4,7 @@
 namespace RZP\Models\Reward;
 
 use Carbon\Carbon;
+use RZP\Diag\EventCode;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 
@@ -71,6 +72,22 @@ class Core extends Base\Core
         $this->repo->reward->update($reward['id'], $columnsToUpdate);
 
         $response = $this->repo->reward->fetchUpdatedRewardColumnsById($reward['id'], $columns);
+
+        $properties = [];
+
+        try
+        {
+
+            $properties['updated_fields'] = $columnsToUpdate;
+
+            $properties['coupon'] = $rewardEntity->getCouponCode();
+
+            $this->app['diag']->trackRewardUpdateEvent(EventCode::REWARD_UPDATED, $rewardEntity, null, $properties);
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->traceException($e);
+        }
 
         return $response->toArrayPublic();
     }

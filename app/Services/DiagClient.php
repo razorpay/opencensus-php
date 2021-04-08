@@ -21,6 +21,7 @@ class DiagClient extends EventTrackerClient
     use Traits\VirtualVpaPrefixEvent;
     use Traits\PaymentConfigEvent;
     use Traits\DisputeEvent;
+    use Traits\RewardEvent;
 
     public function trackEvent(string $eventType, string $eventVersion, array $event,
                                array $properties,

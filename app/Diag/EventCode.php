@@ -687,6 +687,12 @@ class EventCode
         'name'  => 'partnerships.appstore.wa.pl.failed'
     ];
 
+    //M2M Reward Events
+    const REWARD_UPDATED = [
+        'group' => 'updation',
+        'name'  => 'reward.updated'
+    ];
+
     const PAYMENT_ELIGIBILITY_CHECK_INITIATED = [
         'group' => 'eligibility',
         'name'  => 'payment.eligibility_check.initiated'
