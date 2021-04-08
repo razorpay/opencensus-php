@@ -99,7 +99,8 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: 7.2
-          extensions: opencensus, memcached, pdo_mysql, mysqli, pgsql, pcntl
+          extensions: memcached, pdo_mysql, mysqli, pgsql, pcntl
+          ini-values: extension=opencensus.so
 
       - uses: niden/actions-memcached@v7
 
@@ -109,7 +110,6 @@ jobs:
           phpize
           ./configure --enable-opencensus
           sudo make install
-          sudo docker-php-ext-enable opencensus
 
 #      - name: Install memcached extension
 #        run: |
