@@ -360,7 +360,7 @@ class Terminal extends Base
             'gateway'               => 'cashfree',
             'card'                  => 1,
             'upi'                   => 1,
-            'netbanking'            => 0,
+            'netbanking'            => 1,
             'gateway_merchant_id'   => 'abcd',
             'network_category'      => 'ecommerce',
             'gateway_secure_secret' => 'secret',

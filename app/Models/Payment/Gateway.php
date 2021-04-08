@@ -1129,6 +1129,7 @@ class Gateway
             self::EBS,
             self::ATOM,
             self::PAYU,
+            self::CASHFREE,
             self::NETBANKING_SIB,
             self::NETBANKING_CBI,
             self::NETBANKING_IDFC,
@@ -2237,6 +2238,7 @@ class Gateway
         Gateway::PAYTM,
         Gateway::ATOM,
         Gateway::PAYU,
+        Gateway::CASHFREE,
     ];
 
     /**
@@ -3183,6 +3185,7 @@ class Gateway
             self::NETBANKING_IOB,
             self::NETBANKING_FSB,
             self::PAYU,
+            self::CASHFREE,
             self::NETBANKING_DCB,
             self::NETBANKING_IBK,
             self::NETBANKING_UBI,
@@ -3246,6 +3249,7 @@ class Gateway
             self::NETBANKING_FSB,
             self::PAYTM,
             self::PAYU,
+            self::CASHFREE,
             self::NETBANKING_IDFC,
             self::NETBANKING_OBC,
             self::NETBANKING_DCB,

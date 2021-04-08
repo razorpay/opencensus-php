@@ -1276,8 +1276,8 @@ class DatabaseSeeder extends Seeder
         $this->createNetbankingIobTerminal();
         $this->createNetbankingFsbTerminal();
         $this->createPayuTerminal();
-        $this->createNetbankingDcbTerminal();
         $this->createCashfreeTerminal();
+        $this->createNetbankingDcbTerminal();
     }
 
     protected function createNetbankingCorporationTerminals()
@@ -2859,7 +2859,7 @@ class DatabaseSeeder extends Seeder
                 'merchant_id' => Account::TEST_ACCOUNT,
                 'gateway' => Gateway::CASHFREE,
                 'card' => '1',
-                'netbanking' => '0',
+                'netbanking' => '1',
                 'gateway_merchant_id' => '323395bf6400747e2f43bbd9a93323',
                 'gateway_secure_secret' => Crypt::encrypt('2d2fe54f576ff428d93019f48695870abebb2327'),
                 'created_at'            => time(),

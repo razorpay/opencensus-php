@@ -529,6 +529,55 @@ class Netbanking
                 IFSC::YESB,
             ]
         ],
+        Gateway::CASHFREE=>[
+            'retail'=>[
+                self::BARB_C,
+                self::BARB_R,
+                IFSC::BKID,
+                self::BKID_C,
+                IFSC::CBIN,
+                IFSC::CIUB,
+                IFSC::CNRB,
+                IFSC::CSBK,
+                IFSC::DBSS,
+                IFSC::DEUT,
+                IFSC::DLXB,
+                IFSC::ESFB,
+                IFSC::FDRL,
+                IFSC::HDFC,
+                IFSC::IBKL,
+                IFSC::ICIC,
+                self::ICIC_C,
+                IFSC::IDFB,
+                IFSC::IDIB,
+                IFSC::INDB,
+                IFSC::IOBA,
+                IFSC::JAKA,
+                IFSC::KARB,
+                IFSC::KKBK,
+                IFSC::KVBL,
+                self::LAVB_R,
+                IFSC::MAHB,
+                IFSC::PSIB,
+                self::PUNB_C,
+                self::PUNB_R,
+                IFSC::RATN,
+                self::RATN_C,
+                IFSC::SBIN,
+                IFSC::SCBL,
+                IFSC::SIBL,
+                IFSC::SVCB,
+                self::SVCB_C,
+                IFSC::TMBL,
+                IFSC::TNSC,
+                IFSC::UBIN,
+                IFSC::UCBA,
+                IFSC::UTIB,
+                self::UTIB_C,
+                IFSC::YESB,
+                self::YESB_C,
+            ]
+        ],
         Gateway::NETBANKING_ICICI => [
             'retail' => [
                 IFSC::ICIC,
@@ -956,6 +1005,10 @@ class Netbanking
     {
         return self::$gatewaySupportedBanks[Gateway::PAYU]['retail'];
     }
+    public static function getCashfreeSupportedBanks()
+    {
+        return self::$gatewaySupportedBanks[Gateway::CASHFREE]['retail'];
+    }
 
     public static function getDirectlyNetbankingBanks()
     {
@@ -1054,6 +1107,11 @@ class Netbanking
     public static function isPayuSupportedBank($bank)
     {
         return in_array($bank, self::getPayuSupportedBanks(), true) === true;
+    }
+
+    public static function isCashfreeSupportedBank($bank)
+    {
+        return in_array($bank, self::getCashfreeSupportedBanks(), true) === true;
     }
 
     public static function isNetbankingBankDirectlySupported($bank)
