@@ -55,15 +55,13 @@ class LaravelTest extends TestCase
 
         $spansByName = $this->groupSpansByName($spans);
 
-//        $this->assertEquals('/?rand=' . $rand, $spans[0]['name']); assertion failing.
+        $this->assertEquals('/?rand=' . $rand, $spans[0]['name']);
         $this->assertNotEmpty($spansByName['bootstrap']);
         $this->assertNotEmpty($spansByName['laravel/view']);
     }
 
     public function testEloquent()
     {
-        $this->markTestSkipped();
-
         // create a user
         $email = uniqid() . '@user.com';
         $response = self::$client->request('GET', '/users/store', [

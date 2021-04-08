@@ -62,7 +62,7 @@ class WordpressTest extends TestCase
             $spansByName[$span['name']][] = $span;
         }
 
-//        $this->assertEquals('/?rand=' . $rand, $spans[0]['name']); assertion failing.
+        $this->assertEquals('/?rand=' . $rand, $spans[0]['name']);
         $this->assertNotEmpty($spansByName['mysqli_query']);
         $this->assertNotEmpty($spansByName['load_textdomain']);
         $this->assertNotEmpty($spansByName['get_header']);
