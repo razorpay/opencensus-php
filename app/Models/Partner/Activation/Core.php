@@ -207,6 +207,38 @@ class Core extends Base\Core
     }
 
     /**
+     * This function supports the admin to hold commissions/ release commissions for a partner
+     * Supported actions: ['hold_commissions', 'release_commissions']
+     * @param Entity $partnerActivation
+     * @param array  $actionData
+     *
+     * @return Entity
+     * @throws Exception\LogicException
+     */
+    public function performAction(Entity $partnerActivation, array $actionData)
+    {
+        $partnerActivationValidator = $partnerActivation->getValidator();
+
+        $partnerActivationValidator->validateInput('action', $actionData);
+
+        $action = $actionData[Activation\Constants::ACTION];
+
+        $validationFunction = 'validate'.studly_case($action);
+
+        $partnerActivationValidator->$validationFunction($partnerActivation);
+
+        $holdFunds = ($action === Activation\Action::HOLD_COMMISSIONS);
+
+        $input = [Activation\Entity::HOLD_FUNDS => $holdFunds];
+
+        $partnerActivation->edit($input);
+
+        $this->repo->partner_activation->saveOrFail($partnerActivation);
+
+        return $partnerActivation;
+    }
+
+    /**
      * This function does the following
      * 1. updates the activation status of a partner
      * 2. Maintains the state transition for the partner_activation status

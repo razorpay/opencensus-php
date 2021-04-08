@@ -52,8 +52,6 @@ class PartnerActivationTest extends OAuthTestCase
 
         $this->fillAllRequirements(self::MERCHANT_ID, false);
 
-        $this->fillAllRequirements(self::MERCHANT_ID, false);
-
         $this->ba->proxyAuth('rzp_test_' . self::MERCHANT_ID);
 
         $this->startTest();
@@ -83,7 +81,7 @@ class PartnerActivationTest extends OAuthTestCase
 
         $this->fillAllRequirements(self::MERCHANT_ID, false);
 
-        $this->fillRequirementStatus(self::MERCHANT_ID, false, 'verified');
+        $this->fillStatusForRequirements(self::MERCHANT_ID, false, 'verified');
 
         $this->ba->proxyAuth('rzp_test_' . self::MERCHANT_ID);
 
@@ -104,9 +102,7 @@ class PartnerActivationTest extends OAuthTestCase
 
         $this->fillAllRequirements(self::MERCHANT_ID, false);
 
-        $this->fillRequirementStatus(self::MERCHANT_ID, false, 'pending');
-
-        $this->ba->proxyAuth('rzp_test_' . self::MERCHANT_ID);
+        $this->fillStatusForRequirements(self::MERCHANT_ID, false, 'pending');
 
         $this->ba->proxyAuth('rzp_test_' . self::MERCHANT_ID);
 
@@ -271,6 +267,55 @@ class PartnerActivationTest extends OAuthTestCase
 
     }
 
+    public function testHoldCommissionsAction()
+    {
+        $this->createMerchant(self::MERCHANT_ID, false, 'activated');
+
+        $this->fillAllRequirements(self::MERCHANT_ID, false);
+
+        $testData = $this->testData['testFetchPartnerActivationForNonRegisteredBusiness'];
+        $this->ba->proxyAuth('rzp_test_' . self::MERCHANT_ID);
+        $this->runRequestResponseFlow($testData);
+
+        $this->ba->adminAuth();
+        $testData                   = $this->testData['testHoldCommissionsAction'];
+        $testData['request']['url'] = '/partner/' . self::MERCHANT_ID. '/action';
+        $this->runRequestResponseFlow($testData);
+
+        $this->ba->adminAuth();
+        $testData                   = $this->testData['testHoldCommissionsActionInvalidAction'];
+        $testData['request']['url'] = '/partner/' . self::MERCHANT_ID. '/action';
+        $response = $this->runRequestResponseFlow($testData);
+        s($response);
+    }
+
+    public function testReleaseCommissionsAction()
+    {
+        $this->createMerchant(self::MERCHANT_ID, false, 'activated');
+
+        $this->fillAllRequirements(self::MERCHANT_ID, false);
+
+        $testData = $this->testData['testFetchPartnerActivationForNonRegisteredBusiness'];
+        $this->ba->proxyAuth('rzp_test_' . self::MERCHANT_ID);
+        $this->runRequestResponseFlow($testData);
+
+        $this->ba->adminAuth();
+        $testData                   = $this->testData['testHoldCommissionsAction'];
+        $testData['request']['url'] = '/partner/' . self::MERCHANT_ID. '/action';
+        $this->runRequestResponseFlow($testData);
+
+        $this->ba->adminAuth();
+        $testData                   = $this->testData['testReleaseCommissionsAction'];
+        $testData['request']['url'] = '/partner/' . self::MERCHANT_ID. '/action';
+        $this->runRequestResponseFlow($testData);
+
+        $this->ba->adminAuth();
+        $testData                   = $this->testData['testReleaseCommissionsActionInvalidAction'];
+        $testData['request']['url'] = '/partner/' . self::MERCHANT_ID. '/action';
+        $this->runRequestResponseFlow($testData);
+
+    }
+
     private function updatePartnerActivationToNeedsClarification()
     {
         $this->createMerchant(self::MERCHANT_ID, false, null);
@@ -375,7 +420,7 @@ class PartnerActivationTest extends OAuthTestCase
     }
 
 
-    private function fillRequirementStatus(string $merchantId, bool $registeredBusinessType, string $status)
+    private function fillStatusForRequirements(string $merchantId, bool $registeredBusinessType, string $status)
     {
         if ($registeredBusinessType === true)
         {

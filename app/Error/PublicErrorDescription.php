@@ -965,6 +965,13 @@ class PublicErrorDescription
 
     const BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS                       = 'The information that you have filled could not be processed. Please try again later';
 
+    //Partner Activation error descriptions
+    const BAD_REQUEST_PARTNER_ACTIVATION_OPERATION_IN_PROGRESS                      = 'Partner activation is in progress';
+    const BAD_REQUEST_PARTNER_ACTIVATION_ALREADY_LOCKED                             = 'Partner activation details cannot be saved as partner activation form is locked';
+    const BAD_REQUEST_PARTNER_ACTION_NOT_SUPPORTED                                  = 'provided partner action is not supported';
+    const BAD_REQUEST_PARTNER_COMMISSIONS_ALREADY_ON_HOLD                           = 'partner commissions already on hold';
+    const BAD_REQUEST_PARTNER_COMMISSIONS_ALREADY_RELEASED                          = 'partner commissions already released';
+
     // Free payout
     const BAD_REQUEST_FREE_PAYOUT_SUPPORTED_MODES_ARRAY_DUPLICATE_VALUE         = 'Value in free payout supported modes array is duplicate.';
     const BAD_REQUEST_FREE_PAYOUT_UPDATE_ANOTHER_OPERATION_IN_PROGRESS          = 'Request failed because another operation is in progress';

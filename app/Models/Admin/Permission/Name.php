@@ -50,7 +50,6 @@ class Name
     const EDIT_IIN_RULE                       = 'edit_iin_rule';
     const EDIT_IIN_RULE_BULK                  = 'edit_iin_rule_bulk';
     const EDIT_ACTIVATE_MERCHANT              = 'edit_activate_merchant';
-    const EDIT_ACTIVATE_PARTNER               = 'edit_activate_partner';
     const EDIT_MERCHANT_KEY_ACCESS            = 'edit_merchant_key_access';
     const EDIT_MERCHANT_ENABLE_LIVE           = 'edit_merchant_enable_live';
     const EDIT_MERCHANT_DISABLE_LIVE          = 'edit_merchant_disable_live';
@@ -631,6 +630,11 @@ class Name
     const MANAGE_CARE_SERVICE_CALLBACK                 = 'manager_care_service_callback';
 
     const TOKEN_REGISTRATION_ACTIONS = 'token_registration_actions';
+
+
+    //partner KYC permissions
+    const EDIT_ACTIVATE_PARTNER               = 'edit_activate_partner';
+    const PARTNER_ACTIONS                     = 'partner_actions';
 
     // Perform general purpose read operations e.g. query cache stats, elasticsearch meta etc.
     const DEVELOPERS_READ                              = 'developers_read';

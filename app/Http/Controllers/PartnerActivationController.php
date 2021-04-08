@@ -44,4 +44,12 @@ class PartnerActivationController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function performAction($id)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->performAction($id, $input);
+
+        return ApiResponse::json($response);
+    }
 }

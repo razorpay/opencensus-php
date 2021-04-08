@@ -28,6 +28,8 @@ class Constants
 
     const ACTIVATION_STATUSES = [self::UNDER_REVIEW, self::ACTIVATED, self::REJECTED, self::REJECTED];
 
+    const ACTION = 'action';
+
     const PARTNER_MUTEX_LOCK_TIMEOUT = '60';
     const PARTNER_MUTEX_RETRY_COUNT  = '2';
 

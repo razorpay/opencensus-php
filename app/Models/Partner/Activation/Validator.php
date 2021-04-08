@@ -39,6 +39,10 @@ class Validator extends Detail\Validator
 
     ];
 
+    protected static $actionRules = [
+        Constants::ACTION   => 'required|custom'
+    ];
+
     protected static $activationStatusRules = [
         Entity::ACTIVATION_STATUS               => 'required|string|max:30',
         Entity::REJECTION_REASONS               => 'filled|array',
@@ -63,6 +67,32 @@ class Validator extends Detail\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_BANK_ACCOUNT);
+        }
+    }
+
+    public function validateAction($attribute, $action)
+    {
+        if (Action::exists($action) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PARTNER_ACTION_NOT_SUPPORTED);
+        }
+    }
+
+    public function validateHoldCommissions(Entity $partnerActivation)
+    {
+        if ($partnerActivation->isFundsOnHold() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PARTNER_COMMISSIONS_ALREADY_ON_HOLD);
+        }
+    }
+
+    public function validateReleaseCommissions(Entity $partnerActivation)
+    {
+        if ($partnerActivation->isFundsOnHold() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PARTNER_COMMISSIONS_ALREADY_RELEASED);
         }
     }
 }

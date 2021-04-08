@@ -8,6 +8,7 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Partner\Activation;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
@@ -104,5 +105,23 @@ class Service extends Base\Service
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PARTNER_ACTIVATION_ALREADY_LOCKED);
         }
+    }
+
+    public function performAction(string $id, array $input)
+    {
+        $this->trace->info(
+            TraceCode::PARTNER_ACTION_DATA,
+            [
+                'merchant_id' => $id,
+                'input'       => $input,
+            ]);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        $this->merchantValidator->validateIsPartner($merchant);
+
+        $partnerActivation = $this->core->getPartnerActivation($merchant);
+
+        return $this->activationCore->performAction($partnerActivation, $input);
     }
 }

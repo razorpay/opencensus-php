@@ -407,5 +407,83 @@ return [
             'class'               => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
+    ],
+    'testHoldCommissionsAction'                 => [
+        'request'  => [
+            'url'     => '/partner/{id}/action',
+            'method'  => 'PUT',
+            'content' => [
+                'action' => 'hold_commissions'
+            ]
+        ],
+        'response' => [
+            'content'     => [
+                'merchant_id'       => '1cXSLlUU8V9sXl',
+                'activation_status' => 'activated',
+                'hold_funds'        => true,
+            ],
+            'status_code' => 200
+        ]
+    ],
+    'testHoldCommissionsActionInvalidAction'    => [
+        'request'   => [
+            'url'     => '/partner/{id}/action',
+            'method'  => 'PUT',
+            'content' => [
+                'action' => 'hold_commissions'
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'partner commissions already on hold',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_COMMISSIONS_ALREADY_ON_HOLD,
+        ],
+    ],
+    'testReleaseCommissionsAction'              => [
+        'request'  => [
+            'url'     => '/partner/{id}/action',
+            'method'  => 'PUT',
+            'content' => [
+                'action' => 'release_commissions'
+            ]
+        ],
+        'response' => [
+            'content'     => [
+                'merchant_id'       => '1cXSLlUU8V9sXl',
+                'activation_status' => 'activated',
+                'hold_funds'        => false,
+            ],
+            'status_code' => 200
+        ]
+    ],
+    'testReleaseCommissionsActionInvalidAction' => [
+        'request'   => [
+            'url'     => '/partner/{id}/action',
+            'method'  => 'PUT',
+            'content' => [
+                'action' => 'release_commissions'
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'partner commissions already released',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_COMMISSIONS_ALREADY_RELEASED,
+        ],
     ]
 ];

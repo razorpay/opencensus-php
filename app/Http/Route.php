@@ -1787,7 +1787,7 @@ class Route
         'partner_activation_details'               => ['get',      'partner/activation',                             'PartnerActivationController@getPartnerActivationDetails'           ],
         'partner_activation_save'                  => ['post',     'partner/activation',                             'PartnerActivationController@savePartnerActivationDetails'          ],
         'partner_activation_migrate'               => ['post',     'partner/activation/migrate',                     'MerchantController@createPartnerActivationForPartners'             ],
-
+        'partner_actions'                          => ['put',      'partner/{id}/action',                           'PartnerActivationController@performAction'                         ],
         'merchant_sync_stakeholder'                => ['post',     'merchants/stakeholders/sync',                    'MerchantController@syncStakeholderFromMerchant'                    ],
 
         'commissions_get_multiple'                 => ['get',      'commissions',                                    'CommissionController@list'                                         ],
@@ -4123,6 +4123,7 @@ class Route
         // Partner Activation routes
         'partner_activation_status',
         'partner_activation_update',
+        'partner_actions',
 
         // Scrooge - ODS Dashboard
         'scrooge_dashboard_init',
@@ -5389,6 +5390,7 @@ class Route
         'partner_activation_save'                  => '*',
         'partner_activation_update'                => Permission::EDIT_PARTNERS,
         'partner_activation_status'                => Permission::EDIT_ACTIVATE_PARTNER,
+        'partner_actions'                          => Permission::PARTNER_ACTIONS,
     ];
 
     public static $bankingRoutePermissions = [

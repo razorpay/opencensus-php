@@ -149,7 +149,12 @@ return [
                 'description' => 'Edit partner activation status',
                 'assignable'  => true,
                 'workflow'    => true,
-            ]
+            ],
+            Permission::PARTNER_ACTIONS => [
+                'description' => 'To perform actions on partner activation',
+                'assignable'  => true,
+                'workflow'    => true,
+            ],
         ],
 
         PermissionCategory::MERCHANT_DETAIL => [
