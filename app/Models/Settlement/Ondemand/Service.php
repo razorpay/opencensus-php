@@ -140,7 +140,7 @@ class Service extends Base\Service
                 else
                 {
                     CreateSettlementOndemandPayoutJobs::dispatch($this->mode, $settlementOndemand->getId(),
-                        $settlementOndemand->getMerchantId());
+                        $settlementOndemand->getMerchantId())->delay(10);
 
                     $settlementOndemand->setStatus(Status::INITIATED);
 
@@ -152,7 +152,7 @@ class Service extends Base\Service
                     {
                         foreach ($settlementOndemandPayouts as $settlementOndemandPayout)
                         {
-                            MockPayoutOndemandWebhook::dispatch($this->mode, $settlementOndemandPayout);
+                            MockPayoutOndemandWebhook::dispatch($this->mode, $settlementOndemandPayout)->delay(20);
                         }
                     }
                 }

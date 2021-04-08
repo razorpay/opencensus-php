@@ -12,6 +12,8 @@ class CreateSettlementOndemandPayoutJobs extends Job
 {
     const MAX_ALLOWED_ATTEMPTS = 3;
 
+    const RETRY_DELAY = 60;
+
     /** @var Ondemand\Entity $settlementOndemand */
     protected $settlementOndemand;
 
@@ -60,9 +62,10 @@ class CreateSettlementOndemandPayoutJobs extends Job
         {
             if ($this->attempts() <= self::MAX_ALLOWED_ATTEMPTS)
             {
-                $this->release(1);
-            }
+                $this->release(self::RETRY_DELAY);
 
+                return ;
+            }
             else
             {
                 $this->delete();
