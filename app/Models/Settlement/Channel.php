@@ -23,6 +23,7 @@ class Channel
     const CITI      = 'citi';
     const M2P       = 'm2p';
     const AMAZONPAY = 'amz_pay';
+    const AMAZONPAY_FTS = 'amazon_pay'; // FTS has "amazon_pay" as value where as FTA has "amz_pay" due to DB limitations
 
     public static $gateways = [
         self::KOTAK => [
@@ -270,7 +271,8 @@ class Channel
             self::ICICI,
             self::CITI,
             self::YESBANK,
-            self::AXIS
+            self::AXIS,
+            self::AMAZONPAY_FTS,
         ];
     }
 
