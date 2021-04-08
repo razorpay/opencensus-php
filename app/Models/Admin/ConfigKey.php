@@ -177,6 +177,22 @@ class ConfigKey
 
     const RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS_FOR_FUND_LOADING = self::PREFIX . 'rx_globally_whitelisted_payer_accounts_for_fund_loading';
 
+    // This will be used to get the number of records to save at once in bulk
+    const ACCOUNT_STATEMENT_RECORDS_TO_SAVE_AT_ONCE = self::PREFIX . 'account_statement_records_to_save_at_once';
+
+    // This will be used to get the number of records to fetch at once in bulk
+    const RBL_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE = self::PREFIX . 'rbl_account_statement_records_to_fetch_at_once';
+
+    // This will be used to get the number of records to process[link with entities] at once in bulk
+    const ACCOUNT_STATEMENT_RECORDS_TO_PROCESS_AT_ONCE = self::PREFIX . 'account_statement_records_to_process_at_once';
+
+    // This is the number of times we are going to save records in chunks. This will be revisited. It can be high
+    // for some a/cs and low for some.
+    const ACCOUNT_STATEMENT_RECORDS_TO_SAVE_IN_TOTAL = self::PREFIX . 'account_statement_records_to_process_at_once';
+
+    // Account numbers for which new flow applies where we divide fetch and process flow
+    const ACCOUNT_STATEMENT_V2_FLOW = 'account_statement_v2_flow';
+
     const REQUEST_LOG_STATE = self::PREFIX . 'request_log_state';
 
     const SLAVE_ROUTES = self::PREFIX.'slave_routes';

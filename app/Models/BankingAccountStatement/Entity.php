@@ -3,6 +3,7 @@
 namespace RZP\Models\BankingAccountStatement;
 
 use RZP\Models\Base;
+use RZP\Base\BuilderEx;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Models\BankingAccount;
@@ -269,6 +270,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BANK_TRANSACTION_ID);
     }
 
+    public function getBankInstrumentId()
+    {
+        return $this->getAttribute(self::BANK_INSTRUMENT_ID);
+    }
+
     public function getSerialNumber()
     {
         return $this->getAttribute(self::BANK_SERIAL_NUMBER);
@@ -304,6 +310,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DESCRIPTION);
     }
 
+    public function getCategory()
+    {
+        return $this->getAttribute(self::CATEGORY);
+    }
+
     public function getUtr()
     {
         return $this->getAttribute(self::UTR);
@@ -322,5 +333,77 @@ class Entity extends Base\PublicEntity
     public function isTypeDebit()
     {
         return ($this->getType() === Type::DEBIT);
+    }
+
+    protected function getUtrFromDescription()
+    {
+        $description = $this->getDescription();
+
+        if ($this->isTypeCredit() === true)
+        {
+            $regex = self::CREDIT_REGEX;
+        }
+        else
+        {
+            $regex = self::IMPS_DEBIT_REGEX;
+
+            if ($this->isNeftOrRtgs($description) === true)
+            {
+                $regex = self::NEFT_RTGS_DEBIT_REGEX;
+            }
+        }
+
+        $match = preg_match($regex, $description, $matches);
+
+        if ($match === 1)
+        {
+            $match = (($regex === self::CREDIT_REGEX) or
+                     ($regex === self::NEFT_RTGS_DEBIT_REGEX)) ? $matches[2] : $matches[1];
+        }
+
+        // Could be an empty string match
+        if (empty($match) === false)
+        {
+            return $match;
+        }
+
+        return null;
+    }
+
+    protected function isNeftOrRtgs(string  $description)
+    {
+        $regex = self::NEFT_RTGS_DEBIT_REGEX;
+
+        $match = preg_match($regex, $description, $matches);
+
+        if ($match === 1)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param BuilderEx $query
+     * @param array $columns
+     * @param array $values
+     * @return BuilderEx
+     * Sample query - https://github.com/razorpay/api/pull/21802#issuecomment-812577026
+     */
+    public static function scopeWhereInMultiple(BuilderEx $query, array $columns, array $values)
+    {
+        collect($values)
+            ->transform(function ($v) use ($columns) {
+                $clause = [];
+                foreach ($columns as $index => $column) {
+                    $clause[] = [$column, '=', $v[$index]];
+                }
+                return $clause;
+            })->each(function($clause, $index) use ($query) {
+                $query->where($clause, null, null,  'or');
+            });
+
+        return $query;
     }
 }

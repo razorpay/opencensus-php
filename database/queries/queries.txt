@@ -6184,6 +6184,11 @@ ALTER TABLE stakeholders
 ALTER TABLE bvs_validation
     ADD COLUMN rule_execution_list JSON DEFAULT NULL;
 
+ALTER table banking_account_statement
+    modify column entity_id char(14) null,
+    modify column transaction_id char(14) null,
+    modify column entity_type varchar(255) null;
+
 ALTER TABLE rewards
     ADD COLUMN brand_name CHAR(26) DEFAULT NULL;
 

@@ -5,6 +5,7 @@ namespace RZP\Models\BankingAccountStatement\Processor;
 use Carbon\Carbon;
 
 use RZP\Exception;
+use Rzp\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Base\Core as BaseCore;
@@ -22,6 +23,10 @@ abstract class Base extends BaseCore
     protected $source;
 
     protected $channel;
+
+    abstract public function checkForDuplicateTransactions(array $bankTransactions,
+                                                            string $channel,
+                                                            string $accountNumber);
 
     abstract protected function sendRequestAndGetResponse(array $input);
 

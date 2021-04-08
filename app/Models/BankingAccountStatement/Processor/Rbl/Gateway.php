@@ -13,9 +13,11 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\BankingAccountStatement\Type;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\BankingAccountStatement\Entity;
+use RZP\Models\BankingAccountStatement\Channel;
 use RZP\Models\BankingAccountStatement\Category;
 use RZP\Models\BankingAccountStatement\Processor\Source;
 use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
@@ -35,6 +37,8 @@ class Gateway extends BaseProcessor
 
     const DEFAULT_RBL_STATEMENT_FETCH_RETRY_LIMIT = 3;
 
+    const RBL_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE_DEFAULT = 200;
+
     // regex to fetch utr from description
     const CREDIT_REGEX = '/^(RTGS\/|NEFT\/|R-)(.*?)(\/|-)/';
 
@@ -52,6 +56,95 @@ class Gateway extends BaseProcessor
         $this->setSource(Source::FETCH_API);
 
         parent::__construct($channel, $accountNumber);
+    }
+
+    public function checkForDuplicateTransactions(array $bankTransactions, string $channel, string $accountNumber)
+    {
+        $recordsToCheck = [];
+        $totalRecordCount = count($bankTransactions);
+        $totalRecords = 0;
+        $skippedRecordCount = 0;
+        $processedRecordCount = 0;
+
+        $limit = (int) (new AdminService)->getConfigKey(
+            ['key' => ConfigKey::RBL_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE]);
+
+        if (empty($limit) == true)
+        {
+            $limit = self::RBL_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE_DEFAULT;
+        }
+
+        foreach ($bankTransactions as $bankTransaction)
+        {
+            $recordsToCheck[] = [
+                $bankTransaction[Entity::BANK_TRANSACTION_ID],
+                $bankTransaction[Entity::BANK_SERIAL_NUMBER],
+                $bankTransaction[Entity::TRANSACTION_DATE],
+                $bankTransaction[Entity::AMOUNT],
+                $bankTransaction[Entity::CHANNEL],
+                $bankTransaction[Entity::ACCOUNT_NUMBER],
+            ];
+
+            $totalRecords++;
+            $processedRecordCount++;
+
+            // either the records are in batches of the limit or the leftover records
+            // second if condition takes care of the case when all records have been processed and
+            // there are some records which are less than the limit and won't give a 0 on mod by
+            // the limit
+            if ((($processedRecordCount % $limit) === 0) or
+                (($totalRecords === $totalRecordCount) and ($processedRecordCount % $limit) !== 0))
+            {
+                $existingRecords = $this->repo->banking_account_statement
+                                              ->findExistingStatementRecordsForBank($recordsToCheck);
+
+                foreach ($existingRecords as $record)
+                {
+                    $isPresent = array_search($record->toArray(), $bankTransactions);
+
+                    if ($isPresent !== false)
+                    {
+                        unset($bankTransactions[$isPresent]);
+                        $skippedRecordCount++;
+                    }
+                }
+
+                $recordsToCheck = [];
+
+                $processedRecordCount = 0;
+            }
+        }
+
+        if ($skippedRecordCount !== 0)
+        {
+            $data = [
+                'channel'                    => Channel::RBL,
+                'skipped_record_count'       => $skippedRecordCount,
+            ];
+
+            $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_EXISTING_RECORDS_FOUND, [
+                'data' => $data,
+            ]);
+
+            $operation = 'existing records found while fetching the statement for RBL';
+
+            (new SlackNotification)->send(
+                $operation,
+                $data,
+                null,
+                1,
+                'rx_ca_rbl_alerts');
+        }
+        else
+        {
+            $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_NO_EXISTING_RECORDS_FOUND,
+                [
+                    'channel'                    => Channel::RBL,
+                    'account_number'             => $accountNumber,
+                ]);
+        }
+
+        return $bankTransactions;
     }
 
     protected function sendRequestAndGetResponse(array $input)

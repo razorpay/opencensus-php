@@ -16,7 +16,6 @@ use RZP\Models\External;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Reversal;
-use RZP\Models\FeeRecovery;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\Payout\Status;
@@ -25,7 +24,6 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Mail\BankingAccount\StatementMail;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
-use RZP\Models\BankingAccountStatement\Processor\Source;
 use RZP\Models\BankingAccountStatement\Details as BASDetails;
 use RZP\Jobs\BankingAccountStatement as BankingAccountStatementJob;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
@@ -47,6 +45,9 @@ class Core extends Base\Core
 
     const RBL_STATEMENT_FETCH_OTHERS_RULE           = "others";
 
+    const ACCOUNT_STATEMENT_RECORDS_TO_SAVE_AT_ONCE_DEFAULT = 200;
+
+    const ACCOUNT_STATEMENT_RECORDS_TO_SAVE_IN_TOTAL_DEFAULT = 100;
     /**
      * Temporary hack. Should not set balance at a class level.
      * This restricts us from processing transactions from
@@ -88,8 +89,8 @@ class Core extends Base\Core
             $this->trace->info(
                 TraceCode::BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_REQUEST,
                 [
-                    'channel'       => $channel,
-                    'accountNumber' => $accountNumber,
+                    'channel'        => $channel,
+                    'account_number' => $accountNumber,
                 ]);
 
             $this->mutex->acquireAndRelease(
@@ -148,6 +149,304 @@ class Core extends Base\Core
         }
 
         return ['channel' => $channel, 'account_number' => $accountNumber];
+    }
+
+    public function fetchAccountStatementV2(array $input)
+    {
+        $channel = array_pull($input, Entity::CHANNEL);
+
+        $accountNumber = array_pull($input, Entity::ACCOUNT_NUMBER);
+
+        try
+        {
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_REQUEST,
+                [
+                    'channel'        => $channel,
+                    'account_number' => $accountNumber,
+                ]);
+
+            $this->mutex->acquireAndRelease(
+                'banking_account_statement_fetch_' . $accountNumber . '_' . $channel,
+                function () use ($channel, $accountNumber, $input)
+                {
+                    $bankingAccount = (new BankingAccount\Repository)->findByAccountNumberAndChannel($accountNumber, $channel);
+
+                    $currentTime = Carbon::now()->getTimestamp();
+
+                    $bankingAccount->setLastStatementAttemptAt($currentTime);
+
+                    $this->repo->saveOrFail($bankingAccount);
+
+                    $basDetailEntity = $this->repo->banking_account_statement_details->fetchByAccountNumberAndChannel($accountNumber, $channel);
+
+                    $basDetailEntity->setLastStatementAttemptAt();
+
+                    $this->repo->saveOrFail($basDetailEntity);
+
+                    $merchant = $bankingAccount->merchant;
+
+                    $processor = $this->getProcessor($channel, $accountNumber);
+
+                    $bankTransactions = $processor->fetchAccountStatementDetails($input);
+
+                    $this->saveAccountStatementDetails($bankTransactions, $merchant, $channel, $accountNumber, $processor);
+
+                    $bankingAccount->balance->updateLastFetchedAt();
+                },
+                300,
+                ErrorCode::BAD_REQUEST_ANOTHER_BANKING_ACCOUNT_STATEMENT_FETCH_IN_PROGRESS
+            );
+        }
+        catch (Exception\BadRequestException $e)
+        {
+            if ($e->getCode() === ErrorCode::BAD_REQUEST_ANOTHER_BANKING_ACCOUNT_STATEMENT_FETCH_IN_PROGRESS)
+            {
+                $this->trace->traceException(
+                    $e,
+                    null,
+                    TraceCode::ANOTHER_BANKING_ACCOUNT_STATEMENT_FETCH_IN_PROGRESS,
+                    [
+                        'channel'           => $channel,
+                        'account_number'    => $accountNumber,
+                        'message'           => $e->getMessage(),
+                    ]);
+            }
+
+            throw $e;
+        }
+    }
+
+    public function processStatementForAccountV2(array $input)
+    {
+        $channel = array_pull($input, Entity::CHANNEL);
+
+        $accountNumber = array_pull($input, Entity::ACCOUNT_NUMBER);
+
+        $limit = (int) (new AdminService)->getConfigKey(
+            ['key' => ConfigKey::ACCOUNT_STATEMENT_RECORDS_TO_PROCESS_AT_ONCE]);
+
+        if (empty($limit) == true)
+        {
+            $limit = self::ACCOUNT_STATEMENT_RECORDS_TO_SAVE_AT_ONCE_DEFAULT;
+        }
+
+        $saveLimit = (int) (new AdminService)->getConfigKey(
+            ['key' => ConfigKey::ACCOUNT_STATEMENT_RECORDS_TO_SAVE_IN_TOTAL]);
+
+        if (empty($saveLimit) == true)
+        {
+            $saveLimit = self::ACCOUNT_STATEMENT_RECORDS_TO_SAVE_IN_TOTAL_DEFAULT;
+        }
+
+        $bankingAccount = (new BankingAccount\Repository)->findByAccountNumberAndChannel($accountNumber, $channel);
+
+        $merchant = $bankingAccount->merchant;
+
+        try
+        {
+            $this->mutex->acquireAndRelease(
+                'banking_account_statement_process_' . $accountNumber . '_' . $channel,
+                function () use ($channel, $accountNumber, $input, $limit, $saveLimit, $merchant)
+                {
+                    while ($saveLimit > 0)
+                    {
+                        $basEntities = $this->repo->banking_account_statement->fetchUnlinkedBasRecords($accountNumber, $channel, $limit);
+
+                        if (count($basEntities) == 0)
+                            break;
+
+                        $startTime = microtime(true);
+
+                        $this->saveAccountStatementV2($basEntities, $merchant);
+
+                        $endTime = microtime(true);
+
+                        $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_BULK_LINKING_TIME,
+                            [
+                                'account_number'         => $accountNumber,
+                                'time_to_link_records'   => $endTime - $startTime,
+                            ]);
+
+                        $saveLimit--;
+                    }
+                },
+                1800,
+                ErrorCode::BAD_REQUEST_ANOTHER_BANKING_ACCOUNT_STATEMENT_FETCH_IN_PROGRESS
+            );
+        }
+        catch (Exception\BadRequestException $e)
+        {
+            // catching only BadRequestException exception to log and have noop for duplicate statement fetch request
+            // Ignoring the duplicate exception and treating it success and delete account number from sqs.
+            if ($e->getCode() === ErrorCode::BAD_REQUEST_ANOTHER_BANKING_ACCOUNT_STATEMENT_FETCH_IN_PROGRESS)
+            {
+                $this->trace->traceException(
+                    $e,
+                    null,
+                    TraceCode::ANOTHER_BANKING_ACCOUNT_STATEMENT_FETCH_IN_PROGRESS,
+                    [
+                        'channel'           => $channel,
+                        'account_number'    => $accountNumber,
+                        'message'           => $e->getMessage(),
+                    ]);
+            }
+            else
+            {
+                throw $e;
+            }
+        }
+    }
+
+    /**
+     * @param array $bankTransactions
+     * @param $merchant
+     * @param string $channel
+     * @param string $accountNumber
+     * @throws Exception\BadRequestException
+     * We will be saving the records in bulk and with a limit of 200 records in 1 go
+     */
+    public function saveAccountStatementDetails(array $bankTransactions, $merchant, string $channel, string $accountNumber, Processor\Base $processor)
+    {
+        $bankTransactions = $processor->checkForDuplicateTransactions(
+                                        $bankTransactions,
+                                        $channel,
+                                        $accountNumber);
+
+        $lastBankTxn = $this->repo->banking_account_statement->findLatestByAccountNumber($accountNumber);
+
+        $previousClosingBalance = $lastBankTxn == null ? 0 : $lastBankTxn->getBalance();
+
+        $basEntitiesToSave = [];
+        $totalRecordCount = 0;
+        $initialOffset = 0;
+
+        foreach ($bankTransactions as $bankTransaction)
+        {
+            $basEntity = (new Entity)->build($bankTransaction);
+
+            if (empty($basEntity->getUtr()) === true)
+            {
+                $utr = $processor->getUtrForChannel($basEntity);
+
+                $basEntity->setUtr($utr);
+            }
+
+            $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_ENTITY_BUILT,
+                [
+                    'bank_txn_id'           => $bankTransaction[Entity::BANK_TRANSACTION_ID],
+                    'bank_txn_posted_date'  => $bankTransaction[Entity::POSTED_DATE],
+                    'bank_txn_channel'      => $bankTransaction[Entity::CHANNEL],
+                    'bas_id'                => $basEntity->getId(),
+                    'account_no'            => $basEntity->getAccountNumber(),
+                    'utr'                   => $basEntity->getUtr(),
+                ]);
+
+            $basEntity->merchant()->associate($merchant);
+
+            if ($this->validateRecordBalance($previousClosingBalance, $basEntity) == false)
+            {
+                throw new Exception\LogicException('Statement record balance is not in correct order',
+                    ErrorCode::SERVER_ERROR_BANKING_ACCOUNT_STATEMENT_BALANCES_DO_NOT_MATCH,
+                    [
+                        'account_number'    => $accountNumber,
+                        'channel'           => $channel,
+                        'row_balance'       => $basEntity->getBalance(),
+                        'previous_balance'  => $previousClosingBalance,
+                        'bas_amount'        => $basEntity->getAmount(),
+                        'bas_type'          => $basEntity->getType(),
+                    ]);
+            }
+
+            $previousClosingBalance = $basEntity->getBalance();
+
+            $basEntitiesToSave[] = [
+                Entity::ACCOUNT_NUMBER        => $basEntity->getAccountNumber(),
+                Entity::CHANNEL               => $basEntity->getChannel(),
+                Entity::ID                    => $basEntity->getId(),
+                Entity::AMOUNT                => $basEntity->getAmount(),
+                Entity::CURRENCY              => $basEntity->getCurrency(),
+                Entity::TRANSACTION_DATE      => $basEntity->getTransactionDate(),
+                Entity::UTR                   => $basEntity->getUtr(),
+                Entity::BANK_SERIAL_NUMBER    => $basEntity->getSerialNumber(),
+                Entity::TYPE                  => $basEntity->getType(),
+                Entity::BALANCE               => $basEntity->getBalance(),
+                Entity::MERCHANT_ID           => $basEntity->merchant->getId(),
+                Entity::BANK_TRANSACTION_ID   => $basEntity->getBankTransactionId(),
+                Entity::CREATED_AT            => Carbon::now()->getTimestamp(),
+                Entity::UPDATED_AT            => Carbon::now()->getTimestamp(),
+                Entity::POSTED_DATE           => $basEntity->getPostedDate(),
+                Entity::DESCRIPTION           => $basEntity->getDescription(),
+                Entity::BANK_INSTRUMENT_ID    => $basEntity->getBankInstrumentId(),
+                Entity::CATEGORY              => $basEntity->getCategory(),
+            ];
+
+            $totalRecordCount++;
+        }
+
+        $limit = (int) (new AdminService)->getConfigKey(
+            ['key' => ConfigKey::ACCOUNT_STATEMENT_RECORDS_TO_SAVE_AT_ONCE]);
+
+        if (empty($limit) == true)
+        {
+            $limit = self::ACCOUNT_STATEMENT_RECORDS_TO_SAVE_AT_ONCE_DEFAULT;
+        }
+
+        $this->repo->transaction(function() use ($initialOffset, $totalRecordCount, $basEntitiesToSave, $limit, $accountNumber) {
+            while ($initialOffset < $totalRecordCount)
+            {
+                $startTime = microtime(true);
+
+                $records = array_slice(
+                    $basEntitiesToSave,
+                    $initialOffset,
+                    $limit);
+
+                Entity::insert($records);
+
+                $endTime = microtime(true);
+
+                $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_BULK_INSERT_TIME,
+                    [
+                        'account_number'         => $accountNumber,
+                        'time_to_save_records'   => $endTime - $startTime,
+                    ]);
+
+                $initialOffset += $limit;
+            }
+        });
+
+        // This data will be required to create an entry in BAS Details table.
+        // Once statement is fetched, closing balance has to be updated in BAS Details table as well.
+        // Statement fetch will be initiated based on this table.
+        if (count($bankTransactions) > 0)
+        {
+            $basDetailInput = [
+                BASDetails\Entity::MERCHANT_ID               => $merchant->getId(),
+                BASDetails\Entity::ACCOUNT_NUMBER            => $accountNumber,
+                BASDetails\Entity::CHANNEL                   => $channel,
+                BASDetails\Entity::STATEMENT_CLOSING_BALANCE => $previousClosingBalance
+            ];
+
+            (new BASDetails\Core)->createOrUpdate($basDetailInput);
+        }
+    }
+
+    protected function validateRecordBalance($previousClosingBalance, Entity $basEntity) : bool
+    {
+        $currentClosingBalance = $basEntity->getBalance();
+
+        if ($basEntity->getType() == Type::CREDIT)
+        {
+            if ($currentClosingBalance == $previousClosingBalance + $basEntity->getAmount())
+                return true;
+        }
+        else
+        {
+            if ($currentClosingBalance == $previousClosingBalance - $basEntity->getAmount())
+                return true;
+        }
+        return false;
     }
 
     public function requestAccountStatement($input)
@@ -485,6 +784,44 @@ class Core extends Base\Core
         });
 
         $this->fireWebhooksAfterSuccessfulMappingOfSourceEntity($sourceEntity, $isSourceAlreadyCreated);
+    }
+
+    protected function saveAccountStatementV2(Base\PublicCollection $basEntities, Merchant\Entity $merchant)
+    {
+        foreach ($basEntities as $basEntity)
+        {
+            list($sourceEntity, $isSourceAlreadyCreated) = $this->repo->transaction(function() use ($basEntity, $merchant)
+            {
+                $startTime = microtime(true);
+
+                list($sourceEntity, $isSourceAlreadyCreated) = $this->processSourceEntity($basEntity);
+
+                $basEntity->source()->associate($sourceEntity);
+
+                $basEntity->transaction()->associate($sourceEntity->transaction);
+
+                (new Transaction\Core)->updatePostedDate($sourceEntity, $basEntity->getPostedDate());
+
+                $this->repo->saveOrFail($basEntity);
+
+                $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_ENTITY_LINKED, $basEntity->toArray());
+
+                $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_SOURCE_CREATION_V2,
+                    [
+                        'source_entity'       => $sourceEntity->toArray(),
+                        'bas_id'              => $basEntity->getId(),
+                        'account_number'      => $basEntity->getAccountNumber(),
+                        'entity_linking_time' => (microtime(true) - $startTime) * 1000,
+                        'entity_id'           => $sourceEntity->getId(),
+                        'entity_type'         => $basEntity->getEntityType(),
+                    ]);
+
+                return [$sourceEntity, $isSourceAlreadyCreated];
+
+            });
+
+            $this->fireWebhooksAfterSuccessfulMappingOfSourceEntity($sourceEntity, $isSourceAlreadyCreated);
+        }
     }
 
     protected function fireWebhooksAfterSuccessfulMappingOfSourceEntity($sourceEntity, $isSourceAlreadyCreated)

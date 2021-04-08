@@ -27,11 +27,14 @@ class CreateBankingAccountStatementTable extends Migration
             $table->char(Entity::ID, Entity::ID_LENGTH)
                   ->primary();
 
-            $table->char(Entity::TRANSACTION_ID, Transaction\Entity::ID_LENGTH);
+            $table->char(Entity::TRANSACTION_ID, Transaction\Entity::ID_LENGTH)
+                  ->nullable();
 
-            $table->char(Entity::ENTITY_ID, Transaction\Entity::ID_LENGTH);
+            $table->char(Entity::ENTITY_ID, Transaction\Entity::ID_LENGTH)
+                  ->nullable();;
 
-            $table->string(Entity::ENTITY_TYPE, 255);
+            $table->string(Entity::ENTITY_TYPE, 255)
+                  ->nullable();
 
             $table->string(Entity::CHANNEL, 255);
 

@@ -37,6 +37,71 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function findExistingStatementRecordsForBank(array $records)
+    {
+        $columns = [];
+
+        $columns[] = $this->dbColumn(Entity::CHANNEL);
+
+        $columns[]  = $this->dbColumn(Entity::ACCOUNT_NUMBER);
+
+        $columns[] = $this->dbColumn(Entity::BANK_TRANSACTION_ID);
+
+        $columns[] = $this->dbColumn(Entity::AMOUNT);
+
+        $columns[] = $this->dbColumn(Entity::CURRENCY);
+
+        $columns[] = $this->dbColumn(Entity::TYPE);
+
+        $columns[] = $this->dbColumn(Entity::DESCRIPTION);
+
+        $columns[] = $this->dbColumn(Entity::CATEGORY);
+
+        $columns[] = $this->dbColumn(Entity::BANK_SERIAL_NUMBER);
+
+        $columns[] = $this->dbColumn(Entity::BANK_INSTRUMENT_ID);
+
+        $columns[] = $this->dbColumn(Entity::BALANCE);
+
+        $columns[] = $this->dbColumn(Entity::BALANCE_CURRENCY);
+
+        $columns[] = $this->dbColumn(Entity::POSTED_DATE);
+
+        $columns[] = $this->dbColumn(Entity::TRANSACTION_DATE);
+
+        $columns[] = $this->dbColumn(Entity::BALANCE);
+
+        $uniqueColumns = [];
+
+        $uniqueColumns[] = $bankTransactionIdColumn = $this->dbColumn(Entity::BANK_TRANSACTION_ID);
+
+        $uniqueColumns[] = $bankSerialNumberColumn = $this->dbColumn(Entity::BANK_SERIAL_NUMBER);
+
+        $uniqueColumns[] = $bankTransactionDateColumn = $this->dbColumn(Entity::TRANSACTION_DATE);
+
+        $uniqueColumns[] = $bankTransactionAmountColumn = $this->dbColumn(Entity::AMOUNT);
+
+        $uniqueColumns[] = $bankTransactionChannelColumn = $this->dbColumn(Entity::CHANNEL);
+
+        $uniqueColumns[] = $bankTransactionChannelColumn = $this->dbColumn(Entity::ACCOUNT_NUMBER);
+
+
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->whereInMultiple($uniqueColumns, $records)
+                    ->get($columns);
+    }
+
+    public function fetchUnlinkedBasRecords(string $accountNumber, string $channel, $limit)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
+                    ->where(Entity::CHANNEL, $channel)
+                    ->whereNull(Entity::TRANSACTION_ID)
+                    ->orderBy(Entity::CREATED_AT)
+                    ->limit($limit)
+                    ->get();
+    }
+
     public function fetchByUtrForPayout(Payout\Entity $payout)
     {
         $query = $this->newQuery()
