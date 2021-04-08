@@ -21,8 +21,8 @@ import (
 
 	"github.com/oklog/run"
 
-	"github.com/razorpay/opencensus-php/daemon"
-	"github.com/razorpay/opencensus-php/daemon/transport/namedpipe"
+	"github.com/census-instrumentation/opencensus-php/daemon"
+	"github.com/census-instrumentation/opencensus-php/daemon/transport/namedpipe"
 )
 
 const defaultNamedPipePath = `\\.\pipe\oc-daemon`

@@ -32,7 +32,7 @@ import (
 	"go.opencensus.io/tag"
 	"go.opencensus.io/trace"
 
-	"github.com/razorpay/opencensus-php/daemon"
+	"github.com/census-instrumentation/opencensus-php/daemon"
 )
 
 const ms = float64(time.Millisecond)

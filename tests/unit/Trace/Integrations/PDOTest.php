@@ -34,9 +34,11 @@ class PDOTest extends TestCase
         $spanOptions = PDO::handleQuery($scope, $query);
         $expected = [
             'attributes' => [
-                'db.statement' => 'select * from users'
+                'db.statement' => 'select * from users',
+                'span.kind'    => strtolower(Span::KIND_CLIENT)
             ],
-            'kind' => Span::KIND_CLIENT
+            'kind' => strtolower(Span::KIND_CLIENT),
+            'sameProcessAsParentSpan' => false
         ];
 
         $this->assertEquals($expected, $spanOptions);
@@ -49,9 +51,16 @@ class PDOTest extends TestCase
         $expected = [
             'attributes' => [
                 'dsn'       => 'mysql:host=localhost;dbname=testdb',
-                'db.type'   => 'sql'
+                'db.type'   => 'sql',
+                'db.system' => 'mysql',
+                'db.name'   => 'testdb',
+                'net.peer.name' => 'localhost',
+                'db.connection_string' => 'mysql:host=localhost;dbname=testdb',
+                'span.kind' => Span::KIND_CLIENT
             ],
-            'kind' => Span::KIND_CLIENT
+            'kind' => Span::KIND_CLIENT,
+            'sameProcessAsParentSpan' => false,
+            'name' => 'PDO connect'
         ];
 
         $this->assertEquals($expected, $spanOptions);

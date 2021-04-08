@@ -19,7 +19,7 @@ import (
 	"net"
 	"sync/atomic"
 
-	"github.com/razorpay/opencensus-php/daemon"
+	"github.com/census-instrumentation/opencensus-php/daemon"
 )
 
 var errAlreadyClosed = errors.New("already closed")

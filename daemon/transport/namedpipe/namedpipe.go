@@ -23,7 +23,7 @@ import (
 
 	"github.com/Microsoft/go-winio"
 
-	"github.com/razorpay/opencensus-php/daemon"
+	"github.com/census-instrumentation/opencensus-php/daemon"
 )
 
 const bufSize = 65536

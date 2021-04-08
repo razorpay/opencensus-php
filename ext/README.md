@@ -26,10 +26,10 @@ This extension has been built and tested on the following PHP versions:
 
 ### Build from source
 
-1. [Download a release](https://github.com/razorpay/opencensus-php/releases)
+1. [Download a release](https://github.com/census-instrumentation/opencensus-php/releases)
 
    ```bash
-   curl https://github.com/razorpay/opencensus-php/archive/v0.0.4.tar.gz -o opencensus.tar.gz
+   curl https://github.com/census-instrumentation/opencensus-php/archive/v0.0.4.tar.gz -o opencensus.tar.gz
    ```
 
 1. Untar the package

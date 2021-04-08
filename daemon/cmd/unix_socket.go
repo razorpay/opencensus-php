@@ -21,8 +21,8 @@ import (
 
 	"github.com/oklog/run"
 
-	"github.com/razorpay/opencensus-php/daemon"
-	"github.com/razorpay/opencensus-php/daemon/transport/unixsocket"
+	"github.com/census-instrumentation/opencensus-php/daemon"
+	"github.com/census-instrumentation/opencensus-php/daemon/transport/unixsocket"
 )
 
 const defaultUnixSocketPath = "/tmp/oc-daemon.sock"
