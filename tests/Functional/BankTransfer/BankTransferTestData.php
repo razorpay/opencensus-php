@@ -19,7 +19,7 @@ return [
     ],
 
     'processBankTransfer' => [
-        'url'     => '/ecollect/validate',
+        'url'     => '/ecollect/validate/test',
         'method'  => 'post',
         'content' => [],
     ],
@@ -83,7 +83,7 @@ return [
 
     'testBankTransferYesBankRefundsNotAllowed' => [
         'request' => [
-            'url'     => '/ecollect/validate',
+            'url'     => '/ecollect/validate/test',
             'method'  => 'post',
             'content' => [
                 'payee_account'  => null,
@@ -131,7 +131,7 @@ return [
     ],
 
     'testBankTransferFloatingPointImprecision' => [
-        'url'     => '/ecollect/validate',
+        'url'     => '/ecollect/validate/test',
         'method'  => 'post',
         'content' => [
             'payee_account'  => null,
@@ -862,7 +862,7 @@ return [
     ],
 
     'testBankTransferSpecialCharsInAccNumber' => [
-        'url'     => '/ecollect/validate',
+        'url'     => '/ecollect/validate/test',
         'method'  => 'post',
         'content' => [
             'payee_account'  => null,
@@ -879,7 +879,7 @@ return [
     ],
 
     'testBankTransferStripPayerBankAccount' => [
-        'url'     => '/ecollect/validate',
+        'url'     => '/ecollect/validate/test',
         'method'  => 'post',
         'content' => [
             'payee_account'  => null,
@@ -896,7 +896,7 @@ return [
     ],
 
     'testBankTransferImpsUnmappedBankCode' => [
-        'url'     => '/ecollect/validate',
+        'url'     => '/ecollect/validate/test',
         'method'  => 'post',
         'content' => [
             'payee_account'  => null,
@@ -913,7 +913,7 @@ return [
     ],
 
     'testBankTransferRefundRetry' => [
-        'url'     => '/ecollect/validate',
+        'url'     => '/ecollect/validate/test',
         'method'  => 'post',
         'content' => [
             'payee_account'  => null,
@@ -930,7 +930,7 @@ return [
     ],
 
     'testBankTransferRemoveSpaces' => [
-        'url'     => '/ecollect/validate',
+        'url'     => '/ecollect/validate/test',
         'method'  => 'post',
         'content' => [
             'payee_account'  => 'R Z R P A Y 1 2 3',
@@ -947,7 +947,7 @@ return [
     ],
 
     'testBankTransferImpsFromRogueBankNullAccount' => [
-        'url'     => '/ecollect/validate',
+        'url'     => '/ecollect/validate/test',
         'method'  => 'post',
         'content' => [
             'payee_account'  => null,
@@ -964,7 +964,7 @@ return [
     ],
 
     'testBankTransferImpsFromRogueBankInvalidAccount' => [
-        'url'     => '/ecollect/validate',
+        'url'     => '/ecollect/validate/test',
         'method'  => 'post',
         'content' => [
             'payee_account'  => null,
@@ -1015,7 +1015,7 @@ return [
 
     'testBankTransferProcessFailure' => [
         'request' => [
-            'url' => '/ecollect/validate',
+            'url' => '/ecollect/validate/test',
             'method' => 'post',
             'content' => [
                 'payee_account'  => 'RZP1234567890',
@@ -1037,7 +1037,7 @@ return [
 
     'testBankTransferToReallyReallyLongPayeeAccount' => [
         'request' => [
-            'url' => '/ecollect/validate',
+            'url' => '/ecollect/validate/test',
             'method' => 'post',
             'content' => [
                 'payee_account'  => '11122200123456781112220012345678',
@@ -1058,7 +1058,7 @@ return [
     ],
 
     'testBankTransferProcessDuplicateUtr' => [
-        'url'     => '/ecollect/validate',
+        'url'     => '/ecollect/validate/test',
         'method'  => 'post',
         'content' => [
             'payee_account'  => null,
@@ -1076,7 +1076,7 @@ return [
 
     'testBankTransferProcessWithExtraFields' => [
         'request' => [
-            'url' => '/ecollect/validate',
+            'url' => '/ecollect/validate/test',
             'method' => 'post',
             'content' => [
                 'payee_account'      => null,
@@ -1105,7 +1105,7 @@ return [
 
     'testBankTransferProcessWithFieldsOnTestMode' => [
         'request' => [
-            'url' => '/ecollect/validate',
+            'url' => '/ecollect/validate/test',
             'method' => 'post',
             'content' => [
                 'payee_account'           => null,
@@ -1240,7 +1240,7 @@ return [
     ],
 
     'testBankTransferProcessWithPayerBankAccountOf4Chars' => [
-        'url'     => '/ecollect/validate',
+        'url'     => '/ecollect/validate/test',
         'method'  => 'post',
         'content' => [
             'payee_account'  => null,
@@ -1312,11 +1312,8 @@ return [
             'url'     => '/ecollect/validate/file',
             'method'  => 'post',
             'content' => [
-                'sender' => 'qa.testing+sender@razorpay.com',
-                'subject' => 'This is a test',
-                'recipient' => 'qa.testing+recipient@razorpay.com',
-                'timestamp' => '1583501748',
-                'stripped-html' => '',
+                'source' => 'lambda',
+                'key'    => 'icici/filename.xlsx',
             ],
         ],
         'response' => [
@@ -1439,7 +1436,7 @@ return [
     ],
 
     'testProcessBankTransferInvalidPayerIfsc' => [
-        'url'     => '/ecollect/validate',
+        'url'     => '/ecollect/validate/test',
         'method'  => 'post',
         'content' => [
             'payee_account'  => null,
@@ -1489,7 +1486,7 @@ return [
 
     'bankTransferValidateTpv' => [
         'request'  => [
-            'url'     => '/ecollect/validate',
+            'url'     => '/ecollect/validate/test',
             'method'  => 'post',
             'content' => [
                 'payee_account'  => null,

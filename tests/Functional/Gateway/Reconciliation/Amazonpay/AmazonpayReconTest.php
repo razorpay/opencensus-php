@@ -56,7 +56,7 @@ class AmazonpayReconTest extends TestCase
                                    'amount_authorized' => 149000,
                                ]);
 
-         $this->ba->appAuth();
+         $this->ba->h2hAuth();
 
          $fileContents = $this->generateReconFile();
 
@@ -94,7 +94,7 @@ class AmazonpayReconTest extends TestCase
     {
         $payment = $this->makeAmazonPaymentSince(1)[0];
 
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $this->mockReconContentFunction(
             function(& $content, $action = null)
@@ -138,7 +138,7 @@ class AmazonpayReconTest extends TestCase
     {
         $payment = $this->makeAmazonPaymentSince(1)[0];
 
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $this->mockReconContentFunction(
             function(& $content, $action = null)
@@ -184,7 +184,7 @@ class AmazonpayReconTest extends TestCase
 
         $refund = $this->refundPayment($payment['id']);
 
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $this->mockReconContentFunction(
             function(& $content, $action = null)

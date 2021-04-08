@@ -49,7 +49,7 @@ class JioMoneyReconciliationTest extends TestCase
 
         $payments = $this->makePaymentsSince($createdAt);
 
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $fileContents = $this->generateReconFile();
 
@@ -98,7 +98,7 @@ class JioMoneyReconciliationTest extends TestCase
 
         $refund = $this->refundPayment($payment['id']);
 
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $this->mockReconContentFunction(
             function(& $content, $action = null)
@@ -144,7 +144,7 @@ class JioMoneyReconciliationTest extends TestCase
     {
         $this->createFailedPayment();
 
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $fileContents = $this->generateReconFile();
 
@@ -173,7 +173,7 @@ class JioMoneyReconciliationTest extends TestCase
     {
         $this->createFailedPayment();
 
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $fileContents = $this->generateReconFile();
 
@@ -213,7 +213,7 @@ class JioMoneyReconciliationTest extends TestCase
 
         $paymentId = $this->makePaymentsSince($createdAt, 1)[0];
 
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $this->mockReconContentFunction(
             function(& $content, $action = null)
@@ -256,7 +256,7 @@ class JioMoneyReconciliationTest extends TestCase
 
         $paymentId = $this->makePaymentsSince($createdAt, 1)[0];
 
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $this->mockReconContentFunction(
             function(& $content, $action = null)

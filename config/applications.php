@@ -10,6 +10,15 @@ return [
         'cloud'     => true,
     ],
 
+    'admin_dashboard' => [
+        'secret'    => env('APP_ADMIN_DASHBOARD_SECRET'),
+
+    ],
+
+    'merchant_dashboard' => [
+        'secret'    => env('APP_MERCHANT_DASHBOARD_SECRET'),
+    ],
+
     'dashboard_guest'   => [
         'secret'   => env('APP_DASHBOARD_GUEST_SECRET'),
     ],
@@ -806,7 +815,6 @@ return [
     ],
 
     'terminals_service' => [
-        'secret'        => env('TERMINALS_SERVICE_API_SECRET'),
         'mock'          => env('TERMINALS_SERVICE_MOCK', false),
         'secret'        => env('TERMINALS_SERVICE_API_SECRET'),
         'live'          => [
@@ -864,6 +872,7 @@ return [
         'url'                 => env('PG_ROUTER_URL'),
         'pg_router_key'       => env('PG_ROUTER_KEY'),
         'pg_router_secret'    => env('PG_ROUTER_SECRET'),
+        'secret'              => env('API_PG_ROUTER_SECRET'),
     ],
 
     'upi_payment_service' => [

@@ -52,7 +52,7 @@ class BankingScorecardTest extends TestCase
 
         $days = $this->createPayoutEntities();
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $this->fixtures->edit('balance', '10000000100001',
             [

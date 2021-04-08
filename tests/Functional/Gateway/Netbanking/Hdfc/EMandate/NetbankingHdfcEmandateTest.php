@@ -729,7 +729,7 @@ class NetbankingHdfcEmandateTest extends TestCase
                 Payment\Entity::CREATED_AT => $createdAt,
             ]);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         // Email send will throw exception, but file, and gateway-entity will still be created
         Mail::shouldReceive('send')->andThrow(new \Exception('mail_send_exceptiopn'));

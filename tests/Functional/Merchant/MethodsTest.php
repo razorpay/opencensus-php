@@ -29,7 +29,6 @@ class MethodsTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->appAuth();
     }
 
     public function testGetPaymentMethodsRoute()

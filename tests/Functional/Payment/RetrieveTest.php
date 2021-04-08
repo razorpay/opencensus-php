@@ -125,7 +125,7 @@ class PaymentRetrieveTest extends TestCase
 
     public function testRetrievePaymentWithCardIIN()
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $payments = $this->getEntities('payment', ['iin' => '111111'], true);
 
@@ -136,7 +136,7 @@ class PaymentRetrieveTest extends TestCase
     {
         $payment = $this->fixtures->create('payment:captured', ['email' => 'test@test.test']);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $params = [
             'email' => 'test@test.test',
@@ -209,7 +209,7 @@ class PaymentRetrieveTest extends TestCase
     {
         $this->fixtures->create('payment:authorized');
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $payments = $this->getEntities('payment', ['status' => 'authorized']);
 

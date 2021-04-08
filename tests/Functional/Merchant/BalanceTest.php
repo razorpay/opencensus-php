@@ -21,7 +21,6 @@ class BalanceTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->appAuth();
     }
 
     public function testGetBalance()

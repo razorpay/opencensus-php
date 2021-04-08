@@ -49,7 +49,7 @@ class Service extends Base\Service
 
         $this->core = new Core;
 
-        $this->provider = $this->auth->getInternalApp();
+        $this->provider = ($this->auth->getInternalApp() === 'merchant_dashboard') ? 'dashboard' : $this->auth->getInternalApp();
 
         $this->ip = $this->app['request']->ip();
 

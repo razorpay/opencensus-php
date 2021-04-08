@@ -102,7 +102,7 @@ class MerchantBankingInvoiceTest extends TestCase
 
         $balanceId = $this->createDataForBankingInvoiceEntityCreateForGivenMonthYear();
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request = [
             'url'     => '/merchants/invoice/create',
@@ -228,7 +228,7 @@ class MerchantBankingInvoiceTest extends TestCase
 
         $balanceId = $this->createDataForBankingInvoiceEntityCreateForGivenMonthYear();
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request = [
             'url'     => '/merchants/invoice/create',
@@ -295,7 +295,7 @@ class MerchantBankingInvoiceTest extends TestCase
 
         $balanceId = $this->createDataForBankingInvoiceEntityCreateForGivenMonthYear();
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request = [
             'url'     => '/merchants/invoice/create',
@@ -384,7 +384,7 @@ class MerchantBankingInvoiceTest extends TestCase
 
         $balanceId = $this->createDataForBankingInvoiceEntityCreateWithEInvoiceForZeroAmountLineItemForGivenMonthYear();
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request = [
             'url'     => '/merchants/invoice/create',
@@ -479,6 +479,75 @@ class MerchantBankingInvoiceTest extends TestCase
         return $x['id'];
     }
 
+    protected function createDataForBankingInvoiceEntityCreateWithEInvoiceForNegativeAndPositiveAmountLineItem()
+    {
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'activated'    => 1,
+            'activated_at' => Carbon::now(Timezone::IST)->timestamp,
+            'invoice_code' => 'hello1234567',
+        ]);
+
+        $x = $this->fixtures->create('balance',
+            [
+                'merchant_id' => '10000000000000',
+                'type'        => 'banking',
+                'balance'     => 10000000,
+            ]);
+
+        $y = $this->fixtures->create('balance',
+            [
+                'merchant_id' => '10000000000000',
+                'type'        => 'banking',
+                'balance'     => 100000000,
+            ]);
+
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id'               => '10000000000000',
+                'gstin'                     => '29kjsngjk213922',
+                'business_registered_pin'   => '123456',
+            ]);
+
+        $this->fixtures->edit('merchant', 10000000000000, ['business_banking' => 1]);
+
+        $w = $this->fixtures->create(
+            'payout',
+            [
+                'channel'    => 'icici',
+                'amount'     => 1000000,
+                'balance_id' => $x['id'],
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
+            ]);
+
+        $oldDateTime = Carbon::create(2021, 8, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $this->fixtures->reversal->createPayoutReversal(
+            [
+                'merchant_id'   => '10000000000000',
+                'entity_id'     => $w['id'],
+                'entity_type'   => 'payout',
+                'balance_id'    => $x['id'],
+                'amount'        => 1000000,
+                'fee'           => 0,
+                'tax'           => 0,
+            ]);
+
+        $this->fixtures->create(
+            'payout',
+            [
+                'channel'    => 'icici',
+                'amount'     => 1000000,
+                'balance_id' => $y['id'],
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
+            ]);
+
+
+        return [ $x['id'] , $y['id'] ];
+    }
+
     protected function createDataForMultipleAccounts()
     {
         $this->fixtures->edit('merchant', '10000000000000', [
@@ -567,7 +636,7 @@ class MerchantBankingInvoiceTest extends TestCase
 
         $balanceId = $this->createDataForMultipleAccounts();
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request = [
             'url'     => '/merchants/invoice/create',
@@ -730,7 +799,7 @@ class MerchantBankingInvoiceTest extends TestCase
 
         Carbon::setTestNow();
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request = [
             'url'     => '/merchants/invoice/create',
@@ -835,7 +904,7 @@ class MerchantBankingInvoiceTest extends TestCase
 
         Carbon::setTestNow();
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request = [
             'url'     => '/merchants/invoice/create',
@@ -988,7 +1057,7 @@ class MerchantBankingInvoiceTest extends TestCase
 
         Carbon::setTestNow();
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request = [
             'url'     => '/merchants/invoice/create',
@@ -1132,7 +1201,7 @@ class MerchantBankingInvoiceTest extends TestCase
 
         Carbon::setTestNow();
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request1 = [
             'url'     => '/merchants/invoice/create',
@@ -1301,7 +1370,7 @@ class MerchantBankingInvoiceTest extends TestCase
 
         Carbon::setTestNow();
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request1 = [
             'url'     => '/merchants/invoice/create',
@@ -1407,7 +1476,7 @@ class MerchantBankingInvoiceTest extends TestCase
 
         $this->createDataForFetchingBankingInvoices();
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request = [
             'url'     => '/merchants/invoice/create',
@@ -1432,7 +1501,7 @@ class MerchantBankingInvoiceTest extends TestCase
 
         $this->createDataForFetchingBankingInvoices();
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request = [
             'url'     => '/merchants/invoice/create',
@@ -1457,7 +1526,7 @@ class MerchantBankingInvoiceTest extends TestCase
 
         $this->createDataForFetchingBankingInvoices();
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request = [
             'url'     => '/merchants/invoice/create',
@@ -1547,7 +1616,7 @@ class MerchantBankingInvoiceTest extends TestCase
 
         $this->createDataForFetchingBankingInvoices();
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request = [
             'url'     => '/merchants/invoice/create',
@@ -1618,7 +1687,7 @@ class MerchantBankingInvoiceTest extends TestCase
 
         $this->createDataForBankingInvoiceWithFailedPayoutsInGivenMonthAndYear();
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request = [
             'url'     => '/merchants/invoice/create',
@@ -1658,7 +1727,7 @@ class MerchantBankingInvoiceTest extends TestCase
 
         $balanceId = $this->createDataForBankingInvoiceEntityCreateForGivenMonthYear();
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request = [
             'url'     => '/merchants/invoice/create',
@@ -1726,7 +1795,7 @@ class MerchantBankingInvoiceTest extends TestCase
 
         $this->fixtures->edit('payout', $payoutIds[2], ['failed_at' => Carbon::now(Timezone::IST)->timestamp]);
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request = [
             'url'     => '/merchants/invoice/create',

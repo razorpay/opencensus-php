@@ -1309,7 +1309,7 @@ EOT;
 
     protected function generateRefundsExcelForIciciUpi($date = false)
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $request = array(
             'url' => '/refunds/excel',

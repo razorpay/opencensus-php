@@ -34,7 +34,7 @@ trait AttemptReconcileTrait
             ]
         ];
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -54,7 +54,7 @@ trait AttemptReconcileTrait
             ]
         ];
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -71,6 +71,8 @@ trait AttemptReconcileTrait
                 'file' => $uploadedFile
             ],
         ];
+
+        $this->ba->h2hAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 

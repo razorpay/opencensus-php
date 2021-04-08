@@ -1125,7 +1125,7 @@ class CommissionCreateTest extends TestCase
 
         // trigger settlement on this commission
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         Carbon::setTestNow(Holidays::getNthWorkingDayFrom(Carbon::now(), 5)->addHour(10));
 

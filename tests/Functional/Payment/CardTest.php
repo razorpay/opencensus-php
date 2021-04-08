@@ -256,7 +256,7 @@ class CardTest extends TestCase
                     'network' => 'American Express',
                 ]);
 
-        $this->ba->appAuthTest();
+        $this->ba->cronAuth();
 
         $this->startTest();
 

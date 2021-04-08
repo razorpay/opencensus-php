@@ -161,7 +161,7 @@ class TerminalMigrationTest extends TestCase
 
         $beforeCount = DB::table('terminals')->count();
 
-        $this->ba->appAuth();
+        $this->ba->terminalsAuth();
 
         $response = $this->startTest();
 
@@ -213,7 +213,7 @@ class TerminalMigrationTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        $this->ba->appAuth();
+        $this->ba->razorflowAuth();
 
         $this->startTest();
     }
@@ -272,7 +272,7 @@ class TerminalMigrationTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['content'] = $input;
 
-        $this->ba->appAuth();
+        $this->ba->razorflowAuth();
 
         $this->startTest();
     }
@@ -295,7 +295,7 @@ class TerminalMigrationTest extends TestCase
 
         $beforeCount = DB::table('terminals')->count();
 
-        $this->ba->appAuth();
+        $this->ba->terminalsAuth();
 
         $response = $this->startTest();
 
@@ -327,7 +327,7 @@ class TerminalMigrationTest extends TestCase
 
         $beforeCount = DB::table('terminals')->count();
 
-        $this->ba->appAuth();
+        $this->ba->terminalsAuth();
 
         $response = $this->startTest();
 
@@ -346,7 +346,7 @@ class TerminalMigrationTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        $this->ba->appAuth();
+        $this->ba->terminalsAuth();
 
         $this->startTest();
     }
@@ -440,7 +440,7 @@ class TerminalMigrationTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['content']['id'] = $terminal['id'];
 
-        $this->ba->appAuth();
+        $this->ba->terminalsAuth();
 
         $this->expectException('Illuminate\Database\QueryException');
 

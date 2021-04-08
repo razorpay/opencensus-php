@@ -38,7 +38,7 @@ class BatchTest extends TestCase
 
         Mail::fake();
 
-        $this->ba->appAuth();
+        $this->ba->batchAppAuth();
 
         $this->fixtures->create('merchant', ['id' => 'CVuOcOYoUiAqNY']);
 
@@ -63,7 +63,7 @@ class BatchTest extends TestCase
 
         Mail::fake();
 
-        $this->ba->appAuth();
+        $this->ba->batchAppAuth();
 
         $this->fixtures->create('merchant', ['id' => 'CVuOcOYoUiAqNY']);
 

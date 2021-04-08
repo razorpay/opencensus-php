@@ -45,7 +45,7 @@ class PayumoneyReconTest extends TestCase
 
         $payments = $this->makePaymentsSince($createdAt);
 
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $fileContents = $this->generateReconFile();
 
@@ -92,7 +92,7 @@ class PayumoneyReconTest extends TestCase
 
         $payment = $this->makePaymentsSince($createdAt, 1)[0];
 
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $this->mockReconContentFunction(
             function(& $content, $action = null)
@@ -153,7 +153,7 @@ class PayumoneyReconTest extends TestCase
 
         $this->fixtures->edit('transaction', $transaction['id'], ['reconciled_at' => $createdAt]);
 
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $fileContents = $this->generateReconFile();
 
@@ -199,7 +199,7 @@ class PayumoneyReconTest extends TestCase
 
         $payment = $this->makePaymentsSince($createdAt, 1)[0];
 
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $this->mockReconContentFunction(
             function(& $content, $action = null)

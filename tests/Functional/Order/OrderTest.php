@@ -2245,7 +2245,7 @@ class OrderTest extends TestCase
 
     public function testUpdateOrderSuccessFromPGRouter()
     {
-        $this->ba->appAuth();
+        $this->ba->pgRouterAuth();
 
         $order = $this->fixtures->create('order');
 

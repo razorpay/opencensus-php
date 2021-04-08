@@ -389,7 +389,23 @@ return [
         ],
     ],
 
-    'testAccountAuthInvalidId' => [
+    'testAccountAuthInvalidIdViaMerchantDashboard' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/orgs/{id}/self'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT_ID,
+                ],
+            ],
+            'status_code' => 401,
+        ],
+    ],
+
+    'testAccountAuthInvalidIdViaAdminDashboard' => [
         'request' => [
             'method' => 'GET',
             'url' => '/orgs/{id}/self'

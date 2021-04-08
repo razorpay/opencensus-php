@@ -40,7 +40,7 @@ class EmandateDebitReconciliationTest extends TestCase
 
         $this->setMockGatewayTrue();
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
     }
 
     public function testAxisNbEmandateDebitRecon()

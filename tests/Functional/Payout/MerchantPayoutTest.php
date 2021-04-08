@@ -264,21 +264,21 @@ class MerchantPayoutTest extends TestCase
 
     public function testCreateMerchantPayout()
     {
-        $this->ba->appAuth();
+        $this->ba->cronAuth() ;
 
         $this->startTest();
     }
 
     public function testCreateMerchantPayoutWithModulo()
     {
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $this->startTest();
     }
 
     public function testCreateMerchantPayoutWithMinAmount()
     {
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $this->startTest();
     }
@@ -343,7 +343,7 @@ class MerchantPayoutTest extends TestCase
     public function testCreateMerchantPayoutExceedAmountLimit()
     {
         // Merchant payouts should fail for amounts that exceed 80 L.
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $this->startTest();
     }
@@ -463,7 +463,7 @@ class MerchantPayoutTest extends TestCase
 
         $this->fixtures->merchant->edit('10000000000000', ['channel' => Channel::ICICI]);
 
-        $this->ba->appAuth('rzp_live');
+        $this->ba->cronAuth('live');
 
         $this->startTest();
 

@@ -85,7 +85,7 @@ trait SettlementTrait
             'content' => []
         ];
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -135,7 +135,7 @@ trait SettlementTrait
             'method'    => 'POST'
         ];
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -198,7 +198,7 @@ trait SettlementTrait
             'content' => [],
         ];
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -233,7 +233,7 @@ trait SettlementTrait
             'content' => $content
         ];
 
-        $this->ba->appAuth();
+        $this->ba->settlementsAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 

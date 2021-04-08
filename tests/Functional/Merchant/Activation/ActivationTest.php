@@ -2374,7 +2374,7 @@ class ActivationTest extends OAuthTestCase
                                                   [
                                                       'bank_details_verification_status' => 'initiated',
                                                       'penny_testing_updated_at'         => time() - 7300]);
-        $this->ba->appAuthTest();
+        $this->ba->cronAuth();
 
         $this->updateRetryCountInRedis($merchantDetail, 2);
 
@@ -2527,7 +2527,7 @@ class ActivationTest extends OAuthTestCase
                                                    'submitted'                        => 1,
                                                    'submitted_at'                     => now()->getTimestamp()]);
 
-        $this->ba->appAuthTest();
+        $this->ba->cronAuth();
 
         $attribute = $this->getFavAttributes($merchantDetail, "rishabh acharya", "active");
 
@@ -2550,7 +2550,7 @@ class ActivationTest extends OAuthTestCase
             'penny_testing_updated_at'         => time() - 7300,
         ]);
 
-        $this->ba->appAuthTest();
+        $this->ba->cronAuth();
 
         $testData = $this->testData['testPennyTestingRetryCron'];
 
@@ -2575,7 +2575,7 @@ class ActivationTest extends OAuthTestCase
                                                    'submitted'                        => 1,
                                                    'submitted_at'                     => now()->getTimestamp()]);
 
-        $this->ba->appAuthTest();
+        $this->ba->cronAuth();
 
         Mail::fake();
 

@@ -229,7 +229,7 @@ trait PaymentTrait
 
     protected function doAutoCapture()
     {
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request = [
             'url'    => '/payments/autocapture',
@@ -1372,7 +1372,7 @@ trait PaymentTrait
 
     protected function timeoutOldPayment()
     {
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request = [
             'url'     => '/payments/timeout',
@@ -1386,7 +1386,7 @@ trait PaymentTrait
 
     protected function timeoutAuthenticatedPayment()
     {
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request = [
             'url'     => '/payments/auth/timeout',
@@ -1727,7 +1727,7 @@ trait PaymentTrait
 
     protected function generateRefundsExcelForNb($bank)
     {
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request = array(
             'url'     => '/refunds/excel',

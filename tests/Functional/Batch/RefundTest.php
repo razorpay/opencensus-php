@@ -6,10 +6,8 @@ use Mail;
 use Illuminate\Support\Facades\Queue;
 
 use Mockery;
-use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Models\Batch\Header;
-use RZP\Services\RazorXClient;
 use RZP\Jobs\Batch as BatchJob;
 use RZP\Tests\Functional\TestCase;
 use RZP\Services\BatchMicroService;
@@ -140,7 +138,7 @@ class RefundTest extends TestCase
         $this->capturePayment($entries[0][Header::PAYMENT_ID], 50000);
         $this->capturePayment($entries[1][Header::PAYMENT_ID], 50000);
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $this->startTest();
 
@@ -195,7 +193,7 @@ class RefundTest extends TestCase
 
         $payment = $this->capturePayment($entries[0]['Payment Id'], 50000);
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $this->startTest();
     }
@@ -225,7 +223,7 @@ class RefundTest extends TestCase
 
         $this->fixtures->create('batch:refund', $entries);
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $this->startTest();
     }
@@ -246,7 +244,7 @@ class RefundTest extends TestCase
 
         $this->assertEmpty($refund['notes']);
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $this->startTest();
     }
@@ -268,7 +266,7 @@ class RefundTest extends TestCase
 
         $request = $this->testData[__FUNCTION__]['request'];
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $this->startTest();
     }
@@ -281,7 +279,7 @@ class RefundTest extends TestCase
 
         $batch = $this->fixtures->create('batch:refund_with_one_attempt', $entries);
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $this->testData[__FUNCTION__]['request']['url'] = "/batches/$batch->getPublicId()/process";
 
@@ -296,7 +294,7 @@ class RefundTest extends TestCase
 
         $batch = $this->fixtures->create('batch:refund_with_two_attempt', $entries);
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $this->startTest();
     }

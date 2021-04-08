@@ -293,9 +293,18 @@ class BasicAuthTest extends TestCase
         $this->assertEquals($merchant->getId(), $result['id']);
     }
 
-    public function testAccountAuthInvalidId()
+    public function testAccountAuthInvalidIdViaMerchantDashboard()
     {
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
+
+        $this->ba->addAccountAuth('12345');
+
+        $this->startTest();
+    }
+
+    public function testAccountAuthInvalidIdViaAdminDashboard()
+    {
+        $this->ba->adminAuth();
 
         $this->ba->addAccountAuth('12345');
 
@@ -307,7 +316,7 @@ class BasicAuthTest extends TestCase
      */
     public function testUserWhiteListAuthenticate()
     {
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }

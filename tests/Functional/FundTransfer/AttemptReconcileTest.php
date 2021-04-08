@@ -668,7 +668,7 @@ class AttemptReconcileTest extends TestCase
             ]
         ];
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $this->makeRequestAndGetContent($request);
 

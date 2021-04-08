@@ -124,7 +124,7 @@ return [
 
     'testLibrarySetPushForBankTransferPayment' => [
         'request' => [
-            'url' => '/ecollect/validate',
+            'url' => '/ecollect/validate/test',
             'method' => 'post',
             'content' => [
                 'payee_account'  => '111222001',

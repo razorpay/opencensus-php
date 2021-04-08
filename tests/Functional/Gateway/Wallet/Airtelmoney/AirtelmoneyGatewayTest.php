@@ -305,7 +305,7 @@ class AirtelmoneyGatewayTest extends TestCase
 
     protected function generateRefundsExcelForAirtelmoneyWallet($date = false)
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $request = array(
             'url' => '/refunds/excel',

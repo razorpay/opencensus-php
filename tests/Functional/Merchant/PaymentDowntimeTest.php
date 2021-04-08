@@ -46,7 +46,7 @@ class PaymentDowntimeTest extends TestCase
             'url' => '/gateway/downtimes/dummy/webhook'
         ];
 
-        $this->ba->appAuth();
+        $this->ba->directAuth();
         $this->updateSignature($request);
         $this->makeRequestAndGetContent($request);
 
@@ -106,7 +106,7 @@ class PaymentDowntimeTest extends TestCase
             'url' => '/gateway/downtimes/dummy/webhook'
         ];
 
-        $this->ba->appAuth();
+        $this->ba->directAuth();
         $this->updateSignature($request);
         $this->makeRequestAndGetContent($request);
 
@@ -129,7 +129,7 @@ class PaymentDowntimeTest extends TestCase
             'url' => '/gateway/downtimes/dummy/webhook'
         ];
 
-        $this->ba->appAuth();
+        $this->ba->directAuth();
         $this->updateSignature($request);
         $this->makeRequestAndGetContent($request);
 
@@ -152,7 +152,7 @@ class PaymentDowntimeTest extends TestCase
             'url' => '/gateway/downtimes/dummy/webhook'
         ];
 
-        $this->ba->appAuth();
+        $this->ba->directAuth();
         $this->updateSignature($request);
         $this->makeRequestAndGetContent($request);
 
@@ -182,7 +182,7 @@ class PaymentDowntimeTest extends TestCase
             'url' => '/gateway/downtimes/dummy/webhook'
         ];
 
-        $this->ba->appAuth();
+        $this->ba->directAuth();
         $this->updateSignature($request);
         $this->makeRequestAndGetContent($request);
 
@@ -213,7 +213,7 @@ class PaymentDowntimeTest extends TestCase
             'url' => '/gateway/downtimes/dummy/webhook'
         ];
 
-        $this->ba->appAuth();
+        $this->ba->directAuth();
         $this->updateSignature($request);
         $this->makeRequestAndGetContent($request);
 
@@ -244,7 +244,7 @@ class PaymentDowntimeTest extends TestCase
             'url' => '/gateway/downtimes/dummy/webhook'
         ];
 
-        $this->ba->appAuth();
+        $this->ba->directAuth();
         $this->updateSignature($request);
         $this->makeRequestAndGetContent($request);
 
@@ -343,7 +343,7 @@ class PaymentDowntimeTest extends TestCase
             'url' => '/gateway/downtimes/dummy/webhook'
         ];
 
-        $this->ba->appAuth();
+        $this->ba->directAuth();
         $this->updateSignature($request);
         $this->makeRequestAndGetContent($request);
 
@@ -412,7 +412,7 @@ class PaymentDowntimeTest extends TestCase
             'url' => '/gateway/downtimes/dummy/webhook'
         ];
 
-        $this->ba->appAuth();
+        $this->ba->directAuth();
         $this->updateSignature($request);
         $this->makeRequestAndGetContent($request);
 
@@ -609,7 +609,7 @@ class PaymentDowntimeTest extends TestCase
             'url' => '/gateway/downtimes/dummy/webhook'
         ];
 
-        $this->ba->appAuth();
+        $this->ba->directAuth();
         $this->updateSignature($request);
         $this->makeRequestAndGetContent($request);
 
@@ -632,7 +632,7 @@ class PaymentDowntimeTest extends TestCase
             'url' => '/gateway/downtimes/dummy/webhook'
         ];
 
-        $this->ba->appAuth();
+        $this->ba->directAuth();
         $this->updateSignature($request);
         $this->makeRequestAndGetContent($request);
 
@@ -1189,7 +1189,7 @@ class PaymentDowntimeTest extends TestCase
             'url' => '/gateway/downtimes/dummy/webhook'
         ];
 
-        $this->ba->appAuth();
+        $this->ba->directAuth();
         $this->updateSignature($request);
         $this->makeRequestAndGetContent($request);
 
@@ -1215,7 +1215,7 @@ class PaymentDowntimeTest extends TestCase
             'url' => '/gateway/downtimes/dummy/webhook'
         ];
 
-        $this->ba->appAuth();
+        $this->ba->directAuth();
         $this->updateSignature($request);
         $this->makeRequestAndGetContent($request);
 
@@ -1239,7 +1239,7 @@ class PaymentDowntimeTest extends TestCase
             'url' => '/gateway/downtimes/dummy/webhook'
         ];
 
-        $this->ba->appAuth();
+        $this->ba->directAuth();
         $this->updateSignature($request);
         $this->makeRequestAndGetContent($request);
 
@@ -1263,7 +1263,7 @@ class PaymentDowntimeTest extends TestCase
             'url' => '/gateway/downtimes/dummy/webhook'
         ];
 
-        $this->ba->appAuth();
+        $this->ba->directAuth();
         $this->updateSignature($request);
         $this->makeRequestAndGetContent($request);
 
@@ -1438,7 +1438,7 @@ class PaymentDowntimeTest extends TestCase
             'url' => '/gateway/downtimes/webhook/downtime_service'
         ];
 
-        $this->ba->appAuth();
+        $this->ba->downtimeServiceAuth();
 
         $response = $this->makeRequestAndGetContent($downtimeCreateRequest);
 
@@ -1470,7 +1470,7 @@ class PaymentDowntimeTest extends TestCase
             'url' => '/gateway/downtimes/webhook/downtime_service'
         ];
 
-        $this->ba->appAuth();
+        $this->ba->downtimeServiceAuth();
         $response = $this->makeRequestAndGetContent($downtimeCreateRequest2);
 
         $this->assertEquals('card', $response['method']);
@@ -1506,7 +1506,7 @@ class PaymentDowntimeTest extends TestCase
             'url' => '/gateway/downtimes/webhook/downtime_service'
         ];
 
-        $this->ba->appAuth();
+        $this->ba->downtimeServiceAuth();
 
         $response = $this->makeRequestAndGetContent($downtimeCreateRequest2);
 
@@ -1537,7 +1537,7 @@ class PaymentDowntimeTest extends TestCase
             'url' => '/gateway/downtimes/webhook/downtime_service'
         ];
 
-        $this->ba->appAuth();
+        $this->ba->downtimeServiceAuth();
         $response = $this->makeRequestAndGetContent($downtimeCreateRequest);
 
         $paymentDowntime = $this->getLastEntity('payment.downtime', true);
@@ -1573,7 +1573,7 @@ class PaymentDowntimeTest extends TestCase
             'url' => '/gateway/downtimes/webhook/downtime_service'
         ];
 
-        $this->ba->appAuth();
+        $this->ba->downtimeServiceAuth();
 
         $response = $this->makeRequestAndGetContent($downtimeCreateRequest);
 
@@ -1758,7 +1758,7 @@ class PaymentDowntimeTest extends TestCase
                 'url' => '/gateway/downtimes/dummy/webhook'
             ];
 
-            $this->ba->appAuth();
+            $this->ba->directAuth();
             $this->updateSignature($request);
             $this->makeRequestAndGetContent($request);
         }
@@ -1781,7 +1781,7 @@ class PaymentDowntimeTest extends TestCase
                 'url' => '/gateway/downtimes/dummy/webhook'
             ];
 
-            $this->ba->appAuth();
+            $this->ba->directAuth();
             $this->updateSignature($request);
             $this->makeRequestAndGetContent($request);
         }
@@ -1804,7 +1804,7 @@ class PaymentDowntimeTest extends TestCase
                 'url' => '/gateway/downtimes/dummy/webhook'
             ];
 
-            $this->ba->appAuth();
+            $this->ba->directAuth();
             $this->updateSignature($request);
             $this->makeRequestAndGetContent($request);
         }
@@ -1812,7 +1812,7 @@ class PaymentDowntimeTest extends TestCase
 
     protected function activateDowntimes(string $status)
     {
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $this->makeRequestAndGetContent([
             'url'     => '/payments/downtimes/trigger/' . $status,
@@ -1825,7 +1825,7 @@ class PaymentDowntimeTest extends TestCase
     {
         unset($request['content']['signature']);
 
-        $secret = \Config::get('applications.dashboard.secret');
+        $secret = \Config::get('applications.merchant_dashboard.secret'); // todo verify this
 
         $signature = hash_hmac('sha256', json_encode($request['content']), $secret);
 

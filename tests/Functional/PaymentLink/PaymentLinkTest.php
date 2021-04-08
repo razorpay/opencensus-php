@@ -577,7 +577,7 @@ class PaymentLinkTest extends TestCase
 
         $this->fixtures->create('payment_link');
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $this->startTest();
 

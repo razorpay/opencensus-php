@@ -24,7 +24,7 @@ class LambdaTest extends TestCase
 
         $this->fixtures->create('terminal:shared_enach_rbl_terminal');
 
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
     }
 
     public function testENachRblAckBatchXmlUploadedFile()

@@ -181,7 +181,7 @@ class InvitationTest extends TestCase
 
         $testData['request']['url'] = '/invitations/' . $invitation['id'] .'/accept';
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
 
@@ -230,7 +230,7 @@ class InvitationTest extends TestCase
 
         $testData['request']['url'] = '/invitations/' . $invitation['id'] .'/accept';
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }
@@ -265,7 +265,7 @@ class InvitationTest extends TestCase
 
         $testData['request']['url'] = '/invitations/' . $invitation['id'] .'/accept';
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
 
@@ -299,7 +299,7 @@ class InvitationTest extends TestCase
 
         $testData['request']['url'] = '/invitations/' . $invitation['id'] .'/accept';
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }
@@ -325,7 +325,7 @@ class InvitationTest extends TestCase
 
         $testData['request']['url'] = '/invitations/' . $invitation['id'] .'/accept';
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }
@@ -348,7 +348,7 @@ class InvitationTest extends TestCase
 
         $testData['request']['url'] = '/invitations/' . $invitation['id'] .'/reject';
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
 
@@ -384,7 +384,7 @@ class InvitationTest extends TestCase
 
         $testData['request']['url'] = '/invitations/' . $invitation['id'] .'/hello';
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }
@@ -403,7 +403,7 @@ class InvitationTest extends TestCase
 
         $testData['request']['url'] = '/invitations/' . $invitation['id'] .'/accept';
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }
@@ -515,7 +515,7 @@ class InvitationTest extends TestCase
 
         $testData['request']['url'] = '/invitations/token/' . $invite->token;
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }
@@ -528,7 +528,7 @@ class InvitationTest extends TestCase
 
         $testData['request']['url'] = '/invitations/token/' . '2000000000000020000000000000200000000008';
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }
@@ -551,7 +551,7 @@ class InvitationTest extends TestCase
 
         $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $user['id'];
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $testData['request']['url'] = '/users/' . $user['id'];
 
@@ -578,7 +578,7 @@ class InvitationTest extends TestCase
 
         $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $user['id'];
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $testData['request']['url'] = '/users/' . $user['id'];
 
@@ -607,7 +607,7 @@ class InvitationTest extends TestCase
 
         $testData = & $this->testData[__FUNCTION__];
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $testData['request']['url'] = '/users/' . $user['id'];
 

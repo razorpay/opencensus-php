@@ -91,7 +91,7 @@ class TerminalSelectionTest extends TestCase
      */
     public function testMultipleMerchantForTerminal()
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->fixtures->create('terminal:multiple_netbanking_terminals');
 
@@ -165,7 +165,7 @@ class TerminalSelectionTest extends TestCase
 
     public function testMerchantAssign()
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->fixtures->create('terminal:multiple_netbanking_terminals');
 

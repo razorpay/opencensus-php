@@ -30,7 +30,7 @@ trait ReconTrait
 
     protected function reconcile(UploadedFile $uploadedFile, $gateway, $forceAuthorizePayments = [], $manualFile = false)
     {
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $input = [
             'manual'           => true,

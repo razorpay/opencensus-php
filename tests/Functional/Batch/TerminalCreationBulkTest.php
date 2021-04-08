@@ -174,7 +174,7 @@ class TerminalCreationBulkTest extends TestCase
 
     public function testBulkTerminalCreationForBatchService()
     {
-        $this->ba->appAuth();
+        $this->ba->batchAppAuth();
 
         $response = $this->startTest();
 
@@ -187,7 +187,7 @@ class TerminalCreationBulkTest extends TestCase
 
     public function testBulkTerminalCreationUpiAxis()
     {
-        $this->ba->appAuth();
+        $this->ba->batchAppAuth();
 
         $response = $this->startTest();
 
@@ -201,7 +201,7 @@ class TerminalCreationBulkTest extends TestCase
     // to test gateway access code field
     public function testBulkTerminalNetbankingCub()
     {
-        $this->ba->appAuth();
+        $this->ba->batchAppAuth();
 
         $response = $this->startTest();
 
@@ -215,7 +215,7 @@ class TerminalCreationBulkTest extends TestCase
     // to test paytm bulk creation
     public function testBulkTerminalPaytm()
     {
-        $this->ba->appAuth();
+        $this->ba->batchAppAuth();
 
         $response = $this->startTest();
 
@@ -232,7 +232,7 @@ class TerminalCreationBulkTest extends TestCase
     // to test terminal_password, terminal_password2, gateway_secure_secret, gateway_secure_secret2 fields
     public function testBulkTerminalAtom()
     {
-        $this->ba->appAuth();
+        $this->ba->batchAppAuth();
 
         $response = $this->startTest();
 
@@ -246,7 +246,7 @@ class TerminalCreationBulkTest extends TestCase
     // to test mc_mpan, visa_mpan, rupay_mpan and type[bhsrat_qr] fields
     public function testBulkTerminalWorldline()
     {
-        $this->ba->appAuth();
+        $this->ba->batchAppAuth();
 
         $response = $this->startTest();
 
@@ -261,7 +261,7 @@ class TerminalCreationBulkTest extends TestCase
 
     public function testBulkTerminalCreationInvalidInput()
     {
-        $this->ba->appAuth();
+        $this->ba->batchAppAuth();
 
         $terminal = $this->fixtures->create('terminal:shared_upi_axis_terminal');
 

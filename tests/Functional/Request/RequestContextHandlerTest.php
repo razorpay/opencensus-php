@@ -22,7 +22,7 @@ class  RequestContextHandlerTest extends TestCase
     public function testContextTrackIdGenerated()
     {
 
-        $this->ba->appAuth();
+        $this->ba->batchAppAuth();
 
         $headers = [
             'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
@@ -40,7 +40,7 @@ class  RequestContextHandlerTest extends TestCase
 
     public function testContextTraceIdGenerated()
     {
-        $this->ba->appAuth();
+        $this->ba->batchAppAuth();
 
         $headers = [
             'HTTP_X_Request_TraceId'    => '1234123412341234',

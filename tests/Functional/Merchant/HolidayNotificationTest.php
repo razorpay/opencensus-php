@@ -136,11 +136,11 @@ class HolidayNotificationTest extends TestCase
 
         if ($mode === Mode::LIVE)
         {
-            $this->ba->appAuthLive();
+            $this->ba->cronAuth($mode);
         }
         else if ($mode === Mode::TEST)
         {
-            $this->ba->appAuthTest();
+            $this->ba->cronAuth($mode);
         }
 
         $content = $this->makeRequestAndGetContent($request);

@@ -25,7 +25,7 @@ class OAuthMailTest extends OAuthTestCase
 
         parent::setUp();
 
-        $this->ba->appAuth();
+        $this->ba->authServiceAuth();
     }
 
     public function testOAuthAppAuthorizedMail()

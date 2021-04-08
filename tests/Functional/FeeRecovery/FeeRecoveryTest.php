@@ -979,7 +979,7 @@ class FeeRecoveryTest extends TestCase
 
     protected function updateFtaAndSource($payout, $status, $utr = '933815233814')
     {
-        $this->ba->appAuth();
+        $this->ba->ftsAuth();
 
         $request = [
             'method'  => 'POST',

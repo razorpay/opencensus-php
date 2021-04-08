@@ -1102,7 +1102,7 @@ class RefundTest extends TestCase
      */
     public function testRefundAuthorizedPaymentsOfPaidOrders()
     {
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         //
         // Order 1: - Created, Partial payment allowed
@@ -1659,29 +1659,34 @@ class RefundTest extends TestCase
     {
         $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
         Carbon::setTestNow($now);
+
         $this->fixtures->merchant->edit('10000000000000', ['channel' => Channel::ICICI]);
         $this->fixtures->merchant->activate();
-        $this->ba->privateAuth();
         $payment1 = $this->fixtures->create('payment:captured', ['gateway' => 'cybersource']);
         $rfnd1 = $this->fixtures->create('refund:from_payment', ['payment' => $payment1]);
+
         $refund  = $this->getLastEntity('refund', true);
         $transaction = $this->getLastEntity('transaction',true);
 
         $this->fixtures->transaction->edit($transaction['id'],['settled_at' => 1404986751]);
 
+        $this->ba->privateAuth();
+
         $setlResponse = $this->initiateSettlements(Channel::ICICI, NULL, true, ['10000000000000']);
 
-        $data = $this->testData[__FUNCTION__];
         $this->ba->proxyAuth();
+
+        $data = $this->testData[__FUNCTION__];
         $data['request']['url'] = '/refunds/' . $refund['id'] . '?expand[]=transaction.settlement';
+
         $response = $this->makeRequestAndGetContent($data['request']);
 
         $lastSettlement = $this->getLastEntity('settlement', true);
 
-        $this->assertEquals($response['transaction']['type'],"refund");
+        $this->assertEquals($response['transaction']['type'],'refund');
         $this->assertEquals($lastSettlement['id'],$response['transaction']['settlement_id']);
         $this->assertEquals($response['transaction']['settlement_id'], $response['transaction']['settlement']['id']);
-        $this->assertEquals($response['transaction']['settlement']['status'],"created");
+        $this->assertEquals($response['transaction']['settlement']['status'],'created');
     }
 
     protected function initiateSettlements($channel, $testTimeStamp = null, $useQueue = false, $merchantIds = [])
@@ -1713,7 +1718,7 @@ class RefundTest extends TestCase
             'content' => $content,
         ];
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -6573,7 +6578,7 @@ class RefundTest extends TestCase
 
     public function testScroogeRetryViaCustomFundTransfersBatch()
     {
-        $this->ba->appAuth();
+        $this->ba->batchAppAuth();
 
         $input = [
             "type" => "retry_refunds_to_ba",

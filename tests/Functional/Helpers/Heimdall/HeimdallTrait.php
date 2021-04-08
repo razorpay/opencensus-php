@@ -108,7 +108,7 @@ trait HeimdallTrait
             ],
         ];
 
-        $this->ba->appAuth('rzp_test', '', $this->hostName);
+        $this->ba->dashboardGuestAppAuth($this->hostName);
 
         $content = $this->makeRequestAndGetContent($request);
 

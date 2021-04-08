@@ -18,7 +18,7 @@ class CurrencyTest extends TestCase
 
     public function testCurrencyRatesLatest()
     {
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $this->startTest();
     }

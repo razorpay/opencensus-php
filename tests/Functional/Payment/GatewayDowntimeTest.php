@@ -879,7 +879,7 @@ class GatewayDowntimeTest extends TestCase
 
     protected function commonAlertUPIWebHookTestHandler($testName)
     {
-        $this->ba->appAuth();
+        $this->ba->vajraAuth();
 
         // create downtime
 
@@ -984,7 +984,7 @@ class GatewayDowntimeTest extends TestCase
 
     public function testVajraAlertUPIWebhookWithoutTerminalDowntime()
     {
-        $this->ba->appAuth();
+        $this->ba->vajraAuth();
 
         $this->fixtures->create("terminal:shared_upi_mindgate_terminal");
 
@@ -1062,7 +1062,7 @@ class GatewayDowntimeTest extends TestCase
             $this->testData[__FUNCTION__]['downtimeResponseWithTerminal']
         );
 
-        $this->ba->appAuth();
+        $this->ba->vajraAuth();
 
         $this->startTest();
 
@@ -1081,7 +1081,7 @@ class GatewayDowntimeTest extends TestCase
     {
         $this->createUpiTerminals();
 
-        $this->ba->appAuth();
+        $this->ba->vajraAuth();
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -1570,7 +1570,11 @@ class GatewayDowntimeTest extends TestCase
             'url' => '/router/gateway/downtimes'
         ];
 
-        $this->ba->appAuth();
+        $config = \Config::get('applications.smart_routing');
+        $pwd = $config['secret'];
+
+        $this->ba->appAuth('rzp_test', $pwd);
+
         $response = $this->makeRequestAndGetContent($downtimeGetRequest);
         $this->assertEquals( "upi", $response['gateway_downtimes'][0]['method']);
         $this->assertEquals( "upi_mindgate", $response['gateway_downtimes'][0]['gateway']);
@@ -1595,7 +1599,7 @@ class GatewayDowntimeTest extends TestCase
 
         $this->assertEquals( "upi", $response2['method']);
 
-        $this->ba->appAuth();
+        $this->ba->appAuth('rzp_test', $pwd);
         $response2 = $this->makeRequestAndGetContent($downtimeGetRequest);
         $this->assertEquals(2, sizeof($response2['gateway_downtimes']));
     }
@@ -1641,7 +1645,11 @@ class GatewayDowntimeTest extends TestCase
             'url' => '/router/gateway/downtimes'
         ];
 
-        $this->ba->appAuth();
+        $config = \Config::get('applications.smart_routing');
+        $pwd = $config['secret'];
+
+        $this->ba->appAuth('rzp_test', $pwd);
+
         $response = $this->makeRequestAndGetContent($downtimeGetRequest);
         $this->assertEquals( "card", $response['gateway_downtimes'][0]['method']);
         $this->assertEquals( "hitachi", $response['gateway_downtimes'][0]['gateway']);
@@ -1665,7 +1673,7 @@ class GatewayDowntimeTest extends TestCase
 
         $this->assertEquals( "card", $response['method']);
 
-        $this->ba->appAuth();
+        $this->ba->appAuth('rzp_test', $pwd);
         $response2 = $this->makeRequestAndGetContent($downtimeGetRequest);
         $this->assertEquals(2, sizeof($response2['gateway_downtimes']));
     }
@@ -1691,7 +1699,7 @@ class GatewayDowntimeTest extends TestCase
             'url' => '/gateway/downtimes/webhook/downtime_service'
         ];
 
-        $this->ba->appAuth();
+        $this->ba->downtimeServiceAuth();
 
         $response = $this->makeRequestAndGetContent($downtimeCreateRequest);
 
@@ -1740,7 +1748,7 @@ class GatewayDowntimeTest extends TestCase
             'url' => '/gateway/downtimes/webhook/downtime_service'
         ];
 
-        $this->ba->appAuth();
+        $this->ba->downtimeServiceAuth();
 
         $response = $this->makeRequestAndGetContent($downtimeResolveRequest);
 
@@ -1796,7 +1804,7 @@ class GatewayDowntimeTest extends TestCase
             'url' => '/gateway/downtimes/webhook/downtime_service'
         ];
 
-        $this->ba->appAuth();
+        $this->ba->downtimeServiceAuth();
 
         $response = $this->makeRequestAndGetContent($downtimeCreateRequest);
 
@@ -1849,7 +1857,7 @@ class GatewayDowntimeTest extends TestCase
     {
         unset($request['content']['signature']);
 
-        $secret = \Config::get('applications.dashboard.secret');
+        $secret = \Config::get('applications.merchant_dashboard.secret');
 
         $signature = hash_hmac('sha256', json_encode($request['content']), $secret);
 

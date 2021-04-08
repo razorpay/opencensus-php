@@ -17,8 +17,6 @@ class TerminalTest extends TestCase
         $this->testDataFilePath = __DIR__.'/helpers/TerminalTestData.php';
 
         parent::setUp();
-
-        $this->ba->appAuth();
     }
 
     public function testBilldeskGatewayOnSharedTerminals()

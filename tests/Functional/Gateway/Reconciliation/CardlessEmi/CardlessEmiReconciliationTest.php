@@ -37,7 +37,6 @@ class CardlessEmiReconciliationTest extends TestCase
 
         $this->gateway = Gateway::CARDLESS_EMI;
 
-        $this->ba->appAuth();
     }
 
     public function testPaymentReconciliation()

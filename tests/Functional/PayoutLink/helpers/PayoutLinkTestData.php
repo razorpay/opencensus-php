@@ -2088,7 +2088,6 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => ErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Invalid request payload',
                 ],
             ],

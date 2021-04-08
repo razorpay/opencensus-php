@@ -252,7 +252,7 @@ class OrgTest extends TestCase
 
     public function testGetOrgByHostname()
     {
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }

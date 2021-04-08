@@ -41,7 +41,7 @@ class AuthPolicyTest extends TestCase
 
     public function testAdminLogin()
     {
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $result = $this->startTest();
 
@@ -50,7 +50,7 @@ class AuthPolicyTest extends TestCase
 
     public function testAdminLoginWhenLocked()
     {
-        $this->ba->appAuth('rzp_test', '', $this->hostName);
+        $this->ba->dashboardGuestAppAuth($this->hostName);
 
         $admin = $this->fixtures->create('admin', [
             'email' => 'randomemail@rzp.com',
@@ -125,7 +125,7 @@ class AuthPolicyTest extends TestCase
 
     public function testMaxFailedLoginAttempts()
     {
-        $this->ba->appAuth('rzp_test', '', $this->hostName);
+        $this->ba->dashboardGuestAppAuth($this->hostName);
 
         $admin = $this->fixtures->create('admin', [
             'email' => 'randomemail@rzp.com',
@@ -238,7 +238,7 @@ class AuthPolicyTest extends TestCase
 
     public function testPasswordChangedAtPolicy()
     {
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $passwordChangedAt = Carbon::now()->subDays(40)->timestamp;
 
@@ -276,7 +276,7 @@ class AuthPolicyTest extends TestCase
 
     public function testSuperAdminLockOnMaxFailedAttempts()
     {
-        $this->ba->appAuth('rzp_test', '', $this->hostName);
+        $this->ba->dashboardGuestAppAuth($this->hostName);
 
         $admin = $this->fixtures->create('admin', [
             'email' => 'randomemail@rzp.com',

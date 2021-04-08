@@ -137,7 +137,7 @@ class TerminalOnboardingTest extends TestCase
      */
     public function testMerchantPricingPaypalPlanRule()
     {
-        $this->ba->appAuth();
+        $this->ba->terminalsAuth();
 
         $this->fixtures->create('pricing:standard_plan');
 
@@ -165,7 +165,7 @@ class TerminalOnboardingTest extends TestCase
 
     public function testMerchantPricingPaypalPlanRuleAlreadyExist()
     {
-        $this->ba->appAuth();
+        $this->ba->terminalsAuth();
 
         $this->fixtures->create('pricing:standard_plan');
 
@@ -183,7 +183,7 @@ class TerminalOnboardingTest extends TestCase
     // Terminals Service call api to enable PayPal on activation of PayPal onboarding terminal
     public function testEnablePaypalMethodInternal()
     {
-        $this->ba->appAuth();
+        $this->ba->terminalsAuth();
 
         $this->startTest();
 
@@ -193,7 +193,7 @@ class TerminalOnboardingTest extends TestCase
 
     public function testEnablePaypalMethodInternalWithWrongMerchantIdInInput()
     {
-        $this->ba->appAuth();
+        $this->ba->terminalsAuth();
 
         $this->testData[__FUNCTION__] = $this->testData['testEnablePaypalMethodInternal'];
 

@@ -43,8 +43,6 @@ class NetbankingSbiReconTest extends TestCase
     {
         $payments = $this->makeSbiNbPaymentSince();
 
-        $this->ba->appAuth();
-
         $fileContents = $this->generateReconFile();
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path'], 'razorpay.txt');
@@ -81,7 +79,6 @@ class NetbankingSbiReconTest extends TestCase
 
         $payment = $this->makePaymentsSince($createdAt, 1)[0];
 
-        $this->ba->appAuth();
 
         $this->mockReconContentFunction(
             function (& $content, $action = null)
@@ -108,7 +105,6 @@ class NetbankingSbiReconTest extends TestCase
 
         $payment = $this->makePaymentsSince($createdAt, 1)[0];
 
-        $this->ba->appAuth();
 
         $this->mockReconContentFunction(
             function (& $content, $action = null)
@@ -137,7 +133,6 @@ class NetbankingSbiReconTest extends TestCase
 
         $payment = $this->makePaymentsSince($createdAt, 1)[0];
 
-        $this->ba->appAuth();
 
         $fileContents = $this->generateReconFile();
 
@@ -180,7 +175,6 @@ class NetbankingSbiReconTest extends TestCase
         $refunds[] = $this->refundPayment('pay_' . $payments[0], 1000);
         $refunds[] = $this->refundPayment('pay_' . $payments[0], 1000);
 
-        $this->ba->appAuth();
 
         $this->mockReconContentFunction(
             function (& $content, $action = null) use ($payments, $refunds)
@@ -355,7 +349,6 @@ class NetbankingSbiReconTest extends TestCase
 
         $refund = $this->refundPayment('pay_' . $paymentId);
 
-        $this->ba->appAuth();
 
         $this->mockReconContentFunction(
             function (& $content, $action = null) use ($paymentId, $refund)
@@ -411,7 +404,6 @@ class NetbankingSbiReconTest extends TestCase
 
         $refund = $this->refundPayment('pay_' . $paymentId);
 
-        $this->ba->appAuth();
 
         $this->mockReconContentFunction(
             function (& $content, $action = null) use ($paymentId, $refund)

@@ -477,7 +477,7 @@ class GatewayDowntimeSorterTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['content']['message'] = json_encode($vajraWebhookMessage, true);
 
-        $this->ba->appAuth();
+        $this->ba->vajraAuth();
 
         $this->startTest();
 
@@ -493,7 +493,7 @@ class GatewayDowntimeSorterTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['content']['state'] = 'ok';
 
-        $this->ba->appAuth();
+        $this->ba->vajraAuth();
 
         $this->startTest();
 

@@ -166,7 +166,7 @@ trait FundAccountValidationTrait
 
     protected function updateFtaAndSource($payoutId, $status, $utr = '928337183',$bankStatusCode,$internalError)
     {
-        $this->ba->appAuth();
+        $this->ba->ftsAuth();
 
         $request = [
             'method'  => 'POST',

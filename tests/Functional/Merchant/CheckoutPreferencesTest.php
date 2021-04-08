@@ -94,8 +94,6 @@ class CheckoutPreferencesTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->appAuth();
-
         $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
         $this->fixtures->create('org:hdfc_org');

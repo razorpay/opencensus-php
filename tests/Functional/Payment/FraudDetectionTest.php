@@ -35,8 +35,6 @@ class FraudDetectionTest extends TestCase
 
     public function testBlockedBin()
     {
-        $this->ba->appAuth();
-
         $this->fixtures->create(
             'iin',
             [

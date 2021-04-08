@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Helpers\VirtualAccount;
 
 use RZP\Models\Order;
+use RZP\Models\VirtualAccount\Provider;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 
 trait VirtualAccountTrait
@@ -299,7 +300,20 @@ trait VirtualAccountTrait
             'content' => $paymentArray,
         ];
 
-        $this->ba->appAuth();
+        if ($paymentArray['payee_ifsc'] === Provider::IFSC[Provider::YESBANK])
+        {
+            $this->ba->yesbankAuth();
+        }
+        else if ($paymentArray['payee_ifsc'] === Provider::IFSC[Provider::ICICI])
+        {
+            $this->ba->iciciAuth();
+        }
+        else
+        {
+            $request['url'] = '/ecollect/validate/test';
+
+            $this->ba->proxyAuth();
+        }
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -330,7 +344,7 @@ trait VirtualAccountTrait
             'url'     => '/virtual_accounts/close',
         ];
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $response = $this->makeRequestAndGetContent($request);
 

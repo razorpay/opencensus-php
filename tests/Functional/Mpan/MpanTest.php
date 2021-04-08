@@ -127,7 +127,7 @@ class MpanTest extends TestCase
 
     public function testMpanBulk()
     {
-        $this->ba->appAuth();
+        $this->ba->batchAppAuth();
 
         $response = $this->startTest();
 
@@ -150,7 +150,7 @@ class MpanTest extends TestCase
 
     public function testMpanBulkInvalidMpan()
     {
-        $this->ba->appAuth();
+        $this->ba->batchAppAuth();
 
         $beforeCount = Db::table('mpan')
             ->count();

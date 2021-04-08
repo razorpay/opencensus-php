@@ -224,7 +224,7 @@ class NetbankingCsbGatewayTest extends TestCase
         $this->assertEquals(1, $refunds[2]['is_scrooge']);
 
         // gateway file generation route is an internal auth
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $data = $this->generateGatewayFile('csb', 'combined');
 

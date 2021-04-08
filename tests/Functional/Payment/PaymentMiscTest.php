@@ -141,7 +141,7 @@ class PaymentMiscTest extends TestCase
             'url' => '/gateway/cps/webhook/vajra'
         ];
 
-        $this->ba->appAuth();
+        $this->ba->vajraAuth();
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -158,7 +158,7 @@ class PaymentMiscTest extends TestCase
             'url' => '/gateway/cps/webhook/vajra'
         ];
 
-        $this->ba->appAuth();
+        $this->ba->vajraAuth();
 
         $response = $this->makeRequestAndGetContent($request);
 

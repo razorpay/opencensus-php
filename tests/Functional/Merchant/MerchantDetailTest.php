@@ -1470,7 +1470,7 @@ class MerchantDetailTest extends OAuthTestCase
     {
         $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
 
-        $this->ba->appAuth();
+        $this->ba->mtuLambdaAuth();
 
         $this->startTest();
 
@@ -1484,14 +1484,14 @@ class MerchantDetailTest extends OAuthTestCase
 
     public function testMerchantsMtuUpdateIdFailure()
     {
-        $this->ba->appAuth();
+        $this->ba->mtuLambdaAuth();
 
         $this->startTest();
     }
 
     public function testMerchantsMtuUpdateLiveTransactionFailure()
     {
-        $this->ba->appAuth();
+        $this->ba->mtuLambdaAuth();
 
         $this->startTest();
     }

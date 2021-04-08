@@ -50,8 +50,6 @@ class PayzappReconTest extends TestCase
     {
         $payments = $this->makePayzappPaymentSince();
 
-        $this->ba->appAuth();
-
         $fileContents = $this->generateReconFile();
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path'], $this->mimeType);
@@ -87,8 +85,6 @@ class PayzappReconTest extends TestCase
     public function testReconAmountValidationFailed()
     {
         $payment = $this->makePayzappPaymentSince(1)[0];
-
-        $this->ba->appAuth();
 
         $this->mockReconContentFunction(
             function(& $content, $action = null)
@@ -135,8 +131,6 @@ class PayzappReconTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $refund = $this->refundPayment($payment['id']);
-
-        $this->ba->appAuth();
 
         $this->mockReconContentFunction(
             function(& $content, $action = null)

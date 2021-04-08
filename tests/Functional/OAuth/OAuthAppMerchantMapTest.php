@@ -17,7 +17,7 @@ class OAuthAppMerchantMapTest extends OAuthTestCase
 
         parent::setUp();
 
-        $this->ba->appAuth();
+        $this->ba->authServiceAuth();
     }
 
     public function testOAuthAppMerchantMap()
@@ -129,6 +129,7 @@ class OAuthAppMerchantMapTest extends OAuthTestCase
     {
         $this->fixtures->create('merchant_access_map', ['id' => 'BWkmyutEXIuvvX']);
 
+        $this->ba->storkAppAuth();
         $this->startTest();
 
         $testData = $this->testData['testGetConnectedApplicationsWithServiceOwner'];

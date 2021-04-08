@@ -37,8 +37,6 @@ class UpiSbiGatewayReconTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->appAuth();
-
         $this->payment = $this->getDefaultUpiPaymentArray();
 
         $this->gateway = Payment\Gateway::UPI_SBI;
@@ -265,7 +263,7 @@ class UpiSbiGatewayReconTest extends TestCase
 
         $this->makeUpiSbiRefundsSince($createdAt);
 
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $entries[] = $this->mockRefundData();
 
@@ -299,7 +297,7 @@ class UpiSbiGatewayReconTest extends TestCase
 
         $this->makeUpiSbiRefundsSince($createdAt);
 
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $entry1 = $this->mockRefundData();
 

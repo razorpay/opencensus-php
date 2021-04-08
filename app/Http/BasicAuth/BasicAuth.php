@@ -1509,7 +1509,7 @@ class BasicAuth
 
     public function isDashboardApp()
     {
-        return (in_array($this->getInternalApp(), ['dashboard', 'dashboard_guest'], true) === true);
+        return (in_array($this->getInternalApp(), ['admin_dashboard', 'merchant_dashboard', 'dashboard', 'dashboard_guest',], true) === true);
     }
 
     public function isInternalApp(): bool

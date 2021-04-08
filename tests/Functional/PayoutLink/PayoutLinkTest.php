@@ -2198,7 +2198,7 @@ class PayoutLinkTest extends TestCase
     {
         Mail::fake();
 
-        $this->ba->appAuth();
+        $this->ba->payoutLinksAppAuth();
 
         $this->startTest();
 
@@ -2214,7 +2214,7 @@ class PayoutLinkTest extends TestCase
     {
         Mail::fake();
 
-        $this->ba->appAuth();
+        $this->ba->payoutLinksAppAuth();
 
         $this->startTest();
 
@@ -2230,7 +2230,7 @@ class PayoutLinkTest extends TestCase
     {
         Mail::fake();
 
-        $this->ba->appAuth();
+        $this->ba->payoutLinksAppAuth();
 
         $this->startTest();
 
@@ -2246,7 +2246,7 @@ class PayoutLinkTest extends TestCase
     {
         Mail::fake();
 
-        $this->ba->appAuth();
+        $this->ba->payoutLinksAppAuth();
 
         $this->startTest();
 

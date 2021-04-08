@@ -286,8 +286,8 @@ return [
     ],
 
     'privilegeRouteWithInternalAppAuth' => [
-        'id_settings_key' => 'dashboard',
-        'throttle_key'    => 'invoice_expire_bulk:test:privilege:0::dashboard::',
+        'id_settings_key' => 'merchant_dashboard',
+        'throttle_key'    => 'invoice_expire_bulk:test:privilege:0::merchant_dashboard::',
         'settings'        => [
             'global_id_1' => [
                 K::MAX_BUCKET_SIZE    => 200,

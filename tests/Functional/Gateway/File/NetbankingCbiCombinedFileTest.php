@@ -171,7 +171,7 @@ class NetbankingCbiCombinedFileTest extends TestCase
 
     protected function reconcile($gateway, $uploadedFile, $forceAuthorizePayments = [])
     {
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $input = [
             'manual'           => true,

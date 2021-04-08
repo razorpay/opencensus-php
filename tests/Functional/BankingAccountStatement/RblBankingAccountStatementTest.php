@@ -3489,7 +3489,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->setMozartMockResponse($mockedResponse);
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request = $this->testData['testRblAccountStatementCase1']['request'];
 
@@ -5228,7 +5228,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         Queue::fake();
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $this->startTest();
 

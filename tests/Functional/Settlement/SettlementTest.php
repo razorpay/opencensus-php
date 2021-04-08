@@ -1422,7 +1422,6 @@ class SettlementTest extends TestCase
 
     public function testSettlementIgnoredTxns()
     {
-
         $now = Carbon::create(2018, 8, 14, 10, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($now);

@@ -81,7 +81,7 @@ class UserTest extends TestCase
 
         $testData['request']['content']['merchant_invitation'] = $adminLead['token'];
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->mockHubSpotClient('trackSignupEvent');
 
@@ -100,7 +100,7 @@ class UserTest extends TestCase
 
     public function testRegisterWithOauthPayload()
     {
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }
@@ -108,7 +108,7 @@ class UserTest extends TestCase
     public function testSignupSourceShowingUpInMerchantAfterRegistration()
     {
         //Given
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         //When
         $this->withHeader(RequestHeader::X_REQUEST_ORIGIN, "https://x.razorpay.com");
@@ -133,7 +133,7 @@ class UserTest extends TestCase
             ]
         ];
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
         $this->startTest($testDataToReplace);
 
         $merchantAttribute = $this->getDbEntity('merchant_attribute');
@@ -171,7 +171,7 @@ class UserTest extends TestCase
 
         $testData['request']['content']['merchant_invitation'] = $adminLead['token'];
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->mockHubSpotClient('trackSignupEvent');
 
@@ -213,7 +213,7 @@ class UserTest extends TestCase
 
         $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }
@@ -250,7 +250,7 @@ class UserTest extends TestCase
 
         $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }
@@ -278,7 +278,7 @@ class UserTest extends TestCase
 
         $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }
@@ -297,7 +297,7 @@ class UserTest extends TestCase
 
         $testData['request']['content'] = $content;
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }
@@ -316,14 +316,14 @@ class UserTest extends TestCase
 
         $testData['request']['content'] = $content;
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }
 
     public function testOauthCreateWithUserRegisterPayload()
     {
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }
@@ -355,9 +355,10 @@ class UserTest extends TestCase
 
         $adminLead = $this->fixtures->create('admin_lead', ['admin_id' => $adminId, 'form_data' => $formData]);
 
-        $this->ba->appAuth();
 
         $this->mockHubSpotClient('trackSignupEvent', 3);
+
+        $this->ba->dashboardGuestAppAuth();
 
         $testData = $this->testData['testOauthCreateWithMissingIdToken'];
         $this->runRequestResponseFlow($testData);
@@ -390,7 +391,9 @@ class UserTest extends TestCase
             'email' => 'hello123@gmail.com',
             'password' => 'hello123']);
 
-        $this->ba->appAuth();
+        $testData = &$this->testData[__FUNCTION__];
+
+        $this->ba->dashboardGuestAppAuth();
 
         $testData = $this->testData[__FUNCTION__];
         $this->runRequestResponseFlow($testData);
@@ -430,7 +433,10 @@ class UserTest extends TestCase
             'email' => 'hello123@gmail.com',
             'password' => 'hello123']);
 
-        $this->ba->appAuth();
+        $testData = &$this->testData[__FUNCTION__];
+
+        $this->ba->dashboardGuestAppAuth();
+
 
         $this->startTest();
     }
@@ -439,7 +445,9 @@ class UserTest extends TestCase
     {
         $this->fixtures->create('user', ['id' => 'FL0nl7kME8j3Dd', 'email' => 'hello123@gmail.com', 'password' => 'hello123', 'confirm_token' => 'confirm_token']);
 
-        $this->ba->appAuth();
+        $testData =   &$this->testData[__FUNCTION__];
+
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
 
@@ -470,7 +478,7 @@ class UserTest extends TestCase
 
         $testData =   &$this->testData['testOauthLoginInvalidatePassword'];
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest($testData);
 
@@ -504,7 +512,9 @@ class UserTest extends TestCase
             'email' => 'hello123@gmail.com',
             'password' => 'hello123']);
 
-        $this->ba->appAuth();
+        $testData = &$this->testData[__FUNCTION__];
+
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }
@@ -516,7 +526,9 @@ class UserTest extends TestCase
             'email' => 'hello123@gmail.com',
             'password' => 'hello123']);
 
-        $this->ba->appAuth();
+        $testData = &$this->testData[__FUNCTION__];
+
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }
@@ -529,7 +541,9 @@ class UserTest extends TestCase
             'password'       => 'hello123',
             'oauth_provider' => "[\"google\"]"]);
 
-        $this->ba->appAuth();
+        $testData = &$this->testData[__FUNCTION__];
+
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
 
@@ -568,7 +582,7 @@ class UserTest extends TestCase
 
         $testData['request'] = $request;
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }
@@ -604,7 +618,7 @@ class UserTest extends TestCase
 
         $testData['request'] = $request;
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }
@@ -648,7 +662,7 @@ class UserTest extends TestCase
 
         $testData['request'] = $request;
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }
@@ -687,7 +701,7 @@ class UserTest extends TestCase
 
         $testData['request'] = $request;
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }
@@ -713,7 +727,7 @@ class UserTest extends TestCase
 
         $testData['request'] = $request;
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }
@@ -745,7 +759,7 @@ class UserTest extends TestCase
 
         $testData['request'] = $request;
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }
@@ -1028,7 +1042,7 @@ class UserTest extends TestCase
 
         $testData['request']['content'] = $content;
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }
@@ -1070,7 +1084,7 @@ class UserTest extends TestCase
 
         $testData['request']['content'] = $content;
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }
@@ -1095,7 +1109,7 @@ class UserTest extends TestCase
 
         $testData['request']['content'] = $content;
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }
@@ -1124,7 +1138,7 @@ class UserTest extends TestCase
             'id'        => $user->getId(),
         ];
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }
@@ -1150,7 +1164,7 @@ class UserTest extends TestCase
 
         $testData['request']['content'] = $content;
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }
@@ -1175,7 +1189,7 @@ class UserTest extends TestCase
 
         $testData['request']['content'] = $content;
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }
@@ -1200,7 +1214,7 @@ class UserTest extends TestCase
 
         $testData['request']['content'] = $content;
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
 
@@ -1323,7 +1337,7 @@ class UserTest extends TestCase
 
         $testData['request']['content'] = $content;
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }
@@ -1340,7 +1354,7 @@ class UserTest extends TestCase
 
         $testData['request']['content'] = $content;
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }
@@ -1396,7 +1410,7 @@ class UserTest extends TestCase
 
         $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $user['id'];
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }
@@ -1419,7 +1433,7 @@ class UserTest extends TestCase
 
         $testData['request']['server']['HTTP_X-Dashboard-User-Id'] = $user['id'];
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }
@@ -1636,7 +1650,7 @@ class UserTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Dashboard-User-Id'] = $user['id'];
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
 
@@ -1703,7 +1717,7 @@ class UserTest extends TestCase
 
         $this->fixtures->create('user', ['email' => 'resetpass@razorpay.com']);
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
 
@@ -1725,7 +1739,7 @@ class UserTest extends TestCase
     {
         Mail::fake();
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }
@@ -1767,7 +1781,7 @@ class UserTest extends TestCase
         $testData['request']['content']['password']                 = $password;
         $testData['request']['content']['password_confirmation']    = $password;
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest($testData);
 
@@ -1818,7 +1832,7 @@ class UserTest extends TestCase
         $testData['request']['content']['email']      = $user->getEmail();
         $testData['request']['content']['token']      = $user->getPasswordResetToken();
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest($testData);
 
@@ -1842,7 +1856,7 @@ class UserTest extends TestCase
         $testData['request']['content']['email']      = $user->getEmail();
         $testData['request']['content']['token']      = $user->getPasswordResetToken();
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
     }
@@ -1860,7 +1874,7 @@ class UserTest extends TestCase
         $testData['request']['content']['email']      = $user->getEmail();
         $testData['request']['content']['token']      = $user->getPasswordResetToken();
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->makeRequestAndGetContent($testData['request']);
 
@@ -2329,7 +2343,7 @@ class UserTest extends TestCase
 
         $merchantIds = $user->merchants()->get()->pluck('id')->toArray();
 
-        $this->ba->dashboardGuestAppAuth('rzp_test');
+        $this->ba->dashboardGuestAppAuth();
         $this->ba->setAppAuthHeaders(['X-Dashboard-User-Id' => $user['id']]);
 
         $response = $this->startTest();
@@ -2403,7 +2417,7 @@ class UserTest extends TestCase
                                                             $role = 'owner',
                                                             $mode = 'test');
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
 
@@ -2433,7 +2447,7 @@ class UserTest extends TestCase
                                                             $role = 'owner',
                                                             $mode = 'test');
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
 
@@ -2454,7 +2468,7 @@ class UserTest extends TestCase
                                                             $role = 'owner',
                                                             $mode = 'test');
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
 
@@ -2489,7 +2503,7 @@ class UserTest extends TestCase
 
         $testData['request'] = $request;
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $response = $this->startTest();
 
@@ -2524,7 +2538,7 @@ class UserTest extends TestCase
 
         $testData['request'] = $request;
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $response = $this->startTest();
 
@@ -2640,7 +2654,7 @@ class UserTest extends TestCase
 
         $this->fixtures->merchant->setRestricted(true, $merchantIds[0]);
 
-        $this->ba->dashboardGuestAppAuth('rzp_test');
+        $this->ba->dashboardGuestAppAuth();
         $this->ba->setAppAuthHeaders(['X-Dashboard-User-Id' => $user['id']]);
 
         $response = $this->startTest();
@@ -2760,7 +2774,7 @@ class UserTest extends TestCase
 
         $testData['request'] = $request;
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth();
 
         $response = $this->startTest();
 
@@ -2834,7 +2848,7 @@ class UserTest extends TestCase
             ]
         ];
 
-        $this->ba->appAuth();
+        $this->ba->thirdwatchAuth();
 
         $this->startTest();
     }

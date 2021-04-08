@@ -280,7 +280,7 @@ class ConfigTest extends TestCase
 
     public function testConfigInternalById()
     {
-        $this->ba->appAuth();
+        $this->ba->pgRouterAuth();
 
         $config = $this->fixtures->create('config');
 
@@ -293,7 +293,7 @@ class ConfigTest extends TestCase
 
     public function testConfigInternalList()
     {
-        $this->ba->appAuth();
+        $this->ba->pgRouterAuth();
 
         $this->fixtures->create('config', ['type' => 'late_auth']);
 
@@ -304,7 +304,7 @@ class ConfigTest extends TestCase
 
     public function testConfigInternalListByIsDefault()
     {
-        $this->ba->appAuth();
+        $this->ba->pgRouterAuth();
 
         $this->fixtures->create('config', ['type' => 'checkout', 'name' => 'Default Checkout', 'is_default' => true]);
         $this->fixtures->create('config', ['type' => 'checkout', 'name' => 'Checkout', 'is_default' => false]);

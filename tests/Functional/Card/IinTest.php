@@ -112,7 +112,7 @@ class IinTest extends TestCase
 
     public function testBatchServiceIinUpdate()
     {
-        $this->ba->appAuth();
+        $this->ba->batchAppAuth();
 
         $headers = [
             'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',

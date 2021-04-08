@@ -43,7 +43,7 @@ class VerifyTest extends TestCase
 
         $createdAt = Carbon::now()->subMinutes(3)->getTimestamp();
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $payment = $this->fixtures->create(
             'payment:netbanking_failed', ['created_at' => $createdAt]);
@@ -67,16 +67,6 @@ class VerifyTest extends TestCase
             'success' => 1,
             'filter'  => 'payments_failed'
         ];
-
-        $this->assertContent($content, $resultData);
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $this->assertContent($content, $resultData);
-
-        $this->ba->cronAuth();
-
-        $content = $this->makeRequestAndGetContent($request);
 
         $this->assertContent($content, $resultData);
 
@@ -1482,7 +1472,7 @@ class VerifyTest extends TestCase
     {
         $redisMock = $this->setupRedisMockWithOptions();
 
-        $this->ba->appAuth();
+        $this->ba->appAuth('rzp_test', \Config::get('applications.admin_dashboard')['secret']);
 
         $request = [
             'url'    => '/payments/verify/disabled/gateway',

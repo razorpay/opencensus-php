@@ -258,7 +258,19 @@ final class RequestContext
 
     public function isDashboard(): bool
     {
-        return ($this->internalAppName === 'dashboard');
+        return (($this->internalAppName === 'dashboard') or
+                ($this->isAdminDashboard() === true) or
+                ($this->isMerchantDashboard() === true));
+    }
+
+    public function isAdminDashboard(): bool
+    {
+        return ($this->internalAppName === 'admin_dashboard');
+    }
+
+    public function isMerchantDashboard(): bool
+    {
+        return ($this->internalAppName === 'merchant_dashboard');
     }
 
     public function isPublicAuth(): bool

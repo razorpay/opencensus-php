@@ -76,7 +76,7 @@ class NbplusNetbankingAusfCombinedFileTest extends NbPlusPaymentServiceNetbankin
 
         $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refundEntity1, $refundEntity2]);
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->startTest();
 

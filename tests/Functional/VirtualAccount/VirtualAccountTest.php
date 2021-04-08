@@ -1663,7 +1663,7 @@ class VirtualAccountTest extends TestCase
         $this->fixtures->merchant->disableMethod('10000000000000', 'bank_transfer');
 
         // Does /ecollect/validate (i.e. payment) api call.
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
         $this->startTest();
 
         // Various assertions follows on updated entities following a payment above.

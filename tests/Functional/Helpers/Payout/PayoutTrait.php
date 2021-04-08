@@ -611,7 +611,7 @@ trait PayoutTrait
 
     protected function updateFtaAndSource($payout_id, $status, $utr = '928337183')
     {
-        $this->ba->appAuth();
+        $this->ba->ftsAuth();
 
         $request = [
             'method'  => 'POST',

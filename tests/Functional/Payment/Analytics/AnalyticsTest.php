@@ -264,7 +264,7 @@ class AnalyticsTest extends TestCase
         $this->fixtures->create('terminal:vpa_shared_terminal_icici');
         $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
 
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
 
         $this->startTest();
 

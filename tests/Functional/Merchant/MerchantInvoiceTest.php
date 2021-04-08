@@ -173,7 +173,7 @@ class MerchantInvoiceTest extends TestCase
 
         Carbon::setTestNow();
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $currentTime = $oldDateTime = Carbon::create(2018, 2, 1, 12, 0, 0, Timezone::IST);
 
@@ -232,7 +232,7 @@ class MerchantInvoiceTest extends TestCase
 
         Carbon::setTestNow();
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request = [
             'url'     => '/merchants/invoice/create',
@@ -290,7 +290,7 @@ class MerchantInvoiceTest extends TestCase
             'captured_at' => Carbon::create(2018, 2, 1, 6, 0, 0, Timezone::IST)->timestamp
         ]);
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request = [
             'url'     => '/merchants/invoice/create',
@@ -448,7 +448,7 @@ class MerchantInvoiceTest extends TestCase
 
         Carbon::setTestNow();
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $currentTime = $oldDateTime = Carbon::create(2017, 8, 1, 12, 12, 0, 0, Timezone::IST);
 
@@ -531,7 +531,7 @@ class MerchantInvoiceTest extends TestCase
 
         Carbon::setTestNow();
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $currentTime = $oldDateTime = Carbon::create(2017, 8, 1, 12, 12, 0, 0, Timezone::IST);
 
@@ -589,7 +589,7 @@ class MerchantInvoiceTest extends TestCase
 
         Carbon::setTestNow();
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $currentTime = $oldDateTime = Carbon::create(2018, 2, 1, 12, 0, 0, Timezone::IST);
 
@@ -667,7 +667,7 @@ class MerchantInvoiceTest extends TestCase
 
         Carbon::setTestNow();
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $currentTime = $oldDateTime = Carbon::create(2018, 2, 1, 12, 0, 0, Timezone::IST);
 
@@ -775,7 +775,7 @@ class MerchantInvoiceTest extends TestCase
             'method'  => 'POST',
         ];
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -797,7 +797,7 @@ class MerchantInvoiceTest extends TestCase
             'method'  => 'POST',
         ];
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -1001,7 +1001,7 @@ class MerchantInvoiceTest extends TestCase
 
         $this->setupEInvoiceClientResponse(3, $this->testData[__FUNCTION__]);
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request = [
             'url'     => '/merchants/invoice/create',

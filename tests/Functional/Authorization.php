@@ -92,6 +92,21 @@ class Authorization
         $this->addAppAuthHeaders($hostName);
     }
 
+    public function terminalsAuth($mode = 'test')
+    {
+        $this->appAuth('rzp_' . $mode, \Config::get('applications.terminals_service')['secret']);
+    }
+
+    public function mtuLambdaAuth($mode = 'test')
+    {
+        $this->appAuth('rzp_' . $mode, \Config::get('applications.mtu_lambda')['secret']);
+    }
+
+    public function razorflowAuth($mode = 'test')
+    {
+        $this->appAuth('rzp_' . $mode, \Config::get('applications.razorflow')['secret']);
+    }
+
     public function subscriptionsAuth()
     {
         $this->appAuth('rzp_test_10000000000000', \Config::get('applications.subscriptions')['secret']);
@@ -120,9 +135,16 @@ class Authorization
         $this->proxy = false;
     }
 
-    public function dashboardGuestAppAuth()
+    public function dashboardGuestAppAuth($hostname = null, $mode = 'test')
     {
-        $this->appAuth('rzp_test', \Config::get('applications.dashboard_guest')['secret']);
+        $this->appAuth('rzp_' . $mode, \Config::get('applications.dashboard_guest')['secret'], $hostname);
+
+        $this->proxy = false;
+    }
+
+    public function dashboardInternalAppAuth($hostname = null, $mode = 'test')
+    {
+        $this->appAuth('rzp_' . $mode, \Config::get('applications.dashboard_internal')['secret'], $hostname);
 
         $this->proxy = false;
     }
@@ -139,6 +161,15 @@ class Authorization
         $this->appAuth('rzp_test_10000000000000', \Config::get('applications.payment_links')['secret']);
 
         $this->proxy = true;
+    }
+
+    public function pgRouterAuth($mode = 'test')
+    {
+        $pgRouterConfig = \Config::get('applications.pg_router');
+
+        $pwd = $pgRouterConfig['secret'];
+
+        $this->appAuth('rzp_' . $mode, $pwd);
     }
 
     public function mandateHQAuth()
@@ -163,6 +194,20 @@ class Authorization
         $this->proxy = false;
     }
 
+    public function payoutLinksAppAuth($mode = 'test')
+    {
+        $this->appAuth('rzp_' . $mode, \Config::get('applications.payout_links')['secret']);
+
+        $this->proxy = false;
+    }
+
+    public function workflowsAppAuth($mode = 'test')
+    {
+        $this->appAuth('rzp_' . $mode, \Config::get('applications.workflows')['secret']);
+
+        $this->proxy = false;
+    }
+
     public function storkAppAuth($user = 'rzp_test')
     {
         $this->appAuth($user, \Config::get('applications.stork')['secret']);
@@ -177,6 +222,16 @@ class Authorization
         $pwd = $config['secret'];
 
         $this->appAuth('rzp_' . $mode, $pwd);
+    }
+
+    public function vajraAuth($mode = 'test')
+    {
+        $this->appAuth('rzp_' . $mode, \Config::get('applications.vajra')['secret']);
+    }
+
+    public function downtimeServiceAuth($mode = 'test')
+    {
+        $this->appAuth('rzp_' . $mode, \Config::get('applications.downtime_service')['secret']);
     }
 
     public function careAppAuth()
@@ -221,7 +276,7 @@ class Authorization
 
     public function proxyAuth($user = 'rzp_test_10000000000000', $merchantUser = null)
     {
-        $this->appAuth($user);
+        $this->appAuth($user, \Config::get('applications.merchant_dashboard')['secret']);
 
         $this->proxy = true;
 
@@ -390,7 +445,7 @@ class Authorization
     {
         $appAuthCaller = 'appAuth' . studly_case($mode);
 
-        $this->$appAuthCaller();
+        $this->$appAuthCaller(\Config::get('applications.admin_dashboard')['secret']);
 
         $this->type = 'admin';
 
@@ -403,7 +458,7 @@ class Authorization
                                    $orgId = null,
                                    $hostName = null)
     {
-        $this->appAuth($user);
+        $this->appAuth($user, \Config::get('applications.admin_dashboard')['secret']);
 
         $this->addAdminProxyAuthHeaders($account, $orgId, $token, $hostName);
 
@@ -840,6 +895,15 @@ class Authorization
         $ftsConfig = \Config::get('applications.fts');
 
         $pwd = $ftsConfig['secret'];
+
+        $this->appAuth('rzp_' . $mode, $pwd);
+    }
+
+    public function thirdwatchAuth($mode = 'test')
+    {
+        $thirdwatchConfig = \Config::get('applications.thirdwatch');
+
+        $pwd = $thirdwatchConfig['secret'];
 
         $this->appAuth('rzp_' . $mode, $pwd);
     }

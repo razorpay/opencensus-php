@@ -2437,7 +2437,7 @@ class TerminalTest extends TestCase
 
     public function testTerminalFetchByIdAppAuth()
     {
-        $this->ba->appAuth();
+        $this->ba->terminalsAuth();
 
         $terminal   = $this->fixtures->create(
             'terminal');
@@ -2456,7 +2456,7 @@ class TerminalTest extends TestCase
 
     public function testTerminalFetchByIdAppAuthBadRequest()
     {
-        $this->ba->appAuth();
+        $this->ba->terminalsAuth();
 
         $id = 'Asdfgh';
 

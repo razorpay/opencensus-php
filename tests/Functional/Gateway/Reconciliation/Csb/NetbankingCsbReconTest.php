@@ -41,7 +41,7 @@ class NetbankingCsbReconTest extends TestCase
 
         $payments = $this->makePaymentsSince($createdAt);
 
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $response = $this->generateAndUploadReconFile();
 
@@ -90,7 +90,7 @@ class NetbankingCsbReconTest extends TestCase
 
         $payment = $this->makePaymentsSince($createdAt, 1)[0];
 
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $this->mockReconContentFunction(
             function (& $content, $action = null)
@@ -113,7 +113,7 @@ class NetbankingCsbReconTest extends TestCase
 
         $payment = $this->makePaymentsSince($createdAt, 1)[0];
 
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $this->mockReconContentFunction(
             function (& $content, $action = null)
@@ -136,7 +136,7 @@ class NetbankingCsbReconTest extends TestCase
 
         $payment = $this->makePaymentsSince($createdAt, 1)[0];
 
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $this->mockReconContentFunction(
             function (& $content, $action = null)

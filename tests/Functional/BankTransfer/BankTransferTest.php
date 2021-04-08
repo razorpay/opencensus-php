@@ -71,7 +71,6 @@ class BankTransferTest extends TestCase
 
         $this->bankAccount = $this->createVirtualAccount();
 
-        $this->ba->appAuth();
     }
 
     protected function createTerminals()
@@ -692,7 +691,7 @@ class BankTransferTest extends TestCase
 
         $request['content']['payee_ifsc'] = $ifsc;
 
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -751,7 +750,7 @@ class BankTransferTest extends TestCase
 
         $request['content']['payee_ifsc'] = $ifsc;
 
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -798,7 +797,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('captured', $payment['status']);
         $this->assertEquals(4000000, $payment['amount_refunded']);
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $this->fixtures->base->editEntity(
             'bank_account',
@@ -898,7 +897,7 @@ class BankTransferTest extends TestCase
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertEquals(Status::CREATED, $attempt['status']);
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request = [
             'method'  => 'POST',
@@ -1060,7 +1059,7 @@ class BankTransferTest extends TestCase
 
         $request['content']['payee_ifsc'] = $ifsc;
 
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
 
         $this->makeRequestAndGetContent($request);
 
@@ -1079,7 +1078,7 @@ class BankTransferTest extends TestCase
 
         $request['content']['payee_ifsc'] = $ifsc;
 
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
 
         $this->makeRequestAndGetContent($request);
 
@@ -1144,7 +1143,7 @@ class BankTransferTest extends TestCase
 
         $request['content']['payee_ifsc'] = $ifsc;
 
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
 
         $this->makeRequestAndGetContent($request);
 
@@ -1179,7 +1178,7 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferToReallyReallyLongPayeeAccount()
     {
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
 
         $this->startTest();
 
@@ -1262,7 +1261,7 @@ class BankTransferTest extends TestCase
 
         $request['content']['payee_ifsc'] = $ifsc;
 
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
 
         $this->makeRequestAndGetContent($request);
 
@@ -1299,7 +1298,7 @@ class BankTransferTest extends TestCase
 
         $request['content']['payee_ifsc'] = $ifsc;
 
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
 
         $this->makeRequestAndGetContent($request);
 
@@ -1463,7 +1462,8 @@ class BankTransferTest extends TestCase
         $request['content']['payee_ifsc'] = $ifsc;
         $request['content']['payer_ifsc'] = $ifsc;
         $request['content']['transaction_id'] = $utr;
-        $this->ba->appAuth();
+
+        $this->ba->proxyAuth();
         // Another payment, same UTR, made to a different account, from a different account
         $response = $this->makeRequestAndGetContent($request);
         $this->assertEquals(true, $response['valid']);
@@ -1648,7 +1648,7 @@ class BankTransferTest extends TestCase
 
         $data['request']['content']['payee_account'] = $accountNumber;
 
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
 
         $response = $this->makeRequestAndGetContent($data['request']);
 
@@ -1666,6 +1666,7 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferProcessFailure()
     {
+        $this->ba->proxyAuth();
         $this->startTest();
     }
 
@@ -1749,6 +1750,7 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferNotifyNonFailure()
     {
+        $this->ba->kotakAuth();
         $this->startTest();
     }
 
@@ -1889,6 +1891,7 @@ class BankTransferTest extends TestCase
 
         $request['content']['payee_ifsc'] = $ifsc;
 
+        $this->ba->proxyAuth();
         $response = $this->makeRequestAndGetContent($request);
 
         $bankTransfer =  $this->getLastEntity('bank_transfer', true);
@@ -2084,8 +2087,12 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferIcici()
     {
+        $accountNumber = $this->getIciciVaBankAccount();
+
+        $this->ba->batchAppAuth();
+
         $this->processOrNotifyBankTransfer(
-            $this->getIciciVaBankAccount(),
+            $accountNumber,
             'ICIC0000104',
             'awesome_utr'
         );
@@ -2101,8 +2108,12 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferIciciWithIfscAsBankCode()
     {
+        $accountNumber = $this->getIciciVaBankAccount();
+
+        $this->ba->batchAppAuth();
+
         $this->processOrNotifyBankTransfer(
-            $this->getIciciVaBankAccount(),
+            $accountNumber,
             'ICIC0000104',
             'awesome_utr'
         );
@@ -2120,8 +2131,12 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferIciciWithIfscAsInvalidBankCode()
     {
+        $accountNumber = $this->getIciciVaBankAccount();
+
+        $this->ba->batchAppAuth();
+
         $this->processOrNotifyBankTransfer(
-            $this->getIciciVaBankAccount(),
+            $accountNumber,
             'ICIC0000104',
             'awesome_utr'
         );
@@ -2134,11 +2149,11 @@ class BankTransferTest extends TestCase
     {
         Queue::fake();
 
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $entries = $this->getDefaultFileEntries();
 
-        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+        $this->createExcelFile($entries, 'filename', 'files/filestore');
 
         $this->startTest();
     }
@@ -2304,7 +2319,7 @@ class BankTransferTest extends TestCase
 
         $request['content']['payee_ifsc']     = $ifsc1;
 
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
 
         $response1 = $this->makeRequestAndGetContent($request);
 
@@ -2324,7 +2339,7 @@ class BankTransferTest extends TestCase
 
         $request['content']['payee_ifsc']    = $ifsc2;
 
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
 
         $response2 = $this->makeRequestAndGetContent($request);
 
@@ -2361,7 +2376,7 @@ class BankTransferTest extends TestCase
 
         $request['content']['payee_ifsc']     = $ifsc1;
 
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
 
         $response1 = $this->makeRequestAndGetContent($request);
 
@@ -2381,7 +2396,7 @@ class BankTransferTest extends TestCase
 
         $request['content']['payee_ifsc']    = $ifsc2;
 
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
 
         $response2 = $this->makeRequestAndGetContent($request);
 
@@ -2416,7 +2431,7 @@ class BankTransferTest extends TestCase
 
         $request['content']['payee_ifsc'] = $ifsc1;
 
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
 
         $response1 = $this->makeRequestAndGetContent($request);
 
@@ -2434,7 +2449,7 @@ class BankTransferTest extends TestCase
 
         $this->assertEquals($ifsc1, $bankTransfer1['payee_ifsc']);
 
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
 
         $request['content']['payee_ifsc'] = $ifsc2;
 
@@ -2523,6 +2538,7 @@ class BankTransferTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['content']['payee_account'] = $accountNumber;
 
+        $this->ba->proxyAuth();
         $this->startTest();
 
         // Created bank transfer is an expected one
@@ -2550,6 +2566,7 @@ class BankTransferTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['content']['payee_account'] = $accountNumber;
 
+        $this->ba->proxyAuth();
         $this->startTest();
 
         // Created bank transfer is an expected one
@@ -2611,11 +2628,15 @@ class BankTransferTest extends TestCase
 
     protected function processBankTransfer($accountNumber, $ifsc, $utr = null, $amount = null, $mode = 'test')
     {
+        $this->ba->proxyAuth();
+
         return $this->processOrNotifyBankTransfer($accountNumber, $ifsc, $utr, $amount, $mode);
     }
 
     protected function notifyBankTransfer($accountNumber, $ifsc, $utr = null)
     {
+        $this->ba->kotakAuth();
+
         return $this->processOrNotifyBankTransfer($accountNumber, $ifsc, $utr);
     }
 
@@ -2641,8 +2662,6 @@ class BankTransferTest extends TestCase
         $request['content']['transaction_id'] = $utr;
 
         $request['content']['amount'] = $amount ?: 50000;
-
-        $this->ba->appAuth();
 
         if ($mode === 'live')
         {
@@ -2904,7 +2923,7 @@ class BankTransferTest extends TestCase
 
         $this->fixtures->payment->edit($payment['id'], ['receiver_id' => null, 'receiver_type' => null]);
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $response = $this->makeRequestAndGetContent(
             [
@@ -2998,7 +3017,7 @@ class BankTransferTest extends TestCase
 
         $request['content']['amount'] = 50000;
 
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -3133,28 +3152,6 @@ class BankTransferTest extends TestCase
         return $bankAccount['account_number'];
     }
 
-    protected function createAndPutExcelFileInRequest(array $entries, string $callee)
-    {
-        $url = $this->writeToExcelFile($entries, 'file', 'files/batch');
-
-        $uploadedFile = $this->createUploadedFileForBatch($url);
-
-        $this->testData[$callee]['request']['files']['attachment-1'] = $uploadedFile;
-    }
-
-    public function createUploadedFileForBatch(string $url, $fileName = 'file.xlsx', $mime = null): UploadedFile
-    {
-        $mime = $mime ?? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-
-        return new UploadedFile(
-            $url,
-            $fileName,
-            $mime,
-            filesize($url),
-            null,
-            true);
-    }
-
     protected function getDefaultFileEntries()
     {
         return [
@@ -3185,7 +3182,7 @@ class BankTransferTest extends TestCase
         $request['content']['payee_account'] = $accountNumber;
         $request['content']['payee_ifsc']    = $ifsc;
 
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -3519,7 +3516,7 @@ class BankTransferTest extends TestCase
         $testData['request']['content']['payee_account'] = $bankAccount['account_number'];
         $testData['request']['content']['payee_ifsc']    = $bankAccount['ifsc'];
 
-        $this->ba->appAuth();
+        $this->ba->proxyAuth();
 
         $this->startTest($testData);
     }
@@ -3644,7 +3641,7 @@ class BankTransferTest extends TestCase
 
         $request['content']['transaction_id'] = $utr;
 
-        $this->ba->appAuth();
+        $this->ba->batchAppAuth();
 
         $response = $this->startTest();
 
@@ -3771,7 +3768,7 @@ class BankTransferTest extends TestCase
 
         $request['content']['transaction_id'] = $utr;
 
-        $this->ba->appAuth();
+        $this->ba->batchAppAuth();
 
         $response = $this->startTest();
 
@@ -3869,7 +3866,7 @@ class BankTransferTest extends TestCase
 
         $request['content']['transaction_id'] = $utr;
 
-        $this->ba->appAuth();
+        $this->ba->batchAppAuth();
 
         $response = $this->startTest();
 
@@ -3996,7 +3993,7 @@ class BankTransferTest extends TestCase
 
         $request['content']['transaction_id'] = $utr;
 
-        $this->ba->appAuth();
+        $this->ba->batchAppAuth();
 
         $response = $this->startTest();
 
@@ -4112,7 +4109,7 @@ class BankTransferTest extends TestCase
 
         $request['content']['transaction_id'] = $utr;
 
-        $this->ba->appAuth();
+        $this->ba->batchAppAuth();
 
         $response = $this->startTest();
 
@@ -4205,7 +4202,7 @@ class BankTransferTest extends TestCase
 
         $request['content']['transaction_id'] = $utr;
 
-        $this->ba->appAuth();
+        $this->ba->batchAppAuth();
 
         $response = $this->startTest();
 
@@ -4307,7 +4304,7 @@ class BankTransferTest extends TestCase
 
         $this->setupGlobalWhitelistPayerAccounts($whitelistedAccounts);
 
-        $this->ba->appAuth();
+        $this->ba->batchAppAuth();
 
         $response = $this->startTest();
 
@@ -4403,7 +4400,7 @@ class BankTransferTest extends TestCase
 
         $this->setupGlobalWhitelistPayerAccounts($whitelistedAccounts);
 
-        $this->ba->appAuth();
+        $this->ba->batchAppAuth();
 
         $response = $this->startTest();
 
@@ -4512,7 +4509,7 @@ class BankTransferTest extends TestCase
 
         $this->setupGlobalWhitelistPayerAccounts($whitelistedAccounts);
 
-        $this->ba->appAuth();
+        $this->ba->batchAppAuth();
 
         $response = $this->startTest();
 

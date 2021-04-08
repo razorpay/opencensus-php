@@ -28,7 +28,7 @@ class ScorecardTest extends TestCase
 
         $prEntities = $this->createPaymentEntities();
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $this->startTest();
 

@@ -155,7 +155,7 @@ trait HasRequestCases
         string $name = 'batch_create',
         string $path = 'batches'): Request
     {
-        $secret = \Config::get('applications.dashboard.secret');
+        $secret = \Config::get('applications.merchant_dashboard.secret');
         $server = [
             'HTTP_X-Dashboard-User-Id'   => self::$testUserId,
             // TODO: What is role of default user created in fixtures?
@@ -169,7 +169,7 @@ trait HasRequestCases
         string $name = 'invoice_expire_bulk',
         string $path = 'invoices/expire'): Request
     {
-        $secret = \Config::get('applications.dashboard.secret');
+        $secret = \Config::get('applications.merchant_dashboard.secret');
         return $this->mockRouteRequest($name, $path, [], ['rzp_test', $secret]);
     }
 
@@ -177,7 +177,7 @@ trait HasRequestCases
         string $name = 'dummy_route',
         string $path = 'dummy/route'): Request
     {
-        $secret = \Config::get('applications.dashboard.secret');
+        $secret = \Config::get('applications.admin_dashboard.secret');
         $server = [
             'HTTP_X-Org-Id'                => self::$testOrgId,
             'HTTP_X-Admin-Token'           => self::$testAdminToken,

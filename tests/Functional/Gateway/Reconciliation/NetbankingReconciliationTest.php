@@ -23,7 +23,6 @@ class NetbankingReconciliationTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->appAuth();
 
         $this->gateway = '';
     }
@@ -2184,7 +2183,7 @@ class NetbankingReconciliationTest extends TestCase
 
     protected function reconcile($gateway, $uploadedFile, $forceAuthorizePayments = [])
     {
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $input = [
             'manual'           => true,

@@ -40,7 +40,7 @@ class ScroogeFetchEntitiesTest extends TestCase
         $refund2 = $this->getLastEntity('refund', true);
 
         // Internal auth
-        $this->ba->appAuth('rzp_test','');
+        $this->ba->scroogeAuth();
 
         $subTestArgs = [
             'refund1' => $refund1,

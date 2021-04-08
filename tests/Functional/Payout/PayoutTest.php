@@ -4183,7 +4183,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->expectWebhookEventWithContents('payout.updated', $eventTestDataKey);
 
-        $this->ba->appAuth();
+        $this->ba->ftsAuth();
 
         $request = [
             'method'  => 'POST',
@@ -4238,7 +4238,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->dontExpectWebhookEvent('payout.updated');
 
-        $this->ba->appAuth();
+        $this->ba->ftsAuth();
 
         $request = [
             'method'  => 'POST',
@@ -5490,7 +5490,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->testData[__FUNCTION__] = $testData;
 
-        $this->ba->appAuth();
+        $this->ba->ftsAuth();
         $this->startTest();
 
         Mail::assertNotQueued(PayoutMail::class);
@@ -6100,7 +6100,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->testData[__FUNCTION__] = $testData;
 
-        $this->ba->appAuth();
+        $this->ba->ftsAuth();
 
         $this->startTest();
 
@@ -6130,7 +6130,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->testData[__FUNCTION__] = $testData;
 
-        $this->ba->appAuth();
+        $this->ba->ftsAuth();
 
         $this->startTest();
 
@@ -7130,7 +7130,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->testData[__FUNCTION__] = $testData;
 
-        $this->ba->appAuth();
+        $this->ba->ftsAuth();
         $this->startTest();
 
         $counter = $this->getDbEntities('counter',
@@ -7183,7 +7183,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->testData[__FUNCTION__] = $testData;
 
-        $this->ba->appAuth();
+        $this->ba->ftsAuth();
         $this->startTest();
 
         $counter = $this->getDbEntities('counter',
@@ -7236,7 +7236,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->testData[__FUNCTION__] = $testData;
 
-        $this->ba->appAuth();
+        $this->ba->ftsAuth();
         $this->startTest();
 
         $counter = $this->getDbEntities('counter',
@@ -7289,7 +7289,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->testData[__FUNCTION__] = $testData;
 
-        $this->ba->appAuth();
+        $this->ba->ftsAuth();
         $this->startTest();
 
         $counter = $this->getDbEntities('counter',
@@ -7342,7 +7342,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->testData[__FUNCTION__] = $testData;
 
-        $this->ba->appAuth();
+        $this->ba->ftsAuth();
         $this->startTest();
 
         $counter = $this->getDbEntities('counter',
@@ -7737,7 +7737,7 @@ class PayoutTest extends OAuthTestCase
 
         Carbon::setTestNow($newTime);
 
-        $this->ba->appAuth();
+        $this->ba->ftsAuth();
         $this->startTest();
 
         $counter = $this->getDbEntities('counter',
@@ -8612,7 +8612,7 @@ class PayoutTest extends OAuthTestCase
 
         $testData['request']['content']['source_id'] = $payout->getId();
 
-        $this->ba->appAuth();
+        $this->ba->ftsAuth();
         $this->startTest();
 
         $payout->reload();

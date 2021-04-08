@@ -46,8 +46,6 @@ class MpesaReconTest extends TestCase
     {
         $payments = $this->makeMpesaPaymentSince();
 
-        $this->ba->appAuth();
-
         $fileContents = $this->generateReconFile();
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
@@ -88,8 +86,6 @@ class MpesaReconTest extends TestCase
     {
         $payment = $this->makeMpesaPaymentSince(1)[0];
 
-        $this->ba->appAuth();
-
         $this->mockReconContentFunction(
             function(& $content, $action = null)
             {
@@ -129,8 +125,6 @@ class MpesaReconTest extends TestCase
     public function testReconPaymentIdAbsent()
     {
         $payment = $this->makeMpesaPaymentSince(1)[0];
-
-        $this->ba->appAuth();
 
         $this->mockReconContentFunction(
             function(& $content, $action = null)
@@ -175,8 +169,6 @@ class MpesaReconTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $refund = $this->refundPayment($payment['id']);
-
-        $this->ba->appAuth();
 
         $this->mockReconContentFunction(
             function(& $content, $action = null)

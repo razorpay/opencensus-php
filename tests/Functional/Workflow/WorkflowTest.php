@@ -270,7 +270,7 @@ class WorkflowTest extends TestCase
             ]);
 
         // Approve with Owner role user
-        $this->ba->appAuthLive();
+        $this->ba->workflowsAppAuth('live');
 
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/wf-service/state/callback';

@@ -730,7 +730,7 @@ return [
 
     'testPayVirutalAccountOnBankingBalance' => [
         'request' => [
-            'url'     => '/ecollect/validate',
+            'url'     => '/ecollect/validate/test',
             'method'  => 'post',
             'content' => [
                 'payer_account'  => '7654321234567',

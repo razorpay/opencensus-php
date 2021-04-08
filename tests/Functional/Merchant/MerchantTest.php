@@ -158,8 +158,6 @@ class MerchantTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->appAuth();
-
         $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
         $this->fixtures->create('org:hdfc_org');
@@ -4700,7 +4698,7 @@ class MerchantTest extends TestCase
 
     public function testGetKeySecret()
     {
-        $this->ba->appAuth();
+        $this->ba->expressAuth();
 
         $this->startTest();
     }
@@ -4960,7 +4958,7 @@ class MerchantTest extends TestCase
                 'contact_mobile'                => '124098598978',
             ]);
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request = [
             'url'       => '/merchants/beneficiary/file/bank/kotak',
@@ -5170,7 +5168,6 @@ class MerchantTest extends TestCase
 
         $this->merchantAssignPricingPlan('1hDYlICobzOCYt', $merchant['id']);
 
-        $this->ba->appAuth();
 
         $this->assertArraySelectiveEquals($merchant, $content);
 
@@ -5354,17 +5351,16 @@ class MerchantTest extends TestCase
 
     public function testScheduleTaskMigration()
     {
-        $this->ba->appAuth();
-
         $merchant = $this->createMerchant();
 
+        $this->ba->cronAuth();
         $this->startTest();
 
         $scheduleTask = $this->getLastEntity('schedule_task', true);
 
         $this->assertEquals(null, $scheduleTask['method']);
 
-        $this->ba->appAuthLive();
+        $this->ba->dashboardInternalAppAuth(null, 'live');
 
         $scheduleTask = $this->getLastEntity('schedule_task', true);
 
@@ -6058,6 +6054,8 @@ class MerchantTest extends TestCase
                 'name'          => 'marketplace'
             ]);
 
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
@@ -6095,6 +6093,8 @@ class MerchantTest extends TestCase
             'entity_type' => 'application',
         ]);
 
+        $this->ba->adminAuth();
+
         $this->startTest();
     }
 
@@ -6126,6 +6126,7 @@ class MerchantTest extends TestCase
                 'tag_slug'          => 'ref-parentaccount1',
             ]);
 
+        $this->ba->adminAuth();
         $this->startTest();
     }
 
@@ -6154,7 +6155,7 @@ class MerchantTest extends TestCase
                 'contact_mobile'                => '124098598978',
             ]);
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request = [
             'url'       => '/merchants/beneficiary/file/bank/axis',
@@ -6201,7 +6202,7 @@ class MerchantTest extends TestCase
                 'contact_mobile'                => '124098598978',
             ]);
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $request = [
             'url'       => '/merchants/beneficiary/file/bank/axis',
@@ -8150,7 +8151,7 @@ class MerchantTest extends TestCase
     // Internal merchant_details route return merchant and merchant_details in response
     public function testInternalGetMerchant()
     {
-        $this->ba->appAuth();
+        $this->ba->terminalsAuth();
 
         $this->fixtures->create('merchant', ['id'=>'100ghi000ghi00']);
 
@@ -8166,7 +8167,7 @@ class MerchantTest extends TestCase
     // Internal merchant_details route return merchant name and website
     public function testInternalGetMerchantBulk()
     {
-        $this->ba->appAuth();
+        $this->ba->dashboardInternalAppAuth();
 
         $this->fixtures->create('merchant', ['id' => '100ghi000ghi00', "name" => 'test0']);
         $this->fixtures->create('merchant', ['id' => '100ghi000ghi01', "name" => 'test1']);
@@ -8179,7 +8180,7 @@ class MerchantTest extends TestCase
     {
         Mail::fake();
 
-        $this->ba->appAuth();
+        $this->ba->terminalsAuth();
 
         $this->startTest();
 
@@ -8197,14 +8198,14 @@ class MerchantTest extends TestCase
 
     public function testInternalMerchantSendEmailInvalidType()
     {
-        $this->ba->appAuth();
+        $this->ba->terminalsAuth();
 
         $this->startTest();
     }
 
     public function testInternalMerchantSendEmailInstrumentNameMissing()
     {
-        $this->ba->appAuth();
+        $this->ba->terminalsAuth();
 
         $this->startTest();
     }
@@ -8873,14 +8874,14 @@ class MerchantTest extends TestCase
 
     public function testGetPreferencesInternal()
     {
-        $this->ba->appAuth();
+        $this->ba->terminalsAuth();
 
         $this->startTest();
     }
 
     public function testGetAutoDisabledMethodsForMerchant()
     {
-        $this->ba->appAuth();
+        $this->ba->terminalsAuth();
 
         $this->startTest();
     }
@@ -8893,7 +8894,7 @@ class MerchantTest extends TestCase
             MerchantEntity::CATEGORY2         => 'mutual_funds',
         ]);
 
-        $this->ba->appAuth();
+        $this->ba->terminalsAuth();
 
         $this->startTest();
     }
@@ -8905,7 +8906,7 @@ class MerchantTest extends TestCase
             MerchantEntity::CATEGORY2         => 'cryptocurrency',
         ]);
 
-        $this->ba->appAuth();
+        $this->ba->terminalsAuth();
 
         $this->startTest();
     }
@@ -8917,7 +8918,7 @@ class MerchantTest extends TestCase
             MerchantEntity::CATEGORY2         => 'random',
         ]);
 
-        $this->ba->appAuth();
+        $this->ba->terminalsAuth();
 
         $this->startTest();
     }

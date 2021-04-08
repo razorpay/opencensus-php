@@ -14,8 +14,6 @@ class KeyTest extends TestCase
         $this->testDataFilePath = __DIR__.'/helpers/KeyData.php';
 
         parent::setUp();
-
-        $this->ba->appAuth();
     }
 
     /**

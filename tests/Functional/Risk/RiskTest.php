@@ -17,7 +17,8 @@ class RiskTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->appAuth();
+        // Note: Routes have been removed and test cases have been skipped
+        // $this->ba->appAuth();
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
     }

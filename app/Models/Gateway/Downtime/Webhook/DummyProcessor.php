@@ -60,6 +60,6 @@ class DummyProcessor implements ProcessorInterface
      */
     protected function getSecret(): string
     {
-        return Config::get('applications.dashboard.secret');
+        return Config::get('applications.merchant_dashboard.secret');
     }
 }

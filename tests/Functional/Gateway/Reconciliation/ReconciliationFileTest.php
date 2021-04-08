@@ -1011,7 +1011,7 @@ class ReconciliationFileTest extends TestCase
 
     public function testVirtualAccYesBankReconFile()
     {
-        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal');
+        $this->fixtures->terminal->createBankAccountTerminal();
 
         $this->fixtures->merchant->addFeatures(['virtual_accounts']);
 
@@ -1055,7 +1055,7 @@ class ReconciliationFileTest extends TestCase
     // MIS row with trans_status as 'PENDING CREDIT'
     public function testVirtualAccYesBankPendingCreditReconFile()
     {
-        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal');
+        $this->fixtures->terminal->createBankAccountTerminal();
 
         $this->fixtures->merchant->addFeatures(['virtual_accounts']);
 
@@ -1101,7 +1101,7 @@ class ReconciliationFileTest extends TestCase
 
     public function testVirtualAccYesBankReconFileWithWrongValues()
     {
-        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal');
+        $this->fixtures->terminal->createBankAccountTerminal();
 
         $this->fixtures->merchant->addFeatures(['virtual_accounts']);
 
@@ -1167,7 +1167,7 @@ class ReconciliationFileTest extends TestCase
      */
     public function testVirtualAccRblReconFile()
     {
-        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal');
+        $this->fixtures->terminal->createBankAccountTerminal();
 
         $this->fixtures->merchant->addFeatures(['virtual_accounts']);
 
@@ -2509,7 +2509,7 @@ class ReconciliationFileTest extends TestCase
                                    $manualFile = false,
                                    $response = null)
     {
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $testData = $this->testData['reconciliate'];
 

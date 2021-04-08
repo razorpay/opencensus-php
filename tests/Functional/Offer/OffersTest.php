@@ -404,7 +404,7 @@ class OffersTest extends TestCase
     {
         $offer = $this->fixtures->create('offer:expired');
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $this->testData[__FUNCTION__]['response']['content'] = [$offer->getPublicId()];
 

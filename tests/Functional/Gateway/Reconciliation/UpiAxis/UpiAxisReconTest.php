@@ -246,7 +246,7 @@ class UpiAxisReconTest extends TestCase
 
         $this->makeUpiAxisRefundsSince($createdAt);
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $entries[] = $this->mockRefundData();
 
@@ -288,7 +288,7 @@ class UpiAxisReconTest extends TestCase
     {
         $this->payment = $this->doUpiAxisPayment();
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $refund1 = $this->refundPayment('pay_' . $this->payment['id'], 10000);
         $refund2 = $this->refundPayment('pay_' . $this->payment['id'], 20000);

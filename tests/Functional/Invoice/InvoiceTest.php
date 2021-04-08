@@ -2757,7 +2757,7 @@ class InvoiceTest extends TestCase
 
         $this->refundAuthorizedPayment($payment->getPublicId());
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $this->startTest();
     }
@@ -2816,7 +2816,7 @@ class InvoiceTest extends TestCase
 
         $this->expectWebhookEventWithContents('invoice.expired', 'testInvoiceExpiredWebhookEventData');
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $this->startTest();
     }

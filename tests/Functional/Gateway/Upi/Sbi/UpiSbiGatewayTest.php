@@ -1223,7 +1223,7 @@ class UpiSbiGatewayTest extends TestCase
 
     protected function generateRefundsExcelForSbiUpi($date = false)
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $request = [
             'url' => '/gateway/files',

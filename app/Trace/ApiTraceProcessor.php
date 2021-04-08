@@ -174,6 +174,8 @@ class ApiTraceProcessor
         if ($this->app['basicauth']->isDashboardApp() === true)
         {
             $record['request'] += $this->app['basicauth']->getDashboardHeaders();
+
+            $record['request']['dashboard_app'] = $this->app['basicauth']->getInternalApp() ?? '';
         }
     }
 

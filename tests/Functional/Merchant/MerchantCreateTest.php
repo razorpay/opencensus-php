@@ -53,7 +53,6 @@ class MerchantCreateTest extends TestCase
 
         $this->app->make(Factory::class)->load($factoryPath);
 
-        $this->ba->appAuth();
     }
 
     public function testCreateMerchantWithDuplicateEmail()
@@ -176,7 +175,6 @@ class MerchantCreateTest extends TestCase
 
     protected function checkMethods()
     {
-        $this->ba->appAuthTest();
 
         $methods = $this->getEntityById('methods', '1X4hRFHFx4UiXt', true);
 
@@ -212,7 +210,6 @@ class MerchantCreateTest extends TestCase
 
     protected function checkMerchantDetails()
     {
-        $this->ba->appAuthTest();
 
         $merchantDetails = $this->getEntityById('merchant_detail', '1X4hRFHFx4UiXt', true);
 
@@ -221,8 +218,6 @@ class MerchantCreateTest extends TestCase
 
     protected function checkSettlementSchedule($merchant)
     {
-        $this->ba->appAuthTest();
-
         $scheduledTasks = $this->getEntities('schedule_task', ['count' => 2 ], true);
 
         foreach ($scheduledTasks['items'] as $scheduledTask)
@@ -1135,8 +1130,6 @@ class MerchantCreateTest extends TestCase
         $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
 
         $linkedAcc = $this->startTest();
-
-        $this->ba->appAuthTest();
 
         // Check schedule entries for new linked account
         $scheduleTasks = $this->getEntities('schedule_task', [

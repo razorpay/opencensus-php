@@ -41,7 +41,7 @@ class NetbankingAirtelReconTest extends TestCase
     {
         $payments = $this->makeAirtelPaymentSince();
 
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $fileContents = $this->generateReconFile();
 
@@ -77,7 +77,7 @@ class NetbankingAirtelReconTest extends TestCase
     {
         $payments = $this->makeAirtelPaymentSince();
 
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $fileContents = $this->generateReconFile();
 
@@ -139,7 +139,7 @@ class NetbankingAirtelReconTest extends TestCase
     {
         $payment = $this->makeAirtelPaymentSince(1)[0];
 
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $this->mockReconContentFunction(
             function(& $content, $action = null)
@@ -183,7 +183,7 @@ class NetbankingAirtelReconTest extends TestCase
     {
         $payment = $this->makeAirtelPaymentSince(1)[0];
 
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $this->mockReconContentFunction(
             function(& $content, $action = null)
@@ -229,7 +229,7 @@ class NetbankingAirtelReconTest extends TestCase
 
         $this->refundPayment($payment['id']);
 
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $this->mockReconContentFunction(
             function(& $content, $action = null)

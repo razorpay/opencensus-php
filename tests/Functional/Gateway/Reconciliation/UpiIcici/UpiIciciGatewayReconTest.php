@@ -55,7 +55,7 @@ class UpiIciciGatewayReconTest extends TestCase
 
         $this->makeUpiIciciRefundsSince($createdAt);
 
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $fileContents = $this->generateReconFile(['type' => 'refund']);
 
@@ -94,7 +94,7 @@ class UpiIciciGatewayReconTest extends TestCase
 
         $this->makeUpiIciciRefundsSince($createdAt);
 
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $this->mockReconContentFunction(
             function (& $content, $action = null)
@@ -140,7 +140,7 @@ class UpiIciciGatewayReconTest extends TestCase
 
         list($refunds, $payments) = $this->makeUpiIciciRefundsSince($createdAt);
 
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $this->mockReconContentFunction(
             function (& $content, $action = null)
@@ -197,7 +197,7 @@ class UpiIciciGatewayReconTest extends TestCase
 
         $this->makeUpiIciciPaymentsSince($createdAt, $rrn, 1);
 
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $fileContents = $this->generateReconFile(['type' => 'payment']);
 
@@ -249,7 +249,7 @@ class UpiIciciGatewayReconTest extends TestCase
         // We make just one payment
         $this->makeUpiIciciPaymentsSince($createdAt, $rrn, 1);
 
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $this->mockReconContentFunction(
             function(& $content, $action = null)
@@ -458,7 +458,7 @@ class UpiIciciGatewayReconTest extends TestCase
         // We make just one payment
         $this->makeUpiIciciPaymentsSince($createdAt, $rrn, 1);
 
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $this->mockReconContentFunction(
             function(& $content, $action = null)
@@ -484,7 +484,7 @@ class UpiIciciGatewayReconTest extends TestCase
         // We make just one payment
         $this->makeUpiIciciPaymentsSince($createdAt, $rrn, 1);
 
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $this->mockReconContentFunction(
             function(& $content, $action = null)
@@ -923,7 +923,7 @@ class UpiIciciGatewayReconTest extends TestCase
 
     private function reconcileWithMock(callable $closure = null)
     {
-        $this->ba->appAuth();
+        $this->ba->h2hAuth();
 
         $this->mockReconContentFunction(
             function(& $content, $action = null) use ($closure)

@@ -444,7 +444,7 @@ class AdminTest extends TestCase
             'updated_at' => $now_minus_40->timestamp,
         ]);
 
-        $this->ba->appAuth();
+        $this->ba->cronAuth();
 
         $this->startTest();
     }
@@ -509,7 +509,7 @@ class AdminTest extends TestCase
 
     public function testLoginUserDoesNotExist()
     {
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth($this->hostName);
 
         $this->startTest();
     }
@@ -523,9 +523,10 @@ class AdminTest extends TestCase
             'oauth_provider_id'  => 'test oauth provider id',
         ]);
 
+        $this->ba->dashboardInternalAppAuth();
+
         $this->app['config']->set('oauth.admin_google_oauth_client_mock', true);
 
-        $this->ba->appAuth();
 
         $this->startTest();
     }
@@ -541,7 +542,7 @@ class AdminTest extends TestCase
 
         $this->app['config']->set('oauth.admin_google_oauth_client_mock', false);
 
-        $this->ba->appAuth();
+        $this->ba->dashboardInternalAppAuth();
 
         $this->startTest();
     }
@@ -590,7 +591,7 @@ class AdminTest extends TestCase
         $admin = $this->fixtures->create(
             'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
 
-        $this->ba->appAuth('rzp_test', '', $this->hostName);
+        $this->ba->dashboardGuestAppAuth($this->hostName);
 
         $this->startTest();
 
@@ -611,7 +612,7 @@ class AdminTest extends TestCase
         $this->fixtures->create(
             'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth($this->hostName);
 
         $this->startTest();
     }
@@ -621,7 +622,7 @@ class AdminTest extends TestCase
         $this->fixtures->create(
             'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
 
-        $this->ba->appAuth();
+        $this->ba->dashboardGuestAppAuth($this->hostName);
 
         $this->startTest();
     }
@@ -641,7 +642,7 @@ class AdminTest extends TestCase
 
         $newPassword = $this->testData[__FUNCTION__]['request']['content']['password'];
 
-        $this->ba->appAuth('rzp_test', '', $this->hostName);
+        $this->ba->dashboardGuestAppAuth($this->hostName);
 
         $this->startTest();
 
@@ -674,7 +675,7 @@ class AdminTest extends TestCase
 
         $newPassword = $this->testData[__FUNCTION__]['request']['content']['password'];
 
-        $this->ba->appAuth('rzp_test', '', $this->hostName);
+        $this->ba->dashboardGuestAppAuth($this->hostName);
 
         $this->startTest();
 
@@ -703,7 +704,7 @@ class AdminTest extends TestCase
 
         $this->adminForgotPassword($admin->getEmail());
 
-        $this->ba->appAuth('rzp_test', '', $this->hostName);
+        $this->ba->dashboardGuestAppAuth($this->hostName);
 
         $this->startTest();
 
@@ -723,7 +724,7 @@ class AdminTest extends TestCase
 
         $this->adminForgotPassword($admin->getEmail());
 
-        $this->ba->appAuth('rzp_test', '', $this->hostName);
+        $this->ba->dashboardGuestAppAuth($this->hostName);
 
         $this->startTest();
 
@@ -747,7 +748,7 @@ class AdminTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['content']['token'] = $token;
 
-        $this->ba->appAuth('rzp_test', '', $this->hostName);
+        $this->ba->dashboardGuestAppAuth($this->hostName);
 
         $this->startTest();
 
@@ -774,7 +775,7 @@ class AdminTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['content']['token'] = $token;
 
-        $this->ba->appAuth('rzp_test', '', $this->hostName);
+        $this->ba->dashboardGuestAppAuth($this->hostName);
 
         $this->startTest();
 
@@ -804,7 +805,7 @@ class AdminTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['content']['token'] = $token;
 
-        $this->ba->appAuth('rzp_test', '', $this->hostName);
+        $this->ba->dashboardGuestAppAuth($this->hostName);
 
         $this->startTest();
 
@@ -829,7 +830,7 @@ class AdminTest extends TestCase
             'hostname'      => $hostName,
         ]);
 
-        $this->ba->appAuth('rzp_test', '', $hostName);
+        $this->ba->dashboardGuestAppAuth($hostName);
 
         $this->startTest();
 
