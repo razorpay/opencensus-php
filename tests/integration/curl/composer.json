@@ -2,7 +2,7 @@
     "require": {
         "php": "^7.2",
         "opencensus/opencensus": "dev-master",
-        "ext-opencensus": "*"
+        "ext-opencensus": "dev-master"
     },
     "require-dev": {
         "phpunit/phpunit": "^7.0"
