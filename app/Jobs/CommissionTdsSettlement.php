@@ -14,13 +14,9 @@ use RZP\Models\Partner\Commission\Invoice;
 
 class CommissionTdsSettlement extends Job
 {
-    const RETRY_INTERVAL = 300;
-
-    const MAX_RETRY_ATTEMPT = 5;
-
     const MUTEX_LOCK_TIMEOUT = 3000;
 
-    const COMMISSIONS_TRANSACTION_FETCH_LIMIT = 5000;
+    const COMMISSIONS_TRANSACTION_FETCH_LIMIT = 2500;
 
     /**
      * @var string
@@ -89,15 +85,7 @@ class CommissionTdsSettlement extends Job
     {
         try
         {
-            $this->trace->info(
-                TraceCode::COMMISSION_TDS_SETTLEMENT_REQUEST,
-                [
-                    'mode'          => $this->mode,
-                    'partner_id'    => $this->partnerId,
-                    'toTimestamp'   => $this->toTimestamp,
-                    'fromTimestamp' => $this->fromTimestamp,
-                    'invoice_id'    => $this->invoiceId,
-                ]);
+            $this->traceOptions();
 
             if (($this->skipProcessed === false) and ($invoice->getStatus() === Invoice\Status::PROCESSED))
             {
@@ -112,8 +100,12 @@ class CommissionTdsSettlement extends Job
 
             $partner = $this->repoManager->merchant->findOrFail($this->partnerId);
 
+            $batchCount = 1;
+
             while (true)
             {
+                $this->trace->info(TraceCode::COMMISSION_TRANSACTION_FETCH_START, ['batch_count' => $batchCount]);
+
                 // fetch txns in batches and process
                 $transactions = $this->repoManager->transaction->fetchUnsettledCommissionTransactions(
                     $partner,
@@ -130,6 +122,8 @@ class CommissionTdsSettlement extends Job
                 $afterId = $transactions->last()->getId();
 
                 CommissionOnHoldClear::dispatch($this->mode, $transactions->getIds());
+
+                $batchCount++;
             }
 
             if ($this->createTds === true)
@@ -177,28 +171,23 @@ class CommissionTdsSettlement extends Job
                 ]
             );
 
-            $this->checkRetry();
+            $this->delete();
         }
     }
 
-    protected function checkRetry()
+    protected function traceOptions()
     {
-        if ($this->attempts() > self::MAX_RETRY_ATTEMPT)
-        {
-            $this->trace->error(TraceCode::COMMISSION_TDS_SETTLEMENT_QUEUE_DELETE, [
-                'mode'          => $this->mode,
-                'partner_id'    => $this->partnerId,
-                'toTimestamp'   => $this->toTimestamp,
-                'fromTimestamp' => $this->fromTimestamp,
-                'job_attempts'  => $this->attempts(),
-                'message'       => 'Deleting the job after configured number of tries. Still unsuccessful.'
+        $this->trace->info(
+            TraceCode::COMMISSION_TDS_SETTLEMENT_REQUEST,
+            [
+                'mode'           => $this->mode,
+                'partner_id'     => $this->partnerId,
+                'toTimestamp'    => $this->toTimestamp,
+                'fromTimestamp'  => $this->fromTimestamp,
+                'invoice_id'     => $this->invoiceId,
+                'skip_processed' => $this->skipProcessed,
+                'create_tds'     => $this->createTds,
+                'update_status'  => $this->updateInvoiceStatus,
             ]);
-
-            $this->delete();
-        }
-        else
-        {
-            $this->release(self::RETRY_INTERVAL);
-        }
     }
 }

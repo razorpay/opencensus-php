@@ -1851,6 +1851,8 @@ class Repository extends Base\Repository
             return new Base\PublicCollection;
         }
 
+        $txnFetchStartTime      = microtime(true);
+
         $query = $this->newQueryWithConnection($this->getSlaveConnection())
                       ->where(Entity::MERCHANT_ID, $partner->getId())
                       ->where(Entity::BALANCE_ID, $commissionBalance->getId())
@@ -1876,7 +1878,21 @@ class Repository extends Base\Repository
             $query->take($limit);
         }
 
-        return $query->get();
+        $results = $query->get();
+
+        $txnFetchTimeTaken = microtime(true) - $txnFetchStartTime;
+
+        $this->trace->info(
+            TraceCode::COMMISSION_TRANSACTION_FETCH_TIME_TAKEN,
+            [
+                'time_taken' => $txnFetchTimeTaken,
+                'txn_count'  => $results->count(),
+                'after_id'   => $afterId,
+                'limit'      => $limit,
+            ]);
+
+
+        return $results;
     }
 
     public function fetchRequiredColumnsForSettlement(bool $fetchAll = true): array
