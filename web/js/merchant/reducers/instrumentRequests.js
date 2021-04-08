@@ -161,24 +161,24 @@ let initialState = {
                 </p>
               ),
             },
-            {
-              name: 'Google Pay Omnichannel',
-              status: 'Request',
-              slug: 'google_pay',
-              description: (
-                <p>
-                  An enhancement that allows customers to pay via google pay by entering their{' '}
-                  <b>phone number instead of UPI ID.</b>{' '}
-                  <a
-                    href="https://razorpay.com/docs/payment-gateway/payment-methods/upi/google-pay/omnichannel/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Know more...
-                  </a>
-                </p>
-              ),
-            },
+            // {
+            //   name: 'Google Pay Omnichannel',
+            //   status: 'Request',
+            //   slug: 'google_pay',
+            //   description: (
+            //     <p>
+            //       An enhancement that allows customers to pay via google pay by entering their{' '}
+            //       <b>phone number instead of UPI ID.</b>{' '}
+            //       <a
+            //         href="https://razorpay.com/docs/payment-gateway/payment-methods/upi/google-pay/omnichannel/"
+            //         target="_blank"
+            //         rel="noopener noreferrer"
+            //       >
+            //         Know more...
+            //       </a>
+            //     </p>
+            //   ),
+            // },
           ],
         },
       ],
