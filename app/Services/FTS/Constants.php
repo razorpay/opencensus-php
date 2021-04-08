@@ -184,6 +184,8 @@ final class Constants
 
     const PAYOUT_DOWNTIME_PREFIX         = 'poutdown_';
 
+    const SOURCE_ACCOUNT_TYPE_IDENTIFIER = 'account_type';
+
     const COUNTRY_CODE                   = 'country_code';
 
     const WALLET                         = 'wallet';

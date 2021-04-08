@@ -9,15 +9,16 @@ use RZP\Http\Throttle\Constant as K;
 class Validator extends Base\Validator
 {
     protected static $createSourceAccountRules = [
-      'id'                => 'sometimes|alpha_num|size:14',
-      'type'              => 'filled|string|required|in:bank_account,banking_account',
-      'config'            => 'required|array',
-      'product'           => 'filled|string|required|in:payout,refund,payout_refund,settlement,penny_testing,ca_payout,es_on_demand',
-      'channel'           => 'filled|string|required|in:yesbank,icici,citi,m2p,axis,rbl',
-      'credentials'       => 'required|array',
-      'fund_account_id'   => 'sometimes|integer',
-      'mozartIdentifier'  => 'filled|string|required|in:V1,V2,V3',
-      'sourceAccountType' => 'filled|string|required|in:current,nodal'
+      'id'                          => 'sometimes|alpha_num|size:14',
+      'type'                        => 'filled|string|required|in:bank_account,banking_account',
+      'config'                      => 'required|array',
+      'product'                     => 'filled|string|required|in:payout,refund,payout_refund,settlement,penny_testing,ca_payout,es_on_demand',
+      'channel'                     => 'filled|string|required|in:yesbank,icici,citi,m2p,axis,rbl',
+      'credentials'                 => 'required|array',
+      'fund_account_id'             => 'sometimes|integer',
+      'mozartIdentifier'            => 'filled|string|required|in:V1,V2,V3',
+      'sourceAccountType'           => 'filled|string|required|in:current,nodal',
+      'sourceAccountTypeIdentifier' => 'sometimes|string|in:pool,direct',
     ];
 
     protected static $deleteSourceAccountRules = [

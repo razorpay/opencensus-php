@@ -52,6 +52,8 @@ class CreateAccount extends Base
 
     protected $sourceAccountType;
 
+    protected $sourceAccountTypeIdentifier;
+
     public function __construct($app)
     {
         parent::__construct($app);
@@ -311,6 +313,13 @@ class CreateAccount extends Base
             Constants::CHANNEL              => strtoupper($channel),
             Constants::CONFIGURATION        => $content[Constants::CONFIGURATION],
         ];
+
+        if(array_key_exists(Constants::SOURCE_ACCOUNT_TYPE_IDENTIFIER,$content)==true)
+        {
+            $request += [
+                    Constants::SOURCE_ACCOUNT_TYPE_IDENTIFIER => $content[Constants::SOURCE_ACCOUNT_TYPE_IDENTIFIER],
+            ];
+        }
 
         return $request;
     }
@@ -582,9 +591,10 @@ class CreateAccount extends Base
     protected function generateRequestForSourceAccount(array $input)
     {
         return [
-            Constants::CREDENTIALS       => $input['credentials'],
-            Constants::MOZART_IDENTIFIER => $input['mozartIdentifier'],
-            Constants::CONFIGURATION     => $input['config'],
+            Constants::CREDENTIALS                     => $input['credentials'],
+            Constants::MOZART_IDENTIFIER               => $input['mozartIdentifier'],
+            Constants::CONFIGURATION                   => $input['config'],
+            Constants::SOURCE_ACCOUNT_TYPE_IDENTIFIER  => $input['sourceAccountTypeIdentifier'],
         ];
     }
 
