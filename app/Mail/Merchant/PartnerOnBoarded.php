@@ -49,7 +49,16 @@ class PartnerOnBoarded extends Mailable
 
     protected function addSubject()
     {
-        $this->subject('Welcome to Razorpay Partner Program');
+        $partnerType = $this->partner[Merchant\Entity::PARTNER_TYPE];
+
+        if ($partnerType === Merchant\Constants::PURE_PLATFORM)
+        {
+            $this->subject('You’re just a step away from becoming a Razorpay Partner');
+        }
+        else
+        {
+            $this->subject('Welcome to Razorpay Partner Program');
+        }
 
         return $this;
     }
@@ -89,6 +98,10 @@ class PartnerOnBoarded extends Mailable
         else if ($partnerType === Merchant\Constants::AGGREGATOR)
         {
             $this->view('emails.mjml.merchant.partner.onboarded.aggregator');
+        }
+        else if ($partnerType === Merchant\Constants::PURE_PLATFORM)
+        {
+            $this->view('emails.mjml.merchant.partner.onboarded.pure_platform');
         }
 
         return $this;
