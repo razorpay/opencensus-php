@@ -171,18 +171,15 @@ class Repository extends Base\Repository
 
     public function fetchVirtualAccountsToBeClosed()
     {
-        return $this->repo->useSlave( function()
-        {
-            $now = Carbon::now(Timezone::IST)->getTimestamp();
+        $now = Carbon::now(Timezone::IST)->getTimestamp();
 
-            $nowMinus14days = Carbon::now(Timezone::IST)->addDays(-14)->getTimestamp();
+        $nowMinus14days = Carbon::now(Timezone::IST)->addDays(-14)->getTimestamp();
 
-            $query = $this->newQuery()
-                ->where(Entity::STATUS, '=', Status::ACTIVE)
-                ->whereBetween(Entity::CLOSE_BY, array($nowMinus14days, $now));
-
-            return $query->get();
-        });
+        return $this->newQuery($this->getSlaveConnection())
+                    ->where(Entity::STATUS, '=', Status::ACTIVE)
+                    ->whereBetween(Entity::CLOSE_BY, array($nowMinus14days, $now))
+                    ->pluck(Entity::ID)
+                    ->toArray();
     }
 
     public function getActiveVirtualAccountFromVpaId(string $vpaId)

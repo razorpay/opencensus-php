@@ -264,7 +264,7 @@ class Service extends Base\Service
 
     public function closeVirtualAccountsByCloseBy()
     {
-        $virtualAccounts = $this->repo
+        $virtualAccountIds = $this->repo
                                 ->virtual_account
                                 ->fetchVirtualAccountsToBeClosed();
 
@@ -272,10 +272,12 @@ class Service extends Base\Service
 
         $failures = [];
 
-        foreach ($virtualAccounts as $virtualAccount)
+        foreach ($virtualAccountIds as $virtualAccountId)
         {
             try
             {
+                $virtualAccount = $this->repo->virtual_account->find($virtualAccountId);
+
                 $this->core->close($virtualAccount);
 
                 $success++;
@@ -288,7 +290,7 @@ class Service extends Base\Service
 
                 $failure++;
 
-                $failures[] = $virtualAccount->getPublicId();
+                $failures[] = $virtualAccountId;
             }
         }
 
