@@ -1738,19 +1738,20 @@ app
         $scope.rightLayout = true;
         if ($state.current.name === 'access.signin' || $state.current.name === 'access.lockme') {
           if ($state.current.name === 'access.signin') {
-            let utm = readUTMsCookie();
+            let utmData = readUTMsCookie();
 
             pushPromMetric({ flow: 'login', label: 'login_landed' });
 
             fireDLSuccessEvents('login.display_login', {
               source: 'sign_in',
-              first_utm: utm.firstUtm,
-              last_utm: utm.lastUtm,
+              first_utm: utmData.firstUtm,
+              last_utm: utmData.lastUtm,
               ref_url: $location.search().utm_source || document.referrer,
-              first_page: utm.firstPage,
-              final_page: utm.finalPage,
-              website: utm.website,
+              first_page: utmData.firstPage,
+              final_page: utmData.finalPage,
+              website: utmData.website,
               version: $scope.authVersion,
+              referring_url: utmData.website,
             });
           }
 
@@ -2477,6 +2478,7 @@ app
                   first_page: utmData.firstPage,
                   final_page: utmData.finalPage,
                   website: utmData.website,
+                  referring_url: utmData.website
                 }),
             );
           $scope.isSignupDisplayEventFired = true;
