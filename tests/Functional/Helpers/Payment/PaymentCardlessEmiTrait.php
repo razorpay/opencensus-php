@@ -49,6 +49,13 @@ trait PaymentCardlessEmiTrait
                     'method' =>  'POST',
                 ];
 
+                $parsed_url = parse_url($newRequest['url']);
+
+                if ($parsed_url['path'] === '/v1/gateway/mocksharp/payment')
+                {
+                    $request['content'] = ['status' => 'authorized'];
+                }
+
                 $resp = $this->sendRequest($request);
 
                 $data = $this->getPaymentJsonFromCallback($resp->getContent());

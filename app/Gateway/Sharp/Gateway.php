@@ -6,16 +6,17 @@ use Crypt;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Gateway\Base;
-use RZP\Gateway\GooglePay\Action;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\BharatQr;
 use RZP\Models\UpiMandate;
-use RZP\Gateway\Upi\Base\Vpa;
-use RZP\Gateway\Upi\Base as UpiBase;
 use RZP\Models\Customer\Token;
+use RZP\Gateway\GooglePay\Action;
+use RZP\Gateway\Upi\Base as UpiBase;
+use RZP\Models\Payment\Processor\PayLater;
+use RZP\Models\Payment\Processor\CardlessEmi;
 
 class Gateway extends Base\Gateway
 {
@@ -32,6 +33,21 @@ class Gateway extends Base\Gateway
         if ($this->isBharatQrPayment() === true)
         {
             return null;
+        }
+
+        if($input['payment']['method'] === Payment\Gateway::CARDLESS_EMI)
+        {
+            $provider = $input['payment']['wallet'];
+
+            if(in_array($provider, CardlessEmi::getCardlessEmiDirectAquirers()) === false)
+            {
+                $provider = strtolower(CardlessEmi::getProviderForBank($provider));
+            }
+
+            if((in_array($provider, Payment\Gateway::$redirectFlowProvider) === false))
+            {
+                return;
+            }
         }
 
         $this->failIfRequired($input);
@@ -505,7 +521,14 @@ class Gateway extends Base\Gateway
             ];
         }
 
-        return $this->getCallbackResponseData($input, $acquirerData);
+        $response = $this->getCallbackResponseData($input, $acquirerData);
+
+        if(($input['payment'][Payment\Entity::METHOD] === Payment\Method::CARDLESS_EMI))
+        {
+            $response[Payment\Entity::TWO_FACTOR_AUTH] = null;
+        }
+
+        return $response;
     }
 
     public function callbackOtpSubmit(array $input)

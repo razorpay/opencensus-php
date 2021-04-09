@@ -51,6 +51,44 @@ class SharpGatewayTest extends TestCase
         $this->assertEquals($payment['status'], 'captured');
     }
 
+    public function testCardlessEmiPayment()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'cardless_emi');
+
+        $payment = $this->getDefaultCardlessEmiPaymentArray('earlysalary');
+
+        $payment['contact'] = '+91' . $payment['contact'];
+
+        $this->setOtp('123456');
+
+        $response = $this->doAuthPayment($payment);
+
+        $this->assertNotNull($response['razorpay_payment_id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment);
+    }
+
+    public function testCardlessEmiPaymentSubProvider()
+    {
+        $this->fixtures->merchant->enableCardlessEmi('10000000000000');
+
+        $this->provider = 'kkbk';
+
+        $payment = $this->getDefaultCardlessEmiPaymentArray($this->provider);
+
+        unset($payment['emi_duration']);
+
+        $payment['contact'] = '+91' . $payment['contact'];
+
+        $response = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment);
+    }
+
     public function testUpiPayment()
     {
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');

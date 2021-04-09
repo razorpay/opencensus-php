@@ -497,6 +497,29 @@ class CheckoutPreferencesTest extends TestCase
         $this->assertArrayHasKey('intent', $response['methods']['upi_type']);
     }
 
+    public function testGetCheckoutPreferencesForCardlessEmiTestMode()
+    {
+        $this->fixtures->merchant->enableCardlessEmi('10000000000000');
+
+        $response = $this->getPreferences();
+
+        $this->assertEquals($response['methods']['cardless_emi']['earlysalary'],true);
+
+        $this->assertEquals($response['methods']['cardless_emi']['zestmoney'],true);
+
+        $this->assertEquals($response['methods']['cardless_emi']['hdfc'],true);
+
+        $this->assertEquals($response['methods']['cardless_emi']['kkbk'],true);
+
+        $this->assertEquals($response['methods']['cardless_emi']['fdrl'],true);
+
+        $this->assertEquals($response['methods']['cardless_emi']['idfb'],true);
+
+        $this->assertEquals($response['methods']['cardless_emi']['icic'],true);
+
+        $this->assertEquals($response['methods']['cardless_emi']['hcin'],true);
+    }
+
     public function testGetCheckoutPreferencesForDisabledUpi()
     {
         $this->fixtures->merchant->disableUpi('10000000000000');

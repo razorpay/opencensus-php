@@ -5,6 +5,7 @@ namespace RZP\Gateway\CardlessEmi;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Gateway\Base;
+use RZP\Gateway\Sharp;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
@@ -80,6 +81,11 @@ class Gateway extends Base\Gateway
     public function checkAccount($input)
     {
         $this->action($input, Action::CHECK_ACCOUNT);
+
+        if($this->terminal['gateway'] === Payment\Gateway::SHARP)
+        {
+            return $this->mockCheckAccountResponseForSharpTerminal($input);
+        }
 
         $this->provider = strtoupper($this->terminal['gateway_acquirer']);
 
@@ -1377,5 +1383,52 @@ class Gateway extends Base\Gateway
         }
 
         return $response;
+    }
+    public function mockCheckAccountResponseForSharpTerminal($input)
+    {
+        $content = [
+        'account_exists'  => true,
+        'emi_plans'       => [
+            [
+                'entity'           => 'emi_plan',
+                'duration'         => 3,
+                'interest'         => 13,
+                'currency'         => 'INR',
+                'amount_per_month' => '1000.20'
+            ],
+            [
+                'entity'           => 'emi_plan',
+                'duration'         => 6,
+                'interest'         => 19,
+                'currency'         => 'INR',
+                'amount_per_month' => '1000.20'
+            ],
+        ],
+        'loan_agreement'      => 'link_to_loan_agreement',
+        'redirection_url'     => 'dummy_redirect_url',
+        'extra'               => 'lender_brand',
+        'lender_branding_url' => 'dummy_lender_branding_url',
+    ];
+
+        $this->provider = $input['provider'];
+
+        if($input['method'] === Payment\Gateway::CARDLESS_EMI)
+        {
+            if(in_array($input['provider'], CardlessEmi::getCardlessEmiDirectAquirers()) === false)
+            {
+                $this->provider = CardlessEmi::getProviderForBank($input['provider']);
+            }
+
+            $this->provider = strtoupper($this->provider);
+
+            $this->addCacheData($input, $content);
+
+            if (in_array(strtolower($this->provider), Payment\Gateway::$redirectFlowProvider) === true)
+            {
+                return $content;
+            }
+        }
+
+        return;
     }
 }

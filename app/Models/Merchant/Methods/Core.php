@@ -12,16 +12,18 @@ use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
-use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Card\Network;
 use RZP\Models\Pricing\Plan;
 use RZP\Constants\Entity as E;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Feature\Constants;
+use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Partner\Config as PartnerConfig;
 
 class Core extends Base\Core
@@ -762,6 +764,11 @@ class Core extends Base\Core
 
         $terminals = $terminals->toArray();
 
+        if($this->mode === Mode::TEST && (empty($terminals)))
+        {
+            return $this->getProvidersforTestMode($method);
+        }
+
         if ($method === Payment\Method::PAYLATER)
         {
             $providers = (array_unique(array_column($terminals, 'gateway_acquirer')));
@@ -873,5 +880,37 @@ class Core extends Base\Core
         }
 
         return;
+    }
+
+    public function getProvidersforTestMode($method)
+    {
+        $provider = [];
+        $enabledBanks = [];
+
+        if ($method === Payment\Method::CARDLESS_EMI)
+        {
+            $providers =  CardlessEmi::getCardlessEmiDirectAquirers();
+
+            foreach ($providers as $providerName)
+            {
+                if (CardlessEmi::isMultilenderProvider($providerName))
+                {
+                    $enabledBanks = array_unique(array_merge($enabledBanks, CardlessEmi::getSupportedBanksForMultilenderProvider($providerName)));
+                }
+                else
+                {
+                    array_push($enabledBanks, $providerName);
+                }
+            }
+        }
+
+        $enabledBanks = array_map('strtolower', $enabledBanks);
+
+        foreach ($enabledBanks as $providerName)
+        {
+            $provider[$providerName] = true;
+        }
+
+        return $provider;
     }
 }
