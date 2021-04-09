@@ -218,11 +218,20 @@ class Checkout
 
             if (isset($org) === true)
             {
-                $features = $org->getEnabledFeatures();
 
-                $data['org'] = $org;
+                if($orgId === "100000razorpay")
+                {
 
-                $data['org_features'] = $features;
+                    $data['org'] = ["isOrgRazorpay" => true, "checkout_logo_url" => $org->getCheckoutLogo()];
+
+                }
+                else
+                {
+
+                    $data['org'] = ["isOrgRazorpay" => false, "checkout_logo_url" => $org->getCheckoutLogo()];
+
+                }
+
             }
         }
     }
