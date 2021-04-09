@@ -157,6 +157,7 @@ class Entity extends Base\PublicEntity
             case Method::UPI:
                 $vpaHandle = $this->getVpaHandle();
                 $psp = $this->getPSP();
+                $issuer = $this->getIssuer();
                 if( empty($psp) === false)
                 {
                     $instrument[self::PSP] = $psp;
@@ -165,6 +166,10 @@ class Entity extends Base\PublicEntity
                 else if( empty($vpaHandle) === false)
                 {
                     $instrument[self::VPA_HANDLE] = $vpaHandle;
+                }
+                else if( empty($issuer) === false)
+                {
+                    $instrument[self::ISSUER] = $issuer;
                 }
                 break;
 
