@@ -886,25 +886,11 @@ class Processor extends Base\Core
             ];
         }
 
-        $useSlaveReplica = $this->isTransactionFetchToSlave($merchant->getId());
-
-        if ($useSlaveReplica === true)
+        // fetch all the valid transactions from the slave
+        $txns = $this->repo->useSlave( function() use ($merchant, $balance, $params)
         {
-            // fetch all the valid transactions from the slave
-            $txns = $this->repo->useSlave( function() use ($merchant, $balance, $params)
-            {
-                return $this->repo
-                            ->transaction
-                            ->fetchUnsettledTransactionsForProcessing($merchant->getId(), $balance, $params);
-            });
-        }
-        else
-        {
-            // fetch all the valid transactions from all channels for a given merchant
-            $txns = $this->repo
-                         ->transaction
-                         ->fetchUnsettledTransactionsForProcessing($merchant->getId(), $balance, $params);
-        }
+            return $this->repo->transaction->fetchUnsettledTransactionsForProcessing($merchant->getId(), $balance, $params);
+        });
 
         // If there are no transactions to settle then return
         if ($txns->isEmpty() === true)
@@ -1212,26 +1198,5 @@ class Processor extends Base\Core
         return [
             'error' => null,
         ];
-    }
-
-    /**
-     * This will be used to identify weather to fetch transactions from slave or master
-     * @param $merchantId
-     * @return bool
-     */
-    public function isTransactionFetchToSlave($merchantId)
-    {
-        $variant = $this->app->razorx->getTreatment($merchantId,
-            RazorxTreatment::SETTLEMENT_TXN_FETCH_TO_SLAVE,
-            $this->mode);
-
-        $this->trace->info(
-            TraceCode::SETTLEMENT_QUERY_TO_SLAVE_REPLICA_DEBUG,
-            [
-                'merchant_id' => $merchantId,
-                'variant'     => $variant,
-            ]);
-
-        return (strtolower($variant) === 'on');
     }
 }
