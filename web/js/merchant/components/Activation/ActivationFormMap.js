@@ -240,8 +240,8 @@ const businessModel = [
       placeholder: 'Minimum 200 characters',
       descriptionClass: 'Input--business-description',
       validator: (value) => {
-        if (value.length < 250) {
-          return 'Business Description should be at least 250 Characters';
+        if (value.length < 200) {
+          return 'Business Description should be at least 200 Characters';
         }
       },
       showCharacterLength: (val) => {

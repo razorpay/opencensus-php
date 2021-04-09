@@ -448,7 +448,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
                 </Space>
                 <View>
                   <Heading size="large">
-                    Account Activation
+                    Account Details
                     {/* {merchantFlow === 'greylist'
                       ? 'Account Activation'
                       : !isL1Submitted(onboarding_milestone) || isUnregPoiStatus
@@ -460,7 +460,12 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
             </Flex>
             <Link
               onClick={() => {
-                setIsSaveAndExitModalOpen(true);
+                if (!data.submitted) {
+                  setIsSaveAndExitModalOpen(true);
+                } else {
+                  history.push('/dashboard');
+                }
+
                 analyticsTrack({
                   objectName: 'SignUp',
                   actionName: 'form fill',
@@ -538,7 +543,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
         </StyledFooter>
       </Flex>
       <EnableSettlementModal isOpen={isEnableSettlementModalOpen} />
-      <SubmitFormModal isOpen={isSubmitFormModalOpen} />
+      <SubmitFormModal isOpen={isSubmitFormModalOpen} isAutoKycDone={data.isAutoKycDone} />
       <DedupeModal isOpen={isDedupeModalOpen} />
       <SaveAndExitModal
         isOpen={isSaveAndExitModalOpen}

@@ -12,6 +12,7 @@ import { fetch } from 'v2/services/rest/rest-fetch';
 import { analyticsTrack } from '../../../../services/tracking/segment';
 import { useApp } from 'v2/context/App';
 import { Divider } from './Styled';
+import ResendIcon from './ResendIcon.svg';
 
 const generateCaptcha = async () => {
   const fetchData = await fetch<any>({
@@ -139,167 +140,165 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
     >
       {(formikProps) => (
         <Form>
-          <Space margin={[0, 0, 5, 0]}>
-            <View>
-              <Text size="medium" weight="bold" color="shade.970">
-                Aadhar Verification
+          <View>
+            <Text size="medium" weight="bold" color="shade.970">
+              Aadhar Verification
+            </Text>
+            {!aadharError && (
+              <Text size="xsmall" color="shade.950">
+                An OTP will be sent to number linked with your Aadhar
               </Text>
-              {!aadharError && (
-                <Text size="xsmall" color="shade.950">
-                  An OTP will be sent to number linked with your Aadhar
-                </Text>
-              )}
+            )}
 
-              {aadharError === 'OTP_LIMIT_EXCEEDED' && (
-                <Text size="xsmall" color="negative.900">
-                  You have exceeded the maximum attempts to submit OTP. Please try again
-                </Text>
-              )}
+            {aadharError === 'OTP_LIMIT_EXCEEDED' && (
+              <Text size="xsmall" color="negative.900">
+                You have exceeded the maximum attempts to submit OTP. Please try again
+              </Text>
+            )}
 
-              {aadharError === 'INPUT_DATA_ISSUE' && (
-                <Text size="xsmall" color="negative.900">
-                  Something went wrong. Please try again
-                </Text>
-              )}
+            {aadharError === 'INPUT_DATA_ISSUE' && (
+              <Text size="xsmall" color="negative.900">
+                Something went wrong. Please try again
+              </Text>
+            )}
 
-              <Space margin={[4, 0, 0, 0]}>
-                <View>
-                  <TextInput
-                    width="auto"
-                    name="aadharNumber"
-                    type="text"
-                    label="12 Digit Aadhar Number"
-                    value={formikProps.values.aadharNumber}
-                    errorText={
-                      apiError === 'INVALID_AADHAAR_NUMBER'
-                        ? 'Aadhar number is invalid'
-                        : formikProps.touched.aadharNumber && formikProps.errors.aadharNumber
+            <Space margin={[4, 0, 0, 0]}>
+              <View>
+                <TextInput
+                  width="auto"
+                  name="aadharNumber"
+                  type="text"
+                  label="12 Digit Aadhar Number"
+                  value={formikProps.values.aadharNumber}
+                  errorText={
+                    apiError === 'INVALID_AADHAAR_NUMBER'
+                      ? 'Aadhar number is invalid'
+                      : formikProps.touched.aadharNumber && formikProps.errors.aadharNumber
+                  }
+                  onChange={(value) => {
+                    formikProps.setFieldValue('aadharNumber', value.trim());
+                    if (aadharError) {
+                      setApiError('');
                     }
-                    onChange={(value) => {
-                      formikProps.setFieldValue('aadharNumber', value.trim());
-                      if (aadharError) {
-                        setApiError('');
-                      }
-                    }}
-                    onBlur={(value) => {
-                      formikProps.setFieldTouched('aadharNumber', value.trim());
-                      analyticsTrack({
-                        objectName: 'SignUp',
-                        actionName: 'Aadhar number in get otp',
-                        screen: 'home page',
-                        eventAction: 'initiated',
-                        user,
-                      });
-                    }}
-                  />
-                  <Space margin={[4, 0, 4, 0]}>
-                    <View>
-                      {captcha ? (
-                        <>
-                          <img src={`data:image/jpeg;base64,${captcha}`} alt="E-Aadhar captcha" />
-                          <img
-                            src="/dist/css/assets/onboarding/resend.svg"
-                            className="captcha-screen__resend"
-                            onClick={() => fetchCaptcha()}
-                          />
-                        </>
-                      ) : (
-                        <Text>Loading...</Text>
-                      )}
-                    </View>
-                  </Space>
-                </View>
-              </Space>
-              <Space margin={[4, 0, 0, 0]}>
-                <View>
-                  <TextInput
-                    width="auto"
-                    name="captchaCode"
-                    type="text"
-                    label="Enter the code shown"
-                    value={formikProps.values.captchaCode}
-                    errorText={
-                      apiError === 'INVALID_CAPTCHA'
-                        ? 'Code didn’t match, please enter the new code'
-                        : apiError === 'NO_PROVIDER_ERROR' ||
-                          apiError === 'INVALID_SESSION_ID' ||
-                          apiError === 'invalid_argument'
-                        ? 'Something went wrong. Please try again'
-                        : formikProps.touched.captchaCode && formikProps.errors.captchaCode
+                  }}
+                  onBlur={(value) => {
+                    formikProps.setFieldTouched('aadharNumber', value.trim());
+                    analyticsTrack({
+                      objectName: 'SignUp',
+                      actionName: 'Aadhar number in get otp',
+                      screen: 'home page',
+                      eventAction: 'initiated',
+                      user,
+                    });
+                  }}
+                />
+                <Space margin={[4, 0, 4, 0]}>
+                  <View>
+                    {captcha ? (
+                      <>
+                        <img src={`data:image/jpeg;base64,${captcha}`} alt="E-Aadhar captcha" />
+                        <img
+                          src={ResendIcon}
+                          className="captcha-screen__resend"
+                          onClick={() => fetchCaptcha()}
+                        />
+                      </>
+                    ) : (
+                      <Text>Loading...</Text>
+                    )}
+                  </View>
+                </Space>
+              </View>
+            </Space>
+            <Space margin={[4, 0, 0, 0]}>
+              <View>
+                <TextInput
+                  width="auto"
+                  name="captchaCode"
+                  type="text"
+                  label="Enter the code shown"
+                  value={formikProps.values.captchaCode}
+                  errorText={
+                    apiError === 'INVALID_CAPTCHA'
+                      ? 'Code didn’t match, please enter the new code'
+                      : apiError === 'NO_PROVIDER_ERROR' ||
+                        apiError === 'INVALID_SESSION_ID' ||
+                        apiError === 'invalid_argument'
+                      ? 'Something went wrong. Please try again'
+                      : formikProps.touched.captchaCode && formikProps.errors.captchaCode
+                  }
+                  onChange={(value) => {
+                    formikProps.setFieldValue('captchaCode', value.trim());
+                    if (apiError) {
+                      setApiError('');
                     }
-                    onChange={(value) => {
-                      formikProps.setFieldValue('captchaCode', value.trim());
-                      if (apiError) {
-                        setApiError('');
-                      }
-                    }}
-                    onBlur={(value) => {
-                      formikProps.setFieldTouched('captchaCode', value.trim());
-                      analyticsTrack({
-                        objectName: 'SignUp',
-                        actionName: 'captcha code',
-                        screen: 'home page',
-                        eventAction: 'initiated',
-                        user,
-                      });
-                    }}
-                  />
-                </View>
-              </Space>
-              <Space margin={[4, 0, 0, 0]}>
-                <View>
-                  <TextInput
-                    width="auto"
-                    name="createdPin"
-                    type="text"
-                    label="Create a PIN"
-                    value={formikProps.values.createdPin}
-                    errorText={formikProps.touched.createdPin && formikProps.errors.createdPin}
-                    onChange={(value) => formikProps.setFieldValue('createdPin', value.trim())}
-                    onBlur={(value) => {
-                      formikProps.setFieldTouched('createdPin', value.trim());
-                      analyticsTrack({
-                        objectName: 'SignUp',
-                        actionName: 'create pin',
-                        screen: 'home page',
-                        eventAction: 'initiated',
-                        user,
-                      });
-                    }}
-                    helpText="Create a 4 digit PIN to secure your aadhar details with us"
-                  />
-                </View>
-              </Space>
-              <Space margin={[4, 0, 0]}>
-                <Divider />
-              </Space>
-              <Flex alignItems="center">
-                <View>
-                  <Space padding={[0, 1, 0, 0]}>
-                    <View>
-                      <Button
-                        variant="tertiary"
-                        size="small"
-                        onClick={() => {
-                          const nextScreen = 'AadharInput';
-                          goToNextScreen({ nextScreen });
-                        }}
-                      >
-                        Back
-                      </Button>
-                    </View>
-                  </Space>
-                  <Space padding={[1.5, 0]}>
-                    <View>
-                      <Button variant="secondary" size="small" type="submit">
-                        Get OTP
-                      </Button>
-                    </View>
-                  </Space>
-                </View>
-              </Flex>
-            </View>
-          </Space>
+                  }}
+                  onBlur={(value) => {
+                    formikProps.setFieldTouched('captchaCode', value.trim());
+                    analyticsTrack({
+                      objectName: 'SignUp',
+                      actionName: 'captcha code',
+                      screen: 'home page',
+                      eventAction: 'initiated',
+                      user,
+                    });
+                  }}
+                />
+              </View>
+            </Space>
+            <Space margin={[4, 0, 0, 0]}>
+              <View>
+                <TextInput
+                  width="auto"
+                  name="createdPin"
+                  type="text"
+                  label="Create a PIN"
+                  value={formikProps.values.createdPin}
+                  errorText={formikProps.touched.createdPin && formikProps.errors.createdPin}
+                  onChange={(value) => formikProps.setFieldValue('createdPin', value.trim())}
+                  onBlur={(value) => {
+                    formikProps.setFieldTouched('createdPin', value.trim());
+                    analyticsTrack({
+                      objectName: 'SignUp',
+                      actionName: 'create pin',
+                      screen: 'home page',
+                      eventAction: 'initiated',
+                      user,
+                    });
+                  }}
+                  helpText="Create a 4 digit PIN to secure your aadhar details with us"
+                />
+              </View>
+            </Space>
+            <Space margin={[4, 0, 0]}>
+              <Divider />
+            </Space>
+            <Flex alignItems="center">
+              <View>
+                <Space padding={[0, 1, 0, 0]}>
+                  <View>
+                    <Button
+                      variant="tertiary"
+                      size="small"
+                      onClick={() => {
+                        const nextScreen = 'AadharInput';
+                        goToNextScreen({ nextScreen });
+                      }}
+                    >
+                      Back
+                    </Button>
+                  </View>
+                </Space>
+                <Space padding={[1.5, 0]}>
+                  <View>
+                    <Button variant="secondary" size="small" type="submit">
+                      Get OTP
+                    </Button>
+                  </View>
+                </Space>
+              </View>
+            </Flex>
+          </View>
         </Form>
       )}
     </Formik>

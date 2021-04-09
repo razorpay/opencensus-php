@@ -67,7 +67,7 @@ const OnboardingCard: React.FC = () => {
                 <>
                   <Space margin={[1, 2, 0, 0]}>
                     <Text size="small" color="positive.960" weight="bold">
-                      {activationData.activation_progress}% done
+                      {activationData.activation_progress}% complete
                     </Text>
                   </Space>
                   <Space margin={[0, 2, 0, 0]}>

@@ -36,7 +36,7 @@ const BusinessAOV: React.FC<BusinessAOVPropsT> = ({
         ? aovRangeData.config.map((item, index) => {
             if (item.max === 0) {
               return (
-                <Option key={index} value="More than ₹ 1,00,000" label="More than ₹ 1,00,000">
+                <Option key={index} value={`${item.min}-${item.max}`} label="More than ₹ 1,00,000">
                   <Text size="medium" color="shade.970">
                     More than ₹ 1,00,000
                   </Text>

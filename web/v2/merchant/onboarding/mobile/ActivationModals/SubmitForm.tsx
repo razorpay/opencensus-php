@@ -9,6 +9,7 @@ import BannerModal from './Frame.svg';
 
 export interface SubmitFromPropsT {
   isOpen: boolean;
+  isAutoKycDone: boolean;
 }
 
 const Container = styled(View)`
@@ -16,7 +17,7 @@ const Container = styled(View)`
   text-align: center;
 `;
 
-const SubmitFrom: React.FC<SubmitFromPropsT> = ({ isOpen }) => {
+const SubmitFrom: React.FC<SubmitFromPropsT> = ({ isOpen, isAutoKycDone }) => {
   const backToDashboard = () => {
     window.location.href = '/';
   };
@@ -42,8 +43,9 @@ const SubmitFrom: React.FC<SubmitFromPropsT> = ({ isOpen }) => {
 
             <Text size="medium" align="center">
               Your documents are under review. It’s now our responsibility to make sure your
-              documents are processed. It usually takes 3 days for our team to review your
-              documents.
+              documents are processed. It usually takes {isAutoKycDone ? ' 3 - 5 ' : ' 8 - 10 '}{' '}
+              days for our team to review your documents. We will reach out to you if we need any
+              clarification.
             </Text>
           </View>
           <Space margin={[2, 0, 2, 0]}>

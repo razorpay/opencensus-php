@@ -27,20 +27,28 @@ export const ACTIVATION_STATUS_UNDER_REVIEW = {
   registered: {
     title: 'Details are under review',
     description:
-      'Your documents are under review. It generally takes around 3 working days. Our team will reach out to you in case of any clarification',
+      'Your documents are under review. It generally takes around 3 - 5 working days. Our team will reach out to you in case of any clarification',
   },
 };
 
 export const ACTIVATION_STATUS_NEEDS_CLARIFICATION = {
-  title: 'Check your registered email',
+  title: 'Clarification required',
   description:
-    'Your submitted details require further clarifications. Please check your registered email inbox for a mail with “Razorpay: Activation form update” as subject and complete the requested steps for a quick resolution.',
+    'We need some clarification regarding your submitted details. Please clarify these details at the earliest to get your account activated.',
 };
 
 export const ACTIVATION_STATUS_ACTIVATED = {
   title: 'Payments and Settlements have been enabled',
   description:
-    'Your account has been activated. Your  payments will be settled to you according to your settlement schedule',
+    'Your account has been activated. Your  payments will be settled to you according to your settlement schedule. Switch to live mode to start accepting payments',
+  description_live_mode:
+    'Your account has been activated. Your  payments will be settled to you according to your settlement schedule.',
+};
+
+export const ACTIVATION_STATUS_ACTIVATED_MCC_PENDING = {
+  title: 'Payments and Settlements have been enabled',
+  description:
+    'You can start accepting payments in live mode now. Payments will be settled to your bank account according to your settlement schedule. Please note we may ask you for more clarifications later as part of routine checks.',
 };
 
 export const REMAINING_STEPS = {

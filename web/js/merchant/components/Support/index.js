@@ -105,6 +105,10 @@ export default class Support extends Component {
       return null;
     }
 
+    if (isOnBoardingRevampScreen) {
+      return null;
+    }
+
     return (
       <div class={classList('support', isHidden && 'hidden')}>
         <SupportHeader

@@ -92,7 +92,7 @@ const isTabComplete = (data, tab) => {
   const tabData = data[tab];
   return Object.keys(tabData).every((key) => {
     if (!isVisible(key, data)) return true;
-    if (key === 'gstin' && !data.gstin) return true;
+    if (key === 'gstin' && data.gstin === '' && typeof data.hasGSTIN !== 'boolean') return true;
     return !!tabData[key].value && !tabData[key].error;
   });
 };
@@ -123,7 +123,7 @@ type State = {
 };
 
 const useActivationFormState = create<State>((set) => ({
-  same_address: false,
+  same_address: true,
   has_gstin: false,
   has_website: false,
   active_tab_id: 'contact_details',

@@ -12,7 +12,7 @@ export const Modal: React.FC = () => {
   return (
     <>
       <Button onClick={() => setIsOpen(true)}>Open Modal</Button>
-      <SubmitForm isOpen={isOpen} />
+      <SubmitForm isOpen={isOpen} isAutoKycDone={true} />
     </>
   );
 };

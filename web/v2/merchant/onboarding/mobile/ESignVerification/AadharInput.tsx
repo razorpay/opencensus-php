@@ -140,18 +140,22 @@ const AadharInput: React.FC<AadharInputPropsT> = ({
               <Space margin={[0, 0, 1.5]}>
                 <Divider />
               </Space>
-              <Checkbox
-                onChange={mobileNotLinked}
-                title="My Aadhar is not linked with any mobile number"
-                checked={!isAadharLinkedToMobile}
-                disabled={disabled}
-              />
-              {!isAadharLinkedToMobile && (
-                <Text size="small" color="shade.960">
-                  You can continue without verification but your details review might take a little
-                  longer
-                </Text>
-              )}
+              <Space padding={[0, 0, 1.5]}>
+                <View>
+                  <Checkbox
+                    onChange={mobileNotLinked}
+                    title="My Aadhar is not linked with any mobile number"
+                    checked={!isAadharLinkedToMobile}
+                    disabled={disabled}
+                  />
+                  {!isAadharLinkedToMobile && (
+                    <Text size="small" color="shade.960">
+                      You can continue without verification but your details review might take a
+                      little longer
+                    </Text>
+                  )}
+                </View>
+              </Space>
             </View>
           </Space>
         </Form>

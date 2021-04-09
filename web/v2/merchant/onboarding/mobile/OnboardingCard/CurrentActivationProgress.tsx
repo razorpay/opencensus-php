@@ -2,6 +2,7 @@ import React from 'react';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
 import { isUnregisteredBusiness, checkIfDedupe } from '../services/utils';
 import RemainingStepsInfo from './RemainingStepsInfo';
+import { getMode, switchMode } from 'v2/services/mode';
 import Info from './Info';
 import Buttons from './Buttons';
 import * as Messages from './Constants';
@@ -24,79 +25,29 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; pay
       user,
     });
   };
+
+  const isTestMode = getMode(user.current) === 'test';
+
   const contactSupport = () => {
     window.rzpTicketSystem.openModal('#ticket');
   };
-  const goToDashboard = () => {
-    window.location.href = '/app/settlements';
+
+  const goToNcFlow = () => {
+    history.push('activation');
   };
 
   const isDedupeState = checkIfDedupe(data);
 
-  if (
-    data.poi_verification_status === 'incorrect_details' ||
-    data.poi_verification_status === 'not_matched'
-  ) {
-    return (
-      <>
-        <Info
-          title={Messages.POI_VERIFICATION_STATUS.incorrect_details.title}
-          description={Messages.POI_VERIFICATION_STATUS.incorrect_details.description}
-          titleColor="negative.900"
-          hasError
-        />
-        <Buttons.Primary onClick={onCTAClick} title="Review Details" icon="arrowRight" />
-      </>
-    );
-  }
-
-  if (data.poi_verification_status === 'failed') {
-    return (
-      <>
-        <Info
-          title={Messages.POI_VERIFICATION_STATUS.failed.title}
-          description={Messages.POI_VERIFICATION_STATUS.failed.description}
-          titleColor="negative.900"
-          hasError
-        />
-        <Buttons.Primary onClick={onCTAClick} title="Try Again" />
-      </>
-    );
-  }
-
-  if (data.poi_verification_status === 'pending') {
-    return (
-      <Info
-        title={Messages.POI_VERIFICATION_STATUS.pending.title}
-        description={Messages.POI_VERIFICATION_STATUS.pending.description}
-        titleColor="neutral.960"
-      />
-    );
-  }
-
   if (data.submitted) {
-    if (data.bank_details_verification_status === 'failed') {
-      return (
-        <>
-          <Info
-            title={Messages.BANK_DETAILS_VERIFICATION_STATUS.failed.title}
-            description={Messages.BANK_DETAILS_VERIFICATION_STATUS.failed.description}
-            titleColor="negative.900"
-          />
-          <Buttons.Primary
-            onClick={onCTAClick}
-            title="Upload Bank Account Proof"
-            icon="arrowRight"
-          />
-        </>
-      );
-    }
-
     if (data.activation_status === 'under_review') {
       let description = '';
       if (isUnregisteredBusiness(data.business_type)) {
+        description = `This process usually takes ${
+          data.isAutoKycDone ? ' 3 - 5 ' : ' 8 - 10 '
+        } working days after your first transaction. If we need any more information we will reach out to you on your registered email id.`;
+      } else if (!data.isAutoKycDone) {
         description =
-          'This  process usually takes 1-2 working days after your first transaction. If we need any more information we will reach out to you on your registered email id.';
+          'Your documents are under review. It generally takes around 8 - 10 working days. Our team will reach out to you in case of any clarification';
       } else {
         description = Messages.ACTIVATION_STATUS_UNDER_REVIEW.registered.description;
       }
@@ -125,27 +76,110 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; pay
             titleColor="negative.900"
             hasError
           />
-          <Buttons.LinkButton
+          <Buttons.Primary onClick={() => goToNcFlow()} title="Clarify Details" />
+        </>
+      );
+    }
+
+    if (data.activation_status === 'activated') {
+      return (
+        <>
+          <Info
+            title={Messages.ACTIVATION_STATUS_ACTIVATED.title}
+            description={
+              isTestMode
+                ? Messages.ACTIVATION_STATUS_ACTIVATED.description
+                : Messages.ACTIVATION_STATUS_ACTIVATED.description_live_mode
+            }
+          />
+          {isTestMode && (
+            <Buttons.Secondary
+              onClick={() => {
+                switchMode(user.current, 'live');
+                window.location.reload();
+              }}
+              title="Switch To Live Mode"
+            />
+          )}
+        </>
+      );
+    }
+
+    if (data.activation_status === 'activated_mcc_pending') {
+      return (
+        <>
+          <Info
+            title={Messages.ACTIVATION_STATUS_ACTIVATED_MCC_PENDING.title}
+            description={Messages.ACTIVATION_STATUS_ACTIVATED_MCC_PENDING.description}
+          />
+          {isTestMode && (
+            <Buttons.Secondary
+              onClick={() => {
+                switchMode(user.current, 'live');
+                window.location.reload();
+              }}
+              title="Switch To Live Mode"
+            />
+          )}
+        </>
+      );
+    }
+
+    if (data.bank_details_verification_status === 'failed') {
+      return (
+        <>
+          <Info
+            title={Messages.BANK_DETAILS_VERIFICATION_STATUS.failed.title}
+            description={Messages.BANK_DETAILS_VERIFICATION_STATUS.failed.description}
+            titleColor="negative.900"
+          />
+          <Buttons.Primary
             onClick={onCTAClick}
-            title="View Submitted Details"
+            title="Upload Bank Account Proof"
             icon="arrowRight"
           />
         </>
       );
     }
-
+  } else {
     if (
-      data.activation_status === 'activated' ||
-      data.activation_status === 'activated_mcc_pending'
+      data.poi_verification_status === 'incorrect_details' ||
+      data.poi_verification_status === 'not_matched'
     ) {
       return (
         <>
           <Info
-            title={Messages.ACTIVATION_STATUS_ACTIVATED.title}
-            description={Messages.ACTIVATION_STATUS_ACTIVATED.description}
+            title={Messages.POI_VERIFICATION_STATUS.incorrect_details.title}
+            description={Messages.POI_VERIFICATION_STATUS.incorrect_details.description}
+            titleColor="negative.900"
+            hasError
           />
-          <Buttons.Secondary onClick={() => goToDashboard()} title="View settlement schedule" />
+          <Buttons.Primary onClick={onCTAClick} title="Review Details" icon="arrowRight" />
         </>
+      );
+    }
+
+    if (data.poi_verification_status === 'failed') {
+      return (
+        <>
+          <Info
+            title={Messages.POI_VERIFICATION_STATUS.failed.title}
+            description={Messages.POI_VERIFICATION_STATUS.failed.description}
+            titleColor="negative.900"
+            hasError
+          />
+          <Buttons.Primary onClick={onCTAClick} title="Try Again" />
+        </>
+      );
+    }
+
+    if (data.poi_verification_status === 'pending') {
+      return (
+        <Info
+          title={Messages.POI_VERIFICATION_STATUS.pending.title}
+          description={Messages.POI_VERIFICATION_STATUS.pending.description}
+          titleColor="neutral.960"
+        />
       );
     }
   }

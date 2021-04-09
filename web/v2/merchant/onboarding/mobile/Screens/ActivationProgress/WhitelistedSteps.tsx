@@ -142,6 +142,8 @@ const WhitelistedSteps: React.FC<RouteComponentProps> = ({ history }) => {
   const hasPoiStatus =
     data.poi_verification_status === 'incorrect_details' ||
     data.poi_verification_status === 'not_matched';
+
+  const shouldShowPoiError = !data.submitted && hasPoiStatus;
   return (
     <Screen>
       <OnboardingStepCard
@@ -168,8 +170,8 @@ const WhitelistedSteps: React.FC<RouteComponentProps> = ({ history }) => {
             name: 'Business Details',
             id: 'business_details',
             onClick,
-            isComplete: isBusinessDetailsCompleted && !hasPoiStatus,
-            hasErrorText: hasPoiStatus ? 'Unable to verify your PAN. Please update' : '',
+            isComplete: isBusinessDetailsCompleted && !shouldShowPoiError,
+            hasErrorText: shouldShowPoiError ? 'Unable to verify your PAN. Please update' : '',
           },
         ]}
         onCTAClick={onCTAClick}
@@ -198,7 +200,7 @@ const WhitelistedSteps: React.FC<RouteComponentProps> = ({ history }) => {
         onCTAClick={submitL2}
       />
       <EnableSettlementModal isOpen={isEnableSettlementModalOpen} />
-      <SubmitFormModal isOpen={isSubmitFormModalOpen} />
+      <SubmitFormModal isOpen={isSubmitFormModalOpen} isAutoKycDone={data.isAutoKycDone} />
     </Screen>
   );
 };

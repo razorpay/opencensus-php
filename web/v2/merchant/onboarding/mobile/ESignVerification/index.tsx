@@ -93,7 +93,7 @@ const ESignVerification: React.FC<ESignPropsT> = ({ disabled = false }) => {
   };
 
   return (
-    <Card padding={[2]} margin={[0, 0, 2, 0]}>
+    <Card padding={[2, 2, 0, 2]} margin={[0, 0, 2, 0]}>
       {renderComponent()}
     </Card>
   );

@@ -68,10 +68,12 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
 
     if (updatedDetails.merchant_avg_order_value) {
       let merchant_avg_order_value;
-      if (updatedDetails.merchant_avg_order_value.value === 'More than ₹ 1,00,000') {
+      if (updatedDetails.merchant_avg_order_value.value === '100000-0') {
         merchant_avg_order_value = {
-          min_aov: 100000,
-          max_aov: 0,
+          value: {
+            min_aov: 100000,
+            max_aov: 0,
+          },
         };
       } else {
         const value = updatedDetails.merchant_avg_order_value.value.split('-');
@@ -146,6 +148,10 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
             }
             return Yup.string().nullable();
           }),
+          business_model: Yup.string().min(
+            200,
+            'Business Description should be at least 200 Characters',
+          ),
         });
         return _schema;
       }}
@@ -276,12 +282,11 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
                       onChange={(value) => {
                         formikProps.setFieldValue('business_model', value);
                       }}
-                      maxLength={200}
                       disabled={isFormLocked}
                       errorText={
                         formikProps.touched.business_model && formikProps.errors.business_model
                       }
-                      helpText="Tell us about the products you sell, your customers and the channels you primarily use for business ( Website, offline retail, etc )"
+                      helpText="Tell us about the products you sell, your customers and the channels you primarily use for business ( Website, offline retail, etc) with minimum 200 characters"
                     />
                   </View>
                 </Space>

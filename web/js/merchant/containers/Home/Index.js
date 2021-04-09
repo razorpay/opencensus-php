@@ -1019,6 +1019,9 @@ export default class HomeContainer extends Component {
             onClose={() => {
               iaActivations.trackClose(activation_flow);
               this.props.hideKYCStatusModal();
+              if (isMobile && user.isOnboardingV2Enabled) {
+                window.location.reload();
+              }
             }}
             onGoToDashboard={() => {
               iaActivations.trackClose(activation_flow);

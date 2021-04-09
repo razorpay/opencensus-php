@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { withRouter, RouteComponentProps } from 'react-router-dom';
 import Space from '@razorpay/blade/src/atoms/Space';
 import View from '@razorpay/blade/src/atoms/View';
 import Flex from '@razorpay/blade/src/atoms/Flex';
@@ -7,15 +8,19 @@ import Text from '@razorpay/blade/src/atoms/Text';
 import Link from '@commander/shield/src/shared/Link';
 import SaveAndExitModal from '../../SaveAndExitModal';
 import HeaderBackground from './images/header_background.svg';
+import useActivation from '../../hooks/useActivation';
 
 const StyledActivationProgressHeader = styled(View)`
   box-shadow: 0px 4px 5px rgba(11, 112, 231, 0.05);
   background: url("${HeaderBackground}") right bottom -10px no-repeat;
   background-color: ${({ theme }) => theme.colors.background['200']};
 `;
-
-const ActivationProgressHeader: React.FC<{ progress: number }> = ({ progress }) => {
+const ActivationProgressHeader: React.FC<RouteComponentProps & { progress: number }> = ({
+  progress,
+  history,
+}) => {
   const [isSaveAndExitModalOpen, setIsSaveAndExitModalOpen] = useState(false);
+  const { data } = useActivation();
 
   return (
     <>
@@ -24,7 +29,7 @@ const ActivationProgressHeader: React.FC<{ progress: number }> = ({ progress }) 
           <StyledActivationProgressHeader>
             <View>
               <Text size="large" weight="bold">
-                Account Activation
+                Account Details
               </Text>
               <Text size="xsmall" weight="bold" color="positive.960">
                 {progress}% complete
@@ -32,7 +37,9 @@ const ActivationProgressHeader: React.FC<{ progress: number }> = ({ progress }) 
             </View>
             <Space padding={[0.5, 0]}>
               <Link
-                onClick={() => setIsSaveAndExitModalOpen(true)}
+                onClick={() =>
+                  !data.submitted ? setIsSaveAndExitModalOpen(true) : history.push('/dashboard')
+                }
                 size="xsmall"
                 weight="bold"
                 color="primary.800"
@@ -51,4 +58,4 @@ const ActivationProgressHeader: React.FC<{ progress: number }> = ({ progress }) 
   );
 };
 
-export default ActivationProgressHeader;
+export default withRouter(ActivationProgressHeader);

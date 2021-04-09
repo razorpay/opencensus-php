@@ -64,13 +64,6 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
     fetchDefaultIfscInfo();
   }, []);
 
-  useEffect(() => {
-    // when checkbox is unchecked then bankAndCompanyDetailsCompleted set to false
-    if (!hasGSTIN && data.gstin === '' && !data.gstin.length) {
-      setBankAndCompanyDetailsCompleted(hasGSTIN);
-    }
-  }, [hasGSTIN]);
-
   return (
     <Formik
       initialValues={{
@@ -265,8 +258,11 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                         if (value) {
                           formikProps.setFieldTouched('gstin');
                           formikProps.setFieldValue('gstin', '');
+                          setIsBlurCalled(true);
+                        } else {
+                          isTabComplete({ ...data, hasGSTIN: !value }, 'bank_and_company_details');
+                          setBankAndCompanyDetailsCompleted(value);
                         }
-                        setIsBlurCalled(true);
                         analyticsTrack({
                           objectName: 'SignUp',
                           actionName: "I don't have a GSTIN checkbox",

@@ -356,10 +356,14 @@ export const checkIfDedupe = (data) => {
 };
 export function checkIfEAadharStepCompleted(data) {
   let isEAadharFieldFilled = false;
+  const AadharEnabledTypes = ['11', '1', '3'];
   if (
     (data && data.stakeholder && data.stakeholder.aadhaar_esign_status === 'verified') ||
     (data.stakeholder && data.stakeholder.aadhaar_linked == '0')
   ) {
+    isEAadharFieldFilled = true;
+  }
+  if (!AadharEnabledTypes.includes(data.business_type)) {
     isEAadharFieldFilled = true;
   }
   return isEAadharFieldFilled;

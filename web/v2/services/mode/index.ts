@@ -1,8 +1,9 @@
 let mode: ModeT = 'test';
 export type ModeT = 'test' | 'live';
 
-export function getMode(): string {
-  return mode;
+export function getMode(merchantId?: string): string {
+  const _mode = localStorage.getItem(`rzp_mode--${merchantId}`) || mode;
+  return _mode;
 }
 
 export function setMode(value: ModeT): ModeT {

@@ -4,11 +4,9 @@ import * as Yup from 'yup';
 import { Formik } from 'formik';
 import View from '@razorpay/blade/src/atoms/View';
 import Space from '@razorpay/blade/src/atoms/Space';
-import Text from '@razorpay/blade/src/atoms/Text';
 import TextInput from '@razorpay/blade/src/atoms/TextInput';
 import TextArea from '@razorpay/blade/src/atoms/TextArea';
 import Checkbox from '@razorpay/blade/src/atoms/Checkbox';
-import Link from '@commander/shield/src/shared/Link';
 import { getColor } from '@razorpay/blade/src/_helpers/theme';
 import { Select, Option } from 'v2/components/Select';
 import { FormSection, Field, GetTouchedFields } from '../Form';
@@ -101,6 +99,7 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
     data.poi_verification_status === 'incorrect_details' ||
     data.poi_verification_status === 'not_matched';
 
+  const shouldShowPoiError = !data.submitted && hasPoiStatus;
   useEffect(() => {
     if (hasPoiStatus) {
       analyticsTrack({
@@ -185,7 +184,7 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
         business_operation_state: businessDetails.business_operation_state.value,
         business_operation_city: businessDetails.business_operation_city.value,
         business_operation_pin: businessDetails.business_operation_pin.value,
-        same_address: false,
+        same_address: true,
       }}
       validationSchema={businessDetailsSchema}
       enableReinitialize
@@ -201,11 +200,11 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
           <FormSection
             title="PAN Details"
             subtitle={
-              hasPoiStatus
+              shouldShowPoiError
                 ? 'PAN Verification failed. Please review your details and submit again'
                 : 'These details will be verified with the government database'
             }
-            hasError={hasPoiStatus}
+            hasError={shouldShowPoiError}
           >
             <Field visible={isVisible('company_pan', data)}>
               <TextInput
@@ -213,9 +212,12 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                 name="company_pan"
                 label="Business PAN"
                 helpText="PAN of the Company"
-                value={formikProps.values.company_pan}
+                value={
+                  formikProps.values.company_pan && formikProps.values.company_pan.toUpperCase()
+                }
                 errorText={formikProps.touched.company_pan && formikProps.errors.company_pan}
                 disabled={isFormLocked}
+                autoCapitalize="characters"
               />
             </Field>
             <Field visible={isVisible('business_name', data)}>
@@ -235,9 +237,12 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                 name="promoter_pan"
                 label={getLabel('promoter_pan', data)}
                 helpText={getHelpText('promoter_pan', data)}
-                value={formikProps.values.promoter_pan}
+                value={
+                  formikProps.values.promoter_pan && formikProps.values.promoter_pan.toUpperCase()
+                }
                 errorText={formikProps.touched.promoter_pan && formikProps.errors.promoter_pan}
                 disabled={isFormLocked}
+                autoCapitalize="characters"
               />
             </Field>
             <Field last>
@@ -306,7 +311,8 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
             <Field>
               <Select
                 label="Select State"
-                placeholder="SELECT STATE"
+                bottomSheetHeaderText="SELECT STATE"
+                placeholder=""
                 inputPlaceholder="Search State"
                 searchable={true}
                 errorText={
@@ -399,7 +405,8 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
               <Field last>
                 <Select
                   label="Select State"
-                  placeholder="SELECT STATE"
+                  placeholder=""
+                  bottomSheetHeaderText="SELECT STATE"
                   inputPlaceholder="Search State"
                   searchable={true}
                   errorText={
@@ -427,14 +434,14 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
           <Space margin={[2, 0, 1.5, 0]}>
             <StyledSeparator />
           </Space>
-          {data.activation_flow !== 'greylist' ? (
+          {/* {data.activation_flow !== 'greylist' ? (
             <Text size="xsmall" align="center">
               By submitting these details you agree to our{' '}
               <Link href="https://razorpay.com/terms/" target="_blank" size="xsmall">
                 terms and conditions
               </Link>
             </Text>
-          ) : null}
+          ) : null} */}
 
           <GetTouchedFields
             handleSubmit={handleSubmit}

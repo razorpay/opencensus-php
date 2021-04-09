@@ -171,7 +171,7 @@ const VerifyOTP: React.FC<VerifyOtpPropsT> = ({
                 </View>
               </Space>
               <Flex alignItems="center">
-                <Space padding={[0, 0, 4]}>
+                <Space padding={[0, 0, 1.5]}>
                   <View>
                     <Text size="small" color="shade.960">
                       Did not recieve OTP?

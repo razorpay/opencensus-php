@@ -62,6 +62,8 @@ const GreylistedSteps: React.FC<RouteComponentProps> = ({ history }) => {
     data.poi_verification_status === 'incorrect_details' ||
     data.poi_verification_status === 'not_matched';
 
+  const shouldShowPoiError = !data.submitted && hasPoiStatus;
+
   return (
     <View>
       <OnboardingStepCard
@@ -85,8 +87,8 @@ const GreylistedSteps: React.FC<RouteComponentProps> = ({ history }) => {
             name: 'Business Details',
             id: 'business_details',
             onClick,
-            isComplete: isBusinessDetailsCompleted && !hasPoiStatus,
-            hasErrorText: hasPoiStatus ? 'Unable to verify your PAN. Please update' : '',
+            isComplete: isBusinessDetailsCompleted && !shouldShowPoiError,
+            hasErrorText: shouldShowPoiError ? 'Unable to verify your PAN. Please update' : '',
           },
           {
             name: 'Bank and Business Details',
@@ -107,7 +109,7 @@ const GreylistedSteps: React.FC<RouteComponentProps> = ({ history }) => {
         activationFlow={merchantFlow}
         onCTAClick={submitL2}
       />
-      <SubmitFormModal isOpen={isSubmitFormModalOpen} />
+      <SubmitFormModal isOpen={isSubmitFormModalOpen} isAutoKycDone={data.isAutoKycDone} />
     </View>
   );
 };
