@@ -350,7 +350,7 @@ class Core extends Base\Core
         $values = array_merge($defaultValues, $values);
 
         $this->trace->info(
-            TraceCode::FUND_ACCOUNT_VALIDATION_CREATE_VALUES,
+            TraceCode::REQUEST_CREATE_VALUES_TO_FTS,
             $values
         );
 
