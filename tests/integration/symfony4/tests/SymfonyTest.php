@@ -24,7 +24,6 @@ use Symfony\Component\HttpKernel\Event\ControllerEvent;
 use Symfony\Component\HttpKernel\Event\FinishRequestEvent;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\Event\TerminateEvent;
-use OpenCensus\Trace\Integrations\PDO;
 
 class SymfonyTest extends TestCase
 {

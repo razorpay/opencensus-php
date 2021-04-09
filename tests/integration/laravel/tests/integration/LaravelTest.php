@@ -19,7 +19,6 @@ namespace OpenCensus\Tests\Integration\Trace\Exporter;
 
 use GuzzleHttp\Client;
 use PHPUnit\Framework\TestCase;
-use OpenCensus\Trace\Integrations\PDO;
 
 class LaravelTest extends TestCase
 {
