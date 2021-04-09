@@ -24,8 +24,8 @@ cp -R app config routes tests phpunit.xml.dist laravel
 pushd laravel
 
 composer config repositories.opencensus git ${REPO}
-composer require opencensus/opencensus:dev-${BRANCH}
-composer require --dev guzzlehttp/guzzle:~6.0
+composer require --no-interaction opencensus/opencensus:dev-${BRANCH} doctrine
+composer require --no-interaction --dev phpunit/phpunit:^7.0 guzzlehttp/guzzle:~6.0
 
 php artisan migrate
 vendor/bin/phpunit --config=phpunit.xml.dist
