@@ -145,7 +145,7 @@ class Core extends Base\Core
                         'transferId'=>$transfer->getId()
                     ]);
 
-            TransferProcess::dispatch($this->mode, $payment->getId(), Constant::PAYMENT)->delay(120);
+            TransferProcess::dispatch($this->mode, $payment->getId(), Constant::PAYMENT);
         }
 
 
