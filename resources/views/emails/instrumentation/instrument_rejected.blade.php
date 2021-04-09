@@ -111,12 +111,6 @@
                         </table>
 
                     </div>
-
-                    <!--[if mso | IE]>
-                    </td>
-                    </tr>
-                    </table>
-                    <![endif]-->
                 </td>
             </tr>
             </tbody>
@@ -124,32 +118,13 @@
 
     </div>
 
-
-    <!--[if mso | IE]>
-    </td>
-    </tr>
-    </table>
-    <table
-        align="center" border="0" cellpadding="0" cellspacing="0" class="max-width-override-outlook" style="width:600px;" width="600"
-    >
-        <tr>
-            <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
-    <![endif]-->
-
-
+ 
     <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
 
         <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
             <tbody>
             <tr>
                 <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
-                    <!--[if mso | IE]>
-                    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                        <tr>
-                            <td
-                                class="" style="vertical-align:top;width:600px;"
-                            >
-                    <![endif]-->
 
                     <div class="mj-column-per-100 outlook-group-fix" style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
 
@@ -167,7 +142,7 @@
                               <div style="display: flex; justify-content: center">                                   <img src="https://cdn.razorpay.com/static/assets/instrument-request/warning.svg" />
                                                         </div>
                                                       </div>
-                                            <div class="center-align font-size-normal font-color-primary" style="text-align: center; font-size: 18px; font-weight: 700; line-height: 1.5; color: #0D2366; margin-top: 12px">                           Sorry!</div></div>
+                                    </div>
                                                 </div>
 
                                         </td>
@@ -177,18 +152,28 @@
                                             <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
 
                                                 <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="card title" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; padding-bottom: 16px; border-top-left-radius: 0; border-top-right-radius: 0;"><div style="text-align: center; font-size: 14px; line-height: 25px; color: #0D2366;"> Your {{$instrument_name}} request has been denied  </div>
-                                                      <div style="border-bottom: 4px solid #2DD589; margin: 0 auto; margin-top: 12px; margin-bottom: 8px; width: 24px; "></div>
-                                                      <div style="text-align: center; font-size: 14px; line-height: 20px; color: #646D8B;font-weight: 400">
-                                                      <p>  We had to deny your request to enable {{$instrument_name}} for your Razorpay account. We had to take this decision due to the following reason: </p>
+                             
+                                                    <div class="card title" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; padding-bottom: 16px; border-top-left-radius: 0; border-top-right-radius: 0;"><div style="text-align: left; font-size: 14px; line-height: 25px; color: #0D2366;">
+                                                      <p>Hey {{$contact_name}}</p>
+                             <p>
+                               Your request to enable  {{$instrument_name}} has been denied 
+                             </p>                          </div>
+                                                      <div style="text-align: left; font-size: 14px; line-height: 20px; color: #646D8B;font-weight: 400">
+                                                      <p>  This is because: </p>
                                                         <p>{{$comment}}</p>
 
+                                                        <p>
+                                                          Please reach out to us <a href="https://razorpay.com/support" target="_blank">here</a> if you think we might have made a mistake. </p>
+
+                                                        <p> Bringing the future of payments to you, </p>
+<p> Team Razorpay</p>
                                                       </div>
                                                     </div>
                                                 </div>
 
                                             </td>
                                         </tr>
+                                      
 
                                     </table>
 
@@ -198,93 +183,12 @@
                         </table>
 
                     </div>
-
-                    <!--[if mso | IE]>
-                    </td>
-                    </tr>
-                    </table>
-                    <![endif]-->
                 </td>
             </tr>
             </tbody>
         </table>
 
     </div>
-
-    <!--[if mso | IE]>
-    </td>
-    </tr>
-    </table>
-    <table
-        align="center" border="0" cellpadding="0" cellspacing="0" class="max-width-override-outlook" style="width:600px;" width="600"
-    >
-        <tr>
-            <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
-    <![endif]-->
-
-
-    <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
-
-        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
-            <tbody>
-            <tr>
-                <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
-                    <!--[if mso | IE]>
-                    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                        <tr>
-                            <td
-                                class="" style="vertical-align:top;width:600px;"
-                            >
-                    <![endif]-->
-
-                    <div class="mj-column-per-100 outlook-group-fix" style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
-
-                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
-                            <tbody>
-                            <tr>
-                                <td style="vertical-align:top;padding:0px;">
-
-                                    <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
-
-                                        <tr>
-                                            <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
-
-                                                <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="footer" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; margin-top: 8px; margin-bottom: 8px;"><div class="footer-text" style="font-size: 12px; line-height: 1.5; color: #7B8199; text-align: center; padding: 8px 0;">If you have any issues with the payment method request, Please reach out to us by raising a request <a class="link" href="https://razorpay.com/support" target="_blank" style="text-decoration: none; color: #528FF0;">here</a></div></div>
-                                                </div>
-
-                                            </td>
-                                        </tr>
-
-                                    </table>
-
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-
-                    </div>
-
-                    <!--[if mso | IE]>
-                    </td>
-                    </tr>
-                    </table>
-                    <![endif]-->
-                </td>
-            </tr>
-            </tbody>
-        </table>
-
-    </div>
-
-
-    <!--[if mso | IE]>
-    </td>
-    </tr>
-    </table>
-    <![endif]-->
-
-
 </div>
 
 </body>

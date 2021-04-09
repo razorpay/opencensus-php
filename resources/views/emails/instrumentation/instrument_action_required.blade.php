@@ -119,7 +119,7 @@
                     <![endif]-->
                 </td>
             </tr>
-            </tbody>
+            </tbody> 
         </table>
 
     </div>
@@ -167,7 +167,7 @@
                               <div style="display: flex; justify-content: center">                                   <img src="https://cdn.razorpay.com/static/assets/instrument-request/warning.svg" /> 
                                                         </div>
                                                       </div>
-                                            <div class="center-align font-size-normal font-color-primary" style="text-align: center; font-size: 18px; font-weight: 700; line-height: 1.5; color: #0D2366; margin-top: 12px">                           Attention Required!</div></div>
+          </div>
                                                 </div>
 
                                         </td>
@@ -177,32 +177,19 @@
                                             <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
 
                                                 <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="card title" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; padding-bottom: 16px; border-top-left-radius: 0; border-top-right-radius: 0;"><div style="text-align: center; font-size: 14px; line-height: 25px; color: #0D2366;"> We need your help to approve {{$instrument_name}} request  </div>
-                                                      <div style="border-bottom: 4px solid #2DD589; margin: 0 auto; margin-top: 12px; margin-bottom: 8px; width: 24px; "></div>
-                                                      <div style="text-align: center; font-size: 14px; line-height: 20px; color: #646D8B;font-weight: 400">
-                                                      <p>  While we were reviewing your request for enabling {{$instrument_name}}, we found a few discrepancies and we’d need your help to resolve it.  
+                                                    <div class="card title" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; padding-bottom: 16px; border-top-left-radius: 0; border-top-right-radius: 0;"><div style="text-align: left; font-size: 14px; line-height: 25px; color: #0D2366;"> Hey, {{$contact_name}}  </div>
+<!--                                                       <div style="border-bottom: 4px solid #2DD589; margin: 0 auto; margin-top: 12px; margin-bottom: 8px; width: 24px; "></div> -->
+                                                      <div style="text-align: left; font-size: 14px; line-height: 20px; color: #646D8B;font-weight: 400">
+                                                      <p>  While we were reviewing your request for enabling {{$instrument_name}}, we found a few discrepancies. To continue further, we need your help in resolving them.  
+
  </p>
                                                         <p>{{$comment}}</p>
-
-                                                                                        <a
-                            href="{{$profile_link}}"
-                            target="_blank"
-                            style="color: white; text-decoration: unset;"
-                    >
-                        <div
-                                style="
-                    padding: 9px 30px;                           margin: 16px auto;
-                    border-radius: 3px;
-                    color: #528ff0;
-                    border: 1px solid #528ff0;
-                                       width: 168px; 
-                                       text-align: center; font-size: 14px; line-height: 18px; vertical-align: center;
-                  "
-                        >
-                            Go to Dashboard
-                        </div>
-                    </a>   
-                                                      </div>
+                                                        
+                                                        <div class="footer-text" style="font-size: 12px; line-height: 1.5; color: #7B8199;">
+                                                         <p> Please reach out to us with the necessary changes by raising a request <a class="link" href="https://razorpay.com/support" target="_blank" style="text-decoration: none; color: #528FF0;">here</a></p>
+                                                          <p>Bringing the future of payments to you, </p>
+                                                          <span> Team Razorpay </span>
+                                                         </div></div>                                     </div>
                                                     </div>
                                                 </div>
 
@@ -270,7 +257,7 @@
                                             <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
 
                                                 <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="footer" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; margin-top: 8px; margin-bottom: 8px;"><div class="footer-text" style="font-size: 12px; line-height: 1.5; color: #7B8199; text-align: center; padding: 8px 0;">If you have any issues with the payment method request, Please reach out to us by raising a request <a class="link" href="https://razorpay.com/support" target="_blank" style="text-decoration: none; color: #528FF0;">here</a></div></div>
+                                                    <div class="footer" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; margin-top: 8px; margin-bottom: 8px;">
                                                 </div>
 
                                             </td>

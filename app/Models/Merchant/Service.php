@@ -3500,7 +3500,6 @@ class Service extends Base\Service
 
         return $data;
     }
-
     /**
      * Will provide if merchant is confirmed or not.
      *
