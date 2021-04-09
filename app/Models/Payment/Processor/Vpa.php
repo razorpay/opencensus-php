@@ -156,7 +156,7 @@ trait Vpa
      * @param $tracable
      * @return mixed
      */
-    protected function getTerminalsForValidateVpa(string $vpa, & $tracable)
+    protected function getTerminalsForValidateVpa(string $vpa, &$tracable)
     {
         // Get terminals stored in env
         $terminalIds = Payment\Gateway::getTerminalsForValidateVpaForMode($this->mode);
@@ -174,12 +174,12 @@ trait Vpa
 
         if (($this->mode === Mode::LIVE) and ($variant === Payment\Gateway::UPI_SBI))
         {
-            $terminalIds = ['6KTOhwf4XBOMns', 'BZuiTusQVjb1a4', 'CrTfneH0erizag', 'CrWje4EiFnXUE8', 'AK6NMmzbL6FPe4'];
+            $terminalIds = ['AK6NMmzbL6FPe4', 'BZuiTusQVjb1a4', 'CrTfneH0erizag', 'CrWje4EiFnXUE8', '6KTOhwf4XBOMns'];
         }
 
         if (($this->mode === Mode::LIVE) and ($variant === Payment\Gateway::UPI_ICICI))
         {
-            $terminalIds = ['AK6NMmzbL6FPe4', 'BZuiTusQVjb1a4', 'CrTfneH0erizag', 'CrWje4EiFnXUE8', '6KTOhwf4XBOMns'];
+            $terminalIds = ['6KTOhwf4XBOMns', 'BZuiTusQVjb1a4', 'CrTfneH0erizag', 'CrWje4EiFnXUE8', 'AK6NMmzbL6FPe4'];
         }
 
         $terminals = $this->filterTerminalsForValidateVpa($terminalIds);
@@ -228,8 +228,8 @@ trait Vpa
             // Randomly choose an enabled mindgate terminal.
             $selectedTerminal = $mindgateEnabledTerminals->random();
 
-            // Filter enabled terminals to only include one mindgate terminal (which is randomly chosen in the above step)
-            // along with other gateway terminals.
+            // Filter enabled terminals to only include one mindgate terminal
+            // (which is randomly chosen in the above step) along with other gateway terminals.
             $terminals = $terminals->filter(function ($terminal) use ($mindgateEnabledTerminals, $selectedTerminal){
 
                 // Check if the terminal is mindgate terminal and
