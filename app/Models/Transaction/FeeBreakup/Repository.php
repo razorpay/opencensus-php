@@ -55,7 +55,7 @@ class Repository extends Base\Repository
                            ->payment
                            ->dbColumn(Payment\Entity::CAPTURED_AT);
 
-        $feesBreakup = $this->newQuery()
+        $feesBreakup = $this->newQueryWithConnection($this->getSlaveConnection())
                             ->selectRaw(Entity::NAME . ','.
                                 'SUM(' .$feeBreakupAmount .') AS sum')
                             ->join(Table::TRANSACTION, $feeBreakupTransactionId, '=', $transactionId)
