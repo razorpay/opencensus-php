@@ -19,6 +19,7 @@ namespace OpenCensus\Tests\Integration\Trace\Exporter;
 
 use GuzzleHttp\Client;
 use PHPUnit\Framework\TestCase;
+use OpenCensus\Trace\Integrations\PDO;
 
 class LaravelTest extends TestCase
 {
@@ -62,8 +63,6 @@ class LaravelTest extends TestCase
 
     public function testEloquent()
     {
-        $this->markTestSkipped();
-
         // create a user
         $email = uniqid() . '@user.com';
         $response = self::$client->request('GET', '/users/store', [
