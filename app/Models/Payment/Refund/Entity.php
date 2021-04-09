@@ -21,6 +21,7 @@ use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\NotesTrait;
 use Razorpay\Spine\DataTypes\Dictionary;
 use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Payment\Refund\Metric as RefundMetric;
 use RZP\Models\Payment\PaymentMeta\MismatchAmountReason;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
@@ -28,7 +29,7 @@ use RZP\Models\Payment\Refund\Constants as RefundConstants;
 /**
  * @property Payment\Entity     $payment
  * @property Transaction\Entity $transaction
- * @property Merchant\Entity    $merchant
+ * @property MerchantEntity    $merchant
  */
 class Entity extends Base\PublicEntity
 {
@@ -337,6 +338,31 @@ class Entity extends Base\PublicEntity
             Constants::REFUND_PUBLIC_STATUS_FEATURE_ENABLED => $refundPublicStatusFeatureEnabled,
             Constants::REFUND_PENDING_STATUS_FEATURE_ENABLED => $refundPendingStatusFeatureEnabled,
         ];
+
+        $app = \App::getFacadeRoot();
+
+        $app['trace']->info(TraceCode::REFUND_AUTHORIZE_BULK,
+            [
+                'public refund entity with expand' => 'called toArrayPublicWithExpand',
+            ]);
+
+        if ((new Merchant\Core())->isOrgCustomBranding($this->merchant) === true)
+        {
+            $app['trace']->info(TraceCode::MERCHANT_FEATURE_NOT_EXIST,
+                [
+                    'merchant has custom branding' => true,
+                ]);
+
+            $response[self::PROCESSED_AT] = $this->getProcessedAt();
+            $response['refund_type'] = (new Core)->getRefundType($this->getPublicId(), $this->merchant);
+        }
+        else
+        {
+            $app['trace']->info(TraceCode::MERCHANT_FEATURE_NOT_EXIST,
+                [
+                    'merchant has custom branding' => false,
+                ]);
+        }
 
         return $this->getPublicStatus($response, $data);
     }
@@ -1112,6 +1138,12 @@ class Entity extends Base\PublicEntity
 
         $data[Payment\Entity::CONTACT] = $this->payment->getContact();
         $data[Payment\Entity::EMAIL]   = $this->payment->getEmail();
+
+        if ((new Merchant\Core())->isOrgCustomBranding($this->merchant) === true)
+        {
+            $data[self::PROCESSED_AT] = $this->getProcessedAt();
+            $data['refund_type'] = (new Core)->getRefundType($this->getPublicId(), $this->merchant);
+        }
 
         return $data;
     }

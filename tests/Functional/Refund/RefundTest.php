@@ -16,6 +16,7 @@ use RZP\Services\RazorXClient;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
+use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Payment\RefundRrnUpdated;
 use RZP\Exception\BadRequestException;
@@ -46,6 +47,7 @@ class RefundTest extends TestCase
 {
     use PaymentTrait;
     use DbEntityFetchTrait;
+    use CustomBrandingTrait;
 
     protected $payment = null;
 
@@ -1610,6 +1612,54 @@ class RefundTest extends TestCase
         $refunds = $this->getEntities('refund');
         $rfnds = ['entity' => 'collection', 'count' => 1, 'items' => [$actual]];
         $this->assertArraySelectiveEquals($rfnds, $refunds);
+    }
+
+    public function testFetchRefundByIdWithCustomBranding()
+    {
+        $this->createCustomBrandingOrgAndAssignMerchant();
+
+        $payment = $this->fixtures->create('payment:captured');
+        $rfnd = $this->fixtures->create('refund:from_payment', ['payment' => $payment]);
+
+        $this->fixtures->refund->edit(
+            $rfnd['id'],
+            [
+                'speed_requested'  => 'normal',
+                'speed_decisioned' => 'normal',
+                'speed_processed'  => 'normal',
+                'status'           => 'processed'
+            ]
+        );
+
+        $rfnd = $this->getDbEntityById('refund', $rfnd['id']);
+
+        $actual = $rfnd->toArrayPublicWithExpand();
+
+        $this->assertArrayHasKey('processed_at', $actual);
+        $this->assertArrayHasKey('refund_type', $actual);
+    }
+
+    public function testFetchRefundByIdWithoutCustomBranding()
+    {
+        $payment = $this->fixtures->create('payment:captured');
+        $rfnd = $this->fixtures->create('refund:from_payment', ['payment' => $payment]);
+
+        $this->fixtures->refund->edit(
+            $rfnd['id'],
+            [
+                'speed_requested'  => 'normal',
+                'speed_decisioned' => 'normal',
+                'speed_processed'  => 'normal',
+                'status'           => 'processed'
+            ]
+        );
+
+        $rfnd = $this->getDbEntityById('refund', $rfnd['id']);
+
+        $actual = $rfnd->toArrayPublicWithExpand();
+
+        $this->assertArrayNotHasKey('processed_at', $actual);
+        $this->assertArrayNotHasKey('refund_type', $actual);
     }
 
     public function testFetchRefunds()

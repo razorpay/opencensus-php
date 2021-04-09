@@ -60,6 +60,10 @@ class Payment extends Validator
         Entity::FEE_BEARER          => 'sometimes',
         Entity::OFFERS              => 'sometimes',
         Entity::ORDER               => 'sometimes',
+        Entity::LATE_AUTHORIZED     => 'sometimes',
+        Entity::AUTO_CAPTURED       => 'sometimes',
+        Entity::AUTHORIZED_AT       => 'sometimes',
+        Entity::CAPTURED_AT         => 'sometimes',
     );
 
     protected function validateMethod($attribute, $value)

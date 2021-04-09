@@ -272,7 +272,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const FOREX_RATE_APPLIED                = 'forex_rate_applied';
 
     const FORCE_TERMINAL_ID                 = 'force_terminal_id';
-    
+
     const FILE        = 'file';
     const SIGNED_FORM = 'signed_form';
     const NACH        = 'nach';
@@ -598,7 +598,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::OTP_ATTEMPTS         => null,
         self::OTP_COUNT            => null,
         self::EMI_PLAN_ID          => null,
-        self::LATE_AUTHORIZED      => null,
+        self::LATE_AUTHORIZED      => 0,
         self::RECURRING            => false,
         self::INTERNATIONAL        => null,
         self::VERIFY_BUCKET        => null,
@@ -3516,6 +3516,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $data['invoice_id'] = $this->getInvoiceId();
         }
 
+        if ((new Merchant\Core())->isOrgCustomBranding($this->merchant))
+        {
+            $data[self::AUTHORIZED_AT] = $this->getAuthorizeTimestamp();
+            $data[self::AUTO_CAPTURED] = $this->getAutoCaptured();
+            $data[self::CAPTURED_AT] = $this->getCapturedAt();
+            $data[self::LATE_AUTHORIZED] = $this->isLateAuthorized();
+        }
+
         return $data;
     }
 
@@ -4356,6 +4364,46 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
 
         $data[self::STATUS] = $this->getCurrentPaymentStatus();
+
+        return $data;
+    }
+
+    /**
+     * Get the collection of items as a plain array.
+     * @return array
+     * @throws LogicException
+     */
+    public function toArrayPublic()
+    {
+        $data = parent::toArrayPublic();
+
+        if ((new Merchant\Core())->isOrgCustomBranding($this->merchant) === true)
+        {
+            $data[self::AUTHORIZED_AT] = $this->getAuthorizeTimestamp();
+            $data[self::AUTO_CAPTURED] = $this->getAutoCaptured();
+            $data[self::CAPTURED_AT] = $this->getCapturedAt();
+            $data[self::LATE_AUTHORIZED] = $this->isLateAuthorized();
+        }
+
+        return $data;
+    }
+
+    /**
+     * Get the collection of items as a plain array.
+     * @return array
+     * @throws LogicException
+     */
+    public function toArrayPublicWithExpand()
+    {
+        $data = parent::toArrayPublicWithExpand();
+
+        if ((new Merchant\Core())->isOrgCustomBranding($this->merchant) === true)
+        {
+            $data[self::AUTHORIZED_AT] = $this->getAuthorizeTimestamp();
+            $data[self::AUTO_CAPTURED] = $this->getAutoCaptured();
+            $data[self::CAPTURED_AT] = $this->getCapturedAt();
+            $data[self::LATE_AUTHORIZED] = $this->isLateAuthorized();
+        }
 
         return $data;
     }

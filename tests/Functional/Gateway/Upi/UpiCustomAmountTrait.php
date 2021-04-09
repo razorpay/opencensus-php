@@ -341,7 +341,7 @@ trait UpiCustomAmountTrait
             'base_amount'       => 50000,
             'status'            => 'created',
             'verified'          => 1,
-            'late_authorized'   => null,
+            'late_authorized'   => false,
         ], $payment->toArray(), true);
 
         $this->assertNull($payment->paymentMeta);
@@ -384,7 +384,7 @@ trait UpiCustomAmountTrait
             'base_amount'       => 50000,
             'status'            => 'created',
             'verified'          => 1,
-            'late_authorized'   => null,
+            'late_authorized'   => false,
         ], $payment->toArray(), true);
 
         $this->assertNull($payment->paymentMeta);
@@ -425,7 +425,7 @@ trait UpiCustomAmountTrait
             'base_amount'       => 50000,
             'status'            => 'created',
             'verified'          => 0,
-            'late_authorized'   => null,
+            'late_authorized'   => false,
         ], $payment->toArray(), true);
 
         $this->assertNull($payment->paymentMeta);
@@ -466,7 +466,7 @@ trait UpiCustomAmountTrait
             'base_amount'       => 50000,
             'status'            => 'created',
             'verified'          => 0,
-            'late_authorized'   => null,
+            'late_authorized'   => false,
         ], $payment->toArray(), true);
 
         $this->assertNull($payment->paymentMeta);

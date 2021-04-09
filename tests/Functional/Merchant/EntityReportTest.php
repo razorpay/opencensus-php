@@ -8,6 +8,7 @@ use PhpParser\Node\Scalar\MagicConst\Dir;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Invoice;
 use RZP\Services\RazorXClient;
+use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -19,6 +20,7 @@ class EntityReportTest extends TestCase
     use PaymentTrait;
     use SettlementTrait;
     use DbEntityFetchTrait;
+    use CustomBrandingTrait;
 
     public function __construct()
     {
@@ -47,6 +49,90 @@ class EntityReportTest extends TestCase
         assert(count($paymentReport) === 2);
         assert(count($refundReport) === 1);
         assert(count($combinedReport) === 3);
+    }
+
+    public function testRefundReportWithCustomBranding()
+    {
+        $this->createCustomBrandingOrgAndAssignMerchant();
+
+        $this->doAuthAndCapturePayment();
+        $this->doAuthCaptureAndRefundPayment();
+
+        $dt = Carbon::today(Timezone::IST);
+
+        $input = [
+            'year' => $dt->year,
+            'month' => $dt->month,
+            'day' => $dt->day
+        ];
+
+        $refundReport =  $this->fetchReport('refund', $input);
+
+        $this->assertArrayHasKey('processed_at', $refundReport[0]);
+        $this->assertArrayHasKey('refund_type', $refundReport[0]);
+    }
+
+    public function testRefundReportWithoutCustomBranding()
+    {
+        $this->doAuthAndCapturePayment();
+        $this->doAuthCaptureAndRefundPayment();
+
+        $dt = Carbon::today(Timezone::IST);
+
+        $input = [
+            'year' => $dt->year,
+            'month' => $dt->month,
+            'day' => $dt->day
+        ];
+
+        $refundReport =  $this->fetchReport('refund', $input);
+
+        $this->assertArrayNotHasKey('processed_at', $refundReport[0]);
+        $this->assertArrayNotHasKey('refund_type', $refundReport[0]);
+    }
+
+    public function testPaymentReportWithCustomBranding()
+    {
+        $this->createCustomBrandingOrgAndAssignMerchant();
+
+        $this->doAuthAndCapturePayment();
+        $this->doAuthCaptureAndRefundPayment();
+
+        $dt = Carbon::today(Timezone::IST);
+
+        $input = [
+            'year' => $dt->year,
+            'month' => $dt->month,
+            'day' => $dt->day
+        ];
+
+        $paymentReport =  $this->fetchReport('payment', $input);
+
+        $this->assertArrayHasKey('authorized_at', $paymentReport[0]);
+        $this->assertArrayHasKey('captured_at', $paymentReport[0]);
+        $this->assertArrayHasKey('late_authorized', $paymentReport[0]);
+        $this->assertArrayHasKey('auto_captured', $paymentReport[0]);
+    }
+
+    public function testPaymentReportWithoutCustomBranding()
+    {
+        $this->doAuthAndCapturePayment();
+        $this->doAuthCaptureAndRefundPayment();
+
+        $dt = Carbon::today(Timezone::IST);
+
+        $input = [
+            'year' => $dt->year,
+            'month' => $dt->month,
+            'day' => $dt->day
+        ];
+
+        $paymentReport =  $this->fetchReport('payment', $input);
+
+        $this->assertArrayNotHasKey('authorized_at', $paymentReport[0]);
+        $this->assertArrayNotHasKey('captured_at', $paymentReport[0]);
+        $this->assertArrayNotHasKey('late_authorized', $paymentReport[0]);
+        $this->assertArrayNotHasKey('auto_captured', $paymentReport[0]);
     }
 
     public function testTransactionReport()

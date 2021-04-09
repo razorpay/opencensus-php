@@ -328,6 +328,21 @@ return [
         ],
     ],
 
+    'testFindWithExpandsForPrivateAuthForCustomBranding' => [
+        'request' => [
+            'url'     => '/payments/',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'authorized_at' => null,
+                'late_authorized' => false,
+                'captured_at' => null,
+                'auto_captured' => false,
+            ],
+        ],
+    ],
+
     'testFetchStatusCountForPrivateAuth' => [
         'request' => [
             'url'     => '/payments/transaction/count',
@@ -597,6 +612,17 @@ return [
         ],
     ],
     'testProxyAuthPaymentFetchFeeBearerAttribute' => [
+        'request' => [
+            'url'     => '/payments/',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testProxyAuthPaymentWithCustomBranding' => [
         'request' => [
             'url'     => '/payments/',
             'method'  => 'GET',

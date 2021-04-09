@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Payment;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Models\Currency\Currency;
+use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Models\Feature\Constants as Feature;
@@ -22,6 +23,7 @@ class PaymentFetchTest extends TestCase
     use OAuthTrait;
     use PaymentTrait;
     use DbEntityFetchTrait;
+    use CustomBrandingTrait;
 
     protected function setUp(): void
     {
@@ -246,6 +248,38 @@ class PaymentFetchTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] .= $payment->getPublicId();
 
         $content = $this->startTest();
+
+        $this->assertArrayNotHasKey('authorized_at', $content);
+        $this->assertArrayNotHasKey('captured_at', $content);
+        $this->assertArrayNotHasKey('late_authorized', $content);
+        $this->assertArrayNotHasKey('auto_captured', $content);
+
+        $this->assertArrayNotHasKey('dcc', $content);
+        $this->assertArrayNotHasKey('forex_rate', $content);
+        $this->assertArrayNotHasKey('gateway_amount', $content);
+        $this->assertArrayNotHasKey('gateway_currency', $content);
+        $this->assertArrayNotHasKey('dcc_offered', $content);
+        $this->assertArrayNotHasKey('dcc_mark_up_percent', $content);
+    }
+
+    public function testFindWithExpandsForPrivateAuthForCustomBranding()
+    {
+        $this->ba->privateAuth();
+
+        $this->createCustomBrandingOrgAndAssignMerchant();
+
+        $card = $this->fixtures->create('card', ['name' => 'Test Name']);
+
+        $payment = $this->fixtures->create('payment', ['card_id' => $card->getId()]);
+
+        $this->testData[__FUNCTION__]['request']['url'] .= $payment->getPublicId();
+
+        $content = $this->startTest();
+
+        $this->assertArrayHasKey('authorized_at', $content);
+        $this->assertArrayHasKey('captured_at', $content);
+        $this->assertArrayHasKey('late_authorized', $content);
+        $this->assertArrayHasKey('auto_captured', $content);
 
         $this->assertArrayNotHasKey('dcc', $content);
         $this->assertArrayNotHasKey('forex_rate', $content);
@@ -645,6 +679,25 @@ class PaymentFetchTest extends TestCase
 
     public function testProxyAuthPaymentFetchFeeBearerAttribute()
     {
+        $payment = $this->fixtures->create('payment:authorized', []);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/pay_' . $payment['id'];
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotNull($response);
+
+        $this->assertArrayHasKey('fee_bearer', $response);
+
+        $this->assertEquals('platform', $response['fee_bearer']);
+    }
+
+    public function testProxyAuthPaymentWithCustomBranding()
+    {
+        $this->createCustomBrandingOrgAndAssignMerchant();
+
         $payment = $this->fixtures->create('payment:authorized', []);
 
         $this->testData[__FUNCTION__]['request']['url'] = '/payments/pay_' . $payment['id'];

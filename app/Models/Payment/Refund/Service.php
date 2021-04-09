@@ -13,6 +13,7 @@ use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Models\Bank\IFSC;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
