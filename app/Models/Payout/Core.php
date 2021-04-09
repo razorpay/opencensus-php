@@ -1848,28 +1848,8 @@ class Core extends Base\Core
     protected function updateFeesBreakupWithDummyFeesBreakupDetails(Transaction\Entity $transaction,
                                                                     Base\PublicCollection $dummyFeesBreakup)
     {
-        /** @var Base\PublicCollection $originalFeesBreakup */
-        $originalFeesBreakup = $transaction->feesBreakup;
-
         // Since external entities do not have any fees_breakup, create them now
-        if ($originalFeesBreakup->count() === 0)
-        {
-            (new Transaction\Core)->saveFeeDetails($transaction, $dummyFeesBreakup);
-        }
-        else
-        {
-            //
-            // Since external entities should not have any fees_breakup, throw an exception
-            //
-            throw new Exception\LogicException(
-                'External entity should not have any fee breakup',
-                null,
-                [
-                    'transaction_id'        => $transaction->getId(),
-                    'source_id'             => $transaction->source->getPublicId(),
-                    'fee_breakup_count'     => $originalFeesBreakup->count(),
-                ]);
-        }
+        (new Transaction\Core)->saveFeeDetails($transaction, $dummyFeesBreakup);
     }
 
     /**
