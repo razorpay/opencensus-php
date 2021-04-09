@@ -9,7 +9,7 @@ jobs:
     env:
       commit_id: ${{ github.event.pull_request.head.sha }}
     # Trigger back-merge master when PR is approved and feature branch isn't hotfix branch
-    if: github.event.review.state == 'approved' && !contains(github.event.pull_request.head.ref, 'hotfix')
+    if: github.event.review.state == 'approved' && !contains(github.event.pull_request.head.ref, 'hotfix') && !contains(github.event.pull_request.head.ref, 'revert-')
     runs-on: [self-hosted]
     steps:
     - name: checkout
@@ -63,6 +63,14 @@ jobs:
           const regex = /skiproast.*true/i;
           skipFlag = regex.test(context.payload.pull_request.body.toLowerCase())
           return Boolean(skipFlag)
+    - if: contains(github.event.pull_request.head.ref, 'hotfix')
+      name: Set flag
+      id: hotfix
+      run: echo "::set-output name=flag::true"
+    - if: contains(github.event.pull_request.head.ref, 'revert-')
+      name: Set flag
+      id: revert
+      run: echo "::set-output name=flag::true"
      # Validate existence of Roast PR NUmber Field
     - name: Validate existence of roastPRNumber Field
       uses: actions/github-script@0.9.0
@@ -165,6 +173,8 @@ jobs:
         WEBHOOK_TRIGGER: bvt-api-approval
         GITHUB_TOKEN: ${{ github.token }}
         SKIP_ROAST: ${{steps.skip-roast.outputs.result}}
+        HOTFIX: ${{ steps.hotfix.outputs.flag }}
+        REVERT: ${{ steps.revert.outputs.flag }}
         ROAST_PR_COMMIT: ${{steps.latest-commit.outputs.result}}
         GIT_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
       run: |

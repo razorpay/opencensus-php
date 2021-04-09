@@ -3,7 +3,10 @@
 run_bvt_suite_when_approved() {
   PRNumber=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
   commitId=$(jq --raw-output .pull_request.head.sha "$GITHUB_EVENT_PATH")
-  skipRoast=${SKIP_ROAST}
+  skipRoast="false"
+  if [ "${SKIP_ROAST}" = "true" ] || [ "${HOTFIX}" = "true" ] || [ "${REVERT}" = "true" ]; then
+    skipRoast="true"
+  fi
   roastPRCommit=${ROAST_PR_COMMIT}
   statusCode=$(curl -c /tmp/cookies -o -s -w "%{http_code}" --location --request GET 'https://deploy-api.razorpay.com/login' \
     --header "Authorization: Bearer ${GIT_TOKEN}")

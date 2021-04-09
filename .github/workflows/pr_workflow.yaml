@@ -13,7 +13,7 @@ jobs:
     # Trigger back-merge master if any commit pushed in an approved PR and branch isn't hotfix
     - name: backmerge-master
     # Get the Label from label list and check if approved label applied on the PR
-      if: contains(github.event.pull_request.labels.*.name, 'approved') && !contains(github.event.pull_request.head.ref, 'hotfix')
+      if: contains(github.event.pull_request.labels.*.name, 'approved') && !contains(github.event.pull_request.head.ref, 'hotfix') && !contains(github.event.pull_request.head.ref, 'revert-')
       id: backmerge
       uses: devmasx/merge-branch@a1752b9ba42bb417ec19be7dc974e2faf77d3ef2
       with:
@@ -30,6 +30,14 @@ jobs:
           const regex = /skiproast.*true/i;
           skipFlag = regex.test(context.payload.pull_request.body.toLowerCase())
           return Boolean(skipFlag)
+    - if: contains(github.event.pull_request.head.ref, 'hotfix')
+      name: Set flag
+      id: hotfix
+      run: echo "::set-output name=flag::true"
+    - if: contains(github.event.pull_request.head.ref, 'revert-')
+      name: Set flag
+      id: revert
+      run: echo "::set-output name=flag::true"
       # Validate existence of Roast PR NUmber Field
     - name: Validate existence of roastPRNumber Field
       uses: actions/github-script@0.9.0
@@ -130,6 +138,8 @@ jobs:
         WEBHOOK_TRIGGER : bvt-api-commit
         GITHUB_TOKEN:  ${{ github.token }}
         SKIP_ROAST :  ${{steps.skip-roast.outputs.result}}
+        HOTFIX: ${{ steps.hotfix.outputs.flag }}
+        REVERT: ${{ steps.revert.outputs.flag }}
         ROAST_PR_COMMIT: ${{steps.latest-commit.outputs.result}}
         GIT_TOKEN :  ${{ secrets.CI_BOT_TOKEN }}
       run: |
