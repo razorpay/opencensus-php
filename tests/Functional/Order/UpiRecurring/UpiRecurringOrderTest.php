@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Order;
 
+use Carbon\Carbon;
 use RZP\Models\Order;
 use RZP\Models\UpiMandate;
 use RZP\Tests\Functional\TestCase;
@@ -94,7 +95,7 @@ class UpiRecurringOrderTest extends TestCase
         $this->assertNull($order);
     }
 
-    public function testCreateOrderWithInvalidStartTimeAndEndTime()
+    public function testCreateOrderWithStartTimeGreaterThanEndTime()
     {
         $this->startTest();
 
@@ -154,6 +155,53 @@ class UpiRecurringOrderTest extends TestCase
         $this->assertNotNull($upiMandate['start_time']);
 
         $this->assertNotNull($upiMandate['end_time']);
+
+        $startTime = Carbon::createFromTimestamp($upiMandate['start_time']);
+        $endTime = Carbon::createFromTimestamp($upiMandate['end_time']);
+
+        $this->assertTrue($startTime->lessThan($endTime));
+
+        $this->assertSame(10, $startTime->diffInYears($endTime));
+    }
+
+    public function testCreateOrderWithStartTimeAndNoEndTime()
+    {
+        $this->startTest();
+
+        $upiMandate = $this->getDbLastEntity('upi_mandate');
+
+        $order = $this->getDbLastEntity('order');
+
+        $this->assertNotNull($upiMandate);
+
+        $this->assertNotNull($order);
+
+        $startTime = Carbon::createFromTimestamp($upiMandate['start_time']);
+        $endTime = Carbon::createFromTimestamp($upiMandate['end_time']);
+
+        $this->assertTrue($startTime->lessThan($endTime));
+    }
+
+    public function testCreateOrderWithEndTimeAndNoStartTime()
+    {
+        $this->startTest();
+
+        $upiMandate = $this->getDbLastEntity('upi_mandate');
+
+        $order = $this->getDbLastEntity('order');
+
+        $this->assertNotNull($upiMandate);
+
+        $this->assertNotNull($order);
+
+        $this->assertNotNull($upiMandate['start_time']);
+
+        $this->assertNotNull($upiMandate['end_time']);
+
+        $startTime = Carbon::createFromTimestamp($upiMandate['start_time']);
+        $endTime = Carbon::createFromTimestamp($upiMandate['end_time']);
+
+        $this->assertTrue($startTime->lessThan($endTime));
     }
 
     public function testCreateOrderAmountGreaterThanMaxAmount()

@@ -164,7 +164,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
-    'testCreateOrderWithInvalidStartTimeAndEndTime' => [
+    'testCreateOrderWithStartTimeGreaterThanEndTime' => [
         'request' => [
             'content' => [
                 'amount'          => 50000,
@@ -186,7 +186,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The start time should be less than end time and greater than current time.',
+                    'description' => 'The start time should be less than end time',
                 ],
             ],
             'status_code' => 400,
@@ -219,6 +219,57 @@ return [
             ],
         ],
     ],
+
+    'testCreateOrderWithStartTimeAndNoEndTime' => [
+        'request' => [
+            'content' => [
+                'amount'          => 50000,
+                'currency'        => 'INR',
+                'method'          => 'upi',
+                'customer_id'     => 'cust_100000customer',
+                'payment_capture' => 1,
+                'token'           => [
+                    'max_amount'      => 150000,
+                    'frequency'       => 'monthly',
+                    'start_at'        => Carbon::now()->addDay(1)->getTimestamp(),
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'        => 50000,
+                'currency'      => 'INR',
+            ],
+        ],
+    ],
+
+    'testCreateOrderWithEndTimeAndNoStartTime' => [
+        'request' => [
+            'content' => [
+                'amount'          => 50000,
+                'currency'        => 'INR',
+                'method'          => 'upi',
+                'customer_id'     => 'cust_100000customer',
+                'payment_capture' => 1,
+                'token'           => [
+                    'max_amount'      => 150000,
+                    'frequency'       => 'monthly',
+                    'expire_at'       => Carbon::now()->addYear(5)->getTimestamp(),
+                ]
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'        => 50000,
+                'currency'      => 'INR',
+            ],
+        ],
+    ],
+
     'testCreateOrderWithoutFrequency' => [
         'request' => [
             'content' => [

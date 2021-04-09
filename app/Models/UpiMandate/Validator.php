@@ -6,7 +6,6 @@ use Carbon\Carbon;
 
 use RZP\Base;
 use RZP\Exception\BadRequestValidationFailureException;
-use RZP\Models\Card\IIN\Category;
 
 class Validator extends Base\Validator
 {
@@ -56,17 +55,19 @@ class Validator extends Base\Validator
 
     public function validateTime($input)
     {
-        $currentTime = Carbon::now()->getTimestamp();
+        $startTime = Carbon::createFromTimestamp($input[Entity::START_TIME]);
 
-        $startTime = $input[Entity::START_TIME] ?? Carbon::now()->getTimestamp();
+        $endTime = Carbon::createFromTimestamp($input[Entity::END_TIME]);
 
-        $endTime = $input[Entity::END_TIME] ?? Carbon::now()->addYears(10)->getTimestamp();
-
-        if (($startTime < $currentTime) or ($startTime > $endTime))
+        if ($startTime > $endTime)
         {
             throw new BadRequestValidationFailureException(
-                'The start time should be less than end time and greater than current time.'
-            );
+                'The start time should be less than end time',
+                null,
+                [
+                    'start_time'       => $startTime,
+                    'end_time'         => $endTime,
+                ]);
         }
     }
 

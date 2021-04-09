@@ -100,19 +100,14 @@ class Core extends Base\Core
     // transformer, which will use these params and convert them to the standard start_time and end_time fields.
     protected function transformTokenParamsForUpi(array &$input)
     {
-        $endTime = $input['expire_at'] ?? null;
+        $startTime = $input['start_at'] ?? Carbon::now()->getTimestamp();
 
-        $startTime = $input['start_at'] ?? null;
+        //Default end time to 10 years from current timestamp.
+        $endTime = $input['expire_at'] ?? Carbon::now()->addYears(10)->getTimestamp();
 
-        if ($startTime !== null)
-        {
-            $input[Entity::START_TIME] = $startTime;
-        }
+        $input[Entity::START_TIME] = $startTime;
 
-        if ($endTime !== null)
-        {
-            $input[Entity::END_TIME] = $endTime;
-        }
+        $input[Entity::END_TIME] = $endTime;
 
         // We default the frequency to as_presented if merchant does not pass us this parameter.
         $input['frequency'] = $input['frequency'] ?? Frequency::AS_PRESENTED;
