@@ -326,4 +326,22 @@ class Create extends Job
                 ]);
         }
     }
+
+    /**
+     * This method override the parent method so as to delete the message from the queue
+     * if the queue job timeout being observed in the Job
+     * ref: https://razorpay.slack.com/archives/C015MHZFY49/p1615276985000600
+     */
+    protected function beforeJobKillCleanUp()
+    {
+        $this->trace->info(
+            TraceCode::SETTLEMENT_CREATE_MESSAGE_DELETE,
+            [
+                'merchant_id' => $this->merchantId,
+            ]);
+
+        $this->delete();
+
+        parent::beforeJobKillCleanUp();
+    }
 }
