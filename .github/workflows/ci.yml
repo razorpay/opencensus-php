@@ -97,7 +97,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: 7.2
-          extensions: memcached, pdo_mysql, mysqli, pgsql, pcntl
+          extensions: memcached, pdo_mysql, mysqli, pdo_pgsql, pcntl
           ini-values: extension=opencensus.so
 
       - uses: niden/actions-memcached@v7
