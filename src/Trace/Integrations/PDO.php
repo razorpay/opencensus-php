@@ -31,18 +31,29 @@ use OpenCensus\Trace\Span;
  */
 class PDO implements IntegrationInterface
 {
-    static $params = [];
+    // database connection string dsn
+    static $dsn = "";
+
+    // optional parameters
+    // - proxy_sql: bool - if connection was made using proxy_sql
+    static $options = [];
+
     /**
      * Static method to add instrumentation to the PDO requests
+     * @param string $dsn
+     * @param array $options
      */
-    public static function load($params = [])
+    public static function load($dsn = "", $options = [])
     {
         if (!extension_loaded('opencensus')) {
             trigger_error('opencensus extension required to load PDO integrations.', E_USER_WARNING);
             return;
         }
 
-        PDO::$params = $params;
+        PDO::$dsn = $dsn;
+
+        PDO::$options = $options;
+
         // public int PDO::exec(string $query)
         opencensus_trace_method('PDO', 'exec', [static::class, 'handleQuery']);
 
@@ -72,7 +83,7 @@ class PDO implements IntegrationInterface
      */
     public static function handleQuery($pdo, $query)
     {
-        $attributes = PDO::getTagsFromDSN(PDO::$params['dsn']);
+        $attributes = PDO::getTagsFromDSN(PDO::$dsn);
 
         return [
             'attributes'        => [
@@ -95,7 +106,7 @@ class PDO implements IntegrationInterface
      */
     public static function handleCommit($pdo)
     {
-        $attributes = PDO::getTagsFromDSN(PDO::$params['dsn']);
+        $attributes = PDO::getTagsFromDSN(PDO::$dsn);
 
         return [
             'attributes' => [
@@ -118,10 +129,10 @@ class PDO implements IntegrationInterface
      */
     public static function handleConnect($pdo, $dsn)
     {
-        $attributes = PDO::getTagsFromDSN(PDO::$params['dsn']);
+        $attributes = PDO::getTagsFromDSN(PDO::$dsn);
 
         $attributes['span.kind'] = 'client';
-        $attributes['proxy'] = PDO::$params['proxy_sql'] === true ? 'proxy_sql' : 'none';
+        $attributes['proxy_sql'] = PDO::$options['proxy_sql'] ?? false;
 
         return [
             'attributes'                => $attributes,
@@ -162,7 +173,7 @@ class PDO implements IntegrationInterface
             'span.kind' => 'client'
         ];
 
-        $connectionTags = PDO::getTagsFromDSN(PDO::$params['dsn']);
+        $connectionTags = PDO::getTagsFromDSN(PDO::$dsn);
 
         return [
             'attributes' => $tags + $errorTags + $connectionTags,
