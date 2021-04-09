@@ -152,6 +152,7 @@ jobs:
           MYSQL_PASSWORD: mysql
           MYSQL_DATABASE: mysqldb
           MYSQL_RANDOM_ROOT_PASSWORD: yes
+          MYSQL_ALLOW_EMPTY_PASSWORD: 1
       postgres:
         image: postgres:9.6
         env:
