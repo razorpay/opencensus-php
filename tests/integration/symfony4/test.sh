@@ -24,7 +24,7 @@ cp -r src tests phpunit.xml.dist symfony_test/
 pushd symfony_test
 
 composer config repositories.opencensus git ${REPO}
-composer require --no-interaction opencensus/opencensus:dev-${BRANCH} doctrine
+composer require --no-interaction opencensus/opencensus:dev-${BRANCH}
 composer require --no-interaction --dev phpunit/phpunit:^7.0 guzzlehttp/guzzle:~6.0
 
 bin/console doctrine:migrations:migrate -n
