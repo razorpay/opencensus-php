@@ -32,7 +32,7 @@ use OpenCensus\Trace\Tracer;
  */
 class PDO implements IntegrationInterface
 {
-    static $db_host = "";
+    private static $db_host = "";
     /**
      * Static method to add instrumentation to the PDO requests
      */
