@@ -35,7 +35,7 @@ class PDO implements IntegrationInterface
     static $dsn = "";
 
     // optional parameters
-    // - proxy_sql: bool - if connection was made using proxy_sql
+    // - tags - additional tags for the trace
     static $options = [];
 
     /**
@@ -129,10 +129,10 @@ class PDO implements IntegrationInterface
      */
     public static function handleConnect($pdo, $dsn)
     {
-        $attributes = PDO::getTagsFromDSN(PDO::$dsn);
+        $attributes = PDO::getTagsFromDSN(PDO::$dsn ?? $dsn);
 
         $attributes['span.kind'] = 'client';
-        $attributes['proxy_sql'] = PDO::$options['proxy_sql'] ?? false;
+        $attributes += PDO::$options['tags'] ?? [];
 
         return [
             'attributes'                => $attributes,
