@@ -6,8 +6,13 @@ namespace RZP\Services\Mock\DE;
 
 class PersonalisationService
 {
-    public function fetchPersonalisationData(array $input, bool $upiIntent = false)
+    public function fetchPersonalisationData(array $input, bool $upiIntent = false, bool $nullResponse = false)
     {
+        if ($nullResponse === true)
+        {
+            return null;
+        }
+
         $response = (new \Requests_Response());
 
         $upiIntrument = [

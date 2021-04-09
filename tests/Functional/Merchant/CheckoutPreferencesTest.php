@@ -1497,4 +1497,30 @@ class CheckoutPreferencesTest extends TestCase
 
         $this->assertArrayNotHasKey('preferred_methods', $response);
     }
+
+    public function testGetCheckoutPersonalisationWithNullPreferences()
+    {
+        $this->ba->publicAuth();
+
+        $order = $this->fixtures->order->create();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testGetCheckoutPersonalisationWithNullPreferencesFalse()
+    {
+        $this->ba->publicAuth();
+
+        $order = $this->fixtures->order->create();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $this->runRequestResponseFlow($testData);
+    }
 }

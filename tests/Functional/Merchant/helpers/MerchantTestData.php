@@ -7813,6 +7813,20 @@ return [
         ],
     ],
 
+    'testGetCheckoutPersonalisationWithNullPreferences' => [
+        'request' => [
+            'url'     => '/personalisation',
+            'method'  => 'get',
+            'content' => [
+                'order_id'      => 'null',
+            ],
+        ],
+        'response' => [
+            'content' => [
+              ],
+        ],
+    ],
+
     'testHoldFundsWithUpdateObserverData' => [
         'request' => [
             'url' => '/merchants/10000000000000/action',
@@ -7826,6 +7840,45 @@ return [
                 'workflow' => [
                     'name' => "Hold Funds",
                 ],
+             ],
+        ],
+    ],
+
+
+    'testGetCheckoutPersonalisationWithNullPreferencesFalse' => [
+        'request' => [
+            'url'     => '/personalisation',
+            'method'  => 'get',
+            'content' => [
+                'order_id'      => 'null',
+                'contact'     => 1234123412,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'preferred_methods' => [
+                    '1234123412' => [
+                        'instruments' => [
+                            [
+                                'instrument' => null,
+                                'method'     => 'card',
+                                'issuer'     => null,
+                                'type'       => 'debit',
+                                'network'    => 'Visa',
+                            ],
+                            [
+                                'instrument' => null,
+                                'method'     => 'netbanking',
+                            ],
+                            [
+                                'instrument' => 'phonepay',
+                                'method'     => 'wallet',
+                            ],
+                        ],
+                        "is_customer_identified"    => false,
+                        "user_aggregates_available" => false,
+                    ],
+                ]
             ],
         ],
     ],
@@ -7845,5 +7898,5 @@ return [
                 ],
             ],
         ],
-    ]
+    ],
 ];

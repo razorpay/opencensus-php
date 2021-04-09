@@ -1246,9 +1246,17 @@ class Checkout
 
         if ($personalisationMock === true)
         {
-            if (isset( $input['upi_intent']) === true)
+            if ((isset( $input['upi_intent']) === true) and (isset($input['null_response']) === true))
+            {
+                $response = (new MockPersonalisationService())->fetchPersonalisationData($input, $input['upi_intent'], $input['null_response']);
+            }
+            else if ((isset( $input['upi_intent']) === true))
             {
                 $response = (new MockPersonalisationService())->fetchPersonalisationData($input, $input['upi_intent']);
+            }
+            else if ((isset( $input['null_response']) === true))
+            {
+                $response = (new MockPersonalisationService())->fetchPersonalisationData($input, false, $input['null_response']);
             }
             else
             {
@@ -1291,108 +1299,94 @@ class Checkout
 
             $preferences = $responseBody['preferences'];
 
-            $preferences = $this->sortByScore($preferences);
-
-            $pos = 0;
-
-            foreach ($preferences as $preference)
+            if ($preferences !== null)
             {
-                if ((($preference['method'] === Payment\Method::CARD) or
-                    ($preference['method'] === Payment\Method::EMI)) and
-                    ($preference['instrument'] !== Payment\Method::CARD))
-                {
-                    $card = (new Card\Repository())->find($preference['instrument']);
+                $preferences = $this->sortByScore($preferences);
 
-                    // adding this check to insure it doesn't break on local
-                    if (is_null($card) === false) {
-                        $card->overrideIINDetails();
+                $pos = 0;
 
-                        $preference['issuer'] = $card->issuer;
+                foreach ($preferences as $preference) {
+                    if ((($preference['method'] === Payment\Method::CARD) or
+                            ($preference['method'] === Payment\Method::EMI)) and
+                        ($preference['instrument'] !== Payment\Method::CARD)) {
+                        $card = (new Card\Repository())->find($preference['instrument']);
 
-                        $preference['type'] = $card->type;
+                        // adding this check to insure it doesn't break on local
+                        if (is_null($card) === false) {
+                            $card->overrideIINDetails();
 
-                        $preference['network'] = $card->network;
+                            $preference['issuer'] = $card->issuer;
 
-                        $token = null;
+                            $preference['type'] = $card->type;
 
-                        //put token instead of card id in response
-                        if ((isset($input[Payment\Entity::APP_TOKEN]) === true) and
-                            (isset($card->global_card_id) === true))
-                        {
-                            //token for emi payments is stored with method as card
-                            $token = (new Customer\Token\Repository())->fetchByMethodAndCardIdAndMerchant(
-                                Payment\Method::CARD,
-                                $card->global_card_id,
-                                $this->repo->merchant->getSharedAccount()->getId()
-                            );
+                            $preference['network'] = $card->network;
+
+                            $token = null;
+
+                            //put token instead of card id in response
+                            if ((isset($input[Payment\Entity::APP_TOKEN]) === true) and
+                                (isset($card->global_card_id) === true)) {
+                                //token for emi payments is stored with method as card
+                                $token = (new Customer\Token\Repository())->fetchByMethodAndCardIdAndMerchant(
+                                    Payment\Method::CARD,
+                                    $card->global_card_id,
+                                    $this->repo->merchant->getSharedAccount()->getId()
+                                );
+                            } elseif (isset($input[Payment\Entity::CUSTOMER_ID]) === true) {
+                                //token for emi payments is stored with method as card
+
+                                $token = (new Customer\Token\Repository())->getByMethodAndCustomerIdAndCardIdAndMerchantId(
+                                    Payment\Method::CARD,
+                                    $input[Payment\Entity::CUSTOMER_ID],
+                                    $preference['instrument'],
+                                    $merchant->getId()
+                                );
+                            }
                         }
-                        elseif (isset($input[Payment\Entity::CUSTOMER_ID]) === true)
-                        {
-                            //token for emi payments is stored with method as card
 
-                            $token = (new Customer\Token\Repository())->getByMethodAndCustomerIdAndCardIdAndMerchantId(
-                                Payment\Method::CARD,
-                                $input[Payment\Entity::CUSTOMER_ID],
-                                $preference['instrument'],
-                                $merchant->getId()
-                            );
+                        if (isset($token) === true) {
+                            $preference['instrument'] = $token->getPublicId();
+                        } else {
+                            $preference['instrument'] = null;
+                            $preference['issuer'] = null;
                         }
                     }
 
-                    if (isset($token) === true)
-                    {
-                        $preference['instrument'] = $token->getPublicId();
+                    if ((isset($input[Payment\Entity::APP_TOKEN]) === false) and
+                        (isset($input[Payment\Entity::CUSTOMER_ID]) === false)) {
+
+                        if ($preference['method'] === Payment\Method::NETBANKING) {
+                            if (isset($preference['instrument']) === true) {
+                                $preference['instrument'] = null;
+                            }
+                        } else if ($preference['method'] === Payment\Method::UPI) {
+                            if ((isset($preference['instrument']) === true) and
+                                ($this->validVpa($preference['instrument']))) {
+                                $preference['instrument'] = null;
+                            }
+                        }
                     }
-                    else
-                    {
-                        $preference['instrument'] = null;
-                        $preference['issuer'] = null;
-                    }
+
+                    unset($preference['score']);
+
+                    //replace the index value with the new value
+                    $preferences[$pos] = $preference;
+                    $pos = $pos + 1;
                 }
 
-                if ((isset($input[Payment\Entity::APP_TOKEN]) === false) and
-                    (isset($input[Payment\Entity::CUSTOMER_ID]) === false))
-                {
+                if (isset($contact) === true) {
+                    $data['preferred_methods'][$contact]['instruments'] = $preferences;
 
-                    if($preference['method'] === Payment\Method::NETBANKING)
-                    {
-                        if (isset($preference['instrument']) === true)
-                        {
-                            $preference['instrument'] = null;
-                        }
-                    }
-                    else if ($preference['method'] === Payment\Method::UPI)
-                    {
-                        if ((isset($preference['instrument']) === true) and
-                            ($this->validVpa($preference['instrument'])))
-                        {
-                            $preference['instrument'] = null;
-                        }
-                    }
+                    $data['preferred_methods'][$contact]['is_customer_identified'] = $responseBody['is_customer_identified'];
+
+                    $data['preferred_methods'][$contact]['user_aggregates_available'] = $responseBody['user_aggregates_available'];
+                } else {
+                    $data['preferred_methods']['default']['instruments'] = $preferences;
+
+                    $data['preferred_methods']['default']['is_customer_identified'] = $responseBody['is_customer_identified'];
+
+                    $data['preferred_methods']['default']['user_aggregates_available'] = $responseBody['user_aggregates_available'];
                 }
-
-                unset($preference['score']);
-
-                //replace the index value with the new value
-                $preferences[$pos] = $preference;
-                $pos = $pos + 1;
-            }
-
-            if (isset($contact) === true)
-            {
-                $data['preferred_methods'][$contact]['instruments'] = $preferences;
-
-                $data['preferred_methods'][$contact]['is_customer_identified'] = $responseBody['is_customer_identified'];
-
-                $data['preferred_methods'][$contact]['user_aggregates_available'] = $responseBody['user_aggregates_available'];
-            }
-            else
-            {
-                $data['preferred_methods']['default']['instruments'] = $preferences;
-
-                $data['preferred_methods']['default']['is_customer_identified'] = $responseBody['is_customer_identified'];
-
-                $data['preferred_methods']['default']['user_aggregates_available'] = $responseBody['user_aggregates_available'];
             }
         }
         catch (\Exception $e)
