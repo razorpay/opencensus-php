@@ -564,7 +564,6 @@ class Route
         'mark_transactions_postpaid'               => ['post',     'transactions/postpaid',                          'TransactionController@markTransactionPostpaid'                     ],
         'toggle_transaction_hold'                  => ['patch',    'transactions/hold',                              'TransactionController@toggleTransactionHold'                       ],
         'toggle_transaction_release'               => ['patch',    'transactions/release',                           'TransactionController@toggleTransactionRelease'                    ],
-        'mdr_adjustment'                           => ['post',      'transactions/mdr_adjustment_calculation',        'TransactionController@mdrAdjustmentCalculation'                   ],
         'setl_fetch_schedule'                      => ['get',      'settlements/schedules',                          'ScheduleController@getSettlementSchedules'                         ],
         'setl_get_transaction_details'             => ['post',     'settlements/get_transaction_details',            'SettlementController@getSettlementSourceDetails'                   ],
         'setl_fetch_by_id'                         => ['get',      'settlements/{id}',                               'SettlementController@getSettlement'                                ],
@@ -2811,7 +2810,6 @@ class Route
         'user_verify_second_factor_auth',
         'user_resend_otp_2fa',
         'merchant_inheritance_parent_set_bulk',
-        'mdr_adjustment',
         'pricing_add_plan_rule_bulk',
         'loc_bulk_withdrawal_update',
         'adj_add_batch',
@@ -5227,7 +5225,6 @@ class Route
         'merchant_inheritance_parent_set_bulk'               => Permission::MANAGE_INHERITANCE,
         'merchant_inheritance_parent_delete'                 => Permission::MANAGE_INHERITANCE,
 
-        'mdr_adjustment'                                     => Permission::MDR_ADJUSTMENT,
 
         'subscription_registration_cancel_links_batch'      => Permission::CANCEL_BATCH,
 
@@ -7350,7 +7347,6 @@ class Route
             'los_service_admin',
             'mailgun_webhook',
             'mark_transactions_postpaid',
-            'mdr_adjustment',
             'merchant_2fa_change_setting',
             'merchant_actions',
             'merchant_activation_archive',
@@ -8846,7 +8842,6 @@ class Route
             'virtual_account_create',
             'oauth_token_create',
             'merchant_inheritance_parent_set_bulk',
-            'mdr_adjustment',
             'entity_bulk_update',
             'merchants_access_map_upsert_bulk',
             'adj_add_batch',

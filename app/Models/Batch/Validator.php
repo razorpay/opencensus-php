@@ -338,13 +338,6 @@ class Validator extends Base\Validator
         Entity::SCHEDULE             => 'sometimes|numeric',
     ];
 
-    protected static $mdrAdjustmentCreateRules = [
-        Entity::TYPE                 => 'required|custom',
-        Entity::NAME                 => 'filled|string|max:255',
-        Entity::FILE                 => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,
-        Entity::SCHEDULE             => 'sometimes|numeric',
-    ];
-
     protected static $captureSettingCreateRules = [
         Entity::TYPE                    => 'required|in:capture_setting',
         Entity::FILE                    => 'required_without:file_id|file|max:60720' . self::DEFAULT_MIME_RULE,

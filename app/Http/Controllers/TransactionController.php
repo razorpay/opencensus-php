@@ -62,15 +62,6 @@ class TransactionController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function mdrAdjustmentCalculation()
-    {
-        $input = Request::all();
-
-        $response = $this->service()->mdrAdjustmentCalculation($input);
-
-        return ApiResponse::json($response);
-    }
-
     public function createCreditRepaymentTransaction()
     {
         $input = Request::all();

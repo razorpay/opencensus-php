@@ -161,10 +161,6 @@ class Header
     const MERCHANT_CONFIG_INHERITANCE_PARENT_MERCHANT_ID = 'Parent Merchant Id';
     const MERCHANT_CONFIG_INHERITANCE_MERHCANT_ID        = 'Merchant Id';
 
-    //
-    // Mdr adjustment headers
-    //
-    const MDR_ADJUSTMENT_TRANSACTION_ID = 'transaction_id';
 
     //
     // Virtual Account Bulk Creation Headers
@@ -3166,11 +3162,6 @@ class Header
              */
         ],
 
-        Type::MDR_ADJUSTMENT => [
-            self::INPUT => [
-                self::MDR_ADJUSTMENT_TRANSACTION_ID,
-            ],
-        ],
         Type::ADJUSTMENT => [
             self::INPUT => [
                 self::ADJUSTMENT_REFERENCE_ID,

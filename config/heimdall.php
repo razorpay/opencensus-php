@@ -1346,10 +1346,6 @@ return [
                 'description' => 'Admin action for marking transactions postpaid',
                 'assignable'  => true
             ],
-            Permission::MDR_ADJUSTMENT => [
-                'description' => 'Mdr Adjustment of transactions',
-                'assignable'  => true
-            ],
             Permission::CREATE_TRANSACTION_FEE_BREAKUP => [
                 'description' => 'Create transaction fee break up',
                 'assignable'  => true

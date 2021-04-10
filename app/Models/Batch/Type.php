@@ -67,8 +67,6 @@ class Type
 
     const MERCHANT_CONFIG_INHERITANCE = 'merchant_config_inheritance';
 
-    const MDR_ADJUSTMENT            = 'mdr_adjustment';
-
     const PAYMENT_LINK_V2           = 'payment_link_v2';
 
     // Batch Terminal Creation
@@ -186,7 +184,6 @@ class Type
         self::ADMIN_BATCH,
         self::MERCHANT_CONFIG_INHERITANCE,
         self::ENTITY_UPDATE_ACTION,
-        self::MDR_ADJUSTMENT,
         self::ADJUSTMENT,
         self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG,
         self::ECOLLECT_ICICI,
@@ -394,7 +391,6 @@ class Type
         self::PRICING_RULE,
         self::LOC_WITHDRAWAL,
         self::MERCHANT_CONFIG_INHERITANCE,
-        self::MDR_ADJUSTMENT,
         self::ENTITY_UPDATE_ACTION,
         self::ADJUSTMENT,
         self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG,

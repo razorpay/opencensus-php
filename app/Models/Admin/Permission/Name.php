@@ -619,7 +619,6 @@ class Name
     const EDIT_MERCHANT_BALANCE_CONFIG                 = 'edit_merchant_balance_config';
     const DELETE_PAYMENT_CONFIG                        = 'delete_payment_config';
     const UPDATE_ENTITY_BALANCE_ID                     = 'update_entity_balance_id';
-    const MDR_ADJUSTMENT                               = 'mdr_adjustment';
     const CREATE_REWARD                                = 'create_reward';
     const UPDATE_REWARD                                = 'update_reward';
     const DELETE_REWARD                                = 'delete_reward';
