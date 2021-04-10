@@ -694,6 +694,7 @@ class Repository extends Base\Repository
 
         $mode = $mode ?? $this->app['rzp.mode'];
 
-        return ($mode === Mode::TEST) ? Connection::SLAVE_TEST : Connection::DATA_WAREHOUSE_LIVE;
+        // Adding return type as slave for now. hotfix to reduce replication lag in TiDb
+        return ($mode === Mode::TEST) ? Connection::SLAVE_TEST : Connection::SLAVE_LIVE;
     }
 }
