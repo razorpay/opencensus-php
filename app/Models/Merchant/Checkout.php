@@ -34,6 +34,7 @@ use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
 use RZP\Services\DE\PersonalisationService;
 use RZP\Services\Mock\DE\PersonalisationService as MockPersonalisationService;
+use RZP\Models\Key;
 
 class Checkout
 {
@@ -763,8 +764,12 @@ class Checkout
 
         $data['language_code'] = App::getLocale();
 
-        $data['merchant_id'] = $merchant->getId();
+        $data['merchant_key'] = $this->app['basicauth']->getPublicKey();
 
+        if(empty($data['merchant_key']) === true)
+        {
+            $data['merchant_key'] = (new key\Core)->getLatestActiveKeyForMerchant($merchant->getId());
+        }
         /*
         if hdfc merchant, sending redirect true. Done specificially
         for shopify merchants of HDFC.

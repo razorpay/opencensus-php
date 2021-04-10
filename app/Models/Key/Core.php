@@ -154,4 +154,17 @@ class Core extends Base\Core
             $this->trace->traceException($e, null, null, compact('keyId', 'merchantId'));
         }
     }
+    public function getLatestActiveKeyForMerchant($merchantId)
+    {
+        $merchantKey = $this->repo->key->getLatestActiveKeyForMerchant($merchantId);
+
+        if(isset($merchantKey) === true)
+        {
+            return $merchantKey->getPublickey();
+        }
+        else
+        {
+            return "";
+        }
+    }
 }
