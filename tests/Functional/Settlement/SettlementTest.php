@@ -51,6 +51,10 @@ class SettlementTest extends TestCase
 
         parent::setUp();
 
+        $connector = $this->mockSqlConnectorWithReplicaLag(0);
+
+        $this->app->instance('db.connector.mysql', $connector);
+
         $this->ba->publicAuth();
     }
 

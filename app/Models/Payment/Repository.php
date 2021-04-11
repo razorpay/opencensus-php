@@ -1504,7 +1504,9 @@ class Repository extends Base\Repository
 
     public function getCapturedAmountByGateway(string $gateway, int $from, int $to)
     {
-        return $this->newQuery()
+        // checks replication lag of 5 mins
+        // throws exception if lag is greater than the threshold
+        return $this->newQueryOnSlave(300000)
                     ->where(Entity::GATEWAY, '=', $gateway)
                     ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
                     ->sum(Entity::AMOUNT);
