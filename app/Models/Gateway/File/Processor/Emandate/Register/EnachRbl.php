@@ -18,6 +18,7 @@ use RZP\Exception\RuntimeException;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\GatewayFileException;
+use RZP\Exception\ServerErrorException;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Services\Beam\Service as BeamService;
 use RZP\Services\Beam\Constants as BeamConstants;
@@ -62,7 +63,20 @@ class EnachRbl extends Base
         $begin = $this->gatewayFile->getBegin() + self::NUM_SECS_IN_ONE_DAY;
         $end = $this->gatewayFile->getEnd() + self::NUM_SECS_IN_ONE_DAY;
 
-        $payments = $this->repo->payment->fetchPendingEmandateRegistrationForEnach($begin, $end);
+        try
+        {
+            $payments = $this->repo->payment->fetchPendingEmandateRegistrationForEnach($begin, $end);
+        }
+        catch (ServerErrorException $e)
+        {
+            $this->trace->traceException($e);
+
+            throw new GatewayFileException(
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
+                [
+                    'id' => $this->gatewayFile->getId(),
+                ]);
+        }
 
         $paymentIds = $payments->pluck(Payment\Entity::ID)->toArray();
 

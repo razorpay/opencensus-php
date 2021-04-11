@@ -907,6 +907,10 @@ class PaymentCreateTest extends TestCase
 
     public function testSecondRecurringWithMissingBankAccountDetailsAndAuthType()
     {
+        $connector = $this->mockSqlConnectorWithReplicaLag(0);
+
+        $this->app->instance('db.connector.mysql', $connector);
+
         $payment = $this->setupEmandateAndGetPaymentRequest('UTIB', 0);
 
         $payment['bank_account'] = [
@@ -4189,7 +4193,7 @@ class PaymentCreateTest extends TestCase
 
         $paymentFromResponse = $this->doAuthPayment($paymentArray);
     }
-    
+
     public function testPaymentCreateWithMetaInfo()
     {
         $this->ba->privateAuth();

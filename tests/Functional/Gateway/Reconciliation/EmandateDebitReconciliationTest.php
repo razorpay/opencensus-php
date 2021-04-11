@@ -41,6 +41,10 @@ class EmandateDebitReconciliationTest extends TestCase
         $this->setMockGatewayTrue();
 
         $this->ba->adminAuth();
+
+        $connector = $this->mockSqlConnectorWithReplicaLag(0);
+
+        $this->app->instance('db.connector.mysql', $connector);
     }
 
     public function testAxisNbEmandateDebitRecon()

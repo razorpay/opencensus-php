@@ -154,6 +154,41 @@ return [
         ]
     ],
 
+    'testRegisterFileGenerationWithReplicationLagError' => [
+        'request' => [
+            'content' => [
+                'type'    => 'emandate_register',
+                'targets' => ['enach_rbl'],
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'status'              => 'failed',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'emandate@razorpay.com',
+                        'type'                => 'emandate_register',
+                        'target'              => 'enach_rbl',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true,
+                        'error_code'          => 'error_generating_file',
+                        'error_description'   => 'Error occurred trying to create file',
+                        'file_generated_at'   => null,
+                        'sent_at'             => null
+                    ]
+                ]
+            ]
+        ]
+    ],
+
     'tokenWebhookData' => [
         'mode'  => 'test',
         'event' => [

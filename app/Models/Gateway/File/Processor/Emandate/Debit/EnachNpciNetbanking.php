@@ -3,6 +3,7 @@
 namespace RZP\Models\Gateway\File\Processor\Emandate\Debit;
 
 Use Config;
+use Carbon\Carbon;
 
 use RZP\Gateway\Enach;
 use RZP\Models\Payment;
@@ -14,13 +15,12 @@ use RZP\Models\Base as ModelBase;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
+use RZP\Exception\ServerErrorException;
 use RZP\Exception\GatewayErrorException;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Services\Beam\Service as BeamService;
 use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Gateway\Enach\Npci\Netbanking\DebitFileHeading as Headings;
-
-use Carbon\Carbon;
 
 class EnachNpciNetbanking extends Base
 {
@@ -217,12 +217,24 @@ class EnachNpciNetbanking extends Base
 
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_INIT);
 
-        $tokens = $this->repo->token->fetchPendingEMandateDebitWithGatewayAcquirer(
-                                                       static::GATEWAY,
-                                                       $begin,
-                                                       $end,
-                                                       Payment\Gateway::ACQUIRER_YESB
-                                                     );
+        try
+        {
+            $tokens = $this->repo->token->fetchPendingEMandateDebitWithGatewayAcquirer(
+                    static::GATEWAY,
+                    $begin,
+                    $end,
+                    Payment\Gateway::ACQUIRER_YESB);
+        }
+        catch (ServerErrorException $e)
+        {
+            $this->trace->traceException($e);
+
+            throw new GatewayFileException(
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
+                [
+                    'id' => $this->gatewayFile->getId(),
+                ]);
+        }
 
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_COMPLETE);
 

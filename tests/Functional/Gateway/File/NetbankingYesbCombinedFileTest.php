@@ -30,6 +30,10 @@ class NetbankingYesbCombinedFileTest extends TestCase
         $this->bank = 'YESB';
 
         $this->terminal = $this->fixtures->create('terminal:shared_netbanking_yesb_terminal');
+
+        $connector = $this->mockSqlConnectorWithReplicaLag(0);
+
+        $this->app->instance('db.connector.mysql', $connector);
     }
 
     public function testNetbankingYesbCombinedFile()

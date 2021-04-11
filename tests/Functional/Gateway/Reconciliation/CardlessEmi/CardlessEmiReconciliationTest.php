@@ -37,6 +37,9 @@ class CardlessEmiReconciliationTest extends TestCase
 
         $this->gateway = Gateway::CARDLESS_EMI;
 
+        $connector = $this->mockSqlConnectorWithReplicaLag(0);
+
+        $this->app->instance('db.connector.mysql', $connector);
     }
 
     public function testPaymentReconciliation()

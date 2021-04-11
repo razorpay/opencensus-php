@@ -3,11 +3,15 @@
 namespace RZP\Models\Gateway\File\Processor\Nach\Debit;
 
 use Carbon\Carbon;
+
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Netbanking;
 use RZP\Models\FundTransfer\Holidays;
 use RZP\Models\Base\PublicCollection;
+use RZP\Exception\GatewayFileException;
+use RZP\Exception\ServerErrorException;
 use RZP\Models\Gateway\File\Processor\Nach;
 
 abstract class Base extends Nach\Base
@@ -29,7 +33,20 @@ abstract class Base extends Nach\Base
                       ->addHours(9)
                       ->getTimestamp();
 
-        $tokens = $this->repo->token->fetchPendingNachDebit( static::GATEWAY, $begin, $end);
+        try
+        {
+            $tokens = $this->repo->token->fetchPendingNachDebit( static::GATEWAY, $begin, $end);
+        }
+        catch (ServerErrorException $e)
+        {
+            $this->trace->traceException($e);
+
+            throw new GatewayFileException(
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
+                [
+                    'id' => $this->gatewayFile->getId(),
+                ]);
+        }
 
         $paymentIds = $tokens->pluck('payment_id')->toArray();
 

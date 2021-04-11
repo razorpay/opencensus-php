@@ -7,11 +7,14 @@ use Carbon\Carbon;
 
 use RZP\Gateway\Enach;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Holidays;
 use RZP\Models\Base\PublicCollection;
+use RZP\Exception\GatewayFileException;
+use RZP\Exception\ServerErrorException;
 
 class CombinedNachCitiEarlyDebit extends PaperNachCiti
 {
@@ -46,12 +49,24 @@ class CombinedNachCitiEarlyDebit extends PaperNachCiti
 
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_INIT);
 
-        $tokens = $this->repo->token->fetchPendingNachOrMandateDebit(
-            [Payment\Gateway::ENACH_NPCI_NETBANKING, Payment\Gateway::NACH_CITI],
-            $begin,
-            $end,
-            Payment\Gateway::ACQUIRER_CITI
-        );
+        try
+        {
+            $tokens = $this->repo->token->fetchPendingNachOrMandateDebit(
+                        [Payment\Gateway::ENACH_NPCI_NETBANKING, Payment\Gateway::NACH_CITI],
+                        $begin,
+                        $end,
+                        Payment\Gateway::ACQUIRER_CITI);
+        }
+        catch (ServerErrorException $e)
+        {
+            $this->trace->traceException($e);
+
+            throw new GatewayFileException(
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
+                [
+                    'id' => $this->gatewayFile->getId(),
+                ]);
+        }
 
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_COMPLETE);
 

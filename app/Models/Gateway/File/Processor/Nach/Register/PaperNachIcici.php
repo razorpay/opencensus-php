@@ -18,6 +18,7 @@ use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\FundTransfer\Holidays;
 use RZP\Exception\GatewayFileException;
+use RZP\Exception\ServerErrorException;
 use RZP\Exception\GatewayErrorException;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Gateway\Enach\Base\CategoryCode;
@@ -86,7 +87,20 @@ class PaperNachIcici extends Base
 
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_INIT);
 
-        $tokens = $this->repo->token->fetchPendingNachRegistration(self::GATEWAY, $begin, $end);
+        try
+        {
+            $tokens = $this->repo->token->fetchPendingNachRegistration(self::GATEWAY, $begin, $end);
+        }
+        catch (ServerErrorException $e)
+        {
+            $this->trace->traceException($e);
+
+            throw new GatewayFileException(
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
+                [
+                    'id' => $this->gatewayFile->getId(),
+                ]);
+        }
 
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_COMPLETE);
 

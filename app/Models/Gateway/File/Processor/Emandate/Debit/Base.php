@@ -4,16 +4,17 @@ namespace RZP\Models\Gateway\File\Processor\Emandate\Debit;
 
 use Carbon\Carbon;
 
-use RZP\Constants\Timezone;
-use RZP\Error\ErrorCode;
-use RZP\Exception\GatewayFileException;
-use RZP\Gateway\Base\Action as GatewayAction;
-use RZP\Gateway\Netbanking;
-use RZP\Models\Base\PublicCollection;
-use RZP\Models\Gateway\File\Processor\Emandate;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
+use RZP\Gateway\Netbanking;
 use RZP\Models\Base as ModelBase;
+use RZP\Models\Base\PublicCollection;
+use RZP\Exception\GatewayFileException;
+use RZP\Exception\ServerErrorException;
+use RZP\Gateway\Base\Action as GatewayAction;
+use RZP\Models\Gateway\File\Processor\Emandate;
 
 abstract class Base extends EMandate\Base
 {
@@ -38,7 +39,20 @@ abstract class Base extends EMandate\Base
 
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_INIT);
 
-        $tokens = $this->repo->token->fetchPendingEMandateDebit(static::GATEWAY, $begin, $end);
+        try
+        {
+            $tokens = $this->repo->token->fetchPendingEMandateDebit(static::GATEWAY, $begin, $end);
+        }
+        catch (ServerErrorException $e)
+        {
+            $this->trace->traceException($e);
+
+            throw new GatewayFileException(
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
+                [
+                    'id' => $this->gatewayFile->getId(),
+                ]);
+        }
 
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_COMPLETE);
 

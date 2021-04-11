@@ -216,7 +216,7 @@ class Repository extends Base\Repository
 
     public function fetchPaymentsWithStatus($from, $to, $gateway, $status)
     {
-        return $this->newQueryWithConnection($this->getSlaveConnection())
+        return $this->newQueryOnSlave(600000)
                     ->from(\DB::raw('`payments` FORCE INDEX (payments_authorized_at_index)'))
                     ->whereBetween(Payment\Entity::AUTHORIZED_AT, array($from, $to))
                     ->whereIn('status', $status)
@@ -899,7 +899,7 @@ class Repository extends Base\Repository
 
         $transactionReconciledAt = $txnRepo->dbColumn(Transaction\Entity::RECONCILED_AT);
 
-        return $this->newQueryWithConnection($this->getSlaveConnection())
+        return $this->newQueryOnSlave(600000)
             ->select($paymentAttrs)
             ->from(\DB::raw('`payments`, `transactions` USE INDEX (transactions_reconciled_at_index)'))
             ->where($paymentId, '=', \DB::raw('`transactions`.`entity_id`'))
@@ -1530,7 +1530,7 @@ class Repository extends Base\Repository
 
         $selectCols = $this->repo->payment->dbColumn('*');
 
-        return $this->newQuery()
+        return $this->newQueryOnSlave(600000)
                     ->select($selectCols)
                     ->join(
                         Table::TOKEN,

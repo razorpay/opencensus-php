@@ -16,6 +16,7 @@ use RZP\Models\FundTransfer\Holidays;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Gateway\File\Constants;
 use RZP\Exception\GatewayFileException;
+use RZP\Exception\ServerErrorException;
 use RZP\Exception\GatewayErrorException;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Services\Beam\Service as BeamService;
@@ -426,12 +427,24 @@ class EnachNbIcici extends Debit\Base
                        ->addHours(9)
                        ->getTimestamp();
 
-        $tokens = $this->repo->token->fetchPendingEMandateDebitWithGatewayAcquirer(
-            static::GATEWAY,
-            $begin,
-            $end,
-            Payment\Gateway::ACQUIRER_ICIC
-        );
+        try
+        {
+            $tokens = $this->repo->token->fetchPendingEMandateDebitWithGatewayAcquirer(
+                    static::GATEWAY,
+                    $begin,
+                    $end,
+                    Payment\Gateway::ACQUIRER_ICIC);
+        }
+        catch (ServerErrorException $e)
+        {
+            $this->trace->traceException($e);
+
+            throw new GatewayFileException(
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
+                [
+                    'id' => $this->gatewayFile->getId(),
+                ]);
+        }
 
         $paymentIds = $tokens->pluck('payment_id')->toArray();
 

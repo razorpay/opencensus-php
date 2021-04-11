@@ -33,6 +33,10 @@ class NetbankingCsbReconTest extends TestCase
         $this->gateway = Payment\Gateway::NETBANKING_CSB;
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_netbanking_csb_terminal');
+
+        $connector = $this->mockSqlConnectorWithReplicaLag(0);
+
+        $this->app->instance('db.connector.mysql', $connector);
     }
 
     public function testPaymentReconciliation()

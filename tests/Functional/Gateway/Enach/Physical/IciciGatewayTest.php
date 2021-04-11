@@ -63,6 +63,10 @@ class IciciGatewayTest extends TestCase
             E::CUSTOMER,
             ['id' => '1000000000cust']
         );
+
+        $connector = $this->mockSqlConnectorWithReplicaLag(0);
+
+        $this->app->instance('db.connector.mysql', $connector);
     }
 
     public function testGatewayFileRegister()

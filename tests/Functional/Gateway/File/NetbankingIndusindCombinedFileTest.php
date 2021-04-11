@@ -25,6 +25,10 @@ class NetbankingIndusindCombinedFileTest extends TestCase
         parent::setUp();
 
         $this->fixtures->create('terminal:shared_netbanking_indusind_terminal');
+
+        $connector = $this->mockSqlConnectorWithReplicaLag(0);
+
+        $this->app->instance('db.connector.mysql', $connector);
     }
 
     public function testGenerateCombinedFile()

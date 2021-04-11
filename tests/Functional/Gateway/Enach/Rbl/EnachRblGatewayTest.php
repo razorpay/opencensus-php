@@ -6,6 +6,8 @@ use Mail;
 use Excel;
 use Cache;
 use Carbon\Carbon;
+use Illuminate\Http\Testing\File as TestingFile;
+
 use RZP\Exception;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Entity;
@@ -26,8 +28,6 @@ use RZP\Models\Payment\Entity as Payment;
 use RZP\Exception\GatewayTimeoutException;
 use RZP\Mail\Gateway\EMandate\Base as Email;
 use RZP\Excel\ExportSheet as ExcelSheetExport;
-
-use Illuminate\Http\Testing\File as TestingFile;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Fixtures\Entity\TransactionTrait;
@@ -46,6 +46,10 @@ class EnachRblGatewayTest extends TestCase
         $this->testDataFilePath = __DIR__ . '/EnachRblGatewayTestData.php';
 
         parent::setUp();
+
+        $connector = $this->mockSqlConnectorWithReplicaLag(0);
+
+        $this->app->instance('db.connector.mysql', $connector);
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_enach_rbl_terminal');
         $this->fixtures->create(Entity::CUSTOMER);
@@ -1278,6 +1282,44 @@ class EnachRblGatewayTest extends TestCase
         $this->assertEquals(35, $count);
 
         $this->assertArrayNotHasKey(IFSC::UTBI, $banks);
+    }
+
+    public function testRegisterFileGenerationWithReplicationLagError()
+    {
+        $connector = $this->mockSqlConnectorWithReplicaLag(700000);
+
+        $this->app->instance('db.connector.mysql', $connector);
+
+        $dt = Carbon::create(2018, 05, 27, 12, 35, 00, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $payment = $this->getEmandatePaymentArray('HDFC', 'aadhaar', 0);
+
+        $order = $this->fixtures->create('order:emandate_order', ['amount' => $payment['amount']]);
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->doAuthPayment($payment);
+
+        $enach = $this->getLastEntity('enach', true);
+
+        $this->assertEquals('authorize', $enach['action']);
+        $this->assertEquals(0, $enach['amount']);
+        $this->assertNotNull($enach['signed_xml']);
+
+        //
+        // We choose 28th May because registration happened on 27th May
+        // need to be sent on 28th May. This date will change if value
+        // of is `$dt` is changed.
+        //
+        $dt = Carbon::create(2018, 05, 28, 7, 35, 00, Timezone::IST);
+
+        Carbon::setTestNow($dt);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
     }
 
     protected function makeDebitPayment()

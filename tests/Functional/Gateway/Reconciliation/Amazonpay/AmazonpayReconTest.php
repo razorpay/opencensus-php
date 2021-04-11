@@ -43,6 +43,10 @@ class AmazonpayReconTest extends TestCase
         $this->gateway = Payment\Gateway::WALLET_AMAZONPAY;
 
         $this->fixtures->merchant->enableWallet(Merchant\Account::TEST_ACCOUNT, $this->wallet);
+
+        $connector = $this->mockSqlConnectorWithReplicaLag(0);
+
+        $this->app->instance('db.connector.mysql', $connector);
     }
 
      public function testPaymentReconciliation()

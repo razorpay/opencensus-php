@@ -51,6 +51,10 @@ class NachGatewayTest extends TestCase
         $this->fixtures->merchant->enableMethod('10000000000000', 'nach');
 
         $this->fixtures->create('terminal:nach');
+
+        $connector = $this->mockSqlConnectorWithReplicaLag(0);
+
+        $this->app->instance('db.connector.mysql', $connector);
     }
 
     public function testGatewayFileDebitBankResponsePending()

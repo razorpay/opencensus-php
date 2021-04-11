@@ -188,6 +188,7 @@ class Repository extends Base\Repository
     public function fetchPendingEmandateRegistration(string $gateway, int $from, int $to)
     {
         $paymentTokenIdColumn = $this->repo->payment->dbColumn(Payment\Entity::TOKEN_ID);
+
         $paymentGlobalTokenIdColumn = $this->repo->payment->dbColumn(Payment\Entity::GLOBAL_TOKEN_ID);
 
         $paymentRecurringTypeColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING_TYPE);
@@ -212,7 +213,7 @@ class Repository extends Base\Repository
                 ->select($this->repo->payment->dbColumn('*'))
                 ->whereBetween($paymentAuthorizedAtColumn, [$from, $to]);
 
-        return $this->newQueryWithConnection($this->getSlaveConnection())
+        return $this->newQueryOnSlave(600000)
             ->select($selectCols, 'payments.id as payment_id')
             ->joinSub(
                 $subQuery,
@@ -253,7 +254,7 @@ class Repository extends Base\Repository
 
         $selectCols = $this->dbColumn('*');
 
-        return $this->newQueryWithConnection($this->getSlaveConnection())
+        return $this->newQueryOnSlave(600000)
                     ->select($selectCols,
                              'payments.id as payment_id',
                              'payments.amount as payment_amount',
@@ -324,7 +325,7 @@ class Repository extends Base\Repository
 
         $selectCols = $this->dbColumn('*');
 
-        return $this->newQueryWithConnection($this->getSlaveConnection())
+        return $this->newQueryOnSlave(600000)
                     ->select($selectCols,
                             'payments.id as payment_id',
                             'payments.amount as payment_amount',
@@ -364,7 +365,7 @@ class Repository extends Base\Repository
 
         $selectCols = $this->dbColumn('*');
 
-        $tokens = $this->newQueryWithConnection($this->getSlaveConnection())
+        $tokens = $this->newQueryOnSlave(600000)
                         ->select($selectCols, 'payments.id as payment_id')
                         ->from(\DB::raw('`tokens`, `payments`'))
                         ->where($tokenIdColumn, '=', \DB::raw('`payments`.`token_id`'))
@@ -410,7 +411,7 @@ class Repository extends Base\Repository
             ->select($this->repo->payment->dbColumn('*'))
             ->whereBetween($paymentCreatedAtColumn, [$from, $to]);
 
-        $tokens = $this->newQuery()
+        $tokens = $this->newQueryOnSlave(600000)
                         ->select($selectCols,
                             'payments.id as payment_id',
                             'payments.amount as payment_amount',
@@ -461,7 +462,7 @@ class Repository extends Base\Repository
 
         $selectCols = $this->dbColumn('*');
 
-        return $this->newQueryWithConnection($this->getSlaveConnection())
+        return $this->newQueryOnSlave(600000)
               ->select($selectCols,
                        'payments.id as payment_id',
                        'payments.amount as payment_amount',

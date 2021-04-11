@@ -41,6 +41,10 @@ class JioMoneyReconciliationTest extends TestCase
         $this->gateway = 'wallet_jiomoney';
 
         $this->fixtures->merchant->enableWallet('10000000000000', 'jiomoney');
+
+        $connector = $this->mockSqlConnectorWithReplicaLag(0);
+
+        $this->app->instance('db.connector.mysql', $connector);
     }
 
     public function testPaymentReconciliation()

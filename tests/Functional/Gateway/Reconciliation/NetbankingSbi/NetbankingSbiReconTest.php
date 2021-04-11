@@ -35,6 +35,10 @@ class NetbankingSbiReconTest extends TestCase
         $this->payment = $this->getDefaultNetbankingPaymentArray($this->bank);
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_netbanking_sbi_terminal');
+
+        $connector = $this->mockSqlConnectorWithReplicaLag(0);
+
+        $this->app->instance('db.connector.mysql', $connector);
     }
 
     //----------------------------------------------- Payment Recon ----------------------------------------------------
