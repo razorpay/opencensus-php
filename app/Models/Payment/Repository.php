@@ -2333,7 +2333,7 @@ class Repository extends Base\Repository
 
     public function findFirstDataAuthSeparatedPaymentIdsBetween(int $start, int $end)
     {
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->whereBetween(Entity::CREATED_AT, [$start, $end])
                     ->where(Entity::GATEWAY, '=', Gateway::FIRST_DATA)
                     ->where(Entity::AUTHENTICATION_GATEWAY, '=', Gateway::MPI_BLADE)
