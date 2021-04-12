@@ -87,7 +87,7 @@ class UpiSharpGatewayTest extends TestCase
             'handle'        => 'razorpay',
             'name'          => 'tobeupdated',
             'status'        => 'valid',
-            'received_at'   => Carbon::now()->subSeconds(2592005)->getTimestamp(),
+            'received_at'   => Carbon::now()->subSeconds(15552001)->getTimestamp(),
         ]);
 
         $vpa = $this->getDbLastEntity('payments_upi_vpa');

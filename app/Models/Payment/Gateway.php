@@ -2387,11 +2387,11 @@ class Gateway
 
     public static $upiValidateVpaTerminals = [
         Mode::LIVE => [
-            'AK6NMmzbL6FPe4',
             'BZuiTusQVjb1a4',
             'CrTfneH0erizag',
             'CrWje4EiFnXUE8',
             '6KTOhwf4XBOMns',
+            'AK6NMmzbL6FPe4'
         ],
         Mode::TEST => [
             '1000SharpTrmnl',
