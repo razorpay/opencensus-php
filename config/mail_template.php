@@ -1,5 +1,7 @@
 <?php
 
+use \RZP\Models\Merchant\RazorxTreatment;
+
 return [
 
     /**
@@ -19,6 +21,7 @@ return [
     ],
 
     'stork_whitelist' => [
-        'emails.mjml.merchant.user.contact_mobile_updated',
+        'emails.payment.merchant'                          => RazorxTreatment::API_STORK_MAIL_PAYMENT_CAPTURE,
+        'emails.mjml.merchant.user.contact_mobile_updated' => RazorxTreatment::API_STORK_MAIL_CONTACT_MOBILE_UPDATED,
     ],
 ];

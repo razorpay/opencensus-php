@@ -229,13 +229,17 @@ final class RazorxTreatment
 
     const GSTIN_SELF_SERVE_V2 = 'gstin_self_serve_v2';
 
-    // select emails will be sent via stork. this flag will control the percentage of the traffic for those select emails.
-    const API_SELECT_EMAILS_VIA_STORK = 'api_select_emails_via_stork';
-
     const SYSTEM_BASED_NEEDS_CLARIFICATION_NOT_MATCHED  = 'system_based_needs_clarification_not_matched';
 
     // to a/b test between offer tile vs subtext for cred
     const CRED_OFFER_SUBTEXT = 'cred_offer_subtext';
+
+    // controls %age of the mail to be sent via stork
+    const API_STORK_MAIL_PAYMENT_CAPTURE        = 'api_stork_mail_payment_capture';
+    const API_STORK_MAIL_CONTACT_MOBILE_UPDATED = 'api_stork_mail_contact_mobile_updated';
+
+    // will route the traffic slave or master based on the replica
+    const SETTLEMENT_TXN_FETCH_TO_SLAVE = 'settlement_transaction_fetch_to_slave';
 
     const PERFORM_ACTION_ON_WORKFLOW_OBSERVER_DATA = 'perform_action_on_workflow_observer_data';
 }

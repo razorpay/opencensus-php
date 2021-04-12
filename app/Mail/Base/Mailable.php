@@ -80,16 +80,18 @@ class Mailable extends BaseMailable
 
     protected function shouldSendEmailViaStork(): bool
     {
+        $storkWhitelistedTemp = config('mail_template.stork_whitelist');
+
         // 1. check if email template is to be sent via stork
-        if (in_array($this->view, config('mail_template.stork_whitelist'), true) === false)
+        if (isset($storkWhitelistedTemp[$this->view]) === false)
         {
             return false;
         }
 
         // 2. check if razorx experiment is turned on
         $app  = App::getFacadeRoot();
-        $id   = $app['request']->getTaskId() ?? '';
-        $exp  =  Merchant\RazorxTreatment::API_SELECT_EMAILS_VIA_STORK;
+        $id   = $this->mid ?? $app['request']->getTaskId() ?? '';
+        $exp  = $storkWhitelistedTemp[$this->view];
         $mode = $this->mode ?? Mode::LIVE;
         return (strtolower(app('razorx')->getTreatment($id, $exp, $mode)) === 'on');
     }
