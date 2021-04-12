@@ -582,7 +582,7 @@ class Repository extends Base\Repository
     {
         $input[Entity::ENTITY_TYPE] = $entityType;
 
-        return $this->repo->invoice->fetch($input, $merchantId, ConnectionType::DATA_WAREHOUSE);
+        return $this->repo->invoice->fetch($input, $merchantId, ConnectionType::SLAVE);
     }
 
     public function findByMerchantAndTokenRegistration(
