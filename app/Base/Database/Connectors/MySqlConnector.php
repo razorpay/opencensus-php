@@ -86,7 +86,13 @@ class MySqlConnector extends BaseMySqlConnector
             (Tracing::shouldTraceRoute(Route::current()) === true))
         {
             $hostDSN = $this->getHostDsn($config);
-            PDOTracer::load($hostDSN);
+            $options = [
+                'tags' => [
+                    'proxy_sql' => $this->hasSocket($config),
+                ]
+            ];
+
+            PDOTracer::load($hostDSN, $options);
         }
 
         $this->initializeWaitTimeout($connection, $config);
