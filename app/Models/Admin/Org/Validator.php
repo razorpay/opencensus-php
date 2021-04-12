@@ -28,8 +28,9 @@ class Validator extends Base\Validator
         Entity::SIGNATURE_EMAIL      => 'sometimes|email',
         Entity::PERMISSIONS          => 'required|array',
         Entity::WORKFLOW_PERMISSIONS => 'sometimes|array',
-        Entity::TYPE                  => 'filled|in:restricted',
+        Entity::TYPE                 => 'filled|in:restricted',
         Entity::BACKGROUND_IMAGE_URL => 'sometimes|url',
+        Entity::MERCHANT_STYLES      => 'sometimes|array',
     ];
 
     protected static $editRules = [
@@ -52,6 +53,7 @@ class Validator extends Base\Validator
         Entity::WORKFLOW_PERMISSIONS     => 'sometimes|array',
         Entity::DEFAULT_PRICING_PLAN_ID  => 'sometimes|alpha_num|size:14',
         Entity::BACKGROUND_IMAGE_URL     => 'sometimes|url',
+        Entity::MERCHANT_STYLES          => 'sometimes|array',
     ];
 
     protected function validateEmailDomains($attribute, $domains)

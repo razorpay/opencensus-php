@@ -84,6 +84,9 @@ class CreateOrgs extends Migration
                   ->unsigned()
                   ->nullable();
 
+            $table->json(Org::MERCHANT_STYLES)
+                ->nullable();
+
             $table->index(Org::CREATED_AT);
             $table->index(Org::UPDATED_AT);
             $table->index(Org::DELETED_AT);

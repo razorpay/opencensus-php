@@ -30,6 +30,10 @@ return [
                     'password'              => 'xYZ123!@#',
                     'password_confirmation' => 'xYZ123!@#',
                 ],
+                'merchant_styles' => [
+                    'color_code1' => '123',
+                    'color_code2' => '345'
+                ]
             ],
         ],
         'response' => [
@@ -383,6 +387,10 @@ return [
                     'password' => 'XYZ123!@#',
                     'password_confirmation' => 'XYZ123!@#',
                 ],
+                'merchant_styles' => [
+                    'color_code1' => '123',
+                    'color_code2' => '345'
+                ],
             ],
         ],
         'response'  => [
@@ -427,6 +435,10 @@ return [
                 'business_name' => 'HDFC Bank Public Limited',
                 'auth_type' => 'invalid_auth',
                 'custom_code' => 'hdfc',
+                'merchant_styles' => [
+                    'color_code1' => '123',
+                    'color_code2' => '345'
+                ]
             ],
         ],
         'response'  => [

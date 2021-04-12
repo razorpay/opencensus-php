@@ -33,6 +33,7 @@ class Entity extends Base\Entity
     const CROSS_ORG_ACCESS        = 'cross_org_access';
     const DEFAULT_PRICING_PLAN_ID = 'default_pricing_plan_id';
     const BACKGROUND_IMAGE_URL    = 'background_image_url';
+    const MERCHANT_STYLES         = 'merchant_styles';
 
     /**
      * Org level features
@@ -109,6 +110,7 @@ class Entity extends Base\Entity
         self::TYPE,
         self::FEATURES,
         self::BACKGROUND_IMAGE_URL,
+        self::MERCHANT_STYLES,
     ];
 
     protected $visible = [
@@ -135,6 +137,7 @@ class Entity extends Base\Entity
         self::DEFAULT_PRICING_PLAN_ID,
         self::TYPE,
         self::BACKGROUND_IMAGE_URL,
+        self::MERCHANT_STYLES,
     ];
 
     protected $public = [
@@ -159,6 +162,7 @@ class Entity extends Base\Entity
         self::WORKFLOW_PERMISSIONS,
         self::DEFAULT_PRICING_PLAN_ID,
         self::BACKGROUND_IMAGE_URL,
+        self::MERCHANT_STYLES,
     ];
 
     protected $guarded = [
@@ -168,6 +172,7 @@ class Entity extends Base\Entity
     protected $casts = [
         self::ALLOW_SIGN_UP    => 'bool',
         self::CROSS_ORG_ACCESS => 'bool',
+        self::MERCHANT_STYLES => 'array',
     ];
 
     protected $defaults = [
@@ -401,4 +406,15 @@ class Entity extends Base\Entity
     {
         return $this->attributes[self::BACKGROUND_IMAGE_URL];
     }
+
+    public function getMerchantStyles() : array
+    {
+        return $this->attributes[self::MERCHANT_STYLES];
+    }
+
+    public function setMerchantStyles(string $styles)
+    {
+        $this->attributes[self::MERCHANT_STYLES] = $styles;
+    }
 }
+

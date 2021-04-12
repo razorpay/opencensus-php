@@ -18,6 +18,11 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($org);
 
+        if (isset($input['merchant_styles']) === true)
+        {
+            unset($input['merchant_styles']);
+        }
+
         $this->addOrgRelatedEntities($org, $input);
 
         return $org;
@@ -80,6 +85,11 @@ class Core extends Base\Core
                 $this->disableWorkflowPermissionsForOrg($org, $diffPerms);
 
                 $this->enableWorkflowPermissionsForOrg($org, $perms);
+            }
+
+            if (isset($input['merchant_styles']) === true)
+            {
+                unset($input['merchant_styles']);
             }
         });
 
