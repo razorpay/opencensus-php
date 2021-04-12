@@ -417,7 +417,7 @@ class Core extends Base\Core
             $bankingAccount = $this->fetchByBankReferenceAndChannel($channel, $attributes[Entity::BANK_REFERENCE_NUMBER]);
 
             // if data validation of pincode or business beneficiary name failed, trigger the internal email
-            if($this->isDataValidForBankingAccount($bankingAccount) === false)
+            if($this->isDataValidForBankingAccount($bankingAccount, $attributes[Entity::BENEFICIARY_PIN], $attributes[Entity::BENEFICIARY_NAME]) === false)
             {
                 // trigger the internal email
                 $eventProperties = [
@@ -1331,15 +1331,17 @@ class Core extends Base\Core
 
     /**
      * @param Entity $bankingAccount
+     * @param string $beneficiaryPin
+     * @param string $beneficiaryName
      * @return bool
      */
-    public function isDataValidForBankingAccount(Entity $bankingAccount): bool
+    public function isDataValidForBankingAccount(Entity $bankingAccount, string $beneficiaryPin, string $beneficiaryName): bool
     {
         //similar_text - returns the number of matching chars percentage in both strings.
         //The number of matching characters is calculated by finding the longest first common substring, and
         //then doing this for the prefixes and the suffixes, recursively. The lengths of all found common substrings are added.
-        similar_text($bankingAccount->getBeneficiaryName(), $bankingAccount->merchant->merchantDetail->getBusinessName(), $similarityPercent);
-        if($bankingAccount->getBeneficiaryPin() !== $bankingAccount->getPincode() || $similarityPercent < 75.00)
+        similar_text($beneficiaryName, $bankingAccount->merchant->merchantDetail->getBusinessName(), $similarityPercent);
+        if($beneficiaryPin !== $bankingAccount->getPincode() || $similarityPercent < 75.00)
         {
             return false;
         }

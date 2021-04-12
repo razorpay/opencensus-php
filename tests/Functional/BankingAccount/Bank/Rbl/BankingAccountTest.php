@@ -344,11 +344,118 @@ class BankingAccountTest extends TestCase
         $this->assertEquals('Success', $response['RZPAlertNotiRes']['Body']['Status']);
     }
 
-    public function testDataAmbiguityInBankingAccountWebhook()
+    public function testDataAmbiguityInWebhookWithSamePinCodeAndSameBusinessName()
     {
-        $attribute = ['activation_status' => 'activated'];
+        $merchantDetailArray = [
+            'contact_name'               => 'rzp',
+            'contact_email'              => 'test@rzp.com',
+            'merchant_id'                => '10000000000000',
+            'business_operation_address' => 'Koramangala',
+            'business_operation_state'   => 'KARNATAKA',
+            'business_operation_pin'     => 560034,
+            'business_dba'               => 'test',
+            'business_name'              => 'INTERNET BANKING CA',
+            'business_operation_city'    => 'Bangalore',
+            'activation_status'          => 'activated'
+        ];
 
-        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+        $merchantDetail = $this->fixtures->create('merchant_detail', $merchantDetailArray);
+
+        $bankingAccount = $this->setAuthAndCreateBankingAccount($merchantDetail->merchant['id']);
+
+        $dataToReplace = [
+            'request' => [
+                'content' => [
+                    'RZPAlertNotiReq' => [
+                        'Body' => [
+                            'RZP_Ref No' => $bankingAccount->getBankReferenceNumber(),
+                            'Account No' => '31900299180853'
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        Mail::fake();
+
+        $response = $this->startTest($dataToReplace);
+
+        $this->assertEquals('Success', $response['RZPAlertNotiRes']['Body']['Status']);
+
+        Mail::assertNotQueued(ActivationMails\AccountOpeningWebhookDataAmbiguity::class);
+
+        Mail::assertNotQueued(ActivationMails\AccountOpeningWebhookDataAmbiguity::class, function ($mail) use($bankingAccount)
+        {
+            $mail->build();
+
+            return ($mail->subject === ActivationMails\AccountOpeningWebhookDataAmbiguity::SUBJECT && $mail->to[0]['address'] === 'x-onboarding@razorpay.com');
+        });
+    }
+
+    public function testDataAmbiguityInWebhookWithSamePinCodeAndDifferentBusinessName()
+    {
+        $merchantDetailArray = [
+            'contact_name'               => 'rzp',
+            'contact_email'              => 'test@rzp.com',
+            'merchant_id'                => '10000000000000',
+            'business_operation_address' => 'Koramangala',
+            'business_operation_state'   => 'KARNATAKA',
+            'business_operation_pin'     => 560034,
+            'business_dba'               => 'test',
+            'business_name'              => 'Razorpay Private Limited',
+            'business_operation_city'    => 'Bangalore',
+            'activation_status'          => 'activated'
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $merchantDetailArray);
+
+        $bankingAccount = $this->setAuthAndCreateBankingAccount($merchantDetail->merchant['id']);
+
+        $dataToReplace = [
+            'request' => [
+                'content' => [
+                    'RZPAlertNotiReq' => [
+                        'Body' => [
+                            'RZP_Ref No' => $bankingAccount->getBankReferenceNumber(),
+                            'Account No' => '31900299180853'
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        Mail::fake();
+
+        $response = $this->startTest($dataToReplace);
+
+        $this->assertEquals('Success', $response['RZPAlertNotiRes']['Body']['Status']);
+
+        Mail::assertQueued(ActivationMails\AccountOpeningWebhookDataAmbiguity::class);
+
+        Mail::assertQueued(ActivationMails\AccountOpeningWebhookDataAmbiguity::class, function ($mail) use($bankingAccount)
+        {
+            $mail->build();
+
+            return ($mail->subject === ActivationMails\AccountOpeningWebhookDataAmbiguity::SUBJECT && $mail->to[0]['address'] === 'x-onboarding@razorpay.com');
+        });
+    }
+
+    public function testDataAmbiguityInWebhookWithSamePinCodeAndSimilarityInBusinessNameLessThanRequiredPercent()
+    {
+        $merchantDetailArray = [
+            'contact_name'               => 'rzp',
+            'contact_email'              => 'test@rzp.com',
+            'merchant_id'                => '10000000000000',
+            'business_operation_address' => 'Koramangala',
+            'business_operation_state'   => 'KARNATAKA',
+            'business_operation_pin'     => 560034,
+            'business_dba'               => 'test',
+            'business_name'              => 'Internet Banking Ca',
+            'business_operation_city'    => 'Bangalore',
+            'activation_status'          => 'activated'
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $merchantDetailArray);
 
         $bankingAccount = $this->setAuthAndCreateBankingAccount($merchantDetail->merchant['id']);
 
