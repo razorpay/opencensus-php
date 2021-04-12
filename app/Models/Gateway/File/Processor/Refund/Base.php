@@ -92,6 +92,8 @@ class Base extends BaseProcessor
 
         $end = $this->gatewayFile->getEnd();
 
+        $this->updateBeginAndEndIfRequired($begin, $end);
+
         // If Scrooge needs to be called to fetch refunds data
         if ($this->fetchRefundsFromScrooge === true)
         {
@@ -727,5 +729,12 @@ class Base extends BaseProcessor
                 }
             }
         }
+    }
+
+    // function to update start and end times.
+    // for example: for nb_sbi, refund file is for 8 P.M - 8 P.M., so 4 hours are deducted from
+    // both the begin and end times.
+    public function updateBeginAndEndIfRequired(& $begin, & $end)
+    {
     }
 }

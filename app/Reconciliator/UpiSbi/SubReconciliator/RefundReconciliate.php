@@ -17,9 +17,6 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
     const BLACKLISTED_COLUMNS = [];
 
-    const RECON_STATUS   = 'recon_status';
-    const GATEWAY_STATUS = 'gateway_status';
-
     protected function getRefundId(array $row)
     {
         return Base\SubReconciliator\Helper::getArrayFirstValue($row, self::COLUMN_REFUND_ID);

@@ -39,31 +39,32 @@ class Scrooge
     const RESPONSE_SUCCESS_CODES = [200];
 
     const URLS = [
-        'retry'                              => 'retry',
-        'get_reports'                        => 'reports',
-        'bulk_status_update'                 => 'bulk-status-update',
-        'bulk_recon'                         => 'bulk-reconcile',
-        'bulk_reference1_update'             => 'bulk-reference1-update',
-        'get_refunds'                        => 'refunds',
-        'get_dashboard_init_data'            => 'init',
-        'status_update'                      => 'status-update',
-        'verify'                             => 'verify',
-        'download_refunds'                   => 'refunds/download',
-        'enqueue'                            => 'enqueue',
-        'download_refunds_gateway_file'      => 'refunds/download-gateway-file',
-        'instant_refunds_mode'               => 'instant_refunds_mode',
-        'get_file_based_refunds'             => 'file_based_refunds',
-        'refresh_fta_modes'                  => 'fta_modes_refresh',
-        'fetch_refund_create_data'           => 'fetch/refund_create_data',
-        'fetch_instant_refunds_modes'        => 'fetch/instant_refund_mode_configs',
-        'instant-refunds-decisioning-helper' => 'instant-refunds-decisioning-helper',
-        'fetch-from-gateway-reference-value' => 'fetch_from_gateway_reference_value',
+        'retry'                                => 'retry',
+        'get_reports'                          => 'reports',
+        'bulk_status_update'                   => 'bulk-status-update',
+        'bulk_recon'                           => 'bulk-reconcile',
+        'bulk_reference1_update'               => 'bulk-reference1-update',
+        'get_refunds'                          => 'refunds',
+        'get_dashboard_init_data'              => 'init',
+        'status_update'                        => 'status-update',
+        'verify'                               => 'verify',
+        'download_refunds'                     => 'refunds/download',
+        'enqueue'                              => 'enqueue',
+        'download_refunds_gateway_file'        => 'refunds/download-gateway-file',
+        'download_refunds_gateway_report_file' => 'refunds/download-gateway-report-file',
+        'instant_refunds_mode'                 => 'instant_refunds_mode',
+        'get_file_based_refunds'               => 'file_based_refunds',
+        'refresh_fta_modes'                    => 'fta_modes_refresh',
+        'fetch_refund_create_data'             => 'fetch/refund_create_data',
+        'fetch_instant_refunds_modes'          => 'fetch/instant_refund_mode_configs',
+        'instant-refunds-decisioning-helper'   => 'instant-refunds-decisioning-helper',
+        'fetch-from-gateway-reference-value'   => 'fetch_from_gateway_reference_value',
         // Retry routes
-        'retry_with_verify'                  => 'retry/with_verify',
-        'retry_without_verify'               => 'retry/without_verify',
-        'retry_source_fund_transfers'        => 'retry/source_fund_transfers',
-        'retry_custom_fund_transfers'        => 'retry/custom_fund_transfers',
-        'retry_with_attempt_appended_id'     => 'retry/with_attempt_appended_id',
+        'retry_with_verify'                    => 'retry/with_verify',
+        'retry_without_verify'                 => 'retry/without_verify',
+        'retry_source_fund_transfers'          => 'retry/source_fund_transfers',
+        'retry_custom_fund_transfers'          => 'retry/custom_fund_transfers',
+        'retry_with_attempt_appended_id'       => 'retry/with_attempt_appended_id',
     ];
 
     // Headers
@@ -325,6 +326,16 @@ class Scrooge
     public function downloadGatewayRefundsFile(array $input): array
     {
         return $this->sendRequest(self::ListBaseURL . '/' . self::URLS['download_refunds_gateway_file'],
+            Requests::POST, $input);
+    }
+
+    /**
+     * @param array $input
+     * @return array
+     */
+    public function downloadGatewayReportsFile(array $input): array
+    {
+        return $this->sendRequest(self::ListBaseURL . '/' . self::URLS['download_refunds_gateway_report_file'],
             Requests::POST, $input);
     }
 

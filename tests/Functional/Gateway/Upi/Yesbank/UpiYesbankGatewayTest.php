@@ -2,14 +2,10 @@
 
 namespace RZP\Tests\Functional\Gateway\Upi\Yesbank;
 
-use RZP\Constants\Mode;
 use RZP\Models\Payment\Method;
-use RZP\Models\Payment\Status;
 use RZP\Models\Payment\Gateway;
-use RZP\Gateway\Upi\Base\Secure;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
-use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Tests\Functional\Fixtures\Entity\Terminal;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;

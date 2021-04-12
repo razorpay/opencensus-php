@@ -4,10 +4,8 @@ namespace RZP\Tests\Functional\Helpers\Reconciliator;
 
 use Excel;
 use Mockery;
-use RZP\Models\Merchant;
 use RZP\Models\FileStore;
 use Illuminate\Http\UploadedFile;
-use RZP\Models\Base\PublicEntity;
 use RZP\Excel\Export as ExcelExport;
 use RZP\Reconciliator\RequestProcessor\Base;
 use RZP\Excel\ExportSheet as ExcelSheetExport;

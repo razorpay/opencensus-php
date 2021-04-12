@@ -40,7 +40,12 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
     // contains failure, should be sent to scrooge.
     const RECON_STATUS_FAILURE_GATEWAYS = [
         RequestProcessor\Base::UPI_SBI,
+        RequestProcessor\Base::NETBANKING_SBI,
     ];
+
+    // Keys used to send recon and gateway statuses to scrooge
+    const RECON_STATUS   = 'recon_status';
+    const GATEWAY_STATUS = 'gateway_status';
 
     /**
      * @var Payment\Entity
@@ -554,8 +559,6 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
                 [
                     'refund_id' => $refundId,
                 ]);
-
-            //return null;
         }
 
         $gatewaySettledAt = $this->getGatewaySettledAt($row);

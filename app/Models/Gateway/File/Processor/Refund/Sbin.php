@@ -45,29 +45,15 @@ class Sbin extends Base
     ];
 
     // SBI netbanking works on a 8pm to 8pm cycle for refunds
-    public function fetchEntities(): PublicCollection
+    public function updateBeginAndEndIfRequired(& $begin, & $end)
     {
-        $begin = $this->gatewayFile->getBegin();
-
-        $end = $this->gatewayFile->getEnd();
-
         $begin = Carbon::createFromTimestamp($begin, Timezone::IST)
-                        ->subHours(4)
-                        ->getTimestamp();
+                         ->subHours(4)
+                         ->getTimestamp();
 
         $end = Carbon::createFromTimestamp($end, Timezone::IST)
-                      ->subHours(4)
-                      ->getTimestamp();
-
-        $refunds = $this->repo->refund->fetchRefundsForGatewaysBetweenTimestamps(
-            static::PAYMENT_TYPE_ATTRIBUTE,
-            static::GATEWAY_CODE,
-            $begin,
-            $end,
-            static::GATEWAY
-        );
-
-        return $refunds;
+                       ->subHours(4)
+                       ->getTimestamp();
     }
 
     protected function formatDataForFile(array $data)

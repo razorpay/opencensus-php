@@ -58,6 +58,8 @@ class NetbankingSbiCombinedFileTest extends TestCase
         $this->assertEquals(1, $refund->getReference3());
         $this->assertEquals('processed', $refund->getStatus());
 
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refund]);
+
         $content = $this->generateFiles();
 
         $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
@@ -89,6 +91,8 @@ class NetbankingSbiCombinedFileTest extends TestCase
         $this->updateCreatedAtOfRefund($refund['id']);
 
         $refund = $this->getDbLastEntity('refund');
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refund]);
 
         $this->assertNull($refund->getGatewayRefunded());
         $this->assertEquals(1, $refund->getReference3());
@@ -158,6 +162,8 @@ class NetbankingSbiCombinedFileTest extends TestCase
         $this->assertNull($refund->getGatewayRefunded());
         $this->assertEquals(1, $refund->getReference3());
         $this->assertEquals('processed', $refund->getStatus());
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refund]);
 
         $content = $this->generateFiles();
 
@@ -247,6 +253,9 @@ class NetbankingSbiCombinedFileTest extends TestCase
         $this->updateAuthorizedAtOfPayment($payment['id']);
 
         $refund = $this->refundPayment($payment['id']);
+
+        $refund =  $this->getDbLastEntity('refund');
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refund]);
 
         $this->updateCreatedAtOfRefund($refund['id']);
     }

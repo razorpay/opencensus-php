@@ -1888,6 +1888,8 @@ trait Refund
 
     public function callRefundFunctionOnScrooge($refund, $data = [])
     {
+        $this->setRefundReference3IfApplicable($refund->payment);
+
         $data = $this->getGatewayDataForScroogeRefund($refund, $refund->payment, $data);
 
         $refund->setIsScrooge(true);
@@ -2394,6 +2396,7 @@ trait Refund
             'payment_base_amount'       => $payment->getBaseAmount(),
             'payment_authorized_at'     => $payment->getAuthorizeTimestamp(),
             'payment_service_route'     => $payment->getCpsRoute(),
+            'sequence_no'               => $refund->getReference3(),
             'payment_gateway_captured'  => $payment->getGatewayCaptured(),
         ];
 

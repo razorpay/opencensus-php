@@ -81,6 +81,23 @@ class ScroogeController extends Controller
         return ApiResponse::json($response['body'], $response['code']);
     }
 
+    public function downloadGatewayReportsFile()
+    {
+        $response = $this->app['scrooge']->downloadGatewayReportsFile($this->input);
+
+        if ($response['code'] !== 201)
+        {
+            $publicErrorMessage = json_decode(json_encode($response['body']), true)['public_error']['message']
+                ?? 'service request failed';
+
+            $error = new Error(ErrorCode::BAD_REQUEST_SCROOGE_DASHBOARD_ERROR, $publicErrorMessage);
+
+            return ApiResponse::generateErrorResponse($error);
+        }
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
+
     public function dashboardInit()
     {
         $response = $this->app['scrooge']->dashboardInit($this->input);

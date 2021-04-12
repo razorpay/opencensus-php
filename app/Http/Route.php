@@ -1539,6 +1539,7 @@ class Route
         'scrooge_refunds_download'                   => ['post',     'scrooge/refunds/download',                            'ScroogeController@downloadRefunds'                          ],
         'scrooge_refunds_enqueue'                    => ['post',     'scrooge/refunds/enqueue',                             'ScroogeController@enqueue'                                  ],
         'scrooge_refunds_download_gateway_file'      => ['post',     'scrooge/refunds/download-gateway-file',               'ScroogeController@downloadGatewayRefundsFile'               ],
+        'scrooge_refunds_download_gateway_report'    => ['post',     'scrooge/refunds/download-gateway-report',             'ScroogeController@downloadGatewayReportsFile'               ],
         'scrooge_processed_refunds_state_change'     => ['post',     'scrooge/refunds/processed-refunds-state-change',      'ScroogeController@bulkStatusUpdate'                         ],
 
         // Scrooge retry routes
@@ -4135,6 +4136,7 @@ class Route
         'scrooge_refunds_get',
         'scrooge_refunds_update',
         'scrooge_refunds_download_gateway_file',
+        'scrooge_refunds_download_gateway_report',
         'scrooge_refresh_fta_modes_cache',
         'scrooge_set_instant_refund_mode_config',
         'scrooge_expire_instant_refund_mode_config',
@@ -4915,6 +4917,7 @@ class Route
         'scrooge_refunds_get_multiple'             => Permission::VIEW_SCROOGE_REFUNDS,
         'scrooge_refunds_download'                 => Permission::VIEW_SCROOGE_REFUNDS,
         'scrooge_refunds_download_gateway_file'    => Permission::VIEW_SCROOGE_REFUNDS,
+        'scrooge_refunds_download_gateway_report'  => Permission::DOWNLOAD_NON_MERCHANT_REPORT,
         'scrooge_refunds_get'                      => Permission::VIEW_SCROOGE_REFUNDS,
         'scrooge_refunds_update'                   => Permission::EDIT_REFUND,
         'scrooge_refund_create'                    => Permission::RETRY_REFUND,

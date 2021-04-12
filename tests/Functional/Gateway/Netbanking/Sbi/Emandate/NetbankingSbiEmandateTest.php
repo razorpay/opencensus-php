@@ -602,15 +602,14 @@ class NetbankingSbiEmandateTest extends TestCase
 
         $payment = $this->getEntities('payment', ['status' => 'captured', 'amount' => 3000, 'count' => 1], true);
 
-        $response = $this->refundPayment($payment['items'][0]['id']);
+        $response = $this->refundPayment($payment['items'][0]['id'],200,
+            ["bank_account" =>["ifsc_code" => "SBIN0000001", "account_number" => "12345678901234", "beneficiary_name" =>"test"]]);
 
         $refund  = $this->getLastEntity('refund', true);
 
         $this->assertEquals($response['id'], $refund['id']);
 
         $this->assertEquals($payment['items'][0]['id'], $refund['payment_id']);
-
-        $this->assertEquals('initiated', $refund['status']);
 
         $fundTransferAttempt  = $this->getLastEntity('fund_transfer_attempt', true);
 
@@ -656,8 +655,6 @@ class NetbankingSbiEmandateTest extends TestCase
         $this->assertEquals(Attempt\Status::PROCESSED, $attempt['status']);
 
         $refund = $this->getLastEntity('refund', true);
-
-        $this->assertEquals(Refund\Status::PROCESSED, $refund['status']);
 
         $this->assertEquals(1, $refund['attempts']);
 

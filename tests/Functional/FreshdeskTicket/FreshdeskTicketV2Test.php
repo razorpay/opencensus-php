@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Functional\FreshdeskTicket;
 
 use Mockery;
@@ -9,7 +8,6 @@ use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\Freshdesk\FreshdeskTrait;
-
 
 class FreshdeskTicketV2Test extends TestCase
 {

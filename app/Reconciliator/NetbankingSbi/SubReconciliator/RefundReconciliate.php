@@ -5,9 +5,7 @@ namespace RZP\Reconciliator\NetbankingSbi\SubReconciliator;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Netbanking;
 use RZP\Reconciliator\Base;
-use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Refund;
-use RZP\Gateway\Netbanking\Sbi\Status;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ReconciliationException;
 use RZP\Gateway\Netbanking\Sbi\ReconFields\RefundReconFields;
@@ -31,6 +29,9 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     const ERROR_DESCRIPTION     = 'error_description';
 
     const BLACKLISTED_COLUMNS = [];
+
+    const REFERENCE3          = 'reference3';
+    const SEQUENCE_NO         = 'sequence_no';
 
     protected function getRefundId(array $row)
     {
@@ -94,12 +95,7 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
     protected function getReconRefundStatus(array $row)
     {
-        $rowStatus = $row[RefundReconFields::STATUS] ?? null;
-
-        if (empty($rowStatus) === false)
-        {
-            $rowStatus = strtolower($rowStatus);
-        }
+        $rowStatus = strtolower($row[RefundReconFields::STATUS] ?? null);
 
         if (in_array($rowStatus, self::VALID_STATUS, true) === false)
         {
@@ -120,6 +116,10 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
         if ($rowStatus === self::SUCCESS)
         {
             return Refund\Status::PROCESSED;
+        }
+        elseif ($rowStatus === self::DECLINED)
+        {
+            return self::DECLINED;
         }
 
         return Refund\Status::FAILED;
@@ -149,20 +149,29 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
         $refund = $this->refund;
 
-        if ($status === Refund\Status::FAILED)
+        if ($status === Refund\Status::PROCESSED)
         {
-            list($refund, $seqNo) = $this->incrementSequenceCount($refund);
+            static::$scroogeReconciliate[$this->refund->getId()]->setGatewayKeys([
+                self::GATEWAY_STATUS      => self::SUCCESS,
+            ]);
 
-            $this->createGatewayEntity($seqNo);
+            $refund = $this->setGatewayRefunded(true, $refund);
+        }
+        else
+        {
+            $refund = $this->incrementSequenceCount($refund);
+
+            $updatedReference3 = $refund->getReference3();
 
             if ($this->shouldRetry($row) === false)
             {
                 $refund = $this->setGatewayRefunded(false, $refund);
             }
-        }
-        elseif ($status === Refund\Status::PROCESSED)
-        {
-            $refund = $this->setGatewayRefunded(true, $refund);
+
+            static::$scroogeReconciliate[$this->refund->getId()]->setGatewayKeys([
+                self::GATEWAY_STATUS      => $status,
+                self::SEQUENCE_NO         => $updatedReference3,
+            ]);
         }
 
         $this->repo->saveOrFail($refund);
@@ -227,57 +236,7 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
         $refundEntity->setReference3($newSeqNo);
 
-        return [$refundEntity, $newSeqNo];
-    }
-
-    protected function getGatewayRefund(string $refundId)
-    {
-        $sequenceNo = $this->refund->getReference3();
-
-        $gatewayRefund = $this->repo->netbanking->findByRefundIdActionAndReference1(
-                                                                                    $refundId,
-                                                                                    Action::REFUND,
-                                                                                    $sequenceNo
-                                                                                   );
-
-        return $gatewayRefund;
-    }
-
-    protected function getReferenceNumber(array $row)
-    {
-        return $row[RefundReconFields::REFUND_REF_NO] ?? null;
-    }
-
-    /**
-     * Overriding in child class in order to persist status, received and error_description in gateway entity
-     *
-     * @param $seqNo
-     *
-     */
-    private function createGatewayEntity($seqNo)
-    {
-        $gatewayPayment = $this->getNewGatewayPaymentEntity();
-
-        $gatewayPayment->setPaymentId($this->payment->getId());
-
-        $gatewayPayment->setRefundId($this->refund->getId());
-
-        $gatewayPayment->setAction(Action::REFUND);
-
-        $gatewayPayment->setBank($this->payment->getBank());
-
-        $gatewayPayment->setAmount($this->refund->getAmount());
-
-        $gatewayPayment->setStatus(Status::SENT);
-
-        $gatewayPayment->setReference1($seqNo);
-
-        $this->repo->saveOrFail($gatewayPayment);
-    }
-
-    private function getNewGatewayPaymentEntity()
-    {
-        return new Netbanking\Base\Entity;
+        return $refundEntity;
     }
 
     /**
@@ -305,82 +264,5 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
         }
 
         return $rowDetails;
-    }
-
-    protected function persistGatewayData(array $rowDetails)
-    {
-        $gatewayRefund = $this->getGatewayRefund($this->refund->getId());
-
-        if ($gatewayRefund === null)
-        {
-            return;
-        }
-
-        $this->persistGatewayArn($rowDetails, $gatewayRefund);
-
-        $this->persistReferenceNumber($rowDetails, $gatewayRefund);
-
-        $this->persistGatewayTransactionId($rowDetails, $gatewayRefund);
-
-        $this->persistStatus($rowDetails, $gatewayRefund);
-
-        $this->persistReceived($rowDetails, $gatewayRefund);
-
-        $this->persistErrorDescription($rowDetails, $gatewayRefund);
-
-        $this->repo->saveOrFail($gatewayRefund);
-    }
-
-    /**
-     * Store status in netbanking entity. Updates the status to processed / failed based on recon file
-     *
-     * @param $rowDetails
-     * @param $gatewayRefund
-     *
-     */
-    protected function persistStatus($rowDetails, $gatewayRefund)
-    {
-        if (empty($rowDetails[self::REFUND_STATUS]) === true)
-        {
-            return;
-        }
-
-        $status = $rowDetails[self::REFUND_STATUS];
-
-        $gatewayRefund->setStatus($status);
-    }
-
-    /**
-     * Always sets received to true in the netbanking entity as recon file contains both success and failure refunds
-     *
-     * @param $rowDetails
-     * @param $gatewayRefund
-     */
-    protected function persistReceived($rowDetails, $gatewayRefund)
-    {
-        $gatewayRefund->setReceived(true);
-    }
-
-    /**
-     * Persist error description in case of refund failures within netbanking entity
-     *
-     * @param $rowDetails
-     * @param $gatewayRefund
-     */
-    protected function persistErrorDescription($rowDetails, $gatewayRefund)
-    {
-        if (empty($rowDetails[self::ERROR_DESCRIPTION]) === true)
-        {
-            return;
-        }
-
-        if ($rowDetails[self::REFUND_STATUS] === Refund\Status::FAILED)
-        {
-            $attributes = [
-                Netbanking\Base\Entity::ERROR_MESSAGE => $rowDetails[self::ERROR_DESCRIPTION]
-            ];
-
-            $gatewayRefund->fill($attributes);
-        }
     }
 }
