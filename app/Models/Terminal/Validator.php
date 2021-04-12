@@ -1465,7 +1465,7 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
-        Entity::UPI                        => 'sometimes|boolean|in:1',
+        Entity::UPI                        => 'sometimes|boolean',
     ];
 
     protected static $paytmEditTerminalRules = [

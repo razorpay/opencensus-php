@@ -1122,7 +1122,8 @@ return [
                 'gateway_secure_secret'    => '12345',
                 'procurer'                 => 'merchant',
                 'netbanking'               => '0',
-                'card'                     => '0'
+                'card'                     => '0',
+                'upi'                      => '0',
             ],
             'method' => 'POST'
         ],
@@ -1133,6 +1134,13 @@ return [
                 ],
                 'netbanking' => false,
                 'card'       => false,
+                'upi'        => false,
+                'emi'        => false,
+                'bank_transfer' => false,
+                'aeps'       => false,
+                'cardless_emi' => false,
+                'paylater'    => false,
+                'cred'        => false,
             ]
         ],
     ],
