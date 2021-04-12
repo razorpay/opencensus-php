@@ -3270,6 +3270,31 @@ class Gateway
         return (in_array($gateway, $gateways, true));
     }
 
+    public static function isGatewayForSchedulerService($gateway)
+    {
+        $gateways = [
+            self::NETBANKING_IDBI,
+            self::NETBANKING_DCB,
+            self::ISG,
+            self::NETBANKING_UBI,
+            self::PAYU,
+            self::NACH_ICICI,
+            self::NETBANKING_JSB,
+            self::NETBANKING_FSB,
+            self::CARDLESS_EMI,
+            self::HDFC_DEBIT_EMI,
+            self::WALLET_PAYPAL,
+            self::NETBANKING_EQUITAS,
+            self::NETBANKING_SVC,
+            self::NETBANKING_CSB,
+            self::WALLET_PHONEPESWITCH,
+            self::EBS,
+            self::NETBANKING_RBL,
+        ];
+
+        return (in_array($gateway, $gateways, true));
+    }
+
     /**
      * Some gateways, for example sbi netbanking expect us to send the sequence no or the order in which the refunds
      * were created. If a payment p1 has three refunds, they would expect us to track the order in which they are created

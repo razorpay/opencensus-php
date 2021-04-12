@@ -687,6 +687,15 @@ class EventCode
         'name'  => 'partnerships.appstore.wa.pl.failed'
     ];
 
+    const FAILED_PAYMENT_KAFKA_PUSH_SUCCESS                  = [
+        'group' => 'kafka_push',
+        'name'  => 'failed.payment.kafka.push.success'
+    ];
+
+    const FAILED_PAYMENT_KAFKA_PUSH_FAILED                  = [
+        'group' => 'kafka_push',
+        'name'  => 'failed.payment.kafka.push.failed'
+    ];
     //M2M Reward Events
     const REWARD_UPDATED = [
         'group' => 'updation',

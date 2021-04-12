@@ -198,7 +198,7 @@ class CreatePayments extends Migration
             $table->integer(Payment::REFERENCE5)
                   ->nullable();
 
-            $table->integer(Payment::REFERENCE6)
+            $table->integer(Payment::IS_PUSHED_TO_KAFKA)
                   ->nullable();
 
             $table->bigInteger(Payment::REFERENCE9)

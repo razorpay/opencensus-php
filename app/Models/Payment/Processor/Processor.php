@@ -2345,6 +2345,30 @@ class Processor
 
         $this->updateVerifyBucketOnPaymentFailure($exception);
 
+        if (($payment->getGateway() !== null) and
+            (Payment\Gateway::isGatewayForSchedulerService($payment->getGateway())))
+        {
+            $variant = $this->app->razorx->getTreatment(
+                $payment->getGateway(),
+                Merchant\RazorxTreatment::RAZORX_GATEWAY_SCHEDULER_EXPERIMENT,
+                $this->mode
+            );
+
+            if (($variant === 'on') and
+                ($this->app->runningUnitTests() === false))
+            {
+                $this->trace->info(
+                    TraceCode::FAILED_PAYMENT_KAFKA_PUSH_INITIATED,
+                    [
+                        'payment_id'    => $payment->getId(),
+                    ]
+                );
+                $isPushedToKafka = (new Payment\Core())->pushFailedPaymentToKafka($payment);
+
+                $payment->setIsPushedToKafka($isPushedToKafka);
+            }
+        }
+
         $this->repo->saveOrFail($payment);
 
         $this->tracePaymentFailed($error, $traceCode);

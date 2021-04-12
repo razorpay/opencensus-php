@@ -133,7 +133,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const CAPTURE               = 'reference3';
     const CPS_ROUTE             = 'cps_route';
     const REFERENCE5            = 'reference5';
-    const REFERENCE6            = 'reference6';
+    const IS_PUSHED_TO_KAFKA    = 'reference6';
     const REFERENCE9            = 'reference9';
     const FEE_BEARER            = 'fee_bearer';
     //Reference13 has been used to store detailed error fields of combination of source, step and reason.
@@ -613,6 +613,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::CPS_ROUTE            => self::API,
         self::AUTHENTICATION_GATEWAY => null,
         self::FEE_BEARER           => Merchant\FeeBearer::PLATFORM,
+        self::IS_PUSHED_TO_KAFKA           => null,
     ];
 
     protected $amounts = [
@@ -1393,6 +1394,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function setMetadataKey($key, $value)
     {
         $this->metadata[$key] = $value;
+    }
+
+    public function setIsPushedToKafka($isPushedToKafka)
+    {
+        $this->setAttribute(self::IS_PUSHED_TO_KAFKA, $isPushedToKafka);
     }
 
     public function getRecurringType()

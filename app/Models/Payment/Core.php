@@ -4,10 +4,14 @@ namespace RZP\Models\Payment;
 
 use Cache;
 use RZP\Models\Base;
+use RZP\Diag\EventCode;
 use RZP\Models\Payment;
+use RZP\Services\KafkaProducer;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\VirtualAccount\Receiver;
 use RZP\Models\Payment\Processor\Processor;
+use RZP\Models\Payment\Processor\Constants;
 use RZP\Models\Payment\Processor\TerminalProcessor;
 
 class Core extends Base\Core
@@ -182,5 +186,58 @@ class Core extends Base\Core
         $this->repo->payment->saveOrFail($payment);
 
         return $payment;
+    }
+
+    public function pushFailedPaymentToKafka($payment)
+    {
+        //1 => successfully pushed to kafka
+        $isPushedToKafka = 1;
+
+        $topic = env('REGISTER_PAYMENT_SCHEDULER_EVENT', 'register-payment-scheduler-event');
+
+        $data = [
+            Constants::NAMESPACE    => $payment->getMethod() . '_' . $payment->getGateway() . '_verify',
+            Constants::ENTITY_ID    => $payment->getId(),
+            Constants::ENTITY_TYPE  => 'payments',
+            Constants::REMINDER_DATA => [
+                Constants::VERIFY_AT      => $payment->getCreatedAt()
+            ],
+            Constants::VERIFY_SERVICE => 'api'
+        ];
+
+        $message = [
+            Constants::KAFKA_MESSAGE_TASK_NAME => Constants::REGISTER_PAYMENT_IN_SCHEDULER,
+            Constants::KAFKA_MESSAGE_DATA      => $data,
+        ];
+
+        try
+        {
+            (new KafkaProducer($topic, stringify($message)))->Produce();
+
+            $this->trace->info(
+                TraceCode::FAILED_PAYMENT_KAFKA_PUSH_SUCCESS,
+                [
+                    'payment_id'    => $payment->getId(),
+                    'topic'         => $topic,
+                ]
+            );
+
+            $this->app['diag']->trackPaymentEventV2(EventCode::FAILED_PAYMENT_KAFKA_PUSH_SUCCESS, $payment);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FAILED_PAYMENT_KAFKA_PUSH_FAILED
+            );
+
+            // 2 => kafka push failed, marking for retry
+            $isPushedToKafka = 2;
+
+            $this->app['diag']->trackPaymentEventV2(EventCode::FAILED_PAYMENT_KAFKA_PUSH_FAILED, $payment, $e);
+        }
+
+        return $isPushedToKafka;
     }
 }

@@ -35,4 +35,15 @@ class Constants
     const IS_PAYMENT_CAPTURED           = 'is_payment_captured';
     const IS_ADMIN_AUTH                 = 'is_admin_auth';
     const IS_PAYMENT_AMOUNT_MISMATCH    = 'is_payment_amount_mismatch';
+
+    //kafka constants
+    const REGISTER_PAYMENT_IN_SCHEDULER   = 'register_payment_in_scheduler';
+    const KAFKA_MESSAGE_TASK_NAME         = 'task_name';
+    const KAFKA_MESSAGE_DATA              = 'data';
+    const NAMESPACE                       = 'namespace';
+    const ENTITY_ID                       = 'entity_id';
+    const ENTITY_TYPE                     = 'entity_type';
+    const REMINDER_DATA                   = 'reminder_data';
+    const VERIFY_AT                       = 'verify_at';
+    const VERIFY_SERVICE                  = 'verify_service';
 }

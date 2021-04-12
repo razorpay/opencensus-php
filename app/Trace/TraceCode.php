@@ -4283,6 +4283,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Trace Code
     const TEMPLATING_RESPONSE                                   = 'TEMPLATING_RESPONSE';
     const TEMPLATING_REQUEST                                    = 'TEMPLATING_REQUEST';
+    const FAILED_PAYMENT_KAFKA_PUSH_INITIATED                   = 'FAILED_PAYMENT_KAFKA_PUSH_INITIATED';
+    const FAILED_PAYMENT_KAFKA_PUSH_SUCCESS                     = 'FAILED_PAYMENT_KAFKA_PUSH_SUCCESS';
+    const FAILED_PAYMENT_KAFKA_PUSH_FAILED                      = 'FAILED_PAYMENT_KAFKA_PUSH_FAILED';
 
     const PAYMENT_CAPTURE_FAILED_MYSQL_HAS_GONE_AWAY            = 'PAYMENT_CAPTURE_FAILED_MYSQL_HAS_GONE_AWAY';
     //Segmentation trigger trace codes

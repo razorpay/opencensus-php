@@ -29,6 +29,11 @@ fix_permissions() {
   cd /app/ && chmod 777 -R storage
 }
 
+create_kafka_credentials_dir() {
+  mkdir -p /opt/razorpay/certs/kafka
+  chmod 777 /opt/razorpay/certs/kafka
+}
+
 configure(){
   echo "casting alohomora - vault,env.php,apache"
   sed -i "s|APACHE_HOST|$HOSTNAME|g" dockerconf/api.apache.conf.j2
@@ -136,10 +141,12 @@ main() {
   ## Now, based on the app type, call the specific functions
   if [[ "${app_type}" == "web" ]]; then
     echo "Starting web app"
+    create_kafka_credentials_dir
     start_apache
   elif [[ "${app_type}" == "web-dark" ]]; then
     configure_dark
     echo "Starting web app"
+    create_kafka_credentials_dir
     start_apache
   elif [[ "${app_type}" == "web-hallmark" ]]; then
     configure_hallmark
