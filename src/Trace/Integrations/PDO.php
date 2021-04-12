@@ -31,11 +31,19 @@ use OpenCensus\Trace\Span;
  */
 class PDO implements IntegrationInterface
 {
+    // database connection string dsn
     static $dsn = "";
+
+    // optional parameters
+    // - tags - additional tags for the trace
+    static $options = [];
+
     /**
      * Static method to add instrumentation to the PDO requests
+     * @param string $dsn
+     * @param array $options
      */
-    public static function load($dsn="")
+    public static function load($dsn = "", $options = [])
     {
         if (!extension_loaded('opencensus')) {
             trigger_error('opencensus extension required to load PDO integrations.', E_USER_WARNING);
@@ -43,6 +51,8 @@ class PDO implements IntegrationInterface
         }
 
         PDO::$dsn = $dsn;
+
+        PDO::$options = $options;
 
         // public int PDO::exec(string $query)
         opencensus_trace_method('PDO', 'exec', [static::class, 'handleQuery']);
@@ -73,12 +83,14 @@ class PDO implements IntegrationInterface
      */
     public static function handleQuery($pdo, $query)
     {
+        $attributes = PDO::getTagsFromDSN(PDO::$dsn);
+
         return [
             'attributes'        => [
                 'db.statement'  => $query,
                 'span.kind'     => 'client',
-                'db.system'     => PDO::$db_system,
-                'net.peer.name' => PDO::$db_host
+                'db.system'     => $attributes['db.system'],
+                'net.peer.name' => $attributes['net.peer.name']
             ],
             'kind'              => 'client',
             'sameProcessAsParentSpan' => false
@@ -94,11 +106,13 @@ class PDO implements IntegrationInterface
      */
     public static function handleCommit($pdo)
     {
+        $attributes = PDO::getTagsFromDSN(PDO::$dsn);
+
         return [
             'attributes' => [
                 'span.kind'     => 'client',
-                'db.system'     => PDO::$db_system,
-                'net.peer.name' => PDO::$db_host
+                'db.system'     => $attributes['db.system'],
+                'net.peer.name' => $attributes['net.peer.name']
             ],
             'kind'                      => 'client',
             'sameProcessAsParentSpan'   => false
@@ -115,8 +129,11 @@ class PDO implements IntegrationInterface
      */
     public static function handleConnect($pdo, $dsn)
     {
-        $attributes = PDO::getTagsFromDSN($dsn);
+        $attributes = PDO::getTagsFromDSN(PDO::$dsn ?? $dsn);
+
         $attributes['span.kind'] = 'client';
+        $attributes += PDO::$options['tags'] ?? [];
+
         return [
             'attributes'                => $attributes,
             'kind'                      => 'client',
