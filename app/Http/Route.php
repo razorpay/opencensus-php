@@ -5559,6 +5559,7 @@ class Route
         'user_verify_contact'                          => '*',
         'user_merchant_mapping_action'                 => '*',
         'merchant_activation_save'                     => '*',
+        'bvs_service_dashboard'                        => '*',
         'merchant_razorx_bulk_evaluate'                => '*',
         'merchant_razorx_evaluate'                     => '*',
         'fetch_partner_intent'                         => '*',
