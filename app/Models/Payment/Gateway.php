@@ -2212,6 +2212,8 @@ class Gateway
         IFSC::DCBL => Gateway::NETBANKING_DCB,
         IFSC::UBIN => Gateway::NETBANKING_UBI,
         IFSC::IDIB => Gateway::NETBANKING_IBK,
+        IFSC::AUBL => Gateway::NETBANKING_AUSF,
+        IFSC::JSFB => Gateway::NETBANKING_JSB,
     ];
 
     /**
