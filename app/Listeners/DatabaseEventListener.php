@@ -30,8 +30,7 @@ class DatabaseEventListener
 
         $this->trace = $this->app['trace'];
 
-        // TODO: read from redis
-        $this->sampleRate = 100;
+        $this->sampleRate = $this->app['config']->get('database.db_mysql_query_sampling_rate');
     }
 
         /**

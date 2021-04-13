@@ -372,8 +372,17 @@ return array(
     | the migrations on disk haven't actually been run in the database.
     |
     */
-
     'migrations' => 'migrations',
+
+    /*
+    |--------------------------------------------------------------------------
+    | DB Query log sampling rate -- count per 1000 queries
+    |--------------------------------------------------------------------------
+    |
+    | This is the query sampling rate for all db queries. Value is count
+    | of queries to be logged out of 1000 queries.
+    */
+    'db_mysql_query_sampling_rate' => env('DB_MYSQL_QUERY_SAMPLING_RATE', 1),
 
     /*
     |--------------------------------------------------------------------------
