@@ -25,6 +25,7 @@ class RemindersController extends Controller
 
     const WHITELISTED_ROUTES_REGEX = [
         self::GET => [
+            '^batch$',
             '^merchant_config$',
             '^merchant_config\/[[:alnum:]]{14}$',
             '^merchant_settings$',
@@ -50,6 +51,7 @@ class RemindersController extends Controller
 
     const WHITELIST_ADMIN_ROUTES_REGEX = [
         self::GET => [
+            '^batch$',
             '^merchant_settings$',
             '^merchant_settings\/[[:alnum:]]{14}$',
             '^configs$',
