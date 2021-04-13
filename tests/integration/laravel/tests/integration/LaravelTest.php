@@ -54,6 +54,7 @@ class LaravelTest extends TestCase
         $this->assertNotEmpty($spans);
 
         $spansByName = $this->groupSpansByName($spans);
+        echo $spans;
 
 //        $this->assertEquals('/?rand=' . $rand, $spans[0]['name']);
         $this->assertNotEmpty($spansByName['bootstrap']);
@@ -78,6 +79,7 @@ class LaravelTest extends TestCase
         $this->assertNotEmpty($spans);
 
         $spansByName = $this->groupSpansByName($spans);
+        echo $spansByName;
         $this->assertNotEmpty($spansByName['bootstrap']);
         $this->assertNotEmpty($spansByName['eloquent/insert']);
         $this->assertNotEmpty($spansByName['PDO::__construct']);

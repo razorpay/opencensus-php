@@ -31,7 +31,7 @@ composer require --dev phpunit/phpunit:^7.0 guzzlehttp/guzzle:~6.0
 
 bin/console doctrine:migrations:migrate -n --allow-no-migration
 
-echo "Running PHP server at ${TEST_HOST}:${TEST_PORT}"
+echo "Running PHP server at ${TEST_HOST}:${TEST_PORT}:${REPO}:${BRANCH}"
 php -S ${TEST_HOST}:${TEST_PORT} -t public &
 
 vendor/bin/phpunit

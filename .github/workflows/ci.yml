@@ -89,6 +89,8 @@ jobs:
       TEST_HOST: localhost
       TEST_PORT: 9999
       TEST_URL: http://localhost:9999
+      POSTGRES_PASSWORD: pgsql
+      POSTGRES_USER: postgres
 
     steps:
       - uses: actions/checkout@v2
