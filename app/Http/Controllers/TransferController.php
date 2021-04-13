@@ -143,4 +143,13 @@ class TransferController extends Controller
              'input' => $input]
         );
     }
+
+    public function transferRecon()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->transferRecon($input);
+
+        return ApiResponse::json($response);
+    }
 }

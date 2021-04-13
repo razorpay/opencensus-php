@@ -132,6 +132,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Partner\Commission\Component\Repository        $commission_component;
  * @property Models\BankingAccountTpv\Repository                   $banking_account_tpv;
  * @property Models\Partner\Activation\Repository                  $partner_activation;
+ * @property Models\Settlement\Repository                          $settlement
  */
 
 class RepositoryManager extends Illuminate\Support\Manager
