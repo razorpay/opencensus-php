@@ -142,7 +142,7 @@ jobs:
         continue-on-error: true
         run: tests/integration/symfony4/test.sh
         env:
-          DATABASE_URL: mysql://mysql:mysql@mysql:3306/mysqldb
+          DATABASE_URL: mysql://mysql:mysql@127.0.0.1:3306/mysqldb
 
     services:
       mysql:

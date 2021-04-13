@@ -54,7 +54,7 @@ class LaravelTest extends TestCase
         $this->assertNotEmpty($spans);
 
         $spansByName = $this->groupSpansByName($spans);
-        echo implode(" ", $spans);
+        echo json_encode($spans);
 
 //        $this->assertEquals('/?rand=' . $rand, $spans[0]['name']);
         $this->assertNotEmpty($spansByName['bootstrap']);
