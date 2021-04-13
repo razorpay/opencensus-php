@@ -599,8 +599,11 @@ return [
             Permission::GET_ADVERTISER_LOGO => [
                 'description' => 'Get Advertiser Logo',
                 'assignable'  => true
-            ]
-            ,
+            ],
+            Permission::REWARD_BATCH_MAIL => [
+                'description' => 'Send Reward Mails to Merchants',
+                'assignable'  => true
+            ],
             Permission::ADMIN_FETCH_FUND_ACCOUNT_VALIDATION => [
                 'assignable' => true,
             ],

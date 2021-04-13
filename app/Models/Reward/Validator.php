@@ -34,6 +34,13 @@ class Validator extends Base\Validator
         Entity::BRAND_NAME                      => 'sometimes|filled|string|max:26',
     ];
 
+    protected static $mailerRules = [
+        'reward_ids'     => 'required|array',
+        'merchant_ids'   => 'required|array',
+        'content'        => 'required|filled|string',
+        'subject'        => 'required|filled|string'
+    ];
+
     public function validateRewardPeriod(array $input)
     {
         $now = Carbon::now()->getTimestamp();

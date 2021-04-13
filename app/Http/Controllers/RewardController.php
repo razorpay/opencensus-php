@@ -72,4 +72,12 @@ class RewardController extends Controller
 
         return ApiResponse::json($data);
     }
+    public function sendRewardMailToMerchants()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->sendRewardMailToMerchants($input);
+
+        return ApiResponse::json($data);
+    }
 }

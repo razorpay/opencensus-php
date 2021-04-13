@@ -190,4 +190,13 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::IS_DELETED);
     }
 
+    public function getMerchantWebsiteRedirectLink()
+    {
+        return $this->getAttribute(self::MERCHANT_WEBSITE_REDIRECT_LINK);
+    }
+
+    public function getBrandName()
+    {
+        return $this->getAttribute((self::BRAND_NAME));
+    }
 }

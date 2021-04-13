@@ -2,12 +2,12 @@
 
 
 namespace RZP\Models\Reward;
-
+use Mail;
 use Carbon\Carbon;
 use RZP\Diag\EventCode;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
-
+use RZP\Mail\Reward as RewardMail;
 
 class Core extends Base\Core
 {
@@ -90,6 +90,24 @@ class Core extends Base\Core
         }
 
         return $response->toArrayPublic();
+    }
+
+    public function sendMailToMerchant( $merchantId, $subject, $data)
+    {
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        if(isset($merchant) === false || empty($data['reward']) === true)
+        {
+            return false;
+        }
+        $data['merchant_name'] = $merchant->getBillingLabelNotName();
+
+        $data['subject'] = $subject;
+
+
+        Mail::queue(new RewardMail\NewReward($merchant->getEmail() , $subject, $data));
+
+        return true;
     }
 
     public function fetchReward($merchantId)

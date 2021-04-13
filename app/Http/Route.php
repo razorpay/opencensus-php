@@ -2289,6 +2289,8 @@ class Route
         'reward_activate_or_deactivate'           => ['patch',   'rewards',                                                 'RewardController@activateDeactivateReward'                    ],
         'reward_delete'                           => ['delete',  'rewards/{id}',                                            'RewardController@deleteReward'                                ],
         'reward_fetch'                            => ['get',     'rewards',                                                 'RewardController@fetchReward'                                 ],
+        'rewards_batch_email'                     => ['post',    'rewards/batch_email',                                     'RewardController@sendRewardMailToMerchants'                   ],
+
 
         //Routes related to app framework
         'app_mapping_create'                      => ['post',    'app/mapping',                                             'ApplicationFrameworkController@createAppMapping'              ],
@@ -4481,6 +4483,7 @@ class Route
         'reward_delete',
         'reward_create',
         'reward_update',
+        'rewards_batch_email',
         // Admin merchant notification configs
         'create_merchant_notification_config_admin',
         'update_merchant_notification_config_admin',
@@ -5340,6 +5343,7 @@ class Route
         'reward_create'                               => Permission::CREATE_REWARD,
         'reward_delete'                               => Permission::DELETE_REWARD,
         'advertiser_logo'                             => Permission::GET_ADVERTISER_LOGO  ,
+        'rewards_batch_email'                         => Permission::REWARD_BATCH_MAIL,
         // Admin merchant notification configs
         'create_merchant_notification_config_admin'           => Permission::MERCHANT_NOTIFICATION_CONFIG_ADMIN,
         'update_merchant_notification_config_admin'           => Permission::MERCHANT_NOTIFICATION_CONFIG_ADMIN,

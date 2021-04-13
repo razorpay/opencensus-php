@@ -623,6 +623,7 @@ class Name
     const UPDATE_REWARD                                = 'update_reward';
     const DELETE_REWARD                                = 'delete_reward';
     const GET_ADVERTISER_LOGO                          = 'get_advertiser_logo';
+    const REWARD_BATCH_MAIL                            = 'reward_batch_mail';
     const PG_ROUTER_ORDER_SYNC                         = 'pg_router_order_sync';
     const GET_IRCTC_SETTLEMENT_FILE                    = 'get_irctc_settlement_file';
     const CREATE_TRANSACTION_FEE_BREAKUP               = 'create_transaction_fee_breakup';
