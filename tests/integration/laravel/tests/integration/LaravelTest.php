@@ -81,7 +81,7 @@ class LaravelTest extends TestCase
         $this->assertNotEmpty($spans);
 
         $spansByName = $this->groupSpansByName($spans);
-        echo json_encode($spansByName);
+//        echo json_encode($spansByName);
         $this->assertNotEmpty($spansByName['bootstrap']);
         $this->assertNotEmpty($spansByName['eloquent/insert']);
         $this->assertNotEmpty($spansByName['PDO::__construct']);
@@ -163,6 +163,7 @@ class LaravelTest extends TestCase
         foreach ($spans as $span) {
             if (!array_key_exists($span['name'], $spansByName)) {
                 $spansByName[$span['name']] = [];
+                echo $span['name'];
             }
             $spansByName[$span['name']][] = $span;
         }

@@ -116,33 +116,34 @@ jobs:
           sudo apt-get install -y -q --no-install-recommends \
             libmemcached11 libmemcached-dev zlib1g-dev zlib1g
 
-      - name: Curl test
-        run: tests/integration/curl/test.sh
-
-      - name: Wordpress test
-        run: tests/integration/wordpress/test.sh
+#      - name: Curl test
+#        run: tests/integration/curl/test.sh
+#
+#      - name: Wordpress test
+#        run: tests/integration/wordpress/test.sh
 
       - name: Laravel test
         continue-on-error: true
         run: tests/integration/laravel/test.sh
 
-      - name: Guzzle 5 test
-        run: tests/integration/guzzle5/test.sh
+#      - name: Guzzle 5 test
+#        run: tests/integration/guzzle5/test.sh
+#
+#      - name: Guzzle 6 test
+#        run: tests/integration/guzzle6/test.sh
+#
+#      - name: Memcached test
+#        run: tests/integration/memcached/test.sh
+#
+#      - name: Pgsql test
+#        run: tests/integration/pgsql/test.sh
 
-      - name: Guzzle 6 test
-        run: tests/integration/guzzle6/test.sh
-
-      - name: Memcached test
-        run: tests/integration/memcached/test.sh
-
-      - name: Pgsql test
-        run: tests/integration/pgsql/test.sh
-
-      - name: Symfony 4 test
-        continue-on-error: true
-        run: tests/integration/symfony4/test.sh
-        env:
-          DATABASE_URL: mysql://mysql:mysql@127.0.0.1:3306/mysqldb
+#      Need to fix this test case
+#      - name: Symfony 4 test
+#        continue-on-error: true
+#        run: tests/integration/symfony4/test.sh
+#        env:
+#          DATABASE_URL: mysql://mysql:mysql@127.0.0.1:3306/mysqldb
 
     services:
       mysql:
