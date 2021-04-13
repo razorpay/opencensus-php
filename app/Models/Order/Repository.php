@@ -51,7 +51,7 @@ class Repository extends Base\Repository
 
     public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip, $entityToRelationFetchMap = [])
     {
-        $orders = $this->newQuery()
+        $orders = $this->newQueryWithConnection($this->getSlaveConnection())
                        ->merchantId($merchantId)
                        ->betweenTime($from, $to)
                        ->with('payments')
