@@ -12,7 +12,7 @@ use RZP\Exception;
 use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Jobs\Settlement\Bucket;
-use RZP\Jobs\CardsPaymentRecon;
+use RZP\Jobs\CardsPaymentTransaction;
 use RZP\Mail\Merchant\FeeCreditsAlert;
 use RZP\Models\Base;
 use RZP\Models\Base\PublicCollection;
@@ -198,7 +198,7 @@ class Core extends Base\Core
 
         if ($this->app->runningUnitTests() === false)
         {
-            CardsPaymentRecon::dispatch($data);
+            CardsPaymentTransaction::dispatch($data);
         }
     }
 

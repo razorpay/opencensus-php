@@ -142,7 +142,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_QUEUE_CAPTURE_DELETE                          = 'PAYMENT_QUEUE_CAPTURE_DELETE';
     const PAYMENT_CAPTURE_ADD_TO_QUEUE                          = 'PAYMENT_CAPTURE_ADD_TO_QUEUE';
     const PAYMENT_RECON_QUEUE_CPS_REQUEST                       = 'PAYMENT_RECON_QUEUE_CPS_REQUEST';
+    const PAYMENT_TRANSACTION_QUEUE_CPS_REQUEST                 = 'PAYMENT_TRANSACTION_QUEUE_CPS_REQUEST';
     const PAYMENT_RECON_QUEUE_CPS_SUCCESS                       = 'PAYMENT_RECON_QUEUE_CPS_SUCCESS';
+    const PAYMENT_TRANSACTION_QUEUE_CPS_SUCCESS                 = 'PAYMENT_TRANSACTION_QUEUE_CPS_SUCCESS';
     const PAYMENT_RECON_CPS_QUEUE_DELETE                        = 'PAYMENT_RECON_CPS_QUEUE_DELETE';
     const PAYMENT_RECON_QUEUE_NBPLUS_REQUEST                    = 'PAYMENT_RECON_QUEUE_NBPLUS_REQUEST';
     const PAYMENT_RECON_QUEUE_NBPLUS_SUCCESS                    = 'PAYMENT_RECON_QUEUE_NBPLUS_SUCCESS';
@@ -2521,6 +2523,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FUND_TRANSFER_SOURCE_UPDATE_RECON_FAILED              = 'FUND_TRANSFER_SOURCE_UPDATE_RECON_FAILED';
 
     const NO_ASSOCIATED_BANKING_ACCOUNT                         = 'NO_ASSOCIATED_BANKING_ACCOUNT';
+
+    const TRANSACTION_INFO                                      = 'TRANSACTION_INFO';
+    const TRANSACTION_INFO_ALERT                                = 'TRANSACTION_INFO_ALERT';
+    const PAYMENT_TRANSACTION_CPS_QUEUE_DELETE                  = 'PAYMENT_TRANSACTION_CPS_QUEUE_DELETE';
 
 
     // Subscription service
