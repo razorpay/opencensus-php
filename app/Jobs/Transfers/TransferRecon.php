@@ -3,6 +3,7 @@
 namespace RZP\Jobs\Transfers;
 
 use RZP\Jobs\Job;
+use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transfer\Service as Transfers;
 
@@ -34,6 +35,14 @@ class TransferRecon extends Job
     public function handle()
     {
         parent::handle();
+
+        $this->trace->info(
+            TraceCode::MESSAGE_RECEIVED_FROM_TRANSFER_SETTLEMENT_QUEUE,
+            [
+                'settlement_id' => $this->settlementIds,
+                'current_time'  => Carbon::now()->getTimestamp(),
+            ]
+        );
 
         try
         {

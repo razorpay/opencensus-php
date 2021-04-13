@@ -12,7 +12,6 @@ use RZP\Base\BuilderEx;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
-use RZP\Models\Transfer\Constant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
 use RZP\Gateway\Billdesk;
@@ -24,6 +23,7 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Balance;
+use RZP\Models\Transfer\Constant;
 use RZP\Constants\Entity as ConstantEntity;
 
 class Repository extends Base\Repository
@@ -1966,6 +1966,28 @@ class Repository extends Base\Repository
                       ->skip($skip * Constant::CHUNK)
                       ->take(Constant::CHUNK)
                       ->get();
+    }
+
+    public function fetchLinkedAccountTransactionIdsBySettlementId(string $settlementId, int $skip = 0)
+    {
+        $paymentIdColumn        = $this->repo->payment->dbColumn(Payment\Entity::ID);
+        $transferIdColumn       = $this->repo->payment->dbColumn(Payment\Entity::TRANSFER_ID);
+
+        $transactionIdColumn    = $this->dbColumn(Entity::ID);
+        $typeColumn             = $this->dbColumn(Entity::TYPE);
+        $entityIdColumn         = $this->dbColumn(Entity::ENTITY_ID);
+        $settlementIdColumn     = $this->dbColumn(Entity::SETTLEMENT_ID);
+
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+                      ->join(Table::PAYMENT, $entityIdColumn, '=', $paymentIdColumn)
+                      ->select($transactionIdColumn)
+                      ->where($typeColumn, Type::PAYMENT)
+                      ->where($settlementIdColumn, $settlementId)
+                      ->whereNotNull($transferIdColumn)
+                      ->skip($skip)
+                      ->take(Constant::CHUNK);
+
+        return $query->pluck(Entity::ID);
     }
 
     public function getTransactionBalanceType(string $transactionId)

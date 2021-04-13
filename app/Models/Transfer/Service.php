@@ -46,104 +46,89 @@ class Service extends Base\Service
     public function UpdateTransfersWithSettlementId($settlementIds)
     {
         $this->trace->info(
-            TraceCode::TRANSFER_SETTLEMENT_INITIATED,
+            TraceCode::TRANSFER_RECON_INITIATED,
             [
-                'settlementIds' => $settlementIds
-            ]);
+                'settlement_ids' => $settlementIds
+            ]
+        );
 
         foreach ($settlementIds as $settlementId)
         {
+            $startTime = microtime(true);
+
+            $settlement = $this->repo->settlement->findOrFail($settlementId);
+
+            $merchant = $this->repo->merchant->findOrFail($settlement->getMerchantId());
+
+            if ($merchant->isLinkedAccount() === false)
+            {
+                continue;
+            }
+
             $transferIds = [];
 
             try
             {
-                $startTime = microtime(true);
-
-                $setl = $this->repo->settlement->findOrFail($settlementId);
-
-                $merchantId = $setl->getMerchantId();
-
-                $merchant = $this->repo->merchant->find($merchantId);
-
-                if ($merchant->isLinkedAccount() === true)
+                for ($skip = 0; true; $skip += Constant::CHUNK)
                 {
-                    $transferIds = $this->repo->transaction(function () use($settlementId, $transferIds, $setl)
+                    $transactionIds = $this->repo->transaction->fetchLinkedAccountTransactionIdsBySettlementId($settlementId, $skip);
+
+                    $transferIdsChunk = $this->updateSettlementIdInTransfer($settlementId, $transactionIds);
+
+                    $transferIds = array_merge($transferIds, $transferIdsChunk);
+
+                    if (count($transactionIds) < Constant::CHUNK)
                     {
-                        $transactions = $this->repo->transaction->fetchTransactionsForSettlementIdCount($settlementId);
-
-                        $this->trace->info(
-                            TraceCode::COUNT_TRANSACTIONS_FETCHED_FOR_SETTLEMENT_ID,
-                            [
-                                'settlement_id'     => $settlementId,
-                                'settlement_status' => $setl->getStatus(),
-                                'count'             => $transactions,
-                            ]
-                        );
-
-                        $totalchunks = ceil($transactions / Constant::CHUNK);
-
-                        for ($chunk = 0; $chunk < $totalchunks; $chunk = $chunk + 1)
-                        {
-                            $transactions = $this->repo->transaction->fetchTransactionsForSettlementId($settlementId, $chunk);
-
-                            $transferIdsChunk = $this->updateSettlementIdInTransfer($transactions, $settlementId);
-
-                            $transferIds = array_merge($transferIds, $transferIdsChunk);
-                        }
-
-                        return $transferIds;
-                    });
-
-                    $this->trace->info(
-                        TraceCode::TRANSFERS_UPDATED_WITH_RECIPIENT_SETTLEMENT_ID,
-                        [
-                            'settlement_id' => $settlementId,
-                            'transfers_ids' => $transferIds,
-                        ]
-                    );
-
-                    $this->fireTransferSettledWebhookIfApplicable($transferIds, $setl);
+                        break;
+                    }
                 }
-                $timeTaken = microtime(true) - $startTime;
-
-                $this->trace->info(
-                    TraceCode::RECIPIENT_SETTLEMENT_UPDATE_TIME_TAKEN,
-                    [
-                        'time_taken'   => $timeTaken,
-                        'settlementId' => $settlementId,
-                    ]);
             }
             catch (\Exception $ex)
             {
                 $this->trace->traceException(
                     $ex,
                     Trace::CRITICAL,
-                    TraceCode::SETTLEMENT_ID_NOT_FOUND_TRANSFERS,
+                    TraceCode::TRANSFER_RECON_FAILURE,
                     [
-                        'settlementId' => $settlementId,
-                    ]);
+                        'settlement_id' => $settlementId,
+                    ]
+                );
             }
+
+            $endTime = microtime(true);
+
+            $this->trace->info(
+                TraceCode::TRANSFER_RECON_COMPLETE,
+                [
+                    'settlement_id'     => $settlementId,
+                    'time_taken'        => $endTime - $startTime,
+                    'transfers_ids'     => $transferIds,
+                ]
+            );
+
+            $this->fireTransferSettledWebhookIfApplicable($transferIds, $settlement);
         }
     }
 
-    protected function updateSettlementIdInTransfer(\Illuminate\Support\Collection $transactions, $settlementId)
+    protected function updateSettlementIdInTransfer($settlementId, $transactionIds)
     {
         $transferIds = [];
 
         try
         {
-            foreach ($transactions as $txn)
+            foreach ($transactionIds as $transactionId)
             {
                 $this->trace->info(
                     TraceCode::TRANSACTION_FETCHED_FOR_SETTLEMENT_ID,
                     [
-                        'txn_id' => $txn->getId(),
+                        'settlement_id'     => $settlementId,
+                        'transaction_id'    => $transactionId,
                     ]
                 );
 
-                $settlementId = $txn->getSettlementId();
+                $transaction = $this->repo->transaction->findOrFail($transactionId);
 
-                $transfer = $txn->source->transfer;
+                $transfer = $transaction->source->transfer;
 
                 $transfer->setRecipientSettlementId($settlementId);
 
@@ -159,8 +144,8 @@ class Service extends Base\Service
                 Trace::CRITICAL,
                 TraceCode::TRANSFER_UPDATE_SETTLEMENT_ID_FAILED,
                 [
-                    'transactions' => $transactions,
-                    'settlementId' => $settlementId,
+                    'settlement_id'     => $settlementId,
+                    'transaction_ids'   => $transactionIds,
                 ]);
         }
 
