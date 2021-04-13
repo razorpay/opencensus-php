@@ -56,7 +56,7 @@ class LaravelTest extends TestCase
 
         $spansByName = $this->groupSpansByName($spans);
 //        echo json_encode($spans);
-        echo json_encode($spansByName);
+//        echo json_encode($spansByName);
 
 //        $this->assertEquals('/?rand=' . $rand, $spans[0]['name']);
         $this->assertNotEmpty($spansByName['bootstrap']);
