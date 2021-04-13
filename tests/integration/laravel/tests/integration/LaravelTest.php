@@ -42,6 +42,7 @@ class LaravelTest extends TestCase
     public function testReportsTraceToFile()
     {
         $rand = mt_rand();
+        echo $rand;
         $response = self::$client->request('GET', '/', [
             'query' => [
                 'rand' => $rand
@@ -54,7 +55,8 @@ class LaravelTest extends TestCase
         $this->assertNotEmpty($spans);
 
         $spansByName = $this->groupSpansByName($spans);
-        echo json_encode($spans);
+//        echo json_encode($spans);
+        echo json_encode($spansByName);
 
 //        $this->assertEquals('/?rand=' . $rand, $spans[0]['name']);
         $this->assertNotEmpty($spansByName['bootstrap']);
@@ -79,7 +81,7 @@ class LaravelTest extends TestCase
         $this->assertNotEmpty($spans);
 
         $spansByName = $this->groupSpansByName($spans);
-//        echo $spansByName;
+        echo json_encode($spansByName);
         $this->assertNotEmpty($spansByName['bootstrap']);
         $this->assertNotEmpty($spansByName['eloquent/insert']);
         $this->assertNotEmpty($spansByName['PDO::__construct']);
