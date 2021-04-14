@@ -2,6 +2,7 @@ import ajax from 'merchant/utils/ajax';
 import QueryString from 'query-string';
 import { filterBy, getURLQueryParams } from 'common/utils/rzp-utils';
 import { RZPFeatures } from 'merchant/helpers/data';
+import abExperimentsMap from 'merchant/utils/abExperimentsMap';
 
 import { fetchFeaturesAjax } from 'merchant/reducers/config';
 import { getOrg } from 'merchant/store';
@@ -321,6 +322,18 @@ export default class User {
   }
 
   get isProjectNitroEnabled() {
+    // moving nitro to splitz phase wise, so keeping checks for both splitz and razorx experiments currently.
+
+    const splitzExperiments = window.rzp_user.splitz_experiments || {};
+    const splitzObj =
+      splitzExperiments[
+        Object.keys(splitzExperiments).find((key) => abExperimentsMap.project_nitro.includes(key))
+      ] || {};
+
+    if (splitzObj.variables) {
+      return splitzObj.variables.result === 'on';
+    }
+
     return (
       this.getExpStatus('project_nitro') ||
       this.getExpStatus('project_nitro_1') ||
