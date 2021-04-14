@@ -6,7 +6,7 @@ import { Field } from 'redux-form';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import { getURLQueryParams } from 'common/utils/rzp-utils';
 import {
-  fetchWithdrawalConfigurationByMerchantID,
+  fetchFunctionalWithdrawalConfigByMerchantID,
   fetchInstallments,
 } from 'merchant/reducers/capital/withdrawals';
 import {
@@ -26,7 +26,7 @@ import moment from 'moment';
     withdrawalConfigurationDetails: state.withdrawals.withdrawalConfiguration,
   }),
   {
-    fetchWithdrawalConfigurationByMerchantID,
+    fetchFunctionalWithdrawalConfigByMerchantID,
     fetchInstallments,
   },
 )
@@ -50,7 +50,7 @@ class RepaymentsSchedule extends Component {
   fetchWC = () => {
     const {
       user: { current },
-      fetchWithdrawalConfigurationByMerchantID: fetchWCByMerchantID,
+      fetchFunctionalWithdrawalConfigByMerchantID: fetchWCByMerchantID,
     } = this.props;
     return fetchWCByMerchantID({
       owner_type: 'RZP_MERCHANT',

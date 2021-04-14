@@ -7,7 +7,7 @@ import axios from 'axios';
 import {
   fetchWithdrawalConfiguration,
   fetchWithdrawals,
-  fetchWithdrawalConfigurationByMerchantID,
+  fetchFunctionalWithdrawalConfigByMerchantID,
 } from 'merchant/reducers/capital/withdrawals';
 import { CASH_ADVANCE_BASE_URL, CASH_ADVANCE_SECTIONS } from './constants';
 
@@ -21,7 +21,7 @@ import { CASH_ADVANCE_BASE_URL, CASH_ADVANCE_SECTIONS } from './constants';
     openModal,
     fetchWithdrawals,
     fetchWithdrawalConfiguration,
-    fetchWithdrawalConfigurationByMerchantID,
+    fetchFunctionalWithdrawalConfigByMerchantID,
   },
 )
 class WithdrawalsRoot extends Component {
@@ -63,12 +63,11 @@ class WithdrawalsRoot extends Component {
   }
 
   fetchWithdrawalConfiguration = () => {
-    const { fetchWithdrawalConfigurationByMerchantID, user } = this.props;
-    fetchWithdrawalConfigurationByMerchantID({
+    const { fetchFunctionalWithdrawalConfigByMerchantID, user } = this.props;
+
+    fetchFunctionalWithdrawalConfigByMerchantID({
       owner_id: user.current,
       owner_type: 'RZP_MERCHANT',
-      status: 'ACTIVE',
-      skip: 0,
     });
   };
 
@@ -145,10 +144,7 @@ class WithdrawalsRoot extends Component {
     );
 
     if (hasWithdrawFeature) {
-      if (!hasWC) {
-        return OnboardingSection;
-      } else if (wcError) {
-        //TODO: render broken image here.
+      if (wcError) {
         return 'Error while loading WC.';
       }
       return <Redirect to={`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.OVERVIEW}`} />;

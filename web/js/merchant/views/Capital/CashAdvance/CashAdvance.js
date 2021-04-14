@@ -2,14 +2,13 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { NavLink, withRouter, Redirect } from 'react-router-dom';
-
 import { CASH_ADVANCE_BASE_URL, CASH_ADVANCE_SECTIONS } from './constants';
 import Withdrawals from './withdrawals';
 import Overview from './Overview';
 import Repayments from './Repayments/Repayments';
 import {
   fetchSeedData,
-  fetchWithdrawalConfigurationByMerchantID,
+  fetchFunctionalWithdrawalConfigByMerchantID,
   fetchWithdrawals,
 } from 'merchant/reducers/capital/withdrawals';
 import LoaderDots from 'common/ui/LoaderDots';
@@ -38,7 +37,7 @@ const Loader = () => {
     };
   },
   {
-    fetchWithdrawalConfigurationByMerchantID,
+    fetchFunctionalWithdrawalConfigByMerchantID,
     fetchSeedData,
     fetchWithdrawals,
   },
@@ -58,14 +57,12 @@ class CashAdvance extends React.Component {
     const {
       user: { current },
       fetchWithdrawals,
-      fetchWithdrawalConfigurationByMerchantID,
+      fetchFunctionalWithdrawalConfigByMerchantID,
     } = this.props;
 
-    fetchWithdrawalConfigurationByMerchantID({
-      owner_type: 'RZP_MERCHANT',
+    fetchFunctionalWithdrawalConfigByMerchantID({
       owner_id: current,
-      status: 'ACTIVE',
-      skip: 0,
+      owner_type: 'RZP_MERCHANT',
     });
 
     fetchWithdrawals({

@@ -17,8 +17,7 @@ class PopoverTitle extends Component {
     const { children, ...otherProps } = this.props;
 
     otherProps.className =
-      (otherProps.className ? otherProps.className + ' ' : '') +
-      'rzp-popover-title';
+      (otherProps.className ? otherProps.className + ' ' : '') + 'rzp-popover-title';
 
     return <div {...otherProps}>{children}</div>;
   }
@@ -33,8 +32,7 @@ class PopoverBody extends Component {
     const { children, ...otherProps } = this.props;
 
     otherProps.className =
-      (otherProps.className ? otherProps.className + ' ' : '') +
-      'rzp-popover-body';
+      (otherProps.className ? otherProps.className + ' ' : '') + 'rzp-popover-body';
 
     return <div {...otherProps}>{children}</div>;
   }
@@ -74,7 +72,7 @@ class Popover extends Component {
     let popoverTitle = null,
       popoverBody = null;
 
-    React.Children.forEach(children, child => {
+    React.Children.forEach(children, (child) => {
       if (!popoverTitle && isChildSameType(child, PopoverTitle)) {
         popoverTitle = child;
       }
@@ -110,9 +108,7 @@ class Popover extends Component {
             </popoverTitle.type>
           )}
           {popoverBody && (
-            <popoverBody.type {...popoverBody.props}>
-              {popoverBody.props.children}
-            </popoverBody.type>
+            <popoverBody.type {...popoverBody.props}>{popoverBody.props.children}</popoverBody.type>
           )}
         </div>
       </Tooltip>
@@ -121,8 +117,7 @@ class Popover extends Component {
 }
 
 Popover.propTypes = {
-  children: ({ children }) =>
-    checkChildrenType(children, [PopoverTitle, PopoverBody]),
+  children: ({ children }) => checkChildrenType(children, [PopoverTitle, PopoverBody]),
   ...Tooltip.propTypes,
 };
 

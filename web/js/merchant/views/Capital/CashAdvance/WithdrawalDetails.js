@@ -9,7 +9,7 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import {
   fetchWithdrawalDetails,
-  fetchWithdrawalConfigurationByMerchantID,
+  fetchFunctionalWithdrawalConfigByMerchantID,
 } from 'merchant/reducers/capital/withdrawals';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import Repayments from 'merchant/models/Capital/Repayments';
@@ -33,7 +33,7 @@ import {
   }),
   {
     fetchWithdrawalDetails,
-    fetchWithdrawalConfigurationByMerchantID,
+    fetchFunctionalWithdrawalConfigByMerchantID,
     closeModal,
     openModal,
   },
@@ -55,13 +55,13 @@ class WithdrawalDetails extends Component {
   };
 
   componentWillMount() {
-    const { fetchWithdrawalConfigurationByMerchantID, user } = this.props;
-    fetchWithdrawalConfigurationByMerchantID({
-      owner_type: 'RZP_MERCHANT',
+    const { fetchFunctionalWithdrawalConfigByMerchantID, user } = this.props;
+
+    fetchFunctionalWithdrawalConfigByMerchantID({
       owner_id: user.current,
-      status: 'ACTIVE',
-      skip: 0,
+      owner_type: 'RZP_MERCHANT',
     });
+
     this.fetchWithdrawalDetails();
   }
 

@@ -26,9 +26,9 @@ export default class LoanOriginationEntity extends GenericEntity {
     return this.request(`${this.resourceUrlPrefix('withdrawal', 'WithdrawalAPI', 'SeedData')}`, {});
   }
 
-  fetchWithdrawalConfigurationByMerchantID(data) {
+  fetchFunctionalWithdrawalConfigByMerchantID(data) {
     return this.request(
-      this.resourceUrlPrefix('withdrawal', 'WithdrawalConfigAPI', 'ListOrSearchWithdrawalConfig'),
+      this.resourceUrlPrefix('withdrawal', 'WithdrawalConfigAPI', 'GetFunctionalWithdrawalConfig'),
       data,
     ).then((res) => {
       if (

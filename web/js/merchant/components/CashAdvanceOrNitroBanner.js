@@ -9,7 +9,7 @@ import Button from 'common/new-ui/Button';
 import Amount from 'common/ui/Amount';
 import { fetchProducts, getApplications } from 'merchant/reducers/capital';
 import { CAPITAL_PRODUCT_NAME_CODE_MAP } from 'merchant/views/Capital/Loans/constants';
-import { fetchWithdrawalConfigurationByMerchantID } from 'merchant/reducers/capital/withdrawals';
+import { fetchFunctionalWithdrawalConfigByMerchantID } from 'merchant/reducers/capital/withdrawals';
 
 const EVENT_CATEGORY_CA_BANNER = 'Cash Advance Banner - Settlements';
 
@@ -22,7 +22,7 @@ const CashAdvanceOrNitroBanner = ({
   user,
   fetchProducts,
   getApplications,
-  fetchWithdrawalConfigurationByMerchantID,
+  fetchFunctionalWithdrawalConfigByMerchantID,
   loanApplicationDetails,
   history,
   withdrawalConfigurationDetails,
@@ -62,11 +62,9 @@ const CashAdvanceOrNitroBanner = ({
   };
 
   useEffect(() => {
-    fetchWithdrawalConfigurationByMerchantID({
+    fetchFunctionalWithdrawalConfigByMerchantID({
       owner_id: user.current,
       owner_type: 'RZP_MERCHANT',
-      status: 'ACTIVE',
-      skip: 0,
     });
   }, []);
 
@@ -180,7 +178,7 @@ CashAdvanceOrNitroBanner.propTypes = {
   user: PropTypes.object,
   fetchProducts: PropTypes.function,
   getApplications: PropTypes.function,
-  fetchWithdrawalConfigurationByMerchantID: PropTypes.function,
+  fetchFunctionalWithdrawalConfigByMerchantID: PropTypes.function,
   loanApplicationDetails: PropTypes.object,
   history: PropTypes.object,
   withdrawalConfigurationDetails: PropTypes.object,
@@ -194,6 +192,6 @@ export default withRouter(
       loanApplicationDetails: state.loanApplicationDetails,
       withdrawalConfigurationDetails: state.withdrawals.withdrawalConfiguration,
     }),
-    { fetchProducts, getApplications, fetchWithdrawalConfigurationByMerchantID },
+    { fetchProducts, getApplications, fetchFunctionalWithdrawalConfigByMerchantID },
   )(CashAdvanceOrNitroBanner),
 );

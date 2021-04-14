@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import Amount from 'common/ui/Amount';
 import Button from 'common/new-ui/Button';
 import { CASH_ADVANCE_BASE_URL, CASH_ADVANCE_SECTIONS } from './constants';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 
 const Loader = () => (
   <div class="flex">
@@ -23,11 +24,29 @@ export default function CreditSummary({
   if (loading) return <Loader />;
 
   const { configuration: { internal_credit_limit = 0 } = {} } = withdrawalConfiguration;
+  const withdrawalConfigStatus = withdrawalConfiguration.status;
 
   return (
     <div className="withdrawals__credit-meta">
-      <div className="title__wrapper">
-        <p className="title">Withdrawal Balance</p>
+      <div className="withdrawals__credit-meta__header">
+        <div className="title__wrapper">
+          <p className="title">Withdrawal Balance</p>
+        </div>
+        {withdrawalConfigStatus && withdrawalConfigStatus.toLowerCase() === 'onhold' && (
+          <div className="withdrawals__status__wrapper">
+            <div className="help-content small" style={{ position: 'relative' }}>
+              <p className="withdrawals__status">Blocked</p>
+              <Popover align="top" theme="dark" parentQuerySelector=".withdrawals__top-summary">
+                <PopoverBody>
+                  <div className="text-left">
+                    Your withdrawals are temporarily blocked due to missed repayments. Please repay
+                    to continue withdrawing from your credit line.
+                  </div>
+                </PopoverBody>
+              </Popover>
+            </div>
+          </div>
+        )}
       </div>
       <div className="amount__wrapper">
         <Amount value={internalCreditBalance} parentQuerySelector=".withdrawals__top-summary" />

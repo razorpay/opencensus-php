@@ -8,7 +8,7 @@ import Button from 'common/new-ui/Button';
 import Amount from 'common/ui/Amount';
 import LoaderDots from 'common/ui/LoaderDots';
 import { fetchProducts, getApplications } from 'merchant/reducers/capital';
-import { fetchWithdrawalConfigurationByMerchantID } from 'merchant/reducers/capital/withdrawals';
+import { fetchFunctionalWithdrawalConfigByMerchantID } from 'merchant/reducers/capital/withdrawals';
 import track from 'common/utils/googleAnalytics';
 import { CAPITAL_PRODUCT_CODES } from 'merchant/views/Capital/Loans/constants';
 
@@ -16,7 +16,7 @@ const SettlementsUpsell = ({
   user,
   fetchProducts,
   getApplications,
-  fetchWithdrawalConfigurationByMerchantID,
+  fetchFunctionalWithdrawalConfigByMerchantID,
   closeModal,
   products,
   applications,
@@ -64,11 +64,9 @@ const SettlementsUpsell = ({
   // get withdrawal config
   useEffect(() => {
     if (!hasWithdrawalConfig && !withdrawalConfigurationDetails.errors) {
-      fetchWithdrawalConfigurationByMerchantID({
+      fetchFunctionalWithdrawalConfigByMerchantID({
         owner_id: user.current,
         owner_type: 'RZP_MERCHANT',
-        status: 'ACTIVE',
-        skip: 0,
       });
     }
   }, [hasWithdrawalConfig]);
@@ -156,7 +154,7 @@ SettlementsUpsell.propTypes = {
   user: PropTypes.object,
   fetchProducts: PropTypes.func,
   getApplications: PropTypes.func,
-  fetchWithdrawalConfigurationByMerchantID: PropTypes.func,
+  fetchFunctionalWithdrawalConfigByMerchantID: PropTypes.func,
   closeModal: PropTypes.func,
   history: PropTypes.object,
   eventCategory: PropTypes.string,
@@ -227,8 +225,8 @@ const mapStateToProps = (state, ownProps) => {
 const mapDispatchToProps = (dispatch) => ({
   fetchProducts: bindActionCreators(fetchProducts, dispatch),
   getApplications: bindActionCreators(getApplications, dispatch),
-  fetchWithdrawalConfigurationByMerchantID: bindActionCreators(
-    fetchWithdrawalConfigurationByMerchantID,
+  fetchFunctionalWithdrawalConfigByMerchantID: bindActionCreators(
+    fetchFunctionalWithdrawalConfigByMerchantID,
     dispatch,
   ),
 });

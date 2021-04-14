@@ -11,11 +11,18 @@ import {
   createWithdrawal,
   fetchSeedData,
   fetchWithdrawalConfiguration,
-  fetchWithdrawalConfigurationByMerchantID,
+  fetchFunctionalWithdrawalConfigByMerchantID,
   fetchWithdrawals,
 } from 'merchant/reducers/capital/withdrawals';
+import { fetchBalances } from 'merchant/reducers/capital/repayments';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { CLOSE_OPTIONS, STATUSES, VIEWS, WITHDRAW_ERROR_TYPES } from './constants';
+import {
+  CLOSE_OPTIONS,
+  STATUSES,
+  VIEWS,
+  WITHDRAW_ERROR_TYPES,
+  COLLECTIONS_PRODUCT_TYPES,
+} from './constants';
 import CreditSummary from './CreditSummary';
 import WithdrawnAmountSummary from './WithdrawnAmountSummary';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
@@ -37,11 +44,12 @@ import MaxWithdrawError from './MaxWithdrawError';
   {
     fetchWithdrawalConfiguration: fetchWithdrawalConfiguration,
     fetchSeedData: fetchSeedData,
-    fetchWithdrawalConfigurationByMerchantID,
+    fetchFunctionalWithdrawalConfigByMerchantID,
     showNotification,
     openModal,
     closeModal,
     fetchWithdrawals,
+    fetchBalances,
   },
 )
 export default class AmountWithdraw extends React.Component {
@@ -57,15 +65,30 @@ export default class AmountWithdraw extends React.Component {
       isTouched: false,
       isAutomatedTagTouched: false,
       isAutomatedTagPulsating: false,
+      outstandingRepaymentAmount: null,
     };
     this.state = this.initialState;
   }
 
   componentDidMount() {
-    const { fetchSeedData } = this.props;
+    const { fetchSeedData, fetchBalances } = this.props;
 
     // fetchSeedData();
     this.prefillData();
+
+    fetchBalances({
+      product_type: COLLECTIONS_PRODUCT_TYPES.CASH_ADVANCE,
+      credit_id: this.props.user.current,
+    }).then((res) => {
+      if (res.data && res.data.balances && res.data.balances.length) {
+        let balances = res.data.balances;
+        let tempOutstandingRepaymentAmount = balances.reduce(
+          (a, b) => parseInt(a) + (parseInt(b['balance_amount']) || 0),
+          0,
+        );
+        this.setState({ outstandingRepaymentAmount: tempOutstandingRepaymentAmount });
+      }
+    });
   }
 
   startAutomatedTagPulsating = () => {
@@ -584,6 +607,8 @@ export default class AmountWithdraw extends React.Component {
       : {};
     const repayableAmount = getFormattedAmountNew((principle + interest) * 100, true);
     const showFirstWithdrawalOffer = this.getFirstWithdrawalOffer();
+    const withdrawalConfigStatus = this.props.withdrawalConfigurationDetails.data.status;
+
     return (
       <div className="withdrawals__action-container card flex">
         {showFirstWithdrawalOffer ? (
@@ -613,66 +638,86 @@ export default class AmountWithdraw extends React.Component {
           </React.Fragment>
         ) : null}
         <div class="no-margin full-width" style={{ position: 'relative' }}>
-          <div className="flex" style={{ marginBottom: 8, alignItems: 'center' }}>
-            <h3 className="title text--secondary">Withdraw Amount</h3>
-            {user.isAutomatedLOCEligible && automated_loc && (
-              <div style={{ marginLeft: 12 }} className="automated-popover-container">
-                <div className={`${isAutomatedTagPulsating ? 'pulsating-ring' : ''}`}>
-                  <div className="automated-tag" onMouseOver={this.handleAutomatedTextMouseOver}>
-                    AUTOMATED
-                  </div>
-                </div>
-                <Popover className="automated-popover" align="bottom" theme="dark">
-                  <PopoverBody>{this.automatedWithdrawTooltipView()}</PopoverBody>
-                </Popover>
+          {withdrawalConfigStatus && withdrawalConfigStatus.toLowerCase() === 'onhold' ? (
+            <div>
+              <div className="flex end-align">
+                <i className="i i-error withdrawals__onhold-icon" />
+                <h3 className="withdrawals__onhold-title text--secondary">
+                  Withdrawals are on hold!
+                </h3>
               </div>
-            )}
-          </div>
-          <div class="full-width no-margin" style={{ position: 'absolute' }}>
-            {this.getWithdrawalForm(withdrawalAmount)}
-          </div>
-          {hasDueDateAndWithdrawnAmount && (
-            <div class="repayable-amount-hint">
-              <strong>{repayableAmount}</strong>
-              <span class="repayable-helper-text">&nbsp; will be the repayable amount</span>
-              {user.isAutomatedLOCEligible && !automated_loc && (
-                <div className="automated-withdrawal flex">
-                  <div className="automated-withdrawal-wrapper">
-                    <div style={{ fontSize: 14 }}>Automate your withdrawals</div>
-                    <Button.Transparent
-                      class="text-small enable-now-btn"
-                      onClick={this.handleEnableNowClickForAutomatedWithdrawal}
-                    >
-                      Enable Now
-                    </Button.Transparent>
+              <p className="withdrawals__onhold-summary">
+                Sorry, Your withdrawals are temporarily blocked due to missed repayments. Please
+                repay to continue <br /> using your credit line.
+              </p>
+            </div>
+          ) : (
+            <div>
+              <div className="flex" style={{ marginBottom: 8, alignItems: 'center' }}>
+                <h3 className="title text--secondary">Withdraw Amount</h3>
+                {user.isAutomatedLOCEligible && automated_loc && (
+                  <div style={{ marginLeft: 12 }} className="automated-popover-container">
+                    <div className={`${isAutomatedTagPulsating ? 'pulsating-ring' : ''}`}>
+                      <div
+                        className="automated-tag"
+                        onMouseOver={this.handleAutomatedTextMouseOver}
+                      >
+                        AUTOMATED
+                      </div>
+                    </div>
+                    <Popover className="automated-popover" align="bottom" theme="dark">
+                      <PopoverBody>{this.automatedWithdrawTooltipView()}</PopoverBody>
+                    </Popover>
                   </div>
+                )}
+              </div>
+              <div class="full-width no-margin" style={{ position: 'absolute' }}>
+                {this.getWithdrawalForm(withdrawalAmount)}
+              </div>
+              {hasDueDateAndWithdrawnAmount && (
+                <div class="repayable-amount-hint">
+                  <strong>{repayableAmount}</strong>
+                  <span class="repayable-helper-text">&nbsp; will be the repayable amount</span>
+                  {user.isAutomatedLOCEligible && !automated_loc && (
+                    <div className="automated-withdrawal flex">
+                      <div className="automated-withdrawal-wrapper">
+                        <div style={{ fontSize: 14 }}>Automate your withdrawals</div>
+                        <Button.Transparent
+                          class="text-small enable-now-btn"
+                          onClick={this.handleEnableNowClickForAutomatedWithdrawal}
+                        >
+                          Enable Now
+                        </Button.Transparent>
+                      </div>
 
-                  <div className="rounded-rectange" />
+                      <div className="rounded-rectange" />
+                    </div>
+                  )}
+                  <div class="flex">
+                    <div class="text-small full-width no-margin text-strong p-r">
+                      <strong>
+                        {showRepaymentDetailsBreakup ? (
+                          <Button.Transparent onClick={this.toggleBreakup}>
+                            <i class="i i-chevron-left" />
+                            Hide Breakup
+                          </Button.Transparent>
+                        ) : (
+                          <Button.Transparent onClick={this.toggleBreakup}>
+                            Show Breakup
+                            <i class="i i-chevron-right" />
+                          </Button.Transparent>
+                        )}
+                        {this.state.showRepaymentDetailsBreakup && (
+                          <Button.Transparent class="pull-right" onClick={this.toggleBreakup}>
+                            Show Credit Details
+                            <i class="i i-chevron-right" />
+                          </Button.Transparent>
+                        )}
+                      </strong>
+                    </div>
+                  </div>
                 </div>
               )}
-              <div class="flex">
-                <div class="text-small full-width no-margin text-strong p-r">
-                  <strong>
-                    {showRepaymentDetailsBreakup ? (
-                      <Button.Transparent onClick={this.toggleBreakup}>
-                        <i class="i i-chevron-left" />
-                        Hide Breakup
-                      </Button.Transparent>
-                    ) : (
-                      <Button.Transparent onClick={this.toggleBreakup}>
-                        Show Breakup
-                        <i class="i i-chevron-right" />
-                      </Button.Transparent>
-                    )}
-                    {this.state.showRepaymentDetailsBreakup && (
-                      <Button.Transparent class="pull-right" onClick={this.toggleBreakup}>
-                        Show Credit Details
-                        <i class="i i-chevron-right" />
-                      </Button.Transparent>
-                    )}
-                  </strong>
-                </div>
-              </div>
             </div>
           )}
         </div>

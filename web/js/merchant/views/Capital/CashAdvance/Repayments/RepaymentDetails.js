@@ -9,7 +9,7 @@ import DataTable from 'common/ui/Table/DataTable';
 import Button from 'common/new-ui/Button';
 import Withdrawals from 'merchant/models/Capital/Withdrawals';
 import Repayments from 'merchant/models/Capital/Repayments';
-import { fetchWithdrawalConfigurationByMerchantID } from 'merchant/reducers/capital/withdrawals';
+import { fetchFunctionalWithdrawalConfigByMerchantID } from 'merchant/reducers/capital/withdrawals';
 import {
   STATUS_LABELS,
   StatusPillClasses,
@@ -34,7 +34,7 @@ import { computePrincipalAndInterest } from '../utils';
     };
   },
   {
-    fetchWithdrawalConfigurationByMerchantID,
+    fetchFunctionalWithdrawalConfigByMerchantID,
   },
 )
 class RepaymentDetails extends Component {
@@ -66,7 +66,7 @@ class RepaymentDetails extends Component {
     const {
       user,
       withdrawalConfigurationDetails,
-      fetchWithdrawalConfigurationByMerchantID,
+      fetchFunctionalWithdrawalConfigByMerchantID,
     } = this.props;
 
     try {
@@ -97,11 +97,9 @@ class RepaymentDetails extends Component {
       });
 
       if (!withdrawalConfigurationDetails) {
-        await fetchWithdrawalConfigurationByMerchantID({
-          owner_type: 'RZP_MERCHANT',
+        await fetchFunctionalWithdrawalConfigByMerchantID({
           owner_id: user.current,
-          status: 'ACTIVE',
-          skip: 0,
+          owner_type: 'RZP_MERCHANT',
         });
       }
 

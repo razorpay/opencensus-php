@@ -26,11 +26,11 @@ export const fetchWithdrawalConfiguration = (data) => {
   };
 };
 
-export const fetchWithdrawalConfigurationByMerchantID = (data) => {
+export const fetchFunctionalWithdrawalConfigByMerchantID = (data) => {
   const withdrawal = new Withdrawal();
   return {
     type: FETCH_WITHDRAWAL_CONFIG,
-    payload: withdrawal.fetchWithdrawalConfigurationByMerchantID(data),
+    payload: withdrawal.fetchFunctionalWithdrawalConfigByMerchantID(data),
   };
 };
 
