@@ -80,9 +80,9 @@ class LaravelTest extends TestCase
         $spansByName = $this->groupSpansByName($spans);
         $this->assertNotEmpty($spansByName['bootstrap']);
         $this->assertNotEmpty($spansByName['eloquent/insert']);
-        $this->assertNotEmpty($spansByName['PDO::__construct']);
+        $this->assertNotEmpty($spansByName['PDO connect']);
         $this->assertNotEmpty($spansByName['PDO::exec']);
-        $this->assertNotEmpty($spansByName['PDOStatement::execute']);
+        $this->assertNotEmpty($spansByName['PDO set PDO insert users']);
 
         $this->clearSpans();
 
@@ -97,7 +97,7 @@ class LaravelTest extends TestCase
         $spansByName = $this->groupSpansByName($spans);
         $this->assertNotEmpty($spansByName['bootstrap']);
         $this->assertNotEmpty($spansByName['eloquent/get']);
-        $this->assertNotEmpty($spansByName['PDO::__construct']);
+        $this->assertNotEmpty($spansByName['PDO connect']);
         $this->assertNotEmpty($spansByName['PDO::exec']);
         $this->assertNotEmpty($spansByName['PDOStatement::execute']);
 
@@ -114,7 +114,7 @@ class LaravelTest extends TestCase
         $spansByName = $this->groupSpansByName($spans);
         $this->assertNotEmpty($spansByName['bootstrap']);
         $this->assertNotEmpty($spansByName['eloquent/get']);
-        $this->assertNotEmpty($spansByName['PDO::__construct']);
+        $this->assertNotEmpty($spansByName['PDO connect']);
         $this->assertNotEmpty($spansByName['PDO::exec']);
         $this->assertNotEmpty($spansByName['PDOStatement::execute']);
 
@@ -131,7 +131,7 @@ class LaravelTest extends TestCase
         $spansByName = $this->groupSpansByName($spans);
         $this->assertNotEmpty($spansByName['bootstrap']);
         $this->assertNotEmpty($spansByName['eloquent/update']);
-        $this->assertNotEmpty($spansByName['PDO::__construct']);
+        $this->assertNotEmpty($spansByName['PDO connect']);
         $this->assertNotEmpty($spansByName['PDO::exec']);
         $this->assertNotEmpty($spansByName['PDOStatement::execute']);
 
@@ -148,7 +148,7 @@ class LaravelTest extends TestCase
         $spansByName = $this->groupSpansByName($spans);
         $this->assertNotEmpty($spansByName['bootstrap']);
         $this->assertNotEmpty($spansByName['eloquent/delete']);
-        $this->assertNotEmpty($spansByName['PDO::__construct']);
+        $this->assertNotEmpty($spansByName['PDO connect']);
         $this->assertNotEmpty($spansByName['PDO::exec']);
         $this->assertNotEmpty($spansByName['PDOStatement::execute']);
     }
@@ -159,11 +159,10 @@ class LaravelTest extends TestCase
         foreach ($spans as $span) {
             if (!array_key_exists($span['name'], $spansByName)) {
                 $spansByName[$span['name']] = [];
+                echo $span['name'];
             }
             $spansByName[$span['name']][] = $span;
         }
-
-        echo $spansByName;
 
         return $spansByName;
     }
