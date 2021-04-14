@@ -4298,6 +4298,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_CAPTURE_FAILED_MYSQL_HAS_GONE_AWAY            = 'PAYMENT_CAPTURE_FAILED_MYSQL_HAS_GONE_AWAY';
     //Segmentation trigger trace codes
     const SEGMENT_CREATE_UPDATE_ERROR                        = 'SEGMENT_CREATE_UPDATE_ERROR';
+    const FINAL_ERROR_CODE                                   = 'FINAL_ERROR_CODE';
+    const VERIFY_NEW_ROUTE_RESULT                            = 'VERIFY_NEW_ROUTE_RESULT';
 
     // DB Query Event Listners
     const DB_QUERY_EXECUTION_LOG                                = 'DB_QUERY_EXECUTION_LOG';

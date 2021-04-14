@@ -2363,7 +2363,7 @@ class Route
         'templating_get_template_config'          => ['get',     'templating/template_configs/{id}',                        'TemplatingServiceController@getTemplateConfig'                ],
         'templating_list_template_config'         => ['get',     'templating/template_configs',                             'TemplatingServiceController@listTemplateConfig'               ],
         'care_service_myoperator_webhook_proxy'   => ['post',    'care_service/myoperator_webhook/{path?}',                 'CareProxyController@postMyOperatorWebhookProxyRequest'        ],
-
+        'payment_verify_new'                      => ['post',    'payments/{id}/verify_new',                                'PaymentController@postVerifyNew'                              ],
         // Merchant Fraud
         'website_checker'                         => ['post',    'merchant/website/checker',                                'MerchantController@websiteChecker'                            ]
     ];
@@ -3164,6 +3164,7 @@ class Route
         'p2p_retrieve_banks_cron',
 
         'user_fetch_entity',
+        'payment_verify_new',
         'bulk_submerchant_assign',
 
         // Merchant Fraud

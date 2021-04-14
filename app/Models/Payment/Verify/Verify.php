@@ -299,14 +299,14 @@ class Verify extends Base\Core
         return $this->verifyMultiplePayments($payments, $filter, $bucketFilter, $verifiableCount, $verifyFetchTime);
     }
 
-    public function verifyAllPayments($timestamps, $gateway, $count, $bucket)
+    public function verifyAllPayments($timestamps, $gateway, $count, $bucket, $filterPaymentPushedToKafka = true)
     {
         $verifyFetchStartTime = Carbon::now()->getTimestamp();
 
         $disabledGateways = $this->getBlockedGateways();
 
         $payments = $this->repo->payment->getPaymentsToVerifyByGatewayAndTime($timestamps, $gateway, $count,
-                            $disabledGateways, $bucket, [Payment\Status::FAILED, Payment\Status::CREATED]);
+                            $disabledGateways, $bucket, [Payment\Status::FAILED, Payment\Status::CREATED], $filterPaymentPushedToKafka);
 
         $verifyFetchEndTime = Carbon::now()->getTimestamp();
 
@@ -325,32 +325,32 @@ class Verify extends Base\Core
         return $summary;
     }
 
-    public function fetchFailedAndCreatedPayments($timestamps, $gateway, $count, $bucket, $useSlave, $disabledGateways)
+    public function fetchFailedAndCreatedPayments($timestamps, $gateway, $count, $bucket, $useSlave, $disabledGateways, $filterPaymentPushedToKafka)
     {
         if ($useSlave === true)
         {
-            $payments = $this->repo->useSlave( function() use ($timestamps, $gateway, $count, $bucket, $disabledGateways)
+            $payments = $this->repo->useSlave( function() use ($timestamps, $gateway, $count, $bucket, $disabledGateways, $filterPaymentPushedToKafka)
             {
                 return $this->repo->payment->getPaymentsToVerifyByGatewayAndTime($timestamps, $gateway, $count,
-                                            $disabledGateways, $bucket, [Payment\Status::FAILED, Payment\Status::CREATED]);
+                                            $disabledGateways, $bucket, [Payment\Status::FAILED, Payment\Status::CREATED], $filterPaymentPushedToKafka);
             });
         }
         else
         {
             $payments = $this->repo->payment->getPaymentsToVerifyByGatewayAndTime($timestamps, $gateway, $count,
-                                            $disabledGateways, $bucket, [Payment\Status::FAILED, Payment\Status::CREATED]);
+                                            $disabledGateways, $bucket, [Payment\Status::FAILED, Payment\Status::CREATED], $filterPaymentPushedToKafka);
         }
 
         return $payments;
     }
 
-    public function verifyAllPaymentsNewRoute($timestamps, $gateway, $count, $bucket, $useSlave)
+    public function verifyAllPaymentsNewRoute($timestamps, $gateway, $count, $bucket, $useSlave, $filterPaymentPushedToKafka)
     {
         $verifyFetchStartTime = Carbon::now()->getTimestamp();
 
         $disabledGateways = $this->getBlockedGateways();
 
-        $payments = $this->fetchFailedAndCreatedPayments($timestamps, $gateway, $count, $bucket, $useSlave, $disabledGateways);
+        $payments = $this->fetchFailedAndCreatedPayments($timestamps, $gateway, $count, $bucket, $useSlave, $disabledGateways, $filterPaymentPushedToKafka);
 
         $payments = $this->filterPaymentsWithFinalErrorCode($payments);
 
@@ -371,14 +371,14 @@ class Verify extends Base\Core
         return $summary;
     }
 
-    public function verifyCapturedPayments($timestamps, $gateway, $count, $bucket)
+    public function verifyCapturedPayments($timestamps, $gateway, $count, $bucket, $filterPaymentPushedToKafka)
     {
         $verifyFetchStartTime = Carbon::now()->getTimestamp();
 
         $disabledGateways = $this->getBlockedGateways();
 
         $payments = $this->repo->payment->getPaymentsToVerifyByGatewayAndTime($timestamps, $gateway, $count,
-            $disabledGateways, $bucket,  [Payment\Status::CAPTURED]);
+            $disabledGateways, $bucket,  [Payment\Status::CAPTURED], $filterPaymentPushedToKafka);
 
         $verifyFetchEndTime = Carbon::now()->getTimestamp();
 
@@ -1983,5 +1983,31 @@ class Verify extends Base\Core
         }
 
         return $payment->shouldAllowGatewayAmountMismatch($verify->currency, $verify->amountAuthorized);
+    }
+
+    public function isFinalErrorCode($payment)
+    {
+        $method = $payment->getMethod();
+        $internal_error_code = $payment->getInternalErrorCode()??'';
+
+        $isFinalErrorCode = $this->isFinal($method, $internal_error_code);
+
+        if ($isFinalErrorCode === true)
+        {
+            $payment->setNonVerifiable();
+
+            $this->trace->info(TraceCode::PAYMENT_VERIFY_FILTER,
+                [
+                    'payment_id' => $payment->getId(),
+                    'internal_error_code' => $internal_error_code,
+                    'isFinal' => $isFinalErrorCode,
+                ]);
+
+            $this->repo->saveOrFail($payment);
+
+            $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_FILTERED_FINAL_FAILURE, $payment);
+        }
+
+        return $isFinalErrorCode;
     }
 }

@@ -191,11 +191,12 @@ class Validator extends Base\Validator
     ];
 
     protected static $verifyAllRules = [
-        'gateway'                    => 'sometimes|string|max:50',
-        'delay'                      => 'sometimes|integer|max:2592000',
-        'count'                      => 'sometimes|integer|max:10000',
-        'bucket'                     => 'sometimes|sequential_array',
-        'use_slave'                  => 'sometimes|boolean',
+        'gateway'                        => 'sometimes|string|max:50',
+        'delay'                          => 'sometimes|integer|max:2592000',
+        'count'                          => 'sometimes|integer|max:10000',
+        'bucket'                         => 'sometimes|sequential_array',
+        'use_slave'                      => 'sometimes|boolean',
+        'filter_payment_pushed_to_kafka' => 'sometimes|boolean',
     ];
 
     protected static $bulkVerifyRules = [

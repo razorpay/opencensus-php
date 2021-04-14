@@ -598,7 +598,7 @@ class Repository extends Base\Repository
     }
 
     public function getPaymentsToVerifyByGatewayAndTime(array $timestamps, $gateway, $count, $disabledGateways,
-                                                        $bucket, array $filterStatus = [])
+                                                        $bucket, array $filterStatus = [], $filterPaymentPushedToKafka = false)
     {
         $query = $this->newQuery()
                       ->whereBetween(Payment\Entity::VERIFY_AT, $timestamps);
@@ -620,6 +620,11 @@ class Repository extends Base\Repository
         if (isset($filterStatus) === true)
         {
             $query->whereIn(Payment\Entity::STATUS, $filterStatus);
+        }
+
+        if ($filterPaymentPushedToKafka === true)
+        {
+            $query->whereNull(Payment\Entity::IS_PUSHED_TO_KAFKA);
         }
 
         return $query->take($count)

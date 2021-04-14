@@ -335,6 +335,13 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postVerifyNew($id)
+    {
+        $data = $this->service()->verifyPaymentNewRoute($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function postVerifyCapturedPayments()
     {
         $input = Request::all();

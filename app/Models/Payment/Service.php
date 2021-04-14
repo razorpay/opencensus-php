@@ -45,6 +45,7 @@ use RZP\Models\Settlement\Bucket;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Base\ConnectionType;
 use RZP\Models\Payment\Verify\Verify;
+use RZP\Models\Payment\Verify\Filter;
 use RZP\Models\Locale\Core as Locale;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\CardMandate\CardMandateNotification;
@@ -2342,7 +2343,9 @@ class Service extends Base\Service
 
         $start = $this->getStartTimestamp($delay);
 
-        return (new Verify)->verifyAllPayments([$start, $end], $gateway, $count, $bucket);
+        $filterPaymentPushedToKafka = $input['filter_payment_pushed_to_kafka'] ?? false;
+
+        return (new Verify)->verifyAllPayments([$start, $end], $gateway, $count, $bucket, $filterPaymentPushedToKafka);
     }
 
     public function verifyAllPaymentsNewRoute(array $input)
@@ -2366,7 +2369,9 @@ class Service extends Base\Service
         $startTime = Carbon::createFromTimestamp($start, Timezone::IST)->toTimeString();
         $endTime = Carbon::createFromTimestamp($end, Timezone::IST)->toTimeString();
 
-        return (new Verify)->verifyAllPaymentsNewRoute([$start, $end], $gateway, $count, $bucket, $useSlave);
+        $filterPaymentPushedToKafka = $input['filter_payment_pushed_to_kafka'] ?? false;
+
+        return (new Verify)->verifyAllPaymentsNewRoute([$start, $end], $gateway, $count, $bucket, $useSlave, $filterPaymentPushedToKafka);
     }
 
     public function verifyPaymentsInBulk(array $input)
@@ -2422,7 +2427,9 @@ class Service extends Base\Service
         $startTime = Carbon::createFromTimestamp($start, Timezone::IST)->toTimeString();
         $endTime = Carbon::createFromTimestamp($end, Timezone::IST)->toTimeString();
 
-        return (new Verify)->verifyCapturedPayments([$start, $end], $gateway, $count, $bucket);
+        $filterPaymentPushedToKafka = $input['filter_payment_pushed_to_kafka'] ?? false;
+
+        return (new Verify)->verifyCapturedPayments([$start, $end], $gateway, $count, $bucket, $filterPaymentPushedToKafka);
     }
 
     /**
@@ -3420,5 +3427,50 @@ class Service extends Base\Service
             );
         }
         return true;
+    }
+
+    public function verifyPaymentNewRoute($id)
+    {
+        $data = [];
+
+        $payment =  $this->repo->payment->findOrFail($id);
+
+        if ((new Verify())->isFinalErrorCode($payment) === true)
+        {
+            $this->trace->info(
+                TraceCode::FINAL_ERROR_CODE,
+                [
+                    'payment_id' => $id
+                ]);
+
+            $data['retry_verify'] = false;
+        }
+        else
+        {
+            $filter = ($payment->isCreated() === true) ? Filter::PAYMENTS_CREATED : Filter::PAYMENTS_FAILED;
+
+            $result = (new Verify())->verifyPaymentNewRoute($payment, $filter);
+
+            $this->trace->info(
+                TraceCode::VERIFY_NEW_ROUTE_RESULT,
+                [
+                    'payment_id' => $id,
+                    'result'     => $result,
+                ]);
+
+            if (($payment->getStatus() === Payment\Status::CAPTURED) or
+                ($payment->getStatus() === Payment\Status::AUTHORIZED))
+            {
+                $data['retry_verify'] = false;
+            }
+            else
+            {
+                $data['retry_verify'] = true;
+            }
+        }
+
+        $data['payment'] = $payment;
+
+        return $data;
     }
 }

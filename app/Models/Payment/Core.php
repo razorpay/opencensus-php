@@ -233,7 +233,10 @@ class Core extends Base\Core
             );
 
             // 2 => kafka push failed, marking for retry
-            $isPushedToKafka = 2;
+            // commenting out this, as can't have index on reference6
+            // we will have to explore the async approach via queue
+            //$isPushedToKafka = 2;
+            $isPushedToKafka = null;
 
             $this->app['diag']->trackPaymentEventV2(EventCode::FAILED_PAYMENT_KAFKA_PUSH_FAILED, $payment, $e);
         }
