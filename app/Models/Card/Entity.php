@@ -70,9 +70,6 @@ class Entity extends Base\PublicEntity
 
     const NETWORK_CODE = 'network_code';
 
-    const CREATE_NEW_CARD_ENTITY_FEATURE = 'create_new_card_entity';
-    const CREATE_NEW_CARD_ENTITY_FEATURE_RC = 0;
-
     protected static $sign = 'card';
 
     protected $entity = 'card';

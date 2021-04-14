@@ -3806,6 +3806,10 @@ class PaymentCreateTest extends TestCase
 
     public function testCreatePaymentAMEXExistingCardS2SPayment()
     {
+        $this->markTestSkipped(
+            'Not using existing card now, new card entity will be created.'
+        );
+
         $this->ba->privateAuth();
 
         $paymentArray = $this->getDefaultPaymentArray();
