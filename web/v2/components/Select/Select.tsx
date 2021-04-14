@@ -1,4 +1,4 @@
-import React, { ReactElement, ReactNode, ReactText, useState } from 'react';
+import React, { ReactElement, ReactNode, ReactText, useEffect, useState } from 'react';
 import TextInput from '@razorpay/blade/src/atoms/TextInput';
 import View from '@razorpay/blade/src/atoms/View';
 import Text from '@razorpay/blade/src/atoms/Text';
@@ -70,7 +70,9 @@ const Select: React.FC<SelectPropsT> = ({
     selectedOption = nodes.filter((child) => child.props.value === selectedValue)[0];
   }
 
-  const selctedLabel = selectedOption && selectedOption.props.label;
+  let selctedLabel = selectedOption && selectedOption.props.label;
+  selctedLabel = value === '' ? '' : selctedLabel;
+
   const [inputValue, setInputValue] = useState(selctedLabel);
   const [expanded, setExpanded] = useState<ReactText[]>(['0']);
 
@@ -96,6 +98,10 @@ const Select: React.FC<SelectPropsT> = ({
       onChange(child.props.value, child);
     }
   };
+
+  useEffect(() => {
+    setSelectedValue(value);
+  }, [value]);
 
   const getOptions = (optionNodes: ReactElement[]) => {
     return optionNodes

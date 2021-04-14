@@ -142,6 +142,12 @@ export default function useActivation() {
             data.business_details.business_operation_pin.value)
       ) {
         setSameAddress(true);
+      } else if (
+        data.business_details.business_registered_pin.value &&
+        data.business_details.business_registered_pin.value !==
+          data.business_details.business_operation_pin.value
+      ) {
+        setSameAddress(false);
       }
       if (isUnregisteredBusiness(data.business_overview.business_type.value) || data.gstin === '') {
         setHasGSTIN(true); // setting as true to hide the GSTIN Input in bank and company details screen

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import * as Yup from 'yup';
 import { Formik } from 'formik';
+import { useQuery } from 'react-query';
 import View from '@razorpay/blade/src/atoms/View';
 import Space from '@razorpay/blade/src/atoms/Space';
 import TextInput from '@razorpay/blade/src/atoms/TextInput';
@@ -16,6 +17,8 @@ import { getLabel, getHelpText } from '../services/utils';
 import { states } from '../Constants/OnboardingConstants';
 import { analyticsTrack } from '../../../../services/tracking/segment';
 import { useApp } from 'v2/context/App';
+import { useSnackbar } from 'v2/components/SnackBar/SnackbarContext';
+import { fetch } from 'v2/services/rest/rest-fetch';
 
 const StyledSeparator = styled(View)`
   height: 1px;
@@ -87,6 +90,10 @@ interface BusinessDetailsProps {
 const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
   const { data, postData } = useActivation();
   const { user } = useApp();
+  const snackbar = useSnackbar();
+  const [pinCode, setPinCodeValue] = useState('');
+  const [isRegisteredPin, setIsRegisteredPin] = useState(true);
+
   const businessDetails = data.business_details;
   const setBusinessDetailsCompleted = useActivationFormState(
     (state) => state.setBusinessDetailsCompleted,
@@ -94,6 +101,51 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
   const setSameAddress = useActivationFormState((state) => state.setSameAddress);
   const hasSameAdress = useActivationFormState((state) => state.same_address);
   const [isBlurCalled, setIsBlurCalled] = useState(false);
+
+  const autoFillCityState = (context) => {
+    let reqData = {};
+    if (hasSameAdress && isRegisteredPin) {
+      reqData = {
+        business_registered_city: context.city || '',
+        business_registered_state: context.state_code || '',
+        business_operation_city: context.city || '',
+        business_operation_state: context.state_code || '',
+      };
+    } else if (isRegisteredPin && !hasSameAdress) {
+      reqData = {
+        business_registered_city: context.city || '',
+        business_registered_state: context.state_code || '',
+      };
+    } else if (!isRegisteredPin && !hasSameAdress) {
+      reqData = {
+        business_operation_city: context.city || '',
+        business_operation_state: context.state_code || '',
+      };
+    }
+    postData(reqData);
+  };
+
+  const { refetch } = useQuery(
+    ['pincode', pinCode],
+    async () => {
+      const fetchData = await fetch<any>({
+        url: `pincodes/${pinCode}`,
+      });
+      return fetchData;
+    },
+    {
+      enabled: false,
+      retry: false,
+      refetchOnWindowFocus: false,
+      onSuccess: (res) => {
+        autoFillCityState(res);
+      },
+      onError: () => {
+        autoFillCityState({});
+        snackbar.error('invalid pin code');
+      },
+    },
+  );
 
   const hasPoiStatus =
     data.poi_verification_status === 'incorrect_details' ||
@@ -169,6 +221,17 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
     }
   };
 
+  useEffect(() => {
+    const hasSamePinCode = [
+      businessDetails.business_registered_pin.value,
+      businessDetails.business_operation_pin.value,
+    ].includes(pinCode);
+
+    if (hasSamePinCode && pinCode.length === 6) {
+      refetch();
+    }
+  }, [businessDetails, pinCode]);
+
   return (
     <Formik
       initialValues={{
@@ -177,14 +240,13 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
         promoter_pan: businessDetails.promoter_pan.value,
         promoter_pan_name: businessDetails.promoter_pan_name.value,
         business_registered_address: businessDetails.business_registered_address.value,
-        business_registered_state: businessDetails.business_registered_state.value,
-        business_registered_city: businessDetails.business_registered_city.value,
+        business_registered_state: businessDetails.business_registered_state.value || '',
+        business_registered_city: businessDetails.business_registered_city.value || '',
         business_registered_pin: businessDetails.business_registered_pin.value,
         business_operation_address: businessDetails.business_operation_address.value,
-        business_operation_state: businessDetails.business_operation_state.value,
-        business_operation_city: businessDetails.business_operation_city.value,
+        business_operation_state: businessDetails.business_operation_state.value || '',
+        business_operation_city: businessDetails.business_operation_city.value || '',
         business_operation_pin: businessDetails.business_operation_pin.value,
-        same_address: true,
       }}
       validationSchema={businessDetailsSchema}
       enableReinitialize
@@ -288,6 +350,12 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                   formikProps.touched.business_registered_pin &&
                   formikProps.errors.business_registered_pin
                 }
+                onChange={(val) => {
+                  if (val.length === 6) {
+                    setPinCodeValue(val);
+                  }
+                  setIsRegisteredPin(true);
+                }}
                 disabled={isFormLocked}
               />
             </Field>
@@ -386,6 +454,12 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                   onBlur={(value) => {
                     formikProps.setFieldTouched('business_operation_pin');
                     formikProps.setFieldValue('business_operation_pin', value);
+                  }}
+                  onChange={(val) => {
+                    if (val.length === 6) {
+                      setPinCodeValue(val);
+                    }
+                    setIsRegisteredPin(false);
                   }}
                 />
               </Field>
