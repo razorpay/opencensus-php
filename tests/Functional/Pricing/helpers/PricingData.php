@@ -3340,7 +3340,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Payout mode should be NEFT/IMPS/RTGS/IFT/card',
+                    'description' => 'Payout mode should be NEFT/IMPS/RTGS/IFT/card/amazonpay',
                 ],
             ],
             'status_code' => 400,
@@ -3348,6 +3348,37 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+    'testAddPricingPlanRuleWithFeaturePayoutAmazonpayModeBankingProduct' => [
+        'request' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'product'             => 'banking',
+                'payment_method'      => 'fund_transfer',
+                'payment_method_type' => 'amazonpay',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 100,
+                'amount_range_active' => '0',
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+                'feature'             => 'payout',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'product'             => 'banking',
+                'payment_method'      => 'fund_transfer',
+                'payment_method_type' => 'amazonpay',
+                'percent_rate'        => 0,
+                'fixed_rate'          => 100,
+                'amount_range_active' => false,
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+                'feature'             => 'payout',
+            ],
         ],
     ],
     'testAddPricingPlanRuleWithFeatureRefund' => [
