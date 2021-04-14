@@ -5,6 +5,7 @@ return [
 
         // Add splitz experiment ids here.
 
-        env('ANNOUNCEMENT_SHOPIFY_SPLITZ', ''),
+        //project nitro campaign experiments
+        'ANNOUNCEMENT_NITRO_HYDERABAD_SPLITZ' => env('ANNOUNCEMENT_NITRO_HYDERABAD_SPLITZ',''),
     ]
 ];

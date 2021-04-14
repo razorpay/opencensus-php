@@ -150,7 +150,33 @@ class Constants
                 ],
             ],
             'filters'     => [
-                'experiments'         => ['project_nitro', 'project_nitro_1', 'project_nitro_feb_2021', 'project_nitro_feb_2021_1','nitro_hyderabad_v2','nitro_hyderabad_v3','nitro_midmarket_mumbai_v1'],
+                'experiments'         => ['project_nitro', 'project_nitro_1', 'project_nitro_feb_2021', 'project_nitro_feb_2021_1', 'nitro_hyderabad_v2', 'nitro_hyderabad_v3', 'nitro_midmarket_mumbai_v1'],
+            ],
+        ],
+        [
+            'title'       => 'Get 1.65% pricing with RazorpayX',
+            'description' => 'Open a current account with RazorpayX & reduce your transaction fee to 1.65%.',
+            'start_ts'    => 1612788789,
+            'end_ts'      => 1617167373,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro.svg',
+            'id'          => 'projectNitro',
+            'campaign'    => 'nitro',
+            "target_product_feature" => 'XCA',
+            "target_metric" => 'MTU',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Learn More',
+                    'url'   => '',
+                    'id'    => 'announcement-projectNitro-cta1',
+                ],
+            ],
+            'filters'     => [
+                'splitz_experiments'         => [
+                    'ANNOUNCEMENT_NITRO_HYDERABAD_SPLITZ' => [
+                        'result' => 'on'
+                    ]
+                ],
             ],
         ],
         [
@@ -731,12 +757,19 @@ class Constants
             ],
             [
                 'data'  => [
+                    'version'     =>  'nitro_hyderabad_v4',
+                    "version_description" => 'Nitro for hyderabad',
+                ],
+                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_HYDERABAD_SPLITZ'],
+            ],
+            [
+                'data'  => [
                     'version'     =>  'nitro_midmarket_mumbai_v1',
                     "version_description" => 'Nitro for mumbai mid market',
                 ],
                 'experiments'         => ['nitro_midmarket_mumbai_v1'],
             ],
-        ]
+        ],
     ];
 
     public static function getNotifications(): array

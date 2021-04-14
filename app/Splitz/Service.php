@@ -30,7 +30,7 @@ class Service extends Base\Service
     {
         $data = [];
 
-        foreach (config('splitz.experiments') as $experimentFeatureFlag)
+        foreach (config('splitz.experiments') as $key => $experimentFeatureFlag)
         {
             $variant = $this->getVariant($experimentFeatureFlag, $merchantId);
 
