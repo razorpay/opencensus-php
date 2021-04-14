@@ -3670,6 +3670,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const SUPPORT_TICKET_STATUS_REQUEST                         = 'SUPPORT_TICKET_STATUS_REQUEST';
     const SUPPORT_TICKET_STATUS_RESPONSE                        = 'SUPPORT_TICKET_STATUS_RESPONSE';
+    const TICKET_DETAILS                                        = 'TICKET_DETAILS';
 
     const FRESHDESK_SUPPORT_TICKETS_REQUEST                     = 'FRESHDESK_SUPPORT_TICKETS_REQUEST';
     const FRESHDESK_SUPPORT_TICKETS_RESPONSE                    = 'FRESHDESK_SUPPORT_TICKETS_RESPONSE';

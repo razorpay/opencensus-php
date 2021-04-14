@@ -41,8 +41,6 @@ class FreshdeskTicketClient
         Constants::URLX        => 'tokenx',
     ];
 
-    const X_SALESFORCE_EMAIL_ID         = 'X-Salesforce-Email-Id';
-
     public function __construct(Application $app)
     {
         $this->app          = $app;
@@ -520,13 +518,6 @@ class FreshdeskTicketClient
         foreach (self::REQUEST_REDACT_FIELDS as $field)
         {
             unset($request[$field]);
-        }
-
-        $salesforceAgentEmailId = $this->app['request']->header(self::X_SALESFORCE_EMAIL_ID);
-
-        if (empty($salesforceAgentEmailId) === false)
-        {
-            $request['salesforce_agent_email_id'] = $salesforceAgentEmailId;
         }
 
         return $request;

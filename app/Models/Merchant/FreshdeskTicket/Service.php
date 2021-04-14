@@ -34,6 +34,8 @@ class Service extends Base\Service
         'status'   => 2,
     ];
 
+    const X_SALESFORCE_EMAIL_ID         = 'X-Salesforce-Email-Id';
+
     const FRESHDESK_INSTANCES = [
         Type::SUPPORT_DASHBOARD_X => [Constants::RZPX   => Constants::URLX],
         Type::SUPPORT_DASHBOARD   => [Constants::RZP    => Constants::URL,
@@ -314,6 +316,8 @@ class Service extends Base\Service
             Entity::TYPE            => $type,
         ], $this->merchant->getId(), true);
 
+        $this->trace->info(TraceCode::TICKET_DETAILS, $this->getRedactedTicket($ticketEntity));
+
         return $this->rewriteFreshdeskTicket($ticketCreateResponse, $ticketEntity);
     }
 
@@ -446,10 +450,12 @@ class Service extends Base\Service
 
         $url = self::FRESHDESK_INSTANCES[$type][$fdInstance];
 
+        $tags = $this->appendTagsToTicket($ticketEntity->getTicketId(), $fdInstance, Constants::GRIEVANCE_TAGS);
+
         $data = [
             Constants::TICKET_STATUS    => TicketStatus::getStatusMappingForStatusString(TicketStatus::PROCESSING),
             Constants::TICKET_PRIORITY  => Priority::getValueForPriorityString(Priority::URGENT),
-            Constants::TICKET_TAGS      => Constants::GRIEVANCE_TAGS,
+            Constants::TICKET_TAGS      => $tags,
         ];
 
         $ticket = $this->app[Constants::FRESHDESK_CLIENT]->updateTicketV2($ticketEntity->getTicketId(), $data, $url);
@@ -1054,18 +1060,7 @@ class Service extends Base\Service
             return [];
         }
 
-        $url = self::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][$fdInstance];
-
-        $ticket = $this->app[Constants::FRESHDESK_CLIENT]->fetchTicketById($ticketId, $url);
-
-        if (empty($ticket['id']) === true)
-        {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_NOT_FOUND);
-        }
-
-        $tags = $ticket[Constants::TICKET_TAGS] ?? [];
-
-        $tags = array_merge($tags,Constants::AUTOMATED_WORKFLOW_RESOLVE_TAGS);
+        $tags = $this->appendTagsToTicket($ticketId, $fdInstance, Constants::AUTOMATED_WORKFLOW_RESOLVE_TAGS);
 
         $content = [
             Constants::STATUS       => TicketStatus::getStatusMappingForStatusString(TicketStatus::RESOLVED),
@@ -1148,6 +1143,40 @@ class Service extends Base\Service
         }
 
         return $input;
+    }
+
+    protected function appendTagsToTicket($ticketId, $fdInstance, array $tagsToAdd)
+    {
+        $url = self::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][$fdInstance];
+
+        $ticket = $this->app[Constants::FRESHDESK_CLIENT]->fetchTicketById($ticketId, $url);
+
+        if (empty($ticket['id']) === true)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_NOT_FOUND);
+        }
+
+        $tags = $ticket[Constants::TICKET_TAGS] ?? [];
+
+        return array_merge($tags,$tagsToAdd);
+
+    }
+
+    protected function getRedactedTicket(Entity $ticketEntity) : array
+    {
+        $salesforceAgentEmailId = $this->app['request']->header(self::X_SALESFORCE_EMAIL_ID);
+
+        $ticketToLog = [
+            Entity::ID          =>  $ticketEntity->getId(),
+            Entity::TICKET_ID   =>  $ticketEntity->getTicketId(),
+        ];
+
+        if (empty($salesforceAgentEmailId) == false)
+        {
+            $ticketToLog['salesforce_agent_email_id'] = $salesforceAgentEmailId;
+        }
+
+        return $ticketToLog;
     }
 
 }

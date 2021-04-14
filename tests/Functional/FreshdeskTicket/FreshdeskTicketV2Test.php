@@ -222,10 +222,19 @@ class FreshdeskTicketV2Test extends TestCase
 
     public function testRaiseGrievanceOnTicket()
     {
+        $this->expectFreshdeskRequestAndRespondWith('tickets/12?include=requester', 'get',
+            [
+            ],
+            [
+                'tags'  => ['value2'],
+                'id'    => '12',
+            ]);
+
         $this->expectFreshdeskRequestAndRespondWith('tickets/12', 'PUT',
         [
             'status'    => 2,
             'priority'  => 4,
+            'tags'      => ['value2','new_grievance_raised'],
         ],
         [
             'id'            => '12',
