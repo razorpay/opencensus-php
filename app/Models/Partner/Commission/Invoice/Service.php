@@ -3,7 +3,11 @@
 namespace RZP\Models\Partner\Commission\Invoice;
 
 use RZP\Models\Base;
+use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
+use RZP\Models\Partner\Activation;
+use RZP\Exception\BadRequestException;
 
 class Service extends Base\Service
 {
@@ -41,6 +45,21 @@ class Service extends Base\Service
 
     public function fetchBulk(array $input)
     {
+        $partnerActivation = (new Activation\Core())->createOrFetchPartnerActivationForMerchant($this->merchant, false);
+
+        if (($partnerActivation->getActivationStatus() !== Activation\Constants::ACTIVATED) and
+            ($this->mode === Mode::LIVE))
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PARTNER_IS_NOT_ACTIVATED,
+                null,
+                [
+                    'partner_id' => $this->merchant->getId(),
+                    'reason'     => 'only active partners can fetch commission invoices'
+                ]
+            );
+        }
+
         $invoices = $this->repo->commission_invoice->fetch($input, $this->merchant->getId());
 
         return $invoices->toArrayPublic();

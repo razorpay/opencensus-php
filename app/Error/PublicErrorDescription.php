@@ -971,6 +971,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PARTNER_ACTION_NOT_SUPPORTED                                  = 'provided partner action is not supported';
     const BAD_REQUEST_PARTNER_COMMISSIONS_ALREADY_ON_HOLD                           = 'partner commissions already on hold';
     const BAD_REQUEST_PARTNER_COMMISSIONS_ALREADY_RELEASED                          = 'partner commissions already released';
+    const BAD_REQUEST_PARTNER_IS_NOT_ACTIVATED                                      = 'partner is not activated';
 
     // Free payout
     const BAD_REQUEST_FREE_PAYOUT_SUPPORTED_MODES_ARRAY_DUPLICATE_VALUE         = 'Value in free payout supported modes array is duplicate.';
