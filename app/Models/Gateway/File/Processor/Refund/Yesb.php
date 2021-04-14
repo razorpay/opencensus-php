@@ -24,6 +24,7 @@ class Yesb extends Base
     const PAYMENT_BANK               = 'Yesbank';
     const PAYMENT_TYPE_ATTRIBUTE     = Payment\Entity::BANK;
     const GATEWAY_CODE               = IFSC::YESB;
+    const BASE_STORAGE_DIRECTORY     = 'Yesbank/Refund/Netbanking/';
 
     // This value needs be stored as this is used in the file name
     protected $gatewayMerchantId;
@@ -56,7 +57,7 @@ class Yesb extends Base
         $date = Carbon::now(Timezone::IST)->format('dmY');
 
         // the serial no is hardcoded as the file is generated only once
-        return 'RAZORPAY'. self::FILE_NAME . $date . '_' . '01';
+        return self::BASE_STORAGE_DIRECTORY . 'RAZORPAY'. self::FILE_NAME . $date . '_' . '01';
     }
 
     protected function fetchBankPaymentId($data)

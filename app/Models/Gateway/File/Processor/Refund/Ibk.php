@@ -22,6 +22,7 @@ class Ibk extends Base
     const GATEWAY                = Payment\Gateway::NETBANKING_IBK;
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
     const GATEWAY_CODE           = [IFSC::IDIB, IFSC::ALLA];
+    const BASE_STORAGE_DIRECTORY = 'Ibk/Refund/Netbanking/';
 
     protected function formatDataForFile(array $data)
     {
@@ -56,7 +57,7 @@ class Ibk extends Base
     {
         $date = Carbon::now(Timezone::IST)->format('dmY');
 
-        return strtr(self::FILE_NAME, ['{$date}' => $date]);
+        return self::BASE_STORAGE_DIRECTORY . strtr(self::FILE_NAME, ['{$date}' => $date]);
     }
 
     protected function getFormattedAmount($amount): String

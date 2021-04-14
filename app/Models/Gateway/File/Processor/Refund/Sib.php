@@ -19,6 +19,7 @@ class Sib extends Base
     const GATEWAY                = Payment\Gateway::NETBANKING_SIB;
     const GATEWAY_CODE           = IFSC::SIBL;
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
+    const BASE_STORAGE_DIRECTORY = 'Sib/Refund/Netbanking/';
 
     // Refund fields
     const SERIAL_NO          = 'Sr No';
@@ -53,7 +54,7 @@ class Sib extends Base
     {
         $time = Carbon::now(Timezone::IST)->format('dmY');
 
-        return static::FILE_NAME . $time;
+        return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . $time;
     }
 
     protected function fetchBankPaymentId($row)

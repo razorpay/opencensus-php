@@ -22,6 +22,7 @@ class Scbl extends Base
     const GATEWAY                    = Payment\Gateway::NETBANKING_SCB;
     const PAYMENT_TYPE_ATTRIBUTE     = Payment\Entity::BANK;
     const GATEWAY_CODE               = IFSC::SCBL;
+    const BASE_STORAGE_DIRECTORY     = 'Scbl/Refund/Netbanking/';
 
     protected function formatDataForFile(array $data)
     {
@@ -52,7 +53,7 @@ class Scbl extends Base
     {
         $date = Carbon::now(Timezone::IST)->format('d-m-Y');
 
-        return 'RAZORPAY'. self::FILE_NAME . $date ;
+        return self::BASE_STORAGE_DIRECTORY . 'RAZORPAY'. self::FILE_NAME . $date ;
     }
 
     protected function getFormattedAmount($amount): String

@@ -23,6 +23,7 @@ class Kvb extends Base
     const GATEWAY                    = Payment\Gateway::NETBANKING_KVB;
     const PAYMENT_TYPE_ATTRIBUTE     = Payment\Entity::BANK;
     const GATEWAY_CODE               = IFSC::KVBL;
+    const BASE_STORAGE_DIRECTORY     = 'Kvb/Refund/Netbanking/';
 
     protected function formatDataForFile(array $data)
     {
@@ -54,7 +55,7 @@ class Kvb extends Base
     {
         $date = Carbon::now(Timezone::IST)->format('dmY');
 
-        return 'RAZORPAY'. self::FILE_NAME . $date . '_' . '01';
+        return self::BASE_STORAGE_DIRECTORY . 'RAZORPAY'. self::FILE_NAME . $date . '_' . '01';
     }
 
     protected function getFormattedAmount($amount): String

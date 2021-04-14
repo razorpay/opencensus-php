@@ -22,6 +22,7 @@ class Vijaya extends Base
     const REFUND                     = 'RFND';
     const PAYMENT_TYPE_ATTRIBUTE     = Payment\Entity::BANK;
     const GATEWAY_CODE               = IFSC::VIJB;
+    const BASE_STORAGE_DIRECTORY     = 'Vijaya/Refund/Netbanking/';
 
     protected function formatDataForFile(array $data)
     {
@@ -50,6 +51,6 @@ class Vijaya extends Base
     {
         $date = Carbon::now(Timezone::IST)->format('dmY');
 
-        return self::FILE_NAME . $date . '01';
+        return self::BASE_STORAGE_DIRECTORY . self::FILE_NAME . $date . '01';
     }
 }

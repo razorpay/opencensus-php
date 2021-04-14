@@ -3,12 +3,13 @@
 namespace RZP\Models\Gateway\File\Processor\Refund;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
+
+use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
-use RZP\Models\Gateway\File\Processor\FileHandler;
-use RZP\Models\Payment;
+use RZP\Constants\Timezone;
 use RZP\Services\NbPlus\Netbanking;
+use RZP\Models\Gateway\File\Processor\FileHandler;
 
 class Aubl extends Base
 {
@@ -28,7 +29,8 @@ class Aubl extends Base
     const FILE_TYPE                  = FileStore\Type::AUBL_NETBANKING_REFUND;
     const PAYMENT_TYPE_ATTRIBUTE     = Payment\Entity::BANK;
     const GATEWAY_CODE               = IFSC::AUBL;
-    const GATEWAY = Payment\Gateway::NETBANKING_AUSF;
+    const GATEWAY                    = Payment\Gateway::NETBANKING_AUSF;
+    const BASE_STORAGE_DIRECTORY     = 'Aubl/Refund/Netbanking/';
 
     protected function formatDataForFile(array $data)
     {
@@ -60,7 +62,7 @@ class Aubl extends Base
     {
         $date = Carbon::now(Timezone::IST)->format('Ymd');
 
-        return self::FILE_NAME . $date;
+        return self::BASE_STORAGE_DIRECTORY . self::FILE_NAME . $date;
     }
 
     protected function addGatewayEntitiesToDataWithPaymentIds(array $data, array $paymentIds)

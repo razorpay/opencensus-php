@@ -20,6 +20,7 @@ class Jsb extends Base
     const GATEWAY                = Payment\Gateway::NETBANKING_JSB;
     const GATEWAY_CODE           = IFSC::JSFB;
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
+    const BASE_STORAGE_DIRECTORY = 'Jsb/Refund/Netbanking/';
 
     const HEADERS = RefundFields::REFUND_FIELDS;
 
@@ -53,7 +54,7 @@ class Jsb extends Base
     {
         $time = Carbon::now(Timezone::IST)->format('dmYis');
 
-        return static::FILE_NAME . $time;
+        return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . $time;
     }
 
     protected function fetchBankPaymentId($row)

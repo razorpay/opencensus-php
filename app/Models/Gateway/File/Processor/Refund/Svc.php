@@ -2,11 +2,14 @@
 
 namespace RZP\Models\Gateway\File\Processor\Refund;
 
+use Carbon\Carbon;
+
 use RZP\Models\Payment;
 use phpseclib\Crypt\AES;
 use RZP\Models\FileStore;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Entity;
+use RZP\Constants\Timezone;
 use RZP\Gateway\Base\AESCrypto;
 use RZP\Services\NbPlus\Netbanking;
 use RZP\Models\Terminal\Entity as Terminal;
@@ -27,6 +30,7 @@ class Svc extends Base
     const GATEWAY                    = Payment\Gateway::NETBANKING_SVC;
     const PAYMENT_TYPE_ATTRIBUTE     = Payment\Entity::BANK;
     const GATEWAY_CODE               = IFSC::SVCB;
+    const BASE_STORAGE_DIRECTORY     = 'Svc/Refund/Netbanking/';
 
     protected function formatDataForFile(array $data)
     {
@@ -70,5 +74,12 @@ class Svc extends Base
         $aes = new AESCrypto(AES::MODE_CBC, $masterKey, base64_decode($iv));
 
         return bin2hex($aes->encryptString($formattedData));
+    }
+
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . '_' . $this->mode . '_' . $time;
     }
 }
