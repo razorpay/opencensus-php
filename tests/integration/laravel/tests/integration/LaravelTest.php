@@ -163,7 +163,7 @@ class LaravelTest extends TestCase
             $spansByName[$span['name']][] = $span;
         }
 
-        echo "Spanning Names To Update".$spansByName;
+        echo $spansByName;
 
         return $spansByName;
     }
