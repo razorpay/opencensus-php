@@ -159,7 +159,7 @@ class LaravelTest extends TestCase
         foreach ($spans as $span) {
             if (!array_key_exists($span['name'], $spansByName)) {
                 $spansByName[$span['name']] = [];
-                echo $span['name'];
+                echo $span['name']."\n";
             }
             $spansByName[$span['name']][] = $span;
         }
