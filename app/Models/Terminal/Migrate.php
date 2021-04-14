@@ -5,6 +5,7 @@ namespace RZP\Models\Terminal;
 
 use RZP\Exception;
 use RZP\Models\Base\Collection;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
@@ -464,7 +465,7 @@ trait Migrate
         return $terminal;
     }
 
-    public static function getEntityCollectionFromTerminalServiceResponse(array $response)
+    public static function getEntityCollectionFromTerminalServiceResponse(array $response): PublicCollection
     {
         $terminals = [];
 
@@ -475,7 +476,7 @@ trait Migrate
             $terminals[] = $terminal;
         }
 
-        $collection = new Collection($terminals);
+        $collection = new PublicCollection($terminals);
 
         return $collection;
     }
@@ -546,6 +547,15 @@ trait Migrate
             $content["gateway_acquirer"] = $terminalData["gateway_acquirer"];
         }
 
+        if (empty($terminalData["status"]) === false)
+        {
+            $content["status"] = $terminalData["status"];
+        }
+
+        if (empty($terminalData["org_id"]) === false)
+        {
+            $content["org_id"] = $terminalData["org_id"];
+        }
 
         $identifiers = [];
 

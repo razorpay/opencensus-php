@@ -407,7 +407,7 @@ class Repository extends Base\Repository
         {
             $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
-            $variantFlag = $this->app->razorx->getTreatment($gatewayMerchantId, "ROUTE_PROXY_TS_BY_IDENTIFIERS", $mode);
+            $variantFlag = $this->app->razorx->getTreatment($gatewayMerchantId, "ROUTE_PROXY_TS_BY_IDENTIFIERS_2", $mode);
 
             if ($variantFlag === 'proxy')
             {
@@ -443,6 +443,7 @@ class Repository extends Base\Repository
                     {
                         $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
                     }
+                    return $terminal2;
                 }
             }
         }
@@ -468,7 +469,7 @@ class Repository extends Base\Repository
         {
             $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
-            $variantFlag = $this->app->razorx->getTreatment($gatewayMerchantId, "ROUTE_PROXY_TS_BY_IDENTIFIERS", $mode);
+            $variantFlag = $this->app->razorx->getTreatment($gatewayMerchantId, "ROUTE_PROXY_TS_BY_IDENTIFIERS_2", $mode);
 
             if ($variantFlag === 'proxy')
             {
@@ -497,6 +498,8 @@ class Repository extends Base\Repository
                     if (Terminal\Service::compareTerminalEntity($terminal, $terminal2) === false)
                     {
                         $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+
+                        return $terminal2;
                     }
                 }
             }
@@ -523,7 +526,7 @@ class Repository extends Base\Repository
         {
             $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
-            $variantFlag = $this->app->razorx->getTreatment($gatewayMerchantId, "ROUTE_PROXY_TS_BY_IDENTIFIERS", $mode);
+            $variantFlag = $this->app->razorx->getTreatment($gatewayMerchantId, "ROUTE_PROXY_TS_BY_IDENTIFIERS_2", $mode);
 
             if ($variantFlag === 'proxy')
             {
@@ -555,6 +558,8 @@ class Repository extends Base\Repository
                     {
                         $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
                     }
+
+                    return $terminal2;
                 }
             }
         }
@@ -584,7 +589,7 @@ class Repository extends Base\Repository
 
         $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
-        $variantFlag = $this->app->razorx->getTreatment($gatewayMerchantId, "ROUTE_PROXY_TS", $mode);
+        $variantFlag = $this->app->razorx->getTreatment($gatewayMerchantId, "ROUTE_PROXY_TS_4", $mode);
 
         if ($variantFlag === 'proxy')
         {
@@ -619,6 +624,8 @@ class Repository extends Base\Repository
                     {
                         $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
                     }
+
+                    return $terminal2;
                 }
             }
             catch (\Throwable $ex)
@@ -655,6 +662,12 @@ class Repository extends Base\Repository
 
                 $path = "v1/merchants/terminals";
 
+                // edge case handling for wallet_paypal
+                if (($content["gateway"] = Payment\Gateway::WALLET_PAYPAL) and (isset($content["status"]) === false))
+                {
+                    $content["status"] = Status::ACTIVATED;
+                }
+
                 $response = $this->app['terminals_service']->proxyTerminalService($content, "POST", $path);
 
                 $tsTerminals = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response);
@@ -675,7 +688,7 @@ class Repository extends Base\Repository
         return $terminals;
     }
 
-    public function getNonFailedNonDeactivatedByParams(array $params)
+    public function getNonFailedNonDeactivatedByParams(array $params, $proxyTs = true)
     {
 
         $query = $this->buildFetchByParamsQuery($params);
@@ -684,41 +697,44 @@ class Repository extends Base\Repository
                      ->where(Entity::STATUS, '!=', Status::DEACTIVATED)
                      ->get();
 
-        try
+        if ($proxyTs === true)
         {
-            $mode = $this->app['rzp.mode'] ??  Mode::LIVE ;
-
-            $randomId = (new Entity)->generateId();
-
-            $variantFlag = $this->app->razorx->getTreatment($randomId, "ROUTE_PROXY_TS",  $mode);
-
-            $data = ["function" => "getByParams", "params" => $params];
-
-            if ($variantFlag === 'proxy')
+            try
             {
-                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+                $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
-                $content = Terminal\Service::getTerminalServiceRequestFromParam($params);
+                $randomId = (new Entity)->generateId();
 
-                $content['statuses'] = [Status::ACTIVATED, Status::CREATED, Status::PENDING];
+                $variantFlag = $this->app->razorx->getTreatment($randomId, "ROUTE_PROXY_TS_4", $mode);
 
-                $path = "v1/merchants/terminals";
+                $data = ["function" => "getNonFailedNonDeactivatedByParams", "params" => $params];
 
-                $response = $this->app['terminals_service']->proxyTerminalService($content, "POST", $path);
+                if ($variantFlag === 'proxy') {
+                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
-                $tsTerminals = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response);
+                    $content = Terminal\Service::getTerminalServiceRequestFromParam($params);
 
-                if (Terminal\Service::compareTerminalCollection($terminals, $tsTerminals) === false)
-                {
-                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+                    $content['statuses'] = [Status::ACTIVATED, Status::CREATED, Status::PENDING];
+
+                    $path = "v1/merchants/terminals";
+
+                    $response = $this->app['terminals_service']->proxyTerminalService($content, "POST", $path);
+
+                    $tsTerminals = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response);
+
+                    if (Terminal\Service::compareTerminalCollection($terminals, $tsTerminals) === false) {
+                        $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+                    }
+
+                    return $tsTerminals;
                 }
             }
-        }
-        catch (\Throwable $ex)
-        {
-            $data['message'] = $ex->getMessage();
+            catch (\Throwable $ex)
+            {
+                $data['message'] = $ex->getMessage();
 
-            $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+                $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+            }
         }
 
         return $terminals;
@@ -850,7 +866,7 @@ class Repository extends Base\Repository
 
         $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
-        $variantFlag = $this->app->razorx->getTreatment($gateway, "ROUTE_PROXY_NO_MID_OR_IDENTIFIERS_TS", $mode);
+        $variantFlag = $this->app->razorx->getTreatment($gateway, "ROUTE_PROXY_TS", $mode);
 
         if ($variantFlag === 'proxy')
         {
@@ -990,7 +1006,7 @@ class Repository extends Base\Repository
 
         $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
-        $variantFlag = $this->app->razorx->getTreatment($mid, "ROUTE_PROXY_TS", $mode);
+        $variantFlag = $this->app->razorx->getTreatment($mid, "ROUTE_PROXY_TS_4", $mode);
 
         if ($variantFlag === 'proxy')
         {
@@ -1018,6 +1034,8 @@ class Repository extends Base\Repository
                     {
                         $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
                     }
+
+                    return $terminal2;
                 }
             }
             catch (\Throwable $ex)
@@ -1042,7 +1060,7 @@ class Repository extends Base\Repository
 
         $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
-        $variantFlag = $this->app->razorx->getTreatment($mid, "ROUTE_PROXY_TS", $mode);
+        $variantFlag = $this->app->razorx->getTreatment($mid, "ROUTE_PROXY_TS_4", $mode);
 
         if ($variantFlag === 'proxy')
         {
@@ -1069,6 +1087,8 @@ class Repository extends Base\Repository
                     {
                         $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
                     }
+
+                    return $terminal2;
                 }
             }
             catch (\Throwable $ex)
@@ -1316,7 +1336,7 @@ class Repository extends Base\Repository
 
         $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
-        $variantFlag = $this->app->razorx->getTreatment($ids[0], "ROUTE_PROXY_NO_MID_OR_IDENTIFIERS_TS", $mode);
+        $variantFlag = $this->app->razorx->getTreatment($ids[0], "ROUTE_PROXY_TS", $mode);
 
         if ($variantFlag === 'proxy')
         {
@@ -1382,7 +1402,7 @@ class Repository extends Base\Repository
 
         $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
-        $variantFlag = $this->app->razorx->getTreatment($gateway, "ROUTE_PROXY_TS", $mode);
+        $variantFlag = $this->app->razorx->getTreatment($gateway, "ROUTE_PROXY_TS_4", $mode);
 
         if ($variantFlag === 'proxy')
         {
@@ -1410,6 +1430,8 @@ class Repository extends Base\Repository
                 {
                     $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
                 }
+
+                return $terminals;
             }
             catch (\Throwable $ex)
             {

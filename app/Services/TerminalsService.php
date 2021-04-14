@@ -225,9 +225,10 @@ class TerminalsService
 
         $fetchTerminalsPath = "v1/merchants/terminals";
 
-        if (($path == $fetchTerminalsPath) && (isset($options[self::TIMEOUT]) == false))
+        if (($path === $fetchTerminalsPath) and (isset($options[self::TIMEOUT]) === false))
         {
-            $options[self::TIMEOUT] = 500;
+            $options[self::TIMEOUT] = 0.5;
+            $options[self::CONNECT_TIMEOUT] = 0.5;
         }
 
         $response = $this->sendRequest($path, $input, $method, $options, $headers);
