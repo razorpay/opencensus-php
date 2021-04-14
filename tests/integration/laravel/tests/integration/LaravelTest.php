@@ -55,7 +55,7 @@ class LaravelTest extends TestCase
 
         $spansByName = $this->groupSpansByName($spans);
 
-//        $this->assertEquals('/?rand=' . $rand, $spans[0]['name']);
+        $this->assertEquals('/?rand=', $spans[0]['name']);
         $this->assertNotEmpty($spansByName['bootstrap']);
         $this->assertNotEmpty($spansByName['laravel/view']);
     }
@@ -162,6 +162,9 @@ class LaravelTest extends TestCase
             }
             $spansByName[$span['name']][] = $span;
         }
+
+        echo "Spanning Names To Update".$spansByName;
+
         return $spansByName;
     }
 
