@@ -33,18 +33,22 @@ class ChannelNotification
 
     // TODO: Will change once merchant specific logic is plugged in
     protected $internalContact = [
-        '9980755411', // Pawan
-        '9845404807', // Anshuman
-        '9130522794', // Likhit
-        '8050408646', // Lokesh
-        '8976670177', // Sagar
-        '8861655100', // Karna
+        '9008516469',
+        '9620148438',
+        '9986565961',
+        '9057230892',
+        '8147712680',
+        '7892118329',
+        '9130522794',
+        '8050408646',
+        '8976670177',
+        '8861655100',
+        '9632355521',
+        '9109999819',
     ];
 
     protected $internalEmails = [
         'sagar.gupta@razorpay.com',
-        'anshuman.p@razorpay.com',
-        'pawan.murarka@razorpay.com'
     ];
 
     protected $templateMap = [
