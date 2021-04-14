@@ -311,6 +311,30 @@ return [
         ],
     ],
 
+    'testCreateTicketForAUserWithoutNameRzpX' => [
+        'request' => [
+            'url'     => '/fd/support_dashboard_x/ticket/',
+            'method'  => 'POST',
+            'content' => [
+                'description'   => 'ticket description',
+                'subject'       => 'ticket subject',
+                'cc_emails'     => ['a@b.com'],
+                'custom_fields' => [
+                    'cf_requester_category'       => 'Merchant',
+                    'cf_requestor_subcategory'    => 'Activation'
+                ],
+                'email' =>  'user@razorpay.com',
+                'name'  => '',
+                'phone' => '1234567890',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'description'  => 'ticket description',
+            ],
+        ],
+    ],
+
     'testCreateTicketForUserRzpX' => [
         'request' => [
             'url'     => '/fd/support_dashboard_x/ticket/',

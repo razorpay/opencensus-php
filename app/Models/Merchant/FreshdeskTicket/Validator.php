@@ -73,7 +73,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $createSupportDashboardXTicketRules = [
-        'name'                                                   => 'required|string',
+        'name'                                                   => 'sometimes|string',
         'email'                                                  => 'required|email',
         'subject'                                                => 'required|string',
         'description'                                            => 'required|string',

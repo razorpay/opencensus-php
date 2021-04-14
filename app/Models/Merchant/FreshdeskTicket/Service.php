@@ -956,8 +956,6 @@ class Service extends Base\Service
     {
         $input['email'] = $input['email'] ?? $this->merchant->getEmail();
 
-        $input['name'] = $input['name'] ?? $this->merchant->getName();
-
         $input['phone'] = $input['phone'] ?? $this->merchant->merchantDetail->getContactMobile();
 
         $input['custom_fields']['cf_merchant_id_dashboard'] = $this->getQueryParamMerchantIdForSearchAPI();
