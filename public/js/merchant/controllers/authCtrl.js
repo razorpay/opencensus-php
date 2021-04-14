@@ -720,17 +720,44 @@ app
       }
 
       function readUTMsCookie() {
-        const rzpUtmCookie = getCookie('rzp_utm');
-        let utms = {};
-        let parsedCookie = JSON.parse(rzpUtmCookie);
-        utms.firstUtm =
-          parsedCookie && parsedCookie.attributions ? parsedCookie.attributions[0] : '';
-        utms.lastUtm =
-          parsedCookie && parsedCookie.attributions ? parsedCookie.attributions[1] : '';
-        utms.firstPage = parsedCookie && parsedCookie.first_page ? parsedCookie.first_page : '';
-        utms.finalPage = parsedCookie && parsedCookie.final_page ? parsedCookie.final_page : '';
-        utms.website = parsedCookie && parsedCookie.website ? parsedCookie.website : '';
-        return utms;
+        let firstUtm = '';
+        let lastUtm = '';
+        let firstPage = '';
+        let finalPage = '';
+        let website = '';
+
+        try {
+          const rzpUtmCookie = getCookie('rzp_utm');
+          const parsedCookie = JSON.parse(rzpUtmCookie);
+
+          // Populate first and last utm
+          // Put first utm object to firstUtm key
+          // and second utm object to lastUtm key
+          // if second utm object is not present
+          // populate first utm object to lastUtm key
+          if (parsedCookie && parsedCookie.attributions && parsedCookie.attributions.length > 0) {
+            const attributions = parsedCookie.attributions;
+            firstUtm = attributions[0];
+            if (attributions[1]) {
+              lastUtm = attributions[1];
+            } else {
+              lastUtm = attributions[0];
+            }
+          }
+          firstPage = parsedCookie && parsedCookie.first_page ? parsedCookie.first_page : '';
+          finalPage = parsedCookie && parsedCookie.final_page ? parsedCookie.final_page : '';
+          website = parsedCookie && parsedCookie.website ? parsedCookie.website : '';
+        } catch (e) {
+          console.log('rzp_utm cookie is malformed');
+        }
+
+        return {
+          firstUtm,
+          lastUtm,
+          firstPage,
+          finalPage,
+          website,
+        };
       }
 
       $scope.onCreateAccountWithGoogle = function (email) {
@@ -2478,7 +2505,7 @@ app
                   first_page: utmData.firstPage,
                   final_page: utmData.finalPage,
                   website: utmData.website,
-                  referring_url: utmData.website
+                  referring_url: utmData.website,
                 }),
             );
           $scope.isSignupDisplayEventFired = true;
