@@ -55,7 +55,7 @@ class LaravelTest extends TestCase
 
         $spansByName = $this->groupSpansByName($spans);
 
-        $this->assertEquals('/?rand=', $spans[0]['name']);
+        $this->assertEquals('/', $spans[0]['name']);
         $this->assertNotEmpty($spansByName['bootstrap']);
         $this->assertNotEmpty($spansByName['laravel/view']);
     }
