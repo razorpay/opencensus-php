@@ -1,3 +1,4 @@
+import { getMode } from 'v2/services/mode';
 /* Delimiters are space / underscore */
 export const titleCase = (sentence) => {
   return (sentence || '')
@@ -35,6 +36,8 @@ const getCommonProperties = ({ screen, properties, user }) => {
     is_reg_auto_kyc_enabled: user.isRegAutoKYCEnabled,
     is_esign_aadhar_enabled: user.isEsignAadharEnabled,
     new_onboarding_flow: 'yes',
+    mode: 'live',
+    rzp_mode: getMode(user.id) || '',
     ...browser_details,
     ...properties,
   };

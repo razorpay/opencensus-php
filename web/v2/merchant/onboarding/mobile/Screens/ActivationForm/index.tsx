@@ -28,7 +28,7 @@ import {
 } from '../../ActivationModals';
 import SaveAndExitModal from '../../SaveAndExitModal';
 import FAQs from '../../FAQs/FAQs';
-import { checkIfEAadharStepCompleted, checkIfDedupe } from '../../services/utils';
+import { checkIfDedupe } from '../../services/utils';
 // import { L1_FORM_FIELD_NAMES } from '../../Constants/OnboardingConstants';
 import { analyticsTrack } from '../../../../../services/tracking/segment';
 
@@ -296,8 +296,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
     isBusinessOverviewCompleted &&
     isBusinessDetailsCompleted &&
     isBankAndCompanyDetailsCompleted &&
-    isDocumentsUploadCompleted &&
-    checkIfEAadharStepCompleted(data);
+    isDocumentsUploadCompleted;
 
   if (isContactDetailsCompleted) {
     analyticsTrack({
@@ -351,7 +350,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
       },
     });
   }
-  if (isDocumentsUploadCompleted && checkIfEAadharStepCompleted(data)) {
+  if (isDocumentsUploadCompleted) {
     analyticsTrack({
       objectName: 'SignUp',
       actionName: 'tab filled',
@@ -403,7 +402,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
         key="documents"
         title="Documents"
         tabId="documents"
-        completed={isDocumentsUploadCompleted && checkIfEAadharStepCompleted(data)}
+        completed={isDocumentsUploadCompleted}
       >
         <DocumentUpload isFormLocked={!!data.locked} />
       </Tab>,

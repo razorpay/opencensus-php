@@ -54,10 +54,10 @@ export const getHelpText = (field, data) => {
 };
 
 export const getMerchantFlow = (business_type: string, activation_flow: string): string => {
-  if (business_type === '11') {
-    return 'whitelist';
-  }
-  return activation_flow;
+  // if (business_type === '11') {
+  //   return 'whitelist';
+  // }
+  return activation_flow || 'greylist';
 };
 
 export const isL1Submitted = (onboarding_milestone: string | null): boolean => {
@@ -194,13 +194,30 @@ function onScreenDocuments(data) {
       return prevValue;
     }, {});
 }
+export function checkIfEAadharStepCompleted(data) {
+  let isEAadharFieldFilled = false;
+  const AadharEnabledTypes = ['11', '1', '3'];
+  if (
+    (data && data.stakeholder && data.stakeholder.aadhaar_esign_status === 'verified') ||
+    (data.stakeholder && data.stakeholder.aadhaar_linked == '0')
+  ) {
+    isEAadharFieldFilled = true;
+  }
+  if (!AadharEnabledTypes.includes(data.business_type)) {
+    isEAadharFieldFilled = true;
+  }
 
-export function isDocmentTabComplete(data) {
+  return isEAadharFieldFilled;
+}
+
+export function isDocumentTabComplete(data) {
   const tabData = { ...onScreenDocuments(data) };
 
-  return Object.keys(tabData).every((key) => {
+  const isDocumentFieldsFilled = Object.keys(tabData).every((key) => {
     return !!tabData[key].value && !tabData[key].error;
   });
+
+  return isDocumentFieldsFilled && checkIfEAadharStepCompleted(data);
 }
 
 export function getDefaultSelectedDocs(context, type) {
@@ -354,17 +371,3 @@ export function getDocumentTitle(context) {
 export const checkIfDedupe = (data) => {
   return data && !!data.locked && !data.activated && data.merchant.hold_funds;
 };
-export function checkIfEAadharStepCompleted(data) {
-  let isEAadharFieldFilled = false;
-  const AadharEnabledTypes = ['11', '1', '3'];
-  if (
-    (data && data.stakeholder && data.stakeholder.aadhaar_esign_status === 'verified') ||
-    (data.stakeholder && data.stakeholder.aadhaar_linked == '0')
-  ) {
-    isEAadharFieldFilled = true;
-  }
-  if (!AadharEnabledTypes.includes(data.business_type)) {
-    isEAadharFieldFilled = true;
-  }
-  return isEAadharFieldFilled;
-}

@@ -25,10 +25,9 @@ import useActivation from '../hooks/useActivation';
 import {
   getAdditionalDocCount,
   getBizCatSubCatPair,
-  isDocmentTabComplete,
+  isDocumentTabComplete,
   getDefaultSelectedDocs,
   getDocumentTitle,
-  checkIfEAadharStepCompleted,
 } from '../services/utils';
 import { analyticsTrack } from '../../../../services/tracking/segment';
 import ShopEstablishmentNumber from './ShopEstablishmentNumber';
@@ -61,8 +60,6 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
   const [bankDoc, setBankDoc] = useState<string>(defaultBankDoc);
   const [additionalDoc, setAdditionalDoc] = useState<string>(defaultAdditionalDoc);
   const [progress, setProgress] = useState<number>(0);
-
-  const isAadharFilled = checkIfEAadharStepCompleted(data);
 
   const setDocumentUploadCompleted = useActivationFormState(
     (state) => state.setDocumentUploadCompleted,
@@ -115,7 +112,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
       });
     }
 
-    const isComplete = isDocmentTabComplete({
+    const isComplete = isDocumentTabComplete({
       ...data,
       documents: { ...documents, ...response.documents },
       addressDoc,
@@ -123,7 +120,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
       bankDoc,
       additionalDoc,
     });
-    setDocumentUploadCompleted(isComplete && isAadharFilled);
+    setDocumentUploadCompleted(isComplete);
   };
 
   const onDeleteFile = async (fileName: string) => {
@@ -133,7 +130,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
       const curDoc = file[file.length - 1];
       const response = await documentDelete(curDoc);
       setProgress(0);
-      const isComplete = isDocmentTabComplete({
+      const isComplete = isDocumentTabComplete({
         ...data,
         documents: { ...documents, ...response.documents },
         addressDoc,
@@ -141,7 +138,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
         bankDoc,
         additionalDoc,
       });
-      setDocumentUploadCompleted(isComplete && isAadharFilled);
+      setDocumentUploadCompleted(isComplete);
       analyticsTrack({
         objectName: 'SignUp',
         actionName: `${file} delete`,
@@ -167,15 +164,15 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
 
   // update document tab complete checkbox whenever state change
   useEffect(() => {
-    const isComplete = isDocmentTabComplete({
+    const isComplete = isDocumentTabComplete({
       ...data,
       addressDoc,
       businessDoc,
       bankDoc,
       additionalDoc,
     });
-    setDocumentUploadCompleted(isComplete && isAadharFilled);
-  }, [addressDoc, businessDoc, bankDoc, additionalDoc, isAadharFilled]);
+    setDocumentUploadCompleted(isComplete);
+  }, [addressDoc, businessDoc, bankDoc, additionalDoc]);
 
   const shouldShowEsignFlow =
     data.business_type === '11' || data.business_type === '1' || data.business_type === '3';

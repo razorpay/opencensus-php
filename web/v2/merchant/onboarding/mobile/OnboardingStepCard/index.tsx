@@ -8,6 +8,7 @@ import Button from '@razorpay/blade/src/atoms/Button';
 import Card from '../../../../components/Card';
 import { StepList } from '../Step';
 import { StepPropsT } from '../Step/Step';
+import { useActivationFormState } from 'v2/merchant/onboarding/mobile/context/store';
 
 interface OnboardingStepCardPropsT {
   steps: StepPropsT[];
@@ -40,6 +41,29 @@ const OnboardingStepCard: React.FC<OnboardingStepCardPropsT> = ({
 }) => {
   const _subtitle = info || subtitle;
 
+  const isContactDetailsCompleted = useActivationFormState(
+    (state) => state.isContactDetailsCompleted,
+  );
+  const isBusinessOverviewCompleted = useActivationFormState(
+    (state) => state.isBusinessOverviewCompleted,
+  );
+  const isBusinessDetailsCompleted = useActivationFormState(
+    (state) => state.isBusinessDetailsCompleted,
+  );
+  const isBankAndCompanyDetailsCompleted = useActivationFormState(
+    (state) => state.isBankAndCompanyDetailsCompleted,
+  );
+  const isDocumentsUploadCompleted = useActivationFormState(
+    (state) => state.isDocumentsUploadCompleted,
+  );
+
+  const isAllTabCompleted =
+    isContactDetailsCompleted &&
+    isBusinessOverviewCompleted &&
+    isBusinessDetailsCompleted &&
+    isBankAndCompanyDetailsCompleted &&
+    isDocumentsUploadCompleted;
+
   const canShowTermsAndCondition =
     activationFlow === 'greylist' ? greyListFlowCanSubmit : whiteListFlowCanSubmit;
 
@@ -64,7 +88,8 @@ const OnboardingStepCard: React.FC<OnboardingStepCardPropsT> = ({
         <Button
           size="large"
           disabled={
-            activationFlow === 'greylist' ? !greyListFlowCanSubmit : !whiteListFlowCanSubmit
+            !isAllTabCompleted ||
+            (activationFlow === 'greylist' ? !greyListFlowCanSubmit : !whiteListFlowCanSubmit)
           }
           onClick={onCTAClick}
           block

@@ -103,15 +103,14 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
               .required('LLPIN is a required field')
               .nullable();
           }),
-          gstin: Yup.lazy(() => {
-            if (!hasGSTIN) {
-              return Yup.string()
-                .trim()
-                .length(15, 'Please provide valid GSTIN')
-                .required('GSTIN is a required field')
-                .nullable();
-            }
-            return Yup.string().trim().nullable();
+          gstin: Yup.string().when('hasGstin', {
+            is: hasGSTIN,
+            then: Yup.string()
+              .trim()
+              .length(15, 'Please provide valid GSTIN')
+              .required('GSTIN is a required field')
+              .nullable(),
+            otherwise: Yup.string().trim().nullable(),
           }),
         });
       }}

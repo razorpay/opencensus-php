@@ -132,7 +132,7 @@ const GetOTP: React.FC<GetOTPPropsT> = ({
             .required('Aadhar Number is a required field'),
           captchaCode: Yup.string().required('captcha is a required field'),
           createdPin: Yup.string()
-            .length(4, 'Pin number should be of 4 digits')
+            .matches(/\d{4}/, { message: 'Pin number should be of 4 digits' })
             .required('Pin is a required field'),
         });
       }}

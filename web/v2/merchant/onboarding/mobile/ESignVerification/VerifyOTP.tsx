@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import * as Yup from 'yup';
 import { Formik, Form } from 'formik';
 import Text from '@razorpay/blade/src/atoms/Text';
@@ -9,6 +9,7 @@ import Button from '@razorpay/blade/src/atoms/Button';
 import Flex from '@razorpay/blade/src/atoms/Flex';
 import { useMutation } from 'react-query';
 import { fetch } from 'v2/services/rest/rest-fetch';
+import useActivation from '../hooks/useActivation';
 import { analyticsTrack } from '../../../../services/tracking/segment';
 import { useApp } from 'v2/context/App';
 import { Divider } from './Styled';
@@ -37,14 +38,16 @@ const VerifyOTP: React.FC<VerifyOtpPropsT> = ({
   pin,
   inputCaptcha,
 }) => {
-  const [isOtpVerified, setOtpVerified] = useState(false);
   const [apiError, setApiError] = useState('');
   const { user } = useApp();
+  const { postData } = useActivation();
 
   const [fetchOTP] = useMutation(verifyAadhar, {
     onSuccess: (response) => {
       if (response.is_valid) {
-        setOtpVerified(response.is_valid);
+        postData({ stakeholder: { aadhaar_linked: 1 } });
+        const nextScreen = 'AadharSuccess';
+        goToNextScreen({ nextScreen });
         analyticsTrack({
           objectName: 'SignUp',
           actionName: 'otp',
@@ -81,13 +84,6 @@ const VerifyOTP: React.FC<VerifyOtpPropsT> = ({
     };
     await fetchOTP(data);
   };
-
-  useEffect(() => {
-    if (isOtpVerified) {
-      const nextScreen = 'AadharSuccess';
-      goToNextScreen({ nextScreen });
-    }
-  }, [isOtpVerified]);
 
   return (
     <Formik

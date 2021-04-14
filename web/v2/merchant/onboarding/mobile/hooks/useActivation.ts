@@ -6,7 +6,7 @@ import { useActivationFormState, isTabComplete } from '../context/store';
 import activationFormatter from '../services/formatters/activation';
 import {
   isUnregisteredBusiness,
-  isDocmentTabComplete,
+  isDocumentTabComplete,
   getDefaultSelectedDocs,
 } from '../services/utils';
 
@@ -120,7 +120,7 @@ export default function useActivation() {
       const isBusinessOverviewTabComplete = isTabComplete(data, 'business_overview');
       const isBusinessDetailsTabComplete = isTabComplete(data, 'business_details');
       const isBankAndCompanyDetailsTabComplete = isTabComplete(data, 'bank_and_company_details');
-      const isDocumentsUploadTabComplete = isDocmentTabComplete({
+      const isDocumentsUploadTabComplete = isDocumentTabComplete({
         ...data,
         addressDoc,
         bankDoc,
@@ -149,8 +149,11 @@ export default function useActivation() {
       ) {
         setSameAddress(false);
       }
-      if (isUnregisteredBusiness(data.business_overview.business_type.value) || data.gstin === '') {
-        setHasGSTIN(true); // setting as true to hide the GSTIN Input in bank and company details screen
+
+      if (data.gstin === '') {
+        setHasGSTIN(true);
+      } else {
+        setHasGSTIN(false);
       }
     }
   }, [
