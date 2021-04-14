@@ -12,8 +12,9 @@ run_bvt_suite_when_approved() {
     --header "Authorization: Bearer ${GIT_TOKEN}")
   cookies="$(cat /tmp/cookies | awk '/SESSION/ { print $NF }')"
   SPINNAKER_HEADER="Cookie: SESSION=$cookies"
-  # pipeline id of API PR Approval Filter
-  PIPELINE_ID="20ca36ae-948c-4a7f-8c72-97cb45768c24"
+  # pipeline id - Trigger BVT Execution -> New pipeline to trigger the BVT execution in parallel (Maintaining two child pipelines now)
+  PIPELINE_ID="842e0854-3a08-4e67-9881-a9ea1d005b31"
+  api_instance=${API_INSTANCE}
   # https://developer.github.com/v3/pulls/reviews/#list-reviews-on-a-pull-request
   echo "Status Code for fetching spinnaker cookie $statusCode"
   if [ -z "$roastPRCommit"]; then
@@ -22,8 +23,8 @@ run_bvt_suite_when_approved() {
   if [ "$skipRoast" = "true" ]; then
     if [ "$statusCode" = 200 ]; then
       spinnakerBody=$(curl --location --request GET "https://deploy-api.razorpay.com/executions?pipelineConfigIds=${PIPELINE_ID}&limit=50" \
-        -H "${SPINNAKER_HEADER}" | jq '[.[] | {status: .status,id: .id,startTime: .startTime,buildTime: .buildTime,commitId: .stages[0].outputs.app_commit_id,pr_number: .stages[0].outputs.pr_number}]')
-      pipelines=$(echo "$spinnakerBody" | jq --raw-output '.[] | {pr_number: .pr_number,id: .id,status: .status,commitId: .commitId}| @base64')
+        -H "${SPINNAKER_HEADER}" | jq '[.[] | {status: .status,id: .id,startTime: .startTime,buildTime: .buildTime,commitId: .stages[0].outputs.app_commit_id,pr_number: .stages[0].outputs.pr_number,apiInstance: .trigger.parameters.instance}]')
+      pipelines=$(echo "$spinnakerBody" | jq --raw-output '.[] | {pr_number: .pr_number,id: .id,status: .status,commitId: .commitId,apiInstance: .apiInstance}| @base64')
       for p in $pipelines; do
       pipeline="$(echo "$p" | base64 -d)"
       pId=$(echo "$pipeline" | jq --raw-output '.id')
@@ -34,6 +35,7 @@ run_bvt_suite_when_approved() {
         spinnakerCancelRequestStatusCode=$(curl -o -s -w "%{http_code}" --location --request PUT "https://deploy-api.razorpay.com/pipelines/$pId/cancel" \
           -H "${SPINNAKER_HEADER}")
         echo "PR number $pPRNumber and Commit id $pCommitId in $pStatus state, this is being cancelled"
+        api_instance=$(echo "$pipeline" | jq --raw-output '.apiInstance')
         if [ "$spinnakerCancelRequestStatusCode" = 200 ]; then
           echo "Pipeline cancellation succeeded"
         else
@@ -47,7 +49,7 @@ run_bvt_suite_when_approved() {
       -u github-actions:"$SPINNAKER_PASSWORD" \
       https://deploy-github-actions.razorpay.com/webhooks/webhook/"$WEBHOOK_TRIGGER" \
       -H "content-type: application/json" \
-      -d "{\"review\":{\"state\":\"approved\", \"skip_roast\":\"$skipRoast\", \"roast_commit_id\":\"$roastPRCommit\"},\"pull_request\":{\"head\":{ \"sha\":\"$commitId\"},\"number\":\"$PRNumber\",\"state\":\"approved\"} }"
+      -d "{\"review\":{\"state\":\"approved\", \"skip_roast\":\"$skipRoast\", \"roast_commit_id\":\"$roastPRCommit\"},\"pull_request\":{\"head\":{ \"sha\":\"$commitId\"},\"number\":\"$PRNumber\",\"state\":\"approved\"},\"instance\":\"$api_instance\" }"
     exit 0
   fi
   URI="https://api.github.com"
@@ -68,13 +70,13 @@ run_bvt_suite_when_approved() {
   fi
   if [ "$statusCode" = 200 ]; then
     spinnakerBody=$(curl --location --request GET "https://deploy-api.razorpay.com/executions?pipelineConfigIds=${PIPELINE_ID}&limit=50" \
-      -H "${SPINNAKER_HEADER}" | jq '[.[] | {status: .status,id: .id,startTime: .startTime,buildTime: .buildTime,commitId: .stages[0].outputs.app_commit_id,pr_number: .stages[0].outputs.pr_number}]')
-    pipelines=$(echo "$spinnakerBody" | jq --raw-output '.[] | {pr_number: .pr_number,id: .id,status: .status,commitId: .commitId}| @base64')
+      -H "${SPINNAKER_HEADER}" | jq '[.[] | {status: .status,id: .id,startTime: .startTime,buildTime: .buildTime,commitId: .stages[0].outputs.app_commit_id,pr_number: .stages[0].outputs.pr_number,apiInstance: .trigger.parameters.instance}]')
+    pipelines=$(echo "$spinnakerBody" | jq --raw-output '.[] | {pr_number: .pr_number,id: .id,status: .status,commitId: .commitId,apiInstance: .apiInstance}| @base64')
     for p in $pipelines; do
       pipeline="$(echo "$p" | base64 -d)"
       pCommitId=$(echo "$pipeline" | jq --raw-output '.commitId')
       pStatus=$(echo "$pipeline" | jq --raw-output '.status')
-      if [ "$pCommitId" = "$commitId" ] && [ "$pStatus" = "RUNNING" ]; then
+      if [ "$pPRNumber" = "$PRNumber" ] && [ "$pStatus" = "RUNNING" ]; then
         echo "$pCommitId"
         echo "$pStatus"
         echo "CommitId already in queue, ignoring for bvt execution"
@@ -91,6 +93,8 @@ run_bvt_suite_when_approved() {
         spinnakerCancelRequestStatusCode=$(curl -o -s -w "%{http_code}" --location --request PUT "https://deploy-api.razorpay.com/pipelines/$pId/cancel" \
           -H "${SPINNAKER_HEADER}")
         echo "PR number $pPRNumber and Commit id $pCommitId in $pStatus state, this is being cancelled"
+        #pipeline cancel logic
+        api_instance=$(echo "$pipeline" | jq --raw-output '.apiInstance')
         if [ "$spinnakerCancelRequestStatusCode" = 200 ]; then
           echo "Pipeline cancellation succeeded"
         else
@@ -105,7 +109,7 @@ run_bvt_suite_when_approved() {
     -u github-actions:"$SPINNAKER_PASSWORD" \
     https://deploy-github-actions.razorpay.com/webhooks/webhook/"$WEBHOOK_TRIGGER" \
     -H "content-type: application/json" \
-    -d "{\"review\":{\"state\":\"approved\", \"skip_roast\":\"$skipRoast\", \"roast_commit_id\":\"$roastPRCommit\"},\"pull_request\":{\"head\":{ \"sha\":\"$commitId\"},\"number\":\"$PRNumber\",\"state\":\"approved\"} }"
+    -d "{\"review\":{\"state\":\"approved\", \"skip_roast\":\"$skipRoast\", \"roast_commit_id\":\"$roastPRCommit\"},\"pull_request\":{\"head\":{ \"sha\":\"$commitId\"},\"number\":\"$PRNumber\",\"state\":\"approved\"},\"instance\":\"$api_instance\" }"
 }
 
 run_bvt_suite_when_approved

@@ -27,7 +27,7 @@ jobs:
             repo: context.payload.repository.name,
             labels: ['approved']
           })
-    # Back-merge master branch into feature post PR approval
+    # Back-merge master branch into feature post PR approval check
     - name: backmerge-master
       id: backmerge
       uses: devmasx/merge-branch@a1752b9ba42bb417ec19be7dc974e2faf77d3ef2
@@ -63,6 +63,13 @@ jobs:
           const regex = /skiproast.*true/i;
           skipFlag = regex.test(context.payload.pull_request.body.toLowerCase())
           return Boolean(skipFlag)
+    # Get the API Instance from Spinnaker
+    - name: Get API Instance from Spinnaker
+      env:
+        GIT_TOKEN :  ${{ secrets.CI_BOT_TOKEN }}
+      id: script
+      run: |
+        echo "API_INSTANCE=$(sh ./.github/actions/getSpinnakerConfig.sh)" >> $GITHUB_ENV
     - if: contains(github.event.pull_request.head.ref, 'hotfix')
       name: Set flag
       id: hotfix
@@ -170,7 +177,7 @@ jobs:
       if: env.GIT_NEW_COMMIT_AFTER_MERGE == env.commit_id
       env:
         SPINNAKER_PASSWORD: ${{ secrets.SPINNAKER_PASSWORD }}
-        WEBHOOK_TRIGGER: bvt-api-approval
+        WEBHOOK_TRIGGER: api-pr-commit
         GITHUB_TOKEN: ${{ github.token }}
         SKIP_ROAST: ${{steps.skip-roast.outputs.result}}
         HOTFIX: ${{ steps.hotfix.outputs.flag }}
