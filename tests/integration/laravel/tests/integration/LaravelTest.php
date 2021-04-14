@@ -82,7 +82,6 @@ class LaravelTest extends TestCase
         $this->assertNotEmpty($spansByName['eloquent/insert']);
         $this->assertNotEmpty($spansByName['PDO connect']);
         $this->assertNotEmpty($spansByName['PDO::exec']);
-        $this->assertNotEmpty($spansByName['PDO set']);
         $this->assertNotEmpty($spansByName['PDO insert users']);
 
         $this->clearSpans();
