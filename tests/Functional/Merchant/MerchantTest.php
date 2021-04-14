@@ -1556,8 +1556,6 @@ class MerchantTest extends TestCase
 
         $this->esClient->indices()->refresh();
 
-        $this->fixtures->create('merchant_freshdesk_tickets', $this->getDefaultFreshdeskArray());
-
         $workflowAction = $this->getLastEntity('workflow_action', true);
 
         $this->setUpFreshdeskClientMock();
@@ -1626,8 +1624,6 @@ class MerchantTest extends TestCase
         ]);
 
         $this->esClient->indices()->refresh();
-
-        $this->fixtures->create('merchant_freshdesk_tickets', $this->getDefaultFreshdeskArray());
 
         $workflowAction = $this->getLastEntity('workflow_action', true);
 
@@ -1704,8 +1700,6 @@ class MerchantTest extends TestCase
             'ticket_id'     => '123',
             'fd_instance'   => 'rzp'
         ],'live');
-
-        $this->fixtures->create('merchant_freshdesk_tickets', $this->getDefaultFreshdeskArray('10000000000044'));
 
         $workflowAction = $this->getLastEntity('workflow_action', true,'live');
 

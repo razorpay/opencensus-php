@@ -1083,17 +1083,14 @@ class Service extends Base\Service
             $this->merchant = $this->repo->merchant->findByPublicId($merchantId);
         }
 
-        $ticketEntity = $this->repo->merchant_freshdesk_tickets->fetch([
-            Entity::TYPE                => $type,
-            Entity::TICKET_ID           => $freshdeskTicketId,
-        ],$this->merchant->getId())->firstOrFail();
-
         $input = [
-            Constants::USER_ID     =>   $agentIdToReply,
+            Constants::USER_ID     =>   (int)$agentIdToReply,
             Constants::BODY        =>   $replyBody
         ];
 
-        $this->postTicketReply($ticketEntity->getId(), $input, $type);
+        $url = self::FRESHDESK_INSTANCES[$type][$fdInstance];
+
+        return $this->app[Constants::FRESHDESK_CLIENT]->postTicketReply($freshdeskTicketId, $input, $url);
     }
 
     protected function getAgentId ($fdInstance)
