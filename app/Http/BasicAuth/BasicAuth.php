@@ -417,7 +417,7 @@ class BasicAuth
 
         $this->authCreds->creds[self::SECRET] = $secret;
 
-        $this->authCreds->setPublicKey($key);
+        $this->authCreds->creds[self::PUBLIC_KEY] = $key;
 
         return $this->checkAndSetAccountId();
     }
@@ -1045,7 +1045,7 @@ class BasicAuth
         }
 
         $this->authCreds->creds[self::SECRET] = null;
-        $this->authCreds->setPublicKey($key);
+        $this->authCreds->creds[self::PUBLIC_KEY] = $key;
 
         // If key is wrong in formatting or something, send error back
         if ($this->checkAndSetKeyId($key) !== null)
@@ -1815,7 +1815,7 @@ class BasicAuth
         }
 
         $this->authCreds->creds[self::SECRET] = null;
-        $this->authCreds->setPublicKey($key);
+        $this->authCreds->creds[self::PUBLIC_KEY] = $key;
 
         return $this->checkAndSetAccountId();
     }
