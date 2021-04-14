@@ -140,7 +140,7 @@ const AadharInput: React.FC<AadharInputPropsT> = ({
               <Space margin={[0, 0, 1.5]}>
                 <Divider />
               </Space>
-              <Space margin={[0, 0, 1.5]}>
+              <Space padding={[0, 0, 1.5]}>
                 <View>
                   <Checkbox
                     onChange={mobileNotLinked}

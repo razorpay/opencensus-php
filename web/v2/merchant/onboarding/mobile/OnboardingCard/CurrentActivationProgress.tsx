@@ -39,6 +39,19 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; pay
   const isDedupeState = checkIfDedupe(data);
 
   if (data.submitted) {
+    if (isDedupeState) {
+      return (
+        <>
+          <Info
+            title={Messages.DEDUPE.title}
+            description={Messages.DEDUPE.description}
+            titleColor="negative.900"
+            hasError
+          />
+          <Buttons.Primary onClick={() => contactSupport()} title="Contact support" />
+        </>
+      );
+    }
     if (data.activation_status === 'under_review') {
       let description = '';
       if (isUnregisteredBusiness(data.business_type)) {
@@ -190,20 +203,6 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; pay
     data.onboarding_milestone === 'L2'
   ) {
     return <RemainingStepsInfo data={data} payments={payments} />;
-  }
-
-  if (isDedupeState) {
-    return (
-      <>
-        <Info
-          title={Messages.DEDUPE.title}
-          description={Messages.DEDUPE.description}
-          titleColor="negative.900"
-          hasError
-        />
-        <Buttons.Primary onClick={() => contactSupport()} title="Contact support" />
-      </>
-    );
   }
 
   if (data.activation_progress >= 24) {
