@@ -28,19 +28,6 @@ export default class AnnouncementDetails extends React.Component {
     hasScrolledToEnd: false,
   };
 
-  getCommonNotificationTrackingProperties() {
-    const notification =
-      window.notifications.find((notification) => notification.id === this.props.id) || {};
-
-    return {
-      version: notification.version,
-      campaign: notification.campaign,
-      version_description: notification.version_description,
-      target_product_feature: notification.target_product_feature,
-      target_metric: notification.target_metric,
-    };
-  }
-
   componentDidMount() {
     const { id, tracking } = this.props;
     tracking.trackEvent(
@@ -48,7 +35,6 @@ export default class AnnouncementDetails extends React.Component {
         card_id: id,
         title: window.notifications.find((notification) => notification.id === id).l2_content.title,
         whats_new: isWhatsNewSection(id),
-        ...this.getCommonNotificationTrackingProperties(),
       }),
     );
   }
@@ -68,7 +54,6 @@ export default class AnnouncementDetails extends React.Component {
           text: button.label,
           url: button.url,
           whats_new: isWhatsNewSection(button.notificationId),
-          ...this.getCommonNotificationTrackingProperties(),
         }),
     );
 
@@ -108,7 +93,6 @@ export default class AnnouncementDetails extends React.Component {
             card_id: id,
             title,
             whats_new: isWhatsNewSection(id),
-            ...this.getCommonNotificationTrackingProperties(),
           }),
       );
 
