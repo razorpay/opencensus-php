@@ -363,15 +363,19 @@ class ViewDataSerializer extends Base\Core
 
     protected function getMerchantSupportDetails()
     {
-       if ($this->merchant->merchantDetail === null)
-       {
-           return ['support_email' => '', 'support_mobile' => ''];
-       }
+        $supportDetails = $this->repo->merchant_email->getEmailByType(Merchant\Email\Type::SUPPORT, $this->merchant->getId());
 
-        return [
-            'support_email'  => $this->merchant->merchantDetail->getContactEmail(),
-            'support_mobile' => $this->merchant->merchantDetail->getContactMobile()
-        ];
+        if ($supportDetails !== null)
+        {
+            $supportDetails = $supportDetails->toArrayPublic();
+
+            return [
+                'support_email'  => $supportDetails[Merchant\Email\Entity::EMAIL],
+                'support_mobile' => $supportDetails[Merchant\Email\Entity::PHONE]
+            ];
+        }
+
+        return ['support_email' => '', 'support_mobile' => ''];
     }
 
     protected function getMerchantLogo(Merchant\Entity $partner = null)

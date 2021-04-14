@@ -758,11 +758,15 @@ class Service extends Base\Service
 
             $response['org_custom_code'] =  $this->merchant->org->getCustomCode();
 
-            if ($this->merchant->merchantDetail !== null)
-            {
-                $response['support_email'] = $this->merchant->merchantDetail->getContactEmail();
+            $supportDetails = $this->repo->merchant_email->getEmailByType(Merchant\Email\Type::SUPPORT, $merchant->getId());
 
-                $response['support_mobile'] = $this->merchant->merchantDetail->getContactMobile();
+            if ($supportDetails !== null)
+            {
+                $supportDetails = $supportDetails->toArrayPublic();
+
+                $response['support_email']  = $supportDetails[Merchant\Email\Entity::EMAIL];
+
+                $response['support_mobile'] = $supportDetails[Merchant\Email\Entity::PHONE];
             }
         }
 
