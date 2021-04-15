@@ -311,7 +311,8 @@ class Core extends Base\Core
             $path = "v1/terminals/" .  $terminal->getId();
 
             $input = [
-                Entity::ENABLED => $toggle
+                Entity::ENABLED => $toggle,
+                Entity::STATUS => $terminal->getStatus(),
             ];
 
             $response = $this->app['terminals_service']->proxyTerminalService($input, "PATCH", $path);
@@ -342,11 +343,9 @@ class Core extends Base\Core
 
         (new GatewayTerminalService)->callGatewayForTerminalEnableOrDisable($terminal, 'disable_terminal');
 
-        $terminal = $this->toggle($terminal, false);
-
         $terminal->setStatus(Status::DEACTIVATED);
 
-        $terminal->save();
+        $terminal = $this->toggle($terminal, false);
 
         return $terminal;
     }
@@ -533,7 +532,7 @@ class Core extends Base\Core
         ];
     }
 
-    public function setBanksForTerminal(Entity $terminal, $banksToEnable): array
+    public function setBanksForTerminal(Entity $terminal, $banksToEnable, $syncWithTerminalService = true): array
     {
         $gateway = $terminal->getGateway();
 
@@ -575,7 +574,34 @@ class Core extends Base\Core
 
         $terminal->setEnabledBanks($banksToEnable);
 
-        $this->repo->saveOrFail($terminal);
+        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+        $mId = $terminal->getMerchantId();
+
+        $variantFlag = $this->app->razorx->getTreatment($mId, "TERMINAL_EDIT_PROXY", $mode);
+
+        if ($variantFlag === "on" && $syncWithTerminalService === true)
+        {
+            $syncWithTerminalService = false;
+
+            $path = "v1/terminals/".$terminal->getId()."/banks";
+
+            $input = [
+                Entity::ENABLED_BANKS => $banksToEnable
+            ];
+
+            $response = $this->app['terminals_service']->proxyTerminalService($input, "PATCH", $path);
+
+            $terminal->setSyncStatus(SyncStatus::SYNC_SUCCESS);
+
+            $this->repo->saveOrFail($terminal, ['shouldSync' => $syncWithTerminalService]);
+
+            return $response;
+        }
+        else
+        {
+            $this->repo->saveOrFail($terminal, ['shouldSync' => $syncWithTerminalService]);
+        }
 
         return $this->getBanksForTerminal($terminal);
     }

@@ -409,7 +409,6 @@ return [
             ],
         ],
     ],
-
     'testEditTerminalOnTerminalServiceBadRequest' => [
         'request' => [
             'method'  => 'PUT',
@@ -429,7 +428,8 @@ return [
             'internal_error_code' => 'BAD_REQUEST_TERMINALS_SERVICE_ERROR',
         ],
     ],
-    'testToggleTerminalOnTerminalService' => [
+
+    'testToggleTerminalFromTerminalService' => [
         'request' => [
             'method'  => 'PUT',
             'content' => [ 'toggle' => '0']
@@ -442,15 +442,56 @@ return [
         ],
     ],
 
-    'testToggleTerminalFromTerminalService' => [
+    'testEnableTerminalOnTerminalService' => [
         'request' => [
+            'url'     => '/terminals/term_1n25f6uN5S1Z5a/enable',
             'method'  => 'PUT',
-            'content' => [ 'toggle' => '0']
+        ],
+        'response' => [
+            'content' => [
+                'enabled' => true,
+                'status'  => 'activated'
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testDisableTerminalOnTerminalService' => [
+        'request' => [
+            'url'     => '/terminals/term_1n25f6uN5S1Z5a/disable',
+            'method'  => 'PUT',
         ],
         'response' => [
             'content' => [
                 'enabled' => false,
+                'status'  => 'deactivated'
             ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testSetTerminalBanksOnTerminalService' => [
+        'request' => [
+            'method'  => 'PATCH',
+            'content' => [ 'enabled_banks' => ['SBBJ', 'SBHY']],
+            'url'     => '/terminals/1n25f6uN5S1Z5a/banks'
+        ],
+        'response' => [
+            'status_code' => 200,
+        ],
+    ],
+
+    'testSetTerminalsBanksOnTerminalService' => [
+        'request' => [
+            'method'  => 'PUT',
+            'content' => [
+                'action'       => 'remove',
+                'terminal_ids' => ['1n25f6uN5S1Z5a'],
+                'banks'        => ['SBBJ', 'SBHY'],
+            ],
+            'url'     => '/terminals/banks/bulk'
+        ],
+        'response' => [
             'status_code' => 200,
         ],
     ],

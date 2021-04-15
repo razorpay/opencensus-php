@@ -88,11 +88,9 @@ class Service extends Base\Service
 
         (new GatewayTerminalService)->callGatewayForTerminalEnableOrDisable($terminal, 'enable_terminal');
 
-        $terminal = (new Terminal\Core)->toggle($terminal, true);
-
         $terminal->setStatus(Terminal\Status::ACTIVATED);
 
-        $terminal->save();
+        $terminal = (new Terminal\Core)->toggle($terminal, true);
 
         return $terminal->toArrayPublic();
     }

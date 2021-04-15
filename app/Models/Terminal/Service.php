@@ -309,7 +309,7 @@ class Service extends Base\Service
              ->setEntityAndId($terminal->getEntity(), $terminal->getId())
              ->handle($original, $dirty);
 
-        (new Terminal\Core)->toggle($terminal, $toggle);
+        $terminal = (new Terminal\Core)->toggle($terminal, $toggle);
 
         return $terminal->toArrayAdmin();
     }
@@ -406,9 +406,20 @@ class Service extends Base\Service
             {
                 $terminalId = $terminal->getId();
 
-                $enabledBanks = $this->core()->getBanksForTerminal($terminal)["enabled"];
+                $oldBanksList = [];
 
-                $oldBanksList = array_keys($enabledBanks);
+                try
+                {
+                    $enabledBanks = $this->core()->getBanksForTerminal($terminal)["enabled"];
+
+                    $oldBanksList = array_keys($enabledBanks);
+                }
+                catch (\Throwable $t)
+                {
+                    $returnData[$terminalId] = $t->getMessage();
+
+                    continue;
+                }
 
                 $newBanksList = $this->getNewBankList($oldBanksList, $banks, $action);
 
@@ -417,7 +428,7 @@ class Service extends Base\Service
                 {
                     try
                     {
-                        $updatedEnabledBanks = $this->core()->setBanksForTerminal($terminal, $newBanksList);
+                        $updatedEnabledBanks = $this->core()->setBanksForTerminal($terminal, $newBanksList, false);
 
                         $returnData[$terminalId] = $updatedEnabledBanks["enabled"];
                     }
@@ -437,6 +448,21 @@ class Service extends Base\Service
                 {
                     $returnData[$id] = "Terminal doesn't exist";
                 }
+            }
+
+            $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+            $variantFlag = $this->app->razorx->getTreatment($ids[0], "TERMINAL_EDIT_PROXY", $mode);
+
+            if ($variantFlag === "on")
+            {
+                $input["banks"] = $banks;
+
+                $path = "v1/terminals/banks";
+
+                $response = $this->app['terminals_service']->proxyTerminalService($input, "PUT", $path);
+
+                return $response;
             }
 
             $returnData["success"] = true;

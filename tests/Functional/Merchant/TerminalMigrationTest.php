@@ -1991,43 +1991,6 @@ class TerminalMigrationTest extends TestCase
         $this->startTest();
     }
 
-    public function testToggleTerminalOnTerminalService()
-    {
-        $terminal = $this->fixtures->create('terminal',
-            ['enabled' => true]);
-
-        $tid = $terminal['id'];
-
-        $this->razorxValue = 'on';
-
-        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($tid) {
-
-            $data = [
-                "enabled" => false
-            ];
-            $this->assertStringEndsWith('/terminals/'.$tid, $path);
-
-            $data = $this->terminalRepository->getById($tid)->toArray();
-
-            $body = json_encode(['data' => $data]);
-
-            $response = new \Requests_Response;
-
-            $response->body = $body;
-
-            return $response;
-
-        }, 3);
-
-        $url = '/terminals/'.$tid.'/toggle';
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
-        $this->ba->adminAuth();
-
-        $this->startTest();
-    }
-
     public function testToggleTerminalFromTerminalService()
     {
         $terminal = $this->fixtures->create(
@@ -2060,6 +2023,8 @@ class TerminalMigrationTest extends TestCase
             }
 
             $data = $originalTerminal;
+
+            $data["enabled"] = false;
 
             $body = json_encode(['data' => $data]);
 
@@ -2097,6 +2062,200 @@ class TerminalMigrationTest extends TestCase
             }
             $this->assertEquals($originalTerminal[$key], $finalTerminal[$key]);
         }
+    }
+
+    public function testSetTerminalBanksOnTerminalService()
+    {
+        DB::table('terminals')->delete();
+
+        $terminal = $this->fixtures->create(
+            'terminal', [
+            'id'          => '1n25f6uN5S1Z5a',
+            'merchant_id' => '10000000000000',
+            'netbanking' => 1,
+            'gateway' => 'netbanking_sbi'
+        ]);
+
+        $data = [
+            'enabled' => [
+                'SBBJ' => 'State Bank of Bikaner and Jaipur',
+                'SBHY' => 'State Bank of Hyderabad',
+            ],
+            'disabled' => [
+                'SBIN' => 'State Bank of India',
+                'SBMY' => 'State Bank of Mysore',
+                'STBP' => 'State Bank of Patiala',
+                'SBTR' => 'State Bank of Travancore',
+            ]
+        ];
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx
+            ->method('getTreatment')
+            ->will($this->returnCallback(function ($mid, $feature, $mode)
+            {
+                if ($feature === 'TERMINAL_EDIT_PROXY')
+                {
+                    return 'on';
+                }
+
+                return 'off';
+            }));
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($terminal, $data) {
+
+            $response = new \Requests_Response;
+
+            $this->assertEquals("v1/terminals/". $terminal->getId() . "/banks", $path);
+
+            $body = json_encode(['data' => $data]);
+
+            $response->body = $body;
+
+            return $response;
+        }, 1);
+
+        $this->ba->adminAuth();
+
+        $this->testData[__FUNCTION__]['response']['content'] = $data;
+
+        $this->startTest();
+    }
+
+    public function testSetTerminalsBanksOnTerminalService()
+    {
+        DB::table('terminals')->delete();
+
+        $terminal = $this->fixtures->create(
+            'terminal', [
+            'id'          => '1n25f6uN5S1Z5a',
+            'merchant_id' => '10000000000000',
+            'netbanking' => 1,
+            'gateway' => 'netbanking_sbi'
+        ]);
+
+        $data = [
+            '1n25f6uN5S1Z5a'=> [
+                'SBIN' => 'State Bank of India',
+                'SBMY' => 'State Bank of Mysore',
+                'STBP' => 'State Bank of Patiala',
+                'SBTR' => 'State Bank of Travancore',
+            ],
+            'success' => true,
+        ];
+
+        $this->razorxValue = "on";
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($data) {
+
+            $response = new \Requests_Response;
+
+            $this->assertEquals("v1/terminals/banks", $path);
+
+            $body = json_encode(['data' => $data]);
+
+            $response->body = $body;
+
+            return $response;
+        }, 1);
+
+        $this->ba->adminAuth();
+
+        $this->testData[__FUNCTION__]['response']['content'] = $data;
+
+        $this->startTest();
+    }
+
+    public function testEnableTerminalOnTerminalService()
+    {
+        DB::table('terminals')->delete();
+
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'id'          => '1n25f6uN5S1Z5a',
+                'merchant_id' => '10000000000000',
+                'enabled'     => false,
+                'status'      => 'deactivated',
+                'gateway'     => 'worldline'
+            ]);
+
+        $this->razorxValue = 'on';
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) {
+
+            $data = $this->terminalRepository->findOrFail('1n25f6uN5S1Z5a')->toArrayWithPassword();
+
+            $data["enabled"] = true;
+
+            $data["status"] = "activated";
+
+            $body = json_encode(['data' => $data]);
+
+            $response = new \Requests_Response;
+
+            $response->body = $body;
+
+            return $response;
+
+        }, 1);
+
+        $this->app['basicauth']->setPartnerMerchantId('10000000000000');
+
+        $this->fixtures->merchant->addFeatures(FeatureConstants::TERMINAL_ONBOARDING);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testDisableTerminalOnTerminalService()
+    {
+        DB::table('terminals')->delete();
+
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'id'          => '1n25f6uN5S1Z5a',
+                'merchant_id' => '10000000000000',
+                'enabled'     => false,
+                'status'      => 'activated',
+                'gateway'     => 'worldline'
+            ]);
+
+        $this->razorxValue = 'on';
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) {
+
+            $data = $this->terminalRepository->findOrFail('1n25f6uN5S1Z5a')->toArrayWithPassword();
+
+            $data["enabled"] = false;
+
+            $data["status"] = "deactivated";
+
+            $body = json_encode(['data' => $data]);
+
+            $response = new \Requests_Response;
+
+            $response->body = $body;
+
+            return $response;
+
+        }, 1);
+
+        $this->app['basicauth']->setPartnerMerchantId('10000000000000');
+
+        $this->fixtures->merchant->addFeatures(FeatureConstants::TERMINAL_ONBOARDING);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
     }
 
     // tests for fetching all terminals of merchant in admin route
