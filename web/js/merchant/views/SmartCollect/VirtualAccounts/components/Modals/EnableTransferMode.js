@@ -39,6 +39,10 @@ import {
   fetchConfigForVirtualAccount,
 })
 export default class EnableTransferMode extends React.Component {
+  state = {
+    descriptorLength: 0,
+  };
+
   componentDidMount() {
     // Make call only when va_config is not available in store, or call failed last time when CreateVirtualAccount modal was opened
     if (!this.props.va_config || !Object.keys(this.props.va_config).length) {
@@ -118,11 +122,23 @@ export default class EnableTransferMode extends React.Component {
             class="Input--vTop no-margin  "
             label="Virtual UPI ID"
             name="descriptor"
-            description="If left blank, a UPI ID will be auto generated"
+            description={
+              <>
+                <div class="remaining-count">
+                  {this.state.descriptorLength}/{descriptorLimit_VPA}
+                </div>
+                <br />
+                If left blank, a UPI ID will be auto generated
+              </>
+            }
             validator={(val) => {
               if (!validateAlphanumericWithStrictLength(val, descriptorLimit_VPA)) {
                 return `Enter only Alphanumeric, ${descriptorLimit_VPA} characters`;
               }
+            }}
+            onChange={(e) => {
+              let val = e.target.value;
+              this.setState({ descriptorLength: val.length });
             }}
             style={getStyle_DescriptorInput_VPA(va_config)}
             addonBefore={
@@ -162,7 +178,15 @@ export default class EnableTransferMode extends React.Component {
             class="Input--vTop no-margin"
             label="Account Number"
             name="descriptor"
-            description="If left blank, an account number will be auto generated"
+            description={
+              <>
+                <div class="remaining-count">
+                  {this.state.descriptorLength}/{descriptorLimit_BankAccount}
+                </div>
+                <br />
+                If left blank, an account number will be auto generated
+              </>
+            }
             validator={(val) => {
               if (!validateAlphanumericWithMaxLength(val, descriptorLimit_BankAccount)) {
                 return `Enter only Alphanumeric, upto ${descriptorLimit_BankAccount} characters`;
@@ -171,6 +195,7 @@ export default class EnableTransferMode extends React.Component {
             style={getStyle_DescriptorInput_BankAccount(va_config)}
             onChange={(e) => {
               let val = e.target.value;
+              this.setState({ descriptorLength: val.length });
 
               if (validateAlphanumericWithMaxLength(val, descriptorLimit_BankAccount)) {
                 e.target.value = val.toUpperCase();
@@ -187,7 +212,7 @@ export default class EnableTransferMode extends React.Component {
     }
 
     return (
-      <div>
+      <div class="EnableTransferModeModal">
         <ModalHeader title={formTitle} onCloseClick={this.props.closeModal} />
         <div class="modal-body">
           <Form onSubmit={this.onSubmit} class="filters">
