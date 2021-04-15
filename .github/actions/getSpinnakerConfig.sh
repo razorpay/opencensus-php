@@ -7,7 +7,8 @@ get_spinnaker_config_value() {
   cookies="$(cat /tmp/cookies | awk '/SESSION/ { print $NF }')"
   SPINNAKER_HEADER="Cookie: SESSION=$cookies"
   if [ "$statusCode" = 200 ]; then
-     apiInstanceFromSpinnaker=$(curl --location --request GET "https://deploy-api.razorpay.com/executions?pipelineConfigIds=842e0854-3a08-4e67-9881-a9ea1d005b31&limit=1" \
+    # fetching the instance of latest running pipeline from Spinnaker. If no pipeline is running then default set to BVT-1
+     apiInstanceFromSpinnaker=$(curl --location --request GET "https://deploy-api.razorpay.com/executions?pipelineConfigIds=842e0854-3a08-4e67-9881-a9ea1d005b31&limit=1&statuses=RUNNING" \
       -H "${SPINNAKER_HEADER}" | jq --raw-output '.[].stages[0].outputs.instance')
   fi
   # Condition to check the current instance values tag
