@@ -7854,6 +7854,7 @@ class Route
             'read_options_by_ref_id',
             'recon_fetch_batchs_files_multiple',
             'recon_fetch_files_count',
+            'reconciliate',
             'reconciliate_via_batch_service',
             'refund_cancel_batch',
             'refund_create',
