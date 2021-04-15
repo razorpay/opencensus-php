@@ -347,6 +347,8 @@ class Mode extends Core
             self::NEFT,
             self::IFT,
             self::UPI,
+            self::AMAZONPAY,
+            self::CARD,
         ];
     }
 
