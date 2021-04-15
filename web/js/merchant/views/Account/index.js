@@ -14,7 +14,7 @@ export default function MyAccount() {
     <React.Fragment>
       <tabbed-container>
         <header id="myaccount-header">
-          <ShowWhen>
+          <ShowWhen additionalCondition={(user) => !user.isOrgAxis}>
             <NavLink to="/trustedbadge">Trusted Badge</NavLink>
           </ShowWhen>
 

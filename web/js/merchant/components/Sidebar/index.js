@@ -88,6 +88,10 @@ export default class Sidebar extends Component {
       routes.settings = '/webhooks';
     }
 
+    if (user.isOrgAxis) {
+      routes['account'] = '/profile';
+    }
+
     if (location.state && location.state.was404) {
       routes[this.prevRoute] = BASE_ROUTES[this.prevRoute]; // Assumption that these routes are always valid for any given role
     }

@@ -463,7 +463,11 @@ export default class Content extends Component {
             additionalCondition={(user) => user.isAllowedView('reports')}
           />
 
-          <ShowWhenRoute path="/trustedbadge" component={MyAccount} />
+          <ShowWhenRoute
+            path="/trustedbadge"
+            component={MyAccount}
+            additionalCondition={(user) => !user.isOrgAxis}
+          />
           <ShowWhenRoute
             path="/profile"
             component={MyAccount}
