@@ -717,13 +717,25 @@ class Base extends BaseProcessor
             {
                 $refundCreatedAtRange = array_column($refundData, RefundConstants::SCROOGE_CREATED_AT);
 
-                if ((max($refundCreatedAtRange) > $this->gatewayFile->getEnd()) or
-                    (min($refundCreatedAtRange) < $this->gatewayFile->getBegin()))
+                // For some gateways, refunds fetched are supposed to be in different time range than
+                // the time range of file..
+                // Ex- For NB sbi, its 8-8 when the file time is 12-12
+                $endTime   = $this->gatewayFile->getEnd();
+                $beginTime = $this->gatewayFile->getBegin();
+
+                $this->updateBeginAndEndIfRequired($beginTime, $endTime);
+
+                if ((max($refundCreatedAtRange) > $endTime) or
+                    (min($refundCreatedAtRange) < $beginTime))
                 {
                     throw new GatewayFileException(
                         ErrorCode::SERVER_ERROR_GATEWAY_FILE_LOGICAL_ERROR_REFUNDS_OUT_OF_RANGE,
                         [
-                            'id' => $this->gatewayFile->getId(),
+                            'id'                   => $this->gatewayFile->getId(),
+                            'max_time'             => max($refundCreatedAtRange),
+                            'min_time'             => min($refundCreatedAtRange),
+                            'updatedEndTime'       => $endTime,
+                            'updatedBeginTime'     => $beginTime
                         ]
                     );
                 }
