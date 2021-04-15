@@ -31,7 +31,7 @@ fix_permissions() {
 
 create_kafka_credentials_dir() {
   mkdir -p /opt/razorpay/certs/kafka
-  chmod 777 /opt/razorpay/certs/kafka
+  chmod 777 /opt/razorpay/certs -R
 }
 
 configure(){
