@@ -50,70 +50,75 @@ class BankAccount extends Base
 
     public function preProcessValidation()
     {
-        // TODO: right now we are fetching only completed FAV
-        // so, user can still send simultaneous request to send money to same account number
-        // will add mutex and validation over merchant, account_number, status later to solve this.
-        $result = $this->repo->fund_account_validation
-                       ->fetchCompletedFAVByAccountNumber(
-                           $this->account->getAccountNumber(),
-                           Carbon::now()->subMonth(1)->getTimestamp());
+        // If merchant is expecting utr, we can not return same utr, so need to hit fresh request
+        $isUtrExposeEnabled = $this->validation->merchant->isFeatureEnabled(MerchantFeature::EXPOSE_FA_VALIDATION_UTR);
 
-        $ifscCode = $this->account->getIfscCode();
-
-        $isDifferentIfsc = false;
-
-        //if with the same account number and different ifscs an fav is attempted
-        //adding a filter for ifsc on top of existing account number check to decide whether to pick from cache or hit fresh
-
-        if ($result != null)
+        if($isUtrExposeEnabled === false)
         {
-            $resultIfsc = $result->getAttribute(Constants::IFSC_CODE);
+            // TODO: right now we are fetching only completed FAV
+            // so, user can still send simultaneous request to send money to same account number
+            // will add mutex and validation over merchant, account_number, status later to solve this.
+            $result = $this->repo->fund_account_validation
+                ->fetchCompletedFAVByAccountNumber(
+                    $this->account->getAccountNumber(),
+                    Carbon::now()->subMonth(1)->getTimestamp());
 
-            $isDifferentIfsc = ($resultIfsc != $ifscCode);
+            $ifscCode = $this->account->getIfscCode();
 
-            if ($isDifferentIfsc === true) {
+            $isDifferentIfsc = false;
 
-                //logging in case of an instance when same account number and diff ifsc
-                $this->trace->info(
-                    TraceCode::FUND_ACCOUNT_VALIDATE_WITH_SAME_ACC_NUMBER_DIFF_IFSC,
-                    [
-                        'existing_ifsc'  => $resultIfsc,
-                        'id'             => $result->getId(),
-                        'requested_ifsc' => $ifscCode
-                    ]
-                );
-            }
-        }
+            //if with the same account number and different ifscs an fav is attempted
+            //adding a filter for ifsc on top of existing account number check to decide whether to pick from cache or hit fresh
 
-        // If merchant is expecting utr, we can not return same utr, so no retry
-        // Now, If same account detail was already processed and it is active account
-        // copy and return
-        //also when there is a merger in banks the ifsc changes
-        // if the ifsc is in the list of old ifsc mappings then we will do a fresh fav rather than retruning the same response
-
-        $retryRequired = $this->isRetryRequired($ifscCode);
-
-        if (($retryRequired === false) and
-            (($result != null) and
-            ($isDifferentIfsc === false)) and
-            ($result->getAccountStatus() === AccountStatus::ACTIVE))
-        {
-
-            $beneficiaryName = $result->getRegisteredName() ?? '';
-
-            // if beneficiary Name exist then only copy details
-            // Also, not checking for empty because older beneficiary Names
-            // can still have names from $benificiaryNameNotAllowedArray
-            if ($this->isBeneficiaryNamePresent($beneficiaryName) === true)
+            if ($result != null)
             {
-                $this->trace->info(
-                    TraceCode::FUND_ACCOUNT_ALREADY_VALIDATED,
-                    $result->toArrayPublic()
-                );
+                $resultIfsc = $result->getAttribute(Constants::IFSC_CODE);
 
-                $this->copyFundAccountDetailsAndMarkAsCompleted($result);
+                $isDifferentIfsc = ($resultIfsc != $ifscCode);
 
-                return;
+                if ($isDifferentIfsc === true)
+                {
+                    //logging in case of an instance when same account number and diff ifsc
+                    $this->trace->info(
+                        TraceCode::FUND_ACCOUNT_VALIDATE_WITH_SAME_ACC_NUMBER_DIFF_IFSC,
+                        [
+                            'existing_ifsc' => $resultIfsc,
+                            'id' => $result->getId(),
+                            'requested_ifsc' => $ifscCode
+                        ]
+                    );
+                }
+            }
+
+            // Now, If same account detail was already processed and it is active account
+            // copy and return
+            //also when there is a merger in banks the ifsc changes
+            // if the ifsc is in the list of old ifsc mappings then we will do a fresh fav rather than retruning the same response
+
+            $retryRequired = $this->isRetryRequired($ifscCode);
+
+            if (($retryRequired === false) and
+                (($result != null) and
+                ($isDifferentIfsc === false)) and
+                ($result->getAccountStatus() === AccountStatus::ACTIVE))
+            {
+
+                $beneficiaryName = $result->getRegisteredName() ?? '';
+
+                // if beneficiary Name exist then only copy details
+                // Also, not checking for empty because older beneficiary Names
+                // can still have names from $benificiaryNameNotAllowedArray
+                if ($this->isBeneficiaryNamePresent($beneficiaryName) === true)
+                {
+                    $this->trace->info(
+                        TraceCode::FUND_ACCOUNT_ALREADY_VALIDATED,
+                        $result->toArrayPublic()
+                    );
+
+                    $this->copyFundAccountDetailsAndMarkAsCompleted($result);
+
+                    return;
+                }
             }
         }
 
@@ -134,10 +139,7 @@ class BankAccount extends Base
     {
         $isRetryRequired = false;
 
-        $isUtrExposeEnabled = $this->validation->merchant->isFeatureEnabled(MerchantFeature::EXPOSE_FA_VALIDATION_UTR);
-
-        if ((array_key_exists($ifsc, OldNewIfscMapping::$oldToNewIfscMapping) === true) or
-            ($isUtrExposeEnabled === true))
+        if ((array_key_exists($ifsc, OldNewIfscMapping::$oldToNewIfscMapping) === true))
         {
             $isRetryRequired = true;
         }
@@ -145,8 +147,7 @@ class BankAccount extends Base
         $this->trace->info(
             TraceCode::FUND_ACCOUNT_VALIDATION_INVALIDATE_CACHE,
             [
-                'is_retry'              => $isRetryRequired,
-                'is_utr_expose_feature' => $isUtrExposeEnabled
+                'is_retry'              => $isRetryRequired
             ]
         );
 
