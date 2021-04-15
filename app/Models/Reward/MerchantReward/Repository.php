@@ -24,7 +24,7 @@ class Repository extends Base\Repository
 
     public function fetchAvailableMerchantRewardByMerchantIdAnRewardId($merchantId, $rewardId)
     {
-        $query = $this->newQuery()
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
             ->where(Entity::MERCHANT_ID, '=', $merchantId)
             ->where(Entity::REWARD_ID, '=', $rewardId)
             ->where(Entity::STATUS, '=', Entity::AVAILABLE);
@@ -32,9 +32,10 @@ class Repository extends Base\Repository
         return $query->first();
     }
 
+
     public function fetchLiveMerchantRewardByMerchantIdAnRewardId($merchantId, $rewardId)
     {
-        $query = $this->newQuery()
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
             ->where(Entity::MERCHANT_ID, '=', $merchantId)
             ->where(Entity::REWARD_ID, '=', $rewardId)
             ->whereIn(Entity::STATUS, [Entity::LIVE, Entity::QUEUE]);
@@ -50,7 +51,7 @@ class Repository extends Base\Repository
 
         $rewardId = $this->repo->reward->dbColumn(RewardEntity::ID);
 
-        $query = $this->newQuery()
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
             ->select(Table::MERCHANT_REWARD.'.*')
             ->join(Table::REWARD, $merchantRewardId, '=', $rewardId)
             ->where(RewardEntity::ENDS_AT, '<=', $now)
@@ -61,7 +62,7 @@ class Repository extends Base\Repository
 
     public function fetchMerchantRewardByRewardId($rewardId)
     {
-        $query = $this->newQuery()
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
             ->where(Entity::REWARD_ID, '=', $rewardId);
 
         return $query->get();
@@ -69,15 +70,17 @@ class Repository extends Base\Repository
 
     public function fetchMerchantRewardByMerchantId($merchantId)
     {
-        $query = $this->newQuery()
-            ->where(Entity::MERCHANT_ID, '=', $merchantId);
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->whereIn(Entity::STATUS, [Entity::LIVE, Entity::QUEUE, Entity::AVAILABLE]);
+
 
         return $query->get();
     }
 
     public function fetchCountOfLiveRewardByMerchantId($merchantId)
     {
-        $query = $this->newQuery()
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
             ->where(Entity::MERCHANT_ID, '=', $merchantId)
             ->where(Entity::STATUS, '=', Entity::LIVE);
 
@@ -92,15 +95,15 @@ class Repository extends Base\Repository
 
         $rewardId = $this->repo->reward->dbColumn(RewardEntity::ID);
 
-        $query = $this->newQuery()
-                      ->select(Table::MERCHANT_REWARD.'.*')
-                      ->join(Table::REWARD, $merchantRewardId, '=', $rewardId)
-                      ->where(Entity::MERCHANT_ID, '=', $merchantId)
-                      ->where(Entity::STATUS, '=', Entity::QUEUE)
-                      ->where(RewardEntity::STARTS_AT, '<=', $now)
-                      ->where(RewardEntity::ENDS_AT, '>=', $now)
-                      ->orderBy(RewardEntity::STARTS_AT)
-                      ->orderBy(Entity::ACCEPTED_AT);
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+            ->select(Table::MERCHANT_REWARD.'.*')
+            ->join(Table::REWARD, $merchantRewardId, '=', $rewardId)
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->where(Entity::STATUS, '=', Entity::QUEUE)
+            ->where(RewardEntity::STARTS_AT, '<=', $now)
+            ->where(RewardEntity::ENDS_AT, '>=', $now)
+            ->orderBy(RewardEntity::STARTS_AT)
+            ->orderBy(Entity::ACCEPTED_AT);
 
         return $query->first();
     }
@@ -115,25 +118,42 @@ class Repository extends Base\Repository
 
     public function fetchLiveRewardByMerchantId($merchantId)
     {
-        $query = $this->newQuery()
-            ->where(Entity::MERCHANT_ID, '=', $merchantId)
-            ->where(Entity::STATUS, '=', Entity::LIVE)
-            ->limit(Entity::MAX_LIVE_REWARD_ALLOWED);
 
-        return $query->get();
+        $now = Carbon::now()->getTimestamp();
+
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+            ->select(Table::REWARD.'.*')
+            ->from(TABLE::REWARD)
+            ->where(RewardEntity::ENDS_AT, '>', $now)
+            ->whereIn(RewardEntity::ID, function($query) use($now, $merchantId) {
+                $query->select(Table::MERCHANT_REWARD.'.'.(Entity::REWARD_ID))
+                    ->from(TABLE::MERCHANT_REWARD)
+                    ->where(Entity::MERCHANT_ID,'=',$merchantId)
+                    ->where(Entity::STATUS, '=', 'live') ;
+            });
+
+        return $query->get()->toArray();
     }
 
     public function fetchQueueMerchantRewards()
     {
-        $query = $this->newQuery()
-                      ->where(Entity::STATUS, '=', Entity::QUEUE);
+        $now = Carbon::now()->getTimestamp();
+
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+            ->select(Table::MERCHANT_REWARD.'.*')
+            ->where(Entity::STATUS, '=', Entity::QUEUE)
+            ->whereIn(Entity::REWARD_ID, function($query) use($now) {
+                $query->select('rewards.id')
+                      ->from(TABLE::REWARD)
+                      ->where(RewardEntity::STARTS_AT, '<=', $now) ;
+            });
 
         return $query->get();
     }
 
     public function fetchLiveMerchantRewardByRewardIdAndMerchantId($rewardId, $merchantId)
     {
-        $query = $this->newQuery()
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
             ->where(Entity::REWARD_ID, '=', $rewardId)
             ->where(Entity::MERCHANT_ID, '=', $merchantId)
             ->where(Entity::STATUS, '=', Entity::LIVE);
@@ -143,7 +163,7 @@ class Repository extends Base\Repository
 
     public function fetchMerchantIdsByRewardId(string $rewardId)
     {
-        $query = $this->newQuery()
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
             ->where(Entity::REWARD_ID, '=', $rewardId);
         return $query->get();
     }
@@ -158,7 +178,7 @@ class Repository extends Base\Repository
 
     public function fetchMerchantRewardByMerchantIdAndRewardId($merchantId, $rewardId)
     {
-        $query = $this->newQuery()
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
             ->where(Entity::MERCHANT_ID, '=', $merchantId)
             ->where(Entity::REWARD_ID, '=', $rewardId);
             return $query->first();

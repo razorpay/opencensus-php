@@ -5663,24 +5663,26 @@ class Service extends Base\Service
 
     public function getRewardsForCheckout()
     {
-        $merchantRewards = $this->repo->merchant_reward->fetchLiveRewardByMerchantId($this->merchant->getId());
+        $rewards = $this->repo->merchant_reward->fetchLiveRewardByMerchantId($this->merchant->getId());
 
         $response = [];
 
-        $now = $now = Carbon::now()->getTimestamp();
-
-        foreach ($merchantRewards as $merchantReward)
+        if(empty($rewards) === false)
         {
-            $reward = $this->repo->reward->find($merchantReward->getRewardId());
+            $rewardKey = array_rand($rewards);
 
-            if ($reward->getEndsAt() >= $now)
+            if(isset($rewardKey) === true)
             {
+                $reward = $rewards[$rewardKey];
+
                 $response [] = [
-                    'reward_id' => $reward->getPublicId(),
-                    'logo'      => $reward->logo,
-                    'name'      => $reward->name,
+                    'reward_id' => "reward_".$reward['id'],
+                    'logo'      => $reward['logo'],
+                    'name'      => $reward['name'],
+                    'brand_name' => $reward['brand_name'],
+
                 ];
-            }
+            };
         }
 
         return $response;

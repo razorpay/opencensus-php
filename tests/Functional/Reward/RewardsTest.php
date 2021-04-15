@@ -94,7 +94,7 @@ class RewardsTest extends TestCase
         $this->startTest();
     }
 
-    public function testRewardMovingToQueue()
+    public function testRewardMovingToLiveOnActivate()
     {
         $this->ba->adminAuth();
 
@@ -132,60 +132,7 @@ class RewardsTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request, $callback);
 
-        $this->assertEquals('queue', $response['status']);
-    }
-
-    public function testRewardMovingFromQueueToLive()
-    {
-        $this->markTestSkipped("Skipping the test until 25-01-2021: manual testing done");
-        $this->ba->adminAuth();
-
-        $reward = $this->fixtures->create('reward');
-
-        $this->fixtures->create('merchant_reward', ['reward_id' => $reward->id, 'status' => 'live',
-            'activated_at' => Carbon::today()->getTimestamp(), 'accepted_at' => Carbon::today()->getTimestamp()]);
-
-        $reward2 = $this->fixtures->create('reward', ['name' => 'Test Reward 2']);
-
-        $this->fixtures->create('merchant_reward', ['reward_id' => $reward2->id, 'status' => 'live',
-            'activated_at' => Carbon::today()->getTimestamp(), 'accepted_at' => Carbon::today()->getTimestamp()]);
-
-        $reward3 = $this->fixtures->create('reward', ['name' => 'Test Reward 3']);
-
-        $this->fixtures->create('merchant_reward', ['reward_id' => $reward3->id, 'status' => 'live',
-            'activated_at' => Carbon::today()->getTimestamp(), 'accepted_at' => Carbon::today()->getTimestamp()]);
-
-        $reward4 = $this->fixtures->create('reward', ['name' => 'Test Reward 4']);
-
-        $this->fixtures->create('merchant_reward', ['reward_id' => $reward4->id, 'status' => 'queue',
-            'accepted_at' => Carbon::today()->getTimestamp()]);
-
-        $this->ba->proxyAuth();
-
-        $deactivateContent = [
-            'reward_id' => $reward3->getPublicId(),
-            'activate'  => 0,
-        ];
-
-        $request = [
-            'method' => 'PATCH',
-            'url' => '/rewards',
-            'content' => $deactivateContent
-        ];
-
-        $response = $this->makeRequestAndGetContent($request, $callback);
-
-        $this->assertEquals('available', $response['status']);
-
-        $fetchRequest = [
-            'method' => 'GET',
-            'url' => '/rewards',
-            'content' => []
-        ];
-
-        $response = $this->makeRequestAndGetContent($fetchRequest, $callback);
-
-        $this->assertEquals('live', $response[3]['status']);
+        $this->assertEquals('live', $response['status']);
     }
 
     public function testDeleteReward()
@@ -231,7 +178,7 @@ class RewardsTest extends TestCase
 
     public function testExpireRewardCron()
     {
-        $this->markTestSkipped("Skipping the test until 25-01-2021: manual testing done");
+        //$this->markTestSkipped("Skipping the test until 25-01-2021: manual testing done");
         $callback = null;
 
         $this->ba->cronAuth();
@@ -242,9 +189,30 @@ class RewardsTest extends TestCase
         $expiredMerchantReward = $this->fixtures->create('merchant_reward', ['reward_id' => $expiredReward->id, 'status' => 'live',
             'activated_at' => Carbon::today()->getTimestamp(), 'accepted_at' => Carbon::today()->getTimestamp()]);
 
+        $reward1 = $this->fixtures->create('reward', ['name' => 'Test Reward 1']);
+
+        $merchantReward1 = $this->fixtures->create('merchant_reward', ['reward_id' => $reward1->id, 'status' => 'queue',
+            'accepted_at' => Carbon::today()->getTimestamp()]);
+
+        $reward2 = $this->fixtures->create('reward', ['name' => 'Test Reward 2']);
+
+        $merchantReward2 = $this->fixtures->create('merchant_reward', ['reward_id' => $reward2->id, 'status' => 'queue',
+            'accepted_at' => Carbon::today()->getTimestamp()]);
+
+
+        $reward3 = $this->fixtures->create('reward', ['name' => 'Test Reward 3']);
+
+        $merchantReward3 = $this->fixtures->create('merchant_reward', ['reward_id' => $reward3->id, 'status' => 'queue',
+            'accepted_at' => Carbon::today()->getTimestamp()]);
+
         $reward4 = $this->fixtures->create('reward', ['name' => 'Test Reward 4']);
 
-        $queueMerchantReward = $this->fixtures->create('merchant_reward', ['reward_id' => $reward4->id, 'status' => 'queue',
+        $merchantReward4 = $this->fixtures->create('merchant_reward', ['reward_id' => $reward4->id, 'status' => 'queue',
+            'accepted_at' => Carbon::today()->getTimestamp()]);
+
+        $reward5 = $this->fixtures->create('reward', ['name' => 'Test Reward 5', 'starts_at'=> Carbon::tomorrow()->getTimestamp()]);
+
+        $merchantReward5 = $this->fixtures->create('merchant_reward', ['reward_id' => $reward5->id, 'status' => 'queue',
             'accepted_at' => Carbon::today()->getTimestamp()]);
 
         $request = array(
@@ -265,9 +233,17 @@ class RewardsTest extends TestCase
 
         $fetchResponse = $this->makeRequestAndGetContent($fetchRequest, $callback);
 
-        $this->assertEquals('expired', $fetchResponse[0]['status']);
+        $this->assertEquals('live', $fetchResponse[0]['status']);
 
         $this->assertEquals('live', $fetchResponse[1]['status']);
+
+        $this->assertEquals('live', $fetchResponse[2]['status']);
+
+        $this->assertEquals('live', $fetchResponse[3]['status']);
+
+        $this->assertEquals('queue', $fetchResponse[4]['status']);
+
+
     }
 
     public function testGetNullAdvertiserLogo()

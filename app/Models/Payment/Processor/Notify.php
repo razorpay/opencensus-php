@@ -517,6 +517,7 @@ class Notify
                         'flat_cashback' => $reward->getFlatCashback(),
                         'max_cashback'  => $reward->getMaxCashback(),
                         'min_amount'    => $reward->getMinAmount(),
+                        'brand_name'    => $reward->getBrandName(),
                     );
                 }
             }

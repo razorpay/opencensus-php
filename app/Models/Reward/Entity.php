@@ -197,6 +197,6 @@ class Entity extends Base\PublicEntity
 
     public function getBrandName()
     {
-        return $this->getAttribute((self::BRAND_NAME));
+        return $this->getAttribute(self::BRAND_NAME);
     }
 }

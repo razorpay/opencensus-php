@@ -483,45 +483,39 @@
                                   style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
                                   <div class="card merchant-highlight informative"
                                     style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 25px; padding-right: 25px; border-radius: 2px; background-color: #FFFFFF; border-top-width: 0px; border-top-style: solid; padding-top: 20px; padding-bottom: 20px; border-top-color: {{ $merchant['brand_color'] }}; margin-top: 8px;">
-                                    <div style="text-align: center; font-size: 15px; font-weight: 900; color: #525A76;">
-                                      Rewards from various brands successfully unlocked!
-                                    </div>
-                                    <div style="text-align: center; font-size: 15px; color: #525A76; margin-top: 7px;">
-                                      Use Coupon Codes below to avail discounts.
-                                    </div>
-                                    <div style="display: flex; justify-content: space-evenly; margin-top: 30px;">
-                                      
+
                                       @foreach ($rewards as $reward)
-                                        <div style="display: inline-block; width: 112px;">
-                                          <a href="https://api.razorpay.com/v1/reward/{{$reward['id']}}/{{$payment['id']}}/terms" target="_blank" style="text-decoration: none;">
-                                            <div style="height: 136px; background: linear-gradient(199.72deg, #FFFFFF 1.23%, #F8F8F8 99.45%); box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.18); border-radius: 5px;">
-                                              <div>
-                                                <img src="https://cdn.razorpay.com/static/assets/email/ic-navigate.png"
-                                                  style="height: 13px; position: relative; left: 95px; padding-top: 5px; padding-right: 5px;" />
-                                              </div>
-                                              <div style="padding: 22px 38px 22px 37px;">
-                                                @isset($reward["logo"])
-                                                  <img src="{{$reward['logo']}}" title="logo" style="height: 36px; width: 36px;" />
-                                                @endisset
-                                              </div>
-                                              <div style="border: 0.6px dashed #CECECE; border-radius: 1px; opacity: 0.5; box-sizing: border-box;"></div>
-                                              <div style="text-align: center; padding-top: 10px; text-transform: uppercase; color: #2C54E3;">
-                                                {{$reward["coupon_code"]}}
-                                              </div>
+                                        <div style="text-align: center; font-size: 15px; font-weight: 900; color: #525A76;">
+                                            You have successfully unlocked reward from {{$reward['brand_name']}}
+                                        </div>
+                                        <div style="text-align: center; font-size: 15px; color: #525A76; margin-top: 7px;">
+                                            Copy & Use Coupon Codes below to avail the discount
+                                        </div>
+                                        <div style="margin-top: 30px; text-align: center;">
+                                            <div style="width: 132px; height: 125px; margin: auto; text-align: center; background: linear-gradient(222.44deg, #F0F0F0 3.74%, #FBFBFB 98.79%); box-shadow: 0px 6px 10px rgb(0 0 0 / 20%); border-radius: 3px;">
+                                                <div style="margin-bottom: 11px; padding-top: 6px;">
+                                                    {{$reward['brand_name']}}
+                                                </div>
+                                                <div style="margin-top: 6px; padding-left: 30px; padding-right: 30px; height: 72px;">
+                                                    <img src="{{$reward['logo']}}" />
+                                                </div>
+                                                <img src="https://cdn.razorpay.com/static/assets/email/reward_frame.png" style="position: relative; top: -102px;" />
                                             </div>
-                                          </a>
-                                          <div style="color: #525A76; margin-top: 15px; text-align: center; line-height: 17px;">
-                                            {{$reward["display_text"]}}
-                                          </div>
-                                          <div style="text-align: center; font-size: 8px; line-height: 17px; text-shadow: 2px 3px 12px rgba(0, 0, 0, 0.1);">
-                                            <a href="https://api.razorpay.com/v1/reward/{{$reward['id']}}/{{$payment['id']}}/terms" style="color: #525A76; text-decoration: underline; opacity: 0.5;">
-                                              View T&C
+                                            <div>
+                                                <div style="font-weight: 900; font-size: 25px; color: #2F58E4; line-height: 138%; margin-top: 25px;">
+                                                    {{$reward["coupon_code"]}}
+                                                </div>
+                                                <div style="color: #363636; margin: 8px 70px; font-weight: 900; font-size: 14px; line-height: 138%;">
+                                                    {{$reward["name"]}}
+                                                </div>
+                                            </div>
+                                            <a href="https://api.razorpay.com/v1/reward/{{$reward['id']}}/{{$payment['id']}}/terms" style="color: #3F71D7; font-weight: 500; font-size: 15px; line-height: 20px;">
+                                                View T&C
                                             </a>
-                                          </div>
                                         </div>
                                       @endforeach
 
-                                    </div>
+
                                   </div>
                                 </div>
 

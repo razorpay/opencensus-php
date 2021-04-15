@@ -10,7 +10,6 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Reward\Entity as RewardEntity;
 
-
 class Core extends Base\Core
 {
     /**
@@ -147,6 +146,7 @@ class Core extends Base\Core
                     $this->repo->merchant_reward->update($merchantReward, $columnsToUpdate);
 
                     $this->moveQueueRewardToLive($merchantReward->getMerchantId());
+
                 }
 
                 $reward = $this->repo->reward->find($rewardId);
@@ -183,10 +183,8 @@ class Core extends Base\Core
 
         $columnsToUpdate = [];
 
-        $liveRewardCount = $this->repo->merchant_reward->fetchCountOfLiveRewardByMerchantId($merchantId);
 
-        if (($liveRewardCount >= Entity::MAX_LIVE_REWARD_ALLOWED) or
-            ($reward->getStartsAt() > $now))
+        if ($reward->getStartsAt() > $now)
         {
             $columnsToUpdate[Entity::STATUS] = Entity::QUEUE;
 
@@ -259,7 +257,7 @@ class Core extends Base\Core
 
     /**
      * @param $merchantId
-     * @param int $now
+     * @param $rewardId
      */
     public function moveQueueRewardToLive($merchantId): void
     {
@@ -346,14 +344,11 @@ class Core extends Base\Core
                     ['reward_id' => $queueMerchantReward->getRewardId(),
                         'merchant_id' => $queueMerchantReward->getMerchantId()]);
 
-                $liveRewardCount = $this->repo->merchant_reward->fetchCountOfLiveRewardByMerchantId(
-                    $queueMerchantReward->getMerchantId());
 
-                if ($liveRewardCount < Entity::MAX_LIVE_REWARD_ALLOWED) {
-                    $this->moveQueueRewardToLive($queueMerchantReward->getMerchantId());
+                $this->moveQueueRewardToLive($queueMerchantReward->getMerchantId());
 
-                    $successQueueToLiveCountReward += 1;
-                }
+                $successQueueToLiveCountReward += 1;
+
             } catch (\Exception $e) {
                 $this->trace->traceException($e);
 
