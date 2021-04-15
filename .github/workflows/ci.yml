@@ -1,0 +1,160 @@
+name: CI
+on: [ push ]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        php: [ 7.0, 7.1, 7.2, 7.3, 7.4 ]
+
+    runs-on: ubuntu-latest
+
+    env:
+      TEST_PHP_ARGS: -q
+      REPORT_EXIT_STATUS: 1
+      RUN_EXTENSION_TESTS: 1
+      SUDO_CMD: "sudo"
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "${{ matrix.php }}"
+
+      - name: Install build tools
+        run: |
+          autoconf -V || \
+            (
+              $SUDO_CMD apt-get update -y && \
+              $SUDO_CMD apt-get install -y -q --no-install-recommends \
+                build-essential \
+                g++ \
+                gcc \
+                libc-dev \
+                make \
+                autoconf \
+                git \
+                unzip
+            )
+
+      - name: Extension unit tests
+        run: |
+          if [ $RUN_EXTENSION_TESTS -eq "1" ]; then
+            pushd ext
+            phpize
+            ./configure --enable-opencensus
+            make test || ((find . -name '*.diff' | xargs cat) && false)
+            $SUDO_CMD make install
+            popd
+          else
+            echo "Skipping extension tests"
+          fi
+
+      - name: Cache Dependency
+        uses: actions/cache@v2
+        with:
+          path: ./vendor
+          key: v3-dependencies-${{ matrix.php }}-${{ hashFiles('composer.json') }}
+
+      - name: Install composer packages
+        run: composer install -n --prefer-dist
+
+      - name: Enable E_ALL error reporting for strict testing
+        run: $SUDO_CMD cp config/php.ini /usr/local/etc/php
+
+      - name: PHP Code Style
+        run: vendor/bin/phpcs --standard=./phpcs.xml
+
+      - name: PHP unit tests
+        run: vendor/bin/phpunit
+
+      - name: PHP unit tests with extension
+        run: |
+          if [ $RUN_EXTENSION_TESTS -eq "1" ]; then
+            php -d extension=opencensus.so vendor/bin/phpunit
+          else
+            echo "Skipping units tests with extension"
+          fi
+
+  integration:
+    runs-on: ubuntu-latest
+    env:
+      DB_HOST: 127.0.0.1
+      DB_USERNAME: mysql
+      DB_PASSWORD: mysql
+      DB_DATABASE: mysqldb
+      TEST_HOST: localhost
+      TEST_PORT: 9999
+      TEST_URL: http://localhost:9999
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 7.2
+          extensions: memcached, pdo_mysql, mysqli, pdo_pgsql, pcntl
+          ini-values: extension=opencensus.so
+
+      - uses: niden/actions-memcached@v7
+
+      - name: Install opencensus extension
+        run: |
+          cd ext
+          phpize
+          ./configure --enable-opencensus
+          sudo make install
+
+      - name: Install memcached extension
+        run: |
+          sudo apt-get install -y -q --no-install-recommends \
+            libmemcached11 libmemcached-dev zlib1g-dev zlib1g
+
+      - name: Curl test
+        run: tests/integration/curl/test.sh
+
+      - name: Wordpress test
+        run: tests/integration/wordpress/test.sh
+
+      - name: Laravel test
+        run: tests/integration/laravel/test.sh
+
+      - name: Guzzle 5 test
+        run: tests/integration/guzzle5/test.sh
+
+      - name: Guzzle 6 test
+        run: tests/integration/guzzle6/test.sh
+
+      - name: Memcached test
+        run: tests/integration/memcached/test.sh
+
+      - name: Pgsql test
+        run: tests/integration/pgsql/test.sh
+
+      - name: Symfony 4 test
+        run: tests/integration/symfony4/test.sh
+        env:
+          DATABASE_URL: mysql://mysql:mysql@127.0.0.1:3306/mysqldb
+
+    services:
+      mysql:
+        image: mysql:5.7
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_USER: mysql
+          MYSQL_PASSWORD: mysql
+          MYSQL_DATABASE: mysqldb
+          MYSQL_RANDOM_ROOT_PASSWORD: yes
+          MYSQL_ALLOW_EMPTY_PASSWORD: 1
+      postgres:
+        image: postgres:9.6
+        env:
+          POSTGRES_PASSWORD: pgsql
+          POSTGRES_USER: postgres
+        ports:
+          - 5432:5432

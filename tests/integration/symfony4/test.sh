@@ -18,35 +18,23 @@ set -e
 pushd $(dirname ${BASH_SOURCE[0]})
 source ../setup_test_repo.sh
 
-if [[ ! -d symfony_test ]]; then
-    composer create-project --prefer-dist symfony/skeleton symfony_test ^4.0
-    cp -r src tests phpunit.xml.dist symfony_test/
-fi
+composer create-project --prefer-dist symfony/skeleton symfony_test ^4.0
+cp -r src tests phpunit.xml.dist symfony_test/
 
 pushd symfony_test
 
-composer require --no-interaction symfony/orm-pack
-composer require --no-interaction --dev phpunit guzzlehttp/guzzle:~6.0
+composer require symfony/orm-pack
 
-if [[ ! -z ${CIRCLE_PR_NUMBER} ]]; then
-    composer config repositories.opencensus git ${REPO}
-    composer remove symfony/flex # Necessary so that we can work with branches that have slash in them
-    composer config repositories.opencensus git ${REPO}
-    composer require --no-interaction opencensus/opencensus:dev-${BRANCH}
-else
-    mkdir -p vendor/opencensus/opencensus
-    cp -r ../../../../src/ opencensus
-    jq '.["autoload"]["psr-4"] += {"OpenCensus\\": "opencensus/"}' composer.json > composer.test
-    mv composer.test composer.json
-    composer dumpautoload
-fi
+composer config repositories.opencensus git ${REPO}
+composer require opencensus/opencensus:dev-${BRANCH}
+composer require --dev phpunit/phpunit:^7.0 guzzlehttp/guzzle:~6.0
 
-bin/console doctrine:migrations:migrate -n
+bin/console doctrine:migrations:migrate -n --allow-no-migration
 
 echo "Running PHP server at ${TEST_HOST}:${TEST_PORT}"
 php -S ${TEST_HOST}:${TEST_PORT} -t public &
 
-vendor/bin/simple-phpunit
+vendor/bin/phpunit
 
 # Clean up running PHP processes
 function cleanup {

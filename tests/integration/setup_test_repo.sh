@@ -15,14 +15,5 @@
 
 # A script for installing necessary software on CI systems.
 
-if [ ! -z "${CIRCLE_PR_NUMBER}" ]; then
-    PR_INFO=$(curl "https://api.github.com/repos/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pulls/${CIRCLE_PR_NUMBER}")
-    export BRANCH=$(echo $PR_INFO | jq -r .head.ref)
-    export REPO=$(echo $PR_INFO | jq -r .head.repo.html_url)
-elif [ ! -z "${CIRCLE_BRANCH}" ]; then
-    export BRANCH=$CIRCLE_BRANCH
-    export REPO=$CIRCLE_REPOSITORY_URL
-else
-    export BRANCH="master"
-    export REPO="https://github.com/census-instrumentation/opencensus-php"
-fi
+export BRANCH=$(echo ${GITHUB_REF#refs/heads/})
+export REPO="https://github.com/razorpay/opencensus-php"

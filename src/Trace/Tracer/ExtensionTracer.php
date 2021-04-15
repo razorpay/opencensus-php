@@ -55,9 +55,9 @@ class ExtensionTracer implements TracerInterface, SpanEventHandlerInterface
      * Create a new ExtensionTracer
      *
      * @param SpanContext|null $initialContext The starting span context.
-     * @param null $exporter.
+     * @param null $exporter
      * @param array $options
-     *      @type int span_buffer_limit, overrides the default span buffer limit
+     * @type int span_buffer_limit, overrides the default span buffer limit
      */
     public function __construct(SpanContext $initialContext = null, $exporter = null, $options = [])
     {
@@ -68,17 +68,16 @@ class ExtensionTracer implements TracerInterface, SpanEventHandlerInterface
         $this->exporter = $exporter;
 
         // set span limit from options if present
-        if (isset($options['span_buffer_limit'])){
+        if (isset($options['span_buffer_limit'])) {
             $this->spanBufferLimit = $options['span_buffer_limit'];
         }
-
     }
 
     public function inSpan(array $spanOptions, callable $callable, array $arguments = [])
     {
         $span = $this->startSpan($spanOptions + [
-            'sameProcessAsParentSpan' => $this->hasSpans
-        ]);
+                'sameProcessAsParentSpan' => $this->hasSpans
+            ]);
         $scope = $this->withSpan($span);
         try {
             return call_user_func_array($callable, $arguments);
@@ -138,14 +137,13 @@ class ExtensionTracer implements TracerInterface, SpanEventHandlerInterface
     }
 
     /* This checks the numbet of spans in memory and if the count is more than the set limit, it exports all
-    the closed span present in memory, to free up the memory. We are only exporting closed spans as only those spans use is over,
-    the open ones stop time along with other attributes might not have been set yet.*/
+    the closed span present in memory, to free up the memory. We are only exporting closed spans as only those
+    spans use is over, the open ones stop time along with other attributes might not have been set yet.*/
     public function checkSpanLimit()
     {
         $count = opencensus_trace_count();
 
         if ($count >= $this->spanBufferLimit) {
-
             $closedSpans = [];
             $spans = $this->spans();
 
