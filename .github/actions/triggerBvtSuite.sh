@@ -4,7 +4,7 @@ run_bvt_suite_when_approved() {
   PRNumber=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
   commitId=$(jq --raw-output .pull_request.head.sha "$GITHUB_EVENT_PATH")
   skipRoast="false"
-  if [ "${SKIP_ROAST}" = "true" ] || [ "${HOTFIX}" = "true" ] || [ "${REVERT}" = "true" ]; then
+  if [ "${HOTFIX}" = "true" ] || [ "${REVERT}" = "true" ]; then
     skipRoast="true"
   fi
   roastPRCommit=${ROAST_PR_COMMIT}
