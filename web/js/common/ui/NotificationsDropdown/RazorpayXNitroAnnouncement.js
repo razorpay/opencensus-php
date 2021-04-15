@@ -14,6 +14,7 @@ import { getCookie } from '../../utils/cookies';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { updateUser } from 'merchant_common/reducers/user';
 import { caReqEventType } from 'merchant/containers/Home/OnboardingCard/data';
+import abExperimentsMap from 'merchant/utils/abExperimentsMap';
 
 const NAME = 'full_name';
 const PHONE = 'phone';
@@ -84,9 +85,20 @@ export const nitroCampaignId = () => {
       version: 'nitro_midmarket_mumbai_v1',
       version_description: 'Nitro for mumbai mid market',
     },
+    GwPth7nhHNdMND: {
+      version: 'nitro_hyderabad_v4',
+      version_description: 'Nitro for hyderabad',
+    },
+    GxtSf8y77iWw9e: {
+      version: 'nitro_hyderabad_v4',
+      version_description: 'Nitro for hyderabad',
+    },
   };
 
   const getExpStatus = (name) => {
+    if (abExperimentsMap.project_nitro.includes(name)) {
+      return (window.rzp_user?.splitz_experiments || {})[name]?.variables?.result === 'on';
+    }
     return ((window.rzp_user.experiments || {})[name] || {}).result === 'on';
   };
 
