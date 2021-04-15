@@ -413,6 +413,16 @@ class Repository extends \Razorpay\Spine\Repository
     {
         $slaveConnection = $this->getSlaveConnection();
 
+        $heartbeatConfig = $this->app['config']->get('database.connections.live.heartbeat_check');
+
+        $heartbeatEnabled = $heartbeatConfig['enabled'] ?? true ;
+
+        //If heartbeat check is false then we don't check the replication lag and directly make the query to slave db
+        if ($heartbeatEnabled === false)
+        {
+            return $this->newQueryWithConnection($slaveConnection);
+        }
+
         $replicationLagInMilli = $this->app['db.connector.mysql']->getReplicationLagInMilli($slaveConnection);
 
         if (($lagThreshold !== null) and
@@ -422,8 +432,8 @@ class Repository extends \Razorpay\Spine\Repository
                 'Replication lag greater than the defined threshold',
                 ErrorCode::SERVER_ERROR_SLAVE_LAG_THRESHOLD_BREACHED,
                 [
-                    'lag_threshold'     => $lagThreshold,
-                    'actual_lag_in_ms'  => $replicationLagInMilli
+                    'lag_threshold'    => $lagThreshold,
+                    'actual_lag_in_ms' => $replicationLagInMilli
                 ]);
         }
 

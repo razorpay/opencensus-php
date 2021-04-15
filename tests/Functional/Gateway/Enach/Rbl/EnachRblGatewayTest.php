@@ -1290,6 +1290,8 @@ class EnachRblGatewayTest extends TestCase
 
         $this->app->instance('db.connector.mysql', $connector);
 
+        $this->app['config']->set('database.connections.live.heartbeat_check.enabled', true);
+
         $dt = Carbon::create(2018, 05, 27, 12, 35, 00, Timezone::IST);
 
         Carbon::setTestNow($dt);

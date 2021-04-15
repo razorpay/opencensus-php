@@ -255,6 +255,8 @@ class GatewayCombinedFileTest extends TestCase
 
         $this->app->instance('db.connector.mysql', $connector);
 
+        $this->app['config']->set('database.connections.live.heartbeat_check.enabled', true);
+
         $this->fixtures->create('terminal:shared_netbanking_rbl_terminal');
 
         Mail::fake();
