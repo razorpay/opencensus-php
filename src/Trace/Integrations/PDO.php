@@ -33,7 +33,7 @@ use OpenCensus\Trace\Tracer;
 class PDO implements IntegrationInterface
 {
     // database connection string dsn
-    private static $dsn = "";
+    private static $dsn = null;
 
     // optional parameters
     // - tags - additional tags for the trace
@@ -324,5 +324,10 @@ class PDO implements IntegrationInterface
             $errorTags['error.message'] = $errorCodeMsgArray[$error] ?? '';
         }
         return $errorTags;
+    }
+
+    public static function setDsn($dsn)
+    {
+        self::$dsn = $dsn;
     }
 }

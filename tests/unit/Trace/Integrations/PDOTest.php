@@ -30,12 +30,14 @@ class PDOTest extends TestCase
     {
         $scope = null;
         $query = 'select * from users';
-
+        PDO::setDsn('mysql:host=localhost;dbname=testdb');
         $spanOptions = PDO::handleQuery($scope, $query);
         $expected = [
             'attributes' => [
                 'db.statement' => 'select * from users',
-                'span.kind'    => strtolower(Span::KIND_CLIENT)
+                'span.kind'    => strtolower(Span::KIND_CLIENT),
+                'db.system' => 'mysql',
+                'net.peer.name' => 'localhost',
             ],
             'kind' => strtolower(Span::KIND_CLIENT),
             'sameProcessAsParentSpan' => false
@@ -50,9 +52,12 @@ class PDOTest extends TestCase
         $spanOptions = PDO::handleConnect(null, $dsn);
         $expected = [
             'attributes' => [
-                'dsn'       => '',
+                'dsn'       => 'mysql:host=localhost;dbname=testdb',
                 'db.type'   => 'sql',
-                'db.connection_string' => '',
+                'db.system' => 'mysql',
+                'db.name'   => 'testdb',
+                'net.peer.name' => 'localhost',
+                'db.connection_string' => 'mysql:host=localhost;dbname=testdb',
                 'span.kind' => strtolower(Span::KIND_CLIENT)
             ],
             'kind' => strtolower(Span::KIND_CLIENT),
