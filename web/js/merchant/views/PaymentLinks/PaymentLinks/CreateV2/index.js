@@ -404,6 +404,7 @@ export default class PaymentLinkCreateV2 extends React.Component {
             isLoading={state.isLoading}
             disabled={state.isFormLocked}
             remindersConfig={props.paymentLinkRemindersConfig}
+            isDescriptionRequired={props.user.isPaymentLinkDescriptionRequired}
             onClose={this.onFormAbruptClose}
             onChange={this.onFieldChange}
             onSubmit={this.onFormSubmit}

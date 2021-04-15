@@ -42,7 +42,11 @@ export default class UPIForm extends React.Component {
           defaultCurrency={formData.currency}
           defaultAmount={formData.amount}
         />
-        <PaymentFor disabled={props.disabled} defaultValue={formData.description} />
+        <PaymentFor
+          disabled={props.disabled}
+          defaultValue={formData.description}
+          required={props.isDescriptionRequired}
+        />
         <ContactDetails
           disabled={props.disabled}
           defaultContactNumber={formData.contact}

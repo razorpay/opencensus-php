@@ -603,6 +603,18 @@ export default class User {
     return this.getExpStatus('sellerapp_PL_batch_upload');
   }
 
+  get isPaymentLinkDescriptionRequired() {
+    const userBusinessType = Number(this.business_type);
+    const isRazorXExperimentEnabled = this.getExpStatus('pl_description_required');
+
+    // required for proprietorship and unregistered
+    const REQUIRED_DESCRIPTION_BUSINESS_TYPES = [1, 11];
+    return (
+      REQUIRED_DESCRIPTION_BUSINESS_TYPES.indexOf(userBusinessType) !== -1 &&
+      isRazorXExperimentEnabled
+    );
+  }
+
   get isBatchCancelEnabled() {
     return this.getExpStatus('batch_cancel');
   }

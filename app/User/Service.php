@@ -1579,6 +1579,7 @@ class Service extends Base\Service
             'upi_intent_notification',
             'rx_disable_taxpayment_payoutflow',
             'onboarding_v2',
+            'pl_description_required',
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
