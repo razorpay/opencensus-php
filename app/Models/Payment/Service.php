@@ -2122,7 +2122,9 @@ class Service extends Base\Service
 
         foreach ($payments as $payment)
         {
-            if ($payment->shouldTimeoutAuthenticatedPayment($now) === true)
+            $payment->reload();
+            if (($payment->isAuthenticated() === true) and
+                ($payment->shouldTimeoutAuthenticatedPayment($now) === true))
             {
                 $this->repo->transaction(function () use ($payment, & $count, & $error)
                 {
@@ -2188,7 +2190,10 @@ class Service extends Base\Service
 
         foreach ($payments as $payment)
         {
-            if ($payment->shouldTimeout($now) === true)
+            $payment->reload();
+
+            if (($payment->isCreated() === true) and
+                ($payment->shouldTimeout($now) === true))
             {
                 $this->repo->transaction(function () use ($payment, & $count, & $error)
                 {

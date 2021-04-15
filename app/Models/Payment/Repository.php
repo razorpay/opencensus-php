@@ -369,15 +369,18 @@ class Repository extends Base\Repository
      */
     public function fetchOldCreatedPaymentsForMethodForTimeout(int $fromTimestamp, int $toTimestamp, int $limit, string $method)
     {
-        return $this->newQuery()
-                    ->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
-                    ->status(Payment\Status::CREATED)
-                    ->where(Payment\Entity::CREATED_AT, '>=', $fromTimestamp)
-                    ->where(Payment\Entity::CREATED_AT, '<=', $toTimestamp)
-                    ->where(Payment\Entity::METHOD, '=', $method)
-                    ->with(['merchant', 'merchant.features'])
-                    ->limit($limit)
-                    ->get();
+        return $this->repo->useSlave(function() use ($fromTimestamp, $toTimestamp, $limit, $method)
+        {
+            return $this->newQuery()
+                        ->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
+                        ->status(Payment\Status::CREATED)
+                        ->where(Payment\Entity::CREATED_AT, '>=', $fromTimestamp)
+                        ->where(Payment\Entity::CREATED_AT, '<=', $toTimestamp)
+                        ->where(Payment\Entity::METHOD, '=', $method)
+                        ->with(['merchant', 'merchant.features'])
+                        ->limit($limit)
+                        ->get();
+        });
     }
 
     public function getMerchantFirstAuthorizedPaymentTimeStamp($merchantId)
@@ -398,6 +401,8 @@ class Repository extends Base\Repository
      */
     public function fetchOldAuthenticatedPaymentsForMethodForTimeout(int $fromTimestamp, int $toTimestamp, int $limit, string $method)
     {
+      return $this->repo->useSlave(function() use ($fromTimestamp, $toTimestamp, $limit, $method)
+      {
         return $this->newQuery()
             ->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
             ->status(Payment\Status::AUTHENTICATED)
@@ -407,6 +412,7 @@ class Repository extends Base\Repository
             ->with(['merchant', 'merchant.features'])
             ->limit($limit)
             ->get();
+      });
     }
 
     /**
@@ -416,11 +422,14 @@ class Repository extends Base\Repository
      */
     public function fetchOldPaymentsMinCreatedForMethodForTimeout(string $method)
     {
-        return  $this->newQueryWithConnection($this->getSlaveConnection())
-                    ->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
-                    ->status(Payment\Status::CREATED)
-                    ->where(Payment\Entity::METHOD, '=', $method)
-                    ->min(Entity::CREATED_AT);
+        return $this->repo->useSlave(function() use ($method)
+        {
+          return $this->newQueryWithConnection($this->getSlaveConnection())
+                      ->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
+                      ->status(Payment\Status::CREATED)
+                      ->where(Payment\Entity::METHOD, '=', $method)
+                      ->min(Entity::CREATED_AT);
+        });
     }
 
     /**
@@ -430,11 +439,14 @@ class Repository extends Base\Repository
      */
     public function fetchOldPaymentsMinAuthenticatedForMethodForTimeout(string $method)
     {
-        return  $this->newQueryWithConnection($this->getSlaveConnection())
-            ->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
-            ->status(Payment\Status::AUTHENTICATED)
-            ->where(Payment\Entity::METHOD, '=', $method)
-            ->min(Entity::AUTHENTICATED_AT);
+        return $this->repo->useSlave(function() use ($method)
+        {
+          return  $this->newQueryWithConnection($this->getSlaveConnection())
+                      ->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
+                      ->status(Payment\Status::AUTHENTICATED)
+                      ->where(Payment\Entity::METHOD, '=', $method)
+                      ->min(Entity::AUTHENTICATED_AT);
+        });
     }
 
     /**
@@ -1480,16 +1492,19 @@ class Repository extends Base\Repository
 
         $nowMinus2Days = Carbon::today(Timezone::IST)->subDays(2)->getTimestamp();
 
-        $results = $this->newQuery()
-                        ->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
-                        ->join($orderTable, $orderId, '=', $paymentOrderId)
-                        ->select($paymentCols)
-                        ->where($paymentAuthorizedAt, '>', $nowMinus2Days)
-                        ->where($orderStatus, Order\Status::PAID)
-                        ->where($paymentStatus, Status::AUTHORIZED)
-                        ->where($paymentDisputed, 0)
-                        ->with('merchant')
-                        ->get();
+        $results = $this->repo->useSlave(function() use ($orderTable, $orderId, $paymentOrderId, $paymentCols, $paymentAuthorizedAt, $nowMinus2Days, $orderStatus, $paymentStatus, $paymentDisputed)
+        {
+          return $this->newQuery()
+                      ->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
+                      ->join($orderTable, $orderId, '=', $paymentOrderId)
+                      ->select($paymentCols)
+                      ->where($paymentAuthorizedAt, '>', $nowMinus2Days)
+                      ->where($orderStatus, Order\Status::PAID)
+                      ->where($paymentStatus, Status::AUTHORIZED)
+                      ->where($paymentDisputed, 0)
+                      ->with('merchant')
+                      ->get();
+        });
 
         return $results;
     }

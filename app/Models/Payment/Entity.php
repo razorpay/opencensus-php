@@ -1906,6 +1906,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->getAttribute(self::STATUS) === Status::AUTHORIZED);
     }
 
+    public function isAuthenticated()
+    {
+        return ($this->getAttribute(self::STATUS) === Status::AUTHENTICATED);
+    }
+
     public function isCreatedOrAuthorized()
     {
         return ($this->isCreated() or $this->isAuthorized());
