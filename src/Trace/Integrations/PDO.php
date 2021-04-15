@@ -32,18 +32,29 @@ use OpenCensus\Trace\Tracer;
  */
 class PDO implements IntegrationInterface
 {
-    private static $db_host = "";
+    // database connection string dsn
+    static $dsn = "";
+
+    // optional parameters
+    // - tags - additional tags for the trace
+    static $options = [];
+
     /**
      * Static method to add instrumentation to the PDO requests
+     * @param string $dsn
+     * @param array $options
      */
-    public static function load($db_host = "")
+    public static function load($dsn = "", $options = [])
     {
         if (!extension_loaded('opencensus')) {
             trigger_error('opencensus extension required to load PDO integrations.', E_USER_WARNING);
             return;
         }
 
-        PDO::$db_host = $db_host;
+        PDO::$dsn = $dsn;
+
+        PDO::$options = $options;
+
         // public int PDO::exec(string $query)
         opencensus_trace_method('PDO', 'exec', [static::class, 'handleQuery']);
 
@@ -54,7 +65,7 @@ class PDO implements IntegrationInterface
         opencensus_trace_method('PDO', 'query', [static::class, 'handleQuery']);
 
         // public bool PDO::commit ( void )
-        opencensus_trace_method('PDO', 'commit');
+        opencensus_trace_method('PDO', 'commit', [static::class, 'handleCommit']);
 
         // public PDO::__construct(string $dsn [, string $username [, string $password [, array $options]]])
         opencensus_trace_method('PDO', '__construct', [static::class, 'handleConnect']);
@@ -73,18 +84,44 @@ class PDO implements IntegrationInterface
      */
     public static function handleQuery($pdo, $query)
     {
+        $attributes = PDO::getTagsFromDSN(PDO::$dsn);
+
         // checks if span limit has reached and if yes exports the closed spans
         if (Tracer::$tracer != null) {
             Tracer::$tracer->checkSpanLimit();
         }
 
         return [
-            'attributes' => [
-                'db.statement' => $query,
-                'span.kind' => 'client'
+            'attributes'        => [
+                'db.statement'  => $query,
+                'span.kind'     => 'client',
+                'db.system'     => $attributes['db.system'],
+                'net.peer.name' => $attributes['net.peer.name']
             ],
-            'kind' => 'client',
+            'kind'              => 'client',
             'sameProcessAsParentSpan' => false
+        ];
+    }
+
+    /**
+     * Handle commit
+     *
+     * @internal
+     * @param PDO $pdo The connection
+     * @return array
+     */
+    public static function handleCommit($pdo)
+    {
+        $attributes = PDO::getTagsFromDSN(PDO::$dsn);
+
+        return [
+            'attributes' => [
+                'span.kind'     => 'client',
+                'db.system'     => $attributes['db.system'],
+                'net.peer.name' => $attributes['net.peer.name']
+            ],
+            'kind'                      => 'client',
+            'sameProcessAsParentSpan'   => false
         ];
     }
 
@@ -97,6 +134,99 @@ class PDO implements IntegrationInterface
      * @return array
      */
     public static function handleConnect($pdo, $dsn)
+    {
+        $attributes = PDO::getTagsFromDSN(PDO::$dsn ?? $dsn);
+
+        $attributes['span.kind'] = 'client';
+        $attributes += PDO::$options['tags'] ?? [];
+
+        return [
+            'attributes'                => $attributes,
+            'kind'                      => 'client',
+            'sameProcessAsParentSpan'   => false,
+            'name'                      => 'PDO connect'
+        ];
+    }
+
+    /**
+     * Handle extracting the SQL query from a PDOStatement instance
+     *
+     * @internal
+     * @param PDOStatement $statement The prepared statement
+     * @return array
+     */
+    public static function handleStatementExecute($statement)
+    {
+        /*
+            refer following for SQL return codes
+            https://docstore.mik.ua/orelly/java-ent/jenut/ch08_06.htm
+        */
+
+        $rowCount = $statement->rowCount();
+        $errorCode = $statement->errorCode();
+        $errorTags = PDO::getErrorTags($errorCode);
+
+        $query = $statement->queryString;
+        $operation = PDO::getOperationName($query);
+        $tableName = PDO::getTableName($query, $operation);
+
+        $tags = [
+            'db.statement' => $query,
+            'db.row_count' => $rowCount,
+            'db.operation' => $operation,
+            'db.table' => $tableName,
+            'db.sql.table' => $tableName,
+            'span.kind' => 'client'
+        ];
+
+        $connectionTags = PDO::getTagsFromDSN(PDO::$dsn);
+
+        return [
+            'attributes' => $tags + $errorTags + $connectionTags,
+            'kind'       => 'client',
+            'sameProcessAsParentSpan' => false,
+            'name'       => sprintf("PDO %s %s", $operation, $tableName)
+        ];
+    }
+
+    public static function getOperationName($query){
+        // select/insert/update/delete
+
+        // some queries are enclosed in (). trim them before figuring out operation.
+        $operation = explode(" ", trim($query, "( "))[0];
+        return $operation;
+    }
+
+    public static function getTableName($query, $operation){
+        $tableName = "";
+        $operation = strtolower($operation);
+        $query = strtolower(trim($query));
+        $query_parts = explode(" ", $query);
+
+        if (($operation === 'select') or ($operation === 'delete')){
+            // select <...> from <tablename> where ...
+            // delete from <table_name> where ...
+            $from_index = array_search('from', $query_parts);
+            if (($from_index) and ($from_index+1 < count($query_parts))){
+                $tableName = $query_parts[$from_index+1];
+            }
+        }
+        else if (strtolower($operation) === 'update'){
+            // update <table_name> set ... where ...
+            $tableName = $query_parts[1];
+        }
+        else if (strtolower($operation) === 'insert'){
+            // insert into <tablename> ...
+            $into_index = array_search('into', $query_parts);
+            if (($into_index) and ($into_index+1 < count($query_parts))){
+                $tableName = $query_parts[$into_index+1];
+            }
+        }
+
+        return trim($tableName, " \n\r\t\v\0`");
+    }
+
+    public static function getTagsFromDSN($dsn)
     {
         // https://www.php.net/manual/en/ref.pdo-mysql.connection.php
         // example $dsn: mysql:host=localhost;dbname=testdb
@@ -132,49 +262,25 @@ class PDO implements IntegrationInterface
             $attributes['net.peer.port'] = $connection_params['port'];
         }
 
-        if (array_key_exists('host', $connection_params)) {
-            $attributes['net.peer.name'] = $connection_params['host'];
-        } elseif (array_key_exists('unix_socket', $connection_params)) {
-            $attributes['net.peer.name'] = PDO::$db_host;
+        if (array_key_exists('host', $connection_params)){
+            $attributes['net.peer.name'] =  $connection_params['host'];
         }
 
-        $attributes += [
-            'dsn' => $dsn,
-            'db.type' => 'sql',
-            'db.connection_string' => $dsn,
-            'span.kind' => 'client'
-        ];
+        $attributes['dsn'] = $dsn;
+        $attributes['db.type'] = 'sql';
+        $attributes['db.connection_string'] = $dsn;
 
-        return [
-            'attributes' => $attributes,
-            'kind' => 'client',
-            'sameProcessAsParentSpan' => false,
-            'name' => 'PDO connect'
-        ];
+        return $attributes;
     }
 
-    /**
-     * Handle extracting the SQL query from a PDOStatement instance
-     *
-     * @internal
-     * @param PDOStatement $statement The prepared statement
-     * @return array
-     */
-    public static function handleStatementExecute($statement)
+    public static function getErrorTags($errorCode)
     {
-        /*
-            refer following for SQL return codes
-            https://docstore.mik.ua/orelly/java-ent/jenut/ch08_06.htm
-        */
-
         // checks if span limit has reached and if yes flushes the closed spans
         if (Tracer::$tracer != null) {
             Tracer::$tracer->checkSpanLimit();
         }
 
-        $rowCount = $statement->rowCount();
-        $errorCode = $statement->errorCode();
-        $error = substr($errorCode, 0, 2);
+        $error =  substr($errorCode, 0, 2);
         $errorTags = [];
 
         switch ($error) {
@@ -217,62 +323,6 @@ class PDO implements IntegrationInterface
             $errorTags['error.code'] = $errorCode;
             $errorTags['error.message'] = $errorCodeMsgArray[$error] ?? '';
         }
-
-        $query = $statement->queryString;
-        $operation = PDO::getOperationName($query);
-        $tableName = PDO::getTableName($query, $operation);
-
-        $tags = [
-            'db.statement' => $query,
-            'db.row_count' => $rowCount,
-            'db.operation' => $operation,
-            'db.table' => $tableName,
-            'db.sql.table' => $tableName,
-            'span.kind' => 'client'
-        ];
-
-        return [
-            'attributes' => $tags + $errorTags,
-            'kind' => 'client',
-            'sameProcessAsParentSpan' => false,
-            'name' => sprintf("PDO %s %s", $operation, $tableName)
-        ];
-    }
-
-    public static function getOperationName($query)
-    {
-        // select/insert/update/delete
-
-        // some queries are enclosed in (). trim them before figuring out operation.
-        $operation = explode(" ", trim($query, "( "))[0];
-        return $operation;
-    }
-
-    public static function getTableName($query, $operation)
-    {
-        $tableName = "";
-        $operation = strtolower($operation);
-        $query = strtolower(trim($query));
-        $query_parts = explode(" ", $query);
-
-        if (($operation === 'select') or ($operation === 'delete')) {
-            // select <...> from <tablename> where ...
-            // delete from <table_name> where ...
-            $from_index = array_search('from', $query_parts);
-            if (($from_index) and ($from_index + 1 < count($query_parts))) {
-                $tableName = $query_parts[$from_index + 1];
-            }
-        } elseif (strtolower($operation) === 'update') {
-            // update <table_name> set ... where ...
-            $tableName = $query_parts[1];
-        } elseif (strtolower($operation) === 'insert') {
-            // insert into <tablename> ...
-            $into_index = array_search('into', $query_parts);
-            if (($into_index) and ($into_index + 1 < count($query_parts))) {
-                $tableName = $query_parts[$into_index + 1];
-            }
-        }
-
-        return trim($tableName, " \n\r\t\v\0`");
+        return $errorTags;
     }
 }
