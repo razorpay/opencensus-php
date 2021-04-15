@@ -720,20 +720,12 @@ class Core extends Base\Core
 
         $isValidForCharge = $this->isValidForAutoCharge($tokenRegistration);
 
-        $tokenRegistration->incrementAttempts();
-
-        $this->trace->info(
-            TraceCode::TOKEN_REGISTRATION_AUTO_CHARGE_PAYMENT,
-            [
-                'token.registration_id' => $tokenRegistration->getId(),
-                'status'                => 'increment attempts'
-            ]
-        );
-
-        $this->repo->saveOrFail($tokenRegistration);
-
         if ($isValidForCharge === false)
         {
+            $tokenRegistration->incrementAttempts();
+
+            $this->repo->saveOrFail($tokenRegistration);
+            
             $this->trace->info(TraceCode::TOKEN_REGISTRATION_NOT_VALID_FOR_AUTO_CHARGE,
                 [
                     'token.registration_id' =>$tokenRegistration->getId(),
@@ -745,11 +737,31 @@ class Core extends Base\Core
             return [];
         }
 
+        $this->trace->info(
+            TraceCode::TOKEN_REGISTRATION_AUTO_CHARGE_PAYMENT,
+            [
+                'token.registration_id' => $tokenRegistration->getId(),
+                'status'                => 'before order creation'
+            ]
+        );
+
         $order = $this->createOrder($tokenRegistration);
 
         $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_AUTO_ORDER_CREATED, $tokenRegistration->getMetricDimensions());
 
         $paymentSuccess = true;
+
+        $tokenRegistration->incrementAttempts();
+
+        $this->trace->info(
+            TraceCode::TOKEN_REGISTRATION_AUTO_CHARGE_PAYMENT,
+            [
+                'token.registration_id' => $tokenRegistration->getId(),
+                'status'                => 'increment attempts'
+            ]
+        );
+
+        $this->repo->saveOrFail($tokenRegistration);
 
         try{
             $payment = $this->createPayment($tokenRegistration, $order);

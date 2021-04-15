@@ -28,6 +28,12 @@ class TokenRegistrationAutoCharge extends Job
 
     public $tries = 3;
 
+    /**
+     * Default timeout value for a job is 60s. Changing it to 180s
+     * as Auto Charge takes more than 1 minute to complete in some cases.
+     */
+    public $timeout = 180;
+
     public function __construct(string $mode, SubscriptionRegistration\Entity $tokenRegistration )
     {
         parent::__construct($mode);
