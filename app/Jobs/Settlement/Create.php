@@ -3,7 +3,6 @@
 namespace RZP\Jobs\Settlement;
 
 use Cache;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\App;
 use Razorpay\Trace\Logger as Trace;
 
@@ -28,8 +27,6 @@ class Create extends Job
     const TOTAL_MERCHANT_COUNT  = '{settlement}_total_merchant_count_%s';
 
     const CHANNEL_WISE_COUNT    = '{settlement}_channel_wise_count_%s';
-
-    const TRANSFER_SETTLEMENT_DELAY = 600; // In seconds.
 
     /**
      * @var string
@@ -155,16 +152,7 @@ class Create extends Job
                         'settlementIds' => $settlementIds
                     ]);
 
-                TransferRecon::dispatch($settlementIds, $this->mode)->delay(self::TRANSFER_SETTLEMENT_DELAY);
-
-                $this->trace->info(
-                    TraceCode::MESSAGE_PUSHED_TO_TRANSFER_SETTLEMENT_QUEUE,
-                    [
-                        'settlement_ids'    => $settlementIds,
-                        'current_time'      => Carbon::now()->getTimestamp(),
-                        'delay (seconds)'   => self::TRANSFER_SETTLEMENT_DELAY,
-                    ]
-                );
+                TransferRecon::dispatch($settlementIds, $this->mode);
             }
         }
         catch (BadRequestException $e)

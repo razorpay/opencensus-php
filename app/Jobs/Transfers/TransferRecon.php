@@ -36,14 +36,6 @@ class TransferRecon extends Job
     {
         parent::handle();
 
-        $this->trace->info(
-            TraceCode::MESSAGE_RECEIVED_FROM_TRANSFER_SETTLEMENT_QUEUE,
-            [
-                'settlement_id' => $this->settlementIds,
-                'current_time'  => Carbon::now()->getTimestamp(),
-            ]
-        );
-
         try
         {
            (new Transfers)->UpdateTransfersWithSettlementId($this->settlementIds);

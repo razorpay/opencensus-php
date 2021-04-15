@@ -1978,7 +1978,7 @@ class Repository extends Base\Repository
         $entityIdColumn         = $this->dbColumn(Entity::ENTITY_ID);
         $settlementIdColumn     = $this->dbColumn(Entity::SETTLEMENT_ID);
 
-        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+        $query = $this->newQuery()
                       ->join(Table::PAYMENT, $entityIdColumn, '=', $paymentIdColumn)
                       ->select($transactionIdColumn)
                       ->where($typeColumn, Type::PAYMENT)

@@ -28,8 +28,6 @@ class Processor extends Base\Core
 {
     use SettlementTrait;
 
-    const TRANSFER_SETTLEMENT_DELAY = 600; // In seconds.
-
     protected $setlTime;
 
     protected $input;
@@ -1180,16 +1178,7 @@ class Processor extends Base\Core
 
             (new Core)->triggerSettlementWebhook($setl, $input['redacted_ba']);
 
-            TransferRecon::dispatch([$setl->getId()], $this->mode)->delay(self::TRANSFER_SETTLEMENT_DELAY);
-
-            $this->trace->info(
-                TraceCode::MESSAGE_PUSHED_TO_TRANSFER_SETTLEMENT_QUEUE,
-                [
-                    'settlement_id'     => $setl->getId(),
-                    'current_time'      => Carbon::now()->getTimestamp(),
-                    'delay (seconds)'   => self::TRANSFER_SETTLEMENT_DELAY,
-                ]
-            );
+            TransferRecon::dispatch([$setl->getId()], $this->mode);
         }
         catch (\Throwable $e)
         {
