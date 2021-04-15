@@ -21,6 +21,8 @@ class Base extends Mailable
         $this->data = array_merge($this->data, $data);
 
         $this->isMerchantEmail = $isMerchantEmail;
+
+        $this->mid = $data['merchant']['id'] ?? null;
     }
 
     protected function addSender()
