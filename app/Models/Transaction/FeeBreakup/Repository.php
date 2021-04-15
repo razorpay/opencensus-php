@@ -72,17 +72,17 @@ class Repository extends Base\Repository
 
     public function fetchByTransactionId(string $transactionId)
     {
-        $feesBreakup = $this->newQuery()
+        $feesBreakups = $this->newQueryWithConnection($this->getSlaveConnection())
                             ->where(Entity::TRANSACTION_ID, $transactionId)
                             ->get();
 
-        return $feesBreakup;
+        return $feesBreakups;
     }
 
-    public function deleteFeeBreakupForTransactionId(string $transactionId)
+    public function deleteFeeBreakupForId(string $id)
     {
         $this->newQuery()
-             ->where(Entity::TRANSACTION_ID, $transactionId)
-             ->delete();
+            ->where(Entity::ID, $id)
+            ->delete();
     }
 }

@@ -302,7 +302,12 @@ class Core extends Base\Core
 
             $feesSplit = new Base\PublicCollection;
 
-            $this->repo->fee_breakup->deleteFeeBreakupForTransactionId($txn->getId());
+            $feeBreakUps = $this->repo->fee_breakup->fetchByTransactionId($txn->getId());
+
+            foreach ($feeBreakUps as $feeBreakUp)
+            {
+                $this->repo->fee_breakup->deleteFeeBreakupForId($feeBreakUp->getId());
+            }
 
             list($credit, $fee, $serviceTax, $feesSplit) = $this->calculatePostpaidFee($txn);
 
