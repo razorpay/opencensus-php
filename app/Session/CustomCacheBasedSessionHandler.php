@@ -29,11 +29,8 @@ class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessi
     public function write($sessionId, $data)
     {
         $connection = $this->cache->connection();
-        $sessionKey = $this->sessionNamespace.':'.$sessionId;
 
-        $ttlForSession = $connection->ttl($sessionKey);
-
-        $responses = $connection->transaction(function ($tx) use ($sessionId, $data, $ttlForSession)
+        $responses = $connection->transaction(function ($tx) use ($sessionId, $data)
         {
             $lifetime = $this->minutes * 60;
 
@@ -45,32 +42,27 @@ class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessi
 
             $tx->hmset($sessionKey, $data);
 
-            // add session and expire for the session only if the key is not set.
-            if ($ttlForSession == -2)
+            $tx->expire($sessionKey, $lifetime);
+
+            // Write to admins:adminID:sessions = [ Sid1, Sid2, Sid3 ]
+            if (isset($data['admin_id']))
             {
-                $tx->expire($sessionKey, $lifetime);
+                $adminKey = $this->getAdminSessionKey($data['admin_id']);
 
-                // Write to admins:adminID:sessions = [ Sid1, Sid2, Sid3 ]
-                if (isset($data['admin_id']))
-                {
-                    $adminKey = $this->getAdminSessionKey($data['admin_id']);
+                $tx->sadd($adminKey, $sessionId);
 
-                    $tx->sadd($adminKey, $sessionId);
-
-                    $tx->expire($adminKey, $lifetime);
-                }
-
-                // Write to users:userID:sessions = [ Sid1, Sid2, Sid3 ]
-                if (isset($data['user_id']))
-                {
-                    $userKey = $this->getUserSessionKey($data['user_id']);
-
-                    $tx->sadd($userKey, $sessionId);
-
-                    $tx->expire($userKey, $lifetime);
-                }
+                $tx->expire($adminKey, $lifetime);
             }
 
+            // Write to users:userID:sessions = [ Sid1, Sid2, Sid3 ]
+            if (isset($data['user_id']))
+            {
+                $userKey = $this->getUserSessionKey($data['user_id']);
+
+                $tx->sadd($userKey, $sessionId);
+
+                $tx->expire($userKey, $lifetime);
+            }
         });
 
         return $responses;
