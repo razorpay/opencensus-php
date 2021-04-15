@@ -42,12 +42,12 @@ const CMD_MAX_LEN = 256;
 
 class Redis implements IntegrationInterface
 {
-    static $host = "";
+    private static $host = "";
 
     /**
      * Static method to add instrumentation to redis requests
      */
-    public static function load($host="")
+    public static function load($host = "")
     {
         if (!extension_loaded('opencensus')) {
             trigger_error('opencensus extension required to load Redis integrations.', E_USER_WARNING);
@@ -92,7 +92,7 @@ class Redis implements IntegrationInterface
                 'span.kind' => 'client',
             ];
 
-            if (Redis::$host){
+            if (Redis::$host) {
                 $attrs['net.peer.name'] = Redis::$host;
             }
 

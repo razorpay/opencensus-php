@@ -33,11 +33,11 @@ use OpenCensus\Trace\Tracer;
 class PDO implements IntegrationInterface
 {
     // database connection string dsn
-    static $dsn = "";
+    private static $dsn = "";
 
     // optional parameters
     // - tags - additional tags for the trace
-    static $options = [];
+    private static $options = [];
 
     /**
      * Static method to add instrumentation to the PDO requests
@@ -189,7 +189,8 @@ class PDO implements IntegrationInterface
         ];
     }
 
-    public static function getOperationName($query){
+    public static function getOperationName($query)
+    {
         // select/insert/update/delete
 
         // some queries are enclosed in (). trim them before figuring out operation.
@@ -197,28 +198,27 @@ class PDO implements IntegrationInterface
         return $operation;
     }
 
-    public static function getTableName($query, $operation){
+    public static function getTableName($query, $operation)
+    {
         $tableName = "";
         $operation = strtolower($operation);
         $query = strtolower(trim($query));
         $query_parts = explode(" ", $query);
 
-        if (($operation === 'select') or ($operation === 'delete')){
+        if (($operation === 'select') or ($operation === 'delete')) {
             // select <...> from <tablename> where ...
             // delete from <table_name> where ...
             $from_index = array_search('from', $query_parts);
-            if (($from_index) and ($from_index+1 < count($query_parts))){
+            if (($from_index) and ($from_index+1 < count($query_parts))) {
                 $tableName = $query_parts[$from_index+1];
             }
-        }
-        else if (strtolower($operation) === 'update'){
+        } elseif (strtolower($operation) === 'update') {
             // update <table_name> set ... where ...
             $tableName = $query_parts[1];
-        }
-        else if (strtolower($operation) === 'insert'){
+        } elseif (strtolower($operation) === 'insert') {
             // insert into <tablename> ...
             $into_index = array_search('into', $query_parts);
-            if (($into_index) and ($into_index+1 < count($query_parts))){
+            if (($into_index) and ($into_index+1 < count($query_parts))) {
                 $tableName = $query_parts[$into_index+1];
             }
         }
@@ -262,7 +262,7 @@ class PDO implements IntegrationInterface
             $attributes['net.peer.port'] = $connection_params['port'];
         }
 
-        if (array_key_exists('host', $connection_params)){
+        if (array_key_exists('host', $connection_params)) {
             $attributes['net.peer.name'] =  $connection_params['host'];
         }
 
