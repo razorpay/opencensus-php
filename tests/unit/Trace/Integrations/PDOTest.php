@@ -50,12 +50,9 @@ class PDOTest extends TestCase
         $spanOptions = PDO::handleConnect(null, $dsn);
         $expected = [
             'attributes' => [
-                'dsn'       => 'mysql:host=localhost;dbname=testdb',
+                'dsn'       => '',
                 'db.type'   => 'sql',
-                'db.system' => 'mysql',
-                'db.name'   => 'testdb',
-                'net.peer.name' => 'localhost',
-                'db.connection_string' => 'mysql:host=localhost;dbname=testdb',
+                'db.connection_string' => '',
                 'span.kind' => strtolower(Span::KIND_CLIENT)
             ],
             'kind' => strtolower(Span::KIND_CLIENT),
