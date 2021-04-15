@@ -712,6 +712,7 @@ export default class User {
   }
 
   get isUPICAWEnabled() {
+    return true;
     return this.isFeatureEnabled('caw_upi') || this.getExpStatus('upi_caw');
   }
 

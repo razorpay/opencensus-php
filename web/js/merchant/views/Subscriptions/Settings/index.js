@@ -3,6 +3,8 @@ import { RZPFeatures } from 'merchant/helpers/data';
 import { classList, findBy } from 'common/utils/rzp-utils';
 
 import DocsLink from 'merchant/components/DocsLink';
+import Amount from 'common/ui/Amount';
+import Banner from 'common/ui/Banner';
 import HeaderAction from 'common/ui/HeaderAction';
 import SwitchField from 'common/ui/Forms/SwitchField';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
@@ -97,16 +99,21 @@ export default class SubscriptionsSettings extends React.Component {
                 <span class="title">Payment Methods</span>
               </div>
               <div class="panel-body">
+                <Banner>
+                  Cards and UPI currently support recurring payments upto <Amount value={500000} />.
+                  Charges of higher value would automatically fail for domestic cards.
+                </Banner>
                 <div class="row">
                   <div class="col-md-6">
                     <ToggleCard
                       checked
-                      hideActions
                       title={
                         <>
                           <i class="i i-card m-r" /> Card
                         </>
                       }
+                      onToggleChange={this.onToggleChange(PAYMENT_METHODS.CARD)}
+                      checked={isEnabled(PAYMENT_METHODS.CARD)(settings)}
                       description="Accept recurring payments via cards for your subscriptions in any of our supported international currencies."
                     />
                   </div>
@@ -123,9 +130,8 @@ export default class SubscriptionsSettings extends React.Component {
                       checked={isEnabled(PAYMENT_METHODS.UPI)(settings)}
                       description={
                         <>
-                          Accept UPI payments on subscriptions when recurring
-                          charge is less than <b>₹ 2000</b>. Only supports
-                          Indian currency.
+                          Accept UPI payments on subscriptions when recurring charge is less than{' '}
+                          <b>₹ 5000</b>. Only supports Indian currency.
                         </>
                       }
                     />
@@ -143,7 +149,6 @@ export default class SubscriptionsSettings extends React.Component {
 const ToggleCard = ({
   title,
   checked,
-  hideActions,
   children,
   description,
   onToggleChange,
@@ -154,13 +159,11 @@ const ToggleCard = ({
         <span class="title">{title}</span>
 
         <span class="pull-right toggler-btn">
-          {!hideActions && (
-            <SwitchField
-              checked={checked}
-              onChange={onToggleChange}
-              type="prime"
-            />
-          )}
+          <SwitchField
+            checked={checked}
+            onChange={onToggleChange}
+            type="prime"
+          />
           <strong
             class={classList('m-l', checked ? 'text-primary' : 'text-faded')}
           >
