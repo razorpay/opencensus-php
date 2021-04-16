@@ -22,7 +22,7 @@ class Base extends Mailable
 
         $this->isMerchantEmail = $isMerchantEmail;
 
-        $this->mid = $data['merchant']['id'] ?? null;
+        $this->mid = $this->mid ?? $data['merchant']['id'] ?? null;
     }
 
     protected function addSender()
