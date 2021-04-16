@@ -24,10 +24,11 @@ class Core extends Base\Core
      * Create flow: Creates new batch entity against given file id or against
      * given file(by first storing it).
      *
-     * @param  array             $input
-     * @param  Merchant\Entity   $merchant
-     * @param  Base\PublicEntity $creator
+     * @param array $input
+     * @param Merchant\Entity $merchant
+     * @param Base\PublicEntity|null $creator
      * @return Entity
+     * @throws BadRequestException
      */
     public function create(array $input, Merchant\Entity $merchant, Base\PublicEntity $creator = null): Entity
     {

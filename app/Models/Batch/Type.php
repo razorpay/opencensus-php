@@ -139,9 +139,11 @@ class Type
 
     const INTERNAL_INSTRUMENT_REQUEST = 'internal_instrument_request';
 
-    const PAYOUT_APPROVAL = 'payout_approval';
+    const PAYOUT_APPROVAL             = 'payout_approval';
 
-    const PAYOUT_LINK_BULK       = 'payout_link_bulk';
+    const TALLY_PAYOUT                = 'tally_payout';
+
+    const PAYOUT_LINK_BULK            = 'payout_link_bulk';
 
     //
     // Support admin action for bulk retrying refunds via FTA to custom sources
@@ -346,6 +348,7 @@ class Type
         self::PAYOUT_LINK_BULK,
         self::PAYMENT_LINK,
         self::PAYOUT,
+        self::TALLY_PAYOUT,
         self::FUND_ACCOUNT,
         self::SUBMERCHANT_ASSIGN,
         self::PRICING_RULE,
@@ -384,6 +387,7 @@ class Type
      * @var array
      */
     public static $batchTypeMigrationCompleted = [
+        self::TALLY_PAYOUT,
         self::PAYOUT_LINK_BULK,
         self::PAYMENT_LINK,
         self::PAYOUT,

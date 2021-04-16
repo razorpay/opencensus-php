@@ -1371,7 +1371,7 @@ class Constants
             'feature'       => self::CAPITAL_CARDS_COLLECTIONS,
             'display_name'  => 'Autocollection for credit cards',
             'documentation' => '',
-        ]
+        ],
     ];
 
     /**

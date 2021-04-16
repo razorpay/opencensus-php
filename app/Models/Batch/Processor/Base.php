@@ -970,7 +970,6 @@ class Base extends BaseModel\Core
 
             $formatted[] = $dict;
         }
-
         unset($entries);
 
         return $formatted;

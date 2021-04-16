@@ -3,6 +3,8 @@
 namespace RZP\Models\Batch;
 
 use App;
+use DateTime;
+
 use RZP\Base;
 use Carbon\Carbon;
 use RZP\Models\User;
@@ -422,6 +424,13 @@ class Validator extends Base\Validator
         Entity::SCHEDULE    => 'sometimes|numeric',
     ];
 
+    protected static $tallyPayoutValidateRules = [
+        Entity::TYPE        => 'required|in:tally_payout',
+        Entity::NAME        => 'filled|string|max:255',
+        Entity::FILE        => 'required_without:file_id|file|max:10240' . self::CSV_MIME_RULE,
+        Entity::FILE_ID     => 'required_without:file|public_id'
+    ];
+
     protected static $payoutCreateRules = [
         Entity::TYPE        => 'required|in:payout',
         Entity::NAME        => 'filled|string|max:255',
@@ -442,6 +451,15 @@ class Validator extends Base\Validator
         Entity::TOKEN                => 'required|unsigned_id',
         Entity::SCHEDULE             => 'sometimes|numeric',
         Entity::CONFIG               => 'sometimes',
+    ];
+
+    protected static $tallyPayoutCreateRules = [
+        Entity::TYPE                 => 'required|in:tally_payout',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required_without:file_id|file|max:10240' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID              => 'required_without:file|public_id',
+        Entity::OTP                  => 'required|filled|min:4',
+        Entity::TOKEN                => 'required|unsigned_id'
     ];
 
     protected static $payoutApprovalValidateRules = [
@@ -485,6 +503,31 @@ class Validator extends Base\Validator
         Header::CONTACT_MOBILE_2            => 'sometimes|nullable|string',
         Header::CONTACT_REFERENCE_ID        => 'sometimes|nullable|string',
         Header::NOTES                       => 'sometimes|nullable|notes',
+    ];
+
+    protected static $tallyPayoutTypeRowRules = [
+        Header::RAZORPAYX_ACCOUNT_NUMBER    => 'required|alpha_num|between:5,22',
+        Header::PAYOUT_PURPOSE              => 'required|string|max:30|alpha_dash_space',
+        Header::PAYOUT_REFERENCE_ID         => 'required|string|max:40',
+        Header::PAYOUT_MODE                 => 'required|string|custom',
+        Header::PAYOUT_AMOUNT_RUPEES        => 'required|regex:/^-?\d+(\.\d{1,2})?$/|numeric|min:1',
+        Header::PAYOUT_CURRENCY             => 'required|size:3|in:INR',
+        Header::PAYOUT_DATE                 => 'required|string|custom',
+        Header::PAYOUT_NARRATION            => 'sometimes|nullable|string|max:30|alpha_space_num',
+        Header::FUND_ACCOUNT_TYPE           => 'required|string|in:bank_account,vpa',
+        Header::FUND_ACCOUNT_NAME           => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|string',
+        Header::FUND_ACCOUNT_IFSC           => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|string',
+        Header::FUND_ACCOUNT_NUMBER         => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|string',
+        Header::FUND_ACCOUNT_VPA            => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',vpa|string',
+        Header::CONTACT_NAME_2              => 'required_without:'. Header::FUND_ACCOUNT_NAME .'|sometimes|string',
+        Header::CONTACT_TYPE                => 'sometimes|string',
+        Header::CONTACT_ADDRESS             => 'sometimes|string',
+        Header::CONTACT_CITY                => 'sometimes|string',
+        Header::CONTACT_ZIPCODE             => 'sometimes|string|max:10',
+        Header::CONTACT_STATE               => 'sometimes|string',
+        Header::CONTACT_EMAIL_2             => 'sometimes|string|email',
+        Header::CONTACT_MOBILE_2            => 'sometimes|numeric',
+        Header::NOTES_STR_VALUE             => 'sometimes|string|max:256',
     ];
 
     // Similar to the above rules but this one will contain headers for the rupees version.
@@ -749,6 +792,18 @@ class Validator extends Base\Validator
         PayoutMode::validateMode($value);
     }
 
+    public function validatePayoutDate($attribute, $value)
+    {
+        $expectedFormat = 'd/m/Y';
+
+        $d = DateTime::createFromFormat($expectedFormat, $value);
+
+        if (!$d || $d->format($expectedFormat) != $value)
+        {
+            throw new BadRequestValidationFailureException('Invalid Payout Date format, should be d/m/Y');
+        }
+    }
+
     protected static $payoutRupeesTypeRowValidators = [
         'payout_amount_rupees',
     ];
@@ -990,7 +1045,7 @@ class Validator extends Base\Validator
      *
      * @return array
      */
-    protected function getRuleNames(): array
+    protected function  getRuleNames(): array
     {
         $type = $this->entity->getType();
         $subType = $this->entity->getSubType();
@@ -1313,6 +1368,56 @@ class Validator extends Base\Validator
         {
             $this->validateInput('payoutApprovalTypeRow', $entry);
         });
+    }
+
+    protected function validateTallyPayoutEntries(array & $entries, array $params, ME $merchant)
+    {
+        // Limit number of entries. We are using same bulk payout count restriction
+        $countOfPayouts = count($entries);
+
+        $this->assertCustomLimitForMerchant($merchant, $countOfPayouts);
+
+        if ($merchant->isFeatureEnabled(Feature::PAYOUT) === false)
+        {
+            throw new BadRequestValidationFailureException('Batch type is not enabled for merchant');
+        }
+
+        $this->getTrace()->info(TraceCode::TALLY_PAYOUTS_VALIDATION_BEGINS, [
+            'count' => $countOfPayouts,
+            'entries' => $entries
+        ]);
+
+        //Check other validations required
+        $this->validateEntriesWithPublicExceptionHandled($entries, function (array $entry)
+        {
+            $this->validateInput('tallyPayoutTypeRow', $entry);
+        });
+
+        $this->getTrace()->info(TraceCode::TALLY_PAYOUTS_VALIDATION_ENDS, [
+            'count' => $countOfPayouts
+        ]);
+
+        // Following are Payout Amount Validations.
+        // Only to be done if merchant does not have CA. If the merchant has a current account,
+        // then we do not know his current balance in real time, and hence we simply skip these validations
+
+        if ($merchant->hasDirectBankingBalance() === true)
+        {
+            return;
+        }
+
+        // After validating contents per row only should do following aggregate validations.
+        $totalPayoutAmount = array_sum(array_column($entries, Header::PAYOUT_AMOUNT_RUPEES));
+
+        $bankingBalance = $merchant->sharedBankingBalance->getBalanceWithLockedBalance();
+
+        if ($totalPayoutAmount > $bankingBalance)
+        {
+            throw new BadRequestValidationFailureException(
+                'Total payout amount in uploaded file is more than the available account balance',
+                Entity::FILE,
+                compact('totalPayoutAmount', 'bankingBalance'));
+        }
     }
 
     protected function validateCreditEntries(array & $entries, array $params, ME $merchant)

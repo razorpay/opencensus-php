@@ -36,6 +36,7 @@ class Header
 
     const NOTES_PLACE       = 'notes[place]';
     const NOTES_CODE        = 'notes[code]';
+    const NOTES_STR_VALUE   = 'note[value]'; // on purpose this is not 'notes[value]', to avoid the NotesRegex
 
     //
     // Refund Headers
@@ -791,6 +792,10 @@ class Header
     const CONTACT_EMAIL_2             = 'Contact Email';
     const CONTACT_MOBILE_2            = 'Contact Mobile';
     const CONTACT_REFERENCE_ID        = 'Contact Reference Id';
+    const CONTACT_ADDRESS             = 'Contact Address 1';
+    const CONTACT_CITY                = 'Contact City';
+    const CONTACT_ZIPCODE             = 'Contact Zipcode';
+    const CONTACT_STATE               = 'Contact State';
 
     // Fund Account Headers, refer HEADER_MAP for full list of input & output headers.
     const FUND_ACCOUNT_ID             = 'Fund Account Id';
@@ -810,6 +815,7 @@ class Header
     const PAYOUT_REFERENCE_ID      = 'Payout Reference Id';
     const PAYOUT_ID                = 'Payout Id';
     const PAYOUT_AMOUNT_RUPEES     = 'Payout Amount (in Rupees)';
+    const PAYOUT_DATE              = 'Payout Date';
 
     // Linked Account Reversal Headers
     const TRANSFER_ID              = 'Transfer Id';
@@ -2907,6 +2913,59 @@ class Header
                 self::ERROR_DESCRIPTION,
             ],
         ],
+        Type::TALLY_PAYOUT => [
+            self::INPUT => [
+                self::RAZORPAYX_ACCOUNT_NUMBER,
+                self::PAYOUT_PURPOSE,
+                self::PAYOUT_REFERENCE_ID,
+                self::PAYOUT_MODE,
+                self::PAYOUT_AMOUNT_RUPEES,
+                self::PAYOUT_CURRENCY,
+                self::PAYOUT_DATE,
+                self::PAYOUT_NARRATION,
+                self::FUND_ACCOUNT_TYPE,
+                self::FUND_ACCOUNT_NAME,
+                self::FUND_ACCOUNT_IFSC,
+                self::FUND_ACCOUNT_NUMBER,
+                self::FUND_ACCOUNT_VPA,
+                self::CONTACT_NAME_2,
+                self::CONTACT_TYPE,
+                self::CONTACT_ADDRESS,
+                self::CONTACT_CITY,
+                self::CONTACT_ZIPCODE,
+                self::CONTACT_STATE,
+                self::CONTACT_EMAIL_2,
+                self::CONTACT_MOBILE_2,
+                self::NOTES_STR_VALUE,
+            ],
+            self::OUTPUT => [
+                self::RAZORPAYX_ACCOUNT_NUMBER,
+                self::PAYOUT_PURPOSE,
+                self::PAYOUT_REFERENCE_ID,
+                self::PAYOUT_MODE,
+                self::PAYOUT_AMOUNT,
+                self::PAYOUT_CURRENCY,
+                self::PAYOUT_DATE,
+                self::PAYOUT_NARRATION,
+                self::FUND_ACCOUNT_TYPE,
+                self::FUND_ACCOUNT_NAME,
+                self::FUND_ACCOUNT_IFSC,
+                self::FUND_ACCOUNT_NUMBER,
+                self::FUND_ACCOUNT_VPA,
+                self::CONTACT_NAME_2,
+                self::CONTACT_TYPE,
+                self::CONTACT_ADDRESS,
+                self::CONTACT_CITY,
+                self::CONTACT_ZIPCODE,
+                self::CONTACT_STATE,
+                self::CONTACT_EMAIL_2,
+                self::CONTACT_MOBILE_2,
+                self::NOTES_STR_VALUE,
+                self::PAYOUT_ID,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
 
         Type::CREDIT => [
           self::INPUT => [
@@ -3566,7 +3625,12 @@ class Header
             $actualHeaders[] = self::NOTES;
         }
 
-
+        //
+        // Headers are not present in tally payouts hence, no validation needed.
+        //
+        if ($type === Type::TALLY_PAYOUT) {
+            return;
+        }
         //
         // Speed is also optional. See ^above comments about Notes;
         // Speed is optional for batch type refunds.
