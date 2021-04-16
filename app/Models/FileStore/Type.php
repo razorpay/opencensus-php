@@ -148,10 +148,6 @@ class Type
 
     const SBI_UPI_REFUND                    = 'sbi_upi_refund';
 
-    const UPI_ICICI_FAILED_REFUND           = 'upi_icici_failed_refund';
-
-    const UPI_MINDGATE_FAILED_REFUND        = 'upi_mindgate_failed_refund';
-
     const AIRTELMONEY_WALLET_FAILED_REFUND  = 'airtelmoney_wallet_failed_refund';
 
     const AXIS_MIGS_FAILED_REFUND           = 'axis_migs_failed_refund';
@@ -329,7 +325,6 @@ class Type
             self::ICICI_EMI_FILE_SFTP,
             self::PNB_NETBANKING_REFUND,
             self::PNB_NETBANKING_CLAIMS,
-            self::UPI_ICICI_FAILED_REFUND,
             self::AIRTELMONEY_WALLET_FAILED_REFUND,
             self::AXIS_MIGS_FAILED_REFUND,
             self::ICIC_FIRST_DATA_FAILED_REFUND,
@@ -483,7 +478,6 @@ class Type
         self::FUND_TRANSFER_H2H,
         self::PNB_NETBANKING_REFUND,
         self::PNB_NETBANKING_CLAIMS,
-        self::UPI_ICICI_FAILED_REFUND,
         self::AIRTELMONEY_WALLET_FAILED_REFUND,
         self::AXIS_MIGS_FAILED_REFUND,
         self::ICIC_FIRST_DATA_FAILED_REFUND,
@@ -531,7 +525,6 @@ class Type
             self::BATCH_VALIDATED,
             self::PNB_NETBANKING_REFUND,
             self::PNB_NETBANKING_CLAIMS,
-            self::UPI_ICICI_FAILED_REFUND,
             self::AIRTELMONEY_WALLET_FAILED_REFUND,
             self::AXIS_MIGS_FAILED_REFUND,
             self::ICIC_FIRST_DATA_FAILED_REFUND,
@@ -607,6 +600,16 @@ class Type
 
         self::RECON_SFTP_INPUT_BUCKET_CONFIG => [
             self::FSB_NETBANKING_REFUND,
+            self::AIRTELMONEY_WALLET_FAILED_REFUND,
+            self::AXIS_MIGS_FAILED_REFUND,
+            self::ICIC_FIRST_DATA_FAILED_REFUND,
+            self::HDFC_CYBERSOURCE_FAILED_REFUND,
+            self::AXIS_CYBERSOURCE_FAILED_REFUND,
+            self::HDFC_FSS_FAILED_REFUND,
+            self::PNB_NETBANKING_REFUND,
+            self::PNB_NETBANKING_CLAIMS,
+            self::GATEWAY_FAILED_REFUNDS,
+            self::ICICI_NETBANKING_REFUND_DIRECT_SETTLEMENT,
             self::HDFC_EMANDATE_REFUND,
             self::ICICI_PAYLATER_REFUND,
             self::OBC_NETBANKING_REFUND,

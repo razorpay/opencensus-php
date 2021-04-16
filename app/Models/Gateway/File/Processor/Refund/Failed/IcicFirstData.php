@@ -2,9 +2,12 @@
 
 namespace RZP\Models\Gateway\File\Processor\Refund\Failed;
 
+use Carbon\Carbon;
+
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
+use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Base\PublicCollection;
 
@@ -14,8 +17,9 @@ class IcicFirstData extends Base
     const EXTENSION        = FileStore\Format::XLSX;
     const ACQUIRER         =  Payment\Gateway::ACQUIRER_ICIC;
 
-    const FILE_NAME        = 'Icic_FirstData_Failed_Refunds';
-    const FILE_TYPE        = FileStore\Type::ICIC_FIRST_DATA_FAILED_REFUND;
+    const FILE_NAME              = 'Icic_FirstData_Failed_Refunds';
+    const FILE_TYPE              = FileStore\Type::ICIC_FIRST_DATA_FAILED_REFUND;
+    const BASE_STORAGE_DIRECTORY = 'IcicFirstData/Refund/Failed/';
 
     const SR_NO                   = 'Sr No';
     const MERCHANT_TRANSACTION_ID = 'Merchant Transaction ID';
@@ -142,5 +146,12 @@ class IcicFirstData extends Base
         }, $data);
 
         return $data;
+    }
+
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . '_' . $this->mode . '_' . $time;
     }
 }

@@ -4,17 +4,18 @@ namespace RZP\Models\Gateway\File\Processor\Refund\Failed;
 
 use Carbon\Carbon;
 
-use RZP\Models\Base\PublicCollection;
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Models\Base\PublicCollection;
 
 class All extends Base
 {
-    const EXTENSION             = FileStore\Format::CSV;
-    const GATEWAY               = ''; // fetch for all gateways
-    const FILE_NAME             = 'Failed_Refunds';
-    const FILE_TYPE             = FileStore\Type::GATEWAY_FAILED_REFUNDS;
+    const EXTENSION              = FileStore\Format::CSV;
+    const GATEWAY                = ''; // fetch for all gateways
+    const FILE_NAME              = 'Failed_Refunds';
+    const FILE_TYPE              = FileStore\Type::GATEWAY_FAILED_REFUNDS;
+    const BASE_STORAGE_DIRECTORY = 'AllGateways/Refunds/Failed/';
 
     const SR_NO                 = 'Sr No';
     const REFUND_ID             = 'Refund Id';
@@ -104,5 +105,12 @@ class All extends Base
         {
             return "Partial";
         }
+    }
+
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . '_' . $this->mode . '_' . $time;
     }
 }

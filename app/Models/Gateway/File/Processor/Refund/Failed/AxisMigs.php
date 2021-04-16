@@ -2,17 +2,21 @@
 
 namespace RZP\Models\Gateway\File\Processor\Refund\Failed;
 
+use Carbon\Carbon;
+
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
+use RZP\Constants\Timezone;
 use RZP\Models\Base\PublicCollection;
 
 class AxisMigs extends Base
 {
-    const GATEWAY   = Payment\Gateway::AXIS_MIGS;
-    const EXTENSION = FileStore\Format::XLSX;
-    const FILE_NAME = 'Axis_Migs_Failed_Refunds';
-    const FILE_TYPE = FileStore\Type::AXIS_MIGS_FAILED_REFUND;
-    const ACQUIRER  = Payment\GATEWAY::ACQUIRER_AXIS;
+    const GATEWAY                = Payment\Gateway::AXIS_MIGS;
+    const EXTENSION              = FileStore\Format::XLSX;
+    const FILE_NAME              = 'Axis_Migs_Failed_Refunds';
+    const FILE_TYPE              = FileStore\Type::AXIS_MIGS_FAILED_REFUND;
+    const ACQUIRER               = Payment\GATEWAY::ACQUIRER_AXIS;
+    const BASE_STORAGE_DIRECTORY = 'AxisMigs/Refund/Failed/';
 
     const SR_NO                   = 'Sr No';
     const CARD_NUMBER             = 'Card Number';
@@ -62,5 +66,12 @@ class AxisMigs extends Base
         }
 
         return $formattedData;
+    }
+
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . '_' . $this->mode . '_' . $time;
     }
 }

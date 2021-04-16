@@ -2,16 +2,20 @@
 
 namespace RZP\Models\Gateway\File\Processor\Refund\Failed;
 
+use Carbon\Carbon;
+
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
+use RZP\Constants\Timezone;
 use RZP\Gateway\Upi\Icici\RefundFile;
 
 class UpiIcici extends Base
 {
-    const GATEWAY    = Payment\Gateway::UPI_ICICI;
-    const EXTENSION  = FileStore\Format::CSV;
-    const FILE_NAME  = 'Icici_Upi_Failed_Refunds';
-    const FILE_TYPE  = FileStore\Type::ICICI_UPI_REFUND;
+    const GATEWAY                = Payment\Gateway::UPI_ICICI;
+    const EXTENSION              = FileStore\Format::CSV;
+    const FILE_NAME              = 'Icici_Upi_Failed_Refunds';
+    const FILE_TYPE              = FileStore\Type::ICICI_UPI_REFUND;
+    const BASE_STORAGE_DIRECTORY = 'UpiIcici/Refund/Failed/';
 
     protected function formatDataForFile(array $data)
     {
@@ -35,5 +39,12 @@ class UpiIcici extends Base
         }
 
         return $formattedData;
+    }
+
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . '_' . $this->mode . '_' . $time;
     }
 }

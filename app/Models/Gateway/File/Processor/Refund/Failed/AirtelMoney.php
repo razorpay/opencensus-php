@@ -2,15 +2,19 @@
 
 namespace RZP\Models\Gateway\File\Processor\Refund\Failed;
 
+use Carbon\Carbon;
+
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
+use RZP\Constants\Timezone;
 
 class AirtelMoney extends Base
 {
-    const GATEWAY            = Payment\Gateway::WALLET_AIRTELMONEY;
-    const EXTENSION          = FileStore\Format::CSV;
-    const FILE_NAME          = 'Airtelmoney_Wallet_Failed_Refunds';
-    const FILE_TYPE          = FileStore\Type::AIRTELMONEY_WALLET_FAILED_REFUND;
+    const GATEWAY                = Payment\Gateway::WALLET_AIRTELMONEY;
+    const EXTENSION              = FileStore\Format::CSV;
+    const FILE_NAME              = 'Airtelmoney_Wallet_Failed_Refunds';
+    const FILE_TYPE              = FileStore\Type::AIRTELMONEY_WALLET_FAILED_REFUND;
+    const BASE_STORAGE_DIRECTORY = 'AirtelMoney/Refund/Wallet/Failed/';
 
     const SR_NO               = 'Sr No';
     const CUSTOMER_PHONE      = 'Customer Phone';
@@ -44,5 +48,12 @@ class AirtelMoney extends Base
         }
 
         return $formattedData;
+    }
+
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . '_' . $this->mode . '_' . $time;
     }
 }

@@ -22,6 +22,7 @@ class Pnb extends Base
     const GATEWAY                = Payment\Gateway::NETBANKING_PNB;
     const GATEWAY_CODE           = [Payment\Processor\Netbanking::PUNB_C, Payment\Processor\Netbanking::PUNB_R, IFSC::ORBC, IFSC::UTBI];
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
+    const BASE_STORAGE_DIRECTORY = 'Pnb/Refund/Netbanking/';
 
     protected $type = Payment\Entity::BANK;
 
@@ -55,6 +56,6 @@ class Pnb extends Base
     {
         $dateTime = Carbon::now(Timezone::IST)->format('YdmHis');
 
-        return static::FILE_NAME . $dateTime;
+        return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . $dateTime;
     }
 }

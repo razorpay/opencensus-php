@@ -2,17 +2,21 @@
 
 namespace RZP\Models\Gateway\File\Processor\Refund\Failed;
 
+use Carbon\Carbon;
+
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
+use RZP\Constants\Timezone;
 use RZP\Models\Base\PublicCollection;
 
 class HdfcFss extends Base
 {
-    const GATEWAY            = Payment\Gateway::HDFC;
-    const ACQUIRER           = Payment\Gateway::ACQUIRER_HDFC;
-    const EXTENSION          = FileStore\Format::XLSX;
-    const FILE_NAME          = 'Hdfc_FSS_Failed_Refunds';
-    const FILE_TYPE          = FileStore\Type::HDFC_FSS_FAILED_REFUND;
+    const GATEWAY                = Payment\Gateway::HDFC;
+    const ACQUIRER               = Payment\Gateway::ACQUIRER_HDFC;
+    const EXTENSION              = FileStore\Format::XLSX;
+    const FILE_NAME              = 'Hdfc_FSS_Failed_Refunds';
+    const FILE_TYPE              = FileStore\Type::HDFC_FSS_FAILED_REFUND;
+    const BASE_STORAGE_DIRECTORY = 'HdfcFss/Refund/Failed/';
 
     const SR_NO              = 'Sr No';
     const MECODE             = 'MECODE';
@@ -66,5 +70,12 @@ class HdfcFss extends Base
         }
 
         return $formattedData;
+    }
+
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . '_' . $this->mode . '_' . $time;
     }
 }

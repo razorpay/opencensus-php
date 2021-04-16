@@ -11,10 +11,11 @@ use RZP\Models\Base\PublicCollection;
 
 class HdfcCybersource extends Base
 {
-    const GATEWAY          = Payment\Gateway::CYBERSOURCE;
-    const EXTENSION        = FileStore\Format::XLSX;
-    const FILE_NAME        = 'Hdfc_Cybersource_Failed_Refunds';
-    const FILE_TYPE        = FileStore\Type::HDFC_CYBERSOURCE_FAILED_REFUND;
+    const GATEWAY                = Payment\Gateway::CYBERSOURCE;
+    const EXTENSION              = FileStore\Format::XLSX;
+    const FILE_NAME              = 'Hdfc_Cybersource_Failed_Refunds';
+    const FILE_TYPE              = FileStore\Type::HDFC_CYBERSOURCE_FAILED_REFUND;
+    const BASE_STORAGE_DIRECTORY = 'HdfcCybersource/Refund/Failed/';
 
     const SR_NO                   = 'Sr No';
     const RAZORPAY_REFUND_ID      = 'Razorpay Refund ID';
@@ -62,5 +63,12 @@ class HdfcCybersource extends Base
         }
 
         return $formattedData;
+    }
+
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . '_' . $this->mode . '_' . $time;
     }
 }

@@ -26,6 +26,7 @@ class Icici extends Base
     const GATEWAY                     = Payment\Gateway::NETBANKING_ICICI;
     const PAYMENT_TYPE_ATTRIBUTE      = Payment\Entity::BANK;
     const GATEWAY_CODE                = [Payment\Processor\Netbanking::ICIC_C, IFSC::ICIC];
+    const BASE_STORAGE_DIRECTORY      = 'Icici/Refund/Netbanking/';
 
     const DIRECT                      = 'direct';
 
@@ -316,6 +317,6 @@ class Icici extends Base
     {
        $name = parent::getFileToWriteNameWithoutExt();
 
-       return $pid . '/' . $name;
+       return static::BASE_STORAGE_DIRECTORY . $pid . '/' . $name;
     }
 }

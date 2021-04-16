@@ -17,10 +17,11 @@ use RZP\Gateway\Netbanking\Pnb\ClaimFields;
 
 class Pnb extends Base
 {
-    const FILE_NAME = 'PNB_CLAIMS_';
-    const EXTENSION = FileStore\Format::XLSX;
-    const FILE_TYPE = FileStore\Type::PNB_NETBANKING_CLAIMS;
-    const GATEWAY   = Payment\Gateway::NETBANKING_PNB;
+    const FILE_NAME              = 'PNB_CLAIMS_';
+    const EXTENSION              = FileStore\Format::XLSX;
+    const FILE_TYPE              = FileStore\Type::PNB_NETBANKING_CLAIMS;
+    const GATEWAY                = Payment\Gateway::NETBANKING_PNB;
+    const BASE_STORAGE_DIRECTORY = 'Pnb/Claims/Netbanking/';
 
     public function createFile($data)
     {
@@ -112,7 +113,7 @@ class Pnb extends Base
     {
         $dateTime = Carbon::now(Timezone::IST)->format('YdmHis');
 
-        return static::FILE_NAME . $dateTime;
+        return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . $dateTime;
     }
 
     protected function getFormattedAmount($amount): String
