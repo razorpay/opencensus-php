@@ -10,10 +10,13 @@ use RZP\Models\FundAccount\Validation\Core as FAVCore;
 class FavQueueForFTS extends Job
 {
     // max number of retry attempts
-    const MAX_RETRY_ATTEMPTS = 5;
+    const MAX_RETRY_ATTEMPTS = 4;
 
-    // min delay used for exponential backoff
-    const MIN_RETRY_DELAY = 30;
+    // Min delay used for exponential backoff
+    // Setting it to 1 sec
+    // With each retry, the release wait period will double
+    // Hence, the total time spent in waiting between retries shall be (1 + 2 + 4 + 8) = 15 secs
+    const MIN_RETRY_DELAY = 1;
 
     /**
      * @var string
