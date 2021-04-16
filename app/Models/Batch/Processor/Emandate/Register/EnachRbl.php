@@ -3,13 +3,15 @@
 namespace RZP\Models\Batch\Processor\Emandate\Register;
 
 use Config;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Gateway\Enach\Rbl;
+use RZP\Gateway\Base\Action;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Gateway;
 use RZP\Gateway\Enach\Base\Entity;
-use PhpOffice\PhpSpreadsheet\IOFactory as SpreadsheetIOFactory;
 
 class EnachRbl extends Base
 {
@@ -66,9 +68,7 @@ class EnachRbl extends Base
 
     protected function getGatewayPayment(Payment\Entity $payment)
     {
-        return $this->repo
-                    ->enach
-                    ->findAuthorizedPaymentByPaymentId($payment->getId());
+        return $this->repo->enach->findByPaymentIdAndAction($payment->getId(), Action::AUTHORIZE);
     }
 
     /**
@@ -79,8 +79,8 @@ class EnachRbl extends Base
      */
     protected function parseExcelSheetsUsingPhpSpreadSheet($filePath, $numRowsToSkip = 0): array
     {
-        $fileType = SpreadsheetIOFactory::identify($filePath);
-        $reader = SpreadsheetIOFactory::createReader($fileType);
+        $fileType = IOFactory::identify($filePath);
+        $reader = IOFactory::createReader($fileType);
         $reader->setReadDataOnly(true);
         $spreadsheet = $reader->load($filePath);
         // Override 1: Asserts that it has 2 sheets (For some reason it is expected). And it returns the 2nd sheet's content.

@@ -6,6 +6,7 @@ use Closure;
 use Illuminate;
 
 use RZP\Models;
+use RZP\Gateway;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Constants\Entity;
@@ -133,6 +134,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\BankingAccountTpv\Repository                   $banking_account_tpv;
  * @property Models\Partner\Activation\Repository                  $partner_activation;
  * @property Models\Settlement\Repository                          $settlement
+ * @property Gateway\Enach\Base\Repository                         $enach
  */
 
 class RepositoryManager extends Illuminate\Support\Manager
