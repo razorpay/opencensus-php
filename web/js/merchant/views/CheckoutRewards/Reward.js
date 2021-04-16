@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import Time from 'common/ui/Time';
-import Button, { AsyncBtn } from 'common/new-ui/Button';
+import { AsyncBtn } from 'common/new-ui/Button';
 import Popover, { PopoverBody } from 'common/ui/Popover';
+import { RewardModal } from './RewardModal';
 
-const TIME_FORMAT = 'Do MMM';
+const TIME_FORMAT = 'Do MMM YYYY';
 
 export const STATUSES = {
   AVAILABLE: 'available',
@@ -34,9 +35,9 @@ const CTA = {
 const Reward = (props) => {
   const {
     id,
+    brand_name,
     logo,
     name,
-    display_text,
     starts_at,
     ends_at,
     status,
@@ -77,53 +78,38 @@ const Reward = (props) => {
     });
   };
 
+  const openTerms = () => {
+    props.openModal({
+      component: <RewardModal reward={props.reward} closeModal={props.closeModal} />,
+      size: 'large',
+    });
+  };
+
   const CTAButton = () =>
     CTA[status] == 'Remove' ? (
-      status == 'live' ? (
-        <div
-          className={`Rewards--button-grp ${isEditing ? 'Rewards--button-grp--extra-width' : ''}`}
-        >
-          <AsyncBtn.Transparent
-            class={`Reward--remove-button ${isEditing ? 'Reward--remove-button--disabled' : ''}`}
-            onClick={() => clickRemove()}
-            disabled={false}
-            showLoader={false}
-            pendingState="Removing..."
-          >
-            {isEditing ? 'Removing...' : CTA[status]}
-          </AsyncBtn.Transparent>
-          <Button.Primary
-            type="button"
-            class={status == 'live' ? 'Reward--live-button' : 'Reward--next-button'}
-          >
-            {status == 'live' ? 'LIVE' : 'NEXT'}
-          </Button.Primary>
-        </div>
-      ) : (
-        <AsyncBtn.Transparent
-          class={`Reward--remove-button ${isEditing ? 'Reward--remove-button--disabled' : ''}`}
-          onClick={() => clickRemove()}
-          disabled={false}
-          showLoader={false}
-          pendingState="Removing..."
-        >
-          {isEditing ? 'Removing...' : CTA[status]}
-        </AsyncBtn.Transparent>
-      )
+      <AsyncBtn.Transparent
+        class={`Reward--remove-button ${isEditing ? 'Reward--remove-button--disabled' : ''}`}
+        onClick={clickRemove}
+        disabled={false}
+        showLoader={false}
+        pendingState="Removing..."
+      >
+        {isEditing ? 'Removing...' : CTA[status]}
+      </AsyncBtn.Transparent>
     ) : (
       <>
         <AsyncBtn.Primary
           class={`Button--small Reward--activate-button ${
             isEditing ? 'Reward--activate-button--disabled' : ''
           }`}
-          disabled={false}
-          onClick={() => clickActive()}
+          disabled={props.isEmailAndContactOptional}
+          onClick={clickActive}
           showLoader={false}
           pendingState="Activating..."
         >
           {isEditing ? 'Activating...' : CTA[status]}
         </AsyncBtn.Primary>
-        {!props.isOneRewardLive && (
+        {!props.isEmailAndContactOptional && !props.isOneRewardLive && (
           <Popover align="bottom" theme="dark" className="reward-active-button-popover">
             <PopoverBody>
               <div>
@@ -137,10 +123,10 @@ const Reward = (props) => {
     );
 
   const renderTimeComponent = () => {
-    if (props.subsection === SUB_SECTIONS.AVAILABLE_NOW) {
+    if (props.subsection === SUB_SECTIONS.AVAILABLE_NOW || props.subsection === SUB_SECTIONS.LIVE) {
       return (
         <span className="Reward--ends-at">
-          <span>Expires on: </span>
+          <span>Expires: </span>
           <Time value={ends_at} format={TIME_FORMAT} />
         </span>
       );
@@ -148,11 +134,11 @@ const Reward = (props) => {
       return (
         <>
           <span className="Reward--starts-at">
-            {status === 'live' ? 'Live: ' : 'From '}
+            {'Starts: '}
             <Time value={starts_at} format={TIME_FORMAT} />
           </span>
           <span className="Reward--ends-at">
-            {status === 'live' ? 'Expires: ' : 'to '}
+            {'Expires: '}
             <Time value={ends_at} format={TIME_FORMAT} />
           </span>
         </>
@@ -161,7 +147,7 @@ const Reward = (props) => {
   };
 
   return (
-    <div className="media Rewards--list--item">
+    <div className={`media Rewards--list--item Rewards--list--item-${props.subsection}`}>
       <div className="media-left media-middle">
         <img src={logo} className="Reward--logo" />
       </div>
@@ -169,14 +155,19 @@ const Reward = (props) => {
         <div className="media-heading Reward--brand">
           {merchant_website_redirect_link ? (
             <a href={merchant_website_redirect_link} target="_blank" rel="noreferrer noopener">
-              {name}
+              {brand_name}
             </a>
           ) : (
-            name
+            brand_name
           )}
         </div>
-        <div className="Reward--desc">{display_text}</div>
-        <div className="Reward--time-duration">{renderTimeComponent()}</div>
+        <div className="Reward--desc">{name}</div>
+        <div className="Reward--time-duration">
+          {renderTimeComponent()}
+          <span className="Reward--terms" onClick={openTerms}>
+            {'T&C'}
+          </span>
+        </div>
       </div>
       <div className="media-right">
         <CTAButton />

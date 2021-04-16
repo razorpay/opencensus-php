@@ -148,8 +148,8 @@ export default class InstantActivationAnnouncements extends Component {
           title = 'KYC Clarification';
           content = (
             <React.Fragment>
-              Your KYC details require further clarifications. Update required details within 2 days, otherwise your settlements might get paused.
-              &nbsp;
+              Your KYC details require further clarifications. Update required details within 2
+              days, otherwise your settlements might get paused. &nbsp;
               <Link to="/activation" style={{ 'font-weight': 'bold' }}>
                 Update Details
               </Link>

@@ -11,7 +11,7 @@ export default function NewSubscriptionLinkAddOnDetails({
   currency,
   ...props
 }) {
-  const filteredAddOns = items.items.filter(item => item.currency === currency);
+  const filteredAddOns = items.items.filter((item) => item.currency === currency);
 
   return (
     <>
@@ -39,14 +39,13 @@ export default function NewSubscriptionLinkAddOnDetails({
               </span>
             </li>
           ))}
-          {isPresent(addons) &&
-            isPresent(addons[addons.length - 1]) && (
-              <li class="no-counter">
-                <button class="btn btn-link" onClick={props.onAddAddon}>
-                  Add New Item
-                </button>
-              </li>
-            )}
+          {isPresent(addons) && isPresent(addons[addons.length - 1]) && (
+            <li class="no-counter">
+              <button class="btn btn-link" onClick={props.onAddAddon}>
+                Add New Item
+              </button>
+            </li>
+          )}
         </ol>
       </div>
     </>

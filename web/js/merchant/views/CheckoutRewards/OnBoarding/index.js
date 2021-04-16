@@ -67,7 +67,7 @@ export default class RewardsOnBoarding extends React.Component {
               {...sliderProps}
               feature={RZPFeatures.REWARDS}
               title="Checkout Rewards"
-              imageUrl="/dist/css/assets/product_onboarding/rewards_checkout.gif"
+              imageUrl="https://cdn.razorpay.com/static/assets/rewards/rewards_checkout.gif"
               desc="Give your customers exciting rewards with every purchase! Watch your sales grow with higher conversion and higher repeat purchase."
             />
           )}

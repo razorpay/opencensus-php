@@ -2,7 +2,7 @@ import { connect } from 'react-redux';
 import { UPI_AVL_LIMIT } from 'merchant/helpers/data';
 import { getFormattedAmount } from 'common/utils/rzp-utils';
 
-@connect(state => ({
+@connect((state) => ({
   user: state.session.user,
 }))
 export default class UPIBanner extends React.Component {

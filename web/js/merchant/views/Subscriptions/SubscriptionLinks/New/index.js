@@ -331,7 +331,6 @@ export default class NewSubscriptionLink extends Component {
       quantity: 1,
     };
 
-
     this.setState({
       fields,
     });
@@ -517,7 +516,6 @@ export default class NewSubscriptionLink extends Component {
   renderWizard() {
     const { isFetchingSubscription, currentTab, _selectedPlanAmount, fields } = this.state;
     const isLastTab = currentTab === tabs.length - 1;
-
 
     const sumOfAddons = fields.addons.reduce((previous, addonItem) => {
       const totalAmount = addonItem.item && addonItem.item.amount * addonItem.quantity;
