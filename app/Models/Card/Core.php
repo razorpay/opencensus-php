@@ -428,7 +428,10 @@ class Core extends Base\Core
             Card\Entity::VAULT           => $newCard->getVault(),
         );
 
-        $cards = $this->repo->card->getByParams($params, ['iinRelation'], $limit);
+        $cards = $this->repo->useSlave(function() use ($params, $limit)
+        {
+            return $this->repo->card->getByParams($params, ['iinRelation'], $limit);
+        });
 
         if ($cards->count() > 0)
         {

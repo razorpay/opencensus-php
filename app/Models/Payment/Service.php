@@ -3110,11 +3110,18 @@ class Service extends Base\Service
         }
         else
         {
-            $payments = $this->repo->payment->findPaymentsWithCardVault(Card\Vault::RZP_ENCRYPTION, $limit);
+            $payments = $this->repo->useSlave(function() use ($limit)
+            {
+                return $this->repo->payment->findPaymentsWithCardVault(Card\Vault::RZP_ENCRYPTION, $limit);
+            });
 
             $cardIds = $payments->pluck(Entity::CARD_ID)->toArray();
 
-            $cards = $this->repo->card->findCardsWithVaultAndNoPayments(Card\Vault::RZP_ENCRYPTION, $limit, $cardIds);
+            $cards = $this->repo->useSlave(function() use ($limit, $cardIds)
+            {
+                return $this->repo->card->findCardsWithVaultAndNoPayments(Card\Vault::RZP_ENCRYPTION, $limit, $cardIds);
+            });
+
         }
 
         $this->trace->info(
