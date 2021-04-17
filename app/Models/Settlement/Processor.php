@@ -366,12 +366,10 @@ class Processor extends Base\Core
         $this->traceMemoryUsage(TraceCode::MEMORY_USAGE_SETTLEMENT_FETCHING_ENTITIES);
 
         // fetch all the valid transactions from the slave
-        $txns = $this->repo->useSlave( function() use
-                        ($settledAtCutOff, $channel, $inMids, $notInMids, $useLimit, $params)
-        {
-            return $this->repo->transaction->fetchUnsettledTransactions(
-                $settledAtCutOff, $channel, $inMids, $notInMids, true, $useLimit, $params);
-        });
+        $txns = $this->repo
+                     ->transaction
+                     ->fetchUnsettledTransactions(
+                         $settledAtCutOff, $channel, $inMids, $notInMids, true, $useLimit, $params);
 
         $mids = $txns->pluck(Transaction\Entity::MERCHANT_ID)->toArray();
 
@@ -887,11 +885,9 @@ class Processor extends Base\Core
         }
 
         // fetch all the valid transactions from the slave
-        $txns = $this->repo->useSlave( function() use ($merchant, $balance, $params)
-        {
-            return $this->repo->transaction->fetchUnsettledTransactionsForProcessing($merchant->getId(), $balance, $params);
-        });
-
+        $txns = $this->repo
+                     ->transaction
+                     ->fetchUnsettledTransactionsForProcessing($merchant->getId(), $balance, $params);
         // If there are no transactions to settle then return
         if ($txns->isEmpty() === true)
         {

@@ -125,7 +125,7 @@ class Repository extends Base\Repository
 
         $selectedColumns = $this->fetchRequiredColumnsForSettlement($fetchAll);
 
-        $query = $this->newQuery()
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
                       ->select($selectedColumns)
                       ->joinSub($activatedMerchants->toSql(), 'settle_merchants', function($join)
                                 {
@@ -1798,7 +1798,7 @@ class Repository extends Base\Repository
         $timestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
 	    // The filter on channel is dropped since we have a new index which works without it. WEF Feb 2020.
-        $query = $this->newQuery()
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
                       ->select($selectedColumns)
                       ->where($transactionMerchantId, $mid)
                       ->where($transactionOnHold, 0)
@@ -1832,6 +1832,7 @@ class Repository extends Base\Repository
                 'params'       => $params,
                 'balance_type' => $balance->getType(),
                 'balance_id'   => $balance->getId(),
+                'connection'   => $query->getConnection()->getName(),
             ]);
 
         return $results;
