@@ -3313,12 +3313,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function setPublicGatewayProviderAttribute(array & $array)
     {
-        $app = \App::getFacadeRoot();
-
-        $auth = $app['basicauth'];
-
-        if (($auth->getMerchant() === null) or
-            ($auth->getMerchant()->isFeatureEnabled(Feature\Constants::EXPOSE_GATEWAY_PROVIDER) === false))
+        if (($this->merchant === null) or
+            ($this->merchant->isFeatureEnabled(Feature\Constants::EXPOSE_GATEWAY_PROVIDER) === false))
         {
             unset($array[self::GATEWAY_PROVIDER]);
         }
