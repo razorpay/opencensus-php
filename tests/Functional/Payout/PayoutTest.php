@@ -6388,10 +6388,6 @@ class PayoutTest extends OAuthTestCase
                 {
                     return 'yesbank';
                 }
-                if($featureFlag === (RazorxTreatment::QUEUE_PAYOUT_CREATE_REQUEST))
-                {
-                    return 'off';
-                }
                 return 'on';
             });
 
@@ -6437,10 +6433,6 @@ class PayoutTest extends OAuthTestCase
                    if($featureFlag === (RazorxTreatment::IMPS_MODE_PAYOUT_FILTER))
                    {
                        return 'yesbank';
-                   }
-                   if($featureFlag === (RazorxTreatment::QUEUE_PAYOUT_CREATE_REQUEST))
-                   {
-                       return 'off';
                    }
                    return 'on';
                });

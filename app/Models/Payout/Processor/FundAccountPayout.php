@@ -290,18 +290,11 @@ class FundAccountPayout extends Base
 
     protected function shouldDelayTransactionCreationForPayout()
     {
-        $variant = $this->app['razorx']->getTreatment(
-            $this->merchant->getId(),
-            Merchant\RazorxTreatment::QUEUE_PAYOUT_CREATE_REQUEST,
-            $this->app['rzp.mode'] ?? 'live');
-
-        if (($variant === 'on') or
-            ($this->merchant->isAtLeastOneFeatureEnabled(
+        if ($this->merchant->isAtLeastOneFeatureEnabled(
                     [
                         Features::PAYOUT_PROCESS_ASYNC_LP,
                         Features::PAYOUT_PROCESS_ASYNC
-                    ]) === true))
-
+                    ]) === true)
         {
             return true;
         }

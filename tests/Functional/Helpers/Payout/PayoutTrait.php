@@ -667,10 +667,6 @@ trait PayoutTrait
                 {
                     return 'yesbank';
                 }
-                if ($featureFlag === (RazorxTreatment::QUEUE_PAYOUT_CREATE_REQUEST))
-                {
-                    return 'off';
-                }
                 return 'on';
             });
 

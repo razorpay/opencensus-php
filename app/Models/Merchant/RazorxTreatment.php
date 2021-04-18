@@ -159,9 +159,6 @@ final class RazorxTreatment
 
     const PAYOUT_TO_CARDS_VIA_RBL = 'payout_to_cards_via_rbl';
 
-    // Ledger Async For payouts
-    const QUEUE_PAYOUT_CREATE_REQUEST = 'queue_payout_create_request';
-
     // experiment to ramping pg persistent invoice
     const PG_PERSISTENT_INVOICE = 'pg_persistent_invoice';
 
