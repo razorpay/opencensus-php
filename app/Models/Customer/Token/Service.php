@@ -322,7 +322,10 @@ class Service extends Base\Service
          */
         $lastCreatedAt = $this->app['cache']->get(self::CREATE_GLOBAL_TOKEN_CRON_KEY);
 
-        $payments = $this->repo->payment->getPaymentsForCreatingCustomerVpaTokens($limit, $lastCreatedAt ?? null);
+        $payments = $this->repo->useSlave(function() use ($limit, $lastCreatedAt)
+        {
+            return $this->repo->payment->getPaymentsForCreatingCustomerVpaTokens($limit, $lastCreatedAt ?? null);
+        });
 
         $time = time() - $time;
 

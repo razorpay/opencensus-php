@@ -2249,11 +2249,13 @@ class Service extends Base\Service
 
         $timeUpperLimit = Carbon::now()->subMinutes(5)->getTimestamp();
 
-        $payments = $this->repo
-                         ->payment
-                         ->getAuthorizedAutoCapturePaymentsBetweenTimestamps(
-                            $timeLowerLimit, $timeUpperLimit
-                         );
+        $payments = $this->repo->useSlave(function () use ($timeLowerLimit, $timeUpperLimit)
+        {
+            return $this->repo->payment->getAuthorizedAutoCapturePaymentsBetweenTimestamps(
+                $timeLowerLimit, $timeUpperLimit
+             );
+        });
+
 
         $success          = 0;
         $totalCount       = count($payments);
@@ -2261,13 +2263,18 @@ class Service extends Base\Service
 
         foreach ($payments as $payment)
         {
+            $payment->reload();
+
             $this->merchant = $payment->merchant;
 
             try
             {
-                $this->getNewProcessor()->autoCapturePaymentIfApplicable($payment);
+                if ($payment->isCaptured() === false)
+                {
+                    $this->getNewProcessor()->autoCapturePaymentIfApplicable($payment);
 
-                $success++;
+                    $success++;
+                }
             }
             catch (Exception\RecoverableException $e)
             {

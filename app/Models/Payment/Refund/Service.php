@@ -2272,7 +2272,10 @@ class Service extends Base\Service
 
         $irctcMerchantIds = $featureEntities->pluck(Feature\Entity::ENTITY_ID)->toArray();
 
-        $payment = $this->repo->payment->fetchFirstAuthorizedPaymentsForOrderReceiptOfMerchants($reservationId, $irctcMerchantIds);
+        $payment = $this->repo->useSlave(function () use ($reservationId, $irctcMerchantIds)
+        {
+            return $this->repo->payment->fetchFirstAuthorizedPaymentsForOrderReceiptOfMerchants($reservationId, $irctcMerchantIds);
+        });
 
         if (empty($payment) === true)
         {

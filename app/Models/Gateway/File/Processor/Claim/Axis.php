@@ -38,13 +38,15 @@ class Axis extends Base
 
         $bankCode = (($corporate === true) ? Payment\Processor\Netbanking::UTIB_C : IFSC::UTIB);
 
-        $claims = $this->repo->payment->fetchCorporatePaymentsWithStatusAndRelations(
-            $begin,
-            $end,
-            static::GATEWAY,
-            $bankCode,
-            ['terminal']
-        );
+        $claims = $this->repo->useSlave(function () use ($begin, $end, $bankCode)
+        {
+            return $this->repo->payment->fetchCorporatePaymentsWithStatusAndRelations(
+                    $begin,
+                    $end,
+                    static::GATEWAY,
+                    $bankCode,
+                    ['terminal']);
+        });
 
         $claims = $claims->reject(function($claim)
         {
