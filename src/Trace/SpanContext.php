@@ -57,6 +57,11 @@ class SpanContext
      */
     private $fromHeader;
 
+    /*
+     * @var array Baggage Items
+     */
+    private $baggageItems;
+
     /**
      * Creates a new SpanContext instance
      *
@@ -69,12 +74,14 @@ class SpanContext
         string $traceId = null,
         string $spanId = null,
         bool $enabled = null,
-        bool $fromHeader = false
+        bool $fromHeader = false,
+        array $baggageItems = []
     ) {
         $this->traceId = $traceId ?: IdGenerator::hex(16);
         $this->spanId = $spanId;
         $this->enabled = $enabled;
         $this->fromHeader = $fromHeader;
+        $this->baggageItems = $baggageItems;
     }
 
     /**
@@ -135,5 +142,41 @@ class SpanContext
     public function fromHeader(): bool
     {
         return $this->fromHeader;
+    }
+
+    /**
+     * Fetch the baggage.
+     *
+     * @return array
+     */
+    public function baggage()
+    {
+        return $this->baggageItems;
+    }
+
+    /**
+     * Creates SpanContext with baggageItems
+     *
+     * @param string $key Item key
+     * @param string $value Item value
+     *
+     * @return SpanContext|self
+     */
+    public function withBaggageItem(string $key, string $value): SpanContext
+    {
+        return new self($this->traceId(), $this->spanId(),
+        $this->enabled(), $this->fromHeader(), array_merge($this->baggageItems, [$key => $value]));
+    }
+
+    /**
+     * Gets a baggage item having a key
+     *
+     * @param string $key Item key
+     *
+     * @return string|null
+     */
+    public function getBaggageItem(string $key): ?string
+    {
+        return array_key_exists($key, $this->baggageItems) ? $this->baggageItems[$key] : null;
     }
 }

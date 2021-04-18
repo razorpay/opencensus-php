@@ -34,6 +34,8 @@ class JaegerPropagator implements PropagatorInterface
 
     const CONTEXT_HEADER_FORMAT = '%032s:%016s:%016s:%x';    //traceId, spanId are stored as hex strings in opencensus
 
+    const BAGGAGE_HEADER_PREFIX = 'razorpay';
+
     /**
      * @var FormatterInterface
      */
@@ -77,7 +79,7 @@ class JaegerPropagator implements PropagatorInterface
         if (count($data) < 4) {
             return new SpanContext();
         }
-        
+
         $traceId = $data[0];
         $spanId = $data[1];
         $parentSpanId = $data[2];
@@ -87,7 +89,22 @@ class JaegerPropagator implements PropagatorInterface
 
         $fromHeader = true;
 
-        return new SpanContext($traceId, $spanId, $enabled, $fromHeader);
+
+        // get baggage header
+        $baggageItems = [];
+        foreach($headers as $k => $v)
+        {
+            if(stripos($k, 'HTTP_' . self::BAGGAGE_HEADER_PREFIX) !== false)
+            {
+                $itemKey = str_replace('HTTP_' . self::BAGGAGE_HEADER_PREFIX, "", $k);
+                if ($itemKey != "")
+                {
+                    $baggageItems[$itemKey] = $v;
+                }
+            }
+        }
+
+        return new SpanContext($traceId, $spanId, $enabled, $fromHeader, $baggageItems);
     }
 
     public function inject(SpanContext $context, HeaderSetter $setter)
@@ -98,6 +115,15 @@ class JaegerPropagator implements PropagatorInterface
         $enabled = $context->enabled();
 
         $value = sprintf(self::CONTEXT_HEADER_FORMAT, $traceId, $spanId, $parentID, $enabled);
+
+        // set baggage header
+        if (count($context->baggage()) > 0)
+        {
+            foreach ($context->baggage() as $k => $v)
+            {
+                $setter->set(strtoupper(self::BAGGAGE_HEADER_PREFIX . $k), $v);
+            }
+        }
 
         if (!headers_sent()) {
             header("$this->header: $value");
