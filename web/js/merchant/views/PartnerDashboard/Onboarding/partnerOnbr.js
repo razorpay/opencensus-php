@@ -4,6 +4,7 @@ import Slider from 'common/new-ui/Slider';
 import S0 from './steps/S0';
 import S1 from './steps/S1';
 import S2 from './steps/S2';
+import S2New from './steps/S2-new';
 import S3 from './steps/S3';
 import User from 'merchant/models/User';
 import { updateSession } from 'merchant/reducers/session';
@@ -133,7 +134,11 @@ export default class BaseScreen extends React.Component {
 
   render() {
     return (
-      <div className="partner-onboarding-base-screen">
+      <div
+        className={`partner-onboarding-base-screen ${
+          this.props.user.isPurePlatformSignupEnabled ? 'new-screen' : ''
+        }`}
+      >
         <Slider>
           {!this.props.disableClose
             ? (sliderProps) => (
@@ -148,15 +153,27 @@ export default class BaseScreen extends React.Component {
           {(sliderProps) => (
             <S1 key={1} sliderProps={sliderProps} onNext={this.handleNewUserGetStarted} />
           )}
-          {(sliderProps) => (
-            <S2
-              key={2}
-              sliderProps={sliderProps}
-              onRoleSelect={this.onRoleSelect}
-              role={this.state.role}
-              abort={this.handleCloseClick}
-            />
-          )}
+          {(sliderProps) =>
+            this.props.user.isPurePlatformSignupEnabled ? (
+              <S2New
+                key={2}
+                sliderProps={sliderProps}
+                onRoleSelect={this.onRoleSelect}
+                role={this.state.role}
+                abort={this.handleCloseClick}
+                tracking={this.props.tracking}
+                merchantId={this.props.user.merchant.id}
+              />
+            ) : (
+              <S2
+                key={4}
+                sliderProps={sliderProps}
+                onRoleSelect={this.onRoleSelect}
+                role={this.state.role}
+                abort={this.handleCloseClick}
+              />
+            )
+          }
           {(sliderProps) => <S3 key={3} sliderProps={sliderProps} onNext={this.onCompleteClick} />}
         </Slider>
         {!this.props.disableClose && (

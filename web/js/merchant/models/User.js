@@ -904,6 +904,10 @@ export default class User {
     return this.getExpStatus('partner_app_store');
   }
 
+  get isPurePlatformSignupEnabled() {
+    return this.getExpStatus('pure_platform_signup');
+  }
+
   get canSkipPOADocument() {
     return this.getExpStatus('SKIP_POA_DOCUMENT_FUNCTIONALITY');
   }

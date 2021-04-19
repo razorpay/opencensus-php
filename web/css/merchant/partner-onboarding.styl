@@ -8,8 +8,12 @@
     font-family: Lato;
     font-style: normal;
     padding: 50px;
+    &.new-screen
+      padding: 25px 50px 35px
     .partner-onbr-info
       height: 360px;
+      &.step-2
+        height: 390px
       p
         font-size: 14px;
     .title
@@ -43,7 +47,12 @@
     .info-blue
       color:#518FF0;
      .options-group
-       margin-top:21px;
+       margin: 21px 0 0;
+       &.select-partner-type-options
+        margin: 48px 0 40px;
+        display: flex;
+        justify-content: space-between;
+
        div.value
          height: 102px;
          background: #FFFFFF;
@@ -122,12 +131,155 @@
           vertical-align: middle;
       .slider-btn.back 
         color: #518FF0;
+
+  .SelectBox.PartnerTypeSelectBox
+    padding: 30px 0 28px 0;
+    margin-bottom: 0;
+    display: block;
+    position: relative;
+    background: #FEFEFF;
+    border: 2px solid #D0E3FA;
+    box-sizing: border-box;
+    box-shadow: 2px 4px 12px rgba(11, 112, 231, 0.05);
+    border-radius: 4px;
+    cursor: pointer;
+
+    .SelectBox--popover.rzp-popover
+      position: absolute;
+      width: 160px !important;
+      left: 220px !important;
+      top: 20px !important;
+
+      .rzp-popover-title
+        h4
+          font-size: 12px;
+      .rzp-popover-body
+        font-size: 10px;
+        line-height: 13px;
+
+    .select-box-image-container 
+      position: absolute;
+      left: 50%;
+      top: -24px;
+      transform: translateX(-50%);
+
+    .SelectBox-heading
+      border-bottom: 1px solid #EDF0F5;
+      color: #162F56;
+      margin: 0 5px 10px;
+      height: 70px;
+
+      .Input-label
+        text-align: center;
+        color: #326ECE;
+        margin-bottom: 0;
+
+      .Input-desc
+        margin-top: 0;
+        color: #162F56;
+        font-size: 12px;
+        line-height: 14px;
+        padding: 0 18px;
+        text-align: center;
+
+      img 
+        margin-right: 8px;
+        height: 48px;
+
+    .SelectBox-action
+      padding: 0 18px 0 22px;
+
+      .Input-desc
+        font-size: 14px;
+        color: #162F56;
+        margin: 12px 0;
+      
+      ul
+        padding-left: 5px;
+        list-style: none;
+
+        li
+          font-size: 12px;
+          color: #536582;
+          position: relative;
+
+          &::before 
+            content: '\2022';
+            color: #326ECE;
+            position: absolute;
+            left: -1em;
+      
+    .select-button-container
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      background: #D0E3FA;
+      height: 28px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      .radio-btn
+        background: #FFFFFF;
+        border: 1px solid #326ECE;
+        height: 16px;
+        width: 16px;
+        border-radius: 50%;
+
+        i.fa-check
+          font-size: 10px;
+          position: relative;
+          color: #326ECE;
+          top: -4px;
+          left: 2px;
+
+    &:not(:last-child)
+      margin-bottom: 0;
+      margin-right: 22px;
+
+    .content
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+
+    &:hover
+      background: #FEFEFF;
+
+    &.checked
+      border: 2px solid #326ECE;
+
+      .select-button-container
+        background: #326ECE;
+
+      i.i-check
+        color:#518FF0;
+
 @media (min-width: 900px) 
   .partner-onboarding-base-screen
     min-width:850px;
     background-image:url('assets/onboarding/prt-bkg.png')
+    transition: background-image 5s ease-in-out;
+
+    &.step-2
+      background-image: none;
+      
+      .partner-illustration
+        width: 50%;
+        position: absolute;
+        height: 190px;
+        background: url(assets/onboarding/partner-illustration.png) no-repeat 72% 52px, linear-gradient(to bottom right, transparent 0%, transparent 50%, #67deaf 50%, #67deaf 100%);
+        bottom: 0;
+        right: 0;
+        background-size: 50%, contain;
+
     .partner-onbr-info
       width: 50%;
+      &.step-2
+        width: 100%;
+        .SelectBox.PartnerTypeSelectBox
+          width: 244px;
+
   .slide-controller-wrapper
     width:50%;
 @media  (min-width: 320px) and (max-width: 1024px)

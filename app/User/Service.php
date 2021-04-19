@@ -1580,6 +1580,7 @@ class Service extends Base\Service
             'rx_disable_taxpayment_payoutflow',
             'onboarding_v2',
             'pl_description_required',
+            'pure_platform_signup',
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
