@@ -37,7 +37,7 @@ class PDOTest extends TestCase
                 'db.statement' => 'select * from users',
                 'span.kind'    => strtolower(Span::KIND_CLIENT),
                 'db.system' => 'mysql',
-                'net.peer.name' => 'localhost',
+                'net.peer.name' => 'localhost:3306'
             ],
             'kind' => strtolower(Span::KIND_CLIENT),
             'sameProcessAsParentSpan' => false
@@ -56,7 +56,8 @@ class PDOTest extends TestCase
                 'db.type'   => 'sql',
                 'db.system' => 'mysql',
                 'db.name'   => 'testdb',
-                'net.peer.name' => 'localhost',
+                'net.peer.name' => 'localhost:3306',
+                'net.peer.port' => '3306',
                 'db.connection_string' => 'mysql:host=localhost;dbname=testdb',
                 'span.kind' => strtolower(Span::KIND_CLIENT)
             ],
