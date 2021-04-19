@@ -35,7 +35,7 @@ const businessDetailsSchema = Yup.object().shape({
       excludeEmptyString: true,
     })
     .test('companypan', 'Invalid PAN format.', (value) => {
-      if (!value) {
+      if (!value || value.length <= 3) {
         return true;
       }
       return ['C', 'H', 'F', 'A', 'T', 'B', 'J', 'G', 'L'].indexOf(value[3].toUpperCase()) !== -1;
@@ -51,7 +51,7 @@ const businessDetailsSchema = Yup.object().shape({
       excludeEmptyString: true,
     })
     .test('promoter_pan', 'Invalid PAN Card', (value) => {
-      if (!value) {
+      if (!value || value.length <= 3) {
         return true;
       }
       return value[3].toLowerCase() === 'p';
