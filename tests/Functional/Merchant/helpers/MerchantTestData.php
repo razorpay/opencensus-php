@@ -7384,6 +7384,32 @@ return [
         ],
     ],
 
+    'testGetAutoDisabledMethodsFor5399EcommerceMerchant' => [
+        'request' => [
+            'url'      => '/internal/auto_disabled_methods/10000000000000',
+            'method'   => 'get',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                'auto_disabled_methods' => [ ]
+            ],
+        ],
+    ],
+
+    'testGetAutoDisabledMethodsFor5399OthersMerchant' => [
+        'request' => [
+            'url'      => '/internal/auto_disabled_methods/10000000000000',
+            'method'   => 'get',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                'auto_disabled_methods' => ['emi']
+            ],
+        ],
+    ],
+
     'testCreateSubmerchantWithCode' => [
         'request' => [
             'url' => '/submerchants',

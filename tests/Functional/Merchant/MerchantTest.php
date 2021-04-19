@@ -8917,6 +8917,30 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetAutoDisabledMethodsFor5399EcommerceMerchant()
+    {
+        $this->fixtures->merchant->edit('10000000000000', [
+            MerchantEntity::CATEGORY          => '5399',
+            MerchantEntity::CATEGORY2         => 'ecommerce',
+        ]);
+
+        $this->ba->terminalsAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetAutoDisabledMethodsFor5399OthersMerchant()
+    {
+        $this->fixtures->merchant->edit('10000000000000', [
+            MerchantEntity::CATEGORY          => '5399',
+            MerchantEntity::CATEGORY2         => 'others',
+        ]);
+
+        $this->ba->terminalsAuth();
+
+        $this->startTest();
+    }
+
     public function testCreateSubmerchantWithCode()
     {
         $this->fixtures->merchant->addFeatures(['marketplace', 'route_code_support']);
