@@ -15,6 +15,8 @@ class NetbankingFederalGatewayTest extends TestCase
 
     protected function setUp(): void
     {
+        $this->markTestSkipped("Gateway migrated entirely to Nbplus with new integration which is not present on api");
+
         $this->testDataFilePath = __DIR__.'/NetbankingFederalGatewayTestData.php';
 
         parent::setUp();

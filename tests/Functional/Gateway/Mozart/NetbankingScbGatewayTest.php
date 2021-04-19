@@ -13,6 +13,8 @@ class NetbankingScbGatewayTest extends TestCase
 
     protected function setUp(): void
     {
+        $this->markTestSkipped("Gateway migrated entirely to Nbplus, no longer API <-> Mozart flow");
+
         $this->testDataFilePath = __DIR__.'/NetbankingScbGatewayTestData.php';
 
         parent::setUp();

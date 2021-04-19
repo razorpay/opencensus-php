@@ -19,6 +19,8 @@ class NetbankingFederalCombinedFileTest extends TestCase
 
     protected function setUp(): void
     {
+        $this->markTestSkipped("Gateway migrated entirely to Nbplus, seperate Nbplus test case already present");
+
         Carbon::setTestNow();
 
         $this->testDataFilePath = __DIR__ . '/helpers/NebtankingFederalCombinedFileTestData.php';
