@@ -2014,7 +2014,7 @@ class Repository extends Base\Repository
 
     public function getByTokenIdAndCustomerId(string $tokenId, string $customerId)
     {
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->where(Entity::TOKEN_ID, $tokenId)
                     ->where(Entity::CUSTOMER_ID, $customerId)
                     ->first();
