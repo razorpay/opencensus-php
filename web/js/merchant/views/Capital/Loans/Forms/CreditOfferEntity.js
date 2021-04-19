@@ -81,8 +81,11 @@ class CreditOfferEntity extends Component {
     const creditOffer =
       credit_offer_details.data.credit_offers[credit_offer_details.data.credit_offers.length - 1];
 
+    const isOfferAccepted =
+      accepted_offer_details.data && accepted_offer_details.data.credit_offer_id;
+
     return (
-      <div class={'credit-offer-container'}>
+      <div className="credit-offer-container">
         <div className="loan-offer-wrapper">
           <CreditOffer
             offerDetails={creditOffer}
@@ -94,7 +97,7 @@ class CreditOfferEntity extends Component {
             creditOffer={creditOffer}
             _fromWhere={`${meta.product} Offer`}
           />
-          {!(accepted_offer_details.data && accepted_offer_details.data.credit_offer_id) ? (
+          {!isOfferAccepted ? (
             <div className="loan-offer-action">
               <Button.Transparent onClick={this.handleBack}>
                 <i className="i i-chevron-left" />
@@ -127,6 +130,12 @@ class CreditOfferEntity extends Component {
               </AsyncBtn.Primary>
             </div>
           )}
+          {isOfferAccepted ? (
+            <div className="credit-offer__meta">
+              <hr />
+              <p>Loan sanction letter will be sent on your registered email address</p>
+            </div>
+          ) : null}
         </div>
       </div>
     );
