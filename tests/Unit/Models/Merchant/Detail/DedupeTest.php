@@ -1,0 +1,248 @@
+<?php
+
+
+namespace Unit\Models\Merchant\Detail;
+
+use DB;
+use Mockery;
+use RZP\Constants\Mode;
+use RZP\Tests\Functional\TestCase;
+use RZP\Services\MerchantRiskClient;
+use RZP\Models\Merchant\Detail\BusinessType;
+use RZP\Models\Merchant\Detail\DeDupe\Constants;
+use RZP\Models\Merchant\Detail\Core as DetailCore;
+use RZP\Models\Merchant\Detail\DeDupe\Core as DedupeCore;
+
+class DedupeTest extends TestCase
+{
+    protected function mockMerchantRiskClient(string $merchantId, array $fields = [])
+    {
+        $mockMR = $this->getMockBuilder(MerchantRiskClient::class)
+            ->setMethods(['getMerchantRiskScores'])
+            ->getMock();
+
+        $mockMR->expects($this->any())
+            ->method('getMerchantRiskScores')
+            ->willReturn([
+                "client_type" => "onboarding",
+                "entity_id" => $merchantId,
+                "fields" => $fields
+            ]);
+
+        return $mockMR;
+    }
+
+    protected function createAndFetchMocks($isDedupeRequired = true, array $mockDedupeMethods = [])
+    {
+        $defaultMockDedupeMethods = ['isDedupeRequired'];
+
+        $mockDedupeMethods = array_merge($defaultMockDedupeMethods, $mockDedupeMethods);
+        $mockMC = $this->getMockBuilder(DedupeCore::class)
+            ->setMethods($mockDedupeMethods)
+            ->getMock();
+
+        $mockMC->expects($this->any())
+            ->method('isDedupeRequired')
+            ->willReturn($isDedupeRequired);
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['canSubmitActivationForm', 'triggerWorkflowFlowForImpersonatedMerchant'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('canSubmitActivationForm')
+            ->willReturn(true);
+
+        $detailCoreMock->expects($this->any())
+            ->method('triggerWorkflowFlowForImpersonatedMerchant')
+            ->willReturn(null);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+        $diagMock = Mockery::mock('RZP\Services\DiagClient');
+        $diagMock->shouldReceive([
+            'trackOnboardingEvent'  => [],
+            'buildRequestAndSend'   => [],
+            'trackEmailEvent'       => null
+        ]);
+//        $diagMock->shouldReceive('trackOnboardingEvent')->andReturn([]);
+//        $diagMock->shouldReceive('buildRequestAndSend')->andReturn([]);
+
+        $this->app->instance('diag', $diagMock);
+
+        return [
+            "dedupeCoreMock"    => $mockMC,
+            "detailCoreMock"    => $detailCoreMock
+        ];
+    }
+
+    public function testDedupeBeingSkippedForLinkedAccount()
+    {
+        $core = new DedupeCore();
+
+        $linkedAccount = $this->fixtures->create('merchant', ['parent_id' => '10000000000000']);
+
+        $this->assertEquals(false, $core->isDedupeRequired($linkedAccount));
+    }
+
+    public function testDedupeBeingSkippedForNonRazorpayOrg()
+    {
+        $core = new DedupeCore();
+
+        $dummyOrg = $this->fixtures->create('org', ['custom_code' => 'dummy']);
+
+        $merchant = $this->fixtures->create('merchant', ['org_id' => $dummyOrg['id']]);
+
+        $this->assertEquals(false, $core->isDedupeRequired($merchant));
+    }
+
+    public function testDedupeTrueAndActionOnFields()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
+        $merchant = $merchantDetail->merchant;
+
+        $mocks = $this->createAndFetchMocks(true);
+        $dedupeCore = $mocks['dedupeCoreMock'];
+
+        foreach (Constants::MERCHANT_RISK_ACTIONS as $action)
+        {
+            $mockedResponse = [];
+
+            foreach ($action['keysToCheck'] as $fieldName => $data)
+            {
+                $mockedResponse[] = [
+                    'field'     => $fieldName,
+                    'list'      => $data['list'],
+                    'score'     => 900  // some random score
+                ];
+            }
+            $merchantRiskClientMock = $this->mockMerchantRiskClient($merchant->getId(), $mockedResponse);
+
+            $dedupeCore->setMerchantRiskClient($merchantRiskClientMock);
+
+            [$isImpersonated, $actionToExecute] = $dedupeCore->match($merchant);
+
+            $this->assertTrue($isImpersonated);
+            $this->assertEquals($action[Constants::ACTION] ?? null, $actionToExecute);
+        }
+    }
+
+    public function testL2FormSubmitWithDedupeFalse()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
+        $merchant = $merchantDetail->merchant;
+
+        $mocks = $this->createAndFetchMocks(true, ['match','isDedupeBlocked']);
+
+        $dedupeCoreMock = $mocks['dedupeCoreMock'];
+        $detailCoreMock = $mocks['detailCoreMock'];
+
+        $dedupeCoreMock->expects($this->any())
+            ->method('match')
+            ->willReturn([false, null]);
+        $dedupeCoreMock->expects($this->any())->method('isDedupeBlocked')
+            ->willReturn(false);
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $detailCoreMock->setDedupeCore($dedupeCoreMock);
+
+        $input = ['submit' => '1'];
+
+        $response = $detailCoreMock->saveMerchantDetails($input, $merchant);
+
+        $this->assertNotNull($response['activation_status']);
+    }
+
+    public function testL2FormSubmitWithDedupeTrueAndDeactivateAction()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
+        $merchant = $merchantDetail->merchant;
+
+        $mocks = $this->createAndFetchMocks(true, ['match','isDedupeBlocked']);
+
+        $dedupeCoreMock = $mocks['dedupeCoreMock'];
+        $detailCoreMock = $mocks['detailCoreMock'];
+
+        $dedupeCoreMock->expects($this->any())
+            ->method('match')
+            ->willReturn([true, Constants::DEACTIVATE]);
+        $dedupeCoreMock->expects($this->any())->method('isDedupeBlocked')
+            ->willReturn(true);
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $detailCoreMock->setDedupeCore($dedupeCoreMock);
+
+        $input = ['submit' => '1'];
+
+        $response = $detailCoreMock->saveMerchantDetails($input, $merchant);
+
+        $this->assertNotNull($response['activation_status']);
+        $this->verifyLockAndDeactivate($response);
+    }
+
+    public function testL2FormSubmitWithDedupeTrueAndUnRegDeactivateAction()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
+            'business_type' => BusinessType::getIndexFromKey(BusinessType::NOT_YET_REGISTERED)
+        ]);
+        $merchant = $merchantDetail->merchant;
+
+        $mocks = $this->createAndFetchMocks(true, ['match', 'isDedupeBlocked']);
+
+        $dedupeCoreMock = $mocks['dedupeCoreMock'];
+        $detailCoreMock = $mocks['detailCoreMock'];
+
+        $dedupeCoreMock->expects($this->any())
+            ->method('match')
+            ->willReturn([true, Constants::UNREG_DEACTIVATE]);
+        $dedupeCoreMock->expects($this->any())->method('isDedupeBlocked')
+            ->willReturn(true);
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $detailCoreMock->setDedupeCore($dedupeCoreMock);
+
+        $input = ['submit' => '1'];
+
+        $response = $detailCoreMock->saveMerchantDetails($input, $merchant);
+
+        $this->assertNotNull($response['activation_status']);
+        $this->verifyLockAndDeactivate($response);
+    }
+
+    public function testL2FormSubmitWithDedupeTrueAndNoAction()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
+        $merchant = $merchantDetail->merchant;
+
+        $mocks = $this->createAndFetchMocks(true, ['match', 'isDedupeBlocked']);
+
+        $dedupeCoreMock = $mocks['dedupeCoreMock'];
+        $detailCoreMock = $mocks['detailCoreMock'];
+
+        $dedupeCoreMock->expects($this->any())->method('match')
+            ->willReturn([true, null]);
+        $dedupeCoreMock->expects($this->any())->method('isDedupeBlocked')
+            ->willReturn(false);
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $detailCoreMock->setDedupeCore($dedupeCoreMock);
+
+        $input = ['submit' => '1'];
+
+        $response = $detailCoreMock->saveMerchantDetails($input, $merchant);
+
+        $this->assertNotNull($response['activation_status']);
+    }
+
+    private function verifyLockAndDeactivate(array $response)
+    {
+        $this->assertTrue($response['locked']);
+        $this->assertTrue($response['merchant']['hold_funds']);
+        $this->assertFalse($response['merchant']['live']);
+        $this->assertFalse($response['merchant']['activated']);
+    }
+
+}

@@ -1,0 +1,266 @@
+<?php
+
+
+namespace RZP\Models\Merchant\Detail\DeDupe;
+
+use RZP\Models\Merchant\Detail;
+
+class Constants
+{
+    const ACTION    = 'action';
+
+    const DEACTIVATE            = 'deactivate';
+    const UNREG_DEACTIVATE      = 'unreg_deactivate';
+
+    const BRAND_LIST = 'brand_list';
+    const BLACKLIST = 'blacklist';
+    const HIGH_RISK_LIST = 'high_risk_list';
+    const AUTHORITIES_LIST = 'authorities_list';
+
+    const EXACT_MATCH = 'exact_match';
+    const FUZZY_MATCH = 'fuzzy_match';
+    const FUZZY_MATCH_THRESHOLD = 'FUZZY_MATCH_THRESHOLD';
+    const MERCHANT_RISK_CLIENT_TYPE_ONBOARDING = 'onboarding';
+
+    const MERCHANT_RISK_CONFIG = [
+        Detail\Entity::BUSINESS_MODEL => [
+            'lists' => [
+                self::BRAND_LIST,
+                self::HIGH_RISK_LIST,
+                self::AUTHORITIES_LIST,
+            ],
+            'config_key' => 'business_model'
+        ],
+        Detail\Entity::PROMOTER_PAN => [
+            'lists' => [
+                self::BLACKLIST,
+            ],
+            'config_key' => 'promoter_pan'
+        ],
+        Detail\Entity::COMPANY_PAN => [
+            'lists' => [
+                self::BLACKLIST,
+            ],
+            'config_key' => 'company_pan'
+        ],
+        Detail\Entity::COMPANY_CIN => [
+            'lists' => [
+                self::BLACKLIST,
+            ],
+            'config_key' => 'cin'
+        ],
+        Detail\Entity::GSTIN => [
+            'lists' => [
+                self::BLACKLIST,
+            ],
+            'config_key' => 'gstin'
+        ],
+        Detail\Entity::BANK_ACCOUNT_NUMBER => [
+            'lists' => [
+                self::BLACKLIST,
+            ],
+            'config_key' => 'bank_account_number'
+        ],
+        Detail\Entity::BANK_BRANCH_IFSC => [
+            'lists' => [
+                self::BLACKLIST,
+            ],
+            'config_key' => 'bank_branch_ifsc'
+        ],
+        Detail\Entity::CONTACT_MOBILE => [
+            'lists' => [
+                self::BLACKLIST,
+            ],
+            'config_key' => 'mobile'
+        ],
+        Detail\Entity::CONTACT_EMAIL => [
+            'lists' => [
+                self::BLACKLIST,
+            ],
+            'config_key' => 'email'
+        ],
+        Detail\Entity::BUSINESS_WEBSITE => [
+            'lists' => [
+                self::BLACKLIST,
+                self::BRAND_LIST
+            ],
+            'config_key' => 'website'
+        ],
+        Detail\Entity::BUSINESS_NAME => [
+            'lists' => [
+                self::BRAND_LIST,
+                self::HIGH_RISK_LIST,
+                self::AUTHORITIES_LIST,
+            ],
+            'config_key' => 'merchant_name'
+        ],
+        Detail\Entity::BUSINESS_DBA => [
+            'lists' => [
+                self::BRAND_LIST,
+                self::HIGH_RISK_LIST,
+                self::AUTHORITIES_LIST,
+            ],
+            'config_key' => 'billing_name'
+        ],
+    ];
+
+    const MERCHANT_RISK_ACTIONS = [
+        [
+            'keysToCheck' => [
+                Detail\Entity::PROMOTER_PAN => [
+                    'list' => self::BLACKLIST,
+                    'matchType'=> self::EXACT_MATCH,
+                ]
+            ],
+            self::ACTION => self::DEACTIVATE
+        ],
+        [
+            'keysToCheck' => [
+                Detail\Entity::COMPANY_PAN => [
+                    'list' => self::BLACKLIST,
+                    'matchType'=> self::EXACT_MATCH,
+                ]
+            ],
+            self::ACTION => self::DEACTIVATE
+        ],
+        [
+            'keysToCheck' => [
+                Detail\Entity::COMPANY_CIN => [
+                    'list' => self::BLACKLIST,
+                    'matchType'=> self::EXACT_MATCH,
+                ]
+            ],
+            self::ACTION => self::DEACTIVATE
+        ],
+        [
+            'keysToCheck' => [
+                Detail\Entity::GSTIN => [
+                    'list' => self::BLACKLIST,
+                    'matchType'=> self::EXACT_MATCH,
+                ]
+            ],
+            self::ACTION => self::DEACTIVATE
+        ],
+        [
+            'keysToCheck' => [
+                Detail\Entity::BANK_ACCOUNT_NUMBER => [
+                    'list' => self::BLACKLIST,
+                    'matchType'=> self::EXACT_MATCH,
+                ],
+                Detail\Entity::BANK_BRANCH_IFSC => [
+                    'list' => self::BLACKLIST,
+                    'matchType'=> self::EXACT_MATCH,
+                ]
+            ],
+            self::ACTION => self::DEACTIVATE
+        ],
+        [
+            'keysToCheck' => [
+                Detail\Entity::CONTACT_MOBILE => [
+                    'list' => self::BLACKLIST,
+                    'matchType'=> self::EXACT_MATCH,
+                ]
+            ],
+            self::ACTION => self::DEACTIVATE
+        ],
+        [
+            'keysToCheck' => [
+                Detail\Entity::CONTACT_EMAIL => [
+                    'list' => self::BLACKLIST,
+                    'matchType'=> self::EXACT_MATCH,
+                ]
+            ],
+            self::ACTION => self::DEACTIVATE
+        ],
+        [
+            'keysToCheck' => [
+                Detail\Entity::BUSINESS_WEBSITE => [
+                    'list' => self::BLACKLIST,
+                    'matchType'=> self::EXACT_MATCH,
+                ]
+            ],
+            self::ACTION => self::DEACTIVATE
+        ],
+        [
+            'keysToCheck' => [
+                Detail\Entity::BUSINESS_WEBSITE => [
+                    'list' => self::BRAND_LIST,
+                    'matchType'=> self::EXACT_MATCH,
+                ]
+            ],
+            self::ACTION  => self::UNREG_DEACTIVATE
+        ],
+        [
+            'keysToCheck' => [
+                Detail\Entity::BUSINESS_NAME => [
+                    'list' => self::HIGH_RISK_LIST,
+                    'matchType'=> self::EXACT_MATCH
+                ]
+            ],
+        ],
+        [
+            'keysToCheck' => [
+                Detail\Entity::BUSINESS_NAME => [
+                    'list' => self::AUTHORITIES_LIST,
+                    'matchType'=> self::EXACT_MATCH
+                ]
+            ],
+        ],
+        [
+            'keysToCheck' => [
+                Detail\Entity::BUSINESS_DBA => [
+                    'list' => self::HIGH_RISK_LIST,
+                    'matchType'=> self::EXACT_MATCH
+                ]
+            ],
+        ],
+        [
+            'keysToCheck' => [
+                Detail\Entity::BUSINESS_DBA => [
+                    'list' => self::AUTHORITIES_LIST,
+                    'matchType'=> self::EXACT_MATCH
+                ]
+            ],
+        ],
+        [
+            'keysToCheck' => [
+                Detail\Entity::BUSINESS_NAME => [
+                    'list' => self::BRAND_LIST,
+                    'matchType'=> self::EXACT_MATCH
+                ]
+            ],
+        ],
+        [
+            'keysToCheck' => [
+                Detail\Entity::BUSINESS_DBA => [
+                    'list' => self::BRAND_LIST,
+                    'matchType'=> self::EXACT_MATCH
+                ]
+            ],
+        ],
+        [
+            'keysToCheck' => [
+                Detail\Entity::BUSINESS_MODEL => [
+                    'list' => self::BRAND_LIST,
+                    'matchType'=> self::EXACT_MATCH
+                ]
+            ],
+        ],
+        [
+            'keysToCheck' => [
+                Detail\Entity::BUSINESS_MODEL => [
+                    'list' => self::HIGH_RISK_LIST,
+                    'matchType'=> self::EXACT_MATCH
+                ]
+            ],
+        ],
+        [
+            'keysToCheck' => [
+                Detail\Entity::BUSINESS_MODEL => [
+                    'list' => self::AUTHORITIES_LIST,
+                    'matchType'=> self::EXACT_MATCH
+                ]
+            ],
+        ]
+    ];
+}

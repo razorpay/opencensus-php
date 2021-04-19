@@ -529,6 +529,11 @@ class EventCode
         'name'  => 'kyc.save_modifications.failed',
     ];
 
+    const MERCHANT_DEDUPE = [
+        'group' => 'onboarding',
+        'name'  => 'merchant.dedupe'
+    ];
+
     const PAYMENT_PAGE_CREATED = [
         'group' => 'payment_page',
         'name'  => 'payment_page.created',

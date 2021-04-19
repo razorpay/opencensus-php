@@ -83,6 +83,8 @@ class Core extends Base\Core
 
     private $mcore;
 
+    protected $dedupeCore;
+
     public function __construct()
     {
         parent::__construct();
@@ -94,6 +96,13 @@ class Core extends Base\Core
         $this->mrclient = new MerchantRiskClient();
 
         $this->mcore = new Merchant\Core();
+
+        $this->dedupeCore = new DeDupe\Core();
+    }
+
+    public function setDedupeCore($dedupeCore)
+    {
+        $this->dedupeCore = $dedupeCore;
     }
 
     public function saveMerchantDetails(array $input,
@@ -399,14 +408,16 @@ class Core extends Base\Core
 
         $merchantDetails = $this->getMerchantDetails($merchant);
 
-        $isImpersonated = $this->calculateIsMerchantImpersonated($merchant);
+        [$isImpersonated, $action] = $this->dedupeCore->match($merchant);
 
         $this->autoUpdateMerchantActivationFlows(
             $merchant, $merchantDetails, null, [Detail\Constants::INTERNATIONAL_ACTIVATION], false, $isImpersonated);
 
+        $statusToBeUpdated = $this->getApplicableActivationStatus($merchantDetails);
+
         if ($isImpersonated === true)
         {
-            $this->handleFlowForImpersonatedMerchant($merchant, $merchantDetails);
+            $this->handleFlowForImpersonatedMerchant($merchant, $merchantDetails, $action);
         }
 
         // If a merchant does not have website or app, we would need to activate them
@@ -421,13 +432,14 @@ class Core extends Base\Core
 
         $this->verifyAadhaarWithPanIfApplicable($merchant, $merchantDetails);
 
-        $statusToBeUpdated = $this->getApplicableActivationStatus($merchantDetails);
+        if($statusToBeUpdated != null)
+        {
+            $activationStatusData = [
+                Entity::ACTIVATION_STATUS => $statusToBeUpdated,
+            ];
 
-        $activationStatusData = [
-            Entity::ACTIVATION_STATUS => $statusToBeUpdated,
-        ];
-
-        $this->updateActivationStatus($merchant, $activationStatusData, $merchant);
+            $this->updateActivationStatus($merchant, $activationStatusData, $merchant);
+        }
 
         $autoActivated = $this->autoActivateMerchantIfApplicable($merchant);
 
@@ -806,11 +818,11 @@ class Core extends Base\Core
      */
     protected function processInstantActivation(Merchant\Entity $merchant, Entity $merchantDetails)
     {
-        $isImpersonated = $this->calculateIsMerchantImpersonated($merchant);
+        [$isImpersonated, $action] = (new DeDupe\Core)->match($merchant);
 
         if ($isImpersonated === true)
         {
-            $this->handleFlowForImpersonatedMerchant($merchant, $merchantDetails);
+            $this->handleFlowForImpersonatedMerchant($merchant, $merchantDetails, $action);
         }
 
         $this->autoUpdateMerchantActivationFlows($merchant, $merchantDetails);
@@ -831,7 +843,38 @@ class Core extends Base\Core
         }
     }
 
-    protected function handleFlowForImpersonatedMerchant(Merchant\Entity $merchant, Entity $merchantDetails)
+    protected function handleFlowForImpersonatedMerchant(Merchant\Entity $merchant, Entity $merchantDetails, $action)
+    {
+        $this->triggerWorkflowFlowForImpersonatedMerchant($merchant, $merchantDetails);
+        (new Merchant\Core)->appendTag($merchant, "dedupe");
+
+        if(empty($action) === false)
+        {
+            switch ($action)
+            {
+                case DeDupe\Constants::DEACTIVATE:
+                    $merchant->merchantDetail->setLocked(true);
+                    $merchant->deactivate();
+                    break;
+
+                case DeDupe\Constants::UNREG_DEACTIVATE:
+                    if($merchantDetails->isUnregisteredBusiness() === true)
+                    {
+                        $merchant->merchantDetail->setLocked(true);
+                        $merchant->deactivate();
+                    }
+                    break;
+            }
+        }
+        $eventAttributes = [
+            'dedupe'                 => true,
+            DeDupe\Constants::ACTION => $action
+        ];
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::MERCHANT_DEDUPE, $merchant, null, $eventAttributes);
+    }
+
+    protected function triggerWorkflowFlowForImpersonatedMerchant(Merchant\Entity $merchant, Entity $merchantDetails)
     {
         $actions = (new ActionCore)->fetchOpenActionOnEntityOperationWithPermissionList(
             $merchant->getId(), 'merchant_detail', [Permission\Name::IMPERSONATING_MERCHANT_DEDUPE]);
@@ -869,6 +912,7 @@ class Core extends Base\Core
             $this->app['workflow']->saveActionIfTransactionFailed($workflowActionData);
         }
     }
+
     /**
      * Bypassing all the validation black list or greylist Merchants
      *
@@ -2090,6 +2134,8 @@ class Core extends Base\Core
         $response[Entity::MERCHANT_AVG_ORDER_VALUE]             = $merchantDetails->avgOrderValue;
         $response['isAutoKycDone']                              = $this->isAutoKycDone($merchantDetails);
         $response['isHardLimitReached']                         = empty($hardEscalationLevel3) ? false : true;
+        $response['isDedupe']                                   = $this->dedupeCore->isDedupeBlocked($merchant);
+
         $response = $this->appendBankingSpecificDetails($response, $merchant);
 
         return $response;
@@ -2494,7 +2540,7 @@ class Core extends Base\Core
         ];
 
         $currentActivationStatus = $merchantDetails->getActivationStatus();
-        $isImpersonated = $this->getIsMerchantImpersonated($merchantDetails->merchant);
+        $isImpersonated = $this->dedupeCore->isMerchantImpersonated($merchantDetails->merchant);
 
         if ($isImpersonated === false and
             in_array($currentActivationStatus, $excludeActivationStatusList) === false)
@@ -3725,142 +3771,13 @@ class Core extends Base\Core
             return ActivationFlow::GREYLIST;
         }
 
-        if ($this->getIsMerchantImpersonated($merchant))
+        if ($this->dedupeCore->isMerchantImpersonated($merchant) === true)
         {
             return ActivationFlow::GREYLIST;
         }
 
         return $activationFlow;
     }
-
-    private function getIsMerchantImpersonated(Merchant\Entity $merchant) : bool
-    {
-        if ($this->isDedupeAllowed($merchant) === true)
-        {
-            $riskScores = $this->mrclient->getMerchantImpersonatedDetails(Constants::MERCHANT_RISK_CLIENT_TYPE_ONBOARDING, $merchant->getId());
-
-            if ($this->checkImpersonation($merchant, $riskScores, 'get') === true)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private function calculateIsMerchantImpersonated(Merchant\Entity $merchant) : bool
-    {
-        if ($this->isDedupeAllowed($merchant) === true)
-        {
-            $fields = [];
-
-            foreach (Constants::MERCHANT_RISK_CONFIG as $key => $value)
-            {
-                foreach ($value['lists'] as $list)
-                {
-                    if ($merchant->merchantDetail->getAttribute($key) != null)
-                    {
-                        $fields[] = [
-                            'field' => $key,
-                            'value' => $merchant->merchantDetail->getAttribute($key),
-                            'list' => $list,
-                            'config_key' => $value['config_key']
-                        ];
-                    }
-                }
-            }
-
-            $riskScores = $this->mrclient->getMerchantRiskScores(Constants::MERCHANT_RISK_CLIENT_TYPE_ONBOARDING, $merchant->getId(), $fields);
-
-            if ($this->checkImpersonation($merchant, $riskScores, 'calculate') === true)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public function isDedupeAllowed($merchant)
-    {
-        if ($merchant->getOrgId() !== Org\Entity::RAZORPAY_ORG_ID)
-        {
-            return false;
-        }
-
-        if ($merchant->isLinkedAccount() === true)
-        {
-            return false;
-        }
-
-        if ($this->mcore->isRazorxExperimentEnable($merchant->getId(),
-                RazorxTreatment::DEDUPE_FUNCTIONALITY) === false)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    private function checkImpersonation($merchant, $riskScores, $mode): bool
-    {
-        if (isset($riskScores['fields']) === false)
-        {
-            return false;
-        }
-
-        $response = [];
-
-        foreach ($riskScores['fields'] as $riskScore)
-        {
-            $response[$riskScore['field']][$riskScore['list']] = $riskScore['score'];
-        }
-
-        foreach (Constants::MERCHANT_RISK_ACTIONS as $action)
-        {
-            $flag = true;
-            foreach ($action['keysToCheck'] as $key => $value)
-            {
-                if (isset($response[$key][$value['list']]) === false)
-                {
-                    $flag = false;
-                    break;
-                }
-
-                $score = $response[$key][$value['list']];
-                switch ($value['matchType']) {
-                    case Constants::FUZZY_MATCH:
-                        if ($score < env(Constants::FUZZY_MATCH_THRESHOLD)) $flag = false;
-                        break;
-                }
-            }
-            if ($flag)
-            {
-                $method = $action['method'];
-                if ($mode === 'calculate' and empty($method) === false)
-                {
-                    $this->{$method}($merchant);
-                }
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private function lockFormDeactivate(Merchant\Entity $merchant)
-    {
-        $merchant->merchantDetail->setLocked(true);
-        $merchant->deactivate();
-    }
-
-    private function regUnderReview(Merchant\Entity $merchant)
-    {
-        if ($merchant->merchantDetail->isUnregisteredBusiness())
-        {
-            $this->lockFormDeactivate($merchant);
-        }
-    }
-
 
     /**
      * Check if promotional coupon campaign is enabled
