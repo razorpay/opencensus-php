@@ -4,6 +4,7 @@ namespace RZP\Gateway\Upi\Axis;
 
 use RZP\Error;
 use RZP\Exception;
+use RZP\Models\Order;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use phpseclib\Crypt\AES;
@@ -12,6 +13,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Gateway\Upi\Base;
+use RZP\Models\BankAccount;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Models\Currency\Currency;
@@ -1224,9 +1226,18 @@ class Gateway extends Base\Gateway
 
         $data[Fields::CHECKSUM] = bin2hex($checksum);
 
+        $path = 'pay';
+
+        if ($input['merchant']->isTPVRequired() === true)
+        {
+            $data[Fields::ACCOUNT_NUM_TPV]    =  $input['order'][Order\Entity::ACCOUNT_NUMBER];
+            $data[Fields::IFSC_CODE_TPV]      =  substr($input['order'][Order\Entity::BANK], 0, 4);
+            $path = 'pay_v2';
+        }
+
         $content = json_encode($data);
 
-        $request = $this->getStandardRequestArray($content, 'post', Base\Type::PAY);
+        $request = $this->getStandardRequestArray($content, 'post', $path);
 
         $traceData = $this->maskUpiDataForTracing($request, [
             Entity::VPA => Fields::CUSTOMER_VPA,

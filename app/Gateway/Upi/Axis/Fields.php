@@ -39,6 +39,7 @@ class Fields
     const TXN_TIME                     = 'txnTime';
     const TXN_AMOUNT                   = 'txnAmount';
     const ACCOUNT_NUM                  = 'accountNo';
+    const ACCOUNT_NUM_TPV              = 'accountNumber';
     const IFSC_CODE                    = 'Ifsc';
     const IFSC_CODE_TPV                = 'ifsc';
     const TOKEN                        = 'Token';

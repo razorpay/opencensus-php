@@ -21,4 +21,6 @@ class Url
     const REFUND            = '/WebPaymentS2S/Merchant/refund';
 
     const PAY               = '/WebPaymentS2S/Merchant/MerchRefid';
+
+    const PAY_V2            = '/WebPaymentS2S/Merchant/MerchRefid2';
 }
