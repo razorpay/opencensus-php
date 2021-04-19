@@ -12,7 +12,8 @@ class Repository extends Base\Repository
     protected $entity = 'merchant_promotion';
 
     protected $appFetchParamRules = [
-        Entity::PROMOTION_ID     => 'sometimes|alpha_num',
+        Entity::PROMOTION_ID => 'sometimes|alpha_num',
+        Entity::MERCHANT_ID  => 'sometimes|alpha_num',
     ];
 
     public function findByMerchantAndPromotionId(string $merchantId, string $promotionId)

@@ -3156,7 +3156,11 @@ class AdminFetch
                 'promotion_id'  => [
                     Fetch::LABEL => 'Promotion Id',
                     Fetch::TYPE  => Fetch::TYPE_STRING,
-                ]
+                ],
+                MerchantUser\Entity::MERCHANT_ID => [
+                    Fetch::LABEL  => 'Merchant Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
             ],
 
             Entity::UPI_TRANSFER => [
