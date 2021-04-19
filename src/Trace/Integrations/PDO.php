@@ -32,11 +32,11 @@ use OpenCensus\Trace\Span;
 class PDO implements IntegrationInterface
 {
     // database connection string dsn
-    static $dsn = "";
+    private static $dsn = null;
 
     // optional parameters
     // - tags - additional tags for the trace
-    static $options = [];
+    private static $options = [];
 
     /**
      * Static method to add instrumentation to the PDO requests
@@ -183,7 +183,8 @@ class PDO implements IntegrationInterface
         ];
     }
 
-    public static function getOperationName($query){
+    public static function getOperationName($query)
+    {
         // select/insert/update/delete
 
         // some queries are enclosed in (). trim them before figuring out operation.
@@ -191,28 +192,27 @@ class PDO implements IntegrationInterface
         return $operation;
     }
 
-    public static function getTableName($query, $operation){
+    public static function getTableName($query, $operation)
+    {
         $tableName = "";
         $operation = strtolower($operation);
         $query = strtolower(trim($query));
         $query_parts = explode(" ", $query);
 
-        if (($operation === 'select') or ($operation === 'delete')){
+        if (($operation === 'select') or ($operation === 'delete')) {
             // select <...> from <tablename> where ...
             // delete from <table_name> where ...
             $from_index = array_search('from', $query_parts);
-            if (($from_index) and ($from_index+1 < count($query_parts))){
+            if (($from_index) and ($from_index+1 < count($query_parts))) {
                 $tableName = $query_parts[$from_index+1];
             }
-        }
-        else if (strtolower($operation) === 'update'){
+        } elseif (strtolower($operation) === 'update') {
             // update <table_name> set ... where ...
             $tableName = $query_parts[1];
-        }
-        else if (strtolower($operation) === 'insert'){
+        } elseif (strtolower($operation) === 'insert') {
             // insert into <tablename> ...
             $into_index = array_search('into', $query_parts);
-            if (($into_index) and ($into_index+1 < count($query_parts))){
+            if (($into_index) and ($into_index+1 < count($query_parts))) {
                 $tableName = $query_parts[$into_index+1];
             }
         }
@@ -226,37 +226,35 @@ class PDO implements IntegrationInterface
         // example $dsn: mysql:host=localhost;dbname=testdb
         // example $dsn: mysql:unix_socket=/tmp/mysql.sock;dbname=testdb
 
-        $db_system = "";
+
+        $db_system = '';
         $connection_params = [];
         $attributes = [];
 
         $dbtype_connection = explode(":", $dsn);
-        if (count($dbtype_connection) >= 2){
+        if (count($dbtype_connection) >= 2) {
             $db_system = $dbtype_connection[0];
             $connection = $dbtype_connection[1];
-            foreach (explode(";", $connection) as $kv){
+            foreach (explode(";", $connection) as $kv) {
                 $params = explode("=", $kv);
                 $connection_params[$params[0]] = $params[1];
             }
         }
 
-        if ($db_system){
+        if ($db_system) {
             $attributes['db.system'] = $db_system;
         }
-        if (array_key_exists('dbname', $connection_params)){
+        if (array_key_exists('dbname', $connection_params)) {
             $attributes['db.name'] = $connection_params['dbname'];
         }
 
-        if (array_key_exists('port', $connection_params)) {
-            $attributes['net.peer.port'] = $connection_params['port'];
-        } else {
-            $port = PDO::getDefaultPort($db_system);
-            $attributes['net.peer.port'] = $port;
-            $dsn = $dsn . ':' . $port;
+        if (!array_key_exists('port', $connection_params)) {
+            $connection_params['port'] = PDO::getDefaultPort($db_system);
         }
+        $attributes['net.peer.port'] = $connection_params['port'];
 
-        if (array_key_exists('host', $connection_params)){
-            $attributes['net.peer.name'] =  $connection_params['host'];
+        if (array_key_exists('host', $connection_params)) {
+            $attributes['net.peer.name'] =  $connection_params['host'] . ":" . $connection_params['port'];
         }
 
         $attributes['dsn'] = $dsn;
@@ -286,7 +284,7 @@ class PDO implements IntegrationInterface
         $errorTags = [];
 
         switch ($error) {
-            case (string) '01':
+            case (string)'01':
                 $errorTags = ['warning' => 'true', 'warning.code' => $errorCode];
                 break;
         };
@@ -326,5 +324,10 @@ class PDO implements IntegrationInterface
             $errorTags['error.message'] = $errorCodeMsgArray[$error] ?? '';
         }
         return $errorTags;
+    }
+
+    public static function setDsn($dsn)
+    {
+        self::$dsn = $dsn;
     }
 }
