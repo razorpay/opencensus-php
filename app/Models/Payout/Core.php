@@ -1573,6 +1573,17 @@ class Core extends Base\Core
 
         $transaction = $bas->transaction;
 
+        if ($transaction === null)
+        {
+            throw new Exception\LogicException(
+                'bas row selected is not linked to any transaction!',
+                ErrorCode::SERVER_ERROR_TRANSACTION_WRONG_SOURCE,
+                [
+                    'bas_id'            => $bas->getId(),
+                    'payout_id'         => $payout->getId(),
+                ]);
+        }
+
         $source = $transaction->source;
 
         if ($source->getEntity() !== Constants\Entity::EXTERNAL)
@@ -1646,6 +1657,17 @@ class Core extends Base\Core
         }
 
         $transaction = $bas->transaction;
+
+        if ($transaction === null)
+        {
+            throw new Exception\LogicException(
+                'bas row selected is not linked to any transaction!',
+                ErrorCode::SERVER_ERROR_TRANSACTION_WRONG_SOURCE,
+                [
+                    'bas_id'            => $bas->getId(),
+                    'reversal_id'       => $reversal->getId(),
+                ]);
+        }
 
         $source = $transaction->source;
 

@@ -253,6 +253,11 @@ class Core extends Base\Core
                     {
                         $basEntities = $this->repo->banking_account_statement->fetchUnlinkedBasRecords($accountNumber, $channel, $limit);
 
+                        $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_ROWS_FETCHED, [
+                            'count'             => count($basEntities),
+                            'account_number'    => $accountNumber,
+                        ]);
+
                         if (count($basEntities) == 0)
                             break;
 
@@ -817,7 +822,6 @@ class Core extends Base\Core
                     ]);
 
                 return [$sourceEntity, $isSourceAlreadyCreated];
-
             });
 
             $this->fireWebhooksAfterSuccessfulMappingOfSourceEntity($sourceEntity, $isSourceAlreadyCreated);
@@ -1008,9 +1012,9 @@ class Core extends Base\Core
 
             $this->trace->info(TraceCode::AUTO_RECON_PAYOUT_REVERSAL_CREATE_REQUEST,
                             [
-                                'payout_id'     => $existingPayout->getId(),
-                                'bas_id'        => $basEntity->getId(),
-                                'account_no'    => $basEntity->getAccountNumber(),
+                                'payout_id'         => $existingPayout->getId(),
+                                'bas_id'            => $basEntity->getId(),
+                                'account_number'    => $basEntity->getAccountNumber(),
                             ]);
 
             (new Payout\Core)->reversePayout($existingPayout,

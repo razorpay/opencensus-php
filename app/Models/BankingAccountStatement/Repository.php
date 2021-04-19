@@ -291,11 +291,14 @@ class Repository extends Base\Repository
 
         // reversal amount contains fee and tax but txn will
         // contain only absolute amount which will match with
-        // payout amount
+        // payout amount. We are adding the clause of txn id
+        // being not null to ensure behaviour of code remains
+        // consistent in the new and old flow
         $basEntities = $query->where(Entity::TYPE, Type::CREDIT)
                              ->where(Entity::AMOUNT, $payout->getAmount())
                              ->where(Entity::ACCOUNT_NUMBER, $reversal->balance->getAccountNumber())
                              ->where(Entity::CHANNEL, $reversal->getChannel())
+                             ->whereNotNull(Entity::TRANSACTION_ID)
                              ->get();
 
         return $basEntities;
@@ -307,6 +310,7 @@ class Repository extends Base\Repository
                              ->where(Entity::AMOUNT, $payout->getAmount())
                              ->where(Entity::ACCOUNT_NUMBER, $payout->balance->getAccountNumber())
                              ->where(Entity::CHANNEL, $payout->getChannel())
+                             ->whereNotNull(Entity::TRANSACTION_ID)
                              ->get();
 
         return $basEntities;

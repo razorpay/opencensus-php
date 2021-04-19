@@ -8282,7 +8282,6 @@ class RblBankingAccountStatementTest extends TestCase
     }
   
     /**
-     * @throws \RZP\Exception\BadRequestException
      * Here we are checking that merchant with ACCOUNT_STATEMENT_V2_FLOW feature enabled
      * goes through new flow and that its 2 bas rows get saved and linked
      */
@@ -8721,5 +8720,129 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals(1, count($txnEntities));
 
         $this->assertEquals($txnEntities[0]['id'], $basEntities[0]['transaction_id']);
+    }
+
+    /**
+     * Here we are checking that merchant with ACCOUNT_STATEMENT_V2_FLOW feature enabled
+     * goes through new flow and that payout and reversal have transaction id
+     */
+    public function testRblAccountStatementFetchV2Linking()
+    {
+        (new Admin\Service)->setConfigKeys([
+            Admin\ConfigKey::ACCOUNT_STATEMENT_V2_FLOW => ['2224440041626905']]);
+
+        $this->fixtures->create('banking_account_statement',
+            [
+                'type'                      => 'credit',
+                'amount'                    => '10000',
+                'channel'                   => 'rbl',
+                'account_number'            => 2224440041626905,
+                'bank_transaction_id'       => 'SDHDH',
+                'balance'                   => 20000,
+                'transaction_date'          => 1584987183,
+                'posted_date'               => 1584987183,
+            ]);
+
+        $mockedResponse = $this->getRblBulkResponse();
+
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][0]['txnBalance']['amountValue'] = '314.50';
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][0]['transactionSummary']['txnAmt']['amountValue'] = '114.50';
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][1]['transactionSummary']['txnAmt']['amountValue'] = '100.95';
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][1]['txnBalance']['amountValue'] = '213.55';
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][2]['transactionSummary']['txnAmt']['amountValue'] = '100.95';
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][2]['txnBalance']['amountValue'] = '314.50';
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][2]['transactionSummary']['txnDesc'] = 'R-123456-Z';
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][3]['transactionSummary']['txnAmt']['amountValue'] = '100.95';
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][3]['txnBalance']['amountValue'] = '213.55';
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][3]['transactionSummary']['txnDesc'] = 'l-3456-Z';
+
+        $channel = Channel::RBL;
+
+        $this->setupForRblPayout($channel);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(590, $payout['fees']);
+        $this->assertEquals(90, $payout['tax']);
+        $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123456']);
+
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::FAILED);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(Payout\Status::FAILED, $payout['status']);
+        $this->assertEquals(FundTransfer\Mode::IMPS, $payout['mode']);
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $baBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
+        $this->assertNull($baBeforeTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $basdBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->assertNull($basdBeforeTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        BankingAccountStatementJob::dispatch('test', [
+            'channel'           => Channel::RBL,
+            'account_number'    => 2224440041626905
+        ]);
+
+        $transactions = $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'];
+
+        $txn = last($transactions);
+
+        $basActual = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT, true);
+
+        $externalActual = $this->getLastEntity(EntityConstants::EXTERNAL, true);
+
+        $externalId = str_after($externalActual[ExternalEntity::ID], 'ext_');
+
+        $externalTxnId = $externalActual[ExternalEntity::TRANSACTION_ID];
+
+        $this->txnEntity = $this->getDbEntityById(EntityConstants::TRANSACTION, $externalTxnId);
+
+        $txnActual = $this->txnEntity->toArray();
+
+        $baAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
+
+        $this->assertNotNull($baAfterTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $basdAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->assertNotNull($basdAfterTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $this->assertEquals($txnActual[TransactionEntity::POSTED_AT], $basActual[BasEntity::POSTED_DATE]);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertNotNull($payout['transaction_id']);
+
+        $reversal = $this->getDbLastEntity('reversal');
+
+        $this->assertNotNull($reversal['transaction_id']);
+
+        $externalEntities = $this->getDbEntities('external');
+
+        $this->assertEquals(3, count($externalEntities));
     }
 }
