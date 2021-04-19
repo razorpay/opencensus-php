@@ -6198,5 +6198,7 @@ ALTER TABLE banking_account_tpvs
 
 DROP TABLE terminal_analytics;
 
+ALTER TABLE `partner_configs` CHANGE COLUMN `tds_percentage` `tds_percentage` INT(11) NOT NULL DEFAULT 500;
+
 ALTER TABLE payouts
     ADD COLUMN is_payout_service TINYINT(1) DEFAULT 0;

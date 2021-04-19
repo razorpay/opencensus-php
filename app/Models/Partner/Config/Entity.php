@@ -31,7 +31,7 @@ class Entity extends PublicEntity
     const EXPLICIT_SHOULD_CHARGE  = 'explicit_should_charge';
     const DEFAULT_PAYMENT_METHODS = 'default_payment_methods';
 
-    const DEFAULT_TDS_PERCENTAGE             = 375;
+    const DEFAULT_TDS_PERCENTAGE             = 500;
     const TDS_PERCENTAGE_FOR_MISSING_DETAILS = 2000;
 
     protected $entity             = AppConstants\Entity::PARTNER_CONFIG;
