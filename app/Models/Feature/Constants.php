@@ -622,9 +622,6 @@ class Constants
     // Used to disable tpv flow for merchants for business banking (Razorpay X) fund loading.
     const DISABLE_TPV_FLOW = 'disable_tpv_flow';
 
-    // Used to enable tpv flow for merchants for business banking (Razorpay X) fund loading.
-    const ENABLE_TPV_FLOW = 'enable_tpv_flow';
-
     // Used to enable alternate failure reason in payout for status code.
     const ALTERNATE_PAYOUT_FR = 'alternate_payout_fr';
 
@@ -937,7 +934,6 @@ class Constants
         self::EARLY_MANDATE_PRESENTMENT       => true,
         self::CRED_MERCHANT_CONSENT           => true,
         self::DISABLE_TPV_FLOW                => true,
-        self::ENABLE_TPV_FLOW                 => true,
         self::CAW_IGNORE_CUSTOMER_CHECK       => true,
         self::CAW_UPI                         => true,
         self::SUBSCRIPTION_UPI                => true,

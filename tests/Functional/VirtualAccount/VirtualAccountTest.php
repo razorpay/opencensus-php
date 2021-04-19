@@ -1661,6 +1661,14 @@ class VirtualAccountTest extends TestCase
         $this->setUpMerchantForBusinessBanking($skipFeatureAddition = true);
         $this->fixtures->merchant->disableMethod('10000000000000', 'bank_transfer');
 
+        // Doing this here because these are for banking product fund loads and we want to disable tpv flow for these
+        // flows.
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::DISABLE_TPV_FLOW,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
         // Does /ecollect/validate (i.e. payment) api call.
         $this->ba->proxyAuth();
         $this->startTest();

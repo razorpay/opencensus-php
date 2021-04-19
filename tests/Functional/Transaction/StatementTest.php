@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Transaction;
 
+use RZP\Models\Feature;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\InvalidArgumentException;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -322,6 +323,19 @@ class StatementTest extends TestCase
     protected function createBankTransferTransaction()
     {
         $this->fixtures->merchant->enableMethod('10000000000000', 'bank_transfer');
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        // Disabling tpv flow here because this flow is used for some business banking fund loading tests as well and we
+        // don't want them to fail because of tpv check (as tpv entry would not be created for those tests)
+        if($merchant->isFeatureEnabled( Feature\Constants::DISABLE_TPV_FLOW) === false)
+        {
+            $this->fixtures->create('feature', [
+                'name'        => Feature\Constants::DISABLE_TPV_FLOW,
+                'entity_id'   => 10000000000000,
+                'entity_type' => 'merchant',
+            ]);
+        }
 
         $this->payVirtualAccount($this->virtualAccount->getPublicId(), ['amount' => 25]);
     }

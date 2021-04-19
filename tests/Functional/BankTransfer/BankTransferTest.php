@@ -2562,6 +2562,13 @@ class BankTransferTest extends TestCase
             'type' => 'banking',
         ]);
 
+        // Disabling tpv flow as by default it is enabled now for all merchants.
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::DISABLE_TPV_FLOW,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
         $accountNumber = $this->bankAccount['account_number'];
 
         $this->testData[__FUNCTION__]['request']['content']['payee_account'] = $accountNumber;
@@ -3611,18 +3618,11 @@ class BankTransferTest extends TestCase
         $this->assertEquals('bt_rbl', $payment['gateway']);
     }
 
-    // Enable tpv flow feature flag added -- it means tpv is enabled.
     public function testBankTransferIciciIMPSForRazorpayXWithTpvEnabledButNoTpvAccountFound()
     {
         Mail::fake();
 
         $this->setupForIciciXFundLoading();
-
-        $this->fixtures->create('feature', [
-            'name'        => Feature\Constants::ENABLE_TPV_FLOW,
-            'entity_id'   => 10000000000000,
-            'entity_type' => 'merchant',
-        ]);
 
         list($countOfPaymentsBeforeFundLoading,
             $countOfTransactionsBeforeFundLoading,
@@ -3729,7 +3729,6 @@ class BankTransferTest extends TestCase
         });
     }
 
-    // Enable tpv flow feature flag added -- it means tpv is enabled.
     public function testBankTransferIciciIMPSForRazorpayXWithTpvEnabledButApprovedActiveTpvAccountFound()
     {
         Mail::fake();
@@ -3743,12 +3742,6 @@ class BankTransferTest extends TestCase
                                                 'payer_ifsc' => 'YESB0000022',
                                             ]);
 
-        $this->fixtures->create('feature', [
-            'name'        => Feature\Constants::ENABLE_TPV_FLOW,
-            'entity_id'   => 10000000000000,
-            'entity_type' => 'merchant',
-        ]);
-
         list($countOfPaymentsBeforeFundLoading,
             $countOfTransactionsBeforeFundLoading,
             $countOfBankTransfersBeforeFundLoading
@@ -3828,7 +3821,6 @@ class BankTransferTest extends TestCase
         Mail::assertNotQueued(FundLoadingFailed::class);
     }
 
-    // Enable tpv flow feature flag added -- it means tpv is enabled.
     public function testBankTransferIciciIMPSForRazorpayXWithTpvEnabledButPendingTpvAccountFound()
     {
         Mail::fake();
@@ -3840,12 +3832,6 @@ class BankTransferTest extends TestCase
                                                 'balance_id' => $this->bankingBalance->getId(),
                                                 'status'     => 'pending',
                                             ]);
-
-        $this->fixtures->create('feature', [
-            'name'        => Feature\Constants::ENABLE_TPV_FLOW,
-            'entity_id'   => 10000000000000,
-            'entity_type' => 'merchant',
-        ]);
 
         list($countOfPaymentsBeforeFundLoading,
             $countOfTransactionsBeforeFundLoading,
@@ -3954,7 +3940,6 @@ class BankTransferTest extends TestCase
         });
     }
 
-    // Enable tpv flow feature flag added -- it means tpv is enabled.
     public function testBankTransferIciciIMPSForRazorpayXWithTpvEnabledButInActiveTpvAccountFound()
     {
         Mail::fake();
@@ -3968,12 +3953,6 @@ class BankTransferTest extends TestCase
                                                 'is_active'  => 0,
                                             ]);
 
-        $this->fixtures->create('feature', [
-            'name'        => Feature\Constants::ENABLE_TPV_FLOW,
-            'entity_id'   => 10000000000000,
-            'entity_type' => 'merchant',
-        ]);
-
         list($countOfPaymentsBeforeFundLoading,
             $countOfTransactionsBeforeFundLoading,
             $countOfBankTransfersBeforeFundLoading
@@ -4079,94 +4058,6 @@ class BankTransferTest extends TestCase
 
             return true;
         });
-    }
-
-    // This test checks the condition if both flags are enabled for the merchant (though this case will never happen as
-    // ops will not use disable tpv flow during gradual rollout. But if this happens, disable feature flag will take
-    // priority and will disable tpv flow.
-    public function testBankTransferIciciIMPSForRazorpayXWithTpvEnabledViaFeatureFlagAndDisabledViaFeatureFlag()
-    {
-        Mail::fake();
-
-        $this->setupForIciciXFundLoading();
-
-        list($countOfPaymentsBeforeFundLoading,
-            $countOfTransactionsBeforeFundLoading,
-            $countOfBankTransfersBeforeFundLoading
-            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
-
-        $utr = strtoupper(random_alphanum_string(22));
-
-        $payeeAccount = $this->bankAccount;
-
-        $this->testData[__FUNCTION__] = $this->testData['testBankTransferIciciIMPSForRazorpayXWithTpvEnabledButNoTpvAccountFound'];
-
-        $request = & $this->testData[__FUNCTION__]['request'];
-
-        $request['content']['payee_account'] = $payeeAccount->getAccountNumber();
-
-        $request['content']['payee_ifsc'] = 'ICIC0000104';
-
-        $request['content']['transaction_id'] = $utr;
-
-        $this->ba->batchAppAuth();
-
-        $response = $this->startTest();
-
-        $this->assertEquals($utr, $response['transaction_id']);
-
-        list($countOfPaymentsAfterFundLoading,
-            $countOfTransactionsAfterFundLoading,
-            $countOfBankTransfersAfterFundLoading
-            ) = $this->listCountOfPaymentTransactionAndBankTransferEntities('live');
-
-        // Assert that no new payment was created.
-        $this->assertEquals($countOfPaymentsBeforeFundLoading, $countOfPaymentsAfterFundLoading);
-
-        // Assert that exactly one of these entities was created during fund loading request.
-        $this->assertEquals($countOfBankTransfersBeforeFundLoading + 1, $countOfBankTransfersAfterFundLoading);
-        $this->assertEquals($countOfTransactionsBeforeFundLoading + 1,  $countOfTransactionsAfterFundLoading);
-
-        $transaction = $this->getDbLastEntity('transaction', 'live');
-
-        $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
-
-        $expectedAmount = $request['content']['amount'] . '00';
-
-        $merchantId = $this->bankingBalance->getMerchantId();
-
-        // Assertions on transaction entity created
-        $this->assertEquals($merchantId, $transaction->getMerchantId());
-        $this->assertEquals($expectedAmount, $transaction->getAmount());
-        $this->assertEquals('bank_transfer', $transaction->getType());
-        $this->assertEquals($bankTransfer->getId(), $transaction->getEntityId());
-
-        // Assertions on bank transfer entity created (Internal linking)
-        $this->assertEquals($merchantId, $bankTransfer->getMerchantId());
-        $this->assertEquals($this->virtualAccount->getId(), $bankTransfer->getVirtualAccountId());
-        $this->assertEquals($expectedAmount, $bankTransfer->getAmount());
-        $this->assertEquals('icici', $bankTransfer->getGateway());
-
-        // Assertions on payer bank account for bank transfer
-        $this->assertNotNull($bankTransfer->getPayerBankAccountId());
-
-        $payerBankAccount = $bankTransfer->payerBankAccount;
-
-        $this->assertEquals($request['content']['payer_account'], $payerBankAccount->getAccountNumber());
-        $this->assertEquals($request['content']['payer_ifsc'], $payerBankAccount->getIfscCode());
-        $this->assertEquals($request['content']['payer_name'], $payerBankAccount->getBeneficiaryName());
-
-        // Assertions on bank transfer entity created (Request Params)
-        $this->assertEquals($expectedAmount, $bankTransfer->getAmount());
-        $this->assertEquals($request['content']['payer_ifsc'], $bankTransfer->getPayerIfsc());
-        $this->assertEquals($request['content']['payer_name'], $bankTransfer->getPayerName());
-        $this->assertEquals($request['content']['payer_account'], $bankTransfer->getPayerAccount());
-        $this->assertEquals($request['content']['payee_account'], $bankTransfer->getPayeeAccount());
-        $this->assertEquals($request['content']['payee_ifsc'], $bankTransfer->getPayeeIfsc());
-        $this->assertEquals($request['content']['description'], $bankTransfer->getDescription());
-        $this->assertEquals($utr, $bankTransfer->getUtr());
-
-        Mail::assertNotQueued(FundLoadingFailed::class);
     }
 
     // Using feature flag to disable tpv flow for a specific merchant. This can be used to disable tpv flow for a
@@ -4271,12 +4162,6 @@ class BankTransferTest extends TestCase
 
         $this->setupForIciciXFundLoading();
 
-        $this->fixtures->create('feature', [
-            'name'        => Feature\Constants::ENABLE_TPV_FLOW,
-            'entity_id'   => 10000000000000,
-            'entity_type' => 'merchant',
-        ]);
-
         list($countOfPaymentsBeforeFundLoading,
             $countOfTransactionsBeforeFundLoading,
             $countOfBankTransfersBeforeFundLoading
@@ -4372,6 +4257,12 @@ class BankTransferTest extends TestCase
         Mail::fake();
 
         $this->setupForIciciXFundLoading();
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::DISABLE_TPV_FLOW,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
 
         list($countOfPaymentsBeforeFundLoading,
             $countOfTransactionsBeforeFundLoading,
@@ -4475,12 +4366,6 @@ class BankTransferTest extends TestCase
                                                 'status'     => 'approved',
                                                 'is_active'  => 0,
                                             ]);
-
-        $this->fixtures->create('feature', [
-            'name'        => Feature\Constants::ENABLE_TPV_FLOW,
-            'entity_id'   => 10000000000000,
-            'entity_type' => 'merchant',
-        ]);
 
         list($countOfPaymentsBeforeFundLoading,
             $countOfTransactionsBeforeFundLoading,
@@ -4614,12 +4499,6 @@ class BankTransferTest extends TestCase
                                                 'payer_ifsc' => 'ICIC0002445',
                                             ]);
 
-        $this->fixtures->create('feature', [
-            'name'        => Feature\Constants::ENABLE_TPV_FLOW,
-            'entity_id'   => 10000000000000,
-            'entity_type' => 'merchant',
-        ]);
-
         list($countOfPaymentsBeforeFundLoading,
             $countOfTransactionsBeforeFundLoading,
             $countOfBankTransfersBeforeFundLoading
@@ -4716,12 +4595,6 @@ class BankTransferTest extends TestCase
         Mail::fake();
 
         $this->setupForYesBankXFundLoading();
-
-        $this->fixtures->create('feature', [
-            'name'        => Feature\Constants::ENABLE_TPV_FLOW,
-            'entity_id'   => 10000000000000,
-            'entity_type' => 'merchant',
-        ]);
 
         list($countOfPaymentsBeforeFundLoading,
             $countOfTransactionsBeforeFundLoading,
@@ -4826,12 +4699,6 @@ class BankTransferTest extends TestCase
         Mail::fake();
 
         $this->setupForYesBankXFundLoading();
-
-        $this->fixtures->create('feature', [
-            'name'        => Feature\Constants::ENABLE_TPV_FLOW,
-            'entity_id'   => 10000000000000,
-            'entity_type' => 'merchant',
-        ]);
 
         list($countOfPaymentsBeforeFundLoading,
             $countOfTransactionsBeforeFundLoading,
@@ -4943,12 +4810,6 @@ class BankTransferTest extends TestCase
                                                 'payer_ifsc' => 'ICIC0002445',
                                             ]);
 
-        $this->fixtures->create('feature', [
-            'name'        => Feature\Constants::ENABLE_TPV_FLOW,
-            'entity_id'   => 10000000000000,
-            'entity_type' => 'merchant',
-        ]);
-
         list($countOfPaymentsBeforeFundLoading,
             $countOfTransactionsBeforeFundLoading,
             $countOfBankTransfersBeforeFundLoading
@@ -5054,12 +4915,6 @@ class BankTransferTest extends TestCase
                                                 'payer_ifsc'           => 'ICIC0002445',
                                                 'payer_account_number' => '0923847198498'
                                             ]);
-
-        $this->fixtures->create('feature', [
-            'name'        => Feature\Constants::ENABLE_TPV_FLOW,
-            'entity_id'   => 10000000000000,
-            'entity_type' => 'merchant',
-        ]);
 
         list($countOfPaymentsBeforeFundLoading,
             $countOfTransactionsBeforeFundLoading,

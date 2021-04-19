@@ -685,12 +685,6 @@ class Processor extends VirtualAccount\Processor
 
             $merchantId = $this->virtualAccount->getMerchantId();
 
-            /*
-             * This feature is used for gradual rollout of merchants on the tpv flow, once all existing merchants are
-             * onboarded, we'll remove this feature from code to roll it out for all merchants (existing and new).
-             */
-            $enableTpvFeature = $this->merchant->isFeatureEnabled(Feature\Constants::ENABLE_TPV_FLOW);
-
             // This provides a granular approach to disable tpv for some specific merchants.
             $disableTpvFeature = $this->merchant->isFeatureEnabled(Feature\Constants::DISABLE_TPV_FLOW);
 
@@ -698,29 +692,16 @@ class Processor extends VirtualAccount\Processor
 
             $this->trace->info(TraceCode::FUND_LOADING_FOR_BANKING_ACCOUNT_TRIGGERED,
                                [
-                                   'enable_tpv_feature'  => $enableTpvFeature,
                                    'disable_tpv_feature' => $disableTpvFeature,
                                    'merchant_id'         => $merchantId,
                                    'balance_id'          => $balanceId,
                                ]
             );
 
-            /* This checks if tpv is enabled for the merchant via feature and if it's not disabled via the disable
-             * feature flag, tpv checks are applied on the bank transfer.
-             * Pros:
-             * 1. This solves the problem of using razorx as the razorx failures caused tpv feature to be enabled to all
-             *    merchants which caused issues in gradual rollout.
-             * Cons:
-             * 1. The cons of this approach are we'll need to have a manual deployment again to remove the enable tpv
-             *    feature flag check in order to enable it for all merchant (except the ones disabled via the disable
-             *    feature flag).
-             *
-             * Also, both flags won't be set for a merchant during the gradual rollout and we'll be removing the enable
-             * feature flag check afterwards so it should be not a problem, but if this happens anyways, disable tpv
-             * flow feature flag will take priority and it'll disable the tpv flow.
+            /* This checks if tpv is not disabled via the disable feature flag, tpv checks are applied on the bank
+               transfer.
              */
-            if (($enableTpvFeature === true) and
-                ($disableTpvFeature === false))
+            if ($disableTpvFeature === false)
             {
                 $payerAccountNumber = $payerDetails[BankAccount\Entity::ACCOUNT_NUMBER];
 
@@ -738,7 +719,6 @@ class Processor extends VirtualAccount\Processor
                     $this->trace->info(TraceCode::TPV_ACCOUNT_FUND_LOADING_FOR_BANKING_ACCOUNT_TRIGGERED,
                                        [
                                            'disable_tpv_feature'    => $disableTpvFeature,
-                                           'enable_tpv_feature'     => $enableTpvFeature,
                                            'merchant_id'            => $merchantId,
                                            'balance_id'             => $balanceId,
                                            'banking_account_tpv_id' => $bankingAccountTpv->getId(),
@@ -750,7 +730,6 @@ class Processor extends VirtualAccount\Processor
                     $this->trace->info(TraceCode::NON_TPV_ACCOUNT_FUND_LOADING_FOR_BANKING_ACCOUNT_TRIGGERED,
                                        [
                                            'disable_tpv_feature' => $disableTpvFeature,
-                                           'enable_tpv_feature'  => $enableTpvFeature,
                                            'merchant_id'         => $merchantId,
                                            'balance_id'          => $balanceId,
                                        ]
@@ -780,7 +759,6 @@ class Processor extends VirtualAccount\Processor
                     // Logs to get the bank transfer id as well
                     $this->trace->info(TraceCode::NON_TPV_ACCOUNT_FUND_LOADING_FOR_BANKING_ACCOUNT_BANK_TRANSFER_CREATED,
                                        [
-                                           'enable_tpv_feature'  => $enableTpvFeature,
                                            'disable_tpv_feature' => $disableTpvFeature,
                                            'merchant_id'         => $merchantId,
                                            'balance_id'          => $balanceId,
