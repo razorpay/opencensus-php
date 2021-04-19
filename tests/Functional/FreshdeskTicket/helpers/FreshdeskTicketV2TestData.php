@@ -25,7 +25,7 @@ return [
         'response' => [
             'content'       => [
                 'error' => [
-                    'description' => 'No db records found',
+                    'description' => 'No db records found.',
                     'code'        => 'BAD_REQUEST_ERROR',
                 ],
             ],
@@ -134,7 +134,7 @@ return [
         'response' => [
             'content'       => [
                 'error' => [
-                    'description' => 'No db records found',
+                    'description' => 'No db records found.',
                     'code'        => 'BAD_REQUEST_ERROR',
                 ],
             ],
@@ -177,7 +177,7 @@ return [
         'response' => [
             'content'       => [
                 'error' => [
-                    'description' => 'No db records found',
+                    'description' => 'No db records found.',
                     'code'        => 'BAD_REQUEST_ERROR',
                 ],
             ],

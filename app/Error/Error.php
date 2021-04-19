@@ -379,25 +379,20 @@ class Error extends Support\Fluent
 
         if ($readDescFromCodeMapping === false)
         {
-            if ($this->getDescription() === $errorCodeJson['error_description'])
-            {
-                $this->setDesc($errorCodeJson['error_description']);
+            $this->trace->info(TraceCode::ERROR_CENTRAL_REPO_DESCRIPTION_DOES_NOT_MATCH,
+                [
+                    'method' => $method,
+                    'internal_error_code' => $code,
+                    'central_repo_desc' => $errorCodeJson['error_description'],
+                    'original_desc'     => $this->getDescription(),
+                ]
+            );
 
-                $this->setEnglishDescription($errorCodeJson['error_description']);
-            }
-            else
-            {
-                $this->trace->info(TraceCode::ERROR_CENTRAL_REPO_DESCRIPTION_DOES_NOT_MATCH,
-                    [
-                        'method' => $method,
-                        'internal_error_code' => $code,
-                        'central_repo_desc' => $errorCodeJson['error_description'],
-                        'original_desc'     => $this->getDescription(),
-                    ]
-                );
-            }
+            $this->setDesc($errorCodeJson['error_description']);
+
+            $this->setEnglishDescription($errorCodeJson['error_description']);
         }
-
+        
         $this->setPublicErrorCode($errorCodeJson['public_error_code']);
 
         $this->setSource($source);
