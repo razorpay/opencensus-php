@@ -8982,7 +8982,8 @@ class Route
             'internal_fetch_configs',
             'api_entity_fetch',
             'internal_order_update',
-            'internal_transactions'
+            'internal_transactions',
+            'payment_verify_new',
         ],
 
         'freshdesk_webhook' => [
