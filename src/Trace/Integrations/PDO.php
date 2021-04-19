@@ -258,8 +258,14 @@ class PDO implements IntegrationInterface
         if (array_key_exists('dbname', $connection_params)) {
             $attributes['db.name'] = $connection_params['dbname'];
         }
+
         if (array_key_exists('port', $connection_params)) {
             $attributes['net.peer.port'] = $connection_params['port'];
+        }
+        else {
+            $port = PDO::getDefaultPort($db_system);
+            $attributes['net.peer.port'] = $port;
+            $dsn = $dsn . ':' . $port;
         }
 
         if (array_key_exists('host', $connection_params)) {
@@ -271,6 +277,21 @@ class PDO implements IntegrationInterface
         $attributes['db.connection_string'] = $dsn;
 
         return $attributes;
+    }
+
+    /*
+    * Get default port of the database
+    */
+
+    public static function getDefaultPort($dbSystem)
+    {
+        $dbSystem = strtolower(trim($dbSystem));
+        if ($dbSystem === "mysql") {
+            return '3306';
+        }
+        elseif (($dbSystem === "postgresql") or ($dbSystem === "psql")) {
+            return '5432';
+        }
     }
 
     public static function getErrorTags($errorCode)
