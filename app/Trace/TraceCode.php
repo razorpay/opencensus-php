@@ -4194,6 +4194,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REWARD_ACTIVATE_DEACTIVATE_REQUEST                             = 'REWARD_ACTIVATE_DEACTIVATE_REQUEST';
     const REWARD_QUEUE_TO_LIVE                                           =  'REWARD_QUEUE_TO_LIVE';
     const REWARD_TO_EXPIRE                                               =  'REWARD_TO_EXPIRE';
+    const REWARD_SMS_NOTIFICATION_FAILED                                 = 'REWARD_SMS_NOTIFICATION_FAILED';
+    const REWARD_SMS_FLOW_TRIGGERED                                      = 'REWARD_SMS_FLOW_TRIGGERED';
+    const REWARD_SMS_GET_REQUEST_INPUT                                   = 'REWARD_SMS_GET_REQUEST_INPUT';
+    const REWARD_GETTING_RAVEN_REQUEST                                   = 'REWARD_GETTING_RAVEN_REQUEST';
     const PUBLIC_KEY_SIGNATURE_GENERATION_RAZORX                         = 'PUBLIC_KEY_SIGNATURE_GENERATION_RAZORX';
     const INTERNAL_ERROR_CODE_NOT_FOUND_IN_REPO                          = 'INTERNAL_ERROR_CODE_NOT_FOUND_IN_REPO';
     const STARTED_READING_FROM_CENTRAL_REPO                              = 'STARTED_READING_FROM_CENTRAL_REPO';

@@ -49,6 +49,20 @@ class RewardController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function rewardRedirectUrl($reward_id, $payment_id)
+    {
+        $data = $this->service()->rewardRedirectUrl($reward_id, $payment_id);
+
+        if (isset($data) === false)
+        {
+            return null;
+        }
+
+        return View::make('reward.redirect')->with('data', $data);
+
+
+    }
+
     public function getRewardTerms($id, $paymentId)
     {
         $data = $this->service()->getRewardTerms($id, $paymentId);

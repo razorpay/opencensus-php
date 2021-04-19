@@ -707,6 +707,16 @@ class EventCode
         'name'  => 'reward.updated'
     ];
 
+    const REWARD_SMS_SENT = [
+        'group' => 'sms',
+        'name'  => 'reward.sms.sent'
+    ];
+
+    const REWARD_REDIRECT = [
+        'group' => 'sms',
+        'name'  => 'reward.redirect'
+    ];
+
     const PAYMENT_ELIGIBILITY_CHECK_INITIATED = [
         'group' => 'eligibility',
         'name'  => 'payment.eligibility_check.initiated'

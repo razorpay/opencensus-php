@@ -6,7 +6,7 @@ namespace RZP\Diag\Event;
 
 class RewardEvent extends Event
 {
-    const EVENT_TYPE        = 'payment-event';
+    const EVENT_TYPE        = 'payment-events';
 
     const EVENT_VERSION     = 'v2';
 

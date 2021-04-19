@@ -49,7 +49,7 @@ class Core extends Base\Core
 
                     if($merchant[Entity::ACCEPTED_AT] != null)
                     {
-                        $columnsToUpdate[ENTITY::STATUS] = ENTITY::QUEUE;
+                        $columnsToUpdate[ENTITY::STATUS] = ENTITY::LIVE;
                     }
                     else
                     {

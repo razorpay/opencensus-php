@@ -3,10 +3,11 @@
 
 namespace RZP\Models\Reward;
 
+use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Models\Offer\EntityOffer\Repository as EntityOfferRepository;
 use RZP\Models\Reward\MerchantReward\Validator as MerchantRewardValidator;
-
+use RZP\Diag\EventCode;
 
 class Service extends Base\Service
 {
@@ -15,6 +16,7 @@ class Service extends Base\Service
         parent::__construct();
 
         $this->core = new Core;
+
     }
 
     /**
@@ -255,6 +257,58 @@ class Service extends Base\Service
     public function expireRewards()
     {
         return (new MerchantReward\Core())->expireRewards();
+    }
+
+    public function rewardRedirectUrl($reward_id, $payment_id)
+    {
+
+        $entityOffer = (new EntityOfferRepository())->findByEntityIdAndOfferIdAndType($payment_id, $reward_id);
+
+        if (isset($entityOffer) === true)
+        {
+            try
+            {
+                $payment = $this->repo->payment->find($payment_id);
+
+                if ((isset($payment) === true) and
+                    ($payment->isAuthorized() === true) or
+                    ($payment->isCaptured() === true))
+                {
+                    $reward = $this->repo->reward->findOrFailPublic($reward_id);
+
+                    try
+                    {
+                        $properties = [];
+
+                        $this->app['rzp.mode'] = 'live';
+
+                        $properties['payment_id'] = $payment->getId();
+
+                        $properties['reward_id'] = $reward->getId();
+
+                        $properties['coupon_code'] = $reward->getCouponCode();
+
+                        $properties['publisher merchant_id'] = $payment->getMerchantId();
+
+                        $properties['contact_number'] =  $payment->getContact();
+
+                        $this->app['diag']->trackRewardEvent(EventCode::REWARD_REDIRECT, null, null, $properties);
+
+                    }
+                    catch(\Exception $e)
+                    {
+                        $this->trace->traceException($e);
+                    }
+
+                    return ["url" => $reward->getMerchantWebsiteRedirectLink()];
+                }
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException($e);
+            }
+        }
+
     }
 
     public function getAdvertiserLogo($id)

@@ -2296,6 +2296,7 @@ class Route
         'reward_activate_or_deactivate'           => ['patch',   'rewards',                                                 'RewardController@activateDeactivateReward'                    ],
         'reward_delete'                           => ['delete',  'rewards/{id}',                                            'RewardController@deleteReward'                                ],
         'reward_fetch'                            => ['get',     'rewards',                                                 'RewardController@fetchReward'                                 ],
+        'reward_redirect_url'                     => ['get',     'rewards/redirect/{reward_id}/{payment_id}',               'RewardController@rewardRedirectUrl'                           ],
         'rewards_batch_email'                     => ['post',    'rewards/batch_email',                                     'RewardController@sendRewardMailToMerchants'                   ],
 
 
@@ -5796,6 +5797,7 @@ class Route
         //Accounting Payouts Callback
         'accounting_payouts_callback',
         'reward_terms',
+        'reward_redirect_url',
 
         // Direct Tax-Payment
         'direct_tax_payments_tds_category_public',

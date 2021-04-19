@@ -11,6 +11,12 @@ use RZP\Mail\Reward as RewardMail;
 
 class Core extends Base\Core
 {
+    public function __construct()
+    {
+        parent::__construct();
+
+    }
+
     public function create($input)
     {
         $this->trace->info(TraceCode::REWARD_CREATE_REQUEST, $input);
@@ -77,12 +83,13 @@ class Core extends Base\Core
 
         try
         {
+            $properties['reward_id'] = $reward['id'];
 
             $properties['updated_fields'] = $columnsToUpdate;
 
             $properties['coupon'] = $rewardEntity->getCouponCode();
 
-            $this->app['diag']->trackRewardUpdateEvent(EventCode::REWARD_UPDATED, $rewardEntity, null, $properties);
+            $this->app['diag']->trackRewardEvent(EventCode::REWARD_UPDATED, null, null, $properties);
         }
         catch(\Exception $e)
         {

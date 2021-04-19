@@ -6148,6 +6148,13 @@ trait Authorize
         }
 
         (new Notify($this->payment))->trigger($event);
+
+
+        if($event === Payment\Event::AUTHORIZED)
+        {
+            (new Notify($this->payment))->triggerSms();
+        }
+
     }
 
     public function notifyMigratedCard($payment)

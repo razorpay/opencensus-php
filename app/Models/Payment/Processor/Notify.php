@@ -7,6 +7,7 @@ use Mail;
 use Carbon\Carbon;
 
 use RZP\Constants\Mode;
+use RZP\Diag\EventCode;
 use RZP\Events\Event;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
@@ -53,6 +54,12 @@ class Notify
     protected $template;
     protected $invoice = null;
     protected $slackEnabled = true;
+    protected $elfin;
+
+    /**
+     * @var \RZP\Services\Raven
+     */
+    protected $raven;
 
     /**
      * Creates a new Notify instance
@@ -152,6 +159,125 @@ class Notify
                 Mail::queue($mailable);
             }
         }
+    }
+
+    protected function getRavenSendRewardRequestInput( ): array
+    {
+
+        $this->trace->info(
+            TraceCode::REWARD_GETTING_RAVEN_REQUEST);
+
+        $template = "sms.m2m_reward";
+
+        $this->elfin = $this->app['elfin'];
+
+        $shortenedUrl = $this->elfin->shorten("https://api.razorpay.com/v1/rewards/redirect/".$this->template['rewards'][0]['id']."/".$this->template['payment']['id']);
+
+        $offer_name = $this->template['rewards'][0]['name'];
+
+//        Splitting reward name into multiple strings as in raven one dynamic var can have max 30 chars
+
+        $offer_name_1 = "";
+
+        $offer_name_2 = "";
+
+        if(strlen($offer_name) > 25)
+        {
+            $offer_name_1 = substr($offer_name, 0, 25);
+
+            $offer_name_2 = substr($offer_name, 25,strlen($offer_name)-25 );
+        }
+        else
+        {
+            $offer_name_1 = $offer_name;
+        }
+
+        return [
+            'receiver' => $this->template['customer']['phone'],
+
+            'source'   => "api.reward.".$this->template['rewards'][0]['coupon_code'],
+
+            'template' => $template,
+
+            'params'   => [
+                'offer_name_1' => $offer_name_1,
+                'offer_name_2' => $offer_name_2,
+                'offer_name_3' => "",
+                'coupon' => $this->template['rewards'][0]['coupon_code'],
+                'url' =>  $shortenedUrl,
+                'merchant_name' =>  $this->template['merchant']['billing_label'],
+
+            ],
+        ];
+    }
+
+    public function notifyViaSms()
+    {
+
+        try
+        {
+            $this->raven = $this->app['raven'];
+
+            $request = $this->getRavenSendRewardRequestInput();
+
+            $this->trace->info(
+                TraceCode::REWARD_SMS_GET_REQUEST_INPUT);
+
+            $response = $this->raven->sendSms($request, false);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex, TraceCode::REWARD_SMS_NOTIFICATION_FAILED);
+        }
+
+        if (isset($response['sms_id']) === true)
+        {
+            try
+            {
+                $properties = [];
+
+                $properties['payment_id'] = $this->template['payment']['id'];
+
+                $properties['reward_id'] = $this->template['rewards'][0]['id'];
+
+                $properties['coupon_code'] = $this->template['rewards'][0]['coupon_code'];
+
+                $properties['publisher merchant_id'] = $this->template['merchant']['id'];
+
+                $properties['contact_number'] =  $this->template['customer']['phone'];
+
+                $this->app['diag']->trackRewardEvent(EventCode::REWARD_SMS_SENT, null, null, $properties);
+
+            }
+            catch(\Exception $e)
+            {
+                $this->trace->traceException($e);
+            }
+
+        }
+    }
+
+    public function triggerSms()
+    {
+            try
+            {
+                if(empty($this->template['rewards']) === false)
+                {
+                    $this->trace->info(
+                        TraceCode::REWARD_SMS_FLOW_TRIGGERED,[
+                            "rewardId" => $this->template['rewards'][0]['id']
+                    ]);
+                    $this->notifyViaSms();
+                }
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::CRITICAL,
+                    TraceCode::REWARD_SMS_NOTIFICATION_FAILED
+                );
+            }
     }
 
     /**
@@ -517,6 +643,7 @@ class Notify
                         'flat_cashback' => $reward->getFlatCashback(),
                         'max_cashback'  => $reward->getMaxCashback(),
                         'min_amount'    => $reward->getMinAmount(),
+                        'merchant_website_redirect_link' => $reward->getMerchantWebsiteRedirectLink(),
                         'brand_name'    => $reward->getBrandName(),
                     );
                 }

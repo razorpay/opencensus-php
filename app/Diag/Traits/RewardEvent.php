@@ -10,7 +10,7 @@ use RZP\Diag\Event\RewardEvent as REvent;
 
 trait RewardEvent
 {
-    public function trackRewardUpdateEvent(
+    public function trackRewardEvent(
         array $eventData,
         Reward\Entity $Reward = null,
         \Throwable $ex = null,
@@ -22,10 +22,7 @@ trait RewardEvent
 
         $customProperties += ['timestamp' => $timestamp];
 
-        $event = new REvent($Reward, $ex, $customProperties);
-
-        $properties = $event->getProperties();
-
-        $this->trackEvent(REvent::EVENT_TYPE, REvent::EVENT_VERSION, $eventData, $properties);
+        $this->trackEvent(REvent::EVENT_TYPE, REvent::EVENT_VERSION, $eventData, $customProperties);
     }
+
 }
