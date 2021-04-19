@@ -259,16 +259,13 @@ class PDO implements IntegrationInterface
             $attributes['db.name'] = $connection_params['dbname'];
         }
 
-        if (array_key_exists('port', $connection_params)) {
-            $attributes['net.peer.port'] = $connection_params['port'];
-        } else {
-            $port = PDO::getDefaultPort($db_system);
-            $attributes['net.peer.port'] = $port;
-            $dsn = $dsn . ':' . $port;
+        if (!array_key_exists('port', $connection_params)) {
+            $connection_params['port'] = PDO::getDefaultPort($db_system);
         }
+        $attributes['net.peer.port'] = $connection_params['port'];
 
         if (array_key_exists('host', $connection_params)) {
-            $attributes['net.peer.name'] =  $connection_params['host'];
+            $attributes['net.peer.name'] =  $connection_params['host'] . ":" . $connection_params['port'];
         }
 
         $attributes['dsn'] = $dsn;
