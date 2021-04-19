@@ -373,7 +373,11 @@ function canShowEAadharComponent(activation) {
 }
 
 function isDedupe(activation) {
-  if (!!activation.locked && !activation.activated && activation.merchant.hold_funds) {
+  if (
+    !!activation.locked &&
+    activation.activation_status === 'under_review' &&
+    activation.isDedupe
+  ) {
     return true;
   }
   return false;

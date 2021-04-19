@@ -166,7 +166,7 @@ export default class InstantActivationAnnouncements extends Component {
         theme = commonSettlementBanner.theme;
         title = commonSettlementBanner.title;
         content = commonSettlementBanner.content;
-      } else if (!user.isActivated && !!user.locked && user.merchant.hold_funds) {
+      } else if (user.activation_status === 'under_review' && !!user.locked && user.isDedupe) {
         title = 'Contact Support';
         content = (
           <>

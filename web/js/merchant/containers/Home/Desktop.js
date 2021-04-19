@@ -264,8 +264,8 @@ class AnalyticsDesktop extends Component {
           )}
 
           {!!this.props.user.locked &&
-            !this.props.user.activated &&
-            this.props.user.merchant.hold_funds && <DedupeModal />}
+            this.props.user.activation_status === 'under_review' &&
+            this.props.user.isDedupe && <DedupeModal />}
 
           {this.isCaptureSettingsDefault(items) && user.instantActivation.isWhitelistFlow === true && (
             <AnnouncementBanner title="Capture Settings" theme="success" canBeClosed={true}>
