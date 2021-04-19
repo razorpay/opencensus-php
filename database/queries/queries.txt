@@ -6195,6 +6195,8 @@ ALTER TABLE rewards
 ALTER TABLE banking_account_tpvs
     ADD COLUMN trimmed_payer_account_number varchar(255) DEFAULT NULL,
     ADD UNIQUE INDEX banking_account_tpvs_merchant_id_account_number_uq_index (merchant_id, trimmed_payer_account_number);
-    
+
 DROP TABLE terminal_analytics;
 
+ALTER TABLE payouts
+    ADD COLUMN is_payout_service TINYINT(1) DEFAULT 0;

@@ -72,6 +72,11 @@ class Validator extends Base\Validator
 
     const PAYOUT_BULK_STATUS_UPDATE_MANUAL = 'payout_bulk_status_update_manual';
 
+    // Payout Service Validations
+    const PAYOUT_SERVICE_CREATE             = 'payout_service_create';
+    const PAYOUT_SERVICE_TRANSACTION_CREATE = 'payout_service_transaction_create';
+    const PAYOUT_SERVICE_FTS_CREATE         = 'payout_service_fts_create';
+
     //
     // This is required for build. Currently, build does not
     // accept ruleName as a parameter. Hence, this list needs
@@ -159,6 +164,11 @@ class Validator extends Base\Validator
         Entity::SOURCE_DETAILS . '.*.' . PayoutSource::SOURCE_TYPE => 'required|string|',
         Entity::SOURCE_DETAILS . '.*.' . PayoutSource::PRIORITY    => 'required|integer|min:1',
         Entity::ENABLE_WORKFLOW_FOR_INTERNAL_CONTACT               => 'sometimes|boolean'
+    ];
+
+    protected static $payoutServiceCreateRules = [
+        Entity::ID                   => 'required|string|size:14',
+        Entity::MERCHANT_ID          => 'required|string|size:14'
     ];
 
     protected static $beforeCreateFundAccountPayoutWithOtpRules = [
@@ -292,6 +302,15 @@ class Validator extends Base\Validator
     protected static $payoutBulkSampleFileRules = [
         Entity::FILE_TYPE       => 'required|string|in:sample_file,template_file',
         Entity::FILE_EXTENSION  => 'required|string|in:csv,xlsx',
+    ];
+
+    protected static $payoutServiceFtsCreateRules = [
+        Entity::ID => 'required|string|size:14',
+    ];
+
+    protected static $payoutServiceTransactionCreateRules = [
+        Entity::ID                   => 'required|string|size:14',
+        Entity::QUEUE_IF_LOW_BALANCE => 'sometimes|filled|boolean',
     ];
 
     protected static $payoutBulkStatusUpdateManualRules = [

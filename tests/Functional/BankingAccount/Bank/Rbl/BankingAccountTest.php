@@ -3533,4 +3533,59 @@ class BankingAccountTest extends TestCase
 
         $role->permissions()->attach($permission->getId());
     }
+
+    public function testFetchBankingAccountForPayoutService()
+    {
+        $xBalance1 = $this->fixtures->create('balance',
+            [
+                'merchant_id'       => '10000000000000',
+                'type'              => 'banking',
+                'account_type'      => 'shared',
+                'account_number'    => '2224440041626905',
+                'balance'           => 200,
+            ]);
+
+        $ba1 = $this->fixtures->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000000',
+            'channel'               => 'yesbank',
+            'status'                => 'created',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $this->fixtures->edit('banking_account', $ba1->getId(), [
+            'account_number' => '2224440041626905',
+            'balance_id'     => $xBalance1->getId(),
+        ]);
+
+        $this->ba->appAuth();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/banking_accounts/' . '2224440041626905' .'/10000000000000';
+
+        $response = $this->startTest();
+
+        $this->assertEquals($response[Entity::ACCOUNT_NUMBER], $ba1->getAccountNumber());
+        $this->assertEquals($response[Entity::ID], $ba1->getId());
+    }
+
+    public function testFetchBankingAccountForPayoutServiceInvalidMerchantId()
+    {
+        $this->ba->appAuth();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/banking_accounts/' . '2224440041626905' .'/1';
+
+        $this->startTest();
+    }
+
+    public function testFetchBankingAccountForPayoutServiceInvalidAccountNumber()
+    {
+        $this->ba->appAuth();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/banking_accounts/' . '222' .'/10000000000000';
+
+        $this->startTest();
+    }
 }

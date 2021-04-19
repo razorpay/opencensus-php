@@ -466,4 +466,12 @@ class Repository extends Base\Repository
             ->get();
     }
 
+    public function getBankingAccountWithBalanceViaAccountNumberAndMerchantId($accountNumber, $merchantId)
+    {
+        return $this->newQuery()
+                    ->with(['balance'])
+                    ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
+                    ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->firstOrFail();
+    }
 }

@@ -109,6 +109,7 @@ class Entity extends Base\PublicEntity
     const WORKFLOW_FEATURE                      = 'workflow_feature';
     const ORIGIN                                = 'origin';
     const SOURCE_DETAILS                        = 'source_details';
+    const IS_PAYOUT_SERVICE                     = 'is_payout_service';
     const META                                  = 'meta';
     const REGISTERED_NAME                       = 'registered_name';
     const CANCELLATION_USER_ID                  = 'cancellation_user_id';
@@ -372,6 +373,7 @@ class Entity extends Base\PublicEntity
         self::SCHEDULED_ON,
         self::ORIGIN,
         self::CREATE_REQUEST_SUBMITTED_AT,
+        self::IS_PAYOUT_SERVICE,
     ];
 
     protected $visible = [
@@ -430,6 +432,7 @@ class Entity extends Base\PublicEntity
         self::ORIGIN,
         self::CREATE_REQUEST_SUBMITTED_AT,
         self::SOURCE_DETAILS,
+        self::IS_PAYOUT_SERVICE,
         self::TRANSFERRED_AT,
         self::STATUS_CODE,
         self::META,
@@ -714,6 +717,11 @@ class Entity extends Base\PublicEntity
     // ============================= END RELATIONS =============================
 
     // ============================= GETTERS =============================
+
+    public function getIsPayoutService(): bool
+    {
+        return ($this->getAttribute(self::IS_PAYOUT_SERVICE) === 1);
+    }
 
     public function getPurpose()
     {
@@ -1159,6 +1167,11 @@ class Entity extends Base\PublicEntity
 
     // ============================= SETTERS =============================
 
+    public function setIsPayoutService(int $isPayoutService = 0)
+    {
+        $this->setAttribute(self::IS_PAYOUT_SERVICE, $isPayoutService);
+    }
+
     public function setQueueFlag($flag)
     {
         $this->queueFlag = $flag;
@@ -1450,6 +1463,11 @@ class Entity extends Base\PublicEntity
     public function setCancellationUserId($cancellationUserId)
     {
         $this->setAttribute(self::CANCELLATION_USER_ID, $cancellationUserId);
+    }
+
+    public function setId($id)
+    {
+        $this->setAttribute(self::ID, $id);
     }
 
     // ============================= END SETTERS =============================

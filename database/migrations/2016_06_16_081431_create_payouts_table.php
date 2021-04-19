@@ -187,6 +187,9 @@ class CreatePayoutsTable extends Migration
             $table->tinyInteger(Payout::ORIGIN)
                   ->default(1);
 
+            $table->tinyInteger(Payout::IS_PAYOUT_SERVICE)
+                  ->default(0);
+
             $table->string(Payout::STATUS_CODE, 255)
                   ->nullable();
 

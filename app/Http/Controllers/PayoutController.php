@@ -13,6 +13,31 @@ use RZP\Models\Payout\Metric;
 
 class PayoutController extends Controller
 {
+    public function createPayoutEntry()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createPayoutEntry($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function createFTAForPayoutService(string $payoutId)
+    {
+        $data = $this->service()->createFTAForPayoutService($payoutId);
+
+        return ApiResponse::json($data);
+    }
+
+    public function createPayoutServiceTransaction()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createPayoutServiceTransaction($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postFundAccountPayout()
     {
         $input = Request::all();

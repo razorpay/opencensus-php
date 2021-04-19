@@ -58,8 +58,13 @@ class Base extends FundAccountPayout\Base
             // the transaction creation fails because of insufficient funds and we want
             // to queue the payout instead of failing the complete DB transaction, this
             // FTA does not get created.
+            // Skip for payout service payout because we are breaking these in new flow
+            // as ledger will be a separate service
             //
-            $this->createFundTransferAttempt($payout, $ftaAccount);
+            if ($payout->getIsPayoutService() === false)
+            {
+                $this->createFundTransferAttempt($payout, $ftaAccount);
+            }
         }
         catch (BadRequestException $ex)
         {

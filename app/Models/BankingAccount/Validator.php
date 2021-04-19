@@ -23,6 +23,8 @@ class Validator extends Base\Validator
     const FETCH_GATEWAY_BALANCE    = 'fetch_gateway_balance';
     const DISPATCH_GATEWAY_BALANCE = 'dispatch_gateway_balance';
 
+    const FETCH_BANKING_ACCOUNT_PAYOUT_SERVICE  = 'fetch_banking_account_payout_service';
+
     /**
      * Regular expression for valid names:
      * - Must start with a-z/A-Z/0-9
@@ -185,6 +187,11 @@ class Validator extends Base\Validator
     Entity::CHANNEL     => 'required|string|custom',
     Entity::MERCHANT_ID => 'required|string',
 ];
+
+    protected static $fetchBankingAccountPayoutServiceRules = [
+        Entity::MERCHANT_ID    => 'required|alpha_num|size:14',
+        Entity::ACCOUNT_NUMBER => 'required|alpha_num|between:5,40'
+    ];
 
     protected static $dispatchGatewayBalanceRules = [
         Entity::CHANNEL => 'required|string|custom',

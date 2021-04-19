@@ -66,6 +66,21 @@ class Service extends Base\Service
         $this->appframeworkCore = new ApplicationMerchantMaps\Core;
     }
 
+    public function createPayoutEntry($input)
+    {
+        return $this->core->createPayoutEntry($input);
+    }
+
+    public function createFTAForPayoutService(string $payoutId)
+    {
+        return $this->core->createFTAForPayoutService($payoutId);
+    }
+
+    public function createPayoutServiceTransaction(array $input)
+    {
+        return $this->core->createPayoutServiceTransaction($input);
+    }
+
     public function fundAccountPayoutOnInternalContact(array $input): array
     {
         // check that the auth in internal

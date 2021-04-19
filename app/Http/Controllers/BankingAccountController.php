@@ -168,4 +168,11 @@ class BankingAccountController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function getBankingAccountForAccountNumber(string $accountNumber, string $merchantId)
+    {
+        $response = $this->service()->fetchBankingAccountForAccountNumber($accountNumber, $merchantId);
+
+        return ApiResponse::json($response);
+    }
 }

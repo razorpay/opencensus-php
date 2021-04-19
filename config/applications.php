@@ -867,6 +867,19 @@ return [
         'tag_app_env'           => env('APP_ENV', '')
     ],
 
+    'payouts_service' => [
+        'url'    => env('PAYOUTS_URL'),
+        'secret' => env('PAYOUTS_INTERNAL_APP_SECRET'),
+        'live'   => [
+            'payout_key'    => env('PAYOUTS_AUTH_API_USERNAME_LIVE'),
+            'payout_secret' => env('PAYOUTS_AUTH_API_PASSWORD_LIVE')
+        ],
+        'test'   => [
+            'payout_key'    => env('PAYOUTS_AUTH_API_USERNAME_TEST'),
+            'payout_secret' => env('PAYOUTS_AUTH_API_PASSWORD_TEST')
+        ]
+    ],
+
     'pg_router' => [
         'mock'                => env('PG_ROUTER_MOCK', false),
         'url'                 => env('PG_ROUTER_URL'),

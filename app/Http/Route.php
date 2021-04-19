@@ -2047,7 +2047,13 @@ class Route
 
         'banking_account_activation_spocs'        => ['get',      'banking_accounts/activation/spocs',                          'BankingAccountController@getBankingAccountSalesPOCs'       ],
         'banking_accounts_auditor_daily_updates'  => ['post',     'banking_accounts/activation/{auditorType}/daily-updates',   'BankingAccountController@sendDailyUpdatesToAuditors'        ],
+
+        // Create for payout service
+        'banking_account_fetch_by_account_number' => ['get',      'banking_accounts/{account_number}/{merchant_id}',           'BankingAccountController@getBankingAccountForAccountNumber'],
+
+
         'rbl_current_account_serviceability_get'  => ['get',      'banking_accounts/serviceability/rbl/pincode/{pincode}',      'BankingAccountController@checkPincodeServiceabilityByRBL'       ],
+
         'fetch_throttle_settings'                 => ['get',      'throttle/settings',                                         'ThrottleController@list'                                   ],
         'edit_throttle_settings'                  => ['put',      'throttle/settings',                                         'ThrottleController@create'                                 ],
         'bootstrap_key_cache'                     => ['post',     'throttle/bootstrap_key_cache',                              'ThrottleController@bootstrapKeyCache'                      ],
@@ -2365,7 +2371,13 @@ class Route
         'care_service_myoperator_webhook_proxy'   => ['post',    'care_service/myoperator_webhook/{path?}',                 'CareProxyController@postMyOperatorWebhookProxyRequest'        ],
         'payment_verify_new'                      => ['post',    'payments/{id}/verify_new',                                'PaymentController@postVerifyNew'                              ],
         // Merchant Fraud
-        'website_checker'                         => ['post',    'merchant/website/checker',                                'MerchantController@websiteChecker'                            ]
+        'website_checker'                         => ['post',    'merchant/website/checker',                                'MerchantController@websiteChecker'                            ],
+
+        // Payout service url's
+        'create_payout_entry'                     => ['post',     'payouts_service/create',                                 'PayoutController@createPayoutEntry'                           ],
+        'create_FTA_payout_service'               => ['post',     'payouts_service/create_fta/{payout_id}',                 'PayoutController@createFTAForPayoutService'                   ],
+        'create_ledger_payout_service'            => ['post',     'payouts_service/create_ledger',                          'PayoutController@createPayoutServiceTransaction'              ],
+        'create_reversal_entry'                   => ['post',     'payouts_service/reversal/create',                        'ReversalController@createReversalEntryForPayoutService'       ],
     ];
 
     public static $public = [
@@ -3169,6 +3181,13 @@ class Route
 
         // Merchant Fraud
         'website_checker',
+
+        // payout service
+        'create_payout_entry',
+        'create_reversal_entry',
+        'banking_account_fetch_by_account_number',
+        'create_FTA_payout_service',
+        'create_ledger_payout_service'
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -9004,6 +9023,14 @@ class Route
             'care_service_myoperator_webhook_proxy',
         ],
 
+        'payouts_service' => [
+            'create_payout_entry',
+            'fund_account_get_internal',
+            'banking_account_fetch_by_account_number',
+            'create_reversal_entry',
+            'create_FTA_payout_service',
+            'create_ledger_payout_service',
+        ]
     ];
 
     //

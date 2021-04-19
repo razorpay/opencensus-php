@@ -16,8 +16,10 @@ use RZP\Models\Adjustment;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
 use RZP\Constants\Entity as E;
+use RZP\Services\PayoutService;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Merchant\Balance;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\Ondemand;
 use RZP\Models\Settlement\OndemandPayout;
 use RZP\Models\BankingAccountStatement\Channel;
@@ -26,6 +28,14 @@ use RZP\Models\FundAccount\Validation as FundAccountValidation;
 
 class Core extends Base\Core
 {
+    /**
+     * @var int
+     */
+    protected $payoutServiceMutexTTLForReversal = 120;
+
+    // Payout Service Mutex Keys
+    const REVERSAL_CREATION_PAYOUT_SERVICE = 'reversal_creation_payout_service_';
+
     public function __construct()
     {
         parent::__construct();
@@ -634,5 +644,108 @@ class Core extends Base\Core
         }
 
         return false;
+    }
+
+    /**
+     * Create reversal for payout microservice
+     *
+     * @param array $input
+     * @return mixed
+     */
+    public function createReversalEntryForPayoutService(array $input)
+    {
+        $payoutId = $input[Entity::PAYOUT_ID];
+
+        return $this->mutex->acquireAndRelease(
+            self::REVERSAL_CREATION_PAYOUT_SERVICE . $payoutId,
+            function() use ($input, $payoutId)
+            {
+                (new Validator)->setStrictFalse()->validateInput(Validator::PAYOUT_SERVICE_REVERSAL_CREATE, $input);
+
+                $reversal = $this->repo->reversal->findReversalForPayout($payoutId);
+
+                if (empty($reversal) === false)
+                {
+                    $txn = $reversal->transaction;
+
+                    $response =  [
+                        Entity::TRANSACTION_ID => $txn->getId(),
+                        Entity::FEE            => $txn->getFee(),
+                        Entity::TAX            => $txn->getTax(),
+                    ];
+
+                    $this->trace->info(TraceCode::PAYOUT_SERVICE_EXISTING_REVERSAL_RESPONSE,
+                        ['response' => $response]);
+
+                    return $response;
+                }
+                else
+                {
+                    try
+                    {
+                        $payout   = $this->repo->payout->findOrFail($payoutId);
+
+                        $response = $this->repo->transaction(function() use ($input, $payout)
+                        {
+                            $reversalInput = [
+                                Entity::AMOUNT      => $input[Entity::AMOUNT],
+                                Entity::CURRENCY    => $input[Entity::CURRENCY],
+                                Entity::UTR         => $input[Entity::UTR],
+                                Entity::CHANNEL     => $input[Entity::CHANNEL],
+                            ];
+
+                            $reversal = $this->create($reversalInput);
+
+                            if (empty($input[Entity::ID]) === false)
+                            {
+                                $reversal->setId($input[Entity::ID]);
+                            }
+
+                            $reversal->balance()->associate($payout->balance);
+
+                            $reversal->merchant()->associate($payout->merchant);
+
+                            $reversal->entity()->associate($payout);
+
+                            $reversal = $this->createTransactionFromPayoutReversal($reversal);
+
+                            (new Transaction\Core)->dispatchEventForTransactionCreated($reversal->transaction);
+
+                            $txn = $reversal->transaction;
+
+                            return [
+                                Entity::TRANSACTION_ID => $txn->getId(),
+                                Entity::FEE            => $txn->getFee(),
+                                Entity::TAX            => $txn->getTax(),
+                            ];
+                        });
+
+                        $this->trace->info(
+                            TraceCode::PAYOUT_SERVICE_REVERSAL_AND_TRANSACTION_CREATED,
+                            [
+                                'response' => $response
+                            ]);
+
+                    }
+                    catch (\Throwable $exception)
+                    {
+                        $this->trace->traceException(
+                            $exception,
+                            Trace::ERROR,
+                            TraceCode::ERROR_PAYOUT_SERVICE_REVERSAL_AND_TRANSACTION_CREATION_FAILURE,
+                            [
+                                'input' => $input
+                            ]);
+
+                        $response =  [
+                            Payout\Entity::ERROR => $exception->getMessage(),
+                        ];
+                    }
+                }
+
+                return $response;
+            },
+            $this->payoutServiceMutexTTLForReversal,
+            ErrorCode::BAD_REQUEST_REVERSAL_CREATION_FOR_PAYOUT_SERVICE_IN_PROGRESS);
     }
 }

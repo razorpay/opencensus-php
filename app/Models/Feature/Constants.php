@@ -600,6 +600,11 @@ class Constants
     const OFFER_ON_SUBSCRIPTION = 'offer_on_subscription';
 
     /**
+     * Payout Service enables for merchant
+     */
+    const PAYOUT_SERVICE_ENABLED           = 'payout_service_enabled';
+
+    /**
      * Skips Risk check for merchants
      */
     const APPS_EXTEMPT_RISK_CHECK ='apps_exempt_risk_check';
@@ -943,6 +948,7 @@ class Constants
         self::PAYOUT_PROCESS_ASYNC_LP         => true,
         self::PAYOUT_PROCESS_ASYNC            => true,
         self::FAV_FTA_DPRCN_FWD               => true,
+        self::PAYOUT_SERVICE_ENABLED          => true,
     ];
 
     // Entity type constants

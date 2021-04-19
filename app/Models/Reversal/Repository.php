@@ -220,4 +220,12 @@ class Repository extends Base\Repository
                     ->whereNull($payoutsFailedAtColumn)
                     ->first();
     }
+
+    public function findReversalForPayout($payoutId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ENTITY_ID, '=', $payoutId)
+                    ->where(Entity::ENTITY_TYPE, Type::PAYOUT)
+                    ->first();
+    }
 }

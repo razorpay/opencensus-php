@@ -151,6 +151,10 @@ class Entity extends Base\PublicEntity
     const ASSIGNEE_TEAM = 'assignee_team';
     const SOURCE = 'source';
 
+    // Response attributes
+    const BALANCE_TYPE       = 'balance_type';
+    const BANKING_ACCOUNT_ID = 'banking_account_id';
+
     // Slack channel for alerts
     const RX_CA_RBL_ALERTS = 'rx_ca_rbl_alerts';
 

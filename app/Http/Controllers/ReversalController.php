@@ -40,4 +40,13 @@ class ReversalController extends Controller
 
         return ApiResponse::json($reversal);
     }
+
+    public function createReversalEntryForPayoutService()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createReversalEntryForPayoutService($input);
+
+        return ApiResponse::json($response);
+    }
 }

@@ -35,6 +35,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\BankingAccount;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Services\PayoutService;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Admin\Permission;
 use RZP\Http\BasicAuth\BasicAuth;
@@ -86,6 +87,10 @@ class Core extends Base\Core
      */
     protected $mutex;
 
+    protected $payoutStatusServiceClient;
+
+    protected $payoutDetailsServiceClient;
+
     /** @var Workflow\Service\Client  */
     protected $workflowService;
 
@@ -94,6 +99,10 @@ class Core extends Base\Core
         parent::__construct();
 
         $this->mutex = $this->app['api.mutex'];
+
+        $this->payoutStatusServiceClient = $this->app[PayoutService\Status::PAYOUT_SERVICE_STATUS];
+
+        $this->payoutDetailsServiceClient = $this->app[PayoutService\Details::PAYOUT_SERVICE_DETAIL];
 
         $this->workflowService = new Workflow\Service\Client;
     }
@@ -422,13 +431,20 @@ class Core extends Base\Core
 
     public function updateStatusAfterFtaInitiated(Entity $payout, Attempt\Entity $fta)
     {
-        $payout->batchFundTransfer()->associate($fta->batchFundTransfer);
-
         Status::validateStatusUpdate(Status::INITIATED, $payout->getStatus());
 
-        $payout->setStatus(Status::INITIATED);
+        if ($payout->getIsPayoutService() === true)
+        {
+            $this->updateStatusAfterFtaInitiatedForPayoutService($payout);
+        }
+        else
+        {
+            $payout->batchFundTransfer()->associate($fta->batchFundTransfer);
 
-        $this->repo->saveOrFail($payout);
+            $payout->setStatus(Status::INITIATED);
+
+            $this->repo->saveOrFail($payout);
+        }
     }
 
     public function updateWithDetailsBeforeFtaRecon(Entity $payout, array $ftaData = [])
@@ -439,95 +455,108 @@ class Core extends Base\Core
                 'payout_id' => $payout->getId(),
             ]);
 
-        $initialUtr = $payout->getUtr();
-
-        $this->repo->transaction(
-            function() use ($payout, $ftaData, $initialUtr) {
-
-                // For non-Yesbank, we will not get public_failure_reason
-                $ftaFailureReason = $ftaData[Attempt\Constants::FAILURE_REASON] ?? null;
-
-                $ftaBankStatusCode = $ftaData[Attempt\Entity::BANK_STATUS_CODE] ?? null;
-
-                $initialChannel = $payout->getChannel();
-
-                $updatedChannel = $ftaData[Attempt\Constants::CHANNEL] ?? null;
-
-                $payout->setUtr($ftaData[Attempt\Constants::UTR]);
-
-                $payout->setRemarks($ftaData[Attempt\Constants::REMARKS]);
-
-                $registeredName = $ftaData[Attempt\Constants::BENEFICIARY_NAME] ?? null;
-
-                $payout->setRegisteredName($registeredName);
-
-                //
-                // For VPA type, we always set it to UPI only
-                // at build and we don't take the mode from FTA.
-                //
-                // Also, we don't want to override the payout's mode if it's already set.
-                //
-                if ((empty($ftaData[Attempt\Constants::VPA_ID]) === true) and
-                    ($payout->getMode() === null))
-                {
-                    $payout->setMode($ftaData[Attempt\Constants::MODE]);
-                }
-
-                if (($updatedChannel !== null) and
-                    ($initialChannel !== $updatedChannel))
-                {
-                    $this->updateChannelToPayoutAndTransaction($payout, $initialChannel, $updatedChannel);
-                }
-
-                //
-                // We do not want to override the failure reason if it's already set.
-                // It could have been set in the `afterRecon` flow. In some cases, it's
-                // possible that `beforeRecon` gets called and then `afterRecon` gets
-                // called and then again `beforeRecon`. In `afterRecon`, if the failure
-                // reason gets set, we don't want to reset it to null in `beforeRecon` if
-                // the failure reason is empty in the 2nd `beforeRecon` call.
-                //
-                if (empty($ftaFailureReason) === false)
-                {
-                    $payout->setFailureReason($ftaFailureReason);
-                }
-
-                //
-                // same reason as of failure reason
-                // Only set if status is Failed or reversed
-                //
-                if (empty($ftaBankStatusCode) === false)
-                {
-                    $ftaStatus = $ftaData[Attempt\Constants::FTA_STATUS] ?? null;
-
-                    if ((is_null($ftaStatus) === false) and
-                        (array_search($ftaStatus, [Status::FAILED, Status::REVERSED]) !== false))
-                    {
-                        $payout->setStatusCode($ftaBankStatusCode);
-                    }
-                }
-
-                // we want to override return UTR only if there is no value for UTR before
-                // since return_utr column has a unique constraint, so checking for empty
-                // value.
-                if (empty($payout->getReturnUtr()) === true)
-                {
-                    if (empty($ftaData[Entity::RETURN_UTR]) === false)
-                    {
-                        $returnUtr = $ftaData[Attempt\Constants::RETURN_UTR];
-
-                        $payout->setReturnUtr($returnUtr);
-                    }
-                }
-
-                $this->repo->saveOrFail($payout);
-            });
-
-        if (($initialUtr === null) and
-            ($payout->getUtr() !== null))
+        if ($payout->getIsPayoutService() === true)
         {
-            $this->app->events->dispatch('api.payout.updated', [$payout]);
+            $this->updateWithDetailsBeforeFtaReconForPayoutService($payout, $ftaData);
         }
+        else
+        {
+            $initialUtr = $payout->getUtr();
+
+            $this->repo->transaction(
+                function() use ($payout, $ftaData, $initialUtr)
+                {
+                    // For non-Yesbank, we will not get public_failure_reason
+                    $ftaFailureReason = $ftaData[Attempt\Constants::FAILURE_REASON] ?? null;
+
+                    $ftaBankStatusCode = $ftaData[Attempt\Entity::BANK_STATUS_CODE] ?? null;
+
+                    $initialChannel = $payout->getChannel();
+
+                    $updatedChannel = $ftaData[Attempt\Constants::CHANNEL] ?? null;
+
+                    $payout->setUtr($ftaData[Attempt\Constants::UTR]);
+
+                    $payout->setRemarks($ftaData[Attempt\Constants::REMARKS]);
+
+                    $registeredName = $ftaData[Attempt\Constants::BENEFICIARY_NAME] ?? null;
+
+                    $payout->setRegisteredName($registeredName);
+
+                    //
+                    // For VPA type, we always set it to UPI only
+                    // at build and we don't take the mode from FTA.
+                    //
+                    // Also, we don't want to override the payout's mode if it's already set.
+                    //
+                    if ((empty($ftaData[Attempt\Constants::VPA_ID]) === true) and
+                        ($payout->getMode() === null))
+                    {
+                        $payout->setMode($ftaData[Attempt\Constants::MODE]);
+                    }
+
+                    if (($updatedChannel !== null) and
+                        ($initialChannel !== $updatedChannel))
+                    {
+                        $this->updateChannelToPayoutAndTransaction($payout, $initialChannel, $updatedChannel);
+                    }
+
+                    //
+                    // We do not want to override the failure reason if it's already set.
+                    // It could have been set in the `afterRecon` flow. In some cases, it's
+                    // possible that `beforeRecon` gets called and then `afterRecon` gets
+                    // called and then again `beforeRecon`. In `afterRecon`, if the failure
+                    // reason gets set, we don't want to reset it to null in `beforeRecon` if
+                    // the failure reason is empty in the 2nd `beforeRecon` call.
+                    //
+                    if (empty($ftaFailureReason) === false)
+                    {
+                        $payout->setFailureReason($ftaFailureReason);
+                    }
+
+                    //
+                    // same reason as of failure reason
+                    // Only set if status is Failed or reversed
+                    //
+                    if (empty($ftaBankStatusCode) === false)
+                    {
+                        $ftaStatus = $ftaData[Attempt\Constants::FTA_STATUS] ?? null;
+
+                        if ((is_null($ftaStatus) === false) and
+                            (array_search($ftaStatus, [Status::FAILED, Status::REVERSED]) !== false))
+                        {
+                            $payout->setStatusCode($ftaBankStatusCode);
+                        }
+                    }
+
+                    // we want to override return UTR only if there is no value for UTR before
+                    // since return_utr column has a unique constraint, so checking for empty
+                    // value.
+                    if (empty($payout->getReturnUtr()) === true)
+                    {
+                        if (empty($ftaData[Entity::RETURN_UTR]) === false)
+                        {
+                            $returnUtr = $ftaData[Attempt\Constants::RETURN_UTR];
+
+                            $payout->setReturnUtr($returnUtr);
+                        }
+                    }
+
+                    $this->repo->saveOrFail($payout);
+                });
+
+            if (($initialUtr === null) and
+                ($payout->getUtr() !== null))
+            {
+                $this->app->events->fire('api.payout.updated', [$payout]);
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::PAYOUT_UPDATED_AFTER_FTA_RECON,
+            [
+                'payout_id' => $payout->getId(),
+            ]);
     }
 
     public function fetchAndUpdateGatewayBalance(BankingAccount\Entity $merchantBankingAccount)
@@ -1456,21 +1485,28 @@ class Core extends Base\Core
                 ]);
         }
 
-        $this->repo->transaction(
-            function() use ($payout, $debit_bas) {
-                $payout->setStatus(Status::PROCESSED);
+        if ($payout->getIsPayoutService() === true)
+        {
+            $this->handlePayoutProcessedForPayoutService($payout);
+        }
+        else
+        {
+            $this->repo->transaction(
+                function() use ($payout, $debit_bas) {
+                    $payout->setStatus(Status::PROCESSED);
 
-                $this->repo->saveOrFail($payout);
+                    $this->repo->saveOrFail($payout);
 
-                if ($payout->isBalanceAccountTypeDirect() === true)
-                {
-                    $this->handlePayoutTransactionForDirectBanking($payout, $debit_bas);
+                    if ($payout->isBalanceAccountTypeDirect() === true)
+                    {
+                        $this->handlePayoutTransactionForDirectBanking($payout, $debit_bas);
 
-                    (new FeeRecovery\Core)->handlePayoutStatusUpdate($payout);
-                }
-            });
+                        (new FeeRecovery\Core)->handlePayoutStatusUpdate($payout);
+                    }
+                });
 
-        $this->app->events->dispatch('api.payout.processed', [$payout]);
+            $this->app->events->dispatch('api.payout.processed', [$payout]);
+        }
     }
 
     /**
@@ -1869,12 +1905,20 @@ class Core extends Base\Core
                                             string $ftaBankStatusCode = null,
                                             $credit_bas = null)
     {
-        // will be removed after new error object is released.
-        $ftaFailureReason = $this->getPublicErrorMessage($payout, $ftaFailureReason, $ftaBankStatusCode);
+        // check using service
+        if ($payout->getIsPayoutService() === true)
+        {
+            $this->handlePayoutReversedForPayoutService($payout, $ftaFailureReason, $ftaBankStatusCode);
+        }
+        else
+        {
+            // will be removed after new error object is released.
+            $ftaFailureReason = $this->getPublicErrorMessage($payout, $ftaFailureReason, $ftaBankStatusCode);
 
-        $this->reversePayout($payout, $ftaFailureReason, $ftaBankStatusCode, $credit_bas);
+            $this->reversePayout($payout, $ftaFailureReason, $ftaBankStatusCode, $credit_bas);
 
-        $this->app->events->dispatch('api.payout.reversed', [$payout]);
+            $this->app->events->dispatch('api.payout.reversed', [$payout]);
+        }
     }
 
     protected function handlePayoutFailed(Entity $payout,
@@ -1945,7 +1989,18 @@ class Core extends Base\Core
             ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
         );
 
-        $this->app->events->dispatch('api.payout.failed', [$payout]);
+        if ($payout->getIsPayoutService() === true)
+        {
+            // error will be handled by service
+            $this->payoutStatusServiceClient->updatePayoutStatusViaFTS(
+                $payout->getId(),
+                Status::FAILED,
+                $ftaFailureReason);
+        }
+        else
+        {
+            $this->app->events->dispatch('api.payout.failed', [$payout]);
+        }
     }
 
     protected function verifyPayoutFailedTransaction(Entity $payout, string $ftaFailureReason = null)
@@ -2421,7 +2476,8 @@ class Core extends Base\Core
 
     protected function updateChannelToPayoutAndTransaction(Entity $payout,
                                                            string $payoutChannel,
-                                                           string $ftsChannel)
+                                                           string $ftsChannel,
+                                                           bool $updateForService = false)
     {
         $traceInfo = [
             'payout_id'         => $payout->getId(),
@@ -2451,7 +2507,7 @@ class Core extends Base\Core
                 null,
                 $traceInfo);
         }
-        else
+        else if (($payout->getIsPayoutService() === false) or ($updateForService === true))
         {
             $this->trace->info(
                 TraceCode::PAYOUT_CHANNEL_CHANGED_USING_FTA_DATA,
@@ -2832,5 +2888,295 @@ class Core extends Base\Core
                 'created_till'  => $paginationEntity->getCurrentEndTime()
             ]
         );
+    }
+
+    // ============================= PAYOUT SERVICE =============================
+
+    public function createPayoutEntry(array $input)
+    {
+        (new Validator)->setStrictFalse()->validateInput(Validator::PAYOUT_SERVICE_CREATE, $input);
+
+        // Find merchant using merchant id and set merchant in get processor
+        $merchant = $this->repo->merchant->findOrFail($input[Entity::MERCHANT_ID]);
+
+        return $this->getProcessor('fund_account_payout')
+                    ->setMerchant($merchant)
+                    ->createPayoutEntry($input);
+    }
+
+    public function createFTAForPayoutService(string $payoutId)
+    {
+        (new Validator)->validateInput(Validator::PAYOUT_SERVICE_FTS_CREATE,
+            [
+                Entity::ID => $payoutId
+            ]);
+
+        return $this->getProcessor('fund_account_payout')
+                    ->createFTAForPayoutService($payoutId);
+    }
+
+    public function createPayoutServiceTransaction(array $input)
+    {
+        (new Validator)->validateInput(Validator::PAYOUT_SERVICE_TRANSACTION_CREATE, $input);
+
+        return $this->getProcessor('fund_account_payout')
+                    ->createPayoutServiceTransaction($input);
+    }
+
+    public function reversePayoutService(Entity $payout,
+                                         string $reverseReason = null,
+                                         $ftaBankStatusCode = null)
+    {
+        $this->trace->info(
+            TraceCode::PAYOUT_REVERSAL_INITIATED,
+            [
+                'payout_id' => $payout->getId(),
+            ]);
+
+        $app = App::getFacadeRoot();
+
+        $this->mutex = $app['api.mutex'];
+
+        // Keeping the mutex TTL high while updating the payout to reversed.
+        // This is to ensure that the process that is working on the payout
+        // resource, releases mutex on the payout only once all entities are
+        // saved in the database.
+        $this->mutex->acquireAndRelease(
+            'reversal_payout_id_' . $payout->getId(),
+            function () use ($payout, $reverseReason, $ftaBankStatusCode) {
+
+                $payout->reload();
+
+                if ($payout->isStatusReversed() === true) {
+                    $this->trace->info(
+                        TraceCode::PAYOUT_ALREADY_REVERSED,
+                        [
+                            'payout_id' => $payout->getId(),
+                            'status' => $payout->getStatus(),
+                            'reverse_reason' => $reverseReason,
+                        ]);
+
+                    return;
+                }
+
+                $reversal = $this->repo->transaction(
+                    function () use ($payout, $reverseReason, $ftaBankStatusCode) {
+
+                        $reversalRequest = [
+                            'failure_reason' => $reverseReason,
+                        ];
+
+                        $payout->setFailureReason($reverseReason);
+
+                        $payout->setStatusCode($ftaBankStatusCode);
+
+                        // error will be handled by service
+                        $response = $this->payoutStatusServiceClient->updatePayoutStatusViaFTS(
+                            $payout->getId(),
+                            Status::REVERSED,
+                            $reverseReason);
+
+                        $balance = $payout->balance;
+
+                        if ($balance->getType() === Merchant\Balance\Type::BANKING)
+                        {
+                            $this->decreaseFreePayoutsConsumedAndUnsetFeeTypeIfApplicable($payout);
+                        }
+
+                        $previousStatus = $payout->getStatus();
+
+                        // For certain cases like  where a payout is being marked
+                        // as reversed  through recon flows(as in RBL), the above
+                        // method handleReversalTransactionForDirectBanking updates
+                        // the payout status to processed (to indicate the payout
+                        // got processed at sometime by setting processed_at,
+                        // so when the call returns from above method, we end up
+                        // override payout status. In order to ensure status of
+                        // payout is reversed in the system, we are setting the
+                        // status at the end
+                        $payout->setStatus(Status::REVERSED);
+
+                        $reversal = $this->repo->reversal->findReversalForPayout($payout->getId());
+
+                        // Need to keep this here because handlePayoutStatusUpdate needs the correct payout status
+                        if ($payout->isBalanceAccountTypeDirect() === true) {
+                            (new FeeRecovery\Core)->handlePayoutStatusUpdate($payout, $previousStatus, $reversal);
+                        }
+
+                        $this->repo->saveOrFail($payout);
+
+                        return $reversal;
+                    });
+            },
+            self::PAYOUT_REVERSAL_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
+        );
+    }
+
+    public function updateStatusAfterFtaInitiatedForPayoutService(Entity $payout)
+    {
+        $this->payoutStatusServiceClient->updatePayoutStatusViaFTS(
+            $payout->getId(),
+            Status::INITIATED);
+
+        $payout->setStatus(Status::INITIATED);
+
+        $this->repo->saveOrFail($payout);
+    }
+
+    public function updateWithDetailsBeforeFtaReconForPayoutService(Entity $payout, array $ftaData = [])
+    {
+        try
+        {
+            $input = [
+                Entity::FAILURE_REASON              => $ftaData[Attempt\Constants::FAILURE_REASON] ?? null,
+                Entity::REMARKS                     => $ftaData[Attempt\Constants::REMARKS] ?? null,
+                Attempt\Entity::FUND_TRANSFER_ID    => (int)$payout->getFTSTransferId(),
+                Attempt\Constants::BENEFICIARY_NAME => $ftaData[Attempt\Constants::BENEFICIARY_NAME] ?? null
+            ];
+
+            //
+            // For VPA type, we always set it to UPI only
+            // at build and we don't take the mode from FTA.
+            //
+            // Also, we don't want to override the payout's mode if it's already set.
+            //
+            if ((empty($ftaData[Attempt\Constants::VPA_ID]) === true) and
+                ($payout->getMode() === null))
+            {
+                $input[Entity::MODE] = $ftaData[Attempt\Constants::MODE];
+            }
+
+            // we want to override return UTR only if there is no value for UTR before
+            // since return_utr column has a unique constraint, so checking for empty
+            // value.
+            if (empty($payout->getReturnUtr()) === true)
+            {
+                if (empty($ftaData[Entity::RETURN_UTR]) === false)
+                {
+                    $input[Entity::RETURN_UTR] = $ftaData[Entity::RETURN_UTR];
+                }
+            }
+
+            $initialChannel = $payout->getChannel();
+
+            $updatedChannel = $ftaData[Attempt\Constants::CHANNEL] ?? null;
+
+            if (($updatedChannel !== null) and
+                ($initialChannel !== $updatedChannel))
+            {
+                $this->updateChannelToPayoutAndTransaction($payout, $initialChannel, $updatedChannel);
+
+                $input[Entity::CHANNEL] = $updatedChannel;
+            }
+
+            $input[Entity::UTR] = $ftaData[Attempt\Constants::UTR];
+
+            $response = $this->payoutDetailsServiceClient->updatePayoutDetailsViaFTS($payout, $input);
+
+            $this->updatePayoutDetailsFromServiceResponse($payout, $response);
+
+            //event will be fired via payout service.
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::PAYOUT_UPDATE_AFTER_FTA_RECON_SERVICE_DATA_SYNC_FAILED,
+                [
+                    'payout_id' => $payout->getId()
+                ]);
+
+            throw $exception;
+        }
+    }
+
+    public function updatePayoutDetailsFromServiceResponse(Entity $payout, array $response)
+    {
+        $initialUtr = $payout->getUtr();
+
+        if (empty($response[Entity::FAILURE_REASON]) === false)
+        {
+            $payout->setFailureReason($response[Entity::FAILURE_REASON]);
+        }
+
+        if ((empty($response[Entity::UTR]) === false) and
+            ($response[Entity::UTR] !== ""))
+        {
+            $payout->setUtr($response[Entity::UTR]);
+        }
+
+        if (empty($response[Entity::RETURN_UTR]) === false)
+        {
+            $payout->setReturnUtr($response[Entity::RETURN_UTR]);
+        }
+
+        if (empty($response[Entity::CHANNEL]) === false)
+        {
+            $updatedChannel = $response[Entity::CHANNEL];
+
+            $initialChannel = $payout->getChannel();
+
+            if (($updatedChannel !== null) and
+                ($initialChannel !== $updatedChannel))
+            {
+                $this->updateChannelToPayoutAndTransaction($payout, $initialChannel, $updatedChannel, true);
+            }
+            $payout->setFailureReason($response[Entity::CHANNEL]);
+        }
+
+        if (empty($response[Entity::REMARKS]) === false)
+        {
+            $payout->setRemarks($response[Entity::REMARKS]);
+        }
+
+        if (empty($response[Entity::MODE]) === false)
+        {
+            $payout->setMode($response[Entity::MODE]);
+        }
+
+        if (empty($response[Attempt\Constants::BENEFICIARY_NAME]) === false)
+        {
+            $payout->setRegisteredName($response[Attempt\Constants::BENEFICIARY_NAME]);
+        }
+
+        if (($initialUtr === null) and
+            ($payout->getUtr() !== null))
+        {
+            $this->app->events->dispatch('api.payout.updated', [$payout]);
+        }
+
+        $this->repo->saveOrFail($payout);
+    }
+
+    public function handlePayoutProcessedForPayoutService(Entity $payout)
+    {
+        $this->payoutStatusServiceClient->updatePayoutStatusViaFTS(
+            $payout->getId(),
+            Status::PROCESSED,
+            "");
+
+        $payout->setStatus(Status::PROCESSED);
+
+        $this->repo->saveOrFail($payout);
+        // webhook handled in payout service
+    }
+
+    public function handlePayoutReversedForPayoutService(Entity $payout,
+                                                         string $ftaFailureReason = null,
+                                                         string $ftaBankStatusCode = null)
+    {
+        $ftaFailureReason = $this->getPublicErrorMessage($payout, $ftaFailureReason, $ftaBankStatusCode);
+
+        $this->trace->info(
+            TraceCode::PAYOUT_SERVICE_REVERSE_REQUEST,
+            [
+                'payout_id'      => $payout->getId(),
+                'failure_reason' => $ftaFailureReason,
+            ]);
+
+        // webhook fired via payout service
+        $this->reversePayoutService($payout, $ftaFailureReason, $ftaBankStatusCode);
     }
 }

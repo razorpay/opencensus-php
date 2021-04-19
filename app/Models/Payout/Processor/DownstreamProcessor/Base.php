@@ -30,6 +30,11 @@ class Base extends BaseCore
         return $this->createTransaction($payout);
     }
 
+    public function processCreateFundTransferAttempt(Entity $payout, PublicEntity $ftaAccount)
+    {
+        $this->createFundTransferAttempt($payout, $ftaAccount);
+    }
+
     protected function createTransaction(Entity $payout)
     {
         list ($txn, $feeSplit) = (new Transaction\Processor\Payout($payout))->createTransaction();

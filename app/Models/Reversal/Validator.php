@@ -12,6 +12,8 @@ use RZP\Models\Feature\Constants as Feature;
 
 class Validator extends Base\Validator
 {
+    const PAYOUT_SERVICE_REVERSAL_CREATE = 'payout_service_reversal_create';
+
     protected static $createRules = [
         Entity::AMOUNT               => 'required|integer|min:0',
         Entity::FEE                  => 'sometimes|integer|min:0',
@@ -22,6 +24,11 @@ class Validator extends Base\Validator
         Entity::LINKED_ACCOUNT_NOTES => 'sometimes|array',
         Entity::REFUND_TO_CUSTOMER   => 'sometimes|boolean',
         Entity::UTR                  => 'sometimes|nullable|string',
+    ];
+
+    protected static $payoutServiceReversalCreateRules = [
+        Entity::ID                   => 'required|string|size:14',
+        Entity::PAYOUT_ID            => 'required|string|size:14',
     ];
 
     public function validateReversalAmount(Transfer\Entity $transfer, array $input)

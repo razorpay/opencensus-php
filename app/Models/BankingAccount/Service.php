@@ -638,4 +638,47 @@ class Service extends Base\Service
         }
         return $stateChangeLogBeforeProcessedState;
     }
+
+    /**
+     * Get banking account from account number
+     *
+     * @param string $accountNumber
+     * @param string $merchantId
+     * @return array
+     */
+    public function fetchBankingAccountForAccountNumber(string $accountNumber, string $merchantId)
+    {
+        $this->trace->info(
+            TraceCode::FETCH_BANKING_ACCOUNT_FOR_PAYOUT_SERVICE,
+            [
+                Entity::MERCHANT_ID => $merchantId,
+            ]);
+
+        (new Validator)->setStrictFalse()->validateInput(Validator::FETCH_BANKING_ACCOUNT_PAYOUT_SERVICE,
+            [
+                Entity::ACCOUNT_NUMBER => $accountNumber,
+                Entity::MERCHANT_ID    => $merchantId
+            ]);
+
+        $bankingAccount = $this->repo->banking_account->getBankingAccountWithBalanceViaAccountNumberAndMerchantId($accountNumber, $merchantId);
+
+        $this->trace->info(
+            TraceCode::FETCHED_BANKING_ACCOUNT_FOR_PAYOUT_SERVICE,
+            [
+                Entity::MERCHANT_ID        => $merchantId,
+                Entity::BANKING_ACCOUNT_ID => $bankingAccount->getId()
+            ]);
+
+        return [
+            Entity::ID                   => $bankingAccount->getId(),
+            Entity::STATUS               => $bankingAccount->getStatus(),
+            Entity::CHANNEL              => $bankingAccount->getChannel(),
+            Entity::BALANCE_ID           => $bankingAccount->getBalanceId(),
+            Entity::MERCHANT_ID          => $bankingAccount->getMerchantId(),
+            Entity::ACCOUNT_NUMBER       => $bankingAccount->getAccountNumber(),
+            Entity::ACCOUNT_TYPE         => $bankingAccount->balance->getAccountType(),
+            Entity::BALANCE_TYPE         => $bankingAccount->balance->getType(),
+            Entity::FTS_FUND_ACCOUNT_ID  => $bankingAccount->getFtsFundAccountId()
+        ];
+    }
 }

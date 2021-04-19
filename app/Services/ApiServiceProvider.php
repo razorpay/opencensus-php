@@ -442,6 +442,12 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerBvsHttpClients();
 
+        $this->registerPayoutServiceStatus();
+
+        $this->registerPayoutServiceDetail();
+
+        $this->registerPayoutServiceCreate();
+
         $this->registerFTSChannelNotification();
 
         $this->registerSettlementsPayout();
@@ -1129,6 +1135,30 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             }
 
             return new Stork;
+        });
+    }
+
+    protected function registerPayoutServiceCreate()
+    {
+        $this->app->singleton(PayoutService\Create::PAYOUT_SERVICE_CREATE, function($app)
+        {
+            return new PayoutService\Create($app);
+        });
+    }
+
+    protected function registerPayoutServiceStatus()
+    {
+        $this->app->singleton(PayoutService\Status::PAYOUT_SERVICE_STATUS, function($app)
+        {
+           return new PayoutService\Status($app);
+        });
+    }
+
+    protected function registerPayoutServiceDetail()
+    {
+        $this->app->singleton(PayoutService\Details::PAYOUT_SERVICE_DETAIL, function($app)
+        {
+            return new PayoutService\Details($app);
         });
     }
 

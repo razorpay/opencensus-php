@@ -3,6 +3,7 @@
 namespace RZP\Models\Reversal;
 
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Reversal;
 use RZP\Models\Payment\Refund;
@@ -108,5 +109,15 @@ class Service extends Base\Service
         $reversalData[Reversal\Entity::NOTES] = $result[Refund\Entity::NOTES];
 
         return $reversalData;
+    }
+
+    public function createReversalEntryForPayoutService(array $input)
+    {
+        $this->trace->info(TraceCode::PAYOUT_SERVICE_REVERSAL_CREATE_REQUEST,
+            ['input' => $input]);
+
+        $response = (new Core)->createReversalEntryForPayoutService($input);
+
+        return $response;
     }
 }

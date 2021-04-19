@@ -1997,5 +1997,61 @@ return [
         'response' => [
             'content' => []
         ],
-    ]
+    ],
+
+    'testFetchBankingAccountForPayoutService' => [
+        'request' => [
+            'url'     => '/banking_accounts/',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'status'                => 'created',
+                'channel'               => 'yesbank',
+                'merchant_id'           => '10000000000000',
+                'account_type'          => 'shared',
+                'balance_type'          => 'banking',
+            ],
+        ],
+    ],
+
+    'testFetchBankingAccountForPayoutServiceInvalidMerchantId' => [
+        'request' => [
+            'url'     => '/banking_accounts/',
+            'method'  => 'GET',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The merchant id must be 14 characters.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testFetchBankingAccountForPayoutServiceInvalidAccountNumber' => [
+        'request' => [
+            'url'     => '/banking_accounts/',
+            'method'  => 'GET',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The account number must be between 5 and 40 characters.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];
