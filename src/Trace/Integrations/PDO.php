@@ -261,8 +261,7 @@ class PDO implements IntegrationInterface
 
         if (array_key_exists('port', $connection_params)) {
             $attributes['net.peer.port'] = $connection_params['port'];
-        }
-        else {
+        } else {
             $port = PDO::getDefaultPort($db_system);
             $attributes['net.peer.port'] = $port;
             $dsn = $dsn . ':' . $port;
@@ -288,8 +287,7 @@ class PDO implements IntegrationInterface
         $dbSystem = strtolower(trim($dbSystem));
         if ($dbSystem === "mysql") {
             return '3306';
-        }
-        elseif (($dbSystem === "postgresql") or ($dbSystem === "psql")) {
+        } elseif (($dbSystem === "postgresql") or ($dbSystem === "psql")) {
             return '5432';
         }
     }
