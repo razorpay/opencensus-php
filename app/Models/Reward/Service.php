@@ -218,7 +218,9 @@ class Service extends Base\Service
                 {
                     $reward = $this->repo->reward->findOrFailPublic($id);
 
-                    return $reward;
+                    $merchantId = $payment->merchant_id;
+
+                    return ["reward" => $reward, "merchant_id" => $merchantId];
                 }
             }
             catch (\Exception $e)
@@ -243,7 +245,9 @@ class Service extends Base\Service
                 {
                     $reward = $this->repo->reward->findOrFailPublic($id);
 
-                    return $reward;
+                    $merchantId = $payment->merchant_id;
+
+                    return ["reward" => $reward, "merchant_id" => $merchantId];
                 }
             }
             catch (\Exception $e)
