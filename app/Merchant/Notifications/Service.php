@@ -340,7 +340,7 @@ class Service extends Base\Service
 
     private function populateCampaignDetailsBasedOnRazorxExperiments(array &$value, array $experiments)
     {
-        if(!isset($experiments))
+        if(!isset($experiments) or empty($experiments))
             return;
 
         $announcementToCampaignDetailMap = Constants::getAnnouncementToSubCampaignDetailsMapping();
@@ -379,7 +379,7 @@ class Service extends Base\Service
 
     private function populateCampaignDetailsBasedOnSplitzExperiments(array &$value, array $splitzExperiments)
     {
-        if(!isset($splitzExperiments))
+        if(!isset($splitzExperiments) or empty($splitzExperiments))
             return;
 
         $announcementToCampaignDetailMap = Constants::getAnnouncementToSubCampaignDetailsMapping();
