@@ -175,7 +175,7 @@ class Repository extends Base\Repository
 
         $nowMinus14days = Carbon::now(Timezone::IST)->addDays(-14)->getTimestamp();
 
-        return $this->newQuery($this->getSlaveConnection())
+        return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->where(Entity::STATUS, '=', Status::ACTIVE)
                     ->whereBetween(Entity::CLOSE_BY, array($nowMinus14days, $now))
                     ->pluck(Entity::ID)
