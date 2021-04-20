@@ -151,9 +151,12 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
         if ($status === Refund\Status::PROCESSED)
         {
-            static::$scroogeReconciliate[$this->refund->getId()]->setGatewayKeys([
-                self::GATEWAY_STATUS      => self::SUCCESS,
-            ]);
+            if (isset(static::$scroogeReconciliate[$this->refund->getId()]) === true)
+            {
+                static::$scroogeReconciliate[$this->refund->getId()]->setGatewayKeys([
+                    self::GATEWAY_STATUS => self::SUCCESS,
+                ]);
+            }
 
             $refund = $this->setGatewayRefunded(true, $refund);
         }
@@ -168,10 +171,13 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
                 $refund = $this->setGatewayRefunded(false, $refund);
             }
 
-            static::$scroogeReconciliate[$this->refund->getId()]->setGatewayKeys([
-                self::GATEWAY_STATUS      => $status,
-                self::SEQUENCE_NO         => $updatedReference3,
-            ]);
+            if (isset(static::$scroogeReconciliate[$this->refund->getId()]) === true)
+            {
+                static::$scroogeReconciliate[$this->refund->getId()]->setGatewayKeys([
+                    self::GATEWAY_STATUS => $status,
+                    self::SEQUENCE_NO => $updatedReference3,
+                ]);
+            }
         }
 
         $this->repo->saveOrFail($refund);
