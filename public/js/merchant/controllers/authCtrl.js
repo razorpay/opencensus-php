@@ -449,6 +449,26 @@ app
 
       const utmData = readUTMsCookie();
 
+      /**
+       * check is the current page is the first ever page visited by the
+       * user on razorpay.com domain(website/dashboard). Populate the same
+       * in the cookie `isLandingPageUser`
+       * isLandingPageUser will be true only for the first ever page visit of the user
+       * The subsequent visit on the same page, isLandingPageUser will be false
+       * @returns {boolean} isLandingPageUser
+       */
+      function getIsLandingPageUser() {
+        let isLandingPageUser = false;
+
+        const isLandingPageUserInCookie = getCookie('isLandingPageUser');
+
+        if (utmData.isNewUser && !isLandingPageUserInCookie) {
+          setCookie('isLandingPageUser', true);
+          isLandingPageUser = true;
+        }
+        return isLandingPageUser;
+      }
+
       function fireInitGauthType(type, onetapHideReason) {
         fireDLSuccessEvents('login.display_google_auth', {
           googleAuthVariant: type,
@@ -725,6 +745,7 @@ app
         let firstPage = '';
         let finalPage = '';
         let website = '';
+        let isNewUser = false;
 
         try {
           const rzpUtmCookie = getCookie('rzp_utm');
@@ -747,6 +768,7 @@ app
           firstPage = parsedCookie && parsedCookie.first_page ? parsedCookie.first_page : '';
           finalPage = parsedCookie && parsedCookie.final_page ? parsedCookie.final_page : '';
           website = parsedCookie && parsedCookie.website ? parsedCookie.website : '';
+          isNewUser = parsedCookie && parsedCookie.new_user ? parsedCookie.new_user : false;
         } catch (e) {
           console.log('rzp_utm cookie is malformed');
         }
@@ -757,6 +779,7 @@ app
           firstPage,
           finalPage,
           website,
+          isNewUser,
         };
       }
 
@@ -1779,6 +1802,7 @@ app
               website: utmData.website,
               version: $scope.authVersion,
               referring_url: utmData.website,
+              is_landing_page_user: getIsLandingPageUser(),
             });
           }
 
@@ -2506,6 +2530,7 @@ app
                   final_page: utmData.finalPage,
                   website: utmData.website,
                   referring_url: utmData.website,
+                  is_landing_page_user: getIsLandingPageUser(),
                 }),
             );
           $scope.isSignupDisplayEventFired = true;
