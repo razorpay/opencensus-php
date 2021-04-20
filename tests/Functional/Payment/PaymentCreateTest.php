@@ -4401,4 +4401,28 @@ class PaymentCreateTest extends TestCase
 
         $rewardTermsResponse->assertSee('ERROR: Invalid Payment Id or Reward Id');
     }
+
+    public function testOrderNotesAppendedInPaymentNotes()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $order = $this->createOrder(['notes' => ['optimizer_identifier_1' => 'op1', 1234 => 'op2']]);
+
+        $payment['amount'] = 50000;
+
+        $payment['order_id'] = $order['id'];
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $this->doAuthPayment($payment);
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals($order['notes']['optimizer_identifier_1'],'op1');
+
+        // Payment is automatically captured
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals($payment['notes']['optimizer_identifier_1'],'op1');
+        $this->assertEquals($payment['notes'][1234],'op2');
+
+    }
 }
