@@ -888,6 +888,7 @@ class Processor extends Base\Core
         $txns = $this->repo
                      ->transaction
                      ->fetchUnsettledTransactionsForProcessing($merchant->getId(), $balance, $params);
+
         // If there are no transactions to settle then return
         if ($txns->isEmpty() === true)
         {

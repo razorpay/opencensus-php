@@ -6,6 +6,7 @@ use Config;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Admin;
 use RZP\Models\Feature;
@@ -25,6 +26,7 @@ use RZP\Constants\Entity as EntityConstant;
 use RZP\Models\FundTransfer\Attempt\Purpose;
 use RZP\Models\Settlement\Merchant as SetlMerchant;
 use RZP\Constants\SettlementChannelMedium as Medium;
+use RZP\Models\Settlement\Details\Component as SetlComponent;
 
 trait SettlementTrait
 {
@@ -758,67 +760,67 @@ trait SettlementTrait
             );
         }
 
-        list($setlAmount, $setlFee, $setlApiFee, $tax) = $this->getSettlementAmountsForMerchant($txns);
-
-        if (($setlAmount < 100) or ($setlAmount > $balance->getBalance()) or ($setlAmount >= 50000000000))
-        {
-            $skipReason = null;
-
-            if($setlAmount < 100)
-            {
-                $skipReason = Metric::MIN_SETTLEMENT_AMOUNT_BLOCK;
-            }
-            else if($setlAmount > $balance->getBalance())
-            {
-                $skipReason = Metric::SETTLEMENT_AMOUNT_LESS_THAN_BALANCE;
-            }
-            else if($setlAmount >= 50000000000)
-            {
-                $operation = 'Settlement skipped due to amount grater than 50 Cr';
-
-                $traceData = [
-                    'merchant_id' => $merchant->getId(),
-                    'balance'     => $balance->getBalance(),
-                    'setlAmount'  => $setlAmount,
-                ];
-
-                (new SlackNotification)->send(
-                    $operation,
-                    $traceData,
-                    null,
-                    1,
-                    Config::get('slack.channels.settlement_alerts'));
-
-                $skipReason = Metric::MAX_SETTLEMENT_AMOUNT_BLOCK;
-            }
-
-            $this->trace->count(
-                Metric::MERCHANTS_SKIPPED_FOR_SETTLEMENT_TOTAL,
-                [
-                    Metric::SKIP_REASON => $skipReason
-                ]);
-
-            $this->traceMerchantSettlementSkip(
-                $merchant,
-                [
-                    'balance_id'   => $balance->getId(),
-                    'balance_type' => $balance->getType(),
-                    'balance'      => $balance->getBalance(),
-                    'merchant'     => $merchant->getId(),
-                    'setlAmount'   => $setlAmount,
-                    'reason'       => 'settlement amount less than 1rs or greater than balance or greater than 50Cr',
-                ]);
-
-            return [null, null];
-        }
-
         try
         {
+            list($setlAmount, $setlFee, $setlApiFee, $tax, $setlDetails) = $this->getSettlementAmountsForMerchant($txns);
+
+
+            if (($setlAmount < 100) or ($setlAmount > $balance->getBalance()) or ($setlAmount >= 50000000000))
+            {
+                $skipReason = null;
+
+                if($setlAmount < 100)
+                {
+                    $skipReason = Metric::MIN_SETTLEMENT_AMOUNT_BLOCK;
+                }
+                else if($setlAmount > $balance->getBalance())
+                {
+                    $skipReason = Metric::SETTLEMENT_AMOUNT_LESS_THAN_BALANCE;
+                }
+                else if($setlAmount >= 50000000000)
+                {
+                    $operation = 'Settlement skipped due to amount grater than 50 Cr';
+
+                    $traceData = [
+                        'merchant_id' => $merchant->getId(),
+                        'balance'     => $balance->getBalance(),
+                        'setlAmount'  => $setlAmount,
+                    ];
+
+                    (new SlackNotification)->send(
+                        $operation,
+                        $traceData,
+                        null,
+                        1,
+                        Config::get('slack.channels.settlement_alerts'));
+
+                    $skipReason = Metric::MAX_SETTLEMENT_AMOUNT_BLOCK;
+                }
+                    $this->trace->count(
+                        Metric::MERCHANTS_SKIPPED_FOR_SETTLEMENT_TOTAL,
+                        [
+                            Metric::SKIP_REASON => $skipReason
+                        ]);
+
+                $this->traceMerchantSettlementSkip(
+                    $merchant,
+                    [
+                        'balance_id'   => $balance->getId(),
+                        'balance_type' => $balance->getType(),
+                        'balance'      => $balance->getBalance(),
+                        'merchant'     => $merchant->getId(),
+                        'setlAmount'   => $setlAmount,
+                        'reason'       => 'settlement amount less than 1rs or greater than balance or greater than 50Cr',
+                    ]);
+
+                    return [null, null];
+            }
+
             list($setl, $transferAttempt) =
                 $this->repo->transaction(function () use($merchant, $channel, $txns, $setlAmount, $setlFee, $setlApiFee,
-                                                        $tax, $merchantSettleToPartner, $balance, $params){
+                                                        $tax, $merchantSettleToPartner, $balance, $params, $setlDetails){
                  return $this->settleForMerchant($merchant, $channel, $txns, $setlAmount, $setlFee, $setlApiFee, $tax,
-                                                   $merchantSettleToPartner, $balance, $params);
+                                                   $merchantSettleToPartner, $balance, $params, $setlDetails);
             });
 
             if(($setl !== null) and ($transferAttempt !== null))
@@ -909,15 +911,106 @@ trait SettlementTrait
         $setlAmount = $setlApiFee = 0;
         $setlFee = $tax = 0;
 
+        $entityTypes = SetlComponent::getAllComponents();
+
+        $details = [];
+
+        foreach ($entityTypes as $componentType)
+        {
+            $details[$componentType]['amount'] = 0;
+
+            $details[$componentType]['count'] = 0;
+
+            $details[$componentType][SetlComponent::TAX] = 0;
+            $details[$componentType][SetlComponent::FEE] = 0;
+        }
+
         foreach ($txns as $txn)
         {
             $setlAmount     += $txn->getCredit() - $txn->getDebit();
             $setlApiFee     += $txn->getApiFee();
             $setlFee        += $txn->getFee();
             $tax            += $txn->getTax();
+
+            // following is for calculation of settlement details
+            $componentType = $txn->getType();
+
+            if($componentType !== Transaction\Type::PAYMENT and $componentType !== Transaction\Type::REFUND)
+            {
+                $details[$componentType]['count'] += 1;
+            }
+
+            switch ($componentType)
+                {
+                    case Transaction\Type::PAYMENT:
+                        $payment = $txn->source;
+                        $paymentType = $payment->isInternational() === true ?
+                            Details\Component::PAYMENT_INTERNATIONAL : Details\Component::PAYMENT_DOMESTIC;
+
+                        $details[$paymentType]['count'] += 1;
+                        $details[$paymentType]['amount'] += $txn->getAmount();
+
+                        $componentType = $paymentType;
+
+                        break;
+
+                    case Transaction\Type::REVERSAL:
+                    case Transaction\Type::SETTLEMENT_TRANSFER:
+                        $details[$componentType]['amount'] += $txn->getAmount();
+                        break;
+
+                    case Transaction\Type::REFUND:
+                        $payment = $txn->source->payment;
+                        $refundType = $payment->isInternational() === true ?
+                            Details\Component::REFUND_INTERNATIONAL : Details\Component::REFUND_DOMESTIC;
+
+                        $details[$refundType]['count'] += 1;
+                        $details[$refundType]['amount'] -= $txn->getAmount();
+
+                        $componentType = $refundType;
+
+                        break;
+
+                    case Transaction\Type::PAYOUT:
+                    case Transaction\Type::TRANSFER:
+                    case Transaction\Type::DISPUTE:
+                    case Transaction\Type::FUND_ACCOUNT_VALIDATION:
+                    case Transaction\Type::SETTLEMENT_ONDEMAND:
+                    case Transaction\Type::CREDIT_REPAYMENT:
+                        $details[$componentType]['amount'] -= $txn->getAmount();
+                        break;
+
+                    case Transaction\Type::ADJUSTMENT:
+                    case Transaction\Type::COMMISSION:
+                        $details[$componentType]['amount'] += $txn->getCredit();
+                        $details[$componentType]['amount'] -= $txn->getDebit();
+                        break;
+
+                    default:
+                        throw new Exception\LogicException('Invalid Settlement-component-type:' . $componentType);
+                }
+
+            if(isset($details[$componentType][SetlComponent::FEE]) == false)
+            {
+                $details[$componentType][SetlComponent::FEE] = 0;
+            }
+            if(isset($details[$componentType][SetlComponent::TAX]) == false)
+            {
+                $details[$componentType][SetlComponent::TAX] = 0;
+            }
+
+            $details[$componentType][SetlComponent::TAX] += $txn->getTax();
+
+            $details[$componentType][SetlComponent::FEE] += ($txn->getFee() - $txn->getTax());
+
+            // Add credits if txn is of type fee credits.
+            $details[SetlComponent::FEE_CREDITS]['amount'] += ($txn->isFeeCredits() ? $txn->getCredits() : 0);
+
+            // Add credits if txn is of type refund credits.
+            $details[SetlComponent::REFUND_CREDITS]['amount'] += ($txn->isRefundCredits() ? $txn->getCredits() : 0);
         }
 
-        return [$setlAmount, $setlFee, $setlApiFee, $tax];
+        return [$setlAmount, $setlFee, $setlApiFee, $tax, $details];
     }
 
     /**
@@ -1010,12 +1103,13 @@ trait SettlementTrait
      * @param                $merchantSettleToPartner
      * @param Balance\Entity $balance
      * @param array          $params
+     * @param                $setlDetails
      *
      * @return array
      */
     protected function settleForMerchant(
         $merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax, $merchantSettleToPartner,
-        Balance\Entity $balance, $params): array
+        Balance\Entity $balance, $params, $setlDetails): array
     {
         $settlement = null;
 
@@ -1026,7 +1120,7 @@ trait SettlementTrait
         return $this->mutex->acquireAndRelease(
             $mutexResource,
             function () use($merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax, $settlement, $transferAttempt,
-                 $merchantSettleToPartner, $balance, $params) {
+                 $merchantSettleToPartner, $balance, $params, $setlDetails) {
                 try
                 {
                         $destinationMerchantId = $this->settlementToPartner($merchant->getId());
@@ -1042,8 +1136,6 @@ trait SettlementTrait
                             $merchantSettleToPartner,
                             $isAggregateSettlement);
 
-                        $setlDetailAmounts = $merchantSettler->calculateSettlementDetailAmounts($setlTxns);
-
                         $this->traceSettlementDelayOfTransactions($setlTxns);
 
                         $settlement = $merchantSettler->settle(
@@ -1053,7 +1145,7 @@ trait SettlementTrait
                             $setlApiFee,
                             $tax,
                             $this->setlTime,
-                            $setlDetailAmounts,
+                            $setlDetails,
                             $merchantSettleToPartner,
                             $balance);
 
