@@ -5,6 +5,7 @@ namespace RZP\Models\Terminal;
 use DB;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
@@ -211,17 +212,22 @@ class Repository extends Base\Repository
     }
 
 
-    public function getById($id)
+    public function getById($id, $withTrashed = true, $fromTerminalsService = true)
     {
-        $terminal =  $this->newQuery()
-                    ->withTrashed()
-                    ->findOrFailPublic($id);
+        $query = $this->newQuery();
+
+        if ($withTrashed === true)
+        {
+            $query->withTrashed();
+        }
+
+        $terminal = $query->findOrFailPublic($id);
 
         $mode = $this->app['rzp.mode'] ??  Mode::LIVE ;
 
         $variantFlag = $this->app->razorx->getTreatment($id, "ROUTE_PROXY_TS_BY_ID_2",  $mode);
 
-        if ($variantFlag === 'on')
+        if ($variantFlag === 'on' and $fromTerminalsService === true)
         {
             $data = ["function" => "getById", "terminal_id" => $id];
 
@@ -229,7 +235,7 @@ class Repository extends Base\Repository
             {
                 $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
 
-                $path = "v1/terminals/" . $id ."?with_trashed=true" ;
+                $path = "v1/terminals/" . $id ."?with_trashed=". ($withTrashed ? 'true' : 'false') ;
 
                 $response = $this->app['terminals_service']->proxyTerminalService('', "GET", $path);
 
@@ -251,6 +257,133 @@ class Repository extends Base\Repository
         }
 
         return $terminal;
+    }
+
+    public function findOrFail($id, $columns = array('*'))
+    {
+        $model = $this->find($id, $columns);
+
+        if ( ! is_null($model))
+        {
+            return $model;
+        }
+
+        $data = array(
+            'model' => 'terminal',
+            'operation' => 'find',
+            'attributes' => array('id' => $id, 'columns' => $columns));
+
+        throw new Exception\DbQueryException($data);
+    }
+
+    public function findOrFailPublic($id, $columns = ['*'])
+    {
+        $model = $this->find($id, $columns);
+
+        if (is_null($model) === false)
+        {
+            return $model;
+        }
+
+        $data = [
+            'model' => 'terminal',
+            'attributes' => $id,
+            'operation' => 'find'
+        ];
+
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
+    }
+
+    public function find($id, $columns = ['*'])
+    {
+        $terminal = parent::find($id, $columns);
+
+        $mode = $this->app['rzp.mode'] ??  Mode::LIVE ;
+
+        $variantFlag = $this->app->razorx->getTreatment($id, "ROUTE_PROXY_TS_FIND",  $mode);
+
+        if ($variantFlag === 'terminals_find')
+        {
+            $data = ["function" => "find", "terminal_id" => $id];
+
+            try
+            {
+                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+                $path = "v1/terminals/" . $id;
+
+                $response = $this->app['terminals_service']->proxyTerminalService('', "GET", $path);
+
+                $terminal2 = Terminal\Service::getEntityFromTerminalServiceResponse($response);
+
+                if (Terminal\Service::compareTerminalEntity($terminal, $terminal2) === false)
+                {
+                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+                }
+
+                return $terminal2;
+            }
+            catch (\Throwable $ex)
+            {
+                $data['message'] = $ex->getMessage();
+
+                $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_FIND_FAILED, $data);
+            }
+        }
+
+        return $terminal;
+    }
+
+    public function findMany($ids, $columns = array('*'))
+    {
+        return $this->getByTerminalIds($ids);
+    }
+
+    public function fetch(array $params, string $merchantId = null, string $connectionType = null, $fromTerminalsService = true): PublicCollection
+    {
+        $terminals = parent::fetch($params, $merchantId, $connectionType);
+
+        $mode = $this->app['rzp.mode'] ??  Mode::LIVE ;
+
+        if ($merchantId != null)
+        {
+            $params["merchant_id"] = $merchantId;
+        }
+
+        $variantFlag = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), "ROUTE_PROXY_TS_ADMIN_MULTIPLE_TERMINAL_FETCH", $mode);
+
+        if ($variantFlag === 'proxy' and $fromTerminalsService === true)
+        {
+            try
+            {
+                $path = "v1/admin/terminals/?";
+
+                foreach ($params as $queryParam => $value)
+                {
+                    $path .= $queryParam. '=' .$value. '&';
+                }
+
+                $response = $this->app['terminals_service']->proxyTerminalService('', "GET", $path);
+
+                $tsTerminals = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response);
+
+                if (Terminal\Service::compareTerminalCollection($terminals, $tsTerminals) === false)
+                {
+                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $params);
+                }
+
+                return $tsTerminals;
+            }
+            catch (\Throwable $ex)
+            {
+                $data['message'] = $ex->getMessage();
+
+                $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+            }
+        }
+
+        return $terminals;
     }
 
     public function getByIdNonDeleted($id)

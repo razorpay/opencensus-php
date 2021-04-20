@@ -253,19 +253,6 @@ class TerminalMigrationTest extends TestCase
 
         $this->razorxValue = 'proxy';
 
-        $mock = $this->createMetricsMock();
-
-        $expected = [
-            'route'         => 'razorflow_admin_fetch_terminal_multiple',
-            'message'       => null,
-            'terminal_id'   => 'term_'.$terminal['id'],
-
-        ];
-
-        $mock->expects($this->at(3))
-            ->method('count')
-            ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expected);
-
         $url = '/rf/admin/terminal';
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
@@ -1708,10 +1695,6 @@ class TerminalMigrationTest extends TestCase
 
             $data = $this->terminalRepository->findOrFail($terminal['id'])->toArrayWithPassword();
 
-            $data['id'] = 'term_'.$data['id'];
-
-            $data['entity'] = 'terminal';
-
             $body = json_encode(['data' => [$data]]);
 
             $response = new \Requests_Response;
@@ -1723,19 +1706,6 @@ class TerminalMigrationTest extends TestCase
         }, 1);
 
         $this->razorxValue = 'proxy';
-
-        $mock = $this->createMetricsMock();
-
-        $expected = [
-            'route'         => 'admin_fetch_terminal_multiple',
-            'message'       => null,
-            'terminal_id'   => 'term_'.$terminal['id'],
-
-        ];
-
-        $mock->expects($this->at(3))
-            ->method('count')
-            ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expected);
 
         $url = '/admin/terminal/';
 
@@ -1874,20 +1844,6 @@ class TerminalMigrationTest extends TestCase
         }, 1);
 
         $this->razorxValue = 'proxy';
-
-        $mock = $this->createMetricsMock();
-
-        $expected = [
-            'route'         => 'terminal_fetch',
-            'message'       => null,
-            'terminal_id'   => 'term_'.$terminal['id'],
-
-        ];
-
-
-        $mock->expects($this->at(3))
-            ->method('count')
-            ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expected);
 
         $url = '/terminals/';
 
@@ -2044,6 +2000,8 @@ class TerminalMigrationTest extends TestCase
 
         $this->startTest();
 
+        $this->razorxValue = 'off';
+
         // Verifying fields.
         $finalTerminal = $this->terminalRepository->findOrFail($tid)->toArrayWithPassword();
 
@@ -2062,6 +2020,41 @@ class TerminalMigrationTest extends TestCase
             }
             $this->assertEquals($originalTerminal[$key], $finalTerminal[$key]);
         }
+    }
+
+    public function testFind()
+    {
+        DB::table('terminals')->delete();
+
+        $terminal = $this->fixtures->create(
+            'terminal', [
+            'id'          => '1n25f6uN5S1Z5a',
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $this->razorxValue = 'terminals_find';
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($terminal) {
+            $response = new \Requests_Response;
+
+            $this->assertEquals(Requests::GET, $method);
+
+            $this->assertEquals("v1/terminals/1n25f6uN5S1Z5a", $path);
+
+            $this->razorxValue = 'off';
+
+            $data = $this->terminalRepository->find('1n25f6uN5S1Z5a')->toArray();
+
+            $body = json_encode(['data' => $data]);
+
+            $response->body = $body;
+
+            return $response;
+        }, 1);
+
+        $terminal2 = $this->terminalRepository->find('1n25f6uN5S1Z5a');
+
+        $this->assertEquals($terminal->getId(), $terminal2->getId());
     }
 
     public function testSetTerminalBanksOnTerminalService()

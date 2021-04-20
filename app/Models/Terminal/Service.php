@@ -724,7 +724,7 @@ class Service extends Base\Service
     {
         $client = $this->app['terminals_service'];
 
-        $terminal = $this->repo->terminal->getById($terminalId);
+        $terminal = $this->repo->terminal->getById($terminalId, true, false);
 
         $terminal = $this->repo->transaction(function () use ($terminal, $client) {
 

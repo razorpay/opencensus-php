@@ -4,7 +4,6 @@
 namespace RZP\Models\Terminal;
 
 use RZP\Exception;
-use RZP\Models\Base\Collection;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
@@ -481,7 +480,7 @@ trait Migrate
         return $collection;
     }
 
-    public static function compareTerminalCollection(Collection $apiTerminals, Collection $terminals): bool
+    public static function compareTerminalCollection(PublicCollection $apiTerminals, PublicCollection $terminals): bool
     {
         $app = \App::getFacadeRoot();
 

@@ -124,10 +124,6 @@ class Service extends Base\Service
 
         $merchantId = $this->merchant->getId();
 
-        $terminals = $this->repo->terminal->fetch($input, $merchantId);
-
-        $data = $terminals->toArrayPublic();
-
         // proxy code
         $mode  = $this->mode ?? Mode::LIVE;
 
@@ -141,21 +137,15 @@ class Service extends Base\Service
 
             $path = "v1/public/merchants/terminals";
 
-            $response = $this->app['terminals_service']->proxyTerminalService($content, "POST", $path);
+            return $this->app['terminals_service']->proxyTerminalService($content, "POST", $path);
+        }
+        else
+        {
+            $terminals = $this->repo->terminal->fetch($input, $merchantId, null,false);
 
-            $dataToCompare = $data["items"];
-
-            if ((new Terminal\Service())->compareArrayOfTerminalArrays($dataToCompare, $response) === false)
-            {
-                $traceData = ["content" => $content];
-
-                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_FETCH_ONBOARDING_COMPARISON_FAILED, $traceData);
-            }
-
-            return $response;
+            return $terminals->toArrayPublic();
         }
 
-        return $data;
     }
 
     public function initiateOnboarding($input)
