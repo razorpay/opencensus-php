@@ -343,6 +343,27 @@ app
         }
       }
 
+      const pushPromMetric = ({ flow, label }) => {
+        if (!window.rzpQMetrics) return;
+
+        window.rzpQMetrics.immediate = true;
+
+        window.rzpQMetrics.push({
+          type: 'metrics',
+          properties: {
+            name: 'device.metrics',
+            labels: [
+              {
+                type: 'dashboard_' + flow,
+                source: label,
+              },
+            ],
+          },
+        });
+
+        window.rzpQMetrics.immediate = false;
+      };
+
       $scope.initOneTap = function () {
         // setting up an interval to wait and check if onetap(window.google) has loaded from script
         var checkScriptLoadingInterval = setInterval(() => {
@@ -370,6 +391,7 @@ app
                     emailId: email,
                     googleAuthVariant: G_AUTH_TYPES.oneTap,
                   });
+                  pushPromMetric({ flow: 'login', label: 'login_initiate' });
                   signinHandler(res.credential, tokenEmail, G_AUTH_TYPES.oneTap);
                 }
               },
@@ -378,27 +400,6 @@ app
             clearInterval(checkScriptLoadingInterval);
           }
         }, 50);
-      };
-
-      const pushPromMetric = ({ flow, label }) => {
-        if (!window.rzpQMetrics) return;
-
-        window.rzpQMetrics.immediate = true;
-
-        window.rzpQMetrics.push({
-          type: 'metrics',
-          properties: {
-            name: 'device.metrics',
-            labels: [
-              {
-                type: 'dashboard_' + flow,
-                source: label,
-              },
-            ],
-          },
-        });
-
-        window.rzpQMetrics.immediate = false;
       };
 
       /**
