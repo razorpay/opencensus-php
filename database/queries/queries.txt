@@ -3891,9 +3891,9 @@ ALTER TABLE subscriptions DROP FOREIGN KEY subscriptions_token_id_foreign;
 ALTER TABLE tagging_tags DROP FOREIGN KEY tagging_tags_tag_group_id_foreign;
 ALTER TABLE tax_groups DROP FOREIGN KEY tax_groups_merchant_id_foreign;
 ALTER TABLE taxes DROP FOREIGN KEY taxes_merchant_id_foreign;
-ALTER TABLE terminals DROP FOREIGN KEY terminals_merchant_id_foreign;
 ALTER TABLE terminal_analytics DROP FOREIGN KEY terminal_analytics_payment_id_foreign;
-ALTER TABLE terminal_analytics DROP FOREIGN KEY terminal_analytics_terminal_id_foreign
+ALTER TABLE terminal_analytics DROP FOREIGN KEY terminal_analytics_terminal_id_foreign;
+ALTER TABLE terminals DROP FOREIGN KEY terminals_merchant_id_foreign;
 ALTER TABLE tokens DROP FOREIGN KEY token_terminal_id_foreign;
 ALTER TABLE tokens DROP FOREIGN KEY tokens_card_id_foreign;
 ALTER TABLE tokens DROP FOREIGN KEY tokens_customer_id_foreign;
@@ -6195,6 +6195,9 @@ ALTER TABLE rewards
 ALTER TABLE banking_account_tpvs
     ADD COLUMN trimmed_payer_account_number varchar(255) DEFAULT NULL,
     ADD UNIQUE INDEX banking_account_tpvs_merchant_id_account_number_uq_index (merchant_id, trimmed_payer_account_number);
+
+ALTER TABLE banking_account_tpvs
+    DROP INDEX banking_account_tpvs_merchant_id_account_number_uq_index;
 
 DROP TABLE terminal_analytics;
 

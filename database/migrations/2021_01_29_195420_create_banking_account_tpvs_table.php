@@ -65,10 +65,6 @@ class CreateBankingAccountTpvsTable extends Migration
 
             $table->index(BankingAccountTpv::PAYER_ACCOUNT_NUMBER);
 
-            $table->unique([BankingAccountTpv::MERCHANT_ID,
-                            BankingAccountTpv::TRIMMED_PAYER_ACCOUNT_NUMBER],
-                           'banking_account_tpvs_merchant_id_account_number_uq_index');
-
             $table->index(BankingAccountTpv::STATUS);
 
             $table->index(BankingAccountTpv::CREATED_AT);
