@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0a3401c390ede9e04bff695b8179a951",
+    "content-hash": "2d858a46dde8aaee09f01e8909900f82",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -4920,7 +4920,7 @@
             "time": "2020-01-07T07:47:15+00:00"
         },
         {
-            "name": "mikey179/vfsStream",
+            "name": "mikey179/vfsstream",
             "version": "v1.3.0",
             "source": {
                 "type": "git",
@@ -5582,16 +5582,16 @@
         },
         {
             "name": "opencensus/opencensus",
-            "version": "v0.7.5.4",
+            "version": "v0.7.5.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/opencensus-php.git",
-                "reference": "ebd9cc43311830f0a797ffc415493d071c809b6f"
+                "reference": "b051fdc82c47b7f9a3284e007a559027e814ab78"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/opencensus-php/zipball/ebd9cc43311830f0a797ffc415493d071c809b6f",
-                "reference": "ebd9cc43311830f0a797ffc415493d071c809b6f",
+                "url": "https://api.github.com/repos/razorpay/opencensus-php/zipball/b051fdc82c47b7f9a3284e007a559027e814ab78",
+                "reference": "b051fdc82c47b7f9a3284e007a559027e814ab78",
                 "shasum": ""
             },
             "archive": {
@@ -5653,10 +5653,10 @@
             ],
             "description": "OpenCensus Trace Client for PHP",
             "support": {
-                "source": "https://github.com/razorpay/opencensus-php/tree/v0.7.5.4",
+                "source": "https://github.com/razorpay/opencensus-php/tree/v0.7.5.5",
                 "issues": "https://github.com/razorpay/opencensus-php/issues"
             },
-            "time": "2021-04-12T06:55:30+00:00"
+            "time": "2021-04-20T05:22:48+00:00"
         },
         {
             "name": "opencensus/opencensus-exporter-jaeger",
