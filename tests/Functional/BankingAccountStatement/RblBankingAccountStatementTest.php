@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\BankingAccountStatement;
 
+use App;
 use Mail;
 use Queue;
 use Mockery;
@@ -8280,7 +8281,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         Queue::assertPushed(RblBankingAccountStatementJob::class, 1);
     }
-  
+
     /**
      * Here we are checking that merchant with ACCOUNT_STATEMENT_V2_FLOW feature enabled
      * goes through new flow and that its 2 bas rows get saved and linked
@@ -8844,5 +8845,76 @@ class RblBankingAccountStatementTest extends TestCase
         $externalEntities = $this->getDbEntities('external');
 
         $this->assertEquals(3, count($externalEntities));
+    }
+
+    // Fixed window rate limiter is implemented in job which allows only RBL_STATEMENT_FETCH_RATE_LIMIT number of
+    // requests in RBL_STATEMENT_FETCH_WINDOW_LENGTH seconds. Hence first dispatching into the queue should not be rate
+    // limited and fetch statement while next dispatched job should be rate limited.
+    public function testStatementFetchRateLimiter()
+    {
+        (new AdminService)->setConfigKeys(
+            [
+                ConfigKey::RBL_STATEMENT_FETCH_RATE_LIMIT    => 1,
+                ConfigKey::RBL_STATEMENT_FETCH_WINDOW_LENGTH => 3600,
+                ConfigKey::RBL_ENABLE_RATE_LIMIT_FLOW => 1
+            ]);
+
+        $mockedResponse = $this->getRblDataResponse();
+
+        $txns = $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'];
+
+        $txns[0]['txnBalance']['amountValue'] = '114.50';
+
+        $txns[1]['txnBalance']['amountValue'] = '13.55';
+
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'] = $txns;
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $baBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
+
+        $this->assertNull($baBeforeTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $basdBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->assertNull($basdBeforeTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $this->ba->cronAuth();
+
+        RblBankingAccountStatementJob::dispatch('test', [
+            'channel'        => Channel::RBL,
+            'account_number' => 2224440041626905,
+            'attempt_number' => 0
+        ]);
+
+        $txns = $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'];
+
+        $txns[1]['txnId'] = 'S3';
+
+        $txns[1]['txnBalance']['amountValue'] = '-87.4';
+
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'] = $txns;
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        // this time the job should be rate limited, else balance validation error will be thrown because of the mocked response.
+        RblBankingAccountStatementJob::dispatch('test', [
+            'channel'        => Channel::RBL,
+            'account_number' => 2224440041626905,
+            'attempt_number' => 0
+        ]);
+
+        $app = App::getFacadeRoot();
+
+        $redis = $app['redis']->connection();
+
+        $currentTime = Carbon::now()->getTimestamp();
+
+        // this is for clean up purpose.
+        $redis->del('banking_account_statement_rbl' . stringify((int) ($currentTime / 3600)));
+
+        $basRecords = $this->getDbEntities(EntityConstants::BANKING_ACCOUNT_STATEMENT);
+
+        $this->assertEquals(2, count($basRecords));
     }
 }

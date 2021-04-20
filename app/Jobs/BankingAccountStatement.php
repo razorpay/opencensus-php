@@ -42,6 +42,8 @@ class BankingAccountStatement extends Job
      */
     public function __construct(string $mode, array $params)
     {
+        unset($params['attempt_number']);
+
         $this->params = $params;
 
         parent::__construct($mode);

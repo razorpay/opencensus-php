@@ -130,6 +130,22 @@ class ConfigKey
 
     const RX_SHARED_ACCOUNT_ALLOWED_CHANNELS    = self::PREFIX . 'rx_shared_account_allowed_channels';
 
+    const RBL_STATEMENT_FETCH_WINDOW_LENGTH     = self::PREFIX . 'rbl_statement_fetch_window_length';
+
+    const ICICI_STATEMENT_FETCH_WINDOW_LENGTH   = self::PREFIX . 'icici_statement_fetch_window_length';
+
+    const RBL_STATEMENT_FETCH_RATE_LIMIT                 = self::PREFIX . 'rbl_statement_fetch_rate_limit';
+
+    const RBL_STATEMENT_FETCH_RATE_LIMIT_RELEASE_DELAY   = self::PREFIX . 'rbl_statement_fetch_rate_limit_release_delay';
+
+    const ICICI_STATEMENT_FETCH_RATE_LIMIT               = self::PREFIX . 'icici_statement_fetch_rate_limit';
+
+    const ICICI_STATEMENT_FETCH_RATE_LIMIT_RELEASE_DELAY = self::PREFIX . 'icici_statement_fetch_rate_limit_release_delay';
+
+    const RBL_ENABLE_RATE_LIMIT_FLOW                     = self::PREFIX . 'rbl_enable_rate_limit_flow';
+
+    const ICICI_ENABLE_RATE_LIMIT_FLOW                   = self::PREFIX . 'icici_enable_rate_limit_flow';
+
     // This is used to do correction to closing balance in bank's response
     const RBL_STATEMENT_CLOSING_BALANCE_DIFF = self::PREFIX . 'rbl_statement_closing_balance_diff';
 
@@ -278,10 +294,18 @@ class ConfigKey
         self::ENABLE_CRED_ELIGIBILITY_CALL,
         self::RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_MERCHANTS,
         self::RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS_FOR_FUND_LOADING,
+        self::RBL_STATEMENT_FETCH_RATE_LIMIT,
+        self::RBL_STATEMENT_FETCH_WINDOW_LENGTH,
+        self::ICICI_STATEMENT_FETCH_RATE_LIMIT,
+        self::ICICI_STATEMENT_FETCH_WINDOW_LENGTH,
         self::RBL_STATEMENT_CLOSING_BALANCE_DIFF,
         self::REQUEST_LOG_STATE,
         self::RBL_BANKING_ACCOUNT_STATEMENT_CRON_ATTEMPT_DELAY,
         self::SLAVE_ROUTES,
+        self::RBL_STATEMENT_FETCH_RATE_LIMIT_RELEASE_DELAY,
+        self::ICICI_STATEMENT_FETCH_RATE_LIMIT_RELEASE_DELAY,
+        self::RBL_ENABLE_RATE_LIMIT_FLOW,
+        self::ICICI_ENABLE_RATE_LIMIT_FLOW
     ];
 
     const REDIS_CONFIG_MAP = [

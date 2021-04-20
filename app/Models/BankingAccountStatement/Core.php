@@ -21,6 +21,8 @@ use RZP\Models\Transaction;
 use RZP\Models\Payout\Status;
 use RZP\Models\BankingAccount;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Jobs\RblBankingAccountStatement;
+use RZP\Jobs\IciciBankingAccountStatement;
 use RZP\Mail\BankingAccount\StatementMail;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
@@ -1829,16 +1831,19 @@ class Core extends Base\Core
     }
 
     // Adding a delay in dispatch and default is 0 min delay.
+    // This delay can be made channel specific and can be kept in redis
     public function dispatchBankingAccountStatementJob(string $channel,
                                                        string $accountNumber,
-                                                       int $delay = 0)
+                                                       int $delay = 0,
+                                                       int $attemptNumber = 0)
     {
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_STATEMENT_DISPATCH_JOB_REQUEST,
             [
                 'channel'        => $channel,
-                'accountNumber'  => $accountNumber,
+                'account_number' => $accountNumber,
                 'delay'          => $delay,
+                'attempt_number' => $attemptNumber
             ]);
 
         $job = $this->getAccountStatementJobForChannel($channel, $accountNumber);
@@ -1846,7 +1851,8 @@ class Core extends Base\Core
         $job::dispatch($this->mode,
                        [
                            'channel'        => $channel,
-                           'account_number' => $accountNumber
+                           'account_number' => $accountNumber,
+                           'attempt_number' => $attemptNumber
                        ])->delay($delay);
     }
 

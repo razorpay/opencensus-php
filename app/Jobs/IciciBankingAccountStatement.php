@@ -2,11 +2,14 @@
 
 namespace RZP\Jobs;
 
+use App;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Trace\TraceCode;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Settlement\SlackNotification;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\BankingAccountStatement as BAS;
 
 class IciciBankingAccountStatement extends Job
@@ -15,6 +18,13 @@ class IciciBankingAccountStatement extends Job
     const MAX_RETRY_ATTEMPT = 7;
 
     const MAX_RETRY_DELAY = 120;
+
+    // statement fetch fixed window rate limit related constants.
+    const STATEMENT_FETCH_FIXED_WINDOW_CONFIG_KEY_PREFIX = "banking_account_statement_";
+
+    const DEFAULT_RATE_LIMIT = 10;
+
+    const DEFAULT_FIXED_WINDOW_LENGTH = 5;
 
     /**
      * @var string
@@ -33,6 +43,10 @@ class IciciBankingAccountStatement extends Job
      */
     public $timeout = 1800;
 
+    // maintaining attemptNumber to keep track of number of attempts which are not rate limited. $this->attempts() will
+    // include extra attempts made because of rate limiter.
+    protected $attemptNumber;
+
     /**
      * @param string $mode
      * @param array  $params
@@ -41,6 +55,8 @@ class IciciBankingAccountStatement extends Job
      */
     public function __construct(string $mode, array $params)
     {
+        $this->attemptNumber = array_pull($params, 'attempt_number');
+
         $this->params = $params;
 
         parent::__construct($mode);
@@ -52,27 +68,64 @@ class IciciBankingAccountStatement extends Job
         {
             parent::handle();
 
-            $this->trace->info(
-                TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_INIT,
-                [
-                    'channel'           => $this->params['channel'],
-                    'account_number'    => $this->params['account_number']
-                ]);
+            $enableRateLimit = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::ICICI_ENABLE_RATE_LIMIT_FLOW]);
 
-            $workerStartTime = Carbon::now()->getTimestamp();
+            if ($enableRateLimit === 1)
+            {
+                list($passRateLimit, $rateLimitRequestNumber, $redisKeyName) = $this->checkRateLimit($this->params['channel']);
+            }
+            else
+            {
+                list($passRateLimit, $rateLimitRequestNumber, $redisKeyName) = [true, 0,''];
+            }
 
-            $result = (new BAS\Core)->processStatementForAccount($this->params);
+            if ($passRateLimit === false)
+            {
+                $this->trace->debug(
+                    TraceCode::BANKING_ACCOUNT_STATEMENT_RATE_LIMITED,
+                    [
+                        'channel'                   => $this->params['channel'],
+                        'account_number'            => $this->params['account_number'],
+                        'rate_limit_request_number' => $rateLimitRequestNumber,
+                        'redis_key_name'            => $redisKeyName
+                    ]);
 
-            $workerEndTime = Carbon::now()->getTimestamp();
+                $rateLimitReleaseDelay = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::ICICI_STATEMENT_FETCH_RATE_LIMIT_RELEASE_DELAY]);
 
-            $this->trace->info(TraceCode::BAS_FETCH_PROCESSED_BY_QUEUE,
-                [
-                    'result'        => $result,
-                    'start_time'    => $workerStartTime,
-                    'end_time'      => $workerEndTime
-                ]);
+                if (empty($rateLimitReleaseDelay) == true)
+                {
+                    $rateLimitReleaseDelay = 0;
+                }
 
-            $this->delete();
+                $this->release($rateLimitReleaseDelay);
+            }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_INIT,
+                    [
+                        'channel'                   => $this->params['channel'],
+                        'account_number'            => $this->params['account_number'],
+                        'rate_limit_request_number' => $rateLimitRequestNumber,
+                        'redis_key_name'            => $redisKeyName
+                    ]);
+
+                $workerStartTime = Carbon::now()->getTimestamp();
+
+                (new BAS\Core)->fetchAccountStatementV2($this->params);
+
+                $workerEndTime = Carbon::now()->getTimestamp();
+
+                $this->trace->info(TraceCode::BAS_FETCH_PROCESSED_BY_QUEUE,
+                                   [
+                                       'account_number' => $this->params['account_number'],
+                                       'channel'        => $this->params['channel'],
+                                       'start_time'     => $workerStartTime,
+                                       'end_time'       => $workerEndTime
+                                   ]);
+
+                $this->delete();
+            }
         }
         catch (\Throwable $e)
         {
@@ -90,27 +143,25 @@ class IciciBankingAccountStatement extends Job
 
     protected function checkRetry()
     {
-        if ($this->attempts() < self::MAX_RETRY_ATTEMPT)
+        if ($this->attemptNumber < self::MAX_RETRY_ATTEMPT)
         {
-            $workerRetryDelay = self::MAX_RETRY_DELAY * pow(2, $this->attempts());
+            $workerRetryDelay = self::MAX_RETRY_DELAY * pow(2, $this->attemptNumber);
 
-            $this->release($workerRetryDelay);
+            (new BAS\Core)->dispatchBankingAccountStatementJob($this->params['channel'], $this->params['account_number'], $workerRetryDelay, $this->attemptNumber + 1);
 
             $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_RELEASED, [
                 'channel'               => $this->params['channel'],
                 'account_number'        => $this->params['account_number'],
-                'attempt_number'        => 1 + $this->attempts(),
+                'attempt_number'        => $this->attemptNumber,
                 'worker_retry_delay'    => $workerRetryDelay
             ]);
         }
         else
         {
-            $this->delete();
-
             $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_DELETED, [
                 'channel'           => $this->params['channel'],
                 'account_number'    => $this->params['account_number'],
-                'job_attempts'      => $this->attempts(),
+                'job_attempts'      => $this->attemptNumber,
                 'message'           => 'Deleting the job after configured number of tries. Still unsuccessful.'
             ]);
 
@@ -119,5 +170,67 @@ class IciciBankingAccountStatement extends Job
             //TODO:// setup new channel for icici
             (new SlackNotification)->send($operation, $this->params, null, 1, 'rx_ca_rbl_alerts');
         }
+
+        $this->delete();
+    }
+
+    /***
+     * Fixed window rate limiter. allows only $rateLimit number of requests in $windowLength seconds.
+     *
+     * @param string $channel
+     *
+     * @return array of 2 elements.
+     *               1st element is true if it passes rate limit else false.
+     *               2nd element tells the number of request i.e. if the request is accepted then total number of accepted requests.
+     *               1st element will be true until and unless 2nd element is <= rate limit.
+     */
+    public function checkRateLimit(string $channel)
+    {
+        $app = App::getFacadeRoot();
+
+        $redis = $app['redis']->connection();
+
+        $rateLimit = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::ICICI_STATEMENT_FETCH_RATE_LIMIT]);
+
+        $windowLength = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::ICICI_STATEMENT_FETCH_WINDOW_LENGTH]);
+
+        // rate_limit and window_length is an interdependent combination, hence even if one of them is missing we take
+        // default values for both.
+        if (empty($rateLimit) === true or empty($windowLength) === true)
+        {
+            $rateLimit = self::DEFAULT_RATE_LIMIT;
+
+            $windowLength = self::DEFAULT_FIXED_WINDOW_LENGTH;
+        }
+
+        $currentTime = Carbon::now()->getTimestamp();
+
+        $redisKey = self::STATEMENT_FETCH_FIXED_WINDOW_CONFIG_KEY_PREFIX . $channel . stringify((int) ($currentTime/$windowLength));
+
+        // if the redis key is unset it will return null.
+        $currentRequests = $redis->get($redisKey);
+
+        if ($currentRequests !== null and $currentRequests >= $rateLimit)
+        {
+            // returning $currentRequests + 1 as $currentRequests number of requests were already sent in the current window
+            // and the request received now is ($currentRequests + 1)th request.
+            return [false, $currentRequests + 1, $redisKey];
+        }
+
+        if ($currentRequests === null)
+        {
+            $redis->set($redisKey, 0, 'NX','EX', $windowLength);
+        }
+
+        $updatedCurrentRequests = $redis->incr($redisKey);
+
+        if ($updatedCurrentRequests > $rateLimit)
+        {
+            $redis->decr($redisKey);
+
+            return [false, $updatedCurrentRequests, $redisKey];
+        }
+
+        return [true, $updatedCurrentRequests, $redisKey];
     }
 }
