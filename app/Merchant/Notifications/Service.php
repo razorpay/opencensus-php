@@ -288,8 +288,8 @@ class Service extends Base\Service
      */
     private function populateCampaignDetailsBasedOnFilters(array &$value, array $user)
     {
-        $experiments = array_key_exists('experiments', $user) ? $user['experiments'] : null;
-        $splitzExperiments = array_key_exists('splitz_experiments', $user) ? $user['splitz_experiments'] : null;
+        $experiments = array_key_exists('experiments', $user) ? $user['experiments'] : [];
+        $splitzExperiments = array_key_exists('splitz_experiments', $user) ? $user['splitz_experiments'] : [];
 
         $this->populateCampaignDetailsBasedOnRazorxExperiments($value, $experiments);
         $this->populateCampaignDetailsBasedOnSplitzExperiments($value, $splitzExperiments);
