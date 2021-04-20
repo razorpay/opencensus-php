@@ -321,22 +321,6 @@ class Service extends Base\Service
         return $pricingPlans->toArrayMultiplePlansPublic();
     }
 
-    public function deletePlanRule($planId, $ruleId)
-    {
-        $this->trace->info(TraceCode::PRICING_PLAN_RULE_DELETE_ATTEMPT,
-                            [
-                                'plan_id'    => $planId,
-                                'rule_id'    => $ruleId,
-                            ]);
-
-        $flag = $this->repo->pricing->deletePlanRule($planId, $ruleId);
-
-        if ($flag === true)
-        {
-            return ['message' => 'Pricing successfully deleted'];
-        }
-    }
-
     public function updatePlanRule($planId, $ruleId, $input)
     {
         $this->trace->info(

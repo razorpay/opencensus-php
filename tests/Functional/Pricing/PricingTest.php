@@ -1162,84 +1162,10 @@ class PricingTest extends TestCase
         $response = $this->startTest();
     }
 
-    public function testDeletePricingPlanRule()
-    {
-        $this->ba->adminAuth();
-
-        $content = $this->startTest();
-    }
-
-    public function testDeleteCommissionRule()
-    {
-        $this->ba->adminAuth();
-
-        $content = $this->createPricingPlan2(['type' => 'commission']);
-
-        $testData['request']['url'] = '/pricing/' . $content['id'] . '/rule/' . $content['rules'][0]['id'];
-
-        $this->startTest($testData);
-    }
-
-    /**
-     * RZP Admin will have right to delete the pricing plan of other orgs as well.
-     * Here, we are considering the case where RZP admin is deleting the pricing plan beloning to SBI org.
-     */
-    public function testDeletePricingPlanRuleByRZPAdmin()
-    {
-        $this->fixtures->edit('pricing', '1zE3QYFf1zbys6', ['org_id' => Org::SBIN_ORG]);
-
-        $this->ba->adminAuth();
-
-        $this->startTest();
-    }
-
-    /**
-     * SBI admin will not be allowed to delete the pricing plan of RZP organisation.
-     * Here, we are testing the case where SBI admin is trying to delete the pricing plan of RZP organisation.
-     */
-    public function testDeletePricingPlanRuleBySBIAdmin()
-    {
-        $this->org = $this->getDbEntityById('org', Org::SBIN_ORG);
-
-        $this->authToken = $this->getAuthTokenForOrg($this->org);
-
-        $this->ba->adminAuth('test', $this->authToken, 'org_' . Org::SBIN_ORG);
-
-        $this->startTest();
-    }
-
     public function testDeletePricingPlanRuleForce()
     {
 
         $content = $this->startTest();
-    }
-
-    public function testDeleteUsedPricingPlanRule()
-    {
-        $payment = $this->doAuthAndCapturePayment();
-
-        $txn = $this->getLastEntity('transaction', true);
-
-        $transactionId = (new Transaction\Entity)->verifyIdAndSilentlyStripSign($txn['id']);
-
-        $input = [
-                    'transaction_id' => $transactionId,
-                ];
-
-        $feesSplit = $this->getEntities('fee_breakup', $input, true);
-
-        $index = array_search('payment', array_column($feesSplit['items'], 'name'));
-
-        $ruleId = $feesSplit['items'][$index]['pricing_rule_id'];
-
-        $pricing = $this->getEntityById('pricing', $ruleId, true);
-
-        $this->testData[__FUNCTION__]['request']['url'] =
-                '/pricing/'.$pricing['plan_id'].'/rule/'.$ruleId;
-
-        $this->ba->adminAuth();
-
-        $this->startTest();
     }
 
     public function startTest($testDataToReplace = array())

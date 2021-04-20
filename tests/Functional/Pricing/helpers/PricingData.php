@@ -2844,61 +2844,6 @@ return [
         ]
     ],
 
-    'testDeletePricingPlanRule' => [
-        'request' => [
-            'url' => '/pricing/1hDYlICobzOCYt/rule/1zD0BXpeOyaqpB',
-            'method' => 'delete',
-        ],
-        'response' => [
-            'content' => [
-                'message' => 'Pricing successfully deleted',
-            ],
-        ],
-    ],
-
-    'testDeleteCommissionRule' => [
-        'request' => [
-            'method' => 'delete',
-        ],
-        'response' => [
-            'content' => [
-                'message' => 'Pricing successfully deleted',
-            ],
-        ],
-    ],
-
-    'testDeletePricingPlanRuleByRZPAdmin' => [
-        'request'  => [
-            'url'    => '/pricing/1hDYlICobzOCYt/rule/1zE3QYFf1zbys6',
-            'method' => 'delete',
-        ],
-        'response' => [
-            'content' => [
-                'message' => 'Pricing successfully deleted',
-            ],
-        ],
-    ],
-
-    'testDeletePricingPlanRuleBySBIAdmin' => [
-        'request'   => [
-            'url'    => '/pricing/1hDYlICobzOCYt/rule/1zD0BXpeOyaqpB',
-            'method' => 'delete',
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'No db records found.',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
-        ],
-    ],
-
     'testDeletePricingPlanRuleForce' => [
         'request' => [
             'url' => '/pricing/1hDYlICobzOCYt/rule/1zD0BXpeOyaqpB/force',
@@ -2908,25 +2853,6 @@ return [
             'content' => [
                 'message' => 'Pricing successfully deleted',
             ],
-        ],
-    ],
-
-    'testDeleteUsedPricingPlanRule' => [
-        'request' => [
-            'url' => '/pricing/1hDYlICobzOCYt/rule/1zD0BXpeOyaqpB',
-            'method' => 'delete',
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 

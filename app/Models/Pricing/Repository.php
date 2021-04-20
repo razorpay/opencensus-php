@@ -411,28 +411,6 @@ class Repository extends Base\Repository
                      ->firstOrFailPublic();
     }
 
-    public function deletePlanRule($planId, $ruleId)
-    {
-        $rule = $this->newQueryWithOrgIdParam()
-                     ->planId($planId)
-                     ->where(Entity::ID, '=', $ruleId)
-                     ->firstOrFailPublic();
-
-        $rule->setAuditAction(Action::DELETE_PRICING_PLAN_RULE);
-
-        $count = $rule->feesBreakup->count();
-
-        if ($count === 0)
-        {
-            return $this->forceDelete($rule);
-        }
-        else
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Pricing rule cannot be deleted because it has been used more than once');
-        }
-    }
-
     public function deletePlanRuleForce($planId, $ruleId, $orgId = null)
     {
         $rule = $this->newQueryWithOrgIdParam($orgId)
