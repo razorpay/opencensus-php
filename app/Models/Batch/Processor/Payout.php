@@ -94,13 +94,16 @@ class Payout extends Base
 
     protected function parseFirstRowAndGetHeadings(array & $rows, string $delimiter)
     {
-        $this->headers = str_getcsv(current($rows), $delimiter);
+        $headers = str_getcsv(current($rows), $delimiter);
+
+        // deserialization of notes on headers is required as notes in entries as deserialized.
+        $this->headers = $this->deserializeNotesInHeaders($headers);
 
         $headerRow = $rows[0];
 
         $this->setBatchPayoutsAmountType($headerRow);
 
-        return $this->headers;
+        return $headers;
     }
 
     /**
@@ -134,7 +137,8 @@ class Payout extends Base
 
         $headers = array_values(array_shift($rows) ?? []);
 
-        $this->headers = $headers;
+        // deserialization of notes on headers is required as notes in entries as deserialized.
+        $this->headers = $this->deserializeNotesInHeaders($headers);
 
         // No rows exists
         if (empty($headers) === true)
@@ -149,6 +153,26 @@ class Payout extends Base
         }
 
         return $rows;
+    }
+
+    protected function deserializeNotesInHeaders(array $headers)
+    {
+        foreach ($headers as $key => $header)
+        {
+            if (preg_match(Header::NOTES_REGEX, $header, $matches) === 1)
+            {
+                if (array_search(Header::NOTES, $headers) === false)
+                {
+                    $headers[$key] = Header::NOTES;
+                }
+                else
+                {
+                    unset($headers[$key]);
+                }
+            }
+        }
+
+        return $headers;
     }
 
     protected  function setBatchPayoutsAmountType(string $headerRow)

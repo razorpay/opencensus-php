@@ -75,6 +75,8 @@ class PayoutTest extends TestCase
                 Batch\Header::CONTACT_EMAIL_2           => 'mehul.kaushik@razorpay.com',
                 Batch\Header::CONTACT_MOBILE_2          => '',
                 Batch\Header::CONTACT_REFERENCE_ID      => '',
+                Batch\Header::NOTES_CODE                => 'test',
+                Batch\Header::NOTES_PLACE               => 'Bangalore'
             ],
         ];
 
@@ -91,10 +93,10 @@ class PayoutTest extends TestCase
         $expectedHeaderRow =  'Error Description,RazorpayX Account Number,Payout Amount (in Rupees),Payout Currency,Payout Mode,'.
             'Payout Purpose,Fund Account Id,Fund Account Type,Fund Account Name,Fund Account Ifsc,Fund Account Number,'.
             'Fund Account Vpa,Contact Name,Payout Narration,Payout Reference Id,Contact Type,Contact Email,' .
-            'Contact Mobile,Contact Reference Id';
+            'Contact Mobile,Contact Reference Id,notes[code],notes[place]';
 
         $expectedDataRow = ',2323230041626905,10,INR,NEFT,refund,,bank_account,Mehul Kaushik,SBIN0010720,100200300400,' .
-            ',Mehul Kaushik,test123,,employee,mehul.kaushik@razorpay.com,,';
+            ',Mehul Kaushik,test123,,employee,mehul.kaushik@razorpay.com,,,test,Bangalore';
 
         $this->assertEquals($expectedHeaderRow, trim($fileContent[0]));
         $this->assertEquals($expectedDataRow, trim($fileContent[1]));
@@ -214,8 +216,8 @@ class PayoutTest extends TestCase
                 'mehul.kaushik@razorpay.com',
                 null,
                 null,
-                null,
-                null,
+                'test',
+                'test',
             ]
         ];
 
@@ -1115,8 +1117,8 @@ class PayoutTest extends TestCase
                 'mehul.kaushik@razorpay.com',
                 ' ',
                 null,
-                null,
-                null,
+                'test',
+                'test',
             ]
         ];
 
@@ -1277,8 +1279,8 @@ class PayoutTest extends TestCase
                 'mehul.kaushik@razorpay.com',
                 ' ',
                 null,
-                null,
-                null,
+                'test',
+                'test',
             ]
         ];
 
