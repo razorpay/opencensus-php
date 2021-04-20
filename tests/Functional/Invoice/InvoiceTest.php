@@ -2786,16 +2786,6 @@ class InvoiceTest extends TestCase
         $this->fixtures->invoice->edit($ids[2], ['batch_id' => '00000000000001']);
 
         $this->startTest();
-
-        $response = $this->getEntities('invoice');
-
-        $invoices = $response['items'];
-
-        // Assert that invoices of the batch have gotten issued
-
-        $this->assertEquals('issued', $invoices[0]['status']);
-        $this->assertEquals('draft', $invoices[1]['status']);
-        $this->assertEquals('issued', $invoices[2]['status']);
     }
 
     // ------------------------------------------------------------
