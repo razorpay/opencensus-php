@@ -3,11 +3,11 @@
 namespace RZP\Services\VendorPayments;
 
 use Mail;
-use Requests;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\User\Entity;
+use RZP\Http\Request\Requests;
 use RZP\Http\Response\StatusCode;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payout\Entity as PayoutEntity;
@@ -559,11 +559,11 @@ class Service
                 'url' => $url,
                 'data' => $dataLogged,
             ]);
-
-        $response = Requests::$method(
+        $response = Requests::request(
             $url,
             $headers,
             json_encode($data),
+            $method,
             $options);
 
         $responseBody = json_decode($response->body, true);

@@ -3,10 +3,10 @@
 namespace RZP\Services\AccountingPayouts;
 
 use http\Client\Response;
-use Requests;
 
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Http\Request\Requests;
 use RZP\Trace\TraceCode;
 use RZP\Models\User\Entity;
 use RZP\Http\Response\StatusCode;
@@ -268,10 +268,11 @@ class Service
                 'url' => $url,
             ]);
 
-        $response = Requests::$method(
+        $response = Requests::request(
             $url,
             $headers,
             json_encode($data),
+            $method,
             $options);
 
         $responseBody = json_decode($response->body, true);

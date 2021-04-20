@@ -3,8 +3,8 @@
 namespace RZP\Services\TaxPayments;
 
 use Mail;
-use Requests;
 use RZP\Constants\Mode;
+use RZP\Http\Request\Requests;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\User\Entity;
@@ -484,10 +484,11 @@ class Service
                                'url'     => $url,
                                'data'    => $dataLogged,
                            ]);
-        $response = Requests::$method(
+        $response = Requests::request(
             $url,
             $headers,
             json_encode($data),
+            $method,
             $options);
 
         $responseBody = json_decode($response->body, true);

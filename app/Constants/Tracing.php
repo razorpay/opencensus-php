@@ -63,7 +63,82 @@ class Tracing
             'payment_create_checkout_json',
             'payment_create_private_old',
 
-        ]);
+            // routes used by Vendor Payments
+            'contact_update_internal',
+            'tax_payments_send_email',
+            'vendor_payment_verify_otp',
+            'order_create',
+            'setl_fetch_multiple',
+            'payment_refund',
+            'vendor_payment_send_email_generic',
+            'settings_fetch_internal',
+            'settings_upsert_internal',
+            'tax_payments_enabled_merchant_settings',
+
+            // Vendor Payments API routes
+            'vendor_payment_execute_bulk',
+            'vendor_payment_composite_expands_helper',
+            'vendor_payment_send_failure_email',
+            'vendor_payment_summary',
+            'vendor_payment_contact_list',
+            'vendor_payment_invoice_upload',
+            'vendor_payment_invoice_get_signed_url',
+            'vendor_payment_contact_get',
+            'vendor_payment_contact_create',
+            'vendor_payment_contact_update',
+            'vendor_payment_create',
+            'vendor_payment_list',
+            'vendor_payment_get_by_id',
+            'vendor_payment_verify_otp',
+            'vendor_payment_execute',
+            'vendor_payment_get_tds_categories',
+            'vendor_payment_edit',
+            'vendor_payment_cancel',
+            'vendor_payment_bulk_cancel',
+            'vendor_payment_get_ocr_data',
+            'vendor_payment_get_ocr_data',
+            'vendor_payment_mark_as_paid',
+            'vendor_payment_reporting_info',
+            'vendor_payment_bulk_invoice_download',
+            'vendor_payment_update_invoice_file_id',
+            'vendor_payment_get_invoice_zip_file',
+
+            // accounting-payouts API routes
+            'accounting_payouts_integration_status',
+            'accounting_payouts_integration_app_get_url',
+            'accounting_payouts_integration_app_initiate',
+            'accounting_payouts_integration_status_app',
+            'accounting_payouts_callback',
+            'accounting_payouts_app_credentials',
+            'accounting_payouts_delete_integration',
+            'accounting_payouts_sync_status',
+            'accounting_payouts_sync',
+            'accounting_payouts_sync_internal',
+            'accounting_payouts_waitlist',
+
+            // tax payments API routes
+            'tax_payments_monthly_summary',
+            'tax_payments_admin_auth_api',
+            'tax_payments_pay',
+            'tax_payments_bulk_pay',
+            'tax_payments_get_all_settings',
+            'tax_payments_add_or_update_settings',
+            'tax_payments_list',
+            'tax_payments_create',
+            'tax_payments_get_by_id',
+            'tax_payments_mark_as_paid',
+            'tax_payments_challan_upload',
+            'tax_payments_update_challan_file_id',
+            'tax_payments_edit',
+            'tax_payments_cancel',
+
+            // direct tax payments API routes
+            'direct_tax_payments_tds_category_public',
+            'direct_tax_payments_tds_category_opt',
+            'direct_tax_payments_create',
+            'direct_tax_payments_create_options',
+            'direct_tax_payments_pg_webhook'
+    ]);
     }
 
     public static function getServiceName($app): string
