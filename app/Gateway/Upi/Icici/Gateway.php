@@ -58,6 +58,13 @@ class Gateway extends Base\Gateway
     const DEFAULT_PAYEE_VPA = 'razorpay@icici';
 
     /**
+     * This is a special ifsc for TPV , which skips the TPV
+     * validation on IFSC, and does the validation based on bank
+     * in the gateway side
+     */
+    const SPECIAL_IFSC = 'IFSCXXXXXNA';
+
+    /**
      * Main parent MID of Razorpay
      */
     const PARENT_GATEWAY_MERCHANT_ID = '116798';
@@ -520,7 +527,7 @@ class Gateway extends Base\Gateway
         {
             $data[Fields::VALIDATE_PAYER_ACCOUNT] = 'Y';
             $data[Fields::PAYER_ACCOUNT] = $input['order'][Order\Entity::ACCOUNT_NUMBER];
-            $data[Fields::PAYER_IFSC] = $input['order']['bank_account'][BankAccount\Entity::IFSC];
+            $data[Fields::PAYER_IFSC] = $this->processForSpecialIFSC($input);
         }
 
         $content = $this->transformRequestArrayToContent($data);
@@ -565,7 +572,7 @@ class Gateway extends Base\Gateway
 
             $data[Fields::VALIDATE_PAYER_ACCOUNT2] = 'Y';
             $data[Fields::PAYER_ACCOUNT] = $input['order'][Order\Entity::ACCOUNT_NUMBER];
-            $data[Fields::PAYER_IFSC] = $input['order']['bank_account'][BankAccount\Entity::IFSC];
+            $data[Fields::PAYER_IFSC] = $this->processForSpecialIFSC($input);
         }
 
         $content = $this->transformRequestArrayToContent($data);
@@ -1868,5 +1875,25 @@ class Gateway extends Base\Gateway
         {
             $content[Fields::RESPONSE_CODE] = $content[Fields::TXN_STATUS];
         }
+    }
+
+    /**
+     * This change is to remove the dependency from IFSC code for TPV validations.
+     * When IFSC is sent as 'IFSCXXXXXNA', Gateway will ignore IFSC & validate the request based on account number only.
+     * List of PHASE 1 go-live merchants :
+     * https://docs.google.com/spreadsheets/d/1SlT3Gma86FPzUEbdb8H7gaHEvgUR04D7O1f5hsECcHU/edit#gid=0
+     * @param array $input
+     * @return mixed|string
+     */
+    private function processForSpecialIFSC(array $input)
+    {
+        $merchantList = $this->app['config']->get('gateway.upi_icici.live_static_ifsc_merchants');
+
+        if (in_array($input['merchant']['id'], $merchantList))
+        {
+            return self::SPECIAL_IFSC;
+        }
+
+       return $input['order']['bank_account'][BankAccount\Entity::IFSC];
     }
 }

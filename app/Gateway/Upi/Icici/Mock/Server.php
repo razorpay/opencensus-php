@@ -49,6 +49,8 @@ class Server extends Base\Mock\Server
 
         $this->validateAuthorizeInput($input);
 
+        $this->request($input);
+
         $this->validateAccountNumberForTPV($input);
 
         if (isset($input['payerVa']) === false)
