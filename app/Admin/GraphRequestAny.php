@@ -6,7 +6,9 @@ use Auth;
 use Config;
 use Request;
 use Session;
+use SplFileInfo;
 use GuzzleHttp\Client as Guzzle;
+use GuzzleHttp\Post\PostFile;
 use GuzzleHttp\Exception\RequestException;
 
 use App\Http\ApiUrl;
@@ -14,6 +16,8 @@ use App\Http\ApiUrl;
 class GraphRequestAny
 {
     const COOKIE_HEADER = 'Set-Cookie';
+    const CONTENT_TYPE_JSON = 'application/json';
+    const CONTENT_TYPE_MULTIPART = 'multipart/form-data';
 
     // true is a dummy value
     // presence any value even false will make the key whitelisted
@@ -58,8 +62,9 @@ class GraphRequestAny
     {
         $options = [
             'headers'       => $this->headers,
-            'json'          => $this->data,
         ];
+
+        $options = array_merge($options, $this->getDataForOutgoingRequest($this->data));
 
         try
         {
@@ -132,6 +137,49 @@ class GraphRequestAny
 
         $this->headers = array_merge($defaultHeaders, $this->headers);
     }
+
+    private function getDataForOutgoingRequest($data)
+    {
+
+        $incomingContentType = Request::header('content-type');
+
+        if (strpos($incomingContentType, self::CONTENT_TYPE_JSON) === 0)
+        {
+            return [ 'json'  => $data ];
+        }
+        else if(strpos($incomingContentType, self::CONTENT_TYPE_MULTIPART) === 0)
+        {
+            return ['body' => $this->getOutGoingMultipartData($data) ];
+        }
+
+        return [];
+    }
+
+    private function getOutGoingMultipartData($data)
+    {
+        $outGoingData = [];
+
+        foreach ($data as $key => $value)
+        {
+            if ($value instanceof SplFileInfo)
+            {
+                $fileName = $value->getClientOriginalName();
+
+                $outGoingData[$key] = new PostFile(
+                    $key,
+                    fopen($value, 'r'),
+                    $fileName);
+            }
+            else
+            {
+                $outGoingData[$key] = $value;
+            }
+        }
+
+        return $outGoingData;
+    }
+
+
 
     private function addProxyAuthHeadersIfUserLoggedIn()
     {
