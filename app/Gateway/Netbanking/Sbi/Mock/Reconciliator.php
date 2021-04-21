@@ -34,7 +34,7 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
         $paymentId = $data[ConstantsEntity::PAYMENT][Payment\Entity::ID];
 
         // We are doing a payment reconciliation, so action must be authorize
-        $data[Payment\Method::NETBANKING] = $this->repo
+        $data[ConstantsEntity::NETBANKING] = $this->repo
             ->netbanking
             ->findByPaymentIdAndAction($paymentId, Action::AUTHORIZE)
             ->toArray();

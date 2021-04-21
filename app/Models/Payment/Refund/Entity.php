@@ -618,7 +618,7 @@ class Entity extends Base\PublicEntity
 
     public function getGatewayRefunded()
     {
-        $this->getAttribute(self::GATEWAY_REFUNDED);
+        return $this->getAttribute(self::GATEWAY_REFUNDED);
     }
 
     public function getTerminalId()

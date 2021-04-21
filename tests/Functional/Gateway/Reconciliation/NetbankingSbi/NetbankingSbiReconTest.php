@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Gateway\Reconciliation\NetbankingSbi;
 
 use Carbon\Carbon;
+
 use RZP\Models\Payment;
 use RZP\Services\Scrooge;
 use RZP\Models\Bank\IFSC;
@@ -49,7 +50,7 @@ class NetbankingSbiReconTest extends TestCase
 
     public function testPaymentReconciliation()
     {
-        $payments = $this->makeSbiNbPaymentSince();
+        $this->makeSbiNbPaymentSince();
 
         $fileContents = $this->generateReconFile();
 
@@ -65,7 +66,7 @@ class NetbankingSbiReconTest extends TestCase
 
         $netbanking = $this->getEntities('netbanking', [], true);
 
-        foreach ($netbanking['items'] as $id => $netbankingEntity)
+        foreach ($netbanking['items'] as $netbankingEntity)
         {
             $payment = $this->getEntityById('payment', $netbankingEntity['payment_id'], true);
 
@@ -85,8 +86,7 @@ class NetbankingSbiReconTest extends TestCase
     {
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
 
-        $payment = $this->makePaymentsSince($createdAt, 1)[0];
-
+        $paymentId = $this->makePaymentsSince($createdAt, 1)[0];
 
         $this->mockReconContentFunction(
             function (& $content, $action = null)
@@ -100,19 +100,16 @@ class NetbankingSbiReconTest extends TestCase
 
         $this->reconcile($uploadedFile, Recon::NETBANKING_SBI);
 
-        $netbanking = $this->getLastEntity('netbanking', true);
+        $payment = $this->getEntityById('payment', $paymentId, true);
 
-        $payment = $this->getEntityById('payment', $payment, true);
-
-        $this->assertPaymentReconSkipped($payment, $netbanking);
+        $this->assertPaymentReconSkipped($payment);
     }
 
     public function testReconPaymentFailedReconciliation()
     {
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
 
-        $payment = $this->makePaymentsSince($createdAt, 1)[0];
-
+        $paymentId = $this->makePaymentsSince($createdAt, 1)[0];
 
         $this->mockReconContentFunction(
             function (& $content, $action = null)
@@ -128,38 +125,35 @@ class NetbankingSbiReconTest extends TestCase
 
         $this->reconcile($uploadedFile, Recon::NETBANKING_SBI);
 
-        $netbanking = $this->getLastEntity('netbanking', true);
+        $payment = $this->getEntityById('payment', $paymentId, true);
 
-        $payment = $this->getEntityById('payment', $payment, true);
-
-        $this->assertPaymentReconSkipped($payment, $netbanking);
+        $this->assertPaymentReconSkipped($payment);
     }
 
     public function testReconPaymentForceAuth()
     {
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
 
-        $payment = $this->makePaymentsSince($createdAt, 1)[0];
-
+        $paymentId = $this->makePaymentsSince($createdAt, 1)[0];
 
         $fileContents = $this->generateReconFile();
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path'], 'razorpay.txt');
 
-        $this->fixtures->payment->edit($payment,
+        $this->fixtures->payment->edit($paymentId,
             [
                 'status'        => 'failed',
                 'authorized_at' => null,
                 'error_code'    => 'BAD_REQUEST_ERROR',
             ]);
 
-        $this->reconcile($uploadedFile, Recon::NETBANKING_SBI, [ 'pay_'. $payment ]);
+        $this->reconcile($uploadedFile, Recon::NETBANKING_SBI, ['pay_'. $paymentId]);
 
         $paymentEntity = $this->getDbLastEntity('payment');
 
-        $this->assertEquals($paymentEntity['reference1'], 9999999999);
+        $this->assertEquals(9999999999, $paymentEntity['reference1']);
 
-        $this->assertEquals($paymentEntity['acquirer_data']['bank_transaction_id'], 9999999999);
+        $this->assertEquals(9999999999, $paymentEntity['acquirer_data']['bank_transaction_id']);
 
         $batch = $this->getLastEntity('batch', true);
 
@@ -177,24 +171,23 @@ class NetbankingSbiReconTest extends TestCase
 
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
 
-        $payments = $this->makePaymentsSince($createdAt, 2);
+        $paymentIds = $this->makePaymentsSince($createdAt, 2);
 
-        $refunds[] = $this->refundPayment('pay_' . $payments[0], 1000);
-        $refunds[] = $this->refundPayment('pay_' . $payments[0], 1000);
-        $refunds[] = $this->refundPayment('pay_' . $payments[0], 1000);
-
+        $refunds[] = $this->refundPayment('pay_' . $paymentIds[0], 1000);
+        $refunds[] = $this->refundPayment('pay_' . $paymentIds[0], 1000);
+        $refunds[] = $this->refundPayment('pay_' . $paymentIds[0], 1000);
 
         $this->mockReconContentFunction(
-            function (& $content, $action = null) use ($payments, $refunds)
+            function (& $content, $action = null) use ($paymentIds, $refunds)
             {
                 $content = [RefundReconFields::REFUND_COLUMN_HEADERS];
 
-                $payment = $this->getEntityById('payment', $payments[0], true);
+                $payment = $this->getEntityById('payment', $paymentIds[0], true);
 
                 // Failure Response
                 $content[] = [
                     $payment['acquirer_data']['bank_transaction_id'],
-                    $payments[0],
+                    $paymentIds[0],
                     '11111111',
                     Carbon::now()->format('d-m-Y H:i:s'),
                     1,
@@ -206,7 +199,7 @@ class NetbankingSbiReconTest extends TestCase
                 // Success Response
                 $content[] = [
                     $payment['acquirer_data']['bank_transaction_id'],
-                    $payments[0],
+                    $paymentIds[0],
                     '12345678',
                     Carbon::now()->format('d-m-Y H:i:s'),
                     2,
@@ -218,7 +211,7 @@ class NetbankingSbiReconTest extends TestCase
                 // Declined (no retry)
                 $content[] = [
                     $payment['acquirer_data']['bank_transaction_id'],
-                    $payments[0],
+                    $paymentIds[0],
                     '10000000',
                     Carbon::now()->format('d-m-Y H:i:s'),
                     3,
@@ -292,6 +285,8 @@ class NetbankingSbiReconTest extends TestCase
         // Failure refund assertions
         $failureRefund = $this->getDbEntityById('refund', $refunds[0]['id']);
 
+        $this->assertTrue($failureRefund['gateway_refunded']);
+
         $this->assertNull($failureRefund['reference1']);
 
         $this->assertEquals(4, $failureRefund->getReference3());
@@ -304,7 +299,7 @@ class NetbankingSbiReconTest extends TestCase
 
         $netbankingEntities = ($this->getDbEntities('netbanking', ['refund_id' => $refunds[0]['id']]))->toArray();
 
-        $this->assertEquals(1, count($netbankingEntities));
+        $this->assertCount(1, $netbankingEntities);
 
         $expectedNetbankingDetails = [
                 'status'          => 'sent',
@@ -331,14 +326,14 @@ class NetbankingSbiReconTest extends TestCase
 
         $netbankingEntities = ($this->getDbEntities('netbanking', ['refund_id' => $refunds[1]['id']]))->toArray();
 
-        $this->assertEquals(1, count($netbankingEntities));
+        $this->assertCount(1, $netbankingEntities);
 
         // Declined refund assertions
         $declinedRefund = $this->getDbEntityById('refund', $refunds[2]['id']);
 
         $this->assertNull($declinedRefund['reference1']);
 
-        $this->assertFalse($declinedRefund['gateway_refunded']);
+        $this->assertTrue($declinedRefund['gateway_refunded']);
 
         $this->assertEquals(5, $declinedRefund->getReference3());
 
@@ -350,7 +345,7 @@ class NetbankingSbiReconTest extends TestCase
 
         $netbankingEntities = ($this->getDbEntities('netbanking', ['refund_id' => $refunds[2]['id']]))->toArray();
 
-        $this->assertEquals(1, count($netbankingEntities));
+        $this->assertCount(1, $netbankingEntities);
     }
 
     public function testRefundReconAmountMismatch()
@@ -361,7 +356,7 @@ class NetbankingSbiReconTest extends TestCase
 
         $refund = $this->refundPayment('pay_' . $paymentId);
 
-        $gatewayEntity =   $this->getLastEntity('netbanking', true);
+        $gatewayEntity = $this->getLastEntity('netbanking', true);
 
         $this->fixtures->edit('netbanking', $gatewayEntity['id'],
             [
@@ -422,7 +417,7 @@ class NetbankingSbiReconTest extends TestCase
 
         $refund = $this->refundPayment('pay_' . $paymentId, 3459);
 
-        $gatewayEntity =   $this->getLastEntity('netbanking', true);
+        $gatewayEntity = $this->getLastEntity('netbanking', true);
 
         $this->fixtures->edit('netbanking', $gatewayEntity['id'],
             [
@@ -466,7 +461,7 @@ class NetbankingSbiReconTest extends TestCase
             ->will($this->returnCallback(
                 function (array $input, bool $throwExceptionOnFailure = false): array{
                     return
-                        $response = [
+                        [
                             'body' => [
                                 'response' => [
                                     'batch_id'                  => $input['batch_id'],
@@ -499,7 +494,7 @@ class NetbankingSbiReconTest extends TestCase
         $this->assertArraySelectiveEquals($expectedBatchOutput, json_decode($batch['failure_reason'], true));
     }
 
-    private function assertPaymentReconSkipped(array $payment, array $netbanking)
+    private function assertPaymentReconSkipped(array $payment)
     {
         $transactionId = $payment['transaction_id'];
 

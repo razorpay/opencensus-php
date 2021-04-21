@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Gateway\File;
 
 use Mail;
 use Carbon\Carbon;
+
 use RZP\Models\Feature;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
@@ -52,9 +53,9 @@ class NetbankingSbiCombinedFileTest extends TestCase
 
         $this->createClaimAndRefundPayment($this->bank);
 
-        $refund = $this->getDbLastEntity('refund');
+        $refund = $this->getDbLastRefund();
 
-        $this->assertNull($refund->getGatewayRefunded());
+        $this->assertTrue($refund->getGatewayRefunded());
         $this->assertEquals(1, $refund->getReference3());
         $this->assertEquals('processed', $refund->getStatus());
 
@@ -63,7 +64,7 @@ class NetbankingSbiCombinedFileTest extends TestCase
         $content = $this->generateFiles();
 
         $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
-        $this->assertNotNull(File\Entity::SENT_AT);
+        $this->assertNotNull($content[File\Entity::SENT_AT]);
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
@@ -90,11 +91,11 @@ class NetbankingSbiCombinedFileTest extends TestCase
 
         $this->updateCreatedAtOfRefund($refund['id']);
 
-        $refund = $this->getDbLastEntity('refund');
+        $refund = $this->getDbLastRefund();
 
         $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refund]);
 
-        $this->assertNull($refund->getGatewayRefunded());
+        $this->assertTrue($refund->getGatewayRefunded());
         $this->assertEquals(1, $refund->getReference3());
         $this->assertEquals('processed', $refund->getStatus());
 
@@ -157,9 +158,9 @@ class NetbankingSbiCombinedFileTest extends TestCase
 
         $this->createClaimAndRefundPayment($bank);
 
-        $refund = $this->getDbLastEntity('refund');
+        $refund = $this->getDbLastRefund();
 
-        $this->assertNull($refund->getGatewayRefunded());
+        $this->assertTrue($refund->getGatewayRefunded());
         $this->assertEquals(1, $refund->getReference3());
         $this->assertEquals('processed', $refund->getStatus());
 
@@ -168,7 +169,7 @@ class NetbankingSbiCombinedFileTest extends TestCase
         $content = $this->generateFiles();
 
         $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
-        $this->assertNotNull(File\Entity::SENT_AT);
+        $this->assertNotNull($content[File\Entity::SENT_AT]);
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
@@ -177,10 +178,10 @@ class NetbankingSbiCombinedFileTest extends TestCase
 
     public function testMultipleRefundsSeqNo()
     {
-        $payments    = [];
-        $refunds     = [];
-        $seqNoList   = [];
-        $expected    = [];
+        $payments  = [];
+        $refunds   = [];
+        $seqNoList = [];
+        $expected  = [];
 
         for ($i = 0; $i < 2; $i++)
         {
@@ -222,7 +223,7 @@ class NetbankingSbiCombinedFileTest extends TestCase
         $content = $this->generateFiles();
 
         $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
-        $this->assertNotNull(File\Entity::SENT_AT);
+        $this->assertNotNull($content[File\Entity::SENT_AT]);
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
@@ -241,7 +242,7 @@ class NetbankingSbiCombinedFileTest extends TestCase
 
         $this->assertCount(6, $refundsFileRow);
 
-        $this->assertEquals($refundsFileRow[4], 500);
+        $this->assertEquals(500, $refundsFileRow[4]);
     }
 
     protected function createClaimAndRefundPayment($bank = "SBIN")
@@ -252,9 +253,10 @@ class NetbankingSbiCombinedFileTest extends TestCase
 
         $this->updateAuthorizedAtOfPayment($payment['id']);
 
-        $refund = $this->refundPayment($payment['id']);
+        $this->refundPayment($payment['id']);
 
-        $refund =  $this->getDbLastEntity('refund');
+        $refund = $this->getDbLastRefund();
+
         $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refund]);
 
         $this->updateCreatedAtOfRefund($refund['id']);
