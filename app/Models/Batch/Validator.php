@@ -657,6 +657,13 @@ class Validator extends Base\Validator
         Entity::CONFIG => 'required|array|custom',
     ];
 
+    protected static $submerchantDelinkCreateRules = [
+        Entity::TYPE   => 'required|in:submerchant_delink',
+        Entity::NAME   => 'filled|string|max:255',
+        Entity::FILE   => 'required|file|max:3072' . self::DEFAULT_MIME_RULE,
+        Entity::CONFIG => 'required|array|custom',
+    ];
+
     protected static $submerchantPartnerConfigUpsertCreateRules = [
         Entity::TYPE     => 'required|in:submerchant_partner_config_upsert',
         Entity::NAME     => 'filled|string|max:255',

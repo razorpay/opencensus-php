@@ -3455,6 +3455,21 @@ class Header
             ]
         ],
 
+        Type::SUBMERCHANT_DELINK => [
+            self::INPUT => [
+                self::PARTNER_ID,
+                self::MERCHANT_ID,
+            ],
+
+            self::OUTPUT => [
+                self::PARTNER_ID,
+                self::MERCHANT_ID,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ]
+        ],
+
         Type::SUBMERCHANT_PARTNER_CONFIG_UPSERT => [
             self::INPUT => [
                 self::PARTNER_ID,

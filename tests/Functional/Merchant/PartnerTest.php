@@ -588,6 +588,20 @@ class PartnerTest extends OAuthTestCase
         $this->assertEquals($accessMapEntity['merchant_id'], '10000000000009');
     }
 
+    public function testPartnerSubmerchantDeLinkViaBatch()
+    {
+        $this->testPartnerSubmerchantLinkViaBatch();
+
+        $this->startTest();
+
+        $accessMapEntity = $this->getDbEntity('merchant_access_map', ['merchant_id'     => self::DEFAULT_SUBMERCHANT_ID,
+                                                                      'entity_owner_id' => '10000000000000'], 'live');
+        $this->assertNull($accessMapEntity);
+
+        $accessMapEntity = $this->getDbEntity('merchant_access_map', ['merchant_id'     => self::DEFAULT_SUBMERCHANT_ID,
+                                                                      'entity_owner_id' => '10000000000000'], 'test');
+        $this->assertNull($accessMapEntity);
+    }
 
     public function testPartnerSubmerchantTypeUpdateViaBatch()
     {

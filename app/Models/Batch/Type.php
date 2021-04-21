@@ -114,6 +114,8 @@ class Type
 
     const SUBMERCHANT_LINK      = 'submerchant_link';
 
+    const SUBMERCHANT_DELINK    = 'submerchant_delink';
+
     const SUBMERCHANT_PARTNER_CONFIG_UPSERT = 'submerchant_partner_config_upsert';
 
     const SUBMERCHANT_TYPE_UPDATE      = 'submerchant_type_update';
@@ -198,6 +200,7 @@ class Type
         self::MERCHANT_ACTIVATION,
         self::INTERNAL_INSTRUMENT_REQUEST,
         self::SUBMERCHANT_LINK,
+        self::SUBMERCHANT_DELINK,
         self::SUBMERCHANT_PARTNER_CONFIG_UPSERT,
         self::SUBMERCHANT_TYPE_UPDATE,
         self::RETRY_REFUNDS_TO_BA,
@@ -416,6 +419,7 @@ class Type
         self::CAPTURE_SETTING,
         self::PARTNER_SUBMERCHANT_INVITE,
         self::SUBMERCHANT_LINK,
+        self::SUBMERCHANT_DELINK,
         self::SUBMERCHANT_PARTNER_CONFIG_UPSERT,
         self::SUBMERCHANT_TYPE_UPDATE,
         self::RECURRING_CHARGE,

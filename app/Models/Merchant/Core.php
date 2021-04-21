@@ -4456,6 +4456,35 @@ class Core extends Base\Core
         return $output;
     }
 
+    public function submerchantDelink(Entity $partner, Entity $submerchant)
+    {
+        $appType = (new MerchantApplications\Core())->getDefaultAppTypeForPartner($partner);
+
+        $isMapped = (new AccessMap\Core())->isMerchantMappedToPartnerWithAppType($partner, $submerchant, $appType);
+
+        if ($isMapped === true)
+        {
+            $this->trace->info(TraceCode::SUBMERCHANT_DELINK_REQUEST_BATCH,
+                               [
+                                   "partner_id"     => $partner->getId(),
+                                   "submerchant_id" => $submerchant->getId()
+                               ]);
+
+            return $this->deletePartnerAccessMap($partner, $submerchant);
+
+        }
+        else
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PARTNER_MERCHANT_MAPPING_NOT_FOUND,
+                [
+                    Entity::PARTNER_ID  => $partner->getId(),
+                    Entity::MERCHANT_ID => $submerchant->getId(),
+                ]
+            );
+        }
+    }
+
     public function submerchantTypeUpdate(Entity $partner, Entity $submerchant) {
         $input = [];
         $input['from_app_type'] = MerchantApplications\Entity::REFERRED;
