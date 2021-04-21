@@ -1581,6 +1581,7 @@ class Service extends Base\Service
             'onboarding_v2',
             'pl_description_required',
             'pure_platform_signup',
+            'rx_icici_ca_onboarding'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
