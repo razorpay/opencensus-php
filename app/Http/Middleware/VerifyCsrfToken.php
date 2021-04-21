@@ -155,14 +155,11 @@ class VerifyCsrfToken extends BaseVerifier
 
         $xsrfCookieToken = $request->cookie('XSRF-TOKEN');
 
-        // This is bad, but here the token is logged only when it's a mismatch to check why the tokens are
-        // mismatching
         app('trace')->info(TraceCode::MISMATCHED_VERIFY_TOKEN, [
-            'session_token' => $sessionToken,
-            'verify_token'  => $token,
-            'xsrf_token'    => $xsrfCookieToken,
+            'session_token' => md5($sessionToken ?? ''),
+            'verify_token'  => md5($token ?? ''),
+            'xsrf_token'    => md5($xsrfCookieToken ?? ''),
         ]);
-
         if ((is_string($xsrfCookieToken) === true) and (is_string($token) === true) and
             hash_equals($xsrfCookieToken, $token) == true) {
 
