@@ -12327,4 +12327,93 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_M2P_MERCHANT_BLACKLISTED_BY_NETWORK,
         ],
     ],
+
+    'testCreatePayoutInternalWhenPayoutFeatureNotMapped' => [
+        'request'  => [
+            'url'     => '/payouts_internal',
+            'method'  => 'post',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 100000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'origin'          => 'dashboard',
+                'source_details'  => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'payout_links',
+                        'priority'    => 1,
+                    ],
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'description' => PublicErrorDescription::BAD_REQUEST_URL_NOT_FOUND,
+                ],
+            ],
+            'status_code' => 400,
+        ]
+    ],
+
+    'testCreatePayoutInternalWhenPayoutFeatureMapped' => [
+        'request'  => [
+            'url'     => '/payouts_internal',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'merchant_id',
+                'HTTP_X-Payout-Idempotency' => 'test_i_key',
+            ],
+            'method'  => 'POST',
+            'content' => [
+                'account_number'  => '987654321000',
+                'amount'          => 100000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'origin'          => 'dashboard',
+                'source_details'  => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'payout_links',
+                        'priority'    => 1,
+                    ],
+                ],
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 100000,
+                'currency'        => 'INR',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 0,
+                'fees'            => 0,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'origin'          => 'dashboard',
+                'source_details'  => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'payout_links',
+                        'priority'    => 1,
+                    ],
+                ],
+            ],
+        ]
+    ],
 ];

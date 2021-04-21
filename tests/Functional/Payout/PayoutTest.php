@@ -11280,4 +11280,73 @@ class PayoutTest extends OAuthTestCase
 
         Queue::assertPushed(PayoutPostCreateProcess::class);
     }
+
+    public function testCreatePayoutInternalWhenPayoutFeatureNotMapped()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = $merchant['id'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->payoutLinksAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutInternalWhenPayoutFeatureMapped()
+    {
+        $merchant = $this->fixtures->create('merchant', ['business_banking' => 1]);
+
+        $bankAccount = $this->fixtures->create('bank_account', [
+            'type'           => 'merchant',
+            'merchant_id'    => $merchant['id'],
+            'entity_id'      => $merchant['id'],
+            'account_number' => '987654321000',
+            'ifsc_code'      => 'RAZRB000000',
+        ]);
+
+        $this->fixtures->create('balance', [
+            'type'           => 'banking',
+            'account_type'   => 'shared',
+            'account_number' => $bankAccount['account_number'],
+            'merchant_id'    => $merchant['id'],
+            'balance'        => 280000
+        ]);
+
+        $contact = $this->fixtures->create('contact', [
+            'contact'     => '8888888888',
+            'name'        => 'test user',
+            'type'        => 'customer',
+            'merchant_id' => $merchant['id']
+        ]);
+
+        $fa = $this->fixtures->create('fund_account:bank_account', [
+            'merchant_id' => $merchant['id'],
+            'source_id'   => $contact['id'],
+            'source_type' => 'contact'
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT,
+            'entity_id'   => $merchant['id'],
+            'entity_type' => 'merchant',
+        ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = $merchant['id'];
+
+        $testData['request']['content']['account_number'] = $bankAccount['account_number'];
+
+        $testData['request']['content']['fund_account_id'] = 'fa_'.$fa['id'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->payoutLinksAppAuth();
+
+        $this->startTest();
+    }
 }

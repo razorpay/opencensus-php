@@ -9086,6 +9086,7 @@ class Route
         'payout_fetch_multiple'                => [Feature::PAYOUT],
         'payout_approve'                       => [Feature::PAYOUT],
         'payout_reject'                        => [Feature::PAYOUT],
+        'payout_create_internal'               => [Feature::PAYOUT],
         'customer_get_wallet_balance'          => [Feature::OPENWALLET],
         'customer_get_wallet_statement'        => [Feature::OPENWALLET],
         'payment_transfer'                     => [Feature::MARKETPLACE, Feature::OPENWALLET],
