@@ -120,10 +120,13 @@ class GraphRequestAny
 
         $appMode = Request::header('x-app-mode');
 
+        $productType = Request::header('X-Product-Type');
+
         $defaultHeaders =  [
             'X-Dashboard'                           => 'true',
             'X-Org-Hostname'                        => $domain,
             'X-Request-Origin'                      => $originDomain,
+            'X-Product-Type'                        => $productType,
             'X-Dashboard-Ip'                        => $clientIp,
             'X-IP-Address'                          => $ipAddress,
             'X-User-Agent'                          => $userAgent,
