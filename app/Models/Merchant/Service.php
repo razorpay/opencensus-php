@@ -1690,7 +1690,7 @@ class Service extends Base\Service
 
         if (isset($data[0]) === false)
         {
-            $this->trace->error(TraceCode::DRUID_REQUEST_FAILURE, [
+            $this->trace->info(TraceCode::DRUID_REQUEST_FAILURE, [
                 'message' => self::MERCHANT_DATA_NOT_FOUND_ON_DRUID
             ]);
 
