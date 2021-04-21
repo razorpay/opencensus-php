@@ -85,15 +85,13 @@ class PDO implements IntegrationInterface
     {
         $attributes = PDO::getTagsFromDSN(PDO::$dsn);
 
+        $attributes['span.kind'] = 'client';
+        $attributes['db.statement'] = $query;
+
         return [
-            'attributes'        => [
-                'db.statement'  => $query,
-                'span.kind'     => 'client',
-                'db.system'     => $attributes['db.system'],
-                'net.peer.name' => $attributes['net.peer.name']
-            ],
-            'kind'              => 'client',
-            'sameProcessAsParentSpan' => false
+            'attributes'              => $attributes,
+            'sameProcessAsParentSpan' => false,
+            'kind'                    => 'client'
         ];
     }
 
@@ -108,14 +106,12 @@ class PDO implements IntegrationInterface
     {
         $attributes = PDO::getTagsFromDSN(PDO::$dsn);
 
+        $attributes['span.kind'] = 'client';
+
         return [
-            'attributes' => [
-                'span.kind'     => 'client',
-                'db.system'     => $attributes['db.system'],
-                'net.peer.name' => $attributes['net.peer.name']
-            ],
-            'kind'                      => 'client',
-            'sameProcessAsParentSpan'   => false
+            'attributes'              => $attributes,
+            'sameProcessAsParentSpan' => false,
+            'kind'                    => 'client'
         ];
     }
 
@@ -136,9 +132,9 @@ class PDO implements IntegrationInterface
 
         return [
             'attributes'                => $attributes,
-            'kind'                      => 'client',
             'sameProcessAsParentSpan'   => false,
-            'name'                      => 'PDO connect'
+            'name'                      => 'PDO connect',
+            'kind'                      => 'client'
         ];
     }
 
@@ -176,10 +172,10 @@ class PDO implements IntegrationInterface
         $connectionTags = PDO::getTagsFromDSN(PDO::$dsn);
 
         return [
-            'attributes' => $tags + $errorTags + $connectionTags,
-            'kind'       => 'client',
+            'attributes'              => $tags + $errorTags + $connectionTags,
+            'kind'                    => 'client',
             'sameProcessAsParentSpan' => false,
-            'name'       => sprintf("PDO %s %s", $operation, $tableName)
+            'name'                    => sprintf("PDO %s %s", $operation, $tableName)
         ];
     }
 
