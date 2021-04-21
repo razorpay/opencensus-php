@@ -86,20 +86,18 @@ class PDO implements IntegrationInterface
     {
         $attributes = PDO::getTagsFromDSN(PDO::$dsn);
 
+        $attributes['span.kind'] = 'client';
+        $attributes['db.statement'] = $query;
+
         // checks if span limit has reached and if yes exports the closed spans
         if (Tracer::$tracer != null) {
             Tracer::$tracer->checkSpanLimit();
         }
 
         return [
-            'attributes'        => [
-                'db.statement'  => $query,
-                'span.kind'     => 'client',
-                'db.system'     => $attributes['db.system'],
-                'net.peer.name' => $attributes['net.peer.name']
-            ],
-            'kind'              => 'client',
-            'sameProcessAsParentSpan' => false
+            'attributes'              => $attributes,
+            'sameProcessAsParentSpan' => false,
+            'kind'                    => 'client'
         ];
     }
 
@@ -114,14 +112,17 @@ class PDO implements IntegrationInterface
     {
         $attributes = PDO::getTagsFromDSN(PDO::$dsn);
 
+        $attributes['span.kind'] = 'client';
+
+        // checks if span limit has reached and if yes exports the closed spans
+        if (Tracer::$tracer != null) {
+            Tracer::$tracer->checkSpanLimit();
+        }
+
         return [
-            'attributes' => [
-                'span.kind'     => 'client',
-                'db.system'     => $attributes['db.system'],
-                'net.peer.name' => $attributes['net.peer.name']
-            ],
-            'kind'                      => 'client',
-            'sameProcessAsParentSpan'   => false
+            'attributes'              => $attributes,
+            'sameProcessAsParentSpan' => false,
+            'kind'                    => 'client'
         ];
     }
 
@@ -140,11 +141,16 @@ class PDO implements IntegrationInterface
         $attributes['span.kind'] = 'client';
         $attributes += PDO::$options['tags'] ?? [];
 
+        // checks if span limit has reached and if yes exports the closed spans
+        if (Tracer::$tracer != null) {
+            Tracer::$tracer->checkSpanLimit();
+        }
+
         return [
             'attributes'                => $attributes,
-            'kind'                      => 'client',
             'sameProcessAsParentSpan'   => false,
-            'name'                      => 'PDO connect'
+            'name'                      => 'PDO connect',
+            'kind'                      => 'client'
         ];
     }
 
@@ -181,11 +187,16 @@ class PDO implements IntegrationInterface
 
         $connectionTags = PDO::getTagsFromDSN(PDO::$dsn);
 
+        // checks if span limit has reached and if yes exports the closed spans
+        if (Tracer::$tracer != null) {
+            Tracer::$tracer->checkSpanLimit();
+        }
+
         return [
-            'attributes' => $tags + $errorTags + $connectionTags,
-            'kind'       => 'client',
+            'attributes'              => $tags + $errorTags + $connectionTags,
+            'kind'                    => 'client',
             'sameProcessAsParentSpan' => false,
-            'name'       => sprintf("PDO %s %s", $operation, $tableName)
+            'name'                    => sprintf("PDO %s %s", $operation, $tableName)
         ];
     }
 
@@ -231,12 +242,6 @@ class PDO implements IntegrationInterface
         // https://www.php.net/manual/en/ref.pdo-mysql.connection.php
         // example $dsn: mysql:host=localhost;dbname=testdb
         // example $dsn: mysql:unix_socket=/tmp/mysql.sock;dbname=testdb
-
-
-        // checks if span limit has reached and if yes exports the closed spans
-        if (Tracer::$tracer != null) {
-            Tracer::$tracer->checkSpanLimit();
-        }
 
         $db_system = '';
         $connection_params = [];
@@ -291,11 +296,6 @@ class PDO implements IntegrationInterface
 
     public static function getErrorTags($errorCode)
     {
-        // checks if span limit has reached and if yes flushes the closed spans
-        if (Tracer::$tracer != null) {
-            Tracer::$tracer->checkSpanLimit();
-        }
-
         $error =  substr($errorCode, 0, 2);
         $errorTags = [];
 
