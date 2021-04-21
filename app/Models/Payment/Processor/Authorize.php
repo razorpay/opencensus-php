@@ -8469,6 +8469,23 @@ trait Authorize
         $accountNumber = $gatewayInput['order']['account_number'];
         $bank          = $gatewayInput['order']['bank'];
 
+        $configMerchantId = config('app.upi.special_merchant_ids');
+
+        $merchantId = $configMerchantId === null ? $payment->merchant->getId() : $configMerchantId;
+
+        $merchantIds   = ['Eh54Q1B6HQKbS3', 'CVKpuoxsbkNLcH', 'ErhYRsmOjiVdoU', 'DPursctwBGXKc3', 'CL7IkelU3kb7OC',
+                        'Fh9HUZiUXrY4Kl', 'DabN0OvdyG4uO9', 'EmGIbvueqANhwe', 'Exgj3pcIYh57rw', 'FfeFMJRPl28VL8',
+                        'Ey7hVxW9FvvbCp', 'E32oekICkFIekI', 'EhtHoWq8Bx2EU9', '77LxIqTyXKINdL', 'FikbX8Z8ENtUQu',
+                        'FhcQzJ3uhyx0AQ', 'FCmIcXeQex0yZB', 'FBz2s11ndd79Nb', 'Ds5EiZnpMmRTOS', 'Chd1AcxL7SKEqQ',
+                        'GQfioZM76KHO3q', 'EQqUBXq1GyF1HG', 'CTonWIFn4nZz9r', 'Es5CywkLOhncCa', 'F9vYII8iqVmsJk',
+                        'FiQCx5c10wEKJu', 'DC1v1D9VnarCMx', 'EqDlP38m4HDnoN', 'ExK9MSE59UdPEa', 'AKnea8NahMvF3I',
+                        'Ey5SIeLhE5xxBY', 'FdbItKMuu8I8Wa', 'EJMWJBGJGjJlnJ', 'EpmO3Usa2Ja7kI', 'GR8TiLKAnWbPVH',
+                        '2aTeFCKTYWwfrF', 'GPUOXyFdkavnXl', 'EzJPtuXMDJRlxl', 'FBYspBmKlWefX9', 'CuH4FoLJNkKQni',
+                        'Fzr4Dy6mu3AMKT', 'D7ngSeZ9WAFXVj', 'FRpMUKDua5Byct', 'BDRFTpOxQcC4Xd', 'AoURvHfDZlj9oy',
+                        'Fiq2GZclyyhK16', 'F0bMlaNRUEhv2M', 'FaWxFu5x3Eh9pa', 'GDGFvlOvLMyDDn', 'G5jKc92AIH0q0a',
+                        'GoRqGEIC9TizPj', 'Bl2864ytwSSy0I', 'GWDpXg0jvaNQsC', 'CNoxEwowM0nMIT', 'G8rULxcYjvdOwy',
+                        'Cly8uvagWUrR7j', 'F6lh6Q71GQKFDl', 'BprHrXileKcP5T', 'G8tmhRC0tOTP6v', 'EOQRaXICwJIuoy' ];
+
         // prepend required zeroes in the account number based on bank
         switch ($bank)
         {
@@ -8501,6 +8518,16 @@ trait Authorize
 
             case IFSC::VARA:
                 $accountNumber = str_pad($accountNumber, 19, '0', STR_PAD_LEFT);
+                break;
+
+            case IFSC::SPCB:
+            case IFSC::KVGB:
+            case IFSC::MAHG:
+                // apply padding for only some merchants
+                if (in_array($merchantId, $merchantIds))
+                {
+                    $accountNumber = str_pad($accountNumber, 17, '0', STR_PAD_LEFT);
+                }
                 break;
 
             default:

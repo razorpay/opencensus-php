@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Upi\Icici;
 use Mail;
 use Cache;
 use Carbon\Carbon;
+use phpDocumentor\Reflection\Types\Boolean;
 use RZP\Constants\Timezone;
 use Illuminate\Database\Eloquent\Factory;
 
@@ -349,6 +350,69 @@ class UpiIciciGatewayTest extends TestCase
             ]
         ];
 
+        $cases['spcb_missing_zeroes_hardcoded'] = [
+            [
+                'account_number'    => '135791208642',
+                'ifsc'              => 'SPCB0251001',
+            ],
+            [
+                'payerAccount'      => '00000135791208642', // Leading zeroes padding for 17 chars
+            ],
+            true
+        ];
+
+        $cases['kvgb_missing_zeroes_hardcoded'] = [
+            [
+                'account_number'    => '13579120864',
+                'ifsc'              => 'KVGB0000001',
+            ],
+            [
+                'payerAccount'      => '00000013579120864', // Leading zeroes padding for 17 chars
+            ],
+            true
+        ];
+
+        $cases['mahg_missing_zeroes_hardcoded'] = [
+            [
+                'account_number'    => '13579120864',
+                'ifsc'              => 'MAHG0099922',
+            ],
+            [
+                'payerAccount'      => '00000013579120864', // Leading zeroes padding for 17 chars
+            ],
+            true
+        ];
+
+        $cases['spcb_missing_zeroes'] = [
+            [
+                'account_number'    => '135791208642',
+                'ifsc'              => 'SPCB0251001',
+            ],
+            [
+                'payerAccount'      => '135791208642', // Leading zeroes padding for 17 chars
+            ],
+        ];
+
+        $cases['kvgb_missing_zeroes'] = [
+            [
+                'account_number'    => '13579120864',
+                'ifsc'              => 'KVGB0000001',
+            ],
+            [
+                'payerAccount'      => '13579120864',
+            ]
+        ];
+
+        $cases['mahg_missing_zeroes'] = [
+            [
+                'account_number'    => '13579120864',
+                'ifsc'              => 'MAHG0099922',
+            ],
+            [
+                'payerAccount'      => '13579120864', // Leading zeroes padding for 17 chars
+            ]
+        ];
+
         return $cases;
     }
 
@@ -356,9 +420,15 @@ class UpiIciciGatewayTest extends TestCase
      * @dataProvider tpvBankAccountHandling
      * @param array $bankAccount
      * @param array $expected
+     * @param bool $specialMerchantsEnabled
      */
-    public function testTpvBankAccountHandling(array $bankAccount, array $expected)
+    public function testTpvBankAccountHandling(array $bankAccount, array $expected, bool $specialMerchantsEnabled = false)
     {
+        if($specialMerchantsEnabled)
+        {
+            config()->set('app.upi.special_merchant_ids', 'Eh54Q1B6HQKbS3');
+        }
+
         $terminal = $this->fixtures->create('terminal:shared_upi_icici_tpv_terminal');
 
         $this->fixtures->merchant->enableTpv();
@@ -386,7 +456,7 @@ class UpiIciciGatewayTest extends TestCase
         {
             $asserted = true;
             // remove first four zeroes from the account number since it starts with 0
-            $this->assertArraySubset($expected, $request);
+            $this->assertEquals($expected['payerAccount'], $request['payerAccount']);
         });
 
         $this->doAuthPayment($payment);
