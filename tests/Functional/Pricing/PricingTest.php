@@ -53,6 +53,58 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testAddPricingPlanRuleFeeBearerValidation()
+    {
+        $content = $this->createPricingPlan([]);
+
+        $merchantAttributes = [
+            'fee_bearer'        => 'customer',
+            'pricing_plan_id'   => $content['id'],
+        ];
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $testData['request']['url'] = '/pricing/' . $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanRuleFeeBearerValidationMerchantAssociatedIsDynamicFeeBearer()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testAddPricingPlanRuleFeeBearerValidation'];
+
+        $content = $this->createPricingPlan([]);
+
+        $merchantAttributes = [
+            'fee_bearer'        => 'dynamic',
+            'pricing_plan_id'   => $content['id'],
+        ];
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $testData['request']['url'] = '/pricing/' . $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingPlanRuleFeeBearerValidationFailure()
+    {
+        $content = $this->createPricingPlan([]);
+
+        $merchantAttributes = [
+            'fee_bearer'        => 'platform',
+            'pricing_plan_id'   => $content['id'],
+        ];
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $testData['request']['url'] = '/pricing/' . $content['id'] . '/rule';
+
+        $this->expectException(\RZP\Exception\BadRequestValidationFailureException::class);
+
+        $this->startTest($testData);
+    }
+
     /**
      * SBI admin (cross org feature disabled) can add rules to pricing plans belonging to SBI organisation only.
      * Here, we are testing the case where SBI admin is trying to add a rule to pricing plan of RZP organisation.

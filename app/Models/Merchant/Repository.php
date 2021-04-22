@@ -200,11 +200,15 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchMerchantsWithPricingPlanChunked($planId, $callable, $count = 100000)
+    public function fetchFeeBearersForPlanId($planId)
     {
         return $this->newQuery()
                     ->where(Entity::PRICING_PLAN_ID, '=', $planId)
-                    ->chunk($count, $callable);
+                    ->select(Entity::FEE_BEARER)
+                    ->distinct()
+                    ->get()
+                    ->pluck(Entity::FEE_BEARER)
+                    ->toArray();
     }
 
     public function fetchMerchantsCountWithPricingPlanId($planId)

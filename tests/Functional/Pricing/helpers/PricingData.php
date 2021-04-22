@@ -988,6 +988,65 @@ return [
         ],
     ],
 
+    'testAddPricingPlanRuleFeeBearerValidation' => [
+        'request'  => [
+            'content' => [
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'MAES',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => 0,
+                'amount_range_active' => '0',
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+                'fee_bearer'          =>'customer',
+            ],
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'MAES',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => false,
+                'amount_range_active' => false,
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+            ],
+        ],
+    ],
+
+    'testAddPricingPlanRuleFeeBearerValidationFailure' => [
+        'request'  => [
+            'content' => [
+                'payment_method'      => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network'     => 'MAES',
+                'payment_issuer'      => 'HDFC',
+                'percent_rate'        => 1000,
+                'international'       => 0,
+                'amount_range_active' => '0',
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+                'fee_bearer'          =>'customer',
+            ],
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Unable to add rule to plan TestPlan1. Rule has fee_bearer customer. A merchant on this plan has fee_bearer platform',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+    
     'testAddPricingPlanRuleBySBIAdmin' => [
         'request'   => [
             'content' => [
