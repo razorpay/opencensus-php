@@ -8653,8 +8653,7 @@ trait Authorize
      * Added a check on wasFailed to verify whether this is a case of lateAuth or not.
      * We should skip this auth code verification in case this is a late auth payment.
      *
-     * Skipping the Cashfree and PayU gateways as we are currently getting auth code null
-     * for them.
+     * Skipping auth code validation for gateways which are not sending auth code to authorize the payments
      *
      * @param array $data
      * @throws Exception\LogicException
@@ -8664,7 +8663,7 @@ trait Authorize
         $payment = $this->payment;
 
         if (($wasFailed === false) and
-            ($payment->getGateway() !== Payment\Gateway::CASHFREE and $payment->getGateway() !== Payment\Gateway::PAYU) and
+            (in_array($payment->getGateway(), Payment\Gateway::SKIP_AUTH_CODE_GATEWAYS, true) !== true) and
             ($payment->isMethodCardOrEmi() === true) and
             ($payment->getCpsRoute() === Payment\Entity::CARD_PAYMENT_SERVICE) and
             ($payment->getStatus() !== Payment\Status::AUTHORIZED) and

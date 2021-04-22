@@ -316,6 +316,16 @@ class Gateway
     ];
 
     /**
+     * Gateways for which we are skipping auth code validation to authorize the Payments
+     * As these gateways are not sending auth code once payment done.
+     */
+    const SKIP_AUTH_CODE_GATEWAYS = [
+        self::CASHFREE,
+        self::PAYU,
+        self::PAYTM,
+    ];
+
+    /**
     * Gateways for which we may need to force authorize payments
     * since their verify API's stop working after a certain time
     */
