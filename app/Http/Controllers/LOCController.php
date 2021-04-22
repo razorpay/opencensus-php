@@ -251,6 +251,32 @@ class LOCController extends Controller
         return $response;
     }
 
+    // Method to handle Razorpay X webhooks
+    public function razorpayXWebhook($path = null) {
+        $request = Request::instance();
+        $url     = 'xPayoutCallback';
+        $body    = $request->all();
+
+        $this->trace->info(TraceCode::LINE_OF_CREDIT_RAZORPAYX_WEBHOOK_REQUEST, [
+            'request' => $url,
+        ]);
+
+        $headers = [
+            'X-Service-Name' => 'RazorpayX',
+            'X-Auth-Type'   => 'internal',
+            'X-Razorpay-Signature' => $request->header('X-Razorpay-Signature'),
+        ];
+
+        $response = $this->sendRequestAndParseResponse($url, $body, $headers);
+
+        $this->trace->info(TraceCode::LINE_OF_CREDIT_RAZORPAYX_WEBHOOK_RESPONSE, [
+            'request' => $url,
+            'response' => $response,
+        ]);
+
+        return $response;
+    }
+
     protected function handleAdminRequests($path = null)
     {
         $request = Request::instance();
