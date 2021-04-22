@@ -114,14 +114,18 @@ class TransferController extends Controller
 
     public function processPendingOrderTransfers()
     {
-        $orderIds = $this->service()->processPendingOrderTransfers();
+        $input = Request::all();
+
+        $orderIds = $this->service()->processPendingOrderTransfers($input);
 
         return ApiResponse::json($orderIds);
     }
 
     public function processPendingPaymentTransfers()
     {
-        $orderIds = $this->service()->processPendingPaymentTransfers();
+        $input = Request::all();
+
+        $orderIds = $this->service()->processPendingPaymentTransfers($input);
 
         return ApiResponse::json($orderIds);
     }
@@ -129,7 +133,9 @@ class TransferController extends Controller
 
     public function processFailedOrderTransfers()
     {
-        $orderIds = $this->service()->processFailedOrderTransfers();
+        $input = Request::all();
+
+        $orderIds = $this->service()->processFailedOrderTransfers($input);
 
         return ApiResponse::json($orderIds);
     }

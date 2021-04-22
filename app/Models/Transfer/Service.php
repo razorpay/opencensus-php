@@ -471,9 +471,9 @@ class Service extends Base\Service
         return $transferData;
     }
 
-    public function processPendingOrderTransfers()
+    public function processPendingOrderTransfers(array $input)
     {
-        $orderIds = $this->repo->transfer->fetchPendingTransfersToRetry(EntityConstant::ORDER);
+        $orderIds = $this->repo->transfer->fetchPendingTransfersToRetry(EntityConstant::ORDER, $input['limit'] ?? 300);
 
         $this->trace->info(
             TraceCode::PENDING_ORDER_TRANSFER_PROCESS,
@@ -485,9 +485,9 @@ class Service extends Base\Service
         return $this->processOrderTransfers($orderIds);
     }
 
-    public function processPendingPaymentTransfers()
+    public function processPendingPaymentTransfers(array $input)
     {
-        $paymentIds = $this->repo->transfer->fetchPendingTransfersToRetry(EntityConstant::PAYMENT);
+        $paymentIds = $this->repo->transfer->fetchPendingTransfersToRetry(EntityConstant::PAYMENT, $input['limit'] ?? 300);
 
         $this->trace->info(
             TraceCode::PENDING_ORDER_TRANSFER_PROCESS_CRON,
@@ -558,9 +558,9 @@ class Service extends Base\Service
         return $toalcount;
     }
 
-    public function processFailedOrderTransfers()
+    public function processFailedOrderTransfers(array $input)
     {
-        $orderIds = $this->repo->transfer->fetchFailedTransfersToRetry(EntityConstant::ORDER);
+        $orderIds = $this->repo->transfer->fetchFailedTransfersToRetry(EntityConstant::ORDER, $input['limit'] ?? 300);
 
         $this->trace->info(
             TraceCode::FAILED_ORDER_TRANSFER_PROCESS,
