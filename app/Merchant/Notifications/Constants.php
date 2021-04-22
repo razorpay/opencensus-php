@@ -652,6 +652,46 @@ class Constants
             ]
         ],
         [
+            'title'       => 'Win Rs. 41000 worth free credits',
+            'description' => 'Accept payments from your customers between 19th - 26th April and win Rs. 41,000* worth Razorpay Credits. *T&Cs Apply',
+            'start_ts'    => 1619087502,
+            'end_ts'      => 1619461799,
+            'icon'        => '/dist/css/assets/product_onboarding/rewards_leading_brands.svg',
+            'track_event' => true,
+            'id'          => 'APR20-Reten1-Dashboard',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Accept Payments',
+                    'url'   => '/paymentlinks',
+                ],
+                [
+                    'type'  => 'primary-inverted',
+                    'label' => 'Read More',
+                    'id'    => 'announcement-details-l2',
+                    'url'   => '/announcements/APR20-Reten1-Dashboard/'
+                ],
+            ],
+            'filters'     => [
+                'splitz_experiments'         => [
+                    'ANNOUNCEMENT_RETENTION1_APRIL2021_SPLITZ' => [
+                        'result' => 'on'
+                    ]
+                ],
+                'experiments'         => ['whats-new-dec-2020'],
+            ],
+            'l2_content'  => [
+                'content'     => "<div><div>As the Indian economy reopens, businesses that are successfully adapting to digital payments are able to come out stronger. The transition becomes easier when businesses don't have to pay any charges for accepting digital payments.</div> <div class='paragraph'><p>We are excited to inform you that your Razorpay account is eligible to win any one of the following:</p></div><ol><li>Rs. 41,000 worth of free credits, if you complete a transaction between 19th Apr - 26th Apr OR</li><li>Rs. 31,000 worth of free credits, if you complete a transaction between 27th Apr - 29th Apr OR</li><li>Rs. 11,000 worth of free credits, if you complete a transaction on 30th Apr</li></ol><div class='paragraph'>Once credited, you can use your free credits to accept payments at 0% platform fee.</div><div> <b>Please note:</b> You are eligible to win free credits only once in a month. The free credits will be added to your Razorpay account on or before 7th May’21.</div><div class='paragraph'> <p>We're excited to partner with you on your payments journey and look forward to seeing your business grow!</p></div> </div>",
+                'buttons'     => [
+                    [
+                        'type'  => 'button',
+                        'label' => 'Accept Payments',
+                        'url'   => '/paymentlinks',
+                    ],
+                ],
+            ],
+        ],
+        [
             'id'          => 'whats-new-mar21-credpay-gtm',
             'title'       => 'Introducing CRED Pay',
             'description' => 'Boost repeat sales, loyalty, and average order value by 40% with CRED Pay.',
