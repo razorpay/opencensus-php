@@ -15,14 +15,6 @@ import Field, {
 } from 'razorx/components/ui/Field';
 import { splitzFetch } from 'razorx/helpers/fetch';
 
-const ruleOperatorMap = {
-  '>': 'greater than',
-  '<': 'less than',
-  '==': 'equal to',
-  belongsTo: 'belongs to',
-  doesNotBelongsTo: "doesn't belongs to",
-};
-
 export default
 @withRouter
 class AddEditExperiment extends React.Component {
@@ -104,10 +96,12 @@ class AddEditExperiment extends React.Component {
               value: Number(form.trafficAllocation),
             }
           : undefined,
-        audience: experimentHelpers.createAudienceRules({
-          ruleCondition: this.state.ruleCondition,
-          rules: this.state.rules,
-        }),
+        audience: experimentHelpers.isEmptyRules(this.state.rules)
+          ? undefined
+          : experimentHelpers.createAudienceRules({
+              ruleCondition: this.state.ruleCondition,
+              rules: this.state.rules,
+            }),
         variants: this.state.variants,
       },
     };
@@ -548,12 +542,12 @@ class AddEditExperiment extends React.Component {
                       }}
                     />
                     <PowerSelect
-                      options={Object.keys(ruleOperatorMap)}
-                      optionComponent={(op) => ruleOperatorMap[op.option]}
+                      options={Object.keys(experimentHelpers.ruleOperatorMap)}
+                      optionComponent={(op) => experimentHelpers.ruleOperatorMap[op.option]}
                       searchEnabled={false}
                       showClear={false}
                       placeholder="operator"
-                      selected={ruleOperatorMap[rule.operator]}
+                      selected={experimentHelpers.ruleOperatorMap[rule.operator]}
                       onChange={({ option }) => {
                         const newRules = [...rules];
                         newRules[i] = {
@@ -714,7 +708,7 @@ class AddEditExperiment extends React.Component {
                                 variants: newVariants,
                               });
                             }}
-                            style={{ width: '120px' }}
+                            style={{ width: '50%' }}
                           />
                           <input
                             type="text"
@@ -728,7 +722,7 @@ class AddEditExperiment extends React.Component {
                                 variants: newVariants,
                               });
                             }}
-                            style={{ width: '100%' }}
+                            style={{ width: '50%' }}
                           />
                           <span
                             className="cross"

@@ -27,3 +27,18 @@ export const createAudienceRules = (audienceRules) =>
       ],
     })),
   });
+
+// return true if all rules are empty
+export const isEmptyRules = (audienceRules) => {
+  if (!audienceRules || audienceRules.length === 0) return true;
+
+  return audienceRules.every((rule) => !rule.key && !rule.operator && !rule.value);
+};
+
+export const ruleOperatorMap = {
+  '>': 'greater than',
+  '<': 'less than',
+  '===': 'equal to',
+  belongsTo: 'belongs to',
+  doesNotBelongsTo: "doesn't belongs to",
+};

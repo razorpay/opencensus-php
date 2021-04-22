@@ -11,14 +11,6 @@ import AsyncButton from 'razorx/components/ui/AsyncButton';
 import ExperimentsModal from 'razorx/views/Experiments/Modal';
 import { statusPill } from 'razorx/helpers/data';
 
-const ruleOperatorMap = {
-  '>': 'greater than',
-  '<': 'less than',
-  '==': 'equal to',
-  belongsTo: 'belongs to',
-  doesNotBelongsTo: "doesn't belongs to",
-};
-
 export default
 @withRouter
 class ExperimentDetails extends React.Component {
@@ -244,7 +236,9 @@ class ExperimentDetails extends React.Component {
         </div>
       );
     } else {
-      const audienceRules = experimentHelpers.getAudienceRules(data.audience);
+      const audienceRules = data.audience
+        ? experimentHelpers.getAudienceRules(data.audience)
+        : undefined;
 
       content = (
         <div className="entity-details">
@@ -401,7 +395,7 @@ class ExperimentDetails extends React.Component {
               );
             })}
           </div>
-          {audienceRules.rules.length && audienceRules.rules[0].operator ? (
+          {audienceRules && audienceRules.rules.length && audienceRules.rules[0].operator ? (
             <React.Fragment>
               <br />
               <br />
@@ -414,7 +408,7 @@ class ExperimentDetails extends React.Component {
                     <div className="flex-row">
                       <div>&nbsp;{rule.key}</div>
                       <div>
-                        <b>&nbsp;{ruleOperatorMap[rule.operator]}&nbsp;</b>
+                        <b>&nbsp;{experimentHelpers.ruleOperatorMap[rule.operator]}&nbsp;</b>
                       </div>
                       {['belongsTo', 'doesNotBelongsTo'].includes(rule.operator) ? (
                         <div
