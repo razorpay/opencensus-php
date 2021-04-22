@@ -16,7 +16,6 @@ import ConfirmModalProvider from 'common/ui/ConfirmModal/ConfirmModalProvider';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import '../../css/merchant.styl';
 import '../../dashboard.font';
-import './analytics-entry';
 
 (async () => {
   if (localStorage.referrer === 'chrome-extension') {

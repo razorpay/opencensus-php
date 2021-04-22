@@ -28,7 +28,7 @@ module.exports = ({ config, project }) => {
     v2: path.resolve(__dirname, './v2'),
   };
   config.module.rules[0].test = /(\.ts(x?)|\.m?js)$/; //babel loader to support typescript
-
+  
   //should be removed once commnader and blade pulish their pacakge with babel
   config.module.rules[0].exclude = new RegExp(
     '/node_modules/(?!(@commander|@razorpay|@universe)/).*/',
