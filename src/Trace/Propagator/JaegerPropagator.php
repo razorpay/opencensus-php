@@ -34,7 +34,7 @@ class JaegerPropagator implements PropagatorInterface
 
     const CONTEXT_HEADER_FORMAT = '%032s:%016s:%016s:%x';    //traceId, spanId are stored as hex strings in opencensus
 
-    const BAGGAGE_HEADER_PREFIX = 'razorpay';
+    const BAGGAGE_HEADER_PREFIX = 'rzp-ctx';
 
     /**
      * @var FormatterInterface
@@ -96,7 +96,7 @@ class JaegerPropagator implements PropagatorInterface
         {
             if(stripos($k, 'HTTP_' . self::BAGGAGE_HEADER_PREFIX) !== false)
             {
-                $itemKey = str_replace('HTTP_' . self::BAGGAGE_HEADER_PREFIX, "", $k);
+                $itemKey = str_replace('HTTP_' . self::BAGGAGE_HEADER_PREFIX . '-', "", $k);
                 if ($itemKey != "")
                 {
                     $baggageItems[$itemKey] = $v;
