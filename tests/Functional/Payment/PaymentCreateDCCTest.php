@@ -254,6 +254,47 @@ class PaymentCreateDCCTest extends TestCase
         $this->assertFalse($responseContent['dcc']);
     }
 
+    public function testPaymentCreateDccWithDomesticCard()
+    {
+        $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData());
+        $responseContent = json_decode($response->getContent(), true);
+
+        $cardCurrency = $responseContent['card_currency'];
+        $currencyRequestId = $responseContent['currency_request_id'];
+
+        $this->assertEquals("USD", $cardCurrency);
+        $this->assertNotNull($responseContent['all_currencies']);
+        $this->assertNotNull($currencyRequestId);
+
+        $payment = $this->payment;
+        $payment['card']['number']  =  '4012001038443335';
+        $payment['dcc_currency'] = 'USD';
+        $payment['currency_request_id'] = $currencyRequestId;
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals("captured", $payment['status']);
+        $this->assertEquals(50000, $payment['base_amount']);
+        $this->assertEquals(50000, $payment['amount']);
+        $this->assertEquals('INR', $payment['currency']);
+        $this->assertNull($paymentMeta);
+
+        $paymentFetchRequestData = [
+            'method'  => 'GET',
+            'url'     => '/admin/payment/' . $payment['id'],
+        ];
+
+        $response = $this->sendRequest($paymentFetchRequestData);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $this->assertEquals(false, $responseContent['dcc']);
+        $this->assertEquals(50000, $responseContent['gateway_amount']);
+        $this->assertEquals('INR', $responseContent['gateway_currency']);
+    }
+
     public function testPaymentCreateWithDCCINR()
     {
         $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData());

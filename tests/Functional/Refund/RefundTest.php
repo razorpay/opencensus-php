@@ -4757,19 +4757,12 @@ class RefundTest extends TestCase
     public function testRefundOnCapturedDCCPaymentWithVoidRefund()
     {
         Mail::fake();
-        $this->fixtures->create('terminal:shared_hitachi_terminal', [
-            'type' =>
-                [
-                    'non_recurring' => '1',
-                    'recurring_3ds' => '1',
-                    'recurring_non_3ds' => '1'
-                ]
-        ]);
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
         $this->fixtures->merchant->addFeatures(['dcc']);
         $this->fixtures->merchant->addFeatures('void_refunds');
-        $this->gateway = 'hitachi';
+       // $this->gateway = 'hitachi';
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
         $this->mockCardVault();
 
         $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData());
@@ -4780,13 +4773,7 @@ class RefundTest extends TestCase
         $usdAmount = $responseContent['all_currencies'][$cardCurrency]['amount'];
 
         $payment = $this->getDefaultPaymentArray();
-        $payment['card'] = [
-            'number'       => CardNumber::VALID_ENROLL_NUMBER,
-            'expiry_month' => '02',
-            'expiry_year'  => '35',
-            'cvv'          => 123,
-            'name'         => 'Test Card'
-        ];
+        $payment['card']['number'] = '4012010000000007';
         $payment['dcc_currency'] = $cardCurrency;
         $payment['currency_request_id'] = $currencyRequestId;
 

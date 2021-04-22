@@ -3183,6 +3183,11 @@ trait Authorize
             return;
         }
 
+        if($payment->card === null or (new Payment\Service)->isDccEnabledIIN($payment->card->iinRelation) === false)
+        {
+            return;
+        }
+
         if ((isset($input['dcc_currency']) === true) and
             (isset($input['currency_request_id']) === true))
         {
