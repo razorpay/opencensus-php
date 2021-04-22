@@ -90,7 +90,7 @@ const SettlementsUpsell = ({
   const goToCashAdvance = () => {
     track({
       eventCategory: 'Settle Now - Banner',
-      eventAction: 'Withdraw Funds',
+      eventAction: `Withdraw Funds | ${user.current}`,
       eventLabel: 'Click | Withdraw Funds',
     });
     closeModal();
@@ -112,7 +112,14 @@ const SettlementsUpsell = ({
     !isLoading;
 
   useEffect(() => {
-    if (showWithdrawNowBanner) hideCloseButton();
+    if (showWithdrawNowBanner) {
+      track({
+        eventCategory: 'Settle Now - Banner',
+        eventAction: `Banner visible | ${user.current}`,
+        eventLabel: 'Eligible Merchant | Banner visible',
+      });
+      hideCloseButton();
+    }
   }, [showWithdrawNowBanner]);
 
   if (isLoading)
