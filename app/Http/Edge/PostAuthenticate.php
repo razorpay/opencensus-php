@@ -115,7 +115,14 @@ final class PostAuthenticate
             if ($shouldReport === true)
             {
                 $this->trace->count(Metric::PASSPORT_ATTRS_MISMATCH_TOTAL, $this->ba->getRequestMetricDimensions());
-                $this->trace->warning(TraceCode::PASSPORT_ATTRS_MISMATCH, compact('errors'));
+
+                $dimensions = [
+                    'key_id' => $this->ba->getPublicKey()
+                ];
+                $this->trace->warning(TraceCode::PASSPORT_ATTRS_MISMATCH, [
+                    'errors' => $errors,
+                    'passport' => $dimensions
+                ]);
             }
         }
     }
