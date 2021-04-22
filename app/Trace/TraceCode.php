@@ -4330,8 +4330,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FAV_QUEUE_FOR_FTS_JOB_REQUEST                 = 'FAV_QUEUE_FOR_FTS_JOB_REQUEST';
     const FAV_QUEUE_FOR_FTS_JOB_FAILED                  = 'FAV_QUEUE_FOR_FTS_JOB_FAILED';
     const FAV_QUEUE_FOR_FTS_JOB_SUCCESSFUL              = 'FAV_QUEUE_FOR_FTS_JOB_SUCCESSFUL';
-    const FTS_QUEUE_FOR_FAV_JOB_RELEASED                = 'FTS_QUEUE_FOR_FAV_JOB_RELEASED';
-    const FAV_QUEUE_FOR_FAV_JOB_DELETED                 = 'FAV_QUEUE_FOR_FAV_JOB_DELETED';
+    const FAV_QUEUE_FOR_FTS_JOB_RELEASED                = 'FAV_QUEUE_FOR_FTS_JOB_RELEASED';
+    const FAV_QUEUE_FOR_FTS_JOB_DELETED                 = 'FAV_QUEUE_FOR_FTS_JOB_DELETED';
     const FAV_QUEUE_FOR_FTS_JOB_HANDLER_INIT            = 'FAV_QUEUE_FOR_FTS_JOB_HANDLER_INIT';
     const FAV_QUEUE_FOR_FTS_JOB_TRANSFER_ID_UPDATE_INIT = 'FAV_QUEUE_FOR_FTS_JOB_TRANSFER_ID_UPDATE_INIT';
     const FAV_QUEUE_FOR_FTS_REQUEST_BODY_CREATION_INIT  = 'FAV_QUEUE_FOR_FTS_REQUEST_BODY_CREATION_INIT';
@@ -4545,8 +4545,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::FAV_QUEUE_FOR_FTS_JOB_REQUEST                         => 'FAV ID pushed to queue for FTS request',
         self::FAV_QUEUE_FOR_FTS_JOB_FAILED                          => 'FAV job for FTS request failed',
         self::FAV_QUEUE_FOR_FTS_JOB_SUCCESSFUL                      => 'FAV job for FTS request successful',
-        self::FTS_QUEUE_FOR_FAV_JOB_RELEASED                        => 'FAV job released back to FTS request queue',
-        self::FAV_QUEUE_FOR_FAV_JOB_DELETED                         => 'FAV job deleted from FTS request queue',
+        self::FAV_QUEUE_FOR_FTS_JOB_RELEASED                        => 'FAV job released back to FTS request queue',
+        self::FAV_QUEUE_FOR_FTS_JOB_DELETED                         => 'FAV job deleted from FTS request queue',
         self::FAV_QUEUE_FOR_FTS_JOB_HANDLER_INIT                    => 'FAV Job Handler function initialised',
         self::FAV_QUEUE_FOR_FTS_JOB_TRANSFER_ID_UPDATE_INIT         => 'FAV Transfer ID update after job initialised',
         self::FAV_QUEUE_FOR_FTS_REQUEST_BODY_CREATION_INIT          => 'FAV request body for FTS creation started',

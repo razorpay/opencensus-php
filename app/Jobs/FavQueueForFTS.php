@@ -101,7 +101,7 @@ class FavQueueForFTS extends Job
         if ($noOfAttempts < self::MAX_RETRY_ATTEMPTS)
         {
             $this->trace->info(
-                TraceCode::FTS_QUEUE_FOR_FAV_JOB_RELEASED,
+                TraceCode::FAV_QUEUE_FOR_FTS_JOB_RELEASED,
                 [
                     'fav_id' => $this->favId,
                     'no_of_attempts' => $noOfAttempts,
@@ -114,7 +114,7 @@ class FavQueueForFTS extends Job
         {
             // TODO: Add Sumo alert.
             $this->trace->error(
-                TraceCode::FAV_QUEUE_FOR_FAV_JOB_DELETED,
+                TraceCode::FAV_QUEUE_FOR_FTS_JOB_DELETED,
                 [
                     'fav_id' => $this->favId,
                     'no_of_attempts' => $noOfAttempts,
