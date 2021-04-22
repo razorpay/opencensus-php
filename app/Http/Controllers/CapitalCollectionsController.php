@@ -122,6 +122,11 @@ class CapitalCollectionsController extends Controller
         {
             $url .= '?' . $request->getQueryString();
         }
+        else if (($request->method() === 'GET') and
+                (empty($body) === false))
+        {
+            $url .= '?' . http_build_query($body);
+        }
 
         $response = $this->sendRequestAndParseResponse($url, $body, $headers, $request->method());
 
