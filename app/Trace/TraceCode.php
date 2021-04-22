@@ -68,6 +68,7 @@ class TraceCode
     const ADMIN_LOGOUT_ON_INACTIVITY                = 'ADMIN_LOGOUT_ON_INACTIVITY';
 
     const ADMIN_RAW_API_CALL                        = 'ADMIN_RAW_API_CALL';
+    const BLOCKED_DUE_TO_SBB_622                    = 'BLOCKED_DUE_TO_SBB_622';
 
     protected static $messages = array(
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',

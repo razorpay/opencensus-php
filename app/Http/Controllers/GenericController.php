@@ -49,6 +49,8 @@ class GenericController extends Controller
     public function handleAny($mode, $path)
     {
         $allRequestHeaders = Request::header();
+        $input = Input::all();
+
         $headers = [];
 
         foreach($allRequestHeaders as $key => $value) {
@@ -79,9 +81,26 @@ class GenericController extends Controller
             return AppResponse::unauthorizedResponse('Unauthorized user', Request::route()->getName(), $path);
         }
 
-        list($error, $data, $httpCode) = $request->send($path, $method);
+        /**
+         * This is a temporary check to prevent a security vulnerability
+         * for more info look 👉🏻 https://jira.corp.razorpay.com/browse/SBB-622
+         *  */
+        if (str_contains($path, 'admin/payout') and $method === 'GET')
+        {
+            if ((isset($input['merchant_id']) === true and $input['merchant_id'] === 'G7MHzUX7Vbzbz7'))
+            {
+                $app['trace']->info(TraceCode::BLOCKED_DUE_TO_SBB_622, []);
 
-        $input = Input::all();
+                $error = [
+                    'Access Blocked for the this merchant\'s payout entity from dashbaord BE',
+                    '400',
+                ];
+
+                return AppResponse::jsonResponse($error, null, 403);
+            }
+        }
+
+        list($error, $data, $httpCode) = $request->send($path, $method);
 
         if (($path === self::MERCHANT_BULK_ACTION_ROUTE) and
             (isset($input['action']) === true) and
