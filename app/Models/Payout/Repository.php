@@ -1368,7 +1368,7 @@ class Repository extends Base\Repository
         $payoutsBalanceIdColumn     = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
         $payoutsMerchantIdColumn    = $this->repo->payout->dbColumn(Entity::MERCHANT_ID);
 
-        return $this->newQueryWithConnection($this->getDataWarehouseConnectionWithReplicationLagCheck())
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
                     ->join(Table::BALANCE, $balanceIdColumn, '=', $payoutsBalanceIdColumn)
                     ->join(Table::MERCHANT, $merchantIdColumn, '=', $payoutsMerchantIdColumn)
                     ->betweenTime($from, $to)
@@ -1408,7 +1408,7 @@ class Repository extends Base\Repository
         $payoutsBalanceIdColumn        = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
         $payoutsMerchantIdColumn       = $this->repo->payout->dbColumn(Entity::MERCHANT_ID);
 
-        return $this->newQueryWithConnection($this->getDataWarehouseConnectionWithReplicationLagCheck())
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
                     ->join(Table::BALANCE, $balanceIdColumn, '=', $payoutsBalanceIdColumn)
                     ->join(Table::MERCHANT, $merchantIdColumn, '=', $payoutsMerchantIdColumn)
                     ->betweenTime($from, $to)
@@ -1430,22 +1430,6 @@ class Repository extends Base\Repository
                     ->orderBy('payout_count', 'desc')
                     ->limit($limit)
                     ->get();
-    }
-
-    /**
-     * returns the number of payouts done by the merchant between the time of statement fetched last time and the time of this query.
-     * @param $balanceId
-     * @param $lastFetchTime
-     */
-    public function countOfPayoutsMadeForDirectAccountSinceLastStatementFetch ($balanceId, $lastFetchTime)
-    {
-        $balanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
-        $createdAtColumn = $this->dbColumn(Entity::CREATED_AT);
-
-        return $this->newQuery()
-                    ->where($balanceIdColumn, $balanceId)
-                    ->where($createdAtColumn, '>=', $lastFetchTime )
-                    ->count();
     }
 
     /**
@@ -1508,7 +1492,7 @@ class Repository extends Base\Repository
         $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
         $createdAtColumn  = $this->dbColumn(Entity::CREATED_AT);
 
-        $query = $this->newQuery()
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
                       ->where($statusColumn, Status::INITIATED)
                       ->where($merchantIdColumn, $merchantId)
                       ->where($createdAtColumn, '>=', Carbon::now()->startOfDay()->timestamp);
@@ -1537,67 +1521,12 @@ class Repository extends Base\Repository
         $createdAtColumn  = $this->dbColumn(Entity::CREATED_AT);
         $modeColumn       = $this->dbColumn(Entity::MODE);
 
-        $query = $this->newQuery()
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
                       ->where($statusColumn, Status::INITIATED)
                       ->where($merchantIdColumn, $merchantId)
                       ->where($modeColumn, $mode)
                       ->where($createdAtColumn, '>=', Carbon::now()->startOfDay()->timestamp);
 
         return $query->count();
-    }
-
-    /**
-     * SELECT 'payouts'.'id'
-     * FROM 'payouts'
-     * WHERE 'payouts'.'merchant_id' = ?
-     * AND 'payouts'.'status' = 'initiated'
-     * AND 'payouts'.'created_at' = ?
-     *
-     * @param string $merchantId
-     *
-     * @return array
-     */
-    public function fetchIdOfPayoutsStuckInInitiatedTodayAsArray(string $merchantId)
-    {
-        $statusColumn     = $this->dbColumn(Entity::STATUS);
-        $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
-        $createdAtColumn  = $this->dbColumn(Entity::CREATED_AT);
-
-        $query = $this->newQuery()
-                      ->where($statusColumn, Status::INITIATED)
-                      ->where($merchantIdColumn, $merchantId)
-                      ->where($createdAtColumn, '>=', Carbon::now()->startOfDay()->timestamp);
-
-        return $query->pluck('id')->all();
-    }
-
-    /**
-     * SELECT 'payouts'.'id'
-     * FROM 'payouts'
-     * WHERE 'payouts'.'merchant_id' = ?
-     * AND 'payouts'.'mode' = ?
-     * AND 'payouts'.'status' = 'initiated'
-     * AND 'payouts'.'created_at' = ?
-     *
-     * @param string $merchantId
-     *
-     * @param string $mode
-     *
-     * @return array
-     */
-    public function fetchIdOfPayoutsStuckInInitiatedTodayByModeAsArray(string $merchantId, string $mode)
-    {
-        $statusColumn     = $this->dbColumn(Entity::STATUS);
-        $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
-        $createdAtColumn  = $this->dbColumn(Entity::CREATED_AT);
-        $modeColumn       = $this->dbColumn(Entity::MODE);
-
-        $query = $this->newQuery()
-                      ->where($statusColumn, Status::INITIATED)
-                      ->where($merchantIdColumn, $merchantId)
-                      ->where($modeColumn, $mode)
-                      ->where($createdAtColumn, '>=', Carbon::now()->startOfDay()->timestamp);
-
-        return $query->pluck('id')->all();
     }
 }
