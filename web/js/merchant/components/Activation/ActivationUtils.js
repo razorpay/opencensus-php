@@ -390,7 +390,8 @@ function showAadharDoc(activation) {
     E_SIGN_AADHAR.includes(Number(currentBusinessType)) &&
     activation.props.user.canSkipPOADocument &&
     activation.state.isAadharDocVisible &&
-    !!activation.props.user.isOrgRZP
+    !!activation.props.user.isOrgRZP &&
+    !activation.props.user.needsClarification
   ) {
     return false;
   }
