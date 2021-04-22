@@ -175,8 +175,12 @@ class SpanContext
      *
      * @return string|null
      */
-    public function getBaggageItem(string $key): ?string
+    public function getBaggageItem(string $key)
     {
-        return array_key_exists($key, $this->baggageItems) ? $this->baggageItems[$key] : null;
+        if (array_key_exists($key, $this->baggageItems)) {
+            return $this->baggageItems[$key];
+        }
+
+        return null;
     }
 }

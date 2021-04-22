@@ -91,18 +91,7 @@ class JaegerPropagator implements PropagatorInterface
 
 
         // get baggage header
-        $baggageItems = [];
-        foreach($headers as $k => $v)
-        {
-            if(stripos($k, 'HTTP_' . self::BAGGAGE_HEADER_PREFIX) !== false)
-            {
-                $itemKey = str_replace('HTTP_' . self::BAGGAGE_HEADER_PREFIX . '-', "", $k);
-                if ($itemKey != "")
-                {
-                    $baggageItems[$itemKey] = $v;
-                }
-            }
-        }
+        $baggageItems = $this->getBaggageItemsFromHeader($headers);
 
         return new SpanContext($traceId, $spanId, $enabled, $fromHeader, $baggageItems);
     }
@@ -117,11 +106,9 @@ class JaegerPropagator implements PropagatorInterface
         $value = sprintf(self::CONTEXT_HEADER_FORMAT, $traceId, $spanId, $parentID, $enabled);
 
         // set baggage header
-        if (count($context->baggage()) > 0)
-        {
-            foreach ($context->baggage() as $k => $v)
-            {
-                $setter->set(strtoupper(self::BAGGAGE_HEADER_PREFIX . $k), $v);
+        if (count($context->baggage()) > 0) {
+            foreach ($context->baggage() as $k => $v) {
+                $setter->set(strtolower(self::BAGGAGE_HEADER_PREFIX . '-' . $k), $v);
             }
         }
 
@@ -129,5 +116,22 @@ class JaegerPropagator implements PropagatorInterface
             header("$this->header: $value");
         }
         $setter->set($this->header, $value);
+    }
+
+    public function getBaggageItemsFromHeader($headers)
+    {
+        $baggageItems = [];
+
+        foreach ($headers as $k => $v) {
+            $baggageHeader = 'HTTP_' .  strtoupper(str_replace('-', '_', self::BAGGAGE_HEADER_PREFIX))  . '_';
+            if (stripos($k, $baggageHeader) !== false) {
+                $itemKey = str_replace($baggageHeader, "", $k);
+                if ($itemKey != "") {
+                    $baggageItems[strtolower($itemKey)] = $v;
+                }
+            }
+        }
+
+        return $baggageItems;
     }
 }
