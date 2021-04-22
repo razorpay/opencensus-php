@@ -68,7 +68,6 @@ class RblBankingAccountStatementTest extends TestCase
         parent::setUp();
 
         $this->fixtures->create('contact', ['id' => '1000001contact', 'active' => 1]);
-
         $this->fixtures->create(
             'fund_account',
             [
@@ -8916,5 +8915,33 @@ class RblBankingAccountStatementTest extends TestCase
         $basRecords = $this->getDbEntities(EntityConstants::BANKING_ACCOUNT_STATEMENT);
 
         $this->assertEquals(2, count($basRecords));
+    }
+
+    //in rbl payouts the payouts go from failed->processed->reversed state so
+    // on dashboard the merchant finds it confusing so removing the failed_At when reversed_At is set
+    public function testFailedAtNotPresentWhenReversedAtIsSetForProxyAuth()
+    {
+        $channel = Channel::RBL;
+
+        $this->setupForRblPayout($channel);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'reversed']);
+        $this->fixtures->edit('payout', $payout['id'], ['processed_at' => 1584987183]);
+        $this->fixtures->edit('payout', $payout['id'], ['reversed_at' => 1584987183]);
+        $this->fixtures->edit('payout', $payout['id'], ['failed_at' => 1584987183]);
+
+        $this->ba->proxyAuth();
+
+        $request = [
+            'method' => 'GET',
+            'url' => '/payouts/' . 'pout_' . $payout->getId(),
+        ];
+        $response = $this->sendRequest($request);
+
+        $response = json_decode($response->getContent(), true);
+
+        $this->assertNotContains('failed_at', $response);
     }
 }

@@ -1980,11 +1980,14 @@ class Entity extends Base\PublicEntity
         // We are currently exposing this timestamp only for dashboard.
         // Going forward, we will have a proper auditing stuff for
         // payouts, which will be exposed via API as well.
-        //
 
+        //in rbl payouts the payouts go from failed->processed->reversed state so
+        // on dashboard the merchant finds it confusing so removing the failed_At when reversed_At is set
         // TODO: Move to serializer
 
-        if (app('basicauth')->isProxyOrPrivilegeAuth() === false)
+        if (app('basicauth')->isProxyOrPrivilegeAuth() === false
+            or (app('basicauth')->isProxyOrPrivilegeAuth() === true
+                and isset($attributes[self::REVERSED_AT])))
         {
             unset($attributes[self::FAILED_AT]);
         }
