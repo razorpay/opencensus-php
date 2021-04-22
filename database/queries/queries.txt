@@ -6196,6 +6196,26 @@ ALTER TABLE banking_account_tpvs
     ADD COLUMN trimmed_payer_account_number varchar(255) DEFAULT NULL,
     ADD UNIQUE INDEX banking_account_tpvs_merchant_id_account_number_uq_index (merchant_id, trimmed_payer_account_number);
 
+ALTER TABLE card_mandates
+	ADD mandate_card_id varchar(20),
+	ADD debit_type varchar(20),
+	ADD currency char(3),
+	ADD max_amount bigint,
+	ADD amount bigint,
+	ADD start_at int unsigned,
+	ADD end_at int unsigned,
+	ADD total_cycles int,
+	ADD mandate_interval int,
+	ADD frequency varchar(20),
+	ADD paused_by varchar(30),
+	ADD cancelled_by varchar(30),
+	ADD mandate_card_name varchar(255),
+	ADD mandate_card_last4 varchar(4),
+	ADD mandate_card_network varchar(20),
+	ADD mandate_card_type varchar(10),
+	ADD mandate_card_issuer varchar(10),
+	ADD mandate_card_international tinyint;
+
 ALTER TABLE banking_account_tpvs
     DROP INDEX banking_account_tpvs_merchant_id_account_number_uq_index;
 

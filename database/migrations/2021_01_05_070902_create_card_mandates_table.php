@@ -37,6 +37,57 @@ class CreateCardMandatesTable extends Migration
 
             $table->string(Entity::STATUS, self::VARCHAR_LEN);
 
+            $table->string(Entity::MANDATE_CARD_ID, 20)
+                  ->nullable();
+
+            $table->string(Entity::MANDATE_CARD_LAST4, 4)
+                  ->nullable();
+
+            $table->string(Entity::MANDATE_CARD_NETWORK, 20)
+                  ->nullable();
+
+            $table->string(Entity::MANDATE_CARD_TYPE, 10)
+                  ->nullable();
+
+            $table->string(Entity::MANDATE_CARD_ISSUER, 10)
+                  ->nullable();
+
+            $table->tinyInteger(Entity::MANDATE_CARD_INTERNATIONAL)
+                  ->nullable();
+
+            $table->string(Entity::DEBIT_TYPE, 20)
+                  ->nullable();
+
+            $table->char(Entity::CURRENCY, 3)
+                  ->nullable();
+
+            $table->bigInteger(Entity::MAX_AMOUNT)
+                  ->nullable();
+
+            $table->bigInteger(Entity::AMOUNT)
+                  ->nullable();
+
+            $table->unsignedInteger(Entity::START_AT)
+                  ->nullable();
+
+            $table->unsignedInteger(Entity::END_AT)
+                  ->nullable();
+
+            $table->Integer(Entity::TOTAL_CYCLES)
+                  ->nullable();
+
+            $table->Integer(Entity::MANDATE_INTERVAL)
+                  ->nullable();
+
+            $table->string(Entity::FREQUENCY, 20)
+                  ->nullable();
+
+            $table->string(Entity::PAUSED_BY, 30)
+                  ->nullable();
+
+            $table->string(Entity::CANCELLED_BY, 30)
+                  ->nullable();
+
             $table->unsignedInteger(Entity::CREATED_AT);
 
             $table->unsignedInteger(Entity::UPDATED_AT);
