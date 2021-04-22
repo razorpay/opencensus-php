@@ -1374,6 +1374,11 @@ class Constants
             'display_name'  => 'Autocollection for credit cards',
             'documentation' => '',
         ],
+        self::DISABLE_TPV_FLOW => [
+            'feature'       => self::DISABLE_TPV_FLOW,
+            'display_name'  => 'Disable tpv flow for the merchant',
+            'documentation' => '',
+        ],
     ];
 
     /**
