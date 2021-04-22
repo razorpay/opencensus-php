@@ -104,12 +104,26 @@ const GetOtpScreen = ({
             setScreen('ProviderError');
           }
         }
-        trackEvent(
-          window.rzpQ.onbr().initiated('kyc.e-aadhar_get_captcha', {
-            trigger: true,
-            error_code: res.data?.error_code ? res.data?.error_code : null,
-          }),
-        );
+        if (res.data.code) {
+          setError(res.data.code);
+          if (res.data.code === 'unavailable') {
+            mobileLinkedOnChange(false);
+            setScreen('ProviderError');
+          }
+          trackEvent(
+            window.rzpQ.onbr().initiated('kyc.e-aadhar_get_captcha', {
+              error_code: res.data.code,
+              trigger: true,
+            }),
+          );
+        } else {
+          trackEvent(
+            window.rzpQ.onbr().initiated('kyc.e-aadhar_get_captcha', {
+              trigger: true,
+              error_code: res.data?.error_code ? res.data?.error_code : null,
+            }),
+          );
+        }
         analyticsTrack({
           objectName: 'kyc.e-aadhar get captcha',
           actionName: 'generate captcha',
@@ -174,9 +188,11 @@ const GetOtpScreen = ({
         }
         if (res.data.code) {
           setError(res.data.code);
-          resetState();
           if (res.data.code === 'invalid_argument') {
             setCaptchaValue('');
+          } else if (res.data.code === 'unavailable') {
+            mobileLinkedOnChange(false);
+            setScreen('ProviderError');
           }
           trackEvent(
             window.rzpQ.onbr().initiated('kyc.e-aadhar_send_otp', {

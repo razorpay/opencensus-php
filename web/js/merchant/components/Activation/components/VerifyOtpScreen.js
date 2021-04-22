@@ -93,6 +93,9 @@ const VerifyOtp = ({
           if (res.data.code === 'invalid_argument') {
             setScreen('');
             setCaptchaValue('');
+          } else if (res.data.code === 'unavailable') {
+            mobileLinkedOnChange(false);
+            setScreen('ProviderError');
           }
           trackEvent(
             window.rzpQ.onbr().initiated('kyc.e-aadhar_OTP_submit', {
