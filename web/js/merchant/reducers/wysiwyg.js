@@ -26,6 +26,7 @@ const ADD_IN_FORM_ITEMS = 'ADD_IN_FORM_ITEMS';
 const MARK_DATA_SAVED = 'MARK_DATA_SAVED';
 const REORDER_FORM_ITEMS = 'REORDER_FORM_ITEMS';
 const UPDATE_RECEIPT_DETAILS = 'UPDATE_RECEIPT_DETAILS';
+const PREFILL_CONTACT_DETAILS = 'PREFILL_CONTACT_DETAILS';
 
 export const isFormItemOfTypeAmount = (formItem) => formItem.hasOwnProperty('item');
 
@@ -103,6 +104,11 @@ export const markDataSaved = (_) => ({
 
 export const updateReceiptDetails = (data) => ({
   type: UPDATE_RECEIPT_DETAILS,
+  payload: data,
+});
+
+export const prefillContactDetails = (data) => ({
+  type: PREFILL_CONTACT_DETAILS,
   payload: data,
 });
 
@@ -327,6 +333,14 @@ export default function (state = initialState, action) {
     case REFRESH_PAGE_DATA:
       return {
         ...initialState,
+      };
+
+    case PREFILL_CONTACT_DETAILS:
+      return {
+        ...state,
+        paymentPageEntity: merge(state.paymentPageEntity, {
+          ...action.payload,
+        }),
       };
 
     default:

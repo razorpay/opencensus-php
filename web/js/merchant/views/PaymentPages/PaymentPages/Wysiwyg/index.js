@@ -507,6 +507,16 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       return;
     }
 
+    //check if contact details are filled
+    if (!support_contact || !support_email) {
+      this.props.showNotification({
+        type: 'error',
+        message: 'Please fill in the contact details',
+      });
+
+      return;
+    }
+
     const reqPayload = {
       currency,
       expire_by: expire_by || null,
