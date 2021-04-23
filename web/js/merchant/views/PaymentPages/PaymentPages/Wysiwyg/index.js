@@ -481,6 +481,23 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       return;
     }
 
+    if (this.props.user.isPaymentPageDescriptionRequired) {
+      // {"value":[{"insert":"\n"}],"metaText":". "} is the value in the state when description(quill instance) is empty
+      const isQuillEmptyRegex = /{"value":\[{"insert":"\s*\\n"}],"metaText":"\s*. "}/;
+
+      if (!description || isQuillEmptyRegex.test(description)) {
+        this.props.showNotification({
+          type: 'error',
+          message: 'Please fill out the description',
+        });
+
+        const descriptionElement = document.querySelector('#description-quill .ql-editor');
+        descriptionElement && descriptionElement.focus();
+
+        return;
+      }
+    }
+
     const isValidSchema = validateUISchema(udf_schema);
 
     // console.log('udf_schema......', udf_schema);

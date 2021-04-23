@@ -763,6 +763,18 @@ export default class User {
     return this.getExpStatus('enable_payment_page_receipt');
   }
 
+  get isPaymentPageDescriptionRequired() {
+    const userBusinessType = Number(this.business_type);
+    const isRazorXExperimentEnabled = this.getExpStatus('pp_description_required');
+
+    // required for proprietorship and unregistered
+    const REQUIRED_DESCRIPTION_BUSINESS_TYPES = [1, 11];
+    return (
+      REQUIRED_DESCRIPTION_BUSINESS_TYPES.indexOf(userBusinessType) !== -1 &&
+      isRazorXExperimentEnabled
+    );
+  }
+
   // This is for new payment links microservice.
   // If enabled, then all the apis before sending data, and after fetching/receiving data must transform its data, as FE operate on old structure until 100% rollout.
   get isPaymentlinksV2Enabled() {
