@@ -1,7 +1,7 @@
 <?php
     $invoice_data         = $data['invoice'];
     $customer_details     = $data['invoice']['customer_details'];
-    $has_customer_details = !!($customer_details['customer_name'] or $customer_details['customer_email'] or $customer_details['customer_contact']);
+    $has_customer_details = !!(isset($customer_details['customer_name']) or isset($customer_details['customer_email']) or isset($customer_details['customer_contact']));
 ?>
 
 @if ($has_customer_details)

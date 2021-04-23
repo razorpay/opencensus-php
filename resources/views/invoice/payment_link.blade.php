@@ -572,7 +572,7 @@ $view_preferences               = $data['view_preferences'];
                         @endif
 
                         @if(empty($view_preferences['hide_issued_to']) === true)
-                            @if($customer_details['customer_name'] or $customer_details['customer_email'])
+                            @if(isset($customer_details['customer_name']) or isset($customer_details['customer_email']))
                                 <div class="info">
                                     ISSUED TO
                                     @if($customer_details['customer_name'])

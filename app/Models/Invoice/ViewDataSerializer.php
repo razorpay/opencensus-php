@@ -486,6 +486,12 @@ class ViewDataSerializer extends Base\Core
             Entity::SHIPPING_ADDRESS_TEXT => optional($this->invoice->customerShippingAddress)->formatAsText(),
         ];
 
+        // Unsets Customer details if invoice is in expired status
+        if ($this->invoice->isExpired() === true)
+        {
+            $serialized[Entity::CUSTOMER_DETAILS] = '';
+        }
+
         //
         // Additionally, if it's non-invoice and description is blank we fill it with first line item's description
         // else name. This is because for non-invoice, description should have been mandatory but for legacy reasons,

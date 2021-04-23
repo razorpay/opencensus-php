@@ -613,7 +613,7 @@ $isHostedCheckout               = $hostedpage_options['enable_embedded_checkout'
                         @endif
 
                         @if($hostedpage_options['show_preferences']['issued_to'])
-                            @if($customer_details['customer_name'] or $customer_details['customer_email'])
+                            @if(isset($customer_details['customer_name']) or isset($customer_details['customer_email']))
                                 <div class="info">
                                     ISSUED TO
                                     @if($customer_details['customer_name'])
