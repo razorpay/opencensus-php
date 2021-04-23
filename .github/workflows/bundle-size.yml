@@ -1,6 +1,9 @@
 name: Bundle Size Diff
 
-on: [pull_request]
+on:
+    pull_request:
+        paths:
+            - 'web/**'
 
 jobs:
   bundle-anlayzer:
