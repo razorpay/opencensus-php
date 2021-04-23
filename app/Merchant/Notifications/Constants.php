@@ -172,11 +172,7 @@ class Constants
                 ],
             ],
             'filters'     => [
-                'splitz_experiments'         => [
-                    'ANNOUNCEMENT_NITRO_HYDERABAD_SPLITZ' => [
-                        'result' => 'on'
-                    ]
-                ],
+                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_HYDERABAD_SPLITZ'],
             ],
         ],
         [
@@ -673,11 +669,7 @@ class Constants
                 ],
             ],
             'filters'     => [
-                'splitz_experiments'         => [
-                    'ANNOUNCEMENT_RETENTION1_APRIL2021_SPLITZ' => [
-                        'result' => 'on'
-                    ]
-                ],
+                'splitz_experiments'         => ['ANNOUNCEMENT_RETENTION1_APRIL2021_SPLITZ'],
                 'experiments'         => ['whats-new-dec-2020'],
             ],
             'l2_content'  => [

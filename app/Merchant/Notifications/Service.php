@@ -178,36 +178,22 @@ class Service extends Base\Service
                     break;
 
                 case 'splitz_experiments':
-
                     $this->replaceExperimentPlaceholdersWithId($value);
-
-                    if (isset($user[$key]) === false)
+                    if (isset($user[$key]) === false) {
                         return false;
-
+                    }
                     $userFilterValue = $user[$key];
-
-                    foreach ($userFilterValue as $key => $subValue)
-                    {
-                        $userFilterValue[$key] = (isset($userFilterValue[$key]['variables']) === true) ? $userFilterValue[$key]['variables'] : [];
-                        if (empty($userFilterValue[$key]))
-                        {
-                            unset($userFilterValue[$key]);
+                    foreach ($userFilterValue as $key => $subValue) {
+                        $userFilterValue[$key] = (isset($userFilterValue[$key]) &&
+                            isset($userFilterValue[$key]['variables'])) ?
+                            $userFilterValue[$key]['variables']['result'] : [];
+                    }
+                    foreach ($value as $key => $subValue) {
+                        if (isset($userFilterValue[$subValue]) === true) {
+                            $value[$key] = $userFilterValue[$subValue];
                         }
                     }
-
-                    if (!empty($userFilterValue))
-                    {
-                        foreach ($value as $key => $subValue)
-                        {
-                            if (!array_key_exists($key, $userFilterValue))
-                            {
-                                unset($value[$key]);
-                            }
-                        }
-                    }
-
-                    $isUserEligible = (empty(Util::array_recursive_diff($value, $userFilterValue)) === true);
-
+                    $isUserEligible = in_array("on", $value);
                     break;
 
                 case 'business_category':
