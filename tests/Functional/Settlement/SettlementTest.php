@@ -2542,4 +2542,60 @@ class SettlementTest extends TestCase
        $this->assertEquals(1,$response['count']);
        $this->assertEquals(200, $response['status_code']);
     }
+
+    public function testSettlementServiceMigration()
+    {
+        $this->ba->adminAuth();
+
+        $this->fixtures->merchant->createAccount('setlMerchant12');
+
+        $input = [
+            'name'        => 'Every 1 hour',
+            'period'      => 'hourly',
+            'interval'    => 1,
+            'delay'       => 0,
+        ];
+
+        $this->createAndAssignSettlementSchedule($input,'setlMerchant12');
+
+        $request = [
+            'url'     => '/settlements/service/migration/admin',
+            'method'  => 'POST',
+            'content' => [
+                'merchant_ids'             => ['setlMerchant12'],
+                'migrate_bank_account'    => '0',
+                'migrate_merchant_config' => '1',
+                'via'                     => 'fts',
+            ],
+        ];
+
+        $response =  $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(1, $response['total']);
+
+        $this->assertEquals(0, $response['failed_count']);
+
+        $this->fixtures->create('feature', [
+            'name'          => Constants::NEW_SETTLEMENT_SERVICE,
+            'entity_id'     => 'setlMerchant12',
+            'entity_type'   => 'merchant',
+        ]);
+
+        $request = [
+            'url'     => '/settlements/service/migration/admin',
+            'method'  => 'POST',
+            'content' => [
+                'merchant_ids'             => ['setlMerchant12'],
+                'migrate_bank_account'    => '1',
+                'migrate_merchant_config' => '0',
+                'via'                     => 'fts',
+            ],
+        ];
+
+        $response =  $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(1, $response['total']);
+
+        $this->assertEquals(0, $response['failed_count']);
+    }
 }

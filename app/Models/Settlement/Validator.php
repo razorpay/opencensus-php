@@ -146,9 +146,11 @@ class Validator extends Base\Validator
     ];
 
     protected static $settlementsServiceMigrationRules = [
-        'merchant_ids'        => 'sometimes|array',
-        'merchant_ids.*'      => 'required|string|size:14',
-        'via'                 => 'required|string|in:fts,payout'
+        'merchant_ids'            => 'sometimes|array',
+        'merchant_ids.*'          => 'required|string|size:14',
+        'migrate_bank_account'    => 'required|bool',
+        'migrate_merchant_config' => 'required|bool',
+        'via'                     => 'required|string|in:fts,payout'
     ];
 
     protected static $settlementsStatusReplayRules = [

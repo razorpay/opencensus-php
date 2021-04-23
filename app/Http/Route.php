@@ -602,6 +602,7 @@ class Route
         'setl_update_channel_bulk'                 => ['put',      'settlements/channel/bulk',                       'SettlementController@updateChannelForMultipleSettlements'          ],
         'setl_holidays'                            => ['get',      'settlement/holidays',                            'SettlementController@getHolidayListForYear',                       ],
         'setl_transaction_replay'                  => ['post',     'settlement/transactions/replay',                 'SettlementController@replaySettlementTransactions',                ],
+        'setl_transaction_replay_admin'            => ['post',     'settlement/transactions/replay/admin',           'SettlementController@replaySettlementTransactionsAdmin'            ],
 //    deprecating this route since it is not in use
 //        'nodal_get_account_balance'                => ['get',      'nodal/balance/{channel}',                        'SettlementController@getAccountBalance'                            ],
         'nodal_initiate_transfer'                  => ['post',     'nodal/transfer',                                 'SettlementController@postInitiateTransfer'                         ],
@@ -628,6 +629,7 @@ class Route
         'setl_schedule_get_ids'                    => ['get',      'settlements/schedule/get_ids',                   'SettlementController@scheduleGetIds'                               ],
         'setl_schedule_rename'                     => ['post',     'settlements/schedule/rename',                    'SettlementController@scheduleRename'                               ],
         'setl_service_migration'                   => ['post',     'settlements/service/migration',                  'SettlementController@migrateConfigurations'                        ],
+        'setl_service_migration_admin'             => ['post',     'settlements/service/migration/admin',            'SettlementController@migrateConfigurationsAdmin'                   ],
         'setl_execution_reminder'                  => ['post',     'settlements/reminder/execution',                 'SettlementController@executionReminder'                            ],
         'setl_retry_new_service'                   => ['post',     'settlements/service/retry',                      'SettlementController@settlementRetry'                              ],
         'setl_channel_state_get'                   => ['get',      'settlements/channel/state',                      'SettlementController@getChannelState'                              ],
@@ -4099,6 +4101,8 @@ class Route
         'enable_emi_merchant_sub',
         'oauth_sync_merchant_map',
         'merchant_user_reset_password',
+        'setl_transaction_replay_admin',
+        'setl_service_migration_admin',
 
         // Shield Routes
         'shield_rules_get_multiple',
@@ -4785,8 +4789,9 @@ class Route
         'setl_retry_new_service'                   => Permission::RETRY_SETTLEMENT,
         'setl_schedule_rename'                     => Permission::SCHEDULE_UPDATE,
         'setl_replay_status_update'                => Permission::SETTLEMENT_BULK_UPDATE,
+        'setl_transaction_replay_admin'            => Permission::SETTLEMENT_BULK_UPDATE,
+        'setl_service_migration_admin'             => Permission::SETTLEMENT_BULK_UPDATE,
         'setl_migrate_payout'                      => Permission::SETTLEMENT_BULK_UPDATE,
-
         'merchant_batches'                         => Permission::MERCHANT_BATCH_UPLOAD,
         'merchant_invoice_add_bulk'                => Permission::MERCHANT_INVOICE_EDIT,
         'payment_dispute_create'                   => Permission::CREATE_DISPUTE,
@@ -8039,6 +8044,8 @@ class Route
             'setl_trigger_multiple',
             'setl_trigger_report',
             'setl_update_channel_bulk',
+            'setl_service_migration_admin',
+            'setl_transaction_replay_admin',
             'settings_delete',
             'settings_fetch',
             'settings_fetch_defined',

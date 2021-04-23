@@ -683,6 +683,11 @@ class Service extends Base\Service
 
     public function replayTransactions(array $input): array
     {
+        if (isset($input['initial_ramp']) === true)
+        {
+            $input['initial_ramp'] = ($input['initial_ramp'] === '1');
+        }
+
         $this->trace->info(
             TraceCode::SETTLEMENT_TRANSACTION_REPLAY_REQUEST,
             $input
@@ -1069,6 +1074,16 @@ class Service extends Base\Service
 
     public function migrateConfigurations(array $input)
     {
+        if(isset($input['migrate_bank_account']) === true)
+        {
+            $input['migrate_bank_account'] = ($input['migrate_bank_account'] === '1');
+        }
+
+        if(isset($input['migrate_merchant_config']) === true)
+        {
+            $input['migrate_merchant_config'] = ($input['migrate_merchant_config'] === '1');
+        }
+
         (new Validator)->validateInput('settlements_service_migration', $input);
 
         return (new Core)->migrateConfigurations($input);

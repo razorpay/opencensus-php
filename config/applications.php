@@ -439,6 +439,7 @@ return [
             ],
         ],
         'api' => [
+            'mock' => env('SETTLEMENTS_API_MOCK', false),
             'live' => [
                 'key'       => env('SETTLEMENTS_API_LIVE_KEY'),
                 'secret'    => env('SETTLEMENTS_API_LIVE_SECRET'),

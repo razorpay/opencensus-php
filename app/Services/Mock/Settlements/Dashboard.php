@@ -1,10 +1,10 @@
 <?php
 
-namespace RZP\Services\Mock;
+namespace RZP\Services\Mock\Settlements;
 
-use RZP\Services\Settlements\Base;
+use RZP\Services\Settlements\Dashboard as BaseDahboard;
 
-class SettlementsDashboard extends Base
+class Dashboard extends BaseDahboard
 {
     public function migrateToPayout(array $input) : array
     {

@@ -921,7 +921,6 @@ class Core extends Base\Core
 
         $response = [
             'total'         => count($input['merchant_ids']),
-            'skipped_count' => 0,
             'failed_count'  => 0,
         ];
 
@@ -929,20 +928,12 @@ class Core extends Base\Core
         {
             try
             {
-                if ((new BucketModel\Core)->shouldProcessViaNewService($merchantId) === true)
-                {
-                    migration::dispatch($this->mode, $merchantId, $input['via']);
-                }
-                else
-                {
-                    $this->trace->info(
-                        TraceCode::SETTLEMENT_SERVICE_MIGRATION_SKIPPED,
-                        [
-                            'merchant_id' => $merchantId,
-                        ]);
-
-                    $response['skipped_count'] += 1;
-                }
+                migration::dispatch(
+                    $this->mode,
+                    $merchantId,
+                    $input['migrate_bank_account'],
+                    $input['migrate_merchant_config'],
+                    $input['via']);
             }
             catch (\Throwable $e)
             {

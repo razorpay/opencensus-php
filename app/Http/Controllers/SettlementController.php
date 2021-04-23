@@ -485,6 +485,15 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function replaySettlementTransactionsAdmin()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->replayTransactions($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function executionReminder()
     {
         $input = Request::all();
@@ -513,6 +522,15 @@ class SettlementController extends Controller
     }
 
     public function migrateConfigurations()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->migrateConfigurations($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function migrateConfigurationsAdmin()
     {
         $input = Request::all();
 

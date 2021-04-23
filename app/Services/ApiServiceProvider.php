@@ -1199,7 +1199,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         {
             $mock = $app['config']->get('applications.settlements_service.dashboard.mock');
 
-            $implementation = ($mock === true) ? Mock\SettlementsDashboard::class : Settlements\Dashboard::class;
+            $implementation = ($mock === true) ? Mock\Settlements\Dashboard::class : Settlements\Dashboard::class;
 
             return new $implementation($app);
         });
@@ -1225,6 +1225,10 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
     {
         $this->app->singleton('settlements_api', function($app)
         {
+            $mock = $app['config']->get('applications.settlements_service.api.mock');
+
+            $implementation = ($mock === true) ? Mock\Settlements\Api::class : Settlements\Api::class;
+
             return new Settlements\Api($app);
         });
     }
