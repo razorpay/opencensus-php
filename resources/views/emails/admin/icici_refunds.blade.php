@@ -29,7 +29,7 @@
         </tr>
     </tbody>
 </table>
-    @if ($pid !== "direct")
+    @if (($pid !== "direct") and ($pid !== "emi"))
         <p> Payee Id : {{{$pid}}}</p>
         <p> Account Number : {{{$acc}}}</p>
     @endif

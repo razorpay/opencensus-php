@@ -49,7 +49,7 @@ class Type
     const IDFC_NETBANKING_SUMMARY           = 'idfc_netbanking_summary';
 
     const ICICI_NETBANKING_REFUND           = 'icici_netbanking_refund';
-
+    const ICICI_NETBANKING_REFUND_EMI       = 'icici_netbanking_refund_emi';
     const ICICI_PAYLATER_REFUND             = 'icici_paylater_refund';
 
     const OBC_NETBANKING_REFUND             = 'obc_netbanking_refund';
@@ -256,6 +256,7 @@ class Type
             self::CITI_NACH_EARLY_DEBIT_SUMMARY,
             self::SBI_EMANDATE_DEBIT,
             self::ICICI_NETBANKING_REFUND,
+            self::ICICI_NETBANKING_REFUND_EMI,
             self::ICICI_PAYLATER_REFUND,
             self::ICICI_NETBANKING_REFUND_DIRECT_SETTLEMENT,
             self::AXIS_NETBANKING_REFUND,
@@ -434,6 +435,7 @@ class Type
         self::CORPORATION_NETBANKING_REFUND,
         self::ALLAHABAD_NETBANKING_REFUND,
         self::ICICI_NETBANKING_REFUND,
+        self::ICICI_NETBANKING_REFUND_EMI,
         self::ICICI_NETBANKING_REFUND_DIRECT_SETTLEMENT,
         self::ICICI_PAYLATER_REFUND,
         self::AXIS_NETBANKING_REFUND,

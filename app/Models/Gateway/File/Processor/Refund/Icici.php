@@ -22,6 +22,7 @@ class Icici extends Base
     const FILE_NAME                   = 'Icici_Netbanking_Refunds';
     const EXTENSION                   = FileStore\Format::XLSX;
     const FILE_TYPE                   = FileStore\Type::ICICI_NETBANKING_REFUND;
+    const FILE_TYPE_EMI               = FileStore\Type::ICICI_NETBANKING_REFUND_EMI;
     const FILE_TYPE_DIRECT_SETTLEMENT = FileStore\Type::ICICI_NETBANKING_REFUND_DIRECT_SETTLEMENT;
     const GATEWAY                     = Payment\Gateway::NETBANKING_ICICI;
     const PAYMENT_TYPE_ATTRIBUTE      = Payment\Entity::BANK;
@@ -29,6 +30,7 @@ class Icici extends Base
     const BASE_STORAGE_DIRECTORY      = 'Icici/Refund/Netbanking/';
 
     const DIRECT                      = 'direct';
+    const EMI                         = 'emi';
 
     /*
      * Since File data generation is separated from mail data generation,
@@ -55,6 +57,10 @@ class Icici extends Base
                 if ($pid === self::DIRECT)
                 {
                     $fileType = static::FILE_TYPE;
+                }
+                elseif ($pid === self::EMI)
+                {
+                    $fileType = static::FILE_TYPE_EMI;
                 }
                 else
                 {
@@ -136,8 +142,10 @@ class Icici extends Base
     {
         $formattedData = [];
 
-        foreach ($data as $index => $row)
+        foreach ($data as $row)
         {
+            $bankRef = $this->fetchBankPaymentId($row);
+
             $date = Carbon::createFromTimestamp(
                 $row['payment']['created_at'], Timezone::IST)->format('jS F Y');
 
@@ -156,7 +164,31 @@ class Icici extends Base
                     'Sr No'                 => $srNo,
                     'Payee_id'              => $row['terminal']['gateway_merchant_id'],
                     'SPID'                  => $row['terminal']['gateway_merchant_id2'],
-                    'Bank Reference No.'    => $this->fetchBankPaymentId($row),
+                    'Bank Reference No.'    => $bankRef,
+                    'Transaction Date'      => $date,
+                    'Transaction Amount'    => $row['payment']['amount'] / 100,
+                    'Refund Amount'         => $row['refund']['amount'] / 100,
+                    'Transaction Id'        => $row['payment']['id'],
+                    'Reversal/Cancellation' => 'C',
+                    'Remarks'               => '',
+                ];
+            }
+            elseif ((strpos($bankRef, 'CFL-') !== false))
+            {
+                if (isset($formattedData[self::EMI]) === true)
+                {
+                    $srNo = count($formattedData[self::EMI]) + 1;
+                }
+                else
+                {
+                    $srNo = 1;
+                }
+
+                $formattedData[self::EMI][] = [
+                    'Sr No'                 => $srNo,
+                    'Payee_id'              => $row['terminal']['gateway_merchant_id'],
+                    'SPID'                  => $row['terminal']['gateway_merchant_id2'],
+                    'Bank Reference No.'    => $bankRef,
                     'Transaction Date'      => $date,
                     'Transaction Amount'    => $row['payment']['amount'] / 100,
                     'Refund Amount'         => $row['refund']['amount'] / 100,
@@ -180,7 +212,7 @@ class Icici extends Base
                     'Sr No'                 => $srNo,
                     'Payee_id'              => $row['terminal']['gateway_merchant_id'],
                     'SPID'                  => $row['terminal']['gateway_merchant_id2'],
-                    'Bank Reference No.'    => $this->fetchBankPaymentId($row),
+                    'Bank Reference No.'    => $bankRef,
                     'Transaction Date'      => $date,
                     'Transaction Amount'    => $row['payment']['amount'] / 100,
                     'Refund Amount'         => $row['refund']['amount'] / 100,
@@ -243,6 +275,8 @@ class Icici extends Base
 
         foreach ($data as $row)
         {
+            $bankRef = $this->fetchBankPaymentId($row);
+
             $pid = $row['terminal']['gateway_merchant_id'];
 
             if ($this->isDirectSettlementTerminal($row['terminal']) === true)
@@ -257,6 +291,19 @@ class Icici extends Base
                 {
                     $mailInfo[$pid]['count']++;
                     $mailInfo[$pid]['amount'] = $mailInfo[$pid]['amount'] + $row['refund']['amount'];
+                }
+            }
+            elseif ((strpos($bankRef, 'CFL-') !== false))
+            {
+                if (isset($mailInfo[self::EMI]) === false)
+                {
+                    $mailInfo[self::EMI]['amount'] = $row['refund']['amount'];
+                    $mailInfo[self::EMI]['count']  = 1;
+                }
+                else
+                {
+                    $mailInfo[self::EMI]['count']++;
+                    $mailInfo[self::EMI]['amount'] = $mailInfo[self::EMI]['amount'] + $row['refund']['amount'];
                 }
             }
             else
