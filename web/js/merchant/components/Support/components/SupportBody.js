@@ -189,7 +189,7 @@ class SupportBody extends Component {
               </Link>
             </li>
           </ShowWhen>
-          {window.rzp_user ? (
+          {/* {window.rzp_user ? (
             ['activated', 'under_review', 'instantly_activated', 'needs_clarification'].indexOf(
               window.rzp_user.activation_status,
             ) > -1 && this.props.supportFlags.show_chat ? (
@@ -208,7 +208,7 @@ class SupportBody extends Component {
                 </small>
               </li>
             ) : null
-          ) : null}
+          ) : null} */}
           {isCallEnabled ? (
             <li
               class={`support-item p-all call ${shouldDisable ? 'disabled' : ''}`}
