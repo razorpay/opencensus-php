@@ -34,10 +34,15 @@ class PDOTest extends TestCase
         $spanOptions = PDO::handleQuery($scope, $query);
         $expected = [
             'attributes' => [
-                'db.statement' => 'select * from users',
-                'span.kind'    => strtolower(Span::KIND_CLIENT),
-                'db.system' => 'mysql',
-                'net.peer.name' => 'localhost:3306'
+                'db.statement'         => 'select * from users',
+                'span.kind'            => strtolower(Span::KIND_CLIENT),
+                'db.system'            => 'mysql',
+                'net.peer.name'        => 'localhost:3306',
+                'db.name'              => 'testdb',
+                'net.peer.port'        => '3306',
+                'dsn'                  => 'mysql:host=localhost;dbname=testdb',
+                'db.type'              => 'sql',
+                'db.connection_string' => 'mysql:host=localhost;dbname=testdb',
             ],
             'kind' => strtolower(Span::KIND_CLIENT),
             'sameProcessAsParentSpan' => false

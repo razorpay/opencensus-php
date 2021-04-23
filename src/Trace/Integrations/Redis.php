@@ -41,6 +41,8 @@ const CMD_MAX_LEN = 256;
 
 class Redis implements IntegrationInterface
 {
+    private static $hostMapping = [];
+
     /**
      * Static method to add instrumentation to redis requests
      */
@@ -50,51 +52,92 @@ class Redis implements IntegrationInterface
             trigger_error('opencensus extension required to load Redis integrations.', E_USER_WARNING);
         }
 
-        opencensus_trace_method('Predis\Client', '__construct', function ($predis, $params) {
-            $connection_str = sprintf("%s:%s", $params[0]['host'], $params[0]['port']);
-            return [
-                'attributes' => [
-                    'peer.hostname' => $params[0]['host'],
-                    'peer.port' => $params[0]['port'],
-                    'net.peer.name' => $params[0]['host'],
-                    'net.peer.port' => $params[0]['port'],
-                    'db.type' => 'redis',
-                    'db.system' => 'redis',
-                    'db.connection_string' =>  $connection_str,
-                    'span.kind' => 'client'
-                ],
-                'kind' => 'client',
-                'name' => 'Redis connect',
-                'sameProcessAsParentSpan' => false
-            ];
-        });
+        opencensus_trace_method('Predis\Client', '__construct', [static::class, 'handleConstuct']);
 
         // covers all basic commands
-        opencensus_trace_method('Predis\Client', 'executeCommand', function ($predis, $command) {
-            $arguments = $command->getArguments();
-            $params = $predis->getConnection()->getParameters();
-            $connection_str = sprintf("%s:%s", $params->host, $params->port);
-            array_unshift($arguments, $command->getId());
-            $query = Redis::formatArguments($arguments);
-            $attrs = [
-                'db.type' => 'redis',
-                'db.system' => 'redis',
-                'db.operation' => $command->getId(),
-                'command' => $command->getId(),
-                'service.name' => 'redis',
-                'redis.args_length' => count($arguments),
-                'span.kind' => 'client',
-                'db.connection_string' =>  $connection_str,
-                'net.peer.name' => $params->host,
-                'net.peer.port' => $params->port
-            ];
+        opencensus_trace_method('Predis\Client', 'executeCommand', [static::class, 'handleExecuteCommand']);
+    }
 
-            return ['attributes' => $attrs,
-                    'kind' => 'client',
-                    'name' => 'Redis ' . $command->getId(),
-                    'sameProcessAsParentSpan' => false
-                ];
-        });
+
+    public static function handleConstuct($predis, $params)
+    {
+        $connection_str = sprintf("%s:%s", $params[0]['host'], $params[0]['port']);
+
+        if ((method_exists($predis, 'getConnection')) && (is_iterable($predis->getConnection()) === true)) {
+            foreach ($predis->getConnection() as $connection) {
+                self::$hostMapping[$connection->getParameters()->host] = $connection_str;
+            }
+        }
+
+        return [
+            'attributes' => [
+                'db.connection_string' => $connection_str,
+                'db.system'            => 'redis',
+                'db.type'              => 'redis',
+                'net.peer.name'        => $params[0]['host'],
+                'net.peer.port'        => $params[0]['port'],
+                'span.kind'            => 'client'
+            ],
+            'kind'                    => 'client',
+            'name'                    => 'Redis connect',
+            'sameProcessAsParentSpan' => false
+        ];
+    }
+
+    public static function handleExecuteCommand($predis, $command)
+    {
+        $params = [];
+
+        $cmdParams = null;
+
+        $predisConnection = $predis->getConnection();
+
+        if (get_class($predisConnection) === 'Predis\Connection\Aggregate\RedisCluster') {
+            $cmdParams = $predisConnection->getConnection($command)->getParameters();
+        } else {
+            $cmdParams = $predisConnection->getParameters();
+        }
+
+        if ((isset($cmdParams->host) === true) && (array_key_exists($cmdParams->host, self::$hostMapping) === true)) {
+            $connection = explode(':', self::$hostMapping[$cmdParams->host]);
+
+            $params = [
+                'host' => $connection[0],
+                'port' => $connection[1],
+            ];
+        } else {
+            $params = [
+                'host' => $cmdParams->host ?? '',
+                'port' => $cmdParams->port ?? '',
+            ];
+        }
+
+        $connection_str = sprintf("%s:%s", $params['host'], $params['port']);
+
+        $arguments = $command->getArguments();
+
+        array_unshift($arguments, $command->getId());
+        $query = Redis::formatArguments($arguments);
+
+        $attributes = [
+            'command'              => $command->getId(),
+            'db.connection_string' => $connection_str,
+            'db.operation'         => $command->getId(),
+            'db.system'            => 'redis',
+            'db.type'              => 'redis',
+            'net.peer.name'        => $params['host'],
+            'net.peer.port'        => $params['port'],
+            'redis.args_length'    => count($arguments),
+            'service.name'         => 'redis',
+            'span.kind'            => 'client',
+        ];
+
+        return [
+            'attributes'              => $attributes,
+            'kind'                    => 'client',
+            'name'                    => 'Redis ' . $command->getId(),
+            'sameProcessAsParentSpan' => false
+        ];
     }
 
     public static function formatArguments($arguments)
@@ -108,7 +151,7 @@ class Redis implements IntegrationInterface
                 continue;
             }
 
-            $cmd = (string)$argument;
+            $cmd = (string) $argument;
 
             if (strlen($cmd) > VALUE_MAX_LEN) {
                 $cmd = substr($cmd, 0, VALUE_MAX_LEN) . VALUE_TOO_LONG_MARK;
