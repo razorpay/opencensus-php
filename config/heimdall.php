@@ -1138,6 +1138,11 @@ return [
                 'assignable'  => true,
             ],
 
+            Permission::CAPITAL_CREATE_PAYMENT_LINK => [
+                'description' => 'Allow capital to create payment link',
+                'assignable'  => true,
+            ],
+
             Permission::WALLETS => [
                 'description' => 'Allow access to wallet service admin actions',
                 'assignable'  => true,

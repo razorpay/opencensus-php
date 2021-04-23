@@ -8738,6 +8738,7 @@ class Route
             'capital_multiple_transaction_create',
             'internal_balance_fetch_by_id',
             'internal_balance_fetch_multiple_by_ids',
+            'user_fetch_entity',
         ],
 
         'loc'  => [

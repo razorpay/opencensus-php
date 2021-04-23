@@ -27,6 +27,10 @@ class CapitalCollectionsController extends Controller
     const DELETE   = 'DELETE';
     const MERCHANT = 'MERCHANT';
 
+    const ROUTE_PERMISSION_MAP = [
+        'v1/repayments/payment-link' => Name::CAPITAL_CREATE_PAYMENT_LINK,
+    ];
+
     protected function handleProxyRequests($path = null)
     {
         $request = Request::instance();
@@ -101,6 +105,12 @@ class CapitalCollectionsController extends Controller
         $this->trace->info(TraceCode::CAPITAL_COLLECTIONS_PROXY_REQUEST, [
             'request' => $url,
         ]);
+
+        if (isset(self::ROUTE_PERMISSION_MAP[trim($url, '/')]) === true and
+            $this->ba->getAdmin()->hasPermission(self::ROUTE_PERMISSION_MAP[trim($url, '/')]) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+        }
 
         $headers = [
             'X-Admin-Id'    => $this->ba->getAdmin()->getId() ?? '',
