@@ -42,7 +42,7 @@ class PDOTest extends TestCase
                 'net.peer.port'        => '3306',
                 'dsn'                  => 'mysql:host=localhost;dbname=testdb',
                 'db.type'              => 'sql',
-                'db.connection_string' => 'mysql:host=localhost;dbname=testdb'
+                'db.connection_string' => 'mysql:host=localhost;dbname=testdb',
             ],
             'kind' => strtolower(Span::KIND_CLIENT),
             'sameProcessAsParentSpan' => false
