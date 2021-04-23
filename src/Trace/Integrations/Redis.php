@@ -41,18 +41,14 @@ const CMD_MAX_LEN = 256;
 
 class Redis implements IntegrationInterface
 {
-    static $host = "";
-
     /**
      * Static method to add instrumentation to redis requests
      */
-    public static function load($host="")
+    public static function load()
     {
         if (!extension_loaded('opencensus')) {
             trigger_error('opencensus extension required to load Redis integrations.', E_USER_WARNING);
         }
-
-        Redis::$host = $host;
 
         opencensus_trace_method('Predis\Client', '__construct', function ($predis, $params) {
             $connection_str = sprintf("%s:%s", $params[0]['host'], $params[0]['port']);
@@ -61,6 +57,7 @@ class Redis implements IntegrationInterface
                     'peer.hostname' => $params[0]['host'],
                     'peer.port' => $params[0]['port'],
                     'net.peer.name' => $params[0]['host'],
+                    'net.peer.port' => $params[0]['port'],
                     'db.type' => 'redis',
                     'db.system' => 'redis',
                     'db.connection_string' =>  $connection_str,
@@ -75,6 +72,8 @@ class Redis implements IntegrationInterface
         // covers all basic commands
         opencensus_trace_method('Predis\Client', 'executeCommand', function ($predis, $command) {
             $arguments = $command->getArguments();
+            $params = $predis->getConnection()->getParameters();
+            $connection_str = sprintf("%s:%s", $params->host, $params->port);
             array_unshift($arguments, $command->getId());
             $query = Redis::formatArguments($arguments);
             $attrs = [
@@ -85,11 +84,10 @@ class Redis implements IntegrationInterface
                 'service.name' => 'redis',
                 'redis.args_length' => count($arguments),
                 'span.kind' => 'client',
+                'db.connection_string' =>  $connection_str,
+                'net.peer.name' => $params->host,
+                'net.peer.port' => $params->port
             ];
-
-            if (Redis::$host){
-                $attrs['net.peer.name'] = Redis::$host;
-            }
 
             return ['attributes' => $attrs,
                     'kind' => 'client',
