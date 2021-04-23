@@ -66,7 +66,7 @@ class ZizacoIntegrationTestCase extends IntegrationTestCase
         if (isset($matches[1]))
         {
             $pid = $matches[1];
-            exec("kill $pid");
+            exec("kill $pid");      // nosemgrep: exec-use
         }
     }
 }
