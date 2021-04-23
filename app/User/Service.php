@@ -1582,7 +1582,8 @@ class Service extends Base\Service
             'pl_description_required',
             'pp_description_required',
             'pure_platform_signup',
-            'rx_icici_ca_onboarding'
+            'rx_icici_ca_onboarding',
+            'show_csat_survey'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);

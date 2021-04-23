@@ -899,6 +899,11 @@ export default class User {
     return this.getExpStatus('dashboard_show_nps_survey');
   }
 
+  // CSAT Survey feature
+  showCSATSurvey() {
+    return this.getExpStatus('show_csat_survey');
+  }
+
   // Setter Methods
   set secondFactorAuthOfCurrentMerchant(secondFactorAuth) {
     this.merchants[this.current].second_factor_auth = secondFactorAuth;

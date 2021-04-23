@@ -12,11 +12,13 @@ import { luminateRow } from 'merchant/reducers/app';
 import DocsLink from 'merchant/components/DocsLink';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import CSATSurveyBanner from 'merchant/components/Announcements/CSATSurveyBanner';
 
 @connect(
   (state) => {
     return {
       webhooks: state.webhooks,
+      user: state.session.user,
       modeFormatted: state.session.modeFormatted,
     };
   },
@@ -76,25 +78,28 @@ export default class WebhooksContainer extends ListContainer {
     const { loadingAllWebhooks, webhooks, error } = webhooksState;
 
     return (
-      <div className="content-wrapper" style={{ minHeight: '350px' }}>
-        <HeaderAction>
-          <div class="btn-toolbar pull-right">
-            <DocsLink url="https://razorpay.com/docs/webhooks/" />
-            <button className="btn btn-primary" onClick={this.showNewWebhookModal}>
-              + Add New Webhook
-            </button>
-          </div>
-        </HeaderAction>
+      <>
+        <CSATSurveyBanner user={this.props.user} />
+        <div className="content-wrapper" style={{ minHeight: '350px' }}>
+          <HeaderAction>
+            <div class="btn-toolbar pull-right">
+              <DocsLink url="https://razorpay.com/docs/webhooks/" />
+              <button className="btn btn-primary" onClick={this.showNewWebhookModal}>
+                + Add New Webhook
+              </button>
+            </div>
+          </HeaderAction>
 
-        {error ? <Alert type="error" message={error} /> : null}
+          {error ? <Alert type="error" message={error} /> : null}
 
-        <WebhooksList
-          webhooks={webhooks}
-          isLoading={loadingAllWebhooks}
-          onNewWebhookClick={this.showNewWebhookModal}
-          modeFormatted={modeFormatted}
-        />
-      </div>
+          <WebhooksList
+            webhooks={webhooks}
+            isLoading={loadingAllWebhooks}
+            onNewWebhookClick={this.showNewWebhookModal}
+            modeFormatted={modeFormatted}
+          />
+        </div>
+      </>
     );
   }
 }

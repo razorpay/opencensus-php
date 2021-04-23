@@ -12,6 +12,7 @@ import RollKey from 'merchant/views/Settings/Keys/components/RollKey';
 import NewKey from 'merchant/views/Settings/Keys/components/NewKey';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import CSATSurveyBanner from 'merchant/components/Announcements/CSATSurveyBanner';
 
 @connect(
   (state) => {
@@ -105,22 +106,24 @@ export default class KeysListContainer extends ListContainer {
     const { isWebsiteInWorkflow, onWebsiteAdd } = this.props;
 
     return (
-      <div class="content-wrapper">
-        <Alert type={status.type} message={status.message} />
-
-        <KeysList
-          keys={keys}
-          isLoading={loading}
-          mode={mode}
-          generateKey={this.generateKey}
-          showRollKeyModal={this.showRollKeyModal}
-          merchantId={this.props.session.user.id}
-          hasKeyAccess={hasKeyAccess}
-          businessWebsite={businessWebsite}
-          isWebsiteInWorkflow={isWebsiteInWorkflow}
-          onWebsiteAdd={onWebsiteAdd}
-        />
-      </div>
+      <>
+        <CSATSurveyBanner user={this.props.session.user} />
+        <div class="content-wrapper">
+          <Alert type={status.type} message={status.message} />
+          <KeysList
+            keys={keys}
+            isLoading={loading}
+            mode={mode}
+            generateKey={this.generateKey}
+            showRollKeyModal={this.showRollKeyModal}
+            merchantId={this.props.session.user.id}
+            hasKeyAccess={hasKeyAccess}
+            businessWebsite={businessWebsite}
+            isWebsiteInWorkflow={isWebsiteInWorkflow}
+            onWebsiteAdd={onWebsiteAdd}
+          />
+        </div>
+      </>
     );
   }
 }
