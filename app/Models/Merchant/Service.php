@@ -285,7 +285,7 @@ class Service extends Base\Service
             'data' => $data
         ]);
 
-        $this->app->hubspot->trackSubmerchantSignUp($data, $output['email']);
+        $this->app->hubspot->trackSubmerchantSignUp($merchant->getEmail());
 
         if ($isLinkedAccount === true)
         {
@@ -4112,7 +4112,7 @@ class Service extends Base\Service
             $partner, null,
             $data);
 
-        $this->app->hubspot->trackSubmerchantSignUp($data, $submerchant->getEmail());
+        $this->app->hubspot->trackSubmerchantSignUp($partner->getEmail());
 
         return $accessMap;
     }

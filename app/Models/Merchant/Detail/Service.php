@@ -1046,7 +1046,7 @@ class Service extends Base\Service
                 $partner, null,
                 $data);
 
-            $this->app->hubspot->trackSubmerchantSignUp($data, $subMerchant->getEmail());
+            $this->app->hubspot->trackSubmerchantSignUp($partner->getEmail());
         }
 
         unset($input[Entity::REFERRAL_CODE]);

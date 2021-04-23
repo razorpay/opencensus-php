@@ -4451,7 +4451,7 @@ class Core extends Base\Core
             $partner, null,
             $data);
 
-        $this->app->hubspot->trackSubmerchantSignUp($data, $submerchant->getEmail());
+        $this->app->hubspot->trackSubmerchantSignUp($partner->getEmail());
 
         return $output;
     }
