@@ -153,6 +153,7 @@ class Validator extends Base\Validator
         ConfigKey::ACCOUNT_STATEMENT_RECORDS_TO_PROCESS_AT_ONCE => 'filled|integer',
         ConfigKey::REQUEST_LOG_STATE                      => 'filled|string',
         ConfigKey::SLAVE_ROUTES                           => 'filled|array',
+        ConfigKey::BANKING_ACCOUNT_STATEMENT_PROCESS_DELAY => 'filled|integer',
     ];
 
     protected static $setRedisKeysRules = [

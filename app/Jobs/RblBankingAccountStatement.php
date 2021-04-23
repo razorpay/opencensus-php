@@ -7,15 +7,19 @@ use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
+use RZP\Jobs\BankingAccountStatementProcessor;
 use RZP\Models\BankingAccountStatement as BAS;
 
 class RblBankingAccountStatement extends Job
 {
     //TODO: Move these constants to config
     const MAX_RETRY_ATTEMPT = 7;
+
+    const MAX_RETRY_COUNT_FOR_PROCESSING_ACCOUNT_STATEMENT = 2;
 
     const MAX_RETRY_DELAY = 120;
 
@@ -25,6 +29,8 @@ class RblBankingAccountStatement extends Job
     const DEFAULT_RATE_LIMIT = 10;
 
     const DEFAULT_FIXED_WINDOW_LENGTH = 5;
+
+    const DEFAULT_BANKING_ACCOUNT_STATEMENT_PROCESS_DELAY = 5;
 
     /**
      * @var string
@@ -125,6 +131,8 @@ class RblBankingAccountStatement extends Job
                                        'end_time'       => $workerEndTime
                                    ]);
 
+                $this->dispatchJobForStatementProcessing($this->params);
+
                 $this->delete();
             }
         }
@@ -139,6 +147,59 @@ class RblBankingAccountStatement extends Job
                 ]);
 
             $this->checkRetry();
+        }
+    }
+
+    protected function dispatchJobForStatementProcessing(array $params, $retryCount = 0)
+    {
+        $delay = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::BANKING_ACCOUNT_STATEMENT_PROCESS_DELAY]);
+
+        if (empty($delay) == true)
+        {
+            $delay = self::DEFAULT_BANKING_ACCOUNT_STATEMENT_PROCESS_DELAY;
+        }
+
+        try
+        {
+            $accountNumber = $this->params['account_number'];
+
+            $channel = $this->params['channel'];
+
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESS_DISPATCH_JOB_REQUEST,
+                [
+                    'channel'        => $channel,
+                    'account_number' => $accountNumber,
+                    'delay'          => $delay,
+                ]);
+
+            BankingAccountStatementProcessor::dispatch($this->mode,
+                [
+                    'channel'        => $channel,
+                    'account_number' => $accountNumber,
+                ])->delay($delay);
+
+        }
+        catch (\Throwable $e)
+        {
+            if ($retryCount < self::MAX_RETRY_COUNT_FOR_PROCESSING_ACCOUNT_STATEMENT)
+            {
+                $this->trace->info(
+                    TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESS_DISPATCH_JOB_RETRY,
+                    [
+                        'channel'        => $this->params['channel'],
+                        'account_number' => $this->params['account_number'],
+                        'delay'          => $delay,
+                        'retry_count'    => $retryCount+1,
+                    ]);
+
+                return $this->dispatchJobForStatementProcessing($params, $retryCount+1);
+            }
+
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::FAILED_TO_ENQUEUE_BANKING_ACCOUNT_STATEMENT_PROCESSING_JOB);
         }
     }
 

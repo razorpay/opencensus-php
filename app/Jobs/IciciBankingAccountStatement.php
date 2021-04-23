@@ -26,6 +26,10 @@ class IciciBankingAccountStatement extends Job
 
     const DEFAULT_FIXED_WINDOW_LENGTH = 5;
 
+    const MAX_RETRY_COUNT_FOR_PROCESSING_ACCOUNT_STATEMENT = 2;
+
+    const DEFAULT_BANKING_ACCOUNT_STATEMENT_PROCESS_DELAY = 60;
+
     /**
      * @var string
      */
@@ -124,6 +128,8 @@ class IciciBankingAccountStatement extends Job
                                        'end_time'       => $workerEndTime
                                    ]);
 
+                $this->dispatchJobForStatementProcessing($this->params);
+
                 $this->delete();
             }
         }
@@ -140,6 +146,60 @@ class IciciBankingAccountStatement extends Job
             $this->checkRetry();
         }
     }
+
+    protected function dispatchJobForStatementProcessing(array $params, $retryCount = 0)
+    {
+        $delay = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::BANKING_ACCOUNT_STATEMENT_PROCESS_DELAY]);
+
+        if (empty($delay) == true)
+        {
+            $delay = self::DEFAULT_BANKING_ACCOUNT_STATEMENT_PROCESS_DELAY;
+        }
+
+        try
+        {
+            $accountNumber = $this->params['account_number'];
+
+            $channel = $this->params['channel'];
+
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESS_DISPATCH_JOB_REQUEST,
+                [
+                    'channel'        => $channel,
+                    'account_number' => $accountNumber,
+                    'delay'          => $delay,
+                ]);
+
+            BankingAccountStatementProcessor::dispatch($this->mode,
+                [
+                    'channel'        => $channel,
+                    'account_number' => $accountNumber,
+                ])->delay($delay);
+
+        }
+        catch (\Throwable $e)
+        {
+            if ($retryCount < self::MAX_RETRY_COUNT_FOR_PROCESSING_ACCOUNT_STATEMENT)
+            {
+                $this->trace->info(
+                    TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESS_DISPATCH_JOB_RETRY,
+                    [
+                        'channel'        => $this->params['channel'],
+                        'account_number' => $this->params['account_number'],
+                        'delay'          => $delay,
+                        'retry_count'    => $retryCount+1,
+                    ]);
+
+                return $this->dispatchJobForStatementProcessing($params, $retryCount+1);
+            }
+
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FAILED_TO_ENQUEUE_BANKING_ACCOUNT_STATEMENT_PROCESSING_JOB);
+        }
+    }
+
 
     protected function checkRetry()
     {

@@ -94,6 +94,8 @@ class ConfigKey
 
     const RBL_BANKING_ACCOUNT_STATEMENT_CRON_ATTEMPT_DELAY = self::PREFIX . 'rbl_banking_account_statement_cron_attempt_delay';
 
+    const BANKING_ACCOUNT_STATEMENT_PROCESS_DELAY = self::PREFIX . 'banking_account_statement_process_delay';
+
     CONST RX_BAS_FORCED_FETCH_TIME_IN_HOURS               = self::PREFIX . 'rx_bas_forced_fetch_time_in_hours';
 
     // while creating payouts we fetch balance from gateway at a frequency decided in SLA.

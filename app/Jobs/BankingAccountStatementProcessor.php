@@ -7,18 +7,18 @@ use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\SlackNotification;
+use RZP\Models\BankingAccountStatement as BAS;
 
 class BankingAccountStatementProcessor extends Job
 {
     //TODO: Move these constants to config
-    const MAX_RETRY_ATTEMPT = 7;
+    const MAX_RETRY_ATTEMPT = 3;
 
     const MAX_RETRY_DELAY = 120;
 
     /**
      * @var string
      */
-    //TODO: set queueConfigKey using channel name in a constructor
     protected $queueConfigKey = 'banking_account_statement_processor';
 
     /**
@@ -59,22 +59,19 @@ class BankingAccountStatementProcessor extends Job
                     'account_number'    => $this->params['account_number']
                 ]);
 
-            //$workerStartTime = Carbon::now()->getTimestamp();
-            //
-            // $result = processor
-            //
-            //$workerEndTime = Carbon::now()->getTimestamp();
-            //
-            //$this->trace->info(TraceCode::BAS_FETCH_PROCESSED_BY_QUEUE,
-            //    [
-            //        //'result'        => $result,
-            //        'start_time'    => $workerStartTime,
-            //        'end_time'      => $workerEndTime
-            //    ]);
-            //
-            //$this->trace->info(
-            //    TraceCode::BAS_FETCH_PROCESSED_BY_QUEUE,
-            //    //$result);
+            $workerStartTime = Carbon::now()->getTimestamp();
+
+            (new BAS\Core)->processStatementForAccountV2($this->params);
+
+            $workerEndTime = Carbon::now()->getTimestamp();
+
+            $this->trace->info(TraceCode::BAS_FETCH_PROCESSED_BY_QUEUE,
+                [
+                    'account_number'     => $this->params['account_number'],
+                    'channel'            => $this->params['channel'],
+                    'start_time'         => $workerStartTime,
+                    'end_time'           => $workerEndTime,
+                ]);
 
             $this->delete();
         }
