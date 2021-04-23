@@ -493,17 +493,36 @@
                                         </div>
                                         <div style="margin-top: 30px; text-align: center;">
                                             <div style="width: 132px; height: 125px; margin: auto; text-align: center; box-shadow: 0px 6px 10px rgb(0, 0, 0, 0.2); border-radius: 3px; background-image: url('https://cdn.razorpay.com/static/assets/email/reward_frame.png'); background-color: #F0F0F0;">
-                                                <div style="margin-bottom: 11px; padding-top: 6px;">
-                                                    {{$reward['brand_name']}}
-                                                </div>
-                                                <div style="margin-top: 6px; padding-left: 30px; padding-right: 30px; width: 72px; height: 72px;">
-                                                    <img src="{{$reward['logo']}}" style="max-width: 70px; max-height: 70px;" />
-                                                </div>
+                                                @if (isset($reward["merchant_website_redirect_link"]))
+                                                    <a href="{{$reward["merchant_website_redirect_link"]}}" style="text-decoration: none">
+                                                        <div style="height: 125px;">
+                                                            <div style="margin-bottom: 11px; padding-top: 6px;">
+                                                                {{$reward['brand_name']}}
+                                                            </div>
+                                                            <div style="margin-top: 6px; padding-left: 30px; padding-right: 30px; width: 72px; height: 72px;">
+                                                                <img src="{{$reward['logo']}}" style="max-width: 70px; max-height: 70px;" />
+                                                            </div>
+                                                        </div>
+                                                    </a>
+                                                @else
+                                                    <div style="margin-bottom: 11px; padding-top: 6px;">
+                                                        {{$reward['brand_name']}}
+                                                    </div>
+                                                    <div style="margin-top: 6px; padding-left: 30px; padding-right: 30px; width: 72px; height: 72px;">
+                                                        <img src="{{$reward['logo']}}" style="max-width: 70px; max-height: 70px;" />
+                                                    </div>
+                                                @endif
                                             </div>
-                                            <div>
-                                                <div style="font-weight: 900; font-size: 25px; color: #2F58E4; line-height: 138%; margin-top: 25px;">
-                                                    {{$reward["coupon_code"]}}
-                                                </div>
+                                            <div style="margin-top: 25px;">
+                                                @if (isset($reward["merchant_website_redirect_link"]))
+                                                    <a href="{{$reward["merchant_website_redirect_link"]}}" style="font-weight: 900; font-size: 25px; color: #2F58E4; line-height: 138%; text-decoration: none;">
+                                                        {{$reward["coupon_code"]}}
+                                                    </a>
+                                                @else
+                                                    <div style="font-weight: 900; font-size: 25px; color: #2F58E4; line-height: 138%;">
+                                                        {{$reward["coupon_code"]}}
+                                                    </div>
+                                                @endif
                                                 <div style="color: #363636; margin: 8px 70px; font-weight: 900; font-size: 14px; line-height: 138%;">
                                                     {{$reward["name"]}}
                                                 </div>
