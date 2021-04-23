@@ -2905,13 +2905,14 @@ class Service extends Base\Service
         $payment = $this->repo->payment->find($paymentId);
         $transaction = $payment->transaction;
 
-        if (($payment->getStatus() !== Payment\Status::CAPTURED) or
+        if (($payment->hasBeenCaptured() === false) or
             (empty($transaction) === true))
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED,
                 [
-                    'payment_id' => $paymentId
+                    'payment_id' => $paymentId,
+                    'status'    => $payment->getStatus()
                 ]
             );
         }
