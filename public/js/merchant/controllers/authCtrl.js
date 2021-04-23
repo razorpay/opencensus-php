@@ -136,11 +136,15 @@ app
         email = '';
       }
 
-      var isProd = window.location.hostname.endsWith('razorpay.com');
-      var isAxisBankUATEnv = window.location.hostname.includes('dashboard-axis.stage.razorpay.in');
-      var isLoginWithGoogle = false;
-      var ONE_TAP_SELECTOR = 'one-tap-wrapper';
-      var ONE_TAP_WRAPPER = 'one-tap-overflow';
+      const isProd = window.location.hostname.endsWith('razorpay.com');
+      const isAxisBankUATEnv = window.location.hostname.includes(
+        'dashboard-axis.stage.razorpay.in',
+      );
+      let isLoginWithGoogle = false;
+      const ONE_TAP_SELECTOR = 'one-tap-wrapper';
+      const ONE_TAP_WRAPPER = 'one-tap-overflow';
+      const currentPage =
+        window.location.hostname.toLowerCase() + (window.location.pathname || '').toLowerCase();
 
       $scope.signup = {
         currentStep: 0, // 0, 1, 2
@@ -468,6 +472,82 @@ app
           isLandingPageUser = true;
         }
         return isLandingPageUser;
+      }
+
+      function getFirstPageInSession(currentPage) {
+        // Store the first page url when the user lands on razorpay.com
+        // This should not change when the user navigates to other pages
+        let firstPageURLInSession;
+        try {
+          firstPageURLInSession = sessionStorage.getItem('first_page');
+          if (!firstPageURLInSession) {
+            sessionStorage.setItem('first_page', currentPage);
+            firstPageURLInSession = currentPage;
+          }
+        } catch (e) {
+          firstPageURLInSession = currentPage;
+        }
+
+        return firstPageURLInSession;
+      }
+
+      function uuid() {
+        return 'xxxx-xxxx-xxxx-xxxx'.replace(/[x]/g, function (item) {
+          const random = Math.floor(Math.random() * 16);
+          return random.toString(16);
+        });
+      }
+
+      /**
+       * A function to return session related properties
+       * commonSessionId : a common session id between website & merchant dashboard
+       * isLandingPageSession : tells if the current page is the first page in the session
+       * Here session refers to a session between website & merchant dashboard
+       * @returns {{commonSessionId: string, isLandingPageSession: boolean}}
+       */
+      function getSessionInfo() {
+        let commonSessionId = '';
+        let isLandingPageSession = false;
+        try {
+          commonSessionId = sessionStorage.getItem('commonSessionId');
+          const commonSessionIdCookie = getCookie(commonSessionId);
+          // session starts from website
+          // means document.referrer is https://razorpay.com
+          // or www.razorpay.com
+          const isWebsiteSession = document.referrer.match(
+            '^(https?:\\/\\/|(www\\.))?razorpay.com',
+          );
+
+          /*
+           Check if there is no common session present,
+           if yes, then populate the same
+           if no, check if the session started from website
+           if yes, use website's session id from the cookie
+           and make isLandingPageSession as false because the
+           session started from website and landing page was website
+           if no, create a new session id and populate the same in the cookie,
+           so that website can consume it and make isLandingPageSession as
+           true bcz the session started on website
+            */
+          if (!commonSessionId) {
+            if (isWebsiteSession) {
+              commonSessionId = commonSessionIdCookie;
+              isLandingPageSession = false;
+            } else {
+              sessionStorage.setItem('commonSessionId', uuid());
+              commonSessionId = sessionStorage.getItem('commonSessionId');
+              setCookie('commonSessionId', commonSessionId);
+              isLandingPageSession = getFirstPageInSession(currentPage) === currentPage;
+            }
+          }
+        } catch (e) {
+          // Silently ignore
+        }
+
+        return {
+          commonSessionId,
+          isLandingPageSession,
+        };
       }
 
       function fireInitGauthType(type, onetapHideReason) {
@@ -1804,6 +1884,8 @@ app
               version: $scope.authVersion,
               referring_url: utmData.website,
               is_landing_page_user: getIsLandingPageUser(),
+              is_landing_page_session: getSessionInfo().isLandingPageSession,
+              common_session_id: getSessionInfo().commonSessionId,
             });
           }
 
@@ -2532,6 +2614,8 @@ app
                   website: utmData.website,
                   referring_url: utmData.website,
                   is_landing_page_user: getIsLandingPageUser(),
+                  is_landing_page_session: getSessionInfo().isLandingPageSession,
+                  common_session_id: getSessionInfo().commonSessionId,
                 }),
             );
           $scope.isSignupDisplayEventFired = true;
