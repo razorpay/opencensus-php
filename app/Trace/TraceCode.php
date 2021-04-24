@@ -4297,6 +4297,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const APPS_RISK_CHECK_QUEUE_COMPLETED                       = 'APPS_RISK_CHECK_QUEUE_COMPLETED';
     const APPS_RISK_CHECK_SQS_PUSH_INIT                         = 'APPS_RISK_CHECK_SQS_PUSH_INIT';
     const APPS_RISK_CHECK_SQS_PUSH_FAILED                       = 'APPS_RISK_CHECK_SQS_PUSH_FAILED';
+    const EXTERNAL_REPO_REQUEST_FAILURE                         = 'EXTERNAL_REPO_REQUEST_FAILURE';
     const PERFORM_ACTION_OBSERVER_DATA                          = 'PERFORM_ACTION_OBSERVER_DATA';
     const GET_OBSERVER_DATA                                     = 'GET_OBSERVER_DATA';
     const UPDATE_OBSERVER_DATA                                  = 'UPDATE_OBSERVER_DATA';

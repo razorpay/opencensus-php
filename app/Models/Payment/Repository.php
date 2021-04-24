@@ -36,11 +36,14 @@ use RZP\Models\Pricing\Calculator;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
 use RZP\Constants\Entity as EntityName;
+use RZP\Models\Base\Traits\ExternalRepo;
 use RZP\Models\Gateway\Downtime\DowntimeDetection;
 use RZP\Models\Merchant\Invoice\Type as InvoiceType;
 
 class Repository extends Base\Repository
 {
+    use ExternalRepo;
+
     protected $entity = 'payment';
 
     protected $cardQueryKeys = [

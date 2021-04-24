@@ -5,7 +5,9 @@ namespace RZP\Services;
 use Requests;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Models\Payment;
 use RZP\Models\Order\Metric;
+use RZP\Models\Payment\Entity;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 
@@ -211,6 +213,31 @@ class PGRouter
     public function syncBulkOrderToPgRouter(array $input, bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::PGRouterBulkOrderSyncUrl, Requests::POST, $input, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param string $id
+     * @param array $input
+     *
+     * @return array
+     */
+    public function fetch(string $id, string $merchantId, array $input)
+    {
+        $endpoint = 'v1/payments/'.$id;
+
+        if (empty($merchantId) === false)
+        {
+            $endpoint .= '?merchant_id='.$merchantId;
+        }
+
+        $payment = $this->sendRequest($endpoint, Requests::GET, [], false);
+
+        if (empty($payment) === false and isset($payment['body']['data']['payment']))
+        {
+            return (new Payment\Entity)->forceFill($payment['body']['data']['payment']);
+        }
+
+        return null;
     }
 
     /**

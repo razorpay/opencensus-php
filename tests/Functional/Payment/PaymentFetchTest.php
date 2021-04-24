@@ -1,8 +1,11 @@
 <?php
 
 namespace RZP\Tests\Functional\Payment;
+
+use Mockery;
 use Illuminate\Database\Eloquent\Factory;
 
+use RZP\Error\ErrorCode;
 use RZP\Models\Currency\Currency;
 use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
 use RZP\Tests\Functional\TestCase;
@@ -608,6 +611,77 @@ class PaymentFetchTest extends TestCase
         }
     }
 
+    public function testPaymentFetchFromPG()
+    {
+        $this->enablePgRouterConfig();
+        $pgService = \Mockery::mock('RZP\Services\PGRouter')->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('pg_router', $pgService);
+
+        $pgService->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'))
+            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure)
+            {
+                return [
+                    'body' => [
+                        "data" => [
+                            "payment" => [
+                                'id' => 'GfnBMH2PXyCDVE',
+                                'amount' => 50000,
+                                'currency' => 'INR',
+                                'status' =>'captured',
+                                'order_id' => NULL,
+                                'invoice_id' => NULL,
+                                'international' => FALSE,
+                                'method' => 'card',
+                                'amount_refunded' => 0,
+                                'refund_status' => NULL,
+                                'captured' => TRUE,
+                                'description' => 'random description',
+                                'card_id' => 'GfnBMH2PXyCDVZ',
+                                'bank' => NULL,
+                                'wallet' => NULL,
+                                'vpa' => NULL,
+                                'email' => 'a@b.com',
+                                'contact' => '+919918899029',
+                                'notes' => [
+                                    'merchant_order_id' => 'random order id',
+                                ],
+                                'fee' => 1000,
+                                'tax' =>  0,
+                                'error_code' => NULL,
+                                'error_description' => NULL,
+                                'error_source' => NULL,
+                                'error_step' => NULL,
+                                'error_reason' => NULL,
+                                'reference_2' => '599962',
+                                'created_at' => 1614252933,
+                                'authorized_at' => 1614252933,
+                                'merchant_id' => '10000000000000'
+                            ]
+                        ]
+                    ],
+                ];
+            });
+
+        $paymentFetchResponse = $this->fetchPayment('pay_GfnBMH2PXyCDVE');
+
+        $this->assertEquals('pay_GfnBMH2PXyCDVE', $paymentFetchResponse['id']);
+
+        $this->assertEquals('599962', $paymentFetchResponse['acquirer_data']['auth_code']);
+    }
+
+    public function testPaymentFetchExternalCallDisabled()
+    {
+        $this->disablePgRouterConfig();
+
+        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_INVALID_ID);
+
+        $this->expectExceptionMessage('The id provided does not exist');
+
+        $this->fetchPayment('TestPaymentID');
+
+    }
 
     public function testPaymentFetchNonINRCurrency()
     {
@@ -711,5 +785,227 @@ class PaymentFetchTest extends TestCase
         $this->assertArrayHasKey('fee_bearer', $response);
 
         $this->assertEquals('platform', $response['fee_bearer']);
+    }
+
+    public function testFetchPaymentFromPgRouterWithPrivateAuth()
+    {
+        $this->enablePgRouterConfig();
+        $pgService = \Mockery::mock('RZP\Services\PGRouter')->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('pg_router', $pgService);
+
+        $pgService->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'))
+            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure)
+            {
+                return [
+                    'body' => [
+                        'data'=>[
+                            'payment'=>[
+                                'id'=>'GrClIcbRtTUxxb',
+                                'contact'=>'9891337297',
+                                'email'=>'qa1610364215uduuazxbwyuxqrjl@example.com',
+                                'merchant_id'=>'10000000000000',
+                                'status'=>'authorized',
+                                'gateway'=>'cybersource',
+                                'description'=>'',
+                                'gateway_captured'=>false,
+                                'captured_at'=>0,
+                                'recurring'=>false,
+                                'international'=>false,
+                                'terminal_id'=>'',
+                                'recurring_type'=>'',
+                                'authorized_at'=>0,
+                                'authentication_gateway'=>'cybersource',
+                                'verify_at'=>0,
+                                'amount'=>100,
+                                'otp_count'=>null,
+                                'currency'=>'INR',
+                                'method'=>'card',
+                                'auth_type'=>'3ds',
+                                'order_id'=>'GrClAVU8GPQU4M',
+                                'card_id'=>'GrClJNBzyquD7E',
+                                'base_amount'=>null,
+                                'authorized_amount'=>1,
+                                'settled_by'=>'',
+                                'updated_at'=>1616745601,
+                                'created_at'=>1616744756,
+                                'captured'=>false,
+                                'receiver_type'=>'',
+                                'convert_currency'=>false,
+                                'preferred_auth'=>null,
+                                'acquirer_data'=>[
+                                    'auth_code'=>'83100'
+                                ],
+                                'internal_error_code'=>'',
+                                'error_description'=>'',
+                                'notes'=> [],
+                                'two_factor_auth'=>'passed',
+                                'invoice_id'=> null,
+                                'transfer_id'=>'',
+                                'payment_link_id'=>'',
+                                'amount_refunded'=>null,
+                                'base_amount_refunded'=>null,
+                                'amount_paidout'=>null,
+                                'amount_transferred'=>null,
+                                'refund_status'=>null,
+                                'bank'=>null,
+                                'wallet'=>null,
+                                'vpa'=>null,
+                                'on_hold'=>null,
+                                'on_hold_until'=>null,
+                                'emi_plan_id'=>'',
+                                'error_code'=>'',
+                                'cancellation_reason'=>'',
+                                'global_customer_id'=>'',
+                                'receiver_id'=>'',
+                                'app_token'=>'',
+                                'emi_subvention'=>'',
+                                'acknowledged_at'=>null,
+                                'refund_at'=>null,
+                                'reference13'=>null,
+                                'reference16'=>null,
+                                'reference17'=>null,
+                                'global_token_id'=>'',
+                                'transaction_id'=>'',
+                                'auto_captured'=>false,
+                                'reference1'=>null,
+                                'reference2'=>null,
+                                'cps_route'=>null,
+                                'batch_id'=>'',
+                                'signed'=>false,
+                                'verified'=>1,
+                                'verify_bucket'=>null,
+                                'callback_url'=>'',
+                                'fee'=>0,
+                                'mdr'=>0,
+                                'tax'=>0,
+                                'otp_attempts'=>null,
+                                'save'=>false,
+                                'late_authorized'=>false,
+                                'disputed'=>false,
+                                'entity'=>'payments',
+                                'fee_bearer'=>'platform',
+                                'error_source'=>'',
+                                'error_step'=>'',
+                                'error_reason'=>'',
+                                'gateway_amount'=>0,
+                                'gateway_currency'=>'',
+                                'forex_rate'=>0,
+                                'dcc_offered'=>0,
+                                'dcc_mark_up_percent'=>0,
+                                'action_type'=>'',
+                                'reference_id'=>'',
+                                'dcc'=>false,
+                                'dcc_markup_amount'=>0,
+                                'mcc'=>false,
+                                'forex_rate_received'=>0,
+                                'forex_rate_applied'=>0,
+                                'admin'=>true,
+                                'mode'=>'test'
+                            ]
+                        ]
+                    ]
+                ];
+            });
+
+        $this->ba->privateAuth();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payments/pay_AqQFBCdRFFwmB4';
+
+        $response = $this->startTest();
+
+        $this->assertEquals($response['id'], 'pay_GrClIcbRtTUxxb');
+    }
+
+    public function testFetchPaymentFromPgRouterWithPrivateAuthFailure()
+    {
+        $this->enablePgRouterConfig();
+        $pgService = \Mockery::mock('RZP\Services\PGRouter')->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('pg_router', $pgService);
+
+        $pgService->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'))
+            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure)
+            {
+                return [
+                    'body' => []
+                ];
+            });
+
+        $this->ba->privateAuth();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payments/pay_AqQFBCdRFFwmB4';
+
+        $this->startTest();
+    }
+
+    public function testFetchPaymentFromPgRouterWithAdminAuth() {
+        $this->enablePgRouterConfig();
+        $pgService = \Mockery::mock('RZP\Services\PGRouter')->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('pg_router', $pgService);
+
+        $pgService->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'))
+            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure)
+            {
+                return [
+                    'body' => [
+                        'data' => [
+                            'payment' => [
+                                'id' => 'AqQFBCdRFFwmB4',
+                                'amount' => 50000,
+                                'currency' => 'INR',
+                                'status' =>'captured',
+                                'order_id' => NULL,
+                                'invoice_id' => NULL,
+                                'international' => FALSE,
+                                'method' => 'card',
+                                'amount_refunded' => 0,
+                                'refund_status' => NULL,
+                                'captured' => TRUE,
+                                'description' => 'random description',
+                                'card_id' => 'GfnBMH2PXyCDVZ',
+                                'bank' => NULL,
+                                'wallet' => NULL,
+                                'vpa' => NULL,
+                                'email' => 'a@b.com',
+                                'contact' => '+919918899029',
+                                'notes' => [
+                                    'merchant_order_id' => 'random order id',
+                                ],
+                                'fee' => 1000,
+                                'tax' =>  0,
+                                'error_code' => NULL,
+                                'error_description' => NULL,
+                                'error_source' => NULL,
+                                'error_step' => NULL,
+                                'error_reason' => NULL,
+                                'reference_2' => '599962',
+                                'created_at' => 1614252933,
+                                'captured_at' => 1614252933,
+                                'authorized_at' => 1614252933,
+                                'merchant_id' => '10000000000000'
+                            ]
+                        ]
+                    ]
+                ];
+            });
+
+        $this->ba->adminAuth();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] .= '/pay_AqQFBCdRFFwmB4';
+
+        $response = $this->startTest();
+
+        $this->assertEquals($response['id'], 'pay_AqQFBCdRFFwmB4');
     }
 }

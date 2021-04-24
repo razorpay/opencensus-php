@@ -47,6 +47,7 @@ class ConfigKey
     const FTS_ROUTE_PERCENTAGE                  = self::PREFIX . 'fts_request_percentage';
     const FTS_PAYOUT_BANK_ACCOUNT               = self::PREFIX . 'fts_payout_bank_account';
     const CPS_SERVICE_ENABLED                   = self::PREFIX . 'cps_service_enabled';
+    const PG_ROUTER_SERVICE_ENABLED             = self::PREFIX . 'pg_router_service_enabled';
     const SETTLEMENT_TRANSACTION_LIMIT          = self::PREFIX . 'settlement_transaction_limit';
     const ENABLE_PAYMENT_DOWNTIMES              = self::PREFIX . 'enable_payment_downtimes';
     const DOWNTIME_THROTTLE                     = self::PREFIX . 'downtime:throttle';
@@ -247,6 +248,7 @@ class ConfigKey
         self::FTS_PAYOUT_BANK_ACCOUNT,
         self::CARD_PAYMENT_SERVICE_ENABLED,
         self::NB_PLUS_SERVICE_ENABLED,
+        self::PG_ROUTER_SERVICE_ENABLED,
         self::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT,
         self::LOW_BALANCE_RX_EMAIL,
         self::BANKING_ACCOUNT_STATEMENT_FETCH_V2,

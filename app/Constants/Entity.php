@@ -967,6 +967,14 @@ class Entity
         self::MERCHANT_E_INVOICE                => \RZP\Models\Merchant\Invoice\EInvoice::class,
     ];
 
+    protected static $externalRepoSingleton = [
+        self::PAYMENT => 'pg_router',
+    ];
+
+    protected static $externalRepoConfigKey = [
+        self::PAYMENT => Models\Admin\ConfigKey::PG_ROUTER_SERVICE_ENABLED,
+    ];
+
     protected static $externalServiceClass = [
         self::REPORTING_LOGS                => \RZP\Services\Reporting::class,
         self::REPORTING_CONFIGS             => \RZP\Services\Reporting::class,
@@ -1223,6 +1231,23 @@ class Entity
         $class = self::$externalServiceClass[$entity];
 
         return new $class;
+    }
+
+    public static function validateExternalRepoEntity(string $entity)
+    {
+        return (isset(self::$externalRepoSingleton[$entity]) === true);
+    }
+
+    public static function getExternalConfigKeyName(string $entity)
+    {
+        return self::$externalRepoConfigKey[$entity];
+    }
+
+    public static function getExternalRepoSingleton(string $entity)
+    {
+        $singletonName = self::$externalRepoSingleton[$entity];
+
+        return App::getFacadeRoot()[$singletonName];
     }
 
     public static function getExternalEntityName(string $entity)

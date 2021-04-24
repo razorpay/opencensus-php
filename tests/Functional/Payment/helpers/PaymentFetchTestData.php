@@ -622,6 +622,48 @@ return [
         ],
     ],
 
+    'testFetchPaymentFromPgRouterWithPrivateAuth' => [
+        'request' => [
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity'            => 'payment',
+            ],
+        ],
+    ],
+
+    'testFetchPaymentFromPgRouterWithPrivateAuthFailure' => [
+        'request' => [
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The id provided does not exist',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ],
+    ],
+
+    'testFetchPaymentFromPgRouterWithAdminAuth' => [
+        'request' => [
+            'url' => '/admin/payment',
+            'method' => 'get'
+        ],
+        'response' => [
+            'content' => [
+                'entity'            => 'payment',
+            ],
+        ],
+    ],
+
     'testProxyAuthPaymentWithCustomBranding' => [
         'request' => [
             'url'     => '/payments/',
