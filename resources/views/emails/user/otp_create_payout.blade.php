@@ -2,6 +2,7 @@
 <html lang="en-US">
 <head>
     <meta charset="utf-8">
+    <title>Razorpay OTP Email</title>
 </head>
 <body>
 

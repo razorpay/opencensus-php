@@ -122,7 +122,11 @@ class Mailable extends BaseMailable
 
             if ($this->isValidRecipient() === false)
             {
-                $trace->info(TraceCode::SEND_EMAIL_FAILED_INVALID_RECIPIENT, ['email' => $toEmail, 'email_hash' => $toEmailHash]);
+                $trace->info(TraceCode::SEND_EMAIL_FAILED_INVALID_RECIPIENT, [
+                    'email'      => $toEmail,
+                    'email_hash' => $toEmailHash,
+                    'mailable'   => get_class($this)
+                    ]);
                 return;
             }
 
@@ -134,7 +138,10 @@ class Mailable extends BaseMailable
 
             $app['diag']->trackEmailEvent(EventCode::EMAIL_ATTEMPTED, $eventProperties);
 
-            $trace->info(TraceCode::SEND_EMAIL_ATTEMPT, ['email' => $toEmailHash]);
+            $trace->info(TraceCode::SEND_EMAIL_ATTEMPT, [
+                'email'    => $toEmailHash,
+                'mailable' => get_class($this)
+                ]);
 
             // if email is to be sent via stork
             if ($this->shouldSendEmailViaStork() === true)
@@ -198,6 +205,7 @@ class Mailable extends BaseMailable
                 [
                     'email' => $toEmailHash,
                     'message_id' => $msgID,
+                    'mailable' => get_class($this)
                 ]
             );
         }
