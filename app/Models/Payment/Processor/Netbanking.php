@@ -385,7 +385,6 @@ class Netbanking
                 IFSC::HDFC,
                 IFSC::ICIC,
                 IFSC::UTIB,
-                self::PUNB_R,
                 self::LAVB_R,
                 self::BKID_C,
             ]
