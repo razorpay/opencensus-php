@@ -596,6 +596,7 @@ class Service extends Base\Service
             $traceData = [
                 'id'          => $user->id,
                 'merchant_id' => $merchantId,
+                'session_mid' => Session::get('current_merchant_id'),
             ];
 
             $this->trace->info(TraceCode::SWITCH_MERCHANT, $traceData);
@@ -1235,6 +1236,13 @@ class Service extends Base\Service
             list($error, $data) = $request->send("users/$userId", "GET");
         }
 
+        $this->trace->info(TraceCode::GET_USER_FROM_API, [
+            'action'                => 'GetUser',
+            'admin_user_flow'       => empty($adminUser) === false,
+            'error'                 => $error,
+            'user_id'               => $userId,
+        ]);
+
         $genericUser = null;
 
         if (empty($error) === true)
@@ -1262,6 +1270,13 @@ class Service extends Base\Service
 
                 Session::put('dashboard_user_payload', $genericUser);
             }
+
+            $this->trace->info(TraceCode::GET_USER_FROM_API, [
+                'action'                => 'GetCurrentMerchant',
+                'current_merchant_id'   => $currentMerchantId,
+                'error'                 => $error,
+                'user_id'               => $userId,
+            ]);
         }
 
         return [$error, $genericUser];

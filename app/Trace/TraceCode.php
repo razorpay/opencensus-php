@@ -70,6 +70,8 @@ class TraceCode
     const ADMIN_RAW_API_CALL                        = 'ADMIN_RAW_API_CALL';
     const BLOCKED_DUE_TO_SBB_622                    = 'BLOCKED_DUE_TO_SBB_622';
 
+    const GET_USER_FROM_API                         = 'GET_USER_FROM_API';
+
     protected static $messages = array(
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',
         self::MISC_TRACE_CODE                       => 'Miscellaneous trace code',
