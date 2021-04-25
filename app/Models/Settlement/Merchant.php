@@ -25,6 +25,8 @@ use RZP\Models\Settlement\Details\Component as SetlComponent;
 
 class Merchant
 {
+    use SettlementTrait;
+
     protected $merchant;
     protected $amount;
     protected $apiFee;
@@ -232,105 +234,6 @@ class Merchant
         $this->createSettlementDetailsEntities();
 
         $this->repo->saveOrFailCollection($this->setlDetails);
-    }
-
-    public function calculateSettlementDetailAmounts($txns): array
-    {
-        $entityTypes = SetlComponent::getAllComponents();
-
-        $details = [];
-
-        foreach ($entityTypes as $componentType)
-        {
-            $details[$componentType]['amount'] = 0;
-
-            $details[$componentType]['count'] = 0;
-
-            $details[$componentType][SetlComponent::TAX] = 0;
-            $details[$componentType][SetlComponent::FEE] = 0;
-        }
-
-        foreach ($txns as $txn)
-        {
-            $componentType = $txn->getType();
-
-            if($componentType !== Transaction\Type::PAYMENT and $componentType !== Transaction\Type::REFUND)
-            {
-                $details[$componentType]['count'] += 1;
-            }
-
-            switch ($componentType)
-            {
-                case Transaction\Type::PAYMENT:
-                    $payment = $txn->source;
-                    $paymentType = $payment->isInternational() === true ?
-                        Details\Component::PAYMENT_INTERNATIONAL : Details\Component::PAYMENT_DOMESTIC;
-
-                    $details[$paymentType]['count'] += 1;
-                    $details[$paymentType]['amount'] += $txn->getAmount();
-
-                    $componentType = $paymentType;
-
-                    break;
-
-                case Transaction\Type::REVERSAL:
-                case Transaction\Type::SETTLEMENT_TRANSFER:
-                    $details[$componentType]['amount'] += $txn->getAmount();
-                    break;
-
-                case Transaction\Type::REFUND:
-                    $payment = $txn->source->payment;
-                    $refundType = $payment->isInternational() === true ?
-                        Details\Component::REFUND_INTERNATIONAL : Details\Component::REFUND_DOMESTIC;
-
-                    $details[$refundType]['count'] += 1;
-                    $details[$refundType]['amount'] -= $txn->getAmount();
-
-                    $componentType = $refundType;
-
-                    break;
-
-                case Transaction\Type::PAYOUT:
-                case Transaction\Type::TRANSFER:
-                case Transaction\Type::DISPUTE:
-                case Transaction\Type::FUND_ACCOUNT_VALIDATION:
-                case Transaction\Type::SETTLEMENT_ONDEMAND:
-                case Transaction\Type::CREDIT_REPAYMENT:
-                    $details[$componentType]['amount'] -= $txn->getAmount();
-                    break;
-
-                case Transaction\Type::ADJUSTMENT:
-                case Transaction\Type::COMMISSION:
-                    $details[$componentType]['amount'] += $txn->getCredit();
-                    $details[$componentType]['amount'] -= $txn->getDebit();
-                    break;
-
-                default:
-                    throw new Exception\LogicException('Invalid Settlement-component-type:' . $componentType);
-            }
-
-            if(isset($details[$componentType][SetlComponent::FEE]) == false)
-            {
-                $details[$componentType][SetlComponent::FEE] = 0;
-            }
-
-            if(isset($details[$componentType][SetlComponent::TAX]) == false)
-            {
-                $details[$componentType][SetlComponent::TAX] = 0;
-            }
-
-            $details[$componentType][SetlComponent::TAX] += $txn->getTax();
-
-            $details[$componentType][SetlComponent::FEE] += ($txn->getFee() - $txn->getTax());
-
-            // Add credits if txn is of type fee credits.
-            $details[SetlComponent::FEE_CREDITS]['amount'] += ($txn->isFeeCredits() ? $txn->getCredits() : 0);
-
-            // Add credits if txn is of type refund credits.
-            $details[SetlComponent::REFUND_CREDITS]['amount'] += ($txn->isRefundCredits() ? $txn->getCredits() : 0);
-        }
-
-        return $details;
     }
 
     protected function createSettlementDetailsEntities()

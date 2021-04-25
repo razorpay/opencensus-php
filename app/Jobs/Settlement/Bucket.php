@@ -81,6 +81,17 @@ class Bucket extends Job
             }
             else if (in_array($txn->getType(), $this->allowedTypeForBucketing) === true)
             {
+                if ($txn->isTypePayment() === true)
+                {
+                    $payment = $txn->source;
+
+                    // Only transactions settlable by razorpay are considered
+                    if ($payment->getSettledBy() !== 'Razorpay')
+                    {
+                        return;
+                    }
+                }
+
                 $core->addMerchantToSettlementBucket($txn->getId(), $txn->getMerchantId(), $txn->getSettledAt());
             }
         }
