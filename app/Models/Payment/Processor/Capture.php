@@ -676,6 +676,15 @@ trait Capture
     {
         $data['mode'] = $this->mode;
 
+        $customProperties = [
+            'payment'  => [
+                'status'            => $this->payment->getStatus(),
+                'gateway_captured'  => $this->payment->getGatewayCaptured(),
+            ],
+        ];
+
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CAPTURE_QUEUE, $this->payment, null, [], $customProperties);
+
         $this->trace->info(
             TraceCode::PAYMENT_CAPTURE_ADD_TO_QUEUE,
             ['payment_id' => $this->payment->getId()]);

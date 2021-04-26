@@ -3,6 +3,7 @@
 namespace RZP\Jobs;
 
 use App;
+use RZP\Diag\EventCode;
 use Slack;
 use RZP\Exception;
 use RZP\Models\Card;
@@ -48,9 +49,11 @@ class Capture extends Job
             $this->data
         );
 
+        $payment = $this->fetchPayment();
+
         try
         {
-            $this->runCaptureFlowForQueue();
+            $this->runCaptureFlowForQueue($payment);
 
             $this->traceData['state'] = 'success';
 
@@ -61,31 +64,41 @@ class Capture extends Job
                 $this->data
             );
 
+            app('diag')->trackPaymentEventV2(EventCode::PAYMENT_CAPTURE_QUEUE, $payment, null, [], $this->fetchProperties($payment));
+
             $this->delete();
         }
         catch (Exception\GatewayTimeoutException $ex)
         {
+            app('diag')->trackPaymentEventV2(EventCode::PAYMENT_CAPTURE_QUEUE, $payment, $ex, [], $this->fetchProperties($payment));
+
             $traceCode = TraceCode::PAYMENT_QUEUE_CAPTURE_FAILURE;
 
             $this->handleCaptureException($traceCode, $ex);
         }
         catch (\Exception $ex)
         {
+            app('diag')->trackPaymentEventV2(EventCode::PAYMENT_CAPTURE_QUEUE, $payment, $ex, [], $this->fetchProperties($payment));
+
             $traceCode = TraceCode::PAYMENT_CAPTURE_FAILURE_EXCEPTION;
 
             $this->handleCaptureException($traceCode, $ex);
         }
     }
 
-    protected function runCaptureFlowForQueue()
+    protected function runCaptureFlowForQueue($payment)
     {
         $basicAuth = App::getFacadeRoot()['basicauth'];
 
         $basicAuth->setMode($this->mode);
 
-        $payment = $this->repoManager->payment->findOrFail($this->data['payment']['id']);
-
         $this->addTraceData($payment);
+
+        // return if payment is already gateway captured
+        if($payment->isGatewayCaptured() === true)
+        {
+            return;
+        }
 
         $merchant = $payment->merchant;
 
@@ -187,5 +200,27 @@ class Capture extends Job
     public function getData()
     {
         return $this->data;
+    }
+
+    protected function fetchProperties($payment)
+    {
+        return [
+            'attempts' => $this->attempts(),
+            'payment'  => [
+                'status'            => $payment->getStatus(),
+                'gateway_captured'  => $payment->getGatewayCaptured(),
+            ],
+        ];
+    }
+
+    protected function fetchPayment()
+    {
+        $basicAuth = App::getFacadeRoot()['basicauth'];
+
+        $basicAuth->setMode($this->mode);
+
+        $payment = $this->repoManager->payment->findOrFail($this->data['payment']['id']);
+
+        return $payment;
     }
 }

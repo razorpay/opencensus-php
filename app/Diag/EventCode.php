@@ -226,6 +226,11 @@ class EventCode
         'name'  => 'payment.capture.processed'
     ];
 
+    const PAYMENT_CAPTURE_QUEUE                     = [
+        'group' => 'capture',
+        'name'  => 'payment.capture.queue'
+    ];
+
     const PAYMENT_CREATE_REQUEST_PROCESSED              = [
         'group' => 'payment_create_response',
         'name'  => 'payment.create.request.processed'
