@@ -9,6 +9,8 @@ class Channel
 {
     const RBL = Settlement\Channel::RBL;
 
+    const ICICI = Settlement\Channel::ICICI;
+
     protected static $channels = [
         self::RBL,
     ];

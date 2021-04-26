@@ -16,6 +16,10 @@ class SupportedFormats
         Channel::RBL => [
             self::PDF,
             self::XLSX,
+        ],
+        Channel::ICICI => [
+            self::PDF,
+            self::XLSX,
         ]
     ];
 

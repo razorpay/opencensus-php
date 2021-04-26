@@ -17,6 +17,7 @@ use RZP\Models\Currency\Currency;
 use RZP\Exception\BadRequestException;
 use Razorpay\Spine\DataTypes\Dictionary;
 use RZP\Models\Merchant\Credits\Constants;
+use RZP\Models\BankingAccountStatement\Details;
 
 /**
  * Class Entity
@@ -307,6 +308,11 @@ class Entity extends Base\PublicEntity
     public function bankingAccount()
     {
         return $this->hasOne(BankingAccount\Entity::class);
+    }
+
+    public function bankingAccountStatementDetails()
+    {
+        return $this->hasOne(Details\Entity::class);
     }
 
     public static function buildFromMerchant($merchant)

@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Constants\Table;
+use RZP\Models\Merchant\Balance;
 use RZP\Constants\Entity as EntityConstants;
 
 class Entity extends Base\PublicEntity
@@ -159,4 +160,9 @@ class Entity extends Base\PublicEntity
     }
 
     // ============================= END SETTERS ===========================
+
+    public function balance()
+    {
+        return $this->belongsTo(Balance\Entity::class);
+    }
 }

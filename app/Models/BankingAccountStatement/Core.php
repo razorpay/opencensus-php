@@ -510,19 +510,18 @@ class Core extends Base\Core
 
         $statementGenerator = $this->getGenerator($accountNumber, $channel, $format, $fromDate, $toDate);
 
-        $bankingAccount = $this->repo
-                               ->banking_account
-                               ->findByAccountNumberAndChannel($accountNumber, $channel);
+        $balance = $this->repo->balance->getBalanceByAccountNumberOrFail($accountNumber);
 
         $temporaryFilePath = $statementGenerator->getStatement();
 
         $this->trace->info(TraceCode::CA_STATEMENT_GENERATED,
                            [
-                               'banking_account_id'  => $bankingAccount->getId(),
+                               'balance_id'          => $balance->getId(),
+                               'account_number'      => $balance->getAccountNumber(),
                                'temporary_file_path' => $temporaryFilePath
                            ]);
 
-        $ufhResponse = $this->uploadTemporaryFileToStore($temporaryFilePath, $bankingAccount);
+        $ufhResponse = $this->uploadTemporaryFileToStore($temporaryFilePath, $balance);
 
         $fileId = $ufhResponse[self::FILE_ID] ?? null;
 
@@ -570,7 +569,7 @@ class Core extends Base\Core
         return sprintf(self::DASHBOARD_FILE_URL, $this->config['applications.dashboard.url'], $fileId);
     }
 
-    protected function uploadTemporaryFileToStore(string $pathToTemporaryFile, BankingAccount\Entity $entity)
+    protected function uploadTemporaryFileToStore(string $pathToTemporaryFile, Merchant\Balance\Entity $entity)
     {
         $ufhService = $this->app['ufh.service'];
 
@@ -583,8 +582,8 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::UFH_RESPONSE,
             [
-                'banking_account_id' => $entity->getId(),
-                'response'           => $response,
+                'balance_id' => $entity->getId(),
+                'response'   => $response,
             ]);
 
         return $response;

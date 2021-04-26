@@ -567,14 +567,14 @@ return [
                 'format' => 'xlsx',
                 'to_date' => '',
                 'from_date' => '946684800',
-                'channel' => 'icici'
+                'channel' => 'hdfc'
             ]
         ],
         'response' => [
             'content' => [
                 'error' => [
                     'code'        => ErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Not a valid channel: icici',
+                    'description' => 'Not a valid channel: hdfc',
                 ],
             ],
             'status_code' => 400,
