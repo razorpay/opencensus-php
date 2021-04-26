@@ -6,6 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
+use RZP\Models\Customer;
 use RZP\Models\QrCode\Entity as QrCode;
 use RZP\Models\VirtualAccount\Entity as VirtualAccount;
 
@@ -32,9 +33,11 @@ class CreateQrCodeTable extends Migration
 
             $table->char(QrCode::PROVIDER, 50);
 
-            $table->char(QrCode::ENTITY_ID, QrCode::ID_LENGTH);
+            $table->string(QrCode::ENTITY_ID, QrCode::ID_LENGTH)
+                  ->nullable();
 
-            $table->string(QrCode::ENTITY_TYPE, 50);
+            $table->string(QrCode::ENTITY_TYPE, 50)
+                  ->nullable();
 
             $table->integer(QrCode::AMOUNT)
                   ->unsigned()
@@ -52,6 +55,39 @@ class CreateQrCodeTable extends Migration
             $table->integer(QrCode::CREATED_AT);
 
             $table->integer(QrCode::UPDATED_AT);
+
+            $table->string(QrCode::NAME)
+                  ->nullable();
+
+            $table->string(QrCode::USAGE_TYPE, 20)
+                  ->nullable();
+
+            $table->string(QrCode::STATUS, 20)
+                  ->nullable();
+
+            $table->text(QrCode::DESCRIPTION)
+                  ->nullable();
+
+            $table->bigInteger(QrCode::TOTAL_AMOUNT_RECEIVED)
+                  ->default(0);
+
+            $table->integer(QrCode::PAYMENT_RECEIVED_COUNT)
+                  ->default(0);
+
+            $table->json(QrCode::NOTES)
+                  ->nullable();
+
+            $table->string(QrCode::CUSTOMER_ID, Customer\Entity::ID_LENGTH)
+                  ->nullable();
+
+            $table->string(QrCode::CLOSE_REASON, 20)
+                  ->nullable();
+
+            $table->integer(QrCode::CLOSE_BY)
+                  ->nullable();
+
+            $table->integer(QrCode::CLOSED_AT)
+                  ->nullable();
 
             $table->index(QrCode::REFERENCE);
 

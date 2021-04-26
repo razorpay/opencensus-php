@@ -14,8 +14,8 @@ use RZP\Models\VirtualAccount\Provider;
 
 class Entity extends Base\PublicEntity
 {
-    const ID                        = 'id';
-    const MERCHANT_ID               = 'merchant_id';
+    const ID          = 'id';
+    const MERCHANT_ID = 'merchant_id';
     //
     // Reference will always be equal to id in case
     // qr code is generated before payment happens.
@@ -29,14 +29,26 @@ class Entity extends Base\PublicEntity
     // notification on same reference we will generate qr code
     // again with same reference.
     //
-    const REFERENCE                 = 'reference';
-    const PROVIDER                  = 'provider';
-    const ENTITY_ID                 = 'entity_id';
-    const ENTITY_TYPE               = 'entity_type';
-    const AMOUNT                    = 'amount';
-    const QR_STRING                 = 'qr_string';
-    const SHORT_URL                 = 'short_url';
-    const MPANS_TOKENIZED           = 'mpans_tokenized';
+    const REFERENCE       = 'reference';
+    const PROVIDER        = 'provider';
+    const ENTITY_ID       = 'entity_id';
+    const ENTITY_TYPE     = 'entity_type';
+    const AMOUNT          = 'amount';
+    const QR_STRING       = 'qr_string';
+    const SHORT_URL       = 'short_url';
+    const MPANS_TOKENIZED = 'mpans_tokenized';
+
+    const NAME                   = 'name';
+    const USAGE_TYPE             = 'usage_type';
+    const STATUS                 = 'status';
+    const DESCRIPTION            = 'description';
+    const TOTAL_AMOUNT_RECEIVED  = 'total_amount_received';
+    const PAYMENT_RECEIVED_COUNT = 'payment_received_count';
+    const NOTES                  = 'notes';
+    const CUSTOMER_ID            = 'customer_id';
+    const CLOSE_BY               = 'close_by';
+    const CLOSED_AT              = 'closed_at';
+    const CLOSE_REASON           = 'close_reason';
 
     protected static $sign = 'qr';
 
@@ -50,6 +62,18 @@ class Entity extends Base\PublicEntity
         self::REFERENCE,
         self::QR_STRING,
         self::MPANS_TOKENIZED,
+        self::NAME,
+        self::USAGE_TYPE,
+        self::AMOUNT,
+        self::STATUS,
+        self::DESCRIPTION,
+        self::TOTAL_AMOUNT_RECEIVED,
+        self::PAYMENT_RECEIVED_COUNT,
+        self::NOTES,
+        self::CUSTOMER_ID,
+        self::CLOSE_BY,
+        self::CLOSED_AT,
+        self::CLOSE_REASON
     ];
 
     protected $visible = [
@@ -60,6 +84,18 @@ class Entity extends Base\PublicEntity
         self::SHORT_URL,
         self::QR_STRING,
         self::CREATED_AT,
+        self::NAME,
+        self::USAGE_TYPE,
+        self::AMOUNT,
+        self::STATUS,
+        self::DESCRIPTION,
+        self::TOTAL_AMOUNT_RECEIVED,
+        self::PAYMENT_RECEIVED_COUNT,
+        self::NOTES,
+        self::CUSTOMER_ID,
+        self::CLOSE_BY,
+        self::CLOSED_AT,
+        self::CLOSE_REASON
     ];
 
     protected $public = [
@@ -68,6 +104,21 @@ class Entity extends Base\PublicEntity
         self::REFERENCE,
         self::SHORT_URL,
         self::CREATED_AT,
+    ];
+
+    protected $nonVaAttributes = [
+        self::NAME,
+        self::USAGE_TYPE,
+        self::AMOUNT,
+        self::STATUS,
+        self::DESCRIPTION,
+        self::TOTAL_AMOUNT_RECEIVED,
+        self::PAYMENT_RECEIVED_COUNT,
+        self::NOTES,
+        self::CUSTOMER_ID,
+        self::CLOSE_BY,
+        self::CLOSED_AT,
+        self::CLOSE_REASON
     ];
 
     protected $casts = [
@@ -134,6 +185,13 @@ class Entity extends Base\PublicEntity
         return $this->entity;
     }
 
+    public function toArrayPublicAllAttributes()
+    {
+        $this->public = array_merge($this->public, $this->nonVaAttributes);
+
+        return parent::toArrayPublic();
+    }
+
     /**
      * Gets the most recent qrcode file
      *
@@ -170,6 +228,7 @@ class Entity extends Base\PublicEntity
         {
             return $qrStringFromDb;
         }
+
         return $this->getQrStringWithDetokenizedMpans($qrStringFromDb);
     }
 
@@ -198,7 +257,7 @@ class Entity extends Base\PublicEntity
      */
     public function getQrCodeFilename(): string
     {
-        return 'qrcodes/'. $this->getId();
+        return 'qrcodes/' . $this->getId();
     }
 
     public function isGeneratedByMerchant()
@@ -240,8 +299,8 @@ class Entity extends Base\PublicEntity
 
         $mode = $app['rzp.mode'];
 
-        $variant  =  $app['razorx']->getTreatment($app['request']->getTaskId(),
-            RazorxTreatment::TOKENIZE_QR_STRING_MPANS, $mode, 2);
+        $variant = $app['razorx']->getTreatment($app['request']->getTaskId(),
+                                                RazorxTreatment::TOKENIZE_QR_STRING_MPANS, $mode, 2);
 
         if (strtolower($variant) !== 'on')
         {
@@ -259,7 +318,7 @@ class Entity extends Base\PublicEntity
 
         $this->setAttribute(self::QR_STRING, $tokenizedMpansQrString);
 
-        if(strlen($qrString) !== strlen($tokenizedMpansQrString))
+        if (strlen($qrString) !== strlen($tokenizedMpansQrString))
         {
             $app['trace']->info(TraceCode::SETTING_QR_CODE_MPANS_TOKENIZED_TO_TRUE, []);
 
@@ -295,7 +354,7 @@ class Entity extends Base\PublicEntity
 
         $tagValueMap = self::getTagValueMapFromQrString($qrString);
 
-        foreach($tagValueMap as $tag => $value)
+        foreach ($tagValueMap as $tag => $value)
         {
             if (in_array($tag, [Tags::VISA, TAGS::MASTERCARD, TAGS::RUPAY]) === true)
             {
@@ -328,7 +387,7 @@ class Entity extends Base\PublicEntity
 
         $tagValueMap = self::getTagValueMapFromQrString($qrString);
 
-        foreach($tagValueMap as $tag => $value)
+        foreach ($tagValueMap as $tag => $value)
         {
             if (in_array($tag, [Tags::VISA, TAGS::MASTERCARD, TAGS::RUPAY]) === true)
             {
@@ -390,7 +449,7 @@ class Entity extends Base\PublicEntity
     {
         $qrString = '';
 
-        foreach($tagValueMap as $tag => $value)
+        foreach ($tagValueMap as $tag => $value)
         {
             $tagString = $tag . self::getLengthAndValue($value);
 
