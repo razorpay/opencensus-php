@@ -70,6 +70,7 @@ class Limit
         Type::NACH_MIGRATION                        => 500100,
         Type::LINKED_ACCOUNT_CREATE                 => 50000,
         Type::PAYOUT_LINK_BULK                      => 50000,
+        Type::SETTLEMENT_ONDEMAND_FEATURE_CONFIG    => 50000,
     ];
 
     /**
