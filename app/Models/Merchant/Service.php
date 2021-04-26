@@ -5666,26 +5666,42 @@ class Service extends Base\Service
 
     public function getRewardsForCheckout()
     {
+        $variant = $this->app->razorx->getTreatment(
+            $this->merchant->getId(),
+            Merchant\RazorxTreatment::M2M_REWARDS_AB_TESTING,
+            $this->mode
+        );
+
         $rewards = $this->repo->merchant_reward->fetchLiveRewardByMerchantId($this->merchant->getId());
 
-        $response = [];
-
-        if(empty($rewards) === false)
+        if(empty($rewards) === true)
         {
+            $response[] = ['variant' => false];
+
+            return $response;
+        }
+
+        $response[] = ['variant' => true];
+
+        if($variant === 'on' || $variant === 'off')
+        {
+            if($variant === 'off')
+            {
+                $response[0]['variant'] = false;
+            }
+
             $rewardKey = array_rand($rewards);
 
             if(isset($rewardKey) === true)
             {
                 $reward = $rewards[$rewardKey];
 
-                $response [] = [
-                    'reward_id' => "reward_".$reward['id'],
-                    'logo'      => $reward['logo'],
-                    'name'      => $reward['name'],
-                    'brand_name' => $reward['brand_name'],
+                $response[0]['reward_id'] = "reward_".$reward['id'];
+                $response[0]['logo'] = $reward['logo'];
+                $response[0]['name'] = $reward['name'];
+                $response[0]['brand_name'] = $reward['brand_name'];
+            }
 
-                ];
-            };
         }
 
         return $response;

@@ -240,4 +240,6 @@ final class RazorxTreatment
     const SETTLEMENT_TXN_FETCH_TO_SLAVE = 'settlement_transaction_fetch_to_slave';
 
     const PERFORM_ACTION_ON_WORKFLOW_OBSERVER_DATA = 'perform_action_on_workflow_observer_data';
+
+    const M2M_REWARDS_AB_TESTING = 'M2m_rewards_ab_testing';
 }
