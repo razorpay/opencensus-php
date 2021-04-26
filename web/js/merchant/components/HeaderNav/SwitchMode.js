@@ -49,27 +49,15 @@ const SwitchMode = ({ mode, modeFormatted, onSwitchMode, isTestModeBlocked }) =>
       </DropdownTrigger>
       <DropdownContent>
         <ul class="dropdown-menu switch-modes-menu nav nav-stacked">
-          <li>
+          <li data-test="Test Mode">
             <a
               onClick={() => onSwitchMode('test')}
               class={classList(mode === 'test' && 'selected')}
             >
               <i class="i i-info-circle ModeIndicator--test" /> Test Mode
-              <Popover
-                align="bottom"
-                theme="dark"
-                followPointer={true}
-                className="test-mode-popover"
-              >
-                <PopoverBody>
-                  <div>All the transactions done in Test mode are sample</div>
-                  <div>transactions and there will not be any real money</div>
-                  <div>debited/credited in your account.</div>
-                </PopoverBody>
-              </Popover>
             </a>
           </li>
-          <li>
+          <li data-test="Live Mode">
             <a
               onClick={() => onSwitchMode('live')}
               class={classList(mode === 'live' && 'selected')}

@@ -1,5 +1,5 @@
 const MY_ACCOUNT = require('./tests/MyAccount/selectors');
-const SETTINGS = require('./tests/Settings/selectos');
+const SETTINGS = require('./tests/Settings/selectors');
 
 module.exports = {
   LOGIN: {

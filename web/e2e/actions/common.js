@@ -6,7 +6,7 @@ async function changeMerchant(pageCtx, merchantName) {
 
 async function changeMode(pageCtx, mode) {
   await pageCtx.click('.switch-modes-toggle');
-  await pageCtx.click(`.switch-modes-toggle >> ModeIndicator--${mode}`);
+  await pageCtx.click(`data-test=${mode} Mode`);
 }
 
 async function goToPage(pageCtx, page) {

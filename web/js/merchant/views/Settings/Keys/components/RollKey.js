@@ -81,7 +81,7 @@ export default class RollKey extends Component {
           <div class="modal-body">
             <Alert type="error" message={this.state.errors} />
 
-            <div class="radio rollkey">
+            <div class="radio rollkey" data-test="deactivate-immediately">
               <Field
                 component={RadioButton}
                 name="delay_roll"

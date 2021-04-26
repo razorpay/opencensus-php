@@ -11,8 +11,8 @@ import { useTwoFactorVerificationContext } from 'common/ui/TwoFactorVerification
 import EditWebsiteDetailsModal from 'merchant/views/Account/Profile/components/EditWebsiteDetailsModal';
 
 const KeysListItem = (props) => {
-  let mode = props.mode;
-  let { id, created_at, expired_at } = props.apiKey;
+  const mode = props.mode;
+  const { id, created_at, expired_at } = props.apiKey;
 
   const context = useTwoFactorVerificationContext();
 
@@ -41,11 +41,9 @@ const KeysListItem = (props) => {
     <tr>
       <td>{id}</td>
       <td>
-        <Time value={created_at} format={'MMM Do, YYYY hh:mm:ss A'} />
+        <Time value={created_at} format="MMM Do, YYYY hh:mm:ss A" />
       </td>
-      <td>
-        {expired_at ? <Time value={expired_at} format={'MMM Do, YYYY hh:mm:ss A'} /> : 'Never'}
-      </td>
+      <td>{expired_at ? <Time value={expired_at} format="MMM Do, YYYY hh:mm:ss A" /> : 'Never'}</td>
       <td>
         {expired_at ? (
           'None'
@@ -53,7 +51,7 @@ const KeysListItem = (props) => {
           <div class="row-action">
             <button class="btn btn-xs btn-primary" onClick={onRegenerateKeys}>
               <i class="i i-refresh" />
-              <span>Regenerate {mode} Key</span>
+              <span data-test="regenerate-api-key">Regenerate {mode} Key</span>
             </button>
           </div>
         )}
@@ -63,7 +61,7 @@ const KeysListItem = (props) => {
 };
 
 export default connect(null, { openModal, closeModal })((props) => {
-  let {
+  const {
     mode,
     keys,
     isLoading,
@@ -76,8 +74,8 @@ export default connect(null, { openModal, closeModal })((props) => {
     onWebsiteAdd,
   } = props;
 
-  let params = {
-    merchantId: merchantId,
+  const params = {
+    merchantId,
   };
 
   return (
@@ -85,7 +83,7 @@ export default connect(null, { openModal, closeModal })((props) => {
       <div class="table-responsive">
         <table class="table table-hover">
           <thead>
-            <tr>
+            <tr data-test="key-id-header-row">
               <th>Key Id</th>
               <th>Created At</th>
               <th>Expiry</th>
@@ -114,6 +112,7 @@ export default connect(null, { openModal, closeModal })((props) => {
                         onClick={() => {
                           generateKey(params);
                         }}
+                        data-test="generate-api-key"
                       >
                         Generate {mode} Key
                       </button>
