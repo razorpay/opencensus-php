@@ -62,12 +62,17 @@ jobs:
         credentials:
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
           password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
-        image: c.rzp.io/razorpay/onggi:redis
+        image: c.rzp.io/proxy_dockerhub/library/redis
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
       mysql:
         credentials:
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
           password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
-        image: c.rzp.io/razorpay/onggi:mysql-5.7
+        image: c.rzp.io/proxy_dockerhub/library/mysql:5.7
         env:
           MYSQL_DATABASE: api
           MYSQL_ROOT_PASSWORD: root
@@ -75,7 +80,7 @@ jobs:
         credentials:
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
           password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
-        image: c.rzp.io/razorpay/onggi:elasticsearch-5.2-alpine
+        image: c.rzp.io/proxy_dockerhub/library/elasticsearch:5.6-alpine
         env:
           ES_JAVA_OPTS: -Xms512m -Xmx512m
   workflow_status:
