@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b82d0358b2a8606f0e69fff068a6d287",
+    "content-hash": "fada678ce85470d2acdf8c6a0a7f7ded",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -4920,7 +4920,7 @@
             "time": "2020-01-07T07:47:15+00:00"
         },
         {
-            "name": "mikey179/vfsStream",
+            "name": "mikey179/vfsstream",
             "version": "v1.3.0",
             "source": {
                 "type": "git",
@@ -6766,12 +6766,6 @@
                 "predis",
                 "redis"
             ],
-            "funding": [
-                {
-                    "url": "https://github.com/sponsors/tillkruss",
-                    "type": "github"
-                }
-            ],
             "time": "2020-09-11T19:18:05+00:00"
         },
         {
@@ -7787,16 +7781,16 @@
         },
         {
             "name": "razorpay/oauth",
-            "version": "1.0.2",
+            "version": "1.1.0",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/oauth.git",
-                "reference": "aba34af875d1112d760ec24f501382a9f1b77aec"
+                "reference": "1b116ee8065d3981417d534a22faa8fb6201bb16"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/oauth/zipball/aba34af875d1112d760ec24f501382a9f1b77aec",
-                "reference": "aba34af875d1112d760ec24f501382a9f1b77aec",
+                "url": "https://api.github.com/repos/razorpay/oauth/zipball/1b116ee8065d3981417d534a22faa8fb6201bb16",
+                "reference": "1b116ee8065d3981417d534a22faa8fb6201bb16",
                 "shasum": ""
             },
             "require": {
@@ -7833,10 +7827,10 @@
                 "service"
             ],
             "support": {
-                "source": "https://github.com/razorpay/oauth/tree/1.0.2",
+                "source": "https://github.com/razorpay/oauth/tree/1.1.0",
                 "issues": "https://github.com/razorpay/oauth/issues"
             },
-            "time": "2021-04-01T13:01:11+00:00"
+            "time": "2021-04-13T15:31:06+00:00"
         },
         {
             "name": "razorpay/razorpay",
