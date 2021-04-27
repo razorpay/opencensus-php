@@ -55,6 +55,7 @@ _dcs.account = '9421167';
           case 'success':
             window.rzpQ.push(
               window.rzpQ.now().onbr().success(eventName, {
+                mode: 'live',
                 src: scriptSrc,
               }),
             );
@@ -62,6 +63,7 @@ _dcs.account = '9421167';
           case 'failed':
             window.rzpQ.push(
               window.rzpQ.now().onbr().failed(eventName, {
+                mode: 'live',
                 src: scriptSrc,
               }),
             );
