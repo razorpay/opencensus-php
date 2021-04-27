@@ -305,7 +305,10 @@ class LeafListItem extends React.Component {
     };
 
     let getListClass = (status, path) => {
-      if ([ACTION_REQUIRED, REJECTED].includes(status)) {
+      if (
+        [ACTION_REQUIRED, REJECTED].includes(status) ||
+        (path === 'pg.cards.domestic.amex' && status === REQUESTABLE)
+      ) {
         return 'action-required-list-item';
       } else if ((status === ACTIVATED && path === 'pg.wallet.paytm') || status === REQUESTED) {
         return 'list-item-has-description';
@@ -340,6 +343,8 @@ class LeafListItem extends React.Component {
         return <p style={displayTextStyle}>{name}</p>;
       }
     };
+    const isAmex =
+      instrument.status === REQUESTABLE && instrument.path === 'pg.cards.domestic.amex';
     return (
       <li class={getListClass(instrument.status, instrument.path)}>
         <div>
@@ -437,17 +442,18 @@ class LeafListItem extends React.Component {
                 </button>
               </div>
             )}
-            {[REQUESTABLE, CANCELLED].includes(instrument.status) && (
-              <div className="flex-end">
-                <button
-                  class="btn btn-primary ml-5"
-                  disabled={this.state.loading}
-                  onClick={this.handleCreateRequest}
-                >
-                  {this.state.loading ? 'Requesting..' : 'Request'}
-                </button>
-              </div>
-            )}
+            {[REQUESTABLE, CANCELLED].includes(instrument.status) ||
+              (isAmex && (
+                <div className="flex-end">
+                  <button
+                    class="btn btn-primary ml-5"
+                    disabled={this.state.loading || instrument.path === 'pg.cards.domestic.amex'}
+                    onClick={this.handleCreateRequest}
+                  >
+                    {this.state.loading ? 'Requesting..' : 'Request'}
+                  </button>
+                </div>
+              ))}
             {![REQUESTABLE, CANCELLED, ACCOUNT_LINKABLE].includes(instrument.status) &&
               instrument.path !== 'pg.wallet.paytm' && (
                 <div className="flex-end">
@@ -511,14 +517,19 @@ class LeafListItem extends React.Component {
               )}
           </div>
         )}
-        {[ACTION_REQUIRED, REJECTED].includes(instrument.status) && (
-          <>
-            <div class="comment" title={instrument.comment}>
-              <i class="i i-info-outline" />
-              <p>{instrument.comment || 'No comments available'}</p>
-            </div>
+        {[ACTION_REQUIRED, REJECTED].includes(instrument.status) ||
+          (isAmex && (
+            <>
+              <div class="comment" title={instrument.comment}>
+                <i class="i i-info-outline" />
+                <p>
+                  {isAmex
+                    ? 'Due to recent data localisation guidelines issued by RBI, we are unable to offer this instrument currently.'
+                    : instrument.comment || 'No comments available'}
+                </p>
+              </div>
 
-            {/* <p style={{ margin: '5px 20px' }}>
+              {/* <p style={{ margin: '5px 20px' }}>
               Please complete your{' '}
               <span>
                 {' '}
@@ -528,8 +539,8 @@ class LeafListItem extends React.Component {
               </span>{' '}
               to re-submit your request.
             </p> */}
-          </>
-        )}
+            </>
+          ))}
       </li>
     );
   }
