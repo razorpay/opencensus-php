@@ -9,7 +9,7 @@ use RZP\Models\Payment\Status as PaymentStatus;
 use RZP\Reconciliator\Base\SubReconciliator\Helper;
 use RZP\Gateway\Netbanking\Sbi\ReconFields\PaymentReconFields;
 
-class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
+class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceRecon
 {
     const BLACKLISTED_COLUMNS = [];
 
@@ -33,11 +33,6 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         $status = $row[PaymentReconFields::STATUS] ?? Status::SUCCESS;
 
         return $this->getApiPaymentStatus($status);
-    }
-
-    protected function getMerchantId(array $row)
-    {
-        return $row[PaymentReconFields::MERCHANT_ID] ?? null;
     }
 
     protected function validatePaymentAmountEqualsReconAmount(array $row)

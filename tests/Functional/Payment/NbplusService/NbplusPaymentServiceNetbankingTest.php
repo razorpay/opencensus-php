@@ -69,10 +69,7 @@ class NbPlusPaymentServiceNetbankingTest extends TestCase
                           {
                               return 'enablewebhooks';
                           }
-                          if($feature === "nb_netbanking_federal_nbplus_merchant_whitelisting"){
-                              return 'nbplusps';
-                          }
-                            return 'nbplusps';
+                          return 'nbplusps';
                       })
                   );
 

@@ -2,15 +2,17 @@
 
 namespace RZP\Models\Gateway\File\Processor\Claim;
 
+use Carbon\Carbon;
+
+use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
+use RZP\Services\NbPlus\Netbanking;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
-use Carbon\Carbon;
-
-class Sbin extends Base
+class Sbin extends NetbankingBase
 {
     use FileHandler;
 
@@ -84,7 +86,7 @@ class Sbin extends Base
 
             $formattedData[] = [
                 $row['payment']['id'],
-                $row['gateway']['bank_payment_id'],
+                $this->fetchBankPaymentId($row),
                 number_format($row['payment']['amount'] / 100, 2, '.', ''),
                 'SUCCESS',
                 $date,
@@ -102,5 +104,15 @@ class Sbin extends Base
         $time = Carbon::now(Timezone::IST)->format('dmY');
 
         return static::FILE_NAME . '_' . $time;
+    }
+
+    protected function fetchBankPaymentId($data)
+    {
+        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        {
+            return $data['gateway'][Netbanking::BANK_TRANSACTION_ID]; // payment through nbplus service
+        }
+
+        return $data['gateway']['bank_payment_id']; // payment through api - mozart
     }
 }

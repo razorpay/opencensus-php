@@ -3279,6 +3279,7 @@ class Gateway
             self::NETBANKING_KOTAK,
             self::NETBANKING_AUSF,
             self::NETBANKING_DLB,
+            self::NETBANKING_SBI,
         ];
 
         return (in_array($gateway, $gateways, true));
