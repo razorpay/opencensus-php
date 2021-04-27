@@ -870,6 +870,11 @@ class Authorization
         return $this->admin;
     }
 
+    public function setType(string $type)
+    {
+        $this->type = $type;
+    }
+
     public function getOrgId()
     {
         return $this->orgId;

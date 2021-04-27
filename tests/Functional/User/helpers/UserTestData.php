@@ -2255,4 +2255,36 @@ return [
             ],
         ],
     ],
+
+    'testGetUserForAdminFromMerchantDashboardApp' => [
+        'request'  => [
+            'url'     => '/users-admin/',
+            'method'  => 'GET',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id' => '',
+            ],
+        ],
+    ],
+
+    'testGetUserForAdminInProxyAuthShouldFail' => [
+        'request'  => [
+            'url'     => '/users-admin/',
+            'method'  => 'GET',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'The requested URL was not found on the server.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
 ];

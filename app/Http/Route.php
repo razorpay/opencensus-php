@@ -6730,6 +6730,7 @@ class Route
             'user_verify_email',
             'user_verify_second_factor_auth',
             'user_verify_through_email',
+            'user_fetch_admin',
             'validate_checkout_offers',
             'vendor_payment_bulk_cancel',
             'vendor_payment_bulk_invoice_download',

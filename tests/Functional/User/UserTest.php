@@ -2868,4 +2868,39 @@ class UserTest extends TestCase
 
         $this->startTest();
     }
+
+    // for nonrzp orgs, on "logging-in as merchant" from admin dashboard -> 'merchant_dashboard' app calls
+    // user_admin_fetch in admin-auth. Test asserts that the requests succeeds
+    public function testGetUserForAdminFromMerchantDashboardApp()
+    {
+        $userId = $this->fixtures->create('user')->getId();
+
+        $appAuthCaller = 'appAuth' . studly_case('test');
+
+        $this->ba->$appAuthCaller(\Config::get('applications.merchant_dashboard')['secret']);
+
+        $this->ba->setType('admin');
+
+        $this->ba->addAdminAuthHeaders();
+
+        $this->testData[__FUNCTION__]['request']['url'] .= $userId;
+
+        $this->testData[__FUNCTION__]['response']['content']['id'] .= $userId;
+
+        $this->startTest();
+    }
+
+    // see test scenario for 'testGetUserForAdminFromMerchantDashboardApp'
+    // because we have added 'user_fetch_admin' in 'merchant_dashboard' app, asserting in this test case that
+    // merchant trying to hit this route in proxy auth should fail
+    public function testGetUserForAdminInProxyAuthShouldFail()
+    {
+        $this->ba->proxyAuth();
+
+        $userId = $this->fixtures->create('user')->getId();
+
+        $this->testData[__FUNCTION__]['request']['url'] .= $userId;
+
+        $this->startTest();
+    }
 }
