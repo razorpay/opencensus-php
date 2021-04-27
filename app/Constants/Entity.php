@@ -522,7 +522,7 @@ class Entity
             QueryCacheConstants::TTL     => 15,
         ],
         self::AUTH_TOKEN  => [
-            QueryCacheConstants::VERSION => 'v1',
+            QueryCacheConstants::VERSION => 'v2',
             QueryCacheConstants::TTL     => 5,
         ],
         self::METHODS  => [

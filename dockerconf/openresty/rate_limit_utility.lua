@@ -71,7 +71,7 @@ function M.get_details_by_oauth_token(redis, token, ngx)
         sha_1:update(string.match(res, "\"(.*)\""))
         local tagKeyHash = str.to_hex(sha_1:final())
         -- ngx.log(ngx.DEBUG, "tag key hash :  ", tagKeyHash)
-        local res, err = redis:get("laravel:".. tagKeyHash .. ":rememberable:v1:auth_token:auth_token_" .. tokenHash)
+        local res, err = redis:get("laravel:".. tagKeyHash .. ":rememberable:v2:auth_token:auth_token_" .. tokenHash)
         if err then
             return nil, "redis error, failed to fetch token"
         end
