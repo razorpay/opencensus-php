@@ -5178,10 +5178,10 @@ class Route
         'banking_account_webhook_account'
         . '_info_internal'                        => Permission::BANKING_UPDATE_ACCOUNT,
 
-        'fetch_throttle_settings'                  => Permission::EDIT_THROTTLE_SETTINGS,
+        'fetch_throttle_settings'                  => Permission::VIEW_THROTTLE_SETTINGS,
         'edit_throttle_settings'                   => Permission::EDIT_THROTTLE_SETTINGS,
         'bootstrap_key_cache'                      => Permission::EDIT_THROTTLE_SETTINGS,
-        'throttle_migrate_redis'                  => Permission::EDIT_THROTTLE_SETTINGS,
+        'throttle_migrate_redis'                   => Permission::EDIT_THROTTLE_SETTINGS,
         'throttle_create_config'                   => Permission::EDIT_THROTTLE_SETTINGS,
         'throttle_delete_config'                   => Permission::EDIT_THROTTLE_SETTINGS,
         'throttle_get_config'                      => Permission::EDIT_THROTTLE_SETTINGS,
