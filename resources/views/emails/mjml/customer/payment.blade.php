@@ -556,6 +556,78 @@
       </div>
     @endisset
 
+    @if($merchant['eligible_for_covid_relief'] == true)
+      <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
+        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%">
+          <tbody>
+            <tr>
+              <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top">
+                <div class="mj-column-per-100 outlook-group-fix" style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%">
+                  <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+                    <tbody>
+                      <tr>
+                        <td style="vertical-align:top;padding:0px">
+                          <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+                            <tr>
+                              <td align="left" style="font-size:0px;padding:0px;word-break:break-word">
+                                <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#11082C" >
+                                  <div style="width:85%;width:calc(46000% - 211600px);max-width:460px;min-width:308px;margin-left:auto;margin-right:auto;box-sizing:border-box;padding-left:32px;padding-right:32px;border-radius:2px;background-color:#ffffff;border-top-width:0px;border-top-style:solid;padding-top:20px;padding-bottom:20px;border-top-color:#528ff0;margin-top:8px">
+                                    <div align="center" style="text-align:center;">
+                                      <img width="18px" alt="razorpay donate" src="https://cdn.razorpay.com/static/assets/email/heart.png">
+                                    </div>
+                                    <div style="text-align:center;font-size:14px;font-weight:900;margin-top: 8px; line-height: 20px;">
+                                      Covid Relief Initiative by Razorpay
+                                    </div>
+                                    <div style="text-align:center;font-size:11px;margin-top:10px;font-weight: 400;line-height: 16px;">
+                                      The entire country is fighting Covid 19 and you can help save lives.
+                                      <br />
+                                      Please consider donating towards covid relief, every donation matters.
+                                    </div>
+                                    <div style="text-align:center;font-size:12px;margin-top:15px">
+                                      <a href="https://razorpay.com/links/covid19" target="_blank" style="background: linear-gradient(267.08deg, #0067FF 4.96%, #2B8DD5 102.48%); border-radius: 2px; padding: 6px 20px; box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.18);text-decoration: none; font-weight: 700; line-height: 18px;color: #ffffff; display: inline-block;">
+                                      Donate with Razorpay
+                                      </a>
+                                    </div>
+                                    <div style="text-align:center;font-size:11px;margin-top:15px;margin-bottom: 15px;font-weight: 400;line-height: 16px;">
+                                      Help people in need of oxygen cylinders, oximeters or medicines by sharing a small contribution.
+                                    </div>
+                                    <hr style="height:1px;border-width:0;color:#e9e9e9;background-color:#e9e9e9">
+                                    <div style="text-align:center;font-size:11px;margin-top:14px;font-weight: 400;line-height: 149%;">
+                                      Share this donation link with as many people as possible and help save lives
+                                    </div>
+                                    <div style="text-align:center;font-size:11px;;margin-top:3px">
+                                      <a href="https://razorpay.com/links/covid19" style="color:#528FF0;font-weight:500;font-size:11px;line-height:16px" target="_blank" >
+                                      https://razorpay.com/links/covid19
+                                      </a>
+                                    </div>
+                                    <div align="center" style="text-align:center;font-size:12px;margin-top:12px">
+                                      <a href="https://www.facebook.com/razorpay" style="text-decoration: none; margin: 6px;" target="_blank">
+                                      <img height="16px" alt="razorpay facebook" src="https://cdn.razorpay.com/static/assets/email/facebook.png" style="height: 16px; width: auto">
+                                      </a>
+                                      <a href="https://twitter.com/razorpay" style="text-decoration: none; margin: 6px;" target="_blank">
+                                      <img height="16px" alt="razorpay twitter" src="https://cdn.razorpay.com/static/assets/email/twitter.png" style="height: 16px; width: auto">
+                                      </a>
+                                      <a href="https://instagram.com/razorpay" style="text-decoration: none; margin: 6px;" target="_blank">
+                                      <img height="16px" alt="razorpay instagram" src="https://cdn.razorpay.com/static/assets/email/insta.png" style="height: 16px; width: auto">
+                                      </a>
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    @endif
+
     <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
       <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
         <tbody>

@@ -17,6 +17,7 @@ use RZP\Models\Base\Utility;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\Payment as PaymentMail;
 use RZP\Models\Invoice\ViewDataSerializer;
+use RZP\Models\Merchant\Detail\BusinessType;
 use RZP\Models\Merchant\Email as MerchantEmail;
 use RZP\Models\Currency\DCC as Dcc;
 use RZP\Models\Reward\Repository as RewardRepository;
@@ -517,21 +518,29 @@ class Notify
      */
     protected function templateData()
     {
+        $eligibleForCovidRelief = true;
+
+        if($this->merchant->merchantDetail === null || $this->merchant->merchantDetail->getBusinessType() === null || in_array($this->merchant->merchantDetail->getBusinessType(), [BusinessType::NGO, BusinessType::TRUST]))
+        {
+            $eligibleForCovidRelief = false;
+        }
+
         $data  = [
             'customer'  => [
                 'email' => $this->payment->getEmail(),
                 'phone' => $this->payment->getContact()
             ],
             'merchant'  => [
-                'billing_label' => $this->merchant->getBillingLabel(),
-                'website'       => $this->merchant->getWebsite(),
+                'billing_label'             => $this->merchant->getBillingLabel(),
+                'website'                   => $this->merchant->getWebsite(),
                 // This is the reporting email address for the merchant
-                'email'             => $this->merchant->getTransactionReportEmail(),
-                'id'                => $this->merchant->getId(),
-                'brand_color'       => $this->merchant->getBrandColorOrDefault(),
-                'contrast_color'    => $this->merchant->getContrastOfBrandColor(),
-                'brand_logo'        => $this->merchant->getFullLogoUrlWithSize(),
-                'name'              => $this->merchant->getName(),
+                'email'                     => $this->merchant->getTransactionReportEmail(),
+                'id'                        => $this->merchant->getId(),
+                'brand_color'               => $this->merchant->getBrandColorOrDefault(),
+                'contrast_color'            => $this->merchant->getContrastOfBrandColor(),
+                'brand_logo'                => $this->merchant->getFullLogoUrlWithSize(),
+                'name'                      => $this->merchant->getName(),
+                'eligible_for_covid_relief' => $eligibleForCovidRelief,
             ],
             'payment'   => [
                 'id'                   => $this->payment->getId(),
