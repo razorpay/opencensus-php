@@ -39,7 +39,7 @@ jobs:
     - name: validate_php_syntax
       run: ci-assets/validate_php_syntax.sh
   build-web:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted]
     needs: [cancel]
     continue-on-error: false
     name: Build Web Harbor
@@ -68,7 +68,7 @@ jobs:
             OPENCENSUS_IMAGE=c.rzp.io/razorpay/onggi:opencensus-php-v2020.10.28
 
   build-worker:
-     runs-on: ubuntu-latest
+     runs-on: [self-hosted]
      needs: [ cancel ]
      continue-on-error: false
      name: Build Worker Harbor
@@ -97,7 +97,7 @@ jobs:
              OPENRESTY_IMAGE=c.rzp.io/razorpay/onggi:openresty-1.17.8.2-0-alpine-fat-nosse42
 
   build-checkout:
-     runs-on: ubuntu-latest
+     runs-on: [self-hosted]
      needs: [cancel]
      continue-on-error: false
      name: Build Checkout Harbor
@@ -124,7 +124,7 @@ jobs:
              NGINX_IMAGE=c.rzp.io/razorpay/onggi:nginx-alpine-3.12
 
   build-openresty:
-     runs-on: ubuntu-latest
+     runs-on: [self-hosted]
      needs: [cancel]
      continue-on-error: false
      name: Build Openresty Harbor
