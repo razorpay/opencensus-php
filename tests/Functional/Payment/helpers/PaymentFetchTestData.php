@@ -338,7 +338,7 @@ return [
                 'authorized_at' => null,
                 'late_authorized' => false,
                 'captured_at' => null,
-                'auto_captured' => false,
+                'auto_captured' => null,
             ],
         ],
     ],

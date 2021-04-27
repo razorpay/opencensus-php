@@ -3529,6 +3529,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $data[self::AUTHORIZED_AT] = $this->getAuthorizeTimestamp();
             $data[self::AUTO_CAPTURED] = $this->getAutoCaptured();
             $data[self::CAPTURED_AT] = $this->getCapturedAt();
+
+            if(isset($data[self::CAPTURED_AT]) === false )
+            {
+                $data[self::AUTO_CAPTURED] = null;
+            }
+
             $data[self::LATE_AUTHORIZED] = $this->isLateAuthorized();
         }
 
@@ -4390,6 +4396,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $data[self::AUTHORIZED_AT] = $this->getAuthorizeTimestamp();
             $data[self::AUTO_CAPTURED] = $this->getAutoCaptured();
             $data[self::CAPTURED_AT] = $this->getCapturedAt();
+
+            if(isset($data[self::CAPTURED_AT]) === false )
+            {
+                $data[self::AUTO_CAPTURED] = null;
+            }
+
             $data[self::LATE_AUTHORIZED] = $this->isLateAuthorized();
         }
 
@@ -4410,6 +4422,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $data[self::AUTHORIZED_AT] = $this->getAuthorizeTimestamp();
             $data[self::AUTO_CAPTURED] = $this->getAutoCaptured();
             $data[self::CAPTURED_AT] = $this->getCapturedAt();
+
+            if(isset($data[self::CAPTURED_AT]) === false )
+            {
+                $data[self::AUTO_CAPTURED] = null;
+            }
+
             $data[self::LATE_AUTHORIZED] = $this->isLateAuthorized();
         }
 
