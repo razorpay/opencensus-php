@@ -25,6 +25,14 @@ class Validator extends Base\Validator
         Entity::CHANNEL           => 'required|string|max:8|custom',
     ];
 
+    protected static $fetchRules = [
+        'beneficiary_name'           => 'required|string',
+        'beneficiary_ifsc_code'      => 'required|string',
+        'beneficiary_account_number' => 'required|string',
+        'source_account_number'      => 'required|string',
+        'channel'                    => 'required|string'
+    ];
+
     protected static $ftsFundAccountCreateRules = [
         'size'         => 'required|filled|integer',
         'account_type' => 'required|filled|string|in:bank_account',

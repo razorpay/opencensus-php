@@ -1912,6 +1912,7 @@ class Route
         //API Routes for FTS
         'update_fts_fund_transfer'                 => ['post',     'update_fts_fund_transfer',                       'FundTransferAttemptController@updateFTA'                           ],
         'update_fts_nodal_beneficiary'             => ['post',     'update_fts_nodal_beneficiary',                   'NodalBeneficiaryController@createOrUpdateNodalBeneficiary'         ],
+        'fetch_nodal_beneficiary_code'             => ['get',      'fetch_nodal_beneficiary_code',                   'NodalBeneficiaryController@fetchNodalBeneficiaryCode'              ],
 
         // API Route for Vault
         'vault_token_create'                       => ['post',     'vault_token_create',                             'AdminController@createVaultToken'                                  ],
@@ -3070,6 +3071,7 @@ class Route
         'fts_one_off_db_migrate_cron',
         'fts_bulk_transfer_publish',
         'fts_account_balance_alert',
+        'fetch_nodal_beneficiary_code',
         'entity_bulk_update',
         'merchants_access_map_upsert_bulk',
         'settings_fetch_internal',
@@ -8852,6 +8854,7 @@ class Route
             'update_fts_nodal_beneficiary',
             'update_fts_fund_transfer',
             'fts_channel_notification',
+            'fetch_nodal_beneficiary_code',
         ],
 
         'reminders' => [

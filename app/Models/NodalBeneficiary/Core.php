@@ -22,6 +22,18 @@ class Core extends Base\Core
      * @param array $input
      * @return Entity
      */
+
+    // fetchNodalBeneficiaryCode input
+    const BENEFICIARY_NAME           = 'beneficiary_name';
+    const BENEFICIARY_IFSC_CODE      = 'beneficiary_ifsc_code';
+    const BENEFICIARY_ACCOUNT_NUMBER = 'beneficiary_account_number';
+    const CHANNEL                    = 'channel';
+    const TYPE_MERCHANT              = 'merchant';
+    const SOURCE_ACCOUNT_NUMBER      = 'source_account_number';
+
+    // fetchNodalBeneficiaryCode output
+    const BENEFICIARY_CODE           = 'beneficiary_code';
+
     public function createWithBankAccount(array $input): Entity
     {
         $merchantId = $input[Entity::MERCHANT_ID];
@@ -235,5 +247,121 @@ class Core extends Base\Core
                     'error' => $e->getMessage()
                 ]);
         }
+    }
+
+    /**
+     * Fetches the beneficiary code based on the bank details provided. This should be made redundant post
+     * moving the early bene registration of yes bank via fts itself
+     * Ref link https://razorpay.slack.com/archives/C01DQKYPMFU/p1617774389024400
+     * @param array $input
+     * @return array
+     */
+
+    public function fetchNodalBeneficiaryCode(array $input)
+    {
+        try
+        {
+            $validator = new Validator;
+
+            $validator->validateInput('fetch', $input);
+
+            if (!$this->validateSourceBankAccount($input[self::CHANNEL], $input[self::SOURCE_ACCOUNT_NUMBER])){
+
+                $this->trace->info(
+                    TraceCode::FTS_FETCH_NODAL_BENEFICIARY_ATTEMPT_FAILED,
+                    [
+                        'message'  => 'failed to match source account no',
+                        'input'    => $input
+                    ]
+                );
+
+                return [
+                    self::BENEFICIARY_CODE  => ''
+                ];
+            }
+
+            $bankAccountId = $this->repo->nodal_beneficiary->fetchRegisteredBeneficiaryCodeForBeneDetails(
+                $input[self::BENEFICIARY_NAME],
+                $input[self::BENEFICIARY_IFSC_CODE],
+                $input[self::BENEFICIARY_ACCOUNT_NUMBER],
+                strtolower($input[self::CHANNEL]),
+                self::TYPE_MERCHANT
+            );
+
+            if ($bankAccountId != null)
+            {
+                $beneficiaryCode = $bankAccountId[0];
+
+                $this->trace->info(
+                    TraceCode::FTS_FETCH_NODAL_BENEFICIARY_ATTEMPT_SUCCESS,
+                    [
+                        'message'   => 'successfully find bene code',
+                        'input'     => $input,
+                        'bene_code' => $beneficiaryCode
+                    ]
+                );
+
+                return [
+                    self::BENEFICIARY_CODE => $beneficiaryCode
+                ];
+            }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::FTS_FETCH_NODAL_BENEFICIARY_ATTEMPT_FAILED,
+                    [
+                        'message'  => 'failed to find record',
+                        'input'    => $input
+                    ]
+                );
+
+                return [
+                    self::BENEFICIARY_CODE  => ''
+                ];
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FTS_FETCH_NODAL_BENEFICIARY_ATTEMPT_FAILED,
+                [
+                    'error' => $e->getMessage()
+                ]);
+        }
+    }
+
+    /**
+     * validates the source accoutno. Since there is no source account field present in the nodal beneficiary table,
+     * have to apply the filter at the application level
+     * @param string $channel
+     * @param string $sourceAccountNumber
+     * @return bool
+     */
+    private function validateSourceBankAccount(string $channel, string $sourceAccountNumber)
+    {
+        /**
+         *  For this route currently we have use case of fetching settlement type source account means account
+         */
+         switch (strtolower($channel))
+         {
+             case 'yesbank':
+                 $config = Config::get('nodal.yesbank.primary');
+
+                 $primaryAccountNumber = $config['account_number'];
+
+                 $this->trace->debug(
+                     TraceCode::FTS_FETCH_NODAL_BENEFICIARY_DEBUG,
+                     [
+                         'stored_source_account_no'  => mask_except_last4($primaryAccountNumber),
+                         'input_source_account_no'   => mask_except_last4($sourceAccountNumber)
+                     ]
+                 );
+
+                 return $sourceAccountNumber == $primaryAccountNumber;
+             default:
+                 return false;
+         }
     }
 }

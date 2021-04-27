@@ -3,6 +3,8 @@
 namespace RZP\Models\NodalBeneficiary;
 
 use RZP\Models\Base;
+use RZP\Constants\Table;
+use RZP\Models\BankAccount;
 
 class Repository extends Base\Repository
 {
@@ -97,4 +99,47 @@ class Repository extends Base\Repository
                     ->where(Entity::CHANNEL, $channel)
                     ->first();
     }
+
+    /**
+     * @param string $beneficiaryName
+     * @param string $beneficiaryIfsc
+     * @param string $beneficiaryAccountNumber
+     * @param string $channel
+     * @param string $type
+     * @return mixed
+     */
+    public function fetchRegisteredBeneficiaryCodeForBeneDetails(string $beneficiaryName,
+                                                                 string $beneficiaryIfsc,
+                                                                 string $beneficiaryAccountNumber,
+                                                                 string $channel,
+                                                                 string $type)
+    {
+
+        $bankAccountRef       = $this->repo->bank_account;
+        $nodalBeneficiaryRef  = $this->repo->nodal_beneficiary;
+
+        $bankAccountIdColumn                      =   $bankAccountRef->dbColumn(BankAccount\Entity::ID);
+        $bankAccountBeneficiaryNameColumn         =  $bankAccountRef->dbColumn(BankAccount\Entity::BENEFICIARY_NAME);
+        $bankAccountBeneficiaryIfscColumn         = $bankAccountRef->dbColumn(BankAccount\Entity::IFSC_CODE);
+        $bankAccountBeneficiaryAccountNoColumn    =  $bankAccountRef->dbColumn(BankAccount\Entity::ACCOUNT_NUMBER);
+        $bankAccountBeneficiaryTypeColumn         = $bankAccountRef->dbColumn(BankAccount\Entity::TYPE);
+        $bankAccountBeneficiaryCreatedAtColumn    =  $bankAccountRef->dbColumn(BankAccount\Entity::CREATED_AT);
+
+        $nodalBeneficiaryBankAccountIdColumn      = $nodalBeneficiaryRef->dbColumn(Entity::BANK_ACCOUNT_ID);
+        $nodalBeneficiaryChannelColumn            = $nodalBeneficiaryRef->dbColumn(Entity::CHANNEL);
+        $nodalBeneficiaryRegistrationStatusColumn = $nodalBeneficiaryRef->dbColumn(Entity::REGISTRATION_STATUS);
+
+        return  $this->newQueryWithConnection($this->getSlaveConnection())
+                     ->join(Table::BANK_ACCOUNT, $nodalBeneficiaryBankAccountIdColumn, '=', $bankAccountIdColumn)
+                     ->where($bankAccountBeneficiaryNameColumn,'=',$beneficiaryName)
+                     ->where($bankAccountBeneficiaryIfscColumn,'=',$beneficiaryIfsc)
+                     ->where($bankAccountBeneficiaryAccountNoColumn,'=',$beneficiaryAccountNumber)
+                     ->where($bankAccountBeneficiaryTypeColumn,'=',$type)
+                     ->where($nodalBeneficiaryChannelColumn,'=', $channel)
+                     ->where($nodalBeneficiaryRegistrationStatusColumn ,'=', status::VERIFIED)
+                     ->orderBy($bankAccountBeneficiaryCreatedAtColumn, 'desc')
+                     ->limit(1)
+                     ->pluck($nodalBeneficiaryBankAccountIdColumn)->toArray();
+    }
+
 }

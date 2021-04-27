@@ -24,4 +24,14 @@ class NodalBeneficiaryController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function fetchNodalBeneficiaryCode()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->fetchNodalBeneficiaryCode($input);
+
+        return ApiResponse::json($response);
+    }
+
 }

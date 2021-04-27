@@ -4,6 +4,7 @@ namespace RZP\Models\FundTransfer\Yesbank\Request;
 
 use Config;
 use Requests_Hooks;
+use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use RZP\Models\Base as BaseModel;
 use RZP\Models\Settlement\Channel;
@@ -92,6 +93,13 @@ abstract class Base extends ApiProcessor
      */
     protected function loadNodalConfig(string $type): array
     {
+        $this->trace->debug(
+            TraceCode::NODAL_BEN_REGISTRATION_YESBANK_DEBUG,
+            [
+                'type'  => $type,
+            ]
+        );
+
         switch ($type)
         {
             case Type::PRIMARY:

@@ -28,4 +28,12 @@ class Service extends Base\Service
 
         return $nodalBeneficiary->toArrayAdmin();
     }
+
+    public function fetchNodalBeneficiaryCode(array $input): array
+    {
+        $this->trace->info(TraceCode::FTS_FETCH_NODAL_BENEFICIARY, $input);
+
+        return $this->core()->fetchNodalBeneficiaryCode($input);
+    }
+
 }
