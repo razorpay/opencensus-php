@@ -106,32 +106,11 @@ class MySqlConnection extends BaseMySqlConnection
      */
     protected function validateSlaveConnectionRoute()
     {
-        $isSlaveRoute = false;
-
-        try
-        {
-            $isSlaveRoute = $this->canRouteToSlave();
-        }
-        catch (\Throwable $ex)
-        {
-            $this->trace->traceException(
-                $ex,
-                Trace::CRITICAL,
-                TraceCode::SLAVE_ROUTES_FETCH_FAILED);
-        }
-
-        return $isSlaveRoute;
+        return $this->canRouteToSlave();
     }
 
     protected function canRouteToSlave()
     {
-       $slaveRoutes = Cache::get(ConfigKey::SLAVE_ROUTES);
-
-       if (empty($slaveRoutes) === true)
-       {
-            return false;
-       }
-
        $app = App::getFacadeRoot();
 
        $routeName = $app['request.ctx']->getRoute() ?? null;
@@ -141,8 +120,46 @@ class MySqlConnection extends BaseMySqlConnection
             return false;
        }
 
+       $result = $this->checkStaticRouteList($routeName);
 
-       return (in_array($routeName, $slaveRoutes, true) === true);
+       if ($result === true)
+       {
+            return $result;
+       }
+
+       return $this->checkRedisRouteList($routeName);
+    }
+
+    protected function checkRedisRouteList($routeName)
+    {
+        $routes = [];
+
+        try
+        {
+           $routes = Cache::get(ConfigKey::SLAVE_ROUTES);
+
+           if (empty($routes) === true)
+           {
+             return false;
+           }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::CRITICAL,
+                TraceCode::SLAVE_ROUTES_FETCH_FAILED);
+
+        }
+
+        return (in_array($routeName, $routes, true) === true);
+    }
+
+    protected function checkStaticRouteList($routeName)
+    {
+        $routes = \RZP\Http\Route::$forceReplicaRoutes;
+
+        return (in_array($routeName, $routes, true) === true);
     }
 
     protected function tryAgainIfCausedByLostConnection(QueryException $e, $query, $bindings, Closure $callback)
