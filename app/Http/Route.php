@@ -1708,6 +1708,7 @@ class Route
         //splitz service
         'splitz_route'                             => ['any',      'service/splitz',                                 'SplitzController@sendRequest'                                      ],
         'splitz_evaluate'                          => ['post',     'splitz/evaluate',                                'SplitzController@evaluateRequest'                                  ],
+        'splitz_evaluate_bulk'                     => ['post',     'splitz/bulkEvaluate',                            'SplitzController@evaluateRequestBulk'                              ],
         'splitz_preflight'                         => ['options',  'splitz/evaluate',                                'SplitzController@allowCors'                                        ],
 
         // Account API routes
@@ -5690,6 +5691,7 @@ class Route
         'capital_collections_webhook',
         'download_papernach_form',
         'splitz_evaluate',
+        'splitz_evaluate_bulk',
         'splitz_preflight',
         'settlement_ondemand_razorpayx_webhook',
         'loc_razorpayx_webhook',

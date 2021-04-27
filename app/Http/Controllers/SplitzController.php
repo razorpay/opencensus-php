@@ -8,6 +8,7 @@ use ApiResponse;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Services\SplitzService;
 
 class SplitzController extends Controller
 {
@@ -51,6 +52,40 @@ class SplitzController extends Controller
     {
         return ApiResponse::json([]);
     }
+
+    public function evaluateRequestBulk()
+    {
+        $parameters = Request::all();
+
+        $response = [];
+
+        if (empty($parameters) === false)
+        {
+            $bulkEvaluateArray['bulk_evaluate'] = [];
+
+            $chunkExperimentArray = array_chunk($parameters, 10);
+
+            foreach ($chunkExperimentArray as $batchExperimentArray)
+            {
+                $bulkEvaluateArray = json_encode($batchExperimentArray, JSON_UNESCAPED_SLASHES);
+
+                $bulk_evaluate = '{"bulk_evaluate":' . $bulkEvaluateArray . '}';
+
+                $result = (new SplitzService())->bulkCallsToSplitz($bulk_evaluate);
+
+                foreach ($result as $resultValue)
+                {
+                    if (isset($resultValue['bulk_evaluate_response']) == true)
+                    {
+                        $response = array_merge($response, $resultValue['bulk_evaluate_response']);
+                    }
+                }
+            }
+        }
+
+        return $response;
+    }
+
 
     public function evaluateRequest()
     {
