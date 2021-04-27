@@ -30,6 +30,7 @@ class FreshdeskTicketClient
     const LIST_TICKETS        = 'tickets';
     const UPDATE_TICKET       = 'tickets/%s';
     const UPDATE_NOTE         = 'tickets/%s/notes';
+    const SEND_OUTBOUND_EMAIL = 'tickets/outbound_email';
 
     const REQUEST_REDACT_FIELDS = [
         'content',
@@ -118,6 +119,25 @@ class FreshdeskTicketClient
         return $response ?? [];
     }
 
+    /**
+     * Send outbound email
+     *
+     * @param array  $input
+     * @param string $urlKey
+     * @return array $response
+     */
+    public function sendOutboundEmail(array $input, $urlKey = 'url') : array
+    {
+        $authKey = $this->getAuthKey($urlKey);
+
+        $url = $this->getUrl(self::SEND_OUTBOUND_EMAIL, $urlKey);
+
+        $auth = $this->getAuth($authKey);
+
+        $response = $this->makeRequestAndGetFreshdeskResponse(self::HTTP_POST, $url, $auth, $input);
+
+        return $response ?? [];
+    }
 
     /**
      * Get tickets for the given $merchantID

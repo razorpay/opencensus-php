@@ -381,6 +381,14 @@ return [
                 'customer_support_group_id' => env('FRESHDESK_CUSTOMER_SUPPORT_GROUP_ID'),
             ],
         ],
+
+        'group_ids' => [
+            'merchant_risk' => env('FRESHDESK_GROUP_MERCHANT_RISK_ID'),
+        ],
+
+        'email_config_ids' => [
+            'risk_notification' => env('FRESHDESK_EMAIL_CONFIG_RISK_NOTIFICATION_ID'),
+        ],
     ],
 
     'freshdesk_webhook' => [

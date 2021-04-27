@@ -4,6 +4,7 @@ namespace RZP\Models\Typeform;
 
 use App;
 use Mail;
+use View;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\lib\DataParser;
@@ -23,6 +24,15 @@ use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
 
 class Core extends Base\Core
 {
+    private $freshdeskConfig;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->freshdeskConfig = $this->app['config']->get('applications.freshdesk');
+    }
+
     /**
      * @param array $input
      *
@@ -576,11 +586,33 @@ class Core extends Base\Core
 
     private function sendEnablementClosureEmail(Merchant $merchant, array $permissionsData)
     {
-        $mailable = $this->getEnablementMailable($merchant, $permissionsData);
+        $merchantEmail = $merchant->merchantDetail->getContactEmail();
+
+        list($mailViewTpl, $mailData, $tags) = $this->getEnablementMailTemplateAndData($merchant, $permissionsData);
+
+        $mailBody = View::make($mailViewTpl, $mailData)->render();
 
         try
         {
-            Mail::queue($mailable);
+            $fdOutboundEmailRequest = [
+                'subject'         => Constants::IE_MAIL_SUBJECT,
+                'description'     => $mailBody,
+                'status'          => 5,
+                'type'            => 'Question',
+                'priority'        => 1,
+                'email'           => $merchantEmail,
+                'tags'            => $tags,
+                'group_id'        => (int) $this->freshdeskConfig['group_ids']['merchant_risk'],
+                'email_config_id' => (int) $this->freshdeskConfig['email_config_ids']['risk_notification'],
+                'custom_fields' => [
+                    'cf_ticket_queue' => 'Merchant',
+                    'cf_category'     => 'Risk Report_Merchant',
+                    'cf_subcategory'  => 'International Enablement',
+                    'cf_product'      => 'Payment Gateway',
+                ],
+            ];
+
+            $this->app['freshdesk_client']->sendOutboundEmail($fdOutboundEmailRequest);
 
             $this->app['trace']->info(
                 TraceCode::INTERNATIONAL_ENABLEMENT_EMAIL_SENT,
@@ -600,7 +632,7 @@ class Core extends Base\Core
         }
     }
 
-    private function getEnablementMailable(Merchant $merchant, array $permissionsData)
+    private function getEnablementMailTemplateAndData(Merchant $merchant, array $permissionsData)
     {
         $data = [
             'merchant_id'   => $merchant->getId(),
@@ -610,7 +642,9 @@ class Core extends Base\Core
         $approvedPermList = [];
         $rejectedPermList = [];
         $rejectionReasons = [];
-        $mailableHandler  = NULL;
+        $mailViewTpl      = NULL;
+
+        $tags[] = Constants::FD_TAG_IE_AUTO_MAILER;
 
         foreach ($permissionsData as $permissionName => $permissionData)
         {
@@ -639,13 +673,23 @@ class Core extends Base\Core
 
             $rejectionReason = key($rejectionReasons);
 
-            $mailableHandler = Constants::REJECTED_MAILABLE_CLASS[$rejectionReason];
+            $mailViewTpl = Constants::REJECTED_MAIL_VIEW_TPL[$rejectionReason];
+
+            $tags[] = Constants::FD_TAG_IE_REJECTED;
+
+            $tags[] = Constants::FD_TAG_IE_SIBLING;
+
+            $tags[] = Constants::FD_IE_REJECTION_TAGS[$rejectionReason];
         }
         else if (count($approvedPermList) == 2)
         {
-            $mailableHandler = Constants::ACCEPTED_MAILABLE_CLASS;
+            $mailViewTpl = Constants::ACCEPTED_MAIL_VIEW_TPL;
 
             $this->addAdditionalApprovalEmailData($merchant, $data);
+
+            $tags[] = Constants::FD_TAG_IE_APPROVED;
+
+            $tags[] = Constants::FD_TAG_IE_SIBLING;
         }
         else if (count($approvedPermList) > 0 && count($rejectedPermList) > 0)
         {
@@ -653,28 +697,36 @@ class Core extends Base\Core
 
             $data['rejected_products'] = Constants::PERMISSION_PRODUCT_MAPPING[$rejectedPermList[0]];
 
-            $mailableHandler = Constants::ACCEPTED_MAILABLE_CLASS;
+            $mailViewTpl = Constants::ACCEPTED_MAIL_VIEW_TPL;
 
             $this->addAdditionalApprovalEmailData($merchant, $data);
+
+            $tags[] = Constants::FD_TAG_IE_APPROVED;
+
+            $tags[] = Constants::FD_TAG_IE_APPROVED_REJECTED;
+
+            $tags[] = Constants::FD_TAG_IE_SIBLING;
         }
         else if (count($rejectedPermList) == 1)
         {
             $rejectionReason = key($rejectionReasons);
 
-            $mailableHandler = Constants::REJECTED_MAILABLE_CLASS[$rejectionReason];
+            $mailViewTpl = Constants::REJECTED_MAIL_VIEW_TPL[$rejectionReason];
+
+            $tags[] = Constants::FD_TAG_IE_REJECTED;
+
+            $tags[] = Constants::FD_IE_REJECTION_TAGS[$rejectionReason];
         }
         else
         {
-            $mailableHandler = Constants::ACCEPTED_MAILABLE_CLASS;
+            $mailViewTpl = Constants::ACCEPTED_MAIL_VIEW_TPL;
 
             $this->addAdditionalApprovalEmailData($merchant, $data);
+
+            $tags[] = Constants::FD_TAG_IE_APPROVED;
         }
 
-        $merchantEmail = $merchant->merchantDetail->getContactEmail();
-
-        $mailable = new $mailableHandler($data, $merchantEmail);
-
-        return $mailable;
+        return [$mailViewTpl, $data, $tags];
     }
 
     private function addAdditionalApprovalEmailData(Merchant $merchant, array & $emailData)

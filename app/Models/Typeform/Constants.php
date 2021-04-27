@@ -69,13 +69,33 @@ class Constants
         self::REJECT_REASON_MERCHANT_NOT_REGISTERED => 1,
     ];
 
-    const REJECTED_MAILABLE_CLASS = [
-        self::REJECT_REASON_MERCHANT_LOOKS_RISKY    => \RZP\Mail\Merchant\InternationalEnablement\RejectedRiskyMerchant::class,
-        self::REJECT_REASON_MERCHANT_LOOKS_SAFE     => \RZP\Mail\Merchant\InternationalEnablement\RejectedSafeMerchant::class,
-        self::REJECT_REASON_MERCHANT_NOT_REGISTERED => \RZP\Mail\Merchant\InternationalEnablement\RejectedUnregisteredMerchant::class,
+    const REJECTED_MAIL_VIEW_TPL = [
+        self::REJECT_REASON_MERCHANT_LOOKS_RISKY    => 'emails.merchant.international_enablement_request.rejected_merchant_looks_risky',
+        self::REJECT_REASON_MERCHANT_LOOKS_SAFE     => 'emails.merchant.international_enablement_request.rejected_merchant_looks_safe',
+        self::REJECT_REASON_MERCHANT_NOT_REGISTERED => 'emails.merchant.international_enablement_request.rejected_unregistered_merchant',
     ];
 
-    const ACCEPTED_MAILABLE_CLASS = \RZP\Mail\Merchant\InternationalEnablement\Accepted::class;
+    const ACCEPTED_MAIL_VIEW_TPL = 'emails.merchant.international_enablement_request.accepted';
+
+    const IE_MAIL_SUBJECT = 'Razorpay | International Payment Acceptance Request';
+
+    // FD tags
+    const FD_TAG_IE_AUTO_MAILER = 'intl_auto_mailer';
+    const FD_TAG_IE_SIBLING     = 'intl_sibling';
+
+    const FD_TAG_IE_APPROVED          = 'intl_approved';
+    const FD_TAG_IE_REJECTED          = 'intl_rejected';
+    const FD_TAG_IE_APPROVED_REJECTED = 'intl_approved_rejected';
+
+    const FD_TAG_IE_REJECTED_SAFE         = 'intl_rejected_safe';
+    const FD_TAG_IE_REJECTED_RISKY        = 'intl_rejected_risky';
+    const FD_TAG_IE_REJECTED_UNREGISTERED = 'intl_rejected_unreg';
+
+    const FD_IE_REJECTION_TAGS = [
+        self::REJECT_REASON_MERCHANT_LOOKS_RISKY    => self::FD_TAG_IE_REJECTED_RISKY,
+        self::REJECT_REASON_MERCHANT_LOOKS_SAFE     => self::FD_TAG_IE_REJECTED_SAFE,
+        self::REJECT_REASON_MERCHANT_NOT_REGISTERED => self::FD_TAG_IE_REJECTED_UNREGISTERED,
+    ];
 
     // NOTE: We are picking a static mapping, as from the merchants perspective these are teh only possible combinations
     // In case Pages, Links and Invoices can be vouched for seperately, then this needs to change
