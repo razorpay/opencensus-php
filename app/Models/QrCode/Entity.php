@@ -326,6 +326,25 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function setStatus(string $status)
+    {
+        Status::checkStatus($status);
+
+        $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function setCloseReason(string $closeReason)
+    {
+        CloseReason::checkCloseReason($closeReason);
+
+        $this->setAttribute(self::CLOSE_REASON, $closeReason);
+    }
+
+    public function setClosedAt(int $closedAt)
+    {
+        $this->setAttribute(self::CLOSED_AT, $closedAt);
+    }
+
     public function setMpansTokenized(bool $areMpansTokenized)
     {
         $this->setAttribute(self::MPANS_TOKENIZED, $areMpansTokenized);
