@@ -104,8 +104,8 @@ class DefaultMethodsForCategory
             '5912'  =>  [
                 Category::PHARMA    =>  [
                     // need to support phonepe.
-                    self::BLACKLISTED_METHODS => self::CATEGORY_DEPENDENT_METHODS,
-                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [],
+                    self::BLACKLISTED_METHODS => [ENTITY::AMEX, Entity::EMI],
+                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
                 ]
             ],
             '8062'  =>  [
