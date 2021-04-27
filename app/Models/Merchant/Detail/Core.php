@@ -1274,7 +1274,7 @@ class Core extends Base\Core
             {
                 foreach ($values as &$val)
                 {
-                    if ($val[Merchant\Constants::NC_COUNT] !== $ncCount)
+                    if (isset($val[Merchant\Constants::NC_COUNT]) and $val[Merchant\Constants::NC_COUNT] !== $ncCount)
                     {
                         $val[Merchant\Constants::IS_CURRENT] = false;
                     }
