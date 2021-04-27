@@ -1124,6 +1124,9 @@ return [
                 'description'             => 'NEFT payment of 50,000 rupees with extra fields',
                 'attempt'                 => 1,
             ],
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
         ],
         'response' => [
             'content' => [

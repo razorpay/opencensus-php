@@ -138,6 +138,7 @@ class Processor extends VirtualAccount\Processor
                                    'balance_type'       => $balanceType,
                                    'virtual_account_id' => $this->virtualAccount->getId(),
                                    'bank_transfer_id'   => $bankTransfer->getId(),
+                                   'utr'                => $bankTransfer->getUtr(),
                                    'unexpected_reason'  => $bankTransfer->getUnexpectedReason()
                                ]
             );
@@ -700,8 +701,10 @@ class Processor extends VirtualAccount\Processor
 
             /* This checks if tpv is not disabled via the disable feature flag, tpv checks are applied on the bank
                transfer.
+               We only check for tpv in live mode as in test mode this check shouldn't exist.
              */
-            if ($disableTpvFeature === false)
+            if (($disableTpvFeature === false) and
+                ($this->isLiveMode() === true))
             {
                 $payerAccountNumber = $payerDetails[BankAccount\Entity::ACCOUNT_NUMBER];
 

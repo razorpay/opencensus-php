@@ -2549,6 +2549,10 @@ class BankTransferTest extends TestCase
         $this->assertNotNull($bankTransfer['payment_id']);
     }
 
+    /*
+     * Here we are not disabling tpv flow and still all fund loads should happen successfully as these are test mode
+     * fund loads.
+     */
     public function testBankTransferProcessWithFieldsOnTestMode()
     {
         Mail::fake();
@@ -2562,12 +2566,13 @@ class BankTransferTest extends TestCase
             'type' => 'banking',
         ]);
 
-        // Disabling tpv flow as by default it is enabled now for all merchants.
-        $this->fixtures->create('feature', [
-            'name'        => Feature\Constants::DISABLE_TPV_FLOW,
-            'entity_id'   => 10000000000000,
-            'entity_type' => 'merchant',
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'   => '10000000000000',
+            'contact_name'  => 'Aditya',
+            'business_type' => 3
         ]);
+
+        $this->setupRedisConfigKeysForTerminalSelection();
 
         $accountNumber = $this->bankAccount['account_number'];
 
@@ -2583,6 +2588,10 @@ class BankTransferTest extends TestCase
         $this->assertEquals(null, $bankTransfer['unexpected_reason']);
 
         Mail::assertNotQueued(BankTransfer::class);
+
+        // Since this was a test mode fund loading, it shall always pass and thus we will not send Fund loading failed
+        // mail.
+        Mail::assertNotQueued(FundLoadingFailed::class);
     }
 
     public function testBankTransferProcessWithFieldsOnLiveMode()
