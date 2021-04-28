@@ -6458,7 +6458,6 @@ class MerchantTest extends TestCase
                                       'test')->toArray();
 
         $this->assertNotNull($testTpv);
-
     }
 
     /**
@@ -6567,6 +6566,9 @@ class MerchantTest extends TestCase
 
         $this->assertContains('payout', $testFeaturesArray);
         $this->assertContains('payout', $liveFeaturesArray);
+
+        $this->assertContains('skip_hold_funds_on_payout', $testFeaturesArray);
+        $this->assertContains('skip_hold_funds_on_payout', $liveFeaturesArray);
     }
 
     /**

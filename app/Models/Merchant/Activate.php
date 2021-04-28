@@ -640,6 +640,8 @@ class Activate extends Base\Core
 
             $this->addPayoutFeatureIfApplicable($merchant, $mode);
 
+            $this->addSkipHoldFundsOnPayout($merchant);
+
             //create activated TPV
             (new BankingAccountTpv\Core())->createAutoApprovedTpvForActivatedMerchants($merchant, $mode);
         }
@@ -746,5 +748,21 @@ class Activate extends Base\Core
         $result = (strtolower($variant) !== 'off');
 
         return $result;
+    }
+
+    protected function  addSkipHoldFundsOnPayout(Entity $merchant)
+    {
+        if ($merchant->isFeatureEnabled(Feature\Constants::SKIP_HOLD_FUNDS_ON_PAYOUT) === true)
+        {
+            return;
+        }
+
+        $featureParams = [
+            Feature\Entity::ENTITY_ID   => $merchant->getId(),
+            Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Feature\Entity::NAMES       => [Feature\Constants::SKIP_HOLD_FUNDS_ON_PAYOUT],
+        ];
+
+        (new Feature\Service)->addFeatures($featureParams);
     }
 }
