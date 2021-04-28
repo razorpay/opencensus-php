@@ -293,7 +293,8 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::PRICING_PLAN_FETCH_ATTEMPT);
 
-        $input[Fetch::COUNT] = $input[Fetch::COUNT] ?? 100000;
+        // updated limit to fetch all records by default.
+        $input[Fetch::COUNT] = $input[Fetch::COUNT] ?? 150000;
 
         $input[Fetch::SKIP] = $input[Fetch::SKIP] ?? 0;
 
