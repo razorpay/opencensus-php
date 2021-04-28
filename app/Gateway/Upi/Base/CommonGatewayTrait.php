@@ -22,7 +22,6 @@ use RZP\Models\Payment\UpiMetadata\Flow;
  * @package RZP\Gateway\Upi\Base
  * @property $action
  * @property $input
- * @property $shouldUseMozartEntity
  */
 trait CommonGatewayTrait
 {
@@ -40,17 +39,6 @@ trait CommonGatewayTrait
 
         $gatewayEntity = $this->upiCreateGatewayEntity($input, $attributes);
 
-        $mozart = $this->getUpiMozartGatewayWithModeSet();
-
-        // Should always be false, we do not intend to create mozart entity anymore, it is here allow fallback
-        // for other gateways
-        if ($this->upiShouldUseMozartEntity() === true)
-        {
-            $mozartEntity = $mozart->createMozartEntity([
-                'raw' => []
-            ], $input, Action::AUTHORIZE);
-        }
-
         $result = $this->upiSendGatewayRequest(
                         $input,
                         TraceCode::GATEWAY_AUTHORIZE_REQUEST,
@@ -59,13 +47,6 @@ trait CommonGatewayTrait
         $response = new Response($result['data'] ?? []);
 
         $this->upiUpdateGatewayEntity($gatewayEntity, $response->getFilteredUpi());
-
-        // Should always be false, we do not intend to create mozart entity anymore, it is here allow fallback
-        // for other gateways
-        if ($this->upiShouldUseMozartEntity() === true)
-        {
-            $mozart->updateMozartEntity($mozartEntity, $result, true, Action::AUTHORIZE);
-        }
 
         $this->upiTraceGatewayResponse($response, $result, TraceCode::GATEWAY_AUTHORIZE_RESPONSE);
 
@@ -82,13 +63,6 @@ trait CommonGatewayTrait
         $gatewayEntity = $this->upiGetRepository()
                               ->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
 
-        $mozart = $this->getUpiMozartGatewayWithModeSet();
-
-        if ($this->upiShouldUseMozartEntity() === true)
-        {
-            $mozartEntity = $mozart->findEntityByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
-        }
-
         $result = $input['gateway'];
 
         $response = new Response($result['data'] ?? []);
@@ -98,11 +72,6 @@ trait CommonGatewayTrait
         $gatewayEntity->setReceived(1);
 
         $this->upiUpdateGatewayEntity($gatewayEntity, $response->getFilteredUpi());
-
-        if ($this->upiShouldUseMozartEntity() === true)
-        {
-            $mozart->updateMozartEntity($mozartEntity, $result, true, Action::AUTHORIZE);
-        }
 
         $this->upiCheckErrorsAndThrowExceptionFromResponse($result);
 
@@ -306,6 +275,13 @@ trait CommonGatewayTrait
                 Payment\Entity::REFERENCE16   => $gatewayPayment->getNpciReferenceId(),
             ]
         ];
+    }
+
+    protected function upiRefund(array $input)
+    {
+        $mozart = $this->getUpiMozartGatewayWithModeSet();
+
+        $mozart->refund($input);
     }
 
     /****************** Helper **************************
@@ -518,16 +494,6 @@ trait CommonGatewayTrait
         $response = $mozart->sendUpiMozartRequest($input, $traceCode, $action);
 
         return $response;
-    }
-
-    protected function upiShouldUseMozartEntity(): bool
-    {
-        if (isset($this->shouldUseMozartEntity) === false)
-        {
-            return false;
-        }
-
-        return $this->shouldUseMozartEntity;
     }
 
     protected function upiCheckErrorsAndThrowExceptionFromResponse(array $response)

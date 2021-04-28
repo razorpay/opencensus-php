@@ -93,7 +93,6 @@ class UpiJuspayGatewayTest extends TestCase
     {
         $this->createTestTerminal();
 
-
         $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
 
         $paymentId = $response['payment_id'];
@@ -313,9 +312,9 @@ class UpiJuspayGatewayTest extends TestCase
         $payment->reload();
 
         $this->assertArraySubset([
-             Entity::STATUS      =>  'authorized',
-             Entity::REFERENCE16 =>  '034520388334',
-             Entity::VPA         =>  'customer@vpa',
+             Entity::STATUS      => 'authorized',
+             Entity::REFERENCE16 => '034520388334',
+             Entity::VPA         => 'customer@vpa',
         ], $payment->toArray());
 
         $upi = $this->getDbLastUpi();
@@ -361,10 +360,6 @@ class UpiJuspayGatewayTest extends TestCase
         $this->makeRequestAndCatchException(function () {
             $this->doAuthPaymentViaAjaxRoute($this->payment);
         });
-
-        $mozart = $this->getDbLastMozart();
-        $this->assertNotNull($mozart);
-        $this->assertSame('authorize', $mozart->getAction());
 
         $payment = $this->getDbLastPayment();
         $this->assertSame('failed', $payment->getStatus());

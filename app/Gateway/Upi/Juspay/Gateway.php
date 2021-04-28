@@ -15,8 +15,6 @@ class Gateway extends Base\Gateway
 
     use Base\CommonGatewayTrait;
 
-    use Base\MozartTrait;
-
     const ACQUIRER = 'axis';
 
     protected $gateway = Payment\Gateway::UPI_JUSPAY;
@@ -24,8 +22,6 @@ class Gateway extends Base\Gateway
     // As, UPI Juspay currently depends on mozart entity we will mark this flag as false
     // TODO: Mark this as true or remove it , when we move the upi entity creation to this class.
     protected $shouldMapLateAuthorized = false;
-
-    protected $shouldUseMozartEntity = true;
 
     protected $map = [];
 
@@ -52,7 +48,7 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $this->refundRequest($input);
+        $this->upiRefund($input);
     }
 
     public function verify(array $input)
