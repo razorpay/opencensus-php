@@ -117,6 +117,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function putMerchantRiskAttributes($id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->editRiskAttributes($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     /**
      *  This updates the merchant email
      *  Don't use lightly

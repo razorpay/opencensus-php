@@ -634,6 +634,8 @@ class Name
 
     const TOKEN_REGISTRATION_ACTIONS = 'token_registration_actions';
 
+    //Permission to update merchant risk attributes
+    const EDIT_MERCHANT_RISK_ATTRIBUTES = 'edit_merchant_risk_attributes';
 
     //partner KYC permissions
     const EDIT_ACTIVATE_PARTNER               = 'edit_activate_partner';

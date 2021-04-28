@@ -269,6 +269,7 @@ return [
                 'workflow'   => true,
             ],
             Permission::EDIT_MERCHANT_METHODS               => '',
+            Permission::EDIT_MERCHANT_RISK_ATTRIBUTES       => '',
             Permission::EDIT_MERCHANT_ENABLE_INTERNATIONAL  => '',
             Permission::EDIT_MERCHANT_DISABLE_INTERNATIONAL => '',
             Permission::EDIT_MERCHANT_TERMINAL              => '',

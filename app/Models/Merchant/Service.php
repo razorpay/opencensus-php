@@ -534,6 +534,39 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
+    public function editRiskAttributes(string $id, array $input): array
+    {
+        // not adding a lock, as the chances of race condition is extremely rare
+        $this->trace->info(
+            TraceCode::MERCHANT_EDIT_RISK_ATTRIBUTES,
+            [
+                'merchant_id' => $id,
+                'input'       => $input,
+            ]);
+
+        (new Validator)->validateRiskAttributes($input);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        if ($this->app['api.route']->isWorkflowExecuteOrApproveCall() === false)
+        {
+            $newMerchant = clone $merchant;
+
+            $newMerchant->edit($input);
+
+            // in case diff is empty, 
+            // the workflow handle method will throw an undefined index exception as part of redactFields
+            // we can introduce a additonal check to get the diff and verify if its empty or not
+            (new Validator)->validateRiskAttributesHasDiff($merchant, $newMerchant);
+
+            $this->app['workflow']
+                ->setEntity($merchant->getEntity())
+                ->handle($merchant, $newMerchant);
+        }
+
+        return $this->edit($id, $input);
+    }
+
     /**
      * Old flow: Sends a mail to the sub-merchant email telling them about
      * account creation. Adds aggregator in cc if the sub-merchant

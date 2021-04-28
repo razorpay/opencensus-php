@@ -20,6 +20,7 @@ use RZP\Models\Admin\Admin;
 use RZP\Models\Payment\Event;
 use RZP\Models\Merchant\Detail;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Workflow\Action\Differ;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Detail\ActivationFlow as ActivationFlow;
@@ -77,6 +78,10 @@ class Validator extends Base\Validator
 
     const ACTION_PERMISSION_MAP_FOR_MERCHANT_EDIT_BULK = [
         Action::SUSPEND               => Permission::EDIT_MERCHANT_SUSPEND_BULK
+    ];
+
+    const MERCHANT_RISK_ATTRIBUTES = [
+        Entity::MAX_PAYMENT_AMOUNT
     ];
 
     protected static $createRules = [
@@ -1904,4 +1909,46 @@ class Validator extends Base\Validator
         }
     }
 
+    /**
+     * Validates if only risk attributes
+     *
+     * @param array $input
+     *
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateRiskAttributes(array $input)
+    {
+        if(empty($input) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_MERCHANT_RISK_ATTRIBUTES_REQUIRED);
+        }
+
+        foreach(array_keys($input) as $riskAttribute)
+        {
+            if (in_array($riskAttribute, self::MERCHANT_RISK_ATTRIBUTES) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_INVALID_RISK_ATTRIBUTE,
+                    $riskAttribute);
+            }
+        }
+    }
+
+    /**
+     * Validates if risk attributes has diff
+     *
+     * @param Entity $merchant
+     * @param Entity $newMerchant
+     *
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateRiskAttributesHasDiff(Entity $merchant, Entity $newMerchant)
+    {
+        $diff = (new Differ\Core)->createDiff($merchant->toArray(), $newMerchant->toArray());
+
+        if (empty($diff) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_MERCHANT_NO_DIFF_IN_RISK_ATTRIBUTES);
+        }
+    }
 }
