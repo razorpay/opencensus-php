@@ -29,6 +29,8 @@ class Core extends Base\Core
 
         if($downtime->isScheduled() === false)
         {
+            (new Service())->emailDowntime(Constants::CREATED, $downtime);
+
             PaymentDowntimeEvent::dispatch($this->mode, Status::STARTED, serialize($downtime));
         }
 
@@ -50,6 +52,8 @@ class Core extends Base\Core
 
         if($downtime->isScheduled() === false)
         {
+            (new Service())->emailDowntime(Constants::CREATED, $downtime, $lastSeverity);
+
             PaymentDowntimeEvent::dispatch($this->mode, Status::STARTED, serialize($downtime), $lastSeverity);
         }
 

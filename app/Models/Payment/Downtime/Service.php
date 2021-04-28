@@ -121,8 +121,6 @@ class Service extends Base\Service
 
     public function eventDowntimeStarted(Entity $downtime, $lastSeverity=null)
     {
-        $this->emailDowntime(Constants::CREATED, $downtime, $lastSeverity);
-
         try
         {
             // @see getMerchantsSubscribingToWebhookEvent method.
@@ -162,8 +160,6 @@ class Service extends Base\Service
 
     public function eventDowntimeResolved(Entity $downtime, $lastSeverity=null)
     {
-        $this->emailDowntime(Constants::RESOLVED, $downtime, $lastSeverity);
-
         try {
             // @see getMerchantsSubscribingToWebhookEvent method.
             if($downtime->getMerchantId() === null)
