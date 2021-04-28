@@ -2204,6 +2204,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const FRESHCHAT_REQUEST                                     = 'FRESHCHAT_REQUEST';
     const FRESHCHAT_RESPONSE                                    = 'FRESHCHAT_RESPONSE';
+    const PUT_FRESHCHAT_TIMINGS_CONFIG                          = 'PUT_FRESHCHAT_TIMINGS_CONFIG';
+    const PUT_FRESHCHAT_HOLIDAYS_CONFIG                         = 'PUT_FRESHCHAT_HOLIDAYS_CONFIG';
 
     const CARE_SERVICE_REQUEST                                  = 'CARE_SERVICE_REQUEST';
     const CARE_SERVICE_RESPONSE                                 = 'CARE_SERVICE_RESPONSE';
@@ -4338,6 +4340,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // DB Query Event Listners
     const DB_QUERY_EXECUTION_LOG                                = 'DB_QUERY_EXECUTION_LOG';
+
 
     // PAYOUT_CREATE_SUBMITTED_LOW_PRIORITY traces
     const PAYOUT_CREATE_SUBMITTED_INITIATE_REQUEST_LOW_PRIORITY     = 'PAYOUT_CREATE_SUBMITTED_INITIATE_REQUEST_LOW_PRIORITY';

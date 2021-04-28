@@ -2206,6 +2206,12 @@ class Route
 
         'freshchat_extract_report_cron'           => ['post',      'freshchat/extract_report',                                    'FreshchatController@postExtractReport'                      ],
         'freshchat_retrieve_report_cron'          => ['post',      'freshchat/retrieve_report',                                   'FreshchatController@postRetrieveReport'                     ],
+        'freshchat_put_chat_timings_config'       => ['put',       'chat/timings_config',                                         'FreshchatController@putChatTimingsConfig'                   ],
+        'freshchat_get_chat_timings_config'       => ['get',       'chat/timings_config',                                         'FreshchatController@getChatTimingsConfig'                   ],
+        'freshchat_get_chat_timings_config_proxy' => ['get',       'merchants/chat/timings_config',                               'FreshchatController@getChatTimingsConfig'                   ],
+        'freshchat_put_chat_holidays_config'      => ['put',       'chat/holidays_config',                                        'FreshchatController@putChatHolidaysConfig'                  ],
+        'freshchat_get_chat_holidays_config'      => ['get',       'chat/holidays_config',                                        'FreshchatController@getChatHolidaysConfig'                  ],
+        'freshchat_get_chat_holidays_config_proxy'=> ['get',       'merchants/chat/holidays_config',                              'FreshchatController@getChatHolidaysConfig'                  ],
 
         'entity_bulk_update'                      => ['post',      'entities/bulk-update',                                         'MerchantController@merchantsBulkUpdate'                    ],
         'fetch_batch_actions'                     => ['get',       'batch_actions',                                          'MerchantController@getBatchActions'                        ],
@@ -3292,6 +3298,8 @@ class Route
     ];
 
     public static $proxy = [
+        'freshchat_get_chat_timings_config_proxy',
+        'freshchat_get_chat_holidays_config_proxy',
         'rbl_current_account_serviceability_get',
         'merchant_primary_balance_fetch',
         'virtual_account_expiry_setting_upsert',
@@ -4555,6 +4563,11 @@ class Route
 
         // Care service
         'care_service_admin_proxy',
+
+        'freshchat_put_chat_timings_config',
+        'freshchat_get_chat_timings_config',
+        'freshchat_put_chat_holidays_config',
+        'freshchat_get_chat_holidays_config',
     ];
 
     public static $routePermission = [
@@ -5375,7 +5388,7 @@ class Route
         'reward_update'                               => Permission::UPDATE_REWARD,
         'reward_create'                               => Permission::CREATE_REWARD,
         'reward_delete'                               => Permission::DELETE_REWARD,
-        'advertiser_logo'                             => Permission::GET_ADVERTISER_LOGO  ,
+        'advertiser_logo'                             => Permission::GET_ADVERTISER_LOGO,
         'rewards_batch_email'                         => Permission::REWARD_BATCH_MAIL,
         // Admin merchant notification configs
         'create_merchant_notification_config_admin'           => Permission::MERCHANT_NOTIFICATION_CONFIG_ADMIN,
@@ -5421,6 +5434,12 @@ class Route
         'currency_fetch_all_proxy'                            => Permission::CURRENCY_FETCH_RATES,
 
         'care_service_admin_proxy'                            => Permission::MANAGE_CARE_SERVICE_CALLBACK, // todo: have more fine grained permissions at route level
+
+        'freshchat_put_chat_timings_config'                   => Permission::MANAGE_FRESHCHAT,
+        'freshchat_get_chat_timings_config'                   => Permission::MANAGE_FRESHCHAT,
+        'freshchat_put_chat_holidays_config'                  => Permission::MANAGE_FRESHCHAT,
+        'freshchat_get_chat_holidays_config'                  => Permission::MANAGE_FRESHCHAT,
+
 
         //Partner Activation routes
         'partner_activation_details'               => '*',
@@ -6106,6 +6125,8 @@ class Route
             'freshdesk_fetch_tickets',
             'freshdesk_otp_send',
             'freshdesk_raise_grievance',
+            'freshchat_get_chat_timings_config_proxy',
+            'freshchat_get_chat_holidays_config_proxy',
             'fund_account_bulk_create',
             'fund_account_create',
             'fund_account_create_public',
@@ -7182,6 +7203,10 @@ class Route
             'freshdesk_fetch_tickets',
             'freshdesk_otp_send',
             'freshdesk_raise_grievance',
+            'freshchat_put_chat_timings_config',
+            'freshchat_get_chat_timings_config',
+            'freshchat_put_chat_holidays_config',
+            'freshchat_get_chat_holidays_config',
             'fts_dashboard_bulk_status_get',
             'fts_dashboard_channel_health_create',
             'fts_dashboard_channel_health_delete',

@@ -9250,6 +9250,8 @@ class MerchantTest extends TestCase
             $this->createTestDataForTestMerchantSupportOptions($testCase);
 
             $this->startTest();
+
+            Carbon::setTestNow(Carbon::createFromTimestamp(1617883696)); // timestamp corresponds to valid chat timing on a working day
         }
     }
 
@@ -9446,12 +9448,46 @@ class MerchantTest extends TestCase
                 ],
             ],
             self::ACTIVATE_MERCHANT =>  [1]
-        ]
-        ];
+        ],
+        [
+            self::REQUEST       => [
+                'url'      => '/merchants/support/option/flags',
+                'method'   => \Requests::GET
+            ],
+            self::RESPONSE       => [
+                'content' => [
+                    "show_chat"                 =>  false,
+                    "show_create_ticket_popup"  =>  false
+                ],
+            ],
+            self::ACTIVATE_MERCHANT =>  [1],
+            'time'                  => Carbon::createFromTime(2, 0, 0, Timezone::IST),
+        ],
+        //holiday
+        [
+            self::REQUEST       => [
+                'url'      => '/merchants/support/option/flags',
+                'method'   => \Requests::GET
+            ],
+            self::RESPONSE       => [
+                'content' => [
+                    "show_chat"                 =>  false,
+                    "show_create_ticket_popup"  =>  false
+                ],
+            ],
+            self::ACTIVATE_MERCHANT =>  [1],
+            'time'                  => Carbon::createFromDate(2021, 4, 13, Timezone::IST),
+        ],
+    ];
+
     }
 
     private function createTestDataForTestMerchantSupportOptions($testCase)
     {
+        if (isset($testCase['time']) === true)
+        {
+            Carbon::setTestNow($testCase['time']);
+        }
         if (empty($testCase[self::CREATE_MERCHANT_DETAILS_VALID_FIELDS]) === false)
         {
             $merchantId = $this->fixtures->create('merchant_detail:valid_fields'

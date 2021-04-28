@@ -57,4 +57,5 @@ class Category
     const INHERITANCE                  = 'inheritance';
     const FILE_STORE                   = 'file_store';
     const CONFIG_KEY                   = 'config_key';
+    const FRESHCHAT                    = 'freshchat';
 }

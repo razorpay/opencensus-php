@@ -5796,6 +5796,11 @@ class Service extends Base\Service
      */
     protected function canChatOnDashboard($isActivated) : bool
     {
+        if ((new Freshchat\Service)->isChatEnabledNow() === false)
+        {
+            return false;
+        }
+
         $merchantDetailsCore = new MerchantDetailCore;
 
         $merchantDetail = $merchantDetailsCore->getMerchantDetails($this->merchant);

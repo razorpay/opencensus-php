@@ -1382,6 +1382,13 @@ return [
                 'assignable'    => true,
             ],
         ],
+
+        PermissionCategory::FRESHCHAT => [
+            Permission::MANAGE_FRESHCHAT => [
+                'description'   => 'Manage chat configurations like timings/day of week to enable chat',
+                'assignable'    => true,
+            ],
+        ],
     ],
 
     'workflows' => [

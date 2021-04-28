@@ -176,4 +176,118 @@ class FreshchatTest extends TestCase
             return true;
         });
     }
+
+    public function testPutChatTimingsConfig()
+    {
+        $this->ba->adminAuth();
+        
+        $this->startTest();
+
+        $configFromCache = $this->app['cache']->get('chat_timings_cache_config_key');
+
+        $this->assertEquals($this->testData[__FUNCTION__]['response']['content'], $configFromCache);
+    }
+
+    public function testPutChatTimingsConfigInvalid()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetChatTimingsConfig()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testPutChatTimingsConfig'];
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $this->testData[__FUNCTION__]['request']['method'] = 'GET';
+
+        $this->startTest();
+    }
+
+    public function testGetChatTimingsConfigProxyAuth()
+    {
+        $timingsConfig =  [
+            0 => ['start' => 540, 'end' => 1260],
+            1 => ['start' => 540, 'end' => 1260],
+            2 => ['start' => 540, 'end' => 1260],
+            3 => ['start' => 540, 'end' => 1260],
+            4 => ['start' => 540, 'end' => 1260],
+            5 => ['start' => 0, 'end' => 0],
+            6 => ['start' => 0, 'end' => 0],
+        ];
+
+        $this->app['cache']->forever('chat_timings_cache_config_key',  $timingsConfig);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetChatTimingsConfigDefault()
+    {
+        // first test for default value (incase value is not present in cache)
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testPutChatHoliday()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $configFromCache = $this->app['cache']->get('chat_holidays_cache_config_key');
+
+        $this->assertEquals($this->testData[__FUNCTION__]['response']['content'], $configFromCache);
+    }
+
+    public function testPutChatHolidayInvalid()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetChatHolidaysConfig()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testPutChatHoliday'];
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $this->testData[__FUNCTION__]['request']['method'] = 'GET';
+
+        $this->startTest();
+    }
+
+    public function testGetChatHolidaysConfigProxyAuth()
+    {
+        $holidaysConfig =  [
+            [
+                'day'   => 4,
+                'month' => 3,
+                'year'  => 2021,
+            ],
+        ];
+
+        $this->app['cache']->forever('chat_holidays_cache_config_key',  $holidaysConfig);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetChatHolidaysDefault()
+    {
+        // first test for default value (incase value is not present in cache)
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
 }
