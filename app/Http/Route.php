@@ -1280,7 +1280,8 @@ class Route
         'payout_links_fetch_multiple'              => ['get',       'payout-links',                                  'PayoutLinkController@list'                                         ],
         'payout_links_fetch_by_id'                 => ['get',       'payout-links/{id}',                             'PayoutLinkController@get'                                          ],
         'payout_links_create'                      => ['post',      'payout-links',                                  'PayoutLinkController@create'                                       ],
-        'payout_links_create_batch'                 => ['post',      'payout-links/batch',                           'PayoutLinkController@createBatch'                                       ],
+        'payout_links_batch_process'               => ['post',      'payout-links/batch',                            'PayoutLinkController@processBatch'                                 ],
+        'payout_links_batch_create'                => ['post',      'payout-links/batch-create',                     'PayoutLinkController@createBatch'                                  ],
         'payout_links_generate_end_user_otp'       => ['post',      'payout-links/{x_entity_id}'
                                                                      . '/generate-customer-otp',                     'PayoutLinkController@generateAndSendCustomerOtp'                   ],
         'payout_links_generate_end_user_otp_cors'  => ['options',   'payout-links/{x_entity_id}'
@@ -2534,7 +2535,6 @@ class Route
         'payout_links_fetch_multiple',
         'payout_links_fetch_by_id',
         'payout_links_create',
-        'payout_links_create_batch',
         'payout_links_cancel',
         'payment_create_private',
         'payment_create_private_old',
@@ -3193,7 +3193,8 @@ class Route
         'create_reversal_entry',
         'banking_account_fetch_by_account_number',
         'create_FTA_payout_service',
-        'create_ledger_payout_service'
+        'create_ledger_payout_service',
+        'payout_links_batch_process',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -3375,6 +3376,7 @@ class Route
         'credits_fetch_multiple',
         'credits_fetch_by_id',
         'batch_create',
+        'payout_links_batch_create',
         'batch_validate_file',
         'batch_fetch_multiple',
         'batch_fetch_by_id',
@@ -5456,6 +5458,7 @@ class Route
         'webhook_edit'                                 => Permission::UPDATE_WEBHOOK,
         'webhook_delete'                               => Permission::UPDATE_WEBHOOK,
         'batch_create'                                 => Permission::CREATE_BATCH,
+        'payout_links_batch_create'                    => Permission::CREATE_PAYOUT_LINKS_BATCH,
         'reporting_config_get'                         => Permission::GET_SELF_SERVE_REPORT,
         'reporting_config_list'                        => Permission::GET_SELF_SERVE_REPORT,
         'reporting_config_edit'                        => Permission::CREATE_SELF_SERVE_REPORT,
@@ -5943,6 +5946,7 @@ class Route
             'banking_account_statement_generate',
             'banking_accounts_list',
             'batch_create',
+            'payout_links_batch_create',
             'batch_download_file',
             'batch_fetch_by_id',
             'batch_fetch_multiple',
@@ -6471,7 +6475,6 @@ class Route
             'payout_links_batch_summary',
             'payout_links_cancel',
             'payout_links_create',
-            'payout_links_create_batch',
             'payout_links_customer_hosted_page',
             'payout_links_fetch_by_id',
             'payout_links_fetch_multiple',
@@ -7804,7 +7807,6 @@ class Route
             'payout_links_batch_summary',
             'payout_links_cancel',
             'payout_links_create',
-            'payout_links_create_batch',
             'payout_links_customer_hosted_page',
             'payout_links_fetch_by_id',
             'payout_links_fetch_multiple',
@@ -8911,7 +8913,7 @@ class Route
             'scrooge_refunds_retry_custom_fund_transfers',
             'scrooge_refunds_retry_custom_fund_transfers_batch',
             'partner_config_bulk_upsert',
-            'payout_links_create_batch',
+            'payout_links_batch_process',
             'nach_batch_process',
             'website_checker',
         ],
@@ -9438,7 +9440,6 @@ class Route
         'payout_links_fetch_multiple',
         'payout_links_fetch_by_id',
         'payout_links_create',
-        'payout_links_create_batch',
         'payout_links_generate_end_user_otp',
         'payout_links_generate_end_user_otp_cors',
         'payout_links_verify_customer_otp',
@@ -9450,6 +9451,7 @@ class Route
         'payout_links_bulk_resend_notification_admin',
         'payout_links_customer_hosted_page',
         'payout_links_batch_summary',
+        'payout_links_batch_create',
 
         'vendor_payment_contact_list',
         'vendor_payment_invoice_upload',

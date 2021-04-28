@@ -455,6 +455,7 @@ class Name
     const DELETE_INVITATION                   = 'delete_invitation';
     const MERCHANT_PRODUCT_SWITCH             = 'merchant_product_switch';
     const CREATE_BATCH                        = 'create_batch';
+    const CREATE_PAYOUT_LINKS_BATCH           = 'create_payout_links_batch';
     const CREATE_USER_OTP                     = 'create_user_otp';
     const GENERATE_BANKING_ACCOUNT_STATEMENT  = 'generate_banking_account_statement';
     const MERCHANT_INSTANT_ACTIVATION         = 'merchant_instant_activation';

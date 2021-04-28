@@ -29,6 +29,11 @@ class Validator extends Base\Validator
     const MAX_AMAZON_PAY_AMOUNT            = 1000000;
     const RESEND_NOTIFICATION_PARAMS       = 'resend_notification_params';
     const NOTIFICATION_SETTINGS            = 'notification_settings';
+    const BATCH_CREATE                     = 'batch_create';
+
+    protected static $batchCreateRules = [
+        'type'      => 'required|string',
+    ];
 
     protected static $resendNotificationRules = [
         Entity::SEND_EMAIL           => 'sometimes|boolean',

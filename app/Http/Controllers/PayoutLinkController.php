@@ -199,9 +199,14 @@ class PayoutLinkController extends Controller
         return $this->service()->adminActions($this->input);
     }
 
-    public function createBatch()
+    /**
+     * Internally calls Payout Links MicroService to process the rows
+     * Batch MicroService calls this endpoint with the data to process
+     * @return mixed
+     */
+    public function processBatch()
     {
-        $response = $this->service()->createBatch($this->input);
+        $response = $this->app['payout-links']->processBatch($this->input);
 
         return ApiResponse::json($response);
     }
@@ -216,6 +221,18 @@ class PayoutLinkController extends Controller
     public function bulkResendNotification()
     {
         $response = $this->service()->bulkResendNotification($this->input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * Used by dashboard to create a new Batch
+     * internally calls Batch MicroService to process the input file
+     * @return mixed
+     */
+    public function createBatch()
+    {
+        $response = $this->app['payout-links']->createBatch($this->input, $this->ba->getMerchant(), $this->ba->getUser());
 
         return ApiResponse::json($response);
     }

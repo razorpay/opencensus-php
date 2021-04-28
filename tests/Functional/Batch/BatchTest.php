@@ -5,11 +5,14 @@ namespace RZP\Tests\Functional\Batch;
 use Hash;
 use Mail;
 
-use RZP\Mail\Batch\PayoutApproval;
 use RZP\Models\Vpa;
+use RZP\Models\Batch;
 use RZP\Models\Payout;
+use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
+use RZP\Services\RazorXClient;
 use RZP\Mail\Batch\PaymentLink;
+use RZP\Mail\Batch\PayoutApproval;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Base\PublicCollection;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
@@ -170,5 +173,62 @@ class BatchTest extends TestCase
         $this->ba->adminAuth('test', $token);
 
         $this->startTest();
+    }
+
+    public function testPLBulkBatchCreateForValidUserRoles()
+    {
+        $entries = [
+            [
+                Batch\Header::PAYOUT_LINK_BULK_CONTACT_NAME        => 'Amit',
+                Batch\Header::PAYOUT_LINK_BULK_CONTACT_NUMBER      => '9876543210',
+                Batch\Header::PAYOUT_LINK_BULK_CONTACT_EMAIL       => 'amit@razorpay.com',
+                Batch\Header::PAYOUT_LINK_BULK_PAYOUT_DESC         => 'testing',
+                Batch\Header::CONTACT_TYPE                         => 'employee',
+                Batch\Header::PAYOUT_LINK_BULK_AMOUNT              => 1000,
+                Batch\Header::PAYOUT_LINK_BULK_SEND_SMS            => 'Yes',
+                Batch\Header::PAYOUT_LINK_BULK_SEND_EMAIL          => 'Yes',
+                Batch\Header::PAYOUT_PURPOSE                       => 'refund',
+                Batch\Header::PAYOUT_LINK_BULK_REFERENCE_ID        => 'REFERENCE01',
+                Batch\Header::PAYOUT_LINK_BULK_NOTES_TITLE         => 'test key',
+                Batch\Header::PAYOUT_LINK_BULK_NOTES_DESC          => 'test value',
+            ],
+        ];
+
+        $this->mockRazorXTreatmentAccessDenyUnauthorised('on');
+
+        $validRoles = ['owner', 'admin', 'finance_l1', 'operations'];
+
+        foreach ($validRoles as $role)
+        {
+            $this->createAndPutCsvFileInRequest($entries, __FUNCTION__);
+
+            $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], $role);
+
+            $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+            $this->startTest();
+        }
+    }
+
+    protected function mockRazorXTreatmentAccessDenyUnauthorised($value = 'on')
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode) use ($value)
+                {
+                    if ($feature === Merchant\RazorxTreatment::RAZORPAY_X_ACL_DENY_UNAUTHORISED)
+                    {
+                        return $value;
+                    }
+
+                    return 'off';
+                }));
     }
 }

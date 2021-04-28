@@ -8,6 +8,7 @@ use Requests;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Http\RequestHeader;
 use RZP\Constants\Environment;
 use RZP\Models\FundAccount\Type;
 use RZP\Models\Merchant;
@@ -15,11 +16,15 @@ use RZP\Http\Response\StatusCode;
 use RZP\Models\PayoutLink\Entity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\PayoutLink\Validator;
+use RZP\Models\Batch\Type as BatchType;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Vpa\Entity as VpaEntity;
 use RZP\Models\BankingAccount\Channel;
+use RZP\Models\Batch\Core as BatchCore;
+use RZP\Models\User\Entity as UserEntity;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\FundAccount\Entity as FundAccountEntity;
+use RZP\Exception\BadRequestValidationFailureException;
 
 /**
  * Class PayoutLinks
@@ -538,15 +543,30 @@ class PayoutLinks
         return $this->makeRequest($url, $parsedData);
     }
 
-    public function createBatch(array $input, string $batchId, string $merchantId)
+    public function processBatch(array $input)
     {
-        $this->trace->info(TraceCode::PAYOUT_LINK_BATCH_CREATE_REQUEST,
-            [
-                self::BATCH_ID => $batchId,
-                'input'          => $input
-            ]);
-
         $this->rzpModeCheck();
+
+        $merchantId = $this->app['request']->header(RequestHeader::X_ENTITY_ID) ?? null;
+
+        $userId = $this->app['request']->header(RequestHeader::X_DASHBOARD_USER_ID) ?? null;
+
+        $batchId = $this->app['request']->header(RequestHeader::X_Batch_Id, null);
+
+        if (empty($batchId) === true)
+        {
+            throw new BadRequestValidationFailureException(
+                ErrorCode::BAD_REQUEST_BATCH_ID_MISSING_FOR_PAYOUT_LINK_PROCESS_BATCH
+            );
+        }
+
+        $this->trace->info(TraceCode::PAYOUT_LINK_PROCESS_BATCH_REQUEST,
+            [
+                self::MERCHANT_ID => $merchantId,
+                self::BATCH_ID => $batchId,
+                'input'          => $input,
+                'temp_user_id'=> $userId,
+            ]);
 
         $request[self::BATCH_ID] = $batchId;
 
@@ -587,6 +607,34 @@ class PayoutLinks
         $response = $this->makeRequest($url, $input);
 
         return $response;
+    }
+
+    public function createBatch(array $input, MerchantEntity $merchant, UserEntity $user): array
+    {
+        $plValidator = new Validator();
+
+        $plValidator->setStrictFalse();
+
+        $plValidator->validateInput(Validator::BATCH_CREATE, $input);
+
+        // only creating payout_link_bulk type batch
+        if($input['type'] === BatchType::PAYOUT_LINK_BULK)
+        {
+            $batch = (new BatchCore)->create($input, $merchant, $user);
+
+            return $batch->toArrayPublic();
+        }
+        else
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_BATCH_TYPE_FOR_PAYOUT_LINK_CREATE_BATCH,
+                null,
+                [
+                    Entity::MERCHANT_ID     => $merchant->getId(),
+                    'type'                  => $input['type']
+                ]
+            );
+        }
     }
 
     /**

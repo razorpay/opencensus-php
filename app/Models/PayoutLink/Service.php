@@ -8,12 +8,14 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Models\Batch\Type;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Entity as E;
 use Illuminate\Support\Facades\Mail;
 use RZP\Base\ConnectionType;
 use RZP\Models\User\Core as UserCore;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Batch\Core as BatchCore;
 use RZP\Mail\PayoutLink\FailedInternal;
 use RZP\Mail\PayoutLink\SuccessInternal;
 use RZP\Mail\PayoutLink\SendLinkInternal;
@@ -720,22 +722,6 @@ class Service extends Base\Service
         $this->checkIfPLServiceIsDown();
 
         return $this->app['payout-links']->adminActions($input);
-    }
-
-    public function createBatch(array $input): array
-    {
-        $this->checkIfPLServiceIsDown();
-
-        $merchantId = $this->merchant->getId();
-
-        $batchId = $this->app['request']->header(RequestHeader::X_Batch_Id, null);
-
-        if (empty($batchId) === true)
-        {
-            throw new BadRequestValidationFailureException('batch_id not present');
-        }
-
-        return $this->app['payout-links']->createBatch($input, $batchId, $merchantId);
     }
 
     public function getBatchSummary(string $batchId)

@@ -313,4 +313,28 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_REQUIRED_PERMISSION_NOT_FOUND,
         ],
     ],
+
+    'testPLBulkBatchCreateForValidUserRoles' => [
+        'server' => [
+            'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+        ],
+        'request'  => [
+            'url'     => '/payout-links/batch-create',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'payout_link_bulk',
+                'otp'  => '0007',
+                'token'=> '12345678900000',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'      => 'batch',
+                'type'        => 'payout_link_bulk',
+                'status'      => 'created',
+                'total_count' => 1,
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];

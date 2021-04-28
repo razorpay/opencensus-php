@@ -1034,6 +1034,8 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_CONTACT_ID                                       = 'Contact Id provided is invalid';
     const BAD_REQUEST_CONTACT_ID_EMAIL_AND_PHONE_NUMBER_MISSING                = 'Cannot create payout link as the contact_id provided does not have either email or phone number';
     const BAD_REQUEST_PAYOUT_LINK_SERVICE_UNDER_MAINTAINENCE                   = 'Payout Link service is under maintainence';
+    const BAD_REQUEST_INVALID_BATCH_TYPE_FOR_PAYOUT_LINK_CREATE_BATCH          = 'Invalid batch type for Payout Links Batch';
+    const BAD_REQUEST_BATCH_ID_MISSING_FOR_PAYOUT_LINK_PROCESS_BATCH           = 'Batch ID missing for Payout Links Process Batch';
 
     const BAD_REQUEST_BULK_PAYOUTS_PAYOUT_HEADER_MISMATCH                      = 'Payout amount header needs to be of either rupees or paise type';
     const BAD_REQUEST_VA_TO_VA_PAYOUTS_BLOCKED                                 = 'Payouts to RazorpayX Virtual Account is not enabled for your account. Please contact support for any further assistance';
