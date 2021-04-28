@@ -601,14 +601,17 @@
                                       </a>
                                     </div>
                                     <div align="center" style="text-align:center;font-size:12px;margin-top:12px">
-                                      <a href="https://www.facebook.com/razorpay" style="text-decoration: none; margin: 6px;" target="_blank">
+                                    <a href="https://www.facebook.com/sharer.php?u=https://razorpay.com/links/covid19" style="text-decoration: none; margin: 6px;" target="_blank">
                                       <img height="16px" alt="razorpay facebook" src="https://cdn.razorpay.com/static/assets/email/facebook.png" style="height: 16px; width: auto">
                                       </a>
-                                      <a href="https://twitter.com/razorpay" style="text-decoration: none; margin: 6px;" target="_blank">
+                                      <a href="https://twitter.com/intent/tweet?url=https://razorpay.com/links/covid19&text=Here%20is%20a%20list%20of%20organisations%20doing%20incredible%20work%20in%20fighting%20COVID-19%20in%20India.%0ANo%20contribution%20is%20enough,%20no%20amount%20is%20less,%20every%20bit%20matters.%0ADonate%20Now!" style="text-decoration: none;  margin: 6px;" target="_blank">
                                       <img height="16px" alt="razorpay twitter" src="https://cdn.razorpay.com/static/assets/email/twitter.png" style="height: 16px; width: auto">
                                       </a>
-                                      <a href="https://instagram.com/razorpay" style="text-decoration: none; margin: 6px;" target="_blank">
-                                      <img height="16px" alt="razorpay instagram" src="https://cdn.razorpay.com/static/assets/email/insta.png" style="height: 16px; width: auto">
+                                      <a href="https://www.linkedin.com/shareArticle?url=https://razorpay.com/links/covid19" style="text-decoration: none;  margin: 6px;" target="_blank">
+                                      <img height="16px" alt="razorpay linkedin" src="https://cdn.razorpay.com/static/assets/email/linkedin.png" style="height: 16px; width: auto">
+                                      </a>
+                                      <a href="https://api.whatsapp.com/send?text=Here%20is%20a%20list%20of%20organisations%20doing%20incredible%20work%20in%20fighting%20COVID-19%20in%20India.%0ANo%20contribution%20is%20enough%2C%20no%20amount%20is%20less%2C%20every%20bit%20matters.%0ADonate%20Now!%0Ahttps%3A%2F%2Frazorpay.com%2Flinks%2Fcovid19" style="text-decoration: none;  margin: 6px;" target="_blank">
+                                      <img height="16px" alt="razorpay whatsapp" src="https://cdn.razorpay.com/static/assets/email/whatsapp.png" style="height: 16px; width: auto">
                                       </a>
                                     </div>
                                   </div>
