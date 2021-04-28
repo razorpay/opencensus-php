@@ -524,7 +524,7 @@ class LeafListItem extends React.Component {
                 <i class="i i-info-outline" />
                 <p>
                   {isAmex
-                    ? 'Due to recent data localisation guidelines issued by RBI, we are unable to offer this instrument currently.'
+                    ? 'Due to recent data localisation guidelines compliance issue, Amex has stopped onboarding merchants on their network. We will notify you when this option becomes available again.'
                     : instrument.comment || 'No comments available'}
                 </p>
               </div>
