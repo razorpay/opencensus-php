@@ -18,7 +18,7 @@
     <div>
         What this means for you:
         <br/>
-        1. New payments will not be accepted while the review is in progress.
+        1. You can continue accepting payments while the review is in progress.
         <br/>
         2. Your past payments from customers are safely kept on hold and will be settled immediately once the review is done successfully.
     </div>

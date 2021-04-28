@@ -202,8 +202,6 @@ class Core extends Base\Core
                 // disable settlements for merchants
                 foreach ($merchants as $merchant)
                 {
-                    $merchant->setAttribute(MerchantEntity::ACTIVATED, false);
-                    $merchant->liveDisable();
                     $merchant->setHoldFunds(true);
                     $merchant->setHoldFundsReason('GMV hard limit breached for the merchant.');
                     $this->sendMailToInformHardLimitReached($merchant);
