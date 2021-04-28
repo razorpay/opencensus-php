@@ -883,7 +883,6 @@ class Netbanking
         IFSC::KJSB,
         IFSC::MSNU,
         IFSC::BDBL,
-        IFSC::DLXB,
         IFSC::BACB,
         IFSC::KCCB,
         IFSC::TBSB,

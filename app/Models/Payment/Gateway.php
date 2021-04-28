@@ -372,6 +372,7 @@ class Gateway
         self::NETBANKING_SIB,
         self::NETBANKING_SCB,
         self::NETBANKING_AUSF,
+        self::NETBANKING_DLB,
     ];
 
     /**
@@ -418,7 +419,8 @@ class Gateway
         Payment\Gateway::PAYTM,
         Payment\Gateway::PAYSECURE,
         Payment\Gateway::CRED,
-        Payment\Gateway::UPI_YESBANK
+        Payment\Gateway::UPI_YESBANK,
+        Payment\Gateway::NETBANKING_DLB,
     ];
 
     // Bank such as Netbanking Canara enforces to send fee in request.
@@ -2224,6 +2226,7 @@ class Gateway
         IFSC::IDIB => Gateway::NETBANKING_IBK,
         IFSC::AUBL => Gateway::NETBANKING_AUSF,
         IFSC::JSFB => Gateway::NETBANKING_JSB,
+        IFSC::DLXB => Gateway::NETBANKING_DLB,
     ];
 
     /**

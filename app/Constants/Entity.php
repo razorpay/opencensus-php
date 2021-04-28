@@ -290,6 +290,7 @@ class Entity
     const NETBANKING_IOB         = 'netbanking_iob';
     const NETBANKING_FSB         = 'netbanking_fsb';
     const NETBANKING_AUSF        = 'netbanking_ausf';
+    const NETBANKING_DLB         = 'netbanking_dlb';
     const WALLET_PHONEPE         = 'wallet_phonepe';
     const WALLET_PHONEPESWITCH   = 'wallet_phonepeswitch';
     const NETBANKING_CSB         = 'netbanking_csb';
@@ -911,6 +912,7 @@ class Entity
         self::NETBANKING_EQUITAS     => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_SBI         => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_AUSF        => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_DLB         => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_IDFC        => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_VIJAYA      => \RZP\Gateway\Netbanking\Base::class,
 

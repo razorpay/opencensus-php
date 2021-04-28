@@ -100,6 +100,7 @@ class Type
 
     const AUBL_NETBANKING_COMBINED          = 'aubl_netbanking_combined';
 
+    const DLB_NETBAKING_REFUND              = 'dlb_netbanking_refund';
 
     const INDUSIND_NETBANKING_REFUND        = 'indusind_netbanking_refund';
 
@@ -345,6 +346,7 @@ class Type
             self::AUBL_NETBANKING_CLAIM,
             self::AUBL_NETBANKING_REFUND,
             self::AUBL_NETBANKING_COMBINED,
+            self::DLB_NETBAKING_REFUND,
             self::KOTAK_CORP_NETBANKING_REFUND,
         ],
 
@@ -500,6 +502,7 @@ class Type
         self::AUBL_NETBANKING_CLAIM,
         self::AUBL_NETBANKING_REFUND,
         self::AUBL_NETBANKING_COMBINED,
+        self::DLB_NETBAKING_REFUND,
         self::KOTAK_CORP_NETBANKING_REFUND,
         self::DATA_LAKE_SEGMENT_FILE
     ];
@@ -629,6 +632,7 @@ class Type
             self::SCB_NETBANKING_REFUND,
             self::JSB_NETBANKING_REFUND,
             self::MINDGATE_UPI_REFUND,
+            self::DLB_NETBAKING_REFUND,
         ],
 
         self::DATA_LAKE_SEGMENTS_BUCKET_CONFIG => [

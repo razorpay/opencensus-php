@@ -125,4 +125,16 @@ return [
         'Payment Date'              => Carbon::today()->format("dmY"),
         'fc_process_date'           => Carbon::today()->format("dmY")
     ],
+
+    'testDlbSuccessRecon' => [
+        'Sr.NO'                     => '1',
+        'BankMerchantId'            => 'RAZORPG',
+        'TxnDate'                   => '20210303',
+        'TxnRefNo'                  => '110098534998',
+        'BankRefNo'                 => '12345678',
+        'PAYMENT_AMT'               => '2.00',
+        'AccountNumber'             => '015500100079670',
+        'AccountType'               => 'SAVINGS BANK-RESIDENT',
+        'IBRefNo'                   => '1234',
+    ],
 ];
