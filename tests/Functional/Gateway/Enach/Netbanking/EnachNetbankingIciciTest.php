@@ -249,6 +249,65 @@ class EnachNetbankingNpciIciciTest extends EnachNetbankingNpciGatewayTest
         });
     }
 
+    public function testCancelEmandateToken()
+    {
+        $this->makeDebitPayment();
+
+        $debitPayment = $this->getDbLastPayment();
+
+        $paymentEntity = $this->getDbEntities('payment',
+            [
+                'token_id' => $debitPayment->getTokenId(),
+                'amount'   => 0
+            ])->first();
+
+        $this->assertTrue($paymentEntity->isCaptured());
+
+        $token = $paymentEntity->localToken;
+
+        $this->assertEquals('confirmed', $token->getRecurringStatus());
+        $this->assertEquals($paymentEntity->getMethod(), $token->getMethod());
+        $this->assertEquals($paymentEntity->getTerminalId(), $token->getTerminalId());
+        $this->assertNotEmpty($token->getGatewayToken());
+
+        $enach = $this->getDbEntities('enach', ['payment_id' => $paymentEntity->getId()])->first()->toArray();
+
+        $this->assertEquals('true', $enach['status']);
+        $this->assertNotEmpty($enach['umrn']);
+
+        $response = $this->deleteCustomerToken('token_' . $paymentEntity->getTokenId());
+
+        $this->assertEquals(true, $response['deleted']);
+
+        $this->ba->adminAuth();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $request = [
+            'request' => [
+                'content' => [
+                    'type'    => 'nach_cancel',
+                    'targets' => ['combined_nach_icici']
+                ]
+            ],
+            'response' => [
+                'content' => [
+                    'items' => [
+                        [
+                            'status' => 'file_sent',
+                            'type'   => 'nach_cancel',
+                            'target' => 'combined_nach_icici',
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $request = array_replace_recursive($data, $request);
+
+        $this->startTest($request);
+    }
+
     protected function getBatchDebitFile($payment, $status)
     {
         $paymentId = $payment['id'];

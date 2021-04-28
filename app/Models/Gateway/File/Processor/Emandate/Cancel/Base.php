@@ -19,7 +19,7 @@ abstract class Base extends EMandate\Base
 
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_INIT);
 
-        $tokens = $this->repo->token->fetchEmandateDeletedTokens($begin, $end);
+        $tokens = $this->repo->token->fetchDeletedTokensForMethods(static::METHODS, $begin, $end);
 
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_COMPLETE);
 

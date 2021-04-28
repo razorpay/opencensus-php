@@ -30,6 +30,7 @@ class Type
 
     const ICICI_NACH_REGISTER               = 'icici_nach_register';
     const ICICI_NACH_COMBINED_DEBIT         = 'icici_nach_combined_debit';
+    const ICICI_NACH_COMBINED_CANCEL        = 'icici_nach_combined_cancel';
 
     const CITI_NACH_REGISTER                = 'citi_nach_register';
     const CITI_NACH_DEBIT                   = 'citi_nach_debit';
@@ -248,6 +249,7 @@ class Type
             self::ENACH_NPCI_NB_CANCEL,
             self::ENACH_NPCI_NB_DEBIT_ICICI,
             self::ICICI_NACH_COMBINED_DEBIT,
+            self::ICICI_NACH_COMBINED_CANCEL,
             self::ICICI_NACH_REGISTER,
             self::CITI_NACH_REGISTER,
             self::CITI_NACH_DEBIT,
@@ -424,6 +426,7 @@ class Type
         self::ENACH_NPCI_NB_CANCEL,
         self::ENACH_NPCI_NB_DEBIT_ICICI,
         self::ICICI_NACH_COMBINED_DEBIT,
+        self::ICICI_NACH_COMBINED_CANCEL,
         self::SBI_EMANDATE_DEBIT,
         self::BOB_NETBANKING_REFUND,
         self::BOB_NETBANKING_CLAIMS,
@@ -549,6 +552,7 @@ class Type
             self::ENACH_NPCI_NB_CANCEL,
             self::ENACH_NPCI_NB_DEBIT_ICICI,
             self::ICICI_NACH_COMBINED_DEBIT,
+            self::ICICI_NACH_COMBINED_CANCEL,
             self::CITI_NACH_REGISTER,
             self::CITI_NACH_DEBIT,
             self::CITI_NACH_DEBIT_SUMMARY,

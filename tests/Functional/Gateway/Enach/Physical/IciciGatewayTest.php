@@ -495,6 +495,67 @@ class IciciGatewayTest extends TestCase
         $this->makeRequestWithGivenUrlAndFile($url, $batchFile, 'acknowledge');
     }
 
+    public function testCancelNachToken()
+    {
+        $payment = $this->createRecurringNachPayment();
+
+        $batchFile = $this->getBatchFileToUploadForBankDebitResponse($payment);
+
+        $url = '/admin/batches';
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestWithGivenUrlAndFile($url, $batchFile, 'debit');
+
+        $batch = $this->getLastEntity('batch', true);
+
+        $this->assertEquals('nach', $batch['type']);
+        $this->assertEquals('processed', $batch['status']);
+
+        $paymentEntity = $this->getDbLastPayment();
+
+        $this->assertTrue($paymentEntity->isAuthorized());
+
+        $this->assertTrue($paymentEntity->transaction->isReconciled());
+
+        $this->assertEquals('confirmed', $paymentEntity->localToken->getRecurringStatus());
+
+        $this->assertNotEmpty($paymentEntity->localToken->getGatewayToken());
+
+        $response = $this->deleteCustomerToken('token_' . $paymentEntity['token_id'], 'cust_' . $paymentEntity['customer_id']);
+
+        $this->assertTrue($response['deleted']);
+
+        $this->assertNotNull($paymentEntity->localToken->getDeletedAtColumn());
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $file = $this->getLastEntity('file_store', true);
+
+        $actualZipFile = zip_open(storage_path('files/filestore') . '/' . $file['location']);
+
+        $actualFile = zip_read($actualZipFile);
+
+        $expectedFile = file_get_contents(__DIR__ . '/MMS-CANCEL-ICIC-ICIC401790-11022020-API000001-INP.xml');
+
+        $regPayment = $this->getEntities('payment',
+            ['token_id' => $paymentEntity->getTokenId(), 'amount' => 0], true);
+
+        $paymentId = $regPayment['items'][0]['id'];
+
+        $this->fixtures->stripSign($paymentId);
+
+        $expectedFileData = strtr($expectedFile, ['$paymentId' => $paymentId]);
+
+        $this->assertEquals(zip_entry_read($actualFile), $expectedFileData);
+
+        $this->assertEquals('MMS-CANCEL-ICIC-ICIC401790-11022020-API000001-INP.xml', zip_entry_name($actualFile));
+
+        zip_close($actualZipFile);
+    }
+
     protected function createRecurringNachPayment()
     {
         $initialPayment = $this->createAcceptedToken();

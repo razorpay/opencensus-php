@@ -160,7 +160,9 @@ class Constants
             self::PAPER_NACH_CITI,
             self::PAPER_NACH_ICICI,
         ],
-
+        Type::NACH_CANCEL => [
+            self::COMBINED_NACH_ICICI,
+        ],
         Type::REFUND_FAILED => [
             'All',
             self::UPI_ICICI,
@@ -187,6 +189,7 @@ class Constants
         Type::EMANDATE_CANCEL   => MailConstants::MAIL_ADDRESSES[MailConstants::EMANDATE],
         Type::NACH_DEBIT        => MailConstants::MAIL_ADDRESSES[MailConstants::EMANDATE],
         Type::NACH_REGISTER     => MailConstants::MAIL_ADDRESSES[MailConstants::EMANDATE],
+        Type::NACH_CANCEL       => MailConstants::MAIL_ADDRESSES[MailConstants::EMANDATE],
         Type::REFUND_FAILED     => MailConstants::MAIL_ADDRESSES[MailConstants::REFUNDS],
         Type::PARESDATA         => MailConstants::MAIL_ADDRESSES[MailConstants::GATEWAY_POD],
     ];
@@ -270,7 +273,11 @@ class Constants
             self::PAPER_NACH_ICICI                 => [''],
         ],
 
-            Type::EMI => [
+        Type::NACH_CANCEL => [
+            self::COMBINED_NACH_ICICI => [''],
+        ],
+
+        Type::EMI => [
             self::AXIS     => ['axiscards.emi@razorpay.com'],
             self::INDUSIND => ['indusind.emi@razorpay.com'],
             self::KOTAK    => ['kotakcards.emi@razorpay.com'],

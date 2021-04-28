@@ -275,7 +275,7 @@ class Repository extends Base\Repository
     }
 
     // TODO: need to optimize the query futher
-    public function fetchEmandateDeletedTokens(string $from, $to): Base\PublicCollection
+    public function fetchDeletedTokensForMethods(array $methods, string $from, $to): Base\PublicCollection
     {
         $selectCols = $this->dbColumn('*');
 
@@ -290,11 +290,12 @@ class Repository extends Base\Repository
         return $this->newQueryWithConnection($this->getReportingReplicaConnection())
                     ->select($selectCols,
                         'payments.id as payment_id',
-                        'payments.recurring_type as recurring_type')
+                        'payments.recurring_type as recurring_type',
+                        'payments.gateway as gateway')
                     ->from(\DB::raw('`tokens`, `payments`'))
                     ->where($tokenIdColumn, '=', \DB::raw('`payments`.`token_id`'))
                     ->whereBetween($tokenDeletedAtColumn, [$from, $to])
-                    ->where($tokenMethodColumn, '=', Method::EMANDATE)
+                    ->whereIn($tokenMethodColumn, $methods)
                     ->where(Entity::RECURRING_STATUS, '=', RecurringStatus::CONFIRMED)
                     ->where($tokenRecurringColumn, '=', 1)
                     ->withTrashed()

@@ -30,7 +30,7 @@ class EnachNpciNetbanking extends Base
 
     const GATEWAY   = Payment\Gateway::ENACH_NPCI_NETBANKING;
 
-    const METHOD    = Payment\Method::EMANDATE;
+    const METHODS   = [Payment\Method::EMANDATE];
 
     const EXTENSION = FileStore\Format::ZIP;
 

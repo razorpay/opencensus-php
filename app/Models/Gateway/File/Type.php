@@ -13,6 +13,7 @@ class Type
     const EMANDATE_CANCEL   = 'emandate_cancel';
     const NACH_DEBIT        = 'nach_debit';
     const NACH_REGISTER     = 'nach_register';
+    const NACH_CANCEL       = 'nach_cancel';
     const REFUND_FAILED     = 'refund_failed';
     const PARESDATA         = 'paresdata';
 

@@ -170,4 +170,38 @@ return [
             ]
         ],
     ],
+    'testCancelNachToken' => [
+        'request' => [
+            'url' => '/gateway/files',
+            'method' => 'POST',
+            'content' => [
+                'type'    => 'nach_cancel',
+                'targets' => ['combined_nach_icici'],
+                'begin'   => Carbon::createFromTimestamp(1581359400, Timezone::IST)->getTimestamp(),
+                'end'     => Carbon::createFromTimestamp(1581445799, Timezone::IST)->getTimestamp(),
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'recipients'          => [''],
+                        'status'              => 'file_sent',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'emandate@razorpay.com',
+                        'type'                => 'nach_cancel',
+                        'target'              => 'combined_nach_icici',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true
+                    ],
+                ],
+            ]
+        ]
+    ],
+
 ];

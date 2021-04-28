@@ -16,7 +16,7 @@ use RZP\Exception\GatewayFileException;
 
 abstract class Base extends Processor\Base
 {
-    const FILE_METADATA            = [];
+    const FILE_METADATA = [];
 
     public function checkIfValidDataAvailable(PublicCollection $tokens)
     {
