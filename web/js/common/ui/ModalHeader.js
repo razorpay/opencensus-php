@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 
 const ModalHeader = (props) => (
   <div class="modal-header">
@@ -7,8 +8,18 @@ const ModalHeader = (props) => (
         <i class="i i-close" />
       </button>
     )}
-
-    <h3 class={`modal-title ${props.extraClass}`}>{props.title}</h3>
+    {props.isCovidDonations === true ? (
+      <div class="covid__donations">
+        {props.user.isFeatureEnabled('covid_19_relief') ? (
+          <i class="i i-done" style={{ color: '#1F890E' }} />
+        ) : (
+          <i class="i i-Donate" />
+        )}{' '}
+        <h3 class={`modal-title ${props.extraClass}`}>{props.title}</h3>
+      </div>
+    ) : (
+      <h3 class={`modal-title ${props.extraClass}`}>{props.title}</h3>
+    )}
   </div>
 );
 
@@ -17,4 +28,8 @@ ModalHeader.propTypes = {
   onCloseClick: PropTypes.func,
 };
 
-export default ModalHeader;
+const mapStateToProps = (state) => ({
+  user: state.session.user,
+});
+
+export default connect(mapStateToProps, null)(ModalHeader);

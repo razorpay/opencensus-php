@@ -509,6 +509,10 @@ export default class User {
     return false;
   }
 
+  get isCovidReliefFlowEnabled() {
+    return this.getExpStatus('covid_19_donation_show');
+  }
+
   get isAutomaticSettlementEnabled() {
     return this.isFeatureEnabled('ES_AUTOMATIC');
   }

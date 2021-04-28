@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import { Link } from 'react-router-dom';
-
+import * as NotificationActions from 'merchant_common/reducers/notifications';
 import Header from 'common/ui/Header';
 import Amount from 'common/ui/Amount';
 import Sticky from 'common/ui/Sticky';
@@ -27,7 +27,7 @@ import OndemandModal from 'merchant/views/Settlements/Settlements/components/Mod
 import { openModal } from 'merchant_common/reducers/modals';
 import { fetchInternationalProductsStatus } from 'merchant/reducers/config';
 import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
-
+import CovidKnowMore from 'common/ui/CovidKnowMore';
 import CreditPullModal from 'merchant/containers/CreditPullModal';
 import {
   trackPresetChange,
@@ -45,16 +45,20 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import LocalStorageService from 'common/utils/localStorage';
+import { fetchUser } from 'merchant/reducers/session';
 @withRouter
 @connect(
   (state) => ({
     user: state.session.user,
+    mode: state.session.mode,
     config: state.config,
     internationalProductsStatus: state.config.internationalProductsStatus,
   }),
   {
     openModal,
     fetchInternationalProductsStatus,
+    ...NotificationActions,
+    fetchUser,
   },
 )
 class AnalyticsDesktop extends Component {
@@ -171,6 +175,34 @@ class AnalyticsDesktop extends Component {
     }
   };
 
+  onClickCovidEnableNow = () => {
+    merchantFetch({
+      url: `merchants/me/features?features[covid_19_relief]=1`,
+      mode: `${this.props.mode}`,
+      method: 'POST',
+    })
+      .then(() => {
+        this.props.fetchUser().then(() => {
+          this.props.showNotification({
+            type: 'success',
+            message: 'Updated preferences',
+          });
+          this.props.openModal({
+            size: 'medium',
+            component: <CovidKnowMore isCovidDonations />,
+          });
+          this.props.history.push('/config');
+        });
+      })
+      .catch((err) => {
+        this.props.showNotification({
+          type: 'error',
+          message: err.errors,
+        });
+        this.props.fetchUser();
+      });
+  };
+
   render() {
     const {
       mode,
@@ -266,6 +298,25 @@ class AnalyticsDesktop extends Component {
           {!!this.props.user.locked &&
             this.props.user.activation_status === 'under_review' &&
             this.props.user.isDedupe && <DedupeModal />}
+
+          {!user.isFeatureEnabled('covid_19_relief') &&
+            user.isCovidReliefFlowEnabled &&
+            user.business_type !== 7 &&
+            user.business_type !== 9 && (
+              <AnnouncementBanner title="Donations for Covid Relief" theme="primary">
+                Enable donations on Checkout Page and help India Fight COVID-19.{' '}
+                <Link to="/config" style={{ cursor: 'pointer' }}>
+                  <strong>Know More</strong>
+                </Link>{' '}
+                <a
+                  onClick={this.onClickCovidEnableNow}
+                  class="Button--secondary Button scheduled-btn-act btn-border"
+                  style={{ marginLeft: '24px' }}
+                >
+                  <strong>Enable Now</strong>
+                </a>{' '}
+              </AnnouncementBanner>
+            )}
 
           {this.isCaptureSettingsDefault(items) && user.instantActivation.isWhitelistFlow === true && (
             <AnnouncementBanner title="Capture Settings" theme="success" canBeClosed={true}>
@@ -383,30 +434,30 @@ class AnalyticsDesktop extends Component {
             </AnnouncementBanner>
           )}
 
-          <Fragment>
-            {/* capital banner*/}
-            {user.isCapitalBannerEnabled && <CapitalAnnouncement userId={user.current} />}
+          {/* capital banner*/}
+          {user.isCapitalBannerEnabled && <CapitalAnnouncement userId={user.current} />}
 
-            {user.isCovidFeatureEnabled && <CovidCampaignAnnouncement userId={user.current} />}
+          {user.isCovidFeatureEnabled && <CovidCampaignAnnouncement userId={user.current} />}
 
-            <div className={`v2-onboarding-card${expandOnboardingBanner ? ' expand' : ''}`}>
-              {showOnboardingBanner && (
-                <NewUserOnboardingCard
-                  payments={payments}
-                  onClose={onHideOnboardingBanner}
-                  onFirstStepClose={onFirstStepClose}
-                  isFirstStep={showOnboardingBannerFirstStep}
-                  showInstantActivation={showInstantActivation}
-                />
-              )}
-            </div>
-          </Fragment>
+          <div className={`v2-onboarding-card${expandOnboardingBanner ? ' expand' : ''}`}>
+            {showOnboardingBanner && (
+              <NewUserOnboardingCard
+                payments={payments}
+                onClose={onHideOnboardingBanner}
+                onFirstStepClose={onFirstStepClose}
+                isFirstStep={showOnboardingBannerFirstStep}
+                showInstantActivation={showInstantActivation}
+              />
+            )}
+          </div>
+
           {hasSecondaryBanner && (
             <div className="secondary-announcement-banner">
               <PersonaliseBanner track={trackPersonaliseBanner} />
             </div>
           )}
         </div>
+
         {/* <Sticky stickWhen={scrollAmountToStickHeader} stickAt={50}> */}
         <Header className="clearfix" title="" showMode={false}>
           <div id="analytics-daterange-picker" className="pull-left date-range-container">
@@ -517,7 +568,7 @@ class AnalyticsDesktop extends Component {
                     {settleNowRestrictionMsg && (
                       <Popover
                         align="top"
-                        parentQuerySelector={`.settle-btn .settle-now--desktop`}
+                        parentQuerySelector=".settle-btn .settle-now--desktop"
                         theme="dark"
                       >
                         <PopoverBody>{settleNowRestrictionMsg}</PopoverBody>
@@ -536,6 +587,7 @@ class AnalyticsDesktop extends Component {
           </div>
         </Header>
         {/* </Sticky> */}
+
         <div className="dashboard">
           <div className="row">
             <div className="col-md-12">

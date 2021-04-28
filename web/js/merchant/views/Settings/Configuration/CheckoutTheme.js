@@ -9,6 +9,9 @@ import { uploadLogo, fetchLocale, updateLocale, saveLocale } from 'merchant/redu
 import { showNotification } from 'merchant_common/reducers/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { getIcon } from './components/paymentMethodIcons';
+import SwitchField from 'common/ui/Forms/SwitchField';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import CovidKnowMore from 'common/ui/CovidKnowMore';
 
 const languageOptions = [
   { name: 'English', code: 'en' },
@@ -23,6 +26,7 @@ const languageOptions = [
   fetchLocale,
   updateLocale,
   saveLocale,
+  ...ModalActions,
 })
 @reduxForm({})
 export default class CheckoutTheme extends Component {
@@ -170,8 +174,17 @@ export default class CheckoutTheme extends Component {
     });
   };
 
+  onClickKnowMore = () => {
+    this.props.openModal({
+      size: 'medium',
+      component: <CovidKnowMore isCovidDonations />,
+    });
+  };
+
   render() {
     const { textClr, colorVariations } = this.state;
+    const { user } = this.props;
+    const isEnabled = user.isFeatureEnabled('covid_19_relief');
 
     return (
       <div class="panel panel-default panel-theme">
@@ -182,6 +195,50 @@ export default class CheckoutTheme extends Component {
           <div class="panel-body">
             <form class="form-horizontal">
               <div class="form-group theme-select">
+                {user.isCovidReliefFlowEnabled &&
+                  user.business_type !== 7 &&
+                  user.business_type !== 9 && (
+                    <div class="covid-donations__settings">
+                      <div
+                        class={
+                          user.isFeatureEnabled('covid_19_relief') ? 'text-primary' : 'text-faded'
+                        }
+                      >
+                        <i class="i i-Donate" />
+                        <strong>
+                          Donations{' '}
+                          {user.isFeatureEnabled('covid_19_relief') ? `enabled` : `disabled`} on
+                          Checkout
+                        </strong>
+                        <span class="toggler-btn">
+                          <SwitchField
+                            defaultChecked={!!isEnabled}
+                            onChange={this.props.onSwitchChange}
+                            type="prime"
+                          />
+                          {user.isFeatureEnabled('covid_19_relief') ? (
+                            <b class="text-primary">Enabled</b>
+                          ) : (
+                            <b class="text-faded">Disabled</b>
+                          )}
+                        </span>
+                      </div>
+                      <br />
+                      <div>
+                        {' '}
+                        <p>
+                          Customers will have the option to donate for COVID Relief on the checkout
+                          page post succesful payment.{' '}
+                          <strong
+                            style={{ cursor: 'pointer', color: '#528FF0' }}
+                            onClick={this.onClickKnowMore}
+                          >
+                            Know More
+                          </strong>
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 <label class="col-md-12 col-sm-12" style={{ marginTop: 12 }}>
                   <strong>Theme Color</strong>
                 </label>

@@ -12,11 +12,14 @@ import RTracking from 'react-tracking';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { merchantFetch } from 'merchant/utils/ajax';
 import InstantRefundFee from 'merchant/views/Transactions/Payments/components/InstantRefundFee';
 import DebitRefundAnnouncement from '../../../components/Announcements/Refunds/DebitRefund';
 import SmsNotification from './SmsNotification';
 import WhatsappNotification from './WhatsappNotification';
 import InternationalPayments from './InternationalPayments';
+import { fetchUser } from 'merchant/reducers/session';
+import CovidKnowMore from 'common/ui/CovidKnowMore';
 
 @connect(
   (state) => {
@@ -27,7 +30,7 @@ import InternationalPayments from './InternationalPayments';
       mode: state.session.mode,
     };
   },
-  { ...ConfigActions, ...NotificationActions, openModal, closeModal },
+  { ...ConfigActions, ...NotificationActions, openModal, closeModal, fetchUser },
 )
 @RTracking(() => window.rzpQ.component('CongfigurationContainer'))
 export default class CongfigurationContainer extends Component {
@@ -113,8 +116,6 @@ export default class CongfigurationContainer extends Component {
         }
       });
   };
-
-  componentDidMount() {}
 
   componentDidUpdate() {
     this.popupIfSettle();
@@ -208,6 +209,37 @@ export default class CongfigurationContainer extends Component {
     );
   };
 
+  handleCovidReliefOptinAndOut = (e) => {
+    let bool = e === true ? 1 : 0;
+
+    merchantFetch({
+      url: `merchants/me/features?features[covid_19_relief]=${bool}`,
+      mode: `${this.props.mode}`,
+      method: 'POST',
+    })
+      .then(() => {
+        this.props.fetchUser().then(() => {
+          this.props.showNotification({
+            type: 'success',
+            message: 'Updated preferences',
+          });
+          if (bool === 1) {
+            this.props.openModal({
+              size: 'medium',
+              component: <CovidKnowMore isCovidDonations />,
+            });
+          }
+        });
+      })
+      .catch((err) => {
+        this.props.showNotification({
+          type: 'error',
+          message: err.errors,
+        });
+        this.props.fetchUser();
+      });
+  };
+
   render() {
     const {
       mode,
@@ -236,7 +268,11 @@ export default class CongfigurationContainer extends Component {
           </div>
         ) : (
           <div>
-            <CheckoutTheme form="configForm" onSave={this.saveConfig} />
+            <CheckoutTheme
+              form="configForm"
+              onSave={this.saveConfig}
+              onSwitchChange={this.handleCovidReliefOptinAndOut}
+            />
             {user.isOrgAllowedFunctionality('flashcheckout') && <FlashCheckout />}
             <PaymentSettings />
             <DefaultRefundSpeed />
