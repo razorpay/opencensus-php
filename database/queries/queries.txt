@@ -6192,6 +6192,10 @@ ALTER table banking_account_statement
 ALTER TABLE rewards
     ADD COLUMN brand_name CHAR(26) DEFAULT NULL;
 
+ALTER table fund_accounts
+    ADD COLUMN unique_hash VARCHAR(255) DEFAULT NULL,
+    ADD INDEX fund_accounts_unique_hash_index (unique_hash);
+
 ALTER TABLE banking_account_tpvs
     ADD COLUMN trimmed_payer_account_number varchar(255) DEFAULT NULL,
     ADD UNIQUE INDEX banking_account_tpvs_merchant_id_account_number_uq_index (merchant_id, trimmed_payer_account_number);

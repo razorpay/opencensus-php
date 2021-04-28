@@ -32,6 +32,7 @@ class Entity extends Base\PublicEntity
     const SOURCE_ID     = 'source_id';
     const BATCH_ID      = 'batch_id';
     const ACTIVE        = 'active';
+    const UNIQUE_HASH   = 'unique_hash';
 
     // Relations
     const SOURCE        = 'source';
@@ -136,6 +137,7 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         self::ACTIVE            => true,
         self::IDEMPOTENCY_KEY   => null,
+        self::UNIQUE_HASH       => null,
     ];
 
     protected $casts = [
@@ -225,6 +227,11 @@ class Entity extends Base\PublicEntity
             case Type::CARD:
                 return ucfirst(str_replace('_', ' ', $this->getAccountType()));
         }
+    }
+
+    public function getUniqueHash()
+    {
+        return $this->getAttribute(self::UNIQUE_HASH);
     }
 
     // ------------- End Getters -------------
@@ -367,6 +374,11 @@ class Entity extends Base\PublicEntity
         $this->composite = $composite;
 
         return $this;
+    }
+
+    public function setUniqueHash(string $uniqueHash)
+    {
+        $this->setAttribute(self::UNIQUE_HASH, $uniqueHash);
     }
 
     // ------------- End Setters -------------

@@ -322,7 +322,8 @@ trait TestsBusinessBanking
                                            string $rejectCommentInWebhook = 'off',
                                            string $allowVAToVAPayouts = 'control',
                                            string $registeredNameInPayoutsResponse = 'control',
-                                           string $allowWalletAccountAmazonPay = 'on')
+                                           string $allowWalletAccountAmazonPay = 'on',
+                                           string $fundAccountDuplicateViaUniqueHash = 'on')
     {
         // Mock Razorx
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
@@ -350,7 +351,8 @@ trait TestsBusinessBanking
                     $rejectCommentInWebhook,
                     $allowVAToVAPayouts,
                     $registeredNameInPayoutsResponse,
-                    $allowWalletAccountAmazonPay
+                    $allowWalletAccountAmazonPay,
+                    $fundAccountDuplicateViaUniqueHash
                 )
                 {
                     if (ends_with($feature, 'mode_payout_filter'))
@@ -413,19 +415,19 @@ trait TestsBusinessBanking
                         return strtolower($allowVAToVAPayouts);
                     }
 
-                    if ($feature === 'disable_tpv_flow_for_banking_account_fund_loading')
-                    {
-                        return strtolower($disableTpvFlowForBankingAccountFundLoading);
-                    }
-
-                    if (($feature === 'registered_name_in_payouts_response'))
+                    if ($feature === 'registered_name_in_payouts_response')
                     {
                         return strtolower($registeredNameInPayoutsResponse);
                     }
 
-                    if (($feature === 'rx_enable_amazonpay_wallet_payout'))
+                    if ($feature === 'rx_enable_amazonpay_wallet_payout')
                     {
                         return strtolower($allowWalletAccountAmazonPay);
+                    }
+
+                    if ($feature === 'fund_account_duplicate_check_via_unique_hash')
+                    {
+                        return strtolower($fundAccountDuplicateViaUniqueHash);
                     }
 
                     return strtolower($defaultBehaviour);

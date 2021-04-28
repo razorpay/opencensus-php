@@ -54,6 +54,9 @@ class CreateFundAccounts extends Migration
             $table->integer(FundAccount::DELETED_AT)
                   ->nullable();
 
+            $table->string(FundAccount::UNIQUE_HASH)
+                  ->nullable();
+
             $table->index(FundAccount::SOURCE_ID);
 
             $table->index(FundAccount::ACCOUNT_ID);
@@ -67,6 +70,8 @@ class CreateFundAccounts extends Migration
             $table->index(FundAccount::UPDATED_AT);
 
             $table->index(FundAccount::DELETED_AT);
+
+            $table->index(FundAccount::UNIQUE_HASH);
 
             $table->foreign(FundAccount::MERCHANT_ID)
                   ->references(Merchant::ID)

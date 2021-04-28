@@ -4,6 +4,9 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\BankAccount\Entity as BankAccount;
+use RZP\Models\FundAccount\Entity as FundAccount;
+use RZP\Models\FundAccount\Validation\Entity as Validation;
 
 return [
     'testGetFundAccounts' => [
@@ -2979,6 +2982,170 @@ return [
         'exception' => [
             'class'               => Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_CARD_NOT_SUPPORTED_FOR_FUND_ACCOUNT,
+        ],
+    ],
+
+    'testCreateBankAccountFundAccountWithAllowedSpecialCharacters' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account' => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit- &M',
+                    'account_number' => '111000111',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content'     => [
+                'entity'       => 'fund_account',
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account' => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit- &M',
+                    'account_number' => '111000111'
+                ],
+            ],
+            'status_code' => 201
+        ],
+    ],
+
+    'testCreateDuplicateBankAccountFundAccountWithExtraSpacesInName' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account' => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit-    &M',
+                    'account_number' => '111000111',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content'     => [
+                'entity'       => 'fund_account',
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account' => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit- &M',
+                    'account_number' => '111000111'
+                ],
+            ],
+            'status_code' => 200
+        ],
+    ],
+
+    'testUpdationOfExistingDuplicateFundAccountWithHash' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M',
+                    'account_number' => '111000111'
+                ],
+            ],
+            'status_code' => 200
+        ],
+    ],
+
+    'testTaxPaymentFundAccountCreationSuccessAndVerifyHashCreation' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts_internal',
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'content' => [
+                'account_type' => 'bank_account',
+                'bank_account' => [
+                    'name'           => 'test name',
+                    'ifsc'           => 'ICIC0000020',
+                    'account_number' => '000205031288'
+                ],
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'entity'       => 'fund_account',
+                'contact_id'   => '',
+                'account_type' => 'bank_account',
+                'bank_account' => [
+                    'ifsc'           => 'ICIC0000020',
+                    'bank_name'      => 'ICICI Bank',
+                    'name'           => 'test name',
+                    'notes'          => [],
+                    'account_number' => '000205031288',
+                ]
+            ],
+            'status_code' => 201,
+        ],
+    ],
+
+    'createValidationWithFundAccountEntity' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations',
+            'method'  => 'post',
+            'content' => [
+                Validation::FUND_ACCOUNT  => [
+                    FundAccount::ACCOUNT_TYPE => 'bank_account',
+                    FundAccount::DETAILS      => [
+                        BankAccount::ACCOUNT_NUMBER => '123456789',
+                        BankAccount::NAME           => 'Rohit Keshwani',
+                        BankAccount::IFSC           => 'SBIN0010411',
+                    ],
+                ],
+                Validation::AMOUNT        => '100',
+                Validation::CURRENCY      => 'INR',
+                Validation::NOTES         => []
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account.validation',
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'account_type' => 'bank_account',
+                    'active'       => true,
+                    'details'      => [
+                        'account_number' => '123456789',
+                        'name'           => 'Rohit Keshwani',
+                        'ifsc'           => 'SBIN0010411',
+                        'bank_name'      => 'State Bank of India',
+                    ],
+                ],
+                'status'       => 'created',
+                'amount'       => 100,
+                'currency'     => 'INR',
+                'notes'        => [],
+                'results'      => [
+                    'account_status'  => null,
+                    'registered_name' => null,
+                ],
+            ],
         ],
     ],
 ];

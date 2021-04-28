@@ -74,6 +74,11 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_NAME      => 'sometimes|regex:/^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–\/]+/|max:40|string',
     ];
 
+    /*
+     * RZP\Models\FundAccount\Core::REGEX_FOR_REMOVING_WHITE_SPACES_AND_SPECIAL_CHARACTERS_FROM_BANK_ACCOUNT_NAME
+     * needs to be updated accordingly if the validation regex for name field is changed in
+     * $addFundAccountBankAccountRules.
+     */
     protected static $addFundAccountBankAccountRules = [
         Entity::IFSC           => 'required|alpha_num|size:11',
         Entity::ACCOUNT_NUMBER => 'required|regex:/^[a-zA-Z0-9]+$/|between:5,35',

@@ -14,6 +14,11 @@ class Validator extends Base\Validator
 
     const VPA_REGEX = '/^[a-zA-Z0-9][a-zA-Z0-9\.-]*@[a-zA-Z]+$/';
 
+    /*
+     * RZP\Models\FundAccount\Core::REGEX_FOR_REMOVING_WHITE_SPACES_AND_SPECIAL_CHARACTERS_FROM_VPA_USERNAME
+     * needs to be updated accordingly if the validation regex for address field is changed in
+     * $createRules (in the validateAddress method).
+     */
     protected static $createRules = [
         Entity::ADDRESS => 'required|string|custom',
     ];

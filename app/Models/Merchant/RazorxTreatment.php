@@ -242,4 +242,7 @@ final class RazorxTreatment
     const PERFORM_ACTION_ON_WORKFLOW_OBSERVER_DATA = 'perform_action_on_workflow_observer_data';
 
     const M2M_REWARDS_AB_TESTING = 'M2m_rewards_ab_testing';
+
+    // Experiment to check for duplicate fund accounts via unique hash column
+    const FUND_ACCOUNT_DUPLICATE_CHECK_VIA_UNIQUE_HASH = 'fund_account_duplicate_check_via_unique_hash';
 }

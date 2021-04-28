@@ -21,6 +21,7 @@ use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Services\FTS\CreateAccount;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Contact\Entity as ContactEntity;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\WalletAccount\Validator as WalletAccountValidator;
@@ -32,6 +33,17 @@ use RZP\Models\WalletAccount\Validator as WalletAccountValidator;
  */
 class Core extends Base\Core
 {
+    /*
+     * These regex are based on the validators used in fund account creation for bank account and vpa type fund
+     * accounts, if those validators are changed, these regex should be updated accordingly as well.
+     */
+    const REGEX_FOR_REMOVING_WHITE_SPACES_AND_SPECIAL_CHARACTERS = "/[^a-zA-Z0-9]+/";
+
+    const REGEX_FOR_REMOVING_WHITE_SPACES_AND_SPECIAL_CHARACTERS_FROM_VPA_USERNAME = "/[^a-zA-Z0-9.-]+/";
+
+    const REGEX_FOR_REMOVING_WHITE_SPACES_AND_SPECIAL_CHARACTERS_FROM_BANK_ACCOUNT_NAME =
+        "/[^a-zA-Z0-9-&\'._()\/]+/";
+
     const DEFAULT_COUNTRY_CODE = '+91';
 
     /**
@@ -110,24 +122,72 @@ class Core extends Base\Core
 
         (new Validator)->setStrictFalse()->validateInput('create', $input);
 
+        $accountDetails = $this->getAccountDetailsForInput($input);
+
+        $uniqueHash = null;
+
+        $variant = $this->app->razorx->getTreatment($merchant->getId(),
+                                                    RazorxTreatment::FUND_ACCOUNT_DUPLICATE_CHECK_VIA_UNIQUE_HASH,
+                                                    $this->mode,
+                                                    Entity::FUND_ACCOUNT_RX_RETRY_COUNT);
+
+
+        if(strtolower($variant) === 'on')
+        {
+            $uniqueHash = $this->generateUniqueHashForFundAccount($input[Entity::ACCOUNT_TYPE],
+                                                                  $merchant,
+                                                                  $accountDetails,
+                                                                  $source);
+        }
+
         if (($source instanceof Contact\Entity) and
             ($createDuplicate === false))
         {
-            $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetails($input,
-                                                                                       $merchant,
-                                                                                       $source);
+            $fundAccount = null;
 
-            if (empty($fundAccount) === false)
+            if (empty($uniqueHash) === false)
             {
+                $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetailsFromHash($uniqueHash);
 
-                $this->trace->info(
-                    TraceCode::DUPLICATE_FUND_ACCOUNT_FOUND,
-                    [
-                        Entity::ID           => $fundAccount->getId(),
-                        Entity::BATCH_ID     => $batchId,
-                    ]);
+                if (empty($fundAccount) === false)
+                {
+                    $this->trace->info(
+                        TraceCode::DUPLICATE_FUND_ACCOUNT_FOUND_USING_HASH,
+                        [
+                            Entity::ID          => $fundAccount->getId(),
+                            Entity::BATCH_ID    => $batchId,
+                            Entity::UNIQUE_HASH => $uniqueHash,
+                        ]);
 
-                return $fundAccount;
+                    return $fundAccount;
+                }
+            }
+
+            if (empty($fundAccount) === true)
+            {
+                $fundAccount = $this->repo->fund_account->getFundAccountWithSimilarDetails($input, $merchant, $source);
+
+                if (empty($fundAccount) === false)
+                {
+                    $this->trace->info(
+                        TraceCode::DUPLICATE_FUND_ACCOUNT_FOUND_USING_FALLBACK,
+                        [
+                            Entity::ID                            => $fundAccount->getId(),
+                            Entity::BATCH_ID                      => $batchId,
+                            Entity::UNIQUE_HASH . '_of_input'     => $uniqueHash,
+                            Entity::UNIQUE_HASH . '_of_duplicate' => $fundAccount->getUniqueHash(),
+                        ]);
+
+                    if (empty($uniqueHash) === false)
+                    {
+                        $fundAccount = $this->updateDuplicateFundAccountWithHash($fundAccount,
+                                                                                 $uniqueHash,
+                                                                                 $merchant,
+                                                                                 $source);
+                    }
+
+                    return $fundAccount;
+                }
             }
         }
 
@@ -148,6 +208,11 @@ class Core extends Base\Core
         if (empty($batchId) === false)
         {
             $fundAccount->setBatchId($batchId);
+        }
+
+        if (empty($uniqueHash) === false)
+        {
+            $fundAccount->setUniqueHash($uniqueHash);
         }
 
         $this->repo->saveOrFail($fundAccount);
@@ -415,14 +480,245 @@ class Core extends Base\Core
         }
     }
 
+    /*
+     * $accountDetails should have different keys for different account types
+     * Bank account => name, account number, name
+     * Vpa => address
+     * Card => we won't be creating hash for it so even empty array works
+     */
+    protected function generateUniqueHashForFundAccount(string $accountType,
+                                                        Merchant\Entity $merchant,
+                                                        array $accountDetails,
+                                                        $source)
+    {
+        $merchantId = $merchant->getId();
+
+        $sourceEntityName = (empty($source) === false) ? $source->getEntityName() : '';
+
+        $sourceId = (empty($source) === false) ? $source->getId() : '';
+
+        /*
+         * Hash input structure for bank account/vpa type fund accounts -
+         * {merchant_id}|{source_entity_name}|{source_id}|{account_input_suffix}
+         *
+         * In case (empty(source) === true) hash input reduces to -
+         * {merchant_id}|||bank_account|{account_input_suffix}
+         * We use '' as source_entity_name and source_id in that case.
+         */
+        $uniqueHashInput = $merchantId . '|' . $sourceEntityName . '|' . $sourceId;
+
+        switch ($accountType)
+        {
+            case Type::BANK_ACCOUNT:
+                $uniqueHashInputBankAccountSuffix = $this->getUniqueHashInputSuffixForBankAccount($accountDetails);
+
+                $uniqueHashInput = $uniqueHashInput . '|' . $uniqueHashInputBankAccountSuffix;
+
+                break;
+
+            case Type::VPA:
+                $uniqueHashInputVpaSuffix = $this->getUniqueHashInputSuffixForVpa($accountDetails);
+
+                $uniqueHashInput = $uniqueHashInput . '|' . $uniqueHashInputVpaSuffix;
+
+                break;
+
+            default:
+                $uniqueHashInput = null;
+
+                break;
+        }
+
+        $uniqueHash = $uniqueHashInput;
+
+        if (empty($uniqueHash) === false)
+        {
+            $uniqueHash = hash('sha3-256', $uniqueHash);
+        }
+
+        return $uniqueHash;
+    }
+
+    /*
+     * Hash input suffix structure for bank account type fund accounts -
+     * bank_account|{account_number}|{ifsc}|{name}
+     */
+    protected function getUniqueHashInputSuffixForBankAccount(array $bankAccountDetails) : string
+    {
+        $accountNumber =
+            $this->removeWhitespacesAndSpecialCharacters($bankAccountDetails[BankAccount\Entity::ACCOUNT_NUMBER]);
+
+        $ifsc = strtoupper($this->removeWhitespacesAndSpecialCharacters($bankAccountDetails[BankAccount\Entity::IFSC]));
+
+        $customRegexForName = self::REGEX_FOR_REMOVING_WHITE_SPACES_AND_SPECIAL_CHARACTERS_FROM_BANK_ACCOUNT_NAME;
+
+        $name = $this->removeWhitespacesAndSpecialCharacters($bankAccountDetails[BankAccount\Entity::NAME],
+                                                             $customRegexForName);
+
+        $uniqueHashInput = Type::BANK_ACCOUNT . '|' . $accountNumber . '|' . $ifsc . '|' . $name;
+
+        return $uniqueHashInput;
+    }
+
+    /*
+     * Hash input suffix structure for vpa type fund accounts -
+     * vpa|{username}|{handle}
+     */
+    protected function getUniqueHashInputSuffixForVpa(array $vpaAccountDetails) : string
+    {
+        list($username, $handle) = explode(Vpa\Entity::AROBASE, $vpaAccountDetails[Vpa\Entity::ADDRESS]);
+
+        $customRegexForUsername = self::REGEX_FOR_REMOVING_WHITE_SPACES_AND_SPECIAL_CHARACTERS_FROM_VPA_USERNAME;
+
+        $username = $this->removeWhitespacesAndSpecialCharacters($username, $customRegexForUsername);
+
+        $handle = $this->removeWhitespacesAndSpecialCharacters($handle);
+
+        $uniqueHashInput = Type::VPA . '|' . $username . '|' . $handle;
+
+        return $uniqueHashInput;
+    }
+
+    protected function removeWhitespacesAndSpecialCharacters(string $input,
+                                                             string $customRegex = null) : string
+    {
+        $regexForRemovingWhitespaceAndSpecialCharacters = self::REGEX_FOR_REMOVING_WHITE_SPACES_AND_SPECIAL_CHARACTERS;
+
+        if (empty($customRegex) === false)
+        {
+            $regexForRemovingWhitespaceAndSpecialCharacters = $customRegex;
+        }
+
+        $input = preg_replace($regexForRemovingWhitespaceAndSpecialCharacters, "", $input);
+
+        return $input;
+    }
+
+    protected function getAccountDetailsForInput(array $input)
+    {
+        switch ($input[Entity::ACCOUNT_TYPE])
+        {
+            case Type::BANK_ACCOUNT :
+                $accountDetails = $input[Entity::BANK_ACCOUNT];
+
+                break;
+
+            case Type::VPA :
+                $accountDetails = $input[Entity::VPA];
+
+                break;
+
+            case Type::CARD :
+                $accountDetails = $input[Entity::CARD];
+
+                break;
+
+            default :
+                $accountDetails = [];
+
+                break;
+        }
+
+        return $accountDetails;
+    }
+
+    protected function updateDuplicateFundAccountWithHash(Entity $fundAccount,
+                                                          string $uniqueHash,
+                                                          Merchant\Entity $merchant,
+                                                          $source) : Entity
+    {
+        $accountType = $fundAccount->getAccountType();
+
+        $accountDetails = $this->getAccountDetailsForFundAccount($fundAccount);
+
+        $uniqueHashForExistingFundAccount = $this->generateUniqueHashForFundAccount($accountType,
+                                                                                    $merchant,
+                                                                                    $accountDetails,
+                                                                                    $source);
+
+        if ($uniqueHash === $uniqueHashForExistingFundAccount)
+        {
+            $fundAccount->setUniqueHash($uniqueHash);
+
+            $this->repo->saveOrFail($fundAccount);
+
+            $this->trace->info(
+                TraceCode::EXISTING_FUND_ACCOUNT_HASH_UPDATED,
+                [
+                    Entity::ID          => $fundAccount->getId(),
+                    Entity::UNIQUE_HASH => $uniqueHash,
+                ]);
+        }
+
+        else
+        {
+            $this->trace->info(
+                TraceCode::HASH_MISMATCH_FOR_INPUT_AND_DUPLICATE_FUND_ACCOUNT,
+                [
+                    Entity::ID                            => $fundAccount->getId(),
+                    Entity::UNIQUE_HASH . '_of_input'     => $uniqueHash,
+                    Entity::UNIQUE_HASH . '_of_duplicate' => $uniqueHashForExistingFundAccount,
+                ]);
+        }
+
+        return $fundAccount;
+    }
+
+    protected function getAccountDetailsForFundAccount(Entity $fundAccount)
+    {
+        switch ($fundAccount->getAccountType())
+        {
+            case Type::BANK_ACCOUNT :
+                /** @var BankAccount\Entity $bankAccount */
+                $bankAccount = $fundAccount->account;
+
+                $accountDetails = [
+                    BankAccount\Entity::NAME           => $bankAccount->getBeneficiaryName(),
+                    BankAccount\Entity::IFSC           => $bankAccount->getIfscCode(),
+                    BankAccount\Entity::ACCOUNT_NUMBER => $bankAccount->getAccountNumber(),
+                ];
+
+                break;
+
+            case Type::VPA :
+                /** @var Vpa\Entity $vpa */
+                $vpa = $fundAccount->account;
+
+                $accountDetails = [
+                    Vpa\Entity::ADDRESS => $vpa->getAddress(),
+                ];
+
+                break;
+
+            case Type::CARD :
+                /** @var Card\Entity $card */
+                $card = $fundAccount->account;
+
+                $accountDetails = [
+                    Card\Entity::NAME         => $card->getName(),
+                    Card\Entity::NUMBER       => $card->getMaskedCardNumber(),
+                    Card\Entity::EXPIRY_MONTH => $card->getExpiryMonth(),
+                    Card\Entity::EXPIRY_YEAR  => $card->getExpiryYear(),
+                ];
+
+                break;
+
+            default :
+                $accountDetails = [];
+
+                break;
+        }
+
+        return $accountDetails;
+    }
+
     public function constructWalletAccountFundAccountRequest(array $input)
     {
         $variant = $this->app['razorx']->getTreatment($this->merchant->getId(),
-            Merchant\RazorxTreatment::ENABLE_WALLET_ACCOUNT_AMAZON_PAYOUT,
-            Mode::LIVE
-        );
+                                                      RazorxTreatment::ENABLE_WALLET_ACCOUNT_AMAZON_PAYOUT,
+                                                      Mode::LIVE);
 
-        if ($variant === 'on')
+        if (strtolower($variant) === 'on')
         {
                 $input[Entity::ACCOUNT_TYPE] = Entity::WALLET_ACCOUNT;
 

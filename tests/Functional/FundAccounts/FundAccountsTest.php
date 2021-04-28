@@ -7,6 +7,7 @@ use Queue;
 
 use RZP\Error\Error;
 use RZP\Models\Feature;
+use RZP\Models\FundAccount;
 use RZP\Models\Card\Issuer;
 use RZP\Models\Card\Network;
 use RZP\Models\Contact\Type;
@@ -16,12 +17,14 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
+use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
 
 class FundAccountsTest extends TestCase
 {
     use PaymentTrait;
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
+    use FundAccountValidationTrait;
 
     protected function setUp(): void
     {
@@ -61,19 +64,34 @@ class FundAccountsTest extends TestCase
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
-        $this->startTest();
+        $this->mockRazorxTreatment();
+
+        $response = $this->startTest();
 
         $bankAccount = $this->getLastEntity('bank_account', true);
 
         $expectedBankAccount = [
-            'type'           => 'contact',
-            'entity_id'      => '1000000contact',
-            'ifsc_code'      => 'SBIN0007105',
-            'account_number' => '111000111',
-            'merchant_id'    => '10000000000000',
+            'type'             => 'contact',
+            'entity_id'        => '1000000contact',
+            'ifsc_code'        => 'SBIN0007105',
+            'account_number'   => '111000111',
+            'beneficiary_name' => 'Amit M',
+            'merchant_id'      => '10000000000000',
         ];
 
         $this->assertArraySelectiveEquals($expectedBankAccount, $bankAccount);
+
+        $this->assertArrayNotHasKey(FundAccount\Entity::UNIQUE_HASH, $response);
+
+        $expectedHashInput = '10000000000000|contact|1000000contact|bank_account|111000111|SBIN0007105|AmitM';
+
+        $expectedHash = hash('sha3-256', $expectedHashInput);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $uniqueHash = $fundAccount->getUniqueHash();
+
+        $this->assertEquals($expectedHash, $uniqueHash);
 
         Queue::assertPushed(CreateAccount::class);
     }
@@ -155,7 +173,9 @@ class FundAccountsTest extends TestCase
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
-        $this->startTest();
+        $this->mockRazorxTreatment();
+
+        $response = $this->startTest();
 
         $vpa = $this->getLastEntity('vpa', true);
 
@@ -168,6 +188,18 @@ class FundAccountsTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedVpaAttrs, $vpa);
+
+        $this->assertArrayNotHasKey(FundAccount\Entity::UNIQUE_HASH, $response);
+
+        $expectedHashInput = '10000000000000|contact|1000000contact|vpa|amitm|upi';
+
+        $expectedHash = hash('sha3-256', $expectedHashInput);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $uniqueHash = $fundAccount->getUniqueHash();
+
+        $this->assertEquals($expectedHash, $uniqueHash);
 
         Queue::assertPushed(CreateAccount::class);
     }
@@ -188,7 +220,7 @@ class FundAccountsTest extends TestCase
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
-        $this->startTest();
+        $response = $this->startTest();
 
         $walletAccount = $this->getLastEntity('wallet_account', true);
 
@@ -203,6 +235,14 @@ class FundAccountsTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedWalletAccountAttrs, $walletAccount);
+
+        $this->assertArrayNotHasKey(FundAccount\Entity::UNIQUE_HASH, $response);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $uniqueHash = $fundAccount->getUniqueHash();
+
+        $this->assertNull($uniqueHash);
 
         Queue::assertPushed(CreateAccount::class);
     }
@@ -390,7 +430,7 @@ class FundAccountsTest extends TestCase
 
         $this->mockCardVault();
 
-        $this->startTest();
+        $response = $this->startTest();
 
         $card = $this->getLastEntity('card', true);
 
@@ -401,6 +441,14 @@ class FundAccountsTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedCardAttrs, $card);
+
+        $this->assertArrayNotHasKey(FundAccount\Entity::UNIQUE_HASH, $response);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $uniqueHash = $fundAccount->getUniqueHash();
+
+        $this->assertNull($uniqueHash);
 
         Queue::assertPushed(CreateAccount::class);
     }
@@ -499,7 +547,21 @@ class FundAccountsTest extends TestCase
     {
         $this->fixtures->create('customer', ['id' => '1000facustomer']);
 
-        $this->startTest();
+        $this->mockRazorxTreatment();
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey(FundAccount\Entity::UNIQUE_HASH, $response);
+
+        $expectedHashInput = '10000000000000|customer|1000facustomer|vpa|amitm|upi';
+
+        $expectedHash = hash('sha3-256', $expectedHashInput);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $uniqueHash = $fundAccount->getUniqueHash();
+
+        $this->assertEquals($expectedHash, $uniqueHash);
     }
 
     public function testUpdateFundAccount()
@@ -826,6 +888,8 @@ class FundAccountsTest extends TestCase
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
+        $this->mockRazorxTreatment();
+
         $this->startTest();
 
         $vpa = $this->getLastEntity('vpa', true);
@@ -837,6 +901,16 @@ class FundAccountsTest extends TestCase
             'handle'      => 'upi',
             'merchant_id' => '10000000000000',
         ];
+
+        $expectedHashInput = '10000000000000|contact|1000000contact|vpa|a.mitm|upi';
+
+        $expectedHash = hash('sha3-256', $expectedHashInput);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $uniqueHash = $fundAccount->getUniqueHash();
+
+        $this->assertEquals($expectedHash, $uniqueHash);
 
         $this->assertArraySelectiveEquals($expectedVpaAttrs, $vpa);
 
@@ -1038,7 +1112,7 @@ class FundAccountsTest extends TestCase
 
         $this->makeRequestAndGetContent($fundAccountRequest);
 
-        $fund_account1 = $this->getDbLastEntity('fund_account');
+        $fundAccount1 = $this->getDbLastEntity('fund_account');
 
         $fundAccountRequest['content']['bank_account'] = [
             'ifsc'           => 'KKBK0000958',
@@ -1048,7 +1122,7 @@ class FundAccountsTest extends TestCase
 
         $this->makeRequestAndGetContent($fundAccountRequest);
 
-        $fund_account2 = $this->getDbLastEntity('fund_account');
+        $fundAccount2 = $this->getDbLastEntity('fund_account');
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -1062,7 +1136,7 @@ class FundAccountsTest extends TestCase
         $this->assertEquals(2, count($response['items']));
 
         // Assert that the response has only those FA that we created above.
-        $this->assertTrue(empty(array_diff(['fa_' . $fund_account1->getId(), 'fa_' . $fund_account2->getId()],
+        $this->assertTrue(empty(array_diff(['fa_' . $fundAccount1->getId(), 'fa_' . $fundAccount2->getId()],
                                      [$response['items'][0]['id'], $response['items'][1]['id']])));
     }
 
@@ -1104,7 +1178,7 @@ class FundAccountsTest extends TestCase
 
         $this->makeRequestAndGetContent($fundAccountRequest);
 
-        $fund_account = $this->getDbLastEntity('fund_account');
+        $fundAccount = $this->getDbLastEntity('fund_account');
 
         $fundAccountRequest['content']['bank_account'] = [
             'ifsc'           => 'KKBK0000958',
@@ -1114,18 +1188,16 @@ class FundAccountsTest extends TestCase
 
         $this->makeRequestAndGetContent($fundAccountRequest);
 
-        $fund_account2 = $this->getDbLastEntity('fund_account');
-
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = '/fund_accounts/fa_' . $fund_account->getId();
+        $testData['request']['url'] = '/fund_accounts/fa_' . $fundAccount->getId();
 
         $this->testData[__FUNCTION__] = $testData;
 
         $response = $this->startTest();
 
         // Assert that the response has only that FA whose id we sent  in the get request.
-        $this->assertEquals('fa_' . $fund_account->getId(), $response['id']);
+        $this->assertEquals('fa_' . $fundAccount->getId(), $response['id']);
     }
 
     public function testFetchFundAccountsWithFundAccountIdIfFundAccountDoesNotExist()
@@ -1150,9 +1222,9 @@ class FundAccountsTest extends TestCase
 
         $this->makeRequestAndGetContent($fundAccountRequest);
 
-        $fund_account = $this->getDbLastEntity('fund_account');
+        $fundAccount = $this->getDbLastEntity('fund_account');
 
-        $randomFundAccountId = (sprintf('%s', $fund_account->getId()));
+        $randomFundAccountId = (sprintf('%s', $fundAccount->getId()));
 
         $randomFundAccountId++;
 
@@ -1305,5 +1377,235 @@ class FundAccountsTest extends TestCase
         $this->mockCardVault();
 
         $this->startTest();
+    }
+
+    public function testCreateBankAccountFundAccountWithAllowedSpecialCharacters()
+    {
+        Queue::fake();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->mockRazorxTreatment();
+
+        $response = $this->startTest();
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+
+        $expectedBankAccount = [
+            'type'             => 'contact',
+            'entity_id'        => '1000000contact',
+            'ifsc_code'        => 'SBIN0007105',
+            'account_number'   => '111000111',
+            'merchant_id'      => '10000000000000',
+            'beneficiary_name' => 'Amit- &M',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBankAccount, $bankAccount);
+
+        $this->assertArrayNotHasKey(FundAccount\Entity::UNIQUE_HASH, $response);
+
+        $expectedHashInput = '10000000000000|contact|1000000contact|bank_account|111000111|SBIN0007105|Amit-&M';
+
+        $expectedHash = hash('sha3-256', $expectedHashInput);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $uniqueHash = $fundAccount->getUniqueHash();
+
+        $this->assertEquals($expectedHash, $uniqueHash);
+
+        Queue::assertPushed(CreateAccount::class);
+    }
+
+    public function testCreateDuplicateBankAccountFundAccountWithExtraSpacesInName()
+    {
+        $this->testCreateBankAccountFundAccountWithAllowedSpecialCharacters();
+
+        $noOfFundAccountsBeforeSendingDuplicateRequest = count($this->getDbEntities('fund_account'));
+
+        $noOfBankAccountsBeforeSendingDuplicateRequest = count($this->getDbEntities('bank_account'));
+
+        $this->mockRazorxTreatment();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $noOfFundAccountsAfterSendingDuplicateRequest = count($this->getDbEntities('fund_account'));
+
+        $noOfBankAccountsAfterSendingDuplicateRequest = count($this->getDbEntities('bank_account'));
+
+        // We check that no new fund account or bank account is created if extra spaces are sent in the bank account
+        // name.
+        $this->assertEquals($noOfBankAccountsBeforeSendingDuplicateRequest,
+                            $noOfBankAccountsAfterSendingDuplicateRequest);
+
+        $this->assertEquals($noOfFundAccountsBeforeSendingDuplicateRequest,
+                            $noOfFundAccountsAfterSendingDuplicateRequest);
+    }
+
+    public function testCreateTwoDifferentFundAccountsAndVerifyTheyHaveDifferentHashes()
+    {
+        $this->testCreateFundAccountBankAccount();
+
+        $fundAccount1 = $this->getDbLastEntity('fund_account');
+
+        $this->mockRazorxTreatment();
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreateBankAccountFundAccountWithAllowedSpecialCharacters'];
+
+        $this->startTest();
+
+        $fundAccount2 = $this->getDbLastEntity('fund_account');
+
+        $this->assertNotEquals($fundAccount1->getUniqueHash(), $fundAccount2->getUniqueHash());
+    }
+
+    public function testUpdationOfExistingDuplicateFundAccountWithHash()
+    {
+        $this->mockRazorxTreatment();
+
+        $this->testCreateFundAccountBankAccount();
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $this->fixtures->edit(
+            'fund_account',
+            $fundAccount->getId(),
+            [
+                FundAccount\Entity::UNIQUE_HASH => null,
+            ]
+        );
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $fundAccount->reload();
+
+        $this->assertNotNull($fundAccount->getUniqueHash());
+    }
+
+    public function testTaxPaymentFundAccountCreationSuccessAndVerifyHashCreation()
+    {
+        $contact = $this->fixtures->create('contact',
+                                           [
+                                               'name' => 'some test name',
+                                               'type' => Type::TAX_PAYMENT_INTERNAL_CONTACT
+                                           ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['contact_id'] = $contact->getPublicId();
+
+        $this->testData[__FUNCTION__]['response']['content']['contact_id'] = $contact->getPublicId();
+
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $this->mockRazorxTreatment();
+
+        $this->startTest();
+
+        $expectedHashInput = '10000000000000|contact|' . $contact->getId() .
+                             '|bank_account|000205031288|ICIC0000020|testname';
+
+        $expectedHash = hash('sha3-256', $expectedHashInput);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $uniqueHash = $fundAccount->getUniqueHash();
+
+        $this->assertEquals($expectedHash, $uniqueHash);
+    }
+
+    public function testNullSourceFundAccountCreationAndVerifyHash()
+    {
+        $response = $this->createValidationWithFundAccountEntity();
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+
+        $expectedBankAccount = [
+            'type'             => null,
+            'entity_id'        => null,
+            'ifsc_code'        => 'SBIN0010411',
+            'account_number'   => '123456789',
+            'merchant_id'      => '10000000000000',
+            'beneficiary_name' => 'Rohit Keshwani',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBankAccount, $bankAccount);
+
+        $this->assertArrayNotHasKey(FundAccount\Entity::UNIQUE_HASH, $response['fund_account']);
+
+        $expectedHashInput = '10000000000000|||bank_account|123456789|SBIN0010411|RohitKeshwani';
+
+        $expectedHash = hash('sha3-256', $expectedHashInput);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $uniqueHash = $fundAccount->getUniqueHash();
+
+        $this->assertEquals($expectedHash, $uniqueHash);
+    }
+
+    // In this case there should not be hash creation for fund account.
+    public function testCreateFundAccountBankAccountWithExperimentDisabledForDedupViaHash()
+    {
+        Queue::fake();
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreateFundAccountBankAccount'];
+
+        $response = $this->startTest();
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+
+        $expectedBankAccount = [
+            'type'             => 'contact',
+            'entity_id'        => '1000000contact',
+            'ifsc_code'        => 'SBIN0007105',
+            'account_number'   => '111000111',
+            'beneficiary_name' => 'Amit M',
+            'merchant_id'      => '10000000000000',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBankAccount, $bankAccount);
+
+        $this->assertArrayNotHasKey(FundAccount\Entity::UNIQUE_HASH, $response);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $uniqueHash = $fundAccount->getUniqueHash();
+
+        $this->assertNull($uniqueHash);
+
+        Queue::assertPushed(CreateAccount::class);
+    }
+
+    // In this case there should not be hash updation for the duplicate fund account.
+    public function testNonUpdationOfExistingDuplicateFundAccountWithHashWhenExperimentIsDisabled()
+    {
+        $this->testCreateFundAccountBankAccountWithExperimentDisabledForDedupViaHash();
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $this->fixtures->edit(
+            'fund_account',
+            $fundAccount->getId(),
+            [
+                FundAccount\Entity::UNIQUE_HASH => null,
+            ]
+        );
+
+        $this->testData[__FUNCTION__] = $this->testData['testUpdationOfExistingDuplicateFundAccountWithHash'];
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $fundAccount->reload();
+
+        $this->assertNull($fundAccount->getUniqueHash());
     }
 }

@@ -6,6 +6,7 @@ use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\Contact;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Models\WalletAccount;
 use RZP\Constants\Entity as E;
@@ -58,6 +59,33 @@ class Repository extends Base\Repository
 
                 break;
         }
+
+        return $account;
+    }
+
+    /**
+     * Get fund account if exists with similar details using unique_hash.
+     *
+     * @param string|null         $uniqueHash
+     * @param Contact\Entity|null $contact
+     *
+     * @return Entity|null
+     */
+    public function getFundAccountWithSimilarDetailsFromHash(string $uniqueHash = null)
+    {
+       $account = null;
+
+       if (empty($uniqueHash) === false)
+       {
+           $allFundAccountAttributes = $this->dbColumn('*');
+
+           $faUniqueHashColumn = $this->dbColumn(Entity::UNIQUE_HASH);
+
+           $account = $this->newQueryWithConnection($this->getReportingReplicaConnection())
+                           ->select($allFundAccountAttributes)
+                           ->where($faUniqueHashColumn, '=', $uniqueHash)
+                           ->first();
+       }
 
         return $account;
     }

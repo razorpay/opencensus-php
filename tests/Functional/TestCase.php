@@ -136,7 +136,6 @@ class TestCase extends ParentTestCase
             $testData = $this->testData[$name];
         }
 
-
         $this->replaceValuesRecursively($testData, $testDataToReplace);
 
         return $this->runRequestResponseFlow($testData);
