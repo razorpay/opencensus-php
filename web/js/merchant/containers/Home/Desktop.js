@@ -46,6 +46,8 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import LocalStorageService from 'common/utils/localStorage';
 import { fetchUser } from 'merchant/reducers/session';
+import AsyncButton from 'react-async-button';
+
 @withRouter
 @connect(
   (state) => ({
@@ -176,7 +178,7 @@ class AnalyticsDesktop extends Component {
   };
 
   onClickCovidEnableNow = () => {
-    merchantFetch({
+    return merchantFetch({
       url: `merchants/me/features?features[covid_19_relief]=1`,
       mode: `${this.props.mode}`,
       method: 'POST',
@@ -308,13 +310,13 @@ class AnalyticsDesktop extends Component {
                 <Link to="/config" style={{ cursor: 'pointer' }}>
                   <strong>Know More</strong>
                 </Link>{' '}
-                <a
-                  onClick={this.onClickCovidEnableNow}
+                <AsyncButton
+                  type="button"
                   class="Button--secondary Button scheduled-btn-act btn-border"
-                  style={{ marginLeft: '24px' }}
-                >
-                  <strong>Enable Now</strong>
-                </a>{' '}
+                  onClick={this.onClickCovidEnableNow}
+                  text="Enable Now"
+                  pendingText="Enabling..."
+                />
               </AnnouncementBanner>
             )}
 

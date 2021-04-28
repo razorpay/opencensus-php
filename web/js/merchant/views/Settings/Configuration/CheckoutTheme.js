@@ -12,6 +12,7 @@ import { getIcon } from './components/paymentMethodIcons';
 import SwitchField from 'common/ui/Forms/SwitchField';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import CovidKnowMore from 'common/ui/CovidKnowMore';
+import LoaderDots from 'common/ui/LoaderDots';
 
 const languageOptions = [
   { name: 'English', code: 'en' },
@@ -199,34 +200,38 @@ export default class CheckoutTheme extends Component {
                   user.business_type !== 7 &&
                   user.business_type !== 9 && (
                     <div class="covid-donations__settings">
-                      <div
-                        class={
-                          user.isFeatureEnabled('covid_19_relief') ? 'text-primary' : 'text-faded'
-                        }
-                      >
-                        <i class="i i-Donate" />
-                        <strong>
-                          Donations{' '}
-                          {user.isFeatureEnabled('covid_19_relief') ? `enabled` : `disabled`} on
-                          Checkout
-                        </strong>
-                        <span class="toggler-btn">
-                          <SwitchField
-                            defaultChecked={!!isEnabled}
-                            onChange={this.props.onSwitchChange}
-                            type="prime"
-                          />
-                          {user.isFeatureEnabled('covid_19_relief') ? (
-                            <b class="text-primary">Enabled</b>
-                          ) : (
-                            <b class="text-faded">Disabled</b>
-                          )}
-                        </span>
-                      </div>
+                      {this.props.isLoading ? (
+                        <LoaderDots />
+                      ) : (
+                        <div
+                          class={
+                            user.isFeatureEnabled('covid_19_relief') ? 'text-primary' : 'text-faded'
+                          }
+                        >
+                          <i class="i i-Donate" />
+                          <strong>
+                            Donations{' '}
+                            {user.isFeatureEnabled('covid_19_relief') ? `enabled` : `disabled`} on
+                            Checkout
+                          </strong>
+                          <span class="toggler-btn">
+                            <SwitchField
+                              defaultChecked={!!isEnabled}
+                              onChange={this.props.onSwitchChange}
+                              type="prime"
+                            />
+                            {user.isFeatureEnabled('covid_19_relief') ? (
+                              <b class="text-primary">Enabled</b>
+                            ) : (
+                              <b class="text-faded">Disabled</b>
+                            )}
+                          </span>
+                        </div>
+                      )}
                       <br />
                       <div>
                         {' '}
-                        <p>
+                        <p style={{ marginBottom: '8px' }}>
                           Customers will have the option to donate for COVID Relief on the checkout
                           page post succesful payment.{' '}
                           <strong

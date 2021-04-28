@@ -34,6 +34,8 @@ import CovidKnowMore from 'common/ui/CovidKnowMore';
 )
 @RTracking(() => window.rzpQ.component('CongfigurationContainer'))
 export default class CongfigurationContainer extends Component {
+  state = { isLoading: false };
+
   componentWillMount() {
     this.props.fetchFeatures(this.props.user.current).catch((err) => {
       this.props.showNotification({
@@ -210,6 +212,7 @@ export default class CongfigurationContainer extends Component {
   };
 
   handleCovidReliefOptinAndOut = (e) => {
+    this.setState({ isLoading: true });
     let bool = e === true ? 1 : 0;
 
     merchantFetch({
@@ -223,6 +226,7 @@ export default class CongfigurationContainer extends Component {
             type: 'success',
             message: 'Updated preferences',
           });
+          this.setState({ isLoading: false });
           if (bool === 1) {
             this.props.openModal({
               size: 'medium',
@@ -232,6 +236,7 @@ export default class CongfigurationContainer extends Component {
         });
       })
       .catch((err) => {
+        this.setState({ isLoading: false });
         this.props.showNotification({
           type: 'error',
           message: err.errors,
@@ -272,6 +277,7 @@ export default class CongfigurationContainer extends Component {
               form="configForm"
               onSave={this.saveConfig}
               onSwitchChange={this.handleCovidReliefOptinAndOut}
+              isLoading={this.state.isLoading}
             />
             {user.isOrgAllowedFunctionality('flashcheckout') && <FlashCheckout />}
             <PaymentSettings />
