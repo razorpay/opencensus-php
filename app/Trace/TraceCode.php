@@ -1374,6 +1374,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BHARAT_QR_PAYMENT_VALIDATE_REQUEST                    = 'BHARAT_QR_PAYMENT_VALIDATE_REQUEST';
 
     const UPI_QR_PAYMENT_PROCESSING_FAILED                      = 'UPI_QR_PAYMENT_PROCESSING_FAILED';
+    const UPI_METRIC_DIMENSION_CREATE_FAILED                    = 'UPI_METRIC_DIMENSION_CREATE_FAILED';
 
     const UPI_TRANSFER_SAVE_REQUEST                             = 'UPI_TRANSFER_SAVE_REQUEST';
     const UPI_TRANSFER_REQUEST_SAVED                            = 'UPI_TRANSFER_REQUEST_SAVED';

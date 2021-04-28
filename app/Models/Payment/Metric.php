@@ -7,6 +7,7 @@ use App;
 use RZP\Exception;
 use RZP\Error\Error;
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 
 class Metric extends Base\Core
 {
@@ -29,6 +30,8 @@ class Metric extends Base\Core
     const LABEL_TRACE_FIELD                     = 'field';
     const LABEL_TRACE_SOURCE                    = 'source';
     const LABEL_TRACE_EXCEPTION_CLASS           = 'exception_class';
+    const LABEL_UPI_FLOW                        = 'upi_flow';
+    const LABEL_PAYMENT_IS_TPV                  = 'is_tpv';
 
     const LABEL_LIBRARY                         = 'library';
 
@@ -168,6 +171,7 @@ class Metric extends Base\Core
             self::LABEL_PAYMENT_CURRENCY         => $payment->getCurrency(),
             self::LABEL_PAYMENT_INTERNATIONAL    => $payment->isInternational(),
             self::LABEL_PAYMENT_TRANSACTION_TYPE => $payment->getTransactionType(),
+            self::LABEL_PAYMENT_IS_TPV           => $payment->merchant->isTPVRequired(),
         ];
 
         if ($payment->hasCard() === true)
@@ -186,7 +190,43 @@ class Metric extends Base\Core
             self::LABEL_CARD_TYPE    => $cardType ?? null,
         ];
 
+        $upiDimensions = $this->getDefaultUpiDimensions($payment);
+
+        $dimensions += $upiDimensions;
+
         return $dimensions;
+    }
+
+    protected function getDefaultUpiDimensions(Entity $payment): array
+    {
+        $upiDimensions = [
+            self::LABEL_UPI_FLOW        => null,
+        ];
+
+        if ($payment->isUpi() === false)
+        {
+            return $upiDimensions;
+        }
+
+        try
+        {
+            $upi = $payment->getUpiMetadata();
+
+            $upiFlow  = $upi->getFlow();
+
+            $upiDimensions[self::LABEL_UPI_FLOW] = $upiFlow ?? null;
+        }
+        catch (\Error $exception)
+        {
+            $this->trace->warning(
+                TraceCode::UPI_METRIC_DIMENSION_CREATE_FAILED,
+                [
+                    'message' => $exception->getMessage()
+                ]
+            );
+        }
+
+        return $upiDimensions;
     }
 
     protected function getDefaultExceptionDimensions(\Throwable $e): array
