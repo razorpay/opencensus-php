@@ -2572,13 +2572,13 @@ class BankingAccountTest extends TestCase
         $this->fixtures->edit('banking_account', $ba1->getId(), [
             'account_number' => '2224440041626905',
             'balance_id'     => $xBalance1->getId(),
-            'balance_last_fetched_at' => 1677042035,
+            'balance_last_fetched_at' => 1587565319,
         ]);
 
         $this->fixtures->edit('banking_account', $ba2['id'], [
             'account_number' => '1234567808',
             'balance_id'     => $xBalance2->getId(),
-            'balance_last_fetched_at' => 1677042035,
+            'balance_last_fetched_at' => 1587565319,
         ]);
 
         $response = $this->startTest();

@@ -721,14 +721,19 @@ class Entity extends Base\PublicEntity
             $this->load(self::BALANCE);
         }
 
-        $array[self::BALANCE] = optional($this->balance)->only(
-            [
-                Balance\Entity::ID,
-                Balance\Entity::BALANCE,
-                Balance\Entity::CURRENCY,
-                Balance\Entity::LOCKED_BALANCE,
-                Balance\Entity::LAST_FETCHED_AT,
-            ]);
+        $array[self::BALANCE] = optional($this->balance)->toArrayPublic();
+
+        if ( $array[self::BALANCE] !== null)
+        {
+            $array[self::BALANCE] = array_intersect_key($array[self::BALANCE],
+                                                        array_flip([
+                                                                       Balance\Entity::ID,
+                                                                       Balance\Entity::BALANCE,
+                                                                       Balance\Entity::CURRENCY,
+                                                                       Balance\Entity::LOCKED_BALANCE,
+                                                                       Balance\Entity::LAST_FETCHED_AT,
+                                                                   ]));
+        }
     }
 
     public function setPublicAccountStatementLastUpdatedAtAttribute(array & $array)
