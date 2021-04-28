@@ -442,18 +442,17 @@ class LeafListItem extends React.Component {
                 </button>
               </div>
             )}
-            {[REQUESTABLE, CANCELLED].includes(instrument.status) ||
-              (isAmex && (
-                <div className="flex-end">
-                  <button
-                    class="btn btn-primary ml-5"
-                    disabled={this.state.loading || instrument.path === 'pg.cards.domestic.amex'}
-                    onClick={this.handleCreateRequest}
-                  >
-                    {this.state.loading ? 'Requesting..' : 'Request'}
-                  </button>
-                </div>
-              ))}
+            {(isAmex || [REQUESTABLE, CANCELLED].includes(instrument.status)) && (
+              <div className="flex-end">
+                <button
+                  class="btn btn-primary ml-5"
+                  disabled={this.state.loading || instrument.path === 'pg.cards.domestic.amex'}
+                  onClick={this.handleCreateRequest}
+                >
+                  {this.state.loading ? 'Requesting..' : 'Request'}
+                </button>
+              </div>
+            )}
             {![REQUESTABLE, CANCELLED, ACCOUNT_LINKABLE].includes(instrument.status) &&
               instrument.path !== 'pg.wallet.paytm' && (
                 <div className="flex-end">
@@ -517,30 +516,18 @@ class LeafListItem extends React.Component {
               )}
           </div>
         )}
-        {[ACTION_REQUIRED, REJECTED].includes(instrument.status) ||
-          (isAmex && (
-            <>
-              <div class="comment" title={instrument.comment}>
-                <i class="i i-info-outline" />
-                <p>
-                  {isAmex
-                    ? 'Due to recent data localisation guidelines compliance issue, Amex has stopped onboarding merchants on their network. We will notify you when this option becomes available again.'
-                    : instrument.comment || 'No comments available'}
-                </p>
-              </div>
-
-              {/* <p style={{ margin: '5px 20px' }}>
-              Please complete your{' '}
-              <span>
-                {' '}
-                <Link to="/activation" style={{ textDecoration: 'underline' }}>
-                  Activation Form
-                </Link>
-              </span>{' '}
-              to re-submit your request.
-            </p> */}
-            </>
-          ))}
+        {(isAmex || [ACTION_REQUIRED, REJECTED].includes(instrument.status)) && (
+          <>
+            <div class="comment" title={instrument.comment}>
+              <i class="i i-info-outline" />
+              <p>
+                {isAmex
+                  ? 'Due to recent data localisation guidelines compliance issue, Amex has stopped onboarding merchants on their network. We will notify you when this option becomes available again.'
+                  : instrument.comment || 'No comments available'}
+              </p>
+            </div>
+          </>
+        )}
       </li>
     );
   }
