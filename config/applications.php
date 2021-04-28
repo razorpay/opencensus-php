@@ -374,6 +374,13 @@ return [
             'rzp'       =>  env('FRESHDESK_RZP_AGENT_ID'),
         ],
 
+        'activation'  => [
+            'rzp'   =>   [
+                'agentId'   =>  env('WORKFLOW_ACTIVATION_RZP_AGENT_ID'),
+                'groupId'   =>  env('WORKFLOW_ACTIVATION_RZP_GROUP_ID'),
+            ],
+        ],
+
         'customer' => [
             'dispute' => [
                 'automation_agent_id'       => env('FRESHDESK_AUTOMATION_AGENT_ID'),

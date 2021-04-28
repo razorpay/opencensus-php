@@ -8,6 +8,7 @@ class Constants
     const MERCHANT_ACTION                       =   'merchant_actions';
     const EDIT_PAYMENT_METHOD                   =   'merchant_put_payment_methods';
     const EMAIL_CHANGE                          =   'merchant_edit_email';
+    const MERCHANT_ACTIVATION_STATUS            =   'merchant_activation_status';
 
     const APPROVE                               =   'approve';
 
@@ -20,6 +21,8 @@ class Constants
         self::EDIT_PAYMENT_METHOD           => PaymentMethodChangeObserver::class,
 
         self::EMAIL_CHANGE                  => EmailChangeObserver::class,
+
+        self::MERCHANT_ACTIVATION_STATUS    => MerchantActivationStatusObserver::class,
 
     ];
 }

@@ -17,11 +17,11 @@ class Validator extends Base\Validator
     const CREATE_FEE_RECOVERY_SCHEDULE_TASK = 'create_fee_recovery_schedule_task';
 
     protected static $createRules = [
-        ScheduleTask::TYPE              => 'required|string|max:20',
-        ScheduleTask::METHOD            => 'sometimes|nullable|string|max:20|custom',
-        ScheduleTask::SCHEDULE_ID       => 'required|alpha_dash|max:20',
-        ScheduleTask::NEXT_RUN_AT       => 'sometimes|integer',
-        ScheduleTask::INTERNATIONAL     => 'sometimes|integer',
+        ScheduleTask::TYPE                => 'required|string|max:20',
+        ScheduleTask::METHOD              => 'sometimes|nullable|string|max:20|custom',
+        ScheduleTask::SCHEDULE_ID         => 'required|alpha_dash|max:20',
+        ScheduleTask::NEXT_RUN_AT         => 'sometimes|integer',
+        ScheduleTask::INTERNATIONAL       => 'sometimes|integer',
     ];
 
     protected static $updateNextRunAtRules = [

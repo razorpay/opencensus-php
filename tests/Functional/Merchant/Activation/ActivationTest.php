@@ -11,6 +11,7 @@ use Mockery;
 
 use Carbon\Carbon;
 use RZP\Constants\Mode;
+use RZP\Models\Base\EsDao;
 use RZP\Models\Card\Network;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
@@ -18,6 +19,7 @@ use RZP\Services\RazorXClient;
 use RZP\Services\HubspotClient;
 use RZP\Models\Currency\Currency;
 use RZP\Jobs\FundAccountValidation;
+use RZP\Models\Admin\Permission\Name;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Document\Type;
 use RZP\Tests\Functional\Partner\Constants;
@@ -30,12 +32,18 @@ use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Admin\Org\Repository as OrgRepository;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
+use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
 use RZP\Models\Merchant\Methods\Repository as MethodRepo;
+use RZP\Tests\Functional\Helpers\Freshdesk\FreshdeskTrait;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
+use \RZP\Models\Workflow\Action\Differ\Entity as DifferEntity;
 use RZP\Models\FundAccount\Validation\Entity as ValidationEntity;
+use RZP\Models\Workflow\Observer\Constants as ObserverConstants;
+use RZP\Models\Workflow\Observer\MerchantActivationStatusObserver;
 use RZP\Models\Merchant\Detail\Constants as MerchantDetailsConstant;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
 use RZP\Mail\Merchant\NeedsClarificationEmail as NeedsClarificationEmail;
@@ -52,9 +60,17 @@ class ActivationTest extends OAuthTestCase
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
     use FundAccountValidationTrait;
+    use WorkflowTrait;
+    use FreshdeskTrait;
 
     const DEFAULT_MERCHANT_ID = '10000000000000';
     const RZP_ORG                   = '100000razorpay';
+    const MERCHANT_ACTIVATED_WORKFLOW_DATA = 'MERCHANT_ACTIVATED_WORKFLOW_DATA';
+    const MERCHANT_ACTIVATED_ES_DATA = 'MERCHANT_ACTIVATED_ES_DATA';
+
+    protected $esClient;
+
+    protected $esDao;
 
     protected function setUp(): void
     {
@@ -65,6 +81,10 @@ class ActivationTest extends OAuthTestCase
         $this->fixtures->create('org:hdfc_org');
 
         $this->enableRazorXTreatmentForActivation();
+
+        $this->esDao = new EsDao();
+
+        $this->esClient =  $this->esDao->getEsClient()->getClient();
     }
 
     protected function enableRazorXTreatmentForActivation()
@@ -2118,6 +2138,373 @@ class ActivationTest extends OAuthTestCase
         $this->assertNull($merchant->convertOnApi());
     }
 
+    public function testActivationWithUpdateObserverData()
+    {
+        $data = [
+            'submitted'             => 1,
+            'activation_status'     => 'under_review'
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail',$data);
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $this->setupWorkflow("Activation Workflow",Name::EDIT_ACTIVATE_MERCHANT);
+
+        $activationRequest = [
+            'url'     => '/merchant/activation/' . $merchantId . '/activation_status',
+            'method'  => 'patch',
+            'content' => [
+                'activation_status' => 'activated',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($activationRequest);
+
+        $expectedWorkflow  = $this->getExpectedArraysForWorkflowObserverTestCases(self::MERCHANT_ACTIVATED_WORKFLOW_DATA);
+
+        $this->assertStringStartsWith('w_action_', $response['id']);
+
+        $this->esClient->indices()->refresh();
+
+        $this->updateObserverData($response['id'],  [
+            'ticket_id'     => 123,
+            'fd_instance'   => 'rzp'
+        ]);
+
+        $this->esClient->indices()->refresh();
+
+        $this->assertArraySelectiveEquals($expectedWorkflow, $response);
+
+        $workflowData = $this->getWorkflowData();
+
+        $expectedWorkFlowActionData  = $this->getExpectedArraysForWorkflowObserverTestCases(self::MERCHANT_ACTIVATED_ES_DATA);
+
+        $this->assertArraySelectiveEquals($expectedWorkFlowActionData, $workflowData);
+
+        $this->assertEquals('https://api.razorpay.com/v1/merchant/activation/'.$merchantId.'/activation_status', $workflowData['url']);
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->fixtures->create('merchant_freshdesk_tickets', $this->getDefaultFreshdeskArray($merchantId));
+
+        $this->setUpFreshdeskClientMock();
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123/reply', 'post',
+            [
+                'body' => implode("<br><br>",(new MerchantActivationStatusObserver(
+                    [
+                        DifferEntity::PAYLOAD => [
+                            "activation_status" => 'activated'
+                        ],
+                        DifferEntity::ENTITY_ID => $merchantId]))->getTicketReplyContent(ObserverConstants::APPROVE, $merchantId)),
+            ],
+            [
+
+            ]);
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123?include=requester', 'GET',
+            [],
+            [
+                'id'        => '123',
+                'tags'      => null
+            ]);
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123', 'PUT',
+            [
+                'status'    => 4
+            ],
+            [
+                'id'            => '123',
+            ]);
+
+        $this->performWorkflowAction($workflowAction['id'], true);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertTrue($merchant->isActivated());
+    }
+
+    public function testActivationWithoutObserverData()
+    {
+        $data = [
+            'submitted'             => 1,
+            'activation_status'     => 'under_review'
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $data);
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $this->setupWorkflow("Activation Workflow",Name::EDIT_ACTIVATE_MERCHANT);
+
+        $activationRequest = [
+            'url'     => '/merchant/activation/' . $merchantId . '/activation_status',
+            'method'  => 'patch',
+            'content' => [
+                'activation_status' => 'activated',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($activationRequest);
+
+        $expectedWorkflow  = $this->getExpectedArraysForWorkflowObserverTestCases(self::MERCHANT_ACTIVATED_WORKFLOW_DATA);
+
+        $this->assertStringStartsWith('w_action_', $response['id']);
+
+        $this->esClient->indices()->refresh();
+
+        $this->assertArraySelectiveEquals($expectedWorkflow, $response);
+
+        $workflowData = $this->getWorkflowData();
+
+        $this->assertEquals([], $workflowData[DifferEntity::WORKFLOW_OBSERVER_DATA]);
+
+        $this->assertEquals('https://api.razorpay.com/v1/merchant/activation/'.$merchantId.'/activation_status', $workflowData['url']);
+
+        $this->setUpFreshdeskClientMock();
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets', 'POST',
+            [
+                'description' => 'Ticket Created from Backend',
+                'priority'  =>  1,
+            ],
+            [
+                'description' => 'Ticket Created from Backend',
+                'priority'  =>  1,
+                'id'        => '123',
+                'fr_due_by' => '2020-12-08T16:04:20Z',
+            ]);
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123/reply', 'post',
+            [
+                'body' => implode("<br><br>",(new MerchantActivationStatusObserver(
+                    [
+                        DifferEntity::PAYLOAD => [
+                            "activation_status" => 'activated'
+                        ],
+                        DifferEntity::ENTITY_ID => $merchantId]))->getTicketReplyContent(ObserverConstants::APPROVE, $merchantId)),
+            ],
+            [
+
+            ]);
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123?include=requester', 'GET',
+            [],
+            [
+                'id'        => '123',
+                'tags'      => null
+            ]);
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123', 'PUT',
+            [
+                'status'    => 4
+            ],
+            [
+                'id'            => '123',
+            ]);
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->performWorkflowAction($workflowAction['id'], true);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertTrue($merchant->isActivated());
+
+    }
+
+    public function testActivationRejectedWithUpdateObserverData()
+    {
+        $data = [
+            'submitted'             => 1,
+            'activation_status'     => 'under_review'
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $data);
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $this->setupWorkflow("Activation Workflow",Name::EDIT_ACTIVATE_MERCHANT);
+
+        $activationRequest = [
+            'url'     => '/merchant/activation/' . $merchantId . '/activation_status',
+            'method'  => 'patch',
+            'content' => [
+                'activation_status' => 'rejected',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($activationRequest);
+
+        $expectedWorkflow  = $this->getExpectedArraysForWorkflowObserverTestCases(self::MERCHANT_ACTIVATED_WORKFLOW_DATA);
+
+        $this->assertStringStartsWith('w_action_', $response['id']);
+
+        $this->esClient->indices()->refresh();
+
+        $this->updateObserverData($response['id'],  [
+            'ticket_id'     => 123,
+            'fd_instance'   => 'rzp'
+        ]);
+
+        $this->esClient->indices()->refresh();
+
+        $this->assertArraySelectiveEquals($expectedWorkflow, $response);
+
+        $workflowData = $this->getWorkflowData();
+
+        $expectedWorkFlowActionData  = $this->getExpectedArraysForWorkflowObserverTestCases(self::MERCHANT_ACTIVATED_ES_DATA);
+
+        $this->assertArraySelectiveEquals($expectedWorkFlowActionData, $workflowData);
+
+        $this->assertEquals('https://api.razorpay.com/v1/merchant/activation/'.$merchantId.'/activation_status', $workflowData['url']);
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->setUpFreshdeskClientMock();
+
+        $this->fixtures->create('merchant_freshdesk_tickets', $this->getDefaultFreshdeskArray($merchantId));
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123?include=requester', 'GET',
+            [],
+            [
+                'id'        => '123',
+                'tags'      => null
+            ]);
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123/reply', 'post',
+            [
+                'body' => implode("<br><br>",(new MerchantActivationStatusObserver(
+                    [
+                        DifferEntity::PAYLOAD => [
+                            "activation_status" => 'rejected'
+                        ],
+                        DifferEntity::ENTITY_ID => $merchantId]))->getTicketReplyContent(ObserverConstants::APPROVE, $merchantId)),
+            ],
+            [
+
+            ]);
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123', 'PUT',
+            [
+                'status'    => 4
+            ],
+            [
+                'id'            => '123',
+            ]);
+
+        $this->performWorkflowAction($workflowAction['id'], true);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertFalse($merchant->isActivated());
+    }
+
+    public function testActivationRejectedWithoutObserverData()
+    {
+        $data = [
+            'submitted'             => 1,
+            'business_category'     => 'healthcare',
+            'business_subcategory'  => 'clinic',
+            'activation_status'     => 'under_review'
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $data);
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $this->fixtures->edit('merchant',
+            $merchantId,
+            ['activated' => 1, 'international' => 0, 'org_id' => Org::HDFC_ORG]);
+
+        $this->setupWorkflow("Activation Workflow",Name::EDIT_ACTIVATE_MERCHANT);
+
+        $activationRequest = [
+            'url'     => '/merchant/activation/' . $merchantId . '/activation_status',
+            'method'  => 'patch',
+            'content' => [
+                'activation_status' => 'rejected',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($activationRequest);
+
+        $expectedWorkflow  = $this->getExpectedArraysForWorkflowObserverTestCases(self::MERCHANT_ACTIVATED_WORKFLOW_DATA);
+
+        $this->assertArrayHasKey("id",$response );
+
+        $this->assertStringStartsWith('w_action_', $response['id']);
+
+        $this->esClient->indices()->refresh();
+
+        $this->assertArraySelectiveEquals($expectedWorkflow, $response);
+
+        $workflowData = $this->getWorkflowData();
+
+        $this->assertEquals([], $workflowData[DifferEntity::WORKFLOW_OBSERVER_DATA]);
+
+        $this->assertEquals('https://api.razorpay.com/v1/merchant/activation/'.$merchantId.'/activation_status', $workflowData['url']);
+
+        $this->setUpFreshdeskClientMock();
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets', 'POST',
+            [
+                'description' => 'Ticket Created from Backend',
+                'priority'  =>  1,
+            ],
+            [
+                'description' => 'Ticket Created from Backend',
+                'priority'  =>  1,
+                'id'        => '123',
+                'fr_due_by' => '2020-12-08T16:04:20Z',
+            ]);
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123/reply', 'post',
+            [
+                'body' => implode("<br><br>",(new MerchantActivationStatusObserver(
+                    [
+                        DifferEntity::PAYLOAD => [
+                            "activation_status" => 'rejected'
+                        ],
+                        DifferEntity::ENTITY_ID => $merchantId]))->getTicketReplyContent(ObserverConstants::APPROVE, $merchantId)),
+            ],
+            [
+            ]);
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123?include=requester', 'GET',
+            [],
+            [
+                'id'        => '123',
+                'tags'      => null
+            ]);
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123', 'PUT',
+            [
+                'status'    => 4
+            ],
+            [
+                'id'            => '123',
+            ]);
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->performWorkflowAction($workflowAction['id'], true);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertFalse($merchant->isActivated());
+
+    }
+
     protected function runFixturesForInternationalActivation(string $merchantId, string $orgId = Org::RZP_ORG)
     {
         $this->fixtures->edit('merchant', $merchantId, ['international' => 0, 'org_id' => $orgId]);
@@ -3170,5 +3557,42 @@ class ActivationTest extends OAuthTestCase
 
             return true;
         });
+    }
+
+    protected function getExpectedArraysForWorkflowObserverTestCases($arrayType) : array
+    {
+        if ($arrayType === self::MERCHANT_ACTIVATED_WORKFLOW_DATA)
+        {
+            return [
+                'entity_name'   => "merchant_detail",
+                'workflow'      => [
+                    'name'      => "Activation Workflow",
+                ],
+                'permission'    =>[
+                    'name'  => "edit_activate_merchant"
+                ],
+                'state'         =>"open",
+                'maker_type'    => "admin",
+                'org_id'        => "org_100000razorpay",
+                'approved'      =>  FALSE,
+                'current_level' =>  1,
+            ];
+        }
+
+        if ($arrayType === self::MERCHANT_ACTIVATED_ES_DATA)
+        {
+            return [
+                'method' => "PATCH",
+                'payload' => [
+
+                ],
+                'workflow_observer_data' =>  [
+                    'ticket_id' => "123",
+                    'fd_instance' => "rzp"
+                ],
+                'state' => "open",
+                'route' => "merchant_activation_status",
+            ];
+        }
     }
 }

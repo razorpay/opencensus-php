@@ -152,7 +152,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editEmailRules = [
-        Entity::EMAIL                       => 'required|email|unique:merchants'
+        Entity::EMAIL                               => 'required|email|unique:merchants',
     ];
 
     protected static $editPreSignupRules = [
@@ -179,8 +179,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $actionRules = [
-        Entity::ACTION                                     => 'required|custom',
-        ProductInternationalMapper::INTERNATIONAL_PRODUCTS => 'sometimes|array'
+        Entity::ACTION                                      => 'required|custom',
+        ProductInternationalMapper::INTERNATIONAL_PRODUCTS  => 'sometimes|array',
     ];
 
     protected static $change2faSettingRules = [

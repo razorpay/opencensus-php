@@ -320,6 +320,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BENEFICIARY_NAME);
     }
 
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
+    }
+
     public function getName()
     {
         return $this->getAttribute(self::NAME);

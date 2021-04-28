@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\FreshdeskTicket;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Constants\Mode;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
@@ -61,6 +62,8 @@ class Validator extends Base\Validator
         'group_id'                                               => 'sometimes',
         'subject'                                                => 'required|string',
         'description'                                            => 'required|string',
+        'responder_id'                                           => 'sometimes|int|custom:responder_id',
+        'type'                                                   => 'sometimes|string|custom:ticket_type',
         'phone'                                                  => 'sometimes',
         'attachments'                                            => 'sometimes',
         'attachments.*'                                          => 'custom:attachment',
@@ -70,6 +73,10 @@ class Validator extends Base\Validator
         'custom_fields.cf_requestor_subcategory'                 => 'required',
         'custom_fields.cf_merchant_id_dashboard'                 => 'required',
         'fd_instance'                                            => 'sometimes',
+        'custom_fields.cf_category'                              => 'sometimes|string|custom:custom_field_category',
+        'custom_fields.cf_subcategory'                           => 'sometimes|string|custom:custom_field_sub_category',
+        'custom_fields.cf_product'                               => 'sometimes|string|custom:custom_field_product',
+        'custom_fields.cf_ticket_queue'                          => 'sometimes|string|custom:custom_field_ticket_queue',
     ];
 
     protected static $createSupportDashboardXTicketRules = [
@@ -261,5 +268,109 @@ class Validator extends Base\Validator
             $app['rzp.mode'] ?? Mode::LIVE);
 
         return $variant !== 'control';
+    }
+
+    protected function validateResponderId($attribute, $value)
+    {
+        $validResponderIds = $this->getValidResponderIds();
+
+        if (in_array($value, $validResponderIds, true) === false)
+        {
+            throw new BadRequestValidationFailureException('Invalid Responder Id: ' . $value);
+        }
+    }
+
+    protected function validateTicketType($attribute, $value)
+    {
+        $validTicketTypes = $this->getValidTicketTypes();
+
+        if (in_array($value, $validTicketTypes, true) === false)
+        {
+            throw new BadRequestValidationFailureException('Invalid Ticket Type: ' . $value);
+        }
+    }
+
+    protected function getValidTicketTypes()
+    {
+        return [
+            Constants::SERVICE_REQUEST_TICKET_TYPE,
+        ];
+    }
+
+    protected function validateCustomFieldTicketQueue($attribute, $value)
+    {
+        $validQueues = $this->getValidCustomFieldTicketQueues();
+
+        if (in_array($value, $validQueues, true) === false)
+        {
+            throw new BadRequestValidationFailureException('Invalid Ticket Queue: ' . $value);
+        }
+    }
+
+    protected function getValidCustomFieldTicketQueues()
+    {
+        return [
+            Constants::MERCHANT_TICKET_QUEUE,
+        ];
+    }
+
+    protected function validateCustomFieldProduct($attribute, $value)
+    {
+        $validProducts = $this->getValidCustomFieldProduct();
+
+        if (in_array($value, $validProducts, true) === false)
+        {
+            throw new BadRequestValidationFailureException('Invalid Custom Field Product: ' . $value);
+        }
+    }
+
+    protected function getValidCustomFieldProduct()
+    {
+        return [
+            Constants::PAYMENT_GATEWAY_CF_PRODUCT,
+        ];
+    }
+
+    protected function validateCustomFieldCategory($attribute, $value)
+    {
+        $validCategories = $this->getValidCustomFieldCategory();
+
+        if (in_array($value, $validCategories, true) === false)
+        {
+            throw new BadRequestValidationFailureException('Invalid Category Id: ' . $value);
+        }
+    }
+
+    protected function getValidCustomFieldCategory()
+    {
+        return [
+            Constants::ACTIVATION_CF_CATEGORY,
+        ];
+    }
+
+    protected function validateCustomFieldSubCategory($attribute, $value)
+    {
+        $validSubCategories = $this->getValidCustomFieldSubCategory();
+
+        if (in_array($value, $validSubCategories, true) === false)
+        {
+            throw new BadRequestValidationFailureException('Invalid Subcategory Id: ' . $value);
+        }
+    }
+
+    protected function getValidCustomFieldSubCategory()
+    {
+        return [
+            Constants::ACTIVATION_CF_SUBCATEGORY,
+        ];
+    }
+
+    protected function getValidResponderIds()
+    {
+        $app = \App::getFacadeRoot();
+
+        return [
+            (int)$app['config']->get('applications.freshdesk.activation.rzp.agentId'),
+        ];
     }
 }

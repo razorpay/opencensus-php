@@ -36,7 +36,7 @@ class PaymentMethodChangeObserver implements WorkflowObserverInterface
     {
         $merchantId = $this->getMerchantId();
 
-        if (key_exists(FDConstants::TICKET_ID, $observerData) &&
+        if (key_exists(FDConstants::TICKET_ID, $observerData) and
             key_exists(FDConstants::FD_INSTANCE, $observerData))
         {
             $fdInstance = $observerData[FDConstants::FD_INSTANCE];

@@ -146,13 +146,12 @@ trait WorkflowTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function getWorkflowData()
+    protected function getWorkflowData($mode = 'test')
     {
-        $workflowAction = $this->getLastEntity('workflow_action', true);
+        $workflowAction = $this->getLastEntity('workflow_action', true, $mode);
 
         $this->esClient->indices()->refresh();
-
-        return $this->esDao->searchByIndexTypeAndActionId('workflow_action_test_testing', 'action',
+        return $this->esDao->searchByIndexTypeAndActionId('workflow_action_'.$mode.'_testing', 'action',
             substr($workflowAction['id'], 9))[0]['_source'];
     }
 

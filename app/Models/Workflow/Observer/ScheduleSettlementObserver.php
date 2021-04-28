@@ -35,7 +35,7 @@ class ScheduleSettlementObserver implements WorkflowObserverInterface
     {
         $merchantId = $this->getMerchantId();
 
-        if (key_exists(FDConstants::TICKET_ID, $observerData) === true &&
+        if (key_exists(FDConstants::TICKET_ID, $observerData) === true and
             key_exists(FDConstants::FD_INSTANCE, $observerData) === true)
         {
             $fdInstance = $observerData[FDConstants::FD_INSTANCE];

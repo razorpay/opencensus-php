@@ -201,11 +201,6 @@ class Service extends Base\Service
 
         $observerClassInstance = new $observerClass($diff);
 
-        if (empty($observerData) === true)
-        {
-            return;
-        }
-
         $this->trace->info(TraceCode::PERFORM_ACTION_OBSERVER_DATA, [
             DifferEntity::WORKFLOW_OBSERVER_DATA    => $observerData,
             DifferEntity::ACTION_ID                 => $actionId,

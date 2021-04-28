@@ -4,7 +4,6 @@
 namespace RZP\Models\Workflow\Observer;
 
 use App;
-use RZP\Models\Workflow\Service;
 use RZP\Models\Workflow\Action\Differ\Entity;
 use RZP\Models\Merchant\FreshdeskTicket\Service as FDService;
 use RZP\Models\Merchant\FreshdeskTicket\Constants as FDConstants;
@@ -32,7 +31,7 @@ class EmailChangeObserver implements WorkflowObserverInterface
     {
         $merchantId = $this->getMerchantId();
 
-        if (key_exists(FDConstants::TICKET_ID, $observerData) &&
+        if (key_exists(FDConstants::TICKET_ID, $observerData) and
             key_exists(FDConstants::FD_INSTANCE, $observerData))
         {
             $fdInstance = $observerData[FDConstants::FD_INSTANCE];

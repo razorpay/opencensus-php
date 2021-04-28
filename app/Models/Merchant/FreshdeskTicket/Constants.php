@@ -14,9 +14,10 @@ class Constants
 
     const CUSTOM_FIELDS             = 'custom_fields';
     // custom fields
-    const CATEGORY                  = 'cf_requester_category';
+    const CF_REQUESTOR_CATEGORY     = 'cf_requester_category';
     const CF_REQUESTOR_SUBCATEGORY  = 'cf_requestor_subcategory';
     const CF_SUBCATEGORY            = 'cf_subcategory';
+    const CF_CATEGORY               = 'cf_category';
     const TRANSACTION_ID            = 'cf_transaction_id';
     const PAYMENT_ID                = 'cf_razorpay_payment_id';
     const REFUND_ID                 = 'cf_refund_id';
@@ -25,6 +26,8 @@ class Constants
     const PAYMENT_CUSTOMER_EMAIL    = 'cf_payment_email';
     const PAYMENT_CUSTOMER_PHONE    = 'cf_payment_phone';
     const CF_MERCHANT_ID_DASHBOARD  = 'cf_merchant_id_dashboard';
+    const CF_TICKET_QUEUE           = 'cf_ticket_queue';
+    const CF_PRODUCT                = 'cf_product';
 
     //Flows
     const CUSTOMER = 'Customer';
@@ -35,6 +38,7 @@ class Constants
     const REFUND        = 'refund';
     const ORDER         = 'order';
     const TRANSACTION   = 'transaction';
+    const TYPE          = 'type';
 
     const OTP                         = 'otp';
     const OTP_SOURCE                  = 'source';
@@ -88,6 +92,7 @@ class Constants
     const TICKET_PRIORITY   = 'priority';
     const TICKET_STATUS     = 'status';
     const TICKET_TAGS       = 'tags';
+    const RESPONDER_ID      = 'responder_id';
 
     const ATTACHMENTS       = 'attachments';
     const BODY              = 'body';
@@ -101,5 +106,13 @@ class Constants
 
     // razorx flags
     const RAZORX_FLAG_VALIDATE_FRESHDESK_ATTACHMENT_EXTENSION = 'validate_freshdesk_attachment_extension';
+
+    // Default values for Activation Workflow Ticket Creation
+    const SERVICE_REQUEST_TICKET_TYPE   = 'Service Request';
+    const ACTIVATION_SUBJECT            = 'Ticket Created from Backend';
+    const ACTIVATION_CF_CATEGORY        = 'Dashboard';
+    const ACTIVATION_CF_SUBCATEGORY     = 'Account Activated and Account Rejected';
+    const MERCHANT_TICKET_QUEUE         = 'Merchant';
+    const PAYMENT_GATEWAY_CF_PRODUCT    = 'Payment Gateway';
 
 }

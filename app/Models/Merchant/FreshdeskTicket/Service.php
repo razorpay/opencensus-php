@@ -714,7 +714,7 @@ class Service extends Base\Service
 
         unset($input['mode']);
 
-        $category = $input[Constants::CUSTOM_FIELDS][Constants::CATEGORY];
+        $category = $input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_CATEGORY];
 
         switch ($category)
         {
@@ -1138,6 +1138,16 @@ class Service extends Base\Service
         }
 
         return $input;
+    }
+
+    public function postTicketOnMerchantBehalf($input, $merchantId)
+    {
+        if (empty($this->merchant) === true)
+        {
+            $this->merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+        }
+
+        return $this->postTicketV2(TYPE::SUPPORT_DASHBOARD, $input);
     }
 
     protected function appendTagsToTicket($ticketId, $fdInstance, array $tagsToAdd)

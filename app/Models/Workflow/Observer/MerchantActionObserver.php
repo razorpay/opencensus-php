@@ -4,6 +4,7 @@
 namespace RZP\Models\Workflow\Observer;
 
 use App;
+use RZP\Models\Merchant\Action;
 use RZP\Models\Workflow\Action\Differ\Entity;
 use RZP\Models\Merchant\FreshdeskTicket\Service as FDService;
 use RZP\Models\Merchant\FreshdeskTicket\Constants as FDConstants;
@@ -38,7 +39,7 @@ class MerchantActionObserver implements WorkflowObserverInterface
     {
         $merchantId = $this->getMerchantId();
 
-        if (key_exists(FDConstants::TICKET_ID, $observerData) &&
+        if (key_exists(FDConstants::TICKET_ID, $observerData) and
             key_exists(FDConstants::FD_INSTANCE, $observerData))
         {
             $fdInstance = $observerData[FDConstants::FD_INSTANCE];
@@ -77,7 +78,7 @@ class MerchantActionObserver implements WorkflowObserverInterface
     {
         $merchantName = $this->repo->merchant->findOrFailPublic($merchantId)->getName() ?? "";
 
-        if ($this->merchantAction === 'release_funds')
+        if ($this->merchantAction === Action::RELEASE_FUNDS)
         {
             if ($workflowAction === Constants::APPROVE)
             {
@@ -93,7 +94,7 @@ class MerchantActionObserver implements WorkflowObserverInterface
             }
         }
 
-        if($this->merchantAction === 'hold_funds')
+        if ($this->merchantAction === Action::HOLD_FUNDS)
         {
             if ($workflowAction === Constants::APPROVE)
             {
