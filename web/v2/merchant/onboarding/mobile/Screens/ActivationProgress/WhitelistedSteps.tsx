@@ -195,7 +195,10 @@ const WhitelistedSteps: React.FC<RouteComponentProps> = ({ history }) => {
         onCTAClick={submitL2}
       />
       <EnableSettlementModal isOpen={isEnableSettlementModalOpen} />
-      <SubmitFormModal isOpen={isSubmitFormModalOpen} isAutoKycDone={data.isAutoKycDone} />
+      <SubmitFormModal
+        isOpen={isSubmitFormModalOpen}
+        hasClarificationReasons={data.kyc_clarification_reasons?.nc_count}
+      />
     </Screen>
   );
 };

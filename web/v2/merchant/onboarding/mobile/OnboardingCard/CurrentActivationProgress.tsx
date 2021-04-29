@@ -67,11 +67,12 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; pay
       let description = '';
       if (isUnregisteredBusiness(data.business_type)) {
         description = `This process usually takes ${
-          data.isAutoKycDone ? ' 3 - 5 ' : ' 8 - 10 '
+          data.kyc_clarification_reasons?.nc_count ? ' 3 ' : ' 3 - 4 '
         } working days after your first transaction. If we need any more information we will reach out to you on your registered email id.`;
       } else if (!data.isAutoKycDone) {
-        description =
-          'Your documents are under review. It generally takes around 8 - 10 working days. Our team will reach out to you in case of any clarification';
+        description = `KYC Review process usually takes ${
+          data.kyc_clarification_reasons?.nc_count ? ' 3 ' : '3 - 4'
+        } working days. We will notify you if we require any clarifications on your KYC.`;
       } else {
         description = Messages.ACTIVATION_STATUS_UNDER_REVIEW.registered.description;
       }

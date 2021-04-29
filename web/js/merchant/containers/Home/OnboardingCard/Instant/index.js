@@ -135,6 +135,7 @@ export default class OnboardingCardInstant extends Component {
         isAutoKycDone,
         isHardLimitReached,
         merchant,
+        kyc_clarification_reasons,
       } = user,
       { showTransactionsHelper, isKLA, isWebsiteInWorkflow, contentWidth, activeStep } = this.state,
       commonModeCardProps = {
@@ -171,6 +172,7 @@ export default class OnboardingCardInstant extends Component {
         isAutoKycDone,
         isHardLimitReached,
         merchant,
+        kyc_clarification_reasons,
       };
     const showJuggernautCaFlow = isActivated && hasNeoCouponCode(campaigns);
     const hasAppliedCa = this.props.user.user.settings['clicked_ca_apply_request_done'];

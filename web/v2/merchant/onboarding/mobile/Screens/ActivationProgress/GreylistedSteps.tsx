@@ -109,7 +109,10 @@ const GreylistedSteps: React.FC<RouteComponentProps> = ({ history }) => {
         activationFlow={merchantFlow}
         onCTAClick={submitL2}
       />
-      <SubmitFormModal isOpen={isSubmitFormModalOpen} isAutoKycDone={data.isAutoKycDone} />
+      <SubmitFormModal
+        isOpen={isSubmitFormModalOpen}
+        hasClarificationReasons={data.kyc_clarification_reasons?.nc_count}
+      />
     </View>
   );
 };

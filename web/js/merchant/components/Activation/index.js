@@ -1283,7 +1283,7 @@ export default class ActivationWizard extends React.Component {
       } else if (response.success) {
         this.props.showKYCStatusModal({
           modalType: 'KYC_CLARIFICATION_SUBMIT_MODAL',
-          activationDuration: '8-10 days',
+          activationDuration: '3 days',
         });
         LocalStorageService.setItem(
           `rzp_onboarding--${this.props.user.current}--clarification_submitted`,

@@ -17,11 +17,14 @@ function getKycActivationSubmitBody(args) {
   }
   return (
     <div>
-      <div>KYC review process usually takes 8-10 working days. </div>
-
-      <div>We will notify you if we require any clarifications on your KYC. </div>
-
-      <div>Until then you can try out our products in the test mode </div>
+      <div>
+        Your documents and KYC detail are under review. It's now our responsibility to make sure
+        your documents are processed.
+      </div>
+      <div>
+        It usually takes 3-4 working days for our team to review your documents. We will reach out
+        to you if we need any clarification.
+      </div>
     </div>
   );
 }
@@ -87,7 +90,7 @@ const ModalButtons = ({ args, modalType }) => {
 
   return (
     <button className="btn btn-primary" onClick={args.onGoToDashboard}>
-      Try our products
+      Back to Dashboard
     </button>
   );
 };

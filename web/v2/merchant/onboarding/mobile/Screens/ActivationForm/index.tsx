@@ -542,7 +542,10 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
         </StyledFooter>
       </Flex>
       <EnableSettlementModal isOpen={isEnableSettlementModalOpen} />
-      <SubmitFormModal isOpen={isSubmitFormModalOpen} isAutoKycDone={data.isAutoKycDone} />
+      <SubmitFormModal
+        isOpen={isSubmitFormModalOpen}
+        hasClarificationReasons={data.kyc_clarification_reasons?.nc_count}
+      />
       <DedupeModal isOpen={isDedupeModalOpen} />
       <SaveAndExitModal
         isOpen={isSaveAndExitModalOpen}

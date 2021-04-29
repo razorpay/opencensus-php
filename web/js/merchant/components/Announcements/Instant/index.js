@@ -148,8 +148,8 @@ export default class InstantActivationAnnouncements extends Component {
           title = 'KYC Clarification';
           content = (
             <React.Fragment>
-              Your KYC details require further clarifications. Update required details within 2
-              days, otherwise your settlements might get paused. &nbsp;
+              Your KYC details require further clarifications. Update required details within 1 day,
+              otherwise your settlements might get paused. &nbsp;
               <Link to="/activation" style={{ 'font-weight': 'bold' }}>
                 Update Details
               </Link>
@@ -235,8 +235,9 @@ export default class InstantActivationAnnouncements extends Component {
         } else if (mode !== 'live') {
           content = (
             <React.Fragment>
-              We are reviewing your KYC details. It usually takes{' '}
-              {user.isAutoKycDone ? '3 - 5' : '8 - 10'} business days. Meanwhile &nbsp;
+              KYC Review process usually takes{' '}
+              {user.kyc_clarification_reasons?.nc_count ? '3' : '3 - 4'} working days. We will
+              notify you if we require any clarifications on your KYC. Meanwhile&nbsp;
               <button
                 className="btn-link cursor-pointer"
                 style={{ padding: '0' }}
@@ -249,9 +250,9 @@ export default class InstantActivationAnnouncements extends Component {
         } else {
           content = (
             <React.Fragment>
-              We are reviewing your KYC details. It usually takes{' '}
-              {user.isAutoKycDone ? '3 - 5' : '8 - 10'} business days. We will reach out to you if
-              we need any further details.
+              KYC Review process usually takes{' '}
+              {user.kyc_clarification_reasons?.nc_count ? '3' : '3 - 4'} working days. We will
+              notify you if we require any clarifications on your KYC.
             </React.Fragment>
           );
         }
