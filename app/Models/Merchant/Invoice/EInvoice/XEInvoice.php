@@ -196,7 +196,7 @@ class XEInvoice extends Core
             ]);
 
             $invoiceTime = Carbon::createFromDate($input[Entity::YEAR],
-                $input[Entity::MONTH], 1, Timezone::IST)->subMonth()->startOfMonth();
+                $input[Entity::MONTH], 1, Timezone::IST)->startOfMonth()->subMonth();
 
             $invoiceNumber = $this->getInvoiceNumberGreaterThanAmountAndRegisteredOnGSPPortal($creditNoteAmount,
                 $invoiceTime, $eInvoiceEntity);
@@ -239,9 +239,9 @@ class XEInvoice extends Core
                 }
             }
 
-            $invoiceTime = Carbon::createFromTimestamp($invoiceTime->getTimestamp())->subMonth();
+            $invoiceTime = $invoiceTime->startOfMonth()->subMonth();
 
-        } while($invoiceTime->getTimestamp() >= self::EINVOICE_START_TIMESTAMP && $invoiceTime->getTimestamp() > $activatedAt);
+        } while(($invoiceTime->getTimestamp() >= self::EINVOICE_START_TIMESTAMP) and ($invoiceTime->getTimestamp() > $activatedAt));
 
         $this->trace->info(TraceCode::EINVOICE_MANUAL_CREDIT_NOTE_REQUIRED_FOR_X, [
             'merchantID' => $eInvoiceEntity->getMerchantId(),

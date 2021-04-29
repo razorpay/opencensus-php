@@ -123,12 +123,18 @@ class Processor extends Base\Core
         {
             $balance = $this->repo->balance->findByIdAndMerchantId($balanceId, $this->merchantId);
 
-            $invoiceBreakup = $this->repo->merchant_invoice->fetchBankingInvoiceReportData($this->merchantId, $this->month, $this->year);
-
-            if (($balance->isTypeBanking() === true) and ($this->checkInvalidLineItems($invoiceBreakup) === true))
+            if (($balance->isTypeBanking() === true) and ($this->checkEligibleLineItems($details) === true))
             {
               try
                {
+                   $this->trace->info(TraceCode::EINVOICE_ELIGIBLE_INVOICE_FOR_X,
+                       [
+                           'merchant_id' => $this->merchant->getId(),
+                           'month' => $this->month,
+                           'year' => $this->year,
+                           'balance_id' => $balanceId,
+                       ]
+                   );
                    $xEInvoiceCore = new Merchant\Invoice\EInvoice\XEInvoice;
 
                    $merchant = $this->repo->merchant->findOrFailPublicWithRelations($this->merchantId, ['merchantDetail']);
@@ -281,11 +287,11 @@ class Processor extends Base\Core
         return false;
     }
 
-    protected function checkInvalidLineItems($invoiceBreakup) : bool
+    protected function checkEligibleLineItems($invoice) : bool
     {
-        foreach ($invoiceBreakup as $index => $entity)
+        foreach ($invoice as $index => $lineItem)
         {
-            $tax = $entity->getTax();
+            $tax = $lineItem[Entity::TAX];
             if($tax > 0)
             {
                 return true;
