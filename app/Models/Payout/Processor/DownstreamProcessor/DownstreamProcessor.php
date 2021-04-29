@@ -79,44 +79,10 @@ class DownstreamProcessor
                 $channel = $this->getChannelForFundTransfer($accountType);
             }
 
-            // $this->blockYesbankPayoutsIfRequired($channel, $this->payout);
-
             $subProcessor = $subProcessor . '\\' . studly_case($accountType) . '\\' . studly_case($channel);
         }
 
         return new $subProcessor;
-    }
-
-    public function blockYesbankPayoutsIfRequired($channel, $payout)
-    {
-        if ($this->mode === Mode::TEST)
-        {
-            return;
-        }
-
-        if ($channel === Channel::YESBANK)
-        {
-            $variant = $this->app->razorx->getTreatment($payout->merchant->getId(),
-                                                        Merchant\RazorxTreatment::RAZORPAY_X_ENABLE_YESBANK_PAYOUTS,
-                                                        $this->mode);
-
-            // Enable payouts only for certain merchants. If the experiment is not created or times out, razorx
-            // will return back "control" and we will throw an exception on payout creation.
-
-            if (strtolower($variant) === 'on')
-            {
-                return;
-            }
-
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYOUTS_NOT_ALLOWED_CURRENTLY,
-                null,
-                [
-                    'channel'       => 'yesbank',
-                    'merchant_id'   => $payout->getMerchantId(),
-                    'payout_id'     => $payout->getId(),
-                ]);
-        }
     }
 
     public function getAccountTypeForFundTransfer()

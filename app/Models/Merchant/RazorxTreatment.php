@@ -63,9 +63,6 @@ final class RazorxTreatment
     // Decides whether reject reason has to be sent in webhook
     const PAYOUTS_REJECT_COMMENT_IN_WEBHOOK_FILTER = 'payouts_reject_comment_in_webhook_filter';
 
-    // Decides if payout.created webhook should be fired for the merchant
-    const PAYOUTS_CREATED_WEBHOOK = 'payouts_created_webhook';
-
     // Decides if the Settlement UX changes are displayed to the merchant
     const SETTLEMENT_UX_REVAMP = 'settlement_ux_revamp';
 

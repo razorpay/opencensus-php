@@ -128,27 +128,9 @@ class FundAccountPayout extends Base
         {
             if ($payout->isStatusBeforeCreate() === false)
             {
-                $shouldFirePayoutCreatedWebhook = $this->shouldFirePayoutCreatedWebhook($payout);
-
-                // TODO: Remove this after a week or two. JIRA: https://razorpay.atlassian.net/browse/RX-853
-                if ($shouldFirePayoutCreatedWebhook === true)
-                {
-                    $this->app->events->dispatch('api.payout.created', [$payout]);
-                }
-
                 $this->app->events->dispatch('api.payout.initiated', [$payout]);
             }
         }
-    }
-
-    protected function shouldFirePayoutCreatedWebhook(Payout\Entity $payout)
-    {
-        $variant = $this->app->razorx->getTreatment($payout->getMerchantId(),
-                                                    Merchant\RazorxTreatment::PAYOUTS_CREATED_WEBHOOK,
-                                                    $this->mode,
-                                                    FundAccount\Entity::FUND_ACCOUNT_RX_RETRY_COUNT);
-
-        return (strtolower($variant) === 'on');
     }
 
     public function getAccountTypeForFundTransfer(Payout\Entity $payout)
