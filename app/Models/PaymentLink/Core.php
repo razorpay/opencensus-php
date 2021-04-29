@@ -1699,19 +1699,19 @@ class Core extends Base\Core
             'fields'        => [
                 [
                     'key'        => 'description',
-                    'value'      => $paymentLink->getDescription(),
+                    'value'      => $paymentLink->getMetaDescription(),
                     'list'       => 'high_risk_list',
                     'config_key' => 'description',
                 ],
                 [
                     'key'        => 'description',
-                    'value'      => $paymentLink->getDescription(),
+                    'value'      => $paymentLink->getMetaDescription(),
                     'list'       => 'authorities_list',
                     'config_key' => 'description',
                 ],
                 [
                     'key'        => 'description',
-                    'value'      => $paymentLink->getDescription(),
+                    'value'      => $paymentLink->getMetaDescription(),
                     'list'       => 'brand_list',
                     'config_key' => 'description',
                 ],
@@ -1773,7 +1773,7 @@ class Core extends Base\Core
                 {
                     case Entity::DESCRIPTION:
 
-                        $dataFields[Entity::DESCRIPTION] = $paymentLink->getDescription();
+                        $dataFields[Entity::DESCRIPTION] = $paymentLink->getMetaDescription();
 
                         break;
 

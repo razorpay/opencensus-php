@@ -447,6 +447,23 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DESCRIPTION);
     }
 
+    public function getMetaDescription()
+    {
+        $description = $this->getAttribute(self::DESCRIPTION);
+
+        if (($description !== null) and (json_decode($description) !== null))
+        {
+            $decodedDescription = json_decode($description, true);
+
+            if (isset($decodedDescription['metaText']) === true)
+            {
+                return $decodedDescription['metaText'];
+            }
+        }
+
+        return $description;
+    }
+
     public function getTitle()
     {
         return $this->getAttribute(self::TITLE);

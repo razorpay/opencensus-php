@@ -715,7 +715,7 @@ class PublicErrorDescription
     const BAD_REQUEST_INVOICE_FEE_BEARER_CUSTOMER                               = 'Invoices disabled because fee bearer is customer';
     const BAD_REQUEST_PAYMENT_LINK_BATCH_ISSUED_ALREADY                         = 'Some/all payment links of given batch has been issued already';
     const BAD_REQUEST_BATCH_NOTIFICATIONS_SENT_ALREADY                          = 'Notification for this batch has already been sent';
-    const BAD_REQUEST_PAYMENT_LINK_SLUG_GENERATE_FAILED                         = 'Failed to create link with given slug, please try a different value';
+    const BAD_REQUEST_PAYMENT_LINK_SLUG_GENERATE_FAILED                         = 'This URL is already taken, please try a different value';
 
     const BAD_REQUEST_ITEM_INACTIVE                                             = 'Item cannot be used as it is inactive';
     const BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED                                     = 'You can not edit/delete an item with which invoices have been created already';
