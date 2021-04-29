@@ -604,13 +604,13 @@
                                     <a href="https://www.facebook.com/sharer.php?u=https://razorpay.com/links/covid19" style="text-decoration: none; margin: 6px;" target="_blank">
                                       <img height="16px" alt="razorpay facebook" src="https://cdn.razorpay.com/static/assets/email/facebook.png" style="height: 16px; width: auto">
                                       </a>
-                                      <a href="https://twitter.com/intent/tweet?url=https://razorpay.com/links/covid19&text=Here%20is%20a%20list%20of%20organisations%20doing%20incredible%20work%20in%20fighting%20COVID-19%20in%20India.%0ANo%20contribution%20is%20enough,%20no%20amount%20is%20less,%20every%20bit%20matters.%0ADonate%20Now!" style="text-decoration: none;  margin: 6px;" target="_blank">
+                                      <a href="https://twitter.com/intent/tweet?url=https://razorpay.com/links/covid19&text=Here%E2%80%99s%20a%20list%20of%20organisations%20doing%20incredible%20work%20in%20the%20fight%20against%20COVID-19%20in%20India!%0AYou%20can%20play%20your%20part%20by%20donating%20to%20their%20cause.%20Together%20we%20can%20make%20a%20difference." style="text-decoration: none;  margin: 6px;" target="_blank">
                                       <img height="16px" alt="razorpay twitter" src="https://cdn.razorpay.com/static/assets/email/twitter.png" style="height: 16px; width: auto">
                                       </a>
                                       <a href="https://www.linkedin.com/shareArticle?url=https://razorpay.com/links/covid19" style="text-decoration: none;  margin: 6px;" target="_blank">
                                       <img height="16px" alt="razorpay linkedin" src="https://cdn.razorpay.com/static/assets/email/linkedin.png" style="height: 16px; width: auto">
                                       </a>
-                                      <a href="https://api.whatsapp.com/send?text=Here%20is%20a%20list%20of%20organisations%20doing%20incredible%20work%20in%20fighting%20COVID-19%20in%20India.%0ANo%20contribution%20is%20enough%2C%20no%20amount%20is%20less%2C%20every%20bit%20matters.%0ADonate%20Now!%0Ahttps%3A%2F%2Frazorpay.com%2Flinks%2Fcovid19" style="text-decoration: none;  margin: 6px;" target="_blank">
+                                      <a href="https://api.whatsapp.com/send?text=Here%E2%80%99s%20a%20list%20of%20organisations%20doing%20incredible%20work%20in%20the%20fight%20against%20COVID-19%20in%20India!%0AYou%20can%20play%20your%20part%20by%20donating%20to%20their%20cause.%20Together%20we%20can%20make%20a%20difference.%0Ahttps%3A%2F%2Frazorpay.com%2Flinks%2Fcovid19" style="text-decoration: none;  margin: 6px;" target="_blank">
                                       <img height="16px" alt="razorpay whatsapp" src="https://cdn.razorpay.com/static/assets/email/whatsapp.png" style="height: 16px; width: auto">
                                       </a>
                                     </div>
