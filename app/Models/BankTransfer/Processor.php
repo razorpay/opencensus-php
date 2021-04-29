@@ -660,7 +660,6 @@ class Processor extends VirtualAccount\Processor
             $payerBankAccount = $bankTransfer->payerBankAccount;
 
             $payerDetails = [
-                BankAccount\Entity::IFSC           => $payerBankAccount->getIfscCode(),
                 BankAccount\Entity::ACCOUNT_NUMBER => $payerBankAccount->getAccountNumber(),
             ];
 
@@ -708,14 +707,11 @@ class Processor extends VirtualAccount\Processor
             {
                 $payerAccountNumber = $payerDetails[BankAccount\Entity::ACCOUNT_NUMBER];
 
-                $firstFourDigitsOfIfsc = substr($payerDetails[BankAccount\Entity::IFSC], 0, 4);
-
                 $bankingAccountTpv = $this->repo->banking_account_tpv
-                                                ->getApprovedActiveTpvAccountWithPayerAccountNumberAndIfscFirstFour(
+                                                ->getApprovedActiveTpvAccountWithPayerAccountNumber(
                                                     $merchantId,
                                                     $balanceId,
-                                                    $payerAccountNumber,
-                                                    $firstFourDigitsOfIfsc);
+                                                    $payerAccountNumber);
 
                 if (empty($bankingAccountTpv) === false)
                 {
@@ -811,23 +807,15 @@ class Processor extends VirtualAccount\Processor
 
         $payerAccountNumber = $payerDetails[BankAccount\Entity::ACCOUNT_NUMBER];
 
-        $firstFourDigitsOfIfsc = substr($payerDetails[BankAccount\Entity::IFSC], 0, 4);
-
         $isGloballyWhitelistedPayerAccount = false;
 
         foreach ($globalWhitelistedPayerAccounts as $globalWhitelistedPayerAccount)
         {
-            if ((isset($globalWhitelistedPayerAccount[self::ACCOUNT_NUMBER]) === true) and
-                (isset($globalWhitelistedPayerAccount[self::IFSC_CODE]) === true))
+            if (isset($globalWhitelistedPayerAccount[self::ACCOUNT_NUMBER]) === true)
             {
                 $globalWhitelistedPayerAccountAccountNumber = $globalWhitelistedPayerAccount[self::ACCOUNT_NUMBER];
 
-                $globalWhitelistedPayerAccountIfscCode = $globalWhitelistedPayerAccount[self::IFSC_CODE];
-
-                $firstFourDigitsOfIfscOfWhitelistedAccount = substr($globalWhitelistedPayerAccountIfscCode, 0, 4);
-
-                if (($globalWhitelistedPayerAccountAccountNumber === $payerAccountNumber) and
-                    ($firstFourDigitsOfIfscOfWhitelistedAccount === $firstFourDigitsOfIfsc))
+                if ($globalWhitelistedPayerAccountAccountNumber === $payerAccountNumber)
                 {
                     $isGloballyWhitelistedPayerAccount = true;
 

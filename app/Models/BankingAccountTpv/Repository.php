@@ -9,10 +9,9 @@ class Repository extends Base\Repository
 {
     protected $entity = Constants\Entity::BANKING_ACCOUNT_TPV;
 
-    public function getApprovedActiveTpvAccountWithPayerAccountNumberAndIfscFirstFour($merchantId,
-                                                                                      $balanceId,
-                                                                                      $payerAccountNumber,
-                                                                                      $payerBankCode)
+    public function getApprovedActiveTpvAccountWithPayerAccountNumber($merchantId,
+                                                                      $balanceId,
+                                                                      $payerAccountNumber)
     {
         $merchantIdColumn = $this->repo->banking_account_tpv->dbColumn(Entity::MERCHANT_ID);
 
@@ -20,8 +19,6 @@ class Repository extends Base\Repository
 
         $trimmedPayerAccountNumberColumn =
             $this->repo->banking_account_tpv->dbColumn(Entity::TRIMMED_PAYER_ACCOUNT_NUMBER);
-
-        $payerIfscColumn = $this->repo->banking_account_tpv->dbColumn(Entity::PAYER_IFSC);
 
         $statusColumn = $this->repo->banking_account_tpv->dbColumn(Entity::STATUS);
 
@@ -33,7 +30,6 @@ class Repository extends Base\Repository
                     ->where($merchantIdColumn, $merchantId)
                     ->where($balanceIdColumn, $balanceId)
                     ->where($trimmedPayerAccountNumberColumn, $trimmedPayerAccountNumber)
-                    ->where($payerIfscColumn, 'like', $payerBankCode . '%')
                     ->where($statusColumn, Status::APPROVED)
                     ->where($isActiveColumn, 1)
                     ->first();
