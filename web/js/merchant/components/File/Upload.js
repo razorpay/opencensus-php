@@ -105,7 +105,8 @@ export default class FileUpload extends React.Component {
     //- windows sends empty file.type if it is not set in user registry
     //- so manually add file type from the map
     if (isBlank(type)) {
-      type = fileTypesMap[file.name.split('.').pop()];
+      let probableTypes = fileTypesMap[file.name.split('.').pop()];
+      type = probableTypes.split(',')[0];
     }
 
     //- if it is still empty return false for other types which are not required
@@ -126,8 +127,15 @@ export default class FileUpload extends React.Component {
 
     // Uploaded file type matches given pattern
     const isValidFilePattern = acceptedTypes.some((aT) => {
-      let pattern = new RegExp(aT);
-      return pattern.test(type);
+      let types = aT.split(',');
+
+      for (let t of types) {
+        let pattern = new RegExp(t.trim());
+        if (pattern.test(type)) {
+          return true;
+        }
+      }
+      return false;
     });
 
     return acceptedTypes.length === 0 || isValidFilePattern;
@@ -377,7 +385,7 @@ export function removeDropShield(selector) {
 const MAX_API_LIMIT = 25 * 1024 * 1024; // Max 25MB limit from api
 
 const fileTypesMap = {
-  csv: 'text/csv',
+  csv: 'text/csv,application/vnd.ms-excel',
   xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', //new excel format
   pdf: 'application/pdf',
   xls: 'application/vnd.ms-excel', //Old microsoft excel sheets.
