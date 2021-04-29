@@ -531,6 +531,11 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         payment_success_message: settings.payment_success_message,
         payment_success_redirect_url: settings.payment_success_redirect_url,
         udf_schema: JSON.stringify(udf_schema),
+        pp_fb_pixel_tracking_id: settings.pp_fb_pixel_tracking_id,
+        pp_ga_pixel_tracking_id: settings.pp_ga_pixel_tracking_id,
+        pp_fb_event_add_to_cart_enabled: settings.pp_fb_event_add_to_cart_enabled,
+        pp_fb_event_initiate_payment_enabled: settings.pp_fb_event_initiate_payment_enabled,
+        pp_fb_event_payment_complete_enabled: settings.pp_fb_event_payment_complete_enabled,
       },
       slug,
     };
@@ -744,7 +749,6 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
               style={{ color: '#fff' }}
               onClick={this.togglePageReceiptModal}
             >
-              <span class="badge bg-success hidden-xs m-r">New</span>
               <span>Payment Receipts</span>
             </Button.Transparent>
           )}
@@ -754,6 +758,9 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
             style={{ color: '#fff' }}
             onClick={this.togglePageSettings}
           >
+            {user.isPaymentPagePluginsSettingsEnabled && (
+              <span class="badge bg-success hidden-xs m-r">New</span>
+            )}
             Page Settings
           </Button.Transparent>
           <AsyncBtn.Primary
@@ -835,6 +842,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
             handleAction={this.handleSaveSettings}
             isNew={this.props.id}
             isTestMode={this.props.mode.toLowerCase() === 'test'}
+            showPluginsSettings={this.props.user.isPaymentPagePluginsSettingsEnabled}
           />
         )}
 

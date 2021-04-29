@@ -16,7 +16,7 @@ import SocialShareOptions from './SocialShareOptions';
 export default class extends React.PureComponent {
   state = {};
 
-  onSubmit = formData => {
+  onSubmit = (formData) => {
     const reqPayload = {};
     const msg = [];
 
@@ -34,7 +34,7 @@ export default class extends React.PureComponent {
 
     return this.props
       .handleAction(formData)
-      .then(resp => {
+      .then((resp) => {
         if (resp.data) {
           this.props.showNotification({
             type: 'success',
@@ -52,7 +52,7 @@ export default class extends React.PureComponent {
           err = [];
 
           errors.length &&
-            errors.forEach(e => {
+            errors.forEach((e) => {
               if (e && e.toLowerCase().indexOf('status code') === -1) {
                 err.push(e);
               }
@@ -73,8 +73,7 @@ export default class extends React.PureComponent {
   };
 
   openEmbedButtonView = () => {
-    this.props.trackClickOnCreateEmbedButton &&
-      this.props.trackClickOnCreateEmbedButton();
+    this.props.trackClickOnCreateEmbedButton && this.props.trackClickOnCreateEmbedButton();
 
     this.props.openModal({
       size: 'small',
@@ -98,11 +97,7 @@ export default class extends React.PureComponent {
         <span class="label--faded" style={{ float: 'left' }}>
           Share via SMS or email
         </span>
-        <Button.Transparent
-          style={{ float: 'right' }}
-          type="submit"
-          class="Button--Link"
-        >
+        <Button.Transparent style={{ float: 'right' }} type="submit" class="Button--Link">
           <b>
             Send
             <i class="i i-arrow-forward" />
@@ -146,9 +141,7 @@ export default class extends React.PureComponent {
             {isNew && (
               <div class="Share-section">
                 {!isPaymentPagesV2 && (
-                  <div class="label--faded m-b">
-                    Use the following url to accept payments.
-                  </div>
+                  <div class="label--faded m-b">Use the following url to accept payments.</div>
                 )}
                 <div>
                   <CustomClipboard
@@ -165,47 +158,40 @@ export default class extends React.PureComponent {
                       readOnly={true}
                       class="Input--inline is-focused"
                     />
-                    <Button.Primary class="Button--input--right">
-                      Copy URL
-                    </Button.Primary>
+                    <Button.Primary class="Button--input--right">Copy URL</Button.Primary>
                   </CustomClipboard>
                 </div>
                 {AddonAction}
               </div>
             )}
 
-            {isPaymentPagesV2 &&
-              isNew && (
-                <div class="Share-section">
-                  <span class="label--faded">
-                    <i class="i i-embed-btn" />
-                    Embed Payment Button
+            {isPaymentPagesV2 && isNew && (
+              <div class="Share-section">
+                <span class="label--faded">
+                  <i class="i i-embed-btn" />
+                  Embed Hyperlink Button
+                </span>
+                <div style={{ display: 'inline-block' }}>
+                  <span class="help-content">
+                    <i class="i i-info-outline" style={{ marginLeft: 4 }} />
+                    <Popover align="top" theme="dark" parentQuerySelector=".ReactModal__Content">
+                      <PopoverBody>
+                        Your customers can pay from your website by clicking on this Hyperlink
+                        Button
+                      </PopoverBody>
+                    </Popover>
                   </span>
-                  <div style={{ display: 'inline-block' }}>
-                    <span class="help-content">
-                      <i class="i i-info-outline" style={{ marginLeft: 4 }} />
-                      <Popover
-                        align="top"
-                        theme="dark"
-                        parentQuerySelector=".ReactModal__Content"
-                      >
-                        <PopoverBody>
-                          Your customers can pay from your website by clicking
-                          on this Payment Button
-                        </PopoverBody>
-                      </Popover>
-                    </span>
-                  </div>
-                  <Button.Transparent
-                    type="button"
-                    class="Button--Link"
-                    onClick={this.openEmbedButtonView}
-                    style={{ float: 'right' }}
-                  >
-                    <b>Create</b>
-                  </Button.Transparent>
                 </div>
-              )}
+                <Button.Transparent
+                  type="button"
+                  class="Button--Link"
+                  onClick={this.openEmbedButtonView}
+                  style={{ float: 'right' }}
+                >
+                  <b>Create</b>
+                </Button.Transparent>
+              </div>
+            )}
 
             <div class="Share-section">
               <span class="label--faded">
@@ -235,7 +221,7 @@ export default class extends React.PureComponent {
                 type="tel"
                 placeholder="Mobile"
                 addonBefore={<i class="i i-phone" />}
-                validator={val => {
+                validator={(val) => {
                   if (!isPhone(val)) {
                     return 'Invalid phone';
                   }
@@ -247,7 +233,7 @@ export default class extends React.PureComponent {
                 type="email"
                 placeholder="Email"
                 addonBefore={<i class="i i-email" />}
-                validator={val => {
+                validator={(val) => {
                   if (!isEmail(val)) {
                     return 'Invalid email';
                   }

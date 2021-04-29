@@ -4,13 +4,12 @@ import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Input from 'common/new-ui/Input';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { lenientUrl, validateSlug } from 'common/utils/validators';
-import { DateField } from 'merchant/views/PaymentLinks/PaymentLinks/components/Edit/EditExpiry';
 import { trackPageSettingsData } from '../../ga';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 import CreateEmbedButton from 'merchant/views/PaymentPages/PaymentPages/components/Modals/CreateEmbedButton';
-
+import PluginsAndAddOns from './PluginsAndAddOns';
 export default class extends React.Component {
   state = this.initState();
 
@@ -56,6 +55,14 @@ export default class extends React.Component {
     this.props.openModal({
       size: 'small',
       component: <CreateEmbedButton id={this.props.paymentPageEntity.id} />,
+    });
+  };
+
+  openConfigurePluginsView = () => {
+    this.props.openModal({
+      size: 'medium',
+      className: 'PluginsAndAddOns',
+      component: <PluginsAndAddOns />,
     });
   };
 
@@ -135,6 +142,20 @@ export default class extends React.Component {
         onClick={this.openEmbedButtonView}
       >
         <b>Create</b>
+      </Button.Transparent>
+    );
+
+    const isPluginConfigured =
+      paymentPageEntity.settings &&
+      (paymentPageEntity.settings.pp_ga_pixel_tracking_id ||
+        paymentPageEntity.settings.pp_fb_pixel_tracking_id);
+    const PluginsBtn = (
+      <Button.Transparent
+        type="button"
+        class="Button--Link"
+        onClick={this.openConfigurePluginsView}
+      >
+        <b>{isPluginConfigured ? 'Update' : 'Configure'}</b>
       </Button.Transparent>
     );
 
@@ -256,23 +277,26 @@ export default class extends React.Component {
               </div>
 
               <div class="settings-section">
-                <b>Embed Payment Button</b>
-                <div>
-                  Put a payment button on your website
-                  <span class="help-content">
-                    <i class="i i-info-outline" style={{ marginLeft: 4 }} />
-                    <Popover
-                      align="top"
-                      theme="dark"
-                      parentQuerySelector={`.Modal-mask--paymentpages-settings .Modal-body`}
-                    >
-                      <PopoverBody>
-                        Your customers can pay from your website by clicking on this Payment Button
-                      </PopoverBody>
-                    </Popover>
-                  </span>
+                <b>Get Hyperlink Button</b>
+                <div class="cta-section">
+                  <div class="body">
+                    Put a hyperlink button on your website
+                    <span class="help-content">
+                      <i class="i i-info-outline" style={{ marginLeft: 4 }} />
+                      <Popover
+                        align="top"
+                        theme="dark"
+                        parentQuerySelector={`.Modal-mask--paymentpages-settings .Modal-body`}
+                      >
+                        <PopoverBody>
+                          Your customers can pay from your website by clicking on this Payment
+                          Button
+                        </PopoverBody>
+                      </Popover>
+                    </span>
+                  </div>
                   {!(paymentPageEntity.id && typeof paymentPageEntity.title !== 'undefined') ? (
-                    <span class="help-content" style={{ float: 'right' }}>
+                    <span class="help-content action">
                       <span>{EmbedBtn}</span>
                       <Popover
                         align="top"
@@ -285,10 +309,31 @@ export default class extends React.Component {
                       </Popover>
                     </span>
                   ) : (
-                    <span style={{ float: 'right' }}>{EmbedBtn}</span>
+                    <span class="action">{EmbedBtn}</span>
                   )}
                 </div>
               </div>
+              {this.props.showPluginsSettings && (
+                <div class="settings-section">
+                  <div class="Input-label">
+                    Plugins and Add ons <span class="badge bg-success hidden-xs m-r">New</span>
+                  </div>
+                  <div class="cta-section">
+                    <div class="body">
+                      {isPluginConfigured ? (
+                        <div>
+                          Facebook ID: {paymentPageEntity.settings.pp_fb_pixel_tracking_id || '-'}
+                          <br />
+                          GA ID: {paymentPageEntity.settings.pp_ga_pixel_tracking_id || '-'}
+                        </div>
+                      ) : (
+                        'Add your Facebook Pixel or Google tracking ID to track your page metrics'
+                      )}
+                    </div>
+                    <span class="action">{PluginsBtn}</span>
+                  </div>
+                </div>
+              )}
               <footer>
                 <Button.Transparent
                   type="button"

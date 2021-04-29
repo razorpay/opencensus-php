@@ -1595,6 +1595,7 @@ class Service extends Base\Service
             'upi_intent_notification',
             'rx_disable_taxpayment_payoutflow',
             'onboarding_v2',
+            'pp_plugins_settings',
             'pl_description_required',
             'pp_description_required',
             'pure_platform_signup',

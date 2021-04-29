@@ -767,6 +767,10 @@ export default class User {
     return this.getExpStatus('enable_payment_page_receipt');
   }
 
+  get isPaymentPagePluginsSettingsEnabled() {
+    return this.getExpStatus('pp_plugins_settings');
+  }
+  
   get isPaymentPageDescriptionRequired() {
     const userBusinessType = Number(this.business_type);
     const isRazorXExperimentEnabled = this.getExpStatus('pp_description_required');

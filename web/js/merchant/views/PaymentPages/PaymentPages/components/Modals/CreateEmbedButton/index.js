@@ -5,24 +5,21 @@ import Input from 'common/new-ui/Input';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
 import { closeModal } from 'merchant_common/reducers/modals';
 import PreviewEmbedButton from './PreviewEmbedButton';
-import {
-  trackCreateButtonSizeSelection,
-  trackCreateButtonCancel,
-} from '../../../ga';
+import { trackCreateButtonSizeSelection, trackCreateButtonCancel } from '../../../ga';
 
 const BTN_SIZES = ['Large', 'Medium', 'Small'];
 
-@connect(state => ({ config: state.config.config }), { closeModal })
+@connect((state) => ({ config: state.config.config }), { closeModal })
 export default class extends React.Component {
   state = { btnSize: '0', btnLabel: 'Pay Now' };
 
-  updateButtonText = e => {
+  updateButtonText = (e) => {
     this.setState({
       btnLabel: e.target.value,
     });
   };
 
-  updateButtonSize = e => {
+  updateButtonSize = (e) => {
     this.setState({
       btnSize: e.target.value,
     });
@@ -46,9 +43,7 @@ export default class extends React.Component {
 
     const embedBtnCode = `<div class="${buttonClass}" data-url="${pageUrl}" data-text="${
       this.state.btnLabel
-    }" data-color="${this.merchantThemeColor}" data-size="${BTN_SIZES[
-      btnSize
-    ].toLowerCase()}">
+    }" data-color="${this.merchantThemeColor}" data-size="${BTN_SIZES[btnSize].toLowerCase()}">
   <script>
     (function(){
       var d=document; var x=!d.getElementById('${scriptTagID}')
@@ -62,7 +57,7 @@ export default class extends React.Component {
     return (
       <div>
         <ModalHeader
-          title="Create Payment Button"
+          title="Create Hyperlink Button"
           onCloseClick={() => {
             closeModal();
             trackCreateButtonCancel();
@@ -88,11 +83,7 @@ export default class extends React.Component {
             />
             <div class="Input Input--vTop Input--radio">
               <div class="Input-label">Preview</div>
-              <PreviewEmbedButton
-                url={pageUrl}
-                btnSize={btnSize}
-                btnLabel={btnLabel}
-              />
+              <PreviewEmbedButton url={pageUrl} btnSize={btnSize} btnLabel={btnLabel} />
             </div>
             <Input.Textarea
               id="code-copier"
@@ -104,9 +95,7 @@ export default class extends React.Component {
                     <CustomClipboard value={embedBtnCode}>
                       <button
                         class="btn btn-link btn-xs"
-                        onClick={() =>
-                          trackCreateButtonSizeSelection(BTN_SIZES[btnSize])
-                        }
+                        onClick={() => trackCreateButtonSizeSelection(BTN_SIZES[btnSize])}
                       >
                         <i class="i i-copy" style={{ marginRight: 4 }} />
                         Copy
@@ -138,10 +127,10 @@ export default class extends React.Component {
 }
 
 @connect(
-  state => ({
+  (state) => ({
     config: state.config.config,
   }),
-  null
+  null,
 )
 class PreviewPaymentPageButton extends React.Component {
   state = {
@@ -199,8 +188,7 @@ class PreviewPaymentPageButton extends React.Component {
             lineHeight: '18px',
             fontWeight: 600,
             fontSize: 14,
-            fontFamily:
-              'Lato, Muli, -apple-system, BlinkMacSystemFont, Arial, sans-serif',
+            fontFamily: 'Lato, Muli, -apple-system, BlinkMacSystemFont, Arial, sans-serif',
             wordBreak: 'break-word',
             borderRadius: 2,
             textAlign: 'center',
@@ -214,10 +202,7 @@ class PreviewPaymentPageButton extends React.Component {
           {this.state.textColor && btnLabel}
         </a>
         <div style={{ marginTop: 4, textAlign: 'center' }}>
-          <img
-            height="16px"
-            src="https://cdn.razorpay.com/static/assets/powered_by_razorpay.png"
-          />
+          <img height="16px" src="https://cdn.razorpay.com/static/assets/powered_by_razorpay.png" />
         </div>
       </span>
     );

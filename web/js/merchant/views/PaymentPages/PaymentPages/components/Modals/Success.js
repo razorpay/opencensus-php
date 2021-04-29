@@ -229,7 +229,7 @@ export default class extends React.PureComponent {
             </Link>
 
             <Button.Primary onClick={this.openEmbedButtonView} style={{ float: 'right' }}>
-              Get Payment Button
+              Get Hyperlink Button
             </Button.Primary>
           </footer>
         </div>
