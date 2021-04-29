@@ -13,7 +13,12 @@ class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceReco
 
     protected function getPaymentId(array $row)
     {
-        return $row[Reconciliate::PAYMENT_ID] ?? null;
+        if (isset($row[Reconciliate::PAYMENT_ID]) === true)
+        {
+            return trim($row[Reconciliate::PAYMENT_ID]);
+        }
+
+        return null;
     }
 
     protected function getReferenceNumber($row)

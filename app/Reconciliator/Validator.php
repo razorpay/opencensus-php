@@ -104,6 +104,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::NETBANKING_FSB     => ["/Recon file for transaction dated [0-9]{2}-(January|February|March|April|May|June|July|August|September|October|November|December)-20[0-9]{2}/"],
         RequestProcessor\Base::NETBANKING_IOB     => ["/IOB RazorPay Recon File -20[0-9]{6}/"],
         RequestProcessor\Base::NETBANKING_JKB     => ["/Recon File of Razorpay Dated:[0-9]{2}-[0-9]{2}-20[0-9]{2}/"],
+        RequestProcessor\Base::NETBANKING_DCB     => ["/RAZORPAY RECON file dt. [0-9]{2}-[0-9]{2}-20[0-9]{2}/"],
     ];
 
     const GATEWAY_BODY_REGEX = [
@@ -183,6 +184,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::NETBANKING_IOB           => 1,
         RequestProcessor\Base::NETBANKING_JKB           => 1,
         RequestProcessor\Base::NETBANKING_KOTAK_V2      => 1,
+        RequestProcessor\Base::NETBANKING_DCB           => 1,
     ];
 
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
@@ -741,6 +743,19 @@ class Validator extends Base\Core
         $validAttachmentCount = $this->validateAttachmentCount(
             $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
             RequestProcessor\Base::NETBANKING_KOTAK_V2);
+
+        return ($validSubject and $validAttachmentCount);
+    }
+
+    public function validateNetbankingDcbEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::NETBANKING_DCB);
+
+        $validAttachmentCount = $this->validateAttachmentCount(
+            $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
+            RequestProcessor\Base::NETBANKING_DCB);
 
         return ($validSubject and $validAttachmentCount);
     }
