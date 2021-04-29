@@ -715,7 +715,7 @@ abstract class Base extends BaseCore
 
         $this->repo->balance->updateBalance($this->merchantBalance);
 
-        $checkNegativeLimit = $oldBalance >= $newBalance;
+        $checkNegativeLimit = $oldBalance > $newBalance;
 
         $this->txn->setBalance($this->merchantBalance->getBalance(), $negativeLimit, $checkNegativeLimit);
 

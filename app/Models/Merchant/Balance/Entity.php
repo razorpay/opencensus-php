@@ -351,7 +351,9 @@ class Entity extends Base\PublicEntity
         // if the balance after is update is greater than the previous balance,
         // even if it is still negative, we should update the balance.
 
-        if ($newBalance > $oldBalance)
+        // When new balance is equal to old balance, this case can serve for
+        // direct settlement with fees as 0 where net amount is 0.
+        if ($newBalance >= $oldBalance)
         {
             return;
         }
