@@ -52,6 +52,17 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; pay
         </>
       );
     }
+
+    if (data.isHardLimitReached) {
+      return (
+        <Info
+          title={Messages.HARD_LIMIT_REACHED.title}
+          titleColor="neutral.960"
+          description={Messages.HARD_LIMIT_REACHED.description}
+        />
+      );
+    }
+
     if (data.activation_status === 'under_review') {
       let description = '';
       if (isUnregisteredBusiness(data.business_type)) {

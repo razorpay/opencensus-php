@@ -7,7 +7,7 @@ import ErrorIcon from '../Step/Icons/error.svg';
 
 interface InfoPropsT {
   title: string;
-  description: string;
+  description: string | React.ReactNode;
   titleColor?: string;
   descriptionColor?: string;
   hasError?: boolean;

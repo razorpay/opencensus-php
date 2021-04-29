@@ -160,8 +160,22 @@ export default class InstantActivationAnnouncements extends Component {
       } else if (user.isHardLimitReached) {
         (theme = 'warning'),
           (title = 'Account Under Review'),
-          (content =
-            'Our compliance team is reviewing your submitted KYC documents again. Once the review is successfully completed, you will be able to accept payments again. We will contact you over the registered email for any clarification, and we assure you that the review will be done in less than 48 hours.');
+          (content = (
+            <>
+              Our compliance team and partner banks carry out routine audits of your KYC documents.
+              We might temporarily pause your settlements during this time, but don't worry, just
+              look for clarifications asked by our team on your registered email. Once we receive
+              the clarifications, we will resume your settlements. Upon receiving your response, we
+              will be able to process the application within 2 days and re enable settlements for
+              you. Please note, you can still accept payments from your customers.{' '}
+              <a
+                href="https://knowledgebase.razorpay.com/support/solutions/articles/11000103841-why-is-my-settle[%E2%80%A6]ld-and-my-account-under-review-after-getting-activated"
+                target="_blank"
+              >
+                More details
+              </a>
+            </>
+          ));
       } else if (user.activation_status === 'activated_mcc_pending') {
         theme = commonSettlementBanner.theme;
         title = commonSettlementBanner.title;

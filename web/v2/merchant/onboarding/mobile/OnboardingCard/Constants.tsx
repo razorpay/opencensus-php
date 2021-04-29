@@ -1,3 +1,6 @@
+import React from 'react';
+import Link from '@commander/shield/src/shared/Link';
+
 export const POI_VERIFICATION_STATUS = {
   incorrect_details: {
     title: 'PAN Verification Failed',
@@ -187,4 +190,24 @@ export const DEDUPE = {
 export const ACTIVATION_PROGRESS = {
   title: 'You are just few steps away from enabling live payments',
   description: 'Submit the remaining details and start accepting payments from your customers',
+};
+
+export const HARD_LIMIT_REACHED = {
+  title: 'Account is Under Review',
+  description: (
+    <>
+      Our compliance team and partner banks carry out routine audits of your KYC documents. We might
+      temporarily pause your settlements during this time, but don't worry, just look for
+      clarifications asked by our team on your registered email. Once we receive the clarifications,
+      we will resume your settlements. Upon receiving your response, we will be able to process the
+      application within 2 days and re enable settlements for you. Please note, you can still accept
+      payments from your customers.{' '}
+      <Link
+        href="https://knowledgebase.razorpay.com/support/solutions/articles/11000103841-why-is-my-settle[%E2%80%A6]ld-and-my-account-under-review-after-getting-activated"
+        target="_blank"
+      >
+        More details
+      </Link>
+    </>
+  ),
 };

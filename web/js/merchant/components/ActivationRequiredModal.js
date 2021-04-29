@@ -56,10 +56,18 @@ export default ({ onCloseClick, user }) => {
     } else if (user.isHardLimitReached) {
       modalBody = (
         <div>
-          Our compliance team is reviewing your submitted KYC documents again. Once the review is
-          successfully completed, you will be able to accept payments again from your customers. We
-          will reach out to you over the registered email for any clarification during the review,
-          and we assure you that the review will be done in less than 48 hours.
+          Our compliance team and partner banks carry out routine audits of your KYC documents. We
+          might temporarily pause your settlements during this time, but don't worry, just look for
+          clarifications asked by our team on your registered email. Once we receive the
+          clarifications, we will resume your settlements. Upon receiving your response, we will be
+          able to process the application within 2 days and re enable settlements for you. Please
+          note, you can still accept payments from your customers.{' '}
+          <a
+            href="https://knowledgebase.razorpay.com/support/solutions/articles/11000103841-why-is-my-settle[%E2%80%A6]ld-and-my-account-under-review-after-getting-activated"
+            target="_blank"
+          >
+            More details
+          </a>
           {modalAction}
         </div>
       );
