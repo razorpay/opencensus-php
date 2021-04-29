@@ -547,7 +547,8 @@ return [
     ],
 
     'banking_account' => [
-        'apiKey' => env('GOOGLE_MAP_API_KEY')
+        'apiKey' => env('GOOGLE_MAP_API_KEY'),
+        'mock' => env('API_MOCK', false)
     ],
 
     'shield' => [

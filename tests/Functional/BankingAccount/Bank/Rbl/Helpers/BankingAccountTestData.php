@@ -83,6 +83,19 @@ return [
         ],
     ],
 
+    'testCheckServiceableByRBL' => [
+        'request'  => [
+            'url'     => '/banking_accounts/serviceability/rbl/pincode/221002',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                "serviceability" => true,
+                "errorMessage" => null
+            ],
+        ],
+    ],
+
     'testCreateBankingAccountWithActivationDetailWithSalesTeamAsCapitalSme' => [
         'request'  => [
             'url'     => '/banking_accounts_admin',

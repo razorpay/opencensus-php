@@ -19,17 +19,26 @@ class GoogleMapApi
 
     protected $apiKey;
 
+    protected $mock;
+
     public function __construct()
     {
         $app = App::getFacadeRoot();
 
         $this->apiKey = ($app['config']->get('applications.banking_account'))['apiKey'];
+
+        $this->mock = ($app['config']->get('applications.banking_account'))['mock'];
     }
 
     public function getLocationFromPincode($pincode): array
     {
         try
         {
+            if ($this->mock === true)
+            {
+                return [28.5388479, 77.2753728, null];
+            }
+
             $response = $this->sendRequest($pincode, Requests::GET);
 
             $lat1 = $response['results'][0]['geometry']['location']['lat'];

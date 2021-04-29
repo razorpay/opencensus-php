@@ -4576,7 +4576,6 @@ class Route
     public static $routePermission = [
         'bvs_service_dashboard'                    => Permission::EDIT_MERCHANT,
         'bvs_Service_admin'                        => Permission::EDIT_MERCHANT,
-        'rbl_current_account_serviceability_get'   => '*',
         'transfer_debug'                           => Permission::DEBUG_TRANSFERS_ROUTES,
         'virtual_account_debug'                    => Permission::DEBUG_VIRTUAL_ACCOUNT,
         'payment_links_v2_admin'                   => Permission::PAYMENT_LINKS_V2_ADMIN,
@@ -5920,6 +5919,7 @@ class Route
         ],
 
         'merchant_dashboard' => [
+            'rbl_current_account_serviceability_get',
             'account',
             'account_action',
             'account_create',

@@ -554,7 +554,7 @@ class Service extends Base\Service
 
             $newMerchant->edit($input);
 
-            // in case diff is empty, 
+            // in case diff is empty,
             // the workflow handle method will throw an undefined index exception as part of redactFields
             // we can introduce a additonal check to get the diff and verify if its empty or not
             (new Validator)->validateRiskAttributesHasDiff($merchant, $newMerchant);

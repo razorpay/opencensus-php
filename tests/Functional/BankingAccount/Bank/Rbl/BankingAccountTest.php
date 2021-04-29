@@ -210,6 +210,21 @@ class BankingAccountTest extends TestCase
         return $bankingAccount;
     }
 
+    public function testCheckServiceableByRBL()
+    {
+        $this->app['config']->set('applications.banking_account.mock', true);
+
+        $this->app['config']->set('applications.pincodesearcher.mock', true);
+
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $this->startTest();
+    }
+
     public function testCreateBankingAccountWithActivationDetailFails()
     {
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
