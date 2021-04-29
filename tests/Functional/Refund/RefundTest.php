@@ -2665,6 +2665,75 @@ class RefundTest extends TestCase
         $this->assertEquals($refund['balance_id'], $reversal['balance_id']);
     }
 
+    public function testNonINRRefundReversal()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => 1]);
+
+        $input = [
+            'amount'   => 5000,
+            'currency' => 'USD'
+        ];
+
+        $payment = $this->defaultAuthPayment($input);
+
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            if($action === 'refund')
+            {
+                $content['result'] = 'DENIED BY RISK';
+            }
+
+            return $content;
+        });
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $this->assertGreaterThan(time() - 30, $refund['created_at']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('created', $refund['status']);
+
+        $this->scroogeUpdateRefundStatus($refund, 'failed_event');
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(false, $refund['gateway_refunded']);
+        $this->assertEquals(RefundStatus::REVERSED, $refund['status']);
+
+        $reversal = $this->getLastEntity('reversal', true);
+
+        $this->assertEquals($reversal['entity_type'], 'refund');
+        $this->assertEquals('rfnd_'.$reversal['entity_id'], $refund['id']);
+        $this->assertEquals($refund['base_amount'], $reversal['amount']);
+        $this->assertEquals(0, $reversal['fee']);
+        $this->assertEquals(0, $reversal['tax']);
+
+        $transaction = $this->getDbEntities('transaction', ['entity_id' => substr($reversal['id'], 6)])->last();
+        $this->assertEquals($refund['base_amount'], $transaction['amount']);
+        $this->assertEquals(0, $transaction['fee']);
+        $this->assertEquals(0, $transaction['tax']);
+        $this->assertEquals(0, $transaction['debit']);
+        $this->assertEquals($refund['base_amount'], $transaction['credit']);
+
+        $feesBreakup = $this->getDbEntities('fee_breakup', ['transaction_id' => $transaction['id']]);
+        $this->assertEmpty($feesBreakup);
+    }
+
     public function testInstantRefundFailureCapturedPaymentReversal()
     {
         $payment = $this->defaultAuthPayment();
@@ -6662,44 +6731,4 @@ class RefundTest extends TestCase
         $this->assertEquals($expectedOutput, $response);
     }
 
-    public function testUpdateStatusToReversedFailure()
-    {
-        $payment = $this->defaultAuthPayment();
-        $payment = $this->capturePayment($payment['id'], $payment['amount']);
-
-        $this->gateway = 'hdfc';
-        $this->fixtures->edit('payment', $payment['id'], ['currency' => 'USD']);
-
-        $this->mockServerContentFunction(function (&$content, $action = null) {
-            if ($action === 'verify') {
-                $content['result'] = 'FAILURE(SUSPECT)';
-                $content['authRespCode'] = 'J';
-                $content['udf2'] = '';
-                $content['udf5'] = 'TrackID';
-            }
-
-            if ($action === 'refund') {
-                $content['result'] = 'DENIED BY RISK';
-            }
-
-            return $content;
-        });
-
-        $this->expectException(\RZP\Exception\BadRequestValidationFailureException::class);
-
-        // Adding specific amount to refund - this is meant to test failed refunds on scrooge -
-        // in which case we have reversal of refund transactions as well
-        $refund = $this->refundPayment($payment['id'], 3459);
-
-        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
-
-        $refund = $this->getLastEntity('refund', true);
-
-        $this->assertNotEquals(RefundStatus::REVERSED, $refund['status']);
-
-        $reversal = $this->getLastEntity('reversal', true);
-        $payment = $this->getLastEntity('payment', true);
-        $this->assertNull($reversal);
-        $this->assertEquals(3459, $payment['amount_refunded']);
-    }
 }

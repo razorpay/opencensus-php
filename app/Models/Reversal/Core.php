@@ -19,6 +19,7 @@ use RZP\Constants\Entity as E;
 use RZP\Services\PayoutService;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Merchant\Balance;
+use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\Ondemand;
 use RZP\Models\Settlement\OndemandPayout;
@@ -312,10 +313,10 @@ class Core extends Base\Core
     public function reverseForRefund(Payment\Refund\Entity $refund, bool $feeOnlyReversal): Entity
     {
         $reversalInput = [
-            Entity::AMOUNT   => ($feeOnlyReversal === false) ? $refund->getAmount() : 0,
+            Entity::AMOUNT   => ($feeOnlyReversal === false) ? $refund->getBaseAmount() : 0,
             Entity::FEE      => $refund->getFees(),
             Entity::TAX      => $refund->getTax(),
-            Entity::CURRENCY => $refund->getCurrency(),
+            Entity::CURRENCY => Currency::INR,
         ];
 
         $reversal = $this->create($reversalInput);
