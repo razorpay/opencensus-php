@@ -537,6 +537,16 @@ class Entity
     ];
 
     /**
+     * Defined entities for which database access(retrieved, created, updated, deleted)
+     * are instrumented
+     */
+    const INSTRUMENTED_ENTITIES = [
+        self::MERCHANT,
+        self::MERCHANT_DETAIL,
+        self::STAKEHOLDER
+    ];
+
+    /**
      * Id corresponding to following listed entities are allowed for x_entity_id (header or query parameter) during
      * keyless auth to public routes.
      * Ref: KeylessPublicAuth's retrieveMerchant() for usage.

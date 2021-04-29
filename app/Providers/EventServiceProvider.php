@@ -32,6 +32,10 @@ class EventServiceProvider extends ServiceProvider
             Listeners\AuditLogListener::class,
         ],
 
+        Events\EntityInstrumentationEvent::class => [
+            Listeners\EntityInstrumentationListener::class,
+        ],
+
         CacheEvents\CacheHit::class => [
             Listeners\CacheEventListener::class,
         ],

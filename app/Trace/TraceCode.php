@@ -2429,6 +2429,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const METRIC_CACHE_EVENT_ERROR                              = 'METRIC_CACHE_EVENT_ERROR';
     const TOKEN_CACHE_READ_ERROR                                = 'TOKEN_CACHE_READ_ERROR';
     const TOKEN_CACHE_STORE_ERROR                               = 'TOKEN_CACHE_STORE_ERROR';
+    const INSTRUMENT_ENTITY_EVENT_ERROR                         = 'INSTRUMENT_ENTITY_EVENT_ERROR';
 
     //upi status cache
     const UPI_CACHE_STORE_ERROR                                 = 'UPI_CACHE_STORE_ERROR';
@@ -3183,8 +3184,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const KYC_SERVICE_INTEGRATION_ERROR                         = 'KYC_SERVICE_INTEGRATION_ERROR';
 
     //Kafka Consumer
-    const KAFKA_MESSAGE_PROCESSOR_PAYLOAD                       = "KAFKA_MESSAGE_PROCESSOR_PAYLOAD";
-    const KAFKA_MESSAGE_PROCESSING_ERROR                        = "KAFKA_MESSAGE_PROCESSING_ERROR";
+    const KAFKA_MESSAGE_PROCESSOR_PAYLOAD                       = 'KAFKA_MESSAGE_PROCESSOR_PAYLOAD';
+    const KAFKA_MESSAGE_PROCESSING_ERROR                        = 'KAFKA_MESSAGE_PROCESSING_ERROR';
 
     // Merchant Business Verification Notification
     const ONBOARDING_BVS_VERIFICATION_JOB_REQUEST               = 'ONBOARDING_BVS_VERIFICATION_JOB_REQUEST';
@@ -3887,8 +3888,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const INTERNATIONAL_ENABLEMENT_SMS_FAILED                   = 'INTERNATIONAL_ENABLEMENT_SMS_FAILED';
 
     // Proxy route tracecodes
-    const PROXY_REQUEST     = "PROXY_REQUEST";
-    const PROXY_RESPONSE    = "PROXY_RESPONSE";
+    const PROXY_REQUEST     = 'PROXY_REQUEST';
+    const PROXY_RESPONSE    = 'PROXY_RESPONSE';
 
     // ICICI Integration
     const ICICI_VA_CALLBACK                                     = 'ICICI_VA_CALLBACK';

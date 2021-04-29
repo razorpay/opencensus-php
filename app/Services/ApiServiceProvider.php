@@ -72,6 +72,7 @@ use RZP\Services\Beam\Service as BeamService;
 use RZP\Base\Database\Connectors\MySqlConnector;
 use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Services\VendorPayments\Service as VendorPaymentService;
+use RZP\Models\Base\EntityInstrumentationObserver;
 
 class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvider
 {
@@ -99,6 +100,13 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $entityClass = E::getEntityClass(E::PAYMENT);
         $entityObserverClass = E::getEntityObserverClass(E::PAYMENT);
         $entityClass::observe($entityObserverClass);
+
+        // attach instrumentation observer to instrumented entities
+        foreach (E::INSTRUMENTED_ENTITIES as $entity)
+        {
+            $entityClass = E::getEntityClass($entity);
+            $entityClass::observe(EntityInstrumentationObserver::class);
+        }
     }
 
     /**
@@ -649,6 +657,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         });
     }
 
+    // phpcs:ignore Generic.NamingConventions.CamelCapsFunctionName.ScopeNotCamelCaps
     protected function registerMandateHQ()
     {
         $this->app->bind('mandateHQ', function($app)
@@ -776,6 +785,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         });
     }
 
+    // phpcs:ignore Generic.NamingConventions.CamelCapsFunctionName.ScopeNotCamelCaps
     public function registerRazorpayXClient()
     {
         $this->app->bind('razorpayXClient', function($app)
@@ -1042,6 +1052,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         });
     }
 
+    // phpcs:ignore Generic.NamingConventions.CamelCapsFunctionName.ScopeNotCamelCaps
     protected function registerFTSCreateAccount()
     {
         $this->app->bind('fts_create_account', function($app)
@@ -1054,6 +1065,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         });
     }
 
+    // phpcs:ignore Generic.NamingConventions.CamelCapsFunctionName.ScopeNotCamelCaps
     protected function registerFTSRegisterAccount()
     {
         $this->app->bind('fts_register_account', function($app)
@@ -1066,6 +1078,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         });
     }
 
+    // phpcs:ignore Generic.NamingConventions.CamelCapsFunctionName.ScopeNotCamelCaps
     protected function registerFTSFundTransfer()
     {
         $this->app->bind('fts_fund_transfer', function($app)
@@ -1259,7 +1272,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
             $this->env = $app['env'];
 
-            if($this->env === 'bvt' || $this->env === 'automation' || $this->env === 'func'){
+            if($this->env === 'bvt' or $this->env === 'automation' or $this->env === 'func')
+            {
                 return new MultiCurl($responseFactory, ['timeout' => 5]);
             }
 
@@ -1269,6 +1283,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         });
     }
 
+    // phpcs:ignore Generic.NamingConventions.CamelCapsFunctionName.ScopeNotCamelCaps
     protected function registerPGRouter()
     {
         $this->app->bind('pg_router', function ($app)
@@ -1301,6 +1316,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         });
     }
 
+    // phpcs:ignore Generic.NamingConventions.CamelCapsFunctionName.ScopeNotCamelCaps
     protected function registerFTSChannelNotification()
     {
         $this->app->bind('fts_channel_notification', function($app)

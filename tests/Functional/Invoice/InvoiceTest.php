@@ -2156,7 +2156,7 @@ class InvoiceTest extends TestCase
         config(['app.query_cache.mock' => false]);
 
         $this->createMetricsMock()
-             ->expects($this->at(7))
+             ->expects($this->at(8))
              ->method('count')
              ->with(
                 'invoice_view_total',
@@ -2179,7 +2179,7 @@ class InvoiceTest extends TestCase
         config(['app.query_cache.mock' => false]);
 
         $this->createMetricsMock()
-             ->expects($this->at(7))
+             ->expects($this->at(8))
              ->method('count')
              ->with(
                 'invoice_view_total',
