@@ -731,6 +731,14 @@ class Validator extends Base\Validator
         Entity::SCHEDULE             => 'sometimes|numeric',
     ];
 
+    protected static $paymentTransferCreateRules = [
+        Entity::TYPE                 => 'required|in:payment_transfer',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required|file|max:10240' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID              => 'required_without:file|public_id',
+        Entity::SCHEDULE             => 'sometimes|numeric',
+    ];
+
     protected static $payoutLinkBulkValidateRules = [
         Entity::TYPE        => 'required|in:payout_link_bulk',
         Entity::NAME        => 'filled|string|max:255',

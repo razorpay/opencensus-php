@@ -154,6 +154,8 @@ class Type
 
     const CANCEL_DEBIT = 'cancel_debit';
 
+    const PAYMENT_TRANSFER  = 'payment_transfer';
+
     const WEBSITE_CHECKER = 'website_checker';
 
     public static $disabledTypes = [
@@ -381,6 +383,7 @@ class Type
         self::REFUND,
         self::LINKED_ACCOUNT_CREATE,
         self::RETRY_REFUNDS_TO_BA,
+        self::PAYMENT_TRANSFER,
         self::RECURRING_CHARGE_AXIS,
     ];
 
@@ -427,6 +430,7 @@ class Type
         self::REFUND,
         self::LINKED_ACCOUNT_CREATE,
         self::RETRY_REFUNDS_TO_BA,
+        self::PAYMENT_TRANSFER,
         self::SUB_MERCHANT,
         self::RECURRING_CHARGE_AXIS,
         self::WEBSITE_CHECKER,

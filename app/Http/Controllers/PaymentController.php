@@ -473,6 +473,15 @@ class PaymentController extends Controller
         return ApiResponse::json($transfers);
     }
 
+    public function createTransferFromBatch(string $paymentId)
+    {
+        $input = Request::all();
+
+        $transfer = $this->service()->createTransferFromBatch($paymentId, $input);
+
+        return ApiResponse::json($transfer);
+    }
+
     /**
      * CRON route: Fetches all payments with on_hold_until timestamps elapsed
      * and updates the on_hold flag to false to allow settlements

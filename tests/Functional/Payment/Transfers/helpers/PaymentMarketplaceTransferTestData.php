@@ -174,4 +174,42 @@ return [
             ],
         ],
     ],
+
+    'testCreateTransferFromBatch' => [
+        'request' => [
+            'method' => 'post',
+            'content' => [
+                'account'   => 'acc_10000000000001',
+                'amount'    => 1000,
+                'currency'  => 'INR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'recipient' => 'acc_10000000000001',
+                'amount'    => 1000,
+                'currency'  => 'INR',
+            ],
+        ],
+    ],
+
+    'testCreateTransferFromBatchWithOnHold' => [
+        'request' => [
+            'method' => 'post',
+            'content' => [
+                'account'   => 'acc_10000000000001',
+                'amount'    => 1500,
+                'currency'  => 'INR',
+                'on_hold'   => true
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'recipient' => 'acc_10000000000001',
+                'amount'    => 1500,
+                'currency'  => 'INR',
+                'on_hold'   => true,
+            ],
+        ],
+    ],
 ];

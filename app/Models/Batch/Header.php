@@ -1066,6 +1066,18 @@ class Header
     const CAPTURE_SETTING_NAME              = 'Name';
     const CAPTURE_SETTING_CONFIG            = 'Config';
 
+
+    // Payment Transfer Headers
+    const PAYMENT_ID_2          = 'payment_id';
+    const AMOUNT_2              = 'amount';
+    const CURRENCY_2            = 'currency';
+    const TRANSFER_NOTES        = 'transfer_notes';
+    const LINKED_ACCOUNT_NOTES  = 'linked_account_notes';
+    const ON_HOLD               = 'on_hold';
+    const ON_HOLD_UNTIL         = 'on_hold_until';
+    const SOURCE                = 'source';
+    const RECIPIENT             = 'recipient';
+
     // Bulk Payout Links Creation
     const PAYOUT_LINK_BULK_CONTACT_NAME        = 'Name of Contact';
     const PAYOUT_LINK_BULK_CONTACT_NUMBER      = 'Contact Phone Number';
@@ -3560,6 +3572,33 @@ class Header
                 self::CAPTURE_SETTING_MERCHANT_ID,
                 self::CAPTURE_SETTING_NAME,
                 self::CAPTURE_SETTING_CONFIG,
+            ]
+        ],
+
+        Type::PAYMENT_TRANSFER => [
+            self::INPUT => [
+                self::PAYMENT_ID_2,
+                self::ACCOUNT_ID,
+                self::AMOUNT_2,
+                self::CURRENCY_2,
+                self::TRANSFER_NOTES,
+                self::LINKED_ACCOUNT_NOTES,
+                self::ON_HOLD,
+                self::ON_HOLD_UNTIL,
+            ],
+            self::OUTPUT => [
+                self::ID,
+                self::SOURCE,
+                self::RECIPIENT,
+                self::AMOUNT_2,
+                self::CURRENCY_2,
+                self::TRANSFER_NOTES,
+                self::LINKED_ACCOUNT_NOTES,
+                self::ON_HOLD,
+                self::ON_HOLD_UNTIL,
+                self::CREATED_AT,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
             ]
         ],
 

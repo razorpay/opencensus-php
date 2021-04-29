@@ -130,6 +130,17 @@ class BatchServiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreatePaymentTransferBatch()
+    {
+        $entries = $this->getFileEntriesForPaymentTransferBatch();
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testBatchRawAPIGetAllBatches()
     {
         $this->ba->adminAuth();
@@ -258,6 +269,32 @@ class BatchServiceTest extends TestCase
                 Header::IFSC_CODE           => 'CNRB0000002',
                 Header::ACCOUNT_NUMBER      => '9876543210',
                 Header::BENEFICIARY_NAME    => 'Another beneficiary',
+            ],
+        ];
+    }
+
+    protected function getFileEntriesForPaymentTransferBatch()
+    {
+        return [
+            [
+                Header::PAYMENT_ID_2            => 'pay_abcdefg1234567',
+                Header::ACCOUNT_ID              => 'acc_10000000000001',
+                Header::AMOUNT_2                => 1000,
+                Header::CURRENCY_2              => 'INR',
+                Header::TRANSFER_NOTES          => '{"a":"A","b":"B"}',
+                Header::LINKED_ACCOUNT_NOTES    => null,
+                Header::ON_HOLD                 => null,
+                Header::ON_HOLD_UNTIL           => null,
+            ],
+            [
+                Header::PAYMENT_ID_2            => 'pay_hijklmn7654321',
+                Header::ACCOUNT_ID              => 'acc_10000000000002',
+                Header::AMOUNT_2                => 2500,
+                Header::CURRENCY_2              => 'INR',
+                Header::TRANSFER_NOTES          => '{"c":"C","d":"D"}',
+                Header::LINKED_ACCOUNT_NOTES    => '["c"]',
+                Header::ON_HOLD                 => true,
+                Header::ON_HOLD_UNTIL           => 1617116116,
             ],
         ];
     }

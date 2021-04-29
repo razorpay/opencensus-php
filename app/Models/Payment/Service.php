@@ -1135,6 +1135,63 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function createTransferFromBatch(string $paymentId, array $input)
+    {
+        $this->trace->info(
+            TraceCode::PAYMENT_TRANSFER_REQUEST_VIA_BATCH,
+            [
+                'payment_id'    => $paymentId,
+                'input'         => $input,
+            ]
+        );
+
+        $this->parseAttributesForPaymentTransferBatch($input);
+
+        //
+        // Modifying the input as per the existing payment transfer API.
+        //
+        $input = [
+            'transfers' => array($input),
+        ];
+
+        try
+        {
+            $transfers = $this->getNewProcessor()->transfer($paymentId, $input);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::PAYMENT_TRANSFER_VIA_BATCH_FAILED,
+                [
+                    'payment_id' => $paymentId,
+                    'input'      => $input,
+                ]
+            );
+
+            (new Transfer\Metric)->pushCreateFailedMetrics($ex);
+
+            throw $ex;
+        }
+
+        (new Transfer\Metric)->pushCreateSuccessMetrics(current($input['transfers']));
+
+        //
+        // Exactly 1 transfer is created in this flow.
+        //
+        $transfer = $transfers->pop();
+
+        $this->trace->info(
+            TraceCode::PAYMENT_TRANSFER_VIA_BATCH_SUCCESSFUL,
+            [
+                'transfer_id' => $transfer->getPublicId(),
+            ]
+        );
+
+        return $transfer->toArrayPublic();
+    }
+
     /**
      * Transfers a payment
      * /payment/:id/transfer
@@ -3414,6 +3471,45 @@ class Service extends Base\Service
     public function getPaymentMetaByPaymentIdAction($paymentId, $actionType)
     {
         return $this->repo->payment_meta->findByPaymentIdAction($paymentId, $actionType);
+    }
+
+    protected function parseAttributesForPaymentTransferBatch(array & $input)
+    {
+        if(empty($input[Transfer\Entity::NOTES]) === false)
+        {
+            $input[Transfer\Entity::NOTES] = json_decode($input[Transfer\Entity::NOTES], true);
+        }
+        else
+        {
+            unset($input[Transfer\Entity::NOTES]);
+        }
+
+        if(empty($input[Transfer\Entity::LINKED_ACCOUNT_NOTES]) === false)
+        {
+            $input[Transfer\Entity::LINKED_ACCOUNT_NOTES] = json_decode($input[Transfer\Entity::LINKED_ACCOUNT_NOTES]);
+        }
+        else
+        {
+            unset($input[Transfer\Entity::LINKED_ACCOUNT_NOTES]);
+        }
+
+        if(empty($input[Transfer\Entity::ON_HOLD]) === false)
+        {
+            $input[Transfer\Entity::ON_HOLD] = $input[Transfer\Entity::ON_HOLD] === '1';
+        }
+        else
+        {
+            unset($input[Transfer\Entity::ON_HOLD]);
+        }
+
+        if(empty($input[Transfer\Entity::ON_HOLD_UNTIL]) === false)
+        {
+            $input[Transfer\Entity::ON_HOLD_UNTIL] = (int)$input[Transfer\Entity::ON_HOLD_UNTIL];
+        }
+        else
+        {
+            unset($input[Transfer\Entity::ON_HOLD_UNTIL]);
+        }
     }
 
     public function sendNotification(array $input)

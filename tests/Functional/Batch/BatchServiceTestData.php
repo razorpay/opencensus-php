@@ -160,6 +160,26 @@ return [
         ],
     ],
 
+    'testCreatePaymentTransferBatch' => [
+        'request' => [
+            'url' => '/batches',
+            'method' => 'post',
+            'content' => [
+                'type'  => 'payment_transfer',
+                'name'  => 'Transfer batch',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'        => 'batch',
+                'type'          => 'payment_transfer',
+                'name'          => 'Transfer batch',
+                'status'        => 'created',
+                'total_count'   => 2,
+            ],
+        ],
+    ],
+
     'testBatchRawAPIGetAllBatches' => [
         'request' => [
             'url'     => '/service/batch/batch',

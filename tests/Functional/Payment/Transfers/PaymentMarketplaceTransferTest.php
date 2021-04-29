@@ -412,4 +412,35 @@ class PaymentMarketplaceTransferTest extends TestCase
 
         $this->assertEquals('failed', $transfer['status']);
     }
+
+    public function testCreateTransferFromBatch()
+    {
+        $this->fixtures->merchant->addFeatures('marketplace');
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payments/' . $this->payment['id'] . '/transfers/batch';
+
+        $this->ba->proxyAuth();
+        $this->runRequestResponseFlow($testData);
+
+        $transfer = $this->getDbLastEntity('transfer');
+        $this->assertNotNull($transfer);
+        $this->assertEquals('processed', $transfer['status']);
+    }
+
+    public function testCreateTransferFromBatchWithOnHold()
+    {
+        $this->fixtures->merchant->addFeatures('marketplace');
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payments/' . $this->payment['id'] . '/transfers/batch';
+
+        $this->ba->proxyAuth();
+        $this->runRequestResponseFlow($testData);
+
+        $transfer = $this->getDbLastEntity('transfer');
+        $this->assertNotNull($transfer);
+        $this->assertEquals('processed', $transfer['status']);
+        $this->assertTrue($transfer['on_hold']);
+    }
 }

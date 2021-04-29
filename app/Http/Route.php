@@ -139,6 +139,7 @@ class Route
         'payment_bulk_capture'                     => ['post',     'payments/capture/bulk',                          'PaymentController@postBulkCapture'                                 ],
         'payment_fetch_transfers'                  => ['get',      'payments/{id}/transfers',                        'PaymentController@getTransfers'                                    ],
         'payment_transfer'                         => ['post',     'payments/{id}/transfers',                        'PaymentController@postTransfer'                                    ],
+        'payment_transfer_batch'                   => ['post',     'payments/{id}/transfers/batch',                  'PaymentController@createTransferFromBatch'                         ],
         'payment_verify'                           => ['get',      'payments/{id}/verify',                           'PaymentController@getVerify'                                       ],
         'payment_force_authorize'                  => ['post',     'payments/{id}/force_authorize',                  'PaymentController@postForceAuthorize'                              ],
         'payment_cancel'                           => ['get',      'payments/{x_entity_id}/cancel',                  'PaymentController@postCancel'                                      ],
@@ -3152,6 +3153,7 @@ class Route
 
         //GupShup Callbacks
         'gupshup_incoming_messages_callback',
+
         'nps_survey_process_scheduled',
 
         // freshchat cron
@@ -3752,6 +3754,7 @@ class Route
 
         'setl_fetch_source_details',
         'linked_account_create_batch',
+        'payment_transfer_batch',
         'reward_activate_or_deactivate',
         'reward_fetch',
         // merchant notification config
@@ -6224,6 +6227,7 @@ class Route
             'link_account_documents_v2',
             'link_stakeholder_documents_v2',
             'linked_account_create_batch',
+            'payment_transfer_batch',
             'list_low_balance_config',
             'list_merchant_notification_config',
             'loc_service',
@@ -7407,6 +7411,7 @@ class Route
             'link_account_documents_v2',
             'link_stakeholder_documents_v2',
             'linked_account_create_batch',
+            'payment_transfer_batch',
             'list_low_balance_config',
             'list_merchant_notification_config',
             'list_merchant_notification_config_admin',
@@ -8933,6 +8938,7 @@ class Route
             'banking_account_activation_details_via_batch',
             'create_payment_config_bulk_via_batch',
             'linked_account_create_batch',
+            'payment_transfer_batch',
 
             'app_merchant_mapping_create',
             'app_merchant_mapping_update',
