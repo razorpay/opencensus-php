@@ -2903,4 +2903,80 @@ class UserTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testUserAccessWithProductBankingViaFrontendGraphqlAuth()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'owner',
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $request =[
+            'method'    => 'GET',
+            'url'       => '/users/access',
+            'content'   => [
+                'merchant_id'   => $merchant->getId(),
+            ],
+            'server'     => [
+                'HTTP_X-Dashboard-User-Id'      => $user->getId(),
+                'HTTP_X-Request-Origin'         => config('applications.banking_service_url'),
+            ],
+        ];
+
+        $testData['request'] = $request;
+
+        $this->ba->frontendGraphqlAuth();
+
+        $this->startTest();
+
+        $this->assertEquals('banking', $this->app['basicauth']->getRequestOriginProduct());
+    }
+
+    public function testUserAccessWithProductPrimaryViaFrontendGraphqlAuth()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'owner',
+            'product'     => 'primary',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $request =[
+            'method'    => 'GET',
+            'url'       => '/users/access',
+            'content'   => [
+                'merchant_id'   => $merchant->getId(),
+            ],
+            'server'     => [
+                'HTTP_X-Dashboard-User-Id'      => $user->getId(),
+                'HTTP_X-Request-Origin'         => 'https://dashboard.razorpay.com',
+            ],
+        ];
+
+        $testData['request'] = $request;
+
+        $this->ba->frontendGraphqlAuth();
+
+        $this->startTest();
+
+        $this->assertEquals('primary', $this->app['basicauth']->getRequestOriginProduct());
+    }
 }

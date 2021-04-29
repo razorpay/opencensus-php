@@ -2287,4 +2287,30 @@ return [
             'status_code' => 400,
         ],
     ],
+
+    'testUserAccessWithProductBankingViaFrontendGraphqlAuth'   => [
+        'response'      => [
+            'content'   => [
+                'access'    => true,
+                'merchant'  => [
+                    'banking_role'        => 'owner',
+                    'role'                => null,
+                    'product'             => 'banking',
+                ],
+            ],
+        ],
+    ],
+
+    'testUserAccessWithProductPrimaryViaFrontendGraphqlAuth'   => [
+        'response'      => [
+            'content'   => [
+                'access'    => true,
+                'merchant'  => [
+                    'banking_role'        =>  null,
+                    'role'                => 'owner',
+                    'product'             => 'primary',
+                ],
+            ],
+        ],
+    ],
 ];

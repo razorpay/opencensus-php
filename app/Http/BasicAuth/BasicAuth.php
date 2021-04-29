@@ -1509,7 +1509,11 @@ class BasicAuth
 
     public function isDashboardApp()
     {
-        return (in_array($this->getInternalApp(), ['admin_dashboard', 'merchant_dashboard', 'dashboard', 'dashboard_guest',], true) === true);
+        /*
+         * frontend_graphql is added here because it's a client facing proxy layer similar to dashboard doing today.
+         * It's required to set requestOriginProduct.
+        */
+        return (in_array($this->getInternalApp(), ['admin_dashboard', 'merchant_dashboard', 'dashboard', 'dashboard_guest', 'frontend_graphql',], true) === true);
     }
 
     public function isInternalApp(): bool
