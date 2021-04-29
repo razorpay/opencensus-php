@@ -422,6 +422,10 @@
     height: 16px;
 }
 
+.grecaptcha-badge { 
+    visibility: hidden;
+}
+
 .g-btn-container {
     width: 100%;
     position: relative;

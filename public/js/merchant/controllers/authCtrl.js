@@ -2041,7 +2041,9 @@ app
       const renderRecaptchaScript = function (loadCheckbox) {
         let captchaScript = 'https://www.google.com/recaptcha/api.js';
         if (!loadCheckbox)
-          captchaScript = captchaScript.concat('?onload=onloadCallback&render=explicit');
+          captchaScript = captchaScript.concat(
+            '?onload=onloadCallback&render=' + window.RECAPTCHA_V3_SITE_KEY,
+          );
         if (!checkScriptExists(captchaScript)) {
           let script = document.createElement('script');
           script.src = captchaScript;
@@ -2062,6 +2064,9 @@ app
         $scope.inlinePasswordError = '';
       };
 
+      const isCaptchaV3Enabled = () => window.isCaptchaV3Enabled && !isMerchantX;
+      const getCaptchaVariant = () => (isCaptchaV3Enabled() ? 2 : 1);
+
       $scope.sendLoginCredentials = function ($valid) {
         clearErrors();
 
@@ -2080,7 +2085,10 @@ app
           return false;
         }
 
-        fireDLInitiatedEvents('login.native_auth', { emailId: $scope.login.data.email });
+        fireDLInitiatedEvents('login.native_auth', {
+          emailId: $scope.login.data.email,
+          captcha_variant: getCaptchaVariant(),
+        });
 
         /**
          * Condition to disable captcha on staging & during running automated test suites on production
@@ -2092,8 +2100,23 @@ app
         } else if (isProd || isAxisBankUATEnv) {
           updateSpinnerState('show');
           if (window.grecaptcha && window.grecaptcha.execute) {
-            grecaptcha.reset();
-            grecaptcha.execute();
+            // window.isCaptchaV3Enabled variable is set to true from optimize experiment for A/B test.
+            if (isCaptchaV3Enabled()) {
+              // A/B Test - New v3 flow
+              grecaptcha.ready(function () {
+                grecaptcha
+                  .execute(window.RECAPTCHA_V3_SITE_KEY, {
+                    action: 'login',
+                  })
+                  .then((v3Token) => {
+                    login(v3Token, 'v3');
+                  });
+              });
+            } else {
+              // A/B Test - Old v2 flow
+              grecaptcha.reset();
+              grecaptcha.execute();
+            }
 
             /**
              * To hide the spinner if user clicks outside the captcha challenge box
@@ -2125,7 +2148,7 @@ app
         }
       };
 
-      const login = function (captchaVal) {
+      const login = function (captchaVal, captchaMode = 'invisible') {
         fireDLInitiatedEvents('login.login', { method: 'email' });
         pushPromMetric({ flow: 'login', label: 'login_initiate' });
 
@@ -2139,7 +2162,7 @@ app
         };
 
         payload.headers = {
-          'X-RECAPTCHA-MODE': 'invisible',
+          'X-RECAPTCHA-MODE': captchaMode,
         };
 
         var request = $http(payload);
@@ -2158,8 +2181,47 @@ app
               );
               pushPromMetric({ flow: 'login', label: 'login_success_2fa' });
             }
+
+            if (captchaMode === 'v3') {
+              tracking.pushEvents({
+                event_name: 'recaptcha',
+                event_type: 'success',
+                properties: {
+                  captcha_verified_by: 'v3',
+                  captcha_variant: getCaptchaVariant(),
+                },
+              });
+            }
+
             $scope.successFullSignin();
           } else {
+            // if login fails but captchaMode is v3 and fails due to low score, trigger v2
+            if (captchaMode === 'v3') {
+              if (data.errors[0] === 'Captcha score low, Please try again.') {
+                // trigger recaptcha v2
+                grecaptcha.reset();
+                grecaptcha.execute();
+                return;
+              } else if (
+                data.errors[0] === 'Captcha validation Failed, Please refresh page and try again.'
+              ) {
+                fireDLFailureEvents('login.captchav3_verification', {
+                  emailId: $scope.login.data.email,
+                  error: data.errors[0],
+                  captcha_variant: getCaptchaVariant(),
+                });
+              } else {
+                tracking.pushEvents({
+                  event_name: 'recaptcha',
+                  event_type: 'success',
+                  properties: {
+                    captcha_verified_by: 'v3',
+                    captcha_variant: getCaptchaVariant(),
+                  },
+                });
+              }
+            }
+
             if (payload.data.otp && payload.data.otp.length) {
               window.rzpQ.push(
                 window.rzpQ.now().onbr().failed('login.2fa_otp', {
@@ -2205,6 +2267,10 @@ app
         tracking.pushEvents({
           event_name: 'recaptcha',
           event_type: 'success',
+          properties: {
+            captcha_verified_by: 'v2',
+            captcha_variant: getCaptchaVariant(),
+          },
         });
         login(val);
       };
