@@ -79,7 +79,6 @@ jobs:
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
           password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
         image: c.rzp.io/proxy_dockerhub/bitnami/mysql:8.0
-        options: --health-cmd "mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 10
         env:
           MYSQL_DATABASE: api
           MYSQL_ROOT_PASSWORD: root
