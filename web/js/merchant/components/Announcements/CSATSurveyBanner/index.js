@@ -1,29 +1,18 @@
 import { useMemo, useState, useCallback } from 'react';
-import { makePopup } from '@typeform/embed';
 import AnnouncementBanner from 'common/ui/AnnouncementBanner';
 import LocalStorageService from 'common/utils/localStorage';
+import getSurveyForm from './getSurveyForm';
 
 export default function CSATSurveyBanner({ user }) {
-  const { current: merchantId, email } = user;
   const bannerKey = `csat-survey-banner-${user.current}`;
   const [showSurvey, setShowSurvey] = useState(() => !LocalStorageService.getItem(bannerKey));
-  const surveyURL = `https://razorpay.typeform.com/to/Kzw8bOUb?mid=${merchantId}&email=${email}`;
 
   const closeSurvey = useCallback(() => {
     setShowSurvey(false);
     LocalStorageService.setItem(bannerKey, 1);
   }, [bannerKey]);
 
-  const SurveyForm = useMemo(
-    () =>
-      makePopup(surveyURL, {
-        mode: 'popup',
-        hideHeaders: true,
-        hideFooters: true,
-        onSubmit: closeSurvey,
-      }),
-    [surveyURL, closeSurvey],
-  );
+  const SurveyForm = useMemo(() => getSurveyForm(user, closeSurvey), [user, closeSurvey]);
 
   const openSurvey = useCallback(() => {
     SurveyForm.open();

@@ -761,6 +761,25 @@ class Constants
                 ],
             ],
         ],
+        [
+            'id'          => 'APR23-DX-CSAT',
+            'title'       => 'Developers, we want to hear you!',
+            'description' => 'Help us deliver the best developer experience for you. All we need is your valuable feedback. This won’t take more than a minute.',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/csat-survey.svg',
+            'track_event' => true,
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Let’s begin',
+                    'id'    => '',
+                    'url'   => 'https://razorpay.typeform.com/to/Kzw8bOUb',
+                    'url_query_params' => ["mid", "email"]
+                ],
+            ],
+            'start_ts'    => 1619481600,
+            'end_ts'      => 1620432000,
+            'filters'     => ['splitz_experiments' => ['ANNOUNCEMENT_DX_CSAT_APRIL2021_SPLITZ']],
+        ],
     ];
 
     //insert data in data field, that is dynamically loaded based on the sub-campaign
