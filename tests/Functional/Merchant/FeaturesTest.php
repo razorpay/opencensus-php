@@ -12,6 +12,7 @@ use RZP\Models\Feature\Entity;
 use RZP\Services\RazorXClient;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Terminal;
+use RZP\Tests\Traits\MocksRazorx;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Loc\CashAdvanceEligible;
 use RZP\Error\PublicErrorDescription;
@@ -26,12 +27,14 @@ use RZP\Mail\Merchant\EsEligible as EsEligibleMail;
 use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
+use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 use RZP\Models\Base\QueryCache\Constants as CacheConstants;
 use RZP\Mail\Merchant\FeatureEnabled as FeatureEnabledEmail;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
 class FeaturesTest extends TestCase
 {
+    use MocksRazorx;
     use FileUploadTrait;
     use DbEntityFetchTrait;
     use VirtualAccountTrait;
@@ -1975,6 +1978,44 @@ class FeaturesTest extends TestCase
 
     public function testDisableTpvFlowFeature()
     {
+        $this->startTest();
+    }
+
+    public function testAddCovidFeatureRazorXOff()
+    {
+        $this->mockRazorxTreatmentV2(RazorxTreatment::COVID_19_DONATION_SHOW, 'off');
+
+        $this->startTest();
+    }
+
+    public function testAddCovidFeatureForMerchantWithNoBusinessType()
+    {
+        $this->mockRazorxTreatmentV2(RazorxTreatment::COVID_19_DONATION_SHOW, 'on');
+
+        $this->startTest();
+    }
+
+    public function testAddCovidFeatureNgoMerchant()
+    {
+        $this->fixtures->create('merchant_detail',[
+            MerchantDetails::MERCHANT_ID => self::DEFAULT_MERCHANT_ID,
+            MerchantDetails::BUSINESS_TYPE => '7'
+        ]);
+
+        $this->mockRazorxTreatmentV2(RazorxTreatment::COVID_19_DONATION_SHOW, 'on');
+
+        $this->startTest();
+    }
+
+    public function testAddCovidFeatureForMerchant()
+    {
+        $this->mockRazorxTreatmentV2(RazorxTreatment::COVID_19_DONATION_SHOW, 'on');
+
+        $this->fixtures->create('merchant_detail',[
+            MerchantDetails::MERCHANT_ID => self::DEFAULT_MERCHANT_ID,
+            MerchantDetails::BUSINESS_TYPE => '1'
+        ]);
+
         $this->startTest();
     }
 }

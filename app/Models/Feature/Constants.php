@@ -643,6 +643,11 @@ class Constants
      */
     const FAV_FTA_DPRCN_FWD = 'fav_fta_dprcn_fwd';
 
+    /**
+     * Used to enable covid 19 related donation on checkout
+     */
+    const COVID_19_RELIEF = 'covid_19_relief';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -945,6 +950,7 @@ class Constants
         self::PAYOUT_PROCESS_ASYNC            => true,
         self::FAV_FTA_DPRCN_FWD               => true,
         self::PAYOUT_SERVICE_ENABLED          => true,
+        self::COVID_19_RELIEF                 => true,
     ];
 
     // Entity type constants
@@ -1379,6 +1385,11 @@ class Constants
             'display_name'  => 'Disable tpv flow for the merchant',
             'documentation' => '',
         ],
+        self::COVID_19_RELIEF => [
+            'feature'       => self::COVID_19_RELIEF,
+            'display_name'  => 'Will show covid 19 related donation after successful payment',
+            'documentation' => '',
+        ],
     ];
 
     /**
@@ -1414,6 +1425,7 @@ class Constants
         self::LOC_STAGE_2,
         self::SETTLEMENTS_SMS_STOP,
         self::SUGGESTED_ADDRESS_OPT_IN,
+        self::COVID_19_RELIEF,
     ];
 
     /*

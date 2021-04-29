@@ -13,6 +13,7 @@ use RZP\Services\Mock;
 use RZP\Models\Base\EsDao;
 use RZP\Services\UfhService;
 use Illuminate\Http\UploadedFile;
+use RZP\Tests\Traits\MocksRazorx;
 use RZP\Jobs\FundAccountValidation;
 use Illuminate\Cache\Events\CacheHit;
 use RZP\Models\BankAccount\Repository;
@@ -87,6 +88,7 @@ class CheckoutPreferencesTest extends TestCase
 {
     use PaymentTrait;
     use CreatesInvoice;
+    use MocksRazorx;
 
     protected function setUp(): void
     {
@@ -1545,5 +1547,45 @@ class CheckoutPreferencesTest extends TestCase
         $testData['request']['content']['order_id'] = $order->getPublicId();
 
         $this->runRequestResponseFlow($testData);
+    }
+
+    public function testGetCheckoutPreferencesWithCovidReliefBothEnable()
+    {
+        $this->mockRazorxTreatmentV2(RazorxTreatment::COVID_19_DONATION_SHOW, 'on');
+
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::COVID_19_RELIEF]);
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithoutCovidReliefBothDisable()
+    {
+        $this->mockRazorxTreatmentV2(RazorxTreatment::COVID_19_DONATION_SHOW, 'off');
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithoutCovidReliefRazorXOff()
+    {
+        $this->mockRazorxTreatmentV2(RazorxTreatment::COVID_19_DONATION_SHOW, 'off');
+
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::COVID_19_RELIEF]);
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithoutCovidReliefFeatureOff()
+    {
+        $this->mockRazorxTreatmentV2(RazorxTreatment::COVID_19_DONATION_SHOW, 'off');
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
     }
 }

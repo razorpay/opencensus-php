@@ -7925,4 +7925,52 @@ return [
             ],
         ],
     ],
+
+    'testGetCheckoutPreferencesWithCovidReliefBothEnable' => [
+        'request' => [
+            'url'     => '/preferences',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'show_donation' => true
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithoutCovidReliefBothDisable' => [
+        'request' => [
+            'url'     => '/preferences',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'show_donation' => false
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithoutCovidReliefRazorXOff' => [
+        'request' => [
+            'url'     => '/preferences',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'show_donation' => false
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithoutCovidReliefFeatureOff' => [
+        'request' => [
+            'url'     => '/preferences',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'show_donation' => false
+            ],
+        ],
+    ],
 ];

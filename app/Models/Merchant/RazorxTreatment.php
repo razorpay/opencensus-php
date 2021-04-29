@@ -243,6 +243,10 @@ final class RazorxTreatment
 
     const M2M_REWARDS_AB_TESTING = 'M2m_rewards_ab_testing';
 
+    // covid 19 related donation
+    const COVID_19_DONATION_SHOW = 'covid_19_donation_show';
+
     // Experiment to check for duplicate fund accounts via unique hash column
     const FUND_ACCOUNT_DUPLICATE_CHECK_VIA_UNIQUE_HASH = 'fund_account_duplicate_check_via_unique_hash';
+
 }

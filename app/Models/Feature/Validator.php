@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use Illuminate\Http\Request;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Merchant\Detail\BusinessType;
 
 class Validator extends Base\Validator
 {
@@ -21,7 +22,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $createValidators = [
-        'skipWorkflowPayoutSpecific'
+        'skipWorkflowPayoutSpecific',
+        'covid19Relief'
     ];
 
     protected static $onboardingSubmissionsUpsertRules = [
@@ -153,6 +155,55 @@ class Validator extends Base\Validator
                    ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNAVAILABLE,
                    Entity::NAME,
                    Constants::SKIP_WF_AT_PAYOUTS
+               );
+           }
+       }
+   }
+
+   public function validateCovid19Relief($input)
+   {
+       if ($input[Entity::NAME] === Constants::COVID_19_RELIEF && $input[Entity::ENTITY_TYPE] === Constants::MERCHANT) {
+           $app = App::getFacadeRoot();
+
+           $merchantId = $input[Entity::ENTITY_ID];
+
+           $merchant = $app['repo']->merchant->find($merchantId);
+
+           $variant = App::getFacadeRoot()->razorx->getTreatment(
+               $merchant->getId(),
+               Merchant\RazorxTreatment::COVID_19_DONATION_SHOW,
+               $this->getMode()
+           );
+
+           if ($variant !== 'on')
+           {
+               throw new Exception\BadRequestException(
+                   ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNAVAILABLE,
+                   Entity::NAME,
+                   Constants::COVID_19_RELIEF,
+                   'Feature is not live right now'
+               );
+           }
+
+           if ($merchant->merchantDetail === null or $merchant->merchantDetail->getBusinessType() === null)
+           {
+               throw new Exception\BadRequestException(
+                   ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNAVAILABLE,
+                   Entity::NAME,
+                   Constants::COVID_19_RELIEF,
+                   'Merchant business type is not available'
+               );
+           }
+
+           $businessType = $merchant->merchantDetail->getBusinessType();
+
+           if (in_array($businessType, [BusinessType::NGO, BusinessType::TRUST]))
+           {
+               throw new Exception\BadRequestException(
+                   ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNAVAILABLE,
+                   Entity::NAME,
+                   Constants::COVID_19_RELIEF,
+                   'Cannot Enable covid 19 relief feature, since merchant business type is either NGO or TRUST'
                );
            }
        }

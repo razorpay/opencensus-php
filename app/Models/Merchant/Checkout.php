@@ -131,7 +131,22 @@ class Checkout
             $this->fillPreferredMethods($merchant, $input, $data);
         }
 
+        $this->fillCovidReliefDetails($merchant, $data, $mode);
+
         return $data;
+    }
+
+    protected function fillCovidReliefDetails(Entity $merchant, array & $data, $mode)
+    {
+        $featureEnabled = $merchant->isFeatureEnabled(Feature\Constants::COVID_19_RELIEF);
+
+        $covidRazorX = $this->app->razorx->getTreatment(
+            $merchant->getId(),
+            Merchant\RazorxTreatment::COVID_19_DONATION_SHOW,
+            $mode
+        );
+
+        $data['show_donation'] = $featureEnabled === true && $covidRazorX === 'on';
     }
 
     protected function checkAndFillAppDetails(array $input, Entity $merchant, array &$data, $mode)
