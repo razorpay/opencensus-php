@@ -38,6 +38,7 @@ class Bucket extends Job
     protected $allowedTypeForBucketing = [
          Transaction\Type::PAYMENT,
          Transaction\Type::ADJUSTMENT,
+         Transaction\Type::COMMISSION,
          Transaction\Type::SETTLEMENT_TRANSFER,
      ];
 
