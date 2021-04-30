@@ -58,7 +58,7 @@ class Service extends Base\Service
         //
         // This will give wrong result for wealthy merchant on saturdays
         //
-        list ($status, $data) = (new Processor)->isMerchantSettlementAllowed($this->merchant);
+        list ($status, $data) = (new Processor)->isMerchantSettlementAllowed($this->merchant, $balanceType);
 
         if ($status === false)
         {

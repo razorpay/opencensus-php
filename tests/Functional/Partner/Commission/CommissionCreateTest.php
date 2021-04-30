@@ -9,13 +9,15 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Constants\Mode;
+use RZP\Models\Partner;
 use RZP\Constants\Timezone;
-use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\Partner\Config;
+use RZP\Models\Merchant\FeeBearer;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Settlement\Holidays;
+use RZP\Models\Merchant\Detail\Entity;
 use RZP\Mail\Merchant\CommissionInvoice;
 use RZP\Mail\Merchant\CommissionOpsInvoice;
 use RZP\Tests\Functional\Partner\Constants;
@@ -250,8 +252,6 @@ class CommissionCreateTest extends TestCase
     {
         $testData = $this->setUpCommissionCreate();
 
-        $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
-
         $this->createConfigForPartnerApp(
             Constants::DEFAULT_PLATFORM_APP_ID,
             null,
@@ -264,6 +264,68 @@ class CommissionCreateTest extends TestCase
         list($payment, $commission) = $this->assertAndGetCommissionByType(CommissionType::IMPLICIT);
 
         $this->checkClearOnHoldAndSettlement($commission, Config\Entity::TDS_PERCENTAGE_FOR_MISSING_DETAILS/100);
+    }
+
+    public function testCommissionSettlementForNonActivePartner()
+    {
+        $testData = $this->setUpCommissionCreate();
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_PLATFORM_APP_ID,
+            null,
+            [
+                'implicit_plan_id'    => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
+            ]);
+
+        // capture payment
+        $this->startTest($testData);
+
+        list($_, $commission) = $this->assertAndGetCommissionByType(CommissionType::IMPLICIT);
+
+        $testData = $this->testData['testClearOnHoldForCommission'];
+
+        $testData['request']['url'] = '/commissions/partner/'.$commission['partner_id'].'/on_hold/clear';
+
+        // clear on_hold for partner
+        $this->runRequestResponseFlow($testData);
+
+        // non-active partner details
+        $merchantDetailAttributes = [
+            Entity::ACTIVATION_STATUS  => Partner\Activation\Constants::UNDER_REVIEW,
+            Entity::LOCKED             => false,
+            Entity::SUBMITTED          => true,
+        ];
+
+        // add activation details in merchant_detail entity
+        $this->fixtures->merchant_detail->edit(Constants::DEFAULT_PLATFORM_MERCHANT_ID, $merchantDetailAttributes);
+
+        $this->ba->cronAuth();
+
+        Carbon::setTestNow(Holidays::getNthWorkingDayFrom(Carbon::now(), 5)->addHour(10));
+
+        $testData = $this->testData['testInitiateCommissionSettlement'];
+
+        // commission settlement initiate
+        $this->runRequestResponseFlow($testData);
+
+        $settlementTransaction = $this->getDbLastEntity('transaction');
+
+        // check that settlement is not created
+        $this->assertNotEquals('settlement', $settlementTransaction->getType());
+
+        $this->assertEquals(Channel::YESBANK, $settlementTransaction->getChannel());
+
+        $settlement = $this->getDbLastEntity('settlement');
+
+        $this->assertNull($settlement);
+
+        $this->initiateTransfer(Channel::YESBANK, 'settlement', 'settlement');
+
+        // check that fund transfer attempt is created
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        // check that fund transfer didn't happen
+        $this->assertNull($attempt);
     }
 
     public function testInvoiceGenerate()
@@ -1124,6 +1186,14 @@ class CommissionCreateTest extends TestCase
         $this->assertEquals(0, $commTransaction->getOnHold());
 
         // trigger settlement on this commission
+
+        $merchantDetailAttributes = [
+            Entity::ACTIVATION_STATUS  => Partner\Activation\Constants::ACTIVATED,
+            Entity::LOCKED             => false,
+            Entity::SUBMITTED          => true,
+        ];
+
+        $this->fixtures->merchant_detail->edit(Constants::DEFAULT_PLATFORM_MERCHANT_ID, $merchantDetailAttributes);
 
         $this->ba->cronAuth();
 

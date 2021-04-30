@@ -810,7 +810,7 @@ class Processor extends Base\Core
             $forceFlag = $params['ignore_time_limit'] === '1';
         }
 
-        list ($status, $_) = $this->isMerchantSettlementAllowed($merchant, $forceFlag);
+        list ($status, $_) = $this->isMerchantSettlementAllowed($merchant, $balanceType, $forceFlag);
 
         if ($status === false)
         {

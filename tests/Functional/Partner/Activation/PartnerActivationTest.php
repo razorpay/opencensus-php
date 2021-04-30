@@ -285,8 +285,7 @@ class PartnerActivationTest extends OAuthTestCase
         $this->ba->adminAuth();
         $testData                   = $this->testData['testHoldCommissionsActionInvalidAction'];
         $testData['request']['url'] = '/partner/' . self::MERCHANT_ID. '/action';
-        $response = $this->runRequestResponseFlow($testData);
-        s($response);
+        $this->runRequestResponseFlow($testData);
     }
 
     public function testReleaseCommissionsAction()

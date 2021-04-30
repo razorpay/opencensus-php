@@ -19,6 +19,7 @@ use RZP\Models\Transaction;
 use RZP\Base\RuntimeManager;
 use RZP\Constants\Environment;
 use RZP\Models\Merchant\Balance;
+use RZP\Models\Partner\Activation;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\Payout\Core as PayoutCore;
 use RZP\Models\Settlement\Bucket\Constants;
@@ -55,13 +56,16 @@ trait SettlementTrait
      * validates if merchant is eligible for settlement
      *
      * @param Merchant\Entity $merchant
+     * @param string $balanceType
      * @param bool $forceFlag
      * @return array
      */
-    public function isMerchantSettlementAllowed(Merchant\Entity $merchant, $forceFlag = false): array
+    public function isMerchantSettlementAllowed(Merchant\Entity $merchant, string $balanceType, $forceFlag = false): array
     {
-        // process settlement only for activated merchants
-        if ($merchant->isSuspended() === true || $merchant->isActivated() === false)
+        // 1. Do not proceed further if the merchant account is suspended
+        // 2. For non-active merchants check if the settlement is not for partner commissions
+        if (($merchant->isSuspended() === true) || (($merchant->isActivated() === false) and
+            ($this->isPartnerCommissionSettlement($merchant, $balanceType) === false)))
         {
             $this->traceMerchantSettlementSkip(
                 $merchant,
@@ -80,6 +84,7 @@ trait SettlementTrait
         }
 
         // Do not proceed further if merchant funds are on hold
+        // TODO: hold_funds to be checked on partner entity for commission settlement after partner service migration
         if ($merchant->isFundsOnHold() === true)
         {
             $this->traceMerchantSettlementSkip(
@@ -96,6 +101,23 @@ trait SettlementTrait
                     'on_hold' => true,
                 ]
             ];
+        }
+
+        // If it's a partner commission settlement than proceed further only if partner is activated
+        if ($this->isPartnerCommissionSettlement($merchant, $balanceType) === true)
+        {
+            list ($status, $data, $stlSkipReason) = $this->isPartnerCommissionSettlementAllowed($merchant, $balanceType);
+
+            if ($status === false)
+            {
+                $this->traceMerchantSettlementSkip(
+                    $merchant,
+                    [
+                        'reason' => $stlSkipReason,
+                    ]);
+
+                return [$status, $data];
+            }
         }
 
         $merchantSettleToPartner = (new Merchant\Core)->getPartnerBankAccountIdsForSubmerchants([$merchant->getId()]);
@@ -227,6 +249,58 @@ trait SettlementTrait
         }
 
         return [true, []];
+    }
+
+    /**
+     * validates if a partner merchant is eligible for commission settlement
+     *
+     * @param Merchant\Entity $merchant
+     * @param string $balanceType
+     * @return array
+     */
+    // TODO: should also check hold_funds on partner entity for commission settlement after partner service migration
+    protected function isPartnerCommissionSettlementAllowed(Merchant\Entity $merchant, string $balanceType)
+    {
+        if ($this->isPartnerCommissionSettlement($merchant, $balanceType) === true)
+        {
+            $partnerActivation = (new Activation\Core())->createOrFetchPartnerActivationForMerchant($merchant, false);
+
+            if ($partnerActivation->getActivationStatus() !== Activation\Constants::ACTIVATED)
+            {
+                return [
+                    false,
+                    [
+                        'caption' => 'Settlement is not enabled',
+                        'reason'  => 'Only active partner merchant`s commissions are settled',
+                        'on_hold' => $partnerActivation->isFundsOnHold(),
+                    ],
+                    'partner merchant is not active'
+                ];
+            }
+            else
+            {
+                return [true, [], ''];
+            }
+        }
+
+        return [false, ['reason' => 'Settlement is not of type partner commissions'], ''];
+    }
+
+    /**
+     * Validates if the merchant is a partner and it's a commission settlement
+     *
+     * @param Merchant\Entity $merchant
+     * @param string $balanceType
+     * @return bool
+     */
+    protected function isPartnerCommissionSettlement(Merchant\Entity $merchant, string $balanceType)
+    {
+        if (($merchant->isPartner() === true) and ($balanceType === Transaction\Type::COMMISSION))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**
