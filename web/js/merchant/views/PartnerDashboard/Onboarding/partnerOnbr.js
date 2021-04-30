@@ -50,6 +50,26 @@ export default class BaseScreen extends React.Component {
     });
   };
 
+  trackSignupSuccessEvents = () => {
+    this.props.tracking.trackEvent(
+      window.rzpQ.onbr().clicked('partnerships.partner_signup.completed', {
+        merchantId: this.props.user.merchant.id,
+      }),
+    );
+    this.props.tracking.trackEvent(
+      window.rzpQ.onbr().clicked('partnerships.appstore.partner.signup', {
+        merchantId: this.props.user.merchant.id,
+        pagePath: window.location.pathname,
+      }),
+    );
+    window.trackHubs({
+      name: 'update_property',
+      data: {
+        partner_signup_complete: true,
+      },
+    });
+  };
+
   closeTransaction = (url, data) => {
     const userval = new User({
       ...this.props.user,
@@ -66,6 +86,11 @@ export default class BaseScreen extends React.Component {
         this.props.updateSession({ user: userval });
         this.props.history.push(`partners/submerchants`);
         this.props.closeModal();
+
+        // fire tracking events after successful partner signup
+        if (url === 'merchant/partner_type') {
+          this.trackSignupSuccessEvents();
+        }
       })
       .catch((err) => {
         this.props.closeModal();
@@ -87,28 +112,9 @@ export default class BaseScreen extends React.Component {
       eventAction: 'T&C Page',
       eventLabel: 'Partner Onboarding | Accept T&C',
     });
+
     this.closeTransaction('merchant/partner_type', {
       partner_type: this.state.role,
-    });
-
-    this.props.tracking.trackEvent(
-      window.rzpQ.onbr().clicked('partnerships.appstore.partner.signup', {
-        merchantId: this.props.user.merchant.id,
-        pagePath: window.location.pathname,
-      }),
-    );
-
-    this.props.tracking.trackEvent(
-      window.rzpQ.onbr().clicked('partnerships.partner_signup.completed', {
-        merchantId: this.props.user.merchant.id,
-      }),
-    );
-
-    window.trackHubs({
-      name: 'update_property',
-      data: {
-        partner_signup_complete: true,
-      },
     });
   };
 
