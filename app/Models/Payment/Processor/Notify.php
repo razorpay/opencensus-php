@@ -10,6 +10,7 @@ use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
 use RZP\Events\Event;
 use RZP\Models\Payment;
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
@@ -518,13 +519,6 @@ class Notify
      */
     protected function templateData()
     {
-        $eligibleForCovidRelief = true;
-
-        if($this->merchant->merchantDetail === null || $this->merchant->merchantDetail->getBusinessType() === null || in_array($this->merchant->merchantDetail->getBusinessType(), [BusinessType::NGO, BusinessType::TRUST]))
-        {
-            $eligibleForCovidRelief = false;
-        }
-
         $data  = [
             'customer'  => [
                 'email' => $this->payment->getEmail(),
@@ -540,7 +534,7 @@ class Notify
                 'contrast_color'            => $this->merchant->getContrastOfBrandColor(),
                 'brand_logo'                => $this->merchant->getFullLogoUrlWithSize(),
                 'name'                      => $this->merchant->getName(),
-                'eligible_for_covid_relief' => $eligibleForCovidRelief,
+                'eligible_for_covid_relief' => $this->merchant->isFeatureEnabled(Feature\Constants::COVID_19_RELIEF),
             ],
             'payment'   => [
                 'id'                   => $this->payment->getId(),
