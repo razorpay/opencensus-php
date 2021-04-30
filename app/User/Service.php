@@ -447,6 +447,11 @@ class Service extends Base\Service
                 return [[$error, self::LOGIN_UNAUTHENTICATED], null];
             }
 
+            if (in_array('Low captcha score', $error) === true)
+            {
+                return [['Captcha score low, Please try again.', self::LOGIN_UNAUTHENTICATED], null];
+            }
+
             if (in_array('Captcha Failed', $error) === true)
             {
                 return [['Captcha validation Failed, Please refresh page and try again.', self::LOGIN_UNAUTHENTICATED], null];
@@ -1126,7 +1131,7 @@ class Service extends Base\Service
         $request = new \App\Admin\ApiRequestAny($options);
 
         list($error, $data) = $request->processInput($input)->send($route, $httpVerb);
-
+        
         $genericUser = null;
 
         if (empty($error) === true)
