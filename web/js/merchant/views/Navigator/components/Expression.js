@@ -13,10 +13,14 @@ import InputField from 'common/ui/Forms/InputField';
 import { titleCase } from 'common/utils/rzp-utils';
 import Select from './Select';
 import SelectConfig from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/SelectConfig';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import { AmountTooltip } from 'common/ui/Amount';
 import { operators, getValue } from './util';
 import { CSSTransition } from 'react-transition-group';
 
+@connect(null, {
+  showNotification,
+})
 export default class Expression extends React.Component {
   getValue = (type, value) => {
     let r;
@@ -166,7 +170,7 @@ export default class Expression extends React.Component {
                     }}
                   />
                 );
-                if (RHS_TYPE.type == 'input') {
+                if (RHS_TYPE.type == 'input' && !RHS_TYPE.multiple) {
                   jsx = (
                     <div className="row">
                       <div className="col-xs-12">
@@ -189,6 +193,69 @@ export default class Expression extends React.Component {
                           }}
                           type={`${RHS_TYPE.number ? 'number' : 'text'}`}
                           placeholder="Enter Something"
+                          name="enter_text"
+                          class="form-control"
+                        />
+                      </div>
+                    </div>
+                  );
+                }
+                if (
+                  RHS_TYPE.type == 'input' &&
+                  RHS_TYPE.number === true &&
+                  RHS_TYPE.multiple === true
+                ) {
+                  jsx = (
+                    <div className="row">
+                      <div className="col-xs-12">
+                        <input
+                          value={this.props.expression.operands[1].value}
+                          onChange={(e) => {
+                            let value;
+                            value = e.target.value;
+                            const values = value.split(',');
+                            let update = true;
+                            if (value[value.length - 1] === ',') {
+                              values.forEach((item, index) => {
+                                if (index < values.length - 1) {
+                                  if (!(item.length >= 4 && item.length <= 6)) {
+                                    update = false;
+                                    this.props.showNotification({
+                                      type: 'error',
+                                      message: 'Please enter valid BIN number of 4 to 6 digits.',
+                                    });
+                                  }
+                                }
+                              });
+                            }
+                            const arr = values.map((item, index) => {
+                              const res = item.trim();
+                              if (isNaN(res) || (res === '' && index !== values.length - 1)) {
+                                update = false;
+                              }
+                              return res;
+                            });
+                            if (update) {
+                              const newVal = arr.map((item) => {
+                                if (item !== '') {
+                                  return item;
+                                }
+                              });
+                              this.props.update({
+                                ...this.props.expression,
+                                operands: [
+                                  this.props.expression.operands[0],
+                                  {
+                                    ...this.props.expression.operands[1],
+                                    value: newVal.join(','),
+                                    type: VALUE_TYPE,
+                                  },
+                                ],
+                              });
+                            }
+                          }}
+                          type="text"
+                          placeholder="Enter comma separated numbers"
                           name="enter_text"
                           class="form-control"
                         />
