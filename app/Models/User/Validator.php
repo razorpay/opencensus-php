@@ -427,6 +427,37 @@ class Validator extends Base\Validator
                     ]
                 );
             }
+            else if(array_key_exists('score', $output) === true)
+            {
+                $threshold = 0.9;
+                if ($output->score < $threshold)
+                {
+                    throw new BadRequestException(
+                        ErrorCode::BAD_REQUEST_CAPTCHA_SCORE_LOW,
+                        null,
+                        [
+                            'output_from_google'        => (array)$output,
+                            'emailData'                 => $emailData,
+                            'captcha_mode_header'       => Request::header(self::CAPTCHA_MODE_HEADER),
+                            'remoteip'                  => $clientIpAddress,
+                        ]
+                    );
+                }
+                else
+                {
+                    $router = $app['router'];
+
+                    $payload = [
+                        'captcha_mode_header'       => Request::header(self::CAPTCHA_MODE_HEADER),
+                        'emailData'                 => $emailData,
+                        'route'                     => $router->currentRouteName(),
+                        'score'                     => $output->score,
+                        'threshold'                 => $threshold,
+
+                    ];
+                    $app['diag']->trackOnboardingEvent(EventCode::CAPTCHA_TOKEN_VERIFICATION_SUCCESS, null, null, $payload);
+                }
+            }
         }
 
         $app['diag']->trackOnboardingEvent(EventCode::SIGNUP_CAPTCHA_VERIFICATION_SUCCESS, null, null, $emailData);
@@ -614,6 +645,11 @@ class Validator extends Base\Validator
         if ($captchaMode === 'invisible')
         {
             return config('app.signup.invisible_captcha_secret');
+        }
+
+        if($captchaMode === 'v3')
+        {
+            return config('app.signup.v3_captcha_secret');
         }
 
         return config('app.signup.nocaptcha_secret');

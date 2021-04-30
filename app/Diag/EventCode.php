@@ -364,6 +364,11 @@ class EventCode
     ];
 
     // onboarding events
+    const CAPTCHA_TOKEN_VERIFICATION_SUCCESS = [
+        'group' => 'onboarding',
+        'name'  => 'captcha.token_verification.success'
+    ];
+
     const SIGNUP_CAPTCHA_VERIFICATION_SUCCESS = [
         'group' => 'onboarding',
         'name'  => 'signup.captcha_verification.success',

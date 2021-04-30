@@ -305,6 +305,7 @@ return array(
         'nocaptcha_secret'          => env('NOCAPTCHA_SECRET', ''),
         'android_captcha_secret'    => env('ANDROID_NOCAPTCHA_SECRET', ''),
         'invisible_captcha_secret'  => env('INVISIBLE_CAPTCHA_SECRET', ''),
+        'v3_captcha_secret'         => env('V3_CAPTCHA_SECRET', ''),
     ],
 
     'customer_refund_details' => [

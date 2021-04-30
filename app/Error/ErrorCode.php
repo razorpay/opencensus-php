@@ -1463,6 +1463,7 @@ class ErrorCode
     const BAD_REQUEST_OLD_PASSWORD_MISMATCH                                         = 'BAD_REQUEST_OLD_PASSWORD_MISMATCH';
     const BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID                                       = 'BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID';
     const BAD_REQUEST_CAPTCHA_FAILED                                                = 'BAD_REQUEST_CAPTCHA_FAILED';
+    const BAD_REQUEST_CAPTCHA_SCORE_LOW                                             = 'BAD_REQUEST_CAPTCHA_SCORE_LOW';
     const BAD_REQUEST_INVALID_PASSWORD                                              = 'BAD_REQUEST_INVALID_PASSWORD';
     const BAD_REQUEST_NEW_PASSWORD_SAME_AS_OLD_PASSWORD                             = 'BAD_REQUEST_NEW_PASSWORD_SAME_AS_OLD_PASSWORD';
     const BAD_REQUEST_CAPTCHA_TOKEN_NOT_PRESENT                                     = 'BAD_REQUEST_CAPTCHA_TOKEN_NOT_PRESENT';
