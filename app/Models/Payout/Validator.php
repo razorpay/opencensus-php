@@ -413,15 +413,8 @@ class Validator extends Base\Validator
 
             $app = App::getFacadeRoot();
 
-            $variant = $app->razorx->getTreatment(
-                $payout->getMerchantId(),
-                Merchant\RazorxTreatment::PAYOUT_TO_AMEX_CARDS,
-                $this->getMode()
-            );
-
             if (($fundAccount->account->isAmex() === true) and
-                ($cardIssuer === null) and
-                ($variant === 'on'))
+                ($cardIssuer === null))
             {
                 $cardIssuer = Constants::DEFAULT_ISSUER;
             }

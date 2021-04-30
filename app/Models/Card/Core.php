@@ -127,16 +127,9 @@ class Core extends Base\Core
             ((in_array($cardIssuer, FundTransfer\Mode::getSupportedIssuers(), true) === false) and
              (empty($m2pSupportedModeConfigs) === true)))
         {
-            $variant = $this->app->razorx->getTreatment(
-                $merchant->getId(),
-                Merchant\RazorxTreatment::PAYOUT_TO_AMEX_CARDS,
-                $this->mode,
-                FundAccount\Entity::FUND_ACCOUNT_RX_RETRY_COUNT
-            );
 
             if (($card->isAmex() === true) and
-                ($cardIssuer === null) and
-                ($variant === 'on'))
+                ($cardIssuer === null))
             {
                 return $card;
             }

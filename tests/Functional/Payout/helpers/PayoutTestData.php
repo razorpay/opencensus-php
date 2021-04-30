@@ -5984,37 +5984,6 @@ return [
         ],
     ],
 
-    'testPayoutToAmexCardWithNullIssuerSupportedModeButFeatureDisabledOrRazorxTimeout' => [
-        'request' => [
-            'method'  => 'POST',
-            'url'     => '/fund_accounts',
-            'content' => [
-                "account_type" => "card",
-                "contact_id"   => "cont_1000001contact",
-                "card"         => [
-                    "name"         => "Prashanth YV",
-                    "number"       => "340169570990137",
-                    "cvv"          => "2126",
-                    "expiry_month" => 10,
-                    "expiry_year"  => 21,
-                ],
-            ],
-        ],
-        'response' => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Card not supported for fund account creation',
-                ]
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_CARD_NOT_SUPPORTED_FOR_FUND_ACCOUNT,
-        ],
-    ],
-
     'testPayoutToAmexCardWithNullIssuerWithUPIMode' => [
         'request'  => [
             'method'  => 'POST',

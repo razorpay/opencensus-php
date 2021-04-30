@@ -4901,35 +4901,6 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
-    public function testPayoutToAmexCardWithNullIssuerSupportedModeButFeatureDisabledOrRazorxTimeout()
-    {
-        $this->fixtures->create('feature', [
-            'name'        => Feature\Constants::S2S,
-            'entity_id'   => 10000000000000,
-            'entity_type' => 'merchant',
-        ]);
-
-        $this->fixtures->create('feature', [
-            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
-            'entity_id'   => 10000000000000,
-            'entity_type' => 'merchant',
-        ]);
-
-        $this->mockRazorxTreatment('yesbank', 'on' , 'off' , 'off', 'off', 'control');
-
-        $countOfCardsBeforeFundAccountCreateRequest = count($this->getDbEntities('card'));
-
-        $this->ba->privateAuth();
-
-        $this->startTest();
-
-        $countOfCardsAfterFundAccountCreateRequest = count($this->getDbEntities('card'));
-
-        // This is to check that card entity is created even though fund account creation fails.
-        $this->assertEquals($countOfCardsBeforeFundAccountCreateRequest + 1,
-                            $countOfCardsAfterFundAccountCreateRequest);
-    }
-
     public function testPayoutToAmexCardWithNullIssuerWithUPIMode()
     {
         $fundAccountRequest = [

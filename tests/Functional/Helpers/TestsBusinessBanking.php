@@ -370,11 +370,6 @@ trait TestsBusinessBanking
                         return strtolower($webhookArrayPublicPayload);
                     }
 
-                    if ($feature === 'payout_to_amex_cards')
-                    {
-                        return strtolower($payoutToAmexCards);
-                    }
-
                     if ($feature === 'payout_to_prepaid_cards')
                     {
                         return strtolower($payoutToPrepaidCards);

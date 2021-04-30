@@ -181,15 +181,8 @@ class Validator extends Base\Validator
                 $cardType = $iin->getType();
             }
 
-            $variant = $app->razorx->getTreatment(
-                $attempt->getMerchantId(),
-                Merchant\RazorxTreatment::PAYOUT_TO_AMEX_CARDS,
-                $this->getMode()
-            );
-
             if (($attempt->card->isAmex() === true) and
-                ($cardIssuer === null) and
-                ($variant === 'on'))
+                ($cardIssuer === null))
             {
                 $cardIssuer = FundTransferAttemptConstants::DEFAULT_ISSUER;
             }

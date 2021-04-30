@@ -107,9 +107,6 @@ final class RazorxTreatment
 
     const RAZORPAY_X_ENABLE_YESBANK_PAYOUTS = 'razorpay_x_enable_yesbank_payouts';
 
-    // Check whether payout to amex cards is supported for a merchant ot not.
-    const PAYOUT_TO_AMEX_CARDS = 'payout_to_amex_cards';
-
     // Decides if should forward passport(jwt) received from edge to subscriptions service.
     const FORWARD_PASSPORT_TO_SUBSCRIPTIONS = 'forward_passport_to_subscriptions';
 
