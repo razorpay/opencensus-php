@@ -13,7 +13,6 @@ class CreateMaskedKeysView extends Migration
      */
     public function up()
     {
-
         $columns = [
             Key::ID,
             Key::MERCHANT_ID,
@@ -24,12 +23,13 @@ class CreateMaskedKeysView extends Migration
 
         $columnStr = implode(',', $columns);
 
-        $statement = 'CREATE ALGORITHM=MERGE VIEW masked_keys_view AS
+        $view = DB::getConfig('view_db') . '.masked_keys_view';
+
+        $statement = 'CREATE ALGORITHM=MERGE VIEW ' . wrap_db_table($view) . ' AS
                         SELECT ' . $columnStr .
             ' FROM `' . Table::KEY . '`';
 
         DB::statement($statement);
-
     }
 
     /**
@@ -39,6 +39,10 @@ class CreateMaskedKeysView extends Migration
      */
     public function down()
     {
-        DB::statement('DROP VIEW IF EXISTS masked_keys_view');
+        $view = DB::getConfig('view_db') . '.masked_keys_view';
+
+        $statement = 'DROP VIEW IF EXISTS ' . $view;
+
+        DB::statement($statement);
     }
 }
