@@ -146,7 +146,10 @@ class Mailable extends BaseMailable
             // if email is to be sent via stork
             if ($this->shouldSendEmailViaStork() === true)
             {
-                $trace->info(TraceCode::SEND_EMAIL_ATTEMPT_STORK);
+                $trace->info(TraceCode::SEND_EMAIL_ATTEMPT_STORK,
+                [
+                    'template_name'     => $this->getParamsForStork()['template_name'] ?? '',
+                ]);
                 $eventProperties['email_driver'] = 'stork';
                 // we can override any base param by adding the param in `getParamsForStork()`
                 $paramsPayload = array_merge($this->getBaseParamsForStork(), $this->getParamsForStork());

@@ -560,7 +560,10 @@ class Notify
 
                 'dcc'                  => $this->payment->isDCC(),
                 'gateway_amount_spread'=> $this->payment->getAmountComponents($this->payment->isDCC())
-            ]
+            ],
+            'org'       => [
+                'id'                   => $this->merchant->getOrgId(),
+            ],
         ];
 
         // add merchant support details

@@ -232,6 +232,7 @@ final class RazorxTreatment
     // controls %age of the mail to be sent via stork
     const API_STORK_MAIL_PAYMENT_CAPTURE        = 'api_stork_mail_payment_capture';
     const API_STORK_MAIL_CONTACT_MOBILE_UPDATED = 'api_stork_mail_contact_mobile_updated';
+    const API_STORK_MAIL_CUSTOMER_PAYMENT       = 'api_stork_mail_customer_payment';
 
     // will route the traffic slave or master based on the replica
     const SETTLEMENT_TXN_FETCH_TO_SLAVE = 'settlement_transaction_fetch_to_slave';
