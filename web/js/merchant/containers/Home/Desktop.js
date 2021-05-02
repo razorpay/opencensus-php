@@ -177,32 +177,30 @@ class AnalyticsDesktop extends Component {
     }
   };
 
-  onClickCovidEnableNow = () => {
-    return merchantFetch({
-      url: `merchants/me/features?features[covid_19_relief]=1`,
-      mode: `${this.props.mode}`,
-      method: 'POST',
-    })
-      .then(() => {
-        this.props.fetchUser().then(() => {
-          this.props.showNotification({
-            type: 'success',
-            message: 'Updated preferences',
-          });
-          this.props.openModal({
-            size: 'medium',
-            component: <CovidKnowMore isCovidDonations />,
-          });
-          this.props.history.push('/config');
-        });
-      })
-      .catch((err) => {
-        this.props.showNotification({
-          type: 'error',
-          message: err.errors,
-        });
-        this.props.fetchUser();
+  onClickCovidEnableNow = async () => {
+    try {
+      await merchantFetch({
+        url: `merchants/me/features?features[covid_19_relief]=1`,
+        mode: `${this.props.mode}`,
+        method: 'POST',
       });
+
+      await this.props.fetchUser();
+
+      this.props.openModal({
+        size: 'medium',
+        component: <CovidKnowMore isCovidDonations />,
+      });
+      this.props.history.push('/config');
+
+      return true;
+    } catch (err) {
+      this.props.showNotification({
+        type: 'error',
+        message: err.errors,
+      });
+      return false;
+    }
   };
 
   render() {

@@ -33,11 +33,16 @@ function CovidKnowMore(props) {
   return (
     <>
       <div class="covid-know-more-container">
-        <ModalHeader
-          title={title}
-          onCloseClick={props.closeModal}
-          isCovidDonations={props.isCovidDonations}
-        />
+        <div class="modal-header">
+          <div class="covid__donations">
+            {props.user.isFeatureEnabled('covid_19_relief') ? (
+              <i class="i i-done" style={{ color: '#1F890E' }} />
+            ) : (
+              <i class="i i-Donate" />
+            )}{' '}
+            <h3 class="modal-title">{title}</h3>
+          </div>
+        </div>
         <div class="description">
           This will only appear for Standard Checkout users. It will not be shown to Android and iOS
           app users.
