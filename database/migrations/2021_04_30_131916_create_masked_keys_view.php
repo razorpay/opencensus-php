@@ -25,7 +25,7 @@ class CreateMaskedKeysView extends Migration
 
         $view = DB::getConfig('view_db') . '.masked_keys_view';
 
-        $statement = 'CREATE ALGORITHM=MERGE VIEW ' . wrap_db_table($view) . ' AS
+        $statement = 'CREATE OR REPLACE ALGORITHM=MERGE VIEW ' . wrap_db_table($view) . ' AS
                         SELECT ' . $columnStr .
             ' FROM `' . Table::KEY . '`';
 
