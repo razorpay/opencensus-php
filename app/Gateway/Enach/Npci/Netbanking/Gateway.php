@@ -1016,7 +1016,7 @@ class Gateway extends Base\Gateway
             'debit_type'         => 'Max Amount',
             'mandate_start_date' => $startDate,
             'mandate_end_date'   => $endDate,
-            'frequency'          => 'As & When Presented',
+            'frequency'          => 'As And When Presented',
             'corporate_name'     => str_limit($merchantName, 25, ''),
             'utility_code'       => $utilityCode,
             'purpose_text'       => $categoryDescription,
