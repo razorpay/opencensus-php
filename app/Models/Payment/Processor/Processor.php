@@ -2345,6 +2345,10 @@ class Processor
 
         $this->updateVerifyBucketOnPaymentFailure($exception);
 
+        $startTime = microtime(true);
+
+        $isVerifyNewFlow = false;
+
         if (($payment->getGateway() !== null) and
             (Payment\Gateway::isGatewayForSchedulerService($payment->getGateway())))
         {
@@ -2357,17 +2361,21 @@ class Processor
             if (($variant === 'on') and
                 ($this->app->runningUnitTests() === false))
             {
+                $isVerifyNewFlow = true;
+
                 $this->trace->info(
                     TraceCode::FAILED_PAYMENT_KAFKA_PUSH_INITIATED,
                     [
                         'payment_id'    => $payment->getId(),
                     ]
                 );
-                $isPushedToKafka = (new Payment\Core())->pushFailedPaymentToKafka($payment);
+                $isPushedToKafka = (new Payment\Core())->pushFailedPaymentToKafka($payment, $startTime);
 
                 $payment->setIsPushedToKafka($isPushedToKafka);
             }
         }
+
+        (new Payment\Metric())->pushVerifyViaOldOrNewFlowMetrics(get_diff_in_millisecond($startTime), $isVerifyNewFlow, $payment->getGateway());
 
         $this->repo->saveOrFail($payment);
 

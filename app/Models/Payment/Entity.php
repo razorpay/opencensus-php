@@ -1876,6 +1876,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->getAttribute(self::PUBLIC_KEY);
     }
 
+    public function getIsPushedToKafka()
+    {
+        return $this->getAttribute(self::IS_PUSHED_TO_KAFKA);
+    }
+
 // ----------------------- Accessor Ends ---------------------------------------
 
     public function isCreated()

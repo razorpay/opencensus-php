@@ -191,7 +191,11 @@ trait Verify
      */
     public function verifyNewRoute(Payment\Entity $payment, string $verifyRoute = 'verify/new_cron', array $gatewayData = null)
     {
-        $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_INITIATED, $payment);
+        $extraProperties = [
+            'is_pushed_to_kafka'  => $payment->getIsPushedToKafka(),
+        ];
+
+        $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_INITIATED, $payment, null, $extraProperties);
 
         $this->setPayment($payment);
 
@@ -207,6 +211,8 @@ trait Verify
 
         if ($finalException !== null)
         {
+            $customProperties += $extraProperties;
+
             $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_PROCESSED,
                 $payment, $finalException, $customProperties);
 

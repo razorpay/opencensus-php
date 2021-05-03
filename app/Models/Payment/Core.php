@@ -188,7 +188,7 @@ class Core extends Base\Core
         return $payment;
     }
 
-    public function pushFailedPaymentToKafka($payment)
+    public function pushFailedPaymentToKafka($payment, $startTime)
     {
         //1 => successfully pushed to kafka
         $isPushedToKafka = 1;
@@ -223,6 +223,8 @@ class Core extends Base\Core
             );
 
             $this->app['diag']->trackPaymentEventV2(EventCode::FAILED_PAYMENT_KAFKA_PUSH_SUCCESS, $payment);
+
+            (new Payment\Metric())->pushKafkaPushSuccessForFailedPaymentMetrics(get_diff_in_millisecond($startTime));
         }
         catch (\Exception $e)
         {
@@ -239,6 +241,8 @@ class Core extends Base\Core
             $isPushedToKafka = null;
 
             $this->app['diag']->trackPaymentEventV2(EventCode::FAILED_PAYMENT_KAFKA_PUSH_FAILED, $payment, $e);
+
+            (new Payment\Metric())->pushKafkaPushFailedForFailedPaymentMetrics(get_diff_in_millisecond($startTime));
         }
 
         return $isPushedToKafka;

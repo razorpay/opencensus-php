@@ -411,26 +411,7 @@ class Verify extends Base\Core
                 return true;
             }
 
-            $method = $payment->getMethod();
-            $internal_error_code = $payment->getInternalErrorCode()??'';
-
-            $isFinalErrorCode = $this->isFinal($method, $internal_error_code);
-
-            if ($isFinalErrorCode === true)
-            {
-                $payment->setNonVerifiable();
-
-                $this->trace->info(TraceCode::PAYMENT_VERIFY_FILTER,
-                    [
-                        'payment_id' => $payment->getId(),
-                        'internal_error_code' => $internal_error_code,
-                        'isFinal' => $isFinalErrorCode,
-                    ]);
-
-                $this->repo->saveOrFail($payment);
-
-                $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_FILTERED_FINAL_FAILURE, $payment);
-            }
+            $isFinalErrorCode = $this->isFinalErrorCode($payment);
 
             return !$isFinalErrorCode;
         });
@@ -2005,7 +1986,11 @@ class Verify extends Base\Core
 
             $this->repo->saveOrFail($payment);
 
-            $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_FILTERED_FINAL_FAILURE, $payment);
+            $customProperties = [
+                'is_pushed_to_kafka'  => $payment->getIsPushedToKafka(),
+            ];
+
+            $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_FILTERED_FINAL_FAILURE, $payment, null, $customProperties);
         }
 
         return $isFinalErrorCode;

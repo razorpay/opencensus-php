@@ -3308,6 +3308,7 @@ class Gateway
             self::WALLET_PHONEPESWITCH,
             self::EBS,
             self::NETBANKING_RBL,
+            self::SHARP,
         ];
 
         return (in_array($gateway, $gateways, true));

@@ -35,6 +35,8 @@ class Metric extends Base\Core
 
     const LABEL_LIBRARY                         = 'library';
 
+    const IS_VERIFY_NEW_FLOW                    = 'is_verify_new_flow';
+
 
     // Metric Names
     const PAYMENT_CREATED                       = 'payment_created';
@@ -53,6 +55,12 @@ class Metric extends Base\Core
     const API_CHECKOUT_PREFERENCES_REQUEST_COUNT           = 'api_checkout_preferences_request_count';
 
     const API_CHECKOUT_SUBMIT_REQUEST_COUNT                = 'api_checkout_submit_request_count';
+
+    const KAFKA_PUSH_SUCCESS_FOR_FAILED_PAYMENT_COUNT      = 'kafka_push_success_for_failed_payment_count';
+
+    const KAFKA_PUSH_FAILED_FOR_FAILED_PAYMENT_COUNT       = 'kafka_push_failed_for_failed_payment_count';
+
+    const VERIFY_FLOW_NEW_OR_OLD_COUNT                      = 'verify_flow_new_or_old_count';
 
     public function pushCreateMetrics(Entity $payment)
     {
@@ -160,6 +168,26 @@ class Metric extends Base\Core
 
             $this->trace->histogram(self::API_CHECKOUT_SUBMIT_REQUEST_COUNT, $requestTime, $dimensions);
         }
+    }
+
+    public function pushKafkaPushSuccessForFailedPaymentMetrics($requestTime)
+    {
+        $this->trace->histogram(self::KAFKA_PUSH_SUCCESS_FOR_FAILED_PAYMENT_COUNT, $requestTime, []);
+    }
+
+    public function pushKafkaPushFailedForFailedPaymentMetrics($requestTime)
+    {
+        $this->trace->histogram(self::KAFKA_PUSH_FAILED_FOR_FAILED_PAYMENT_COUNT, $requestTime, []);
+    }
+
+    public function pushVerifyViaOldOrNewFlowMetrics($requestTime, $isVerifyNewFlow, $gateway)
+    {
+        $dimensions = [
+            self::LABEL_PAYMENT_GATEWAY    => $gateway,
+            self::IS_VERIFY_NEW_FLOW       => $isVerifyNewFlow
+        ];
+
+        $this->trace->histogram(self::VERIFY_FLOW_NEW_OR_OLD_COUNT, $requestTime, $dimensions);
     }
 
     protected function getDefaultDimentions(Entity $payment)
