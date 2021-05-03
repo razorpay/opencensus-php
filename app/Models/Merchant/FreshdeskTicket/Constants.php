@@ -108,7 +108,7 @@ class Constants
     const RAZORX_FLAG_VALIDATE_FRESHDESK_ATTACHMENT_EXTENSION = 'validate_freshdesk_attachment_extension';
 
     // Default values for Activation Workflow Ticket Creation
-    const SERVICE_REQUEST_TICKET_TYPE   = 'Service Request';
+    const SERVICE_REQUEST_TICKET_TYPE   = 'Service request';
     const ACTIVATION_SUBJECT            = 'Ticket Created from Backend';
     const ACTIVATION_CF_CATEGORY        = 'Dashboard';
     const ACTIVATION_CF_SUBCATEGORY     = 'Account Activated and Account Rejected';
