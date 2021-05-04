@@ -2704,6 +2704,168 @@ class BankingAccountTest extends TestCase
         $this->assertEquals('1234554321', $response['items'][0]['banking_account_ca_spoc_details']['sales_poc_phone_number']);
     }
 
+    public function testBankingAccountSPOCDetailsOnBankingAccountFetchWithRmNameAsVague()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $merchantId = $merchantDetail->merchant['id'];
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $balance = $this->fixtures->create('balance',
+            [
+                'merchant_id'       => $merchantId,
+                'type'              => 'banking',
+                'account_type'      => 'direct',
+                'account_number'    => '1234567890',
+                'balance'           => 90000,
+                'channel'           => 'rbl'
+            ]);
+
+        $bankingAccount = $this->createBankingAccount();
+
+        $this->fixtures->edit('banking_account', $bankingAccount['id'], [
+            'account_number'        => '1234567890',
+            'account_type'          => 'current',
+            'account_ifsc'          => 'YESB000198',
+            'beneficiary_name'      => 'abc',
+            'beneficiary_mobile'    => '9999999999',
+            'beneficiary_email'     => 'aa@abc.com',
+            'beneficiary_address1'  => 'blr1',
+            'beneficiary_state'     => 'karnataka',
+            'beneficiary_country'   => 'india',
+            'username'              => 'MERCHANT_1234',
+            'password'              => 'RANDOM_STRING',
+            'reference1'            => 'MERCHANT_SUB_CORP',
+            'balance_id'            => $balance->getId(),
+        ]);
+
+        $bankingAccountEntity = $this->getDbLastEntity('banking_account');
+
+        $this->testUpdateActivationDetailWithRmNameAsVague($bankingAccountEntity);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $response = $this->startTest();
+
+        $this->assertEquals(null, $response['items'][0]['banking_account_ca_spoc_details']['rm_name']);
+
+        $this->assertEquals('9234567891', $response['items'][0]['banking_account_ca_spoc_details']['rm_phone_number']);
+
+        $this->assertEquals('1234554321', $response['items'][0]['banking_account_ca_spoc_details']['sales_poc_phone_number']);
+
+    }
+
+    public function testBankingAccountSPOCDetailsOnBankingAccountFetchWithRmNameAsVagueWithCaseInSensitiveCheck()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $merchantId = $merchantDetail->merchant['id'];
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $balance = $this->fixtures->create('balance',
+            [
+                'merchant_id'       => $merchantId,
+                'type'              => 'banking',
+                'account_type'      => 'direct',
+                'account_number'    => '1234567890',
+                'balance'           => 90000,
+                'channel'           => 'rbl'
+            ]);
+
+        $bankingAccount = $this->createBankingAccount();
+
+        $this->fixtures->edit('banking_account', $bankingAccount['id'], [
+            'account_number'        => '1234567890',
+            'account_type'          => 'current',
+            'account_ifsc'          => 'YESB000198',
+            'beneficiary_name'      => 'abc',
+            'beneficiary_mobile'    => '9999999999',
+            'beneficiary_email'     => 'aa@abc.com',
+            'beneficiary_address1'  => 'blr1',
+            'beneficiary_state'     => 'karnataka',
+            'beneficiary_country'   => 'india',
+            'username'              => 'MERCHANT_1234',
+            'password'              => 'RANDOM_STRING',
+            'reference1'            => 'MERCHANT_SUB_CORP',
+            'balance_id'            => $balance->getId(),
+        ]);
+
+        $bankingAccountEntity = $this->getDbLastEntity('banking_account');
+
+        $this->testUpdateActivationDetailWithRmNameAsVagueWithCaseInSensitiveCheck($bankingAccountEntity);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $response = $this->startTest();
+
+        $this->assertEquals(null, $response['items'][0]['banking_account_ca_spoc_details']['rm_name']);
+
+        $this->assertEquals('9234567891', $response['items'][0]['banking_account_ca_spoc_details']['rm_phone_number']);
+
+        $this->assertEquals('1234554321', $response['items'][0]['banking_account_ca_spoc_details']['sales_poc_phone_number']);
+
+    }
+
+    public function testBankingAccountSPOCDetailsOnBankingAccountFetchWithRmNameAsEmpty()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $merchantId = $merchantDetail->merchant['id'];
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $balance = $this->fixtures->create('balance',
+            [
+                'merchant_id'       => $merchantId,
+                'type'              => 'banking',
+                'account_type'      => 'direct',
+                'account_number'    => '1234567890',
+                'balance'           => 90000,
+                'channel'           => 'rbl'
+            ]);
+
+        $bankingAccount = $this->createBankingAccount();
+
+        $this->fixtures->edit('banking_account', $bankingAccount['id'], [
+            'account_number'        => '1234567890',
+            'account_type'          => 'current',
+            'account_ifsc'          => 'YESB000198',
+            'beneficiary_name'      => 'abc',
+            'beneficiary_mobile'    => '9999999999',
+            'beneficiary_email'     => 'aa@abc.com',
+            'beneficiary_address1'  => 'blr1',
+            'beneficiary_state'     => 'karnataka',
+            'beneficiary_country'   => 'india',
+            'username'              => 'MERCHANT_1234',
+            'password'              => 'RANDOM_STRING',
+            'reference1'            => 'MERCHANT_SUB_CORP',
+            'balance_id'            => $balance->getId(),
+        ]);
+
+        $bankingAccountEntity = $this->getDbLastEntity('banking_account');
+
+        $this->testUpdateActivationDetailWithRmNameAsEmpty($bankingAccountEntity);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $response = $this->startTest();
+
+        $this->assertSame(null, $response['items'][0]['banking_account_ca_spoc_details']['rm_name']);
+
+        $this->assertEquals('9234567891', $response['items'][0]['banking_account_ca_spoc_details']['rm_phone_number']);
+
+        $this->assertEquals('1234554321', $response['items'][0]['banking_account_ca_spoc_details']['sales_poc_phone_number']);
+
+    }
+
     protected function setMozartMockResponse($mockedResponse)
     {
         $mock = Mockery::mock(Mozart::class)->makePartial();
@@ -2990,6 +3152,75 @@ class BankingAccountTest extends TestCase
 
 
     public function testUpdateActivationDetail(RZP\Models\BankingAccount\Entity $bankingAccount = null)
+    {
+        $bankingAccount = $this->testCreateActivationDetail(null, $bankingAccount);
+
+        $bankingAccountId = $bankingAccount['id'];
+
+        if(str_contains($bankingAccount['id'], Entity::getIdPrefix()) === false)
+        {
+            $bankingAccountId = $bankingAccount->getPublicId();
+        }
+
+        $dataToReplace  = [
+            'request' => [
+                'url'     => '/banking_accounts/activation/' . $bankingAccountId . '/details',
+                'method'  => 'PATCH',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testUpdateActivationDetailWithRmNameAsVague(RZP\Models\BankingAccount\Entity $bankingAccount = null)
+    {
+        $bankingAccount = $this->testCreateActivationDetail(null, $bankingAccount);
+
+        $bankingAccountId = $bankingAccount['id'];
+
+        if(str_contains($bankingAccount['id'], Entity::getIdPrefix()) === false)
+        {
+            $bankingAccountId = $bankingAccount->getPublicId();
+        }
+
+        $dataToReplace  = [
+            'request' => [
+                'url'     => '/banking_accounts/activation/' . $bankingAccountId . '/details',
+                'method'  => 'PATCH',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testUpdateActivationDetailWithRmNameAsVagueWithCaseInSensitiveCheck(RZP\Models\BankingAccount\Entity $bankingAccount = null)
+    {
+        $bankingAccount = $this->testCreateActivationDetail(null, $bankingAccount);
+
+        $bankingAccountId = $bankingAccount['id'];
+
+        if(str_contains($bankingAccount['id'], Entity::getIdPrefix()) === false)
+        {
+            $bankingAccountId = $bankingAccount->getPublicId();
+        }
+
+        $dataToReplace  = [
+            'request' => [
+                'url'     => '/banking_accounts/activation/' . $bankingAccountId . '/details',
+                'method'  => 'PATCH',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testUpdateActivationDetailWithRmNameAsEmpty(RZP\Models\BankingAccount\Entity $bankingAccount = null)
     {
         $bankingAccount = $this->testCreateActivationDetail(null, $bankingAccount);
 

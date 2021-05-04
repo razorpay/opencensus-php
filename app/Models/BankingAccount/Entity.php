@@ -158,6 +158,17 @@ class Entity extends Base\PublicEntity
     // Slack channel for alerts
     const RX_CA_RBL_ALERTS = 'rx_ca_rbl_alerts';
 
+    // RM_NAME possible strings
+    const RM_NOT_MAP = 'rm not map';
+    const RM_NOT_MAP_BY_BM = 'rm not map by bm';
+    const RM_NAME_EMPTY = '';
+
+    protected static $rm_name_missing_possibilities = [
+        self::RM_NOT_MAP,
+        self::RM_NOT_MAP_BY_BM,
+        self::RM_NAME_EMPTY
+    ];
+
     protected $entity = 'banking_account';
 
     protected static $sign = 'bacc';
@@ -690,11 +701,20 @@ class Entity extends Base\PublicEntity
             {
                 $bankingAccountActivationDetails = $this->bankingAccountActivationDetails;
 
+                $rmName = null;
+
+                $rmNameInLowerCaseWithTrimApplied = strtolower(trim($bankingAccountActivationDetails[Activation\Detail\Entity::RM_NAME]));
+
+                if(in_array($rmNameInLowerCaseWithTrimApplied, self::$rm_name_missing_possibilities) === false)
+                {
+                    $rmName = $bankingAccountActivationDetails[Activation\Detail\Entity::RM_NAME];
+                }
+
                 $salesSpoc = $this->spocs()->first()->toArrayPublic();
 
                 $array[self::BANKING_ACCOUNT_CA_SPOC_DETAILS] =
                     [
-                        Activation\Detail\Entity::RM_NAME                  => $bankingAccountActivationDetails[Activation\Detail\Entity::RM_NAME],
+                        Activation\Detail\Entity::RM_NAME                  => $rmName,
                         Activation\Detail\Entity::RM_PHONE_NUMBER          => $bankingAccountActivationDetails[Activation\Detail\Entity::RM_PHONE_NUMBER],
                         Activation\Detail\Entity::SALES_POC_PHONE_NUMBER   => $bankingAccountActivationDetails[Activation\Detail\Entity::SALES_POC_PHONE_NUMBER],
                         Activation\Detail\Entity::SALES_POC_NAME           => $salesSpoc['name'],

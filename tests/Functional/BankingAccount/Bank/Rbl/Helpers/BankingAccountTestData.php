@@ -1739,6 +1739,75 @@ return [
         ],
     ],
 
+    'testBankingAccountSPOCDetailsOnBankingAccountFetchWithRmNameAsVague' => [
+        'request'  => [
+            'url'     => '/banking_accounts',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'account_number'    => '1234567890',
+                        'status'            => 'created',
+                        'balance'           => [
+                            'balance'       => 90000,
+                            'currency'      => 'INR',
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testBankingAccountSPOCDetailsOnBankingAccountFetchWithRmNameAsVagueWithCaseInSensitiveCheck' => [
+        'request'  => [
+            'url'     => '/banking_accounts',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'account_number'    => '1234567890',
+                        'status'            => 'created',
+                        'balance'           => [
+                            'balance'       => 90000,
+                            'currency'      => 'INR',
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testBankingAccountSPOCDetailsOnBankingAccountFetchWithRmNameAsEmpty' => [
+        'request'  => [
+            'url'     => '/banking_accounts',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'account_number'    => '1234567890',
+                        'status'            => 'created',
+                        'balance'           => [
+                            'balance'       => 90000,
+                            'currency'      => 'INR',
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testBulkAssignReviewersToBankingAccounts' => [
         'request'  => [
             'url'     => '/banking_accounts/reviewers',
@@ -1887,6 +1956,84 @@ return [
                 'merchant_poc_name' => 'Sample Name',
                 'merchant_poc_phone_number' => '1234554321',
                 'expected_monthly_gmv' => '10000',
+                'account_type' => 'zero_balance',
+                "is_documents_walkthrough_complete" => '1',
+            ],
+        ],
+    ],
+
+    'testUpdateActivationDetailWithRmNameAsVague' => [
+        'request'  => [
+            'url'     => '/banking_accounts/activation/{id}/details',
+            'method'  => 'POST',
+            'content' => [
+                'merchant_poc_phone_number' => '1234554322',
+                'expected_monthly_gmv' => '100000',
+                'business_category' => 'partnership',
+                'account_type' => 'zero_balance',
+                'is_documents_walkthrough_complete' => true,
+                'sales_poc_id' => 'admin_'. Org::SUPER_ADMIN,
+                'rm_name' => 'RM Not Map By BM',
+                'rm_phone_number' => '9234567891'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_poc_name' => 'Sample Name',
+                'merchant_poc_phone_number' => '1234554322',
+                'expected_monthly_gmv' => '100000',
+                'account_type' => 'zero_balance',
+                "is_documents_walkthrough_complete" => '1',
+            ],
+        ],
+    ],
+
+    'testUpdateActivationDetailWithRmNameAsVagueWithCaseInSensitiveCheck' => [
+        'request'  => [
+            'url'     => '/banking_accounts/activation/{id}/details',
+            'method'  => 'POST',
+            'content' => [
+                'merchant_poc_phone_number' => '1234554322',
+                'expected_monthly_gmv' => '100000',
+                'business_category' => 'partnership',
+                'account_type' => 'zero_balance',
+                'is_documents_walkthrough_complete' => true,
+                'sales_poc_id' => 'admin_'. Org::SUPER_ADMIN,
+                'rm_name' => 'rm not map',
+                'rm_phone_number' => '9234567891'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_poc_name' => 'Sample Name',
+                'merchant_poc_phone_number' => '1234554322',
+                'expected_monthly_gmv' => '100000',
+                'account_type' => 'zero_balance',
+                "is_documents_walkthrough_complete" => '1',
+            ],
+        ],
+    ],
+
+    'testUpdateActivationDetailWithRmNameAsEmpty' => [
+        'request'  => [
+            'url'     => '/banking_accounts/activation/{id}/details',
+            'method'  => 'POST',
+            'content' => [
+                'merchant_poc_phone_number' => '1234554322',
+                'expected_monthly_gmv' => '100000',
+                'business_category' => 'partnership',
+                'account_type' => 'zero_balance',
+                'is_documents_walkthrough_complete' => true,
+                'sales_poc_id' => 'admin_'. Org::SUPER_ADMIN,
+                'rm_name' => '',
+                'rm_phone_number' => '9234567891'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_poc_name' => 'Sample Name',
+                'merchant_poc_phone_number' => '1234554322',
+                'expected_monthly_gmv' => '100000',
                 'account_type' => 'zero_balance',
                 "is_documents_walkthrough_complete" => '1',
             ],
