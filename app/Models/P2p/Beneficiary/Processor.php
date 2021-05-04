@@ -161,6 +161,7 @@ class Processor extends Base\Processor
         $response = array_only($input, [
             Vpa\Entity::USERNAME,
             Vpa\Entity::HANDLE,
+            Vpa\Entity::BENEFICIARY_NAME,
             Entity::BLOCKED,
             Entity::SPAMMED,
             Entity::BLOCKED_AT,

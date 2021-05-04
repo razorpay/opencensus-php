@@ -66,6 +66,11 @@ class VpaTransformer extends Transformer
             Beneficiary::BLOCKED_AT         => null,
         ];
 
+        if(isset($this->input[Beneficiary::NAME]) === true)
+        {
+            $output[Entity::BENEFICIARY_NAME] = $this->input[Beneficiary::NAME];
+        }
+
         if ($this->input[Beneficiary::BLOCKED] === true)
         {
             $output[Beneficiary::BLOCKED_AT] = $this->toTimestamp($this->input[Fields::BLOCKED_AT] ?? null);
