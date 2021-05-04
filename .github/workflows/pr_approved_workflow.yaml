@@ -167,7 +167,7 @@ jobs:
             return String(latestCommit)
     - name: Run bvt suite if PR submitted as approved
       # checking if the commit_id post backmerge is same then run BVT on it. Otherwise it invoke PR_workflow and run BVT
-      if: env.GIT_NEW_COMMIT_AFTER_MERGE == env.commit_id && startsWith(github.event.pull_request.head.ref,'Beta_') != true
+      if: env.GIT_NEW_COMMIT_AFTER_MERGE == env.commit_id && startsWith(github.event.pull_request.head.ref,'beta_') != true
       env:
         SPINNAKER_PASSWORD: ${{ secrets.SPINNAKER_PASSWORD }}
         WEBHOOK_TRIGGER: api-pr-commit

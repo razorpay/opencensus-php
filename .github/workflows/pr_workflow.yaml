@@ -131,7 +131,7 @@ jobs:
             const latestCommit = response.data.head.sha
             return String(latestCommit)
     - name: Run bvt suite if PR approved
-      if: startsWith(github.event.pull_request.head.ref,'Beta_') != true
+      if: startsWith(github.event.pull_request.head.ref,'beta_') != true
       env:
         SPINNAKER_PASSWORD: ${{ secrets.SPINNAKER_PASSWORD }}
         WEBHOOK_TRIGGER : api-pr-commit
