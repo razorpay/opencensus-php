@@ -19,6 +19,8 @@ const languageOptions = [
   { name: 'Hindi', code: 'hi' },
   { name: 'Marathi', code: 'mar' },
   { name: 'Gujarati', code: 'guj' },
+  { name: 'Tamil', code: 'tam' },
+  { name: 'Telugu', code: 'tel' },
 ];
 
 @connect((state) => ({ ...state.config, user: state.session.user }), {
