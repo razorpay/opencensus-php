@@ -5778,13 +5778,7 @@ class Service extends Base\Service
 
         if ($showPopup === true )
         {
-            $merchantDetailsCore = new MerchantDetailCore;
-
-            $merchantDetail = $merchantDetailsCore->getMerchantDetails($this->merchant);
-
-            $isAutoKycDone = ($merchantDetailsCore)->isAutoKycDone($merchantDetail);
-
-            $response['no_of_days_for_activation']  =   $this->daysTakenForActivation($isAutoKycDone);
+            $response['no_of_days_for_activation']  =   $this->daysTakenForActivation();
         }
 
         return $response;
@@ -5848,14 +5842,9 @@ class Service extends Base\Service
         return true;
     }
 
-    protected function daysTakenForActivation( $isAutoKycDone)
+    protected function daysTakenForActivation()
     {
-        if ($isAutoKycDone === true)
-        {
-            return MerchantConstants::MANUAL_KYC_DAYS_WHEN_AUTO_KYC_PASSED;
-        }
-
-        return MerchantConstants::MANUAL_KYC_DAYS_WHEN_AUTO_KYC_FAILED;
+        return MerchantConstants::NUMBER_OF_DAYS_TAKEN_FOR_ACTIVATION;
     }
 
     /**

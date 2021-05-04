@@ -300,8 +300,7 @@ final class Constants
     const INSTRUMENT_STATUS_UPDATE_MERCHANT_MAIL = "instrument_status_update_merchant_mail";
 
     // No of days for manual KYC
-    const MANUAL_KYC_DAYS_WHEN_AUTO_KYC_PASSED    =     "3 to 5";
-    const MANUAL_KYC_DAYS_WHEN_AUTO_KYC_FAILED    =     "8 to 10";
+    const NUMBER_OF_DAYS_TAKEN_FOR_ACTIVATION  =     "3 to 4";
 }
 
 
