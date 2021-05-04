@@ -88,9 +88,11 @@ _dcs.account = '9421167';
   gAuthOneTapscript.async = true;
   document.documentElement.appendChild(gAuthOneTapscript);
   gAuthOneTapscript.onerror = function () {
+    window.isOneTapScriptFailed = true;
     scriptEvent('signup.google_onetap_script_load', onetapScriptSrc, 'failed');
   };
   gAuthOneTapscript.onload = function () {
+    window.isOneTapScriptFailed = false;
     scriptEvent('signup.google_onetap_script_load', onetapScriptSrc, 'success');
   };
   gAuthOneTapscript.src = onetapScriptSrc;

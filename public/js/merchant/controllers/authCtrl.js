@@ -371,6 +371,13 @@ app
       $scope.initOneTap = function () {
         // setting up an interval to wait and check if onetap(window.google) has loaded from script
         var checkScriptLoadingInterval = setInterval(() => {
+          if (window.isOneTapScriptFailed) {
+            clearInterval(checkScriptLoadingInterval);
+            $scope.updateOneTap(false);
+            $scope.isGauthTypeDecided = true;
+            $scope.$apply();
+            fireInitGauthType(G_AUTH_TYPES.btn, 'Script failed to load.');
+          }
           if (window.google) {
             window.google.accounts.id.initialize({
               client_id: window.OAUTH_CLIENT_ID,

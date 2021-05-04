@@ -770,7 +770,7 @@ export default class User {
   get isPaymentPagePluginsSettingsEnabled() {
     return this.getExpStatus('pp_plugins_settings');
   }
-  
+
   get isPaymentPageDescriptionRequired() {
     const userBusinessType = Number(this.business_type);
     const isRazorXExperimentEnabled = this.getExpStatus('pp_description_required');

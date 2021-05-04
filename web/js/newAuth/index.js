@@ -190,6 +190,10 @@ const InlineText = Styled(Text)`
 
 const App = () => {
   const [showBanner, setShowBanner] = useState(false);
+  const [oneTapInfo, setOneTapInfo] = useState({
+    isExpOn: true,
+    isScriptFailed: window.isOneTapScriptFailed,
+  });
   const getCookie = (name) => {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
@@ -220,6 +224,23 @@ const App = () => {
       setShowBanner(true);
     }
   });
+
+  useEffect(() => {
+    // check if Google Onetap script has successfully loaded or failed to load
+    const oneTapInfoInterval = setInterval(() => {
+      if (window.isOneTapScriptFailed !== undefined) {
+        clearInterval(oneTapInfoInterval);
+        setOneTapInfo({
+          isExpOn: true,
+          isScriptFailed: window.isOneTapScriptFailed,
+        });
+      }
+    }, 200);
+
+    return () => {
+      clearInterval(oneTapInfoInterval);
+    };
+  }, [setOneTapInfo]);
 
   const handleContactUsClick = () => {
     window.rzpQ.push(
@@ -324,7 +345,7 @@ const App = () => {
                       header={showBanner && <MobileBanner />}
                       onRouteChange={handleRouteChange}
                       authClientId={window.OAUTH_CLIENT_ID}
-                      isOneTapExpOn={window.isOneTapExpOn}
+                      oneTapInfo={oneTapInfo}
                     />
                   </AbsoluteView>
                   <DesktopOnlyView>
