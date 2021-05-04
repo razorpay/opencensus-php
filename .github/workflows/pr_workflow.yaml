@@ -18,7 +18,7 @@ jobs:
       uses: devmasx/merge-branch@a1752b9ba42bb417ec19be7dc974e2faf77d3ef2
       with:
         type: now
-        from_branch: master
+        from_branch: ${{ github.event.pull_request.base.ref }}
         target_branch: ${{ github.event.pull_request.head.ref }}
         github_token: ${{ secrets.CI_BOT_TOKEN }}
     # Get the API Instance from Spinnaker
@@ -131,6 +131,7 @@ jobs:
             const latestCommit = response.data.head.sha
             return String(latestCommit)
     - name: Run bvt suite if PR approved
+      if: startsWith(github.event.pull_request.head.ref,'Beta_') != true
       env:
         SPINNAKER_PASSWORD: ${{ secrets.SPINNAKER_PASSWORD }}
         WEBHOOK_TRIGGER : api-pr-commit
