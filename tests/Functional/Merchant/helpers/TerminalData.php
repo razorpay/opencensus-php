@@ -3162,6 +3162,30 @@ return [
         ]
     ],
 
+    'testCreatePayuUpiTerminal'        => [
+        'request' => [
+            'url'     => '/merchants/10000000000000/terminals',
+            'content' => [
+                'gateway'                       => 'payu',
+                'gateway_acquirer'              => 'payu',
+                'gateway_merchant_id'           => '12344',
+                'gateway_secure_secret'         => '12344',
+                'upi'                           => 1,
+                'type'                      => [
+                    'non_recurring' => '1',
+                    'direct_settlement_with_refund' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response'  => [
+            'content'  => [
+                'gateway_merchant_id'       => '12344',
+                'enabled'                   => true
+            ]
+        ]
+    ],
+
     'testCreateCashfreeUpiTerminal'        => [
         'request' => [
             'url'     => '/merchants/10000000000000/terminals',
