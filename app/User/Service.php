@@ -1606,7 +1606,8 @@ class Service extends Base\Service
             'pure_platform_signup',
             'rx_icici_ca_onboarding',
             'optimizer_bin_number_op_in',
-            'show_csat_survey'
+            'show_csat_survey',
+            'rx_mobile_app_announcement'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
