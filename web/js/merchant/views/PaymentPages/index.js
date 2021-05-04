@@ -16,6 +16,7 @@ import QuickGuide from './QuickGuide';
 import PaymentPagesList from 'merchant/views/PaymentPages/PaymentPages/List';
 
 import SubscriptionButtonLaunchBanner from 'merchant/components/Announcements/SubscriptionButtonLaunch';
+import PaymentPageAnalyticsBanner from 'merchant/components/Announcements/PaymentPageAnalytics';
 
 @connect(
   (state) => {
@@ -38,7 +39,13 @@ export default class PaymentPagesContainer extends React.Component {
 
     return (
       <>
-        <SubscriptionButtonLaunchBanner productName="PaymentPages" />
+        {this.props.user.isPaymentPagePluginsSettingsEnabled ? (
+          <PaymentPageAnalyticsBanner
+            bannerKey={`payment-pages-analytics-${this.props.user.current}`}
+          />
+        ) : (
+          <SubscriptionButtonLaunchBanner productName="PaymentPages" />
+        )}
 
         <tabbed-container>
           {isQuickGuideOpen && <QuickGuide />}
