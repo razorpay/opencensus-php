@@ -118,9 +118,9 @@ function WhatsappNotification({ currentUser, showNotification, location, history
         <form class="form-horizontal">
           <div class="description">
             Receive notifications from Razorpay via WhatsApp{' '}
-            {currentUser.contact_mobile && (
+            {currentUser.user && currentUser.user.contact_mobile && (
               <span>
-                on your number <strong>+91 - {currentUser.contact_mobile}</strong>
+                on your number <strong>+91 - {currentUser.user.contact_mobile}</strong>
               </span>
             )}
           </div>

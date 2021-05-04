@@ -205,7 +205,8 @@ export default class CongfigurationContainer extends Component {
   isWhatsappNotificationEnabled = (user) => {
     return (
       user.isWhatsappNotificationEnabled() &&
-      user.contact_mobile &&
+      user.user &&
+      user.user.contact_mobile &&
       user.activation_status === 'activated' &&
       user.role === 'owner'
     );
