@@ -407,6 +407,54 @@ class BankingAccountTest extends TestCase
         });
     }
 
+    public function testDataAmbiguityInWebhookWithSamePinCodeAndSameBusinessNameInUpperCase()
+    {
+        $merchantDetailArray = [
+            'contact_name'               => 'rzp',
+            'contact_email'              => 'test@rzp.com',
+            'merchant_id'                => '10000000000000',
+            'business_operation_address' => 'Koramangala',
+            'business_operation_state'   => 'KARNATAKA',
+            'business_operation_pin'     => 560034,
+            'business_dba'               => 'test',
+            'business_name'              => 'Skull Gamers',
+            'business_operation_city'    => 'Bangalore',
+            'activation_status'          => 'activated'
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $merchantDetailArray);
+
+        $bankingAccount = $this->setAuthAndCreateBankingAccount($merchantDetail->merchant['id']);
+
+        $dataToReplace = [
+            'request' => [
+                'content' => [
+                    'RZPAlertNotiReq' => [
+                        'Body' => [
+                            'RZP_Ref No' => $bankingAccount->getBankReferenceNumber(),
+                            'Account No' => '31900299180853'
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        Mail::fake();
+
+        $response = $this->startTest($dataToReplace);
+
+        $this->assertEquals('Success', $response['RZPAlertNotiRes']['Body']['Status']);
+
+        Mail::assertNotQueued(ActivationMails\AccountOpeningWebhookDataAmbiguity::class);
+
+        Mail::assertNotQueued(ActivationMails\AccountOpeningWebhookDataAmbiguity::class, function ($mail) use($bankingAccount)
+        {
+            $mail->build();
+
+            return ($mail->subject === ActivationMails\AccountOpeningWebhookDataAmbiguity::SUBJECT && $mail->to[0]['address'] === 'x-onboarding@razorpay.com');
+        });
+    }
+
     public function testDataAmbiguityInWebhookWithSamePinCodeAndDifferentBusinessName()
     {
         $merchantDetailArray = [

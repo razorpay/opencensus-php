@@ -438,6 +438,49 @@ return [
         ],
     ],
 
+    'testDataAmbiguityInWebhookWithSamePinCodeAndSameBusinessNameInUpperCase' => [
+        'request'  => [
+            'url'     => '/banking_accounts/webhooks/account_info/rbl',
+            'method'  => 'POST',
+            'content' => [
+                'RZPAlertNotiReq' => [
+                    'Body' => [
+                        'Account No.'       => '309002180853',
+                        'Customer Name'     => 'SKULL GAMERS',
+                        'Customer ID'       => 'Customer ID',
+                        'Account Open Date' => '21-11-2020',
+                        'RZP_Ref No'        => '15597',
+                        'IFSC'              => 'HDFC0000090',
+                        'Address1'          => 'RAM NAGAR',
+                        'Address2'          => 'ADARSHA LANE',
+                        'Address3'          =>  '.',
+                        'CITY'              => 'MUMBAI',
+                        'STATE'             => 'MAHARASH',
+                        'COUNTRY'           => 'INDIA',
+                        'PINCODE'           => '560034',
+                        'Phone no.'         => '9899807189',
+                        'Email Id'          => 'test@gmail.com'
+                    ],
+                    'Header' => [
+                        'TranID' => '1234'
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'RZPAlertNotiRes' => [
+                    'Header' => [
+                        'TranID' => '1234'
+                    ],
+                    'Body' => [
+                        'Status' => 'Success'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testDataAmbiguityInWebhookWithSamePinCodeAndDifferentBusinessName' => [
         'request'  => [
             'url'     => '/banking_accounts/webhooks/account_info/rbl',
@@ -489,7 +532,7 @@ return [
                 'RZPAlertNotiReq' => [
                     'Body' => [
                         'Account No.'       => '309002180853',
-                        'Customer Name'     => 'INTERNET BANKING CA',
+                        'Customer Name'     => 'INTERNET CA',
                         'Customer ID'       => 'Customer ID',
                         'Account Open Date' => '21-11-2020',
                         'RZP_Ref No'        => '15597',

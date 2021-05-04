@@ -1340,7 +1340,12 @@ class Core extends Base\Core
         //similar_text - returns the number of matching chars percentage in both strings.
         //The number of matching characters is calculated by finding the longest first common substring, and
         //then doing this for the prefixes and the suffixes, recursively. The lengths of all found common substrings are added.
-        similar_text($beneficiaryName, $bankingAccount->merchant->merchantDetail->getBusinessName(), $similarityPercent);
+
+        $businessNameFromRblInLowerCase = strtolower(trim($beneficiaryName));
+
+        $businessNameFromRazorpayInLowerCase = strtolower(trim($bankingAccount->merchant->merchantDetail->getBusinessName()));
+
+        similar_text($businessNameFromRblInLowerCase, $businessNameFromRazorpayInLowerCase, $similarityPercent);
         if($beneficiaryPin !== $bankingAccount->getPincode() || $similarityPercent < 75.00)
         {
             return false;
