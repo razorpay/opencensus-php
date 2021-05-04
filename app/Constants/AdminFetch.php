@@ -1009,7 +1009,7 @@ class AdminFetch
                 'mode' => [
                     Fetch::LABEL    => 'Transfer Mode',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
-                    Fetch::VALUES => FundTransfer\Mode::getAll(),
+                    Fetch::VALUES => FundTransfer\Mode::getAllFTSModes(),
                 ],
             ],
         ];

@@ -352,6 +352,19 @@ class Mode extends Core
         ];
     }
 
+    public static function getAllFTSModes(): array
+    {
+        return [
+            self::RTGS,
+            self::IMPS,
+            self::NEFT,
+            self::IFT,
+            self::UPI,
+            self::FTS_WALLET_TRANSFERS_MODE,
+            self::CT,
+        ];
+    }
+
     public static function get24x7FtsTransferModes(): array
     {
         return [
