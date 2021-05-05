@@ -414,10 +414,6 @@ export default class User {
     });
   }
 
-  get isUseSettlementOndemandEnabled() {
-    return this.isFeatureEnabled('use_settlement_ondemand');
-  }
-
   get showInstantActivation() {
     return !!this.isOrgRZP;
   }

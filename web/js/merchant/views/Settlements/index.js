@@ -46,12 +46,11 @@ const Settlements = ({ user, merchantBalanceConfigs, current_balance }) => {
       <tabbed-container>
         <header>
           <NavLink to="/settlements">Settlements</NavLink>
-          {user.isUseSettlementOndemandEnabled && (
-            <NavLink onClick={onInstantSettlementsClick} to="/instantsettlements" exact>
-              <i className="i i-early-settlement settle-icon mr-5" />
-              Ondemand Settlements
-            </NavLink>
-          )}
+
+          <NavLink onClick={onInstantSettlementsClick} to="/instantsettlements" exact>
+            <i className="i i-early-settlement settle-icon mr-5" />
+            Ondemand Settlements
+          </NavLink>
         </header>
         <content>
           <Switch>
