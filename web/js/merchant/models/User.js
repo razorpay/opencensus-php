@@ -929,8 +929,8 @@ export default class User {
     return this.getExpStatus('partner_app_store');
   }
 
-  get isPurePlatformSignupEnabled() {
-    return this.getExpStatus('pure_platform_signup');
+  get getPurePlatformExperimentVariant() {
+    return getSplitzExperimentVariant('pure_platform_signup')?.name;
   }
 
   get canSkipPOADocument() {
@@ -959,4 +959,18 @@ function _isAllowed(userRole, moduleName, permissionsMap) {
 
   const isAllowed = allowedRoles.indexOf(userRole) > -1;
   return isAllowed;
+}
+
+function getSplitzExperimentVariant(experimentName) {
+  const splitzExperiments = window.rzp_user.splitz_experiments;
+
+  if (splitzExperiments) {
+    const splitzExperimentVariant =
+      splitzExperiments[
+        Object.keys(splitzExperiments).find((key) => abExperimentsMap[experimentName].includes(key))
+      ];
+
+    return splitzExperimentVariant || {};
+  }
+  return {};
 }

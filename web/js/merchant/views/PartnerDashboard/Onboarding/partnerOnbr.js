@@ -32,6 +32,24 @@ import RTracking from 'react-tracking';
 )
 export default class BaseScreen extends React.Component {
   state = { role: null };
+  constructor(props) {
+    super(props);
+    const purePlatformExperimentVariant = this.props.user.getPurePlatformExperimentVariant;
+    this.state = {
+      role: null,
+      isPurePlatformSignupEnabled: purePlatformExperimentVariant === 'exposed',
+    };
+  }
+
+  componentDidMount() {
+    let defaultVariant = 'not_in_exp';
+    this.props.tracking.trackEvent(
+      window.rzpQ.onbr().interaction('partnerships.pure_platform_signup', {
+        merchantId: this.props.user.merchant.id,
+        variant: this.props.user.getPurePlatformExperimentVariant || defaultVariant,
+      }),
+    );
+  }
 
   onRoleSelect = (role) => {
     this.setState({ role });
@@ -142,7 +160,7 @@ export default class BaseScreen extends React.Component {
     return (
       <div
         className={`partner-onboarding-base-screen ${
-          this.props.user.isPurePlatformSignupEnabled ? 'new-screen' : ''
+          this.state.isPurePlatformSignupEnabled ? 'new-screen' : ''
         }`}
       >
         <Slider>
@@ -160,7 +178,7 @@ export default class BaseScreen extends React.Component {
             <S1 key={1} sliderProps={sliderProps} onNext={this.handleNewUserGetStarted} />
           )}
           {(sliderProps) =>
-            this.props.user.isPurePlatformSignupEnabled ? (
+            this.state.isPurePlatformSignupEnabled ? (
               <S2New
                 key={2}
                 sliderProps={sliderProps}

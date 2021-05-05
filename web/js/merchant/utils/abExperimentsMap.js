@@ -16,4 +16,11 @@ export default {
     // prod experiment ids
     'GxtSf8y77iWw9e',
   ],
+  pure_platform_signup: [
+    // beta experiment ids
+    'H70qyLStkzoFeS',
+
+    // prod experiment ids
+    'H725exSfQ8ZAPz',
+  ],
 };
