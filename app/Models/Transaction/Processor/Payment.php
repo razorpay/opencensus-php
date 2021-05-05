@@ -320,22 +320,6 @@ class Payment extends Base
         return $netAmount;
     }
 
-    protected function getDiscountIfApplicable($payment)
-    {
-        if ($payment->isAppCred() === true)
-        {
-            $discount = $this->repo->discount->fetchForPayment($payment);
-
-            if ($discount !== null)
-            {
-                return $discount->getAmount();
-            }
-        }
-
-        return 0;
-    }
-
-
     protected function getSettledAtTimestamp()
     {
         $payment = $this->source;

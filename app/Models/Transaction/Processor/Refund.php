@@ -112,6 +112,12 @@ class Refund extends Base
             $netAmount += $this->fees;
         }
 
+        // For cases like cred, here instead of using the whole base amount we deduct the coin burn for the transaction
+        // from the base amount.
+        $discount = $this->getDiscountIfApplicable($refund->payment);
+
+        $netAmount -= $discount;
+
         //
         // Net amount is 0, only in a single case when payment's settledby is not razorpay and
         // direct settlement refund is true, provided speed of refund is not instant/optimum

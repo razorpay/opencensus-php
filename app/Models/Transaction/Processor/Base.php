@@ -731,4 +731,14 @@ abstract class Base extends BaseCore
 
         $this->txn->setPostedDate($postedDate);
     }
+
+    // For cases where the actual debit/credit amount can be different from the actual transaction amount
+    // Eg - While doing cred payments a user can burn some % of total amount using cred coins, therefore
+    // that amount should be deducted from the transaction amount.
+    protected function getDiscountIfApplicable($payment)
+    {
+        $discountRatio = $payment->getDiscountRatioIfApplicable();
+
+        return (int) round($discountRatio * $this->txn->getAmount());
+    }
 }

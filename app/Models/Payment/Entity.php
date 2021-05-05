@@ -4617,4 +4617,26 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         return in_array($this->getMerchantId(), $allowedMerchantsForDeficit, true);
     }
+
+    public function getDiscountRatioIfApplicable()
+    {
+        $discountRatio = 0.0;
+
+        $discount = $this->getDiscountIfApplicable();
+
+        if ($discount !== null) {
+            $discountRatio = round($discount / $this->getBaseAmount(), 4);
+        }
+
+        return $discountRatio;
+    }
+
+    public function getDiscountedAmountIfApplicable()
+    {
+        $amount = $this->getBaseAmount();
+
+        $discountRatio = $this->getDiscountRatioIfApplicable();
+
+        return ($amount - (int)(round($amount * $discountRatio)));
+    }
 }

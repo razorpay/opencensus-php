@@ -2439,6 +2439,11 @@ trait Refund
             $extraData['payment_gateway_amount'] = $payment->paymentMeta->getGatewayAmount();
         }
 
+        if ($payment->isAppCred() === true)
+        {
+            $extraData['payment_gateway_amount'] = $payment->getDiscountedAmountIfApplicable();
+        }
+
         $refundData[RefundEntity::SPEED_REQUESTED] = $refundData[RefundEntity::SPEED_DECISIONED];
 
         //

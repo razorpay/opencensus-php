@@ -882,6 +882,12 @@ class Entity extends Base\PublicEntity
             $gatewayAmount = $this->getGatewayAmountForAmountMismatch($this, $this->payment);
         }
 
+        // Temp requirement asked by cred, sending the cash component of the total amount to gateway.
+        if ($this->payment->isAppCred() === true)
+        {
+            $gatewayAmount = $this->getDiscountedRefundAmountIfApplicable();
+        }
+
         $this->setAttribute(self::GATEWAY_AMOUNT, $gatewayAmount);
     }
 
@@ -938,6 +944,12 @@ class Entity extends Base\PublicEntity
         {
             //as these are UPI payments the currency is always INR
             $gatewayCurrency =  'INR';
+        }
+
+        if ($this->payment->isAppCred() === true)
+        {
+            // since cred is only for INR
+            $gatewayCurrency = Currency\Currency::INR;
         }
 
         $this->setAttribute(self::GATEWAY_CURRENCY, $gatewayCurrency);
@@ -1469,5 +1481,17 @@ class Entity extends Base\PublicEntity
         $response = parent::toArrayPublicWithExpand();
 
         return $this->processArrayPublicAndReturn($response);
+    }
+
+    /**
+     * Checks whether a discount should be applied to the original refund amount.
+     */
+    private function getDiscountedRefundAmountIfApplicable()
+    {
+        $amount = $this->getBaseAmount();
+
+        $discountRatio = $this->payment->getDiscountRatioIfApplicable();
+
+        return ($amount - (int)(round($amount * $discountRatio)));
     }
 }

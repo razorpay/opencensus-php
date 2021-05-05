@@ -6760,4 +6760,89 @@ class RefundTest extends TestCase
         $this->assertEquals($expectedOutput, $response);
     }
 
+    public function testRefundWithApplicableDiscountCred()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:direct_cred_terminal');
+
+        $this->fixtures->merchant->enableApp(Account::TEST_ACCOUNT, 'cred');
+
+        $payment = $this->getDefaultCredPayment();
+
+        $payment['amount'] = 200000;
+        unset($payment['app_present']);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments',
+            'content' => $payment
+        ];
+
+        $this->ba->publicAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getLastPayment('payment', true);
+
+        $content = $this->getMockServer('cred')->getAsyncCallbackContentCred($payment);
+
+        $this->makeS2SCallbackAndGetContent($content, 'cred');
+
+        $this->capturePayment($payment['id'], $payment['amount']);
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $this->assertEquals(200000, $refund['amount']);
+
+        $payment = $this->getLastPayment('payment', true);
+
+        $this->assertEquals('full', $payment['refund_status']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(160000, $transaction['debit']);
+    }
+
+    public function testPartialRefundWithApplicableDiscountCred()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:direct_cred_terminal');
+
+        $this->fixtures->merchant->enableApp(Account::TEST_ACCOUNT, 'cred');
+
+        $payment = $this->getDefaultCredPayment();
+
+        $payment['amount'] = 200000;
+        unset($payment['app_present']);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments',
+            'content' => $payment
+        ];
+
+        $refundAmount = 100000;
+
+        $this->ba->publicAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getLastPayment('payment', true);
+
+        $content = $this->getMockServer('cred')->getAsyncCallbackContentCred($payment);
+
+        $this->makeS2SCallbackAndGetContent($content, 'cred');
+
+        $this->capturePayment($payment['id'], $payment['amount']);
+
+        $refund = $this->refundPayment($payment['id'], $refundAmount);
+
+        $this->assertEquals($refundAmount, $refund['amount']);
+
+        $payment = $this->getLastPayment('payment', true);
+
+        $this->assertEquals('partial', $payment['refund_status']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals(80000, $transaction['debit']);
+    }
 }
