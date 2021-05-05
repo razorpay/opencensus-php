@@ -3145,7 +3145,6 @@ class Core extends Base\Core
             {
                 $this->updateChannelToPayoutAndTransaction($payout, $initialChannel, $updatedChannel, true);
             }
-            $payout->setFailureReason($response[Entity::CHANNEL]);
         }
 
         if (empty($response[Entity::REMARKS]) === false)

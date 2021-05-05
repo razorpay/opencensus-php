@@ -9083,6 +9083,7 @@ class Route
             'create_reversal_entry',
             'create_FTA_payout_service',
             'create_ledger_payout_service',
+            'internal_merchant_fetch',
         ]
     ];
 
