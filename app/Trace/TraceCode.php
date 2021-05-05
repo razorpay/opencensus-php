@@ -2420,6 +2420,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GEOLOCATION_UPDATE_RESPONSE                           = 'GEOLOCATION_UPDATE_RESPONSE';
     const GEOLOCATION_FAILURE                                   = 'GEOLOCATION_FAILURE';
 
+    const QR_CODE_CREATE_REQUEST_FAILED                         = 'QR_CODE_CREATE_REQUEST_FAILED';
+    const QR_CODE_IMAGE_FILE_GENERATE                           = 'QR_CODE_IMAGE_FILE_GENERATE';
+    const QR_CODE_UPI_GATEWAY_CALL_FOR_INTENT_URL               = 'QR_CODE_UPI_GATEWAY_CALL_FOR_INTENT_URL';
+    const QR_CODE_CREATE_REQUEST                                = 'QR_CODE_CREATE_REQUEST';
+    const QR_CODE_CREATED                                       = 'QR_CODE_CREATED';
+    const QR_CODE_UPI_QR_TERMINAL_NOT_FOUND_FOR_MERCHANT        = 'QR_CODE_UPI_QR_TERMINAL_NOT_FOUND_FOR_MERCHANT';
+
     const GENERATE_BHARAT_QR_CODE                               = 'GENERATE_BHARAT_QR_CODE';
     const GENERATE_UPI_QR_CODE                                  = 'GENERATE_UPI_QR_CODE';
     const BHARAT_QR_CARD_IDENTIFIERS                            = 'BHARAT_QR_CARD_IDENTIFIERS';

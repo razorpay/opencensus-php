@@ -10,7 +10,6 @@ use RZP\Models\FileStore;
 use RZP\Models\VirtualAccount;
 use RZP\Models\BharatQr\Tags;
 use RZP\Models\Merchant\RazorxTreatment;
-use RZP\Models\VirtualAccount\Provider;
 
 class Entity extends Base\PublicEntity
 {
@@ -352,7 +351,7 @@ class Entity extends Base\PublicEntity
 
     public function generateQrString()
     {
-        $qrString = (new Provider)->generateQrString($this);
+        $qrString = (new Generator)->generateQrString($this);
 
         $this->setQrString($qrString);
 

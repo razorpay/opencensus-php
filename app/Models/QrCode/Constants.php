@@ -2,16 +2,44 @@
 
 namespace RZP\Models\QrCode;
 
+use RZP\Models\FileStore;
+
 class Constants
 {
     const QR_CODE_FILE_NAME = 'QrCode.jpeg';
+    const QR_CODE           = 'qr_code';
+
     // TODO: Find out what should
     // be the best size
-    const QR_CODE_WIDTH     = 220;
-    const QR_CODE_HEIGHT    = 300;
+    const QR_CODE_WIDTH         = 220;
+    const QR_CODE_HEIGHT        = 300;
+    const UPI_QR_CODE_WIDTH     = 240;
+    const UPI_QR_CODE_HEIGHT    = 240;
+
+    const UPI_QR_DEST_X         = 100;
+    const UPI_QR_DEST_Y         = 180;
+    const QR_DEST_X             = 30;
+    const QR_DEST_Y             = 200;
+    const SORCE_X               = 0;
+    const SORCE_Y               = 0;
+    const MARGIN                = 0;
+
+    const OPACITY               = 100;
 
     const QR_STRING_MPAN_TOKENIZATION_SUCCESS_COUNT = 'qr_string_mpan_tokenization_success_count';
     const QR_STRING_MPAN_TOKENIZATION_FAILED_COUNT  = 'qr_string_mpan_tokenization_failed_count';
     const QR_STRING_MPAN_TOKENIZATION_SUCCESS_IDS   = 'qr_string_mpan_tokenization_success_ids';
     const QR_STRING_MPAN_TOKENIZATION_FAILED_IDS    = 'qr_string_mpan_tokenization_failed_ids';
+
+    // Qr Code Tag Values constants
+    const MERCHANT_CATEGORY = 'merchant_category';
+    const MERCHANT_NAME     = 'merchant_name';
+    const MERCHANT_CITY     = 'merchant_city';
+    const MERCHANT_PINCODE  = 'merchant_pincode';
+
+    // Qr Code Extension
+    const QR_CODE_EXTENSION = FileStore\Format::JPEG;
+
+    const SHORT_MODE_LIVE = 'l';
+    const SHORT_MODE_TEST = 't';
 }

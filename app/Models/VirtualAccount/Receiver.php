@@ -77,7 +77,7 @@ class Receiver extends Base\Core
     {
         $input = $this->getQrCodeEntityParams($virtualAccount, $options);
 
-        $qrCode = (new QrCode\Generator($this->merchant))->generate($input, $virtualAccount);
+        $qrCode = (new QrCode\Service())->create($input, $virtualAccount);
 
         return $qrCode;
     }

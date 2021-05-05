@@ -8,4 +8,10 @@ use RZP\Models\Merchant;
 
 class Service extends Base\Service
 {
+    public function isMethodEnabledForMerchant(string $method, Merchant\Entity $merchant)
+    {
+        $methods = $merchant->getMethods();
+
+        return $methods->isMethodEnabled($method);
+    }
 }

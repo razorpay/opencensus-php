@@ -45,13 +45,12 @@ class Service extends Base\Service
         ];
 
         $count = $input['count'] ?? 100;
-        
-        $qrCodes = $this->repo->useSlave(function() use ($count)
-            {
-                return $this->repo->qr_code->fetchQrCodesForMpanTokenization($count);;
-            });
 
-        foreach($qrCodes as $qrCode)
+        $qrCodes = $this->repo->useSlave(function() use ($count) {
+            return $this->repo->qr_code->fetchQrCodesForMpanTokenization($count);;
+        });
+
+        foreach ($qrCodes as $qrCode)
         {
             try
             {
@@ -61,13 +60,13 @@ class Service extends Base\Service
                 $response[Constants::QR_STRING_MPAN_TOKENIZATION_SUCCESS_IDS][] = $qrCode->getId();
 
             }
-            catch(\Throwable $ex)
+            catch (\Throwable $ex)
             {
                 $this->trace->traceException($ex,
-                    Trace::ERROR,
-                    TraceCode::MPAN_TOKENIZATION_FAILED,
-                    [
-                    ]);
+                                             Trace::ERROR,
+                                             TraceCode::MPAN_TOKENIZATION_FAILED,
+                                             [
+                                             ]);
 
                 $response[Constants::QR_STRING_MPAN_TOKENIZATION_FAILED_COUNT]++;
                 $response[Constants::QR_STRING_MPAN_TOKENIZATION_FAILED_IDS][] = $qrCode->getId();
@@ -80,5 +79,28 @@ class Service extends Base\Service
         );
 
         return $response;
+    }
+
+    public function create($input, $virtualAccount = null)
+    {
+        $this->trace->info(TraceCode::QR_CODE_CREATE_REQUEST, [
+            'input'           => $input,
+            'virtual_account' => $virtualAccount->getId() ?? null
+        ]);
+
+        try
+        {
+            $qrCode = (new Core($virtualAccount))->buildQrCode($input);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException($ex, Trace::CRITICAL, TraceCode::QR_CODE_CREATE_REQUEST_FAILED, $input);
+
+            throw $ex;
+        }
+
+        $this->trace->info(TraceCode::QR_CODE_CREATED, $qrCode->toArrayPublic());
+
+        return $qrCode;
     }
 }

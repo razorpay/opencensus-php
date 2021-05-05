@@ -14,6 +14,7 @@ use RZP\Gateway\Upi\Base\Entity as UpiEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
+use RZP\Trace\TraceCode;
 
 class MindgateVirtualAccountTest extends TestCase
 {
@@ -183,7 +184,7 @@ class MindgateVirtualAccountTest extends TestCase
                 $this->createVirtualAccount($this->input);
             },
             Exception\LogicException::class,
-            'UPI intent terminal needs to there for merchant');
+            TraceCode::QR_CODE_UPI_QR_TERMINAL_NOT_FOUND_FOR_MERCHANT);
     }
 
     public function testGatewayFailureOnCreate()
