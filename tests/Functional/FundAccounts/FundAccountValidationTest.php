@@ -9,7 +9,7 @@ use RZP\Error\Error;
 use RZP\Models\Feature;
 use RZP\Models\Admin\Admin;
 use RZP\Jobs\FaVpaValidation;
-use RZP\Models\FundAccount\Validation\Entity as Validation;
+use RZP\Models\Pricing\Fee;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\Balance\Channel;
@@ -21,6 +21,7 @@ use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
+use RZP\Models\FundAccount\Validation\Entity as Validation;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountTrait;
 use RZP\Tests\Functional\Helpers\FundAccount\FundAccountValidationTrait;
@@ -1236,11 +1237,30 @@ class FundAccountValidationTest extends TestCase
 
     public function testFundAccValidationOnPrepaidModelWithNoFeeCreditsAndNoBalanceNewApiError()
     {
-        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::TEST_NEW_BANKING_ERROR]);
 
         $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
 
         $this->fixtures->merchant->editBalance('0');
+
+        $this->startTest();
+    }
+
+    public function testFundAccValidationOnPrepaidModelWithNoFeeCreditsAndNoBalanceNewApiErrorOnLiveMode()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
+
+        $this->fixtures->on('live')->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+
+        $this->fixtures->on('live')->merchant->editBalance('0');
+
+        $this->fixtures->on('live')->merchant->edit('10000000000000',
+            [
+                'activated' => 1,
+                'pricing_plan_id' => Fee::DEFAULT_PRICING_PLAN_ID
+            ]);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
         $this->startTest();
     }

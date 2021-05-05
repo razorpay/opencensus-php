@@ -748,7 +748,7 @@ class ScheduledPayoutTest extends TestCase
         $this->assertEquals(Status::PROCESSING, $updatedScheduledPayout['status']);
     }
 
-    public function testScheduledPayoutProcessingLowBalance()
+    public function testScheduledPayoutProcessingLowBalance($mode = 'test')
     {
         Mail::fake();
 
@@ -760,18 +760,18 @@ class ScheduledPayoutTest extends TestCase
             [
                 'scheduled_at' => $scheduledAtTime
             ],
-            'rzp_test_10000000000000');
+            'rzp_'. $mode .'_10000000000000');
 
-        $scheduledPayout = $this->getDbLastEntity('payout');
+        $scheduledPayout = $this->getDbLastEntity('payout', $mode);
 
         $this->assertEquals(Status::SCHEDULED, $scheduledPayout['status']);
 
-        $this->fixtures->edit('balance', $this->bankingBalance->getId(), ['balance' => 0]);
+        $this->fixtures->on($mode)->edit('balance', $this->bankingBalance->getId(), ['balance' => 0]);
 
         // Setting this to 1 second after the start of the time slot
         Carbon::setTestNow(Carbon::createFromTimestamp($scheduledAtStartOfHour+1, Timezone::IST));
 
-        $this->ba->cronAuth();
+        $this->ba->cronAuth($mode);
 
         $result = $this->startTest();
 
@@ -785,7 +785,7 @@ class ScheduledPayoutTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedResponse, $result);
 
-        $updatedScheduledPayout = $this->getDbEntityById('payout', $scheduledPayout['id']);
+        $updatedScheduledPayout = $this->getDbEntityById('payout', $scheduledPayout['id'], $mode);
 
         $updatedScheduledPayoutArray = $updatedScheduledPayout->toArray();
 
@@ -1267,7 +1267,7 @@ class ScheduledPayoutTest extends TestCase
      */
     public function testFailedWebhookPayoutResponseForNewBankingError()
     {
-        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::TEST_NEW_BANKING_ERROR]);
 
         // When WebhookViaStork experiment is turned on, webhook setting is skipped and
         // stork is called regardless event setting is enabled or not
@@ -1293,6 +1293,43 @@ class ScheduledPayoutTest extends TestCase
         $this->app->events->dispatch('api.payout.failed', [$payout]);
 
         $this->validateStorkWebhookFireEvent('payout.failed', $payoutFailedEventData, $payloadFailed);
+    }
+
+    /**
+     * Check for internal payout webhook error response processed in scheduled payout cron
+     * and fails due to low balance on live mode
+     *
+     */
+    public function testFailedWebhookPayoutResponseForNewBankingErrorOnLiveMode()
+    {
+        $this->liveSetUp();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
+
+        // When WebhookViaStork experiment is turned on, webhook setting is skipped and
+        // stork is called regardless event setting is enabled or not
+        $this->mockRazorxTreatment('yesbank', 'on', 'on');
+
+        $payoutFailedEventData = $this->testData[__FUNCTION__];
+        $payloadFailed = null;
+
+        $this->mockServiceStorkRequest(
+            function ($path, $payload) use ($payoutFailedEventData, & $payloadFailed) {
+                $this->assertContains($payload['event']['name'], ['payout.failed']);
+                switch ($payload['event']['name']) {
+                    case Event::PAYOUT_FAILED:
+                        $payloadFailed = $payload;
+                        break;
+                }
+
+                return new \Requests_Response();
+            });
+
+        $payout = $this->testScheduledPayoutProcessingLowBalance('live');
+
+        $this->app->events->dispatch('api.payout.failed', [$payout]);
+
+        $this->validateStorkWebhookFireEvent('payout.failed', $payoutFailedEventData, $payloadFailed, 'live');
     }
 
     public function testCreateScheduledPayoutAndCheckCorrectWebhooksFired()

@@ -521,7 +521,7 @@ class CompositePayoutTest extends TestCase
 
     public function testCreateCompositePayoutWithoutFundAccountIdAndFundAccountNewApiError()
     {
-        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::TEST_NEW_BANKING_ERROR]);
 
         $this->startTest();
 
@@ -535,6 +535,34 @@ class CompositePayoutTest extends TestCase
         $this->assertEquals(count($payouts), 0);
         $this->assertEquals(count($fundAccounts), 0);
         $this->assertEquals(count($contacts), 0);
+    }
+
+    public function testCreateCompositePayoutWithoutFundAccountIdAndFundAccountNewApiErrorOnLiveMode()
+    {
+        $this->liveSetUp();
+
+        $payoutsBefore = $this->getDbEntities('payout', [], 'live');
+
+        $fundAccountsBefore = $this->getDbEntities('fund_account',  [], 'live');
+
+        $contactsBefore = $this->getDbEntities('contact', [], 'live');
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
+
+        $this->startTest();
+
+        $payouts = $this->getDbEntities('payout', [], 'live');
+
+        $fundAccounts = $this->getDbEntities('fund_account',  [], 'live');
+
+        $contacts = $this->getDbEntities('contact', [], 'live');
+
+        // Assert that none of contact, fund account or payout are created.
+        $this->assertEquals(count($payouts), count($payoutsBefore));
+        $this->assertEquals(count($fundAccounts), count($fundAccountsBefore));
+        $this->assertEquals(count($contacts), count($contactsBefore));
     }
 
     public function testCreateCompositeM2PPayoutForDebitCardWithUpperCaseCardMode()

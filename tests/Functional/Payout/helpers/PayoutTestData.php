@@ -45,6 +45,42 @@ return [
         ],
     ],
 
+    'testCreatePayoutOnLiveMode' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
     'testCreatePayoutWithNewCreditsFlow' => [
         'request'  => [
             'method'  => 'POST',
@@ -10645,7 +10681,70 @@ return [
         ],
     ],
 
+    'testFiringOfWebhookPayoutResponseForReversedPayoutOnLiveMode' => [
+        'entity'   => 'event',
+        'event'    => 'payout.reversed',
+        'contains' => [
+            'payout',
+        ],
+        'payload'  => [
+            'payout' => [
+                'entity' => [
+                    'entity' => 'payout',
+                    'status' => 'reversed',
+                    'failure_reason' => 'Transaction not permitted to beneficiary account.',
+                    'error'  => [
+                        'source' => 'beneficiary_bank',
+                        'reason' =>  'beneficiary_bank_rejected',
+                        'description' => 'Payout rejected by beneficiary bank. Please contact beneficiary bank.'
+                    ]
+                ],
+            ],
+        ],
+    ],
+
     'testNewErrorObjectInPayoutResponse' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'error'           => [
+                    'description' => null,
+                    'reason'      => null,
+                    'source'      => null
+                ]
+            ],
+        ],
+    ],
+
+    'testNewErrorObjectInPayoutResponseOnLiveMode' => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts',
@@ -10744,6 +10843,42 @@ return [
         ],
     ],
 
+    'testCreatePayoutWithWrongFundAccountIdNewApiErrorOnLiveMode' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_101200340560fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The id provided does not exist',
+                    'reason'      => 'input_validation_failed',
+                    'source'      => 'business',
+                    'step'        => null,
+                    'metadata'    => []
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ],
+    ],
+
     'testCreatePayoutWithIfQueueLowBalanceFalseNewApiError' => [
         'request'  => [
             'method'  => 'POST',
@@ -10781,6 +10916,42 @@ return [
         ],
     ],
 
+    'testCreatePayoutWithIfQueueLowBalanceFalseNewApiErrorOnLiveMode' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'NEFT',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc'         => 'xyz',
+                ],
+                'queue_if_low_balance'  => 0
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Your account does not have enough balance to carry out the payout operation.',
+                    'reason'      => 'insufficient_funds',
+                    'source'      => 'business',
+                    'step'        => null,
+                    'metadata'    => []
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING,
+        ],
+    ],
 
     'testPayoutRejectWhenWorkflowEditNewApiError' => [
         'request'  => [
@@ -10837,7 +11008,51 @@ return [
         ],
     ],
 
+    'testFiringOfWebhookPayoutResponseForReversedPayoutDefaultErrorObjectOnLiveMode' => [
+        'entity'   => 'event',
+        'event'    => 'payout.reversed',
+        'contains' => [
+            'payout',
+        ],
+        'payload'  => [
+            'payout' => [
+                'entity' => [
+                    'entity' => 'payout',
+                    'status' => 'reversed',
+                    'failure_reason' => 'Payout failed. Contact support for help.',
+                    'error'  => [
+                        'source' => 'internal',
+                        'reason' =>  'server_error',
+                        'description' => 'Payout failed. Contact support for help.'
+                    ]
+                ],
+            ],
+        ],
+    ],
+
     'testFiringOfWebhookPayoutResponseForProcessedPayout' => [
+        'entity'   => 'event',
+        'event'    => 'payout.processed',
+        'contains' => [
+            'payout',
+        ],
+        'payload'  => [
+            'payout' => [
+                'entity' => [
+                    'entity'         => 'payout',
+                    'status'         => 'processed',
+                    'failure_reason' => null,
+                    'error'  => [
+                        'source'      => null,
+                        'reason'      => null,
+                        'description' => null
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testFiringOfWebhookPayoutResponseForProcessedPayoutOnLiveMode' => [
         'entity'   => 'event',
         'event'    => 'payout.processed',
         'contains' => [
@@ -12384,5 +12599,27 @@ return [
                 ],
             ],
         ]
+    ],
+
+    'testFailedWebhookPayoutResponseForNewBankingErrorOnLiveMode' => [
+        'entity'   => 'event',
+        'event'    => 'payout.failed',
+        'contains' => [
+            'payout',
+        ],
+        'payload'  => [
+            'payout' => [
+                'entity' => [
+                    'entity'         => 'payout',
+                    'status'         => 'failed',
+                    'failure_reason' => 'Insufficient balance to process payout',
+                    'error'          => [
+                        'source' => 'business',
+                        'reason' =>  'insufficient_funds',
+                        'description' => 'Your account does not have enough balance to carry out the payout operation.'
+                    ]
+                ],
+            ],
+        ],
     ],
 ];

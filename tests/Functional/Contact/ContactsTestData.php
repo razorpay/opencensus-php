@@ -2179,7 +2179,69 @@ return [
         ],
     ],
 
+    'testCreateContactWithoutNameNewApiErrorOnLiveMode' => [
+        'request'   => [
+            'content' => [
+                'type'  => 'self',
+                'email' => 'asd@abc.com',
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The name field is required.',
+                    'reason'      => 'input_validation_failed',
+                    'source'      => 'business',
+                    'step'        => null,
+                    'metadata'    => []
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreateRZPFeesTypeContactNewApiError' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test / Contact',
+                'type'         => 'rzp_fees',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INTERNAL_CONTACT_CREATE_UPDATE_NOT_PERMITTED,
+                    'reason'      => 'server_error',
+                    'source'      => 'internal',
+                    'step'        => null,
+                    'metadata'    => []
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INTERNAL_CONTACT_CREATE_UPDATE_NOT_PERMITTED,
+        ],
+    ],
+
+    'testCreateRZPFeesTypeContactNewApiErrorOnLiveMode' => [
         'request'  => [
             'content' => [
                 'name'         => 'Test / Contact',

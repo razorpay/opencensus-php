@@ -1116,14 +1116,36 @@ class ContactsTest extends TestCase
 
     public function testCreateContactWithoutNameNewApiError()
     {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::TEST_NEW_BANKING_ERROR]);
+
+        $this->startTest();
+    }
+
+    public function testCreateContactWithoutNameNewApiErrorOnLiveMode()
+    {
         $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
+
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['activated' => 1,]);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
         $this->startTest();
     }
 
     public function testCreateRZPFeesTypeContactNewApiError()
     {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::TEST_NEW_BANKING_ERROR]);
+
+        $this->startTest();
+    }
+
+    public function testCreateRZPFeesTypeContactNewApiErrorOnLiveMode()
+    {
         $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
+
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['activated' => 1,]);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
         $this->startTest();
     }

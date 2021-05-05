@@ -1302,18 +1302,44 @@ class FundAccountsTest extends TestCase
 
     public function testCreateFundAccountBankAccountWithEmptyArrayNewApiError()
     {
-        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::TEST_NEW_BANKING_ERROR]);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
         $this->startTest();
     }
 
-    public function testCreateFundAccountBankAccountWithInvalidNameNewApiError()
+    public function testCreateFundAccountBankAccountWithEmptyArrayNewApiErrorOnLiveMode()
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
 
+        $this->fixtures->on('live')->create('contact', ['id' => '1000000contact']);
+
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['activated' => 1,]);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
+    public function testCreateFundAccountBankAccountWithInvalidNameNewApiError()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::TEST_NEW_BANKING_ERROR]);
+
         $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->startTest();
+    }
+
+    public function testCreateFundAccountBankAccountWithInvalidNameNewApiErrorOnLiveMode()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
+
+        $this->fixtures->on('live')->create('contact', ['id' => '1000000contact']);
+
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['activated' => 1,]);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
         $this->startTest();
     }

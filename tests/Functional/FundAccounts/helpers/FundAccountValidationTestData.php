@@ -1167,4 +1167,42 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_INSUFFICIENT_BALANCE,
         ],
     ],
+
+    'testFundAccValidationOnPrepaidModelWithNoFeeCreditsAndNoBalanceNewApiErrorOnLiveMode' => [
+        'request' => [
+            'url'     => '/fund_accounts/validations',
+            'method'  => 'post',
+            'content' => [
+                Validation::FUND_ACCOUNT  => [
+                    FundAccount::ACCOUNT_TYPE => 'bank_account',
+                    FundAccount::DETAILS      => [
+                        BankAccount::ACCOUNT_NUMBER => '123456789',
+                        BankAccount::NAME           => 'Rohit Keshwani',
+                        BankAccount::IFSC           => 'SBIN0010411',
+                    ],
+                ],
+                Validation::AMOUNT        => '100',
+                Validation::CURRENCY      => 'INR',
+                Validation::NOTES         => [],
+                Validation::RECEIPT       => '12345667',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The fees calculated for fund account validation is greater than available fee credits or balance.',
+                    'reason'      => 'insufficient_funds',
+                    'source'      => 'business',
+                    'step'        => null,
+                    'metadata'    => []
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FUND_ACCOUNT_VALIDATION_INSUFFICIENT_BALANCE,
+        ],
+    ],
 ];
