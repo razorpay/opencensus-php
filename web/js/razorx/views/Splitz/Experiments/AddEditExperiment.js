@@ -48,9 +48,11 @@ class AddEditExperiment extends React.Component {
 
       selectedType = this.props.data.type;
 
-      const audienceRules = experimentHelpers.getAudienceRules(this.props.data.audience);
-      ruleCondition = audienceRules.ruleCondition;
-      rules = audienceRules.rules;
+      const audienceRules = this.props.data.audience
+        ? experimentHelpers.getAudienceRules(this.props.data.audience)
+        : undefined;
+      ruleCondition = audienceRules?.ruleCondition || ruleCondition;
+      rules = audienceRules?.rules || rules;
     }
 
     return {
