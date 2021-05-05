@@ -97,9 +97,37 @@ class FTSController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function createPreferredRoutingWeights()
+    {
+        $response = $this->app['fts_fund_transfer']->createPreferredRoutingWeights($this->input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function createAccountTypeMappings()
+    {
+        $response = $this->app['fts_fund_transfer']->createAccountTypeMappings($this->input);
+
+        return ApiResponse::json($response);
+    }
+
     public function deleteSourceAccountMappings()
     {
         $response = $this->app['fts_fund_transfer']->deleteSourceAccountMappings($this->input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function deletePreferredRoutingWeights()
+    {
+        $response = $this->app['fts_fund_transfer']->deletePreferredRoutingWeights($this->input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function deleteAccountTypeMappings()
+    {
+        $response = $this->app['fts_fund_transfer']->deleteAccountTypeMappings($this->input);
 
         return ApiResponse::json($response);
     }

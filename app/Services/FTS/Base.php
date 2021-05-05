@@ -90,6 +90,10 @@ class Base
 
     const SOURCE_ACCOUNT_MAPPING = '/source_account_mappings';
 
+    const PREFERRED_ROUTING_WEIGHT = '/preferred_routing_weights';
+
+    const ACCOUNT_TYPE_MAPPING = '/account_type_mappings';
+
     const FUND_TRANSFER_ATTEMPTS_INITIATE_URI = '/attempts/process';
 
     const FTS_ONE_OFF_DB_MIGRATE_URL = '/one_off_db_migrate';

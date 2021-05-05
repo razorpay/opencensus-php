@@ -287,7 +287,7 @@ class FundTransfer extends Base
 
             case Constants::WALLET:
                 $request = $this->addWalletAccountDetails($request);
-    
+
                 break;
 
             default:
@@ -633,7 +633,7 @@ class FundTransfer extends Base
         {
             return [Constants::WALLET_TRANSFER_MODE_FTS, true];
         }
-        
+
         if ($this->fta->hasMode() === true)
         {
             return [$this->fta->getMode(), false];
@@ -1231,12 +1231,52 @@ class FundTransfer extends Base
             $input);
     }
 
+    public function createPreferredRoutingWeights(array $input)
+    {
+        $this->setAdminHeader();
+
+        return $this->createAndSendRequest(
+            parent::PREFERRED_ROUTING_WEIGHT,
+            Requests::POST,
+            $input);
+    }
+
+    public function createAccountTypeMappings(array $input)
+    {
+        $this->setAdminHeader();
+
+        return $this->createAndSendRequest(
+            parent::ACCOUNT_TYPE_MAPPING,
+            Requests::POST,
+            $input);
+    }
+
     public function deleteSourceAccountMappings(array $input)
     {
         $this->setAdminHeader();
 
         return $this->createAndSendRequest(
             parent::SOURCE_ACCOUNT_MAPPING,
+            Requests::DELETE,
+            $input);
+    }
+
+    public function deletePreferredRoutingWeights(array $input)
+    {
+        $this->setAdminHeader();
+
+        return $this->createAndSendRequest(
+            parent::PREFERRED_ROUTING_WEIGHT,
+            Requests::DELETE,
+            $input);
+    }
+
+    public function deleteAccountTypeMappings(array $input)
+    {
+        $this->setAdminHeader();
+
+        return $this->createAndSendRequest(
+            parent::ACCOUNT_TYPE_MAPPING,
             Requests::DELETE,
             $input);
     }

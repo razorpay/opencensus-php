@@ -22,6 +22,10 @@ class FtsAdminClient extends Base
 
     const SOURCE_ACCOUNT_MAPPINGS = "source_account_mappings";
 
+    const PREFERRED_ROUTING_WEIGHTS = "preferred_routing_weights";
+
+    const ACCOUNT_TYPE_MAPPINGS = "account_type_mappings";
+
     public function __construct()
     {
         $app = App::getFacadeRoot();
@@ -90,6 +94,22 @@ class FtsAdminClient extends Base
             parent::SOURCE_ACCOUNT_MAPPING,
             Requests::GET,
             $input)['body'][self::SOURCE_ACCOUNT_MAPPINGS];
+    }
+
+    public function getPreferredRoutingWeights(array $input)
+    {
+        return $this->createAndSendRequest(
+            parent::PREFERRED_ROUTING_WEIGHT,
+            Requests::GET,
+            $input)['body'][self::PREFERRED_ROUTING_WEIGHTS];
+    }
+
+    public function getAccountTypeMappings(array $input)
+    {
+        return $this->createAndSendRequest(
+            parent::ACCOUNT_TYPE_MAPPING,
+            Requests::GET,
+            $input)['body'][self::ACCOUNT_TYPE_MAPPINGS];
     }
 
     public function fetch(string $entity, string $id, array $input)

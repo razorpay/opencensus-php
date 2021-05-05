@@ -398,6 +398,8 @@ class Entity
     const FTS_BENEFICIARY_STATUS         = 'fts.beneficiary_status';
     const FTS_CHANNEL_HEALTH_EVENTS      = 'fts.channel_health_events';
     const FTS_SOURCE_ACCOUNT_MAPPING     = 'fts.source_account_mappings';
+    const FTS_PREFERRED_ROUTING_WEIGHTS  = 'fts.preferred_routing_weights';
+    const FTS_ACCOUNT_TYPE_MAPPINGS      = 'fts.account_type_mappings';
 
     const UFH_FILES                      = 'ufh.files';
 
@@ -1020,6 +1022,8 @@ class Entity
         self::FTS_ATTEMPTS                  => \RZP\Services\FTS\FtsAdminClient::class,
         self::FTS_SOURCE_ACCOUNT            => \RZP\Services\FTS\FtsAdminClient::class,
         self::FTS_SOURCE_ACCOUNT_MAPPING    => \RZP\Services\FTS\FtsAdminClient::class,
+        self::FTS_PREFERRED_ROUTING_WEIGHTS => \RZP\Services\FTS\FtsAdminClient::class,
+        self::FTS_ACCOUNT_TYPE_MAPPINGS     => \RZP\Services\FTS\FtsAdminClient::class,
         self::FTS_CHANNEL_HEALTH_EVENTS     => \RZP\Services\FTS\FtsAdminClient::class,
         self::UFH_FILES                     => \RZP\Services\UfhClient::class,
         self::PAYMENTS_NBPLUS_NETBANKING    => \RZP\Services\NbPlus\Netbanking::class,
