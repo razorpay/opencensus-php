@@ -184,7 +184,7 @@ class Base extends Core
         self::NETBANKING_JSB         => ['channel_payments@janabank.com'],
         self::NETBANKING_FSB         => ['prabhu.veluswamy@fincarebank.com','lijo.k@fincarebank.com','jayaprashanth.vk@fincarebank.com','febin.anto@fincarebank.com','ce035@fincarebank.com','joseph.arun@fincarebank.com'],
         self::NETBANKING_IOB         => ['54667@iobnet.co.in', '63015@iobnet.co.in', 'pg@iobnet.co.in', 'eseeadmin@iobnet.co.in'],
-        self::NETBANKING_DCB         => ['sandesh.kadam@dcbbank.com'],
+        self::NETBANKING_DCB         => ['sandesh.kadam@dcbbank.com', 'arif.shaikh@dcbbank.com'],
         self::NETBANKING_UBI         => [],
         self::NETBANKING_AUSF        => [],
         self::NETBANKING_KOTAK_V2    => ['bankalerts@kotak.com'],
