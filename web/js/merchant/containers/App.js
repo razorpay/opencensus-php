@@ -299,7 +299,7 @@ export default class App extends Component {
     const user = window.rzp_user;
     if (user) {
       const GoLiveNPSEnableTypeForm = makePopup(
-        `https://razorpay.typeform.com/to/eJ8e5AQb?mid=${user.current}&source=dashboard&email=${user.email}`, // go live survey
+        `https://razorpay.typeform.com/to/BkTITg0r?mid=${user.current}&source=dashboard&email=${user.email}`, // go live survey
         {
           mode: 'popup',
           hideHeaders: true,
@@ -310,7 +310,7 @@ export default class App extends Component {
       this.state.GoLiveNPSEnableTypeForm = GoLiveNPSEnableTypeForm; // saving reference typeform
 
       const NonGoLiveNPSEnableTypeForm = makePopup(
-        `https://razorpay.typeform.com/to/cgDsNYSY?mid=${user.current}&source=dashboard&email=${user.email}`, // non go live survey
+        `https://razorpay.typeform.com/to/nvBTyoSd?mid=${user.current}&source=dashboard&email=${user.email}`, // non go live survey
         {
           mode: 'popup',
           hideHeaders: true,
@@ -343,7 +343,7 @@ export default class App extends Component {
         this.state.GoLiveNPSEnableTypeForm
       ) {
         const takeGoLiveNPSSurvey = this.dateIsInRange(user.created_at, [
-          ['2021-02-28', '2021-04-01'],
+          ['2021-04-01', '2021-04-30'],
         ]);
         this.setState({ goLiveNPSSurveyPopup: takeGoLiveNPSSurvey });
       }
@@ -361,9 +361,9 @@ export default class App extends Component {
         this.state.NonGoLiveNPSEnableTypeForm
       ) {
         const takeNonGoLiveNPSSurvey = this.dateIsInRange(user.created_at, [
-          ['2020-02-29', '2020-04-01'],
-          ['2020-08-31', '2020-10-01'],
-          ['2020-11-30', '2021-01-01'],
+          ['2021-01-01', '2021-01-31'],
+          ['2020-10-01', '2020-10-31'],
+          ['2020-04-01', '2020-04-30'],
         ]);
         this.setState({ nonGoLiveNPSSurveyPopup: takeNonGoLiveNPSSurvey });
       }
