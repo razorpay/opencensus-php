@@ -275,11 +275,9 @@ class Repository extends Base\Repository
     }
 
     // TODO: need to optimize the query futher
-    public function fetchDeletedTokensForMethods(array $methods, string $from, $to): Base\PublicCollection
+    public function fetchDeletedTokensForMethods(array $methods, $gateways, string $acquirer, $from, $to): Base\PublicCollection
     {
         $selectCols = $this->dbColumn('*');
-
-        $tokenIdColumn = $this->repo->token->dbColumn(Entity::ID);
 
         $tokenMethodColumn = $this->repo->token->dbColumn(Entity::METHOD);
 
@@ -287,17 +285,22 @@ class Repository extends Base\Repository
 
         $tokenDeletedAtColumn = $this->repo->token->dbColumn(Entity::DELETED_AT);
 
+        $tokenTerminalIdColumn = $this->repo->token->dbColumn(Entity::TERMINAL_ID);
+
+        $terminalGatewayColumn = $this->repo->terminal->dbColumn(Terminal\Entity::GATEWAY);
+
+        $terminalGatewayAcquirerColumn = $this->repo->terminal->dbColumn(Terminal\Entity::GATEWAY_ACQUIRER);
+
         return $this->newQueryWithConnection($this->getReportingReplicaConnection())
-                    ->select($selectCols,
-                        'payments.id as payment_id',
-                        'payments.recurring_type as recurring_type',
-                        'payments.gateway as gateway')
-                    ->from(\DB::raw('`tokens`, `payments`'))
-                    ->where($tokenIdColumn, '=', \DB::raw('`payments`.`token_id`'))
+                    ->select($selectCols)
+                    ->from(\DB::raw('`tokens`, `terminals`'))
+                    ->where($tokenTerminalIdColumn, '=', \DB::raw('`terminals`.`id`'))
                     ->whereBetween($tokenDeletedAtColumn, [$from, $to])
                     ->whereIn($tokenMethodColumn, $methods)
                     ->where(Entity::RECURRING_STATUS, '=', RecurringStatus::CONFIRMED)
                     ->where($tokenRecurringColumn, '=', 1)
+                    ->whereIn($terminalGatewayColumn, $gateways)
+                    ->where($terminalGatewayAcquirerColumn, '=', $acquirer)
                     ->withTrashed()
                     ->get();
     }

@@ -540,14 +540,7 @@ class IciciGatewayTest extends TestCase
 
         $expectedFile = file_get_contents(__DIR__ . '/MMS-CANCEL-ICIC-ICIC401790-11022020-API000001-INP.xml');
 
-        $regPayment = $this->getEntities('payment',
-            ['token_id' => $paymentEntity->getTokenId(), 'amount' => 0], true);
-
-        $paymentId = $regPayment['items'][0]['id'];
-
-        $this->fixtures->stripSign($paymentId);
-
-        $expectedFileData = strtr($expectedFile, ['$paymentId' => $paymentId]);
+        $expectedFileData = strtr($expectedFile, ['$tokenId' => $paymentEntity->getTokenId()]);
 
         $this->assertEquals(zip_entry_read($actualFile), $expectedFileData);
 

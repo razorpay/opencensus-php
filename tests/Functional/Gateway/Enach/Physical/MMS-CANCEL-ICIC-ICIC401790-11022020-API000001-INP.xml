@@ -2,7 +2,7 @@
 <Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.011.001.01">
   <MndtCxlReq>
     <GrpHdr>
-      <MsgId>$paymentId</MsgId>
+      <MsgId>$tokenId</MsgId>
       <CreDtTm>2020-02-11T07:21:45</CreDtTm>
       <InstgAgt>
         <FinInstnId>

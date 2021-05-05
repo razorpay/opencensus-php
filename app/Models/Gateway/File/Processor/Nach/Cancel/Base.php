@@ -5,15 +5,11 @@ namespace RZP\Models\Gateway\File\Processor\Nach\Cancel;
 use DOMDocument;
 use Carbon\Carbon;
 
-use Razorpay\IFSC\IFSC;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Netbanking;
 use RZP\Models\FundTransfer\Holidays;
 use RZP\Models\Base\PublicCollection;
-use RZP\Models\Payment\RecurringType;
-use RZP\Models\Customer\Token\Entity;
-use RZP\Gateway\Enach\Base\CategoryCode;
 use RZP\Models\Gateway\File\Processor\Nach;
 use RZP\Gateway\Enach\Npci\Netbanking\CancelRequestTags;
 
@@ -34,21 +30,16 @@ abstract class Base extends Nach\Base
 
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_INIT);
 
-        $tokens = $this->repo->token->fetchDeletedTokensForMethods(static::METHODS, $begin, $end);
+        $tokens = $this->repo->token->fetchDeletedTokensForMethods(
+            static::METHODS, static::GATEWAYS, static::ACQUIRER, $begin, $end);
 
         $this->trace->info(TraceCode::GATEWAY_FILE_QUERY_COMPLETE);
 
-        $tokens = $tokens->filter(function (Entity $token) {
-            return (($token->terminal->getGatewayAcquirer() === static::ACQUIRER) and
-                    ($token['recurring_type'] === RecurringType::INITIAL) and
-                    (in_array($token['gateway'], static::GATEWAYS, true) === true));
-        });
-
-        $paymentIds = $tokens->pluck('payment_id')->toArray();
+        $tokenIds = $tokens->pluck('id')->toArray();
 
         $this->trace->info(TraceCode::NACH_CANCEL_REQUEST, [
             'gateway_file_id' => $this->gatewayFile->getId(),
-            'entity_ids'      => $paymentIds,
+            'entity_ids'      => $tokenIds,
             'begin'           => $begin,
             'end'             => $end,
         ]);
@@ -62,8 +53,6 @@ abstract class Base extends Nach\Base
 
         foreach ($entites as $token)
         {
-            $paymentId = $token['payment_id'];
-
             $utilityCode = $token->terminal->getGatewayMerchantId2();
 
             $sponsorBankIfsc = $token->terminal->getGatewayAccessCode();
@@ -80,7 +69,7 @@ abstract class Base extends Nach\Base
 
             $grp = $mandateRoot->addChild(CancelRequestTags::GROUP_HEADER);
 
-            $grp->addChild(CancelRequestTags::MSG_ID, $paymentId);
+            $grp->addChild(CancelRequestTags::MSG_ID, $token['id']);
 
             $grp->addChild(CancelRequestTags::CREATION_DATE_TIME, $createdDate);
 

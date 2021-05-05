@@ -5,7 +5,6 @@ namespace RZP\Models\Gateway\File\Processor\Emandate\Cancel;
 use Storage;
 use DOMDocument;
 use Carbon\Carbon;
-use Razorpay\IFSC\IFSC;
 
 use RZP\Gateway\Enach;
 use RZP\Models\Payment;
@@ -15,7 +14,6 @@ use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
-use RZP\Gateway\Enach\Base\CategoryCode;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Services\Beam\Service as BeamService;
 use RZP\Services\Beam\Constants as BeamConstants;
@@ -27,19 +25,12 @@ class EnachNpciNetbanking extends Base
     use FileHandler;
 
     const ACQUIRER  = Payment\Gateway::ACQUIRER_YESB;
-
-    const GATEWAY   = Payment\Gateway::ENACH_NPCI_NETBANKING;
-
+    const GATEWAYS  = [Payment\Gateway::ENACH_NPCI_NETBANKING];
     const METHODS   = [Payment\Method::EMANDATE];
-
     const EXTENSION = FileStore\Format::ZIP;
-
     const FILE_TYPE = FileStore\Type::ENACH_NPCI_NB_CANCEL;
-
     const S3_PATH   = 'yesbank/nach/input_file/';
-
-    const FILE_NAME = 'MMS-CANCEL-YESB-{$utilityCode}-{$date}-API000{$count}-INP';
-
+    const FILE_NAME = 'MMS-CANCEL-YESB-{$utilityCode}-{$date}-API0{$count}-INP';
     const ZIP_FILE  = 'MMS-CANCEL-YESB-{$utilityCode}-{$date}-API000001-INP';
 
     protected $fileStore = [];
@@ -60,7 +51,7 @@ class EnachNpciNetbanking extends Base
             {
                 foreach ($xmls as $count => $xml)
                 {
-                    $count = str_pad(++$count, 3, '0', STR_PAD_LEFT);
+                    $count = str_pad(++$count, 5, '0', STR_PAD_LEFT);
 
                     $fileName = strtr(self::FILE_NAME, ['{$utilityCode}' => $key, '{$date}' => $date, '{$count}' => $count]);
 
@@ -90,25 +81,13 @@ class EnachNpciNetbanking extends Base
 
         foreach ($tokens as $token)
         {
-            $merchant = $token->merchant;
-
-            $paymentId = $token['payment_id'];
-
             $utilityCode = $token->terminal->getGatewayMerchantId2();
 
             $sponsorBankIfsc = $token->terminal->getGatewayAccessCode();
 
-            $sponsorBank = $token->terminal->getGatewayTerminalId();
-
-            $merchantCategory = $merchant->getCategory();
-
-            $mandateCategoryCode = CategoryCode::getCategoryCodeFromMcc($merchantCategory);
-
             $umrn = $token->getGatewayToken();
 
             $destinationBankIfsc = $token->getIfsc();
-
-            $destinationBank = strtoupper(IFSC::getBankName($destinationBankIfsc));
 
             $createdDate = Carbon::now(Timezone::IST)->format('Y-m-d\TH:i:s');
 
@@ -118,7 +97,7 @@ class EnachNpciNetbanking extends Base
 
             $grp = $mandateRoot->addChild(CancelRequestTags::GROUP_HEADER);
 
-            $grp->addChild(CancelRequestTags::MSG_ID, $paymentId);
+            $grp->addChild(CancelRequestTags::MSG_ID, $token['id']);
 
             $grp->addChild(CancelRequestTags::CREATION_DATE_TIME, $createdDate);
 
@@ -128,21 +107,17 @@ class EnachNpciNetbanking extends Base
             $finInstnId1->addChild(CancelRequestTags::CLR_SYS_MEMBER_ID)
                         ->addChild(CancelRequestTags::MEMBER_ID, $sponsorBankIfsc);
 
-            $finInstnId1->addChild(CancelRequestTags::NM, $sponsorBank);
-
             $finInstnId2 = $grp->addChild(CancelRequestTags::INSTD_AGT)
                                ->addChild(CancelRequestTags::FINANCIAL_INST_ID);
 
             $finInstnId2->addChild(CancelRequestTags::CLR_SYS_MEMBER_ID)
                         ->addChild(CancelRequestTags::MEMBER_ID, $destinationBankIfsc);
 
-            $finInstnId2->addChild(CancelRequestTags::NM, $destinationBank);
-
             $undrlygCxlDtls = $mandateRoot->addChild(CancelRequestTags::UNDERLYING_CANCEL_DETAILS);
 
             $undrlygCxlDtls->addChild(CancelRequestTags::CANCEL_RSN)
                            ->addChild(CancelRequestTags::RSN)
-                           ->addChild(CancelRequestTags::PRTRY, $mandateCategoryCode);
+                           ->addChild(CancelRequestTags::PRTRY, 'C002');
 
             $undrlygCxlDtls->addChild(CancelRequestTags::ORIGINAL_MANDATE)
                            ->addChild(CancelRequestTags::ORIGINAL_MANDATE_ID, $umrn);
