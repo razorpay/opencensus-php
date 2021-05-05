@@ -273,6 +273,7 @@ class Channel
             self::YESBANK,
             self::AXIS,
             self::AMAZONPAY_FTS,
+            self::M2P
         ];
     }
 
