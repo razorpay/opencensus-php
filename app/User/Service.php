@@ -1607,7 +1607,8 @@ class Service extends Base\Service
             'rx_icici_ca_onboarding',
             'optimizer_bin_number_op_in',
             'show_csat_survey',
-            'rx_mobile_app_announcement'
+            'rx_mobile_app_announcement',
+            'rx_tally_payouts_enabled'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
