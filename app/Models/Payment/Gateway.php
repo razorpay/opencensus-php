@@ -1232,6 +1232,7 @@ class Gateway
             self::UPI_CITI,
             self::UPI_JUSPAY,
             self::CASHFREE,
+            self::PAYU,
             self::PAYTM,
         ],
 
@@ -1390,6 +1391,7 @@ class Gateway
         self::WALLET_PHONEPE,
         self::CRED,
         self::CASHFREE,
+        self::PAYU,
         self::PAYTM,
     ];
 
