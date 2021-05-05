@@ -26,6 +26,66 @@ class Service extends Base\Service
         $this->trace = $app['trace'];
     }
 
+    public function getSplitzVariantBulk($merchantId): array
+    {
+        return $this->getVariantBulk($merchantId, config('splitz.experiments'));
+    }
+
+    public function getVariantBulk($merchantId, $experimentIds)
+    {
+        $responseData = [];
+
+        if (empty($experimentIds) === true)
+        {
+            return [];
+        }
+
+        $request = new ApiRequestAny();
+
+        $requestData = ['mid' => $merchantId];
+
+        $input = [];
+
+        foreach ($experimentIds as $experimentId)
+        {
+            $experimentInput = [
+                'id'            => $merchantId,
+                'experiment_id' => $experimentId,
+                'request_data'  => json_encode($requestData, true)
+            ];
+
+            array_push($input, $experimentInput);
+        }
+
+        list($error, $data) = $request->processInput($input)->send("splitz/bulkEvaluate", 'POST');
+
+        if (empty($error) === false)
+        {
+            $this->trace->info(TraceCode::SPLITZ_BULK_EVALUATE_FAILED, ["error" => $error]);
+
+            return [];
+        }
+
+        foreach ($data as $output)
+        {
+            if (isset($output['experiment']['id']) === true)
+            {
+                $experimentFeatureFlag = $output['experiment']['id'];
+
+                if (isset($output['variant']) === true)
+                {
+                    $responseData[$experimentFeatureFlag] = $this->transformVariablesFromVariantIfExist($output['variant']);
+                }
+                else
+                {
+                    $responseData[$experimentFeatureFlag] = [];
+                }
+            }
+        }
+
+        return $responseData;
+    }
+
     public function getSplitzVariant($merchantId): array
     {
         $data = [];

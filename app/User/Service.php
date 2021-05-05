@@ -875,7 +875,7 @@ class Service extends Base\Service
 
                     $data['features'] = $merchantService->getMerchantFeatures();
 
-                    $data['splitz_experiments'] = (new SplitzService())->getSplitzVariant($currentMerchantId);
+                    $data['splitz_experiments'] = (new SplitzService())->getSplitzVariantBulk($currentMerchantId);
 
                     $isBankingRequest = ApiUrl::isBankingOriginRequest();
 

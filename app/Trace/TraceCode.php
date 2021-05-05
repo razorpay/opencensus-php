@@ -61,6 +61,8 @@ class TraceCode
 
     const SPLITZ_EVALUATE_FAILED                    = 'SPLITZ_EVALUATE_FAILED';
 
+    const SPLITZ_BULK_EVALUATE_FAILED               = 'SPLITZ_BULK_EVALUATE_FAILED';
+
     const PUSH_METRICS_FAILED                       = 'PUSH_METRICS_FAILED';
 
     const ORG_FEATURES_CACHE_MISS                   = 'ORG_FEATURES_CACHE_MISS';
