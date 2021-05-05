@@ -1232,27 +1232,9 @@ class ApiEventSubscriber extends Base\Core
                 $e, Logger::WARNING, TraceCode::STORK_PRODUCT_SET_FAILED);
         }
 
-        $merchantId = $this->getMerchantFromEntity($this->mainEntity)->getId();
-
-        $variant = $this->app->razorx->getTreatment(
-            $merchantId,
-            Merchant\RazorxTreatment::PAYOUTS_WEBHOOK_FILTER,
-            $this->mode,
-            Payout\Entity::RAZORX_RETRY_COUNT
-        );
-
-        if (strtolower($variant) === 'on')
-        {
-            $payload[Constants\Entity::PAYOUT] = [
-                'entity' => $payout->toArrayPublic(),
-            ];
-        }
-        else
-        {
-            $payload[Constants\Entity::PAYOUT] = [
-                'entity' => $payout->toArrayWebhook(),
-            ];
-        }
+        $payload[Constants\Entity::PAYOUT] = [
+            'entity' => $payout->toArrayWebhook(),
+        ];
 
         return $payload;
     }

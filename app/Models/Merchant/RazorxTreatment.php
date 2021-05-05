@@ -57,9 +57,6 @@ final class RazorxTreatment
     // Decides if fund account and contact creation should have duplicate checks
     const X_CONTACT_AND_FUND_ACCOUNT_CREATION = 'x_contact_and_fund_account_creation';
 
-    // Decides what payload to return in the payouts webhook
-    const PAYOUTS_WEBHOOK_FILTER = 'payouts_webhook_filter';
-
     // Decides whether reject reason has to be sent in webhook
     const PAYOUTS_REJECT_COMMENT_IN_WEBHOOK_FILTER = 'payouts_reject_comment_in_webhook_filter';
 

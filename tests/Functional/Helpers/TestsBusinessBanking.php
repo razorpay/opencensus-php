@@ -365,11 +365,6 @@ trait TestsBusinessBanking
                         return strtolower($ftsEnabled);
                     }
 
-                    if ($feature === 'payouts_webhook_filter')
-                    {
-                        return strtolower($webhookArrayPublicPayload);
-                    }
-
                     if ($feature === 'payout_to_prepaid_cards')
                     {
                         return strtolower($payoutToPrepaidCards);
