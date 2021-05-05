@@ -778,6 +778,23 @@ class Service extends Base\Service
         return $this->getNewProcessor($this->merchant)->fetchFeeForRefundAmount($payment, $input);
     }
 
+    public function scroogeFetchRefundFee(array $input)
+    {
+        (new Validator)->validateInput('get_fee', $input);
+
+        $paymentId = $input[Entity::PAYMENT_ID];
+
+        unset($input[Entity::PAYMENT_ID]);
+
+        Payment\Entity::verifyIdAndStripSign($paymentId);
+
+        $payment = $this->repo->payment->findOrFailPublic($paymentId);
+
+        $merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
+
+        return $this->getNewProcessor($merchant)->fetchFeeForRefundAmount($payment, $input);
+    }
+
     public function fetchRefundCreationData(array $input)
     {
         (new Validator)->validateInput('fetch_refund_creation_data', $input);

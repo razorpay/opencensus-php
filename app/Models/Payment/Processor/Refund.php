@@ -1642,7 +1642,11 @@ trait Refund
         {
             $this->setPayment($payment);
 
-            $refund = (new Payment\Refund\Entity)->build($input, $payment);
+            $refundCreationInput = $input;
+
+            unset($refundCreationInput[RefundConstants::MODE]);
+
+            $refund = (new Payment\Refund\Entity)->build($refundCreationInput, $payment);
 
             $refund->merchant()->associate($this->merchant);
 
@@ -1651,11 +1655,20 @@ trait Refund
             $refund->setSpeedRequested(RefundSpeed::OPTIMUM);
             $refund->setSpeedDecisioned(RefundSpeed::OPTIMUM);
 
-            $data = $this->getRefundCreateData($payment, $refund);
 
-            if (empty($data[RefundConstants::MODE]) === false)
+            if (empty($input[RefundConstants::MODE]) === true)
             {
-                $refund->setModeRequested($data[RefundConstants::MODE]);
+                $data = $this->getRefundCreateData($payment, $refund);
+
+                if (empty($data[RefundConstants::MODE]) === false)
+                {
+                    $refund->setModeRequested($data[RefundConstants::MODE]);
+                }
+
+            }
+            else
+            {
+                $refund->setModeRequested($input[RefundConstants::MODE]);
             }
 
             list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($refund);

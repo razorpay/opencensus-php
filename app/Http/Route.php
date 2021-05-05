@@ -196,6 +196,7 @@ class Route
         'refund_fetch_by_id'                       => ['get',      'refunds/{id}',                                   'RefundController@getRefund'                                        ],
         'refund_fetch_multiple'                    => ['get',      'refunds',                                        'RefundController@getRefunds'                                       ],
         'refund_fetch_fee'                         => ['get',      'refunds/fee',                                    'RefundController@getRefundFee'                                     ],
+        'refund_scrooge_fetch_fee'                 => ['get',      'refunds/scrooge_fetch_fee',                      'RefundController@scroogeFetchRefundFee'                            ],
         'refund_fetch_creation_data'               => ['get',      'refunds/fetch_creation_data',                    'RefundController@fetchRefundCreationData'                          ],
         'refund_generate_excel'                    => ['post',     'refunds/excel',                                  'RefundController@generateRefunds'                                  ],
         'refund_verify_multiple'                   => ['post',     'refunds/{ids}/verify',                           'RefundController@postRefundVerifyMultiple'                         ],
@@ -3041,6 +3042,7 @@ class Route
         'unclaimed_merchant_poc_update',
         'low_balance_config_alert_cron',
         'merchant_notification_config_alert_cron',
+        'refund_scrooge_fetch_fee',
 
         // Razorpay Capital
         // Financial Data Service
@@ -8821,6 +8823,7 @@ class Route
             'scrooge_entities',
             'fund_transfer_attempt_modes',
             'scrooge_refund_reference1_bulk_update',
+            'refund_scrooge_fetch_fee',
         ],
 
         'thirdwatch_reports' => [

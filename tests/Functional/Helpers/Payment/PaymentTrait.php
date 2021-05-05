@@ -1343,6 +1343,23 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
+    protected function paymentScroogeFetchRefundFee(string $paymentId, int $amount, string $mode)
+    {
+        $this->ba->appAuth();
+
+        $request = [
+            'url'     => '/refunds/scrooge_fetch_fee',
+            'method'  => 'get',
+            'content' => [
+                'amount'     => $amount,
+                'payment_id' => $paymentId,
+                'mode'       => $mode,
+            ]
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function authorizeFailedPayment($id)
     {
         $request = array(

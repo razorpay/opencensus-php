@@ -54,6 +54,18 @@ class RefundController extends Controller
         return ApiResponse::json($fee);
     }
 
+    /**
+     * This is almost a duplicate route to getRefundFee, just used by scrooge with internal auth with instant refund mode sent from scrooge.
+     */
+    public function scroogeFetchRefundFee()
+    {
+        $input = Request::all();
+
+        $fee = $this->service()->scroogeFetchRefundFee($input);
+
+        return ApiResponse::json($fee);
+    }
+
     public function fetchRefundCreationData()
     {
         $input = Request::all();
@@ -139,7 +151,7 @@ class RefundController extends Controller
 
     /*
      * Support admin action for bulk retrying refunds via FTA to custom sources
-     */ 
+     */
     public function retryRefundsViaCustomFundTransfersBatch()
     {
         $input = Request::all();
