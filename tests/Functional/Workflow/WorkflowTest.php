@@ -406,7 +406,7 @@ class WorkflowTest extends TestCase
 
     }
 
-    public function testGetWorkflowConfigWFSWithPermission()
+    public function testGetWorkflowConfigWFSFromAdminDashWithPermission()
     {
         $this->setUpExperimentForNWFS();
 
@@ -435,12 +435,12 @@ class WorkflowTest extends TestCase
         $this->ba->adminAuth('test', $token);
 
         $testData = & $this->testData[__FUNCTION__];
-        $testData['request']['url'] = '/wf-service/configs/' . $workflowConfig['config_id'];
+        $testData['request']['url'] = '/wf-service-admin/configs/' . $workflowConfig['config_id'];
 
         $this->startTest();
     }
 
-    public function testGetWorkflowConfigWFSWithoutPermission()
+    public function testGetWorkflowConfigWFSFromAdminDashWithoutPermission()
     {
         $this->setUpExperimentForNWFS();
 
@@ -475,12 +475,39 @@ class WorkflowTest extends TestCase
         $workflowConfig = $this->getDbLastEntity('workflow_config');
 
         $testData = & $this->testData[__FUNCTION__];
-        $testData['request']['url'] = '/wf-service/configs/' . $workflowConfig['config_id'];
+        $testData['request']['url'] = '/wf-service-admin/configs/' . $workflowConfig['config_id'];
 
         $this->startTest();
 
         $workflowConfig = $this->getDbLastEntity('workflow_config', 'test');
         $this->assertEquals(false, $workflowConfig['enabled']);
+    }
+
+    public function testGetWorkflowConfigWFSFromXDashboardWithPermission()
+    {
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->setUpExperimentForNWFS();
+
+        $this->fixtures->on('test')->create(
+            'workflow_config',
+            [
+                'id'              => 'FQfRKbJwE4aWbp',
+                'config_id'       => 'FQE6Xw4ZpoM21X',
+                'config_type'     => 'payout-approval',
+                'enabled'         => false,
+                'merchant_id'     => '10000000000000',
+                'org_id'          => '100000razorpay',
+            ]);
+
+        $workflowConfig = $this->getDbLastEntity('workflow_config');
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/wf-service/configs/' . $workflowConfig['config_id'];
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
     }
 
     private function setUpExperimentForNWFS()

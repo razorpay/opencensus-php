@@ -1205,6 +1205,7 @@ class Route
         'wfs_config_create'                       => ['post',    'wf-service/configs',                               'WorkflowServiceController@createConfig'                            ],
         'wfs_config_update'                       => ['patch',   'wf-service/configs',                               'WorkflowServiceController@updateConfig'                            ],
         'wfs_config_get'                          => ['get',     'wf-service/configs/{id}',                          'WorkflowServiceController@getConfig'                               ],
+        'wfs_config_get_admin'                    => ['get',     'wf-service-admin/configs/{id}',                          'WorkflowServiceController@getConfig'                               ],
         'workflow_state_callback'                 => ['post',    'wf-service/state/callback',                        'WorkflowServiceController@createWorkflowStateMap'                  ],
         'workflow_state_callback_update'          => ['patch',   'wf-service/state/{id}/callback',                   'WorkflowServiceController@updateWorkflowStateMap'                  ],
 
@@ -4464,7 +4465,7 @@ class Route
         'fetch_merchant_instrument_requests',
         'wfs_config_create',
         'wfs_config_update',
-        'wfs_config_get',
+        'wfs_config_get_admin',
         'payout_workflow_retry_admin_bulk',
 
         // gateway credentials
@@ -5350,7 +5351,7 @@ class Route
         // Workflow Service requests
         'wfs_config_create'                        => Permission::WFS_CONFIG_CREATE,
         'wfs_config_update'                        => Permission::WFS_CONFIG_UPDATE,
-        'wfs_config_get'                           => Permission::WFS_CONFIG_CREATE,
+        'wfs_config_get_admin'                     => Permission::WFS_CONFIG_CREATE,
 
         // Instrument requests
         'get_internal_instrument_request_by_id'       => Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST,
@@ -5538,6 +5539,7 @@ class Route
         'payouts_process_scheduled'                    => Permission::PROCESS_PAYOUT_SCHEDULED,
         'payouts_summary'                              => Permission::VIEW_PAYOUT_SUMMARY,
         'payouts_workflow_summary'                     => Permission::VIEW_PAYOUT_WORKFLOW_SUMMARY,
+        'wfs_config_get'                               => Permission::VIEW_PAYOUT_WORKFLOW_SUMMARY,
         'payout_links_fetch_multiple'                  => Permission::VIEW_PAYOUT_LINKS,
         'payout_links_fetch_by_id'                     => Permission::VIEW_PAYOUT_LINKS,
         'payout_links_create'                          => Permission::CREATE_PAYOUT_LINKS,
@@ -8399,7 +8401,7 @@ class Route
             'webhook_fetch_multiple',
             'webhook_fire',
             'wfs_config_create',
-            'wfs_config_get',
+            'wfs_config_get_admin',
             'wfs_config_update',
             'workflow_action_close',
             'workflow_action_details',
