@@ -1,28 +1,93 @@
-import { Component } from 'react';
+import React, { useEffect } from 'react';
+import qs from 'query-string';
 
-export default class LogoutDialog extends Component {
-  constructor(props) {
-    super(props);
-  }
+const LogoutDialog = ({ user }) => {
+  const sendLjData = (state, event) => {
+    let utm, gclid, browserDetails, source;
+    const mode = localStorage.getItem(`rzp_mode--${user.id}`);
+    const query = qs.parse(window.location.search);
 
-  componentDidMount() {
+    if (query.merchant) {
+      source = query.merchant;
+    }
+    if (typeof window.razorpayAnalytics !== 'undefined') {
+      utm = window.razorpayAnalytics.utils.getLandingParams();
+      gclid = window.razorpayAnalytics.utils.getCookie('gclid');
+      if (typeof window.razorpayAnalytics.utils.getBrowserDetails !== 'undefined') {
+        browserDetails = window.razorpayAnalytics.utils.getBrowserDetails();
+      }
+    }
+
+    const properties = {
+      email_id: user.user.email,
+      user_id: user.user.id,
+      mid: user.current,
+      user_role: user.role,
+      component: 'Session expire',
+      utm_params: utm,
+      gclid,
+      mode: 'live',
+      rzp_mode: mode,
+      source,
+      referring_url: document.referrer,
+      url: document.location.href,
+      browser_details: browserDetails,
+      sessionId: window.session_id,
+      version: window.isOneTapExpOn ? 1.2 : 1.1,
+    };
+
+    if (window.rzpQ && window.rzpQ.onbr) {
+      if (state === 'success') {
+        window.rzpQ.push(window.rzpQ.now().onbr().success(event, properties));
+      }
+      if (state === 'initiated') {
+        window.rzpQ.push(window.rzpQ.now().onbr().initiated(event, properties));
+      }
+    }
+  };
+
+  const trackPopupSuccess = () => {
+    sendLjData('success', 'dash.session_expired');
+  };
+
+  const trackLoginInitiated = () => {
+    sendLjData('initiated', 'dash.expired_modal_login_click');
+  };
+
+  useEffect(() => {
+    trackPopupSuccess();
     window.setTimeout(() => {
       window.location.reload();
-    }, 2000);
-  }
+    }, 3000);
+  });
 
-  render() {
-    return (
-      <div class="logout-dialog">
-        <center>
-          <div class="modal-header">
-            <h3 class="modal-title">Your session has expired!</h3>
-          </div>
-          <div class="modal-body">
-            <p>You will be redirected to Login</p>
-          </div>
-        </center>
+  const handleOnClickLogInNow = () => {
+    trackLoginInitiated();
+    window.location.reload();
+  };
+
+  return (
+    <div className="logout-dialog">
+      <div className="content">
+        <h3 className="title">Your session has Expired!</h3>
+        <p>You are required to login again since you have been inactive for the past few hours</p>
+        <div className="subtext">Redirecting soon...</div>
+        <button className="button" onClick={handleOnClickLogInNow}>
+          Log In Now <i className="i i-arrow-forward" />
+        </button>
       </div>
-    );
-  }
-}
+      <img
+        src="/dist/css/assets/logout/bg-desk.png"
+        alt="logout-image"
+        className="bg-image desktop"
+      />
+      <img
+        src="/dist/css/assets/logout/bg-mob.png"
+        alt="logout-image"
+        className="bg-image mobile"
+      />
+    </div>
+  );
+};
+
+export default LogoutDialog;

@@ -1,0 +1,64 @@
+.logout-dialog
+  display: flex
+  background-image: url('/assets/logout-bg.png')
+  @media (max-width: 767px)
+    flex-direction column
+
+  .content
+    padding: 48px 56px
+    @media (max-width: 767px)
+      padding 20px 24px 0 24px
+      margin-bottom -51px
+
+    h3
+      font-weight: bold;
+      font-size: 24px;
+      line-height: 36px;
+      color: #162F56;
+
+    p
+      font-size: 14px;
+      line-height: 20px;
+      color: rgba(22, 47, 86, 0.54);
+
+    .subtext
+      font-style: italic;
+      font-size: 14px;
+      line-height: 20px;
+      color: rgba(22, 47, 86, 0.54);
+
+      .dark-text
+        color: #162F56;
+
+  .button
+    padding-top 24px
+    padding-left 0
+    font-weight: bold;
+    font-size: 14px;
+    line-height: 20px;
+    color: #3395FF;
+    background-color: transparent;
+    border: none;
+
+    i
+      padding-left 10px
+
+    @media (max-width: 767px)
+      padding-top 32px
+
+
+  .bg-image
+    height: 100%;
+    width: 383px;
+    @media (max-width: 767px)
+      width 100%
+
+  .desktop
+    display none
+    @media (min-width: 768px)
+      display block
+
+  .mobile
+    display none
+    @media (max-width: 767px)
+      display block

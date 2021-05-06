@@ -18,7 +18,6 @@ import HeaderNav from 'merchant/components/HeaderNav';
 import Content from 'merchant/routes/Content';
 import Footer from 'merchant/components/Footer';
 import ActivationRequiredModal from 'merchant/components/ActivationRequiredModal';
-import PasswordReLogin from 'merchant_common/components/PasswordReLogin';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 import { updateTwoFactorVerified } from 'merchant_common/reducers/twoFactor';
@@ -30,7 +29,6 @@ import User, { setFeatures } from 'merchant/models/User';
 import { fetchFeaturesAjax } from 'merchant/reducers/config';
 import AddGST from 'merchant/views/Account/Profile/components/AddGST';
 import { fetchGST } from 'merchant/reducers/profile';
-import { fetchConfig, fetchRefundPricing } from 'merchant/reducers/config';
 import { fireAnalyticsEvents, setTrackData } from 'common/utils/googleAnalytics';
 import { resizeWindow, updateMerchantLiveTransactionFlag } from 'merchant/reducers/app';
 import { matchFullPageView } from 'merchant/routes';
@@ -45,6 +43,8 @@ import RTracking from 'react-tracking';
 import qs from 'query-string';
 import Wrapper from 'v2/components/Bootstrap/Wrapper';
 import { fetchActiveTickets } from 'merchant/reducers/config.js';
+import LogoutDialog from 'merchant/components/LogoutDialog';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
 
 @withRouter
 @connect(
@@ -64,6 +64,8 @@ import { fetchActiveTickets } from 'merchant/reducers/config.js';
     fetchGST,
     fetchActiveTickets: fetchActiveTickets,
     resizeWindow,
+    openModal,
+    closeModal,
   },
 )
 @RTracking(
@@ -119,7 +121,6 @@ export default class App extends Component {
 
   constructor(props) {
     super(props);
-    const { user } = props;
 
     const oldModeToken = 'rzp_mode';
     const oldModeValue = LocalStorageService.getItem(oldModeToken);
@@ -140,7 +141,7 @@ export default class App extends Component {
     if (window.rzp_user) {
       this.modeToken = `${oldModeToken}--${window.rzp_user.current}`;
     }
-
+    this.logoutPopupShown = false;
     this.state = {
       isLoading: true,
       goLiveNPSSurveyPopup: false,
@@ -193,13 +194,15 @@ export default class App extends Component {
     }
     const self = this;
     window.addEventListener('NOT_AUTHENTICATED', function (e) {
-      self.registerPendingRequests(e.detail.continueAjax);
-
-      if (this.isDashboardLocked) {
+      if (this.logoutPopupShown) {
         return;
       }
-
-      self.lockDashboard(self.resumePendingRequests);
+      self.props.closeModal();
+      self.props.openModal({
+        size: 'large',
+        component: <LogoutDialog user={user} />,
+      });
+      this.logoutPopupShown = true;
     });
 
     window.addEventListener('REQUEST_ERROR', function (e) {
@@ -635,25 +638,6 @@ export default class App extends Component {
       });
   };
 
-  lockDashboard = (cb) => {
-    const email = this.props.user.user.email;
-
-    if (window.Raven && window.Raven.captureMessage) {
-      window.Raven.captureMessage('Dashboard Locked', {
-        level: 'info',
-      });
-    }
-
-    this.resumeLockActionCB = cb;
-
-    this.setState({ isDashboardLocked: true });
-  };
-
-  removeLockScreen = () => {
-    this.resumeLockActionCB = undefined;
-    this.setState({ isDashboardLocked: false });
-  };
-
   handleResize = () => {
     this.props.resizeWindow();
   };
@@ -761,18 +745,6 @@ export default class App extends Component {
             <ModalDialog />
             <Notifications />
           </TwoFactorVerificationProvider>
-
-          {this.state.isDashboardLocked && (
-            <PasswordReLogin
-              merchantId={user.current}
-              userEmail={user.user.email}
-              removeLockScreen={this.removeLockScreen}
-              showNotification={this.props.showNotification}
-              resumeLockActionCB={this.resumeLockActionCB}
-              isGoogleLogin={user.isGoogleLogin()}
-              isPartner={user.isPartner()}
-            />
-          )}
         </div>
       </Wrapper>
     );
