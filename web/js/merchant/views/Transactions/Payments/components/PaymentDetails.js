@@ -199,6 +199,10 @@ export default (props) => {
                   />
                 </EntityDetailRow>
 
+                {payment.gateway_provider && (
+                  <EntityDetailRow label="Gateway">{payment.gateway_provider}</EntityDetailRow>
+                )}
+
                 <EntityDetailRow label="Created At">
                   <Time value={payment.created_at} format="DD MMM YYYY, hh:mm:ss a" />
                 </EntityDetailRow>
