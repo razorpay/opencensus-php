@@ -598,6 +598,11 @@ class Merchant extends Base
         return $this->fixtures->edit('methods', $id, ['emi' => [Methods\EmiType::CREDIT => '1', Methods\EmiType::DEBIT => '1']]);
     }
 
+    public function enableEmiCredit($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['emi' => [Methods\EmiType::CREDIT => '1']]);
+    }
+
     public function disableEmi($id = '10000000000000')
     {
         return $this->fixtures->edit('methods', $id, ['emi' => []]);

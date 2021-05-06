@@ -4445,13 +4445,74 @@ return [
         ]
     ],
 
+    'testPutPaytmCardNetworkAndEMIMethodWithUpdateObserverData'=> [
+        'request' => [
+            'url' => '/merchants/10000000000000/methods',
+            'method' => 'put',
+            'content' => [
+                'paytm' => true,
+                'emi'   =>  ['credit'=> '0', 'debit' => "1"],
+                'card_networks' =>  ['AMEX'=>'1']
+            ],
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity_id'    =>  "10000000000000",
+                'entity_name'  =>  "methods"
+            ]
+        ]
+    ],
+
+    'testPutEMIMethodWithUpdateObserverData'=> [
+        'request' => [
+            'url' => '/merchants/10000000000000/methods',
+            'method' => 'put',
+            'content' => [
+                'emi'   =>  ['credit'=> '0', 'debit' => "1"]
+            ],
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity_id'    =>  "10000000000000",
+                'entity_name'  =>  "methods"
+            ]
+        ]
+    ],
+
+    'testPutCardNetworkMethodWithUpdateObserverData'=> [
+        'request' => [
+            'url' => '/merchants/10000000000000/methods',
+            'method' => 'put',
+            'content' => [
+                'card_networks' =>  ['AMEX'=>'1']
+            ],
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity_id'    =>  "10000000000000",
+                'entity_name'  =>  "methods"
+            ]
+        ]
+    ],
+
     'testPutPaytmMethodWithUpdateObserverData'=> [
         'request' => [
             'url' => '/merchants/10000000000000/methods',
             'method' => 'put',
             'content' => [
                 'paytm' => true,
-
             ],
             'server' => [
                 'HTTP_X-Dashboard'            => 'true',

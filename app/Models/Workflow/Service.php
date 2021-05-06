@@ -186,9 +186,9 @@ class Service extends Base\Service
             return;
         }
 
-        $diff = (new DifferService)->fetchRequest($actionId);
+        $workflowRequestData = (new DifferService)->fetchRequest($actionId);
 
-        $routeName = $diff[DifferEntity::ROUTE];
+        $routeName = $workflowRequestData[DifferEntity::ROUTE];
 
         $observerClass = $this->getWorkflowObserverClassName($routeName);
 
@@ -197,9 +197,9 @@ class Service extends Base\Service
             return;
         }
 
-        $observerData = $diff[DifferEntity::WORKFLOW_OBSERVER_DATA] ?? [];
+        $observerData = $workflowRequestData[DifferEntity::WORKFLOW_OBSERVER_DATA] ?? [];
 
-        $observerClassInstance = new $observerClass($diff);
+        $observerClassInstance = new $observerClass($workflowRequestData);
 
         $this->trace->info(TraceCode::PERFORM_ACTION_OBSERVER_DATA, [
             DifferEntity::WORKFLOW_OBSERVER_DATA    => $observerData,

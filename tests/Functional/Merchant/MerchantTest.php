@@ -4593,25 +4593,27 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
-    public function testPutPaytmMethodWithUpdateObserverData()
+    public function testPutPaytmCardNetworkAndEMIMethodWithUpdateObserverData()
     {
         $this->app->razorx->method('getTreatment')
-            ->will($this->returnCallback(
-                function ($actionId, $feature, $mode)
-                {
-                    if($feature == "perform_action_on_workflow_observer_data")
-                    {
-                        return 'on';
-                    }
-                    else
-                    {
-                        return 'control';
-                    }
-                }) );
+                          ->will($this->returnCallback(
+                              function ($actionId, $feature, $mode)
+                              {
+                                  if($feature == "perform_action_on_workflow_observer_data")
+                                  {
+                                      return 'on';
+                                  }
+                                  else
+                                  {
+                                      return 'control';
+                                  }
+                              }) );
 
         $this->fixtures->create('pricing:emi_pricing_plan');
 
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $this->fixtures->merchant->enableEmiCredit('10000000000000');
 
         $admin = $this->ba->getAdmin();
 
@@ -4641,30 +4643,34 @@ class MerchantTest extends TestCase
         $this->setUpFreshdeskClientMock();
 
         $this->expectFreshdeskRequestAndRespondWith('tickets/123/reply', 'post',
-            [
-                'body' => implode("<br><br>",(new PaymentMethodChangeObserver([
-                    Entity::ENTITY_ID => '10000000000000',
-                    Entity::PAYLOAD=>[
-                        'paytm'     =>  1,
-                    ]]))->getTicketReplyContent(ObserverConstants::APPROVE,'10000000000000')),
-            ],
-            []);
+                                                    [
+                                                        'body' => implode("<br><br>",(new PaymentMethodChangeObserver([
+                                                                                                                          Entity::ENTITY_ID => '10000000000000',
+                                                                                                                          Entity::PAYLOAD=>[
+                                                                                                                              'paytm'     =>  1,
+                                                                                                                              'emi' =>    ['credit' =>"0", 'debit' => "1"],
+                                                                                                                              'card_networks' =>  [
+                                                                                                                                  'AMEX' => "1"
+                                                                                                                              ]
+                                                                                                                          ]]))->getTicketReplyContent(ObserverConstants::APPROVE,'10000000000000')),
+                                                    ],
+                                                    []);
 
         $this->expectFreshdeskRequestAndRespondWith('tickets/123?include=requester', 'GET',
-            [],
-            [
-                'id'        => '123',
-                'tags'      => ['xyz']
-            ]);
+                                                    [],
+                                                    [
+                                                        'id'        => '123',
+                                                        'tags'      => ['xyz']
+                                                    ]);
 
         $this->expectFreshdeskRequestAndRespondWith('tickets/123', 'PUT',
-            [
-                'status'    => 4,
-                'tags'      => ['xyz','automated_workflow_response']
-            ],
-            [
-                'id'            => '123',
-            ]);
+                                                    [
+                                                        'status'    => 4,
+                                                        'tags'      => ['xyz','automated_workflow_response']
+                                                    ],
+                                                    [
+                                                        'id'            => '123',
+                                                    ]);
 
         $this->performWorkflowAction($workflowAction['id'], true);
 
@@ -4674,20 +4680,312 @@ class MerchantTest extends TestCase
         ];
 
         $this->fixtures->create('merchant_detail',
-            [
-                'merchant_id' => '10000000000000',
-                'business_registered_address'   => 'ksjdnfk akejnffn',
-                'business_registered_state'     => 'karnanata',
-                'business_registered_city'      => 'bengaluru',
-                'business_registered_pin'       => '12345457',
-                'contact_mobile'                => '124098598978',
-            ]);
+                                [
+                                    'merchant_id' => '10000000000000',
+                                    'business_registered_address'   => 'ksjdnfk akejnffn',
+                                    'business_registered_state'     => 'karnanata',
+                                    'business_registered_city'      => 'bengaluru',
+                                    'business_registered_pin'       => '12345457',
+                                    'contact_mobile'                => '124098598978',
+                                ]);
+
+        $this->ba->proxyAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertArraySelectiveEquals(['wallet' =>['paytm' => true ],"card_networks"=>["AMEX"=> 1]], $response);
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertFalse($merchantMethods->isCreditEmiEnabled());
+
+        $this->assertTrue($merchantMethods->isDebitEmiEnabled());
+    }
+
+    public function testPutEMIMethodWithUpdateObserverData()
+    {
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                              function ($actionId, $feature, $mode)
+                              {
+                                  if($feature == "perform_action_on_workflow_observer_data")
+                                  {
+                                      return 'on';
+                                  }
+                                  else
+                                  {
+                                      return 'control';
+                                  }
+                              }) );
+
+        $this->fixtures->create('pricing:emi_pricing_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $this->fixtures->merchant->enableEmiCredit('10000000000000');
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $this->setupWorkflow('Payment Method Workflow', PermissionName::EDIT_MERCHANT_METHODS, "test");
+
+        $response = $this->startTest();
+
+        $this->assertStringStartsWith('w_action_', $response['id']);
+
+        $this->esClient->indices()->refresh();
+
+        $this->updateObserverData($response['id'],  [
+            'ticket_id'     => '123',
+            'fd_instance'   => 'rzp'
+        ]);
+
+        $this->fixtures->create('merchant_freshdesk_tickets', $this->getDefaultFreshdeskArray());
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->esClient->indices()->refresh();
+
+        $this->setUpFreshdeskClientMock();
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123/reply', 'post',
+                                                    [
+                                                        'body' => implode("<br><br>",(new PaymentMethodChangeObserver([
+                                                                                                                          Entity::ENTITY_ID => '10000000000000',
+                                                                                                                          Entity::PAYLOAD=>[
+                                                                                                                              'emi' =>    ['credit' =>"0", 'debit' => "1"],
+                                                                                                                          ]]))->getTicketReplyContent(ObserverConstants::APPROVE,'10000000000000')),
+                                                    ],
+                                                    []);
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123?include=requester', 'GET',
+                                                    [],
+                                                    [
+                                                        'id'        => '123',
+                                                        'tags'      => ['xyz']
+                                                    ]);
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123', 'PUT',
+                                                    [
+                                                        'status'    => 4,
+                                                        'tags'      => ['xyz','automated_workflow_response']
+                                                    ],
+                                                    [
+                                                        'id'            => '123',
+                                                    ]);
+
+        $this->performWorkflowAction($workflowAction['id'], true);
+
+        $this->ba->proxyAuth();
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertFalse($merchantMethods->isCreditEmiEnabled());
+
+        $this->assertTrue($merchantMethods->isDebitEmiEnabled());
+    }
+
+    public function testPutPaytmMethodWithUpdateObserverData()
+    {
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                              function ($actionId, $feature, $mode)
+                              {
+                                  if($feature == "perform_action_on_workflow_observer_data")
+                                  {
+                                      return 'on';
+                                  }
+                                  else
+                                  {
+                                      return 'control';
+                                  }
+                              }) );
+
+        $this->fixtures->create('pricing:emi_pricing_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $this->fixtures->merchant->enableEmiCredit('10000000000000');
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $this->setupWorkflow('Payment Method Workflow', PermissionName::EDIT_MERCHANT_METHODS, "test");
+
+        $response = $this->startTest();
+
+        $this->assertStringStartsWith('w_action_', $response['id']);
+
+        $this->esClient->indices()->refresh();
+
+        $this->updateObserverData($response['id'],  [
+            'ticket_id'     => '123',
+            'fd_instance'   => 'rzp'
+        ]);
+
+        $this->fixtures->create('merchant_freshdesk_tickets', $this->getDefaultFreshdeskArray());
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->esClient->indices()->refresh();
+
+        $this->setUpFreshdeskClientMock();
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123/reply', 'post',
+                                                    [
+                                                        'body' => implode("<br><br>",(new PaymentMethodChangeObserver([
+                                                                                                                          Entity::ENTITY_ID => '10000000000000',
+                                                                                                                          Entity::PAYLOAD=>[
+                                                                                                                              'paytm'     =>  1,
+                                                                                                                          ]]))->getTicketReplyContent(ObserverConstants::APPROVE,'10000000000000')),
+                                                    ],
+                                                    []);
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123?include=requester', 'GET',
+                                                    [],
+                                                    [
+                                                        'id'        => '123',
+                                                        'tags'      => ['xyz']
+                                                    ]);
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123', 'PUT',
+                                                    [
+                                                        'status'    => 4,
+                                                        'tags'      => ['xyz','automated_workflow_response']
+                                                    ],
+                                                    [
+                                                        'id'            => '123',
+                                                    ]);
+
+        $this->performWorkflowAction($workflowAction['id'], true);
+
+        $request = [
+            'url' => '/merchant/methods',
+            'method' => 'get',
+        ];
+
+        $this->fixtures->create('merchant_detail',
+                                [
+                                    'merchant_id' => '10000000000000',
+                                    'business_registered_address'   => 'ksjdnfk akejnffn',
+                                    'business_registered_state'     => 'karnanata',
+                                    'business_registered_city'      => 'bengaluru',
+                                    'business_registered_pin'       => '12345457',
+                                    'contact_mobile'                => '124098598978',
+                                ]);
 
         $this->ba->proxyAuth();
 
         $response = $this->makeRequestAndGetContent($request);
 
         $this->assertArraySelectiveEquals(['wallet' =>['paytm' => true ]], $response);
+    }
+
+    public function testPutCardNetworkMethodWithUpdateObserverData()
+    {
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                              function ($actionId, $feature, $mode)
+                              {
+                                  if($feature == "perform_action_on_workflow_observer_data")
+                                  {
+                                      return 'on';
+                                  }
+                                  else
+                                  {
+                                      return 'control';
+                                  }
+                              }) );
+
+        $this->fixtures->create('pricing:emi_pricing_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $this->fixtures->merchant->enableEmiCredit('10000000000000');
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $this->setupWorkflow('Payment Method Workflow', PermissionName::EDIT_MERCHANT_METHODS, "test");
+
+        $response = $this->startTest();
+
+        $this->assertStringStartsWith('w_action_', $response['id']);
+
+        $this->esClient->indices()->refresh();
+
+        $this->updateObserverData($response['id'],  [
+            'ticket_id'     => '123',
+            'fd_instance'   => 'rzp'
+        ]);
+
+        $this->fixtures->create('merchant_freshdesk_tickets', $this->getDefaultFreshdeskArray());
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->esClient->indices()->refresh();
+
+        $this->setUpFreshdeskClientMock();
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123/reply', 'post',
+                                                    [
+                                                        'body' => implode("<br><br>",(new PaymentMethodChangeObserver([
+                                                                                                                          Entity::ENTITY_ID => '10000000000000',
+                                                                                                                          Entity::PAYLOAD=>[
+                                                                                                                              'card_networks' =>  [
+                                                                                                                                  'AMEX' => "1"
+                                                                                                                              ]
+                                                                                                                          ]]))->getTicketReplyContent(ObserverConstants::APPROVE,'10000000000000')),
+                                                    ],
+                                                    []);
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123?include=requester', 'GET',
+                                                    [],
+                                                    [
+                                                        'id'        => '123',
+                                                        'tags'      => ['xyz']
+                                                    ]);
+
+        $this->expectFreshdeskRequestAndRespondWith('tickets/123', 'PUT',
+                                                    [
+                                                        'status'    => 4,
+                                                        'tags'      => ['xyz','automated_workflow_response']
+                                                    ],
+                                                    [
+                                                        'id'            => '123',
+                                                    ]);
+
+        $this->performWorkflowAction($workflowAction['id'], true);
+
+        $request = [
+            'url' => '/merchant/methods',
+            'method' => 'get',
+        ];
+
+        $this->fixtures->create('merchant_detail',
+                                [
+                                    'merchant_id' => '10000000000000',
+                                    'business_registered_address'   => 'ksjdnfk akejnffn',
+                                    'business_registered_state'     => 'karnanata',
+                                    'business_registered_city'      => 'bengaluru',
+                                    'business_registered_pin'       => '12345457',
+                                    'contact_mobile'                => '124098598978',
+                                ]);
+
+        $this->ba->proxyAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertArraySelectiveEquals(["card_networks"=>["AMEX"=> 1]], $response);
     }
 
     public function testGetKeySecret()
