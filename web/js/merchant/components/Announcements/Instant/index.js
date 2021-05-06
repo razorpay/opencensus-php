@@ -27,8 +27,6 @@ export default class InstantActivationAnnouncements extends Component {
     const commonSettlementBanner = {
       theme: 'success',
       title: 'Account Activated',
-      content:
-        'You can start accepting payments now. Payments will be settled to your bank account according to your settlement schedule. Please note we may ask you for more clarifications later as part of routine checks.',
     };
     let theme = 'warning',
       title,
@@ -135,7 +133,8 @@ export default class InstantActivationAnnouncements extends Component {
         if (!user.isNPSSurveyBannerEnabled && !user.isCovidFeatureEnabled) {
           theme = commonSettlementBanner.theme;
           title = commonSettlementBanner.title;
-          content = commonSettlementBanner.content;
+          content =
+            'You can start accepting payments now. Payments will be settled to your bank account according to your settlement schedule.';
         } else return null;
       } else if (user.isRejected || user.needsClarification) {
         theme = 'danger';
@@ -179,7 +178,8 @@ export default class InstantActivationAnnouncements extends Component {
       } else if (user.activation_status === 'activated_mcc_pending') {
         theme = commonSettlementBanner.theme;
         title = commonSettlementBanner.title;
-        content = commonSettlementBanner.content;
+        content =
+          'Congratulations! You can start accepting payments now. Payments will be settled to your bank account according to your settlement schedule. Please note that as part of the routine compliance checks mandated by our banking partners, we will review your business model, website details and reach out for further clarifications.';
       } else if (user.activation_status === 'under_review' && !!user.locked && user.isDedupe) {
         title = 'Contact Support';
         content = (
