@@ -6,6 +6,7 @@ local M = {}
 local rm_lib                = require 'routes_meta'
 local utility               = require "rate_limit_utility"
 local fixed_window_script   = require("fixed_window")()
+
 -- local sliding_window_script = require("sliding_window")()       -- Sliding window script is not in use for now.
 
 
@@ -123,13 +124,17 @@ local function get_rate_limit_args(redis, req_ctx, ngx)
     -- - Route setting
     -- - Default route setting
     -- - Merchant setting
+    local start_time = ngx.now()
+    local metric_label = "pipelined_HGETALL_2"
     redis:init_pipeline()
     redis:hgetall(route_setting_prefix .. req_ctx.route .. "}")
     redis:hgetall(route_setting_prefix .. default_route .. "}")
     if mid ~= nil then
+        metric_label = "pipelined_HGETALL_3"
         redis:hgetall(merchant_setting_prefix .. mid .. "}")
     end
     local raw_settings, err = redis:commit_pipeline()
+    utility.log_redis_latency_metric(start_time, metric_label, err)
     if err then
         return nil, "failed to get settings from redis: " .. err
     end
@@ -143,7 +148,7 @@ local function get_rate_limit_args(redis, req_ctx, ngx)
             end
         end
     end
-    ngx.log(ngx.DEBUG, "settings for rate_limit_args : ", utility.dump(settings))
+    -- ngx.log(ngx.DEBUG, "settings for rate_limit_args : ", utility.dump(settings))
 
     local merchant_settings = settings[3] or {}
     local route_settings = ((next(settings[1]) ~= nil) and settings[1]) or settings[2]  -- Route specific Setting if present else default route setting
@@ -185,6 +190,7 @@ local function rate_limit(redis, rate_limit_args)
         return nil, nil
     end
 
+    local start_time = ngx.now()
     local res, err = redis:eval(
         fixed_window_script,
         1,
@@ -192,6 +198,7 @@ local function rate_limit(redis, rate_limit_args)
         rate_limit_args.rc,
         rate_limit_args.rcw
     )
+    utility.log_redis_latency_metric(start_time, "EVAL", err)
     if err then
         return nil, err
     end

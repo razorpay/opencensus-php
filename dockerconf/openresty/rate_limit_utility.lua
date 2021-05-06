@@ -28,6 +28,27 @@ local redis_conf = {
     auth = os.getenv("RESTY_REDIS_CLUSTER_PASSWORD") or nil
 }
 
+function M.dump(o)
+    if type(o) == 'table' then
+        local s = '{ '
+        for k,v in pairs(o) do
+            if type(k) ~= 'number' then k = '"'..k..'"' end
+            s = s .. '['..k..'] = ' .. M.dump(v) .. ','
+        end
+        return s .. '} '
+    else
+        return tostring(o)
+    end
+end
+
+function M.log_redis_latency_metric(start_time, metric_label, err)
+    ngx.log(ngx.DEBUG, "redis_op_latency: ", M.dump({
+        latency = ngx.now() - start_time,
+        metric_label = metric_label,
+        err_string = err
+    }))
+end
+
 -- get_redis_conn gets a new connection from redis pool of connections.
 function M.get_redis_conn(ngx)
     local redis = redis_cluster:new(redis_conf)
@@ -61,7 +82,9 @@ function M.get_details_by_oauth_token(redis, token, ngx)
     sha_256:update(token)
     local tokenHash = str.to_hex(sha_256:final())
     -- ngx.log(ngx.DEBUG, "token hash :  ", tokenHash)
+    local start_time = ngx.now()
     local res, err = redis:get("laravel:tag:auth_token_" .. tokenHash .. ":key")
+    M.log_redis_latency_metric(start_time, "GET", err)
     if err then
         return nil, "redis error, failed to fetch token tag"
     end
@@ -71,7 +94,9 @@ function M.get_details_by_oauth_token(redis, token, ngx)
         sha_1:update(string.match(res, "\"(.*)\""))
         local tagKeyHash = str.to_hex(sha_1:final())
         -- ngx.log(ngx.DEBUG, "tag key hash :  ", tagKeyHash)
+        local start_time = ngx.now()
         local res, err = redis:get("laravel:".. tagKeyHash .. ":rememberable:v2:auth_token:auth_token_" .. tokenHash)
+        M.log_redis_latency_metric(start_time, "GET", err)
         if err then
             return nil, "redis error, failed to fetch token"
         end
@@ -99,7 +124,9 @@ function M.get_details_by_key(redis, key, ngx)
         mid = nil,
         mode = nil
     }
+    local start_time = ngx.now()
     local res, err = redis:get(merchant_key_prefix .. key)
+    M.log_redis_latency_metric(start_time, "GET", err)
     if err then
         return nil, "redis error, failed to fetch Merchant for given key"
     end
@@ -121,19 +148,6 @@ function M.get_details_by_proxy_key(key, ngx)
     merchant.mode   = M.parse_mode_from_key(key)
     ngx.log(ngx.DEBUG, "get_details_by_proxy_key mid :  ", merchant.mid)
     return merchant, nil
-end
-
-function M.dump(o)
-    if type(o) == 'table' then
-        local s = '{ '
-        for k,v in pairs(o) do
-            if type(k) ~= 'number' then k = '"'..k..'"' end
-            s = s .. '['..k..'] = ' .. M.dump(v) .. ','
-        end
-        return s .. '} '
-    else
-        return tostring(o)
-    end
 end
 
 return M
