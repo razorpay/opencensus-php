@@ -311,16 +311,16 @@ class BankAccount extends Base
                 TraceCode::FUND_ACCOUNT_VALIDATION_ALREADY_PROCESSED,
                 [
                     'fav_id' => $this->validation->getId(),
-                    'fta_status' => $input['fta_status'],
+                    'fta_status' => $input['fta_status'] ?? $input['status'],
                     'fav_status' => $this->validation->getStatus(),
                 ]);
 
             return;
         }
 
-        $ftaStatus = $input['fta_status'];
+        $status = $input['fta_status'] ?? $input['status'];
 
-        switch ($ftaStatus)
+        switch ($status)
         {
             case Attempt\Status::PROCESSED:
                 $this->updateValidationAfterFtaProcessed($input);

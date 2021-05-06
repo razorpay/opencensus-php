@@ -49,7 +49,7 @@ class FavFtaDeprecationTest extends TestCase
 
         $this->setUpMerchantForBusinessBanking(false, 10000000);
 
-        $this->fixtures->merchant->addFeatures([Features::FAV_FTA_DPRCN_FWD]);
+        $this->fixtures->merchant->addFeatures([Features::FAV_FTA_DPRCN_FWD, Features::FAV_FTA_DPRCN_BCK]);
 
         $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'postpaid']);
 
@@ -115,6 +115,102 @@ class FavFtaDeprecationTest extends TestCase
         $this->assertEquals('penny_testing', $fta['purpose']);
         $this->assertEquals($fav['id'], $fta['source']['id']);
         $this->assertEquals($bankAccount['id'], $fta['bank_account_id']);
+    }
+
+    public function testWebhookFiringFundAccountValidationCompleted()
+    {
+        $this->testFavHandlerFunction();
+
+        $fav = $this->getDbLastEntity('fund_account_validation');
+
+        $fta = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $favId = $fav->getId();
+
+        $eventTestDataKey = 'testFiringOfWebhookOnFAVCompletionWithStork';
+
+        $this->fixtures->edit(
+            'fund_transfer_attempt',
+            $fta->getId(),
+            [
+                'utr'    => '933815233814',
+                'is_fts' => 1,
+            ]);
+
+        $this->expectWebhookEventWithContents('fund_account.validation.completed', $eventTestDataKey);
+
+        $this->updateFtaAndSource($favId, 'PROCESSED', '933815233814', 'SUCCESS', false);
+
+        $fav = $this->getDbEntityById('fund_account_validation', $favId);
+
+        $fta = $this->getDbEntityById('fund_transfer_attempt', $fta->getId());
+
+        $this->assertEquals('processed', $fta->getStatus());
+
+        $this->assertEquals('completed', $fav->getStatus());
+
+    }
+
+    public function testWebhookFiringFundAccountValidationFailed()
+    {
+        $this->testFavHandlerFunction();
+
+        $fav = $this->getDbLastEntity('fund_account_validation');
+
+        $fta = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $favId = $fav->getId();
+
+        $eventTestDataKey = 'testWebhookFiringFundAccountValidationFailed';
+
+        $this->fixtures->edit(
+            'fund_transfer_attempt',
+            $fta->getId(),
+            [
+                'is_fts' => 1,
+            ]);
+
+        $this->expectWebhookEventWithContents('fund_account.validation.failed', $eventTestDataKey);
+
+        $this->updateFtaAndSource($favId, 'FAILED','944926344925','ACCOUNT_INVALID',true);
+
+        $fav = $this->getDbEntityById('fund_account_validation', $favId);
+
+        $fta = $this->getDbEntityById('fund_transfer_attempt', $fta->getId());
+
+        $this->assertEquals('failed', $fta->getStatus());
+
+        $this->assertEquals('failed', $fav->getStatus());
+
+    }
+
+    public function testFundAccValidationWhenFtaStillInitiatedDuringRecon()
+    {
+        $this->testFavHandlerFunction();
+
+        $fav = $this->getDbLastEntity('fund_account_validation');
+
+        $fta = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $favId = $fav->getId();
+
+        $this->fixtures->edit(
+            'fund_transfer_attempt',
+            $fta->getId(),
+            [
+                'is_fts' => 1,
+            ]);
+
+        $this->updateFtaAndSource($favId, 'INITIATED','944926344925','IN_PROGRESS',false);
+
+        $fav = $this->getDbEntityById('fund_account_validation', $favId);
+
+        $fta = $this->getDbEntityById('fund_transfer_attempt', $fta->getId());
+
+        $this->assertEquals('initiated', $fta->getStatus());
+
+        $this->assertEquals('created', $fav->getStatus());
+
     }
 
     protected function createFundAccountBankAccount($key = null)

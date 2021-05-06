@@ -3,6 +3,7 @@
 namespace RZP\Models\FundAccount\Validation;
 
 use RZP\Exception;
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Services\FTS;
 use RZP\Models\Admin;
@@ -12,9 +13,14 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
 use RZP\Models\FundAccount;
 use RZP\Models\Pricing\Fee;
+use RZP\Constants\Timezone;
 use RZP\Models\Settlement\Channel;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\BadRequestException;
+use RZP\Models\FundTransfer\Redaction;
+use RZP\Models\Transaction\ReconciledType;
+use RZP\Constants\Entity as EntityConstant;
 use RZP\Services\FTS\Constants as FtsConstants;
 use RZP\Services\FTS\Transfer\RequestFields as FtsRequestFields;
 
@@ -710,5 +716,105 @@ class Core extends Base\Core
         }
 
         return $address;
+    }
+
+    public function updateFavWithFtsWebhook(array $input)
+    {
+        $this->trace->info(
+            TraceCode::FAV_UPDATE_FROM_FTS_WEBHOOK_CORE_HANDLER_INIT,
+            [
+                'input'     => (new Redaction())->redactData($input)
+            ]);
+
+        try
+        {
+            // Convert status to lowercase if the need be
+            if (array_key_exists(Entity::STATUS, $input) === true)
+            {
+                $input[Entity::STATUS] = strtolower($input[Entity::STATUS]);
+            }
+
+            (new Validator)->validateInput('fts_status_update', $input);
+
+            $extraInfo = $input['extra_info'] ?? [];
+
+            $mapping = [
+                Entity::STATUS                 => $input[FtsConstants::STATUS],
+                Entity::UTR                    => $input[FtsConstants::UTR],
+                FtsConstants::BANK_STATUS_CODE => $input[FtsConstants::BANK_STATUS_CODE],
+                Entity::ID                     => $input[FtsConstants::SOURCE_ID],
+                Entity::FTS_TRANSFER_ID        => $input[FtsConstants::FUND_TRANSFER_ID],
+            ] + $extraInfo;
+
+            $this->updateFav($mapping);
+
+            $this->trace->info(
+                TraceCode::FAV_UPDATE_FROM_FTS_WEBHOOK_CORE_HANDLER_SUCCESSFUL,
+                [
+                    'input'     => (new Redaction())->redactData($input)
+                ]);
+
+            return [
+                'message' => 'FAV source updated successfully',
+            ];
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FAV_UPDATE_FROM_FTS_WEBHOOK_FAILED,
+                [
+                    'error' => $e->getMessage()
+                ]);
+
+            throw $e;
+        }
+    }
+
+    protected function updateFav(array $mapping)
+    {
+        $this->trace->info(
+            TraceCode::FAV_UPDATE_FROM_FTS_WEBHOOK_UPDATE_FAV,
+            [
+                'input'     => $mapping,
+            ]);
+
+        $fav = $this->repo->fund_account_validation->findOrFail($mapping[Entity::ID]);
+
+        $fav->setFTSTransferId($mapping[Entity::FTS_TRANSFER_ID]);
+
+        $this->updateWithDetailsBeforeFtaRecon($fav, $mapping);
+
+        $this->updateStatusAfterFtaRecon($fav, $mapping);
+
+        $this->updateTransactionEntity($fav);
+    }
+
+    public function updateTransactionEntity($source, $reset = false, $reconciledType = ReconciledType::MIS)
+    {
+        $this->trace->info(
+            TraceCode::FAV_UPDATE_FROM_FTS_WEBHOOK_UPDATE_TRANSACTION_INIT,
+            [
+                'input'     => $source->toArrayPublic(),
+            ]);
+
+        // Source entity might update the transaction but because we would have already fetched
+        // the transaction from source earlier. Then if we try to access $this->source->transaction now,
+        // It will return an old copy. Not the updated transaction. Hence, we reload the relation.
+        $source->load(EntityConstant::TRANSACTION);
+
+        $reconciledTime = Carbon::now(Timezone::IST)->timestamp;
+
+        if ($reset === true)
+        {
+            $reconciledTime = $reconciledType = null;
+        }
+
+        $source->transaction->setReconciledAt($reconciledTime);
+
+        $source->transaction->setReconciledType($reconciledType);
+
+        $source->transaction->saveOrFail();
     }
 }

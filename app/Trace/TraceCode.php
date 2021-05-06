@@ -4362,16 +4362,23 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_CREATE_SUBMITTED_PROCESS_JOB_DELETED_LOW_PRIORITY  = 'PAYOUT_CREATE_SUBMITTED_PROCESS_JOB_DELETED_LOW_PRIORITY';
 
     // FTA Deprecation for FAV
-    const FAV_QUEUE_FOR_FTS_JOB_INIT                    = 'FAV_QUEUE_FOR_FTS_JOB_INIT';
-    const FAV_QUEUE_FOR_FTS_JOB_REQUEST                 = 'FAV_QUEUE_FOR_FTS_JOB_REQUEST';
-    const FAV_QUEUE_FOR_FTS_JOB_FAILED                  = 'FAV_QUEUE_FOR_FTS_JOB_FAILED';
-    const FAV_QUEUE_FOR_FTS_JOB_SUCCESSFUL              = 'FAV_QUEUE_FOR_FTS_JOB_SUCCESSFUL';
-    const FAV_QUEUE_FOR_FTS_JOB_RELEASED                = 'FAV_QUEUE_FOR_FTS_JOB_RELEASED';
-    const FAV_QUEUE_FOR_FTS_JOB_DELETED                 = 'FAV_QUEUE_FOR_FTS_JOB_DELETED';
-    const FAV_QUEUE_FOR_FTS_JOB_HANDLER_INIT            = 'FAV_QUEUE_FOR_FTS_JOB_HANDLER_INIT';
-    const FAV_QUEUE_FOR_FTS_JOB_TRANSFER_ID_UPDATE_INIT = 'FAV_QUEUE_FOR_FTS_JOB_TRANSFER_ID_UPDATE_INIT';
-    const FAV_QUEUE_FOR_FTS_REQUEST_BODY_CREATION_INIT  = 'FAV_QUEUE_FOR_FTS_REQUEST_BODY_CREATION_INIT';
-    const FAV_QUEUE_FOR_FTS_REQUEST_CREATED             = 'FAV_QUEUE_FOR_FTS_REQUEST_CREATED';
+    const FAV_QUEUE_FOR_FTS_JOB_INIT                          = 'FAV_QUEUE_FOR_FTS_JOB_INIT';
+    const FAV_QUEUE_FOR_FTS_JOB_REQUEST                       = 'FAV_QUEUE_FOR_FTS_JOB_REQUEST';
+    const FAV_QUEUE_FOR_FTS_JOB_FAILED                        = 'FAV_QUEUE_FOR_FTS_JOB_FAILED';
+    const FAV_QUEUE_FOR_FTS_JOB_SUCCESSFUL                    = 'FAV_QUEUE_FOR_FTS_JOB_SUCCESSFUL';
+    const FAV_QUEUE_FOR_FTS_JOB_RELEASED                      = 'FAV_QUEUE_FOR_FTS_JOB_RELEASED';
+    const FAV_QUEUE_FOR_FTS_JOB_DELETED                       = 'FAV_QUEUE_FOR_FTS_JOB_DELETED';
+    const FAV_QUEUE_FOR_FTS_JOB_HANDLER_INIT                  = 'FAV_QUEUE_FOR_FTS_JOB_HANDLER_INIT';
+    const FAV_QUEUE_FOR_FTS_JOB_TRANSFER_ID_UPDATE_INIT       = 'FAV_QUEUE_FOR_FTS_JOB_TRANSFER_ID_UPDATE_INIT';
+    const FAV_QUEUE_FOR_FTS_REQUEST_BODY_CREATION_INIT        = 'FAV_QUEUE_FOR_FTS_REQUEST_BODY_CREATION_INIT';
+    const FAV_QUEUE_FOR_FTS_REQUEST_CREATED                   = 'FAV_QUEUE_FOR_FTS_REQUEST_CREATED';
+    const FAV_UPDATE_FROM_FTS_WEBHOOK_SERVICE_INIT            = 'FAV_UPDATE_FROM_FTS_WEBHOOK_SERVICE_INIT';
+    const FAV_UPDATE_FROM_FTS_WEBHOOK_FAILED                  = 'FAV_UPDATE_FROM_FTS_WEBHOOK_FAILED';
+    const FAV_UPDATE_FROM_FTS_WEBHOOK_FTA_RECON_CALLED        = 'FAV_UPDATE_FROM_FTS_WEBHOOK_FTA_RECON_CALLED';
+    const FAV_UPDATE_FROM_FTS_WEBHOOK_CORE_HANDLER_INIT       = 'FAV_UPDATE_FROM_FTS_WEBHOOK_CORE_HANDLER_INIT';
+    const FAV_UPDATE_FROM_FTS_WEBHOOK_CORE_HANDLER_SUCCESSFUL = 'FAV_UPDATE_FROM_FTS_WEBHOOK_CORE_HANDLER_SUCCESSFUL';
+    const FAV_UPDATE_FROM_FTS_WEBHOOK_UPDATE_FAV              = 'FAV_UPDATE_FROM_FTS_WEBHOOK_UPDATE_FAV';
+    const FAV_UPDATE_FROM_FTS_WEBHOOK_UPDATE_TRANSACTION_INIT = 'FAV_UPDATE_FROM_FTS_WEBHOOK_UPDATE_TRANSACTION_INIT';
 
     // payout microservice
     const PAYOUT_SERVICE_REQUEST                              = 'PAYOUT_SERVICE_REQUEST';
@@ -4587,6 +4594,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::FAV_QUEUE_FOR_FTS_JOB_TRANSFER_ID_UPDATE_INIT         => 'FAV Transfer ID update after job initialised',
         self::FAV_QUEUE_FOR_FTS_REQUEST_BODY_CREATION_INIT          => 'FAV request body for FTS creation started',
         self::FAV_QUEUE_FOR_FTS_REQUEST_CREATED                     => 'FAV request body for FTS created',
+        self::FAV_UPDATE_FROM_FTS_WEBHOOK_SERVICE_INIT              => 'Starting FAV update using FTS webhook',
+        self::FAV_UPDATE_FROM_FTS_WEBHOOK_FAILED                    => 'Failed to update FAV using FTS webhook',
+        self::FAV_UPDATE_FROM_FTS_WEBHOOK_FTA_RECON_CALLED          => 'Called doRecon() method in the FTS thin client',
+        self::FAV_UPDATE_FROM_FTS_WEBHOOK_CORE_HANDLER_INIT         => 'Started FAV update using FTS webhook in core',
+        self::FAV_UPDATE_FROM_FTS_WEBHOOK_CORE_HANDLER_SUCCESSFUL   => 'FAV update using FTS webhook successful',
+        self::FAV_UPDATE_FROM_FTS_WEBHOOK_UPDATE_FAV                => 'Function called to update FAV entity using the mapping created from the FTS webhook',
+        self::FAV_UPDATE_FROM_FTS_WEBHOOK_UPDATE_TRANSACTION_INIT   => 'Updating transaction entity for FAV as FTS webhook was received',
     ];
 
     public static $fileBasedReconTraceCodes = [

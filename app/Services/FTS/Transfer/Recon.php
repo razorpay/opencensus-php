@@ -17,12 +17,6 @@ trait Recon
 
     protected function reconcileFTA(array $input)
     {
-        //Info: FTS test mode not enabled yet
-        if ($this->mode === Mode::TEST)
-        {
-            return;
-        }
-
         if (array_key_exists(Constants::STATUS, $input) === true)
         {
             $input[Constants::STATUS] = strtolower($input[Constants::STATUS]);

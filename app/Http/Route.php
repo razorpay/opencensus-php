@@ -1920,13 +1920,13 @@ class Route
         'transaction_settled_data_fix'             => ['post',     'transactions/{entity}/settled/fix',              'TransactionController@fixSettled'                                  ],
 
         //API Routes for FTS
-        'update_fts_fund_transfer'                 => ['post',     'update_fts_fund_transfer',                       'FundTransferAttemptController@updateFTA'                           ],
+        'update_fts_fund_transfer'                 => ['post',     'update_fts_fund_transfer',                       'FundTransferAttemptController@updateSource'                        ],
         'update_fts_nodal_beneficiary'             => ['post',     'update_fts_nodal_beneficiary',                   'NodalBeneficiaryController@createOrUpdateNodalBeneficiary'         ],
         'fetch_nodal_beneficiary_code'             => ['get',      'fetch_nodal_beneficiary_code',                   'NodalBeneficiaryController@fetchNodalBeneficiaryCode'              ],
 
         // API Route for Vault
         'vault_token_create'                       => ['post',     'vault_token_create',                             'AdminController@createVaultToken'                                  ],
-        'vault_token_renewal'                      => ['post',     'vault_token_renew',                              'AdminController@renewVaultToken'                                  ],
+        'vault_token_renewal'                      => ['post',     'vault_token_renew',                              'AdminController@renewVaultToken'                                   ],
 
         'entity_origin_create'                     => ['post',     'entity_origins',                                 'EntityOriginController@create'                                     ],
         'create_credit_note'                       => ['post',     'creditnote',                                     'CreditNoteController@create'                                       ],

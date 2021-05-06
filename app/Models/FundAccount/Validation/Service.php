@@ -8,6 +8,8 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Base\Traits;
 use RZP\Models\Merchant\Balance;
+use RZP\Models\FundTransfer\Redaction;
+use RZP\Services\FTS\Transfer\Client as FtsClient;
 
 class Service extends Base\Service
 {
@@ -81,6 +83,29 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::FUND_ACCOUNT_VALIDATION_BULK_PATCH_RESPONSE, [
             'response' => $response
         ]);
+
+        return $response;
+    }
+
+    public function updateFavWithFtsWebhook(array $input) : array
+    {
+        $this->trace->info(
+            TraceCode::FAV_UPDATE_FROM_FTS_WEBHOOK_SERVICE_INIT,
+            [
+                'input'     => (new Redaction())->redactData($input)
+            ]);
+
+        // First update the source FAV entity
+        $response = $this->core->updateFavWithFtsWebhook($input);
+
+        $this->trace->info(
+            TraceCode::FAV_UPDATE_FROM_FTS_WEBHOOK_FTA_RECON_CALLED,
+            [
+                'input'     => (new Redaction())->redactData($input)
+            ]);
+
+        // Call the doRecon() method provided by the FTS client to update FTA for backwards compatibility
+        (new FtsClient($this->app))->doRecon($input);
 
         return $response;
     }

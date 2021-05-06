@@ -7,6 +7,8 @@ use ApiResponse;
 
 use RZP\Constants\Entity;
 use RZP\Models\FundTransfer\Attempt\Constants;
+use RZP\Services\FTS\Constants as FTSConstants;
+use RZP\Models\FundAccount\Validation as FundAccountValidation;
 
 class FundTransferAttemptController extends Controller
 {
@@ -57,7 +59,7 @@ class FundTransferAttemptController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function updateFTA()
+    public function updateSource()
     {
         $input = Request::all();
 

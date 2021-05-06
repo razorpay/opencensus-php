@@ -6,7 +6,8 @@ use RZP\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Exception\BadRequestException;
-
+use RZP\Models\FundTransfer\Attempt\Entity as FtaEntity;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
@@ -44,6 +45,27 @@ class Validator extends Base\Validator
         Entity::FUND_ACCOUNT_VALIDATION_IDS.".*" => 'required|public_id',
     ];
 
+    protected static $ftsStatusUpdateRules = [
+        FtaEntity::UTR                => 'sometimes|string',
+        FtaEntity::STATUS             => 'required|string|custom',
+        FtaEntity::REMARKS            => 'sometimes|string',
+        FtaEntity::NARRATION          => 'sometimes|string',
+        FtaEntity::DATE_TIME          => 'sometimes|string',
+        FtaEntity::SOURCE_ID          => 'required_with:source_type|string',
+        FtaEntity::SOURCE_TYPE        => 'required_with:source_id|string',
+        FtaEntity::FAILURE_REASON     => 'sometimes|string',
+        FtaEntity::MODE               => 'sometimes|string',
+        'bank_processed_time'         => 'sometimes|string',
+        'fund_transfer_id'            => 'required|int',
+        'extra_info'                  => 'sometimes',
+        'extra_info.*'                => 'sometimes',
+        'return_utr'                  => 'sometimes|string',
+        FtaEntity::BANK_STATUS_CODE   => 'sometimes|string',
+        FtaEntity::GATEWAY_REF_NO     => 'sometimes|string',
+        FtaEntity::GATEWAY_ERROR_CODE => 'sometimes|string',
+        FtaEntity::CHANNEL            => 'sometimes|string',
+    ];
+
     /**
      * @param $attribute
      * @param $value
@@ -66,6 +88,17 @@ class Validator extends Base\Validator
                     Merchant\Balance\Entity::ACCOUNT_NUMBER => $validation->balance->getAccountNumber(),
                 ]
             );
+        }
+    }
+
+    protected function validateStatus($attribute, $value)
+    {
+        if (in_array($value, [Status::COMPLETED, Status::CREATED, Status::FAILED, Status::PROCESSED, 'initiated']) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Invalid status',
+                $attribute,
+                $value);
         }
     }
 }

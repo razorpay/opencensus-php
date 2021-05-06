@@ -649,6 +649,11 @@ class Constants
     const FAV_FTA_DPRCN_FWD = 'fav_fta_dprcn_fwd';
 
     /**
+     * Used to enable new FAV forward flow, where FTA is deprecated.
+     */
+    const FAV_FTA_DPRCN_BCK = 'fav_fta_dprcn_bck';
+
+    /**
      * Used to enable covid 19 related donation on checkout
      */
     const COVID_19_RELIEF = 'covid_19_relief';
@@ -955,6 +960,7 @@ class Constants
         self::PAYOUT_PROCESS_ASYNC_LP         => true,
         self::PAYOUT_PROCESS_ASYNC            => true,
         self::FAV_FTA_DPRCN_FWD               => true,
+        self::FAV_FTA_DPRCN_BCK               => true,
         self::PAYOUT_SERVICE_ENABLED          => true,
         self::COVID_19_RELIEF                 => true,
     ];
