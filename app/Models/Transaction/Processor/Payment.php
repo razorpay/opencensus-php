@@ -365,4 +365,19 @@ class Payment extends Base
             $this->txn->setOnHold(true);
         }
     }
+
+    protected function getDiscountIfApplicable($payment)
+    {
+        if ($payment->isAppCred() === true)
+        {
+            $discount = $this->repo->discount->fetchForPayment($payment);
+
+            if ($discount !== null)
+            {
+                return $discount->getAmount();
+            }
+        }
+
+        return 0;
+    }
 }
