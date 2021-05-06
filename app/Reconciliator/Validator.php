@@ -105,6 +105,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::NETBANKING_IOB     => ["/IOB RazorPay Recon File -20[0-9]{6}/"],
         RequestProcessor\Base::NETBANKING_JKB     => ["/Recon File of Razorpay Dated:[0-9]{2}-[0-9]{2}-20[0-9]{2}/"],
         RequestProcessor\Base::NETBANKING_DCB     => ["/RAZORPAY RECON file dt. [0-9]{2}-[0-9]{2}-20[0-9]{2}/"],
+        RequestProcessor\Base::NETBANKING_DLB     => ["/RazorPay - Dhanalaxmi Bank PG Recon File New/"],
     ];
 
     const GATEWAY_BODY_REGEX = [
@@ -185,6 +186,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::NETBANKING_JKB           => 1,
         RequestProcessor\Base::NETBANKING_KOTAK_V2      => 1,
         RequestProcessor\Base::NETBANKING_DCB           => 1,
+        RequestProcessor\Base::NETBANKING_DLB           => 1,
     ];
 
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
@@ -759,6 +761,20 @@ class Validator extends Base\Core
 
         return ($validSubject and $validAttachmentCount);
     }
+
+    public function validateNetbankingDLBEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+            RequestProcessor\Base::NETBANKING_IOB);
+
+        $validAttachmentCount = $this->validateAttachmentCount(
+            $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
+            RequestProcessor\Base::NETBANKING_IOB);
+
+        return ($validSubject and $validAttachmentCount);
+    }
+
     /**
      * For emails without attachments, but links, we allow
      * zero attachments during the initial validation.

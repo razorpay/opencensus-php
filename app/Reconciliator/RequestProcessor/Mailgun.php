@@ -64,6 +64,7 @@ class Mailgun extends Base
         self::NETBANKING_JKB,
         self::NETBANKING_IOB,
         self::NETBANKING_DCB,
+        self::NETBANKING_DLB,
     ];
 
     const LINK_BASED_GATEWAYS = [
