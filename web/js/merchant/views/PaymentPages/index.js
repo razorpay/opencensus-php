@@ -60,7 +60,7 @@ export default class PaymentPagesContainer extends React.Component {
 
           <content>
             <Switch>
-              <Route path="/paymentpages" component={PaymentPagesList} />
+              <Route path="/paymentpages" exact component={PaymentPagesList} />
             </Switch>
           </content>
         </tabbed-container>
