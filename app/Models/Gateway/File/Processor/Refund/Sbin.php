@@ -9,7 +9,7 @@ use RZP\Models\FileStore;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
-use RZP\Models\Base\PublicCollection;
+use RZP\Services\NbPlus\Netbanking;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Gateway\File\Processor\FileHandler;
@@ -72,15 +72,11 @@ class Sbin extends Base
                 Timezone::IST)
                 ->format(self::DATE_FORMAT);
 
-            $paymentId = $row[ConstantsEntity::PAYMENT][PaymentEntity::ID];
-
-            $netbanking = $this->repo->netbanking->findByPaymentIdAndAction($paymentId, Action::AUTHORIZE);
-
             $content[] = [
                 'Tnx Code'            => self::REFUND_CODE,
                 'Txn Date(YYMMDD)'    => $date,
                 'Refund Date(YYMMDD)' => $refundDate,
-                'Ban Ref No.'         => $netbanking[NetbankingEntity::BANK_PAYMENT_ID],
+                'Ban Ref No.'         => $this->fetchBankPaymentId($row),
                 'Txn Amount'          => $this->getFormattedAmount($row[ConstantsEntity::PAYMENT][RefundEntity::AMOUNT]),
                 'Refund Amount'       => $this->getFormattedAmount($row[ConstantsEntity::REFUND][RefundEntity::AMOUNT]),
             ];
@@ -99,5 +95,19 @@ class Sbin extends Base
         $date = Carbon::now(Timezone::IST)->format('d.m.Y');
 
         return static::BASE_STORAGE_DIRECTORY . self::FILE_NAME . '_' . $date;
+    }
+
+    protected function fetchBankPaymentId($data)
+    {
+        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        {
+            return $data['gateway'][Netbanking::BANK_TRANSACTION_ID]; // payment through nbplus service
+        }
+
+        $paymentId = $data[ConstantsEntity::PAYMENT][PaymentEntity::ID];
+
+        $netbanking = $this->repo->netbanking->findByPaymentIdAndAction($paymentId, Action::AUTHORIZE);
+
+        return $netbanking[NetbankingEntity::BANK_PAYMENT_ID];
     }
 }
