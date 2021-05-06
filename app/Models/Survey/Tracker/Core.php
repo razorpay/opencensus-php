@@ -99,28 +99,19 @@ class Core extends Base\Core
 
     public function dispatchForSurvey(UserEntity $user, string $merchantId, SurveyEntity $survey)
     {
-        $surveyTimeWindow = $survey[SurveyEntity::SURVEY_TTL];
-
         $currentTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
 
-        //Current logic is to not sent a survey if any survey was sent to the same email within the buffer time. Hence only checking with email id for across surveys.
-        $surveyTrackerEntity = $this->repo->survey_tracker->getLastSurveySent($user[UserEntity::EMAIL]);
+        $userEmail = $user[UserEntity::EMAIL];
 
-        // $surveyTrackerEntity is not null, means a survey email for this user has already been sent
-        if (empty($surveyTrackerEntity) === false)
+        if((new PrecedenceMapper())->higherPrecedenceSurveyAlreadySent($userEmail, $survey[\RZP\Models\Survey\Entity::TYPE], $survey[\RZP\Models\Survey\Entity::SURVEY_TTL]))
         {
-            $surveyLastSentTimestamp = $surveyTrackerEntity[Entity::CREATED_AT];
+            $this->trace->info(TraceCode::COHORT_EMAIL_ALREADY_SENT_FOR_HIGHER_PRECEDENCE_SURVEY, ['merchant_id' => $merchantId, 'user_id' => $user[UserEntity::ID], 'user_email' => $userEmail, 'survey_type' => $survey[\RZP\Models\Survey\Entity::TYPE]]);
 
-            $snoozePeriod = Carbon::createFromTimestamp($surveyLastSentTimestamp, Timezone::IST)->addHour($surveyTimeWindow)->getTimestamp();
-
-            // If a survey email is sent to an user, then next email will only be sent after the scheduled SURVEY_TTL time
-            if (($surveyLastSentTimestamp <= $currentTimeStamp) and
-                ($currentTimeStamp <= $snoozePeriod))
-            {
-                $this->trace->info(TraceCode::COHORT_EMAIL_ALREADY_SENT_WITHIN_TIMEFRAME, [Entity::X_UID => $user[UserEntity::ID]]);
-
-                return;
-            }
+            return;
+        }
+        else
+        {
+            $this->trace->info(TraceCode::COHORT_EMAIL_GETTING_SENT, ['merchant_id' => $merchantId, 'user_id' => $user[UserEntity::ID], 'user_email' => $userEmail, 'survey_type' => $survey[\RZP\Models\Survey\Entity::TYPE]]);
         }
 
         $surveyTrackerEntityInput = [

@@ -1475,6 +1475,31 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getCAPayoutCohortList(int $startTime, int $endTime, $surveyTTL)
+    {
+        $balanceIdColumn            = $this->repo->balance->dbColumn(Balance\Entity::ID);
+        $balanceTypeColumn          = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
+        $balanceAccountTypeColumn   = $this->repo->balance->dbColumn(Balance\Entity::ACCOUNT_TYPE);
+
+        $payoutCreatedColumn        = $this->dbColumn(Entity::CREATED_AT);
+        $payoutsBalanceIdColumn     = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
+
+        $selectAttr                 = [
+            $this->dbColumn(Entity::MERCHANT_ID),
+            $this->dbColumn(Entity::USER_ID)
+        ];
+
+        return $this->newQuery()
+            ->select($selectAttr)
+            ->join(Table::BALANCE, $balanceIdColumn, '=', $payoutsBalanceIdColumn)
+            ->where($balanceTypeColumn, '=', Balance\Type::BANKING)
+            ->where($balanceAccountTypeColumn, '=', Balance\AccountType::DIRECT)
+            ->whereBetween($payoutCreatedColumn, [$startTime, $endTime])
+            ->whereRaw("datediff(from_unixtime(?),from_unixtime(balance.created_at))%? = 0", [$endTime,  $surveyTTL])
+            ->groupBy(Entity::MERCHANT_ID, Entity::USER_ID)
+            ->get();
+    }
+
     /**
      * SELECT COUNT(*)
      * FROM 'payouts'

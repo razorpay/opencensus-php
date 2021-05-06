@@ -14,7 +14,7 @@ class NpsClient extends Base\Service
      * @return array
      * @throws Exception\BadRequestValidationFailureException
      */
-    public function getCohorts()
+    public function getCohorts($surveyTTL)
     {
         $currentTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
 
@@ -22,7 +22,7 @@ class NpsClient extends Base\Service
 
         $cohorts = $this->repo->banking_account->getCAOnboardCohortList($startTimeStamp, $currentTimeStamp);
 
-        $this->trace->info(TraceCode::COHORT_PAYOUT_COUNT, ['Count' => count($cohorts)]);
+        $this->trace->info(TraceCode::COHORT_ONBOARD_COUNT, ['Count' => count($cohorts)]);
 
         $cohorts = $cohorts->toArray();
 

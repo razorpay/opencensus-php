@@ -632,4 +632,49 @@ return [
             ],
         ],
     ],
+
+    'testPrecedenceForCSAT' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/survey/scheduled/process',
+            'content' => [
+                'survey_type' => 'nps_csat',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'dispatched_cohort_count' => 1,
+            ],
+        ],
+    ],
+
+    'testPrecedenceForNPSPayouts' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/survey/scheduled/process',
+            'content' => [
+                'survey_type' => 'nps_payouts',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'dispatched_cohort_count' => 3,
+            ],
+        ],
+    ],
+
+    'testPrecedenceForActiveCAPayouts' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/survey/scheduled/process',
+            'content' => [
+                'survey_type' => 'nps_active_ca',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'dispatched_cohort_count' => 2,
+            ],
+        ],
+    ],
 ];

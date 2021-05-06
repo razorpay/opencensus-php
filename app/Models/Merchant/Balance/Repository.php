@@ -4,8 +4,10 @@ namespace RZP\Models\Merchant\Balance;
 
 use Carbon\Carbon;
 use RZP\Models\Base;
+use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
+use RZP\Models\BankingAccount;
 
 class Repository extends Base\Repository
 {
@@ -341,5 +343,27 @@ class Repository extends Base\Repository
                     ->get()
                     ->pluck(Entity::ID)
                     ->toArray();
+    }
+
+    public function getCANpsCohortList(int $startTime, int $endTime)
+    {
+        $balanceIdColumn                    = $this->dbColumn(Entity::ID);
+        $balanceCreatedColumn               = $this->dbColumn(Entity::CREATED_AT);
+        $bankingAccountsBalanceIdColumn     = $this->repo->banking_account->dbColumn(BankingAccount\Entity::BALANCE_ID);
+        $activationStatus                   = $this->repo->banking_account->dbColumn(BankingAccount\Entity::STATUS);
+        $accountTypeColumn                  = $this->repo->banking_account->dbColumn(BankingAccount\Entity::ACCOUNT_TYPE);
+
+        $selectAttr                 = [
+            $this->dbColumn(Entity::MERCHANT_ID),
+        ];
+
+        return $this->newQuery()
+            ->select($selectAttr)
+            ->join(Table::BANKING_ACCOUNT, $balanceIdColumn, '=', $bankingAccountsBalanceIdColumn)
+            ->where($accountTypeColumn, '=', BankingAccount\AccountType::CURRENT)
+            ->where($activationStatus, '=', BankingAccount\Status::ACTIVATED)
+            ->whereBetween($balanceCreatedColumn, [$startTime, $endTime])
+            ->groupBy(Entity::MERCHANT_ID)
+            ->get();
     }
 }

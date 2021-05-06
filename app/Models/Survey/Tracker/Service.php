@@ -50,7 +50,7 @@ class Service extends Base\Service
         if (empty($cohorts) === true)
         {
             $cohorts = $this->core->getSurveyClient($surveyType)
-                                  ->getCohorts();
+                                  ->getCohorts($survey[Survey\Entity::SURVEY_TTL]);
         }
 
         $dispatchedCohortCount = 0;
@@ -61,6 +61,8 @@ class Service extends Base\Service
 
             $dispatchedCohortCount += 1;
         }
+
+        $this->trace->info(TraceCode::SELECTED_COHORT_COUNT, ['survey_type' => $surveyType, 'dispatched_cohort_count' => $dispatchedCohortCount]);
 
         return [
             'dispatched_cohort_count' => $dispatchedCohortCount

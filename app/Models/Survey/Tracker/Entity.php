@@ -21,6 +21,7 @@ class Entity extends Base\PublicEntity
     const SKIP_IN_APP            = 'skip_in_app';
 
     // Constants
+    const NPS_ACTIVE_CA          = 'nps_active_ca';
     const NPS_CSAT               = 'nps_csat';
     const NPS_PAYOUTS            = 'nps_payouts';
     const NPS_SURVEY             = 'nps_survey';

@@ -10,7 +10,8 @@ class SurveyServiceMapper
 {
     private static $surveyClientMap = [
         Entity::NPS_PAYOUTS     => 'Payout\NpsClient',
-        Entity::NPS_CSAT        => 'BankingAccount\NpsClient'
+        Entity::NPS_CSAT        => 'BankingAccount\NpsClient',
+        Entity::NPS_ACTIVE_CA   => 'Merchant\Balance\NpsClient'
     ];
 
     /**
