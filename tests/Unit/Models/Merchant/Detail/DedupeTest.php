@@ -237,6 +237,47 @@ class DedupeTest extends TestCase
         $this->assertNotNull($response['activation_status']);
     }
 
+    public function testDedupeTagOnDeactivateAction()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
+
+        $mocks = $this->createAndFetchMocks(true, ['match', 'isDedupeBlocked']);
+
+        $dedupeCoreMock = $mocks['dedupeCoreMock'];
+
+        $dedupeTag = $dedupeCoreMock->getDedupeTagForAction($merchantDetail, Constants::DEACTIVATE);
+
+        self::assertEquals(Constants::DEDUPE_BLOCKED_TAG, $dedupeTag);
+    }
+
+    public function testDedupeTagOnAndUnRegDeactivateAction()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
+            'business_type' => BusinessType::getIndexFromKey(BusinessType::NOT_YET_REGISTERED)
+        ]);
+
+        $mocks = $this->createAndFetchMocks(true, ['match', 'isDedupeBlocked']);
+
+        $dedupeCoreMock = $mocks['dedupeCoreMock'];
+
+        $dedupeTag = $dedupeCoreMock->getDedupeTagForAction($merchantDetail, Constants::UNREG_DEACTIVATE);
+
+        self::assertEquals(Constants::DEDUPE_BLOCKED_TAG, $dedupeTag);
+    }
+
+    public function testDedupeTagOnNoAction()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
+
+        $mocks = $this->createAndFetchMocks(true, ['match', 'isDedupeBlocked']);
+
+        $dedupeCoreMock = $mocks['dedupeCoreMock'];
+
+        $dedupeTag = $dedupeCoreMock->getDedupeTagForAction($merchantDetail, null);
+
+        self::assertEquals(Constants::DEDUPE_TAG, $dedupeTag);
+    }
+
     private function verifyLockAndDeactivate(array $response)
     {
         $this->assertTrue($response['locked']);

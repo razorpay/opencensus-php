@@ -12,6 +12,9 @@ class Constants
     const DEACTIVATE            = 'deactivate';
     const UNREG_DEACTIVATE      = 'unreg_deactivate';
 
+    const DEDUPE_BLOCKED_TAG    = 'dedupe_blocked';
+    const DEDUPE_TAG            = 'dedupe_underreview';
+
     const BRAND_LIST = 'brand_list';
     const BLACKLIST = 'blacklist';
     const HIGH_RISK_LIST = 'high_risk_list';

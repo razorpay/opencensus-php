@@ -846,7 +846,6 @@ class Core extends Base\Core
     protected function handleFlowForImpersonatedMerchant(Merchant\Entity $merchant, Entity $merchantDetails, $action)
     {
         $this->triggerWorkflowFlowForImpersonatedMerchant($merchant, $merchantDetails);
-        (new Merchant\Core)->appendTag($merchant, "dedupe");
 
         if(empty($action) === false)
         {
@@ -866,6 +865,14 @@ class Core extends Base\Core
                     break;
             }
         }
+
+        $dedupeTag = $this->dedupeCore->getDedupeTagForAction($merchantDetails, $action);
+
+        if(empty($dedupeTag) === false)
+        {
+            (new Merchant\Core)->appendTag($merchant, $dedupeTag);
+        }
+
         $eventAttributes = [
             'dedupe'                 => true,
             DeDupe\Constants::ACTION => $action

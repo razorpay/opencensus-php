@@ -6,6 +6,7 @@ namespace RZP\Models\Merchant\Detail\DeDupe;
 use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Models\Admin\Org;
+use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant;
 use RZP\Services\MerchantRiskClient;
@@ -175,5 +176,26 @@ class Core extends Base\Core
         }
 
         return [false, null];
+    }
+
+    public function getDedupeTagForAction(Entity $merchantDetails, $action)
+    {
+        if(empty($action) === true)
+        {
+            return Constants::DEDUPE_TAG;
+        }
+
+        switch ($action)
+        {
+            case Constants::DEACTIVATE:
+                return Constants::DEDUPE_BLOCKED_TAG;
+            case Constants::UNREG_DEACTIVATE:
+                if($merchantDetails->isUnregisteredBusiness() === true)
+                {
+                    return Constants::DEDUPE_BLOCKED_TAG;
+                }
+        }
+
+        return Constants::DEDUPE_TAG;
     }
 }
