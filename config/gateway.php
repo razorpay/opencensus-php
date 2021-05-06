@@ -423,8 +423,6 @@ return [
         'live_private_key'              => env('UPI_ICICI_LIVE_PRIVATE_KEY'),
         'ut_test_private_key'           => env('UPI_ICICI_UPI_TRANSFER_TEST_PRIVATE_KEY'),
         'ut_live_private_key'           => env('UPI_ICICI_UPI_TRANSFER_LIVE_PRIVATE_KEY'),
-        'live_static_ifsc_merchants'    => ['Eh54Q1B6HQKbS3', 'DabN0OvdyG4uO9', 'EmGIbvueqANhwe', 'Exgj3pcIYh57rw',
-            'FfeFMJRPl28VL8', 'Ey7hVxW9FvvbCp', 'E32oekICkFIekI', 'EhtHoWq8Bx2EU9', '77LxIqTyXKINdL', 'FikbX8Z8ENtUQu'],
     ],
 
     'upi_axis' => [

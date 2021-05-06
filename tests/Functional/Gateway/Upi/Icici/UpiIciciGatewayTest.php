@@ -191,17 +191,6 @@ class UpiIciciGatewayTest extends TestCase
         $this->assertEquals('pay', $gatewayEntity['type']);
     }
 
-    public function testStaticIfscMerchantIdLengths()
-    {
-        //A test to avoid any human error in merchantIDs list updation.
-        $merchantList = $this->app['config']->get('gateway.upi_icici.live_static_ifsc_merchants');
-
-        foreach ($merchantList as $merchantId)
-        {
-            $this->assertEquals(strlen($merchantId), 14);
-        }
-    }
-
     public function testStaticIfscTPVPayment()
     {
         $this->fixtures->create('terminal:shared_upi_icici_tpv_terminal', ['tpv' => 2]);
@@ -209,10 +198,6 @@ class UpiIciciGatewayTest extends TestCase
         $this->ba->privateAuth();
 
         $this->fixtures->merchant->enableTPV();
-
-        //Setting config as the test merchant id.
-        //This will ensure that the code section of setting special IFSC is testable.
-        $this->app['config']->set('gateway.upi_icici.live_static_ifsc_merchants', ['10000000000000']);
 
         $data = $this->testData['testTpvPayment'];
 
