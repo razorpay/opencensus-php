@@ -369,7 +369,7 @@ export default class UploadNACHForm extends React.Component {
             showStagedFileStatus
             stagedFileStatus="error"
             maxSize="5242880"
-            accept={['image/jpeg', 'image/png']}
+            accept={['png', 'jpg', 'jpeg']}
             size="large"
             files={file ? [file] : []}
             uploadedFileName="Upload File here"
