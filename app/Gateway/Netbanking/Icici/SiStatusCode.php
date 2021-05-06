@@ -30,6 +30,11 @@ class SiStatusCode
     const INSUFFICIENT_FUNDS          = 'There are no sufficient funds in the debit account selected. ' .
                                         'Please select another account./Insufficient Funds';
 
+    const INSUFFICIENT_BALANCE         = 'There are no sufficient funds in the debit account selected. ' .
+                                         'Please select another account with sufficient balance and try again.' .
+                                         '/Insufficient Funds';
+
+
     const PAYMENT_STOPPED_BY_CUST     = 'PaymentStoppedByCustomer';
 
     const UNABLE_TO_PROCESS           = 'We are currently unable to process your request. Please try after sometime.';
@@ -49,6 +54,7 @@ class SiStatusCode
         self::PAYMENT_STOPPED_BY_CUST     => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_CUSTOMER,
         self::UNABLE_TO_PROCESS           => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
         self::USER_DISABLED               => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_ACCOUNT,
+        self::INSUFFICIENT_BALANCE        => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE,
     ];
 
     public static function getInternalErrorCode(string $status)
