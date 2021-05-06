@@ -55,9 +55,11 @@ jobs:
         result-encoding: string
         script: |
           roastPRNumberStr = context.payload.pull_request.body.toLowerCase()
-          var roastPRNumberValue = roastPRNumberStr.substring(roastPRNumberStr.indexOf("roastprnumber"))
-          var prNumber = roastPRNumberValue.substring(16)
+          var roastPRNumberValue = (roastPRNumberStr.substring(roastPRNumberStr.indexOf("roastprnumber"))).split("\n")
+          var prNumber = roastPRNumberValue[0].substring(16)
           return prNumber
+    - name: Print PR Number
+      run: echo ${{ steps.roastPRNumber.outputs.result }}
       # Get Roast PR State if its approved or not
     - name: Run Roast API PR flow if value is not null
       id: get_pr_state
