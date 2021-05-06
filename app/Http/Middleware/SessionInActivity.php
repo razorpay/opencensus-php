@@ -60,65 +60,41 @@ class SessionInActivity
      */
     public function handle($request, Closure $next)
     {
+        if (($this->isAdminUserAndOrgFeatureEnabledForLogout() === false))
+        {
+            return $next($request);
+        }
+
         // Meta data is stored in session with the key _sf2_meta with keys c,u,l as keys (created, updated, lifetime)
         $metaDataBag = Session::getMetadataBag();
 
-        $user = Auth::guard('user');
-
-        $isAdminUser = false;
+        $user = Auth::guard('api');
 
         $lastUsed = $metaDataBag->getLastUsed();
 
         $sessionConfig = $this->app['config']['session'];
 
-        $inActivityTime = $sessionConfig['inactivity_time'] * 60;
-
-        if (($this->isAdminUserAndOrgFeatureEnabledForLogout() === true))
-        {
-            $user = Auth::guard('api');
-
-            $inActivityTime = $sessionConfig['inactivity_time_admin_dashboard'] * 60;
-
-            $isAdminUser = true;
-        }
-
-        $mobileApp = $request->header('X-Razorpay-App');
+        $inActivityTime = $sessionConfig['inactivity_time_admin_dashboard'] * 60;
 
         $currentTime = time();
 
         $routeName = $request->route()->getName();
 
-        if ((empty($mobileApp) === true) and (empty($user->user()) === false) and (empty($lastUsed) === false) and
+        if ((empty($user->user()) === false) and (empty($lastUsed) === false) and
             (($currentTime - $lastUsed) > $inActivityTime))
         {
             $userEmail = $user->user()->email ?? '';
 
-            $path = '/#/access/signin';
+            $this->trace->info(TraceCode::ADMIN_LOGOUT_ON_INACTIVITY, [
+                'current_time' => $currentTime,
+                'last_used'    => $lastUsed,
+                'user_email'   => $userEmail,
+                'org_id'       => $user->user()->org_id,
+            ]);
 
-            if ($isAdminUser === true)
-            {
-                $this->trace->info(TraceCode::ADMIN_LOGOUT_ON_INACTIVITY, [
-                    'current_time' => $currentTime,
-                    'last_used'    => $lastUsed,
-                    'user_email'   => $userEmail,
-                    'org_id'       => $user->user()->org_id,
-                ]);
+            (new Admin\Service)->logout();
 
-                (new Admin\Service)->logout();
-
-                $path = '/admin';
-            }
-            else
-            {
-                $user->logout();
-            }
-
-            // if session's value is not explicitly removed
-            // then it'll remain even after user is logged out
-            Session::forget(UserConstants::TWO_FA_VERIFIED);
-
-            Session::forget(UserConstants::OAUTH_LOGIN);
-
+            $path = '/admin';
 
             if (empty($userEmail) === false)
             {

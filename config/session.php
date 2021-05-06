@@ -31,7 +31,7 @@ return array(
     |
     */
 
-    'lifetime' => 60*24,
+    'lifetime' => 60*12,
 
     /*
     |--------------------------------------------------------------------------
@@ -39,11 +39,9 @@ return array(
     |--------------------------------------------------------------------------
     |
     | Here you may specify the number of minutes that you wish the session
-    | to be allowed to remain idle before it asks user to login again.
+    | to be allowed to remain idle before it asks admin to login again.
     |
     */
-    'inactivity_time' => 20,
-
     'inactivity_time_admin_dashboard' => 20,
 
     'expire_on_close' => false,
