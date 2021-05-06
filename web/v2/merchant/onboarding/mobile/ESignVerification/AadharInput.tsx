@@ -150,8 +150,8 @@ const AadharInput: React.FC<AadharInputPropsT> = ({
                   />
                   {!isAadharLinkedToMobile && (
                     <Text size="small" color="shade.960">
-                      You can continue without verification but your details review might take a
-                      little longer
+                      You can continue without Aadhar verification via OTP but KYC verification and
+                      account activation will get delayed by 2 weeks. Usually it takes 3-4 days.
                     </Text>
                   )}
                 </View>

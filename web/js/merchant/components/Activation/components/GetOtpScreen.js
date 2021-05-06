@@ -358,7 +358,7 @@ const GetOtpScreen = ({
         {!hasMobileLinked && (
           <Description
             className="Input-content e-aadhar__not-linked-text"
-            text="You can continue without verification via OTP but KYC may get delayed by 2 weeks. Usually it takes 3-4 days"
+            text="You can continue without Aadhar verification via OTP but KYC verification and account activation will get delayed by 2 weeks. Usually it takes 3-4 days."
           />
         )}
       </div>

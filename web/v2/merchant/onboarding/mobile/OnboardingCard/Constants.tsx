@@ -51,7 +51,7 @@ export const ACTIVATION_STATUS_ACTIVATED = {
 export const ACTIVATION_STATUS_ACTIVATED_MCC_PENDING = {
   title: 'Payments and Settlements have been enabled',
   description:
-    'You can start accepting payments in live mode now. Payments will be settled to your bank account according to your settlement schedule. Please note we may ask you for more clarifications later as part of routine checks.',
+    'Congratulations! You can start accepting payments now. Payments will be settled to your bank account according to your settlement schedule. Please note that as part of the routine compliance checks mandated by our banking partners, we will review your business model, website details and reach out for further clarifications.',
 };
 
 export const REMAINING_STEPS = {
