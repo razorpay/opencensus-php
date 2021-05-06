@@ -3,6 +3,7 @@
 namespace RZP\Base;
 
 use App;
+use Illuminate\Support\Arr;
 
 use RZP\Http\BasicAuth;
 use RZP\Trace\TraceCode;
@@ -143,6 +144,13 @@ class Fetch
 
         self::ADMIN_RESTRICTED => [],
     ];
+
+    /**
+     * List of all keys to be masked when passed as extra parameter in GET calls
+     *
+     * @var array
+     */
+    const ALL_KEYS_TO_BE_MASKED_WHILE_LOGGING = ["headers.Authorization"];
 
     /**
      * @var BasicAuth\BasicAuth
@@ -308,10 +316,24 @@ class Fetch
 
         if (count($filtered) !== count($params))
         {
+            $this->ignoreExtraFindParamsForLogging($params);
+
             $this->trace->info(TraceCode::EXTRA_QUERY_PARAM_IN_GET_ROUTE, $params);
         }
 
         $params = $filtered;
+    }
+
+    /**
+     * Occasionally the client would send extra parameters
+     * in GET Call. We log such parameters. We use this method
+     * to ignore logging for parameters that are sensitive.
+     *
+     * @param array $params
+     */
+    public function ignoreExtraFindParamsForLogging(array & $params)
+    {
+        $params = Arr::except($params, self::ALL_KEYS_TO_BE_MASKED_WHILE_LOGGING);
     }
 
     /**

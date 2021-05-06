@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Tests\TestCase;
 use RZP\Trace;
+use RZP\Base\Fetch;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Error\CustomerErrorDescription;
@@ -35,5 +36,38 @@ class TraceTest extends TestCase
         );
 
         $trace->addRecord('info', 'RANDOM MESSAGE', []);
+    }
+
+    //Test to check if sensitive parameters get masked while logging
+    public function testMaskLogByParameters()
+    {
+        $fetch = new Fetch();
+
+        //Test to check if headers.Authorization is getting masked
+        $params = ["headers" => ["Authorization" => "Bearer cnpwX2xpdmVfMk0xNFV0Q1BFWWYwa286U3dMVnBZQlUyQnFDUFNGUk50SWhNbkd4"]];
+
+        $fetch->ignoreExtraFindParamsForLogging($params);
+
+        $modifiedParams = ["headers" => []];
+
+        $this->assertEquals($params, $modifiedParams);
+
+        //Test to check if headers.Authorization1 is not getting masked
+        $params = ["headers" => ["Authorization1" => "Bearer cnpwX2xpdmVfMk0xNFV0Q1BFWWYwa286U3dMVnBZQlUyQnFDUFNGUk50SWhNbkd4"]];
+
+        $fetch->ignoreExtraFindParamsForLogging($params);
+
+        $modifiedParams = ["headers" => ["Authorization1" => "Bearer cnpwX2xpdmVfMk0xNFV0Q1BFWWYwa286U3dMVnBZQlUyQnFDUFNGUk50SWhNbkd4"]];
+
+        $this->assertEquals($params, $modifiedParams);
+
+        //Test to check if headers is not getting masked
+        $params = ["headers" => "cnpwX2xpdmVfMk0xNFV0Q1BFWWYwa286U3dMVnBZQlUyQnFDUFNGUk50SWhNbkd4"];
+
+        $fetch->ignoreExtraFindParamsForLogging($params);
+
+        $modifiedParams = ["headers" => "cnpwX2xpdmVfMk0xNFV0Q1BFWWYwa286U3dMVnBZQlUyQnFDUFNGUk50SWhNbkd4"];
+
+        $this->assertEquals($params, $modifiedParams);
     }
 }
