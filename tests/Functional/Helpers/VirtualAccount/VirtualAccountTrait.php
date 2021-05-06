@@ -4,11 +4,11 @@ namespace RZP\Tests\Functional\Helpers\VirtualAccount;
 
 use RZP\Models\Order;
 use RZP\Models\VirtualAccount\Provider;
-use RZP\Tests\Functional\OAuth\OAuthTrait;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 
 trait VirtualAccountTrait
 {
-    use OAuthTrait;
+    use PartnerTrait;
 
     private function createVirtualAccount(
         array $input = [],

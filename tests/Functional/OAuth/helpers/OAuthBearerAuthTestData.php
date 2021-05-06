@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\OAuth;
 
 use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
@@ -417,7 +418,7 @@ return [
     ],
 
     'testRestrictedAccessFeatureEnabledOnMerchantOnly' => [
-        'request' => [
+        'request'   => [
             'method'  => 'POST',
             'url'     => '/virtual_accounts',
             'content' => [
@@ -436,9 +437,9 @@ return [
         'response'  => [
             'content'     => [
                 'error' => [
-                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_URL_NOT_FOUND
-                ]
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_URL_NOT_FOUND,
+                ],
             ],
             'status_code' => 400,
         ],

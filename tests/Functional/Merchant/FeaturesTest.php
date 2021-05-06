@@ -13,33 +13,33 @@ use RZP\Services\RazorXClient;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Terminal;
 use RZP\Tests\Traits\MocksRazorx;
-use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Loc\CashAdvanceEligible;
 use RZP\Error\PublicErrorDescription;
 use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\KeyWritten;
 use Illuminate\Cache\Events\CacheMissed;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\FileUploadTrait;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Mail\Merchant\EsEligible as EsEligibleMail;
 use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 use RZP\Models\Base\QueryCache\Constants as CacheConstants;
 use RZP\Mail\Merchant\FeatureEnabled as FeatureEnabledEmail;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
-class FeaturesTest extends TestCase
+class FeaturesTest extends OAuthTestCase
 {
     use MocksRazorx;
     use FileUploadTrait;
     use DbEntityFetchTrait;
     use VirtualAccountTrait;
     use CustomBrandingTrait;
-    use RequestResponseFlowTrait;
+    use PaymentTrait;
 
     const DEFAULT_MERCHANT_ID    = '10000000000000';
     const ONBOARDING_MERCHANT_ID = '10000000001017';
@@ -1177,6 +1177,76 @@ class FeaturesTest extends TestCase
             ]);
 
         $this->ba->privateAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = $this->getDefaultVirtualAccountRequestArray();
+
+        $this->startTest($testData);
+    }
+
+    /**
+     *  Application has feature s2s / s2s_json enabled.
+     *  Submerchant and partner does not have feature enabled.
+     */
+    public function testS2SFeatureEnabledOnApplication()
+    {
+        $this->mockCardVault();
+
+        $client = $this->setUpNonPurePlatformPartnerAndSubmerchant();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->create('feature',
+                                [
+                                    'entity_id'   => $client->getApplicationId(),
+                                    'entity_type' => 'application',
+                                    'name'        => 's2s_json'
+                                ]);
+
+        $this->fixtures->create('feature',
+                                [
+                                    'entity_id'   => $client->getApplicationId(),
+                                    'entity_type' => 'application',
+                                    'name'        => 's2s'
+                                ]);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/json',
+            'content' => $payment,
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '100submerchant',
+            ],
+        ];
+
+        $this->ba->privateAuth('rzp_test_partner_' . $client->getId(), $client->getSecret());
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+    }
+
+    /**
+     *   Managed Partner can access the submerchant for Restricted Access Feature enabled on Submerchant.
+     *   Restricted Access Feature is not enable on partner / application.
+     */
+    public function testRestrictedAccessFeatureEnabledOnSubmerchantAndAccessedByPartner()
+    {
+        $client = $this->setUpNonPurePlatformPartnerAndSubmerchant();
+
+        $this->fixtures->merchant->enableMethod('100submerchant', 'bank_transfer');
+
+        $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal');
+
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id' => '100submerchant',
+                'name'      => 'virtual_accounts'
+            ]);
+
+        $this->ba->privateAuth('rzp_test_partner_' . $client->getId(), $client->getSecret());
 
         $testData = $this->testData[__FUNCTION__];
 

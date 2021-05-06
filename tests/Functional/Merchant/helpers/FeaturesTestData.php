@@ -1107,6 +1107,23 @@ return [
         ],
     ],
 
+    'testRestrictedAccessFeatureEnabledOnSubmerchantAndAccessedByPartner' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/virtual_accounts',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '100submerchant',
+            ],
+            'content' => [],
+        ],
+        'response'  => [
+            'content' => [
+                'entity' => 'virtual_account',
+                'status' => 'active',
+            ],
+        ],
+    ],
+
     'testRestrictedAccessFeatureDisabledAndAccessedByMerchant' => [
         'request' => [
             'method'  => 'POST',

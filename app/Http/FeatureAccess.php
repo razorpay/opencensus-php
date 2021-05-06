@@ -4,6 +4,7 @@ namespace RZP\Http;
 
 use App;
 use ApiResponse;
+use RZP\Models\Merchant;
 use Illuminate\Foundation\Application;
 
 use RZP\Models\Feature;
@@ -68,7 +69,7 @@ class FeatureAccess
      *
      * @return null
      */
-    public function verifyFeatureAccess($authReturn, string $bearerToken = null)
+    public function verifyFeatureAccess($authReturn)
     {
         // If the previous calls have thrown an error, just forward the same error
         if ($authReturn !== null)
@@ -187,8 +188,9 @@ class FeatureAccess
                                                         $routeFeaturesAvailableWithApp,
                                                         $merchantRouteFeatures)));
 
-        if ((($appHasNonRestrictedRouteFeatures === true) or
-            ($appAndMerchantHaveRestrictedRouteFeature === true)))
+        if (($appHasNonRestrictedRouteFeatures === true) or
+            ($appAndMerchantHaveRestrictedRouteFeature === true) or
+            ($this->merchantHaveRestrictedAccessIfApplicable($restrictedAccessFeatures, $merchantRouteFeatures) === true))
         {
             return true;
         }
@@ -213,6 +215,36 @@ class FeatureAccess
                                                 $restrictedAccessFeatures));
 
         return (filled($merchantRouteFeaturesWhitelisted) === true);
+    }
+
+    /**
+     *  For aggregator and fully managed partner, check if sub-merchant have
+     *  restricted access feature enabled. Here we are skipping the application enabled features
+     *  check and allowing only for aggregator / fully - managed partner
+     *
+     * @param $restrictedAccessFeatures
+     * @param $merchantRouteFeatures
+     *
+     * @return bool
+     */
+    public function merchantHaveRestrictedAccessIfApplicable($restrictedAccessFeatures, $merchantRouteFeatures)
+    {
+        $merchantHaveRestrictedRouteFeature = filled(array_values(array_intersect(
+                                                                      $restrictedAccessFeatures,
+                                                                      $merchantRouteFeatures)));
+
+        $partnerMerchantId = $this->app['basicauth']->getPartnerMerchantId();
+
+        $partner = $this->repo->merchant->find($partnerMerchantId);
+
+        if ($partner != null and
+            $merchantHaveRestrictedRouteFeature === true and
+            ($partner->isAggregatorPartner() === true) or ($partner->isFullyManagedPartner() === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**

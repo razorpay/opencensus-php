@@ -296,7 +296,6 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
     public function testAppBlacklistedFeatureEnabledOnAppHeadlessOtp()
     {
-
         $client = factory(Client\Entity::class)->create();
 
         $accessToken = $this->generateOAuthAccessToken(
@@ -396,7 +395,7 @@ class OAuthBearerAuthTest extends OAuthTestCase
 
     public function testAppBlacklistedFeatureEnabledOnAppHeadlessOtpGetSecretBugFix()
     {
-       $razorxMock = $this->getMockBuilder(RazorXClient::class)
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
                            ->setMethods(['getTreatment'])
                            ->getMock();

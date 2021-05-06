@@ -8,6 +8,7 @@ use RZP\Models\User\Role;
 use RZP\Models\Feature\Constants as FName;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
+use RZP\Models\Merchant\MerchantApplications;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 use RZP\Tests\Functional\Fixtures\Entity\Org as Org;
@@ -401,6 +402,41 @@ trait PartnerTrait
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
         return [$client, $user];
+    }
+
+    public function setUpNonPurePlatformPartnerAndSubmerchant($partnerId = '10000000000000', $submerchantId = '100submerchant')
+    {
+        $client = $this->markMerchantAsNonPurePlatformPartner($partnerId, MerchantConstants::AGGREGATOR);
+
+        $user = $this->fixtures->user->createUserForMerchant($partnerId, [], Role::OWNER, Mode::LIVE);
+
+        $this->fixtures->merchant->editPricingPlanId('1hDYlICobzOCYt');
+
+        $this->fixtures->merchant->createAccount($submerchantId);
+
+        $this->createDefaultSubmerchantPricingPlan();
+
+        $this->fixtures->merchant->edit(
+            $submerchantId,
+            [
+                'pricing_plan_id' => 'SubmerchantPln',
+                'parent_id'       => $partnerId
+            ]
+        );
+
+        $appIds = (new MerchantApplications\Core)->getMerchantAppIds($partnerId, [MerchantApplications\Entity::MANAGED]);
+
+        $accessMap = $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'merchant_id'     => $submerchantId,
+                'entity_id'       => $appIds[0],
+                'entity_type'     => 'application',
+                'entity_owner_id' => $partnerId,
+            ]
+        );
+
+        return $client;
     }
 
     public function setUpPartnerAuthWithoutSubMerchantAccountId()
