@@ -12,6 +12,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
 use RZP\Models\Gateway\File\ProcessorFactory;
+use RZP\Models\FileStore\Storage\Base\Bucket;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Models\Gateway\File\Processor\Base as BaseProcessor;
 
@@ -193,5 +194,16 @@ class Base extends BaseProcessor
         ];
 
         return $fileData;
+    }
+
+    public function getBucketConfig()
+    {
+        $config = $this->app['config']->get('filestore.aws');
+
+        $bucketType = Bucket::getBucketConfigName(static::FILE_TYPE, $this->env);
+
+        $bucketConfig = $config[$bucketType];
+
+        return $bucketConfig;
     }
 }

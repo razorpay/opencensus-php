@@ -11,7 +11,6 @@ use RZP\Services\Beam\Service;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Gateway\File\Status;
 use RZP\Exception\GatewayFileException;
-use RZP\Models\FileStore\Storage\Base\Bucket;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Services\Beam\Constants as BeamConstants;
@@ -139,17 +138,6 @@ class Ubi extends Base
                 ],
                 $e);
         }
-    }
-
-    protected function getBucketConfig()
-    {
-        $config = $this->app['config']->get('filestore.aws');
-
-        $bucketType = Bucket::getBucketConfigName(static::FILE_TYPE, $this->env);
-
-        $bucketConfig = $config[$bucketType];
-
-        return $bucketConfig;
     }
 
     protected function getFileData(string $type)
