@@ -401,31 +401,38 @@ class Core extends Base\Core
         return new Payment\Processor\Processor($merchant);
     }
 
-    public function getRefundType(string $refundId, \RZP\Models\Merchant\Entity $merchant) : string
+    public function getRefundType(string $refundId, \RZP\Models\Merchant\Entity $merchant, $isBatch, $isScrooge) : string
     {
         $refundType = '';
 
-        if (isset($refundArray[Entity::BATCH_ID]) === true)
+        if (isset($isBatch) === true)
         {
             $refundType  = 'manual';
         }
-        else if ((isset($refundArray[Entity::IS_SCROOGE]) === true) and
-            ($refundArray[Entity::IS_SCROOGE] === true))
+        else if ((isset($isScrooge) === true) and ($isScrooge === true))
         {
-            $scroogeData = $this->app['scrooge']->getRefund($refundId);
-
-            $initiationtype = $scroogeData['initiation_type'];
-
-            $manualRefundTypes = ['Merchant Initiated', 'Initiated via Dashboard', 'Razorpay Initiated'];
-
-            if (in_array($initiationtype, $manualRefundTypes) === true)
+            try
             {
-                $refundType = 'manual';
+                $scroogeData = $this->app['scrooge']->getRefund($refundId);
+
+                $initiationtype = $scroogeData['body']['initiation_type'];
+
+                $manualRefundType = 'Merchant Initiated';
+
+                if (in_array($manualRefundType, $initiationtype) === true)
+                {
+                    $refundType = 'manual';
+                }
+                else
+                {
+                    $refundType = 'auto';
+                }
             }
-            else
+            catch(\Exception $e)
             {
-                $refundType = 'auto';
+                $this->trace->traceException($e);
             }
+
         }
 
         return $refundType;

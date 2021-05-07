@@ -2,17 +2,20 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use Mockery;
 use Carbon\Carbon;
 use mikehaertl\wkhtmlto\Pdf;
 use PhpParser\Node\Scalar\MagicConst\Dir;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Invoice;
+use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Services\Scrooge;
 
 
 class EntityReportTest extends TestCase
@@ -51,8 +54,27 @@ class EntityReportTest extends TestCase
         assert(count($combinedReport) === 3);
     }
 
-    public function testRefundReportWithCustomBranding()
+    public function testRefundReportWithCustomBrandingWithManualRefund()
     {
+
+        $scroogeMock = Mockery::mock('RZP\Services\Scrooge');
+
+        $scroogeMock->shouldReceive('getRefund')->withAnyArgs()->andReturn([
+            'body' => [
+                'initiation_type' => ['Merchant Initiated'],
+            ],
+            'code' => 200
+        ]);
+
+        $scroogeMock->shouldReceive('fetchRefundCreateData')->withAnyArgs()->andReturn([
+            RefundConstants::MODE => 'IMPS',
+            RefundConstants::GATEWAY_REFUND_SUPPORT => true,
+            RefundConstants::INSTANT_REFUND_SUPPORT => true,
+            RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND => null,
+        ]);
+
+        $this->app->instance('scrooge', $scroogeMock);
+
         $this->createCustomBrandingOrgAndAssignMerchant();
 
         $this->doAuthAndCapturePayment();
@@ -66,10 +88,54 @@ class EntityReportTest extends TestCase
             'day' => $dt->day
         ];
 
+
         $refundReport =  $this->fetchReport('refund', $input);
 
         $this->assertArrayHasKey('processed_at', $refundReport[0]);
         $this->assertArrayHasKey('refund_type', $refundReport[0]);
+        $this->assertEquals('manual', $refundReport[0]['refund_type']);
+    }
+
+    public function testRefundReportWithCustomBrandingWithAutoRefund()
+    {
+        $scroogeMock = Mockery::mock('RZP\Services\Scrooge');
+
+        $scroogeMock->shouldReceive('getRefund')->withAnyArgs()->andReturn([
+            'body' => [
+                'initiation_type' => ['Razorpay Initiated'],
+            ],
+            'code' => 200
+        ]);
+
+        $scroogeMock->shouldReceive('fetchRefundCreateData')->withAnyArgs()->andReturn([
+                RefundConstants::MODE => 'IMPS',
+                RefundConstants::GATEWAY_REFUND_SUPPORT => true,
+                RefundConstants::INSTANT_REFUND_SUPPORT => true,
+                RefundConstants::PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND => null,
+        ]);
+
+        $this->app->instance('scrooge', $scroogeMock);
+
+        $this->createCustomBrandingOrgAndAssignMerchant();
+
+        $this->doAuthAndCapturePayment();
+        $this->doAuthCaptureAndRefundPayment();
+
+        $dt = Carbon::today(Timezone::IST);
+
+        $input = [
+            'year' => $dt->year,
+            'month' => $dt->month,
+            'day' => $dt->day
+        ];
+
+
+
+        $refundReport =  $this->fetchReport('refund', $input);
+
+        $this->assertArrayHasKey('processed_at', $refundReport[0]);
+        $this->assertArrayHasKey('refund_type', $refundReport[0]);
+        $this->assertEquals('auto', $refundReport[0]['refund_type']);
     }
 
     public function testRefundReportWithoutCustomBranding()
@@ -89,29 +155,6 @@ class EntityReportTest extends TestCase
 
         $this->assertArrayNotHasKey('processed_at', $refundReport[0]);
         $this->assertArrayNotHasKey('refund_type', $refundReport[0]);
-    }
-
-    public function testPaymentReportWithCustomBranding()
-    {
-        $this->createCustomBrandingOrgAndAssignMerchant();
-
-        $this->doAuthAndCapturePayment();
-        $this->doAuthCaptureAndRefundPayment();
-
-        $dt = Carbon::today(Timezone::IST);
-
-        $input = [
-            'year' => $dt->year,
-            'month' => $dt->month,
-            'day' => $dt->day
-        ];
-
-        $paymentReport =  $this->fetchReport('payment', $input);
-
-        $this->assertArrayHasKey('authorized_at', $paymentReport[0]);
-        $this->assertArrayHasKey('captured_at', $paymentReport[0]);
-        $this->assertArrayHasKey('late_authorized', $paymentReport[0]);
-        $this->assertArrayHasKey('auto_captured', $paymentReport[0]);
     }
 
     public function testPaymentReportWithoutCustomBranding()

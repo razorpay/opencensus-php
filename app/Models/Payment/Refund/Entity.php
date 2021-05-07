@@ -354,7 +354,7 @@ class Entity extends Base\PublicEntity
                 ]);
 
             $response[self::PROCESSED_AT] = $this->getProcessedAt();
-            $response['refund_type'] = (new Core)->getRefundType($this->getPublicId(), $this->merchant);
+            $response['refund_type'] = (new Core)->getRefundType($this->getId(), $this->merchant, $this->getBatchId(), $this->isScrooge());
         }
         else
         {
@@ -1154,7 +1154,7 @@ class Entity extends Base\PublicEntity
         if ((new Merchant\Core())->isOrgCustomBranding($this->merchant) === true)
         {
             $data[self::PROCESSED_AT] = $this->getProcessedAt();
-            $data['refund_type'] = (new Core)->getRefundType($this->getPublicId(), $this->merchant);
+            $data['refund_type'] = (new Core)->getRefundType($this->getId(), $this->merchant, $this->getBatchId(), $this->isScrooge());
         }
 
         return $data;

@@ -1614,7 +1614,7 @@ class RefundTest extends TestCase
         $this->assertArraySelectiveEquals($rfnds, $refunds);
     }
 
-    public function testFetchRefundByIdWithCustomBranding()
+    public function testFetchRefundByIdWithCustomBrandingWithManualRefund()
     {
         $this->createCustomBrandingOrgAndAssignMerchant();
 
@@ -1627,9 +1627,21 @@ class RefundTest extends TestCase
                 'speed_requested'  => 'normal',
                 'speed_decisioned' => 'normal',
                 'speed_processed'  => 'normal',
-                'status'           => 'processed'
+                'status'           => 'processed',
+                'is_scrooge'        => true
             ]
         );
+
+        $scroogeMock = Mockery::mock('RZP\Services\Scrooge');
+
+        $scroogeMock->shouldReceive('getRefund')->withAnyArgs()->andReturn([
+            'body' => [
+                'initiation_type' => ['Merchant Initiated'],
+            ],
+            'code' => 200
+        ]);
+
+        $this->app->instance('scrooge', $scroogeMock);
 
         $rfnd = $this->getDbEntityById('refund', $rfnd['id']);
 
@@ -1637,6 +1649,47 @@ class RefundTest extends TestCase
 
         $this->assertArrayHasKey('processed_at', $actual);
         $this->assertArrayHasKey('refund_type', $actual);
+        $this->assertEquals('manual', $actual['refund_type']);
+
+    }
+
+    public function testFetchRefundByIdWithCustomBrandingWithAutoRefund()
+    {
+        $this->createCustomBrandingOrgAndAssignMerchant();
+
+        $payment = $this->fixtures->create('payment:captured');
+        $rfnd = $this->fixtures->create('refund:from_payment', ['payment' => $payment]);
+
+        $this->fixtures->refund->edit(
+            $rfnd['id'],
+            [
+                'speed_requested'  => 'normal',
+                'speed_decisioned' => 'normal',
+                'speed_processed'  => 'normal',
+                'status'           => 'processed',
+                'is_scrooge'        => true
+            ]
+        );
+
+        $scroogeMock = Mockery::mock('RZP\Services\Scrooge');
+
+        $scroogeMock->shouldReceive('getRefund')->withAnyArgs()->andReturn([
+            'body' => [
+                'initiation_type' => ['Razorpay Initiated'],
+            ],
+            'code' => 200
+        ]);
+
+        $this->app->instance('scrooge', $scroogeMock);
+
+        $rfnd = $this->getDbEntityById('refund', $rfnd['id']);
+
+        $actual = $rfnd->toArrayPublicWithExpand();
+
+        $this->assertArrayHasKey('processed_at', $actual);
+        $this->assertArrayHasKey('refund_type', $actual);
+        $this->assertEquals('auto', $actual['refund_type']);
+
     }
 
     public function testFetchRefundByIdWithoutCustomBranding()
