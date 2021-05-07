@@ -153,14 +153,14 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
             'email'                         =>      $merchant->getEmail(),
             'name'                          =>      $merchant->getName(),
             'description'                   =>      FDConstants::ACTIVATION_SUBJECT,
-            'subject'                       =>      '[Merchant] Activation',
+            'subject'                       =>      'Merchant Account Status Change',
             FDConstants::TYPE               =>      FDConstants::SERVICE_REQUEST_TICKET_TYPE,
             FDConstants::GROUP_ID           =>      (int)$this->app['config']->get('applications.freshdesk.activation.rzp.groupId'),
             FDConstants::RESPONDER_ID       =>      (int)$this->app['config']->get('applications.freshdesk.activation.rzp.agentId'),
             FDConstants::PRIORITY           =>      FDPriority::getValueForPriorityString(FDPriority::LOW),
             FDConstants::CUSTOM_FIELDS=>
                 [
-                    FDConstants::CF_REQUESTOR_CATEGORY    => 'Merchant',
+                    FDConstants::CF_REQUESTOR_CATEGORY    => 'Dashboard',
                     FDConstants::CF_REQUESTOR_SUBCATEGORY => 'Activation',
                     FDConstants::CF_CATEGORY              => FDConstants::ACTIVATION_CF_CATEGORY,
                     FDConstants::CF_SUBCATEGORY           => FDConstants::ACTIVATION_CF_SUBCATEGORY,
