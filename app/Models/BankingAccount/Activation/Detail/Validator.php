@@ -19,6 +19,7 @@ class Validator extends Base\Validator
     const SOLE_PROPRIETORSHIP = 'sole_proprietorship';
     const LIMITED_LIABILITY_PARTNERSHIP = 'limited_liability_partnership';
     const PARTNERSHIP = 'partnership';
+    const ONE_PERSON_COMPANY = 'one_person_company';
 
     // Types of Accounts for RBL
     const INSIGNIA = 'insignia';
@@ -118,7 +119,8 @@ class Validator extends Base\Validator
         self::PRIVATE_PUBLIC_LIMITED_COMPANY,
         self::SOLE_PROPRIETORSHIP,
         self::LIMITED_LIABILITY_PARTNERSHIP,
-        self::PARTNERSHIP
+        self::PARTNERSHIP,
+        self::ONE_PERSON_COMPANY
     ];
 
     protected static $allowedAccountTypesForRBL = [
