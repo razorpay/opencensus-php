@@ -1,27 +1,18 @@
-import { connect } from 'react-redux';
-import { Route, Switch, NavLink } from 'react-router-dom';
 import { Fragment } from 'react';
-import Input, { Description, Label } from 'common/new-ui/Input';
-import Field, {
-  TextAreaField,
-  SwitchField,
-  SelectField,
-  SearchableSelectField,
-} from 'razorx/components/ui/Field';
-import { PowerSelect } from 'react-power-select';
+import Field from 'razorx/components/ui/Field';
 import InputField from 'common/ui/Forms/InputField';
-import { titleCase } from 'common/utils/rzp-utils';
 import Select from './Select';
-import SelectConfig from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/SelectConfig';
-import { showNotification } from 'merchant_common/reducers/notifications';
 import { AmountTooltip } from 'common/ui/Amount';
 import { operators, getValue } from './util';
-import { CSSTransition } from 'react-transition-group';
 
-@connect(null, {
-  showNotification,
-})
 export default class Expression extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      showBinNumberErorr: false,
+    };
+  }
+
   getValue = (type, value) => {
     let r;
     r = this.props.parameters;
@@ -215,19 +206,23 @@ export default class Expression extends React.Component {
                             value = e.target.value;
                             const values = value.split(',');
                             let update = true;
-                            if (value[value.length - 1] === ',') {
-                              values.forEach((item, index) => {
-                                if (index < values.length - 1) {
-                                  if (!(item.length >= 4 && item.length <= 6)) {
-                                    update = false;
-                                    this.props.showNotification({
-                                      type: 'error',
-                                      message: 'Please enter valid BIN number of 4 to 6 digits.',
-                                    });
+                            values.forEach((item, index) => {
+                              if (index < values.length - 1) {
+                                if (!(item.length >= 4 && item.length <= 6)) {
+                                  update = false;
+                                  if (!this.state.showBinNumberErorr) {
+                                    this.setState({ showBinNumberErorr: true });
                                   }
                                 }
-                              });
-                            }
+                              }
+                              if (
+                                this.state.showBinNumberErorr &&
+                                item.length >= 4 &&
+                                item.length <= 6
+                              ) {
+                                this.setState({ showBinNumberErorr: false });
+                              }
+                            });
                             const arr = values.map((item, index) => {
                               const res = item.trim();
                               if (isNaN(res) || (res === '' && index !== values.length - 1)) {
@@ -257,8 +252,15 @@ export default class Expression extends React.Component {
                           type="text"
                           placeholder="Enter comma separated numbers"
                           name="enter_text"
-                          class="form-control"
+                          class={`form-control ${
+                            this.state.showBinNumberErorr ? 'bin-input-error' : ''
+                          }`}
                         />
+                        {this.state.showBinNumberErorr && (
+                          <div className="bin-input-error-msg">
+                            Please enter valid BIN number of 4 to 6 digits.
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
