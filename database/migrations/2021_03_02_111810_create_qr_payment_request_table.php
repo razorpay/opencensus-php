@@ -6,7 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\QrPaymentRequest\Entity;
-use RZP\Models\BharatQr as BharatQr;
+use RZP\Models\BharatQr\Entity as BharatQr;
 
 class CreateQrPaymentRequestTable extends Migration
 {
@@ -26,12 +26,12 @@ class CreateQrPaymentRequestTable extends Migration
             $table->string(Entity::QR_CODE_ID)
                   ->nullable();
 
-            $table->char(Entity::BHARAT_QR_ID, BharatQr\Entity::ID_LENGTH)
-                  ->nullbale()
+            $table->string(Entity::BHARAT_QR_ID, BharatQr::ID_LENGTH)
+                  ->nullable()
                   ->default(null);
 
-            $table->unsignedInteger(Entity::UPI_ID)
-                  ->nullbale()
+            $table->string(Entity::UPI_ID, 14)
+                  ->nullable()
                   ->default(null);
 
             $table->tinyInteger(Entity::IS_CREATED)

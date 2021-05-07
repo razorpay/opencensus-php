@@ -6192,6 +6192,12 @@ ALTER table banking_account_statement
 ALTER TABLE rewards
     ADD COLUMN brand_name CHAR(26) DEFAULT NULL;
 
+ALTER TABLE qr_payment_request
+    MODIFY bharat_qr_id varchar(14);
+
+ALTER TABLE qr_payment_request
+    MODIFY upi_id varchar(14);
+
 ALTER table fund_accounts
     ADD COLUMN unique_hash VARCHAR(255) DEFAULT NULL,
     ADD INDEX fund_accounts_unique_hash_index (unique_hash);
