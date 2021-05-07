@@ -455,7 +455,7 @@ class Service extends Base\Service
                 (array_key_exists('variables', $experiment)) and
                 (array_key_exists('result', $experiment['variables'])) and
                 ($experiment['variables']['result'] === "on")) and
-                (array_key_exists($key, $announcementExperiments));
+                (in_array($key, $announcementExperiments));
     }
 
     /**
