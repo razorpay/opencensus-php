@@ -670,11 +670,6 @@ return [
                         'display_name' => 'On demand Payout'
                     ],
                     [
-                        'feature'      => 'es_on_demand_x_settlement',
-                        'value'        => false,
-                        'display_name' => 'Es Ondemand X Settlement'
-                    ],
-                    [
                         'feature'       => 'es_on_demand_restricted',
                         'value'         => false,
                         'display_name'  => 'Es Ondemand Restricted'
@@ -970,7 +965,6 @@ return [
                     'async_capture',
                     'transaction_v2',
                     'es_on_demand',
-                    'es_on_demand_x_settlement',
                     'es_on_demand_restricted',
                     'es_automatic',
                     'headless_disable',

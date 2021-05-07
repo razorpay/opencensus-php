@@ -50,9 +50,7 @@ class Service extends Base\Service
 
     public function isMerchantWithXSettlementAccount($merchantId)
     {
-        $isFeatureEnabled = $this->validateIfESOndemandXSettlementFeatureEnabled();
-
-        return $isFeatureEnabled and $this->core()->isMerchantWithXSettlementAccount($merchantId);
+        return $this->core()->isMerchantWithXSettlementAccount($merchantId);
     }
 
     public function create(array $input): array
@@ -204,11 +202,6 @@ class Service extends Base\Service
         {
             throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_NON_ES_ON_DEMAND_MERCHANTS_NOT_ALLOWED);
         }
-    }
-
-    public function validateIfESOndemandXSettlementFeatureEnabled()
-    {
-        return $this->merchant->isFeatureEnabled(Feature\Constants::ES_ON_DEMAND_X_SETTLEMENT);
     }
 
     public function fetch(string $id, array $input): array

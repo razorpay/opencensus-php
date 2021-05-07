@@ -542,9 +542,6 @@ class SettlementOndemandTest extends TestCase
         $this->fixtures->feature->create([
             'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
 
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand_x_settlement']);
-
         $this->fixtures
              ->base
              ->editEntity(
@@ -694,9 +691,6 @@ class SettlementOndemandTest extends TestCase
 
         $this->fixtures->feature->create([
             'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
-
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand_x_settlement']);
 
         $this->fixtures
             ->base
@@ -854,9 +848,6 @@ class SettlementOndemandTest extends TestCase
 
         $this->fixtures->feature->create([
             'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
-
-        $this->fixtures->feature->create([
-            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand_x_settlement']);
 
         $this->fixtures
             ->base
