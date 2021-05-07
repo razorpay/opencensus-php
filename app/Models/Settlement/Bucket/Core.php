@@ -460,7 +460,9 @@ class Core extends Base\Core
     {
         $batch = 0;
         $batchSize = 1000;
-        $stat = [];
+        $stat = [
+            'total_count' => 0,
+        ];
 
         $balance = $this->repo->balance->getMerchantBalanceByType($merchantId, $opt['balance_type']);
 
@@ -480,10 +482,25 @@ class Core extends Base\Core
                     ];
                 }
 
+                $stat['total_count']++;
                 $stat[$txn->getType()]['count']++;
                 $stat[$txn->getType()]['amount'] += $txn->getCredit() - $txn->getDebit();
 
-                $this->publishForSettlement($txn, $balance, $opt['initial_ramp']);
+                try
+                {
+                    $this->publishForSettlement($txn, $balance, $opt['initial_ramp']);
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->traceException(
+                        $e,
+                        Trace::ERROR,
+                        TraceCode::SETTLEMENT_SERVICE_TRANSACTION_MIGRATION_FAILED,
+                        [
+                           'merchant_id'    => $merchantId,
+                           'transaction_id' => $txn->getId(),
+                        ]);
+                }
             }
 
             $batch++;

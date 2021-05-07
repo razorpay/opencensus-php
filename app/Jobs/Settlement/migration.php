@@ -102,6 +102,7 @@ class migration extends Job
                     'merchant_id' => $this->merchantId,
                     'via'         => $this->via,
                 ]);
+
             $resource = sprintf(self::MUTEX_RESOURCE, $this->merchantId);
 
             $this->mutex->acquireAndRelease(

@@ -3,6 +3,7 @@
 namespace RZP\Jobs\Settlement;
 
 use RZP\Jobs\Job;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use Razorpay\Trace\Logger as Trace;
@@ -10,8 +11,9 @@ use RZP\Models\Settlement\Bucket\Core;
 
 class TransactionMigration extends Job
 {
-    const MAX_ATTEMPTS = 5;
+    const MUTEX_RESOURCE = 'SETTLEMENT_SERVICE_TRANSACTION_MIGRATION_%s_%s';
 
+    const MUTEX_LOCK_TIMEOUT = 3600;
     /**
      * @var string
      */
@@ -32,7 +34,7 @@ class TransactionMigration extends Job
      *
      * @var int
      */
-    public $timeout = 1800;
+    public $timeout = 3600;
 
     /**
      * @param string $mode
@@ -57,31 +59,45 @@ class TransactionMigration extends Job
 
         try
         {
+            $this->trace->info(
+                TraceCode::SETTLEMENT_SERVICE_TRANSACTION_MIGRATION_BEGIN,
+                [
+                    'merchant_id' => $this->merchantId,
+                    'options'     => $this->opt,
+                ]);
+
+            $startTime = microtime(true);
+
             $core = new Core;
 
             $status = $core->shouldProcessViaNewService($this->merchantId);
+
             if ($status === false)
             {
                 return;
             }
 
-            $details = $core->migrateSettlableTransactions($this->merchantId, $this->opt);
+            $resource = sprintf(self::MUTEX_RESOURCE, $this->merchantId, $this->mode);
+
+            $details = $this->mutex->acquireAndRelease(
+                $resource,
+                function () use($core)
+                {
+                    return $core->migrateSettlableTransactions($this->merchantId, $this->opt);
+                },
+                self::MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS);
 
             $this->trace->info(
-                TraceCode::SETTLEMENT_TRANSACTION_DETAILS ,
+                TraceCode::SETTLEMENT_SERVICE_TRANSACTION_MIGRATION_SUCCESS ,
                 [
                     'merchant_id' =>  $this->merchantId,
                     'details'     => $details,
+                    'time_taken'  => get_diff_in_millisecond($startTime),
                 ]);
         }
         catch (\Throwable $e)
         {
-            // if the max attempt is not exhausted then release the job for retry
-            if ($this->attempts() <= self::MAX_ATTEMPTS)
-            {
-                $this->release(1);
-            }
-
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
@@ -92,5 +108,19 @@ class TransactionMigration extends Job
                 ]
             );
         }
+    }
+
+    protected function beforeJobKillCleanUp()
+    {
+        $this->trace->info(
+            TraceCode::SETTLEMENT_SERVICE_TRANSACTION_MIGRATION_JOB_TIMEOUT,
+            [
+                'merchant_id' => $this->merchantId,
+                'options'     => $this->opt,
+            ]);
+
+        $this->delete();
+
+        parent::beforeJobKillCleanUp();
     }
 }
