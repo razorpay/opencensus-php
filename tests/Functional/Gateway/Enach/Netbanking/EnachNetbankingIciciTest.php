@@ -82,7 +82,7 @@ class EnachNetbankingNpciIciciTest extends EnachNetbankingNpciGatewayTest
         $fileContent = explode("\n", file_get_contents('storage/files/filestore/' . $debit['location']));
 
         // since date and amount is fixed for this test header is a constant
-        $expectedHeader = '56       RAZORPAY                                                                                  0000050000000000000034000007032020                       shared_utility_cod000000000000000000ICIC0TREA00000205025290                       000000002                                                           ';
+        $expectedHeader = '56       RAZORPAY                                                                                  0001000000000000000034000007032020                       shared_utility_cod000000000000000000ICIC0TREA00000205025290                       000000002                                                           ';
 
         $this->assertEquals($expectedHeader, $fileContent[0]);
 

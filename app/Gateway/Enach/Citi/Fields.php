@@ -38,7 +38,7 @@ class Fields
     const ACH_ITEM_SEQ_NUMBER_HEADING                     = '          ';
     const CHECK_SUM_HEADING                               = '          ';
     const FILLER_3                                        = '   ';
-    const USER_DEFINED_LIMIT_FOR_INDIVIDUAL_ITEMS         = '0000050000000';
+    const USER_DEFINED_LIMIT_FOR_INDIVIDUAL_ITEMS         = '0001000000000';
     const SAVINGS                                         = 'savings';
     const CURRENT                                         = 'current';
     const USER_REFERENCE_HEADING                          = '000000000000000000';
