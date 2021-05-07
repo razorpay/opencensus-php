@@ -11,7 +11,6 @@ import HeaderNav from 'merchantLA/components/HeaderNav';
 import Content from 'merchantLA/components/Content';
 import Footer from 'merchant/components/Footer';
 import MerchantTour from 'merchantLA/containers/MerchantTour';
-import PasswordReLogin from 'merchant_common/components/PasswordReLogin';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 import * as SessionActions from 'merchantLA/reducers/session';
@@ -19,6 +18,8 @@ import { applyTheme } from 'merchant_common/helpers/themes';
 import User, { setFeatures } from 'merchantLA/models/User';
 import { resizeWindow } from 'merchantLA/reducers/app';
 import rolesList from 'merchantLA/helpers/permissions/roles-list';
+import LogoutDialog from '../../merchant/components/LogoutDialog';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
 
 @withRouter
 @connect(
@@ -31,15 +32,16 @@ import rolesList from 'merchantLA/helpers/permissions/roles-list';
     ...SessionActions,
     ...NotificationActions,
     resizeWindow,
+    openModal,
+    closeModal,
   },
 )
+
 export default class App extends Component {
   pendingRequests = [];
 
   constructor(props) {
     super(props);
-
-    const { user } = props;
 
     const oldModeToken = 'rzp_mode',
       oldModeValue = LocalStorageService.getItem(oldModeToken);
@@ -55,7 +57,7 @@ export default class App extends Component {
     }
 
     this.modeToken = `${oldModeToken}--${window.rzp_user.current}`;
-
+    this.logoutPopupShown = false;
     this.state = {
       isLoading: true,
     };
@@ -63,27 +65,20 @@ export default class App extends Component {
     this.handleResize = debounce(this.handleResize.bind(this), 200);
   }
 
-  resumePendingRequests = () => {
-    for (let i = 0; i < this.pendingRequests.length; i++) {
-      this.pendingRequests[i]();
-    }
-  };
-
-  registerPendingRequests(req) {
-    this.pendingRequests.push(req);
-  }
-
   componentWillMount() {
     // Event Based method to lock dashboard screen
+    const user = window.rzp_user;
     const self = this;
     window.addEventListener('NOT_AUTHENTICATED', function (e) {
-      self.registerPendingRequests(e.detail.continueAjax);
-
-      if (this.isDashboardLocked) {
+      if (this.logoutPopupShown) {
         return;
       }
-
-      self.lockDashboard(self.resumePendingRequests);
+      self.props.closeModal();
+      self.props.openModal({
+        size: 'large',
+        component: <LogoutDialog user={user} />,
+      });
+      this.logoutPopupShown = true;
     });
 
     window.addEventListener('REQUEST_ERROR', function (e) {
@@ -263,25 +258,6 @@ export default class App extends Component {
       });
   };
 
-  lockDashboard = (cb) => {
-    let email = this.props.user.user.email;
-
-    if (window.Raven && window.Raven.captureMessage) {
-      window.Raven.captureMessage('Dashboard Locked', {
-        level: 'info',
-      });
-    }
-
-    this.resumeLockActionCB = cb;
-
-    this.setState({ isDashboardLocked: true });
-  };
-
-  removeLockScreen = () => {
-    this.resumeLockActionCB = undefined;
-    this.setState({ isDashboardLocked: false });
-  };
-
   handleResize = () => {
     this.props.resizeWindow();
   };
@@ -311,18 +287,6 @@ export default class App extends Component {
         <ModalDialog />
         <Notifications />
         <MerchantTour user={user} />
-
-        {this.state.isDashboardLocked && (
-          <PasswordReLogin
-            merchantId={user.current}
-            userEmail={user.user.email}
-            removeLockScreen={this.removeLockScreen}
-            showNotification={this.props.showNotification}
-            resumeLockActionCB={this.resumeLockActionCB}
-            isGoogleLogin={user.isGoogleLogin()}
-            isPartner={user.isPartner()}
-          />
-        )}
       </div>
     );
   }
