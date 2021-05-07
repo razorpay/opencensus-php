@@ -172,7 +172,7 @@ class Constants
                 ],
             ],
             'filters'     => [
-                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_HYDERABAD_SPLITZ'],
+                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_HYDERABAD_SPLITZ', 'ANNOUNCEMENT_NITRO_KOLKATA_V1_SPLITZ', 'ANNOUNCEMENT_NITRO_CHENNAI_V1_SPLITZ', 'ANNOUNCEMENT_NITRO_SURAT_V1_SPLITZ', 'ANNOUNCEMENT_NITRO_JAIPUR_V1_SPLITZ'],
             ],
         ],
         [
@@ -776,6 +776,34 @@ class Constants
                     "version_description" => 'Nitro for hyderabad',
                 ],
                 'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_HYDERABAD_SPLITZ'],
+            ],
+            [
+                'data'  => [
+                    'version'     =>  'nitro_kolkata_v1',
+                    "version_description" => 'Nitro for kolkata',
+                ],
+                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_KOLKATA_V1_SPLITZ'],
+            ],
+            [
+                'data'  => [
+                    'version'     =>  'nitro_surat_v1',
+                    "version_description" => 'Nitro for surat',
+                ],
+                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_SURAT_V1_SPLITZ'],
+            ],
+            [
+                'data'  => [
+                    'version'     =>  'nitro_jaipur_v1',
+                    "version_description" => 'Nitro for jaipur',
+                ],
+                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_JAIPUR_V1_SPLITZ'],
+            ],
+            [
+                'data'  => [
+                    'version'     =>  'nitro_chennai_v1',
+                    "version_description" => 'Nitro for chennai',
+                ],
+                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_CHENNAI_V1_SPLITZ'],
             ],
             [
                 'data'  => [

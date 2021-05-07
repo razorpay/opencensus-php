@@ -12,9 +12,17 @@ export default {
   project_nitro: [
     // beta experiment ids
     'GwPth7nhHNdMND',
+    'H7361l13HhrBgO', // Kolkata Nitro
+    'H75RfvQFecKHsT', // Chennai Nitro
+    'H75Qu5SInWp3SQ', // Jaipur Nitro
+    'H75Q0JHjnUd5xs', // Surat Nitro
 
     // prod experiment ids
     'GxtSf8y77iWw9e',
+    'H6qGPCBPduY7Gl', // Kolkata Nitro
+    'H6qJ2X77dqHG9I', // Chennai Nitro
+    'H6qIJWTzrqt54X', // Jaipur Nitro
+    'H6qHJJnYOtwfoc', // Surat Nitro
   ],
   pure_platform_signup: [
     // beta experiment ids

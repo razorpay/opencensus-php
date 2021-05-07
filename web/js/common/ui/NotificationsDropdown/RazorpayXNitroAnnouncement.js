@@ -93,6 +93,39 @@ export const nitroCampaignId = () => {
       version: 'nitro_hyderabad_v4',
       version_description: 'Nitro for hyderabad',
     },
+    H7361l13HhrBgO: {
+      version: 'nitro_kolkata_v1',
+      version_description: 'Nitro for kolkata',
+    },
+    H75RfvQFecKHsT: {
+      version: 'nitro_chennai_v1',
+      version_description: 'Nitro for chennai',
+    },
+    H75Qu5SInWp3SQ: {
+      version: 'nitro_jaipur_v1',
+      version_description: 'Nitro for jaipur',
+    },
+    H75Q0JHjnUd5xs: {
+      version: 'nitro_surat_v1',
+      version_description: 'Nitro for surat',
+    },
+
+    H6qGPCBPduY7Gl: {
+      version: 'nitro_kolkata_v1',
+      version_description: 'Nitro for kolkata',
+    },
+    H6qJ2X77dqHG9I: {
+      version: 'nitro_chennai_v1',
+      version_description: 'Nitro for chennai',
+    },
+    H6qIJWTzrqt54X: {
+      version: 'nitro_jaipur_v1',
+      version_description: 'Nitro for jaipur',
+    },
+    H6qHJJnYOtwfoc: {
+      version: 'nitro_surat_v1',
+      version_description: 'Nitro for surat',
+    },
   };
 
   const getExpStatus = (name) => {
