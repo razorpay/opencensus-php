@@ -5,6 +5,7 @@ namespace RZP\Models\QrCode;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Listeners\ApiEventSubscriber;
 
 class Service extends Base\Service
 {
@@ -47,7 +48,7 @@ class Service extends Base\Service
         $count = $input['count'] ?? 100;
 
         $qrCodes = $this->repo->useSlave(function() use ($count) {
-            return $this->repo->qr_code->fetchQrCodesForMpanTokenization($count);;
+            return $this->repo->qr_code->fetchQrCodesForMpanTokenization($count);
         });
 
         foreach ($qrCodes as $qrCode)
@@ -79,6 +80,29 @@ class Service extends Base\Service
         );
 
         return $response;
+    }
+
+    public function publishQrCodeEvent($entity, $event)
+    {
+        try
+        {
+            $eventPayload = [
+                ApiEventSubscriber::MAIN => $entity
+            ];
+
+            Event::checkEvent($event);
+
+            $event = 'api.qr_code.' . $event;
+
+            $this->app['events']->dispatch($event, $eventPayload);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::QR_CODE_WEBHOOK_PUBLISH_FAILED, [
+                'entity' => $entity->toArrayPublic(),
+                'event'  => $event
+            ]);
+        }
     }
 
     public function create($input, $virtualAccount = null)

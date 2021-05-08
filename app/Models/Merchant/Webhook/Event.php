@@ -45,6 +45,9 @@ class Event
     const VIRTUAL_ACCOUNT_CREDITED          = 'virtual_account.credited';
     const VIRTUAL_ACCOUNT_CREATED           = 'virtual_account.created';
     const VIRTUAL_ACCOUNT_CLOSED            = 'virtual_account.closed';
+    const QR_CODE_CLOSED                    = 'qr_code.closed';
+    const QR_CODE_CREATED                   = 'qr_code.created';
+    const QR_CODE_CREDITED                  = 'qr_code.credited';
     const PAYMENT_DISPUTE_WON               = 'payment.dispute.won';
     const PAYMENT_DISPUTE_LOST              = 'payment.dispute.lost';
     const PAYMENT_DISPUTE_CLOSED            = 'payment.dispute.closed';
@@ -139,6 +142,9 @@ class Event
         self::VIRTUAL_ACCOUNT_CREDITED,
         self::VIRTUAL_ACCOUNT_CREATED,
         self::VIRTUAL_ACCOUNT_CLOSED,
+        self::QR_CODE_CLOSED,
+        self::QR_CODE_CREATED,
+        self::QR_CODE_CREDITED,
         self::PAYMENT_DISPUTE_WON,
         self::PAYMENT_DISPUTE_LOST,
         self::PAYMENT_DISPUTE_CLOSED,
@@ -239,6 +245,9 @@ class Event
         self::VIRTUAL_ACCOUNT_CREDITED,
         self::VIRTUAL_ACCOUNT_CREATED,
         self::VIRTUAL_ACCOUNT_CLOSED,
+        self::QR_CODE_CLOSED,
+        self::QR_CODE_CREATED,
+        self::QR_CODE_CREDITED,
         self::PAYMENT_DISPUTE_WON,
         self::PAYMENT_DISPUTE_LOST,
         self::PAYMENT_DISPUTE_CLOSED,
@@ -396,6 +405,9 @@ class Event
         self::TRANSFER_FAILED                   => 21,
         self::PAYOUT_DOWNTIME_STARTED           => 22,
         self::PAYOUT_DOWNTIME_RESOLVED          => 23,
+        self::QR_CODE_CLOSED                    => 24,
+        self::QR_CODE_CREATED                   => 25,
+        self::QR_CODE_CREDITED                  => 26,
     ];
 
     /**
@@ -430,6 +442,9 @@ class Event
         self::VIRTUAL_ACCOUNT_CREDITED          => [Product::PRIMARY],
         self::VIRTUAL_ACCOUNT_CREATED           => [Product::PRIMARY],
         self::VIRTUAL_ACCOUNT_CLOSED            => [Product::PRIMARY],
+        self::QR_CODE_CLOSED                    => [Product::PRIMARY],
+        self::QR_CODE_CREATED                   => [Product::PRIMARY],
+        self::QR_CODE_CREDITED                  => [Product::PRIMARY],
         self::PAYMENT_DISPUTE_WON               => [Product::PRIMARY],
         self::PAYMENT_DISPUTE_LOST              => [Product::PRIMARY],
         self::PAYMENT_DISPUTE_CLOSED            => [Product::PRIMARY],
@@ -508,6 +523,9 @@ class Event
         self::VIRTUAL_ACCOUNT_CREDITED          => Entity::PAYMENT,
         self::VIRTUAL_ACCOUNT_CREATED           => Entity::VIRTUAL_ACCOUNT,
         self::VIRTUAL_ACCOUNT_CLOSED            => Entity::VIRTUAL_ACCOUNT,
+        self::QR_CODE_CLOSED                    => Entity::QR_CODE,
+        self::QR_CODE_CREATED                   => Entity::QR_CODE,
+        self::QR_CODE_CREDITED                  => Entity::PAYMENT,
         self::INVOICE_PAID                      => Entity::INVOICE,
         self::INVOICE_PARTIALLY_PAID            => Entity::INVOICE,
         self::INVOICE_EXPIRED                   => Entity::INVOICE,
@@ -646,6 +664,9 @@ class Event
         self::P2P_VPA_DELETED                   => Feature\Constants::P2P_UPI,
         self::P2P_VERIFICATION_COMPLETED        => Feature\Constants::P2P_UPI,
         self::P2P_DEREGISTRATION_COMPLETED      => Feature\Constants::P2P_UPI,
+        self::QR_CODE_CLOSED                    => Feature\Constants::QR_CODES,
+        self::QR_CODE_CREATED                   => Feature\Constants::QR_CODES,
+        self::QR_CODE_CREDITED                  => Feature\Constants::QR_CODES,
     ];
 
     public static function getLaunchedEventNames()

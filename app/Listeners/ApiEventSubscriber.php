@@ -6,6 +6,7 @@ use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Event;
 use RZP\Models\Payout;
+use RZP\Models\QrCode;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
@@ -427,6 +428,20 @@ class ApiEventSubscriber extends Base\Core
     protected function onVirtualAccountClosed(VirtualAccount\Entity $virtualAccount)
     {
         $payload = $this->getVirtualAccountPayload($virtualAccount);
+
+        $this->dispatchEventToStork($payload);
+    }
+
+    protected function onQrCodeClosed(QrCode\Entity $qrCode)
+    {
+        $payload = $this->getQrCodePayload($qrCode);
+
+        $this->dispatchEventToStork($payload);
+    }
+
+    protected function onQrCodeCreated(QrCode\Entity $qrCode)
+    {
+        $payload = $this->getQrCodePayload($qrCode);
 
         $this->dispatchEventToStork($payload);
     }
@@ -1032,6 +1047,15 @@ class ApiEventSubscriber extends Base\Core
     {
         $partialPayload[Constants\Entity::VIRTUAL_ACCOUNT] = [
             'entity' => $virtualAccount->toArrayPublic()
+        ];
+
+        return $partialPayload;
+    }
+
+    protected function getQrCodePayload(QrCode\Entity $qrCode)
+    {
+        $partialPayload[Constants\Entity::QR_CODE] = [
+            'entity' => $qrCode->toArrayPublicAllAttributes()
         ];
 
         return $partialPayload;

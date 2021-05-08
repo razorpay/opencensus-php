@@ -650,6 +650,11 @@ return [
                         'display_name' => 'Smart Collect'
                     ],
                     [
+                        'feature'      => 'qr_codes',
+                        'value'        => false,
+                        'display_name' => 'QR codes'
+                    ],
+                    [
                         'feature'      => 'upi_transfer_tr',
                         'value'        => false,
                         'display_name' => 'UPI transfer tr webhook'
@@ -928,6 +933,7 @@ return [
                     'order_id_mandatory',
                     'order_receipt_unique',
                     'magic',
+                    'qr_codes',
                     'new_analytics',
                     'daily_settlement',
                     'disable_upi_intent',

@@ -2416,6 +2416,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const UPLOAD_FILE_DETAILS                                   = 'UPLOAD_FILE_DETAILS';
 
+    const QR_CODE_WEBHOOK_PUBLISH_FAILED                        = 'QR_CODE_WEBHOOK_PUBLISH_FAILED';
+
     // To log various debugs for a migrate command
     const BATCH_MIGRATE_DEBUG                                   = 'BATCH_MIGRATE_DEBUG';
 

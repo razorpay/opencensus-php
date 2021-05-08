@@ -603,7 +603,21 @@ class EventCode
     const VIRTUAL_ACCOUNT_CLOSED = [
         'group' => 'virtual_account',
         'name'  => 'virtual_account.closed',
+    ];
 
+    const QR_CODE_CLOSED = [
+        'group' => 'qr_code',
+        'name'  => 'qr_code.closed',
+    ];
+
+    const QR_CODE_CREATED = [
+        'group' => 'qr_code',
+        'name'  => 'qr_code.created',
+    ];
+
+    const QR_CODE_CREDITED = [
+        'group' => 'qr_code',
+        'name'  => 'qr_code.credited',
     ];
 
     const BANK_TRANSFER_REQUEST = [

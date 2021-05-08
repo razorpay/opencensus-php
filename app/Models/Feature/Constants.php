@@ -39,6 +39,7 @@ class Constants
     const EXPOSE_DOWNTIMES                = 'expose_downtimes';
     const PAYMENT_FAILURE_EMAIL           = 'payment_failure_email';
     const VIRTUAL_ACCOUNTS                = 'virtual_accounts';
+    const QR_CODES                        = 'qr_codes';
     const UPI_TRANSFER_TR                 = 'upi_transfer_tr';
     const VIRTUAL_ACCOUNTS_BANKING        = 'virtual_accounts_banking';
     const BANK_TRANSFER_ON_CHECKOUT       = 'bank_transfer_on_checkout';
@@ -748,6 +749,7 @@ class Constants
         self::ORDER_ID_MANDATORY              => true,
         self::ORDER_RECEIPT_UNIQUE            => true,
         self::MAGIC                           => true,
+        self::QR_CODES                        => true,
         self::NEW_ANALYTICS                   => true,
         self::DAILY_SETTLEMENT                => true,
         self::DISABLE_UPI_INTENT              => true,
@@ -1025,6 +1027,11 @@ class Constants
             'feature'       => self::VIRTUAL_ACCOUNTS,
             'display_name'  => 'Smart Collect',
             'documentation' => 'smart-collect',
+        ],
+        self::QR_CODES => [
+            'feature'       => self::QR_CODES,
+            'display_name'  => 'QR codes',
+            'documentation' => 'qr-codes',
         ],
         self::UPI_TRANSFER_TR => [
             'feature'       => self::UPI_TRANSFER_TR,
@@ -1427,6 +1434,7 @@ class Constants
         self::MARKETPLACE,
         self::SUBSCRIPTIONS,
         self::VIRTUAL_ACCOUNTS,
+        self::QR_CODES,
         self::ES_AUTOMATIC,
         self::SHOW_CREDIT_SCORE,
         self::SKIP_WORKFLOWS_FOR_API,
