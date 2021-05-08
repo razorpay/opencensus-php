@@ -343,6 +343,7 @@ class UserRolePermissionsMap
                  Permission::SYNC_ACCOUNTING_INTEGRATION,
                  Permission::VIEW_ACCOUNTING_INTEGRATION,
                  Permission::WAITLIST_ACCOUNTING_INTEGRATION,
+                 Permission::VIEW_PAYOUT_WORKFLOW_SUMMARY,
              ],
 
              BankingRole::VIEW_ONLY => [
@@ -352,7 +353,6 @@ class UserRolePermissionsMap
                  Permission::VIEW_PAYOUT_SUMMARY,
                  Permission::VIEW_PAYOUT_LINKS,
                  Permission::VIEW_PAYOUT_WORKFLOW_SUMMARY,
-                 Permission::VIEW_PAYOUT_LINKS,
                  Permission::VIEW_CONTACT,
                  Permission::VIEW_CONTACT_TYPE,
                  Permission::VIEW_FUND_ACCOUNT_VALIDATION,

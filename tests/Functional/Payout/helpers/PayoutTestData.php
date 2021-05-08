@@ -5011,6 +5011,9 @@ return [
 
     'testGetPayoutMetaWorkflowProxyAuth' => [
         'request'  => [
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
             'method'  => 'GET',
             'url'     => '/payouts/_meta/workflows',
         ],

@@ -4377,7 +4377,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testGetPayoutMetaWorkflowProxyAuth()
     {
-        $merchantUser = $this->fixtures->user->createUserForMerchant('100000Razorpay');
+        $merchantUser = $this->fixtures->user->createBankingUserForMerchant('100000Razorpay');
 
         $this->ba->proxyAuth('rzp_test_100000Razorpay', $merchantUser->getId());
 
