@@ -2165,6 +2165,38 @@ class TerminalMigrationTest extends TestCase
         $this->startTest();
     }
 
+    public function testSetTerminalsBanksAndSync()
+    {
+        DB::table('terminals')->delete();
+
+        $terminal = $this->fixtures->create(
+            'terminal', [
+            'id'          => '1n25f6uN5S1Z5a',
+            'merchant_id' => '10000000000000',
+            'netbanking' => 1,
+            'gateway' => 'netbanking_sbi'
+        ]);
+
+        $this->app['config']->set('applications.terminals_service.sync', true);
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) {
+
+            $response = new \Requests_Response;
+
+            $data = $this->terminalRepository->find('1n25f6uN5S1Z5a')->toArray();
+
+            $body = json_encode(['data' => $data]);
+
+            $response->body = $body;
+
+            return $response;
+        }, 2);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testEnableTerminalOnTerminalService()
     {
         DB::table('terminals')->delete();

@@ -532,7 +532,7 @@ class Core extends Base\Core
         ];
     }
 
-    public function setBanksForTerminal(Entity $terminal, $banksToEnable, $syncWithTerminalService = true): array
+    public function setBanksForTerminal(Entity $terminal, $banksToEnable, $option): array
     {
         $gateway = $terminal->getGateway();
 
@@ -580,10 +580,8 @@ class Core extends Base\Core
 
         $variantFlag = $this->app->razorx->getTreatment($mId, "TERMINAL_EDIT_PROXY", $mode);
 
-        if ($variantFlag === "on" && $syncWithTerminalService === true)
+        if ($variantFlag === "on" and $option['bulk_update'] === false)
         {
-            $syncWithTerminalService = false;
-
             $path = "v1/terminals/".$terminal->getId()."/banks";
 
             $input = [
@@ -594,13 +592,13 @@ class Core extends Base\Core
 
             $terminal->setSyncStatus(SyncStatus::SYNC_SUCCESS);
 
-            $this->repo->saveOrFail($terminal, ['shouldSync' => $syncWithTerminalService]);
+            $this->repo->saveOrFail($terminal, ['shouldSync' => false]);
 
             return $response;
         }
         else
         {
-            $this->repo->saveOrFail($terminal, ['shouldSync' => $syncWithTerminalService]);
+            $this->repo->saveOrFail($terminal, ['shouldSync' => $option['sync_with_terminals_service']]);
         }
 
         return $this->getBanksForTerminal($terminal);

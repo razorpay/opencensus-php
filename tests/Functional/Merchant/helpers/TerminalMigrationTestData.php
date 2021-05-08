@@ -496,6 +496,30 @@ return [
         ],
     ],
 
+    'testSetTerminalsBanksAndSync' => [
+        'request' => [
+            'method'  => 'PUT',
+            'content' => [
+                'action'       => 'remove',
+                'terminal_ids' => ['1n25f6uN5S1Z5a'],
+                'banks'        => ['SBBJ', 'SBHY'],
+            ],
+            'url'     => '/terminals/banks/bulk'
+        ],
+        'response' => [
+            'content' => [
+                '1n25f6uN5S1Z5a'=> [
+                    'SBIN' => 'State Bank of India',
+                    'SBMY' => 'State Bank of Mysore',
+                    'STBP' => 'State Bank of Patiala',
+                    'SBTR' => 'State Bank of Travancore',
+                ],
+                'success' => true,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testAdminFetchTerminalByIdTerminalServiceValidResponseProxy' => [
         'request'    => [
             'method'    => 'GET'

@@ -362,7 +362,12 @@ class Service extends Base\Service
 
         $banksToEnable = $input[Entity::ENABLED_BANKS] ?? [];
 
-        $banks = $this->core()->setBanksForTerminal($terminal, $banksToEnable);
+        $option = [
+            'sync_with_terminals_service' => true,
+            'bulk_update' => false,
+        ];
+
+        $banks = $this->core()->setBanksForTerminal($terminal, $banksToEnable, $option);
 
         return $banks;
     }
@@ -402,6 +407,10 @@ class Service extends Base\Service
 
             $terminals = $this->repo->terminal->findMany($ids);
 
+            $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+            $variantFlag = $this->app->razorx->getTreatment($ids[0], "TERMINAL_EDIT_BANKS_BULK_PROXY", $mode);
+
             foreach ($terminals as $terminal)
             {
                 $terminalId = $terminal->getId();
@@ -428,7 +437,12 @@ class Service extends Base\Service
                 {
                     try
                     {
-                        $updatedEnabledBanks = $this->core()->setBanksForTerminal($terminal, $newBanksList, false);
+                        $option = [
+                            'sync_with_terminals_service' => $variantFlag !== 'on',
+                            'bulk_update' => true,
+                        ];
+
+                        $updatedEnabledBanks = $this->core()->setBanksForTerminal($terminal, $newBanksList, $option);
 
                         $returnData[$terminalId] = $updatedEnabledBanks["enabled"];
                     }
@@ -449,10 +463,6 @@ class Service extends Base\Service
                     $returnData[$id] = "Terminal doesn't exist";
                 }
             }
-
-            $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
-
-            $variantFlag = $this->app->razorx->getTreatment($ids[0], "TERMINAL_EDIT_PROXY", $mode);
 
             if ($variantFlag === "on")
             {
