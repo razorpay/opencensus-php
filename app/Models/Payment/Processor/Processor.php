@@ -2345,38 +2345,6 @@ class Processor
 
         $this->updateVerifyBucketOnPaymentFailure($exception);
 
-        $startTime = microtime(true);
-
-        $isVerifyNewFlow = false;
-
-        if (($payment->getGateway() !== null) and
-            (Payment\Gateway::isGatewayForSchedulerService($payment->getGateway())))
-        {
-            $variant = $this->app->razorx->getTreatment(
-                $payment->getGateway(),
-                Merchant\RazorxTreatment::RAZORX_GATEWAY_SCHEDULER_EXPERIMENT,
-                $this->mode
-            );
-
-            if (($variant === 'on') and
-                ($this->app->runningUnitTests() === false))
-            {
-                $isVerifyNewFlow = true;
-
-                $this->trace->info(
-                    TraceCode::FAILED_PAYMENT_KAFKA_PUSH_INITIATED,
-                    [
-                        'payment_id'    => $payment->getId(),
-                    ]
-                );
-                $isPushedToKafka = (new Payment\Core())->pushFailedPaymentToKafka($payment, $startTime);
-
-                $payment->setIsPushedToKafka($isPushedToKafka);
-            }
-        }
-
-        (new Payment\Metric())->pushVerifyViaOldOrNewFlowMetrics(get_diff_in_millisecond($startTime), $isVerifyNewFlow, $payment->getGateway());
-
         $this->repo->saveOrFail($payment);
 
         $this->tracePaymentFailed($error, $traceCode);
@@ -4663,5 +4631,41 @@ class Processor
     protected function getCardCacheTtl($input)
     {
         return self::REDIRECT_CACHE_TTL;
+    }
+
+    protected function pushPaymentToKafkaForVerify($payment)
+    {
+        $startTime = microtime(true);
+
+        $isVerifyNewFlow = false;
+
+        $gateway = $payment->getGateway();
+
+        if (($gateway !== null) and
+            (array_search($gateway, Payment\Gateway::$verifyDisabled) === false))
+        {
+            $variant = $this->app->razorx->getTreatment(
+                $gateway,
+                Merchant\RazorxTreatment::RAZORX_GATEWAY_SCHEDULER_EXPERIMENT,
+                $this->mode
+            );
+
+            if (($variant === 'on') and
+                ($this->app->runningUnitTests() === false)) {
+                $isVerifyNewFlow = true;
+
+                $this->trace->info(
+                    TraceCode::PAYMENT_KAFKA_PUSH_INITIATED,
+                    [
+                        'payment_id' => $payment->getId(),
+                    ]
+                );
+                $isPushedToKafka = (new Payment\Core())->pushPaymentToKafka($payment, $startTime);
+
+                $payment->setIsPushedToKafka($isPushedToKafka);
+            }
+        }
+
+        (new Payment\Metric())->pushVerifyViaOldOrNewFlowMetrics(get_diff_in_millisecond($startTime), $isVerifyNewFlow, $payment->getGateway());
     }
 }

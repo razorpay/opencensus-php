@@ -56,9 +56,9 @@ class Metric extends Base\Core
 
     const API_CHECKOUT_SUBMIT_REQUEST_COUNT                = 'api_checkout_submit_request_count';
 
-    const KAFKA_PUSH_SUCCESS_FOR_FAILED_PAYMENT_COUNT      = 'kafka_push_success_for_failed_payment_count';
+    const KAFKA_PUSH_SUCCESS_FOR_PAYMENT_COUNT             = 'kafka_push_success_for_payment_count';
 
-    const KAFKA_PUSH_FAILED_FOR_FAILED_PAYMENT_COUNT       = 'kafka_push_failed_for_failed_payment_count';
+    const KAFKA_PUSH_FAILED_FOR_PAYMENT_COUNT              = 'kafka_push_failed_for_payment_count';
 
     const VERIFY_FLOW_NEW_OR_OLD_COUNT                      = 'verify_flow_new_or_old_count';
 
@@ -172,12 +172,12 @@ class Metric extends Base\Core
 
     public function pushKafkaPushSuccessForFailedPaymentMetrics($requestTime)
     {
-        $this->trace->histogram(self::KAFKA_PUSH_SUCCESS_FOR_FAILED_PAYMENT_COUNT, $requestTime, []);
+        $this->trace->histogram(self::KAFKA_PUSH_SUCCESS_FOR_PAYMENT_COUNT, $requestTime, []);
     }
 
     public function pushKafkaPushFailedForFailedPaymentMetrics($requestTime)
     {
-        $this->trace->histogram(self::KAFKA_PUSH_FAILED_FOR_FAILED_PAYMENT_COUNT, $requestTime, []);
+        $this->trace->histogram(self::KAFKA_PUSH_FAILED_FOR_PAYMENT_COUNT, $requestTime, []);
     }
 
     public function pushVerifyViaOldOrNewFlowMetrics($requestTime, $isVerifyNewFlow, $gateway)

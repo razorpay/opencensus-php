@@ -3549,9 +3549,21 @@ class Service extends Base\Service
     {
         $data = [];
 
+        $statusToVerify = [Payment\Status::FAILED, Payment\Status::CREATED];
+
         $payment =  $this->repo->payment->findOrFail($id);
 
-        if ((new Verify())->isFinalErrorCode($payment) === true)
+        if(array_search($payment->getStatus(), $statusToVerify) === false)
+        {
+            $this->trace->info(
+                TraceCode::STATUS_NOT_FOR_VERIFY,
+                [
+                    'payment_id' => $id
+                ]);
+
+            $data['retry_verify'] = false;
+        }
+        else if ((new Verify())->isFinalErrorCode($payment) === true)
         {
             $this->trace->info(
                 TraceCode::FINAL_ERROR_CODE,

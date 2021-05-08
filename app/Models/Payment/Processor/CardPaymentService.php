@@ -285,6 +285,8 @@ trait CardPaymentService
 
         $this->eventPaymentCreated();
 
+        $this->pushPaymentToKafkaForVerify($this->payment);
+
         $this->tracePaymentInfo(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
 
         $gatewayInput['payment'] = $payment->toArrayGateway();

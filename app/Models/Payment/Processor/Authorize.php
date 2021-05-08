@@ -325,6 +325,8 @@ trait Authorize
 
             $this->eventPaymentCreated();
 
+            $this->pushPaymentToKafkaForVerify($this->payment);
+
             $this->validateAndSaveBillingAddressIfApplicable($payment, $input);
 
             return null;
@@ -2293,6 +2295,8 @@ trait Authorize
         );
 
         $this->eventPaymentCreated();
+
+        $this->pushPaymentToKafkaForVerify($this->payment);
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
 

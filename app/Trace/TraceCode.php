@@ -4351,14 +4351,15 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Trace Code
     const TEMPLATING_RESPONSE                                   = 'TEMPLATING_RESPONSE';
     const TEMPLATING_REQUEST                                    = 'TEMPLATING_REQUEST';
-    const FAILED_PAYMENT_KAFKA_PUSH_INITIATED                   = 'FAILED_PAYMENT_KAFKA_PUSH_INITIATED';
-    const FAILED_PAYMENT_KAFKA_PUSH_SUCCESS                     = 'FAILED_PAYMENT_KAFKA_PUSH_SUCCESS';
-    const FAILED_PAYMENT_KAFKA_PUSH_FAILED                      = 'FAILED_PAYMENT_KAFKA_PUSH_FAILED';
+    const PAYMENT_KAFKA_PUSH_INITIATED                          = 'PAYMENT_KAFKA_PUSH_INITIATED';
+    const PAYMENT_KAFKA_PUSH_SUCCESS                            = 'PAYMENT_KAFKA_PUSH_SUCCESS';
+    const PAYMENT_KAFKA_PUSH_FAILED                             = 'PAYMENT_KAFKA_PUSH_FAILED';
 
     const PAYMENT_CAPTURE_FAILED_MYSQL_HAS_GONE_AWAY            = 'PAYMENT_CAPTURE_FAILED_MYSQL_HAS_GONE_AWAY';
     //Segmentation trigger trace codes
     const SEGMENT_CREATE_UPDATE_ERROR                        = 'SEGMENT_CREATE_UPDATE_ERROR';
     const FINAL_ERROR_CODE                                   = 'FINAL_ERROR_CODE';
+    const STATUS_NOT_FOR_VERIFY                              = 'STATUS_NOT_FOR_VERIFY';
     const VERIFY_NEW_ROUTE_RESULT                            = 'VERIFY_NEW_ROUTE_RESULT';
 
     // DB Query Event Listners

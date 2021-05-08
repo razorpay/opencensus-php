@@ -188,7 +188,7 @@ class Core extends Base\Core
         return $payment;
     }
 
-    public function pushFailedPaymentToKafka($payment, $startTime)
+    public function pushPaymentToKafka($payment, $startTime)
     {
         //1 => successfully pushed to kafka
         $isPushedToKafka = 1;
@@ -215,14 +215,14 @@ class Core extends Base\Core
             (new KafkaProducer($topic, stringify($message)))->Produce();
 
             $this->trace->info(
-                TraceCode::FAILED_PAYMENT_KAFKA_PUSH_SUCCESS,
+                TraceCode::PAYMENT_KAFKA_PUSH_SUCCESS,
                 [
                     'payment_id'    => $payment->getId(),
                     'topic'         => $topic,
                 ]
             );
 
-            $this->app['diag']->trackPaymentEventV2(EventCode::FAILED_PAYMENT_KAFKA_PUSH_SUCCESS, $payment);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_KAFKA_PUSH_SUCCESS, $payment);
 
             (new Payment\Metric())->pushKafkaPushSuccessForFailedPaymentMetrics(get_diff_in_millisecond($startTime));
         }
@@ -231,7 +231,7 @@ class Core extends Base\Core
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::FAILED_PAYMENT_KAFKA_PUSH_FAILED
+                TraceCode::PAYMENT_KAFKA_PUSH_FAILED
             );
 
             // 2 => kafka push failed, marking for retry
@@ -240,7 +240,7 @@ class Core extends Base\Core
             //$isPushedToKafka = 2;
             $isPushedToKafka = null;
 
-            $this->app['diag']->trackPaymentEventV2(EventCode::FAILED_PAYMENT_KAFKA_PUSH_FAILED, $payment, $e);
+            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_KAFKA_PUSH_FAILED, $payment, $e);
 
             (new Payment\Metric())->pushKafkaPushFailedForFailedPaymentMetrics(get_diff_in_millisecond($startTime));
         }
