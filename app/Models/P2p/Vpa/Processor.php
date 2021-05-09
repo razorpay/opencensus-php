@@ -34,6 +34,8 @@ class Processor extends Base\Processor
 
         $this->runUsernameValidationChecks($username);
 
+        $this->runUsernameLocalValidationCheck($username);
+
         $this->gatewayInput->put(Entity::USERNAME, $username);
         $this->gatewayInput->put(Entity::BANK_ACCOUNT, $bankAccount);
 
@@ -52,6 +54,8 @@ class Processor extends Base\Processor
         $username = $this->input->get(Entity::USERNAME);
 
         $this->runUsernameValidationChecks($username);
+
+        $this->runUsernameLocalValidationCheck($username);
 
         $this->gatewayInput->put(Entity::USERNAME, $username);
 
@@ -261,7 +265,10 @@ class Processor extends Base\Processor
                 Entity::USERNAME    => $username,
             ]);
         }
+    }
 
+    protected function runUsernameLocalValidationCheck(string $username)
+    {
         if ($this->core->checkLocalAvailability($username))
         {
             throw $this->badRequestException(ErrorCode::BAD_REQUEST_DUPLICATE_VPA, [

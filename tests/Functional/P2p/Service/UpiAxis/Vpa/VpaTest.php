@@ -303,4 +303,35 @@ class VpaTest extends TestCase
 
         $this->assertFalse($default->refresh()->isDefault());
     }
+
+    public function testInitiateCreateVpaForAlreadyTakenVpa()
+    {
+        $this->testCreateVpa();
+
+        $vpa = $this->fixtures->getDbLastVpa();
+
+        $helper = $this->getVpaHelper();
+
+        $this->withFailureResponse($helper, function ($error, $response) {
+            $this->assertSame('BAD_REQUEST_ERROR', $error['code']);
+            $this->assertSame('Duplicate VPA address, try a different username', $error['description']);
+        });
+
+        $helper->intiateCreateVpa([
+            'username' => $vpa->getUsername(),
+        ]);
+    }
+
+    public function testInitiateVpaAvailabilityForAlreadyTakenVpa()
+    {
+        $this->testCreateVpa();
+
+        $vpa = $this->fixtures->getDbLastVpa();
+
+        $helper = $this->getVpaHelper();
+
+        $helper->initiateCheckVpaAvailable([
+            'username' => $vpa->getUsername(),
+        ]);
+    }
 }
