@@ -42,6 +42,8 @@ class Validator extends Base\Validator
     const PG_DIRECT_SALES = 'pg_direct_sales';
     const SELF_SERVE = 'self_serve';
 
+    const SALES_POC_ID = 'sales_poc_id';
+
     // placeholder create rules to allow both the below flows
     protected static $createRules = [
         Entity::BANKING_ACCOUNT_ID                  => 'required|string|size:14',
@@ -113,6 +115,10 @@ class Validator extends Base\Validator
         Entity::RM_PHONE_NUMBER                     => 'sometimes|string|max:255',
         Entity::ACCOUNT_OPEN_DATE                   => 'sometimes|epoch|nullable',
         Entity::ACCOUNT_LOGIN_DATE                  => 'sometimes|epoch|nullable',
+    ];
+
+    protected static $salesPocIdRules = [
+        Entity::SALES_POC_ID                  => 'required|string',
     ];
 
     protected static $allowedBusinessCategories = [

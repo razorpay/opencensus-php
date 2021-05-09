@@ -63,6 +63,8 @@ class BankingAccountActivationCommentsTest extends TestCase
                     Batch\Header::RM_PHONE_NUMBER => '1234543121',
                     Batch\Header::ACCOUNT_OPEN_DATE => '20/7/2020 12:00:00 AM',
                     Batch\Header::ACCOUNT_LOGIN_DATE => '20/7/2020 12:00:00 AM',
+                    Batch\Header::SALES_TEAM => '',
+                    Batch\Header::SALES_POC_EMAIL => ''
                 ],
                 [
                     Batch\Header::RZP_REF_NO => "102020", // non-existent
@@ -74,6 +76,8 @@ class BankingAccountActivationCommentsTest extends TestCase
                     Batch\Header::RM_PHONE_NUMBER => '1234543121',
                     Batch\Header::ACCOUNT_OPEN_DATE => '20/7/2020 12:00:00 AM',
                     Batch\Header::ACCOUNT_LOGIN_DATE => '20/7/2020 12:00:00 AM',
+                    Batch\Header::SALES_TEAM => '',
+                    Batch\Header::SALES_POC_EMAIL => ''
                 ]
             ];
         }

@@ -1031,6 +1031,8 @@ class Header
     const RM_PHONE_NUMBER           = 'RM Phone Number';
     const ACCOUNT_OPEN_DATE         = 'Account Open Date';
     const ACCOUNT_LOGIN_DATE        = 'Account Login Date';
+    const SALES_TEAM                = 'Sales Team';
+    const SALES_POC_EMAIL           = 'Sales POC Email';
 
 
     // Internal Instrument Request
@@ -3526,6 +3528,8 @@ class Header
                 self::RM_PHONE_NUMBER,
                 self::ACCOUNT_OPEN_DATE,
                 self::ACCOUNT_LOGIN_DATE,
+                self::SALES_TEAM,
+                self::SALES_POC_EMAIL
             ],
         ],
 

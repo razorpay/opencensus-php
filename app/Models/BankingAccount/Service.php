@@ -278,13 +278,28 @@ class Service extends Base\Service
             Comment\Entity::ADDED_AT
         ];
 
+        $requiredKeysForBackFillingData = [
+            ActivationDetail\Entity::SALES_POC_EMAIL,
+            ActivationDetail\Entity::SALES_TEAM,
+        ];
+
         $commentInput = array_intersect_key($input, array_fill_keys($requiredKeysforCommentInput, ''));
 
         $updateInput = array_intersect_key($input, array_fill_keys($requiredKeysForUpdateInput, ''));
 
         $activationDetailInput = array_intersect_key($input, array_fill_keys($requiredKeysForActivationDetailInput, ''));
 
+        $backFillDataInput = array_intersect_key($input, array_fill_keys($requiredKeysForBackFillingData, ''));
+
         $updateInput['activation_detail'] = $activationDetailInput;
+
+        if(isset($backFillDataInput[ActivationDetail\Entity::SALES_POC_EMAIL]) === true)
+        {
+            $updateInput['activation_detail']['sales_poc_email'] = $backFillDataInput[ActivationDetail\Entity::SALES_POC_EMAIL];
+
+            $updateInput['activation_detail']['sales_team'] = $backFillDataInput[ActivationDetail\Entity::SALES_TEAM];
+
+        }
 
         if (empty($commentInput[Comment\Entity::COMMENT]) === false)
         {

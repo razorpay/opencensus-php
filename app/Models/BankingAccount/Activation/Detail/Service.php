@@ -3,11 +3,12 @@
 
 namespace RZP\Models\BankingAccount\Activation\Detail;
 
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
 use RZP\Models\BankingAccount;
 use RZP\Models\BankingAccount\State;
 use RZP\Models\BankingAccount\Activation\Comment;
-use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\BankingAccount\Activation\Notification\Event;
 use RZP\Models\BankingAccount\Activation\Notification\Notifier;
 
@@ -35,6 +36,8 @@ class Service extends Base\Service
         $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccountId);
 
         $input[Entity::BANKING_ACCOUNT_ID] = $bankingAccount->getId();
+
+        (new Validator)->setStrictFalse()->validateInput(Validator::SALES_POC_ID, $input);
 
         $activationDetail = $this->repo->transaction(function () use ($bankingAccount, $input)
         {
@@ -82,8 +85,6 @@ class Service extends Base\Service
         // - update via batch service.
         $commentInput = $this->extractCommentInput($input);
 
-        $salesPocId = $input[Entity::SALES_POC_ID] ?? null;
-
         $activationDetail = $this->repo->banking_account_activation_detail->findByBankingAccountId($bankingAccount->getId());
 
         if ($activationDetail === null)
@@ -101,15 +102,11 @@ class Service extends Base\Service
             $activationDetail,
             $input,
             $commentInput,
-            $salesPocId,
             $admin,
             $entity)
         {
             // Adding Sales POC to admin_audit_map table
-            if (empty($salesPocId) === false)
-            {
-                $this->addSalesPOCToBankingAccountIfApplicable($bankingAccount, $input);
-            }
+            $this->addSalesPOCToBankingAccountIfApplicable($bankingAccount, $input);
 
             $activationDetail = $this->core->update($activationDetail, $input);
 
@@ -146,9 +143,24 @@ class Service extends Base\Service
 
             unset($input[Entity::SALES_POC_ID]);
         }
-        else
+        else if(isset($input[Entity::SALES_POC_EMAIL]) === true && isset($input[Entity::SALES_TEAM]) === true)
         {
-            throw new BadRequestValidationFailureException("sales poc id field is required");
+            try
+            {
+                $spoc = (new \RZP\Models\Admin\Admin\Repository)->findByEmail($input['sales_poc_email']);
+            }
+            catch(\Exception $e)
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, [], 'no records found for the sales poc email that is mentioned in the batch upload sheet');
+            }
+
+            $salesPocId = $spoc->getPublicId();
+
+            $bankingAccountCore = new BankingAccount\Core;
+
+            $bankingAccountCore->addSalesPOCToBankingAccount($bankingAccount, $salesPocId);
+
+            unset($input[Entity::SALES_POC_EMAIL]);
         }
     }
 

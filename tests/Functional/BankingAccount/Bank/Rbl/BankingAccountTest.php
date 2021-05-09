@@ -3767,6 +3767,35 @@ class BankingAccountTest extends TestCase
         $this->assertEquals(end($statusChangeLogs['items'])['bank_status'], Rbl\Status::ACCOUNT_OPENED);
     }
 
+    public function testBackFillOfDataInLmsViaBatch()
+    {
+        $this->testCreateBankingAccountWithActivationDetail();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->fixtures->edit('banking_account',
+            $bankingAccount->getId(),
+            [
+                'status'               => Status::PROCESSING,
+                'sub_status'           => Status::DISCREPANCY_IN_DOCS,
+                'bank_internal_status' => Rbl\Status::DISCREPANCY_IN_DOCS
+            ]);
+
+        $content = [
+            'bank_reference_number' => $bankingAccount['bank_reference_number'],
+            'sales_team' => 'capital_sme',
+            'sales_poc_email' => 'superadmin@razorpay.com'
+        ];
+
+        $this->assertUpdateViaBatch($content);
+
+        $activationDetailEntity = $this->getDbEntity('banking_account_activation_detail', [
+            'banking_account_id' => $bankingAccount->getId()
+        ]);
+
+        $this->assertEquals($content['sales_team'], $activationDetailEntity['sales_team']);
+    }
+
     public function testCitiesForAutoComplete()
     {
         $this->ba->adminAuth();
