@@ -28,6 +28,7 @@ use RZP\Exception\ServerErrorException;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
 use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Models\Workflow\Service\Adapter;
+use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\PayoutLink\Entity as PayoutLinkEntity;
 use RZP\Models\Merchant\WebhookV2\Metric as WebhookMetric;
@@ -304,6 +305,8 @@ class ApiEventSubscriber extends Base\Core
         {
             (new CardMandate\CardMandateNotification\Core)->notifyAfterDebit($payment);
         }
+
+        $this->notifySubscriptionRegistrationPaymentAuthorized($payment);
 
         $this->dispatchEventToStork($payload);
     }
@@ -1534,5 +1537,44 @@ class ApiEventSubscriber extends Base\Core
         $plService = $this->app['paymentlinkservice'];
 
         $plService->notifyMerchantStatusAction($merchant);
+    }
+
+    /**
+     * Associating token with subscription registration once payment is authorized
+     * @param Payment\Entity  $payment
+     */
+    protected function notifySubscriptionRegistrationPaymentAuthorized(Payment\Entity $payment)
+    {
+        try
+        {
+            if (($payment->hasInvoice() === true) &&
+                ($payment->invoice !== null) &&
+                ($payment->invoice->getEntityType() === Constants\Entity::SUBSCRIPTION_REGISTRATION))
+            {
+                $token = $payment->getGlobalOrLocalTokenEntity();
+
+                if ($token === null)
+                {
+                    return;
+                }
+
+                $subscriptionRegistration = $payment->invoice->entity;
+
+                if ($subscriptionRegistration !== null)
+                {
+                    (new SubscriptionRegistration\Core)->associateToken($subscriptionRegistration, $token);
+                }
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Logger::ERROR,
+                TraceCode::SUBSCRIPTION_REGISTRATION_TOKEN_ASSOCIATION,
+                [
+                    'payment_id' => $payment->getId(),
+                ]);
+        }
     }
 }

@@ -5540,23 +5540,9 @@ trait Authorize
 
     protected function postPaymentAuthorizeSubscriptionRegistrationProcessing(Payment\Entity $payment)
     {
-        if ($payment->hasInvoice() === false)
-        {
-            return;
-        }
-
-        $invoice = $payment->invoice;
-
-        if ($invoice->getEntityType() !== Entity::SUBSCRIPTION_REGISTRATION)
-        {
-            return;
-        }
-
-        $subscriptionRegistration = $invoice->entity;
-
-        $token = $payment->getGlobalOrLocalTokenEntity();
-
-        (new SubscriptionRegistration\Core)->associateToken($subscriptionRegistration, $token);
+        // This has been moved to eventsubscriber onPaymentAuthorized.
+        // since this flow does not get called for late auth cases
+        // Will be deleting this function in future.
     }
 
     protected function postPaymentAuthorizeSubscriptionProcessing(Payment\Entity $payment)

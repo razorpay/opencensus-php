@@ -532,6 +532,14 @@ class Core extends Base\Core
         $this->repo->saveOrFail($subr);
 
         $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_TOKEN_ASSOCIATED, $subr->getMetricDimensions());
+
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_REGISTRATION_TOKEN_ASSOCIATION,
+            [
+                'token_id'                      => $token->getId(),
+                'subscription_registration_id'  => $subr->getId(),
+            ]
+        );
     }
 
     public function authenticate(Entity $subr, Customer\Token\Entity $token)
@@ -725,7 +733,7 @@ class Core extends Base\Core
             $tokenRegistration->incrementAttempts();
 
             $this->repo->saveOrFail($tokenRegistration);
-            
+
             $this->trace->info(TraceCode::TOKEN_REGISTRATION_NOT_VALID_FOR_AUTO_CHARGE,
                 [
                     'token.registration_id' =>$tokenRegistration->getId(),
