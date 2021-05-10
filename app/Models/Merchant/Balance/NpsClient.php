@@ -14,17 +14,20 @@ class NpsClient extends Base\Service
      * @return array
      * @throws Exception\BadRequestValidationFailureException
      */
-    public function getCohorts($surveyTTL)
+    public function getCohorts($surveyTTL) //survey_ttl is in hours
     {
-        $endTimeStamp = Carbon::now(Timezone::IST)->subDays($surveyTTL)->getTimestamp();
+        $surveyTTLInDays = $surveyTTL/24;
 
-        $startTimeStamp = Carbon::now(Timezone::IST)->subDays($surveyTTL + 1)->getTimestamp();
+        $endTimeStamp = Carbon::now(Timezone::IST)->subDays($surveyTTLInDays)->getTimestamp();
+
+        $startTimeStamp = Carbon::now(Timezone::IST)->subDays($surveyTTLInDays + 1)->getTimestamp();
 
         $endTimeStampCApayouts = Carbon::now(Timezone::IST)->getTimestamp();
 
         $cohortsList1 = $this->repo->balance->getCANpsCohortList($startTimeStamp, $endTimeStamp)->toArray();
 
-        $cohortsList2 = $this->repo->payout->getCAPayoutCohortList($startTimeStamp, $endTimeStampCApayouts, $surveyTTL)->toArray();
+        //granularity of this getCAPayoutCohortList is in days
+        $cohortsList2 = $this->repo->payout->getCAPayoutCohortList($startTimeStamp, $endTimeStampCApayouts, $surveyTTLInDays)->toArray();
 
         $cohorts = array_unique(array_merge($cohortsList1, $cohortsList2), SORT_REGULAR);
 

@@ -14,7 +14,7 @@ class NpsClient extends Base\Service
      * @return array
      * @throws Exception\BadRequestValidationFailureException
      */
-    public function getCohorts($surveyTTL)
+    public function getCohorts($surveyTTL) //survey_ttl is in hours
     {
         $currentTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
 

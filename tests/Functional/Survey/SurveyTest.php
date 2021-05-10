@@ -827,7 +827,7 @@ class SurveyTest extends TestCase
             'id' => 'GLuIMZYR32kZiB',
             'description' => 'RazorpayX survey',
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
-            'survey_ttl' => 30,
+            'survey_ttl' => 720,
             'type'  => 'nps_payouts',
         ]);
 
@@ -835,7 +835,7 @@ class SurveyTest extends TestCase
             'id' => 'GLuIMZYR32kZiY',
             'description' => 'RazorpayX survey',
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
-            'survey_ttl' => 30,
+            'survey_ttl' => 720,
             'type'  => 'nps_csat',
         ]);
 
@@ -843,7 +843,7 @@ class SurveyTest extends TestCase
             'id' => 'GLuIMZYR32kZiZ',
             'description' => 'RazorpayX survey',
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
-            'survey_ttl' => 30,
+            'survey_ttl' => 1080,
             'type'  => 'nps_active_ca',
         ]);
 
@@ -936,7 +936,7 @@ class SurveyTest extends TestCase
             'id' => 'GLuIMZYR32kZiB',
             'description' => 'RazorpayX survey',
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
-            'survey_ttl' => 30,
+            'survey_ttl' => 720,
             'type'  => 'nps_payouts',
         ]);
 
@@ -944,7 +944,7 @@ class SurveyTest extends TestCase
             'id' => 'GLuIMZYR32kZiY',
             'description' => 'RazorpayX survey',
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
-            'survey_ttl' => 30,
+            'survey_ttl' => 1080,
             'type'  => 'nps_active_ca',
         ]);
 
@@ -952,7 +952,7 @@ class SurveyTest extends TestCase
             'id' => 'GLuIMZYR32kZiZ',
             'description' => 'RazorpayX survey',
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
-            'survey_ttl' => 30,
+            'survey_ttl' => 720,
             'type'  => 'nps_csat',
         ]);
 
@@ -1046,23 +1046,23 @@ class SurveyTest extends TestCase
             'id' => 'GLuIMZYR32kZiB',
             'description' => 'RazorpayX survey',
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
-            'survey_ttl' => 30,
+            'survey_ttl' => 720,
             'type'  => 'nps_payouts',
         ]);
 
         $caSurvey = $this->fixtures->on('live')->create('survey', [
-            'id' => 'GLuIMZYR32kZiY',
+            'id' => 'GLuIMZYR32kZiZ',
             'description' => 'RazorpayX survey',
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
-            'survey_ttl' => 45,
+            'survey_ttl' => 1080,
             'type'  => 'nps_active_ca',
         ]);
 
         $csatSurvey = $this->fixtures->on('live')->create('survey', [
-            'id' => 'GLuIMZYR32kZiZ',
+            'id' => 'GLuIMZYR32kZiY',
             'description' => 'RazorpayX survey',
             'survey_url' => 'https://razorpay.typeform.com/to/IWuWQPm5#mid',
-            'survey_ttl' => 30,
+            'survey_ttl' => 720,
             'type'  => 'nps_csat',
         ]);
 
@@ -1105,8 +1105,7 @@ class SurveyTest extends TestCase
         $this->assertNotEquals($tracker1['id'], $surveyTrackerEntity1['id']);
         $this->assertGreaterThan($tracker1['survey_sent_at'], $surveyTrackerEntity1['survey_sent_at']);
 
-        $this->assertNotEquals($tracker2['id'], $surveyTrackerEntity2['id']);
-        $this->assertGreaterThan($tracker2['survey_sent_at'], $surveyTrackerEntity2['survey_sent_at']);
+        $this->assertEquals($tracker2['id'], $surveyTrackerEntity2['id']);
 
         $this->assertEquals($tracker3['id'], $surveyTrackerEntity3['id']);
     }
