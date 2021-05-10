@@ -871,13 +871,9 @@ export default class ActivationWizard extends React.Component {
           field = dynamicFieldName[field]();
         }
 
-        return (
-          this.canSubmitL1Form &&
-          Boolean(
-            state.dirty[field] ||
-              (this.state.commentlist.hasOwnProperty(field) &&
-                this.state.commentlist[field] !== ''),
-          )
+        return Boolean(
+          state.dirty[field] ||
+            (this.state.commentlist.hasOwnProperty(field) && this.state.commentlist[field] !== ''),
         );
       });
 
