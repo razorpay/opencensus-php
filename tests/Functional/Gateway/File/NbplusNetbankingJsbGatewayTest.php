@@ -184,10 +184,10 @@ class NbplusNetbankingJsbGatewayTest extends NbPlusPaymentServiceNetbankingTest
         $this->assertEquals($paymentId, $fullRefundRowData['MerRefNo']);
 
         // validating if partial refund amount is reflected in the file
-        $refundAmount = number_format(($refundAmts[0]) / 100);
+        $refundAmount = number_format($refundAmts[0] / 100, 2, '.', '');
         $this->assertEquals($refundAmount, $fullRefundRowData[RefundFields::REFUND_AMOUNT]);
 
-        $refundAmount = number_format(($refundAmts[1]) / 100);
+        $refundAmount = number_format($refundAmts[1] / 100, 2, '.', '');
         $this->assertEquals($refundAmount, $partialRefundRowData[RefundFields::REFUND_AMOUNT]);
     }
 

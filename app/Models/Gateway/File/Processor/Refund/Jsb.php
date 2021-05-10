@@ -36,7 +36,7 @@ class Jsb extends Base
                 RefundFields::MERCHANT_CODE         => $row['terminal']['gateway_merchant_id'],
                 RefundFields::MERCHANT_NAME         => 'RAZORPAY',
                 RefundFields::PAYMENT_ID            => $row['payment']['id'],
-                RefundFields::REFUND_AMOUNT         => number_format($row['refund']['amount'] / 100),
+                RefundFields::REFUND_AMOUNT         => $this->getFormattedAmount($row['refund']['amount']),
                 RefundFields::CURRENCY              => 'INR',
                 RefundFields::BANK_REFERENCE_NUMBER => $this->fetchBankPaymentId($row),
                 RefundFields::TRANSACTION_DATE      => $transactionDate,
@@ -65,5 +65,10 @@ class Jsb extends Base
         }
 
         return $row['gateway']['data']['bank_payment_id'];
+    }
+
+    protected function getFormattedAmount($amount): String
+    {
+        return number_format($amount / 100, 2, '.', '');
     }
 }
