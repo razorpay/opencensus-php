@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import Banner from 'common/ui/Banner';
-
+import { merchantFetch } from 'merchant/utils/ajax';
 import { classList } from 'common/utils/rzp-utils';
 import { trackSupportOptions } from 'merchant/components/Support/ga';
 import { Link } from 'react-router-dom';
@@ -21,6 +21,9 @@ const isWorkingDay = () => {
   closeModal,
 })
 class SupportBody extends Component {
+  state = {
+    timings: [],
+  };
   openDashboardGuide = (_) => {
     analyticsTrack({
       objectName: 'help and support',
@@ -35,6 +38,16 @@ class SupportBody extends Component {
     trackSupportOptions('dashboard_guide');
     window.open('https://razorpay.com/docs/payment-gateway/dashboard-guide/', '_blank');
   };
+
+  componentDidMount() {
+    let params = {
+      url: 'merchants/chat/timings_config',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    };
+    return merchantFetch(params).then((r) => this.setState({ timings: r.data }));
+  }
 
   handleClick = (id) => {
     const user = this.props.user;
@@ -142,6 +155,26 @@ class SupportBody extends Component {
     const { notifyCount, isOpened, onToggle, isCallEnabled } = this.props;
     const { handleClick, openDashboardGuide } = this;
     const shouldDisable = !isWorkingDay();
+    const today = new Date().getDay();
+    let date;
+    if (this.state.timings.length) {
+      date = {
+        start: this.state.timings[today].start / 60,
+        end: this.state.timings[today].end / 60,
+        start_zone: 'AM',
+        end_zone: 'AM',
+      };
+
+      if (date.start > 12) {
+        date.start = date.start - 12;
+        date.start_zone = 'PM';
+      }
+
+      if (date.end > 12) {
+        date.end = date.end - 12;
+        date.end_zone = 'PM';
+      }
+    }
 
     return (
       <div class={classList('support-body', isOpened && 'active')}>
@@ -199,7 +232,12 @@ class SupportBody extends Component {
                 }`}
                 onClick={() => handleClick('chat')}
               >
-                Chat with us <small class="help-content">(9am-9pm, working days)</small>
+                Chat with us
+                {this.state.timings.length ? (
+                  <small class="help-content">
+                    ({date.start} {date.start_zone} - {date.end} {date.end_zone}, working days)
+                  </small>
+                ) : null}
                 {notifyCount > 0 && <span class="notify-icon m-l">{notifyCount}</span>}
                 <small class="help-block">
                   {shouldDisable && notifyCount < 1
