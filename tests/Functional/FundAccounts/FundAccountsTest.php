@@ -141,20 +141,13 @@ class FundAccountsTest extends TestCase
         $response = $this->startTest();
     }
 
-    public function testCreateFundAccountBankAccountBeneficiaryVerified()
+    public function testCreateFundAccountBankAccountBeneficiaryNotRequired()
     {
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
         $this->startTest();
 
         $bankAccount = $this->getLastEntity('bank_account', true);
-
-        $nodalBeneficiary = $this->getLastEntity('nodal_beneficiary', true);
-
-        // Verify Nodal Beneficiary entity
-        $this->assertNotNull($nodalBeneficiary['id']);
-        $this->assertEquals('verified', $nodalBeneficiary['registration_status']);
-        $this->assertEquals($bankAccount['id'], 'ba_'.$nodalBeneficiary['bank_account_id']);
 
         $expectedBankAccount = [
             'type'           => 'contact',
@@ -396,7 +389,7 @@ class FundAccountsTest extends TestCase
 
         $this->app->razorx->method('getTreatment')
                           ->willReturn('on');
-                          
+
         Queue::fake();
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);

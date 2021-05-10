@@ -260,7 +260,7 @@ return [
         ],
     ],
 
-    'testCreateFundAccountBankAccountBeneficiaryVerified' => [
+    'testCreateFundAccountBankAccountBeneficiaryNotRequired' => [
         'request'  => [
             'content' => [
                 'account_type' => 'bank_account',

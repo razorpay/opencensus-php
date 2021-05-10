@@ -70,40 +70,17 @@ class Beneficiary extends Base\Core
      */
     public function enqueueForBeneficiaryRegistration(Base\Entity $account, $accountType = FundAccountType::BANK_ACCOUNT)
     {
-        $key = 'fts_razorx_beneficiary_register_' . strtolower($accountType . '_' . $account->getType());
-
         $traceData = [
-            'key' => $key,
             'account_type' => $accountType,
             'type' => $account->getType(),
         ];
 
-        try
-        {
-            $this->trace->info(TraceCode::FTS_BENEFICIARY_REGISTER_RAZORX_INIT, $traceData);
+        if (($accountType === FundAccountType::BANK_ACCOUNT) &&
+            ($account->getType() === Type::CONTACT)) {
 
-            $shouldDoBeneReg = $this->app->razorx->getTreatment(
-                $account->getMerchantId(),
-                $key,
-                $this->mode
-            );
+            $this->trace->info(TraceCode::FTS_BENEFICIARY_REGISTER_SKIPPED, $traceData);
 
-            $traceData ['should_do_bene_registration'] = $shouldDoBeneReg;
-
-            $this->trace->info(TraceCode::FTS_BENEFICIARY_REGISTER_RAZORX_COMPLETE, $traceData);
-
-            // Return if Razorx bene registration experiment is off
-            if (strtolower($shouldDoBeneReg) === 'off')
-            {
-                return;
-            }
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::FAILED_TO_GET_TREATMENT_FOR_REGISTER_BENEFICIARY, $traceData);
+            return;
         }
 
         $isValidType = $this->isValidBeneficiaryRegistrationType($account, $accountType);
