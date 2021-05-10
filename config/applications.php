@@ -929,6 +929,10 @@ return [
         'maker_email' => env('MERCHANT_RISK_ALERT_WORKFLOW_MAKER_EMAIL', 'shashank@razorpay.com'),
         'secret'      => env('MERCHANT_RISK_ALERTS_SECRET')
     ],
+    
+    'sms_sync'  =>  [
+        'secret'   => env('SMS_SYNC_SECRET')
+    ],
 
     'care'  => [
         'secret'       => env('CARE_SERVICE_API_SECRET'),

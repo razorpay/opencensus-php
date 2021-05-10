@@ -109,4 +109,14 @@ class TerminalsService extends BaseTerminalsService
         return $response;
     }
 
+    public function proxyTerminalService($input, $method, $path, $options = [], $headers = []): array
+    {
+        if ($path === 'v2/terminal_test_otp/sms_sync')
+        {
+            return [
+                'success' => true,
+            ];
+        }
+        return [];
+    }
 }

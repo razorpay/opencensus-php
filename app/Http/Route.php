@@ -404,6 +404,7 @@ class Route
 
         'get_templates'                            => ['get',      'terminals/proxy/templates/internal_instrument_request',       'TerminalController@proxyV2TerminalService'                         ],
 
+        'terminal_test_save_otp'                   => ['post',     'terminal_test_otp',                              'TerminalController@postTerminalTestOtp'                            ],
         'terminal_enable'                          => ['put',      'terminals/{id}/enable',                          'TerminalOnboardingController@putTerminalEnable'                    ],
         'terminal_disable'                         => ['put',      'terminals/{id}/disable',                         'TerminalOnboardingController@putTerminalDisable'                   ],
         'terminal_fetch'                           => ['get',      'terminals',                                      'TerminalOnboardingController@fetchTerminals'                       ],
@@ -3169,6 +3170,7 @@ class Route
         'freshchat_retrieve_report_cron',
 
         'gateway_downtime_service_webhook',
+        'terminal_test_save_otp',
 
         // merchant risk alerts
         'merchant_risk_alerts_foh_workflow',
@@ -9074,6 +9076,10 @@ class Route
 
         'downtime_service' => [
             'gateway_downtime_service_webhook',
+        ],
+
+        'sms_sync'  =>  [
+            'terminal_test_save_otp',
         ],
 
         'merchant_risk_alerts' => [

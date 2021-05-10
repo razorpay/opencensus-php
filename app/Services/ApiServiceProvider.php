@@ -525,6 +525,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             'pg_router',
             'bvs_http_client',
             'error_mapper',
+            'sms_sync',
             'cache',
             'cache.store',
             'cache.psr6',

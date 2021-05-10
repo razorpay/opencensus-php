@@ -3706,4 +3706,19 @@ return [
         ],
     ],
 
+    'testSmsSyncSaveTerminalTestOtp'   =>  [
+        'request' => [
+            'url'     => '/terminal_test_otp',
+            'method'  => 'POST',
+            'content' => [
+                'msg' => 'message'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ],
+        ],
+    ],
+
 ];

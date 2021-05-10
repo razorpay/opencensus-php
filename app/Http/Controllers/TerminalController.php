@@ -205,6 +205,25 @@ class TerminalController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function postTerminalTestOtp()
+    {
+        $input = Request::all();
+
+        $this->trace->info(TraceCode::SMS_SYNC_SAVE_OTP_CALL_RECEIVED, $input);
+
+        // TODO: do some signature/secret validation here
+
+        $path = "v2/terminal_test_otp/sms_sync";
+
+        $data = [
+            'data' => $input
+        ];
+
+        $response = $this->app['terminals_service']->proxyTerminalService($data, 'POST', $path);
+
+        return ApiResponse::json($response);
+    }
+
     public function fetchTerminalsCredentials()
     {
         $input = Request::all();

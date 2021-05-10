@@ -2823,4 +2823,11 @@ class TerminalTest extends TestCase
         $this->assertEquals($responseTerminal[0]['mpan']['visa_mpan'],   base64_encode('4234567890123456'));
         $this->assertEquals($responseTerminal[0]['mpan']['rupay_mpan'],   base64_encode('6234567890123456'));
     }
+
+    public function testSmsSyncSaveTerminalTestOtp()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
 }
