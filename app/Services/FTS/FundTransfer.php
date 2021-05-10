@@ -768,49 +768,8 @@ class FundTransfer extends Base
             $input);
     }
 
-    public function modifyModeIfRequired(): bool
-    {
-        // Assumption is that the validation would have happened already before this
-        // step and hence we can assume that the bank account exists and is valid.
-        $channel = $this->fta->getChannel();
-
-        $ba = $this->fta->bankAccount;
-
-        if (empty($ba) === false)
-        {
-            $ifsc = $ba->getIfscCode();
-
-            $ifscFirstFour = substr($ifsc, 0, 4);
-
-            if (array_key_exists($channel, $this->channelToIdentifierMapping) === false)
-            {
-                return false;
-            }
-            if ($channel == Channel::ICICI and in_array($ifsc, $this->iciciVaIfsc, true) === true)
-            {
-                return false;
-            }
-            if ($this->channelToIdentifierMapping[$channel] === $ifscFirstFour)
-            {
-                $ifscLastDigits = substr($ifsc, 4, strlen($ifsc)-4);
-
-                if (is_numeric($ifscLastDigits) === false)
-                {
-                    return false;
-                }
-
-                $this->fta->setMode(Mode::IFT);
-
-                return true;
-            }
-        }
-        return false;
-    }
-
     public function shouldAllowTransfersViaFts()
     {
-        $modeChanged = false;
-
         if ($this->mode === ModeConstants::TEST)
         {
             return [false, 'Transfers not allowed on test mode'];
@@ -823,11 +782,7 @@ class FundTransfer extends Base
             $this->fta->setMode($mode);
         }
 
-        if (in_array($this->fta->getMode(), [Mode::NEFT], true) === true)
-        {
-            $modeChanged = $this->modifyModeIfRequired();
-        }
-        if ($modeChanged === true || $shouldUpdateMode === true)
+        if ($shouldUpdateMode === true)
         {
             $this->FTACore->updateFTA($this->fta, 0);
         }
