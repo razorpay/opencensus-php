@@ -190,6 +190,12 @@
           <directory>./tests/Functional/BankTransfer</directory>
           <directory>./tests/Functional/BharatQrPayment</directory>
       </testsuite>
+      <testsuite name="Route Test Suite">
+          <directory>./tests/Functional/Transfer/</directory>
+          <directory>./tests/Functional/Payment/Transfers/</directory>
+          <file>./tests/Functional/Order/Transfer/OrderTransferTest.php</file>
+          <file>./tests/Functional/Merchant/AccountTest.php</file>
+      </testsuite>
   </testsuites>
   <listeners>
     <listener class="\Symfony\Bridge\PhpUnit\SymfonyTestsListener">
