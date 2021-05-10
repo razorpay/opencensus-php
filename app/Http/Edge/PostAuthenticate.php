@@ -60,7 +60,7 @@ final class PostAuthenticate
     {
         $funcStartedAt = millitime();
 
-        $this->ensureRequestContextAdditionalAttrs();
+        $this->ensureRequestContextAdditionalAttrs($request);
         $this->ensureRequestContextPassport($authenticated);
         $this->reportAuthorizationEnforcementMismatches($authenticated, $request);
 
@@ -121,7 +121,8 @@ final class PostAuthenticate
                 ];
                 $this->trace->warning(TraceCode::PASSPORT_ATTRS_MISMATCH, [
                     'errors' => $errors,
-                    'passport' => $dimensions
+                    'passport' => $dimensions,
+                    'trace_id' => $this->reqCtx->edgeTraceId,
                 ]);
             }
         }
@@ -131,13 +132,17 @@ final class PostAuthenticate
      * (2) In request.ctx.v2 set additional attributes (which does not come
      * from edge service) which api's code uses etc.
      *
+     * @param Request $request
      * @return void
      */
-    private function ensureRequestContextAdditionalAttrs()
+    private function ensureRequestContextAdditionalAttrs(Request $request)
     {
         $this->reqCtx->authType = $this->ba->getAuthType();
         $this->reqCtx->proxy    = $this->ba->isProxyAuth();
         $this->reqCtx->authFlowType = app('request.ctx')->getAuthFlowType();
+        // TODO: this should be set before passing to Controller, logger should also use this request now
+        // instead of generating a new id.
+        $this->reqCtx->edgeTraceId = $request->header('X-Razorpay-Request-ID');
     }
 
     /**
@@ -172,6 +177,7 @@ final class PostAuthenticate
         // Not adding these for prom metrics since that'll increase the cardinality of the metric unnecessarily.
         $dimensions['key_id'] = $this->ba->getPublicKey();
         $dimensions['merchant_id'] = $this->ba->getMerchantId();
+        $dimensions['trace_id'] = $this->reqCtx->edgeTraceId;
         $this->trace->warning(TraceCode::EDGE_AUTHORIZATION_MISMATCH, $dimensions);
     }
 }

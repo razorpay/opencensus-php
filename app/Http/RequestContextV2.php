@@ -38,6 +38,12 @@ final class RequestContextV2
     public $authFlowType;
 
     /**
+     * Request trace id fetched from request header attached by Kong proxy.
+     * @var string|null
+     */
+    public $edgeTraceId;
+
+    /**
      * @deprecated This is not a well defined attribute and hence avoid using
      * it as it might be removed later.
      *
