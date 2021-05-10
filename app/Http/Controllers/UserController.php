@@ -610,42 +610,23 @@ class UserController extends Controller
 
     public function postUnlockUserScreen()
     {
-        $input = Input::all();
-
         $encryptedEmail = Cookie::get('rzp_user_email');
 
         if (empty($encryptedEmail) === false)
         {
             $email = Crypt::decrypt($encryptedEmail);
-
-            $this->trace->info(TraceCode::USER_UNLOCK_REQUEST, [$email]);
-            // replace the email.
-            $input['email'] = $email;
-
-            list($error, $data) = (new User\Service)->postloginNo2fa($input);
-
-            $traceData = [
-                'email'         => $input['email'],
-                'error'         => $error,
-                'data'          => $data,
-            ];
-
-            $this->trace->info(TraceCode::USER_UNLOCK_RESPONSE, $traceData);
-        }
-        else
-        {
-            $error = ["Incorrect password/Network issue, please reload the page"];
-            $data = null;
         }
 
-        if (empty($error) === true)
-        {
-            $this->metrics->count(MetricConstants::USER_UNLOCK_COUNT,
-                EVENT_TRIGGER_COUNT,
-                [
-                    MetricConstants::LOGIN_METHOD   => MetricConstants::PASSWORD,
-                ]);
-        }
+        $error = ["Incorrect password/Network issue, please reload the page"];
+        $data  = null;
+
+        $traceData = [
+            'email' => $email ?? null,
+            'error' => $error,
+            'data'  => $data,
+        ];
+
+        $this->trace->info(TraceCode::USER_UNLOCK_CALLED, $traceData);
 
         return AppResponse::jsonResponse($error, $data);
     }

@@ -292,27 +292,18 @@ class Service extends Base\Service
         if ((empty($encryptedEmail) === false))
         {
             $email = Crypt::decrypt($encryptedEmail);
-            //
-            // Adding the email of current user email from cookie
-            // otherwise different google account can unlock the account
-            //
-            $input[Constants::EMAIL] = $email;
-
-            list($error, $data) = $this->oauthLoginNo2fa($input);
-
-            $traceData = [
-                Constants::EMAIL => $input[Constants::EMAIL],
-                Constants::ERROR => $error,
-                Constants::DATA  => $data,
-            ];
-
-            $this->trace->info(TraceCode::USER_OAUTH_UNLOCK_RESPONSE, $traceData);
         }
-        else
-        {
-            $error = [Constants::NETWORK_ISSUE_RELOAD_PAGE];
-            $data  = null;
-        }
+
+        $error = [Constants::NETWORK_ISSUE_RELOAD_PAGE];
+        $data  = null;
+
+        $traceData = [
+            Constants::EMAIL => $email ?? null,
+            Constants::ERROR => $error,
+            Constants::DATA  => $data,
+        ];
+
+        $this->trace->info(TraceCode::USER_UNLOCK_OAUTH_CALLED, $traceData);
 
         return [$error, $data];
     }
