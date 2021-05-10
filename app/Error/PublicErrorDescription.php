@@ -447,6 +447,8 @@ class PublicErrorDescription
     const BAD_REQUEST_DOCUMENT_UPLOAD_PURPOSE_INVALID                           = 'invalid document upload purpose';
     const INVALID_ARGUMENT_INVALID_FILE_HANDLER_SOURCE                          = 'Server error';
 
+    const BAD_REQUEST_INVALID_STATE_CODE                                        = 'invalid state code';
+
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_PENDING                       = 'Payment processing pending';
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_EXPIRED                       = 'Payment failed because UPI request expired';
     const BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_REJECTED                      = 'Payment rejected by customer';

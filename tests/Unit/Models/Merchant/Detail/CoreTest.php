@@ -4,11 +4,13 @@
 namespace Unit\Models\Merchant\Detail;
 
 
+use RZP\Error\PublicErrorDescription;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
 use \RZP\Models\Merchant\Core as MerchantCore;
+use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Detail\SelectiveRequiredFields;
-use RZP\Services\MerchantRiskClient;
 use \RZP\Tests\Functional\TestCase;
 
 class CoreTest extends TestCase
@@ -91,6 +93,40 @@ class CoreTest extends TestCase
         [$validationFields, $validationSelectiveRequiredFields, $validationOptionalFields] = $core->getValidationFields($merchantDetail);
 
         $this->assertTrue(isset($validationSelectiveRequiredFields[SelectiveRequiredFields::POA_DOCUMENTS]));
+    }
 
+    public function testBusinessRegisteredStateCodeValidation()
+    {
+        $this->expectException(BadRequestValidationFailureException::class);
+        $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_INVALID_STATE_CODE);
+
+        $input = [
+            DetailEntity::BUSINESS_REGISTERED_STATE => 'Maharashtra'
+        ];
+
+        (new DetailEntity)->build($input);
+    }
+
+    public function testBusinessRegisteredStateCodeValidationOnInvalid2DigitCode()
+    {
+        $this->expectException(BadRequestValidationFailureException::class);
+        $this->expectExceptionMessage(PublicErrorDescription::BAD_REQUEST_INVALID_STATE_CODE);
+
+        $input = [
+            DetailEntity::BUSINESS_REGISTERED_STATE => 'XT'     // invalid state code
+        ];
+
+        (new DetailEntity)->build($input);
+    }
+
+    public function testBusinessRegisteredStateCodeValidationSuccess()
+    {
+        $input = [
+            DetailEntity::BUSINESS_REGISTERED_STATE => 'MH'     // valid state code
+        ];
+
+        $merchantDetail = (new DetailEntity)->build($input);
+
+        $this->assertEquals($merchantDetail->getBusinessRegisteredState(), 'MH');
     }
 }

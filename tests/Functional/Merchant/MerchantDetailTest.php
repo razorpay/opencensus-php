@@ -1513,11 +1513,11 @@ class MerchantDetailTest extends OAuthTestCase
         $this->startTest();
 
         $testMerchant = $this->getDbEntityById('merchant', '10000000000000', 'test');
-        $this->assertSame('Kerala', $testMerchant->merchantDetail->getBusinessRegisteredState());
+        $this->assertSame('KE', $testMerchant->merchantDetail->getBusinessRegisteredState());
         $this->assertSame('kerala@test.com', $testMerchant->merchantDetail->getContactEmail());
 
         $liveMerchant = $this->getDbEntityById('merchant', '10000000000000', 'live');
-        $this->assertSame('Kerala', $liveMerchant->merchantDetail->getBusinessRegisteredState());
+        $this->assertSame('KE', $liveMerchant->merchantDetail->getBusinessRegisteredState());
         $this->assertSame('kerala@test.com', $liveMerchant->merchantDetail->getContactEmail());
     }
 

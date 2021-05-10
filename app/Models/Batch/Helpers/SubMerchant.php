@@ -152,12 +152,12 @@ class SubMerchant
             MDEntity::BUSINESS_DBA                => $e[Header::BILLING_LABEL]          ?? null,
             MDEntity::BUSINESS_TYPE               => $e[Header::ORGANIZATION_TYPE]      ?? null,
             MDEntity::BUSINESS_OPERATION_ADDRESS  => $e[Header::OPERATIONAL_ADDRESS]    ?? null,
-            MDEntity::BUSINESS_OPERATION_STATE    => $e[Header::OPERATIONAL_CITY]       ?? null,
-            MDEntity::BUSINESS_OPERATION_CITY     => $e[Header::OPERATIONAL_STATE]      ?? null,
+            MDEntity::BUSINESS_OPERATION_STATE    => $e[Header::OPERATIONAL_STATE]       ?? null,
+            MDEntity::BUSINESS_OPERATION_CITY     => $e[Header::OPERATIONAL_CITY]      ?? null,
             MDEntity::BUSINESS_OPERATION_PIN      => $e[Header::OPERATIONAL_PINCODE]    ?? null,
             MDEntity::BUSINESS_REGISTERED_ADDRESS => $e[Header::REGISTERED_ADDRESS]     ?? null,
-            MDEntity::BUSINESS_REGISTERED_STATE   => $e[Header::REGISTERED_CITY]        ?? null,
-            MDEntity::BUSINESS_REGISTERED_CITY    => $e[Header::REGISTERED_STATE]       ?? null,
+            MDEntity::BUSINESS_REGISTERED_STATE   => $e[Header::REGISTERED_STATE]        ?? null,
+            MDEntity::BUSINESS_REGISTERED_CITY    => $e[Header::REGISTERED_CITY]       ?? null,
             MDEntity::BUSINESS_REGISTERED_PIN     => $e[Header::REGISTERED_PINCODE]     ?? null,
         ];
     }
