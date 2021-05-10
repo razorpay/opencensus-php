@@ -1287,4 +1287,41 @@ class FundAccountValidationTest extends TestCase
             0.02);
     }
 
+
+    public function testFundAccValidationForSpecialCharacterRemovalForNaration()
+    {
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['name' => 'L&!T @L and T']);
+        $this->createValidationWithFundAccountEntity();
+
+        $this->ba->privateAuth();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts/validations',
+            'content' => [
+                Validation::FUND_ACCOUNT  => [
+                    FundAccount::ACCOUNT_TYPE => 'bank_account',
+                    FundAccount::DETAILS      => [
+                        BankAccount::ACCOUNT_NUMBER => '123456789',
+                        BankAccount::NAME           => 'Rohit Keshwani',
+                        BankAccount::IFSC           => 'ORBC0101753',
+                    ],
+                ],
+                Validation::AMOUNT        => '100',
+                Validation::CURRENCY      => 'INR',
+                Validation::NOTES         => [],
+                Validation::RECEIPT       => '12345667',
+            ]
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+        $this->assertEquals(1, $fav['attempts']);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals($fta['narration'],'LT L and T');
+        $this->assertEquals($fav['id'], $fta['source']);
+    }
+
 }

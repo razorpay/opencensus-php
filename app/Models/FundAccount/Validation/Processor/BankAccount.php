@@ -198,9 +198,10 @@ class BankAccount extends Base
 
     protected function createFundTransferAttempt(): Attempt\Entity
     {
+        $narration = preg_replace('/[^a-zA-Z0-9 ]+/', '', $this->validation->merchant->getName());
         $fundTransferAttemptInput = [
             Attempt\Entity::PURPOSE   => Attempt\Purpose::PENNY_TESTING,
-            Attempt\Entity::NARRATION => $this->validation->merchant->getName(),
+            Attempt\Entity::NARRATION => $narration,
         ];
 
         $fta = (new Attempt\Core)->createWithBankAccount(
