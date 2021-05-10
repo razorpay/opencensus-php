@@ -137,6 +137,7 @@ class Service extends Base\Service
                 $supportedCurrencies[$currency]['forex_rate'] = (float) $forexRateConverted;
                 $supportedCurrencies[$currency]['fee'] =
                     (new Entity())->getCurrencyConversionFee($baseAmount, $forexRateConverted, $markUpPercent);
+                $supportedCurrencies[$currency]['conversion_percentage'] = $markUpPercent;
             }
             else
             {
