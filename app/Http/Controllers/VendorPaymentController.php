@@ -223,4 +223,9 @@ class VendorPaymentController extends Controller
     {
         return $this->service->getInvoicesFromUfh($this->ba->getMerchant(), $fileId);
     }
+
+    public function getQuickFilterAmounts()
+    {
+        return $this->service->getQuickFilterAmounts($this->ba->getMerchant());
+    }
 }

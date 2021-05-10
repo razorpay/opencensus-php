@@ -52,6 +52,7 @@ class Service
     const CREATE_VENDOR               = 'CreateVendor';
     const UPDATE_VENDOR               = 'UpdateVendor';
     const GET_VENDOR_BULK             = 'GetVendorBulk';
+    const GET_QUICK_FILTER_AMOUNTS    = 'GetQuickFilterAmounts';
 
     const BASE_PATH                   = 'twirp/vendorpayments.Vendorpayments';
 
@@ -517,6 +518,13 @@ class Service
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_VENDOR_BULK);
 
         return $this->makeRequest($merchant, $url, $data);
+    }
+
+    public function getQuickFilterAmounts(MerchantEntity $merchant)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_QUICK_FILTER_AMOUNTS);
+
+        return $this->makeRequest($merchant, $url);
     }
 
     protected function makeRequest(MerchantEntity $merchant = null,

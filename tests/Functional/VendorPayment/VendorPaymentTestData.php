@@ -445,4 +445,17 @@ return [
             'content' => []
         ]
     ],
+    'testGetQuickFilterAmounts' => [
+        'request'  => [
+            'method' => 'GET',
+            'server'  => [
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'url'    => '/vendor-payments/_meta/quick-filter-amounts',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
 ];

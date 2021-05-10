@@ -319,4 +319,19 @@ class VendorPaymentTest extends TestCase
 
         $vpMock->shouldHaveReceived('getInvoicesFromUfh');
     }
+
+    public function testGetQuickFilterAmounts()
+    {
+        $this->ba->proxyAuth();
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('getQuickFilterAmounts')->andReturn([]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('getQuickFilterAmounts');
+    }
 }

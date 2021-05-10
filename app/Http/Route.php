@@ -1238,7 +1238,8 @@ class Route
         'vendor_payment_reporting_info'            => ['get',      'vendor-payments/_meta/get-reporting-info',       'VendorPaymentController@getReportingInfo'                          ],
         'vendor_payment_bulk_invoice_download'     => ['post',     'vendor-payments/_meta/bulk-invoice-download',    'VendorPaymentController@bulkInvoiceDownload'                       ],
         'vendor_payment_update_invoice_file_id'    => ['post',     'vendor-payments/{id}/update-invoice-file-id',    'VendorPaymentController@updateInvoiceFileId'                       ],
-        'vendor_payment_get_invoice_zip_file'       => ['get',      'vendor-payments/invoices/ufh/{id}',              'VendorPaymentController@getInvoicesFromUfh'                       ],
+        'vendor_payment_get_invoice_zip_file'      => ['get',      'vendor-payments/invoices/ufh/{id}',              'VendorPaymentController@getInvoicesFromUfh'                        ],
+        'vendor_payment_get_quick_filter_amounts'  => ['get',      'vendor-payments/_meta/quick-filter-amounts',     'VendorPaymentController@getQuickFilterAmounts'                     ],
 
         // Accounting Payouts (inside vendor payments)
         'accounting_payouts_integration_status'                 => ['get',     'accounting-payouts/integration/status',          'AccountingPayoutsController@integrationStatus'         ],
@@ -3679,6 +3680,7 @@ class Route
         'vendor_payment_bulk_invoice_download',
         'vendor_payment_update_invoice_file_id',
         'vendor_payment_get_invoice_zip_file',
+        'vendor_payment_get_quick_filter_amounts',
 
         // Accounting Payouts
         'accounting_payouts_integration_status',
@@ -5575,6 +5577,7 @@ class Route
         'vendor_payment_update_invoice_file_id'        => Permission::EDIT_VENDOR_PAYMENTS,
         'vendor_payment_bulk_invoice_download'         => Permission::VIEW_VENDOR_PAYMENTS,
         'vendor_payment_get_invoice_zip_file'          => Permission::VIEW_VENDOR_PAYMENTS,
+        'vendor_payment_get_quick_filter_amounts'      => Permission::VIEW_VENDOR_PAYMENTS,
         'merchant_edit_config_logo'                    => Permission::MERCHANT_CONFIG_LOGO,
         'contact_get'                                  => Permission::VIEW_CONTACT,
         'contact_list'                                 => Permission::VIEW_CONTACT,
@@ -6805,6 +6808,7 @@ class Route
             'vendor_payment_reporting_info',
             'vendor_payment_summary',
             'vendor_payment_update_invoice_file_id',
+            'vendor_payment_get_quick_filter_amounts',
             'virtual_account_add_receivers',
             'virtual_account_banking_fetch_multiple',
             'virtual_account_close',
@@ -8368,6 +8372,7 @@ class Route
             'vendor_payment_reporting_info',
             'vendor_payment_summary',
             'vendor_payment_update_invoice_file_id',
+            'vendor_payment_get_quick_filter_amounts',
             'virtual_account_add_receivers',
             'virtual_account_banking_fetch_multiple',
             'virtual_account_bulk_close_for_banking',
@@ -9527,6 +9532,7 @@ class Route
         'vendor_payment_bulk_invoice_download',
         'vendor_payment_update_invoice_file_id',
         'vendor_payment_get_invoice_zip_file',
+        'vendor_payment_get_quick_filter_amounts',
 
         'payout_links_added_fund_accounts',
         'payout_links_added_fund_accounts_cors',
