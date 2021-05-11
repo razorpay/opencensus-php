@@ -51,7 +51,7 @@ class JaegerPropagatorTest extends TestCase
         $headers = new ArrayHeaders();
         $propagator->inject($context, $headers);
         $this->assertEquals($jaegerTraceHeader, $headers->get('uber-trace-id'));
-        $this->assertEquals($baggageItems['HTTP_RZP_CTX_REQUEST_ID'] ?? "", $headers->get('rzp-ctx-request_id'));
+        $this->assertEquals($baggageItems['HTTP_RZPCTX_REQUEST_ID'] ?? "", $headers->get('rzpctx-request_id'));
     }
 
     /**
@@ -63,8 +63,8 @@ class JaegerPropagatorTest extends TestCase
     public function traceMetadata()
     {
         return [
-            ['123456789012345678901234567890ab', '00000000000004d2', true,  '123456789012345678901234567890ab:00000000000004d2:0000000000000000:1', ['HTTP_RZP_CTX_REQUEST_ID' => '12345678901234567']],
-            ['123456789012345678901234567890ab', '00000000000004d2', false, '123456789012345678901234567890ab:00000000000004d2:0000000000000000:0', ['HTTP_RZP_CTX_REQUEST_ID' => '12345678901234567']],
+            ['123456789012345678901234567890ab', '00000000000004d2', true,  '123456789012345678901234567890ab:00000000000004d2:0000000000000000:1', ['HTTP_RZPCTX_REQUEST_ID' => '12345678901234567']],
+            ['123456789012345678901234567890ab', '00000000000004d2', false, '123456789012345678901234567890ab:00000000000004d2:0000000000000000:0', ['HTTP_RZPCTX_REQUEST_ID' => '12345678901234567']],
             ['123456789012345678901234567890ab', '00000000000004d2', true,  '123456789012345678901234567890ab:00000000000004d2:0000000000000000:1', []],
         ];
     }

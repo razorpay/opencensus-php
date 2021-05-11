@@ -118,12 +118,6 @@ class RequestHandler
         $rootSpanAttrs = $this->spanAttrsFromOptions($options);
         unset($options['root_span_options']);
 
-        if (count($spanContext->baggage()) > 0) {
-            foreach ($spanContext->baggage() as $k => $v) {
-                $rootSpanAttrs[$k] = $v;
-            }
-        }
-
         $spanOptions = $options + [
             'startTime' => $this->startTimeFromHeaders($this->headers->toArray()),
             'name' => $rootSpanName,

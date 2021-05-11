@@ -34,7 +34,7 @@ class JaegerPropagator implements PropagatorInterface
 
     const CONTEXT_HEADER_FORMAT = '%032s:%016s:%016s:%x';    //traceId, spanId are stored as hex strings in opencensus
 
-    const BAGGAGE_HEADER_PREFIX = 'rzp-ctx';
+    const BAGGAGE_HEADER_PREFIX = 'rzpctx-';
 
     /**
      * @var FormatterInterface
@@ -108,7 +108,7 @@ class JaegerPropagator implements PropagatorInterface
         // set baggage header
         if (count($context->baggage()) > 0) {
             foreach ($context->baggage() as $k => $v) {
-                $setter->set(strtolower(self::BAGGAGE_HEADER_PREFIX . '-' . $k), $v);
+                $setter->set(strtolower(self::BAGGAGE_HEADER_PREFIX . $k), $v);
             }
         }
 
@@ -123,7 +123,7 @@ class JaegerPropagator implements PropagatorInterface
         $baggageItems = [];
 
         foreach ($headers as $k => $v) {
-            $baggageHeader = 'HTTP_' .  strtoupper(str_replace('-', '_', self::BAGGAGE_HEADER_PREFIX))  . '_';
+            $baggageHeader = 'HTTP_' .  strtoupper(str_replace('-', '_', self::BAGGAGE_HEADER_PREFIX));
             if (stripos($k, $baggageHeader) !== false) {
                 $itemKey = str_replace($baggageHeader, "", $k);
                 if ($itemKey != "") {
