@@ -1674,6 +1674,11 @@ class Validator extends Base\Validator
                 $action = 'create_bulk_payout_link';
                 break;
 
+            // Doing this, as we expect payout and tally_payout to behave the same way
+            case 'tally_payout':
+                $action = 'create_payout_batch';
+                break;
+
             default:
                 $action = "create_{$input[Entity::TYPE]}_batch";
         }
