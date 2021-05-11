@@ -459,7 +459,7 @@ class Core extends Base\Core
     public function migrateSettlableTransactions(string $merchantId, array $opt)
     {
         $batch = 0;
-        $batchSize = 1000;
+        $batchSize = 10000;
         $stat = [
             'total_count' => 0,
         ];
@@ -472,6 +472,8 @@ class Core extends Base\Core
                 'limit'  => $batchSize,
                 'offset' => $batch * $batchSize,
             ]);
+
+            $startTime = microtime(true);
 
             foreach($transactions as $txn)
             {
@@ -502,6 +504,14 @@ class Core extends Base\Core
                         ]);
                 }
             }
+
+            $this->trace->info(
+                TraceCode::SETTLEMENT_SERVICE_TRANSACTION_MIGRATION_PUSH_TIME_TAKEN,
+                [
+                   'merchant_id' => $merchantId,
+                   'txn_count'   => $transactions->count(),
+                   'time_taken'  => get_diff_in_millisecond($startTime),
+                ]);
 
             $batch++;
         } while ($transactions->count() === $batchSize);

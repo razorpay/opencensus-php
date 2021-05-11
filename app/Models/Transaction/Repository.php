@@ -2027,6 +2027,8 @@ class Repository extends Base\Repository
         $txnCreatedAt       = $this->dbColumn(Entity::CREATED_AT);
         $txnType            = $this->dbColumn(Entity::TYPE);
 
+        $startTime = microtime(true);
+
         $query = $this->newQueryWithConnection($this->getSlaveConnection())
             ->select($txnId, $txnBalanceId, $txnMerchantId, $txnEntityId, $txnType,
                 $txnCurrency, $txnCredit, $txnDebit, $txnFee, $txnTax, $txnOnHold, $txnCreatedAt)
@@ -2056,6 +2058,16 @@ class Repository extends Base\Repository
         if ($opt['source_type'] !== null) {
             $query->where($txnType, $opt['source_type']);
         }
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_SERVICE_TRANSACTION_MIGRATION_FETCH_TIME_TAKEN,
+            [
+                'merchant_id' => $merchantId,
+                'options'     => $opt,
+                'limits'      => $limits,
+                'balance_id'  => $balance->getId(),
+                'time_taken'  => get_diff_in_millisecond($startTime),
+            ]);
 
         return $query->get();
     }
