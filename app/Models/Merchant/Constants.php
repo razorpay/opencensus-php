@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant;
 
 use RZP\Models\Admin\Permission\Name as Permission;
+use RZP\Models\Merchant\Detail\Status as ActivationStatus;
 
 /**
  * General constants for Merchant Model.
@@ -153,6 +154,26 @@ final class Constants
         self::ENABLE_INTERNATIONAL_PROD_V2,
     ];
 
+    const X_HOURS_AFTER_ACTIVATION_FORM_SUBMISSION = "x_hours_after_activation_form_submission";
+    const X_HOURS_WITHIN_ACTIVATION_FORM_SUBMISSION = "x_hours_within_activation_form_submission";
+
+    const DEDUPE_MERCHANT       = "dedupe_merchant";
+    const NON_DEDUPE_MERCHANT   = "non_dedupe_merchant";
+
+    const MESSAGE       = "message";
+    const CTA_LIST      = "cta_list";
+    const SHOW_POPUP    = "show_popup";
+    const DEFAULT       = "default";
+    const MIN_ACTIVATION_PROGRESS       = "minimum_activation_progress";
+    const MAX_ACTIVATION_PROGRESS       = "maximum_activation_progress";
+
+    // Possible CTAs
+    const CONTINUE_WITH_TICKET      =    "continue_with_ticket";
+    const COMPLETE_ACTIVATION_FORM  =    "complete_activation_form";
+    const FILL_ACTIVATION_FORM      =    "fill_activation_form";
+    const NEEDS_CLARIFICATION       =    "needs_clarification";
+    const FAQS                      =    "faqs";
+    const THANKS                    =    "thanks";
     /**
      * Partner types that are allowed to view and manage
      * partner settings like client creds.
@@ -299,8 +320,64 @@ final class Constants
     const MERCHANT_INSTRUMENT_STATUS_UPDATE = "merchant_instrument_status_update";
     const INSTRUMENT_STATUS_UPDATE_MERCHANT_MAIL = "instrument_status_update_merchant_mail";
 
-    // No of days for manual KYC
-    const NUMBER_OF_DAYS_TAKEN_FOR_ACTIVATION  =     "3 to 4";
+    const TICKET_CREATION_POPUP_DATA_FOR_ACTIVATION_STATUS = [
+
+        ActivationStatus::UNDER_REVIEW => [
+
+            self::X_HOURS_AFTER_ACTIVATION_FORM_SUBMISSION => [
+                self::SHOW_POPUP => true,
+                self::MESSAGE    => "We received your activation form on :submission_at. Your documents and KYC details are under review.It usually takes 3-4 working days for our team to review your documents. We will reach out if we need any other clarification. Please go through our FAQs if you have any other queries.",
+                self::CTA_LIST   => [self::CONTINUE_WITH_TICKET, self::FAQS],
+            ],
+
+            self::X_HOURS_WITHIN_ACTIVATION_FORM_SUBMISSION => [
+                self::SHOW_POPUP => true,
+                self::MESSAGE    => "We received your activation form on :submission_at. Your documents and KYC details are under review.It usually takes 3-4 working days for our team to review your documents. We will reach out if we need any clarification. Please go through our FAQs if you have any other queries.",
+                self::CTA_LIST   => [self::THANKS, self::FAQS],
+            ],
+        ],
+
+        ActivationStatus::NEEDS_CLARIFICATION => [
+
+            self::DEDUPE_MERCHANT => [
+                self::SHOW_POPUP => false,
+                self::MESSAGE    => "",
+                self::CTA_LIST   => [],
+            ],
+
+            self::NON_DEDUPE_MERCHANT => [
+                self::SHOW_POPUP => true,
+                self::MESSAGE    => "Our team has requested for some clarifications to proceed with your KYC. Kindly share the requested information to fast track the process. If you have any other concerns, please feel free to raise a ticket. ",
+                self::CTA_LIST   => [self::CONTINUE_WITH_TICKET, self::NEEDS_CLARIFICATION],
+            ]
+        ],
+
+        ActivationStatus::REJECTED => [
+
+            self::DEFAULT => [
+                self::SHOW_POPUP => true,
+                self::MESSAGE    => "We regret to inform you that we will not be able to support your business as the bank has not approved your activation form.Your account is terminated with a hold on the funds for the chargeback period of 120 days from the date of rejection. Please go through our FAQs if you have any other queries.",
+                self::CTA_LIST   => [self::CONTINUE_WITH_TICKET, self::FAQS],
+            ]
+        ]
+    ];
+
+    const TICKET_CREATION_POPUP_DATA_FOR_ACTIVATION_PROGRESS_RANGES = [
+        [
+            self::MIN_ACTIVATION_PROGRESS => 0,
+            self::MAX_ACTIVATION_PROGRESS => 0,
+            self::SHOW_POPUP              => true,
+            self::MESSAGE                 => "Please fill the KYC details to serve you better. It usually takes 3-4 working days for our team to review your documents post submission. We will reach out if we need any clarifications. Please go through our FAQs if you have any other queries",
+            self::CTA_LIST                => [self::FAQS, self::FILL_ACTIVATION_FORM],
+        ],
+        [
+            self::MIN_ACTIVATION_PROGRESS => 1,
+            self::MAX_ACTIVATION_PROGRESS => 100,
+            self::SHOW_POPUP              => true,
+            self::MESSAGE                 => "Please fill the KYC details to serve you better. It usually takes 3-4 working days for our team to review your documents post submission. We will reach out to you if we need any clarifications.",
+            self::CTA_LIST                => [self::CONTINUE_WITH_TICKET, self::COMPLETE_ACTIVATION_FORM],
+        ],
+    ];
 }
 
 

@@ -93,7 +93,7 @@ class Core extends Base\Core
 
         $this->mutex = $this->app['api.mutex'];
 
-        $this->mrclient = new MerchantRiskClient();
+        $this->mrclient = $this->app['merchantRiskClient'];
 
         $this->mcore = new Merchant\Core();
 

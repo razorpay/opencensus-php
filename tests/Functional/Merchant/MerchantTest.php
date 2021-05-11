@@ -29,15 +29,16 @@ use RZP\Models\Workflow\Observer\EmailChangeObserver;
 use RZP\Models\Admin\Org\Repository as OrgRepository;
 use RZP\Services\Mock\DruidService as MockDruidService;
 use RZP\Models\Admin\Permission\Name as PermissionName;
+use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Models\Workflow\Observer\MerchantActionObserver;
 use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
 use RZP\Tests\Functional\Helpers\Freshdesk\FreshdeskTrait;
+use RZP\Models\Merchant\Detail\Status as ActivationStatus;
 use RZP\Models\Workflow\Observer\PaymentMethodChangeObserver;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 use \RZP\Models\Workflow\Observer\Constants as ObserverConstants;
-
 
 use RZP\Models\Key;
 use RZP\Jobs\EsSync;
@@ -128,8 +129,6 @@ class MerchantTest extends TestCase
     const RESPONSE                                              = 'response';
     const EDIT_MERCHANT_DETAILS                                 = 'edit_merchant_detail';
     const CREATE_MERCHANT_DETAILS                               = 'create_merchant_detail';
-    const CREATE_MERCHANT_DETAILS_VALID_FIELDS                  = 'create_merchant_detail_valid_fields';
-    const EDIT_MERCHANT_DETAILS_VALID_FIELDS                    = 'edit_merchant_detail_valid_fields';
     const ACTIVATE_MERCHANT                                     = 'activate_merchant';
 
     const EMAIL_EXPECTED_WORKFLOW_ES_DATA_WITH_OBSERVER               = 'EMAIL_EXPECTED_WORKFLOW_ES_DATA_WITH_OBSERVER';
@@ -174,6 +173,59 @@ class MerchantTest extends TestCase
             ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
+    }
+
+    public function testMerchantSupportOptionDedupeMerchant()
+    {
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                              function ($merchantId, $feature, $mode)
+                              {
+                                  if ($feature === "DEDUPE_FUNCTIONALITY" || $feature === "show_create_ticket_popup")
+                                  {
+                                      return 'on';
+                                  }
+                                  else
+                                  {
+                                      return "control";
+                                  }
+
+                              }) );
+
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'                   => '10000000000000',
+            'activation_flow'               => 'whitelist',
+            'business_category'             => 'education',
+            'business_subcategory'          => 'alcohol',
+            'business_type'                 => 2,
+            'activation_status'             => 'needs_clarification',
+            'submitted_at'                  => 1539543931,
+        ]);
+
+        $this->mockMerchantImpersonated();
+
+        $this->startTest();
+    }
+
+    public function testMerchantSupportOptionOldFlow()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'                   => '10000000000000',
+            'activation_flow'               => 'whitelist',
+            'business_category'             => 'education',
+            'business_subcategory'          => 'alcohol',
+            'business_type'                 => 2,
+            'activation_status'             => 'needs_clarification',
+            'submitted_at'                  => 1539543931,
+        ]);
+
+        $this->fixtures->merchant->edit('10000000000000', ['activated' => 1]);
+
+        $this->startTest();
     }
 
     public function testCreateKey()
@@ -9535,9 +9587,31 @@ class MerchantTest extends TestCase
 
     public function testMerchantSupportOptions()
     {
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                              function ($merchantId, $feature, $mode)
+                              {
+                                  if ($feature === "DEDUPE_FUNCTIONALITY" || $feature === "show_create_ticket_popup")
+                                  {
+                                      return 'on';
+                                  }
+                                  else
+                                  {
+                                      return "control";
+                                  }
+
+                              }) );
+
         $this->ba->proxyAuth();
 
         $testCases = $this->getTestCasesForTestMerchantSupportOptions();
+
+        $this->fixtures->create('state', [
+            'entity_id'   => '10000000000000',
+            'entity_type' => 'merchant_detail',
+            'name'        => 'under_review',
+            'created_at'  =>  1539543931
+        ]);
 
         foreach ($testCases as $testCase)
         {
@@ -9553,8 +9627,12 @@ class MerchantTest extends TestCase
         }
     }
 
-    private function getTestCasesForTestMerchantSupportOptions()
+    protected function getTestCasesForTestMerchantSupportOptions()
     {
+        $popupDataForActivationStatus = MerchantConstants::TICKET_CREATION_POPUP_DATA_FOR_ACTIVATION_STATUS;
+
+        $popupDataForFormFillRange = MerchantConstants::TICKET_CREATION_POPUP_DATA_FOR_ACTIVATION_PROGRESS_RANGES;
+
         return [
             [
                 self::REQUEST       => [
@@ -9565,7 +9643,8 @@ class MerchantTest extends TestCase
                     'content' => [
                         "show_chat"                 =>  false,
                         "show_create_ticket_popup"  =>  true,
-                        "no_of_days_for_activation" =>  "3 to 4",
+                        "message_body"              =>  "We received your activation form on October 14, 2018. Your documents and KYC details are under review.It usually takes 3-4 working days for our team to review your documents. We will reach out if we need any other clarification. Please go through our FAQs if you have any other queries.",
+                        "cta_list"                  =>  $popupDataForActivationStatus[ActivationStatus::UNDER_REVIEW][MerchantConstants::X_HOURS_AFTER_ACTIVATION_FORM_SUBMISSION][MerchantConstants::CTA_LIST],
                     ],
                 ],
                 self::CREATE_MERCHANT_DETAILS   =>  [
@@ -9573,7 +9652,11 @@ class MerchantTest extends TestCase
                     'international_activation_flow' => 'greylist',
                     'business_category'             => 'education',
                     'business_subcategory'          => 'alcohol',
-                    'business_type'                 => 1]
+                    'activation_status'             => 'under_review',
+                    'submitted_at'                  => 1539543931,
+                    'business_type'                 => 1
+                ],
+                'time'                  => Carbon::createFromDate(2018, 10, 16, Timezone::IST),
             ],
             [
                 self::REQUEST       => [
@@ -9584,7 +9667,8 @@ class MerchantTest extends TestCase
                     'content' => [
                         "show_chat"                 =>  false,
                         "show_create_ticket_popup"  =>  true,
-                        "no_of_days_for_activation" =>  "3 to 4",
+                        "cta_list"                  => $popupDataForActivationStatus[ActivationStatus::UNDER_REVIEW][MerchantConstants::X_HOURS_WITHIN_ACTIVATION_FORM_SUBMISSION][MerchantConstants::CTA_LIST],
+                        "message_body"              => "We received your activation form on October 14, 2018. Your documents and KYC details are under review.It usually takes 3-4 working days for our team to review your documents. We will reach out if we need any clarification. Please go through our FAQs if you have any other queries.",
                     ],
                 ],
                 self::EDIT_MERCHANT_DETAILS     =>  [
@@ -9592,7 +9676,11 @@ class MerchantTest extends TestCase
                     'activation_flow'               => 'greylist',
                     'business_category'             => 'education',
                     'business_subcategory'          => 'alcohol',
-                    'business_type'                 => 2]
+                    'activation_status'             => 'under_review',
+                    'submitted_at'                  => 1539543931,
+                    'business_type'                 => 2
+                ],
+                'time'                  => Carbon::createFromDate(2018, 10, 15, Timezone::IST),
             ],
             [
                 self::REQUEST       => [
@@ -9603,22 +9691,103 @@ class MerchantTest extends TestCase
                     'content' => [
                         "show_chat"                 =>  false,
                         "show_create_ticket_popup"  =>  true,
-                        "no_of_days_for_activation" =>  "3 to 4",
+                        "cta_list"                  => $popupDataForActivationStatus[ActivationStatus::NEEDS_CLARIFICATION][MerchantConstants::NON_DEDUPE_MERCHANT][MerchantConstants::CTA_LIST],
+                        "message_body"              => $popupDataForActivationStatus[ActivationStatus::NEEDS_CLARIFICATION][MerchantConstants::NON_DEDUPE_MERCHANT][MerchantConstants::MESSAGE],
                     ],
-                ],
-                self::EDIT_MERCHANT_DETAILS_VALID_FIELDS  => [
-                    'poi_verification_status'           => 'verified',
-                    'poa_verification_status'           => 'verified',
-                    'bank_details_verification_status'  => 'verified',
-                    'company_pan_verification_status'   => 'verified',
-                    'cin_verification_status'           => 'verified',
-
                 ],
                 self::EDIT_MERCHANT_DETAILS   =>  [
                     'merchant_id'                   => '10000000000000',
                     'business_category'             => 'education',
                     'business_subcategory'          => 'alcohol',
-                    'business_type'                 => 2]
+                    'activation_status'             => 'needs_clarification',
+                    'submitted_at'                  => 1539543931,
+                    'business_type'                 => 2,
+                    'activation_progress'           => 23,
+                ]
+            ],
+            [
+                self::REQUEST       => [
+                    'url'      => '/merchants/support/option/flags',
+                    'method'   => \Requests::GET
+                ],
+                self::RESPONSE       => [
+                    'content' => [
+                        "show_chat"                 => true,
+                        "show_create_ticket_popup"  => true,
+                        "cta_list"                  => $popupDataForActivationStatus[ActivationStatus::REJECTED][MerchantConstants::DEFAULT][MerchantConstants::CTA_LIST],
+                        "message_body"              => $popupDataForActivationStatus[ActivationStatus::REJECTED][MerchantConstants::DEFAULT][MerchantConstants::MESSAGE],
+                    ],
+                ],
+                self::EDIT_MERCHANT_DETAILS   =>  [
+                    'merchant_id'                   => '10000000000000',
+                    'activation_flow'               => 'whitelist',
+                    'business_category'             => 'education',
+                    'business_subcategory'          => 'college',
+                    'business_type'                 => 3,
+                    'activation_status'             => 'rejected',
+                    'submitted_at'                  => 1539543931,
+                ]
+            ],
+            [
+                self::REQUEST       => [
+                    'url'      => '/merchants/support/option/flags',
+                    'method'   => \Requests::GET
+                ],
+                self::RESPONSE       => [
+                    'content' => [
+                        "show_chat"                 => true,
+                        "show_create_ticket_popup"  => true,
+                        "cta_list"                  => $popupDataForFormFillRange[0][MerchantConstants::CTA_LIST],
+                        "message_body"              => $popupDataForFormFillRange[0][MerchantConstants::MESSAGE],
+                    ]
+                ],
+                self::EDIT_MERCHANT_DETAILS   =>  [
+                    'merchant_id'                   => '10000000000000',
+                    'activation_flow'               => 'whitelist',
+                    'business_category'             => 'education',
+                    'business_subcategory'          => 'college',
+                    'activation_status'             => null,
+                    'business_type'                 => 3,
+                    'submitted'                     => false,
+                    'activation_progress'           => 0,
+                ]
+            ],
+            [
+                self::REQUEST       => [
+                    'url'      => '/merchants/support/option/flags',
+                    'method'   => \Requests::GET
+                ],
+                self::RESPONSE       => [
+                    'content' => [
+                        "show_chat"                 =>  true,
+                        "show_create_ticket_popup"  =>  true,
+                        "cta_list"                  => $popupDataForFormFillRange[1][MerchantConstants::CTA_LIST],
+                        "message_body"              => $popupDataForFormFillRange[1][MerchantConstants::MESSAGE],
+                    ],
+                ],
+                self::EDIT_MERCHANT_DETAILS     =>  [
+                    'merchant_id'                   => '10000000000000',
+                    'activation_flow'               => 'whitelist',
+                    'business_category'             => 'education',
+                    'business_subcategory'          => 'college',
+                    'activation_status'             => null,
+                    'business_type'                 => 4,
+                    'submitted'                     => false,
+                    'activation_progress'           => 23,
+                ]
+            ],
+            [
+                self::REQUEST       => [
+                    'url'      => '/merchants/support/option/flags',
+                    'method'   => \Requests::GET
+                ],
+                self::RESPONSE       => [
+                    'content' => [
+                        "show_chat"                 =>  true,
+                        "show_create_ticket_popup"  =>  false
+                    ],
+                ],
+                self::ACTIVATE_MERCHANT =>  [1]
             ],
             [
                 self::REQUEST       => [
@@ -9628,194 +9797,51 @@ class MerchantTest extends TestCase
                 self::RESPONSE       => [
                     'content' => [
                         "show_chat"                 =>  false,
-                        "show_create_ticket_popup"  =>  true,
-                        "no_of_days_for_activation" =>  "3 to 4",
+                        "show_create_ticket_popup"  =>  false
                     ],
                 ],
-                self::EDIT_MERCHANT_DETAILS_VALID_FIELDS  => [
-                    'poi_verification_status'           => 'verified',
-                    'poa_verification_status'           => 'verified',
-                    'bank_details_verification_status'  => 'verified'
-                ],
-                self::EDIT_MERCHANT_DETAILS     =>  [
-                    'merchant_id'                   => '10000000000000',
-                    'activation_flow'               => 'whitelist',
-                    'business_category'             => 'education',
-                    'business_subcategory'          => 'alcohol',
-                    'business_type'                 => 2]
+                self::ACTIVATE_MERCHANT =>  [1],
+                'time'                  => Carbon::createFromTime(2, 0, 0, Timezone::IST),
             ],
+            //holiday
             [
-            self::REQUEST       => [
-                'url'      => '/merchants/support/option/flags',
-                'method'   => \Requests::GET
-            ],
-            self::RESPONSE       => [
-                'content' => [
-                    "show_chat"                 => true,
-                    "show_create_ticket_popup"  => true,
-                    "no_of_days_for_activation" => "3 to 4",
+                self::REQUEST       => [
+                    'url'      => '/merchants/support/option/flags',
+                    'method'   => \Requests::GET
                 ],
-            ],
-            self::EDIT_MERCHANT_DETAILS   =>  [
-                'merchant_id'                   => '10000000000000',
-                'activation_flow'               => 'whitelist',
-                'business_category'             => 'education',
-                'business_subcategory'          => 'college',
-                'business_type'                 => 3]
-        ],
-        [
-            self::REQUEST       => [
-                'url'      => '/merchants/support/option/flags',
-                'method'   => \Requests::GET
-            ],
-            self::RESPONSE       => [
-                'content' => [
-                    "show_chat"                 => true,
-                    "show_create_ticket_popup"  => true,
-                    "no_of_days_for_activation" => "3 to 4",
-                ]
-            ],
-            self::EDIT_MERCHANT_DETAILS   =>  [
-                'merchant_id'                   => '10000000000000',
-                'activation_flow'               => 'whitelist',
-                'business_category'             => 'education',
-                'business_subcategory'          => 'college',
-                'business_type'                 => 3]
-        ],
-        [
-            self::REQUEST       => [
-                'url'      => '/merchants/support/option/flags',
-                'method'   => \Requests::GET
-            ],
-            self::RESPONSE       => [
-                'content' => [
-                    "show_chat"                 =>  true,
-                    "show_create_ticket_popup"  =>  true,
-                    "no_of_days_for_activation" =>  "3 to 4",
+                self::RESPONSE       => [
+                    'content' => [
+                        "show_chat"                 =>  false,
+                        "show_create_ticket_popup"  =>  false
+                    ],
                 ],
+                self::ACTIVATE_MERCHANT =>  [1],
+                'time'                  => Carbon::createFromDate(2021, 4, 13, Timezone::IST),
             ],
-            self::EDIT_MERCHANT_DETAILS_VALID_FIELDS  => [
-                'poi_verification_status'           => 'verified',
-                'poa_verification_status'           => 'verified',
-                'bank_details_verification_status'  => 'verified',
-                'company_pan_verification_status'   => 'verified',
-                'cin_verification_status'           => 'verified',
-            ],
-            self::EDIT_MERCHANT_DETAILS     =>  [
-                'merchant_id'                   => '10000000000000',
-                'activation_flow'               => 'whitelist',
-                'business_category'             => 'education',
-                'business_subcategory'          => 'college',
-                'business_type'                 => 4]
-        ],
-        [
-            self::REQUEST       => [
-                'url'      => '/merchants/support/option/flags',
-                'method'   => \Requests::GET
-            ],
-            self::RESPONSE       => [
-                'content' => [
-                    "show_chat"                 =>  false,
-                    "show_create_ticket_popup"  =>  true,
-                    "no_of_days_for_activation" =>  "3 to 4",
-                ],
-            ],
-            self::EDIT_MERCHANT_DETAILS_VALID_FIELDS  => [
-                'poi_verification_status'           => 'verified',
-                'poa_verification_status'           => 'verified',
-                'bank_details_verification_status'  => 'verified',
-                'company_pan_verification_status'   => 'verified',
-                'cin_verification_status'           => 'verified',
-            ],
-            self::EDIT_MERCHANT_DETAILS     =>  [
-                'merchant_id'                   => '10000000000000',
-                'activation_flow'               => 'whitelist',
-                'business_category'             => 'education',
-                'business_subcategory'          => 'college',
-                'business_type'                 => 2]
-        ],
-        [
-            self::REQUEST       => [
-                'url'      => '/merchants/support/option/flags',
-                'method'   => \Requests::GET
-            ],
-            self::RESPONSE       => [
-                'content' => [
-                    "show_chat"                 =>  true,
-                    "show_create_ticket_popup"  =>  false
-                ],
-            ],
-            self::ACTIVATE_MERCHANT =>  [1]
-        ],
-        [
-            self::REQUEST       => [
-                'url'      => '/merchants/support/option/flags',
-                'method'   => \Requests::GET
-            ],
-            self::RESPONSE       => [
-                'content' => [
-                    "show_chat"                 =>  false,
-                    "show_create_ticket_popup"  =>  false
-                ],
-            ],
-            self::ACTIVATE_MERCHANT =>  [1],
-            'time'                  => Carbon::createFromTime(2, 0, 0, Timezone::IST),
-        ],
-        //holiday
-        [
-            self::REQUEST       => [
-                'url'      => '/merchants/support/option/flags',
-                'method'   => \Requests::GET
-            ],
-            self::RESPONSE       => [
-                'content' => [
-                    "show_chat"                 =>  false,
-                    "show_create_ticket_popup"  =>  false
-                ],
-            ],
-            self::ACTIVATE_MERCHANT =>  [1],
-            'time'                  => Carbon::createFromDate(2021, 4, 13, Timezone::IST),
-        ],
-    ];
+        ];
 
     }
 
-    private function createTestDataForTestMerchantSupportOptions($testCase)
+    protected function createTestDataForTestMerchantSupportOptions($testCase)
     {
         if (isset($testCase['time']) === true)
         {
             Carbon::setTestNow($testCase['time']);
         }
-        if (empty($testCase[self::CREATE_MERCHANT_DETAILS_VALID_FIELDS]) === false)
-        {
-            $merchantId = $this->fixtures->create('merchant_detail:valid_fields'
-                ,$testCase[self::CREATE_MERCHANT_DETAILS_VALID_FIELDS])['merchant_id'];
 
-            $this->fixtures->edit('merchant_detail',$merchantId,
-                $testCase[self::EDIT_MERCHANT_DETAILS]);
+        if (array_key_exists(self::CREATE_MERCHANT_DETAILS, $testCase) === true)
+        {
+            $this->fixtures->create('merchant_detail',
+                                    $testCase[self::CREATE_MERCHANT_DETAILS]);
         }
 
-        else if (empty($testCase[self::EDIT_MERCHANT_DETAILS_VALID_FIELDS]) === false)
-        {
-            $merchantId = $this->fixtures->edit('merchant_detail',
-                '10000000000000',$testCase[self::EDIT_MERCHANT_DETAILS_VALID_FIELDS])['merchant_id'];
-
-            $this->fixtures->edit('merchant_detail',$merchantId,
-                $testCase[self::EDIT_MERCHANT_DETAILS]);
-        }
-
-        else if (empty($testCase[self::EDIT_MERCHANT_DETAILS]) === false)
+        if (array_key_exists(self::EDIT_MERCHANT_DETAILS, $testCase) === true)
         {
             $this->fixtures->edit('merchant_detail','10000000000000',
                 $testCase[self::EDIT_MERCHANT_DETAILS]);
         }
 
-        else if (empty($testCase[self::CREATE_MERCHANT_DETAILS]) === false)
-        {
-            $this->fixtures->create('merchant_detail',
-                $testCase[self::CREATE_MERCHANT_DETAILS]);
-        }
-        else if (empty($testCase[self::ACTIVATE_MERCHANT]) === false) {
+        if (array_key_exists(self::ACTIVATE_MERCHANT, $testCase) === true) {
             $this->fixtures->merchant->activate();
         }
     }
@@ -10087,5 +10113,39 @@ class MerchantTest extends TestCase
         $this->assertEquals(false, $response['methods']['app_meta']['cred']['hit_eligibility']);
         $this->assertArrayNotHasKey('offer', $response['methods']['app_meta']['cred']);
         $this->assertEquals(true, $response['methods']['app_meta']['cred']['user_eligible']);
+    }
+
+    protected function mockMerchantImpersonated()
+    {
+        $action = [
+            'keysToCheck' => [
+                MerchantDetails::PROMOTER_PAN => [
+                    'list' => 'blacklist',
+                    'matchType'=> 'exact_match',
+                ]
+            ],
+            'action' => 'deactivate'
+        ];
+
+        $mockedResponse = [];
+
+        foreach ($action['keysToCheck'] as $fieldName => $data)
+        {
+            $mockedResponse[] = [
+                'field'     => $fieldName,
+                'list'      => $data['list'],
+                'score'     => 900  // some random score
+            ];
+        }
+
+        $merchantRiskClientMock = Mockery::mock('RZP\Services\MerchantRiskClient');
+
+        $merchantRiskClientMock->shouldReceive('getMerchantImpersonatedDetails')->andReturn([
+                                                                                                "client_type" => "onboarding",
+                                                                                                "entity_id" => '10000000000000',
+                                                                                                "fields" => $mockedResponse
+                                                                                            ]);
+
+        $this->app->instance('merchantRiskClient', $merchantRiskClientMock);
     }
 }

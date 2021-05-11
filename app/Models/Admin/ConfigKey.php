@@ -218,6 +218,9 @@ class ConfigKey
 
     const SLAVE_ROUTES = self::PREFIX.'slave_routes';
 
+    const MIN_HOURS_TO_START_TICKET_CREATION_AFTER_ACTIVATION_FORM_SUBMISSION
+        = self::PREFIX . 'min_hours_to_start_ticket_creation_after_activation_form_submission';
+
     const PUBLIC_KEYS = [
         self::TERMINAL_SELECTION_LOG_VERBOSE,
         self::PRICING_RULE_SELECTION_LOG_VERBOSE,
@@ -309,7 +312,8 @@ class ConfigKey
         self::RBL_STATEMENT_FETCH_RATE_LIMIT_RELEASE_DELAY,
         self::ICICI_STATEMENT_FETCH_RATE_LIMIT_RELEASE_DELAY,
         self::RBL_ENABLE_RATE_LIMIT_FLOW,
-        self::ICICI_ENABLE_RATE_LIMIT_FLOW
+        self::ICICI_ENABLE_RATE_LIMIT_FLOW,
+        self::MIN_HOURS_TO_START_TICKET_CREATION_AFTER_ACTIVATION_FORM_SUBMISSION,
     ];
 
     const REDIS_CONFIG_MAP = [

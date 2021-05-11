@@ -19,7 +19,7 @@ class Core extends Base\Core
     {
         parent::__construct();
 
-        $this->merchantRiskClient = new MerchantRiskClient();
+        $this->merchantRiskClient = $this->app->merchantRiskClient;
     }
 
     public function setMerchantRiskClient($merchantRiskClient)

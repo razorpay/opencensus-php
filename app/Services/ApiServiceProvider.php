@@ -323,6 +323,11 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             return new DruidService();
         });
 
+        $this->app->singleton('merchantRiskClient', function ($app)
+        {
+            return new MerchantRiskClient();
+        });
+
         $this->app->singleton('gateway_file', function($app)
         {
             return new GatewayFileManager($app);

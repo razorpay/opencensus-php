@@ -30,6 +30,7 @@ use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Merchant\Document as Document;
 use RZP\Models\Merchant\Referral as Referral;
 use RZP\Models\Merchant\Notify as NotifyTrait;
+use \RZP\Models\State\Entity as StateChangeEntity;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Models\Merchant\Document\FileHandler\Factory;
 use RZP\Models\Partner\Constants as PartnerConstants;
@@ -1580,5 +1581,17 @@ class Service extends Base\Service
     {
         $partnerCore =  new Partner\Core();
         return $partnerCore->createPartnerActivationForPartners($input);
+    }
+
+    public function getFirstL2SubmissionDate()
+    {
+        $activationStatusChangeLogs = $this->getActivationStatusChangeLog($this->merchant->getId())['items'];
+
+        $activationStatusChangeLogs = array_filter($activationStatusChangeLogs, function ($activationStatusChangeLog)
+        {
+            return ($activationStatusChangeLog[StateChangeEntity::NAME] === Status::UNDER_REVIEW);
+        });
+
+        return empty($activationStatusChangeLogs) === false ? $activationStatusChangeLogs[0][StateChangeEntity::CREATED_AT] : 0;
     }
 }

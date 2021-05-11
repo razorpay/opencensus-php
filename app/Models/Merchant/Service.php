@@ -49,6 +49,7 @@ use RZP\Models\Pricing\Plan;
 use RZP\Models\Payment\Refund;
 use RZP\Services\HubspotClient;
 use RZP\Models\Workflow\Action;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Modules\Migrate\Migrate;
 use RZP\Exception\BaseException;
 use RZP\Models\Merchant\Methods;
@@ -68,6 +69,7 @@ use RZP\Models\Batch\Header as BatchHeader;
 use RZP\Models\Batch\Status as BatchStatus;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Mail\Base\Constants as MailConstants;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Merchant\AutoKyc\Escalations;
 use RZP\Models\Merchant\Detail\ActivationFlow;
@@ -82,6 +84,7 @@ use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\PayoutLink\Service as PayoutLinkService;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 use RZP\Services\Pagination\Entity as PaginationEntity;
+use RZP\Models\Merchant\Detail\Status as MerchantStatus;
 use RZP\Models\Merchant\Detail\Core as MerchantDetailCore;
 use RZP\Models\Merchant\Methods\DefaultMethodsForCategory;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
@@ -106,6 +109,10 @@ class Service extends Base\Service
 
     const DEFAULT_SUBMERCHANT_FETCH_LIMIT = 100;
 
+    const SECOND    = 1;
+    const MINUTE    = 60 * self::SECOND;
+    const HOUR      = 60 * self::MINUTE;
+
     const BOOTSTRAP_ACCESS_MAPS_CACHE_REQUEST_RULES = [
         'source'        => 'array',
         'source.mids'   => 'array|min:1|max:10000',
@@ -129,6 +136,8 @@ class Service extends Base\Service
     const SEGMENT_DATA_PG_ONLY                          = 'pg_only';
     const SEGMENT_DATA_PL_ONLY                          = 'pl_only';
     const SEGMENT_DATA_PP_ONLY                          = 'pp_only';
+
+    const DEFAULT_MIN_HOURS_TO_START_TICKET_CREATION_AFTER_ACTIVATION_FORM_SUBMISSION   =   24;
 
     /**
      * Creates a merchant and saves in database
@@ -5769,17 +5778,31 @@ class Service extends Base\Service
     {
         $isActivated = $this->merchant->isActivated();
 
-        $showPopup = $this->shouldShowSupportPopupOnDashboard($isActivated);
+        $showCreateTicketPopup = false;
+
+        if ($isActivated === false)
+        {
+            $showCreateTicketPopup = true;
+        }
 
         $response = [
             'show_chat'                                 =>      $this->canChatOnDashboard($isActivated),
-            'show_create_ticket_popup'                  =>      $showPopup
+            "show_create_ticket_popup"                  =>      $showCreateTicketPopup,
         ];
 
-        if ($showPopup === true )
+        $variant  = $this->app->razorx->getTreatment(
+            $this->merchant->getId(),
+            RazorxTreatment::SHOW_CREATE_TICKET_POPUP,
+            $this->app['rzp.mode'] ?? Mode::LIVE);
+
+        if ($variant === 'control')
         {
-            $response['no_of_days_for_activation']  =   $this->daysTakenForActivation();
+            return $response;
         }
+
+        $createTicketPopup = $this->getCreateTicketPopupOptions();
+
+        $response = array_merge($response, $createTicketPopup);
 
         return $response;
     }
@@ -5832,19 +5855,40 @@ class Service extends Base\Service
         return  false;
     }
 
-    protected function shouldShowSupportPopupOnDashboard($isActivated) : bool
+    protected function getCreateTicketPopupOptions() : array
     {
-        if ($isActivated === true)
+        $merchantDetails = $this->merchant->merchantDetail;
+
+        if ($this->merchant->isActivated() === true)
         {
-            return false;
+            return [
+                "show_create_ticket_popup" => false,
+                "cta_list"                 => [],
+                "message_body"             => "",
+            ];
         }
 
-        return true;
-    }
+        $activationStatus = $merchantDetails->getActivationStatus();
 
-    protected function daysTakenForActivation()
-    {
-        return MerchantConstants::NUMBER_OF_DAYS_TAKEN_FOR_ACTIVATION;
+        $activationProgress = $merchantDetails->getActivationProgress();
+
+        $formSubmissionDate = $merchantDetails->getSubmittedAt();
+
+        $isSubmitted = $this->merchant->merchantDetail->isSubmitted();
+
+        $dataForPopup = $this->getDataForCreateTicketPopup($activationStatus, $activationProgress, $isSubmitted);
+
+        $message    = ($dataForPopup[Constants::MESSAGE]) ?
+            __($dataForPopup[Constants::MESSAGE],['submission_at' => date("F j, Y",$formSubmissionDate)])
+            : "";
+
+        $response = [
+            "show_create_ticket_popup"  => $dataForPopup[Constants::SHOW_POPUP] ? $dataForPopup[Constants::SHOW_POPUP] : false,
+            "cta_list"                  => $dataForPopup[Constants::CTA_LIST] ? $dataForPopup[Constants::CTA_LIST] : [],
+            "message_body"              => $message
+        ];
+
+        return $response;
     }
 
     /**
@@ -5868,5 +5912,94 @@ class Service extends Base\Service
         }
 
         return $referrals;
+    }
+
+    protected function getDataForCreateTicketPopup($activationStatus, $activationProgress, bool $isSubmitted= false): array
+    {
+        $dataForPopup = [];
+
+        if (in_array($activationStatus,[MerchantStatus::UNDER_REVIEW, MerchantStatus::NEEDS_CLARIFICATION, MerchantStatus::REJECTED]) === true )
+        {
+            $functionName = "getPopupDataFor".studly_case($activationStatus);
+
+            $dataForPopup = $this->$functionName();
+        }
+        else if ($isSubmitted === false)
+        {
+            $activationProgressRanges = Constants::TICKET_CREATION_POPUP_DATA_FOR_ACTIVATION_PROGRESS_RANGES;
+
+            foreach ($activationProgressRanges as $activationProgressRange)
+            {
+                if ($activationProgress >= $activationProgressRange[Constants::MIN_ACTIVATION_PROGRESS] &&
+                    $activationProgress <= $activationProgressRange[Constants::MAX_ACTIVATION_PROGRESS])
+                {
+                    $dataForPopup = $activationProgressRange;
+                }
+            }
+        }
+
+        return $dataForPopup;
+}
+
+    /**
+     * @return int
+     */
+    protected function getMinTimeDiffToAllowCreateTicket(): int
+    {
+        $minTimeDiff = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::MIN_HOURS_TO_START_TICKET_CREATION_AFTER_ACTIVATION_FORM_SUBMISSION]);
+
+        if (empty($minTimeDiff) === true)
+        {
+            $minTimeDiff = self::DEFAULT_MIN_HOURS_TO_START_TICKET_CREATION_AFTER_ACTIVATION_FORM_SUBMISSION;
+        }
+
+        return $minTimeDiff;
+    }
+
+    protected function getPopupDataForUnderReview(): array
+    {
+        $l2FirstSubmissionDateTime = (new Detail\Service())->getFirstL2SubmissionDate();
+
+        $dataForUnderReview = Constants::TICKET_CREATION_POPUP_DATA_FOR_ACTIVATION_STATUS[MerchantStatus::UNDER_REVIEW];
+
+        $minTimeDiff = $this->getMinTimeDiffToAllowCreateTicket();
+
+        $differenceInSeconds = self::HOUR * $minTimeDiff;
+
+        $currentTimestamp = Carbon::now()->getTimestamp();
+
+        if ($differenceInSeconds < $currentTimestamp - $l2FirstSubmissionDateTime)
+        {
+            $dataForPopup = $dataForUnderReview[Constants::X_HOURS_AFTER_ACTIVATION_FORM_SUBMISSION];
+        }
+        else
+        {
+            $dataForPopup = $dataForUnderReview[Constants::X_HOURS_WITHIN_ACTIVATION_FORM_SUBMISSION];
+        }
+
+        return $dataForPopup;
+    }
+
+    protected function getPopupDataForNeedsClarification(): array
+    {
+        $isDedupe = (new Detail\DeDupe\Core)->isMerchantImpersonated($this->merchant);
+
+        $dataForNeedsClarification = Constants::TICKET_CREATION_POPUP_DATA_FOR_ACTIVATION_STATUS[MerchantStatus::NEEDS_CLARIFICATION];
+
+        if ($isDedupe === true)
+        {
+            $dataForPopup = $dataForNeedsClarification[Constants::DEDUPE_MERCHANT];
+        }
+        else
+        {
+            $dataForPopup = $dataForNeedsClarification[Constants::NON_DEDUPE_MERCHANT];
+        }
+
+        return $dataForPopup;
+    }
+
+    protected function getPopupDataForRejected(): array
+    {
+        return Constants::TICKET_CREATION_POPUP_DATA_FOR_ACTIVATION_STATUS[MerchantStatus::REJECTED][Constants::DEFAULT];
     }
 }

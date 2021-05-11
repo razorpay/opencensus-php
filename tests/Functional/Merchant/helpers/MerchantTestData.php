@@ -8034,4 +8034,35 @@ return [
             ],
         ],
     ],
+
+    'testMerchantSupportOptionDedupeMerchant'  =>  [
+
+        'request'       => [
+            'url'      => '/merchants/support/option/flags',
+            'method'   => \Requests::GET
+        ],
+
+        'response'       => [
+            'content' => [
+                "show_chat"                 =>  false,
+                "show_create_ticket_popup"  =>  false,
+                "message_body"              => "",
+                "cta_list"                  => [],
+            ],
+        ],
+    ],
+
+    'testMerchantSupportOptionOldFlow'    =>  [
+
+        'request'       => [
+            'url'      => '/merchants/support/option/flags',
+            'method'   => \Requests::GET
+        ],
+
+        'response'       => [
+            'content' => [
+                "show_create_ticket_popup"  =>  false,
+            ],
+        ],
+    ],
 ];

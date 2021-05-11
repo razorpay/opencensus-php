@@ -57,7 +57,7 @@ class Core extends Base\Core
 
         $this->elfin           = $this->app['elfin'];
         $this->plHostedBaseUrl = $this->app['config']->get('app.payment_link_hosted_base_url');
-        $this->merchantRiskService = new MerchantRiskClient();
+        $this->merchantRiskService = $this->app['merchantRiskClient'];
     }
 
     /**
