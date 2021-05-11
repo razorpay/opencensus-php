@@ -36,7 +36,6 @@ import { closeModal, openModal } from 'merchant_common/reducers/modals';
     closeModal,
   },
 )
-
 export default class App extends Component {
   pendingRequests = [];
 

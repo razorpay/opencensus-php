@@ -480,6 +480,10 @@ export default class User {
     return this.isFeatureEnabled('ES_ON_DEMAND');
   }
 
+  get isSupportDetails2FAEnabled() {
+    return this.getExpStatus('support_details_2FA');
+  }
+
   get isFdTicketsEnabled() {
     return this.getExpStatus('view_fd_tickets');
   }

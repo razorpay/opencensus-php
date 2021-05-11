@@ -1595,6 +1595,7 @@ class Service extends Base\Service
             'pl_description_required',
             'pp_description_required',
             'pure_platform_signup',
+            'support_details_2FA',
             'rx_icici_ca_onboarding',
             'show_csat_survey',
             'rx_mobile_app_announcement',

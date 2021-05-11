@@ -13,13 +13,23 @@ import { required, isMobile, isEmail, isUrlLenient, isPhone } from 'common/utils
 import InputField from 'common/ui/Forms/InputField';
 import { autoPrefixUrls, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
+import VerifyOTP from './VerifyOTPScreen';
 
-@connect(null, { showNotification, createSupportDetail })
+@connect(
+  (state) => {
+    return {
+      user: state.session.user,
+    };
+  },
+  { showNotification, createSupportDetail },
+)
 @RTracking(() => window.rzpQ.component('MerchantDataCollectionModal'))
 @reduxForm({
   form: 'addSupportDetails',
 })
 export default class MerchantDataCollectionModal extends Component {
+  state = { isVerifying: false, newEmail: '', newContact: '', newUrl: '' };
+
   constructor(props) {
     super(props);
     const { supportDetail, initialize } = props;
@@ -31,6 +41,15 @@ export default class MerchantDataCollectionModal extends Component {
       });
   }
 
+  resetState = () => {
+    this.setState({
+      isVerifying: false,
+      newEmail: '',
+      newPhone: '',
+      newUrl: '',
+    });
+  };
+
   onSubmit = (props) => {
     const {
       tracking,
@@ -38,6 +57,8 @@ export default class MerchantDataCollectionModal extends Component {
       closeModal,
       supportModal,
       createSupportDetail,
+      supportDetail,
+      user,
     } = this.props;
 
     const { email, url, phone } = props;
@@ -64,6 +85,20 @@ export default class MerchantDataCollectionModal extends Component {
     }
     const newurl = autoPrefixUrls(url);
 
+    if (
+      user.isSupportDetails2FAEnabled &&
+      phone &&
+      /[789][0-9]{9}/.test(phone) &&
+      phone !== supportDetail.data.phone /* || email !== supportDetail.data.email */
+    ) {
+      this.setState({
+        newEmail: email,
+        newPhone: phone,
+        newUrl: newurl,
+        isVerifying: true,
+      });
+      return;
+    }
     return createSupportDetail({ email, url: newurl, phone })
       .then((res) => {
         if (res.success && supportModal) {
@@ -111,8 +146,18 @@ export default class MerchantDataCollectionModal extends Component {
   }
 
   render() {
-    const { closeModal, handleSubmit } = this.props;
-    return (
+    const { closeModal, handleSubmit, supportDetail } = this.props;
+    const { isVerifying, newEmail, newPhone, newUrl } = this.state;
+    return isVerifying ? (
+      <VerifyOTP
+        closeModal={closeModal}
+        phone={newPhone}
+        email={newEmail}
+        url={newUrl}
+        supportDetail={supportDetail}
+        reset={this.resetState}
+      />
+    ) : (
       <div className="support-modal-content">
         <div className="merchant-heading">
           Support details
