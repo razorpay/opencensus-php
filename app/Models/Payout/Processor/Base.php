@@ -2017,15 +2017,9 @@ class Base extends BaseCore
     {
         if ($this->isPayoutServiceIfApplicable($input) === true)
         {
-            $fundAccountId = $input[Payout\Entity::FUND_ACCOUNT_ID];
-
-            /** @var FundAccount\Entity $fundAccount */
-            $fundAccount = $this->repo->fund_account->findByPublicIdAndMerchant($fundAccountId, $this->merchant);
-
             $input[Balance\Entity::ACCOUNT_NUMBER] = $this->balance->getAccountNumber();
 
-            if (($this->balance->getAccountType() === AccountType::SHARED) and
-                ($fundAccount->account->getEntity() !== Entity::CARD))
+            if ($this->balance->getAccountType() === AccountType::SHARED)
             {
                 $response = $this->payoutCreateServiceClient->createPayoutViaMicroservice($input, $this->merchant->getId());
 

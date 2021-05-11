@@ -124,7 +124,6 @@ class PayoutServiceTest extends TestCase
                     "status"            =>   $status,
                     "purpose"           =>   "refund",
                     "utr"               =>   "",
-                    "mode"              =>   "IMPS",
                     "reference_id"      =>   null,
                     "narration"         =>   "test Merchant Fund Transfer",
                     "batch_id"          =>   "",
@@ -141,7 +140,7 @@ class PayoutServiceTest extends TestCase
     }
 
     // Check payout Create Entry func on processor base
-    public function testCreatePayoutEntry()
+    public function testCreatePayoutEntry($mode = 'IMPS')
     {
         $this->ba->appAuth();
 
@@ -151,6 +150,7 @@ class PayoutServiceTest extends TestCase
             ])->first();
 
         $this->testData[__FUNCTION__]['request']['content']['balance_id'] = $balance->getId();
+        $this->testData[__FUNCTION__]['request']['content']['mode'] = $mode;
 
         $this->startTest();
 
@@ -160,9 +160,9 @@ class PayoutServiceTest extends TestCase
     }
 
     // Check payout Create transaction func on processor base
-    public function testCreatePayoutServiceTransaction()
+    public function testCreatePayoutServiceTransaction($mode = 'IMPS')
     {
-        $this->testCreatePayoutEntry();
+        $this->testCreatePayoutEntry($mode);
 
         $this->ba->appAuth();
 
@@ -174,9 +174,9 @@ class PayoutServiceTest extends TestCase
     }
 
     // Check payout Create fta func on processor base
-    public function testCreatePayoutServiceFtaCreation()
+    public function testCreatePayoutServiceFtaCreation($mode = 'IMPS')
     {
-        $this->testCreatePayoutServiceTransaction();
+        $this->testCreatePayoutServiceTransaction($mode);
 
         $this->ba->appAuth();
 
@@ -418,5 +418,74 @@ class PayoutServiceTest extends TestCase
         $payout->reload();
 
         $this->assertEquals('created', $payout->getStatus());
+    }
+
+    public function testCreatePayoutForCard(): array
+    {
+        $this->fixtures->edit(
+            'fund_account',
+            '100000000000fa',
+            [
+                'account_type' => 'card',
+                'source_id'    => '1000001contact',
+                'source_type'  => 'contact',
+                'account_id'   => '100000000lcard',
+                'active'       => 1,
+            ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::S2S,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->mockPayoutServiceCreate();
+
+        $this->testCreatePayoutServiceFtaCreation('NEFT');
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        // On private auth, payout.user_id should be null
+        $this->assertNull($payout['user_id']);
+
+        // Verify attempt entity
+        $this->assertEquals($payout['id'], $payoutAttempt['source']);
+        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
+        $this->assertEquals('card_100000000lcard', 'card_' . $payoutAttempt['card_id']);
+        $this->assertEquals($payout['channel'], 'yesbank');
+
+        // Verify transaction entity
+        $txn = $this->getLastEntity('transaction', true);
+        $txnId = str_after($txn['id'], 'txn_');
+
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
+        $this->assertNotNull($txn['balance_id']);
+        $this->assertNotNull($txn['posted_at']);
+
+        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true);
+
+        $expectedBreakup = [
+            'name'            => "payout",
+            'transaction_id'  => $txnId,
+            'pricing_rule_id' => "Bbg7cl6t6I3XA5",
+            'percentage'      => null,
+            'amount'          => 500,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+
+        return $payout;
     }
 }
