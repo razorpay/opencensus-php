@@ -179,40 +179,25 @@ export const parameters = [
     description: 'Card IIN number',
     id: 4,
     values: [],
-    operators: getExpStatus('optimizer_bin_number_op_in')
-      ? {
-          '==': {
-            type: 'input',
-            number: true,
-          },
-          in: {
-            multiple: true,
-            type: 'input',
-            number: true,
-          },
-          starting_with: {
-            type: 'input',
-            number: true,
-          },
-          ending_with: {
-            type: 'input',
-            number: true,
-          },
-        }
-      : {
-          '==': {
-            type: 'input',
-            number: true,
-          },
-          starting_with: {
-            type: 'input',
-            number: true,
-          },
-          ending_with: {
-            type: 'input',
-            number: true,
-          },
-        },
+    operators: {
+      '==': {
+        type: 'input',
+        number: true,
+      },
+      in: {
+        multiple: true,
+        type: 'input',
+        number: true,
+      },
+      starting_with: {
+        type: 'input',
+        number: true,
+      },
+      ending_with: {
+        type: 'input',
+        number: true,
+      },
+    },
     type: 'numeric',
   },
   {

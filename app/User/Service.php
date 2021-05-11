@@ -1122,7 +1122,7 @@ class Service extends Base\Service
         $request = new \App\Admin\ApiRequestAny($options);
 
         list($error, $data) = $request->processInput($input)->send($route, $httpVerb);
-        
+
         $genericUser = null;
 
         if (empty($error) === true)
@@ -1596,7 +1596,6 @@ class Service extends Base\Service
             'pp_description_required',
             'pure_platform_signup',
             'rx_icici_ca_onboarding',
-            'optimizer_bin_number_op_in',
             'show_csat_survey',
             'rx_mobile_app_announcement',
             'rx_tally_payouts_enabled'
