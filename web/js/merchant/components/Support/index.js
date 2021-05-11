@@ -29,26 +29,30 @@ export default class Support extends Component {
     notifyCount: 0,
     supportFlags: {
       show_chat: true,
+      message_body: null,
+      cta_list: [],
       show_create_ticket_popup: false,
       no_of_days_for_activation: '3 to 5',
+      loaded: false,
     },
   };
 
   componentDidMount() {
     this.props.checkCallEligibility();
     this.bindEvents();
-    if (this.props.user.isNewSupportChangesEnabled) {
-      merchantFetch({
-        url: 'merchants/support/option/flags',
-      }).then((res) => {
-        this.setState({
-          supportFlags: {
-            no_of_days_for_activation: '3 to 5',
-            ...res.data,
-          },
-        });
+    merchantFetch({
+      url: 'merchants/support/option/flags',
+    }).then((res) => {
+      this.setState({
+        supportFlags: {
+          no_of_days_for_activation: '3 to 5',
+          cta_list: ['continue_with_ticket', 'faqs'],
+          message_body: `Your account is currently not activated. Our team is working hard to fast track your activation and it can take ${`3 to 5`} business days. If you have any other concerns, please feel free to raise a ticket.`,
+          ...res.data,
+          loaded: true,
+        },
       });
-    }
+    });
   }
 
   bindEvents = () => {

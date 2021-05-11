@@ -161,6 +161,11 @@ div[class$="feedback_minimized_label"]
 
 .write-to-us
   padding: 20px
+  .i-close
+    position: absolute;
+    top: 8px;
+    cursor: pointer;
+    right: 5px;
   .write-to-us-heading-container
     margin:-20px -20px 20px -20px
     height: 100px;
@@ -177,6 +182,15 @@ div[class$="feedback_minimized_label"]
   .write-to-us-button-container
     display: flex
     justify-content: space-between
+    flex-wrap: wrap;
+
+    .btn
+      height: 32px;
+      width: 46%;
+      padding: 0px;
+      margin: 2%;
+      font-size: 13px;
+
     &.thanks-button, &.continue-button
       border:none
       border-radius: 2px

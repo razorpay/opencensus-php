@@ -1,37 +1,81 @@
 import react from 'react';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
+import { withRouter, RouteComponentProps } from 'react-router-dom';
 
-function WriteToUsPopup({ businessName, supportFlags, closeModal, rzpTicketSystem, id }) {
-  const msg = `Your account is currently not activated. Our team is working hard to fast track your activation and it can take ${supportFlags.no_of_days_for_activation} business days. If you have any other concerns, please feel free to raise a ticket.`;
+function WriteToUsPopup({ businessName, supportFlags, closeModal, rzpTicketSystem, id, history }) {
+  let data = {
+    cta_list: supportFlags.cta_list,
+    message_body: supportFlags.message_body,
+  };
+  const msg = data.message_body;
   const handleContinueWithTicketClick = () => {
     closeModal();
     rzpTicketSystem.openModal(`#${id}`);
   };
+  const handleFaqs = () => {
+    window.open('https://razorpay.com/knowledgebase/#merchant', '_blank');
+  };
+
+  const MAP = {
+    continue_with_ticket: (
+      <button className="btn btn-secondary " type="button" onClick={handleContinueWithTicketClick}>
+        Continue with Ticket
+      </button>
+    ),
+    complete_activation_form: (
+      <button
+        className="btn btn-primary "
+        type="button"
+        onClick={() => {
+          history.push('/onboarding/steps');
+          closeModal();
+        }}
+      >
+        Complete KYC
+      </button>
+    ),
+    fill_activation_form: (
+      <button
+        className="btn btn-primary "
+        type="button"
+        onClick={() => {
+          history.push('/onboarding/steps');
+          closeModal();
+        }}
+      >
+        Complete KYC
+      </button>
+    ),
+    needs_clarification: (
+      <button
+        className="btn btn-primary "
+        type="button"
+        onClick={() => {
+          history.push('activation');
+          closeModal();
+        }}
+      >
+        Complete KYC
+      </button>
+    ),
+    faqs: (
+      <button className="btn btn-primary" type="button" onClick={handleFaqs}>
+        Browse FAQs
+      </button>
+    ),
+  };
+  data.cta_list = data.cta_list.map((cta) => MAP[cta]);
   return (
     <div className="write-to-us">
       <div className="write-to-us-heading-container">
-        <h3 className="write-to-us-heading-container write-to-us-heading">Hey {businessName}</h3>
+        <h3 className="write-to-us-heading-container write-to-us-heading">
+          Hey {businessName} <i onClick={closeModal} class="i i-close" />
+        </h3>
       </div>
       <p className="write-to-us-content">{msg}</p>
-      <div className="write-to-us-button-container">
-        <Button
-          className="btn btn-secondary write-to-us-button-container continue-button"
-          type="button"
-          onClick={handleContinueWithTicketClick}
-        >
-          Continue with Ticket
-        </Button>
-
-        <Button
-          className="btn btn-primary write-to-us-button-container thanks-button"
-          type="button"
-          onClick={closeModal}
-        >
-          Thanks
-        </Button>
-      </div>
+      <div className="write-to-us-button-container">{data.cta_list}</div>
     </div>
   );
 }
 
-export default WriteToUsPopup;
+export default withRouter(WriteToUsPopup);

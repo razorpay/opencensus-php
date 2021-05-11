@@ -46,7 +46,11 @@ class SupportBody extends Component {
         'Content-Type': 'application/json',
       },
     };
-    return merchantFetch(params).then((r) => this.setState({ timings: r.data }));
+    return merchantFetch(params).then((r) => {
+      if (r.success) {
+        this.setState({ timings: r.data });
+      }
+    });
   }
 
   handleClick = (id) => {
@@ -188,7 +192,12 @@ class SupportBody extends Component {
             myRole="owner admin"
             additionalCondition={(user) => !user.isNewGrievanceFlowEnabled}
           >
-            <li class="support-item p-all ticket" onClick={() => handleClick('ticket')}>
+            <li
+              class={`support-item p-all ticket ${
+                !this.props.supportFlags.loaded ? 'disabled' : ''
+              }`}
+              onClick={() => handleClick('ticket')}
+            >
               Have a query?
               <small class="help-block">For integration, account and payment issues</small>
             </li>
@@ -197,7 +206,12 @@ class SupportBody extends Component {
             myRole="owner admin"
             additionalCondition={(user) => user.isNewGrievanceFlowEnabled}
           >
-            <li class="support-item p-all ticket" onClick={() => handleClick('tickets')}>
+            <li
+              class={`support-item p-all ticket ${
+                !this.props.supportFlags.loaded ? 'disabled' : ''
+              }`}
+              onClick={() => handleClick('tickets')}
+            >
               Have a query?
               <small class="help-block">Check existing query/raise a new one</small>
             </li>
