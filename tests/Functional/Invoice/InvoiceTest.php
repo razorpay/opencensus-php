@@ -2283,7 +2283,7 @@ class InvoiceTest extends TestCase
 
         $this->createDraftInvoice(['status' => 'expired']);
 
-        $this->callViewUrlAndMakeAssertions();
+        $this->callViewUrlAndMakeAssertions(self::TEST_INV_ID,200, '<h2>Error</h2>');
 
     }
 

@@ -10,6 +10,7 @@ use ApiResponse;
 use RZP\Constants;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Invoice\Type;
 use RZP\Models\Invoice\Entity;
@@ -435,6 +436,18 @@ class InvoiceController extends Controller
         if (isset($data['error']) === true)
         {
             $view = 'public.error';
+
+            if ((isset($data['error']['metadata']) === true) &&
+                (isset($data['error']['metadata']['use_end_state_format']) === true))
+            {
+                $view = 'invoice.payment_link_end_state';
+
+                $data['error']['code'] = 'end_state';
+
+                $data['error'] += $data['error']['metadata'];
+
+                unset($data['error']['metadata']);
+            }
         }
 
         //

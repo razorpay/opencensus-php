@@ -7,9 +7,11 @@ use Carbon\Carbon;
 
 use App;
 use RZP\Base;
+use RZP\Error\Error;
 use RZP\Models\Batch;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
+use RZP\Models\Feature;
 use RZP\Models\Customer;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -1012,6 +1014,10 @@ class Validator extends Base\Validator
         {
             throw new BadRequestValidationFailureException("$label with id $id is cancelled");
         }
+        else if (($invoice->isExpired() === true) and ($invoice->isTypeInvoice() === true))
+        {
+            throw new BadRequestValidationFailureException("$label with id $id is expired");
+        }
         // Link partially paid past expiry with payments blocked (feature: BLOCK_PL_PAY_POST_EXPIRY)
         // Should act like expired for these cases so throwing error
         else if (($invoice->isPartiallyPaid() === true) and
@@ -1026,7 +1032,105 @@ class Validator extends Base\Validator
         {
             throw new BadRequestValidationFailureException("This account is suspended");
         }
-        // Expired: All views show custom torn or some kind of page and need data
+
+        $app = App::getFacadeRoot();
+
+        $mode = $app['rzp.mode'];
+
+        $variant = app()->razorx->getTreatment(
+            $invoice->getMerchantId(),
+            Merchant\RazorxTreatment::PAYMENT_LINK_END_STATE_VIEW_CHANGE,
+            $mode
+        );
+
+        if (($variant === 'on') && ($invoice->isTypeLink() === true))
+        {
+            if ($invoice->isExpired() === true)
+            {
+                $exception = new BadRequestException(ErrorCode::BAD_REQUEST_ERROR,
+                    null,
+                    null,
+                    'this payment link was expired.');
+
+                $exception->getError()->setMetadata($this->getErrorMetaDataForEndState($invoice));
+
+                throw $exception;
+            }
+
+            if ($invoice->isCancelled() === true)
+            {
+                $exception = new BadRequestException(ErrorCode::BAD_REQUEST_ERROR,
+                    null,
+                    null,
+                    'this payment link was cancelled.');
+
+                $exception->getError()->setMetadata($this->getErrorMetaDataForEndState($invoice));
+
+                throw $exception;
+            }
+        }
+    }
+
+    protected function getErrorMetaDataForEndState(Entity $invoice)
+    {
+        $app = App::getFacadeRoot();
+
+        $mode = $app['rzp.mode'];
+
+        $repo = $app['repo'];
+
+        $description = 'this payment link was ';
+
+        if ($invoice->isExpired() === true)
+        {
+            $description .= 'expired.';
+        }
+
+        if ($invoice->isCancelled() === true)
+        {
+            $description .= 'cancelled.';
+        }
+
+        $returnArray = [
+            'use_end_state_format' => true,
+            'description'          => $description,
+            'customerMsg'          => 'For any queries, please contact',
+            'merchant_name'        => $invoice->getMerchantLabel(),
+        ];
+
+        $merchant = $invoice->merchant;
+
+        $supportDetails = $repo->merchant_email->getEmailByType(Merchant\Email\Type::SUPPORT, $merchant->getId());
+
+        if ($supportDetails !== null)
+        {
+            $supportDetails = $supportDetails->toArrayPublic();
+
+            $returnArray += [
+                'support_email'  => $supportDetails[Merchant\Email\Entity::EMAIL],
+                'support_mobile' => $supportDetails[Merchant\Email\Entity::PHONE]
+            ];
+        }
+
+        $exemptCustomerFlagging = $merchant->isFeatureEnabled(Feature\Constants::APPS_EXEMPT_CUSTOMER_FLAGGING);
+
+        if (($exemptCustomerFlagging === false) && ($mode === Mode::LIVE))
+        {
+            $reportBaseUrl = $app['config']->get('app.customer_flagging_report_url');
+
+            $params = http_build_query([
+                'e'  => base64_encode($invoice->getPublicId()),
+                's'  => base64_encode('hosted'),
+            ]);
+
+            $reportUrl = $reportBaseUrl . $params;
+
+            $returnArray += [
+                'report_link_url' => $reportUrl,
+            ];
+        }
+
+      return $returnArray;
     }
 
     /**
