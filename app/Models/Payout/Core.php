@@ -2369,7 +2369,7 @@ class Core extends Base\Core
 
         $ftaFailureReason  = $input[Attempt\Constants::FAILURE_REASON] ?? null;
 
-        switch ( $status )
+        switch ($status)
         {
             case Status::PROCESSED:
                 $this->handlePayoutProcessed($payout);
@@ -2390,6 +2390,28 @@ class Core extends Base\Core
         }
 
         return $payout;
+    }
+
+    public function updateFTAOfPayoutManually(Entity $payout, array $input)
+    {
+        /** @var Attempt\Entity $fta */
+        $fta = $payout->fundTransferAttempts()->first();
+
+        // Only updating fta failure reason if payout failure reason was updated during this request.
+        if ((empty($input[Entity::FAILURE_REASON]) === false) and
+            ($payout->wasChanged(Entity::FAILURE_REASON) === true))
+        {
+            $fta->setFailureReason($input[Entity::FAILURE_REASON]);
+        }
+
+        // Only updating fta status if payout status was updated during this request.
+        if ((empty($input[Entity::STATUS]) === false) and
+            ($payout->wasChanged(Entity::STATUS) === true))
+        {
+            $fta->setStatus($input[Entity::STATUS]);
+        }
+
+        $this->repo->fund_transfer_attempt->saveOrFail($fta);
     }
 
     protected function processPendingPayout(Entity $payout, bool $queueFlag): Entity

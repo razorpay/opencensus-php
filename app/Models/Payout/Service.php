@@ -26,7 +26,6 @@ use RZP\Models\Admin\Permission;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Application\ApplicationMerchantMaps;
-use RZP\Models\FundTransfer\Mode as FundTransferMode;
 use RZP\Models\Payout\BatchHelper as PayoutBatchHelper;
 use RZP\Models\FundAccount\Service as FundAccountService;
 use RZP\Models\FundAccount\BatchHelper as FundAccountHelper;
@@ -1466,11 +1465,12 @@ class Service extends Base\Service
 
     public function updatePayoutStatusManually(string $id, array $input)
     {
+        /** @var Entity $payout */
         $payout = $this->repo->payout->findOrFail($id);
 
         (new Validator)->validateInput(Validator::PAYOUT_STATUS_MANUAL, $input);
 
-        $payout = $this->core->updatePayoutStatusManually($payout, $input);
+        $payout = $this->updatePayoutAndFTAManually($payout, $input);
 
         return $payout->toArrayPublic();
     }
@@ -1656,7 +1656,7 @@ class Service extends Base\Service
         {
             try
             {
-                $payout = (new Core)->updatePayoutStatusManually($payout, $input);
+                $this->updatePayoutAndFTAManually($payout, $input);
 
                 $processedIds[] = $payout->getId();
             }
@@ -1680,5 +1680,21 @@ class Service extends Base\Service
             'processed_ids' => $processedIds,
             'failed_ids'    => $failedIds,
         ];
+    }
+
+    protected function updatePayoutAndFTAManually(Entity $payout, array $input) : Entity
+    {
+        $payout = $this->repo->transaction(
+            function() use ($payout, $input)
+            {
+                /** @var Entity $payout */
+                $payout = $this->core->updatePayoutStatusManually($payout, $input);
+
+                $this->core->updateFTAOfPayoutManually($payout, $input);
+
+                return $payout;
+            });
+
+        return $payout;
     }
 }

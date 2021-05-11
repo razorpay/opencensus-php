@@ -6306,6 +6306,11 @@ class PayoutTest extends OAuthTestCase
 
         $payout = $this->getDbLastEntity('payout');
 
+        $fta = $payout->fundTransferAttempts()->first();
+
+        // Assert that fta status was created initially.
+        $this->assertEquals('created', $fta->getStatus());
+
         $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
 
         $request = [
@@ -6320,9 +6325,15 @@ class PayoutTest extends OAuthTestCase
 
         $this->makeRequestAndGetContent($request);
 
-        $payout = $this->getDbLastEntity('payout');
+        $payout->reload();
 
-        $this->assertEquals('processed', $payout['status']);
+        // Assert that payout status was updated.
+        $this->assertEquals('processed', $payout->getStatus());
+
+        $fta->reload();
+
+        // Assert that fta status was also updated along with payout status.
+        $this->assertEquals('processed', $fta->getStatus());
     }
 
     public function testUpdatePayoutToSomeIntermediateStatus()
@@ -6331,11 +6342,28 @@ class PayoutTest extends OAuthTestCase
 
         $payout = $this->getDbLastEntity('payout');
 
+        $fta = $payout->fundTransferAttempts()->first();
+
+        // Assert that fta status was created initially.
+        $this->assertEquals('created', $fta->getStatus());
+
         $this->testData[__FUNCTION__]['request']['url'] = '/payouts/' . $payout['id'] . '/manual/status';
 
         $this->ba->adminAuth();
 
         $this->startTest();
+
+        $payout->reload();
+
+        // Assert that payout status was not updated.
+        $this->assertEquals('created', $payout->getStatus());
+
+        $fta->reload();
+
+        $fta = $payout->fundTransferAttempts()->first();
+
+        // Assert that fta status was also not updated.
+        $this->assertEquals('created', $fta->getStatus());
     }
 
     public function testUpdatePayoutStatusManuallyToReversed()
@@ -6343,6 +6371,11 @@ class PayoutTest extends OAuthTestCase
         $this->testCreatePayout();
 
         $payout = $this->getDbLastEntity('payout');
+
+        $fta = $payout->fundTransferAttempts()->first();
+
+        // Assert that fta status was created initially.
+        $this->assertEquals('created', $fta->getStatus());
 
         $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
 
@@ -6358,9 +6391,15 @@ class PayoutTest extends OAuthTestCase
 
         $this->makeRequestAndGetContent($request);
 
-        $payout = $this->getDbLastEntity('payout');
+        $payout->reload();
 
-        $this->assertEquals('processed', $payout['status']);
+        // Assert that payout status was updated to processed.
+        $this->assertEquals('processed', $payout->getStatus());
+
+        $fta->reload();
+
+        // Assert that fta status was also updated along with payout status to processed.
+        $this->assertEquals('processed', $fta->getStatus());
 
         $request = [
             'url'     => '/payouts/' . $payout['id'] . '/manual/status',
@@ -6375,12 +6414,23 @@ class PayoutTest extends OAuthTestCase
 
         $this->makeRequestAndGetContent($request);
 
-        $payout = $this->getDbLastEntity('payout');
+        $payout->reload();
 
-        $this->assertEquals('reversed', $payout['status']);
+        // Assert that payout status was updated.
+        $this->assertEquals('reversed', $payout->getStatus());
 
+        // Assert that payout failure reason was also updated.
+        $this->assertEquals('payout reversed at bank', $payout['failure_reason']);
+
+        $fta->reload();
+
+        // Assert that fta status was also updated along with payout status.
+        $this->assertEquals('reversed', $fta->getStatus());
+
+        // Assert that fta failure reason was also updated along with payout failure reason.
         $this->assertEquals('payout reversed at bank', $payout['failure_reason']);
     }
+
     // check trimming in payout creation when experiment is not on for merchant.
     public function testCreatePayoutWithUnnecessarySpacesTrimmedInPurpose()
     {
@@ -10917,9 +10967,19 @@ class PayoutTest extends OAuthTestCase
 
         $payout1 = $this->getDbLastEntity('payout');
 
+        $fta1 = $payout1->fundTransferAttempts()->first();
+
+        // Assert that fta status was created initially.
+        $this->assertEquals('created', $fta1->getStatus());
+
         $this->testCreatePayout();
 
         $payout2 = $this->getDbLastEntity('payout');
+
+        $fta2 = $payout2->fundTransferAttempts()->first();
+
+        // Assert that fta status was created initially.
+        $this->assertEquals('created', $fta2->getStatus());
 
         $this->fixtures->edit('payout', $payout1['id'], ['status' => 'initiated']);
 
@@ -10938,13 +10998,19 @@ class PayoutTest extends OAuthTestCase
 
         $this->makeRequestAndGetContent($request);
 
-        $updatePayout1 = $this->getDbEntityById('payout', $payout1['id']);
+        $payout1->reload();
+        $payout2->reload();
 
-        $updatePayout2 = $this->getDbEntityById('payout', $payout2['id']);
+        // Assert payout status was updated.
+        $this->assertEquals('processed', $payout1->getStatus());
+        $this->assertEquals('processed', $payout2->getStatus());
 
-        $this->assertEquals('processed', $updatePayout1['status']);
+        $fta1->reload();
+        $fta2->reload();
 
-        $this->assertEquals('processed', $updatePayout2['status']);
+        // Assert that payout's fta's status was also updated.
+        $this->assertEquals('processed', $fta1->getStatus());
+        $this->assertEquals('processed', $fta2->getStatus());
     }
 
 

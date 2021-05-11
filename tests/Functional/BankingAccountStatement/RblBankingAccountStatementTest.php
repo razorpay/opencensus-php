@@ -5128,6 +5128,11 @@ class RblBankingAccountStatementTest extends TestCase
 
         $payout = $this->getDbLastEntity('payout');
 
+        $fta = $payout->fundTransferAttempts()->first();
+
+        // Assert that fta status was created initially.
+        $this->assertEquals('created', $fta->getStatus());
+
         $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
 
         $request = [
@@ -5145,7 +5150,12 @@ class RblBankingAccountStatementTest extends TestCase
 
         $payout = $this->getDbLastEntity('payout');
 
-        $this->assertEquals('failed', $payout['status']);
+        $this->assertEquals('failed', $payout->getStatus());
+
+        $fta->reload();
+
+        // Assert that fta status was also updated along with payout status.
+        $this->assertEquals('failed', $fta->getStatus());
     }
 
     // Explanation for the test case:
