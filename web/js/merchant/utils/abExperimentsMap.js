@@ -31,6 +31,27 @@ export default {
     // prod experiment ids
     'H725exSfQ8ZAPz',
   ],
+  checkout_rewards_enabled: [
+    // beta experiemnt ids
+    'H7n314X38y1fTx',
+
+    // prod experiment ids
+    'H950h7TcJuvqvv',
+  ],
+  checkout_rewards_interested: [
+    // beta experiemnt ids
+    'H7n4nn2G4leJ0H',
+
+    // prod experiment ids
+    'H951htxXarQetM',
+  ],
+  checkout_rewards_live: [
+    // beta experiemnt ids
+    'H90LoL4UH7mDUC',
+
+    // prod experiment ids
+    'H952mIOniGOgyb',
+  ],
   announcement_text_experiment: [
     // beta experiment ids
     'H7S9OMKVGV53ZZ',

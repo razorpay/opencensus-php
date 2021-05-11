@@ -403,6 +403,7 @@ export default class WhatsNew extends Component {
       'whats-new-mar21-upiintentios-gtm',
       'trusted-badge-mar2021',
       'trusted-badge-enabled',
+      'whats-new-april21-m2mrewards-gtm',
     ];
 
     let cardsList = window.notifications.map((card, idx) => (

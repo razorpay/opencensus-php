@@ -318,6 +318,43 @@ class AnalyticsDesktop extends Component {
               </AnnouncementBanner>
             )}
 
+          {(user.isCheckoutRewardsEnabled ||
+            user.isCheckoutRewardsInterested ||
+            user.isCheckoutRewardsLive) && (
+            <AnnouncementBanner title="Checkout Rewards" theme="warning">
+              Introducing Checkout Rewards for your customers!{' '}
+              <Link
+                to="/checkout-rewards"
+                style={{ cursor: 'pointer' }}
+                onClick={() => {
+                  const version = user.isCheckoutRewardsEnabled
+                    ? 'v1'
+                    : user.isCheckoutRewardsInterested
+                    ? 'v2'
+                    : 'v3';
+
+                  analyticsTrack({
+                    objectName: 'banner',
+                    actionName: 'clicked',
+                    screen: 'home page',
+                    properties: {
+                      hyperlinkClicked: user.isCheckoutRewardsLive ? 'See Rewards' : 'Try Now',
+                      title: 'Checkout Rewards',
+                      version,
+                      campaign: 'M2M Rewards',
+                      version_description: 'Cross Selling M2M rewards feature',
+                      target_product_feature: 'Checkout Rewards',
+                      target_metric: 'Adoption',
+                      ...getCommonAnalyticsProperties(window.rzp_user),
+                    },
+                  });
+                }}
+              >
+                <strong>{user.isCheckoutRewardsLive ? 'See Rewards' : 'Try Now'}</strong>
+              </Link>{' '}
+            </AnnouncementBanner>
+          )}
+
           {this.isCaptureSettingsDefault(items) && user.instantActivation.isWhitelistFlow === true && (
             <AnnouncementBanner title="Capture Settings" theme="success" canBeClosed={true}>
               Currently all payments with order id are being captured by default, click{' '}

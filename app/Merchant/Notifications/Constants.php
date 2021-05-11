@@ -744,6 +744,34 @@ class Constants
             'end_ts'      => 1620432000,
             'filters'     => ['splitz_experiments' => ['ANNOUNCEMENT_DX_CSAT_APRIL2021_SPLITZ']],
         ],
+        [
+            'id'          => 'whats-new-april21-m2mrewards-gtm',
+            'title'       => 'Introducing Checkout Rewards! 🎁',
+            'description' => 'Give your customers exciting rewards with every purchase! Watch your sales grow with higher conversions and higher repeat purchase.',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/checkout_rewards.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Try Now',
+                    'url'   => '/checkout-rewards',
+                ],
+                [
+                    'type'  => 'primary-inverted',
+                    'label' => 'Read More',
+                    'id'    => 'announcement-details-l2',
+                    'url'   => '/announcements/whats-new-april21-m2mrewards-gtm/'
+                ],
+            ],
+            'campaign' => 'M2M Rewards',
+            'version_description' => 'Cross Selling M2M rewards feature',
+            'target_product_feature'=> 'Checkout Rewards',
+            'target_metric' => 'Adoption',
+            'start_ts'    => 1620604800,
+            'end_ts'      => 1628553600,
+            'filters'     => [
+                'splitz_experiments' => ['ANNOUNCEMENT_CHECKOUT_REWARDS_ENABLED_SPLITZ','ANNOUNCEMENT_CHECKOUT_REWARDS_INTERESTED_SPLITZ','ANNOUNCEMENT_CHECKOUT_REWARDS_LIVE_SPLITZ']
+            ],
+        ],
     ];
 
     //insert data in data field, that is dynamically loaded based on the sub-campaign
@@ -813,6 +841,87 @@ class Constants
                 'experiments'         => ['nitro_midmarket_mumbai_v1'],
             ],
         ],
+        'whats-new-april21-m2mrewards-gtm'=> [
+            [
+                'data' => [
+                    'version' => 'v1',
+                    'l2_content'  => [
+                        'content'     => "<div class='paragraph'> <b>What are Checkout Rewards?</b><p> Checkout Rewards are essentially FREE rewards that your customers will receive upon completing each successful payment from your website/app.</p><div class='image'> <img src='https://cdn.razorpay.com/static/assets/whats-new/checkout_rewards.svg' /></div></div><div> <b>How does Checkout Rewards work?</b><p>The GIF below shows what the flow looks like from an end users’ perspective.</p><div class='image'> <img src='https://cdn.razorpay.com/static/assets/whats-new/checkout-rewards-flow.gif' /></div><p>The flow is as simple as it can be. Here’s an overview:</p><ol><li>User arrives on the checkout page of a merchant (Acme Corp in this example)</li><li>User selects their preferred payment type and completes the payment</li><li> User receives an email & SMS with payment confirmation and details about the reward</li><li>User can directly redeem the reward on the website/app of reward provider</li></ol><p> Just to make it obvious, the customer did NOT have to select any reward manually. A customer will automatically receive 1 exciting reward on completing a payment.</p> <br /><p> Please Note - Checkout Rewards is completely <b>Free</b> for you and your end users!</p></div><div class='paragraph'> <b>What to expect from Checkout Rewards</b><ol><li>Increase in sales volume 🚀</li><li>Better user experience 😃</li><li>Higher conversion rates 📈</li></ol></div><div> <b>How to activate Checkout Rewards?</b><p> Well, the beauty of Checkout Rewards lies in its simplicity. You can activate Checkout Rewards in less than 30 seconds. All you have to do is:</p><ol><li>Navigate to “Checkout Rewards” on the left panel</li><li>Click “Activate” to activate a Reward</li><li>That’s it. Your customers will start receiving rewards within 24 hours</li></ol><div class='paragraph'> So, what are you waiting for? Click “Try Now” to start using Checkout Rewards!</div></div>",
+                        'buttons'     => [
+                            [
+                                'type'  => 'button',
+                                'label' => 'Try Now',
+                                'url'   => '/checkout-rewards',
+                            ],
+                            [
+                                'type'  => 'primary-inverted',
+                                'label' => 'Read More',
+                                'url'   => 'https://razorpay.com/docs/payment-gateway/checkout-rewards/',
+                            ],
+                        ],
+                    ],
+
+                ],
+                'splitz_experiments'         => ['ANNOUNCEMENT_CHECKOUT_REWARDS_ENABLED_SPLITZ'],
+            ],
+            [
+                'data' => [
+                    'version' => 'v2',
+                    'l2_content'  => [
+                        'content'     => "<p>Thank you for your interest in Checkout Rewards. We are glad to inform you that the wait is finally over. You can now activate Checkout Rewards and watch your sales increase 🚀</p><div class='paragraph'> <b>What are Checkout Rewards?</b><p> Checkout Rewards are essentially FREE rewards that your customers will receive upon completing each successful payment from your website/app.</p><div class='image'> <img src='https://cdn.razorpay.com/static/assets/whats-new/checkout_rewards.svg' /></div></div><div> <b>How does Checkout Rewards work?</b><p>The GIF below shows what the flow looks like from an end users’ perspective.</p><div class='image'> <img src='https://cdn.razorpay.com/static/assets/whats-new/checkout-rewards-flow.gif' /></div><p>The flow is as simple as it can be. Here’s an overview:</p><ol><li>User arrives on the checkout page of a merchant (Acme Corp in this example)</li><li>User selects their preferred payment type and completes the payment</li><li> User receives an email & SMS with payment confirmation and details about the reward</li><li>User can directly redeem the reward on the website/app of reward provider</li></ol><p> Just to make it obvious, the customer did NOT have to select any reward manually. A customer will automatically receive 1 exciting reward on completing a payment.</p> <br /><p> Please Note - Checkout Rewards is completely <b>Free</b> for you and your end users!</p></div><div class='paragraph'> <b>What to expect from Checkout Rewards</b><ol><li>Increase in sales volume 🚀</li><li>Better user experience 😃</li><li>Higher conversion rates 📈</li></ol></div><div> <b>How to activate Checkout Rewards?</b><p> Well, the beauty of Checkout Rewards lies in its simplicity. You can activate Checkout Rewards in less than 30 seconds. All you have to do is:</p><ol><li>Navigate to “Checkout Rewards” on the left panel</li><li>Click “Activate” to activate a Reward</li><li>That’s it. Your customers will start receiving rewards within 24 hours</li></ol><div class='paragraph'> So, what are you waiting for? Click “Try Now” to start using Checkout Rewards!</div></div>",
+                        'buttons'     => [
+                            [
+                                'type'  => 'button',
+                                'label' => 'Try Now',
+                                'url'   => '/checkout-rewards',
+                            ],
+                            [
+                                'type'  => 'primary-inverted',
+                                'label' => 'Read More',
+                                'url'   => 'https://razorpay.com/docs/payment-gateway/checkout-rewards/',
+                            ],
+                        ],
+                    ],
+                ],
+                'splitz_experiments'         => ['ANNOUNCEMENT_CHECKOUT_REWARDS_INTERESTED_SPLITZ'],
+            ],
+            [
+                'data' => [
+                    'version' => 'v3',
+                    'title' => 'New Checkout Rewards available! 🎁',
+                    'description' => 'Activate new Checkout Rewards from Pharmeasy, Zoomcar, Medibuddy & more!',
+                    'buttons'     => [
+                        [
+                            'type'  => 'button',
+                            'label' => 'See Rewards',
+                            'url'   => '/checkout-rewards',
+                        ],
+                        [
+                            'type'  => 'primary-inverted',
+                            'label' => 'Read More',
+                            'id'    => 'announcement-details-l2',
+                            'url'   => '/announcements/whats-new-april21-m2mrewards-gtm/'
+                        ],
+                    ],
+                    'l2_content'  => [
+                        'content'     => "<p>We are glad to inform you that we have recently added new Checkout Rewards such as Medibuddy, Pharmeasy and Zoomcar. Checkout Rewards are essentially FREE rewards that your customers will receive upon completing each successful payment from your website/app.</p><div class='paragraph'> <b>What are Checkout Rewards?</b><p>Checkout Rewards are essentially FREE rewards that your customers will receive upon completing each successful payment from your website/app.</p><div class='image'> <img src='https://cdn.razorpay.com/static/assets/whats-new/checkout_rewards_available.svg' /></div></div><div> <b>How does Checkout Rewards work?</b><p>The GIF below shows what the flow looks like from an end users’ perspective.</p><div class='image'> <img src='https://cdn.razorpay.com/static/assets/whats-new/checkout-rewards-flow.gif' /></div><p>The flow is as simple as it can be. Here’s an overview:</p><ol><li>User arrives on the checkout page of a merchant (Acme Corp in this example)</li><li>User selects their preferred payment type and completes the payment</li><li>User receives an email & SMS with payment confirmation and details about the reward</li><li>User can directly redeem the reward on the website/app of reward provider</li></ol><p>Just to make it obvious, the customer did NOT have to select any reward manually. A customer will automatically receive 1 exciting reward on completing a payment.</p> <br /><p>Please Note - Checkout Rewards is completely <b>Free</b> for you and your end users!</p></div><div class='paragraph'> <b>What to expect from Checkout Rewards</b><ol><li>Increase in sales volume 🚀</li><li>Better user experience 😃</li><li>Higher conversion rates 📈</li></ol></div><div> <b>How to activate Checkout Rewards?</b><p>Well, the beauty of Checkout Rewards lies in its simplicity. You can activate Checkout Rewards in less than 30 seconds. All you have to do is:</p><ol><li>Navigate to “Checkout Rewards” on the left panel</li><li>Click “Activate” to activate a Reward</li><li>That’s it. Your customers will start receiving rewards within 24 hours</li></ol><div class='paragraph'>So, what are you waiting for? Click “See Rewards” to start using Checkout Rewards!</div></div>",
+                        'buttons'     => [
+                            [
+                                'type'  => 'button',
+                                'label' => 'See Rewards',
+                                'url'   => '/checkout-rewards',
+                            ],
+                            [
+                                'type'  => 'primary-inverted',
+                                'label' => 'Read More',
+                                'url'   => 'https://razorpay.com/docs/payment-gateway/checkout-rewards/',
+                            ],
+                        ],
+                    ],
+                ],
+                'splitz_experiments'         => ['ANNOUNCEMENT_CHECKOUT_REWARDS_LIVE_SPLITZ'],
+            ]
+        ]
     ];
 
     public static function getNotifications(): array
