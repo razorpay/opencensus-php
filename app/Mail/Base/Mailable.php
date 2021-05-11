@@ -140,19 +140,21 @@ class Mailable extends BaseMailable
 
             $trace->info(TraceCode::SEND_EMAIL_ATTEMPT, [
                 'email'    => $toEmailHash,
-                'mailable' => get_class($this)
+                'mailable' => get_class($this),
+                'view'     => $this->view,
                 ]);
 
             // if email is to be sent via stork
             if ($this->shouldSendEmailViaStork() === true)
             {
-                $trace->info(TraceCode::SEND_EMAIL_ATTEMPT_STORK,
-                [
-                    'template_name'     => $this->getParamsForStork()['template_name'] ?? '',
-                ]);
                 $eventProperties['email_driver'] = 'stork';
                 // we can override any base param by adding the param in `getParamsForStork()`
                 $paramsPayload = array_merge($this->getBaseParamsForStork(), $this->getParamsForStork());
+                $trace->info(TraceCode::SEND_EMAIL_ATTEMPT_STORK,
+                [
+                    'template_name'         => $paramsPayload['template_name'] ?? '',
+                    'view'    => $this->view,
+                ]);
 
                 try {
                     $res = (new Stork($this->mode, $this->originProduct))->sendEmail($paramsPayload);
@@ -161,7 +163,11 @@ class Mailable extends BaseMailable
                 $msgID = $res['message_id'] ?? '';
                 if ($msgID === '')
                 {
-                    $trace->info(TraceCode::SEND_EMAIL_ATTEMPT_STORK_FAILED);
+                    $trace->info(TraceCode::SEND_EMAIL_ATTEMPT_STORK_FAILED,
+                    [
+                        'template_name'         => $paramsPayload['template_name'] ?? '',
+                        'view'    => $this->view,
+                    ]);
                 }
             }
 
