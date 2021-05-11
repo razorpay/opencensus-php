@@ -324,7 +324,7 @@ export default class User {
   get isProjectNitroEnabled() {
     // moving nitro to splitz phase wise, so keeping checks for both splitz and razorx experiments currently.
 
-    const splitzExperiments = window.rzp_user.splitz_experiments;
+    const splitzExperiments = window.rzp_user?.splitz_experiments;
 
     if (splitzExperiments) {
       const splitzExperimentVariant =
@@ -982,7 +982,7 @@ function _isAllowed(userRole, moduleName, permissionsMap) {
 }
 
 function getSplitzExperimentVariant(experimentName) {
-  const splitzExperiments = window.rzp_user.splitz_experiments;
+  const splitzExperiments = window.rzp_user?.splitz_experiments;
 
   if (splitzExperiments) {
     const splitzExperimentVariant =
