@@ -17,6 +17,7 @@ class RefundFile extends Base\RefundFile
 {
     protected static $fileToWriteName = 'CORPORATION_Netbanking_Refunds';
 
+    const BASE_STORAGE_DIRECTORY = 'Corporation/Refund/Netbanking/';
     // TODO: Remove the below data and use env to store them
     const POOLING_ACCOUNT_BR_CODE = '1234';
     const POOLING_ACCOUNT_TYPE    = 'CA';
@@ -146,5 +147,12 @@ class RefundFile extends Base\RefundFile
         }
 
         return self::FIXED_STRING_REAR . $lastString;
+    }
+
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        return static::BASE_STORAGE_DIRECTORY . static::$fileToWriteName . '_' . $this->mode . '_' . $time;
     }
 }

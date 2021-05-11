@@ -15,7 +15,7 @@ class All extends Base
     const GATEWAY                = ''; // fetch for all gateways
     const FILE_NAME              = 'Failed_Refunds';
     const FILE_TYPE              = FileStore\Type::GATEWAY_FAILED_REFUNDS;
-    const BASE_STORAGE_DIRECTORY = 'AllGateways/Refunds/Failed/';
+    const BASE_STORAGE_DIRECTORY = 'AllGateways/Refund/Failed/';
 
     const SR_NO                 = 'Sr No';
     const REFUND_ID             = 'Refund Id';

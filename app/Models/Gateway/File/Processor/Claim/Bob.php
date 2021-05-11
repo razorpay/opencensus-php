@@ -28,6 +28,8 @@ class Bob extends NetbankingBase
 
     const FILE_NAME = 'BOB_Netbanking_Claims';
 
+    const BASE_STORAGE_DIRECTORY = 'Bob/Claims/Netbanking/';
+
     protected function formatDataForFile($data)
     {
         $formattedData = [];
@@ -66,6 +68,6 @@ class Bob extends NetbankingBase
     {
         $time = Carbon::now(Timezone::IST)->format('d-m-Y');
 
-        return static::FILE_NAME . '_' . $this->mode . '_' . $time;
+        return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . '_' . $this->mode . '_' . $time;
     }
 }

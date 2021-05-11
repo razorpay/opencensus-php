@@ -2,18 +2,21 @@
 
 namespace RZP\Gateway\Netbanking\Bob;
 
-use RZP\Gateway\Base;
-use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
-use RZP\Models\FileStore;
-use RZP\Models\Payment\Gateway;
-use RZP\Exception;
-
 use Mail;
 use Config;
+use RZP\Exception;
+use Carbon\Carbon;
+use RZP\Gateway\Base;
+use RZP\Models\FileStore;
+use RZP\Constants\Timezone;
+use RZP\Models\Payment\Gateway;
+use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 
 class RefundFile extends Base\RefundFile
 {
     protected static $fileToWriteName = 'BOB_Netbanking_Refunds';
+
+    const BASE_STORAGE_DIRECTORY = 'Bob/Refund/Netbanking/';
 
     public function generate($input)
     {
@@ -114,5 +117,12 @@ class RefundFile extends Base\RefundFile
         $refundFileMail = new RefundFileMail($fileData, Gateway::NETBANKING_BOB, $email);
 
         Mail::queue($refundFileMail);
+    }
+
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        return static::BASE_STORAGE_DIRECTORY . static::$fileToWriteName . '_' . $this->mode . '_' . $time;
     }
 }

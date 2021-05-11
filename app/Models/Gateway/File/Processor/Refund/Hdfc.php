@@ -18,6 +18,7 @@ class Hdfc extends Base
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
     const GATEWAY                = Payment\Gateway::NETBANKING_HDFC;
     const GATEWAY_CODE           = IFSC::HDFC;
+    const BASE_STORAGE_DIRECTORY = 'Hdfc/Refund/Netbanking/';
 
     /**
      * Formats the data fetched from database as per HDFC netbanking refund file format
@@ -69,7 +70,7 @@ class Hdfc extends Base
     {
         $time = Carbon::now(Timezone::IST)->format('d-m-Y');
 
-        return static::FILE_NAME . '_' . $this->mode . '_' . $time;
+        return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . '_' . $this->mode . '_' . $time;
     }
 
     /**

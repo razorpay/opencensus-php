@@ -19,6 +19,7 @@ class Idfc extends NetbankingBase
     const EXTENSION               = FileStore\Format::TXT;
     const FILE_TYPE               = FileStore\Type::IDFC_NETBANKING_CLAIMS;
     const GATEWAY                 = Payment\Gateway::NETBANKING_IDFC;
+    const BASE_STORAGE_DIRECTORY  = 'Idfc/Claims/Netbanking/';
 
     const HEADERS = [
         'RAZORPAYReferenceNumber',
@@ -74,7 +75,7 @@ class Idfc extends NetbankingBase
     {
         $time = Carbon::now(Timezone::IST)->format('Ymd');
 
-        return $time. '_' . self::$filename;
+        return static::BASE_STORAGE_DIRECTORY . $time. '_' . static::$filename;
     }
 
     protected function getFormattedAmountString(int $amount): String

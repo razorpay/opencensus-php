@@ -52,7 +52,7 @@ return [
         'response' => [
             'content' => [
                     'netbanking_hdfc' => [
-                        'file' => storage_path('files/filestore/HDFC_Netbanking_Refunds_test_'.Carbon::today(Timezone::IST)->format('d-m-Y').'.xlsx'),
+                        'file' => storage_path('files/filestore/Hdfc/Refund/Netbanking/HDFC_Netbanking_Refunds_test_'.Carbon::today(Timezone::IST)->format('d-m-Y').'.xlsx'),
                         'count' => 1
                     ]
             ]

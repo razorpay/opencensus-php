@@ -14,11 +14,12 @@ class Kotak extends Base
 {
     use FileHandler;
 
-    const TPV_FILE_NAME     = 'Kotak_Netbanking_Claim_OTRAZORPAY';
-    const NON_TPV_FILE_NAME = 'Kotak_Netbanking_Claim_OSRAZORPAY';
-    const EXTENSION         = FileStore\Format::TXT;
-    const FILE_TYPE         = FileStore\Type::KOTAK_NETBANKING_CLAIM;
-    const GATEWAY           = Payment\Gateway::NETBANKING_KOTAK;
+    const TPV_FILE_NAME          = 'Kotak_Netbanking_Claim_OTRAZORPAY';
+    const NON_TPV_FILE_NAME      = 'Kotak_Netbanking_Claim_OSRAZORPAY';
+    const EXTENSION              = FileStore\Format::TXT;
+    const FILE_TYPE              = FileStore\Type::KOTAK_NETBANKING_CLAIM;
+    const GATEWAY                = Payment\Gateway::NETBANKING_KOTAK;
+    const BASE_STORAGE_DIRECTORY = 'Kotak/Claims/Netbanking/';
 
     protected function fetchReconciledPaymentsToClaim(int $begin, int $end, array $statuses): PublicCollection
     {
@@ -73,6 +74,6 @@ class Kotak extends Base
 
         $name = ($this->getTpv() === true) ? static::TPV_FILE_NAME : static::NON_TPV_FILE_NAME;
 
-        return $name . '_' . $this->mode . '_' . $time;
+        return static::BASE_STORAGE_DIRECTORY . $name . '_' . $this->mode . '_' . $time;
     }
 }

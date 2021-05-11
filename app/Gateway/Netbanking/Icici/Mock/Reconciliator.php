@@ -17,6 +17,8 @@ class Reconciliator extends Base\RefundFile
 
     protected static $fileToWriteName = 'razorpayreports';
 
+    const BASE_STORAGE_DIRECTORY = 'Icici/Recon/Netbanking/';
+
     public function generate($input)
     {
         list($totalAmount, $data) = $this->getReconciliationData($input);
@@ -98,5 +100,12 @@ class Reconciliator extends Base\RefundFile
         }
 
         return $this->generate($inputData);
+    }
+
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        return static::BASE_STORAGE_DIRECTORY . static::$fileToWriteName . '_' . $this->mode . '_' . $time;
     }
 }

@@ -14,6 +14,8 @@ class RefundFile extends Base\RefundFile
 {
     protected static $fileToWriteName = 'Icici_Netbanking_Refunds';
 
+    const BASE_STORAGE_DIRECTORY = 'Icici/Refund/Netbanking/';
+
     // The columns of the file
     protected static $headers = [
         RefundFileFields::SERIAL_NO,
@@ -104,5 +106,12 @@ class RefundFile extends Base\RefundFile
                                 'emails.admin.icici_refunds');
 
         Mail::queue($refundFileMail);
+    }
+
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        return static::BASE_STORAGE_DIRECTORY . static::$fileToWriteName . '_' . $this->mode . '_' . $time;
     }
 }

@@ -2,14 +2,16 @@
 
 namespace RZP\Models\Gateway\File\Processor\Refund;
 
+use Config;
+
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
+use RZP\Constants\Timezone;
+use RZP\Services\NbPlus\Netbanking;
 use RZP\Gateway\Netbanking\Bob\Constants;
 use RZP\Models\Gateway\File\Processor\FileHandler;
-
-use Config;
-use RZP\Services\NbPlus\Netbanking;
 
 class Bob extends Base
 {
@@ -18,6 +20,7 @@ class Bob extends Base
     const FILE_NAME              = 'BOB_Netbanking_Refunds';
     const EXTENSION              = FileStore\Format::TXT;
     const FILE_TYPE              = FileStore\Type::BOB_NETBANKING_REFUND;
+    const BASE_STORAGE_DIRECTORY = 'Bob/Refund/Netbanking/';
 
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
     const GATEWAY                = Payment\Gateway::NETBANKING_BOB;
@@ -110,5 +113,12 @@ class Bob extends Base
 
         // Amount is of type NUMBER(14,2). i.e 14 digits before decimal point and 2 digits after decimal point.
         return str_pad($amt, 17, '0', STR_PAD_LEFT);
+    }
+
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . '_' . $this->mode . '_' . $time;
     }
 }

@@ -125,8 +125,8 @@ class NetbankingHdfcRefundFileTest extends TestCase
         $today = Carbon::now(Timezone::IST)->format('d-m-Y');
 
         $expectedFileContent = [
-            'name' => 'HDFC_Netbanking_Refunds_test_'.$today,
-            'location' => 'HDFC_Netbanking_Refunds_test_'.$today.'.xlsx'
+            'name' => 'Hdfc/Refund/Netbanking/HDFC_Netbanking_Refunds_test_'.$today,
+            'location' => 'Hdfc/Refund/Netbanking/HDFC_Netbanking_Refunds_test_'.$today.'.xlsx'
         ];
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);

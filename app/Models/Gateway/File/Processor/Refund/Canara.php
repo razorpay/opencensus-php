@@ -32,6 +32,7 @@ class Canara extends Base
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
     const BANK_CODE              = 'CNRB';
     const HEADERS                = RefundFileFields::COLUMN_HEADERS;
+    const BASE_STORAGE_DIRECTORY = 'Canara/Refund/Netbanking/';
 
     //protected $config;
 
@@ -83,7 +84,7 @@ class Canara extends Base
     {
         $date = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)->format('dmY');
 
-        return self::FILE_NAME . $date;
+        return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . $date;
     }
 
     protected function formatDataForMail(array $data)
@@ -96,7 +97,7 @@ class Canara extends Base
         $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
 
         $mailData = [
-            'file_name'  => $file->getLocation(),
+            'file_name'  => basename($file->getLocation()),
             'signed_url' => $signedUrl,
         ];
 

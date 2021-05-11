@@ -15,6 +15,8 @@ class RefundFile extends Base\RefundFile
 
     protected static $nonTpvFileName = 'Kotak_Netbanking_Refund_OSRAZORPAY';
 
+    const BASE_STORAGE_DIRECTORY = 'Kotak/Refund/Netbanking/';
+
     protected static $headers = [
         'S.No',
         'Mer.Id',
@@ -98,7 +100,7 @@ class RefundFile extends Base\RefundFile
             $totalAmount = $totalAmount + $row['refund']['amount'] / 100;
         }
 
-        $name = $this->getFileToWriteName();
+        $name = basename($this->getFileToWriteName());
 
         $i--;
 
@@ -109,5 +111,12 @@ class RefundFile extends Base\RefundFile
         $txt = $this->getTextData($data, $initialLine);
 
         return [$txt, $totalAmount];
+    }
+
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        return static::BASE_STORAGE_DIRECTORY . static::$fileToWriteName . '_' . $this->mode . '_' . $time;
     }
 }

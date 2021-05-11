@@ -22,6 +22,7 @@ class Corporation extends Base
     const GATEWAY                    = Payment\Gateway::NETBANKING_CORPORATION;
     const PAYMENT_TYPE_ATTRIBUTE     = Payment\Entity::BANK;
     const GATEWAY_CODE               = IFSC::CORP;
+    const BASE_STORAGE_DIRECTORY     = 'Corporation/Refund/Netbanking/';
 
     private $mid;
 
@@ -78,7 +79,7 @@ class Corporation extends Base
     {
         $date = Carbon::now(Timezone::IST)->format('dmY');
 
-        return $this->mid . '_' . $date . '_' . self::FILE_NAME;
+        return static::BASE_STORAGE_DIRECTORY . $this->mid . '_' . $date . '_' . static::FILE_NAME;
     }
 
     protected function formatDataForMail(array $data)
@@ -107,7 +108,7 @@ class Corporation extends Base
         $today = Carbon::now(Timezone::IST)->format('jS F Y');
 
         $mailData = [
-            'file_name'  => $file->getLocation(),
+            'file_name'  => basename($file->getLocation()),
             'signed_url' => $signedUrl,
             'amount'     => $totalAmount,
             'count'      => count($data),

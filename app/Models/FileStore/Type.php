@@ -512,14 +512,8 @@ class Type
      */
     const BUCKET_CONFIG_TYPE_MAPPING = [
         self::SETTLEMENT_BUCKET_CONFIG => [
-            self::KOTAK_NETBANKING_REFUND,
-            self::HDFC_NETBANKING_REFUND,
             self::HDFC_EMANDATE_REGISTER,
             self::HDFC_EMANDATE_DEBIT,
-            self::BOB_NETBANKING_REFUND,
-            self::BOB_NETBANKING_CLAIMS,
-            self::CANARA_NETBANKING_CLAIMS,
-            self::CANARA_NETBANKING_REFUND,
             self::AXIS_NETBANKING_REFUND,
             self::AXIS_NETBANKING_CLAIMS,
             self::AIRTELMONEY_WALLET_REFUND,
@@ -633,6 +627,18 @@ class Type
             self::JSB_NETBANKING_REFUND,
             self::MINDGATE_UPI_REFUND,
             self::DLB_NETBAKING_REFUND,
+            self::KOTAK_NETBANKING_REFUND,
+            self::HDFC_NETBANKING_REFUND,
+            self::CORPORATION_NETBANKING_REFUND,
+            self::ALLAHABAD_NETBANKING_REFUND,
+            self::CANARA_NETBANKING_REFUND,
+            self::BOB_NETBANKING_REFUND,
+            self::IDFC_NETBANKING_REFUND,
+            self::KOTAK_NETBANKING_CLAIM,
+            self::CANARA_NETBANKING_CLAIMS,
+            self::BOB_NETBANKING_CLAIMS,
+            self::IDFC_NETBANKING_CLAIMS,
+            self::IDFC_NETBANKING_SUMMARY,
         ],
 
         self::DATA_LAKE_SEGMENTS_BUCKET_CONFIG => [

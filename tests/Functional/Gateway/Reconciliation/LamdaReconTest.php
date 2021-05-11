@@ -37,7 +37,9 @@ class LambdaReconTest extends TestCase
 
         $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
 
-        $this->reconcile('NetbankingIcici', $uploadedFile, $fileContents['local_file_path']);
+        $uploadedFile->move(storage_path('files/filestore'), basename($fileContents['local_file_path']));
+
+        $this->reconcile('NetbankingIcici', $uploadedFile, basename($fileContents['local_file_path']));
 
         $gatewayEntity = $this->getDbLastEntity('netbanking');
 
@@ -117,8 +119,6 @@ class LambdaReconTest extends TestCase
             ],
         ];
 
-        $response = $this->makeRequestAndGetContent($request);
-
-        return $response;
+        return $this->makeRequestAndGetContent($request);
     }
 }

@@ -21,6 +21,8 @@ class Reconciliator extends Base\RefundFile
 
     protected static $fileToWriteName = 'Canara_Netbanking_Reconciliation';
 
+    const BASE_STORAGE_DIRECTORY = 'Canara/Recon/Netbanking/';
+
     public function generateReconciliation($input = null)
     {
         $input = [
@@ -111,5 +113,12 @@ class Reconciliator extends Base\RefundFile
     public function content(& $content, $action = '')
     {
         return $content;
+    }
+
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        return static::BASE_STORAGE_DIRECTORY . static::$fileToWriteName . '_' . $this->mode . '_' . $time;
     }
 }

@@ -76,11 +76,11 @@ class NetbankingBobCombinedFileTest extends TestCase
             'items' => [
                 [
                     'type' => 'bob_netbanking_claims',
-                    'location' => 'BOB_Netbanking_Claims_test' . '_' . $date . '.txt'
+                    'location' => 'Bob/Claims/Netbanking/BOB_Netbanking_Claims_test' . '_' . $date . '.txt'
                 ],
                 [
                     'type' => 'bob_netbanking_refund',
-                    'location' => 'BOB_Netbanking_Refunds_test' . '_' . $date . '.txt'
+                    'location' => 'Bob/Refund/Netbanking/BOB_Netbanking_Refunds_test' . '_' . $date . '.txt'
                 ],
             ],
         ];

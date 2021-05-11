@@ -77,11 +77,11 @@ class NetbankingKotakCombinedFileTest extends TestCase
             'items' => [
                 [
                     'type' => 'kotak_netbanking_claim',
-                    'location' => 'Kotak_Netbanking_Claim_OSRAZORPAY_test' . '_' . $time . '.txt',
+                    'location' => 'Kotak/Claims/Netbanking/Kotak_Netbanking_Claim_OSRAZORPAY_test' . '_' . $time . '.txt',
                 ],
                 [
                     'type' => 'kotak_netbanking_refund',
-                    'location' => 'Kotak_Netbanking_Refund_OSRAZORPAY_test' . '_' . $time . '.txt',
+                    'location' => 'Kotak/Refund/Netbanking/Kotak_Netbanking_Refund_OSRAZORPAY_test' . '_' . $time . '.txt',
                 ],
             ],
         ];
@@ -172,11 +172,11 @@ class NetbankingKotakCombinedFileTest extends TestCase
             'items' => [
                 [
                     'type' => 'kotak_netbanking_claim',
-                    'location' => 'Kotak_Netbanking_Claim_OTRAZORPAY_test' . '_' . $time . '.txt',
+                    'location' => 'Kotak/Claims/Netbanking/Kotak_Netbanking_Claim_OTRAZORPAY_test' . '_' . $time . '.txt',
                 ],
                 [
                     'type' => 'kotak_netbanking_refund',
-                    'location' => 'Kotak_Netbanking_Refund_OTRAZORPAY_test' . '_' . $time . '.txt',
+                    'location' => 'Kotak/Refund/Netbanking/Kotak_Netbanking_Refund_OTRAZORPAY_test' . '_' . $time . '.txt',
                 ],
             ],
         ];
@@ -350,11 +350,11 @@ class NetbankingKotakCombinedFileTest extends TestCase
             'items' => [
                 [
                     'type' => 'kotak_netbanking_refund',
-                    'location' => 'Kotak_Netbanking_Refund_OTRAZORPAY_test' . '_' . $time . '.txt',
+                    'location' => 'Kotak/Refund/Netbanking/Kotak_Netbanking_Refund_OTRAZORPAY_test' . '_' . $time . '.txt',
                 ],
                 [
                     'type' => 'kotak_netbanking_claim',
-                    'location' => 'Kotak_Netbanking_Claim_OTRAZORPAY_test' . '_' . $time . '.txt',
+                    'location' => 'Kotak/Claims/Netbanking/Kotak_Netbanking_Claim_OTRAZORPAY_test' . '_' . $time . '.txt',
                 ],
             ],
         ];
@@ -432,11 +432,11 @@ class NetbankingKotakCombinedFileTest extends TestCase
             'items' => [
                 [
                     'type' => 'kotak_netbanking_refund',
-                    'location' => 'Kotak_Netbanking_Refund_OSRAZORPAY_test' . '_' . $time . '.txt',
+                    'location' => 'Kotak/Refund/Netbanking/Kotak_Netbanking_Refund_OSRAZORPAY_test' . '_' . $time . '.txt',
                 ],
                 [
                     'type' => 'kotak_netbanking_claim',
-                    'location' => 'Kotak_Netbanking_Claim_OSRAZORPAY_test' . '_' . $time . '.txt',
+                    'location' => 'Kotak/Claims/Netbanking/Kotak_Netbanking_Claim_OSRAZORPAY_test' . '_' . $time . '.txt',
                 ],
             ],
         ];

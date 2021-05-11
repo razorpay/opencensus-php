@@ -19,6 +19,8 @@ class Reconciliator extends Base\RefundFile
 
     protected static $fileToWriteName = 'Bob_Netbanking_Reconciliation';
 
+    const BASE_STORAGE_DIRECTORY = 'Bob/Recon/Netbanking/';
+
     protected $header1 = ['fileName.txt', 'Num of Txn', 'Total Amount of Txns'];
 
     protected $header2 = [
@@ -131,5 +133,12 @@ class Reconciliator extends Base\RefundFile
             ],
             $this->header2
         ];
+    }
+
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        return static::BASE_STORAGE_DIRECTORY . static::$fileToWriteName . '_' . $this->mode . '_' . $time;
     }
 }

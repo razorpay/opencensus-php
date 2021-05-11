@@ -16,6 +16,8 @@ class RefundFile extends Base\RefundFile
 {
     protected static $fileToWriteName = 'canara_Netbanking_Refunds';
 
+    const BASE_STORAGE_DIRECTORY = 'Canara/Refund/Netbanking/';
+
     public function generate($input)
     {
         $text = $this->getRefundData($input);
@@ -109,5 +111,12 @@ class RefundFile extends Base\RefundFile
         ];
 
         return $data;
+    }
+
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        return static::BASE_STORAGE_DIRECTORY . static::$fileToWriteName . '_' . $this->mode . '_' . $time;
     }
 }

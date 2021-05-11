@@ -24,6 +24,7 @@ class Allahabad extends Base
     const GATEWAY                     = Payment\Gateway::NETBANKING_ALLAHABAD;
     const GATEWAY_CODE                = IFSC::ALLA;
     const PAYMENT_TYPE_ATTRIBUTE      = Payment\Entity::BANK;
+    const BASE_STORAGE_DIRECTORY      = 'Allahabad/Refund/Netbanking/';
 
     protected $config;
 
@@ -88,7 +89,7 @@ class Allahabad extends Base
         $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
 
         $mailData = [
-            'file_name' => $file->getLocation(),
+            'file_name' => basename($file->getLocation()),
             'signed_url' => $signedUrl
         ];
 
@@ -99,7 +100,7 @@ class Allahabad extends Base
     {
         $time = Carbon::now(Timezone::IST)->format('dmY');
 
-        return self::FILE_NAME.'_'.$time;
+        return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME.'_'.$time;
     }
 
     public function formatAmount($amount): string

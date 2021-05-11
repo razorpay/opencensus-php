@@ -15,6 +15,7 @@ class Idfc extends Base
     const FILE_TYPE               = FileStore\Type::IDFC_NETBANKING_SUMMARY;
     const EXTENSION               = FileStore\Format::XLS;
     static $filename              = 'Claim Summary File-RAZORPAY-IDFC';
+    const BASE_STORAGE_DIRECTORY  = 'Idfc/Summary/Netbanking/';
 
     protected $config;
 
@@ -97,7 +98,7 @@ class Idfc extends Base
 
         $fileData = [
             'url'  => $signedUrl,
-            'name' => $file->getLocation(),
+            'name' => basename($file->getLocation()),
         ];
 
         return $fileData;
@@ -116,9 +117,11 @@ class Idfc extends Base
 
             $creator = new FileStore\Creator;
 
+            $fileName = $this->getFileNameToWriteWithoutExtension();
+
             $creator->extension(self::EXTENSION)
                 ->content($fileData)
-                ->name(self::$filename)
+                ->name($fileName)
                 ->store(FileStore\Store::S3)
                 ->type(self::FILE_TYPE)
                 ->entity($this->gatewayFile)
@@ -263,5 +266,10 @@ class Idfc extends Base
     protected function formatAmount($amount)
     {
         return number_format($amount, 2, '.', '');
+    }
+
+    protected function getFileNameToWriteWithoutExtension()
+    {
+        return static::BASE_STORAGE_DIRECTORY . static::$filename;
     }
 }

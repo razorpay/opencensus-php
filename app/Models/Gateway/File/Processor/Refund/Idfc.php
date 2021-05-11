@@ -17,6 +17,7 @@ class Idfc extends Base
     static $filename = 'Razorpay_REFUND';
 
     const FILE_TYPE              = FileStore\Type::IDFC_NETBANKING_REFUND;
+    const BASE_STORAGE_DIRECTORY = 'Idfc/Refund/Netbanking/';
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
     const GATEWAY_CODE           = IFSC::IDFB;
     const GATEWAY                = Payment\Gateway::NETBANKING_IDFC;
@@ -52,7 +53,7 @@ class Idfc extends Base
     {
         $time = Carbon::now(Timezone::IST)->format('Ymd');
 
-        return static::$filename . '_' . $time;
+        return static::BASE_STORAGE_DIRECTORY . static::$filename . '_' . $time;
     }
 
     protected function formatDataForFile(array $data)
@@ -91,7 +92,7 @@ class Idfc extends Base
         $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
 
         $mailData = [
-            'file_name' => $file->getLocation(),
+            'file_name' => basename($file->getLocation()),
             'signed_url' => $signedUrl
         ];
 

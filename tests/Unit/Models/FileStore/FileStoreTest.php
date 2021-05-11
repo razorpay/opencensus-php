@@ -164,13 +164,17 @@ class FileStoreTest extends TestCase
                 'name'   => 'h2h_bucket',
                 'region' => 'region4'
             ],
+            'recon_sftp_input_bucket' => [
+                'name'   => 'recon_sftp_bucket',
+                'region' => 'region5'
+            ],
         ];
 
         Config::set('filestore.aws', $bucketConfig);
 
         $this->checkBucketAndRegion(
             $this->type,
-            'settlement_bucket_config',
+            'recon_sftp_input_bucket',
             $bucketConfig);
 
         $this->checkBucketAndRegion(

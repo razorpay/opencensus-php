@@ -25,6 +25,7 @@ class Kotak extends Base
     const GATEWAY                = Payment\Gateway::NETBANKING_KOTAK;
     const GATEWAY_CODE           = IFSC::KKBK;
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
+    const BASE_STORAGE_DIRECTORY = 'Kotak/Refund/Netbanking/';
 
     protected $type = Payment\Entity::BANK;
 
@@ -168,7 +169,7 @@ class Kotak extends Base
             $totalAmount += $row['refund']['amount'] / 100;
         }
 
-        $name = $this->getFileToWriteName();
+        $name = basename($this->getFileToWriteName());
 
         // First Line in the file is expected to be of the format
         // Format : FileName|ItemsCount|TotalAmount(Rs.)|CHECKSUM
@@ -196,6 +197,6 @@ class Kotak extends Base
 
         $name = ($this->getTpv() === true) ? static::TPV_FILE_NAME : static::NON_TPV_FILE_NAME;
 
-        return $name . '_' . $this->mode . '_' . $time;
+        return static::BASE_STORAGE_DIRECTORY . $name . '_' . $this->mode . '_' . $time;
     }
 }

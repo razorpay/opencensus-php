@@ -28,6 +28,8 @@ class Canara extends NetbankingBase
 
     const FILE_TYPE = FileStore\Type::CANARA_NETBANKING_CLAIMS;
 
+    const BASE_STORAGE_DIRECTORY = 'Canara/Claims/Netbanking/';
+
     const FILE_NAME = 'RPGNBG';
 
     protected function formatDataForFile($data)
@@ -60,8 +62,9 @@ class Canara extends NetbankingBase
     {
         $date = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)->format('dmY');
 
-        return self::FILE_NAME . $date;
+        return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . $date;
     }
+
     protected function fetchBankAccountNumber($data)
     {
         if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)

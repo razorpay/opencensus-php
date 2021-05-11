@@ -17,6 +17,8 @@ class Reconciliator extends Base\RefundFile
 
     const GATEWAY_ENTITY = 'gateway';
 
+    const BASE_STORAGE_DIRECTORY = 'Idfc/Recon/Netbanking/';
+
     public function generateReconciliation($input = null)
     {
         $payments = $this->repo->payment->fetch($input, '10000000000000');
@@ -84,5 +86,12 @@ class Reconciliator extends Base\RefundFile
         }
 
         return $data;
+    }
+
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        return static::BASE_STORAGE_DIRECTORY . static::$fileToWriteName . '_' . $this->mode . '_' . $time;
     }
 }

@@ -18,6 +18,8 @@ class Reconciliator extends Base\RefundFile
 
     protected static $fileToWriteName = 'Hdfc_Netbanking_Reconciliation';
 
+    const BASE_STORAGE_DIRECTORY = 'Hdfc/Recon/Netbanking/';
+
     public function generateReconciliation($input = null)
     {
         $input = [
@@ -103,5 +105,12 @@ class Reconciliator extends Base\RefundFile
         }
 
         return [$totalAmount,$data];
+    }
+
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        return static::BASE_STORAGE_DIRECTORY . static::$fileToWriteName . '_' . $this->mode . '_' . $time;
     }
 }
