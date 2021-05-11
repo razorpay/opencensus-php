@@ -429,25 +429,35 @@ app
         url: document.location.href,
       };
 
+      function trackSegmentEvents(eventName, type, properties) {
+        tracking.transformAndTriggerSegmentEvents(eventName + '.' + type, properties);
+      }
+
+      // fires failed events to Data lake and segment(after transforming)
       function fireDLFailureEvents(eventName, properties) {
         window.rzpQ &&
           window.rzpQ.push(
             window.rzpQ.now().onbr().failed(eventName, Object.assign(gauthEventObj, properties)),
           );
+        trackSegmentEvents(eventName, 'failed', properties);
       }
 
+      // fires success events to Data lake and segment(after transforming)
       function fireDLSuccessEvents(eventName, properties) {
         window.rzpQ &&
           window.rzpQ.push(
             window.rzpQ.now().onbr().success(eventName, Object.assign(gauthEventObj, properties)),
           );
+        trackSegmentEvents(eventName, 'success', properties);
       }
 
+      // fires initiated events to Data lake and segment(after transforming)
       function fireDLInitiatedEvents(eventName, properties) {
         window.rzpQ &&
           window.rzpQ.push(
             window.rzpQ.now().onbr().initiated(eventName, Object.assign(gauthEventObj, properties)),
           );
+        trackSegmentEvents(eventName, 'initiated', properties);
       }
 
       const fireGauthLoginEvt = function (email, error, gAuthType) {
@@ -1227,16 +1237,13 @@ app
                 $scope.signup.userid = data.user.id;
                 $scope.signup.mid = data.current;
                 setCookie('midExists', !!data.current);
-                window.rzpQ &&
-                  window.rzpQ.push(
-                    window.rzpQ.now().onbr().success('signup.create_account', {
-                      mode: $scope.eventsMode,
-                      version: 1,
-                      emailId: data.user.email,
-                      userid: data.user.id,
-                      mid: data.current,
-                    }),
-                  );
+                fireDLSuccessEvents('signup.create_account', {
+                  mode: $scope.eventsMode,
+                  version: 1,
+                  emailId: data.user.email,
+                  userid: data.user.id,
+                  mid: data.current,
+                });
 
                 updateSpinnerState('hide');
                 $state.transitionTo(
@@ -1264,15 +1271,12 @@ app
               value: signupError,
             });
 
-            window.rzpQ &&
-              window.rzpQ.push(
-                window.rzpQ.now().onbr().failed('signup.create_account', {
-                  mode: $scope.eventsMode,
-                  version: 1,
-                  emailId: payload.data.email,
-                  error: signupError,
-                }),
-              );
+            fireDLFailureEvents('signup.create_account', {
+              mode: $scope.eventsMode,
+              version: 1,
+              emailId: payload.data.email,
+              error: signupError,
+            });
 
             let firstError = '';
             if (data.errors && data.errors.length) {
@@ -1456,20 +1460,14 @@ app
             });
             // else
           } else {
-            window.rzpQ &&
-              window.rzpQ.push(
-                window.rzpQ
-                  .now()
-                  .onbr()
-                  .failed('signup.finish_signup', {
-                    mode: $scope.eventsMode,
-                    emailId: $scope.signup.data.email,
-                    mid: $scope.signup.mid,
-                    userid: $scope.signup.userid,
-                    error: data.errors ? data.errors[0] : '',
-                    version: 1,
-                  }),
-              );
+            fireDLFailureEvents('signup.finish_signup', {
+              mode: $scope.eventsMode,
+              emailId: $scope.signup.data.email,
+              mid: $scope.signup.mid,
+              userid: $scope.signup.userid,
+              error: data.errors ? data.errors[0] : '',
+              version: 1,
+            });
             angular.forEach(data.errors, function (value) {
               $scope.alerts.addAlert('danger', value);
 
@@ -1792,9 +1790,7 @@ app
       };
 
       $scope.onCreateClick = function () {
-        window.rzpQ.push(
-          window.rzpQ.now().onbr().initiated('signup.create_account', { mode: $scope.eventsMode }),
-        );
+        fireDLInitiatedEvents('signup.create_account', { mode: $scope.eventsMode });
       };
       $scope.goToSigninLayout = function () {
         $scope.goToSignupStep(0); // reset signup step
@@ -2178,14 +2174,12 @@ app
         request.success(function (data) {
           if (data.success) {
             if (payload.data.otp && payload.data.otp.length) {
-              window.rzpQ.push(
-                window.rzpQ.now().onbr().success('login.2fa_otp', {
-                  source: 'sign_in',
-                  sessionId: window.session_id,
-                  emailId: $scope.login.data.email,
-                  mode: $scope.eventsMode,
-                }),
-              );
+              fireDLSuccessEvents('login.2fa_otp', {
+                source: 'sign_in',
+                sessionId: window.session_id,
+                emailId: $scope.login.data.email,
+                mode: $scope.eventsMode,
+              });
               pushPromMetric({ flow: 'login', label: 'login_success_2fa' });
             }
 
@@ -2230,15 +2224,13 @@ app
             }
 
             if (payload.data.otp && payload.data.otp.length) {
-              window.rzpQ.push(
-                window.rzpQ.now().onbr().failed('login.2fa_otp', {
-                  source: 'sign_in',
-                  sessionId: window.session_id,
-                  emailId: $scope.login.data.email,
-                  mode: $scope.eventsMode,
-                  error: data.errors[0],
-                }),
-              );
+              fireDLFailureEvents('login.2fa_otp', {
+                source: 'sign_in',
+                sessionId: window.session_id,
+                emailId: $scope.login.data.email,
+                mode: $scope.eventsMode,
+                error: data.errors[0],
+              });
             }
             updateSpinnerState('hide');
             window.grecaptcha && grecaptcha.reset();
@@ -2291,16 +2283,13 @@ app
           $scope.loadCaptcha();
           isCaptchaReloadAttempted = true;
         } else {
-          window.rzpQ &&
-            window.rzpQ.push(
-              window.rzpQ.now().onbr().failed('recaptcha', {
-                error: 'Could not connect to captcha.',
-                sessionId: window.session_id,
-                emailId: $scope.login.data.email,
-                mode: $scope.eventsMode,
-                version: 1,
-              }),
-            );
+          fireDLFailureEvents('recaptcha', {
+            error: 'Could not connect to captcha.',
+            sessionId: window.session_id,
+            emailId: $scope.login.data.email,
+            mode: $scope.eventsMode,
+            version: 1,
+          });
         }
       };
 
@@ -2422,14 +2411,12 @@ app
           data: data,
         };
 
-        window.rzpQ.push(
-          window.rzpQ.now().onbr().initiated('login.2fa_change_mobile_number', {
-            source: 'sign_in',
-            sessionId: window.session_id,
-            emailId: $scope.login.data.email,
-            mode: $scope.eventsMode,
-          }),
-        );
+        fireDLInitiatedEvents('login.2fa_change_mobile_number', {
+          source: 'sign_in',
+          sessionId: window.session_id,
+          emailId: $scope.login.data.email,
+          mode: $scope.eventsMode,
+        });
 
         var request = $http(payload);
         $scope.alerts.resetAlerts();
@@ -2473,27 +2460,23 @@ app
         request.success(function (data) {
           if (data.success) {
             $scope.successFullSignin();
-            window.rzpQ.push(
-              window.rzpQ.now().onbr().success('login.2fa_otp', {
-                source: 'sign_in',
-                sessionId: window.session_id,
-                emailId: $scope.login.data.email,
-                mode: $scope.eventsMode,
-              }),
-            );
+            fireDLSuccessEvents('login.2fa_otp', {
+              source: 'sign_in',
+              sessionId: window.session_id,
+              emailId: $scope.login.data.email,
+              mode: $scope.eventsMode,
+            });
             pushPromMetric({ flow: 'login', label: 'login_success_2fa' });
           } else {
             updateSpinnerState('hide');
             $scope.alerts.addAlert('danger', data.errors[0]);
-            window.rzpQ.push(
-              window.rzpQ.now().onbr().failed('login.2fa_otp', {
-                source: 'sign_in',
-                sessionId: window.session_id,
-                emailId: $scope.login.data.email,
-                mode: $scope.eventsMode,
-                error: data.errors[0],
-              }),
-            );
+            fireDLFailureEvents('login.2fa_otp', {
+              source: 'sign_in',
+              sessionId: window.session_id,
+              emailId: $scope.login.data.email,
+              mode: $scope.eventsMode,
+              error: data.errors[0],
+            });
           }
         });
       };
@@ -2516,26 +2499,22 @@ app
         $scope.alerts.resetAlerts();
         request.success(function (data) {
           if (data.success) {
-            window.rzpQ.push(
-              window.rzpQ.now().onbr().success('login.2fa_otp', {
-                source: 'sign_in',
-                sessionId: window.session_id,
-                emailId: $scope.login.data.email,
-                mode: $scope.eventsMode,
-              }),
-            );
+            fireDLSuccessEvents('login.2fa_otp', {
+              source: 'sign_in',
+              sessionId: window.session_id,
+              emailId: $scope.login.data.email,
+              mode: $scope.eventsMode,
+            });
             pushPromMetric({ flow: 'login', label: 'login_success_2fa' });
             $scope.successFullSignin();
           } else {
-            window.rzpQ.push(
-              window.rzpQ.now().onbr().failed('login.2fa_otp', {
-                source: 'sign_in',
-                sessionId: window.session_id,
-                emailId: $scope.login.data.email,
-                mode: $scope.eventsMode,
-                error: data.errors[0],
-              }),
-            );
+            fireDLFailureEvents('login.2fa_otp', {
+              source: 'sign_in',
+              sessionId: window.session_id,
+              emailId: $scope.login.data.email,
+              mode: $scope.eventsMode,
+              error: data.errors[0],
+            });
             updateSpinnerState('hide');
             const firstError = data.errors[0];
             if (typeof firstError === 'object' && !!firstError.internal_error_code) {
@@ -2553,14 +2532,12 @@ app
           url: '/user/2fa/otp-resend',
         };
 
-        window.rzpQ.push(
-          window.rzpQ.now().onbr().initiated('login.2fa_resend_otp', {
-            source: 'sign_in',
-            sessionId: window.session_id,
-            emailId: $scope.login.data.email,
-            mode: $scope.eventsMode,
-          }),
-        );
+        fireDLInitiatedEvents('login.2fa_resend_otp', {
+          source: 'sign_in',
+          sessionId: window.session_id,
+          emailId: $scope.login.data.email,
+          mode: $scope.eventsMode,
+        });
 
         var request = $http(payload);
         $scope.login.resendingOtp = true;
@@ -2568,36 +2545,30 @@ app
         request.success(function (data) {
           if (data.success) {
             $scope.login.resendingOtp = false;
-            window.rzpQ.push(
-              window.rzpQ.now().onbr().success('login.2fa_resend_otp', {
-                source: 'sign_in',
-                sessionId: window.session_id,
-                emailId: $scope.login.data.email,
-                mode: $scope.eventsMode,
-              }),
-            );
+            fireDLSuccessEvents('login.2fa_resend_otp', {
+              source: 'sign_in',
+              sessionId: window.session_id,
+              emailId: $scope.login.data.email,
+              mode: $scope.eventsMode,
+            });
           } else {
             $scope.alerts.addAlert(data.errors[0]);
-            window.rzpQ.push(
-              window.rzpQ.now().onbr().initiated('login.2fa_resend_otp', {
-                source: 'sign_in',
-                sessionId: window.session_id,
-                emailId: $scope.login.data.email,
-                mode: $scope.eventsMode,
-                error: data.errors[0],
-              }),
-            );
+            fireDLInitiatedEvents('login.2fa_resend_otp', {
+              source: 'sign_in',
+              sessionId: window.session_id,
+              emailId: $scope.login.data.email,
+              mode: $scope.eventsMode,
+              error: data.errors[0],
+            });
           }
         });
       };
 
       $scope.resendVerificationEmail = function () {
-        window.rzpQ.push(
-          window.rzpQ.now().onbr().success('signup.email_verification', {
-            source: 'sign_in',
-            mode: $scope.eventsMode,
-          }),
-        );
+        fireDLSuccessEvents('signup.email_verification', {
+          source: 'sign_in',
+          mode: $scope.eventsMode,
+        });
 
         var payload = {
           method: 'post',
@@ -2669,28 +2640,22 @@ app
 
       function displaySignupEvent() {
         if (!$scope.isSignupDisplayEventFired) {
-          window.rzpQ &&
-            window.rzpQ.push(
-              window.rzpQ
-                .now()
-                .onbr()
-                .success('signup.display_signup_page', {
-                  mode: $scope.eventsMode,
-                  version: 1,
-                  service: $scope.currentService,
-                  emailId: $scope.signup.data.email,
-                  first_utm: utmData.firstUtm,
-                  last_utm: utmData.lastUtm,
-                  ref_url: $location.search().utm_source || document.referrer,
-                  first_page: utmData.firstPage,
-                  final_page: utmData.finalPage,
-                  website: utmData.website,
-                  referring_url: utmData.website,
-                  is_landing_page_user: getIsLandingPageUser(),
-                  is_landing_page_session: getSessionInfo().isLandingPageSession,
-                  common_session_id: getSessionInfo().commonSessionId,
-                }),
-            );
+          fireDLSuccessEvents('signup.display_signup_page', {
+            mode: $scope.eventsMode,
+            version: 1,
+            service: $scope.currentService,
+            emailId: $scope.signup.data.email,
+            first_utm: utmData.firstUtm,
+            last_utm: utmData.lastUtm,
+            ref_url: $location.search().utm_source || document.referrer,
+            first_page: utmData.firstPage,
+            final_page: utmData.finalPage,
+            website: utmData.website,
+            referring_url: utmData.website,
+            is_landing_page_user: getIsLandingPageUser(),
+            is_landing_page_session: getSessionInfo().isLandingPageSession,
+            common_session_id: getSessionInfo().commonSessionId,
+          });
           $scope.isSignupDisplayEventFired = true;
         }
       }
@@ -2828,12 +2793,10 @@ app
 
         window.ga && window.ga('send', 'event', 'Signup - Steps', 'Click - Back', toStepName);
 
-        window.rzpQ.push(
-          window.rzpQ.now().onbr().success('signup.back_action', {
-            source: toStepName,
-            mode: $scope.eventsMode,
-          }),
-        );
+        fireDLSuccessEvents('signup.back_action', {
+          source: toStepName,
+          mode: $scope.eventsMode,
+        });
       };
 
       if (isHostedInBB) {

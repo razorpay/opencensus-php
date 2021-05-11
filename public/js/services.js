@@ -1199,15 +1199,37 @@ angular
         switch (data.event_type) {
           case 'initiated':
             window.rzpQ.onbr().initiated('login.' + data.event_name);
+            transformAndTriggerSegmentEvents('login.' + data.event_name + '.initiated');
             break;
           case 'success':
             window.rzpQ.onbr().success('login.' + data.event_name);
+            transformAndTriggerSegmentEvents('login.' + data.event_name + '.success');
             break;
         }
         window.rzpQ.push(properties);
       }
+      function titleCase(str) {
+        return str
+          .toLowerCase()
+          .split(' ')
+          .map(function (word) {
+            return word.charAt(0).toUpperCase() + word.slice(1);
+          })
+          .join(' ');
+      }
+      function emitSegment(eventName = '', properties = {}) {
+        // This is segment's analytics window object not our analytics object
+        if (window.analytics) {
+          window.analytics.track(eventName, properties);
+        }
+      }
+      function transformAndTriggerSegmentEvents(eventName, properties) {
+        var eventNameTitleCase = titleCase(eventName.replace(/[_.]/g, ' '));
+        emitSegment(eventNameTitleCase, properties);
+      }
       return {
         pushEvents: pushEvents,
+        transformAndTriggerSegmentEvents: transformAndTriggerSegmentEvents,
       };
     },
   ]);

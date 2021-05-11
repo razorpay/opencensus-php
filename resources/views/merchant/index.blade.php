@@ -145,6 +145,7 @@ _dcs.account = '9421167';
 @else
   <script type="text/javascript">
       window.session_id = "{!! $session_id !!}"
+      window.isAuthPage = true;
   </script>
   @if($requestPath !== $rootPath and $newAuthFlow === false)
     <script>
