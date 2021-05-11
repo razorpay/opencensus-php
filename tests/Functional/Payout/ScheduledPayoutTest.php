@@ -79,6 +79,8 @@ class ScheduledPayoutTest extends TestCase
         $this->mockStorkService();
 
         $this->ba->privateAuth();
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
     }
 
     public function liveSetUp()

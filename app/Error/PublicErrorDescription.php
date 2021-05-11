@@ -1194,6 +1194,17 @@ class PublicErrorDescription
     // Excel Store
     const BAD_REQUEST_EXCEL_STORE_FILE_PARAM                                        = 'File field should of type file';
 
+    const BAD_REQUEST_BAS_INVALID_BUSINESS_ID                                       = 'Invalid business id provided';
+
+    const BAD_REQUEST_BAS_BUSINESS_ID_NOT_CREATED                                   = 'Business creation is prerequisite for the request';
+
+    const BAD_REQUEST_BAS_BUSINESS_ALREADY_CREATED                                  = 'Business already created for the merchant';
+
+    const BAD_REQUEST_BAS_BUSINESS_DELETION_OPERATION_NOT_PERMITTED                 = 'Business deletion operation is not allowed';
+
+    const BAD_REQUEST_BAS_PERSON_API_FAILURE                                        = 'Error while creating or updating a person';
+
+    const BAD_REQUEST_BANKING_ACCOUNT_SERVICE_ERROR                                 = 'Error from banking account service';
 
     //Offer
     const OFFER_MAX_CARD_USAGE_LIMIT_EXCEEDED                                       = 'Offer Maximum Card Usage limit exceeded';

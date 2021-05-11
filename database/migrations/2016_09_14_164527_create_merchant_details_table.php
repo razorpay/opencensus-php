@@ -369,6 +369,9 @@ class CreateMerchantDetailsTable extends Migration
             $table->string(MerchantDetail::SHOP_ESTABLISHMENT_VERIFICATION_STATUS, 30)
                   ->nullable();
 
+            $table->char(MerchantDetail::BAS_BUSINESS_ID, MerchantDetail::ID_LENGTH)
+                  ->nullable();
+
             $table->foreign(MerchantDetail::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)

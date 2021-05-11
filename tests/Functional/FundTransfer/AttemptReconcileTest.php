@@ -31,6 +31,8 @@ class AttemptReconcileTest extends TestCase
         $this->testDataFilePath = __DIR__ . '/Helpers/AttemptTestData.php';
 
         parent::setUp();
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
     }
 
     // -------------------------------------- Settlement Recon-file tests start -------------------------------

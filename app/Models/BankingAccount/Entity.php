@@ -862,4 +862,10 @@ class Entity extends Base\PublicEntity
 
         return $url;
     }
+
+    //used by banking account service for creating inmemory banking_account entity for banking_accounts api
+    public function setBasCaStatus(string $status)
+    {
+        $this->setAttribute(self::STATUS, $status);
+    }
 }

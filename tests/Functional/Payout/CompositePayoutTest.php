@@ -33,6 +33,8 @@ class CompositePayoutTest extends TestCase
         $this->ba->privateAuth();
 
         $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
     }
 
     public function testCreateCompositePayout()

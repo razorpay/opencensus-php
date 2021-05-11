@@ -106,6 +106,8 @@ class PayoutTest extends OAuthTestCase
         $this->setUpMerchantForBusinessBanking(false, 10000000);
 
         $this->mockStorkService();
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
     }
 
     public function testCreatePayoutAndCheckTransferredAtColumn()
@@ -2999,6 +3001,25 @@ class PayoutTest extends OAuthTestCase
         $payout2 = $this->startTest();
 
         $this->assertArraySelectiveEquals($payout2, $payout);
+    }
+
+    public function testGetPayoutViaPrevilegeAuth()
+    {
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->ba->appAuth('rzp_test_10000000000000', \Config::get('applications.merchant_dashboard')['secret']);
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/payouts/'. $payout['id'];
+
+        $this->startTest();
+
+        $this->assertEquals('bacc_10000000000011', $payout['banking_account_id']);
     }
 
     public function testCreatePaymentPayout(): array

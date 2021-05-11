@@ -466,7 +466,10 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerPhonepeDowntimeService();
 
+        $this->registerBankingAccountService();
+
         $this->registerCacheManager();
+
     }
 
     /**
@@ -1362,6 +1365,17 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         });
     }
 
+    protected function registerBankingAccountService()
+    {
+        $this->app->singleton('banking_account_service', function($app)
+        {
+            $mock = $app['config']->get('applications.banking_account_service.mock');
+
+            $implementation = $mock ? Mock\BankingAccountService::class : BankingAccountService::class;
+
+            return new $implementation($app);
+        });
+    }
     protected function registerCacheManager()
     {
         $this->app->singleton('cache', function ($app) {

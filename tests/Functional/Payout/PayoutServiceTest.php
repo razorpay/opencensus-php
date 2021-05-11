@@ -47,6 +47,8 @@ class PayoutServiceTest extends TestCase
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_SERVICE_ENABLED]);
 
         $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
     }
 
     public function mockPayoutServiceCreate($fail = false)

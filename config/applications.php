@@ -945,4 +945,11 @@ return [
         'password'      => env('TEMPLATING_SERVICE_AUTH_SECRET'),
         'url'           => env('TEMPLATING_SERVICE_URL'),
     ],
+
+    'banking_account_service' => [
+        'url'           => env('APP_BANKING_ACCOUNT_SERVICE_URL'),
+        'secret'        => env('APP_BANKING_ACCOUNT_SERVICE_SECRET'),
+        'timeout'       => env('APP_BANKING_ACCOUNT_SERVICE_TIMEOUT_SECS', 15),
+        'mock'          => env('MOCK_BANKING_ACCOUNT_SERVICE', false),
+    ],
 ];

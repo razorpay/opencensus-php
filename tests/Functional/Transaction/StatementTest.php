@@ -32,6 +32,8 @@ class StatementTest extends TestCase
 
     public function testFetchMultipleStatements()
     {
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
         $this->fixtures->edit('merchant', '10000000000000', ['business_banking' => true]);
 
         // Creates two bank transfer transaction on banking balance.
@@ -342,6 +344,8 @@ class StatementTest extends TestCase
 
     public function testActionFilter()
     {
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
         $this->createPayout();
 
         // Test debit filter after payout

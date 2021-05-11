@@ -75,6 +75,8 @@ class IciciCaPayoutTest extends TestCase
             Details\Entity::CHANNEL        => Details\Channel::ICICI,
             Details\Entity::STATUS         => Details\Status::ACTIVE,
         ]);
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
     }
 
     public function testIciciAccountStatementFetchV2()

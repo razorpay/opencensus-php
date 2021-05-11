@@ -160,6 +160,9 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
 
     const FRAUD_TYPE                               = 'fraud_type';
 
+    //merchant's business banking id generated from banking account service.
+    const BAS_BUSINESS_ID                          = 'bas_business_id';
+
     // relation name
     const STAKEHOLDER    = 'stakeholder';
     const MERCHANT_AVG_ORDER_VALUE    = 'merchant_avg_order_value';
@@ -402,7 +405,8 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::CLIENT_APPLICATIONS,
         self::BUSINESS_SUGGESTED_PIN,
         self::BUSINESS_SUGGESTED_ADDRESS,
-        self::FRAUD_TYPE
+        self::FRAUD_TYPE,
+        self::BAS_BUSINESS_ID,
     ];
 
     protected $defaults = [
@@ -1335,5 +1339,15 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     public function setFraudType($fraudType)
     {
         return $this->setAttribute(self::FRAUD_TYPE, $fraudType);
+    }
+
+    public function setBasBusinessId($businessId)
+    {
+        $this->setAttribute(self::BAS_BUSINESS_ID, $businessId);
+    }
+
+    public function getBasBusinessId()
+    {
+        return $this->getAttribute(self::BAS_BUSINESS_ID);
     }
 }

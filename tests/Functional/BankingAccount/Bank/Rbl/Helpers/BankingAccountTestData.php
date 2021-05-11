@@ -1749,7 +1749,7 @@ return [
                             'balance'       => 90000,
                             'currency'      => 'INR',
                         ]
-                    ],
+                    ]
                 ],
             ],
         ],

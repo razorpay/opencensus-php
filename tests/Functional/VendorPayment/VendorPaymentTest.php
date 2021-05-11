@@ -48,6 +48,8 @@ class VendorPaymentTest extends TestCase
 
     public function testCompositeExpands()
     {
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
         // will call the compostie api and check if the response are as expected
         $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
 
@@ -78,6 +80,8 @@ class VendorPaymentTest extends TestCase
 
     public function testCompositeExpandsWhenOnlyPayoutIsPassed()
     {
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
         // will call the compostie api and check if the response are as expected
         $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
 
@@ -103,6 +107,8 @@ class VendorPaymentTest extends TestCase
 
     public function testCreatePayout()
     {
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
         $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
 
         $payout1 = $this->startTest();
@@ -115,6 +121,8 @@ class VendorPaymentTest extends TestCase
 
     public function testCreateScheduledPayout()
     {
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
         $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
 
         $scheduledAtTime = Carbon::now(Timezone::IST)->hour(9)->addMonths(2)->getTimestamp();

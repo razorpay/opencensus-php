@@ -1120,7 +1120,24 @@ class Entity extends Base\PublicEntity
     {
         $bankingAccount = $this->balance->bankingAccount;
 
-        return optional($bankingAccount)->getFtsFundAccountId();
+        $ftsFundAccountId = optional($bankingAccount)->getFtsFundAccountId();
+
+        if (empty($ftsFundAccountId) === true and
+            ($this->isBalanceAccountTypeDirect() === true) and
+            ($this->balance->getChannel() === Channel::ICICI))
+        {
+            $app = App::getFacadeRoot();
+
+            $channel       = $this->balance->getChannel();
+
+            $accountNumber = $this->balance->getAccountNumber();
+
+            $merchantId    = $this->balance->getMerchantId();
+
+            $ftsFundAccountId = $app['banking_account_service']->fetchFtsFundAccountIdFromBas($merchantId, $channel, $accountNumber);
+        }
+
+        return $ftsFundAccountId;
     }
 
     public function getFeeType()
@@ -1685,6 +1702,13 @@ class Entity extends Base\PublicEntity
         }
 
         $attributes[self::BANKING_ACCOUNT_ID] = optional($this->bankingAccount)->getPublicId();
+
+        //In case of icici ca banking_account_id is fetched from banking account service.
+        //banking_account_id is cached for subsequent calls
+        if(empty($attributes[self::BANKING_ACCOUNT_ID]) === true)
+        {
+            $attributes[self::BANKING_ACCOUNT_ID] = app('banking_account_service')->fetchBankingAccountId($attributes[self::BALANCE_ID]);
+        }
     }
 
     public function setPublicDestinationAttribute(array & $attributes)

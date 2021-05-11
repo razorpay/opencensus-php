@@ -50,6 +50,8 @@ class UserTest extends TestCase
         $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
 
         $this->app->make(Factory::class)->load($factoryPath);
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
     }
 
     public function testCreate()
@@ -2454,7 +2456,7 @@ class UserTest extends TestCase
         Carbon::setTestNow();
     }
 
-    public function testGetForUsersWithNoBankingAccountForIciciCA()
+    public function testGetForUsersWithBankingAccountForIciciCA()
     {
         $oldDateTime = Carbon::create(2019, 7, 21, 12, 23, 41, Timezone::IST);
 

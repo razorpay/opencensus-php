@@ -1,0 +1,291 @@
+<?php
+
+namespace RZP\Models\BankingAccountService;
+
+use RZP\Exception;
+use RZP\Models\Base;
+use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
+use Illuminate\Http\Request;
+use RZP\Models\Merchant\Detail;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Models\BankingAccountStatement;
+use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
+
+class Core extends Base\Core
+{
+    public function createCaBankingDependencies(string $merchantId, array $input): array
+    {
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_SERVICE_CREATE_BANKING_REQUEST, $input);
+
+        $balance = $this->repo->transaction(function () use ($merchantId, $input)
+        {
+            $balance = $this->createBalanceAndBankingAccountStatementDetails($merchantId, $input);
+
+            return $balance;
+        });
+
+        return [
+            'balance_id' => $balance->getId(),
+        ];
+    }
+
+    public function assignBusinessId(string $merchantId, array $input): array
+    {
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_SERVICE_BUSINESS_ID_REQUEST, $input);
+
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        /* @var Detail\Entity $merchantDetail*/
+        $merchantDetail = $merchant->merchantDetail;
+
+        $merchantDetail->setBasBusinessId($input[Constants::BUSINESS_ID]);
+
+        $this->repo->merchant_detail->saveOrFail($merchantDetail);
+
+        return $merchantDetail->toArrayPublic();
+    }
+
+    public function createBalanceAndBankingAccountStatementDetails($merchantId, $input)
+    {
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $attributes = [
+            Merchant\Balance\Entity::ACCOUNT_TYPE        => Merchant\Balance\AccountType::DIRECT,
+            Merchant\Balance\Entity::CHANNEL             => $input[Constants::CHANNEL],
+            Merchant\Balance\Entity::ACCOUNT_NUMBER      => $input[Constants::ACCOUNT_NUMBER],
+        ];
+
+        $balance = $this->createBalance($merchant, $attributes);
+
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_SERVICE_BALANCE_CREATE, $balance->toArrayPublic());
+
+        $this->createBankingAccountStatementDetails($merchantId, $input, $balance->getId());
+
+        return $balance;
+    }
+
+    public function createBalance(Merchant\Entity $merchant, $attributes)
+    {
+        $balance = $this->repo->balance->getBalanceByMerchantIdAccountNumberChannelAndAccountType(
+            $merchant->getId(),
+            $attributes[Constants::ACCOUNT_NUMBER],
+            $attributes[Constants::CHANNEL],
+            AccountType::DIRECT);
+
+        if(empty($balance) === true)
+        {
+            $mode = $this->app['rzp.mode'];
+
+            $balance = (new Merchant\Balance\Core)->createBalanceForCurrentAccount($merchant, $attributes, $mode);
+        }
+
+        return $balance;
+    }
+
+    public function createBankingAccountStatementDetails($merchantId, $input, $balanceId)
+    {
+        $input[Constants::BALANCE_ID] = $balanceId;
+
+        $input[Constants::MERCHANT_ID] = $merchantId;
+
+        (new BankingAccountStatement\Details\Core())->createOrUpdate($input);
+    }
+
+    /**
+     *  Creating bankingAccountEntity in memory only and attaches to result set.
+     *
+     * @param $merchantId
+     * @param $basBankingAccount
+     * @param $bankingAccounts
+     *
+     * @return
+     */
+    public function attachBasBankingAccount($merchantId, $basBankingAccount, $bankingAccounts)
+    {
+        if (empty($basBankingAccount) === true)
+        {
+            return $bankingAccounts;
+        }
+
+        $ba = $this->generateInMemoryBankingAccount($merchantId, $basBankingAccount);
+
+        $bankingAccounts->add($ba);
+
+        return $bankingAccounts;
+    }
+
+    public function attachBankingAccountWithBalance($merchantId, $basBankingAccount)
+    {
+        $ba = $this->generateInMemoryBankingAccount($merchantId, $basBankingAccount);
+
+        $bankingAccountArray = $ba->toArrayPublic();
+
+        $bankingAccountArray['banking_balance'] = optional($ba->balance)->toArrayPublic();
+
+        return $bankingAccountArray;
+    }
+
+    public function generateInMemoryBankingAccount($merchantId, $basBankingAccount)
+    {
+        $ba = new BankingAccountEntity();
+
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $input = [
+            BankingAccountEntity::CHANNEL      => Channel::ICICI,
+            BankingAccountEntity::ACCOUNT_TYPE => 'current',
+            BankingAccountEntity::ACCOUNT_IFSC => $basBankingAccount['ifsc'],
+        ];
+
+        if (empty($basBankingAccount['account_number']) === false)
+        {
+            $input[BankingAccountEntity::ACCOUNT_NUMBER] = $basBankingAccount['account_number'];
+        }
+
+        $ba->build($input);
+
+        $status = $basBankingAccount[Constants::STATUS];
+
+        if ($status === 'ACTIVE')
+        {
+            $status = 'activated';
+        }
+
+        $ba->setId($basBankingAccount['id']);
+
+        $ba->setBasCaStatus($status);
+
+        $balance = $this->repo->balance->getBalanceByMerchantIdChannelAndAccountType(
+            $merchantId,
+            Channel::ICICI,
+            'direct');
+
+        $ba->merchant()->associate($merchant);
+
+        $ba->balance()->associate($balance);
+
+        return $ba;
+    }
+
+    public function removeRequestParamsFromInput($requestParams, $input)
+    {
+        if(empty($requestParams) === true)
+        {
+            return $input;
+        }
+
+        return array_except($input, array_keys($requestParams));
+    }
+
+    public function attachRequestParamsToPath($queryString, $path)
+    {
+        if(empty($queryString) === true)
+        {
+            return $path;
+        }
+
+        return $path . '?' . $queryString;
+    }
+
+    public function isvalidBusinessId($path)
+    {
+        $businessId = null;
+
+        $result = preg_split("/[\/]/", $path);
+
+        if(empty($result) === false)
+        {
+            $businessId = $result[0];
+        }
+        else
+        {
+            $businessId = $path;
+        }
+
+        if($businessId !== $this->fetchBusinessId())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_BAS_INVALID_BUSINESS_ID);
+        }
+
+        return $businessId;
+    }
+
+    public function fetchBusinessId()
+    {
+        /* @var1 Detail\Entity $merchantDetail*/
+        $merchantDetail = $this->merchant->merchantDetail;
+
+        $businessId = $merchantDetail->getBasBusinessId();
+
+        if(empty($businessId) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_BAS_BUSINESS_ID_NOT_CREATED);
+        }
+
+        return $businessId;
+    }
+
+    public function isBusinessExists()
+    {
+        $businessId = $this->merchant->merchantDetail->getBasBusinessId();
+
+        if(empty($businessId) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_BAS_BUSINESS_ALREADY_CREATED);
+        }
+    }
+
+    public function isDeleteBusinessRequest($path, $method)
+    {
+        if ($method === Request::METHOD_DELETE)
+        {
+            //By now business would have created.
+            $businessId = $this->fetchBusinessId();
+
+            if($path === Constants::BUSINESS_PATH . '/' . $businessId)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_BAS_BUSINESS_DELETION_OPERATION_NOT_PERMITTED);
+            }
+        }
+    }
+
+    /*
+     * FE checks for ca_activation_status field and lands on live mode if it's activated.
+     */
+    public function fetchIciciCaStatus($merchantId)
+    {
+        $status = null;
+        //Avoiding failure of /user api if banking account service is down.
+        try
+        {
+            $bankingAccount = $this->app['banking_account_service']->fetchAccountDetails($merchantId);
+
+            if (empty($bankingAccount) === false)
+            {
+                $status = $bankingAccount[Constants::STATUS];
+
+                if ($status === 'ACTIVE')
+                {
+                    $status = 'activated';
+                }
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::BANKING_ACCOUNT_SERVICE_ERROR_FETCH_ACCOUNT_DETAILS
+            );
+        }
+
+        return $status;
+    }
+}

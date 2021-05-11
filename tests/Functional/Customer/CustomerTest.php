@@ -23,6 +23,8 @@ class CustomerTest extends TestCase
         $this->testDataFilePath = __DIR__.'/helpers/CustomerTestData.php';
 
         parent::setUp();
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
     }
 
     public function testCreateCustomer()

@@ -2655,6 +2655,19 @@ return [
         ]
     ],
 
+    'testGetPayoutViaPrevilegeAuth' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/payouts/{id}',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
     'testCreatePaymentPayout' => [
         'request' => [
             'method'  => 'POST',

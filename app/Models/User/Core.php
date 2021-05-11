@@ -29,6 +29,7 @@ use RZP\Mail\User\Otp as OtpMail;
 use RZP\Models\Admin\Admin\Token;
 use RZP\Http\UserRolePermissionsMap;
 use RZP\Exception\BadRequestException;
+use RZP\Models\BankingAccountService;
 use RZP\Modules\SecondFactorAuth\Constants as AuthConstants;
 use RZP\Mail\User\ContactMobileUpdated as ContactMobileUpdatedMail;
 use RZP\Mail\User\AccountLockedWrongAttempt as AccountLockedWrongAttemptMail;
@@ -945,21 +946,29 @@ class Core extends Base\Core
                     return $merchant;
                 }
 
-                $activationStatusCA = null;
+                $caActivationStatus = null;
 
                 if (empty($balance_CA) === false)
                 {
                     $bankingAccountCA = $this->repo->banking_account->getFromBalanceId($balance_CA->getId());
-                    // For ICICI there is no banking_account entity created in api DB, after bankingAccount Service
-                    // is up call that to get ICICI current account status.
-                    $activationStatusCA = optional($bankingAccountCA)->getStatus();
+
+                    $caActivationStatus = optional($bankingAccountCA)->getStatus();
+
+                    //Fetching icici ca status from banking account service.
+                    if(empty($caActivationStatus) === true or
+                       $caActivationStatus !== 'activated')
+                    {
+                        $caActivationStatus = (new BankingAccountService\Core())->fetchIciciCaStatus($merchant['id']);
+                    }
                 }
 
                 // If Only CA is there
                 if (empty($balance) === true)
                 {
                     return $merchant + [
-                        Merchant\Entity::CA_ACTIVATION_STATUS   => $activationStatusCA,
+                        Merchant\Entity::CA_ACTIVATION_STATUS   => $caActivationStatus,
+                        Merchant\Entity::ACCOUNTS               => $this->fetchBankingAccountWithBalance(
+                            $merchant['id']),
                         ];
                 }
 
@@ -976,7 +985,7 @@ class Core extends Base\Core
                         // Below fields except accounts and ca_activation_status are related to only virtual account
 
                         Merchant\Entity::BANKING_ACTIVATED_AT   => $balance->getCreatedAt(),
-                        Merchant\Entity::CA_ACTIVATION_STATUS   => $activationStatusCA,
+                        Merchant\Entity::CA_ACTIVATION_STATUS   => $caActivationStatus,
                         Merchant\Entity::BANKING_BALANCE        => $balance->only([Merchant\Balance\Entity::BALANCE,
                                                                                    Merchant\Balance\Entity::CURRENCY]),
                         Merchant\Entity::BANKING_ACCOUNT        => $bankingAccount->toArrayPublic(),
@@ -1030,6 +1039,9 @@ class Core extends Base\Core
 
             $result[] = $bankingAccountArray;
         }
+
+        //fetches icici ca details from banking account service
+        $result = (new BankingAccountService\Service())->fetchBankingAccountWithBalanceFromBas($merchantId, $result);
 
         return $result;
     }

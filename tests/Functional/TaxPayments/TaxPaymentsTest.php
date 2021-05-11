@@ -31,6 +31,7 @@ class TaxPaymentsTest extends TestCase
 
         $this->config = App::getFacadeRoot()['config'];
 
+        $this->app['config']->set('applications.banking_account_service.mock', true);
     }
 
     public function testSettingsInternalApiAddOrUpdate()

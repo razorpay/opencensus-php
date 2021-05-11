@@ -4725,6 +4725,8 @@ class RblBankingAccountStatementTest extends TestCase
 
         Carbon::setTestNow($oldDateTime);
 
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
         // account statement fetch cron
         $mockedResponse = $this->getRblDataResponse();
 

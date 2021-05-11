@@ -6206,6 +6206,10 @@ ALTER TABLE banking_account_tpvs
     ADD COLUMN trimmed_payer_account_number varchar(255) DEFAULT NULL,
     ADD UNIQUE INDEX banking_account_tpvs_merchant_id_account_number_uq_index (merchant_id, trimmed_payer_account_number);
 
+ALTER TABLE merchant_details
+ ADD COLUMN bas_business_id VARCHAR(14) DEFAULT NULL;
+
+
 ALTER TABLE card_mandates
 	ADD mandate_card_id varchar(20),
 	ADD debit_type varchar(20),

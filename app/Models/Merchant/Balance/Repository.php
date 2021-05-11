@@ -366,4 +366,42 @@ class Repository extends Base\Repository
             ->groupBy(Entity::MERCHANT_ID)
             ->get();
     }
+
+    /**
+     * @param string      $merchantId
+     * @param string      $accountNumber
+     * @param string      $channel
+     *
+     * @param string      $accountType
+     *
+     * @param string|null $connection
+     *
+     * @return Entity
+     */
+    public function getBalanceByMerchantIdAccountNumberChannelAndAccountType(
+        string $merchantId,
+        string $accountNumber,
+        string $channel,
+        string $accountType,
+        string $connection = null)
+    {
+        $query = $connection !== null ? $this->newQueryWithConnection($connection) : $this->newQuery();
+
+        return $query->where(Entity::ACCOUNT_NUMBER, $accountNumber)
+                    ->where(Entity::CHANNEL, $channel)
+                    ->where(Entity::ACCOUNT_TYPE, $accountType)
+                    ->merchantIdAndType($merchantId, Type::BANKING)
+                    ->first();
+    }
+
+    public function getBalanceByMerchantIdChannelAndAccountType(string $merchantId,
+                                                                string $channel,
+                                                                string $accountType)
+    {
+        return $this->newQuery()
+                    ->where(Entity::CHANNEL, $channel)
+                    ->where(Entity::ACCOUNT_TYPE, $accountType)
+                    ->merchantIdAndType($merchantId, Type::BANKING)
+                    ->first();
+    }
 }

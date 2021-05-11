@@ -1973,7 +1973,7 @@ return [
         ],
     ],
 
-    'testGetForUsersWithNoBankingAccountForIciciCA' => [
+    'testGetForUsersWithBankingAccountForIciciCA' => [
         'request'  => [
             'url'     => '/users/30000000000000',
             'method'  => 'GET',
@@ -1987,10 +1987,27 @@ return [
                 'contact_mobile'          => null,
                 'contact_mobile_verified' => false,
                 'confirmed'               => true,
-                'merchants'               => [
+                'merchants' => [
                     [
                         'activated'            => true,
-                        'ca_activation_status' => null,
+                        'ca_activation_status' => 'activated',
+                        'accounts'             => [
+                            [
+                                'channel'         => 'icici',
+                                'status'          => 'activated',
+                                'account_number'  => '2224440041626905',
+                                'account_type'    => 'current',
+                                'balance'         => [
+                                    'balance' => 1000000,
+                                ],
+                                'banking_balance' => [
+                                    'account_number' => '2224440041626905',
+                                    'balance'        => 1000000,
+                                    'type'           => 'banking',
+                                    'channel'        => 'icici',
+                                ]
+                            ]
+                        ],
                     ],
                 ],
                 'invitations' => [

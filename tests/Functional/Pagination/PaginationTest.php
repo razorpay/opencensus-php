@@ -24,6 +24,8 @@ class PaginationTest extends TestCase
         parent::setUp();
 
         $this->ba->privateAuth();
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
     }
 
     public function testSetPaginationParameters()

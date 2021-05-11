@@ -2624,9 +2624,25 @@ class BankingAccountTest extends TestCase
             'balance_id'     => $xBalance2->getId(),
         ]);
 
+        $this->fixtures->create('balance',
+                                [
+                                    'merchant_id'    => '10000000000000',
+                                    'type'           => 'banking',
+                                    'account_type'   => 'direct',
+                                    'account_number' => '567890362718193',
+                                    'balance'        => 20000,
+                                    'channel'        => 'icici',
+                                ]);
+
         $this->ba->proxyAuth();
 
         $this->startTest();
+
+        $bankingAccount = $this->getDbEntity('banking_account', [
+            'account_number'    => '567890362718193',
+        ]);
+
+        $this->assertNull($bankingAccount);
     }
 
     public function testBankingAccountFetchCheckFieldLastFetchedAtInBalance()

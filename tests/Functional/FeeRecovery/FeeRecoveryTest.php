@@ -1566,6 +1566,8 @@ class FeeRecoveryTest extends TestCase
     // out of which one is failed and other is reversed
     public function testOutstandingFeesToBeRecovered()
     {
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
         $this->testCreateFeeRecoveryPayout();
 
         $this->ba->proxyAuth();
@@ -1609,6 +1611,8 @@ class FeeRecoveryTest extends TestCase
     // hence no outstanding amount. Last deducted at will also be equal to processed_at of fee recovery_payout
     public function testOutstandingFeesToBeRecoveredWhenFeeRecoveryPayoutsAreProcessed()
     {
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
         $this->testCreateFeeRecoveryPayout();
 
         $feeRecoveryPayout = $this->getDbLastEntity('payout');
@@ -1661,6 +1665,8 @@ class FeeRecoveryTest extends TestCase
     // Later two new payouts are made then hence some outstanding amount to be recovered
     public function testFeeRecoveryDetails()
     {
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
         $this->testCreateFeeRecoveryPayout();
 
         $feeRecoveryPayout = $this->getDbLastEntity('payout');

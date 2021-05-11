@@ -68,6 +68,7 @@
           <exclude>./tests/Functional/Survey/</exclude>
           <exclude>./tests/Functional/Merchant/LowBalanceConfigTest.php</exclude>
           <exclude>./tests/Functional/BankingAccountTpv/</exclude>
+          <exclude>./tests/Functional/BankingAccountService/</exclude>
       </testsuite>
       <testsuite name="Features-1 Test Suite">
           <directory>./tests/Functional/Currency/</directory>
@@ -82,6 +83,7 @@
           <directory>./tests/Functional/Key/</directory>
           <directory>./tests/Functional/PayoutDowntime/</directory>
           <directory>./tests/Functional/BankingAccountTpv/</directory>
+          <directory>./tests/Functional/BankingAccountService/</directory>
       </testsuite>
       <testsuite name = "Features-2 Test Suite">
           <directory>./tests/Functional/Merchant/</directory>

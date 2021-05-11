@@ -16,6 +16,7 @@ use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Permission;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\BankingAccountService;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\IntegrationException;
 use RZP\Mail\BankingAccount\UpdatesForAuditor;
@@ -145,7 +146,11 @@ class Service extends Base\Service
 
     public function fetchMultiple()
     {
-        return $this->merchant->bankingAccounts->load(Entity::BALANCE)->toArrayPublic();
+        $bankingAccounts = $this->merchant->bankingAccounts;
+
+        $bankingAccounts = (new BankingAccountService\Service())->fetchAccountDetailsFromBas($this->merchant->getMerchantId(), $bankingAccounts);
+
+        return $bankingAccounts->load(Entity::BALANCE)->toArrayPublic();
     }
 
     public function processAccountInfoWebhook(string $channel, array $input)

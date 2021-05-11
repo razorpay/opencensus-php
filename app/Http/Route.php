@@ -1716,6 +1716,13 @@ class Route
         // batch service
         'batch_service_route'                      => ['any',      'service/batch/{path?}',                          'BatchController@sendRequest'                                       ],
 
+        //all requests get forwarded to banking account service
+        'banking_account_service_routes'           => ['any',      'merchant/banking_application/business/{path?}',      'BasController@forwardRequest'                                  ],
+        'banking_account_service_cron_routes'      => ['any',      'bas/merchant/banking_application/cron/{path?}',      'BasController@forwardRequest'                                  ],
+
+        //creates balance and banking_account_statement_details
+        'bas_banking_accounts_create'              => ['post',     'bas/merchant/{id}/banking_accounts',             'BasController@createCurrentAccountBankingDependencies'             ],
+
         //splitz service
         'splitz_route'                             => ['any',      'service/splitz',                                 'SplitzController@sendRequest'                                      ],
         'splitz_evaluate'                          => ['post',     'splitz/evaluate',                                'SplitzController@evaluateRequest'                                  ],
@@ -2807,6 +2814,8 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'bas_banking_accounts_create',
+        'banking_account_service_cron_routes',
         'merchant_update_fraud_type',
         'gstin_e_invoice_cron',
         'fix_merchant_data_cron',
@@ -3197,6 +3206,7 @@ class Route
         'segment_create_update',
         // IPL bot
         'throttle_create_config_spinnaker',
+
         'add_verify_disabled_gateway',
         'p2p_retrieve_banks_cron',
 
@@ -3795,6 +3805,9 @@ class Route
         // NPS survey routes
         'pending_survey_get',
         'update_survey_tracker',
+
+        //Banking account service
+        'banking_account_service_routes',
 
         //Partner Activation routes
         'partner_activation_details',
@@ -5730,6 +5743,9 @@ class Route
         //NPS
         'pending_survey_get'                           => '*',
         'update_survey_tracker'                        => '*',
+
+        //Banking account service
+        'banking_account_service_routes'              => '*',
     ];
 
     public static $direct = [
@@ -6840,6 +6856,7 @@ class Route
             'webhook_fire',
             'wfs_config_get',
             'workflow_payout_amount_rules',
+            'banking_account_service_routes',
         ],
 
         'admin_dashboard' => [
@@ -8684,6 +8701,7 @@ class Route
             'loc_cron',
             'care_service_cron_proxy',
             'p2p_retrieve_banks_cron',
+            'banking_account_service_cron_routes',
         ],
 
         'subscriptions' => [
@@ -9095,6 +9113,11 @@ class Route
             'freshdesk_update_ticket_internal',
             'fd_fetch_ticket',
             'user_fetch_internal'
+        ],
+
+        'banking_account_service' => [
+            'bas_banking_accounts_create',
+            'banking_account_service_cron_routes',
         ],
 
         'myoperator' => [

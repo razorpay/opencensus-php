@@ -34,6 +34,8 @@ class BankingScorecardTest extends TestCase
         $this->fixtures->admin->edit($admin['id'], ['allow_all_merchants' => true]);
 
         $this->ba->adminProxyAuth($this->merchantId, 'rzp_test_' . $this->merchantId);
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
     }
 
     public function testBankingScorecardMailCheck()
