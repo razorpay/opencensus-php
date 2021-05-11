@@ -76,14 +76,10 @@ export default class WhatsNew extends Component {
 
     this.props.tracking.trackEvent(
       window.rzpQ &&
-        window.rzpQ.merchantActions().success(
-          'merchant_dashboard.display_notification',
-          this.whatsNew
-            ? {
-                whats_new: true,
-              }
-            : null,
-        ),
+        window.rzpQ.merchantActions().success('merchant_dashboard.display_notification', {
+          experimentVersion: this.getExperimentVersion(),
+          whats_new: this.whatsNew,
+        }),
     );
 
     document.addEventListener('click', this.handleDocumentClick, true);
@@ -91,6 +87,15 @@ export default class WhatsNew extends Component {
 
   componentWillUnmount() {
     document.removeEventListener('click', this.handleDocumentClick, true);
+  }
+
+  getExperimentVersion() {
+    const { user } = this.props;
+
+    if (user.isAnnouncementTextEnabled) return 2.1;
+    if (user.isWhatsNewTextEnabled) return 2.2;
+
+    return 2.3;
   }
 
   getNotificationTrackingProperties(notification) {
@@ -139,6 +144,7 @@ export default class WhatsNew extends Component {
           ID,
           readID,
           unreadID,
+          experimentVersion: this.getExperimentVersion(),
           ...(this.whatsNew && { whats_new: true }),
         }),
       );
@@ -242,6 +248,7 @@ export default class WhatsNew extends Component {
         ID,
         readID,
         unreadID,
+        experimentVersion: this.getExperimentVersion(),
         ...(this.whatsNew && { whats_new: true }),
       }),
     );
@@ -343,8 +350,32 @@ export default class WhatsNew extends Component {
     else this.showSlider();
   };
 
+  getAnnouncementCta = () => {
+    const { user, showMobileNav } = this.props;
+    const { totalUnread } = this.state;
+    const hasUnread = !!totalUnread;
+
+    if ((user.isAnnouncementTextEnabled || user.isWhatsNewTextEnabled) && !showMobileNav) {
+      return (
+        <>
+          <span onClick={this.handleSliderToggleClick} class={classList(hasUnread && 'highlight')}>
+            {user.isAnnouncementTextEnabled ? 'Announcements' : "What's New"}
+          </span>
+          {hasUnread && <span class="bubble">{totalUnread}</span>}
+        </>
+      );
+    }
+
+    return (
+      <>
+        <i className="i i-horn" onClick={this.handleSliderToggleClick}></i>
+        {hasUnread && <span class="new-bubble">{totalUnread}</span>}
+      </>
+    );
+  };
+
   render() {
-    const { lastReadTS, isOpenSlider1, totalUnread, showTooltip } = this.state;
+    const { lastReadTS, isOpenSlider1, showTooltip } = this.state;
     const { user, history } = this.props;
 
     const eventTrackingRequired = [
@@ -373,7 +404,6 @@ export default class WhatsNew extends Component {
       'trusted-badge-mar2021',
       'trusted-badge-enabled',
     ];
-    const hasUnread = !!this.state.totalUnread;
 
     let cardsList = window.notifications.map((card, idx) => (
       <div className="media media-action" key={idx}>
@@ -393,10 +423,7 @@ export default class WhatsNew extends Component {
 
     return (
       <main className={classList('whats-new', isOpenSlider1 && 'whats-new--active')}>
-        <div className="whats-new-slide-toggle">
-          <i className="i i-horn" onClick={this.handleSliderToggleClick}></i>
-          {hasUnread && <span class="new-bubble">{totalUnread}</span>}
-        </div>
+        <div className="whats-new-slide-toggle">{this.getAnnouncementCta()}</div>
         <div
           className={classList(
             'whats-new__tooltip',

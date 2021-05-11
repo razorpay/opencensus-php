@@ -154,7 +154,7 @@ export default class ProfileDropdown extends Component {
       <Dropdown closeOnClick={false} onShow={this.handleShow} onHide={this.handleHide}>
         <DropdownTrigger
           class={`dropdown-toggle${
-            user.isAnnouncementIconEnabled || user.isWhatsNewSectionEnabled
+            !user.isAnnouncementTextEnabled && !user.isWhatsNewTextEnabled
               ? ' dropdown-toggle--large-icon'
               : ''
           }${user.isRTBProgramEnabled ? ' rtb-user-dropdown' : ''}`}

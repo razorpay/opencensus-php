@@ -16,5 +16,9 @@ return [
 
         // developer csat survey experiment
         'ANNOUNCEMENT_DX_CSAT_APRIL2021_SPLITZ' => env('ANNOUNCEMENT_DX_CSAT_APRIL2021_SPLITZ', ''),
+
+        // Announcement Text vs Icon vs What's New text experiment
+        'ANNOUNCEMENT_TEXT_EXPERIMENT_SPLITZ' => env('ANNOUNCEMENT_TEXT_EXPERIMENT_SPLITZ', ''),
+        'WHATSNEW_TEXT_EXPERIMENT_SPLITZ' => env('WHATSNEW_TEXT_EXPERIMENT_SPLITZ', ''),
     ]
 ];

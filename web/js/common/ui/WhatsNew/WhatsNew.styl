@@ -38,7 +38,23 @@ $bubble-red = #F54A2A;
 
       &:hover:after
         background: #F3F5F9;
-    
+
+    .highlight
+      font-weight: 600
+
+    .bubble
+      display: inline-block
+      width: 18px
+      height: 18px
+      vertical-align: middle
+      border-radius: 50%
+      background: $bubble-red
+      margin-left: 4px
+      color: #fff
+      text-align: center
+      font-size: 12px
+      line-height: 18px
+
     .new-bubble
       position: absolute
       top: 7px;
@@ -51,7 +67,7 @@ $bubble-red = #F54A2A;
       text-align: center
       color: white
       line-height: normal
-  
+
   .whats-new__tooltip
     position: absolute
     top: 50px
@@ -76,8 +92,8 @@ $bubble-red = #F54A2A;
         position: absolute
         top: 27%
         left: 100%
-        width: 0; 
-        height: 0; 
+        width: 0;
+        height: 0;
         border-top: 7px solid transparent
         border-bottom: 7px solid transparent
         border-left: 7px solid #2F3344
@@ -90,7 +106,7 @@ $bubble-red = #F54A2A;
         i.i.i-close
           line-height: 1.2
           cursor: pointer
-    
+
     &.whats-new__tooltip--show
       visibility: visible
       opacity: 1
@@ -151,10 +167,10 @@ $bubble-red = #F54A2A;
                   width: fit-content
                   color: #404F6B
                   white-space: normal
-                
+
                 .NotificationCard-icon--secondary
                   margin-left: 10px
-                
+
               .whats-new__video-small
                 width: 100%
                 height: 214px
@@ -171,14 +187,14 @@ $bubble-red = #F54A2A;
                   position: relative
                   top: 40%
                   left: 45%
-                
+
               .description
                 margin-top: 14px
                 color: #647596
-              
+
               &:hover
                 border-bottom-color: transparent
-            
+
             &.active
               .red-bubble
                 position: absolute
@@ -189,10 +205,10 @@ $bubble-red = #F54A2A;
                 border-radius: 50%
                 border: 1px solid #fff
                 background: $bubble-red
-            
+
             &:hover
               background: #F9FBFF
-          
+
           .media
             margin-top: 0
 

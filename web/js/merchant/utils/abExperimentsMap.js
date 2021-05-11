@@ -31,4 +31,17 @@ export default {
     // prod experiment ids
     'H725exSfQ8ZAPz',
   ],
+  announcement_text_experiment: [
+    // beta experiment ids
+    'H7S9OMKVGV53ZZ',
+
+    // prod experiment ids
+    'H7UUNpcljDyGAn',
+  ],
+  whats_new_text_experiment: [
+    // beta experiment ids
+    'H7S8wOn3THVwUa',
+    // prod experiment ids
+    'H7UYFAJIqhQB0X',
+  ],
 };

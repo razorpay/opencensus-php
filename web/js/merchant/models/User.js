@@ -496,6 +496,14 @@ export default class User {
     return this.getExpStatus('AnnouncementIconJan2021');
   }
 
+  get isAnnouncementTextEnabled() {
+    return getSplitzExperimentVariant('announcement_text_experiment')?.variables?.result === 'on';
+  }
+
+  get isWhatsNewTextEnabled() {
+    return getSplitzExperimentVariant('whats_new_text_experiment')?.variables?.result === 'on';
+  }
+
   get isWhatsNewSectionEnabled() {
     return this.getExpStatus('whats-new-dec-2020');
   }

@@ -140,6 +140,16 @@ export default class HeaderNav extends Component {
                 </li>
               </ShowWhen>
               <ShowWhen
+                additionalCondition={(user) =>
+                  user.isOrgAllowedFunctionality('external_links') &&
+                  (user.isAnnouncementTextEnabled || user.isWhatsNewTextEnabled)
+                }
+              >
+                <li id="whats-new-section">
+                  <WhatsNew analytics={analytics} showMobileNav={showMobileNav} {...commonProps} />
+                </li>
+              </ShowWhen>
+              <ShowWhen
                 additionalCondition={(user) => user.isAppSwitcherEnabled && user.isAccepted}
               >
                 <li id="app-switcher">
@@ -148,7 +158,10 @@ export default class HeaderNav extends Component {
               </ShowWhen>
               <ShowWhen
                 additionalCondition={(user) =>
-                  user.isOrgAllowedFunctionality('external_links') && user.isWhatsNewSectionEnabled
+                  user.isOrgAllowedFunctionality('external_links') &&
+                  user.isWhatsNewSectionEnabled &&
+                  !user.isAnnouncementTextEnabled &&
+                  !user.isWhatsNewTextEnabled
                 }
               >
                 <li id="whats-new-section">
