@@ -2020,7 +2020,11 @@ class Route
         // Governor Proxy APIs New - Search
         'governor_search_rules'                     => ['post',     'namespaces/{namespace_id}/rule_chains/{rule_chain_id}/search',                                           'GovernorController@proxy'              ],
 
-        // Governor Navigator
+        // Optimizer On-boarding
+        'governor_optimizer_create_merchant'        => ['post',     'optimizer/merchant/create',                                                                              'GovernorController@proxy'              ],
+        'governor_optimizer_update_merchant'        => ['put',      'optimizer/merchant/update',                                                                              'GovernorController@proxy'              ],
+
+        // Governor Optimizer
         'governor_list_merchant_providers'          => ['get',      'merchant/mid/providers',                                                                                 'GovernorController@proxy'              ],
         'governor_list_merchant_rule_groups'        => ['get',      'merchant/mid/rule_groups',                                                                               'GovernorController@proxy'              ],
         'governor_get_merchant_rule_group'          => ['get',      'merchant/mid/rule_groups/{rule_group_id}',                                                               'GovernorController@proxy'              ],
@@ -4327,6 +4331,11 @@ class Route
         'governor_update_rule_v1',
         'governor_update_rule_index_v1',
         'governor_search_rules',
+
+        // governor optimizer on-boarding
+        'governor_optimizer_create_merchant',
+        'governor_optimizer_update_merchant',
+
         'banking_account_create_admin',
 
         // throttle settings routes
@@ -5211,6 +5220,8 @@ class Route
         'governor_search_rules'                    => Permission::VIEW_GATEWAY_RULE,
         'governor_delete_merchant_rule_group'      => Permission::DELETE_GATEWAY_RULE,
         'governor_update_merchant_rule_group_mode' => Permission::EDIT_GATEWAY_RULE,
+        'governor_optimizer_create_merchant'       => Permission::CREATE_GATEWAY_RULE,
+        'governor_optimizer_update_merchant'       => Permission::EDIT_GATEWAY_RULE,
 
 
 
@@ -7376,6 +7387,8 @@ class Route
             'governor_update_config_v1',
             'governor_update_merchant_rule_group',
             'governor_update_merchant_rule_group_mode',
+            'governor_optimizer_create_merchant',
+            'governor_optimizer_update_merchant',
             'governor_update_namespace',
             'governor_update_namespace_v1',
             'governor_update_rule',
