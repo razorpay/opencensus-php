@@ -20,6 +20,10 @@ class Metric
     const SESSIONS_REDIS_CLUSTER_MISS           = 'sessions_redis_cluster_miss';
     const SESSIONS_REDIS_READ_MISS              = 'sessions_redis_read_miss';
     const VAULT_MIGRATION_READ_MISS             = 'vault_migration_read_miss';
+    const ENTITY_RETRIEVED                      = 'entity_retrieved';
+    const ENTITY_CREATED                        = 'entity_created';
+    const ENTITY_UPDATED                        = 'entity_updated';
+    const ENTITY_DELETED                        = 'entity_deleted';
 
     // Summary type metric names
     // Using '.histogram' as suffix for pattern match to work(refer statsd_mapping.yml) for statsd_exporter
@@ -53,6 +57,7 @@ class Metric
     const LABEL_INSTANCE                        = 'instance';
     const LABEL_TYPE                            = 'type';
     const LABEL_HAS_PASSPORT                    = 'has_passport';
+    const LABEL_ENTITY_NAME                     = 'entity';
 
     // Default label values
     const LABEL_DEFAULT_VALUE                   = 'other';

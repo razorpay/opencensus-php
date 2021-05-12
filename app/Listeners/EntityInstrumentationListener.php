@@ -10,9 +10,6 @@ use RZP\Trace\TraceCode;
 
 class EntityInstrumentationListener
 {
-    /**
-     * @var Application
-     */
     protected $app;
 
     /**
@@ -39,13 +36,9 @@ class EntityInstrumentationListener
      */
     public function handle(EntityInstrumentationEvent $event)
     {
-        $dimensions = [
-            'entity' => $event->entityName
-        ];
-
         try
         {
-            $this->trace->count($event->eventName, $dimensions);
+            $this->trace->count($event->eventName, $event->dimensions);
         }
         catch (\Throwable $e)
         {
@@ -55,7 +48,7 @@ class EntityInstrumentationListener
                 TraceCode::INSTRUMENT_ENTITY_EVENT_ERROR,
                 [
                     'event' => $event->eventName,
-                    'entity' => $event->entityName
+                    'dimensions' => $event->dimensions
                 ]
             );
         }

@@ -2,17 +2,11 @@
 
 namespace RZP\Models\Base;
 
-use App;
-
+use RZP\Constants\Metric;
 use RZP\Events\EntityInstrumentationEvent;
 
 class EntityInstrumentationObserver
 {
-    const RETRIEVED = 'entity_retrieved';
-    const CREATED   = 'entity_created';
-    const UPDATED   = 'entity_updated';
-    const DELETED   = 'entity_deleted';
-
     /**
      * Listen to the retrieved event.
      *
@@ -21,7 +15,7 @@ class EntityInstrumentationObserver
      */
     public function retrieved(Entity $entity)
     {
-        event(new EntityInstrumentationEvent(self::RETRIEVED, $entity->getEntityName()));
+        event(new EntityInstrumentationEvent(Metric::ENTITY_RETRIEVED, $entity->getEntityName()));
     }
 
     /**
@@ -32,7 +26,7 @@ class EntityInstrumentationObserver
      */
     public function created(Entity $entity)
     {
-        event(new EntityInstrumentationEvent(self::CREATED, $entity->getEntityName()));
+        event(new EntityInstrumentationEvent(Metric::ENTITY_CREATED, $entity->getEntityName()));
     }
 
     /**
@@ -43,7 +37,7 @@ class EntityInstrumentationObserver
      */
     public function updated(Entity $entity)
     {
-        event(new EntityInstrumentationEvent(self::UPDATED, $entity->getEntityName()));
+        event(new EntityInstrumentationEvent(Metric::ENTITY_UPDATED, $entity->getEntityName()));
     }
 
     /**
@@ -54,6 +48,6 @@ class EntityInstrumentationObserver
      */
     public function deleted(Entity $entity)
     {
-        event(new EntityInstrumentationEvent(self::DELETED, $entity->getEntityName()));
+        event(new EntityInstrumentationEvent(Metric::ENTITY_DELETED, $entity->getEntityName()));
     }
 }

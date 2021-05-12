@@ -53,7 +53,9 @@ trait HasRequestCases
     {
         $mock = $this->invokeRequestCase($case, ...$args);
 
-        $this->app->instance('request.ctx', new RequestContext($this->app));
+        $requestContext = new RequestContext($this->app);
+        $requestContext->init();
+        $this->app->instance('request.ctx', $requestContext);
 
         return $mock;
     }

@@ -1,14 +1,17 @@
 <?php
 
-namespace Tests\Functional\Merchant;
+namespace RZP\Tests\Functional\Merchant;
+
+use Illuminate\Support\Facades\Event;
 
 use RZP\Constants\Entity as E;
-use RZP\Models\Base\EntityInstrumentationObserver;
+use RZP\Constants\Metric;
+use RZP\Models\Merchant\Repository as MerchantRepo;
+use RZP\Models\Merchant\Detail\Repository as MerchantDetailRepo;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetailEntity;
 use RZP\Events\EntityInstrumentationEvent;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
-use Illuminate\Support\Facades\Event;
 use RZP\Tests\Functional\TestCase;
 
 class EntityInstrumentationTest extends TestCase
@@ -23,25 +26,26 @@ class EntityInstrumentationTest extends TestCase
         $merchant = $this->fixtures->merchant->create();
         Event::assertDispatched(EntityInstrumentationEvent::class,
             function(EntityInstrumentationEvent $e) {
-                return (EntityInstrumentationObserver::CREATED === $e->eventName)
-                    and (E::MERCHANT == $e->entityName);
+                return (Metric::ENTITY_CREATED === $e->eventName)
+                    and (E::MERCHANT == $e->dimensions[Metric::LABEL_ENTITY_NAME]);
             }
         );
 
-        $merchant = $this->getDbEntityById(E::MERCHANT, $merchant->id);
+        $repo = (new MerchantRepo);
+        $merchant = $repo->find($merchant->id);
         Event::assertDispatched(EntityInstrumentationEvent::class,
             function(EntityInstrumentationEvent $e) {
-                return (EntityInstrumentationObserver::RETRIEVED === $e->eventName)
-                    and (E::MERCHANT == $e->entityName);
+                return (Metric::ENTITY_RETRIEVED === $e->eventName)
+                    and (E::MERCHANT == $e->dimensions[Metric::LABEL_ENTITY_NAME]);
             }
         );
 
         $merchant->name = 'Updated Test Merchant Name';
-        $merchant->saveOrFail();
+        $repo->saveOrFail($merchant);
         Event::assertDispatched(EntityInstrumentationEvent::class,
             function(EntityInstrumentationEvent $e) {
-                return (EntityInstrumentationObserver::UPDATED === $e->eventName)
-                    and (E::MERCHANT == $e->entityName);
+                return (Metric::ENTITY_UPDATED === $e->eventName)
+                    and (E::MERCHANT == $e->dimensions[Metric::LABEL_ENTITY_NAME]);
             }
         );
     }
@@ -54,8 +58,8 @@ class EntityInstrumentationTest extends TestCase
         $merchantDetail = $this->fixtures->merchantDetail->create();
         Event::assertDispatched(EntityInstrumentationEvent::class,
             function(EntityInstrumentationEvent $e) {
-                return (EntityInstrumentationObserver::CREATED === $e->eventName)
-                    and (E::MERCHANT_DETAIL == $e->entityName);
+                return (Metric::ENTITY_CREATED === $e->eventName)
+                    and (E::MERCHANT_DETAIL == $e->dimensions[Metric::LABEL_ENTITY_NAME]);
             }
         );
 
@@ -64,17 +68,34 @@ class EntityInstrumentationTest extends TestCase
         ]);
         Event::assertDispatched(EntityInstrumentationEvent::class,
             function(EntityInstrumentationEvent $e) {
-                return (EntityInstrumentationObserver::RETRIEVED === $e->eventName)
-                    and (E::MERCHANT_DETAIL == $e->entityName);
+                return (Metric::ENTITY_RETRIEVED === $e->eventName)
+                    and (E::MERCHANT_DETAIL == $e->dimensions[Metric::LABEL_ENTITY_NAME]);
             }
         );
 
+        $repo = (new MerchantDetailRepo);
         $merchantDetail->business_name = 'Updated Test Merchant Name';
-        $merchantDetail->saveOrFail();
+        $repo->saveOrFail($merchantDetail);
         Event::assertDispatched(EntityInstrumentationEvent::class,
             function(EntityInstrumentationEvent $e) {
-                return (EntityInstrumentationObserver::UPDATED === $e->eventName)
-                    and (E::MERCHANT_DETAIL == $e->entityName);
+                return (Metric::ENTITY_UPDATED === $e->eventName)
+                    and (E::MERCHANT_DETAIL == $e->dimensions[Metric::LABEL_ENTITY_NAME]);
+            }
+        );
+    }
+
+    public function testInstrumentation()
+    {
+        $merchant = $this->fixtures->merchant->create();
+
+        Event::Fake([EntityInstrumentationEvent::class]);
+
+        $repo = (new MerchantRepo);
+        $repo->getMerchantOrg($merchant->id);
+        Event::assertDispatched(EntityInstrumentationEvent::class,
+            function(EntityInstrumentationEvent $e) {
+                return (Metric::ENTITY_RETRIEVED === $e->eventName)
+                    and (E::MERCHANT == $e->dimensions[Metric::LABEL_ENTITY_NAME]);
             }
         );
     }
