@@ -10784,11 +10784,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testBeneficiaryNameInPayoutsResponse()
     {
-        $this->mockRazorxTreatment('yesbank','off','off','off',
-            'off','on','on','off',
-            'on','on','off',
-            'on','on','off',
-            'control','on');
+        $this->fixtures->merchant->addFeatures([Feature\Constants::BENE_NAME_IN_PAYOUT]);
 
         $this->testCreatePayout();
 
@@ -10809,8 +10805,6 @@ class PayoutTest extends OAuthTestCase
 
     public function testBeneficiaryNameNotPresentInPayoutsRespForNonWhitelistedMerchant()
     {
-        $this->mockRazorxTreatment();
-
         $this->testCreatePayout();
 
         $payout = $this->getDbLastEntity('payout');

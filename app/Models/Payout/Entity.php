@@ -1830,7 +1830,8 @@ class Entity extends Base\PublicEntity
                                               RazorxTreatment::REGISTERED_NAME_IN_PAYOUTS_RESPONSE,
                                               $mode);
 
-        if ($variant === "on")
+        if (($variant === "on") or
+            $this->merchant->isFeatureEnabled(Features::BENE_NAME_IN_PAYOUT) === true)
         {
             $attributes[self::REGISTERED_NAME] = $this->getRegisteredName();
         }

@@ -660,6 +660,12 @@ class Constants
      */
     const COVID_19_RELIEF = 'covid_19_relief';
 
+    /**
+     * Used to decide if registered name to be sent in payouts response
+     */
+    const BENE_NAME_IN_PAYOUT = 'bene_name_in_payout';
+
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,

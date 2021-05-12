@@ -321,7 +321,6 @@ trait TestsBusinessBanking
                                            string $oldToNewIfscForMergedBank = 'on',
                                            string $rejectCommentInWebhook = 'off',
                                            string $allowVAToVAPayouts = 'control',
-                                           string $registeredNameInPayoutsResponse = 'control',
                                            string $allowWalletAccountAmazonPay = 'on',
                                            string $fundAccountDuplicateViaUniqueHash = 'on')
     {
@@ -350,7 +349,6 @@ trait TestsBusinessBanking
                     $oldToNewIfscForMergedBank,
                     $rejectCommentInWebhook,
                     $allowVAToVAPayouts,
-                    $registeredNameInPayoutsResponse,
                     $allowWalletAccountAmazonPay,
                     $fundAccountDuplicateViaUniqueHash
                 )
@@ -403,11 +401,6 @@ trait TestsBusinessBanking
                     if ($feature === 'rx_allow_va_to_va_payouts')
                     {
                         return strtolower($allowVAToVAPayouts);
-                    }
-
-                    if ($feature === 'registered_name_in_payouts_response')
-                    {
-                        return strtolower($registeredNameInPayoutsResponse);
                     }
 
                     if ($feature === 'rx_enable_amazonpay_wallet_payout')
