@@ -208,7 +208,26 @@ return [
                     ]
                 ]
             ]
-        ]
+        ],
+        'expected_passport' => [
+            'mode'          => 'test',
+            'identified'    => true,
+            'authenticated' => true,
+            'consumer'      => [
+                'type' => 'merchant',
+                'id'   => '10000000000000',
+            ],
+            'impersonation' => [
+                'type'     => 'partner',
+                'consumer' => [
+                    // 'id' => 'GtDgJK5g0e5EeR',
+                ],
+            ],
+            'credential' => [
+                // 'username'   => 'rzp_test_partner_GtD7rnNaPwUMJT',
+                // 'public_key' => 'rzp_test_partner_GtD7rnNaPwUMJT-acc_GtDgJK5g0e5EeR',
+            ],
+        ],
     ],
 
     'testPartnerWithoutTerminalOnboardingFeatureShouldNotBeAbleToFetchTerminals'  => [

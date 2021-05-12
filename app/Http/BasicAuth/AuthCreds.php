@@ -121,6 +121,9 @@ abstract class AuthCreds
         $this->key = $key;
 
         $this->reqCtx = $app['request.ctx'];
+
+        // By default username, and public_key are same if not public_key gets updated in setPublicKey func further.
+        $this->app['basicauth']->setPassportCredentialClaims($this->key, $this->key);
     }
 
     public function getMode()
@@ -240,6 +243,8 @@ abstract class AuthCreds
     public function setPublicKey(string $publicKey)
     {
         $this->creds[self::PUBLIC_KEY] = $publicKey;
+
+        $this->app['basicauth']->setPassportCredentialClaims($this->key, $publicKey);
     }
 
     public function setMode(string $mode)
@@ -247,6 +252,8 @@ abstract class AuthCreds
         $this->mode = $mode;
 
         $this->app['rzp.mode'] = $mode;
+
+        $this->app['basicauth']->setPassportMode($mode);
     }
 
     public function invalidApiKey()

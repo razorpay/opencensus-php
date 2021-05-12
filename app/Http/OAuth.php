@@ -376,6 +376,22 @@ class OAuth
         //Fetches partnerMerchantId from applicationId and adds to ba.
         $application = (new Repository())->findOrFail($response[OAuthToken::APPLICATION_ID]);
         $this->ba->setPartnerMerchantId($application->getMerchantId());
+
+        $this->ba->setPassportOAuthClaims(
+            BasicAuth::PASSPORT_OAUTH_OWNER_TYPE_MERCHANT,
+            $response[OAuthToken::MERCHANT_ID],
+            $response[OAuthToken::CLIENT_ID],
+            $response[OAuthToken::APPLICATION_ID],
+            $response[OAuthToken::CLIENT_ENVIRONMENT]
+        );
+
+        $this->ba->setPassportConsumerClaims(
+            BasicAuth::PASSPORT_CONSUMER_TYPE_MERCHANT,
+            $application->getMerchantId(),
+            $auth === AuthType::PRIVATE_AUTH // The function parseOAuthServerResponse is called for both public and private flows.
+        );
+
+        $this->ba->setPassportRoles(preg_filter('/^/', 'oauth::scope::', $tokenScopes));
     }
 
     /**

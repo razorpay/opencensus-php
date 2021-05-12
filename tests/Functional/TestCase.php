@@ -229,4 +229,37 @@ class TestCase extends ParentTestCase
 
         return $connector;
     }
+
+    /**
+     * Asserts that basicauth has exactly same passport value set as expected
+     * in `expected_passport` key of test data.
+     * @return void
+     */
+    protected function assertPassport()
+    {
+        $callee = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]['function'];
+        $expected = $this->testData[$callee]['expected_passport'];
+        $actual = $this->app['basicauth']->getPassport();
+
+        $this->assertArraySelectiveEquals($expected, $actual);
+        $this->assertEqualsCanonicalizing(array_keys($expected), array_keys($actual));
+    }
+
+    /**
+     * See function assertPassport().
+     * @param  string $key   Key in dotted notation
+     * @param  string $regex Optional regex for key's value to assert with
+     * @return void
+     */
+    protected function assertPassportKeyExists(string $key, string $regex = null)
+    {
+        $actual = array_dot($this->app['basicauth']->getPassport());
+
+        $this->assertArrayHasKey($key, $actual);
+
+        if ($regex)
+        {
+            $this->assertRegExp($regex, $actual[$key]);
+        }
+    }
 }

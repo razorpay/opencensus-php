@@ -7,6 +7,8 @@ use Config;
 use ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
+use Lcobucci\JWT\Builder as JWTBuilder;
+use Lcobucci\JWT\Signer as JWTSigner;
 
 use Razorpay\OAuth\OAuthServer;
 use RZP\Error\PublicErrorDescription;
@@ -94,6 +96,16 @@ class BasicAuth
     const OAUTH_KEY_REGEX   = '/^(rzp_(test|live)_oauth_[a-zA-Z0-9]{14}).*$/';
     const KEY_REGEX         = '/^rzp_(test|live)_([a-zA-Z0-9]{14})$/';
 
+    // Ref $passport
+    const PASSPORT_CONSUMER_TYPE_MERCHANT            = 'merchant';
+    const PASSPORT_CONSUMER_TYPE_APPLICATION         = 'application';
+    const PASSPORT_IMPERSONATION_TYPE_PARTNER        = 'partner';
+    const PASSPORT_IMPERSONATION_TYPE_USER_MERCHANT  = 'user_merchant';
+    const PASSPORT_IMPERSONATION_TYPE_ADMIN_MERCHANT = 'admin_merchant';
+    const PASSPORT_OAUTH_OWNER_TYPE_MERCHANT         = 'merchant';
+    const PASSPORT_CONSUMER_TYPE_ADMIN               = 'admin';
+    const PASSPORT_CONSUMER_TYPE_USER                = 'user';
+
     /**
      * The application instance.
      *
@@ -155,6 +167,13 @@ class BasicAuth
     private $isPartnerAuth = false;
 
     /**
+     * This is an instance of an AuthCreds implementation. AuthCreds was added to abstractly handle parts of
+     * authentication for multiple flows e.g. usual key auth, and partner client auth.
+     *
+     * Notice! This is not initialized as part of constructor of init. It is initialized basis request attributes,
+     * after invoke of various handlers e.g. in publicAuth, privateAuth and so on- specifically in function
+     * checkAndSetKeyId. So please ensure initialization before using it.
+     *
      * @var AuthCreds
      */
     public $authCreds = null;
@@ -373,6 +392,13 @@ class BasicAuth
         'merchant_document_upload',
     ];
 
+    /**
+     * Holds passport jwt payload that gets built in api.
+     * Ref https://write.razorpay.com/doc/about-edge-passport-mCa579K52t.
+     * @var array
+     */
+    protected $passport = [];
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -394,6 +420,7 @@ class BasicAuth
         $this->isAdmin            = false;
         $this->appAuth            = false;
         $this->proxy              = false;
+        $this->passport           = [];
     }
 
     public function setCredentials()
@@ -417,7 +444,7 @@ class BasicAuth
 
         $this->authCreds->creds[self::SECRET] = $secret;
 
-        $this->authCreds->creds[self::PUBLIC_KEY] = $key;
+        $this->authCreds->setPublicKey($key);
 
         return $this->checkAndSetAccountId();
     }
@@ -652,6 +679,8 @@ class BasicAuth
             return $error;
         };
 
+        $this->setPassportConsumerClaims(self::PASSPORT_CONSUMER_TYPE_MERCHANT, $this->getMerchantId());
+
         $error = $this->checkAndSetPartnerMerchantScope();
 
         if ($error !== null)
@@ -693,6 +722,8 @@ class BasicAuth
                 return $response;
             }
 
+            $this->setPassportConsumerClaims(self::PASSPORT_CONSUMER_TYPE_MERCHANT, $this->getMerchantId(), true);
+
             $error = $this->checkAndSetAccountScope();
 
             if ($error !== null)
@@ -709,6 +740,11 @@ class BasicAuth
             $this->setProxyTrue();
 
             $this->setAdminAuthIfApplicable();
+
+            $this->setPassportImpersonationClaims(
+                $this->admin ? self::PASSPORT_IMPERSONATION_TYPE_ADMIN_MERCHANT : self::PASSPORT_IMPERSONATION_TYPE_USER_MERCHANT,
+                $this->authCreds->getMerchant()->getId()
+            );
 
             return $this->checkAndSetAccountScope();
         }
@@ -821,6 +857,8 @@ class BasicAuth
 
         $this->authCreds->fetchAndSetMerchantAndCheckLive();
 
+        $this->setPassportConsumerClaims(self::PASSPORT_CONSUMER_TYPE_MERCHANT, $this->getMerchantId());
+
         return $this->checkAndSetPartnerMerchantScope();
     }
 
@@ -854,6 +892,8 @@ class BasicAuth
         // Check key is blank and it's an internal app
         if (($this->isKeyBlank()) and ($this->verifyInternalApp()))
         {
+            $this->setPassportConsumerClaims(self::PASSPORT_CONSUMER_TYPE_APPLICATION , $this->internalApp, true, ['name' => $this->internalApp]);
+
             // Trace to identify the routes incorrectly called
             // TODO: remove it after fixing it
             if ($this->authCreds->creds['key_id'] !== '')
@@ -912,6 +952,11 @@ class BasicAuth
 
             $this->setDashboardHeaders();
 
+            $this->setPassportImpersonationClaims(
+                self::PASSPORT_IMPERSONATION_TYPE_USER_MERCHANT,
+                $this->authCreds->getMerchant()->getId()
+            );
+
             return $this->checkAndSetAccountScope();
         }
 
@@ -948,6 +993,13 @@ class BasicAuth
                 $this->admin = $token->admin;
 
                 $this->adminOrgId = $this->admin->getOrgId();
+
+                $this->setPassportConsumerClaims(
+                    self::PASSPORT_CONSUMER_TYPE_ADMIN,
+                    $this->admin->getId(),
+                    true,
+                    ['org_id' => $this->adminOrgId]
+                );
 
                 return;
             }
@@ -1044,14 +1096,16 @@ class BasicAuth
                 return $res;
         }
 
-        $this->authCreds->creds[self::SECRET] = null;
-        $this->authCreds->creds[self::PUBLIC_KEY] = $key;
-
         // If key is wrong in formatting or something, send error back
         if ($this->checkAndSetKeyId($key) !== null)
         {
             return $this->authCreds->invalidApiKey();
         }
+
+        // Ref doc comment for $authCreds. These lines must be invoked after
+        // checkAndSetKeyId call.
+        $this->authCreds->creds[self::SECRET] = null;
+        $this->authCreds->setPublicKey($key);
 
         if ($this->authCreds->verifyKeyExistenceAndNotExpired() !== true)
         {
@@ -1072,6 +1126,8 @@ class BasicAuth
         }
 
         $this->authCreds->fetchAndSetMerchantAndCheckLive();
+
+        $this->setPassportConsumerClaims(self::PASSPORT_CONSUMER_TYPE_MERCHANT, $this->getMerchantId());
     }
 
 // --------------------- Basic Auths Ends --------------------------------------
@@ -1716,7 +1772,7 @@ class BasicAuth
         $this->isAdmin = true;
     }
 
-    public function setPublicKey(string $publicKey)
+    public function setPublicKey($publicKey)
     {
         $this->creds[self::PUBLIC_KEY] = $publicKey;
     }
@@ -1819,7 +1875,7 @@ class BasicAuth
         }
 
         $this->authCreds->creds[self::SECRET] = null;
-        $this->authCreds->creds[self::PUBLIC_KEY] = $key;
+        $this->authCreds->setPublicKey($key);
 
         return $this->checkAndSetAccountId();
     }
@@ -1855,6 +1911,12 @@ class BasicAuth
         }
 
         $this->authCreds->setMerchant($account);
+
+        // This flow is used in at least 1) Route product, 2) Admin auth flow.
+        $this->setPassportImpersonationClaims(
+            $this->admin ? self::PASSPORT_IMPERSONATION_TYPE_ADMIN_MERCHANT : self::PASSPORT_IMPERSONATION_TYPE_PARTNER,
+            $account->getId()
+        );
     }
 
     /**
@@ -1939,6 +2001,8 @@ class BasicAuth
 
         // $this->applicationId will be set to null if it is not set in authCreds. Also, it defaults to null.
         $this->setOAuthApplicationId($applicationId);
+
+        $this->setPassportImpersonationClaims(self::PASSPORT_IMPERSONATION_TYPE_PARTNER, $account->getId());
     }
 
     protected function isPartnerAuthAllowed(): bool
@@ -2468,6 +2532,9 @@ class BasicAuth
             $this->setUser($user);
 
             $this->setUserRole($userId);
+
+            $this->setPassportConsumerClaims(self::PASSPORT_CONSUMER_TYPE_USER, $userId, true);
+            $this->setPassportRoles([$this->userRole]);
         }
     }
 
@@ -2584,5 +2651,139 @@ class BasicAuth
             'bearer'         => empty($ctx->getBearerToken()) === false,
             'auth_flow_type' => $ctx->getAuthFlowType(),
         ];
+    }
+
+    /**
+     * @return array
+     */
+    public function getPassport(): array
+    {
+        return $this->passport;
+    }
+
+    /**
+     * Sets passport's mode.
+     * @param string $mode
+     */
+    public function setPassportMode(string $mode)
+    {
+        $this->passport['mode'] = $mode;
+    }
+
+    /**
+     * Sets passport's credential claims.
+     * @param string      $username
+     * @param string|null $publicKey
+     */
+    public function setPassportCredentialClaims(string $username, string $publicKey = null)
+    {
+        // - credential.username is username from http basic auth.
+        // - credential.public_key is for constructing callback urls, and as signer sdk argument. It is same as username for private auth.
+        $this->passport['credential'] = ['username' => $username, 'public_key' => $publicKey];
+    }
+
+    /**
+     * Sets passport's consumer claims.
+     * @param string $type
+     * @param string $id
+     * @param bool   $authenticated
+     * @param array  $meta
+     */
+    public function setPassportConsumerClaims(string $type, string $id, bool $authenticated = false, array $meta = [])
+    {
+        $this->passport['identified']    = true;
+        $this->passport['authenticated'] = $authenticated;
+        $this->passport['consumer']      = ['type' => $type, 'id' => $id];
+
+        if (empty($meta) === false)
+        {
+            $this->passport['consumer']['meta'] = $meta;
+        }
+    }
+
+    /**
+     * Sets passport's oauth claims.
+     * @param string $ownerType
+     * @param string $ownerId
+     * @param string $clientId
+     * @param string $appId
+     * @param string $env
+     */
+    public function setPassportOAuthClaims(string $ownerType, string $ownerId, string $clientId, string $appId, string $env)
+    {
+        $this->passport['identified'] = true;
+
+        $this->passport['oauth'] = [
+            'owner_type' => $ownerType,
+            'owner_id'   => $ownerId,
+            'client_id'  => $clientId,
+            'app_id'     => $appId,
+            'env'        => $env,
+        ];
+    }
+
+    /**
+     * Sets passport's impersonation claims.
+     * @param string $type
+     * @param string $consumerId
+     */
+    public function setPassportImpersonationClaims(string $type, string $consumerId, string $consumerType = self::PASSPORT_CONSUMER_TYPE_MERCHANT)
+    {
+        $this->passport['impersonation'] = ['type' => $type, 'consumer' => ['id' => $consumerId, 'type' => $consumerType]];
+    }
+
+    /**
+     * Sets passport's roles.
+     * @param array $roles
+     */
+    public function setPassportRoles(array $roles)
+    {
+        $this->passport['roles'] = $roles;
+    }
+
+    /**
+     * Sets passport's authenticated.
+     * @param bool $authenticated
+     */
+    public function setPassportAuthenticated(bool $authenticated)
+    {
+        $this->passport['authenticated'] = $authenticated;
+    }
+
+    /**
+     * Returns passport jwt which can be forwarded to upstream request. It is
+     * similar to passport received by edge. It is signed by different private
+     * key. The upstream is expected to configure both public keys i.e.
+     * edge's and api's.
+     *
+     * @return string
+     */
+    public function getPassportJwt(string $upstreamHost): string
+    {
+        $passportConfig = $this->app['config']->get('passport');
+
+        $issuerId           = $passportConfig['issuer_id'];
+        $privateKey         = new JWTSigner\Key($passportConfig['issuer_private_key']);
+        $privateKeyId       = $passportConfig['issuer_private_key_id'];
+        $passportExpirySecs = $passportConfig['issuer_passport_expire_secs'];
+
+        $now = time();
+
+        $builder = (new JWTBuilder)
+            ->issuedBy($issuerId)
+            ->permittedFor($upstreamHost)
+            ->identifiedBy($this->request->getId(), true)
+            ->issuedAt($now)
+            ->canOnlyBeUsedAfter($now)
+            ->expiresAt($now + $passportExpirySecs)
+            ->withHeader('kid', $privateKeyId);
+
+        // Appends custom claims.
+        foreach ($this->getPassport() as $key => $value)
+        {
+            $builder->withClaim($key, $value);
+        }
+
+        return $builder->getToken(new JWTSigner\Rsa\Sha256, $privateKey);
     }
 }

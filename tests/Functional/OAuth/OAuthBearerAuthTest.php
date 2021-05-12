@@ -46,6 +46,10 @@ class OAuthBearerAuthTest extends OAuthTestCase
         $this->fixtures->create('payment', ['id' => '10000000000000']);
 
         $this->startTest();
+
+        $this->assertPassport();
+        $this->assertPassportKeyExists('oauth.client_id');
+        $this->assertPassportKeyExists('oauth.app_id');
     }
 
     public function testRefreshClientCredentials()
@@ -119,6 +123,8 @@ class OAuthBearerAuthTest extends OAuthTestCase
         $this->fixtures->create('payment', ['id' => '10000000000000']);
 
         $this->startTest();
+
+        $this->assertPassport();
     }
 
     public function testBearerAuthDummyRouteScope()
@@ -135,6 +141,8 @@ class OAuthBearerAuthTest extends OAuthTestCase
         $this->ba->oauthBearerAuth($accessToken);
 
         $this->startTest();
+
+        $this->assertPassport();
     }
 
     public function testBearerAuthDummyRouteScopeFail()

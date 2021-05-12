@@ -3,24 +3,26 @@
 namespace RZP\Tests\Functional\BasicAuth;
 
 use Carbon\Carbon;
+use Razorpay\Edge\Passport\Kid;
+use Razorpay\Edge\Passport\Passport;
+use Illuminate\Database\Eloquent\Factory;
+
 use RZP\Http\Route;
 use RZP\Models\Key;
-
 use RZP\Models\Merchant;
 use RZP\Services\RazorXClient;
-
 use RZP\Tests\Functional\TestCase;
-use Illuminate\Database\Eloquent\Factory;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class BasicAuthTest extends TestCase
 {
     use PartnerTrait;
+    use PaymentTrait;
     use DbEntityFetchTrait;
-    use RequestResponseFlowTrait;
 
     protected function setUp(): void
     {
@@ -76,6 +78,30 @@ class BasicAuthTest extends TestCase
         $this->ba->adminAuth('test');
 
         $this->startTest();
+
+        $this->assertPassport();
+    }
+
+    public function testAdminProxyAuthOnPrivateRoute()
+    {
+        $this->ba->adminProxyAuth();
+
+        $this->fixtures->admin->edit($this->ba->getAdmin()->getId(), ['allow_all_merchants' => true]);
+
+        $this->startTest();
+
+        $this->assertPassport();
+    }
+
+    public function testAdminProxyAuthOnProxyRoute()
+    {
+        $this->ba->adminProxyAuth();
+
+        $this->fixtures->admin->edit($this->ba->getAdmin()->getId(), ['allow_all_merchants' => true]);
+
+        $this->startTest();
+
+        $this->assertPassport();
     }
 
     public function testPrivateAuthOnAdminRoute()
@@ -139,6 +165,8 @@ class BasicAuthTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->startTest();
+
+        $this->assertPassport();
     }
 
     public function testProxyAuthOnPrivateRouteNotInCloud()
@@ -150,6 +178,15 @@ class BasicAuthTest extends TestCase
         $this->startTest();
     }
 
+    public function testProxyAuth()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $this->assertPassport();
+    }
+
     public function testPrivateAuthKeyNotExpired()
     {
         $this->ba->privateAuth();
@@ -158,6 +195,31 @@ class BasicAuthTest extends TestCase
         $this->fixtures->edit('key', 'TheTestAuthKey', ['expired_at' => time() + 120]);
 
         $this->startTest();
+
+        $this->assertPassport();
+    }
+
+    public function testPrivateAuthAndPassportJwtIssuedByApi()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        // Asserts passport jwt build by api is valid.
+        $token = $this->app['basicauth']->getPassportJwt('subscriptions.razorpay.com');
+
+        $publicKey = file_get_contents(__DIR__.'/helpers/passport-apiv1-public.key');
+        $kid1 = new Kid("apiv1", $publicKey);
+        Passport::init($kid1);
+        $passport = Passport::fromToken($token);
+
+        $this->assertTrue($passport->identified);
+        $this->assertTrue($passport->authenticated);
+        $this->assertSame('test', $passport->mode);
+        // TODO: Uncomment below asserts after updating razorpay/edge-passport-php dep.
+        // $this->assertInstanceOf(\Razorpay\Edge\Passport\ConsumerClaims::class, $passport->consumer);
+        // $this->assertSame('10000000000000', $passport->consumer->id);
+        // $this->assertSame('merchant', $passport->consumer->type);
     }
 
     public function testPrivateAuthKeyExpired()
@@ -229,6 +291,22 @@ class BasicAuthTest extends TestCase
         $this->makeRequestAndGetContent($request);
     }
 
+    public function testPublicAuth()
+    {
+        $this->doAuthPaymentViaCheckoutRoute(null);
+
+        $this->assertPassport();
+    }
+
+    public function testAppAuthForCron()
+    {
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $this->assertPassport();
+    }
+
     public function testAppAuthWithAccount()
     {
         $this->ba->adminAuth();
@@ -291,6 +369,9 @@ class BasicAuthTest extends TestCase
         $result = $this->startTest();
 
         $this->assertEquals($merchant->getId(), $result['id']);
+
+        $this->assertPassport();
+        $this->assertPassportKeyExists('impersonation.consumer.id', "/^{$merchant->getId()}$/");
     }
 
     public function testAccountAuthInvalidIdViaMerchantDashboard()

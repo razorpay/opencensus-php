@@ -329,6 +329,12 @@ class PartnerTerminalOnboardingTest extends TestCase
 
 
         $this->startTest();
+
+        $this->assertPassport();
+
+        $this->assertPassportKeyExists('impersonation.consumer.id', "/^{$subMerchantId}$/");
+        $this->assertPassportKeyExists('credential.username', "/^rzp_test_partner_[a-zA-Z0-9]{14}$/");
+        $this->assertPassportKeyExists('credential.public_key', "/^rzp_test_partner_[a-zA-Z0-9]{14}-acc_{$subMerchantId}$/");
     }
 
     public function testPartnerWithoutTerminalOnboardingFeatureShouldNotBeAbleToFetchTerminals()

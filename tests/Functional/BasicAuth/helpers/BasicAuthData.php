@@ -86,7 +86,80 @@ return [
                 'items'  => []
             ],
             'status_code' => 200,
-        ]
+        ],
+        'expected_passport' => [
+            'mode'          => 'test',
+            'identified'    => true,
+            'authenticated' => true,
+            'consumer'      => [
+                'type' => 'admin',
+                'id'   => 'RzrpySprAdmnId',
+                'meta' => [
+                    'org_id' => '100000razorpay',
+                ],
+            ],
+            'credential' => [],
+        ],
+    ],
+
+    'testAdminProxyAuthOnPrivateRoute' => [
+        'request' => [
+            'method' => 'GET',
+            'url'    => '/balance',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+        'expected_passport' => [
+            'mode'          => 'test',
+            'identified'    => true,
+            'authenticated' => true,
+            'consumer'      => [
+                'type' => 'admin',
+                'id'   => 'RzrpySprAdmnId',
+                'meta' => [
+                    'org_id' => '100000razorpay',
+                ],
+            ],
+            'impersonation' => [
+                'type'     => 'admin_merchant',
+                'consumer' => [
+                    'type' => 'merchant',
+                    'id'   => '10000000000000',
+                ],
+            ],
+            'credential' => [],
+        ],
+    ],
+
+    'testAdminProxyAuthOnProxyRoute' => [
+        'request' => [
+            'method' => 'GET',
+            'url'    => '/balances',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+        'expected_passport' => [
+            'mode'          => 'test',
+            'identified'    => true,
+            'authenticated' => true,
+            'consumer'      => [
+                'type' => 'admin',
+                'id'   => 'RzrpySprAdmnId',
+                'meta' => [
+                    'org_id' => '100000razorpay',
+                ],
+            ],
+            'impersonation' => [
+                'type'     => 'admin_merchant',
+                'consumer' => [
+                    'type' => 'merchant',
+                    'id'   => '10000000000000',
+                ],
+            ],
+            'credential' => [],
+        ],
     ],
 
     'testPrivateAuthOnAdminRoute' => [
@@ -182,6 +255,45 @@ return [
         ],
     ],
 
+    'testPublicAuth' => [
+        'expected_passport' => [
+            'mode'          => 'test',
+            'identified'    => true,
+            'authenticated' => false,
+            'consumer'      => [
+                'type' => 'merchant',
+                'id'   => '10000000000000',
+            ],
+            'credential' => [
+                'username'   => 'rzp_test_TheTestAuthKey',
+                'public_key' => 'rzp_test_TheTestAuthKey',
+            ],
+        ],
+    ],
+
+    'testAppAuthForCron' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payments/timeout',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+        'expected_passport' => [
+            'mode'          => 'test',
+            'identified'    => true,
+            'authenticated' => true,
+            'consumer'      => [
+                'type' => 'application',
+                'id'   => 'cron',
+                'meta' => [
+                    'name' => 'cron',
+                ],
+            ],
+            'credential' => [],
+        ],
+    ],
+
     'testPrivateAuthWithWrongKeyId' => [
         'request' => [
             'method' => 'GET',
@@ -261,6 +373,26 @@ return [
                 ],
             ]
         ],
+        'expected_passport' => [
+            'mode'          => 'test',
+            'identified'    => true,
+            'authenticated' => true,
+            'consumer'      => [
+                'type' => 'user',
+                'id'   => 'MerchantUser01',
+            ],
+            'impersonation' => [
+                'type'     => 'user_merchant',
+                'consumer' => [
+                    'type' => 'merchant',
+                    'id'   => '10000000000000',
+                ],
+            ],
+            'roles' => [
+                'owner',
+            ],
+            'credential' => [],
+        ],
     ],
 
     'testProxyAuthOnPrivateRouteNotInCloud' => [
@@ -282,7 +414,67 @@ return [
         ],
     ],
 
+    'testProxyAuth' => [
+        'request' => [
+            'method' => 'GET',
+            'url'    => '/webhooks/events/all',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+        'expected_passport' => [
+            'mode'          => 'test',
+            'identified'    => true,
+            'authenticated' => true,
+            'consumer'      => [
+                'type' => 'user',
+                'id'   => 'MerchantUser01',
+            ],
+            'impersonation' => [
+                'type'     => 'user_merchant',
+                'consumer' => [
+                    'type' => 'merchant',
+                    'id'   => '10000000000000',
+                ],
+            ],
+            'roles' => [
+                'owner',
+            ],
+            'credential' => [],
+        ],
+    ],
+
     'testPrivateAuthKeyNotExpired' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/payments',
+            'content' => [
+                'count' => 1
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'items' => [
+                ],
+            ]
+        ],
+        'expected_passport' => [
+            'mode'          => 'test',
+            'identified'    => true,
+            'authenticated' => true,
+            'consumer'      => [
+                'type' => 'merchant',
+                'id'   => '10000000000000',
+            ],
+            'credential' => [
+                'username'   => 'rzp_test_TheTestAuthKey',
+                'public_key' => 'rzp_test_TheTestAuthKey',
+            ],
+        ],
+    ],
+
+    'testPrivateAuthAndPassportJwtIssuedByApi' => [
         'request' => [
             'method' => 'GET',
             'url' => '/payments',
@@ -386,6 +578,26 @@ return [
             'content' => [
             ],
             'status_code' => 200,
+        ],
+        'expected_passport' => [
+            'mode'          => 'test',
+            'identified'    => true,
+            'authenticated' => true,
+            'consumer'      => [
+                'type' => 'admin',
+                'id'   => 'RzrpySprAdmnId',
+                'meta' => [
+                    'org_id' => '100000razorpay',
+                ],
+            ],
+            'impersonation' => [
+                'type'     => 'admin_merchant',
+                'consumer' => [
+                    'type' => 'merchant',
+                    // 'id'   => '10000000000000',
+                ],
+            ],
+            'credential' => [],
         ],
     ],
 

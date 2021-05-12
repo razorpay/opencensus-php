@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "71fbdfef2b29b144eee8b3152c075568",
+    "content-hash": "62aad140145a59bdce138edbca179e8e",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -5656,7 +5656,7 @@
                 "source": "https://github.com/razorpay/opencensus-php/tree/v0.7.5.8",
                 "issues": "https://github.com/razorpay/opencensus-php/issues"
             },
-            "time": "2021-04-23T10:30:31+00:00"
+            "time": "2021-05-04T07:39:47+00:00"
         },
         {
             "name": "opencensus/opencensus-exporter-jaeger",

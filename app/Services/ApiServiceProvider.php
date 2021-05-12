@@ -1290,6 +1290,20 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             $client = new MultiCurl($responseFactory, $options);
             return $client;
         });
+
+        $this->app->singleton('edge_proxy_http_client', function ($app)
+        {
+            if ($app->runningUnitTests() === true)
+            {
+                return new Psr18ClientMock; // Returns mock client for unit tests to help make assertions.
+            }
+
+            $options = [
+                'timeout' => 60, // No specific reason for 60s value. The value is bit larger on api gateway.
+            ];
+
+            return new MultiCurl(Psr17FactoryDiscovery::findResponseFactory(), $options);
+        });
     }
 
     // phpcs:ignore Generic.NamingConventions.CamelCapsFunctionName.ScopeNotCamelCaps
