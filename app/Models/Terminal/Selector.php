@@ -809,7 +809,7 @@ class Selector extends Base\Core
 
             $variantFlag = $this->app->razorx->getTreatment($merchantId, "API_ROUTER_NEW_CONTRACT",  $this->mode);
 
-             if ($variantFlag === 'on' and ($merchant->isFeatureEnabled(Features::RAAS) === false))
+             if ($variantFlag === 'on')
              {
                  $data = [
                      'payment'                   => $paymentData,
