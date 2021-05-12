@@ -4574,6 +4574,11 @@ class Core extends Base\Core
         return $this->isOrgFeatureEnabled($merchant, Feature\Constants::ORG_CUSTOM_BRANDING);
     }
 
+    public function isDisableFreeCreditsFeatureEnabled(Entity $merchant, string $featureName)
+    {
+        return $this->isOrgFeatureEnabled($merchant, $featureName);
+    }
+
     protected function isOrgFeatureEnabled(Entity $merchant, string $featureName)
     {
         $org = $this->repo->org->find($merchant->getOrgId());

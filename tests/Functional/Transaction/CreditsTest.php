@@ -107,6 +107,142 @@ class CreditsTest extends TestCase
         // $this->assertEquals(50000, $nodalBalance['credits']);
     }
 
+    public function testAmountCreditsWithDisableRegMerchantFeatureOnRegisteredMerchants()
+    {
+        $this->fixtures->create('credits', [
+            'type'        => 'amount',
+            'value'       => 100000,
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 1
+        ]);
+
+        $this->fixtures->merchant->editCredits('100000', '10000000000000');
+
+        $this->fixtures->feature->create([
+            'entity_type'   => 'org',
+            'entity_id'     => '100000razorpay',
+            'name'          => 'disable_free_credit_reg',
+        ]);
+
+        $this->doAuthAndCapturePayment();
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals(1000, $txn['fee']);
+        $this->assertEquals(0, $txn['tax']);
+        $this->assertEquals(false, $txn['gratis']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+        $this->assertEquals(1049000, $balance['balance']);
+        $this->assertEquals(100000, $balance['credits']);
+    }
+
+    public function testAmountCreditsWithDisableRegMerchantFeatureOnUnregisteredMerchants()
+    {
+        $this->fixtures->create('credits', [
+            'type'        => 'amount',
+            'value'       => 100000,
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $this->fixtures->merchant->editCredits('100000', '10000000000000');
+
+        $this->fixtures->feature->create([
+            'entity_type'   => 'org',
+            'entity_id'     => '100000razorpay',
+            'name'          => 'disable_free_credit_reg',
+        ]);
+
+        $this->doAuthAndCapturePayment();
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals(0, $txn['fee']);
+        $this->assertEquals(0, $txn['tax']);
+        $this->assertEquals(true, $txn['gratis']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+        $this->assertEquals(1050000, $balance['balance']);
+        $this->assertEquals(50000, $balance['credits']);
+    }
+
+    public function testAmountCreditsWithDisableUnRegMerchantFeatureOnUnregisteredMerchants()
+    {
+        $this->fixtures->create('credits', [
+            'type'        => 'amount',
+            'value'       => 100000,
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $this->fixtures->merchant->editCredits('100000', '10000000000000');
+
+        $this->fixtures->feature->create([
+            'entity_type'   => 'org',
+            'entity_id'     => '100000razorpay',
+            'name'          => 'disable_free_credit_unreg',
+        ]);
+
+        $this->doAuthAndCapturePayment();
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals(1000, $txn['fee']);
+        $this->assertEquals(0, $txn['tax']);
+        $this->assertEquals(false, $txn['gratis']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+        $this->assertEquals(1049000, $balance['balance']);
+        $this->assertEquals(100000, $balance['credits']);
+    }
+
+    public function testAmountCreditsWithDisableUnRegMerchantFeatureOnRegisteredMerchants()
+    {
+        $this->fixtures->create('credits', [
+            'type'        => 'amount',
+            'value'       => 100000,
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 1
+        ]);
+
+        $this->fixtures->merchant->editCredits('100000', '10000000000000');
+
+        $this->fixtures->feature->create([
+            'entity_type'   => 'org',
+            'entity_id'     => '100000razorpay',
+            'name'          => 'disable_free_credit_unreg',
+        ]);
+
+        $this->doAuthAndCapturePayment();
+
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals(0, $txn['fee']);
+        $this->assertEquals(0, $txn['tax']);
+        $this->assertEquals(true, $txn['gratis']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+        $this->assertEquals(1050000, $balance['balance']);
+        $this->assertEquals(50000, $balance['credits']);
+    }
+
     public function testPartialCredits()
     {
         $this->fixtures->create('credits', [

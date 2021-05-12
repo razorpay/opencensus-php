@@ -6,6 +6,7 @@ use RZP\Diag\EventCode;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
+use RZP\Models\Card;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Gateway;
@@ -207,7 +208,7 @@ class Payment extends Base
                 break;
 
             // @todo: Need to rethink this.
-            case (($this->amountCredits > 0) and ($this->source->getAmount() !== 0)):
+            case (($this->amountCredits > 0) and ($this->source->getAmount() !== 0) and ($this->shouldDisableAmountCredits()=== false)):
                 $this->calculateFeeForAmountCredit();
                 break;
 
@@ -244,6 +245,52 @@ class Payment extends Base
             ]
         );
 
+    }
+
+    public function shouldDisableAmountCredits():bool
+    {
+        $payment = $this->source;
+
+        $merchant = $payment->merchant;
+
+        $merchantDetail = $merchant->merchantDetail;
+
+        if (isset($merchantDetail) === false)
+        {
+            return false;
+        }
+
+        if (($merchantDetail->isUnregisteredBusiness() === true)
+            and (new Merchant\Core())->isDisableFreeCreditsFeatureEnabled($merchant, Feature\Constants::DISABLE_FREE_CREDIT_UNREG) === true)
+        {
+                return $this->isMethodCreditCard();
+        }
+        else if (($merchantDetail->isUnregisteredBusiness() === false)
+            and (new Merchant\Core())->isDisableFreeCreditsFeatureEnabled($merchant, Feature\Constants::DISABLE_FREE_CREDIT_REG) === true)
+        {
+            return $this->isMethodCreditCard();
+        }
+
+        return false;
+    }
+
+    public function isMethodCreditCard() : bool
+    {
+        $payment = $this->source;
+
+        if ($payment->isMethodCardOrEmi() === false)
+        {
+            return false;
+        }
+
+        $card = $payment->card;
+
+        if (isset($card) === true and $card->isCredit() === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     private function isVasMerchantWithDirectSettlement(): bool

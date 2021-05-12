@@ -48,6 +48,8 @@ class Constants
     const INVOICE_PARTIAL_PAYMENTS        = 'invoice_partial_payments';
     const HIDE_DOWNTIMES                  = 'hide_downtimes';
     const OLD_CREDITS_FLOW                = 'old_credits_flow';
+    const DISABLE_FREE_CREDIT_REG         = 'disable_free_credit_reg';
+    const DISABLE_FREE_CREDIT_UNREG       = 'disable_free_credit_unreg';
     const CHARGE_AT_WILL                  = 'charge_at_will';
     const SETTLEMENT_24X7                 = 'settlement_24x7';
     const EMI_MERCHANT_SUBVENTION         = 'emi_merchant_subvention';
@@ -932,6 +934,8 @@ class Constants
         self::PL_BATCH_UPLOAD_FEATURE         => true,
         self::SETTLEMENTS_SMS_STOP            => true,
         self::ORG_CUSTOM_BRANDING             => true,
+        self::DISABLE_FREE_CREDIT_UNREG       => true,
+        self::DISABLE_FREE_CREDIT_REG         => true,
         self::LOGOUT_ADMIN_INACTIVITY         => true,
         self::TRANSFER_SETTLED_WEBHOOK        => true,
         self::TRANSFER_FAILED_WEBHOOK         => true,
@@ -1306,6 +1310,14 @@ class Constants
         self::ORG_CUSTOM_BRANDING => [
             'feature' => self::ORG_CUSTOM_BRANDING,
             'display_name' => 'Custom Branding feature for an org',
+        ],
+        self::DISABLE_FREE_CREDIT_UNREG => [
+            'feature' => self::DISABLE_FREE_CREDIT_UNREG,
+            'display_name' => 'Org level feature for disable amount credits for unregistered merchants',
+        ],
+        self::DISABLE_FREE_CREDIT_REG => [
+            'feature' => self::DISABLE_FREE_CREDIT_REG,
+            'display_name' => 'Org level feature for disable amount credits for registered merchants',
         ],
         self::TRANSFER_SETTLED_WEBHOOK => [
             'feature'       => self::TRANSFER_SETTLED_WEBHOOK,
