@@ -271,7 +271,14 @@ class Selector extends Base\Core
             }
             catch (\Throwable $e)
             {
-                $sortedTerminals = $this->filterAndSortTerminals($allTerminals, $verbose);
+                $merchant = $this->input['merchant'];
+
+                $sortedTerminals = [];
+
+                if ($merchant->isFeatureEnabled(Features::RAAS) === false)
+                {
+                    $sortedTerminals = $this->filterAndSortTerminals($allTerminals, $verbose);
+                }
 
                 $this->trace->error(
                     TraceCode::PAYMENTS_DATA_PUSH_ROUTING_SERVICE_ERROR,
@@ -878,7 +885,10 @@ class Selector extends Base\Core
     {
         $payment = $this->input['payment'];
 
-        if ($payment[Entity::METHOD] === Method::EMANDATE)
+        $merchant = $this->input['merchant'];
+
+        if (($payment[Entity::METHOD] === Method::EMANDATE) or
+            ($merchant->isFeatureEnabled(Features::RAAS) === true))
         {
             return false;
         }
