@@ -928,6 +928,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PRICING_RULE_SELECTION                                = 'PRICING_RULE_SELECTION';
     const PAYMENT_PRICING_RULE_NOT_FOUND                        = 'PAYMENT_PRICING_RULE_NOT_FOUND';
     const PAYMENT_PRICING_RULE_SELECTION                        = 'PAYMENT_PRICING_RULE_SELECTION';
+    const PRICING_PLAN_DEFAULT_METHODS                          = 'PRICING_PLAN_DEFAULT_METHODS';
 
     const ADDRESS_CREATE_REQUEST                                = 'ADDRESS_CREATE_REQUEST';
     const ADDRESS_PRIMARY_SWITCH                                = 'ADDRESS_PRIMARY_SWITCH';

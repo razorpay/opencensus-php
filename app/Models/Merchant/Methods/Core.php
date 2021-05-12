@@ -514,6 +514,15 @@ class Core extends Base\Core
             $defaultMethods[Entity::PHONEPE] = false;
         }
 
+        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+        $variantFlag = $this->app->razorx->getTreatment($merchant->getId(), 'PRICING_PLAN_DEFAULT_METHODS', $mode);
+
+        if ($variantFlag === 'on')
+        {
+            $this->resetDefaultMethodsBasedOnMerchantPricingPlan($merchant, $defaultMethods);
+        }
+
         if ((is_null($methods) === true) or (is_null($defaultMethods) === true))
         {
             $this->trace->info(
@@ -552,6 +561,44 @@ class Core extends Base\Core
         }
 
         $this->repo->saveOrFail($methods);
+    }
+
+    private function resetDefaultMethodsBasedOnMerchantPricingPlan(Merchant\Entity $merchant, $defaultMethods)
+    {
+        $plan = $this->repo->pricing->getMerchantPricingPlan($merchant);
+
+        $methodsToCheck = Payment\Method::getAllPaymentMethods();
+
+        foreach ($methodsToCheck as $method)
+        {
+            if (isset($defaultMethods[$method]) and $defaultMethods[$method] === true)
+            {
+                $defaultMethods[$method] = $plan->hasMethod($method);
+            }
+        }
+
+        if ($plan->hasNetworkAmex() === false)
+        {
+            $defaultMethods[Entity::AMEX] = false;
+        }
+
+        if ($plan->hasMethod(Entity::CARD) === false)
+        {
+            $defaultMethods[Entity::CREDIT_CARD] = false;
+
+            $defaultMethods[Entity::DEBIT_CARD] = false;
+
+            $defaultMethods[Entity::PREPAID_CARD] = false;
+        }
+
+        $this->trace->info(
+            TraceCode::PRICING_PLAN_DEFAULT_METHODS,
+            [
+                'merchant_id' => $merchant->getId(),
+                'plan_id' => $merchant->getPricingPlanId(),
+                'default_methods' => $defaultMethods,
+            ]
+        );
     }
 
     /**

@@ -99,7 +99,8 @@ class ActivationTest extends OAuthTestCase
         $this->app->razorx->method('getTreatment')
             ->will($this->returnCallback(
                 function($mid, $feature, $mode) {
-                    if ($feature === RazorxTreatment::SELF_SERVE_AUTO_KYC)
+                    if ($feature === RazorxTreatment::SELF_SERVE_AUTO_KYC or
+                        $feature === RazorxTreatment::PRICING_PLAN_DEFAULT_METHODS)
                     {
                         return 'on';
                     }
@@ -298,7 +299,7 @@ class ActivationTest extends OAuthTestCase
             'amex'          => false,
             'netbanking'    => true,
             'upi'           => true,
-            'emi'           => ['credit', 'debit'],
+            'emi'           => [], // emi is disabled because pricing rule is not present.
             'prepaid_card'  => true,
             'paylater'      => true,
             'airtelmoney'   => true,
@@ -434,7 +435,7 @@ class ActivationTest extends OAuthTestCase
             'amex'          => false,
             'netbanking'    => true,
             'upi'           => true,
-            'emi'           => ['credit', 'debit'],
+            'emi'           => [], // emi is disabled because pricing rule is not present.
             'prepaid_card'  => true,
             'paylater'      => true,
             'airtelmoney'   => true,

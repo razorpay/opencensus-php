@@ -201,6 +201,8 @@ final class RazorxTreatment
     // experiment to enable self serving of auto kyc registered merchants
     const SELF_SERVE_AUTO_KYC = 'self_serve_auto_kyc';
 
+    const PRICING_PLAN_DEFAULT_METHODS = 'PRICING_PLAN_DEFAULT_METHODS';
+
     // experiment to enable self serving of auto kyc unregistered merchants
     const UNREG_SELF_SERVE_AUTO_KYC = 'unreg_self_serve_auto_kyc';
 
