@@ -509,6 +509,8 @@ class Name
     const CREATE_GATEWAY_CREDENTIAL           = 'create_gateway_credential';
     const DELETE_GATEWAY_CREDENTIAL           = 'delete_gateway_credential';
 
+    const EXECUTE_TERMINAL_TEST               = 'execute_terminal_test';
+
     const MANAGE_PAYOUT_DOWNTIME              = 'manage_payout_downtime';
     const VIEW_PAYOUT_DOWNTIME                = 'view_payout_downtime';
     const VAULT_TOKEN_CREATE                  = 'vault_token_create';

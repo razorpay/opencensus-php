@@ -402,6 +402,13 @@ class Route
         'terminals_proxy_delete_gateway_credential'=> ['delete',   'terminals/proxy/gateway_credentials/{id}',       'TerminalController@proxyV2TerminalService'                         ],
         'terminals_proxy_fetch_terminals_credentials'=> ['post',   'terminals/credentials',                          'TerminalController@fetchTerminalsCredentials'                      ],
 
+        // Automatic terminal testing
+        'execute_terminal_test_run'                => ['post',     'terminals/proxy/terminal_test_run',                              'TerminalController@proxyV2TerminalService'                         ],
+        'fetch_terminal_test_run'                  => ['get',      'terminals/proxy/terminal_test_run',                              'TerminalController@proxyV2TerminalService'                         ],
+        'fetch_terminal_test_run_by_params'        => ['post',     'terminal_test_run_fetch',                                        'TerminalController@fetchTerminalTestRun'                           ],
+        'create_terminal_test_instrument'          => ['post',     'terminals/proxy/terminal_test_instrument',                       'TerminalController@proxyV2TerminalService'                         ],
+        'delete_terminal_test_instrument'          => ['delete',   'terminals/proxy/terminal_test_instrument/{id}',                  'TerminalController@proxyV2TerminalService'                         ],
+
         'get_templates'                            => ['get',      'terminals/proxy/templates/internal_instrument_request',       'TerminalController@proxyV2TerminalService'                         ],
 
         'terminal_test_save_otp'                   => ['post',     'terminal_test_otp',                              'TerminalController@postTerminalTestOtp'                            ],
@@ -4499,6 +4506,13 @@ class Route
         'terminals_proxy_fetch_gateway_credential',
         'terminals_proxy_delete_gateway_credential',
 
+        // automated terminal testing
+        'execute_terminal_test_run',
+        'fetch_terminal_test_run',
+        'fetch_terminal_test_run_by_params',
+        'create_terminal_test_instrument',
+        'delete_terminal_test_instrument',
+
         // settlements service dashboard routes
         'setl_admin_fetch',
         'setl_schedule_get',
@@ -5401,6 +5415,12 @@ class Route
         'terminals_proxy_create_gateway_credential'   => Permission::CREATE_GATEWAY_CREDENTIAL,
         'terminals_proxy_fetch_gateway_credential'    => Permission::VIEW_GATEWAY_CREDENTIAL,
         'terminals_proxy_delete_gateway_credential'   => Permission::DELETE_GATEWAY_CREDENTIAL,
+
+        'execute_terminal_test_run'                   => Permission::EXECUTE_TERMINAL_TEST,
+        'fetch_terminal_test_run'                     => Permission::EXECUTE_TERMINAL_TEST,
+        'fetch_terminal_test_run_by_params'           => Permission::EXECUTE_TERMINAL_TEST,
+        'create_terminal_test_instrument'             => Permission::EXECUTE_TERMINAL_TEST,
+        'delete_terminal_test_instrument'             => Permission::EXECUTE_TERMINAL_TEST,
 
         'get_irctc_settlement_file_admin'             => Permission::GET_IRCTC_SETTLEMENT_FILE,
 
@@ -8286,6 +8306,11 @@ class Route
             'terminals_proxy_delete_gateway_credential',
             'terminals_proxy_fetch_gateway_credential',
             'terminals_proxy_fetch_terminals_credentials',
+            'execute_terminal_test_run',
+            'fetch_terminal_test_run',
+            'fetch_terminal_test_run_by_params',
+            'create_terminal_test_instrument',
+            'delete_terminal_test_instrument',
             'third_party_health_check',
             'throttle_create_config',
             'throttle_delete_config',

@@ -8,6 +8,8 @@ use RZP\Trace\TraceCode;
 
 class TerminalController extends Controller
 {
+    const X_DASHBOARD_ADMIN_EMAIL   = 'X-Dashboard-Admin-Email';
+
     public function putTerminal(string $id)
     {
         $input = Request::all();
@@ -200,7 +202,27 @@ class TerminalController extends Controller
 
         $path = str_replace("v1/terminals/proxy","v2", $path);
 
-        $response = $this->app['terminals_service']->proxyTerminalService($input, $method, $path);
+        $response = $this->app['terminals_service']->proxyTerminalService($input, $method, $path, [],  $this->getAdminHeaders());
+
+        return ApiResponse::json($response);
+    }
+
+    public function fetchTerminalTestRun()
+    {
+        $input = Request::all();
+
+        $query = $input['query'];
+
+        unset($input['query']);
+
+        $query = $query . '&' . http_build_query($input);
+
+        $response = $this->app['terminals_service']->proxyTerminalService(
+            [],
+            \Requests::GET,
+            'v2/terminal_test_run?' . $query,
+            [],
+            $this->getAdminHeaders());
 
         return ApiResponse::json($response);
     }
@@ -283,5 +305,23 @@ class TerminalController extends Controller
         $cronResponse = $this->service()->tokenizeExistingMpans($input);
 
         return ApiResponse::json($cronResponse);
+    }
+
+    protected function getAdminHeaders() : array
+    {
+        $adminEmail = $this->getAdminEmail();
+        if (empty($adminEmail) === true)
+        {
+            return [];
+        }
+
+        return [
+            self::X_DASHBOARD_ADMIN_EMAIL => $this->getAdminEmail(),
+        ];
+    }
+
+    protected function getAdminEmail() : string
+    {
+        return $this->app['basicauth']->getDashboardHeaders()['admin_email'] ?? '';
     }
 }

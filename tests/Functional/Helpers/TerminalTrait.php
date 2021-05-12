@@ -197,6 +197,52 @@ trait TerminalTrait
         return $response;
     }
 
+    protected function getProxyExecuteTerminalTestRunResponse() : \Requests_Response
+    {
+        $data = ['data' => [
+                'id' => 'trmnlTestRunId',
+                'terminal_id' => 'GzGbeCf6yWzenn',
+                'created_by' => 'admin@razorpay.com',
+                'payment_test_summary' => 
+                [
+                  'success' => 0,
+                  'failed' => 0,
+                  'pending' => 0,
+                  'in_progress' => 0,
+                  'timed_out' => 0,
+                ],
+                'refund_test_summary' => 
+                [
+                  'success' => 0,
+                  'failed' => 0,
+                  'pending' => 0,
+                  'in_progress' => 0,
+                  'timed_out' => 0,
+                ],
+                'verify_test_summary' => 
+                [
+                  'success' => 0,
+                  'failed' => 0,
+                  'pending' => 0,
+                  'in_progress' => 0,
+                  'timed_out' => 0,
+                ],
+                'status' => '',
+                'activate_terminal_on_success' => true,
+                'terminal_test_cases' => NULL,
+                'created_at' => 0,
+                'updated_at' => 0,
+        ]];
+
+        $response =  new \Requests_Response;
+
+        $responseData = ['data' => $data];
+
+        $response->body = json_encode($responseData);
+
+        return $response;
+    }
+
     protected function getTerminalToArrayPassword($terminalId)
     {
         Terminal\Entity::verifyIdAndSilentlyStripSign($terminalId);
