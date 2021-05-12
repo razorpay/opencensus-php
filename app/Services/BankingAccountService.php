@@ -205,11 +205,17 @@ class BankingAccountService
 
         $content = (empty($content) === false) ? json_encode($content) : '';
 
+        $requestHeaders = $headers;
+
+        //unsetting api-token value
+        unset($requestHeaders['Api-Token']);
+
         $this->app['trace']->info(TraceCode::BANKING_ACCOUNT_SERVICE_REQUEST, [
-            'path'       => $path,
-            'method'     => $method,
-            'content'    => $content,
-            'headers'    => $headers,
+            'url'     => $url,
+            'path'    => $path,
+            'method'  => $method,
+            'content' => $content,
+            'headers' => $requestHeaders,
         ]);
 
         //add retries here
