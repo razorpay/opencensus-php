@@ -206,6 +206,40 @@ return [
         ]
     ],
 
+    'testCancelEmandateTokenCiti' => [
+        'request' => [
+            'url' => '/gateway/files',
+            'method' => 'POST',
+            'content' => [
+                'type'    => 'nach_cancel',
+                'targets' => ['combined_nach_citi'],
+                'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp() - 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'recipients'          => [''],
+                        'status'              => 'file_sent',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'emandate@razorpay.com',
+                        'type'                => 'nach_cancel',
+                        'target'              => 'combined_nach_citi',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true
+                    ],
+                ],
+            ]
+        ]
+    ],
+
     'testDebitFileGenerationIcici' => [
         'request' => [
             'content' => [

@@ -66,6 +66,7 @@ class Constants
     const PAPER_NACH_ICICI      = 'paper_nach_icici';
 
     const COMBINED_NACH_ICICI   = 'combined_nach_icici';
+    const COMBINED_NACH_CITI    = 'combined_nach_citi';
 
     const COMBINED_NACH_CITI_EARLY_DEBIT = 'combined_nach_citi_early_debit';
 
@@ -164,6 +165,7 @@ class Constants
         ],
         Type::NACH_CANCEL => [
             self::COMBINED_NACH_ICICI,
+            self::COMBINED_NACH_CITI,
         ],
         Type::REFUND_FAILED => [
             'All',
@@ -278,6 +280,7 @@ class Constants
 
         Type::NACH_CANCEL => [
             self::COMBINED_NACH_ICICI => [''],
+            self::COMBINED_NACH_CITI  => [''],
         ],
 
         Type::EMI => [

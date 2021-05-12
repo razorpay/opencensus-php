@@ -311,4 +311,38 @@ class EnachNetbankingCitiGatewayTest extends EnachNetbankingNpciGatewayTest
         $this->markTestSkipped('not applicable');
     }
 
+    public function testCancelEmandateTokenCiti()
+    {
+        $this->makeDebitPayment();
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $fileStatuses = [
+            'status'     => '1',
+            'error_code' => '00',
+            'error_desc' => '',
+        ];
+
+        $this->makeBatchDebitPayment($payment, $fileStatuses);
+
+        $payment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $transaction = $payment->transaction;
+
+        $this->assertNotNull($transaction['reconciled_at']);
+
+        $enach = $this->getDbEntities('enach', ['payment_id' => $payment['id']])->first()->toArray();
+
+        $this->assertArraySelectiveEquals(['status' => '1'], $enach);
+
+        $response = $this->deleteCustomerToken('token_' . $payment['token_id'], 'cust_' . $payment['customer_id']);
+
+        $this->assertEquals(true, $response['deleted']);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
 }
