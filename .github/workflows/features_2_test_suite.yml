@@ -77,8 +77,6 @@ jobs:
           MYSQL_DATABASE: api
           MYSQL_ROOT_PASSWORD: root
           MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
-        volumes:
-          - ${{ github.workspace }}/scripts/mysql.cnf:/opt/bitnami/mysql/conf/my_custom.cnf
       elasticsearch:
         credentials:
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
