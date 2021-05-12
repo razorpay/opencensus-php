@@ -360,6 +360,9 @@ class CreateMerchantDetailsTable extends Migration
             $table->string(MerchantDetail::BANK_DETAILS_DOC_VERIFICATION_STATUS, 30)
                   ->nullable();
 
+            $table->string(MerchantDetail::MSME_DOC_VERIFICATION_STATUS, 30)
+                  ->nullable();
+
             $table->date(MerchantDetail::DATE_OF_ESTABLISHMENT)
                   ->nullable();
 

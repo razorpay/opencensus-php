@@ -191,6 +191,13 @@ class Type
         self::AADHAR_FRONT,
         self::PASSPORT_FRONT,
         self::VOTER_ID_FRONT,
+        self::MSME_CERTIFICATE,
+    ];
+
+    protected static $poaDocuments = [
+        self::AADHAR_FRONT,
+        self::PASSPORT_FRONT,
+        self::VOTER_ID_FRONT,
     ];
 
     public static function isValid($value)
@@ -206,6 +213,16 @@ class Type
         }
 
         return in_array($documentType, self::$documentsToPerformOcr, true);
+    }
+
+    public static function isPoaDocument($documentType): bool
+    {
+        if (empty($documentType))
+        {
+            return false;
+        }
+
+        return in_array($documentType, self::$poaDocuments, true);
     }
 
     public static function isValidProofType($value)

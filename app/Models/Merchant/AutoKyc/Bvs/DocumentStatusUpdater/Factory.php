@@ -79,6 +79,12 @@ class Factory
                     $artefactType,
                     $validationId);
 
+            case Constant::MSME:
+
+                return new DefaultStatusUpdater(
+                    $merchant, Entity::MSME_DOC_VERIFICATION_STATUS,
+                    $artefactType, $validationId);
+
             default :
 
                 throw new LogicException(

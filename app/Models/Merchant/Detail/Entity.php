@@ -128,6 +128,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     const PERSONAL_PAN_DOC_VERIFICATION_STATUS = 'personal_pan_doc_verification_status';
     const COMPANY_PAN_DOC_VERIFICATION_STATUS  = 'company_pan_doc_verification_status';
     const BANK_DETAILS_DOC_VERIFICATION_STATUS = 'bank_details_doc_verification_status';
+    const MSME_DOC_VERIFICATION_STATUS         = 'msme_doc_verification_status';
 
     const SUBMIT                                   = 'submit';
     const ARCHIVE                                  = 'archive';
@@ -400,6 +401,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::COMPANY_PAN_DOC_VERIFICATION_STATUS,
         self::PERSONAL_PAN_DOC_VERIFICATION_STATUS,
         self::BANK_DETAILS_DOC_VERIFICATION_STATUS,
+        self::MSME_DOC_VERIFICATION_STATUS,
         self::SHOP_ESTABLISHMENT_NUMBER,
         self::SHOP_ESTABLISHMENT_VERIFICATION_STATUS,
         self::CLIENT_APPLICATIONS,
@@ -880,6 +882,16 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     public function getPersonalPanDocVerificationStatus()
     {
         return $this->getAttribute(self::PERSONAL_PAN_DOC_VERIFICATION_STATUS);
+    }
+
+    public function getMsmeDocVerificationStatus()
+    {
+        return $this->getAttribute(self::MSME_DOC_VERIFICATION_STATUS);
+    }
+
+    public function setMsmeDocVerificationStatus(?string $status = null)
+    {
+        return $this->setAttribute(self::MSME_DOC_VERIFICATION_STATUS, $status);
     }
 
     public function getCompanyPanDocVerificationStatus()

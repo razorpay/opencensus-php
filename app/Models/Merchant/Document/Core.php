@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\AutoKyc;
@@ -13,10 +14,25 @@ use RZP\Models\Merchant\Stakeholder;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\FileStore\Entity as FileStoreEntity;
+use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 
 class Core extends Base\Core
 {
+    private $merchantCore;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->merchantCore = new Merchant\Core();
+    }
+
+    public function setMerchantCore($merchantCore)
+    {
+        $this->merchantCore = $merchantCore;
+    }
+
     /**
      * @param Entity $document
      *
@@ -285,20 +301,42 @@ class Core extends Base\Core
         return null;
     }
 
+    public function shouldPerfomOcrOnDocumentUpload(
+        Entity $document, Merchant\Entity $merchant, Merchant\Detail\Entity $merchantDetails): bool
+    {
+        if (Type::isDocumentTypeToPerformOcr($document->getDocumentType()) === false)
+        {
+            return false;
+        }
+
+        if ((Type::isPoaDocument($document->getDocumentType()) === true) and
+            ($this->merchantCore->isAutoKycEnabled($merchantDetails, $merchant) === false))
+        {
+            return false;
+        }
+
+        if($document->getDocumentType() === Merchant\Document\Type::MSME_CERTIFICATE)
+        {
+            $isExperimentEnabled = $this->merchantCore->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
+                RazorxTreatment::MSME_DOC_VERIFICATION);
+
+            return ($isExperimentEnabled === true);
+        }
+
+        return true;
+    }
+
     protected function PerformOcrIfApplicable(
         Merchant\Detail\Entity $merchantDetails,
         Entity $document,
         Merchant\Entity $merchant)
     {
-        $merchantCore = new Merchant\Core();
-
-        if ((Type::isDocumentTypeToPerformOcr($document->getDocumentType()) === false) or
-            ($merchantCore->isAutoKycEnabled($merchantDetails, $merchant) === false))
+        if($this->shouldPerfomOcrOnDocumentUpload($document, $merchant, $merchantDetails) === false)
         {
             return;
         }
 
-        $this->performOcrWithBvs($document, $merchantDetails);
+        $this->performOcrWithBvs($document, $merchant, $merchantDetails);
 
         $this->trace->count(Detail\Metric::MERCHANT_DOCUMENT_OCR_PERFORMED_TOTAL,
                             [
@@ -340,11 +378,28 @@ class Core extends Base\Core
         }
     }
 
+    public function performOcrWithBvs(Entity $document, Merchant\Entity $merchant, Detail\Entity $merchantDetails)
+    {
+        if(Type::isPoaDocument($document->getDocumentType()) === true)
+        {
+            $this->performPoaOcrWithBvs($document, $merchantDetails);
+        }
+        else
+        {
+            $factory = new requestDispatcher\Factory();
+
+            $requestDispatcher = $factory->getBvsRequestDispatcherForDocument(
+                $document->getDocumentType(), $merchant, $merchantDetails);
+
+            $requestDispatcher->triggerBVSRequest();
+        }
+    }
+
     /**
      * @param Entity $document
      * @param Detail\Entity $merchantDetails
      */
-    public function performOcrWithBvs(Entity $document, Detail\Entity $merchantDetails)
+    public function performPoaOcrWithBvs(Entity $document, Detail\Entity $merchantDetails)
     {
         $artefactDetails = Constant::FIELD_ARTEFACT_DETAILS_MAP[$document->getDocumentType()] ?? [];
 

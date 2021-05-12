@@ -6239,3 +6239,6 @@ ALTER TABLE `partner_configs` CHANGE COLUMN `tds_percentage` `tds_percentage` IN
 
 ALTER TABLE payouts
     ADD COLUMN is_payout_service TINYINT(1) DEFAULT 0;
+
+ALTER TABLE merchant_details
+    ADD COLUMN msme_doc_verification_status varchar(30) DEFAULT NULL;

@@ -173,6 +173,9 @@ final class RazorxTreatment
     // experiment to enable esign aadhar functionality
     const ESIGN_AADHAR_FUNCTIONALITY = 'esign_aadhar_functionality';
 
+    // experiment to enable msme doc verification through OCR;
+    const MSME_DOC_VERIFICATION = 'MSME_DOC_VERIFICATION';
+
     // experiment to skip poa documents if aadhaar esign is done
     const SKIP_POA_DOCUMENT_FUNCTIONALITY = "SKIP_POA_DOCUMENT_FUNCTIONALITY";
 

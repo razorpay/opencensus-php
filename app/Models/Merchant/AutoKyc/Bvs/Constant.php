@@ -29,6 +29,7 @@ class Constant
     const LEGAL_NAME        = 'legal_name';
     const TRADE_NAME        = 'trade_name';
     const COMPANY_NAME      = 'company_name';
+    const SIGNATORY_NAME    = 'signatory_name';
     const LLP_NAME          = 'llp_name';
     const SIGNATORY_DETAILS = 'signatory_details';
     const FULL_NAME         = 'full_name';
@@ -50,6 +51,8 @@ class Constant
     // Config names
     const PERSONAL_PAN_OCR           = 'personal_pan_ocr';
     const BUSINESS_PAN_OCR           = 'business_pan_ocr';
+
+    const MSME_OCR                   = 'msme_ocr';
 
     const CANCELLED_CHEQUE_OCR_PERSONAL_PAN             = 'cancelled_cheque_ocr_personal_pan';
     const CANCELLED_CHEQUE_OCR_BUSINESS_PAN             = 'cancelled_cheque_ocr_business_pan';
@@ -81,6 +84,7 @@ class Constant
     const LLP_DEED           = 'llp_deed';
     const BUSINESS_PAN       = 'business_pan';
     const SHOP_ESTABLISHMENT = 'shop_establishment';
+    const MSME               = 'msme';
 
     //
     // Company Search in BVS
