@@ -391,6 +391,8 @@ class Selector extends Base\Core
 
             $paymentData['meta_data'] = $this->getPaymentMetadataArray($payment);
 
+            $paymentData['application'] = $payment->getApplication();
+
             $authNTerminals = $this->getAuthNTerminals();
 
             $merchantData = $this->getMerchantData($merchant);
