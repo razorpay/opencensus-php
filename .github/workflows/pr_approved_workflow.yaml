@@ -63,6 +63,8 @@ jobs:
       id: script
       run: |
         echo "API_INSTANCE=$(sh ./.github/actions/getSpinnakerConfig.sh)" >> $GITHUB_ENV
+    - name: Print Instance value
+      run: echo $API_INSTANCE
     - if: contains(github.event.pull_request.head.ref, 'hotfix')
       name: Set flag
       id: hotfix

@@ -69,17 +69,18 @@ run_bvt_suite_when_approved() {
     exit 0
   fi
   if [ "$statusCode" = 200 ]; then
-    spinnakerBody=$(curl --location --request GET "https://deploy-api.razorpay.com/executions?pipelineConfigIds=${PIPELINE_ID}&limit=50" \
-      -H "${SPINNAKER_HEADER}" | jq '[.[] | {status: .status,id: .id,startTime: .startTime,buildTime: .buildTime,commitId: .stages[0].outputs.app_commit_id,pr_number: .stages[0].outputs.pr_number,apiInstance: .trigger.parameters.instance}]')
-    pipelines=$(echo "$spinnakerBody" | jq --raw-output '.[] | {pr_number: .pr_number,id: .id,status: .status,commitId: .commitId,apiInstance: .apiInstance}| @base64')
+    spinnakerBody=$(curl --location --request GET "https://deploy-api.razorpay.com/executions?pipelineConfigIds=${PIPELINE_ID}&limit=100" \
+      -H "${SPINNAKER_HEADER}" | jq '[.[] | {status: .status,id: .id,startTime: .startTime,buildTime: .buildTime,commitId: .stages[0].outputs.app_commit_id,pr_number: .stages[0].outputs.pr_number,apiInstance: .trigger.parameters.instance,pRoastCommitId: .trigger.payload.review.roast_commit_id}]')
+    pipelines=$(echo "$spinnakerBody" | jq --raw-output '.[] | {pr_number: .pr_number,id: .id,status: .status,commitId: .commitId,apiInstance: .apiInstance,pRoastCommitId: .pRoastCommitId}| @base64')
     for p in $pipelines; do
       pipeline="$(echo "$p" | base64 -d)"
       pCommitId=$(echo "$pipeline" | jq --raw-output '.commitId')
       pStatus=$(echo "$pipeline" | jq --raw-output '.status')
-      if [ "$pPRNumber" = "$PRNumber" ] && [ "$pStatus" = "RUNNING" ]; then
+      pRoastCommitId=$(echo "$pipeline" | jq --raw-output '.pRoastCommitId')
+      if [ "$pCommitId" = "$commitId" ] && [ "$roastPRCommit" = "$pRoastCommitId" ] && ([ "$pStatus" = "RUNNING" ] || [ "$pStatus" = "SUCCEEDED" ]); then
         echo "$pCommitId"
         echo "$pStatus"
-        echo "CommitId already in queue, ignoring for bvt execution"
+        echo "CommitId already in queue or SUCCEEDED in pipeline for same roast commit ID, ignoring for bvt execution"
         exit 0
       fi
     done
@@ -94,7 +95,7 @@ run_bvt_suite_when_approved() {
           -H "${SPINNAKER_HEADER}")
         echo "PR number $pPRNumber and Commit id $pCommitId in $pStatus state, this is being cancelled"
         #pipeline cancel logic
-        api_instance=$(echo "$pipeline" | jq --raw-output '.apiInstance')
+        #api_instance=$(echo "$pipeline" | jq --raw-output '.apiInstance')
         if [ "$spinnakerCancelRequestStatusCode" = 200 ]; then
           echo "Pipeline cancellation succeeded"
         else
