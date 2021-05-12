@@ -2313,6 +2313,7 @@ app
 
       $scope.successFullSignin = function () {
         // check questions have been answered or not
+        updateSpinnerState('show');
         user
           .identity(true)
           .then(function (userDetails) {
