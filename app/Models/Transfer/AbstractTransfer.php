@@ -2,17 +2,13 @@
 
 namespace RZP\Models\Transfer;
 
+use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use Illuminate\Support\Facades\App;
 use RZP\Listeners\ApiEventSubscriber;
-use RZP\Trace\TraceCode;
-use RZP\Models\Payment;
 
 abstract class AbstractTransfer
 {
-
-    /**
-     * AbstractTransfer constructor.
-     */
     protected $payment;
 
     const MUTEX_LOCK_TIMEOUT = 600;
@@ -41,6 +37,9 @@ abstract class AbstractTransfer
 
     protected  $status;
 
+    /**
+     * AbstractTransfer constructor.
+     */
     public function __construct($payment)
     {
         $this->payment = $payment;
@@ -117,37 +116,38 @@ abstract class AbstractTransfer
         return $transfers;
     }
 
-    public function processTransfers($payment ,$transfer,$merchant)
+    public function processTransfers($payment, $transfer, $merchant)
     {
         $this->merchant = $merchant;
 
-        $istransferProcessed = true;
+        $isTransferProcessed = true;
 
         if (($transfer->isFailed() === true) and
             ($transfer->getAttempts() >= Constant::MAX_ALLOWED_ORDER_TRANSFER_PROCESS_ATTEMPTS))
         {
-            $this->trace->info($this->invalidCode,
-                        [
-                            'payment_id' => $payment->getPublicId(),
-                            'transfer' => $transfer->toArrayPublic(),
-                            'transfermode' => $this->transfermode,
-                        ]);
+            $this->trace->info(
+                $this->invalidCode,
+                [
+                    'payment_id'    => $payment->getPublicId(),
+                    'transfer'      => $transfer->toArrayPublic(),
+                    'transfermode'  => $this->transfermode,
+                ]
+            );
+
             return;
         }
 
-        $this->repo->transaction(function () use ($payment, $transfer,$istransferProcessed)
+        try
         {
-            try
+            $transfer = $this->repo->transaction(function () use ($payment, $transfer, $isTransferProcessed)
             {
                 $oldTransfer = clone $transfer;
 
-                $core = new Core();
-
-                $transfer = $core->createTransactionForTransfer($oldTransfer);
+                $transfer = (new Core())->createTransactionForTransfer($oldTransfer);
 
                 $to = $this->repo
-                            ->account
-                            ->findByIdAndMerchant($transfer->getToId(), $this->merchant);
+                           ->account
+                           ->findByIdAndMerchant($transfer->getToId(), $this->merchant);
 
                 $input = $this->getTransferData($transfer);
 
@@ -163,36 +163,36 @@ abstract class AbstractTransfer
 
                 $this->updatePaymentAmountTransferred($payment, $totalTransferAmount);
 
-                (new Metric())->pushTransferProcessSuccessMetrics();
+                return $transfer;
+            });
 
-            } catch (\Exception $e)
+            (new Metric())->pushTransferProcessSuccessMetrics();
+        }
+        catch (\Exception $ex)
+        {
+            $isTransferProcessed = false ;
+
+            (new Metric())->pushTransferProcessFailedMetrics($ex);
+
+            throw  $ex;
+        }
+        finally
+        {
+            if($isTransferProcessed === true)
             {
-                $istransferProcessed = false ;
+                $transfer->incrementAttempts();
 
-                (new Metric())->pushTransferProcessFailedMetrics($e);
+                $this->repo->saveOrFail($transfer);
 
-                throw  $e;
-
-            } finally
-            {
-                if($istransferProcessed === true)
+                if ($transfer->isProcessed())
                 {
-                    $transfer->incrementAttempts();
+                    $this->repo->reload($transfer);
 
-                    $this->repo->saveOrFail($transfer);
-
-                    if ($transfer->isProcessed())
-                    {
-                        $this->repo->reload($transfer);
-
-                        (new Core())->eventTransferProcessed($transfer);
-                    }
+                    (new Core())->eventTransferProcessed($transfer);
                 }
             }
-        });
+        }
     }
-
-
 
     private function getTransferData(Entity $transfer)
     {
