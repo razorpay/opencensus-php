@@ -1421,7 +1421,7 @@ return [
                     'description' => 'The fund account id field is required when fund account is not present.',
                     'reason'      => 'input_validation_failed',
                     'source'      => 'business',
-                    'step'        => null,
+                    'step'        => 'NA',
                     'metadata'    => []
                 ],
             ],
@@ -1455,7 +1455,7 @@ return [
                     'description' => 'The fund account id field is required when fund account is not present.',
                     'reason'      => 'input_validation_failed',
                     'source'      => 'business',
-                    'step'        => null,
+                    'step'        => 'NA',
                     'metadata'    => []
                 ],
             ],

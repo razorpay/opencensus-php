@@ -2167,7 +2167,7 @@ return [
                     'description' => 'The name field is required.',
                     'reason'      => 'input_validation_failed',
                     'source'      => 'business',
-                    'step'        => null,
+                    'step'        => 'NA',
                     'metadata'    => []
                 ],
             ],
@@ -2195,7 +2195,7 @@ return [
                     'description' => 'The name field is required.',
                     'reason'      => 'input_validation_failed',
                     'source'      => 'business',
-                    'step'        => null,
+                    'step'        => 'NA',
                     'metadata'    => []
                 ],
             ],
@@ -2229,7 +2229,7 @@ return [
                     'description' => PublicErrorDescription::BAD_REQUEST_INTERNAL_CONTACT_CREATE_UPDATE_NOT_PERMITTED,
                     'reason'      => 'server_error',
                     'source'      => 'internal',
-                    'step'        => null,
+                    'step'        => 'NA',
                     'metadata'    => []
                 ],
             ],
@@ -2263,7 +2263,7 @@ return [
                     'description' => PublicErrorDescription::BAD_REQUEST_INTERNAL_CONTACT_CREATE_UPDATE_NOT_PERMITTED,
                     'reason'      => 'server_error',
                     'source'      => 'internal',
-                    'step'        => null,
+                    'step'        => 'NA',
                     'metadata'    => []
                 ],
             ],

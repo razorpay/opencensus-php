@@ -3,6 +3,7 @@
 namespace RZP\Models\Payout;
 
 use App;
+use ArrayObject;
 
 use RZP\Error\Error;
 use RZP\Trace\TraceCode;
@@ -91,9 +92,9 @@ class PayoutError extends Error
             self::SOURCE            => $this->getAttribute(self::SOURCE),
             self::REASON            => $this->getAttribute(self::REASON),
             self::DESCRIPTION       => $this->getAttribute(self::DESCRIPTION),
-            self::PUBLIC_ERROR_CODE => null,
-            self::STEP              => null,
-            self::METADATA          => null
+            self::PUBLIC_ERROR_CODE => 'NA',
+            self::STEP              => 'NA',
+            self::METADATA          => new \ArrayObject([], ArrayObject::STD_PROP_LIST|ArrayObject::ARRAY_AS_PROPS)
         ];
     }
 }

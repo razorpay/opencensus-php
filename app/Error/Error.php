@@ -80,6 +80,10 @@ class Error extends Support\Fluent
 
     protected $errorMapper;
 
+    protected $product;
+
+    protected $merchant;
+
     public static $newBankingErrorFeatureMapWithMode = [
         MODE::TEST => Features::TEST_NEW_BANKING_ERROR,
         MODE::LIVE => Features::NEW_BANKING_ERROR,
@@ -96,6 +100,10 @@ class Error extends Support\Fluent
         $this->trace = $this->app['trace'];
 
         $this->errorMapper = $this->app['error_mapper'];
+
+        $this->product = $this->app['basicauth']->getProduct();
+
+        $this->merchant = $this->app['basicauth']->getMerchant();
 
         $this->mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
@@ -759,7 +767,8 @@ class Error extends Support\Fluent
 
         $metadata = $this->getAttribute(self::METADATA);
 
-        if (isset($metadata) === false)
+        if ((isset($metadata) === false) or
+            ($this->product === Product::BANKING))
         {
             $metadata = new \ArrayObject([], ArrayObject::STD_PROP_LIST|ArrayObject::ARRAY_AS_PROPS);
         }
@@ -775,11 +784,19 @@ class Error extends Support\Fluent
 
         if ($this->shouldModifyForNewBankingErrorCode() === true)
         {
+            $error[self::STEP]   = 'NA';
+
             $this->trace->info(TraceCode::NEW_BANKING_ERROR_RESPONSE_DATA,
                 [
                     'new_error_response' => $error
                 ]
             );
+        }
+        else if ($this->product === Product::BANKING)
+        {
+            $error[self::STEP]   = 'NA';
+            $error[self::REASON] = 'NA';
+            $error[self::SOURCE] = 'NA';
         }
 
         $data = $this->getAttribute(self::DATA);
@@ -1030,13 +1047,9 @@ class Error extends Support\Fluent
      */
     public function shouldModifyForNewBankingErrorCode()
     {
-        $product = $this->app['basicauth']->getProduct();
-
-        $merchant = $this->app['basicauth']->getMerchant();
-
-        if (($product === Product::BANKING) and
-            (is_null($merchant) === false) and
-            ($merchant->isFeatureEnabled(self::$newBankingErrorFeatureMapWithMode[$this->mode]) === true))
+        if (($this->product === Product::BANKING) and
+            (is_null($this->merchant) === false) and
+            ($this->merchant->isFeatureEnabled(self::$newBankingErrorFeatureMapWithMode[$this->mode]) === true))
         {
             return true;
         }
