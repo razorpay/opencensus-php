@@ -8,7 +8,7 @@ use RZP\Http\Controllers\P2p\Requests;
 
 class ContextMap
 {
-    const X_RAZORPAY_REQUEST_ID     = 'X-Razorpay-Request-Id';
+    const X_RAZORPAY_REQUEST_ID     = 'X-Razorpay-P2p-Request-Id';
     const X_RAZORPAY_VPA_HANDLE     = 'X-Razorpay-Vpa-Handle';
     const X_RAZORPAY_DEVICE_IP      = 'X-Razorpay-Device-Ip';
     const X_RAZORPAY_DEVICE_GEOCODE = 'X-Razorpay-Device-Geocode';

@@ -574,7 +574,7 @@ class P2pHelper
 
         if ($this->scenarioInContext instanceof Scenario)
         {
-            $servers['HTTP_X_RAZORPAY_REQUEST_ID'] = $this->scenarioInContext->toRequestId();
+            $servers['HTTP_X_RAZORPAY_P2P_REQUEST_ID'] = $this->scenarioInContext->toRequestId();
         }
 
         return $servers;
