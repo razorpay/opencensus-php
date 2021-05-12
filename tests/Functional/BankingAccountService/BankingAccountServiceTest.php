@@ -73,4 +73,13 @@ class BankingAccountServiceTest extends TestCase
 
         $this->assertNotNull($merchantDetail);
     }
+
+    public function testCron()
+    {
+        $this->ba->cronAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('ACTIVE', $response['data']['status']);
+    }
 }

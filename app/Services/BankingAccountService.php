@@ -5,9 +5,10 @@ namespace RZP\Services;
 use Cache;
 use ApiResponse;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use Illuminate\Http\Request;
 use RZP\Http\Request\Requests;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Exception\IntegrationException;
@@ -66,14 +67,6 @@ class BankingAccountService
         }
 
         return $this->fetchBankingAccountByAccountNumberAndChannel($merchantId, $balance->getAccountNumber(), $balance->getChannel());
-
-        /*$businessId = (new Repository())->getByMerchantId($merchantId)->getBasBusinessId();
-
-        $path = 'business/'. $businessId . '/banking_accounts';
-
-        $response =  $this->sendRequestAndProcessResponse($path, 'GET', []);
-
-        return $response['data'];*/
     }
 
     /**
@@ -138,14 +131,15 @@ class BankingAccountService
 
     public function fetchBankingAccountByAccountNumberAndChannel($merchantId, $accountNumber, $channel)
     {
-        $key = 'bas_banking_account_' . $accountNumber . '_' . $channel;
+        /*$key = 'bas_banking_account_' . $accountNumber . '_' . $channel;
 
         $bankingAccount = json_decode(Cache::get($key), true);
 
-        if(empty($bankingAccount) === false)
+        if (empty($bankingAccount) === false and
+            $bankingAccount['status'] === 'ACTIVE')
         {
             return $bankingAccount;
-        }
+        }*/
 
         $businessId = $this->getBusinessId($merchantId);
 
@@ -157,13 +151,13 @@ class BankingAccountService
 
         $response = $this->sendRequestAndProcessResponse($path, 'GET', [], $headers);
 
-        $expiresAt = Carbon::now()->addMinutes(30);
+        /*$expiresAt = Carbon::now()->addMinutes(30);
 
         $key = 'bas_banking_account_' . $accountNumber . '_' . $channel;
 
         $value = $this->bankingAccountCacheFields($response['data']);
 
-        Cache::put($key, json_encode($value), $expiresAt);
+        Cache::put($key, json_encode($value), $expiresAt);*/
 
         return $response['data'];
     }

@@ -54,19 +54,11 @@ class BasController extends Controller
         return ApiResponse::json($data);
     }
 
-    /**
-     * This function assigns business id to a merchant. Gets added to merchant_details entity.
-     * FE consumes business_id through get user call.
-     *
-     * It's called from BAS service only.
-     *
-     * @param string $merchantId
-     */
-    public function assignBusinessId(string $merchantId)
+    public function forwardCronRequest($path = '')
     {
         $input = Request::all();
 
-        $data =  $this->service->assignBusinessId($merchantId, $input);
+        $data =  $this->service->forwardCronRequest($path, $input);
 
         return ApiResponse::json($data);
     }

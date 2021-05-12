@@ -1,5 +1,8 @@
 <?php
 
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\BankingAccountService\Constants;
 
 return [
@@ -24,6 +27,19 @@ return [
             'method'  => 'POST',
             'content' => [
                 'name' => 'Razorpay',
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testCron' => [
+        'request'  => [
+            'url'     => '/bas/banking_application/cron/poll/status/123456',
+            'method'  => 'GET',
+            'content' => [
             ]
         ],
         'response' => [

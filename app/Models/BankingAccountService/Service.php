@@ -117,6 +117,33 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function forwardCronRequest($path, $input)
+    {
+        if(empty($path) === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BAS_CRON_PATH_MISSING);
+        }
+
+        $method = $this->request->getMethod();
+
+        $queryParams = $this->request->query();
+
+        $queryString = $this->request->getQueryString();
+
+        $input = $this->core()->removeRequestParamsFromInput($queryParams, $input);
+
+        $uri = $this->core()->attachRequestParamsToPath($queryString, $path);
+
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_SERVICE_CRON_REQUEST,
+                           [
+                               'input'  => $input,
+                               'method' => $method,
+                               'uri'    => $uri
+                           ]);
+
+        return $this->bankingAccountService->sendRequestAndProcessResponse($uri, $method, $input);
+    }
+
     protected function getBusinessType($merchant)
     {
         // load merchantDetail

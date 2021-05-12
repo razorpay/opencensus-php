@@ -1718,7 +1718,7 @@ class Route
 
         //all requests get forwarded to banking account service
         'banking_account_service_routes'           => ['any',      'merchant/banking_application/business/{path?}',      'BasController@forwardRequest'                                  ],
-        'banking_account_service_cron_routes'      => ['any',      'bas/merchant/banking_application/cron/{path?}',      'BasController@forwardRequest'                                  ],
+        'banking_account_service_cron_routes'      => ['any',      'bas/banking_application/cron/{path?}',               'BasController@forwardCronRequest'                              ],
 
         //creates balance and banking_account_statement_details
         'bas_banking_accounts_create'              => ['post',     'bas/merchant/{id}/banking_accounts',             'BasController@createCurrentAccountBankingDependencies'             ],
@@ -9130,7 +9130,6 @@ class Route
 
         'banking_account_service' => [
             'bas_banking_accounts_create',
-            'banking_account_service_cron_routes',
         ],
 
         'myoperator' => [

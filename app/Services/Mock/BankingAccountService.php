@@ -70,6 +70,15 @@ class BankingAccountService
             ];
         }
 
+        if($path === 'poll/status/123456' and $method === 'GET')
+        {
+            $result = [
+                'data' => [
+                    'status' => 'ACTIVE',
+                ]
+            ];
+        }
+
         return $result;
     }
 }

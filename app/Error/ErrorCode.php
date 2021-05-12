@@ -2128,6 +2128,8 @@ class ErrorCode
 
     const BAD_REQUEST_BANKING_ACCOUNT_SERVICE_ERROR                                 = 'BAD_REQUEST_BANKING_ACCOUNT_SERVICE_ERROR';
 
+    const BAD_REQUEST_BAS_CRON_PATH_MISSING                                         = 'BAD_REQUEST_BAS_CRON_PATH_MISSING';
+
     // Aadhar E-sign error codes
     const BAD_REQUEST_INVALID_SESSION_ID        = "BAD_REQUEST_INVALID_SESSION_ID";
 
