@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Base\BuilderEx;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
@@ -16,6 +17,7 @@ use RZP\Models\EntityOrigin;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\VirtualAccountTpv;
+use RZP\Models\Merchant\Constants;
 use RZP\Jobs\VirtualAccountMigrate;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Order\Entity as Order;
@@ -804,37 +806,35 @@ class Core extends Base\Core
 
         foreach ($virtualAccount['receivers'] as $receiver)
         {
-            $value        = null;
             $receiverType = $receiver['entity'];
-            switch ($receiverType)
-            {
-                case Receiver::VPA:
 
-                    $value = explode('.', $receiver['username'])[1];
-                    break;
-                case Receiver::BANK_ACCOUNT:
-
-                    $value = $receiver['account_number'];
-                    break;
-                default:
-                    break;
-            }
-
-            if (($value === null) or
-                ((empty($receiverTypes) == false) and
-                 (in_array($receiverType, $receiverTypes, true) === false)))
+            if ((empty($receiverTypes) == false) and
+                (in_array($receiverType, $receiverTypes, true) === false))
             {
                 continue;
             }
 
-            $field = [
-                'key'        => Entity::DESCRIPTOR,
-                'value'      => $value,
-                'list'       => 'high_risk_list',
-                'config_key' => Entity::DESCRIPTOR,
-            ];
+            $value = null;
+            switch ($receiverType)
+            {
+                case Receiver::VPA:
+                {
+                    $vpaDynamic = explode('.', $receiver['username'])[1];
 
-            array_push($fields, $field);
+                    $vpaConfigs = $this->getConfigsForVirtualAccount([Entity::RECEIVER_TYPES => [$receiverType]]);
+
+                    $merchantPrefix = explode('.', $vpaConfigs[$receiverType]['prefix'])[1];
+
+                    $descriptor = str_replace($merchantPrefix, '', $vpaDynamic);
+                    $value      = $merchantPrefix . ' ' . $descriptor;
+
+                    break;
+                }
+                default:
+                    break;
+            }
+
+            $this->getDedupeCheckinput(Entity::DESCRIPTOR, $value, $fields);
         }
 
         if (empty($fields) === false)
@@ -848,7 +848,8 @@ class Core extends Base\Core
         $variant  = $this->app->razorx->getTreatment($merchant->getId(),
                                                      RazorxTreatment::APPS_RISK_CHECK_CREATE_VA,
                                                      $this->mode);
-        if (($variant !== 'on') or
+        if (($this->mode === Mode::TEST) or
+            ($variant !== 'on') or
             ($merchant->isFeatureEnabled(Feature\Constants::APPS_EXTEMPT_RISK_CHECK) === true))
         {
             return false;
@@ -857,9 +858,32 @@ class Core extends Base\Core
         return true;
     }
 
+    protected function getDedupeCheckinput($key, $value, & $fields)
+    {
+        if ($value === null)
+        {
+            return;
+        }
+
+        $checkLists = [Constants::HIGH_RISK_LIST, Constants::BRAND_LIST, Constants::AUTHORITIES_LIST];
+
+        foreach ($checkLists as $checkList)
+        {
+            $field = [
+                'key'        => $key,
+                'value'      => $value,
+                'list'       => $checkList,
+                'config_key' => $key,
+            ];
+            array_push($fields, $field);
+        }
+    }
+
     protected function dispatchToQueueForRiskCheck($virtualAccount, array $fields)
     {
         $request = [
+            'entity_type' => $virtualAccount->getEntity(),
+            'merchant_id' => $virtualAccount->getMerchantId(),
             'client_type' => 'smart_collect',
             'entity_id'   => $virtualAccount->getId(),
             'fields'      => $fields,
