@@ -5916,7 +5916,6 @@ class RefundTest extends TestCase
 
         // Fta data not being passed to Scrooge
         $this->assertEquals($vpaData, $scroogeInput['fta_data']);
-
         $this->assertEquals('normal', $scroogeInput['speed_requested']);
         $this->assertEquals('normal', $scroogeInput['speed_processed']);
 

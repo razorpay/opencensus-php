@@ -132,7 +132,12 @@ class Core extends Base\Core
 
     protected function createMissingRefundTransaction(Refund\Entity $refund)
     {
-        assertTrue($refund->transaction === null);
+        $refund->reload();
+
+        if ($refund->transaction !== null)
+        {
+            return $refund->transaction;
+        }
 
         $this->trace->info(
             TraceCode::REFUND_TRANSACTION_CREATE_RECON,
