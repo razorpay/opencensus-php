@@ -4646,11 +4646,11 @@ class Processor
         {
             $variant = $this->app->razorx->getTreatment(
                 $gateway,
-                Merchant\RazorxTreatment::RAZORX_GATEWAY_SCHEDULER_EXPERIMENT,
+                Merchant\RazorxTreatment::GATEWAY_SCHEDULER_VERIFY_EXPERIMENT,
                 $this->mode
             );
 
-            if (($variant === 'on') and
+            if ((str_starts_with($variant, 'on') === true) and
                 ($this->app->runningUnitTests() === false)) {
                 $isVerifyNewFlow = true;
 

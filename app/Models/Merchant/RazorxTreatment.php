@@ -227,7 +227,7 @@ final class RazorxTreatment
     // to a/b test between offer tile vs subtext for cred
     const CRED_OFFER_SUBTEXT = 'cred_offer_subtext';
     //razorx experiment for using scheduler
-    const RAZORX_GATEWAY_SCHEDULER_EXPERIMENT           = 'razorx_gateway_scheduler_experiment';
+    const GATEWAY_SCHEDULER_VERIFY_EXPERIMENT           = 'gateway_scheduler_verify_experiment';
     // controls %age of the mail to be sent via stork
     const API_STORK_MAIL_PAYMENT_CAPTURE        = 'api_stork_mail_payment_capture';
     const API_STORK_MAIL_CONTACT_MOBILE_UPDATED = 'api_stork_mail_contact_mobile_updated';
