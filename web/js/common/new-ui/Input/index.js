@@ -584,9 +584,8 @@ Field.File = (_) => {
       <div class="Input-content Input-File">
         <FileUpload
           name={_.name}
-          onBiggerFileSize={(_) => {
-            console.log('File size is bigger');
-          }}
+          maxSize={_.maxSize}
+          onBiggerFileSize={_.onBiggerFileSize}
           onFileChange={_.onChange}
           defaultValue={_.defaultValue}
           disabled={_.disabled}
