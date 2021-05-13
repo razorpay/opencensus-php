@@ -216,14 +216,15 @@ const App = () => {
     }
   };
 
-  useEffect(() => {
-    if (!window.location.href.includes('coupon_code') && isNEOCouponApplied()) {
-      if (couponCode.toUpperCase() === NEW_YEAR_COUPON) {
-        BANNER_TEXT = 'Special new year pricing plan has been applied. Complete your sign up now';
-      }
-      setShowBanner(true);
-    }
-  });
+  // @Todo: show/hide banner based on campaign end date
+  // useEffect(() => {
+  //   if (!window.location.href.includes('coupon_code') && isNEOCouponApplied()) {
+  //     if (couponCode.toUpperCase() === NEW_YEAR_COUPON) {
+  //       BANNER_TEXT = 'Special new year pricing plan has been applied. Complete your sign up now';
+  //     }
+  //     setShowBanner(true);
+  //   }
+  // });
 
   useEffect(() => {
     // check if Google Onetap script has successfully loaded or failed to load
