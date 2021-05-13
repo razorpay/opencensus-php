@@ -1468,7 +1468,7 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
-        Entity::UPI                        => 'sometimes|boolean',
+        Entity::UPI                        => 'sometimes|boolean|in:0,1',
     ];
 
     protected static $paytmEditTerminalRules = [
@@ -1481,6 +1481,7 @@ class Validator extends Base\Validator
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::NETBANKING                 => 'sometimes|boolean',
         Entity::CARD                       => 'sometimes|boolean',
+        Entity::UPI                        => 'sometimes|boolean|in:0,1',
     ];
 
     protected static $enachRblTerminalRules = [
