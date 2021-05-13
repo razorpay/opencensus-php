@@ -3221,9 +3221,8 @@ class Route
 
         'add_verify_disabled_gateway',
         'p2p_retrieve_banks_cron',
-
-        'user_fetch_entity',
         'payment_verify_new',
+        'user_fetch_entity',
         'bulk_submerchant_assign',
 
         // Merchant Fraud
@@ -9114,6 +9113,10 @@ class Route
             'internal_order_update',
             'internal_transactions',
             'payment_verify_new',
+            'internal_merchant_fetch',
+            'payment_notify',
+            'order_fetch_by_id_internal_admin',
+            'order_fetch_by_id_internal'
         ],
 
         'freshdesk_webhook' => [
@@ -9199,6 +9202,10 @@ class Route
     protected static $s2sJsonRoutes = [
         'payment_create_private_json',
         'payment_create_checkout_json'
+    ];
+
+    protected static $rearchRoutes = [
+        'payment_create_ajax',
     ];
 
     /**
@@ -10447,6 +10454,13 @@ class Route
         $jsonpRoutes = self::$jsonpRoutes;
 
         return in_array($route, $jsonpRoutes);
+    }
+
+    public static function isRearchRoute($route)
+    {
+        $rearchRoutes = self::$rearchRoutes;
+
+        return (in_array($route, $rearchRoutes, true) === true);
     }
 
     public static function isJsonRoute($route)

@@ -628,6 +628,13 @@ class PublicEntity extends UniqueIdEntity
         return $id;
     }
 
+    public static function silentlyStripSign(& $id)
+    {
+        static::stripSign($id);
+
+        return $id;
+    }
+
     public static function verifyIdAndStripSignMultiple(array & $ids)
     {
         $newIds = array_map(function(&$id)

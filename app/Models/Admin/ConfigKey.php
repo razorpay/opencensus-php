@@ -218,6 +218,8 @@ class ConfigKey
 
     const SLAVE_ROUTES = self::PREFIX.'slave_routes';
 
+    const REARCH_CARD_PAYMENTS = self::PREFIX.'rearch_card_payments';
+
     const MIN_HOURS_TO_START_TICKET_CREATION_AFTER_ACTIVATION_FORM_SUBMISSION
         = self::PREFIX . 'min_hours_to_start_ticket_creation_after_activation_form_submission';
 
@@ -313,6 +315,7 @@ class ConfigKey
         self::ICICI_STATEMENT_FETCH_RATE_LIMIT_RELEASE_DELAY,
         self::RBL_ENABLE_RATE_LIMIT_FLOW,
         self::ICICI_ENABLE_RATE_LIMIT_FLOW,
+        self::REARCH_CARD_PAYMENTS,
         self::MIN_HOURS_TO_START_TICKET_CREATION_AFTER_ACTIVATION_FORM_SUBMISSION,
     ];
 

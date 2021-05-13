@@ -3,6 +3,7 @@
 namespace RZP\Models\Transaction;
 
 use Mail;
+use Queue;
 use Config;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger;
@@ -156,14 +157,10 @@ class Core extends Base\Core
 
         if ($payment->isCard() === true)
         {
-            $card = $this->repo->card->findByPublicId($payment->getCardId());
+            $card = $this->repo->card->findOrFail($payment->getCardId());
 
             $payment->card()->associate($card);
         }
-
-        $terminalId = $payment->getTerminalId();
-
-        \RZP\Models\Terminal\Entity::verifyIdAndSilentlyStripSign($terminalId);
 
         $terminal = $this->repo->terminal->findOrFail($payment->getTerminalId());
 
@@ -182,17 +179,28 @@ class Core extends Base\Core
             throw new Exception\BadRequestValidationFailureException("Payment Status not in correct status for transaction creation");
         }
 
-        $this->dispatchUpdatedTransactionToCPS($txn);
+        $this->dispatchUpdatedTransactionToCPS($txn, $payment);
 
         return $txn;
     }
 
-    private function dispatchUpdatedTransactionToCPS($txn)
+    private function dispatchUpdatedTransactionToCPS($txn, $payment)
     {
+        $transactionData = [
+            "fee" => $txn->getFee(),
+            "mdr" => $txn->getAttribute(Entity::MDR) ?? $txn->getFee(),
+            "tax" => $txn->getTax(),
+            "transaction_id" => $txn->getAttribute(Entity::ID),
+            "credit_type" => $txn->getCreditType(),
+            "pricing_id" => $txn->getPricingRule(),
+            "settled_by" => $payment->getSettledBy(),
+            "credit_amount" => $txn->getCredit(),
+        ];
+
         $data = [
             "entity_type" => "transaction",
             "payment_id" => $txn->getEntityId(),
-            "transaction" => $txn->toArrayPublic(),
+            "transaction" => $transactionData,
             "mode" => $this->mode
         ];
 
@@ -213,41 +221,44 @@ class Core extends Base\Core
 
     private function createTransactionForCapturedPayment(Payment\Entity $payment)
     {
-        list($txn, $feesSplit) = $this->createOrUpdateFromPaymentCaptured($payment);
-
-        // $merchantBalance is required in the caller function only if lateBalanceUpdate is set to true.
-
-        $merchantBalance = null;
-
-        if ($payment->isLateBalanceUpdate() === true)
+        return $this->repo->transaction(function() use ($payment)
         {
-            $merchantId = $txn->getMerchantId();
+            list($txn, $feesSplit) = $this->createOrUpdateFromPaymentCaptured($payment);
 
-            $merchantBalance = $this->repo->balance->findOrFail($merchantId);
+            // $merchantBalance is required in the caller function only if lateBalanceUpdate is set to true.
 
-            $txn->accountBalance()->associate($merchantBalance);
-        }
+            $merchantBalance = null;
 
-        $processor = new Processor($payment->merchant);
+            if ($payment->isLateBalanceUpdate() === true)
+            {
+                $merchantId = $txn->getMerchantId();
 
-        $processor->calculateAndSetMdrFeeIfApplicable($payment, $txn);
+                $merchantBalance = $this->repo->balance->findOrFail($merchantId);
 
-        $this->trace->debug(TraceCode::TRANSACTION_DETAILS,
-            [
-                'transaction_id'        => $txn->getId(),
-                'payment_id'            => $txn->getEntityId(),
-                'transaction_credit'    => $txn->getCredit(),
-                'transaction_debit'     => $txn->getDebit(),
-                'transaction_amount'    => $txn->getAmount(),
-                'transaction_fee'       => $txn->getFee()
-            ]
-        );
+                $txn->accountBalance()->associate($merchantBalance);
+            }
 
-        $this->repo->saveOrFail($txn);
+            $processor = new Processor($payment->merchant);
 
-        $this->saveFeeDetails($txn, $feesSplit);
+            $processor->calculateAndSetMdrFeeIfApplicable($payment, $txn);
 
-        return $txn;
+            $this->trace->debug(TraceCode::TRANSACTION_DETAILS,
+                [
+                    'transaction_id'        => $txn->getId(),
+                    'payment_id'            => $txn->getEntityId(),
+                    'transaction_credit'    => $txn->getCredit(),
+                    'transaction_debit'     => $txn->getDebit(),
+                    'transaction_amount'    => $txn->getAmount(),
+                    'transaction_fee'       => $txn->getFee()
+                ]
+            );
+
+            $this->repo->saveOrFail($txn);
+
+            $this->saveFeeDetails($txn, $feesSplit);
+
+            return $txn;
+        });
     }
 
     /**

@@ -6176,7 +6176,7 @@ trait Authorize
         }
     }
 
-    protected function eventPaymentAuthorized()
+    public function eventPaymentAuthorized()
     {
         $eventPayload = [
             ApiEventSubscriber::MAIN => $this->payment,

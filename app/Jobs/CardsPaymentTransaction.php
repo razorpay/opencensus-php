@@ -54,7 +54,7 @@ class CardsPaymentTransaction extends Job
                 // Using the same recon queue for pushing transaction data.
                 $queueName = $this->app['config']->get('queue.payment_card_api_reconciliation.' . $this->mode);
 
-                Queue::pushRaw(json_encode($this->data), $queueName);
+                $this->app['queue']->connection('sqs')->pushRaw(json_encode($this->data), $queueName);
 
                 $this->trace->info(
                     TraceCode::TRANSACTION_INFO,

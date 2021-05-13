@@ -975,7 +975,7 @@ trait Capture
         (new VirtualAccount\Core)->eventVirtualAccountCredited($payment);
     }
 
-    protected function eventPaymentCaptured()
+    public function eventPaymentCaptured()
     {
         $payment = $this->payment;
 

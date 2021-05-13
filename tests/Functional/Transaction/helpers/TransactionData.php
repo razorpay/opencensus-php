@@ -548,7 +548,7 @@ return [
                     'notes' =>  [
                         'merchant_order_id' =>  "random order id",
                     ],
-                    'fee' =>  1000,
+                    'fee' =>  0,
                     'tax' =>  0,
                     'created_at' =>  1614864014,
                     'captured_at' =>  1614874014,

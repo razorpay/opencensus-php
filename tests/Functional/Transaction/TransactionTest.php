@@ -1138,8 +1138,6 @@ class TransactionTest extends TestCase
 
     public function testPaymentCaptureTransactionsCreateInternal()
     {
-        $this->markTestSkipped();
-
         $this->ba->appAuth();
 
         $cardId = $this->fixtures->create('card')['id'];
@@ -1148,7 +1146,7 @@ class TransactionTest extends TestCase
 
         $testData = &$this->testData[__FUNCTION__];
 
-        $testData['request']['content']['payment']['card_id'] = "card_".$cardId;
+        $testData['request']['content']['payment']['card_id'] = $cardId;
 
         $testData['request']['content']['payment']['terminal_id'] = $terminal['id'];
 

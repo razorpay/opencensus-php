@@ -1584,11 +1584,16 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
     }
 
-    protected function setCancellationReasonAttribute(string $reason)
+    protected function setCancellationReasonAttribute($reason)
     {
-        $reason = mb_strtolower($reason);
+        if ($reason !== null)
+        {
+            $reason = mb_strtolower($reason);
 
-        $this->attributes[self::CANCELLATION_REASON] = mb_substr($reason, 0, 255);
+            $this->attributes[self::CANCELLATION_REASON] = mb_substr($reason, 0, 255);
+        }
+
+        $this->attributes[self::CANCELLATION_REASON] =  $reason;
     }
 
     protected function setReference1Attribute($reference1)
@@ -3041,30 +3046,19 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function setPublicDetailedReasonAttribute(array & $array)
     {
-        $reference13 =  strtoupper($this->getAttribute(self::REFERENCE13));
+        $app = \App::getFacadeRoot();
 
-        $array[self::ERROR_SOURCE] = null;
+        $internalErrorCode = $this->getInternalErrorCode();
 
-        $array[self::ERROR_STEP]   = null;
+        $method = $this->getMethod();
 
-        $array[self::ERROR_REASON] = null;
+        $errorCodeJson = $app['error_mapper']->getErrorMapping($internalErrorCode,$method);
 
-        if (empty($reference13) === false)
-        {
-            $source      =  substr($reference13, 0, 2);
+        $array[self::ERROR_SOURCE] = $errorCodeJson['source'] ?: null;
 
-            $step        =  substr($reference13, 2, 2);
+        $array[self::ERROR_STEP]   = $errorCodeJson['step'] ?: null;
 
-            $reason      =  substr($reference13, 4);
-
-            $array[self::ERROR_SOURCE] = DetailedError::$sourceFieldMap[$source] ?? 'NA';
-
-            $array[self::ERROR_STEP] = DetailedError::$stepFieldMap[$step] ?? 'NA';
-
-            $array[self::ERROR_REASON] = DetailedError::$reasonFieldMap[$reason] ?? 'NA';;
-
-            return;
-        }
+        $array[self::ERROR_REASON] = $errorCodeJson['reason'] ?: null;
     }
 
     public function setPublicDCCAttribute(array & $array)

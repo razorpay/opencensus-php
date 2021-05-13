@@ -28,6 +28,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Currency;
 use RZP\Models\Terminal;
 use RZP\Services\Doppler;
+use RZP\Services\KafkaProducer;
 use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\UpiMandate;
@@ -190,8 +191,6 @@ class Processor
      */
     const CARD_PAYMENTS_VIA_PGROUTER = 'card_payments_via_pg_router';
 
-    const PGROUTER_FLOW_LIVE = false;
-
     /**
      * @var Merchant\Entity
      */
@@ -314,6 +313,148 @@ class Processor
         $this->subscription = null;
     }
 
+    private function canRouteThroughRearchFlow(array $input)
+    {
+        try
+        {
+            $currentRouteName = $this->route->getCurrentRouteName();
+            $merchant = $this->app['basicauth']->getMerchant();
+
+            /*
+             * Rearch criteria
+             * 1. Route should be payment/create/ajax
+             * 2. Method should be card
+             * 3. Non recurring payment
+             * 4. Regular card payment
+             * 5. Merchant shouldn't be fee bearer
+             * 6. Capture queue should be implemented in the second ramp
+             */
+            if ((app()->isEnvironmentProduction() === true) and
+                ($this->mode === Mode::TEST))
+            {
+                return false;
+            }
+
+            if ((app()->isEnvironmentQA() === true) and
+                ($this->mode === Mode::LIVE))
+            {
+                return false;
+            }
+
+            if (($this->route->isRearchRoute($currentRouteName) == false) or
+                (empty($input[Payment\Entity::METHOD]) === true) or
+                ($input[Payment\Entity::METHOD] !== Payment\METHOD::CARD) or
+                (empty($input[Payment\Entity::RECURRING]) === false) or
+                (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === false) or
+                (empty($input[Payment\Entity::INVOICE_ID]) === false) or
+                (empty($input[Payment\Entity::PAYMENT_LINK_ID]) === false) or
+                (empty($input[Payment\Entity::TOKEN_ID]) === false) or
+                (empty($input[Payment\Entity::TOKEN]) === false) or
+                (empty($input[Payment\Entity::SAVE]) === false) or
+                (empty($input[Payment\Entity::OFFER_ID]) === false) or
+                (empty($input['reward_ids']) === false) or
+                ($merchant->isFeeBearerPlatform() === false))
+            {
+                return false;
+            }
+
+            if (empty($input[Payment\Entity::ORDER_ID]) === false)
+            {
+                $order = $this->fetchOrderFromInput($input);
+
+                // offers are not supported in initial ramp
+                if ((empty($order) !== false) and
+                    (($order->hasOffers() === true) or
+                     ($order->isDiscountApplicable() === true)))
+                {
+                    return false;
+                }
+            }
+
+            $iinId = substr($input[Payment\Entity::CARD][Card\Entity::NUMBER], 0, 6);
+
+            $iin = $this->repo->iin->find($iinId);
+
+            // IIN not available
+            if (empty($iin) === true)
+            {
+                return false;
+            }
+
+            $supportedNetworks = [
+                Card\Network::MC,
+                Card\Network::VISA,
+            ];
+
+
+            if (($iin->getIssuer() !== Card\Issuer::SBIN) or
+                ($iin->isInternational() === true) or
+                (in_array($iin->getNetworkCode(), $supportedNetworks, true) === false))
+            {
+                return false;
+            }
+
+
+            if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::PG_ROUTER_SERVICE_ENABLED, false) === false)
+            {
+                return false;
+            }
+
+
+            $result = $this->app->razorx->getTreatment($merchant->getId(), self::CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+
+            return ($result === 'on');
+        }
+        catch(\Throwable $e)
+        {
+             $this->trace->traceException(
+                    $e,
+                    Trace::CRITICAL,
+                    TraceCode::REARCH_CRITIERIA_CHECK_FAILED,
+                    []);
+        }
+
+        return false;
+    }
+
+    private function processPaymentViaPGRouter(array $input, $startTime)
+    {
+        (new Payment\Metric)->pushCreateMetricsViaPGRouter($input);
+
+        $input[Payment\Entity::MERCHANT_ID] = $this->merchant->getId();
+
+        //TODO: In cards flow, can this happen? If so, what all attributes have to picked from payment and added to order?
+        if (empty($input[Payment\Entity::ORDER_ID]) === true)
+        {
+            $orderPayLoad = [
+                "amount"          =>  $input['amount'],
+                "currency"        => $input['currency'],
+                "payment_capture" => false,
+            ];
+
+            $this->order = (new Order\Core)->create($orderPayLoad, $this->merchant);
+
+            $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($this->order->getId());
+
+            $input[Payment\Entity::ORDER] = $this->order;
+
+            // Dispatch into KAFKA queue to send to PG Router for dual write happens automatically via Orders Repo.
+            // No need for any special logic here.
+        }
+        else
+        {
+            $this->order = $this->fetchOrderFromInput($input);
+
+            $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($this->order->getId());
+        }
+
+        $paymentData = $this->app['pg_router']->validateAndCreatePayment($input, true);
+
+        $this->logPGRouterRequestTime($input, $startTime);
+
+        return $paymentData;
+    }
+
     public function process(array $input, $gatewayInput = []): array
     {
         try
@@ -337,68 +478,16 @@ class Processor
                 'write_key' => '',
             ];
 
-            $pgrouter_pmt_variant = 'off';
-            // TODO: Exclude below params
-            // 1. International merchants / cards / currency
-            // 2. Customer fee bearer
-            // 3. Payment with offers
-            // 4. Payment discount / rewards
-            // 5. Async balance update
-            // 6. Direct settlement
-            // 7. Exclude payments from any Payment apps such as subscription, PL, PP, Routes, Invoices, etc
-            // 8. Gpay / cred have to be excluded
-            // 9. Payment has orderId in it already
-            // 10. Only checkout based payments
-            //
-            // TODO: Check with Antony and Vikas for further eligibility criteria. They have it documented
-            if (self::PGROUTER_FLOW_LIVE && empty($input[Payment\Entity::SUBSCRIPTION_ID]) === true &&
-                $input[Payment\Entity::METHOD] === Payment\Method::CARD) // TODO: Cards team to add eligibility criteria here for selection of card payments in Phase 1.
+            if ($this->canRouteThroughRearchFlow($input) === true)
             {
-                // TODO: Setup Razorx Flag in stage and prod environments
-                $pgrouter_pmt_variant = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), self::CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+                $this->app['diag']->trackPaymentEventV2(EventCode::REARCH_PAYMENT_CREATION_INITIATED,  null, null, $meta);
 
-                $this->trace->info(
-                    TraceCode::PGROUTER_DEBUG,
-                    [
-                        'PAYMENT_FLOW' => $pgrouter_pmt_variant,
-                    ]);
+                $paymentData = $this->processPaymentViaPGRouter($input, $startTime);
+
+                $this->app['diag']->trackPaymentEventV2(EventCode::REARCH_PAYMENT_CREATE_REQUEST_PROCESSED,  null, null, $meta);
             }
-
-            if ($pgrouter_pmt_variant === 'on') {
-                //TODO: In cards flow, can this happen? If so, what all attributes have to picked from payment and added to order?
-                if (empty($input[Payment\Entity::ORDER_ID]) === true)
-                {
-                    $orderPayLoad = [
-                        "amount"           =>  $input['amount'],
-                        "currency"        => $input['currency'],
-                        "payment_capture" => true,
-                    ];
-                    $this->order = (new Order\Core)->create($orderPayLoad, $this->merchant);
-
-                    $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($this->order->getId());
-                    $input[Payment\Entity::ORDER] = $this->order;
-                    $input[Payment\Entity::MERCHANT_ID] = $this->merchant->getId();
-
-                    // Dispatch into KAFKA queue to send to PG Router for dual write happens automatically via Orders Repo.
-                    // No need for any special logic here.
-                } else {
-                    $this->order = $this->fetchOrderFromInput($input);
-                }
-
-                $output = $this->app['pg_router']->validateAndCreatePayment($input);
-
-                if ($output['code'] >= 500) // Implement retry, at least twice
-                {
-                    throw new Exception\ServerErrorException('Error with PG Router service',
-                        ErrorCode::SERVER_ERROR_PGROUTER_SERVICE_FAILURE);
-                }
-                if ($output['code'] == 400)
-                {
-                    throw new Exception\BadRequestValidationFailureException(
-                        $output['body']['error']['internal_error_code']);
-                }
-                $paymentData = $output['body']['coproto']['response'];
-            } else {
+            else
+            {
                 $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_INPUT_VALIDATIONS_INITIATED, null, null, $meta);
 
                 $payment = $this->buildPaymentEntity($input);
@@ -511,7 +600,7 @@ class Processor
             $data);
     }
 
-    protected function eventPaymentCreated()
+    public function eventPaymentCreated()
     {
         // the scenario where same payment id gets generated in live and test mode is not handled currently.
         $cacheKey = 'EVENT_PAYMENT_CREATED_FIRED_'.$this->payment->getPublicId();
@@ -1976,6 +2065,11 @@ class Processor
 
         $payment = $this->retrieve($id);
 
+        if ($payment->isExternal() === true)
+        {
+            return $this->app['pg_router']->paymentCancel($id,$this->merchant->getId(), true);
+        }
+
         $diff = time() - $payment->getCreatedAt();
 
         if ($diff > self::PAYMENT_CANCEL_TIME_DURATION)
@@ -2470,7 +2564,7 @@ class Processor
         $payment->setTwoFactorAuth($twoFactorAuth);
     }
 
-    protected function eventPaymentFailed($exception)
+    public function eventPaymentFailed($exception)
     {
         $eventPayload = [
             ApiEventSubscriber::MAIN => $this->payment
@@ -4490,6 +4584,24 @@ class Processor
             $requestTime = get_diff_in_millisecond($startTime);
 
             (new Payment\Metric)->pushCreateRequestTimeMetrics($payment, $requestTime);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PAYMENT_ERROR_LOGGING_REQUEST_TIME_METRIC
+            );
+        }
+    }
+
+    protected function logPGRouterRequestTime($payment, $startTime)
+    {
+        try
+        {
+            $requestTime = get_diff_in_millisecond($startTime);
+
+            (new Payment\Metric)->pushRequestTimeMetricsViaPGRouter($payment, $requestTime);
         }
         catch (\Throwable $e)
         {

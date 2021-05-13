@@ -1338,7 +1338,10 @@ trait Refund
         {
             $payment = $this->payment;
 
-            $this->repo->payment->lockForUpdate($payment->getKey());
+            if ($payment->isExternal() == false)
+            {
+                $this->repo->payment->lockForUpdate($payment->getKey());
+            }
 
             $this->createTransactionForRefund($this->refund, $payment);
 
@@ -1855,7 +1858,10 @@ trait Refund
         //
         $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment)
         {
-            $payment->reload();
+            if ($payment->isExternal() == false)
+            {
+                $payment->reload();
+            }
 
             if ($payment->isFullyRefunded() === true)
             {

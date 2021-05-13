@@ -980,6 +980,9 @@ class PaymentFetchTest extends TestCase
                                 'notes' => [
                                     'merchant_order_id' => 'random order id',
                                 ],
+                                'acquirer_data' => [
+                                    'auth_code' => '599962'
+                                ],
                                 'fee' => 1000,
                                 'tax' =>  0,
                                 'error_code' => NULL,
@@ -987,7 +990,6 @@ class PaymentFetchTest extends TestCase
                                 'error_source' => NULL,
                                 'error_step' => NULL,
                                 'error_reason' => NULL,
-                                'reference_2' => '599962',
                                 'created_at' => 1614252933,
                                 'captured_at' => 1614252933,
                                 'authorized_at' => 1614252933,

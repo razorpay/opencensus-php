@@ -1827,6 +1827,68 @@ class PaymentCreateTest extends TestCase
         $this->doAuthPayment($payment);
     }
 
+    public function testRearchPaymentCreateAjax()
+    {
+        $this->fixtures->iin->edit('401200',[
+            'country' => 'IN',
+            'issuer'  => 'SBIN',
+            'network' => 'Visa',
+        ]);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        // we are ramping up auth terminal selection hence to make sure all test cases passes
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                            function ($mid, $feature, $mode)
+                            {
+                                if ($feature === 'card_payments_via_pg_router')
+                                {
+                                    return 'on';
+                                }
+                                return 'off';
+                            }));
+
+        $this->enablePgRouterConfig();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $pgService = \Mockery::mock('RZP\Services\PGRouter')->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('pg_router', $pgService);
+
+        $pgService->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'))
+            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure)
+            {
+                return [
+                    'body' => [
+                        'data' => [
+                            'pg_router' => 'true'
+                        ]
+                    ]
+
+                ];
+            });
+
+        $request = [
+            'content' => $payment,
+            'url'     => '/payments/create/ajax',
+            'method'  => 'post'
+        ];
+
+        $response = $this->makeRequestParent($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertEquals($content['data']['pg_router'], 'true');
+    }
+
     protected function mockGatewayException()
     {
         $gateway = Mockery::mock('RZP\Gateway\GatewayManager');

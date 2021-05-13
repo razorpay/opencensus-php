@@ -805,6 +805,10 @@ trait RepositoryFetch
     {
         $query = $this->getQueryForFindWithParams($params, $connectionType);
 
+        $entity = $this->getEntityClass();
+
+        $entity::silentlyStripSign($id);
+
         $entity = $query->findOrFailPublic($id);
 
         return $entity;

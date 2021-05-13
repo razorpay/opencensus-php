@@ -21,6 +21,11 @@ class EventCode
         'name'  => 'payment.creation.initiated'
     ];
 
+    const REARCH_PAYMENT_CREATION_INITIATED             = [
+        'group' => 'initiation',
+        'name'  => 'rearch.payment.creation.initiated'
+    ];
+
     const PAYMENT_INPUT_VALIDATIONS_INITIATED           = [
         'group' => 'internal_checks',
         'name'  => 'payment.input.validations.initiated'
@@ -234,6 +239,11 @@ class EventCode
     const PAYMENT_CREATE_REQUEST_PROCESSED              = [
         'group' => 'payment_create_response',
         'name'  => 'payment.create.request.processed'
+    ];
+
+    const REARCH_PAYMENT_CREATE_REQUEST_PROCESSED       = [
+        'group' => 'payment_create_response',
+        'name'  => 'rearch.payment.create.request.processed'
     ];
 
     const PAYMENT_RESPONSE_SENT                         = [
@@ -725,6 +735,7 @@ class EventCode
         'group' => 'kafka_push',
         'name'  => 'payment.kafka.push.failed'
     ];
+
     //M2M Reward Events
     const REWARD_UPDATED = [
         'group' => 'updation',

@@ -3,12 +3,13 @@
 namespace RZP\Services;
 
 use Requests;
-use RZP\Error\ErrorCode;
+use RZP\Error\Error;
 use RZP\Exception;
 use RZP\Models\Payment;
-use RZP\Models\Order\Metric;
-use RZP\Models\Payment\Entity;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Error\ErrorClass;
+use RZP\Models\Order\Metric;
 use Razorpay\Trace\Logger as Trace;
 
 class PGRouter
@@ -53,11 +54,14 @@ class PGRouter
 
     const PGRouterPaymentVerify = '/v1/payments/%s/verify';
 
+    const PGRouterPaymentCancel = '/v1/payments/%s/cancel';
+
     // Headers
     const ACCEPT            = 'Accept';
     const X_MODE            = 'X-Mode';
     const CONTENT_TYPE      = 'Content-Type';
     const X_REQUEST_ID      = 'X-Request-ID';
+    const X_REQUEST_TASK_ID = 'X-Razorpay-TaskId';
 
     const REQUEST_TIMEOUT   = 60;
 
@@ -99,32 +103,9 @@ class PGRouter
      */
     public function validateAndCreatePayment(array $input, bool $throwExceptionOnFailure = false): array
     {
-        return $this->sendRequest(self::PGRouterValidateAndCreatePayment, Requests::POST, $input, $throwExceptionOnFailure);
-    }
+        $output = $this->sendRequest(self::PGRouterValidateAndCreatePayment, Requests::POST, $input, $throwExceptionOnFailure);
 
-    /**
-     * @param array $input
-     * @param bool  $throwExceptionOnFailure
-     *
-     * @return array
-     */
-    public function fetchPayment(string $id): array
-    {
-        $url = self::PGRouterFetchPayment . $id;
-        $output = $this->sendRequest($url, Requests::GET);
-
-        if ($output['code'] >= 500) // Implement retry, at least twice
-        {
-            throw new Exception\ServerErrorException('Error with PG Router service',
-                ErrorCode::SERVER_ERROR_PGROUTER_SERVICE_FAILURE);
-        }
-        if ($output['code'] == 400)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                $output['body']['error']['internal_error_code']);
-        }
-
-        return $output['body']['data'];
+        return $output['body'];
     }
 
     /**
@@ -136,20 +117,10 @@ class PGRouter
     public function paymentCapture(string $id, array $captureParams, bool $throwExceptionOnFailure = false): array
     {
         $url = sprintf(self::PGRouterPaymentCapture, $id);
+
         $output = $this->sendRequest($url, Requests::POST, $captureParams, $throwExceptionOnFailure);
 
-        if ($output['code'] >= 500) // Implement retry, at least twice
-        {
-            throw new Exception\ServerErrorException('Error with PG Router service',
-                ErrorCode::SERVER_ERROR_PGROUTER_SERVICE_FAILURE);
-        }
-        if ($output['code'] == 400)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                $output['body']['error']['internal_error_code']);
-        }
-
-        return $output['body']['data'];
+        return $output['body']['data']['payment'];
     }
 
     /**
@@ -158,23 +129,33 @@ class PGRouter
      *
      * @return array
      */
-    public function paymentVerify(string $id): array
+    public function paymentCancel(string $id, string $merchantId, bool $throwExceptionOnFailure = false): array
+    {
+        $url = sprintf(self::PGRouterPaymentCancel, $id);
+
+        if (empty($merchantId) === false)
+        {
+            $url .= '?merchant_id='.$merchantId;
+        }
+
+        $output = $this->sendRequest($url, Requests::GET, [], $throwExceptionOnFailure);
+
+        return $output['body'];
+    }
+
+    /**
+     * @param array $input
+     * @param bool  $throwExceptionOnFailure
+     *
+     * @return array
+     */
+    public function paymentVerify(string $id, bool $throwExceptionOnFailure = false): array
     {
         $url = sprintf(self::PGRouterPaymentVerify, $id);
-        $output = $this->sendRequest($url, Requests::GET);
 
-        if ($output['code'] >= 500) // Implement retry, at least twice
-        {
-            throw new Exception\ServerErrorException('Error with PG Router service',
-                ErrorCode::SERVER_ERROR_PGROUTER_SERVICE_FAILURE);
-        }
-        if ($output['code'] == 400)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                $output['body']['error']['internal_error_code']);
-        }
+        $output = $this->sendRequest($url, Requests::GET, [], $throwExceptionOnFailure);
 
-        return $output['body']['data'];
+        return $output['body']['data']['payment'];
     }
 
     /**
@@ -234,6 +215,13 @@ class PGRouter
 
         if (empty($payment) === false and isset($payment['body']['data']['payment']))
         {
+            if (isset($payment['body']['data']['payment']['acquirer_data']) === true and
+                isset($payment['body']['data']['payment']['acquirer_data']['auth_code']) === true)
+            {
+                $payment['body']['data']['payment']['reference2'] =
+                    $payment['body']['data']['payment']['acquirer_data']['auth_code'];
+            }
+
             return (new Payment\Entity)->forceFill($payment['body']['data']['payment']);
         }
 
@@ -264,9 +252,20 @@ class PGRouter
 
         $decodedResponse = json_decode($response->body, true);
 
-        $this->trace->info(TraceCode::PG_ROUTER_RESPONSE, $decodedResponse ?? []);
+        $this->trace->info(TraceCode::PG_ROUTER_RESPONSE,
+            ["response" => $decodedResponse ?? [],
+                "statusCode" =>  $response->status_code
+            ]);
 
-        return $this->parseResponse($response, $throwExceptionOnFailure);
+        if ($decodedResponse === null)
+        {
+            return [
+                'body' => $decodedResponse,
+                'code' => $response->status_code,
+            ];
+        }
+
+        return $this->parseResponse($decodedResponse, $response->status_code, $throwExceptionOnFailure);
     }
 
     /**
@@ -276,10 +275,11 @@ class PGRouter
     {
         $headers = [];
 
-        $headers[self::ACCEPT]        = 'application/json';
-        $headers[self::CONTENT_TYPE]  = 'application/json';
-        $headers[self::X_MODE]        = $this->mode;
-        $headers[self::X_REQUEST_ID]  = $this->request->getId();
+        $headers[self::ACCEPT]              = 'application/json';
+        $headers[self::CONTENT_TYPE]        = 'application/json';
+        $headers[self::X_MODE]              = $this->mode;
+        $headers[self::X_REQUEST_ID]        = $this->request->getId();
+        $headers[self::X_REQUEST_TASK_ID]   = $this->request->getTaskId();
 
         $this->headers = $headers;
     }
@@ -328,42 +328,131 @@ class PGRouter
 
         unset($traceRequest['options']['auth']);
 
-        if (isset($traceRequest['content']['order_sync_request']) &&
-            isset($traceRequest['content']['order_sync_request']['account_number']))
+        if (is_array($traceRequest['content']) === true)
         {
             unset($traceRequest['content']['order_sync_request']['account_number']);
+
+            unset($traceRequest['content']['card']['number']);
+
+            unset($traceRequest['content']['card']['cvv']);
+
+        }
+        else
+        {
+            $content = json_decode($traceRequest['content'], true);
+
+            unset($content['card']['number']);
+
+            unset($content['card']['cvv']);
+
+            $traceRequest['content'] = json_encode($content);
         }
 
         $this->trace->info(TraceCode::PG_ROUTER_REQUEST, $traceRequest);
     }
 
     /**
-     * @param \Requests_Response $response
-     * @param bool               $throwExceptionOnFailure
+     * @param array $response
+     * @param $statusCode
+     * @param bool $throwExceptionOnFailure
      *
      * @return array
-     * @throws Exception\RuntimeException
+     * @throws Exception\BadRequestException
+     * @throws Exception\InvalidArgumentException
+     * @throws Exception\ServerErrorException
      */
-    protected function parseResponse(\Requests_Response $response, bool $throwExceptionOnFailure = false): array
+    protected function parseResponse(array $response, $statusCode, bool $throwExceptionOnFailure = false): array
     {
-        $code = $response->status_code;
-
-        if (($throwExceptionOnFailure === true) and
-            (in_array($code, [200, 201, 204, 302, 409], true) === false))
+        if ($throwExceptionOnFailure === true)
         {
+            $this->checkForErrors($response);
+        }
 
-            throw new Exception\RuntimeException(
-                'Unexpected response code received from PG Router service.',
-                [
-                    'status_code'   => $code,
-                    'response_body' => json_decode($response->body),
-                ]);
+        if (in_array($statusCode, [503], true) === true)
+        {
+            //TODO: Check if we have to disable admin config for rearch routing logic
+            throw new Exception\ServerErrorException('PG Router Service is unreachable', ErrorCode::SERVER_ERROR_PGROUTER_SERVICE_FAILURE);
         }
 
         return [
-            'body' => json_decode($response->body, true),
-            'code' => $code,
+            'body' => $response,
+            'code' => $statusCode,
         ];
+    }
+
+    public function checkForErrors($response)
+    {
+        if (isset($response['error']) === false)
+        {
+            return;
+        }
+
+        $errorCode = $response['error']['code'];
+
+        $description = $response['error']['description'];
+
+        $metadata = null;
+
+        if (isset($response['error']['metadata']) === true)
+        {
+            $metadata = $response['error']['metadata'];
+        }
+
+        $errorData = [];
+
+        //TODO: Get method from pg router and update here
+        $errorData['method'] = "card";
+
+        if (($metadata != null) and
+            (isset($metadata['payment_id']) === true))
+        {
+            $errorData['payment_id'] = $metadata['payment_id'];
+        }
+
+        if (($metadata != null) and
+            (isset($metadata['order_id']) === true))
+        {
+            $errorData['order_id'] = $metadata['order_id'];
+        }
+
+        $internalErrorCode = $response['internal']['code'];
+
+        $class = Error::getErrorClassFromErrorCode($errorCode);
+
+        switch ($class)
+        {
+            case ErrorClass::GATEWAY:
+                $this->handleGatewayErrors($internalErrorCode, $description,$errorData);
+                break;
+
+            case ErrorClass::BAD_REQUEST:
+                throw new Exception\BadRequestException(
+                    $internalErrorCode, null, $errorData);
+
+            case ErrorClass::SERVER:
+                throw new Exception\ServerErrorException('Error with PG Router service',
+                    ErrorCode::SERVER_ERROR_PGROUTER_SERVICE_FAILURE, $errorData);
+
+            default:
+                throw new Exception\InvalidArgumentException('Not a valid error code class',
+                    array_merge(['errorClass' => $class], $errorData));
+        }
+    }
+
+    protected function handleGatewayErrors($internalErrorCode, $description, $errorData)
+    {
+        switch ($internalErrorCode)
+        {
+            case ErrorCode::GATEWAY_ERROR_REQUEST_ERROR:
+                throw new Exception\GatewayRequestException($description);
+
+            case ErrorCode::GATEWAY_ERROR_TIMED_OUT:
+                throw new Exception\GatewayTimeoutException($description);
+
+            default:
+                throw new Exception\GatewayErrorException($internalErrorCode,
+                    null,null, $errorData);
+        }
     }
 
     /**
@@ -391,7 +480,8 @@ class PGRouter
             ],
         ];
 
-        $headers = $this->headers;
+        $headers = $this->setHeaders();
+
         $headers['PHP_AUTH_USER'] = $this->auth->getPublicKey();
 
         return [

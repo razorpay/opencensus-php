@@ -45,7 +45,6 @@ use RZP\Models\Settlement\Bucket;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Base\ConnectionType;
 use RZP\Models\Payment\Verify\Verify;
-use RZP\Models\Payment\Verify\Filter;
 use RZP\Models\Locale\Core as Locale;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\CardMandate\CardMandateNotification;
@@ -255,7 +254,7 @@ class Service extends Base\Service
         // Since this is in admin auth, we won't
         // have any merchant to check this with.
         //
-        $payment = $this->repo->payment->findByPublicId($id);
+        $payment = $this->repo->payment->findOrFailByPublicIdWithParams($id, []);
 
         $refund = $this->getNewProcessor($payment->merchant)->refundAuthorizedPayment($payment, $input);
 
@@ -316,44 +315,55 @@ class Service extends Base\Service
 
     public function verify($id)
     {
-        try
+        $payment = $this->repo->payment->findOrFailByPublicIdWithParams($id, []);
+
+        if ($payment->isExternal() === true)
         {
-            $payment = $this->core->retrieveById($id);
+            $response = $this->app['pg_router']->paymentVerify($id, true);
 
-            $merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
-
-            $data = $this->getNewProcessor($merchant)->verify($payment);
+            return $this->buildVerifyResponse($response);
         }
-        catch (Exception\DbQueryException $e)
+
+        $merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
+
+        return $this->getNewProcessor($merchant)->verify($payment);
+    }
+
+    private function buildVerifyResponse($response)
+    {
+        $data = [
+            "payment" => $response
+        ];
+
+        if (isset($response['merchant_id']) === true)
         {
-            if (Payment\Processor\Processor::PGROUTER_FLOW_LIVE == true) {
-                $this->trace->traceException(
-                    $e,
-                    Trace::INFO,
-                    TraceCode::PGROUTER_DEBUG,
-                    [
-                        'payment_id' => $id,
-                        'PG_ROUTER_FLOW' => true,
-                        'CLASS_OF_EXCEPTION' => get_class($e),
-                    ]);
+            $merchant = $this->repo->merchant->findOrFail($response['merchant_id']);
 
-                // TODO: No need to do this in future. Once payment fetch is done via Repo layer, we need to perform different
-                // TODO: check to invoke PG Router. No need to fetch payment is done at that time.
-                $payment = $this->app['pg_router']->fetchPayment($id);
-                if ($payment == null or empty($payment)) {
-                    // If Payment is null, it means, this payment doesn't exist in PG Router flow also. So throw BAD_REQUEST_EXCEPTION
-                    throw $e;
-                }
-                // If the code reaches here, it means the payment was processed via PG Router flow. So, start processing for anything left to be processed via API such as offers / notification.
-                // Anything related to auto-capture / authorize / authenticate should be handled inside CPS / PG Router based on method specific or not
-                // 1. Call PG Router for callback action
-                // 2. Create payment entity
-                // 3. Send notification using payment and merchant entities
+            $data['merchant'] = $merchant;
+        }
 
-                $data = $this->app['pg_router']->paymentVerify($id);
-            } else {
-                throw $e;
-            }
+        if ((isset($response['card_id']) === true) and
+            (isset($response['merchant_id']) === true))
+        {
+            $card = $this->repo->card->findByIdAndMerchantId($response['card_id'], $response['merchant_id']);
+
+            $data['card'] = $card;
+        }
+
+        if ((isset($response['refund_id']) === true) and
+            (isset($response['merchant_id']) === true))
+        {
+            $refund = $this->repo->refund->findByIdAndMerchantId($response['refund_id'], $response['merchant_id']);
+
+            $data['refund'] = $refund->toArrayGateway();
+        }
+
+        if ((isset($response['token_id']) === true) and
+            (isset($response['merchant_id']) === true))
+        {
+            $token = $this->repo->token->findByIdAndMerchantId($response['token_id'], $response['merchant_id']);
+
+            $data['token'] = $token;
         }
 
         return $data;
@@ -1011,47 +1021,28 @@ class Service extends Base\Service
      */
     public function capture($id, $input)
     {
-        $pId = $id;
-        try
+        $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
+
+        if ($payment->isExternal() === true)
         {
-            $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
+            $paymentMap = $this->app['pg_router']->paymentCapture($id, $input, true);
 
-            $payment = $this->getNewProcessor()->capture($payment, $input);
-            $finalResponse = $payment->toArrayPublic();
-        }
-        catch (\Throwable $e)
-        {
-            if (Payment\Processor\Processor::PGROUTER_FLOW_LIVE == true) {
-                $this->trace->traceException(
-                    $e,
-                    Trace::INFO,
-                    TraceCode::PGROUTER_DEBUG,
-                    [
-                        'payment_id' => $id,
-                        'PG_ROUTER_FLOW' => true
-                    ]);
+            $payment = (new Payment\Entity)->forceFill($paymentMap);
 
-                // Call PG Router to invoke capture with exact parameters
-                // TODO: No need to do this in future. Once payment fetch is done via Repo layer, we need to perform different
-                // TODO: check to invoke PG Router. No need to fetch payment is done at that time.
-                $payment = $this->app['pg_router']->fetchPayment($pId);
-                if ($payment == null or empty($payment)) {
-                    // If Payment is null, it means, this payment doesn't exist in PG Router flow also. So throw BAD_REQUEST_EXCEPTION
-                    throw $e;
-                }
-                // If the code reaches here, it means the payment was processed via PG Router flow. So, start processing for anything left to be processed via API such as offers / notification.
-                // Anything related to auto-capture / authorize / authenticate should be handled inside CPS / PG Router based on method specific or not
-                // 1. Call PG Router for callback action
-                // 2. Create payment entity
-                // 3. Send notification using payment and merchant entities
+            if ((isset($paymentMap['card_id']) === true) and
+                (isset($paymentMap['merchant_id']) === true))
+            {
+                $card = $this->repo->card->findByIdAndMerchantId($paymentMap['card_id'], $paymentMap['merchant_id']);
 
-                $finalResponse = $this->app['pg_router']->paymentCapture($id, $input);
-            } else {
-                throw $e;
+                $payment->card()->associate($card);
             }
-
         }
-        return $finalResponse;
+        else
+        {
+            $payment = $this->getNewProcessor()->capture($payment, $input);
+        }
+
+        return $payment->toArrayPublic();
     }
 
     /**
@@ -3514,16 +3505,64 @@ class Service extends Base\Service
 
     public function sendNotification(array $input)
     {
+        if ((isset($input['event']) === false) or
+            (isset($input['event_type']) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException("Event or Event Type is missing");
+        }
+
         $event = $input['event'];
+
+        $eventType = $input['event_type'];
+
         $payment = new Payment\Entity();
+
         unset($input['payment']['public_id']);
+
         $payment->forceFill($input['payment']);
 
         $merchant =  $this->repo->merchant->findByPublicId($payment->getMerchantId());
 
         $payment->merchant()->associate($merchant);
 
-        (new Notify($payment))->trigger($event);
+        if ((isset($input['payment']['card_id']) === true) and
+            (isset($input['payment']['merchant_id']) === true))
+        {
+            $card = $this->repo->card->findByIdAndMerchantId($input['payment']['card_id'],
+                $input['payment']['merchant_id']);
+
+            $payment->card()->associate($card);
+        }
+
+        if ($eventType === "webhook")
+        {
+            $processor = new Payment\Processor\Processor($merchant);
+
+            $processor->setPayment($payment);
+
+            switch ($event)
+            {
+                case "payment_created_event":
+                    $processor->eventPaymentCreated();
+                    break;
+                case "payment_authorized_event":
+                    $processor->eventPaymentAuthorized();
+                    break;
+                case "payment_captured_event":
+                    $processor->eventPaymentCaptured();
+                    break;
+                case "payment_failed_event":
+                    $processor->eventPaymentFailed();
+                    break;
+                default:
+                    return;
+            }
+
+        }
+        else if ($eventType === "mail")
+        {
+            (new Notify($payment))->trigger($event);
+        }
     }
 
     public function addVerifyDisabledGateway(array $input)

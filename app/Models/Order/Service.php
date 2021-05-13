@@ -290,11 +290,27 @@ class Service extends Base\Service
         return $order->toArrayPublic();
     }
 
-    public function fetchByIdForAdmin($id)
+    public function fetchByIdForAdmin($id, $input)
     {
-        $order = $this->repo->order->findByPublicId($id);
+        $orderId = Entity::verifyIdAndSilentlyStripSign($id);
 
-        return $order->toArrayAdmin();
+        if (isset($input['merchant_id']) === true)
+        {
+            $order = $this->repo->order->findByIdAndMerchantId($orderId, $input['merchant_id']);
+
+        }
+        else
+        {
+            $order = $this->repo->order->find($orderId);
+        }
+
+        $checkoutConfigId = $order->getAttribute(Entity::CHECKOUT_CONFIG_ID);
+
+        $orderAdminArray = $order->toArrayAdmin();
+
+        $orderAdminArray['checkout_config_id'] = $checkoutConfigId;
+
+        return $orderAdminArray;
     }
 
     public function fetchMultiple($input)

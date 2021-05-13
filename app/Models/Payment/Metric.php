@@ -40,11 +40,14 @@ class Metric extends Base\Core
 
     // Metric Names
     const PAYMENT_CREATED                       = 'payment_created';
+    const PAYMENT_CREATED_PG_ROUTER             = 'payment_created_pg_router';
     const PAYMENT_AUTHENTICATED                 = 'payment_authenticated';
     const PAYMENT_AUTHORIZED                    = 'payment_authorized_v1';
     const PAYMENT_CAPTURED                      = 'payment_captured_v1';
     const PAYMENT_CREATE_REQUEST_TIME           = 'payment_create_request_time';
+    const PAYMENT_CREATE_REQUEST_TIME_PG_ROUTER = 'payment_create_request_time_pg_router';
     const PAYMENT_FAILED                        = 'payment_failed';
+    const PAYMENT_FAILED_PG_ROUTER              = 'payment_failed_pg_router';
     const PAYMENT_PROCESS_FAILED                = 'payment_process_failed';
     const PAYMENT_CAPTURE_FAILED                = 'payment_capture_failed';
     const PAYMENT_REQUEST_ROUTE                 = 'payment_request_route';
@@ -349,5 +352,57 @@ class Metric extends Base\Core
     protected function getFormattedStatus(Entity $payment)
     {
         return ($payment->getStatus() . '_' . $payment->getInternalErrorCode());
+    }
+
+    public function pushCreateMetricsViaPGRouter(array $payment)
+    {
+        $dimensions = [];
+
+        if (isset($payment['gateway']) === true)
+        {
+            $dimensions[self::LABEL_PAYMENT_GATEWAY]          = $payment['gateway'];
+        }
+        if (isset($payment['method']) === true)
+        {
+            $dimensions[self::LABEL_PAYMENT_METHOD]          = $payment['method'];
+        }
+        if (isset($payment['currency']) === true)
+        {
+            $dimensions[self::LABEL_PAYMENT_CURRENCY]          = $payment["currency"];
+        }
+
+        $this->trace->count(self::PAYMENT_CREATED_PG_ROUTER, $dimensions);
+    }
+
+    public function pushFailedMetricsViaPGRouter(array $payment)
+    {
+        $dimensions = [];
+
+        if (isset($payment['gateway']) === true)
+        {
+            $dimensions[self::LABEL_PAYMENT_GATEWAY] = $payment['gateway'];
+        }
+        if (isset($payment['method']) === true)
+        {
+            $dimensions[self::LABEL_PAYMENT_METHOD] = $payment['method'];
+        }
+        if (isset($payment['currency']) === true)
+        {
+            $dimensions[self::LABEL_PAYMENT_CURRENCY] = $payment["currency"];
+        }
+
+        $this->trace->count(self::PAYMENT_FAILED_PG_ROUTER, $dimensions);
+    }
+
+    public function pushRequestTimeMetricsViaPGRouter(array $payment, int $requestTime)
+    {
+        $route  = $this->app['api.route']->getCurrentRouteName();
+
+        $dimensions = [
+            self::LABEL_PAYMENT_METHOD  => $payment['method'],
+            self::PAYMENT_REQUEST_ROUTE => $route,
+        ];
+
+        $this->trace->histogram(self::PAYMENT_CREATE_REQUEST_TIME_PG_ROUTER, $requestTime, $dimensions);
     }
 }
