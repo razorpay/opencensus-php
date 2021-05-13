@@ -18,6 +18,7 @@ use RZP\Models\Merchant\Balance;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Jobs\Settlement\TransactionMigrationPublish;
 
 class Core extends Base\Core
 {
@@ -456,65 +457,96 @@ class Core extends Base\Core
         return $status;
     }
 
-    public function migrateSettlableTransactions(string $merchantId, array $opt)
+    public function fetchAndEnqueueSettlableTransactionsBatch(string $mode, string $merchantId, array $opt)
     {
+        $startTime = microtime(true);
+
         $batch = 0;
         $batchSize = 10000;
+
+        $balance = $this->repo->balance->getMerchantBalanceByType($merchantId, $opt['balance_type']);
+
+        $transactions = $this->repo->transaction->getSettlableTransactions($merchantId, $opt, $balance, true);
+
+        $transactionIds = $transactions->getIds();
+
+        $txnCount = sizeof($transactionIds);
+
+        $transactionIdBatches = array_chunk($transactionIds, $batchSize);
+
+        foreach ($transactionIdBatches as $transactionIdBatch)
+        {
+            $opt['transaction_ids'] = $transactionIdBatch;
+
+            TransactionMigrationPublish::dispatch($mode, $merchantId, $opt);
+
+            $batch++;
+        }
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_SERVICE_TRANSACTION_MIGRATION_BATCH_ENQUEUE_TIME_TAKEN,
+            [
+                'merchant_id'            => $merchantId,
+                'batch_count'            => $batch,
+                'transactions_count'     => $txnCount,
+                'time_taken'             => microtime(true) - $startTime,
+            ]);
+
+        return [
+            'batch_count' => $batch,
+            'transactions_count' => $txnCount,
+        ];
+    }
+
+    public function migrateSettlableTransactionsBatch(string $merchantId, array $opt)
+    {
         $stat = [
             'total_count' => 0,
         ];
 
         $balance = $this->repo->balance->getMerchantBalanceByType($merchantId, $opt['balance_type']);
 
-        do
+        $transactions = $this->repo->transaction->getSettlableTransactions($merchantId, $opt, $balance);
+
+        $startTime = microtime(true);
+
+        foreach($transactions as $txn)
         {
-            $transactions = $this->repo->transaction->getSettlableTransactions($merchantId, $opt, $balance, [
-                'limit'  => $batchSize,
-                'offset' => $batch * $batchSize,
-            ]);
-
-            $startTime = microtime(true);
-
-            foreach($transactions as $txn)
-            {
-                if (isset($stat[$txn->getType()]) === false) {
-                    $stat[$txn->getType()] = [
-                        'count'  => 0,
-                        'amount' => 0,
-                    ];
-                }
-
-                $stat['total_count']++;
-                $stat[$txn->getType()]['count']++;
-                $stat[$txn->getType()]['amount'] += $txn->getCredit() - $txn->getDebit();
-
-                try
-                {
-                    $this->publishForSettlement($txn, $balance, $opt['initial_ramp']);
-                }
-                catch (\Throwable $e)
-                {
-                    $this->trace->traceException(
-                        $e,
-                        Trace::ERROR,
-                        TraceCode::SETTLEMENT_SERVICE_TRANSACTION_MIGRATION_FAILED,
-                        [
-                           'merchant_id'    => $merchantId,
-                           'transaction_id' => $txn->getId(),
-                        ]);
-                }
+            if (isset($stat[$txn->getType()]) === false) {
+                $stat[$txn->getType()] = [
+                    'count'  => 0,
+                    'amount' => 0,
+                ];
             }
 
-            $this->trace->info(
-                TraceCode::SETTLEMENT_SERVICE_TRANSACTION_MIGRATION_PUSH_TIME_TAKEN,
-                [
-                   'merchant_id' => $merchantId,
-                   'txn_count'   => $transactions->count(),
-                   'time_taken'  => get_diff_in_millisecond($startTime),
-                ]);
+            $stat['total_count']++;
+            $stat[$txn->getType()]['count']++;
+            $stat[$txn->getType()]['amount'] += $txn->getCredit() - $txn->getDebit();
 
-            $batch++;
-        } while ($transactions->count() === $batchSize);
+            try
+            {
+                $this->publishForSettlement($txn, $balance, $opt['initial_ramp']);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::SETTLEMENT_SERVICE_TRANSACTION_MIGRATION_FAILED,
+                    [
+                        'merchant_id'    => $merchantId,
+                        'transaction_id' => $txn->getId(),
+                    ]);
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_SERVICE_TRANSACTION_MIGRATION_BATCH_PUBLISH_TIME_TAKEN,
+            [
+                'merchant_id' => $merchantId,
+                'txn_count'   => $transactions->count(),
+                'time_taken'  => microtime(true) - $startTime,
+            ]);
 
         return $stat;
     }

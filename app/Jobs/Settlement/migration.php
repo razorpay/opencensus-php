@@ -7,7 +7,6 @@ use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Models\Merchant;
 use RZP\Constants\Entity as E;
 use RZP\Models\Settlement\Core;
 use RZP\Models\Feature\Constants;
@@ -19,6 +18,16 @@ class migration extends Job
     const MUTEX_RESOURCE     = 'SETTLEMENT_MIGRATION_%s';
 
     const MUTEX_LOCK_TIMEOUT = 30;
+
+    const VIA    = 'VIA';
+    const STATUS = 'STATUS';
+    const REASON = 'REASON';
+    const FAILED_STEPS = 'FAILED_STEPS';
+    const SUCCESSFUL_STEPS = 'SUCCESSFUL_STEPS';
+    const BANK_ACCOUNT_MIGRATION = 'BANK_ACCOUNT_MIGRATION';
+    const MERCHANT_CONFIG_MIGRATION = 'MERCHANT_CONFIG_MIGRATION';
+    const TRANSACTION_MIGRATION_DISPATCH = 'TRANSACTION_MIGRATION_DISPATCH';
+
 
     /**
      * @var string
@@ -73,6 +82,14 @@ class migration extends Job
     {
         parent::handle();
 
+        $startTime = microtime(true);
+
+        $input = [
+            self::MERCHANT_CONFIG_MIGRATION => $this->migrateMerchantConfig,
+            self::BANK_ACCOUNT_MIGRATION    => $this->migrateBankAccount,
+            self::VIA                       => $this->via,
+        ];
+
         $featureResult = $this->repoManager
                               ->feature
                               ->findMerchantWithFeatures(
@@ -87,12 +104,63 @@ class migration extends Job
             $this->trace->info(
                 TraceCode::SETTLEMENT_SERVICE_MIGRATION_SKIPPED,
                 [
-                    'reason'   => 'not supported features assigned',
-                    'features' => $featureResult
+                    'merchant_id'   => $this->merchantId,
+                    'input'         => $input,
+                    'reason'        => 'not supported features assigned',
+                    'features'      => $featureResult,
                 ]);
 
             return ;
         }
+
+        //$migrationResult this will store the migration results for a merchant in this job
+        $migrationResult = [
+            self::SUCCESSFUL_STEPS => [
+                Mode::LIVE => [
+                    self::MERCHANT_CONFIG_MIGRATION => false,
+                    self::BANK_ACCOUNT_MIGRATION => false,
+                    self::TRANSACTION_MIGRATION_DISPATCH => false,
+                ],
+                Mode::TEST => [
+                    self::MERCHANT_CONFIG_MIGRATION => false,
+                    self::BANK_ACCOUNT_MIGRATION => false,
+                    self::TRANSACTION_MIGRATION_DISPATCH => false,
+                ],
+            ],
+            self::FAILED_STEPS => [
+                Mode::LIVE => [
+                    self::MERCHANT_CONFIG_MIGRATION => [
+                        self::STATUS => false,
+                        self::REASON => null,
+                    ],
+                    self::BANK_ACCOUNT_MIGRATION => [
+                        self::STATUS => false,
+                        self::REASON => null,
+                    ],
+                    self::TRANSACTION_MIGRATION_DISPATCH => [
+                        self::STATUS => false,
+                        self::REASON => null,
+                    ],
+                ],
+                Mode::TEST => [
+                    self::MERCHANT_CONFIG_MIGRATION => [
+                        self::STATUS => false,
+                        self::REASON => null,
+                    ],
+                    self::BANK_ACCOUNT_MIGRATION => [
+                        self::STATUS => false,
+                        self::REASON => null,
+                    ],
+                    self::TRANSACTION_MIGRATION_DISPATCH => [
+                        self::STATUS => false,
+                        self::REASON => null,
+                    ],
+                ],
+            ],
+        ];
+
+        // $isFailure is identifier if any step has failed.
+        $isFailure = false;
 
         try
         {
@@ -100,15 +168,45 @@ class migration extends Job
                 TraceCode::SETTLEMENT_SERVICE_MIGRATION_BEGIN,
                 [
                     'merchant_id' => $this->merchantId,
-                    'via'         => $this->via,
+                     self::VIA     => $this->via,
                 ]);
 
             $resource = sprintf(self::MUTEX_RESOURCE, $this->merchantId);
 
             $this->mutex->acquireAndRelease(
                 $resource,
-                function () use($featureResult)
+                function () use($featureResult, &$migrationResult, &$isFailure)
                 {
+                    if($this->migrateMerchantConfig === true)
+                    {
+                        try
+                        {
+                            (new Core)->MigrateMerchantConfiguration($this->merchantId, Mode::LIVE);
+
+                            $migrationResult[self::SUCCESSFUL_STEPS][Mode::LIVE][self::MERCHANT_CONFIG_MIGRATION] = true;
+                        }
+                        catch(\Throwable $e)
+                        {
+                            $isFailure = true;
+                            $migrationResult[self::FAILED_STEPS][Mode::LIVE][self::MERCHANT_CONFIG_MIGRATION][self::STATUS] = true;
+                            $migrationResult[self::FAILED_STEPS][Mode::LIVE][self::MERCHANT_CONFIG_MIGRATION][self::REASON] = $e->getMessage();
+                        }
+
+                        try
+                        {
+                            (new Core)->MigrateMerchantConfiguration($this->merchantId, Mode::TEST);
+
+                            $migrationResult[self::SUCCESSFUL_STEPS][Mode::TEST][self::MERCHANT_CONFIG_MIGRATION] = true;
+
+                        }
+                        catch(\Throwable $e)
+                        {
+                            $isFailure = true;
+                            $migrationResult[self::FAILED_STEPS][Mode::TEST][self::MERCHANT_CONFIG_MIGRATION][self::STATUS] = true;
+                            $migrationResult[self::FAILED_STEPS][Mode::TEST][self::MERCHANT_CONFIG_MIGRATION][self::REASON] = $e->getMessage();
+                        }
+                    }
+
                     if($this->migrateBankAccount === true)
                     {
                         $this->assignNewSettlementServiceFeaturePostMigration();
@@ -116,72 +214,27 @@ class migration extends Job
                         try
                         {
                             (new BankAccount)->MigrateBankAccountsToSettlementService($this->merchantId, $this->via, Mode::LIVE);
+
+                            $migrationResult[self::SUCCESSFUL_STEPS][Mode::LIVE][self::BANK_ACCOUNT_MIGRATION] = true;
                         }
                         catch(\Throwable $e)
                         {
-                            $this->trace->traceException(
-                                $e,
-                                Trace::ERROR,
-                                TraceCode::SETTLEMENT_SERVICE_MIGRATION_FAILED,
-                                [
-                                    'merchant_id' => $this->merchantId,
-                                    'step'        => 'bank account migration',
-                                    'mode'        => 'live',
-                                ]);
+                            $isFailure = true;
+                            $migrationResult[self::FAILED_STEPS][Mode::LIVE][self::BANK_ACCOUNT_MIGRATION][self::STATUS] = true;
+                            $migrationResult[self::FAILED_STEPS][Mode::LIVE][self::BANK_ACCOUNT_MIGRATION][self::REASON] = $e->getMessage();
                         }
 
                         try
                         {
                             (new BankAccount)->MigrateBankAccountsToSettlementService($this->merchantId, $this->via, Mode::TEST);
-                        }
-                        catch(\Throwable $e)
-                        {
-                            $this->trace->traceException(
-                                $e,
-                                Trace::ERROR,
-                                TraceCode::SETTLEMENT_SERVICE_MIGRATION_FAILED,
-                                [
-                                    'merchant_id' => $this->merchantId,
-                                    'step'        => 'bank account migration',
-                                    'mode'        => 'test',
-                                ]);
-                        }
-                    }
 
-                    if($this->migrateMerchantConfig === true)
-                    {
-                        try
-                        {
-                            (new Core)->MigrateMerchantConfiguration($this->merchantId, Mode::LIVE);;
+                            $migrationResult[self::SUCCESSFUL_STEPS][Mode::TEST][self::BANK_ACCOUNT_MIGRATION] = true;
                         }
                         catch(\Throwable $e)
                         {
-                            $this->trace->traceException(
-                                $e,
-                                Trace::ERROR,
-                                TraceCode::SETTLEMENT_SERVICE_MIGRATION_FAILED,
-                                [
-                                    'merchant_id' => $this->merchantId,
-                                    'step'        => 'merchant configuration migration',
-                                    'mode'        => 'live',
-                                ]);
-                        }
-
-                        try
-                        {
-                            (new Core)->MigrateMerchantConfiguration($this->merchantId, Mode::TEST);;
-                        }
-                        catch(\Throwable $e)
-                        {
-                            $this->trace->traceException(
-                                $e,
-                                Trace::ERROR,
-                                TraceCode::SETTLEMENT_SERVICE_MIGRATION_FAILED,
-                                [
-                                    'merchant_id' => $this->merchantId,
-                                    'step'        => 'merchant configuration migration',
-                                    'mode'        => 'test',
-                                ]);
+                            $isFailure = true;
+                            $migrationResult[self::FAILED_STEPS][Mode::TEST][self::BANK_ACCOUNT_MIGRATION][self::STATUS] = true;
+                            $migrationResult[self::FAILED_STEPS][Mode::TEST][self::BANK_ACCOUNT_MIGRATION][self::REASON] = $e->getMessage();
                         }
                     }
                 },
@@ -190,12 +243,86 @@ class migration extends Job
         }
         catch (\Throwable $e)
         {
+            $isFailure = true;
+
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
                 TraceCode::SETTLEMENT_SERVICE_MIGRATION_FAILED,
                 [
-                    'merchant_id' => $this->merchantId
+                    'merchant_id' => $this->merchantId,
+                    'input'       => $input,
+                    'result'      => $migrationResult,
+                ]);
+        }
+        finally {
+            if($isFailure === false)
+            {
+                try {
+                        $balances = $this->repoManager->balance->getMerchantBalances($this->merchantId);
+
+                        foreach ($balances as $balance)
+                        {
+                            //TODO: Allow Commission Type also
+                            if($balance->isTypePrimary() === true)
+                            {
+                                $opt = [
+                                    'from'                => null,
+                                    'to'                  => null,
+                                    'balance_type'        => $balance->getType(),
+                                    'transaction_ids'     => [],
+                                    'initial_ramp'        => true,
+                                    'source_type'         => null,
+                                ];
+
+                                try {
+                                    TransactionMigrationBatch::dispatch(Mode::LIVE, $this->merchantId, $opt);
+
+                                    $migrationResult[self::SUCCESSFUL_STEPS][Mode::LIVE][self::TRANSACTION_MIGRATION_DISPATCH] = true;
+                                }
+                                catch (\Throwable $e) {
+                                    $isFailure = true;
+                                    $migrationResult[self::FAILED_STEPS][Mode::LIVE][self::TRANSACTION_MIGRATION_DISPATCH][self::STATUS] = true;
+                                    $migrationResult[self::FAILED_STEPS][Mode::LIVE][self::TRANSACTION_MIGRATION_DISPATCH][self::REASON] = $e->getMessage();
+                                }
+
+                                try {
+                                    TransactionMigrationBatch::dispatch(Mode::TEST, $this->merchantId, $opt);
+
+                                    $migrationResult[self::SUCCESSFUL_STEPS][Mode::TEST][self::TRANSACTION_MIGRATION_DISPATCH] = true;
+                                }
+                                catch (\Throwable $e) {
+                                    $isFailure = true;
+                                    $migrationResult[self::FAILED_STEPS][Mode::TEST][self::TRANSACTION_MIGRATION_DISPATCH][self::STATUS] = true;
+                                    $migrationResult[self::FAILED_STEPS][Mode::TEST][self::TRANSACTION_MIGRATION_DISPATCH][self::REASON] = $e->getMessage();
+                                }
+                            }
+                        }
+                }
+                catch (\Throwable $e)
+                {
+                    $isFailure = true;
+
+                    $this->trace->traceException(
+                        $e,
+                        Trace::ERROR,
+                        TraceCode::SETTLEMENT_SERVICE_TRANSACTION_MIGRATION_DISPATCH_FAILED,
+                        [
+                            'merchant_id' => $this->merchantId,
+                            'result'      => $migrationResult,
+                            'input'       => $input,
+                        ]);
+                }
+            }
+
+            $this->trace->info(
+                TraceCode::SETTLEMENT_SERVICE_MIGRATION_RESULT,
+                [
+                    'is_failure'  => $isFailure,
+                    'merchant_id' => $this->merchantId,
+                    'input'       => $input,
+                    'result'      => $migrationResult,
+                    'time_taken'  => microtime(true) - $startTime,
                 ]);
         }
     }

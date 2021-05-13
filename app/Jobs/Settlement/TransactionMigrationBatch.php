@@ -5,11 +5,10 @@ namespace RZP\Jobs\Settlement;
 use RZP\Jobs\Job;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Models\Transaction;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\Bucket\Core;
 
-class TransactionMigration extends Job
+class TransactionMigrationBatch extends Job
 {
     const MUTEX_RESOURCE = 'SETTLEMENT_SERVICE_TRANSACTION_MIGRATION_%s_%s';
 
@@ -83,17 +82,17 @@ class TransactionMigration extends Job
                 $resource,
                 function () use($core)
                 {
-                    return $core->migrateSettlableTransactions($this->merchantId, $this->opt);
+                    return $core->fetchAndEnqueueSettlableTransactionsBatch($this->mode, $this->merchantId, $this->opt);
                 },
                 self::MUTEX_LOCK_TIMEOUT,
                 ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS);
 
             $this->trace->info(
-                TraceCode::SETTLEMENT_SERVICE_TRANSACTION_MIGRATION_SUCCESS ,
+                TraceCode::SETTLEMENT_SERVICE_TRANSACTION_MIGRATION_BATCH_ENQUEUE_SUCCESS,
                 [
                     'merchant_id' =>  $this->merchantId,
                     'details'     => $details,
-                    'time_taken'  => get_diff_in_millisecond($startTime),
+                    'time_taken'  => microtime(true) - $startTime,
                 ]);
         }
         catch (\Throwable $e)
@@ -101,7 +100,7 @@ class TransactionMigration extends Job
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::FAILED_TO_MIGRATE_TRANSACTION_TO_NEW_SERVICE,
+                TraceCode::SETTLEMENT_SERVICE_TRANSACTION_MIGRATION_BATCH_ENQUEUE_FAILURE,
                 [
                     'merchant_id' => $this->merchantId,
                     'opt'         => $this->opt,
@@ -113,7 +112,7 @@ class TransactionMigration extends Job
     protected function beforeJobKillCleanUp()
     {
         $this->trace->info(
-            TraceCode::SETTLEMENT_SERVICE_TRANSACTION_MIGRATION_JOB_TIMEOUT,
+            TraceCode::SETTLEMENT_SERVICE_TRANSACTION_MIGRATION_BATCH_JOB_TIMEOUT,
             [
                 'merchant_id' => $this->merchantId,
                 'options'     => $this->opt,

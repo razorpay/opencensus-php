@@ -27,9 +27,9 @@ use RZP\Notifications\Settlement\Events;
 use RZP\Models\Merchant as MerchantModel;
 use RZP\Models\Settlement\Bucket\Preference;
 use RZP\Models\Schedule\Task as scheduleTask;
-use RZP\Jobs\Settlement\TransactionMigration;
 use RZP\Models\Settlement\Bucket as BucketModel;
 use RZP\Models\Settlement\Details as SetlDetails;
+use RZP\Jobs\Settlement\TransactionMigrationBatch;
 use RZP\Mail\Merchant\SettlementsProcessedNotification;
 use RZP\Notifications\Settlement\Handler as SettlementNotificationHandler;
 
@@ -965,7 +965,7 @@ class Core extends Base\Core
 
         foreach ($input['merchant_ids'] as $mid)
         {
-            TransactionMigration::dispatch($this->mode, $mid, $opt);
+            TransactionMigrationBatch::dispatch($this->mode, $mid, $opt);
         }
     }
 

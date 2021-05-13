@@ -2009,7 +2009,8 @@ class Repository extends Base\Repository
         string $merchantId,
         array $opt,
         Balance\Entity $balance,
-        array $limits): Base\PublicCollection {
+        $fetchAllIds = false,
+        array $limits = []): Base\PublicCollection {
 
         $txnId              = $this->dbColumn(Entity::ID);
         $txnBalanceId       = $this->dbColumn(Entity::BALANCE_ID);
@@ -2029,16 +2030,29 @@ class Repository extends Base\Repository
 
         $startTime = microtime(true);
 
-        $query = $this->newQueryWithConnection($this->getSlaveConnection())
-            ->select($txnId, $txnBalanceId, $txnMerchantId, $txnEntityId, $txnType,
-                $txnCurrency, $txnCredit, $txnDebit, $txnFee, $txnTax, $txnOnHold, $txnCreatedAt)
-            ->where($txnBalanceId, $balance->getId())
-            ->whereNotNull($txnSettledAt)
-            ->where($txnSettled, 0)
-            ->where($txnMerchantId, $merchantId)
-            ->where($txnType, '!=', Type::SETTLEMENT)
-            ->offset($limits['offset'])
-            ->limit($limits['limit']);
+        $query = $this->newQueryWithConnection($this->getSlaveConnection());
+
+        if($fetchAllIds === true)
+        {
+            $query->select($txnId);
+        }
+        else
+        {
+            $query->select($txnId, $txnBalanceId, $txnMerchantId, $txnEntityId, $txnType, $txnCurrency, $txnCredit, $txnDebit, $txnFee, $txnTax, $txnOnHold, $txnCreatedAt);
+        }
+
+            $query->where($txnBalanceId, $balance->getId())
+                ->whereNotNull($txnSettledAt)
+                ->where($txnSettled, 0)
+                ->where($txnMerchantId, $merchantId)
+                ->where($txnType, '!=', Type::SETTLEMENT);
+
+            if (empty($limits) == false)
+            {
+                $query->offset($limits['offset']);
+                $query->limit($limits['limit']);
+
+            }
 
         if (empty($opt['transaction_ids']) === false)
         {
@@ -2051,7 +2065,7 @@ class Repository extends Base\Repository
             {
                 $query->whereBetween($txnCreatedAt, [$opt['from'], $opt['to']]);
             } else {
-                $query->where($txnId, '>=', $opt['from']);
+                $query->where($txnCreatedAt, '>=', $opt['from']);
             }
         }
 
@@ -2059,17 +2073,23 @@ class Repository extends Base\Repository
             $query->where($txnType, $opt['source_type']);
         }
 
+        $result = $query->get();
+
+        unset($opt['transaction_ids']);
+
         $this->trace->info(
             TraceCode::SETTLEMENT_SERVICE_TRANSACTION_MIGRATION_FETCH_TIME_TAKEN,
             [
-                'merchant_id' => $merchantId,
-                'options'     => $opt,
-                'limits'      => $limits,
-                'balance_id'  => $balance->getId(),
-                'time_taken'  => get_diff_in_millisecond($startTime),
+                'merchant_id'   => $merchantId,
+                'options'       => $opt,
+                'limits'        => $limits,
+                'txn_count'     => $result->count(),
+                'balance_id'    => $balance->getId(),
+                'fetch_all_ids' => $fetchAllIds,
+                'time_taken'    => microtime(true) - $startTime,
             ]);
 
-        return $query->get();
+        return $result;
     }
 
     /**
