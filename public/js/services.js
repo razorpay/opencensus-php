@@ -1219,6 +1219,10 @@ angular
       }
       function emitSegment(eventName = '', properties = {}) {
         // This is segment's analytics window object not our analytics object
+        Object.assign(properties, {
+          pageUrl: window.location.href,
+          eventTimestamp: new Date().toISOString(),
+        });
         if (window.analytics) {
           window.analytics.track(eventName, properties);
         }
