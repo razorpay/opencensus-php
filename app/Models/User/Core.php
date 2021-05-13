@@ -628,6 +628,7 @@ class Core extends Base\Core
                             'user_id'        => $user->getId(),
                             'account_locked' => $user->isAccountLocked(),
                             'user_mobile'    => $user->getMaskedContactMobile(),
+                            'confirmed'      => $user->getConfirmedAttribute(),
                         ],
                     ]);
     }
