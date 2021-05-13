@@ -47,9 +47,9 @@ class CardPSController extends Controller
 
         unset($input['card']['merchant_id']);
 
-        $card = (new Card\Core)->createViaCps($input['card'],$merchant);
+        $card = (new Card\Core)->createViaCps($input['card'], $merchant, $input['save_token']);
 
-        $response['card'] = $card->toArrayAdmin();
+        $response['card'] = $card->toArray();
 
         if ((isset($input['save_token']) === true) and
             ($input['save_token']))

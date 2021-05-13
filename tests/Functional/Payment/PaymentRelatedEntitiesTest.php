@@ -84,6 +84,8 @@ class PaymentRelatedEntitiesTest extends TestCase
 
     public function testCreateCardEntityWithToken()
     {
+        $this->markTestSkipped();
+
         $merchant = $this->fixtures->create('merchant');
         $customer = $this->fixtures->create('customer');
 
@@ -97,6 +99,8 @@ class PaymentRelatedEntitiesTest extends TestCase
 
     public function testCreateCardEntityWithoutToken()
     {
+        $this->markTestSkipped();
+
         $merchant = $this->fixtures->create('merchant');
 
         $this->testData[__FUNCTION__]['request']['content']['card']['merchant_id'] = $merchant['id'];

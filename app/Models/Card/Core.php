@@ -46,11 +46,15 @@ class Core extends Base\Core
         return $card;
     }
 
-    public function createViaCps($input, $merchant)
+    public function createViaCps($input, $merchant, $recurring)
     {
         $card = (new Card\Entity)->build($input);
 
         $card->merchant()->associate($merchant);
+
+        $card->SetVault(Vault::RZP_VAULT);
+
+        $this->setVaultTokenAndFingerPrint($card, $input, $recurring);
 
         $iin = $this->fillNetworkDetails($card, $input);
 

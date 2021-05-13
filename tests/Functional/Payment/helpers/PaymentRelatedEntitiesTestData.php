@@ -104,7 +104,9 @@ return [
                     'name' => 'shk',
                     'expiry_month' => 04,
                     'expiry_year'  => 2025,
-                    'number'       => '4111466126747568'
+                    'vault_token'  => '4111466126747568',
+                    'iin'          => '411146',
+                    'vault'        => 'rzpvault'
                 ],
                 'save_token' => true,
                 'customer' => [
@@ -115,7 +117,6 @@ return [
         'response' => [
             'content' => [
                 'card' => [
-                   'entity'   => 'card',
                 ],
                 'token' => [
                     'entity' => 'token'
@@ -133,14 +134,15 @@ return [
                     'name' => 'shk',
                     'expiry_month' => 04,
                     'expiry_year'  => 2025,
-                    'number'       => '4111466126747568'
+                    'iin'          => '411146',
+                    'vault_token'  => '4111466126747568',
+                    'vault'        => 'rzpvault'
                 ],
             ]
         ],
         'response' => [
             'content' => [
                 'card' => [
-                    'entity'   => 'card',
                 ]
             ],
         ],

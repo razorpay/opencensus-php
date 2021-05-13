@@ -193,6 +193,19 @@ class Entity extends Base\PublicEntity
         self::IIN            => 'string'
     ];
 
+    public function buildCpsCard(array $input = [], string $operation = 'create')
+    {
+        $this->input = $input;
+
+        $this->validateInput($operation,$input);
+
+        $this->generate($input);
+
+        $this->fill($input);
+
+        return $this;
+    }
+
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');

@@ -21,6 +21,7 @@ class Validator extends Base\Validator
 
     protected static $createCpsRequestRules = [
         Entity::VAULT_TOKEN        => 'required|string',
+        Entity::GLOBAL_FINGERPRINT => 'sometimes|string',
         Entity::EXPIRY_MONTH       => 'required|integer|digits_between:1,2|max:12|min:1',
         Entity::EXPIRY_YEAR        => 'required|integer|digits:4|non_past_year',
         Entity::IIN                => 'required|numeric|digits:6',
