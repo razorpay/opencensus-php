@@ -10,10 +10,6 @@ jobs:
       - name: Checkout Codebase
         uses: actions/checkout@v2
 
-      - name: Extract branch name
-        id: extract_branch
-        run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
-
       - name: Use Node v12
         uses: actions/setup-node@v1
         with:
@@ -35,7 +31,7 @@ jobs:
 
       # Prod
       - name: Deploy - Prod
-        if: ${{ github.event.deployment.environment == 'prod' && env.BRANCH_NAME == 'master' }}
+        if: ${{ github.event.deployment.environment == 'prod' && github.ref == 'refs/heads/master' }}
         env:
           # CDN_PATH can be skipped for prod it's default to "dashboard"
           AWS_KEY: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
