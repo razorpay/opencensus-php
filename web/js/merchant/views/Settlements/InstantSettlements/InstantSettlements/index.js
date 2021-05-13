@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router';
+import { withRouter, Redirect } from 'react-router';
 import ListContainer from 'merchant/containers/ListContainer';
 import { fetchCurrentBalance, fetchOndemandRestrictions } from 'merchant/reducers/home';
 import { fetchHolidayList } from 'merchant/reducers/settlements/details';
@@ -197,6 +197,8 @@ class InstantSettlements extends ListContainer {
       renderSettlementView = PlaceholderLoader;
     }
 
+    if (!user.isOndemandSettlementEnabled) return <Redirect to="/settlements" />;
+
     return (
       <>
         <div className="payout-details">
@@ -207,6 +209,7 @@ class InstantSettlements extends ListContainer {
             isBalanceLoading={current_balance.loading}
             isSettleNowRestricted={isSettleNowRestricted}
             settleNowRestrictionMsg={this.settleNowRestrictionMsg}
+            isOndemandSettlementEnabled={user.isOndemandSettlementEnabled}
           />
           <SettlementMessage
             user={user}
