@@ -1,0 +1,41 @@
+name: Validate
+on: push
+jobs:
+  validate:
+    runs-on: [self-hosted]
+    continue-on-error: false
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v2
+
+      - name: Use Node v12
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.13.0
+
+      # This action allows caching dependencies and build outputs
+      # to improve workflow execution time
+      - name: Cache multiple paths
+        uses: actions/cache@v2
+        with:
+            path: |
+              ~/cache
+              !~/cache/exclude
+            key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+
+      - name: Install Dependencies
+        run: |
+          npm config set unsafe-perm true
+          npm ci # Automatically installs npm ci in web too
+        env:
+          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+
+      - name: Validate
+        # Automatically installs npm ci in web too
+        run: |
+          npx eslint web/v2 --ext .js,.jsx,.ts,.tsx
+          npx stylelint web/v2/**/*.{js,jsx,ts,tsx}
+          cd web && npx tsc
+        env:
+          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+

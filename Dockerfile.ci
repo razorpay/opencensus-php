@@ -1,0 +1,33 @@
+# alpine:3.7
+# -> razorpay/ongii:php7.3 ->
+FROM c.rzp.io/razorpay/onggi:php-7.3-nginx
+# -> razorpay/dashboard:{GIT_COMMIT_HASH}
+
+COPY composer.json composer.lock /app/
+
+WORKDIR /app
+
+ARG GIT_COMMIT_HASH
+ARG GIT_TOKEN
+ARG GIT_USERNAME
+
+RUN set -eu && \
+    composer --version && \
+    git config --global user.name ${GIT_USERNAME} && \
+    composer config -g "github-oauth.github.com" ${GIT_TOKEN} && \
+    composer config -g repos.packagist composer "https://packagist.rzp.io" && \
+    composer install --no-dev --no-interaction --no-autoloader --no-scripts && \
+    rm -rf /root/.composer && \
+    composer clear-cache
+
+RUN mkdir -p public && \
+    echo ${GIT_COMMIT_HASH} > public/commit.txt
+
+COPY --chown=nginx:nginx . /app/
+
+# This step can't run without some classes from above step
+RUN composer dump-autoload && php artisan optimize
+
+EXPOSE 80
+
+ENTRYPOINT ["/app/dockerconf/entrypoint.sh"]

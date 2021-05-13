@@ -1,0 +1,119 @@
+name: Build
+on: push
+jobs:
+  build-web:
+    name: Build Frontend
+    runs-on: [self-hosted]
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v2
+
+      - name: Extract branch name
+        id: extract_branch
+        run: |
+          echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
+
+      - name: Use Node v12.13.0
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.13.0
+
+      # This action allows caching dependencies and build outputs
+      # to improve workflow execution time
+      - name: Cache npm packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.OS }}-npm-cache-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Install Dependencies
+        run: |
+          npm config set unsafe-perm true
+          npm ci # Automatically installs npm ci in web too
+        env:
+          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+
+      - name: Build Signup
+        # Automatically installs npm ci in web too
+        run: node signup.js
+        env:
+          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+
+      - name: Build All
+        # Runs in parellel
+        run: cd web && npm run production:build
+        env:
+          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+
+      - name: Remove files
+        run: rm -rf .git
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.ACTIONS_CACHE_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.ACTIONS_CACHE_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
+        env:
+          AWS_ACCESS_KEY: ${{ secrets.ACTIONS_CACHE_AWS_ACCESS_KEY_ID }}
+          AWS_ACCESS_SECRET: ${{ secrets.ACTIONS_CACHE_AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
+
+      - name: Push build to github actions cache
+        run: |
+          tar czf public.tar.gz public
+          aws s3 cp public.tar.gz s3://rzp-actions-cache/dashboard-${{ github.sha }}.tar.gz
+        env:
+          AWS_ACCESS_KEY: ${{ secrets.ACTIONS_CACHE_AWS_ACCESS_KEY_ID }}
+          AWS_ACCESS_SECRET: ${{ secrets.ACTIONS_CACHE_AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
+
+  build-be:
+    name: Build Backend
+    runs-on: [self-hosted]
+    needs: [build-web]
+    steps:
+      - name: Login to Harbor
+        uses: docker/login-action@v1
+        with:
+          registry: c.rzp.io
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+      - name: build
+        uses: docker/build-push-action@v2
+        with:
+          tags: c.rzp.io/razorpay/dashboard:${{ github.sha }}
+          push: true
+          file: ./Dockerfile.ci
+          build-args: |
+            GIT_COMMIT_HASH=${{ github.sha }}
+            GIT_TOKEN=${{ secrets.GIT_TOKEN }}
+            GIT_USERNAME=rzp
+
+  workflow_status:
+    runs-on: [self-hosted]
+    name: Update Status Check
+    needs: [build-web, build-be]
+    continue-on-error: false
+    if: always()
+    steps:
+      - name: Failed
+        id: failed
+        if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
+        run: |
+          echo 'Failing the workflow for github status check.'
+          curl -X POST -H "Content-Type: application/json" -H "Authorization: token ${{ github.token }}" \
+          -d '{ "state" : "failure" , "context" : "github/combined-status-check" , "description" : "github/combined-status-check", "target_url" : "https://github.com/${{ github.repository }}" }' \
+          https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }}
+          exit 1
+      - name: Success
+        if: ${{ steps.failed.conclusion == 'skipped' }}
+        run: |
+          echo "Status check has passed!"
+          curl -X POST -H "Content-Type: application/json" -H "Authorization: token ${{ github.token }}" \
+          -d '{ "state" : "success" , "context" : "github/combined-status-check" , "description" : "github/combined-status-check", "target_url" : "https://github.com/${{ github.repository }}" }' \
+          https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }}
+          exit 0

@@ -41,7 +41,7 @@ glob(
   ],
   { nodir: true },
   (error, files) => {
-    files.forEach(file => {
+    files.forEach((file) => {
       var fileParams = {
         Bucket: params.Bucket,
         ACL: params.ACL,
@@ -49,6 +49,11 @@ glob(
         Key: file.replace(/^public/, ENV.CDN_PATH || 'dashboard'),
         Body: readFileSync(file),
       };
+
+      // Debug filepath while deploying
+      // TODO: remove console log before merging to master
+      console.log(fileParams.Key);
+
       var ext = path.extname(file).slice(1);
 
       if (
@@ -79,5 +84,5 @@ glob(
         }
       });
     });
-  }
+  },
 );

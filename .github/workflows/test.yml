@@ -1,0 +1,39 @@
+name: Test
+on: push
+jobs:
+  test:
+    runs-on: [self-hosted]
+    continue-on-error: false
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v2
+
+      - name: Use Node v12
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.13.0
+
+      # This action allows caching dependencies and build outputs
+      # to improve workflow execution time
+      - name: Cache multiple paths
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.OS }}-npm-cache-${{ hashFiles('**/package-lock.json') }}
+
+
+      - name: Install Dependencies
+        run: |
+          npm config set unsafe-perm true
+          npm ci # Automatically installs npm ci in web too
+        env:
+          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+
+      - name: Test
+        # Automatically installs npm ci in web too
+        run: |
+          npm run test
+          npm run test:jest
+        env:
+          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+

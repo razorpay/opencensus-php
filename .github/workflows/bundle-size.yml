@@ -13,14 +13,12 @@ jobs:
 
       - uses: actions/cache@v2
         with:
-            path: |
-              ~/cache
-              !~/cache/exclude
-            key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+          path: ~/.npm
+          key: ${{ runner.OS }}-npm-cache-${{ hashFiles('**/package-lock.json') }}
 
       - uses: actions/setup-node@v2-beta
         with:
-          node-version: '12'
+          node-version: 12.13.0
 
       - uses: preactjs/compressed-size-action@v2
         with:

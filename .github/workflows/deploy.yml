@@ -1,0 +1,87 @@
+name: Deploy
+
+on: deployment
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: [self-hosted]
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v2
+
+      - name: Extract branch name
+        id: extract_branch
+        run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
+
+      - name: Use Node v12
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.13.0
+
+      # Set AWS creds and download Artifacts
+      - name: Configure AWS credentials - Actions Cache
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.ACTIONS_CACHE_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.ACTIONS_CACHE_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
+
+      - name: Download artifacts
+        run: |
+          aws s3 cp s3://rzp-actions-cache/dashboard-${{ github.event.deployment.ref }}.tar.gz public.tar.gz
+          tar -xf public.tar.gz
+          ls public
+
+      # Prod
+      - name: Deploy - Prod
+        if: ${{ github.event.deployment.environment == 'prod' && env.BRANCH_NAME == 'master' }}
+        env:
+          # CDN_PATH can be skipped for prod it's default to "dashboard"
+          AWS_KEY: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET: ${{ secrets.PROD_AWS_ACCESS_SECRET }}
+          AWS_CDN_BUCKET: "checkout-live"
+          AWS_REGION: "ap-south-1"
+          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+        run: |
+          # Requirements for running s3sync.js
+          npm install multi-glob aws-sdk
+          # Show what all will get synced
+          ls -laR public/dist/
+          ls -laR public/js/generated/
+          ls -laR public/css/generated/
+          ./s3sync.js
+
+      # Non Prod deployments
+      - name: Deploy Stage
+        if: ${{ github.event.deployment.environment != 'prod' }}
+        env:
+          AWS_KEY: ${{ secrets.STAGE_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET: ${{ secrets.STAGE_AWS_ACCESS_SECRET }}
+          AWS_CDN_BUCKET: "rzp-1018-nonprod-betacdn"
+          AWS_REGION: "ap-south-1"
+          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          # CDN_PATH for beta: dashboard, for zeta dashboard/zeta, for automation dashboard/qa
+          # Expecting payload with CDN_PATH from spinakker
+          CDN_PATH: ${{ github.event.deployment.payload.CDN_PATH }}
+        run: |
+          # Requirements for running s3sync.js
+          npm install multi-glob aws-sdk
+          # Show what all will get synced
+          ls -laR public/dist/
+          ls -laR public/js/generated/
+          ls -laR public/css/generated/
+          ./s3sync.js
+
+
+      - name: Mark Deployment Success on GitHub
+        if: ${{ success() }}
+        run: |
+          curl --location --request POST 'https://api.github.com/repos/razorpay/dashboard/deployments/${{ github.event.deployment.id }}/statuses' \
+          --header 'Authorization: token ${{ github.token }}' \
+          --header 'Accept: application/vnd.github.everest-preview+json' \
+          --header 'Content-Type: application/json' \
+          --data-raw '{
+              "environment": "staging",
+              "state": "success"
+            }'
