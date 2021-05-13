@@ -114,6 +114,8 @@ class ApiTraceProcessor
 
         $this->addTraceId($record);
 
+        $this->addAwsTraceId($record);
+
         $this->addRouteNameForExceptions($record);
 
         $this->scrubCardNumberViaCcPay($record);
@@ -416,5 +418,12 @@ class ApiTraceProcessor
 
             $record['request']['x_request_trace_id'] = $traceId;
         }
+    }
+
+    private function addAwsTraceId(array &$record)
+    {
+        $traceId = $this->app->request->headers->get(RequestHeader::X_AMAZON_TRACE_ID);
+
+        $record['request']['aws_trace_id'] = $traceId;
     }
 }
