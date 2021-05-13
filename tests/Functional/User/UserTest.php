@@ -1903,6 +1903,31 @@ class UserTest extends TestCase
         $this->assertNotEmpty($response['token']);
     }
 
+    public function testSendOtpWithContactForVerifyingSupportContact()
+    {
+        $this->ba->proxyAuth();
+
+        $testData = $this->testData['testSendOtpWithContact'];
+
+        $testData['request']['content'] = [
+            'action'         => 'verify_support_contact',
+            'contact_mobile' => '9876543210',
+        ];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['token']);
+    }
+
+    public function testVerifyOtpWithToken()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testSendOtpViaMail()
     {
         $this->createContact();

@@ -1421,6 +1421,7 @@ class Route
         'user_update_contact_merchant'             => ['patch',    'users/contact',                                  'UserController@updateContactMobile'                                ],
         'user_account_lock_unlock_admin'           => ['put',      'users-admin/account/{id}/{action}',              'UserController@accountLockUnlock'                                  ],
         'otp_create'                               => ['post',     'otp/send',                                       'UserController@sendOtpWithContact'                                 ],
+        'user_otp_verify'                          => ['post',     'users/verify_otp',                               'UserController@verifyOtpWithToken'                                 ],
 
         'user_fetch_for_merchant'                  => ['get',      'users/fetch_for_merchant/{id}',                  'UserController@getUserForMerchant'                                 ],
 
@@ -3480,6 +3481,7 @@ class Route
         'oauth_application_delete',
         'oauth_application_update',
         'otp_create',
+        'user_otp_verify',
         'merchant_analytics',
         'get_merchant_data_for_segment',
         'reports_refund_irctc',
@@ -6831,6 +6833,7 @@ class Route
             'user_update_contact_merchant',
             'user_verify_contact',
             'user_verify_email',
+            'user_otp_verify',
             'user_verify_second_factor_auth',
             'user_verify_through_email',
             'user_fetch_admin',

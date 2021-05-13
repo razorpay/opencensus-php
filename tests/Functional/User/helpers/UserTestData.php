@@ -1388,6 +1388,24 @@ return [
         ],
     ],
 
+    'testVerifyOtpWithToken' => [
+        'request' => [
+            'url'     => '/users/verify_otp',
+            'method'  => 'POST',
+            'content' => [
+                'otp'            => '0007',
+                'token'          => 'Gvt61zZ3Iwzcqy',
+                'action'         => 'verify_support_contact',
+                'contact_mobile' => '9876543210'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ],
+        ],
+    ],
+
     'testSendOtpViaMail' => [
         'request' => [
             'url'     => '/users/otp/send',

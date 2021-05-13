@@ -1399,8 +1399,21 @@ class Core extends Base\Core
         $otp = $input['otp'];
         unset($input['otp']);
 
+        $contactMobile = null;
+
+        if (isset($input['contact_mobile']) === true)
+        {
+            $contactMobile = $input['contact_mobile'];
+
+            unset($input['contact_mobile']);
+        }
         //Unset OTP for logging
         $this->trace->info(TraceCode::USERS_VERIFY_OTP_FOR_ACTION, compact('input'));
+
+        if (is_null($contactMobile) === false)
+        {
+            $input['contact_mobile'] = $contactMobile;
+        }
 
         $input['otp'] = $otp;
 
