@@ -1450,7 +1450,7 @@ class Service extends Base\Service
         {
             $apiBaseUrl = ApiUrl::getApiBaseUrl();
             // removing the /v1/ part at the end in the apiURL obtained from config
-            $apiURL = substr($apiBaseUrl, 0, -4);
+            $apiURL = substr($apiBaseUrl, 0, -4) . '/commit.txt';
 
             $options = [
                 'timeout' => Config::get('api.request_timeout')
@@ -1471,6 +1471,12 @@ class Service extends Base\Service
                     'api_response_time' => $time_taken,
                 ]);
             }
+
+            if ($APIConnection->status_code !== 200)
+            {
+                throw new Exception('API Connection Error');
+            }
+
         }
         catch (Exception $e)
         {
