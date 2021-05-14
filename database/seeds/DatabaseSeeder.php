@@ -1277,6 +1277,7 @@ class DatabaseSeeder extends Seeder
         $this->createNetbankingFsbTerminal();
         $this->createPayuTerminal();
         $this->createCashfreeTerminal();
+        $this->createCcavenueTerminal();
         $this->createNetbankingDcbTerminal();
     }
 
@@ -2862,6 +2863,24 @@ class DatabaseSeeder extends Seeder
                 'netbanking' => '1',
                 'gateway_merchant_id' => '323395bf6400747e2f43bbd9a93323',
                 'gateway_secure_secret' => Crypt::encrypt('2d2fe54f576ff428d93019f48695870abebb2327'),
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            ]
+        );
+    }
+
+    protected function createCcavenueTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id' => 'h1t3hfU4c2A48G',
+                'merchant_id' => Account::TEST_ACCOUNT,
+                'gateway' => Gateway::CCAVENUE,
+                'card' => '1',
+                'netbanking' => '0',
+                'gateway_merchant_id' => '323395bf6400747e2f43bbd9a93323',
+                'gateway_secure_secret' => Crypt::encrypt('2d2fe54f576ff428d93019f48695870abebb2327'),
+                'gateway_access_code' => 'AVDE03HL60BW05EDWB',
                 'created_at'            => time(),
                 'updated_at'            => time(),
             ]

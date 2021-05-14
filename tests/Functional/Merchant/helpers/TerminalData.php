@@ -1168,6 +1168,29 @@ return [
         ]
     ],
 
+    'testCreateCcavenueCardTerminal' => [
+        "request" => [
+            'content' => [
+                'gateway'               => 'ccavenue',
+                'gateway_terminal_id'   => 'CF1234',
+                'gateway_merchant_id'   => '323395bf6400747e2f43bbd9a93323',
+                'gateway_access_code'   => '12344',
+                'gateway_secure_secret' => '2d2fe54f576ff428d93019f48695870abebb2327',
+                'card'                  => 1,
+                'type'                      => [
+                    'non_recurring' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => '323395bf6400747e2f43bbd9a93323',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
     'testCreateCredTerminal' => [
         'request' => [
             'url' => '/merchants/100000Razorpay/terminals',

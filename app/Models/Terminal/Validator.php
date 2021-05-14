@@ -139,6 +139,7 @@ class Validator extends Base\Validator
         Payment\Gateway::PAYU,
         Payment\Gateway::NACH_ICICI,
         Payment\Gateway::CASHFREE,
+        Payment\Gateway::CCAVENUE,
         Payment\Gateway::FULCRUM,
         Payment\Gateway::NETBANKING_UBI,
     ];
@@ -252,6 +253,18 @@ class Validator extends Base\Validator
         Entity::PROCURER                                => 'sometimes|string|in:razorpay,merchant',
         Entity::MODE                                    => 'sometimes|in:2',
         Entity::UPI                                     => 'sometimes|boolean|in:1',
+        Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed'
+    ];
+
+    protected static $ccavenueTerminalRules = [
+        Entity::GATEWAY                                 => 'required|in:ccavenue',
+        Entity::GATEWAY_MERCHANT_ID                     => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET                   => 'required|string',
+        Entity::GATEWAY_ACCESS_CODE                     => 'required|string',
+        Entity::TYPE                                    => 'required|array',
+        Entity::TYPE . '.direct_settlement_with_refund' => 'required|in:1',
+        Entity::PROCURER                                => 'sometimes|string|in:razorpay,merchant',
+        Entity::MODE                                    => 'sometimes|in:2',
         Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed'
     ];
 
@@ -580,6 +593,14 @@ class Validator extends Base\Validator
         Entity::STATUS                     => 'sometimes|string|in:deactivated,activated',
         Entity::ENABLED                    => 'sometimes|in:0,1',
         Entity::UPI                        => 'sometimes|boolean|in:0,1',
+        Entity::TYPE                       => 'sometimes|array',
+    ];
+
+    protected static $ccavenueEditTerminalRules = [
+        Entity::MODE                       => 'sometimes|in:2',
+        Entity::STATUS                     => 'sometimes|string|in:deactivated,activated',
+        Entity::ENABLED                    => 'sometimes|in:0,1',
+        Entity::CARD                       => 'sometimes|boolean|in:0,1',
         Entity::TYPE                       => 'sometimes|array',
     ];
 
@@ -1979,6 +2000,7 @@ class Validator extends Base\Validator
             Gateway::WALLET_PAYPAL,
             Gateway::PAYU,
             Gateway::CASHFREE,
+            Gateway::CCAVENUE,
             Gateway::PAYTM,
         ];
 

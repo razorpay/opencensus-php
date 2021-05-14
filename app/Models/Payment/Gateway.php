@@ -26,6 +26,7 @@ class Gateway
     const ATOM                   = 'atom';
     const PAYU                   = 'payu';
     const CASHFREE               = 'cashfree';
+    const CCAVENUE               = 'ccavenue';
     const BHARAT_QR              = 'bharat_qr';
     const AXIS_GENIUS            = 'axis_genius';
     const AXIS_MIGS              = 'axis_migs';
@@ -295,6 +296,7 @@ class Gateway
         self::PAYU                  => self::PAYU,
         self::CASHFREE              => self::CASHFREE,
         self::NETBANKING_YESB       => self::YESB,
+        self::CCAVENUE              => self::CCAVENUE,
         self::NETBANKING_IDFC       => self::IDFC,
         self::NETBANKING_SBI        => self::SBIN,
     ];
@@ -323,6 +325,7 @@ class Gateway
         self::CASHFREE,
         self::PAYU,
         self::PAYTM,
+        self::CCAVENUE,
     ];
 
     /**
@@ -1135,6 +1138,7 @@ class Gateway
             self::ISG,
             self::PAYU,
             self::CASHFREE,
+            self::CCAVENUE,
         ],
 
         Method::NETBANKING => [
@@ -1566,6 +1570,14 @@ class Gateway
             Network::RUPAY,
         ],
         self:: CASHFREE => [
+            Network::MC,
+            Network::VISA,
+            Network::AMEX,
+            Network::RUPAY,
+            Network::DICL,
+            Network::DISC,
+        ],
+        self:: CCAVENUE => [
             Network::MC,
             Network::VISA,
             Network::AMEX,
@@ -2367,7 +2379,8 @@ class Gateway
         Gateway::FIRST_DATA  => Gateway::FIRST_DATA,
         Gateway::AXIS_MIGS   => Gateway::AXIS_MIGS,
         Gateway::PAYU        => Gateway::PAYU,
-        Gateway::CASHFREE    => Gateway::CASHFREE
+        Gateway::CASHFREE    => Gateway::CASHFREE,
+        Gateway::CCAVENUE    => Gateway::CCAVENUE
     ];
 
     // in case of any changes in gateway config, please contact smart routing team
@@ -3156,6 +3169,7 @@ class Gateway
             self::PAYU,
             self::CASHFREE,
             self::FULCRUM,
+            self::CCAVENUE
         ];
 
         return (in_array($gateway, $gateways, true));
@@ -3190,6 +3204,7 @@ class Gateway
             self::PAYU,
             self::CASHFREE,
             self::FULCRUM,
+            self::CCAVENUE,
         ];
 
         return (in_array($gateway, $gateways, true));
