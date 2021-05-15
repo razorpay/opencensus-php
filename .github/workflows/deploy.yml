@@ -31,7 +31,7 @@ jobs:
 
       # Prod
       - name: Deploy - Prod
-        if: ${{ github.event.deployment.environment == 'prod' && github.ref == 'refs/heads/master' }}
+        if: ${{ github.event.deployment.environment == 'prod' }}
         env:
           # CDN_PATH can be skipped for prod it's default to "dashboard"
           AWS_KEY: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
