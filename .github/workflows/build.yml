@@ -1,8 +1,8 @@
 name: Build
 on: push
 jobs:
-  build-web:
-    name: Build Frontend
+  build:
+    name: Build Dashboard
     runs-on: [self-hosted]
     steps:
       - name: Checkout Codebase
@@ -63,23 +63,21 @@ jobs:
           AWS_ACCESS_SECRET: ${{ secrets.ACTIONS_CACHE_AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
 
-  build-be:
-    name: Build Backend
-    runs-on: [self-hosted]
-    needs: [build-web]
-    steps:
       - name: Login to Harbor
         uses: docker/login-action@v1
         with:
           registry: c.rzp.io
           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
           password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v1
+
       - name: build
         uses: docker/build-push-action@v2
         with:
+          context: .
           tags: c.rzp.io/razorpay/dashboard:${{ github.sha }}
           push: true
           file: ./Dockerfile.ci
@@ -91,7 +89,7 @@ jobs:
   workflow_status:
     runs-on: [self-hosted]
     name: Update Status Check
-    needs: [build-web, build-be]
+    needs: [build]
     continue-on-error: false
     if: always()
     steps:
