@@ -5,7 +5,7 @@ set -euo pipefail
 echo "$(date) Cast config for environments"
 # casting only env.php.j2 for devserve env as the secrets are injected via kube secrets
 # DEV_SERVE variable is to be passed as true
-if [[ "${DEV_SERVE}" == "true" ]]; then
+if [[ -n "${DEV_SERVE:-}" && "${DEV_SERVE}" == "true" ]]; then
   alohomora cast --region ap-south-1 --env $APP_MODE --app dashboard "environment/env.php.j2"
 else
   alohomora cast --region ap-south-1 --env $APP_MODE --app dashboard "environment/.env.vault.j2" "environment/env.php.j2"
