@@ -275,7 +275,7 @@ export default class SubscriptionButtonsList extends ListContainer {
 
 const EmptyComponent = () => (
   <div class="PaymentButton-empty-list">
-    <img src="/dist/css/assets/payment_button/empty-list.svg" />
+    <img src="/dist/css/assets/payment_button/empty-list.svg" width="280px" />
 
     <div class="description">
       <h4>It’s Lonely Here!</h4>
