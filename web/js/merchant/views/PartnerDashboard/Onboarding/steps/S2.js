@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { classList } from 'common/utils/rzp-utils';
 import SlideContoller from './SlideController';
+import { triggerHotjarHeatmap } from 'common/utils/hotjar';
 
 const s2 = ({ role, onRoleSelect, sliderProps, abort }) => {
+  useEffect(() => {
+    triggerHotjarHeatmap('pure_platform_control_heatmap');
+  }, []);
   return (
     <>
       <div className={'partner-onbr-info'}>
@@ -12,7 +16,7 @@ const s2 = ({ role, onRoleSelect, sliderProps, abort }) => {
             class={classList(
               'value',
               role !== 'reseller' && 'no-bottom-border',
-              role === 'reseller' && 'active'
+              role === 'reseller' && 'active',
             )}
             onClick={() => {
               onRoleSelect('reseller');
@@ -30,15 +34,13 @@ const s2 = ({ role, onRoleSelect, sliderProps, abort }) => {
             class={classList(
               'value',
               role !== 'aggregator' && 'no-top-border',
-              role === 'aggregator' && 'active'
+              role === 'aggregator' && 'active',
             )}
             onClick={() => onRoleSelect('aggregator')}
           >
             <div style={{ flex: 9 }}>
               <p className="info info-grey">Refer & Manage Merchants</p>
-              <p>
-                Refer and manage the payment stack for your referred accounts
-              </p>
+              <p>Refer and manage the payment stack for your referred accounts</p>
             </div>
             <div className="check">
               <i class="i i-check" />

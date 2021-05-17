@@ -10,4 +10,10 @@ function triggerHotjarRecording(trigger, tags) {
   }
 }
 
-export { triggerHotjarRecording };
+function triggerHotjarHeatmap(trigger) {
+  if (window && typeof window.hj === 'function') {
+    window.hj('trigger', trigger);
+  }
+}
+
+export { triggerHotjarRecording, triggerHotjarHeatmap };

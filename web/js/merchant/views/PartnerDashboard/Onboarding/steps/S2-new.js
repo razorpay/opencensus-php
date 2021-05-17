@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { classList } from 'common/utils/rzp-utils';
 import SlideController from './SlideController';
 import PartnerSelectBox from './PartnerTypeSelector';
+import { triggerHotjarHeatmap } from 'common/utils/hotjar';
 
 const s2 = ({ role, onRoleSelect, sliderProps, abort, tracking, merchantId }) => {
   const handleNextClick = () => {
@@ -25,6 +26,7 @@ const s2 = ({ role, onRoleSelect, sliderProps, abort, tracking, merchantId }) =>
   useEffect(() => {
     const container = document.querySelector('.partner-onboarding-base-screen');
     container.classList.add('step-2');
+    triggerHotjarHeatmap('pure_platform_exposed_heatmap');
 
     return () => {
       container.classList.remove('step-2');

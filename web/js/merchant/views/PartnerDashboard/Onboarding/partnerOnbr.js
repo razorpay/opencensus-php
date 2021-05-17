@@ -13,6 +13,7 @@ import { connect } from 'react-redux';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { fireAnalyticsEvents } from 'common/utils/googleAnalytics';
+import { triggerHotjarRecording } from 'common/utils/hotjar';
 import { track } from './ga.js';
 import RTracking from 'react-tracking';
 
@@ -43,12 +44,15 @@ export default class BaseScreen extends React.Component {
 
   componentDidMount() {
     let defaultVariant = 'not_in_exp';
+    const variant = this.props.user.getPurePlatformExperimentVariant || defaultVariant;
     this.props.tracking.trackEvent(
       window.rzpQ.onbr().interaction('partnerships.pure_platform_signup', {
         merchantId: this.props.user.merchant.id,
-        variant: this.props.user.getPurePlatformExperimentVariant || defaultVariant,
+        variant: variant,
       }),
     );
+    const hotjarTag = `pure_platform_experiment_${variant}`;
+    triggerHotjarRecording('pure_platform_experiment', ['pure_platform_experiment', hotjarTag]);
   }
 
   onRoleSelect = (role) => {
@@ -121,7 +125,6 @@ export default class BaseScreen extends React.Component {
   };
 
   onCompleteClick = () => {
-    triggerHotjarRecording('partner_onboarding_success');
     fireAnalyticsEvents({
       fbData: 'partner_activation_complete',
       liData: 1668324,
@@ -141,7 +144,6 @@ export default class BaseScreen extends React.Component {
   };
 
   handleCloseClick = () => {
-    triggerHotjarRecording('partner_onboarding_cancelled');
     this.props.closeModal();
   };
 
@@ -212,12 +214,5 @@ export default class BaseScreen extends React.Component {
         )}
       </div>
     );
-  }
-}
-
-function triggerHotjarRecording(trigger) {
-  if (window && typeof window.hj === 'function') {
-    window.hj('trigger', trigger);
-    window.hj('tagRecording', [trigger]);
   }
 }
