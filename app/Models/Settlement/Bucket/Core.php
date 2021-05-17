@@ -462,7 +462,7 @@ class Core extends Base\Core
         $startTime = microtime(true);
 
         $batch = 0;
-        $batchSize = 10000;
+        $batchSize = 1000;
 
         $balance = $this->repo->balance->getMerchantBalanceByType($merchantId, $opt['balance_type']);
 

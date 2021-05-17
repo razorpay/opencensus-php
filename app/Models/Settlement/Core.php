@@ -41,6 +41,12 @@ class Core extends Base\Core
 
     const SETTLEMENT_FAILED_SMS_TEMPLATE = 'sms.settlements.failed';
 
+    const FTS = 'fts';
+    const PAYOUT = 'payout';
+
+    const DEFAULT_FTS_CHANNEL = Channel::ICICI;
+    const DEFAULT_PAYOUT_CHANNEL = Channel::AXIS;
+
     public function retrieveById($id)
     {
         Entity::verifyIdAndStripSign($id);
@@ -715,7 +721,7 @@ class Core extends Base\Core
         return $timestamp;
     }
 
-    public function MigrateMerchantConfiguration($merchantId, $mode)
+    public function MigrateMerchantConfiguration($merchantId, $via, $mode)
     {
         $merchant = $this->repo->merchant->fetchMerchantOnConnection($merchantId, $mode);
 
@@ -773,17 +779,23 @@ class Core extends Base\Core
                 $merchant->getHoldFundsReason() != null ? $merchant->getHoldFundsReason() : 'funds are on hold';
         }
 
-        $settlementServiceSupportedChannels = [
+        $payoutSupportedChannels = [
             Channel::AXIS,
-            Channel::CITI,
-            Channel::RBL,
-            Channel::ICICI,
             Channel::YESBANK,
         ];
 
-        if (in_array($merchant->getChannel(), $settlementServiceSupportedChannels) === true)
+        $ftsSupportedChannels = [
+            Channel::ICICI,
+        ];
+
+        if($via === self::FTS)
         {
-            $response['config']['preferences']['channel'] = strtoupper($merchant->getChannel());
+            $response['config']['preferences']['channel'] = (in_array($merchant->getChannel(), $ftsSupportedChannels) === true) ? strtoupper($merchant->getChannel()) : strtoupper(self::DEFAULT_FTS_CHANNEL);
+        }
+
+        if($via === self::PAYOUT)
+        {
+            $response['config']['preferences']['channel'] = (in_array($merchant->getChannel(), $payoutSupportedChannels) === true) ? strtoupper($merchant->getChannel()) : strtoupper(self::DEFAULT_PAYOUT_CHANNEL);
         }
 
         if (in_array($merchant->getId(), Preferences::ONLY_NEFT_SETTLEMENT_MIDS, true) === true)

@@ -181,7 +181,7 @@ class migration extends Job
                     {
                         try
                         {
-                            (new Core)->MigrateMerchantConfiguration($this->merchantId, Mode::LIVE);
+                            (new Core)->MigrateMerchantConfiguration($this->merchantId, $this->via, Mode::LIVE);
 
                             $migrationResult[self::SUCCESSFUL_STEPS][Mode::LIVE][self::MERCHANT_CONFIG_MIGRATION] = true;
                         }
@@ -194,7 +194,7 @@ class migration extends Job
 
                         try
                         {
-                            (new Core)->MigrateMerchantConfiguration($this->merchantId, Mode::TEST);
+                            (new Core)->MigrateMerchantConfiguration($this->merchantId, $this->via, Mode::TEST);
 
                             $migrationResult[self::SUCCESSFUL_STEPS][Mode::TEST][self::MERCHANT_CONFIG_MIGRATION] = true;
 
@@ -209,8 +209,6 @@ class migration extends Job
 
                     if($this->migrateBankAccount === true)
                     {
-                        $this->assignNewSettlementServiceFeaturePostMigration();
-
                         try
                         {
                             (new BankAccount)->MigrateBankAccountsToSettlementService($this->merchantId, $this->via, Mode::LIVE);
@@ -260,6 +258,8 @@ class migration extends Job
             {
                 try {
                         $balances = $this->repoManager->balance->getMerchantBalances($this->merchantId);
+
+                        $this->assignNewSettlementServiceFeaturePostMigration();
 
                         foreach ($balances as $balance)
                         {
