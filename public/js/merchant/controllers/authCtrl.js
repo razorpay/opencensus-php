@@ -527,7 +527,7 @@ app
         let isLandingPageSession = false;
         try {
           commonSessionId = sessionStorage.getItem('commonSessionId');
-          const commonSessionIdCookie = getCookie(commonSessionId);
+          const commonSessionIdCookie = getCookie('commonSessionId');
           // session starts from website
           // means document.referrer is https://razorpay.com
           // or www.razorpay.com
