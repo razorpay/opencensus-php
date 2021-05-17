@@ -3116,6 +3116,18 @@ class BankingAccountTest extends TestCase
 
     }
 
+    public function testCreateBankingAccountWithRestrictionExcludedForLMS()
+    {
+        $this->ba->adminAuth();
+
+        Mail::fake();
+
+        $this->startTest();
+
+        Mail::assertQueued(XProActivation::class);
+
+    }
+
     public function testCreateActivationDetail(array $input = null, RZP\Models\BankingAccount\Entity $bankingAccount=null)
     {
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();

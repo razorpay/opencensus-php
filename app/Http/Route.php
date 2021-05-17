@@ -2554,6 +2554,15 @@ class Route
     ];
 
     /**
+     * Routes for which merchant access check is skipped, mainly CA LMS routes, as lots
+     * of cross selling is done for CA, need to skip this check so CA Initiation form can be raised
+     * @var array
+     */
+    public static $skipMerchantAccessCheckOnSpecificAdminAuthRoutes = [
+        'banking_account_create_admin'
+    ];
+
+    /**
      * Routes which are supposed to always render a view and not JSON(Api like behavior)
      * @var array
      */

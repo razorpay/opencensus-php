@@ -272,20 +272,15 @@ class AdminAccess
 
         $policyPassed = $this->checkPermissionAllowed($permission, $adminPermissions, $routeName);
 
-        if ($policyPassed === true)
+        if ($policyPassed === true && $merchant)
         {
-            if ($merchant)
+            //This skips the check where we validate admin has access to merchant or not. This was added to
+            // allow a sales spoc to initiate CA onboarding for all merchants on LMS (even if they don’t have
+            // access to them). For almost all admin routes below negative check will pass, because they won’t
+            // be present in the skipMerchantAccessCheckOnSpecificAdminAuthRoutes
+            if(in_array($routeName, Route::$skipMerchantAccessCheckOnSpecificAdminAuthRoutes, true) === false)
             {
-                $hasMerchantAccess = (new Admin\Group\Core)->groupCheck($admin, $merchant);
-
-                if ($hasMerchantAccess)
-                {
-                    $policyPassed = true;
-                }
-                else
-                {
-                    $policyPassed = false;
-                }
+                $policyPassed = (new Admin\Group\Core)->groupCheck($admin, $merchant);
             }
         }
 

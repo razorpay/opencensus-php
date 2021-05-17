@@ -44,6 +44,28 @@ return [
         ],
     ],
 
+    'testCreateBankingAccountWithRestrictionExcludedForLMS' => [
+        'request'  => [
+            'url'     => '/banking_accounts_admin',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [
+                'channel' => 'rbl',
+                'pincode' => '560034',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'channel'         => 'rbl',
+                'status'          => 'created',
+                'pincode'         => '560034',
+                'account_type'    => 'current'
+            ],
+        ],
+    ],
+
     'testCreateBankingAccountWithActivationDetail' => [
         'request'  => [
             'url'     => '/banking_accounts_admin',
