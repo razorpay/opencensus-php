@@ -4,6 +4,7 @@ import RootList from './components/RootList';
 import IntermediateList from './components/IntermediateList';
 import LeafList from './components/LeafList';
 import Spinner from 'common/ui/Spinner';
+import Banner from 'common/ui/Banner';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
@@ -48,49 +49,53 @@ const PaymentMethod = ({
     return;
   };
 
+  const isActivatedUser = window.rzp_user.activation_status === 'activated';
+
   return loading ? (
     <div class="page-spinner-container">
       <Spinner />
     </div>
   ) : (
-    <div class="content-wrapper" id="settings-payment-methods">
-      <div class="panel-heading">
-        <span class="title">Manage Payment Methods </span>
-        &nbsp;
-        <span class="toggler-btn">
-          <a
-            href="https://razorpay.com/docs/payment-gateway/dashboard-guide/settings/payment-methods/"
-            target="_blank"
-            rel="noreferrer"
-            onClick={() =>
-              analyticsTrack({
-                objectName: 'know more',
-                actionName: 'clicked',
-                screen: 'settings',
-                properties: {
-                  location: 'Payment Methods',
-                  ...getCommonAnalyticsProperties(window.rzp_user),
-                },
-              })
-            }
-          >
-            Know More <i class="i i-external-link" style={{ marginLeft: '5px' }} />
-          </a>
-        </span>
-        <div style={{ marginTop: '5px', marginBottom: '20px' }}>
-          We offer a host of payment methods. Some of them are available by default, while others
-          require approval. Raise a request directly from here to enable such payment methods.
-        </div>
-        {/* list view starts*/}
-        <div class="methods-view">
-          <RootList />
-          {intermediateInstrument && Array.isArray(intermediateInstrument.intermediateList) && (
-            <IntermediateList instrument={intermediateInstrument} />
-          )}
-          <LeafList />
+    <>
+      <div class="content-wrapper" id="settings-payment-methods">
+        <div class="panel-heading">
+          <span class="title">Manage Payment Methods </span>
+          &nbsp;
+          <span class="toggler-btn">
+            <a
+              href="https://razorpay.com/docs/payment-gateway/dashboard-guide/settings/payment-methods/"
+              target="_blank"
+              rel="noreferrer"
+              onClick={() =>
+                analyticsTrack({
+                  objectName: 'know more',
+                  actionName: 'clicked',
+                  screen: 'settings',
+                  properties: {
+                    location: 'Payment Methods',
+                    ...getCommonAnalyticsProperties(window.rzp_user),
+                  },
+                })
+              }
+            >
+              Know More <i class="i i-external-link" style={{ marginLeft: '5px' }} />
+            </a>
+          </span>
+          <div style={{ marginTop: '5px', marginBottom: '20px' }}>
+            We offer a host of payment methods. Some of them are available by default, while others
+            require approval. Raise a request directly from here to enable such payment methods.
+          </div>
+          {/* list view starts*/}
+          <div class="methods-view">
+            <RootList />
+            {intermediateInstrument && Array.isArray(intermediateInstrument.intermediateList) && (
+              <IntermediateList instrument={intermediateInstrument} />
+            )}
+            <LeafList />
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

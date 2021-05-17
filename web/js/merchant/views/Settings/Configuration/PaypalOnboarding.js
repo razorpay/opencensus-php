@@ -102,6 +102,7 @@ export default class PaypalOnboardingButton extends Component {
   render() {
     let status = this.props.terminals.length && this.props.terminals[0].status;
     let showStatus = ['created', 'activated', 'rejected', 'pending'].indexOf(status) !== -1;
+    let { disabled, disabledText } = this.props;
     return (
       <React.Fragment>
         {showStatus ? (
@@ -145,21 +146,31 @@ export default class PaypalOnboardingButton extends Component {
             </span>{' '}
           </span>
         ) : null}
+
         {status === 'requested' || this.props.terminals.length === 0 ? (
-          <button
-            disabled={this.state.loading}
-            onClick={this.verifyAccount}
-            class="btn btn-primary paypal-onboard-button"
-          >
-            {' '}
-            {this.props.showLogo && (
-              <img
-                class="paypal-onboard-img"
-                src="https://cdn.razorpay.com/static/assets/paypal.svg"
-              />
+          <>
+            <button
+              disabled={this.state.loading || disabled}
+              onClick={this.verifyAccount}
+              class="btn btn-primary paypal-onboard-button"
+            >
+              {' '}
+              {this.props.showLogo && (
+                <img
+                  class="paypal-onboard-img"
+                  src="https://cdn.razorpay.com/static/assets/paypal.svg"
+                />
+              )}
+              {this.state.loading ? 'Processing..' : 'Link Account'}
+            </button>
+            {disabled && (
+              <Popover align="right" theme="dark">
+                <PopoverBody>
+                  <div style={{ textAlign: 'left', textTransform: 'none' }}>{disabledText}</div>
+                </PopoverBody>
+              </Popover>
             )}
-            {this.state.loading ? 'Processing..' : 'Link Account'}
-          </button>
+          </>
         ) : null}
       </React.Fragment>
     );

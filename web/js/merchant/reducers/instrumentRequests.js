@@ -887,6 +887,9 @@ export default function (state = initialState, action) {
         if (['action_required', 'rejected'].includes(s.status)) {
           lodashset(stateClone, `${path}.comment`, s.comment);
         }
+        if (s.status === 'greyed') {
+          lodashset(stateClone, `${path}.fade_comment`, s.fade_comment);
+        }
       });
       lodashset(stateClone, 'intermediateInstrument', null);
       lodashset(stateClone, 'leafInstrument', null);

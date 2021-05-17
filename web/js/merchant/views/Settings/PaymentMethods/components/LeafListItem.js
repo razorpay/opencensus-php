@@ -28,6 +28,7 @@ import {
   REJECTED,
   REQUESTABLE,
   CANCELLED,
+  GREYED,
 } from '../constants';
 
 class LeafListItem extends React.Component {
@@ -297,11 +298,13 @@ class LeafListItem extends React.Component {
       Request: 'btn btn-primary',
       account_linkable: 'btn btn-primary',
       requestable: 'btn btn-primary',
+      cancelled: 'btn btn-primary',
       activated: 'activated status',
       requested: 'requested status',
       pending: 'pending status',
       rejected: 'rejected status',
       action_required: 'action-required status',
+      greyed: 'btn btn-primary disabled',
     };
 
     let getListClass = (status, path) => {
@@ -310,6 +313,8 @@ class LeafListItem extends React.Component {
         (path === 'pg.cards.domestic.amex' && status === REQUESTABLE)
       ) {
         return 'action-required-list-item';
+      } else if (status === GREYED) {
+        return 'list-item-disabled';
       } else if ((status === ACTIVATED && path === 'pg.wallet.paytm') || status === REQUESTED) {
         return 'list-item-has-description';
       } else if (instrument.path === 'pg.upi.google_pay') {
@@ -395,6 +400,7 @@ class LeafListItem extends React.Component {
               REJECTED,
               ACTION_REQUIRED,
               REQUESTABLE,
+              GREYED,
               ACCOUNT_LINKABLE,
               CANCELLED,
             ].includes(instrument.status) && (
@@ -442,18 +448,31 @@ class LeafListItem extends React.Component {
                 </button>
               </div>
             )}
-            {(isAmex || [REQUESTABLE, CANCELLED].includes(instrument.status)) && (
+            {(isAmex || [REQUESTABLE, CANCELLED, GREYED].includes(instrument.status)) && (
               <div className="flex-end">
                 <button
-                  class="btn btn-primary ml-5"
-                  disabled={this.state.loading || instrument.path === 'pg.cards.domestic.amex'}
+                  class={`${ctaClass[instrument.status]} ml-5`}
+                  disabled={
+                    this.state.loading ||
+                    instrument.path === 'pg.cards.domestic.amex' ||
+                    instrument.status === GREYED
+                  }
                   onClick={this.handleCreateRequest}
                 >
                   {this.state.loading ? 'Requesting..' : 'Request'}
                 </button>
+                {instrument.status === GREYED && (
+                  <Popover align="bottom" theme="dark">
+                    <PopoverBody>
+                      <div style={{ textAlign: 'left', textTransform: 'none' }}>
+                        {instrument.fade_comment}
+                      </div>
+                    </PopoverBody>
+                  </Popover>
+                )}
               </div>
             )}
-            {![REQUESTABLE, CANCELLED, ACCOUNT_LINKABLE].includes(instrument.status) &&
+            {![REQUESTABLE, CANCELLED, GREYED, ACCOUNT_LINKABLE].includes(instrument.status) &&
               instrument.path !== 'pg.wallet.paytm' && (
                 <div className="flex-end">
                   <div class={ctaClass[instrument.status]}>
