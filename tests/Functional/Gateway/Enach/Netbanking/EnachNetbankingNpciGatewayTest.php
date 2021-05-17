@@ -68,8 +68,6 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
     public function testPayment()
     {
-        $this->fixtures->merchant->addFeatures([Feature\Constants::NPCI_SPID]);
-
         $paymentInput                 = $this->getEmandatePaymentArray('SBIN', 'netbanking', 0);
 
         $paymentInput['bank_account'] = [
@@ -103,8 +101,6 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertEquals($token['gateway_token'], $enach['umrn']);
         $this->assertEquals($token['account_type'], $paymentInput['bank_account']['account_type']);
         $this->assertNull($token['expired_at']);
-
-        $this->fixtures->merchant->removeFeatures([Feature\Constants::NPCI_SPID]);
     }
 
     public function testRegistrationOrderForDebitOnlyBank()

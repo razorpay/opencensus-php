@@ -7,7 +7,6 @@ use Carbon\Carbon;
 use RZP\Gateway\Base;
 use RZP\Constants\HashAlgo;
 use RZP\Constants\Timezone;
-use RZP\Models\Feature\Constants as Feature;
 use RZP\Gateway\Enach\Npci\Netbanking\Crypto;
 use RZP\Gateway\Enach\Npci\Netbanking\RequestFields;
 use RZP\Gateway\Enach\Npci\Netbanking\ResponseType;
@@ -24,15 +23,7 @@ class Server extends Base\Mock\Server
 
     public function authorize($input)
     {
-        if ((isset($this->merchant) === true) and
-            ($this->merchant->isFeatureEnabled(Feature::NPCI_SPID) === true))
-        {
-            $this->validateActionInput($input, 'auth_spid');
-        }
-        else
-        {
-            $this->validateActionInput($input, 'auth');
-        }
+        $this->validateActionInput($input, 'auth');
 
         $this->setCryptoAttributes();
 
