@@ -7,6 +7,7 @@ class AccountType
     const NODAL   = 'nodal';
     const SAVINGS = 'savings';
     const CURRENT = 'current';
+    const DIRECT  = 'direct';
 
     public static function isValid(string $type): bool
     {

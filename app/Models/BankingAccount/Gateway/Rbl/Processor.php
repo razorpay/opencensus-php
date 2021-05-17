@@ -243,9 +243,10 @@ class Processor extends BankingAccount\Gateway\Processor
         $mozartIdentifier = $rblConfig[Fields::MOZART_IDENTIFIER];
 
         $body = [
-            FTS\Constants::CREDENTIALS       => $credentials,
-            FTS\Constants::MOZART_IDENTIFIER => $mozartIdentifier,
-            FTS\Constants::CONFIGURATION     => $config,
+            FTS\Constants::CREDENTIALS                      => $credentials,
+            FTS\Constants::MOZART_IDENTIFIER                => $mozartIdentifier,
+            FTS\Constants::CONFIGURATION                    => $config,
+            FTS\Constants::SOURCE_ACCOUNT_TYPE_IDENTIFIER   => BankingAccount\AccountType::DIRECT,
         ];
 
         return $body;
