@@ -72,7 +72,8 @@ class Repository extends Base\Repository
     {
         $query = $this->newQueryWithConnection($this->getSlaveConnection())
             ->where(Entity::MERCHANT_ID, '=', $merchantId)
-            ->whereIn(Entity::STATUS, [Entity::LIVE, Entity::QUEUE, Entity::AVAILABLE]);
+            ->whereIn(Entity::STATUS, [Entity::LIVE, Entity::QUEUE, Entity::AVAILABLE])
+            ->orderBy(Entity::CREATED_AT, 'desc');
 
 
         return $query->get();
