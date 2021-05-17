@@ -12,8 +12,20 @@ use RZP\Models\VirtualAccount;
  */
 class Entity extends Base\PublicEntity
 {
+    protected $payment;
+
     public function getMethod()
     {
         return Payment\Method::UPI;
+    }
+
+    public function getPayment()
+    {
+        return $this->payment;
+    }
+
+    public function setPayment($payment)
+    {
+        $this->payment = $payment;
     }
 }

@@ -96,14 +96,33 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FAILURE_REASON, $failureReason);
     }
 
-    public function setCreated($qrPaymentEntity)
+    public function setFailureReasonIfNotSet($failureReason)
     {
-        if ($qrPaymentEntity === null)
+        if ($this->getAttribute(self::FAILURE_REASON) === null)
         {
-            return;
+            $this->setFailureReason($failureReason);
         }
+    }
 
-        $this->setAttribute(self::IS_CREATED, $qrPaymentEntity->payment !== null);
+    public function setCreatedIfNotSet($qrPaymentEntity)
+    {
+        if ($this->getAttribute(self::IS_CREATED) === null)
+        {
+            $this->setCreated($qrPaymentEntity);
+        }
+    }
+
+    public function setCreated(bool $isCreated)
+    {
+        $this->setAttribute(self::IS_CREATED, $isCreated);
+    }
+
+    public function setExpectedIfNotSet($isExpected)
+    {
+        if ($this->getAttribute(self::EXPECTED) === null)
+        {
+            $this->setExpected($isExpected);
+        }
     }
 
     public function setExpected($isExpected)

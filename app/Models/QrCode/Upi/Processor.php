@@ -15,6 +15,8 @@ use RZP\Models\VirtualAccount;
 use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\GatewayErrorException;
+use RZP\Models\QrPaymentRequest\Type as QrType;
+use RZP\Models\QrPaymentRequest\Service as QrPaymentRequestService;
 
 class Processor extends VirtualAccount\Processor
 {
@@ -51,7 +53,10 @@ class Processor extends VirtualAccount\Processor
      */
     private $isPaymentPendingAtGateway = false;
 
-    public function __construct(array $input, string $referenceId, array $data, Terminal\Entity $terminal)
+    private $qrPaymentRequest;
+
+    public function __construct(array $input, string $referenceId, array $data, Terminal\Entity $terminal,
+                                $qrPaymentRequest)
     {
         parent::__construct();
 
@@ -62,6 +67,8 @@ class Processor extends VirtualAccount\Processor
         $this->data = $data;
 
         $this->terminal = $terminal;
+
+        $this->qrPaymentRequest = $qrPaymentRequest;
     }
 
     public function process(Base\PublicEntity $entity)
@@ -94,6 +101,11 @@ class Processor extends VirtualAccount\Processor
 
             // Since it is going to be on shared merchant
             $this->shouldCapturePayment = false;
+
+            if ($this->qrPaymentRequest !== null)
+            {
+                $this->qrPaymentRequest->setExpected(false);
+            }
         }
 
         $payment = $this->repo->transaction(
@@ -118,6 +130,8 @@ class Processor extends VirtualAccount\Processor
         {
             $paymentProcessor->autoCapturePayment($payment);
         }
+
+        $entity->setPayment($payment);
 
         return $entity;
     }
@@ -206,6 +220,14 @@ class Processor extends VirtualAccount\Processor
         return parent::useSharedVirtualAccount($entity);
     }
 
+    protected function setUnexpectedReason(Base\PublicEntity $entity, string $unexpectedReason)
+    {
+        if ($this->qrPaymentRequest !== null)
+        {
+            $this->qrPaymentRequest->setFailureReasonIfNotSet($unexpectedReason);
+        }
+    }
+
     protected function getReceiver()
     {
         return $this->virtualAccount->qrCode;
@@ -256,6 +278,9 @@ class Processor extends VirtualAccount\Processor
         // TODO: We need to change the authorizePushPayment implementation
         catch (BadRequestException $exception)
         {
+            (new QrPaymentRequestService())->update($this->qrPaymentRequest, true, null,
+                                                    $exception->getMessage(), QrType::UPI_QR);
+
             return false;
         }
     }

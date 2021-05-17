@@ -163,6 +163,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EXPECTED);
     }
 
+    public function getPaymentId()
+    {
+        return $this->getAttribute(self::PAYMENT_ID);
+    }
+
     public function toArrayTrace(): array
     {
         $data = $this->toArray();

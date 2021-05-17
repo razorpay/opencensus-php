@@ -10,6 +10,7 @@ use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
+use RZP\Models\QrPaymentRequest;
 
 class Service extends Base\Service
 {
@@ -28,8 +29,26 @@ class Service extends Base\Service
 
         $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $data['terminal']);
 
-        $response = (new Core)->processPayment($input, $referenceId, $data, $terminal);
+        $qrPaymentRequest = (new QrPaymentRequest\Service())->create($this->getGatewayReponse($input),
+                                                                     QrPaymentRequest\Type::UPI_QR);
+
+        $response = (new Core)->processPayment($input, $referenceId, $data, $terminal, $qrPaymentRequest);
 
         return $response;
     }
+
+    private function getGatewayReponse($input)
+    {
+        $gatewayResponse = [];
+
+        $gatewayResponse['qr_data'] = [
+            QrPaymentRequest\Entity::QR_CODE_ID            => $input['payment_id'],
+            QrPaymentRequest\Entity::TRANSACTION_REFERENCE => $input['npci_upi_txn_id']
+        ];
+
+        $gatewayResponse['callback_data'] = $input;
+
+        return $gatewayResponse;
+    }
+
 }

@@ -288,6 +288,25 @@ class MindgateVirtualAccountTest extends TestCase
                 Entity::AMOUNT_PAID     => 12388,
             ],
             $this->va->toArray());
+
+        $this->runQrPaymentRequestAssertions(true, true,'910000123456', null, $upi->getId());
+    }
+
+    protected function runQrPaymentRequestAssertions(bool $isCreated, $expected, string $transactionReference, $errorMessage = null,
+                                                     $upiId = null)
+    {
+        $qrPaymentRequest = $this->getDbLastEntity('qr_payment_request');
+
+        $this->assertNotNull($qrPaymentRequest['request_payload']);
+        $this->assertNull($qrPaymentRequest['bharat_qr_id']);
+        $this->assertEquals($isCreated, $qrPaymentRequest['is_created']);
+        $this->assertEquals($expected, $qrPaymentRequest['expected']);
+        $this->assertEquals($upiId, $qrPaymentRequest['upi_id']);
+        if ($errorMessage !== null)
+        {
+            $this->assertNotNull($qrPaymentRequest['failure_reason']);
+        }
+        $this->assertEquals($transactionReference, $qrPaymentRequest['transaction_reference']);
     }
 
     public function testFailureCallback()
@@ -347,6 +366,8 @@ class MindgateVirtualAccountTest extends TestCase
                 Entity::AMOUNT_PAID     => 0,
             ],
             $this->va->toArray());
+
+        $this->runQrPaymentRequestAssertions(false, true, '910000123456', 'Gateway Error', null);
     }
 
     public function testPendingCallback()
@@ -441,6 +462,9 @@ class MindgateVirtualAccountTest extends TestCase
 
         $this->va->refresh();
 
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->runQrPaymentRequestAssertions(true, false, '910000123456', null, $upi->getId());
     }
 
     public function testAmountMismatchOnCallback()
@@ -536,6 +560,11 @@ class MindgateVirtualAccountTest extends TestCase
                 Entity::AMOUNT_RECEIVED => 12288,
                 Entity::AMOUNT_PAID     => 12288,
             ], $qrCode->source->toArray());
+
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->runQrPaymentRequestAssertions(true, false,'910000123456', null, $upi->getId());
     }
 
     public function testCloseByOnCallback()
@@ -634,6 +663,10 @@ class MindgateVirtualAccountTest extends TestCase
                 Entity::AMOUNT_RECEIVED => 12388,
                 Entity::AMOUNT_PAID     => 12388,
             ], $qrCode->source->toArray());
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->runQrPaymentRequestAssertions(true, false,'910000123456', null, $upi->getId());
     }
 
     public function testClosedOnCallback()
@@ -735,6 +768,10 @@ class MindgateVirtualAccountTest extends TestCase
                 Entity::AMOUNT_RECEIVED => 12388,
                 Entity::AMOUNT_PAID     => 12388,
             ], $qrCode->source->toArray());
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->runQrPaymentRequestAssertions(true, false, '910000123456', null, $upi->getId());
     }
 
     public function testDuplicateOnCallback()

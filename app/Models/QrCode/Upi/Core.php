@@ -8,7 +8,10 @@ use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\VirtualAccount;
+use RZP\Models\QrPaymentRequest;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\QrPaymentRequest\Type as QrType;
+use RZP\Models\QrPaymentRequest\Service as QrPaymentRequestService;
 
 class Core extends Base\Core
 {
@@ -22,20 +25,23 @@ class Core extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
-    public function processPayment(array $input, string $referenceId, array $data, Terminal\Entity $terminal)
+    public function processPayment(array $input, string $referenceId, array $data, Terminal\Entity $terminal,
+                                   $qrPaymentRequest = null)
     {
         // We can build the entity with data['upi_qr'],
         // Upi Qr Entities are always expected by definition
         $errorMessage = null;
+        $payment = null;
+        $upi = null;
 
         try
         {
             $upiQr = (new Entity);
 
-            $processor = new Processor($input, $referenceId, $data, $terminal);
+            $processor = new Processor($input, $referenceId, $data, $terminal, $qrPaymentRequest);
 
-            $this->mutex->acquireAndRelease($referenceId,
-                function() use ($processor, $upiQr) 
+            $upiQr = $this->mutex->acquireAndRelease($referenceId,
+                function() use ($processor, $upiQr)
                 {
                     $upiQr = $processor->process($upiQr);
 
@@ -68,10 +74,17 @@ class Core extends Base\Core
         }
         finally
         {
+            if ($upiQr !== null and $upiQr->getPayment() !== null)
+            {
+                $upi = $this->repo->upi->fetchByPaymentId($upiQr->getPayment()->getId());
+            }
+
+            (new QrPaymentRequestService())->update($qrPaymentRequest, true, $upi, $errorMessage, QrType::UPI_QR);
+
             // is expected is always true here, as the callback reaches this point only if it was expected, otherwise
             // the GatewayController would forward to create unexpected payment
-            (new VirtualAccount\Metric())->pushPaymentMetrics('upi_qr', true, $valid,
-                                                              $terminal->getGateway(), $errorMessage);
+            (new VirtualAccount\Metric())->pushPaymentMetrics(QrType::UPI_QR, true, $valid, $terminal->getGateway(),
+                                                              $errorMessage);
         }
 
         return $valid;

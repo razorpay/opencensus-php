@@ -33,11 +33,12 @@ class Service extends Base\Service
                 Trace::ERROR,
                 TraceCode::QR_PAYMENT_SAVE_REQUEST_FAILED,
                 [
-                    Entity::QR_CODE_ID => $gatewayResponse['qr_data']['merchant_reference'],
+                    Entity::QR_CODE_ID            => $input[Entity::QR_CODE_ID],
+                    Entity::TRANSACTION_REFERENCE => $input[Entity::TRANSACTION_REFERENCE]
                 ]
             );
         }
-        
+
         return null;
     }
 
@@ -57,13 +58,16 @@ class Service extends Base\Service
 
         try
         {
-            $qrPaymentRequest->setExpected($isExpected);
+            $qrPaymentRequest->setExpectedIfNotSet($isExpected);
 
-            $qrPaymentRequest->setFailureReason($errorMessage);
+            $qrPaymentRequest->setFailureReasonIfNotSet($errorMessage);
+
+            if ($qrPaymentEntity !== null)
+            {
+                $qrPaymentRequest->setCreated($qrPaymentEntity->getPaymentId() !== null);
+            }
 
             $qrPaymentRequest->setQrPaymentEntity($qrPaymentEntity, $type);
-
-            $qrPaymentRequest->setCreated($qrPaymentEntity);
 
             $this->core->update($qrPaymentRequest);
         }
@@ -89,6 +93,11 @@ class Service extends Base\Service
             case Type::BHARAT_QR:
                 $input[Entity::QR_CODE_ID]            = $qrData['merchant_reference'];
                 $input[Entity::TRANSACTION_REFERENCE] = $qrData['provider_reference_id'];
+                break;
+
+            case Type::UPI_QR:
+                $input[Entity::QR_CODE_ID]            = $qrData[Entity::QR_CODE_ID];
+                $input[Entity::TRANSACTION_REFERENCE] = $qrData[Entity::TRANSACTION_REFERENCE];
                 break;
 
             default:

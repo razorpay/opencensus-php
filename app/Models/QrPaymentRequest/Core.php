@@ -33,6 +33,8 @@ class Core extends Base\Core
 
         $qrPaymentRequest->findAndSetRequestSource();
 
+        $qrPaymentRequest->setCreated(false);
+
         $qrPaymentRequest->build($input);
 
         $this->repo->saveOrFail($qrPaymentRequest);
