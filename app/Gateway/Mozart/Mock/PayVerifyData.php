@@ -501,6 +501,14 @@ class PayVerifyData extends Base\Mock\Server
         }
     }
 
+    public function payu($entities)
+    {
+        if ($this->isV2Mock($entities['payment']['description']))
+        {
+            return $this->upiMozartV2($entities);
+        }
+    }
+
     public function cred($entities)
     {
         $response = [

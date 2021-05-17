@@ -46,21 +46,6 @@ class UpiPayuGatewayTest extends TestCase
         $this->markTestSkipped('Skipping Not implemented right now will remove once implement');
     }
 
-    public function testUpiCollectPaymentSuccess()
-    {
-        $this->markTestSkipped('Skipping Not implemented right now will remove once implement');
-    }
-
-    public function testUpiPaymentCallbackFailed()
-    {
-        $this->markTestSkipped('Skipping Not implemented right now will remove once implement');
-    }
-
-    public function testCallbackAmountMismatch()
-    {
-        $this->markTestSkipped('Skipping Not implemented right now will remove once implement');
-    }
-
     public function testUpiVerifyPayment()
     {
         $this->markTestSkipped('Skipping Not implemented right now will remove once implement');
