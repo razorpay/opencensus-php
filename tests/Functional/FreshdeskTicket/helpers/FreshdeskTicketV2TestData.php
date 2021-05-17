@@ -290,6 +290,27 @@ return [
         ],
     ],
 
+    'testCreateTicketRzpCap' => [
+        'request' => [
+            'url'     => '/fd/support_dashboard/ticket/',
+            'method'  => 'POST',
+            'content' => [
+                'description'   => 'ticket description',
+                'subject'       => 'ticket subject',
+                'cc_emails'     => ['a@b.com'],
+                'custom_fields' => [
+                    'cf_requestor_subcategory'       => 'Cash Advance',
+                    'cf_requestor_category'          => 'Merchant',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'description'  => 'ticket description',
+            ],
+        ],
+    ],
+
     'testCreateTicketRzpX' => [
         'request' => [
             'url'     => '/fd/support_dashboard_x/ticket/',

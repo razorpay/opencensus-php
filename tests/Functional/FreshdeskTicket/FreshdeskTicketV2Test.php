@@ -352,6 +352,50 @@ class FreshdeskTicketV2Test extends TestCase
         $this->assertEquals($response['id'], $ticket['id']);
 
         $this->assertEquals('rzpsol', $fdInstance);
+    }
+
+    public function testCreateTicketRzpCap()
+    {
+        $frDueBy = time() + self::DAY * 2;
+
+        $frDueByFreshdeskFormat = $this->getTimeInFreshdeskFormat($frDueBy);
+
+        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST','rzpcap',
+            [
+                'description' => 'ticket description',
+                'subject' => 'ticket subject',
+                'cc_emails' => ['a@b.com', 'merchantuser01@razorpay.com'],
+                'custom_fields' => [
+                    'cf_requestor_subcategory'    =>  'Cash Advance',
+                    'cf_requestor_category'       =>  'Merchant',
+                    'cf_merchant_id_dashboard'    =>  'merchant_dashboard_10000000000000',
+                ],
+            ],
+            [
+                'id'            => '99',
+                'description'   => 'ticket description',
+                'fr_due_by'     => $frDueByFreshdeskFormat,
+                'custom_fields' => [
+                    'cf_requester_category'    => 'Merchant',
+                    'cf_requestor_subcategory' => 'Cash Advance',
+                    'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                ],
+                'priority' =>  1,
+            ]);
+
+        $response = $this->startTest();
+
+        $ticket = $this->getLastEntity('merchant_freshdesk_tickets', true);
+
+        $fdInstance = $ticket['ticket_details']['fd_instance'];
+
+        $this->assertNotEquals('razorpayid0012', $ticket['id']);
+
+        $this->assertNotEquals('99', $response['id']);
+
+        $this->assertEquals($ticket['id'], $response['id']);
+
+        $this->assertEquals('rzpcap', $fdInstance);
 
     }
 
@@ -807,10 +851,13 @@ class FreshdeskTicketV2Test extends TestCase
 
         $expectedUrlx = $this->app['config']->get('applications.freshdesk.urlx') . '/' . $expectedPath;
 
+        $expectedUrlCap = $this->app['config']->get('applications.freshdesk.urlcap') . '/' . $expectedPath;
+
         $expectedUrls = [
             'rzp'       => $expectedUrl1,
             'rzpsol'    => $expectedUrl2,
-            'rzpx'      => $expectedUrlx
+            'rzpx'      => $expectedUrlx,
+            'rzpcap'    => $expectedUrlCap
         ];
 
         $this->freshdeskClientMock

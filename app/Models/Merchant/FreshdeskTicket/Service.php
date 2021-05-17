@@ -39,10 +39,14 @@ class Service extends Base\Service
     const FRESHDESK_INSTANCES = [
         Type::SUPPORT_DASHBOARD_X => [Constants::RZPX   => Constants::URLX],
         Type::SUPPORT_DASHBOARD   => [Constants::RZP    => Constants::URL,
-                                      Constants::RZPSOL => Constants::URL2]
+                                      Constants::RZPSOL => Constants::URL2,
+                                      Constants::RZPCAP => Constants::URLCAP]
     ];
 
-    const TECH_SUBCATEGORIES = ['Technical support', 'Integrations'];
+    const FD_INSTANCE_VS_SUBCATEGORIES = [
+        Constants::RZPSOL => ['Technical support', 'Integrations'],
+        Constants::RZPCAP => ['Instant Settlements', 'Cash Advance', 'Working Capital Loan'],
+    ];
 
     public function getTicketStatus(array $response)
     {
@@ -291,7 +295,7 @@ class Service extends Base\Service
 
         (new Validator)->validateInput('create_' . studly_case($type) . '_ticket', $input);
 
-        $fdInstance = $this->getFdInstanceFromType($type, $input);
+        $fdInstance = $this->getFdInstanceFromTypeAndInput($type, $input);
 
         $input = $this->appendUserEmailToCCEmails($input);
 
@@ -460,7 +464,7 @@ class Service extends Base\Service
 
         $ticket = $this->app[Constants::FRESHDESK_CLIENT]->updateTicketV2($ticketEntity->getTicketId(), $data, $url);
 
-        $this->validateGrievanceResponse($ticket, $input['description']);
+        $this->validateGrievanceResponse($ticket);
 
 
         $replyRequest[Constants::BODY] = $input[Constants::DESCRIPTION];
@@ -675,7 +679,7 @@ class Service extends Base\Service
         $input = array_merge($input, self::STATUS_FIELDS);
     }
 
-    protected function getFdInstanceFromType($type, array &$input)
+    protected function getFdInstanceFromTypeAndInput($type, array &$input)
     {
         if($type === Type::SUPPORT_DASHBOARD_X) return Constants::RZPX;
         return $this->getFdInstance($input);
@@ -685,16 +689,24 @@ class Service extends Base\Service
     {
         $fdInstance = $input[Constants::FD_INSTANCE] ?? Constants::RZP;
 
-        if ((isset($input[Constants::CUSTOM_FIELDS]) === true) and
-            (isset($input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY]) === true))
+        if (isset($input[Constants::CUSTOM_FIELDS]) === true)
         {
-            $subCategory = $input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY];
-
-            if (in_array($subCategory, self::TECH_SUBCATEGORIES) === true)
+            if (isset($input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY]) === true)
             {
-                $fdInstance = Constants::RZPSOL;
+                $subCategory = $input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY];
 
-                unset($input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY]);
+                foreach (self::FD_INSTANCE_VS_SUBCATEGORIES as $fdInstanceForSubcategories => $subcategories)
+                {
+                    if (in_array($subCategory, $subcategories) === true)
+                    {
+                        $fdInstance = $fdInstanceForSubcategories;
+                    }
+                }
+
+                if($fdInstance === Constants::RZPSOL)
+                {
+                    unset($input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY]);
+                }
             }
         }
 
@@ -1024,7 +1036,7 @@ class Service extends Base\Service
 
         $category = $customFields[Constants::CF_REQUESTOR_SUBCATEGORY];
 
-        return (in_array($category, self::TECH_SUBCATEGORIES, true) === true);
+        return (in_array($category, self::FD_INSTANCE_VS_SUBCATEGORIES[Constants::RZPSOL], true) === true);
     }
 
     protected function getGroupIdFromRzpSolutionsTicketInput($input)

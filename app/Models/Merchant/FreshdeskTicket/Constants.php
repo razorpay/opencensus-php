@@ -68,7 +68,9 @@ class Constants
     const URL    = 'url';
     const RZP    = 'rzp';
     const URL2   = 'url2';
+    const URLCAP = 'urlcap';
     const RZPSOL = 'rzpsol';
+    const RZPCAP = 'rzpcap';
     const RZPX   = 'rzpx';
     const URLX   = 'urlx';
 
