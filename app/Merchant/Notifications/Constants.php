@@ -28,6 +28,40 @@ class Constants
             ],
         ],
         [
+            'title'       => 'Settlements on Hold',
+            'description' => 'Settlements on Hold: Your settlements are on hold due to regulatory requirements. Please provide clarification on the email received on your registered email to resolve the issue',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/rtb_announcement.svg',
+            'track_event' => true,
+            'id'          => 'bulk-risk-action-merchant-FOH',
+            'filters'     => [
+                'tags' => ["bulk_action_merchant_foh"]
+            ],
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Check Now!',
+                    'url'   => '/profile',
+                ],
+            ],
+        ],
+        [
+            'title'       => 'Account Disabled',
+            'description' => 'Account Disabled: Your account has been disabled as per regulatory requirements. Please find more details on the email received on your registered email',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/rtb_announcement.svg',
+            'track_event' => true,
+            'id'          => 'bulk-risk-action-merchant-disabled',
+            'filters'     => [
+                'tags' => ["bulk_action_disabled"]
+            ],
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Know More',
+                    'url'   => '/profile',
+                ],
+            ],
+        ],
+        [
             'title'       => 'You have earned the Razorpay Trusted Badge!',
             'description' => 'You are now a Razorpay trusted merchant. The badge has been added to your checkout and is ready to be flaunted.',
             'start_ts'    => 1616594400,
