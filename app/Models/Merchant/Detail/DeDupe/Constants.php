@@ -26,14 +26,6 @@ class Constants
     const MERCHANT_RISK_CLIENT_TYPE_ONBOARDING = 'onboarding';
 
     const MERCHANT_RISK_CONFIG = [
-        Detail\Entity::BUSINESS_MODEL => [
-            'lists' => [
-                self::BRAND_LIST,
-                self::HIGH_RISK_LIST,
-                self::AUTHORITIES_LIST,
-            ],
-            'config_key' => 'business_model'
-        ],
         Detail\Entity::PROMOTER_PAN => [
             'lists' => [
                 self::BLACKLIST,
@@ -241,29 +233,5 @@ class Constants
                 ]
             ],
         ],
-        [
-            'keysToCheck' => [
-                Detail\Entity::BUSINESS_MODEL => [
-                    'list' => self::BRAND_LIST,
-                    'matchType'=> self::EXACT_MATCH
-                ]
-            ],
-        ],
-        [
-            'keysToCheck' => [
-                Detail\Entity::BUSINESS_MODEL => [
-                    'list' => self::HIGH_RISK_LIST,
-                    'matchType'=> self::EXACT_MATCH
-                ]
-            ],
-        ],
-        [
-            'keysToCheck' => [
-                Detail\Entity::BUSINESS_MODEL => [
-                    'list' => self::AUTHORITIES_LIST,
-                    'matchType'=> self::EXACT_MATCH
-                ]
-            ],
-        ]
     ];
 }
