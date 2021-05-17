@@ -1023,6 +1023,11 @@ class Constants
             'display_name'  => 'No Flash Checkout',
             'documentation' => '',
         ],
+        self::CRED_MERCHANT_CONSENT  => [
+            'feature'       => self::CRED_MERCHANT_CONSENT,
+            'display_name'  => 'Cred Merchant Consent',
+            'documentation' => '',
+        ],
         self::MARKETPLACE      => [
             'feature'       => self::MARKETPLACE,
             'display_name'  => 'Route',
@@ -1463,6 +1468,7 @@ class Constants
         self::SETTLEMENTS_SMS_STOP,
         self::SUGGESTED_ADDRESS_OPT_IN,
         self::COVID_19_RELIEF,
+        self::CRED_MERCHANT_CONSENT,
     ];
 
     /*

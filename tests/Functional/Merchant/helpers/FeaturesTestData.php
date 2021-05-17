@@ -416,6 +416,11 @@ return [
                         'display_name' => 'No Flash Checkout'
                     ],
                     [
+                        'feature'      => 'cred_merchant_consent',
+                        'value'        => false,
+                        'display_name' => 'Cred Merchant Consent'
+                    ],
+                    [
                         'feature'      => 'marketplace',
                         'value'        => false,
                         'display_name' => 'Route'
@@ -578,6 +583,7 @@ return [
             'content' => [
                 'features' => [
                     'marketplace' => '1',
+                    'cred_merchant_consent' => '1',
                 ]
             ],
             'url' => '/merchants/me/features',
@@ -594,6 +600,11 @@ return [
                         'feature'      => 'noflashcheckout',
                         'value'        => false,
                         'display_name' => 'No Flash Checkout'
+                    ],
+                    [
+                        'feature'      => 'cred_merchant_consent',
+                        'value'        => true,
+                        'display_name' => 'Cred Merchant Consent'
                     ],
                     [
                         'feature'      => 'marketplace',
@@ -633,6 +644,11 @@ return [
                         'feature'      => 'noflashcheckout',
                         'value'        => false,
                         'display_name' => 'No Flash Checkout'
+                    ],
+                    [
+                        'feature'      => 'cred_merchant_consent',
+                        'value'        => false,
+                        'display_name' => 'Cred Merchant Consent'
                     ],
                     [
                         'feature'      => 'marketplace',
