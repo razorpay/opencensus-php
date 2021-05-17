@@ -12,7 +12,8 @@
       target.style.pointerEvents = 'none';
       target.style.opacity = '0.5';
       var x = new XMLHttpRequest();
-      var base = location.origin + "/v1/payments/{{$data['payment_id']}}/";
+      var origin_base = "{{env('APP_URL')}}" || "https://api.razorpay.com";
+      var base = origin_base + "/v1/payments/{{$data['payment_id']}}/";
       x.onreadystatechange = function() {
         if (x.readyState === 4) {
           document.form1.innerHTML = '';
