@@ -2,16 +2,22 @@
 
 namespace RZP\Tests\Functional\BankingAccountService;
 
+use App;
+
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\BankingAccountService\Constants;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
+use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 
 class BankingAccountServiceTest extends TestCase
 {
     use DbEntityFetchTrait;
+    use TestsBusinessBanking;
     use RequestResponseFlowTrait;
+
+    protected $config;
 
     public function setUp(): void
     {
@@ -22,6 +28,8 @@ class BankingAccountServiceTest extends TestCase
         $this->ba->bankingAccountServiceAppAuth();
 
         $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $this->config = App::getFacadeRoot()['config'];
     }
 
     public function testCreateBankingEntities()
@@ -81,5 +89,55 @@ class BankingAccountServiceTest extends TestCase
         $response = $this->startTest();
 
         $this->assertEquals('ACTIVE', $response['data']['status']);
+    }
+
+    public function testVendorPaymentCompositeExpands()
+    {
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $this->fixtures->create('user', ['id' => '10000000000000', 'name' => 'test-me']);
+
+        $this->fixtures->create(
+            'fund_account',
+            [
+                'id'           => '100000000000fa',
+                'source_id'    => '1000001contact',
+                'source_type'  => 'contact',
+                'account_type' => 'bank_account',
+                'account_id'   => '1000000lcustba'
+            ]);
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $this->fixtures->create('contact', ['id' => 'Dsp92d4N1Mmm6Q', 'name' => 'test_contact']);
+
+        $this->fixtures->create('fund_account:bank_account',
+                                [
+                                    'id'          => 'D6Z9Jfir2egAUT',
+                                    'source_type' => 'contact',
+                                    'source_id'   => 'Dsp92d4N1Mmm6Q',
+                                    'merchant_id' => '10000000000000'
+                                ]);
+
+        $this->fixtures->create('fund_account:bank_account',
+                                [
+                                    'id'          => 'D6Z9Jfir2egAUD',
+                                    'source_type' => 'contact',
+                                    'source_id'   => 'Dsp92d4N1Mmm6Q',
+                                    'merchant_id' => '10000000000000'
+                                ]);
+
+        $this->fixtures->create('payout', ['id' => 'DuuYxmO7Yegu3x', 'fund_account_id' => 'D6Z9Jfir2egAUT','pricing_rule_id' => '1nvp2XPMmaRLxb']);
+
+        //overwriting the balance entity to match conditions required to call mocked bas method.
+        $this->fixtures->edit('balance', '10000000000000',
+                              [
+                                  'balance'      => 1000,
+                                  'type'         => 'banking',
+                                  'account_type' => 'direct',
+                                  'channel'      => 'icici',
+                              ]);
+
+        $this->startTest();
     }
 }

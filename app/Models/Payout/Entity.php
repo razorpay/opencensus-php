@@ -1705,7 +1705,9 @@ class Entity extends Base\PublicEntity
 
         //In case of icici ca banking_account_id is fetched from banking account service.
         //banking_account_id is cached for subsequent calls
-        if(empty($attributes[self::BANKING_ACCOUNT_ID]) === true)
+        if (empty($attributes[self::BANKING_ACCOUNT_ID]) === true and
+            $this->isBalanceAccountTypeDirect() === true and
+            $this->balance->getChannel() === Channel::ICICI)
         {
             $attributes[self::BANKING_ACCOUNT_ID] = app('banking_account_service')->fetchBankingAccountId($attributes[self::BALANCE_ID]);
         }
