@@ -2,7 +2,10 @@
 
 namespace RZP\Models\Gateway\File\Processor\Combined;
 
+use Carbon\Carbon;
+
 use RZP\Models\FileStore;
+use RZP\Constants\Timezone;
 
 class Dcb extends Base
 {
@@ -12,6 +15,11 @@ class Dcb extends Base
             'claims'  => 0,
             'refunds' => 0,
             'total'   => 0,
+        ];
+
+        $count = [
+            'claims'  => 0,
+            'refunds' => 0,
         ];
 
         $claimsFile = $refundsFile = [];
@@ -25,6 +33,8 @@ class Dcb extends Base
                 return $sum;
             });
 
+            $count['refunds'] = count($data['refunds']);
+
             $refundsFile = $this->getFileData(FileStore\Type::DCB_NETBANKING_REFUND);
         }
 
@@ -36,6 +46,8 @@ class Dcb extends Base
 
                 return $sum;
             });
+
+            $count['claims'] = count($data['claims']);
         }
 
         $amount['total'] = $amount['claims'] - $amount['refunds'];
@@ -55,9 +67,13 @@ class Dcb extends Base
             'ifsc'           => $config['ifsc_code'],
         ];
 
+        $txnDate = Carbon::now()->format('d-m-Y');
+
         return [
             'bankName'    => 'Dcb',
+            'subject'     => 'Razorpay_DCB_Netbanking_PG claimed & refund file for ' . $txnDate,
             'amount'      => $amount,
+            'count'       => $count,
             'claimsFile'  => $claimsFile,
             'refundsFile' => $refundsFile,
             'account'     => $account,

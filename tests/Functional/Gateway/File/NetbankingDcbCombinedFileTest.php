@@ -115,7 +115,7 @@ class NetbankingDcbCombinedFileTest extends NbPlusPaymentServiceNetbankingTest
             $date = Carbon::today(Timezone::IST)->format('d-m-Y');
 
             $testData = [
-                'subject' => 'Dcb Netbanking claims and refund files for '.$date,
+                'subject' => 'Razorpay_DCB_Netbanking_PG claimed & refund file for '.$date,
                 'amount' => [
                     'claims'  =>  "1000.00",
                     'refunds' =>  "505.00",
