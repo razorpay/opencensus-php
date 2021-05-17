@@ -2,11 +2,11 @@ import { classList } from 'common/utils/rzp-utils';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
 /* Modal with backdrop mask, closes with animation
-* @props
-*   - {Function} onClose,
-*   - {Boolean, optional} maskClosable, Whether to close modal on clicking outside the modal
-*   - {Boolean, optional} isBlur, To blur background
-* */
+ * @props
+ *   - {Function} onClose,
+ *   - {Boolean, optional} maskClosable, Whether to close modal on clicking outside the modal
+ *   - {Boolean, optional} isBlur, To blur background
+ * */
 export class ModalMask extends React.PureComponent {
   state = {};
 
@@ -31,14 +31,11 @@ export class ModalMask extends React.PureComponent {
     }
   }
 
-  onMaskClose = e => {
+  onMaskClose = (e) => {
     const modalContent = document.getElementsByClassName('Modal-container')[0];
 
     // Don't close modal if clicked inside modal-content (but not on cross btn)
-    if (
-      modalContent.contains(e.target) &&
-      !e.target.classList.contains('Modal-close') > -1
-    ) {
+    if (modalContent.contains(e.target) && !e.target.classList.contains('Modal-close') > -1) {
       return;
     }
 
@@ -46,28 +43,24 @@ export class ModalMask extends React.PureComponent {
   };
 
   // Fadeout based closing modal
-  onClose = e => {
+  onClose = (e) => {
     this.setState({
       isHidden: true,
     });
 
-    setTimeout(_ => this.props.onClose(e), 400);
+    setTimeout((_) => this.props.onClose(e), 400);
   };
 
   render() {
     const { children, maskClosable = false, allowScroll, ...rest } = this.props;
 
     let classArray = rest.className
-      ? rest.className.split(' ').map(cls => 'Modal-mask--' + cls)
+      ? rest.className.split(' ').map((cls) => 'Modal-mask--' + cls)
       : '';
 
     return (
       <div
-        class={classList(
-          'Modal-mask',
-          classArray,
-          this.state.isHidden && 'Modal-mask--hide'
-        )}
+        class={classList('Modal-mask', classArray, this.state.isHidden && 'Modal-mask--hide')}
         onClick={maskClosable ? this.onMaskClose : undefined}
       >
         {children}
@@ -80,13 +73,13 @@ export class ModalMask extends React.PureComponent {
 // TODO: 1-b: Alternatively, ModalContent can restrively child of Modal, and all modals must have property to tell Modal-container custom class and header/banner
 // TODO: 1-c: Both approaches have trade-offs. Currently 'a' chosen to adapt merchant+admin with minimal changes on admin side.
 /*
-* Modal without modal mask. It takes care of close button functionality
-* - ModalMask uses this component. However, Modal can also be used independently.
-* @props
-*   - {Boolean, optional} showCloseBtn, by default close button is shown. Can be hidden if false is passed
-*   - {Function} onClose, action on close btn press
-*   - {Function, optional} onCloseCB, Callback after closing modal
-* */
+ * Modal without modal mask. It takes care of close button functionality
+ * - ModalMask uses this component. However, Modal can also be used independently.
+ * @props
+ *   - {Boolean, optional} showCloseBtn, by default close button is shown. Can be hidden if false is passed
+ *   - {Function} onClose, action on close btn press
+ *   - {Function, optional} onCloseCB, Callback after closing modal
+ * */
 export class Modal extends React.PureComponent {
   componentDidMount() {
     // Add the class if not present on body
@@ -107,19 +100,18 @@ export class Modal extends React.PureComponent {
       onClose,
       onCloseCB,
       allowScroll,
+      fadedCloseButton = false,
       ...rest
     } = this.props;
 
-    let classArray = className
-      ? className.split(' ').map(cls => 'Modal-container--' + cls)
-      : '';
+    let classArray = className ? className.split(' ').map((cls) => 'Modal-container--' + cls) : '';
 
     return (
       <div class={classList('Modal-container', classArray)} {...rest}>
         {showCloseBtn && (
           <span
-            class="Modal-close"
-            onClick={e => {
+            className={`Modal-close ${fadedCloseButton ? 'Modal-close-faded' : ''}`}
+            onClick={(e) => {
               onCloseCB && onCloseCB(e);
               document.body.classList.remove('noscroll');
 
@@ -137,25 +129,17 @@ export class Modal extends React.PureComponent {
 }
 
 /* ModalContent only provides the wrapper for the content
-* @props
-*   - {String/React Node, optional} header, Add custom Class to the modal content
-*   - {String/React Node, optional} banner, pass function (Example: check 'invite a merchant')
-*   - {Boolean, optional} noPadding, By default modal body has padding if it has header over it. Set noPadding true to remove padding.
-* */
-export const ModalContent = ({
-  header,
-  banner,
-  children,
-  className = '',
-  noPadding = false,
-}) => (
+ * @props
+ *   - {String/React Node, optional} header, Add custom Class to the modal content
+ *   - {String/React Node, optional} banner, pass function (Example: check 'invite a merchant')
+ *   - {Boolean, optional} noPadding, By default modal body has padding if it has header over it. Set noPadding true to remove padding.
+ * */
+export const ModalContent = ({ header, banner, children, className = '', noPadding = false }) => (
   <ErrorBoundary>
     <div class={classList('Modal-content', className)}>
       {header && <header>{header}</header>}
       {banner}
-      <div class={classList('Modal-body', noPadding && 'no-padding')}>
-        {children}
-      </div>
+      <div class={classList('Modal-body', noPadding && 'no-padding')}>{children}</div>
     </div>
   </ErrorBoundary>
 );

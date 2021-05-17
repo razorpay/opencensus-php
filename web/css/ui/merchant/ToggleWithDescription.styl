@@ -1,31 +1,78 @@
 .toggle-with-description{
-  padding: 12px 14px;
+  padding: 16px 14px;
   background: '#fff';
   border-radius: 3px;
   border: 1px solid rgba(22, 47, 86, 0.1);
   margin-bottom: 8px;
   min-width: 154px;
+
   &.disabled{
     background: rgba(22, 47, 86, 0.03);
     cursor: not-allowed;
     pointer-events: none;
   }
+
   &.large{
     width: 320px;
   }
-  &.selected{
+
+  &.selected {
     border: 1px solid rgba(11, 112, 231, 0.74);
   }
-  .toggle-title{
+
+  .toggle-title {
     flex: 1;
     font-size: 14px;
     color: rgba(22, 47, 86, 0.87);
+
+    span {
+        i {
+        line-height: 1.24;
+        margin-left: -2px;
+        font-size: 16px;
+      }
+    }
 
     p.selected {
       font-weight: bold;
     }
   }
+
   .toggle-description{
-    color: rgba(22, 47, 86, 0.54)
+    color: rgba(22, 47, 86, 0.54);
+    margin-top: 4px;
+  }
+
+  &.success {
+    background: rgba(36, 168, 50, 0.03);
+    border-color: rgba(36, 168, 50, 0.74);
+
+    .toggle-title {
+      i {
+        color: #24A832;
+      }
+    }
+  }
+
+  &.warn {
+    background: rgba(205, 130, 20, 0.03);
+    border-color: rgba(205, 130, 20, 0.74);
+
+    .toggle-title {
+      i {
+        color: #CD8214;
+      }
+    }
+  }
+
+  &.error {
+    background: rgba(238, 102, 25, 0.03);
+    border-color: rgba(238, 102, 25, 0.74);
+
+    .toggle-title {
+      i {
+        color: #EE6619;
+      }
+    }
   }
 }

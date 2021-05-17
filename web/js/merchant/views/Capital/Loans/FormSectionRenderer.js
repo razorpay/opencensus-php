@@ -25,7 +25,7 @@ import MobileVerification from './Forms/MobileVerification';
 import CreditScoreBreakdown from './Forms/CreditScoreBreakdown';
 import LoanStatusBanner from './LoanStatusBanner';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import PreVerificationUpload from './Forms/PreVerificationUpload';
+import PreVerification from './Forms/PreVerification/PreVerification';
 import CreditOfferEntity from './Forms/CreditOfferEntity';
 import ContractEntity from './Forms/ContractEntity';
 import NachEntity from './Forms/NachEntity';
@@ -51,9 +51,9 @@ const stateFormMap = {
   PROMOTER_INFO_PENDING: PromoterDetailsEntity,
   MOBILE_VERIFICATION_PENDING: MobileVerification,
   CREDIT_PULL_COMPLETED: CreditScoreBreakdown,
-  [APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING]: PreVerificationUpload,
-  [APPLICATION_STATES.PREVERIFICATION_FAILED]: PreVerificationUpload,
-  [APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS]: PreVerificationUpload,
+  [APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING]: PreVerification,
+  [APPLICATION_STATES.PREVERIFICATION_FAILED]: PreVerification,
+  [APPLICATION_STATES.PREVERIFICATION_IN_PROGRESS]: PreVerification,
   [APPLICATION_STATES.SCORE_GENERATION_PENDING]: (props) => (
     <PendingState
       message={APPLICATION_STATE_MESSAGE_MAP[APPLICATION_STATES.SCORE_GENERATION_PENDING]}

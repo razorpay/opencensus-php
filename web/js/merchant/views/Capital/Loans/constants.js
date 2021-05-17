@@ -538,3 +538,23 @@ export const GA_CATEGORY_BY_PRODUCT = {
   [CAPITAL_PRODUCT_CODES.CASH_ADVANCE]: 'Cash Advance - LOS',
   [CAPITAL_PRODUCT_CODES.LOAN]: 'Loans - LOS',
 };
+
+export const PREVERIFICATION_VIEW_STATES = {
+  ACTIVE: 'ACTIVE',
+  PROCESSING: 'PROCESSING',
+  PROCESSED: 'PROCESSED',
+  FEEDBACK: 'FEEDBACK',
+};
+
+export const NOOP = () => {};
+
+export const PREVERIFICATION_FILE_UPLOAD_LIMIT = 7;
+
+export const PREVERIFICATION_OPTIONS = {
+  NETBANKING: 1,
+  NATIVE_UPLOAD: 2,
+};
+
+export const PREVERIFICATION_NETBANKING_RETRY_LIMIT = 3;
+
+export const AVAILABLE_FILE_TYPE_ICONS = ['pdf', 'jpg', 'png', 'csv', 'xlsx'];

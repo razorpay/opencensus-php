@@ -35,6 +35,7 @@ export default class FileUpload extends React.Component {
     onBiggerFileSize: () => {},
     onCloseClick: () => {},
     renderStagedChildren: () => null,
+    hideLoader: false,
   };
 
   constructor(props) {
@@ -44,6 +45,7 @@ export default class FileUpload extends React.Component {
       files: [],
       isDocPreUploaded: !!props.defaultValue,
     };
+    this.fileInputElement = React.createRef();
   }
 
   componentDidUpdate(prevProps) {
@@ -187,7 +189,7 @@ export default class FileUpload extends React.Component {
     if (this.state.isDocPreUploaded) {
       this.setState(
         { isDocPreUploaded: false },
-        () => this.props.onCloseClick && this.props.onCloseClick(),
+        () => this.props.onCloseClick && this.props.onCloseClick(fileIndex),
       );
 
       return;
@@ -196,7 +198,13 @@ export default class FileUpload extends React.Component {
       {
         files: this.state.files.filter((_, index) => index !== fileIndex),
       },
-      () => this.props.onCloseClick && this.props.onCloseClick(),
+      () => {
+        // resetting the input value attribute so that user can reupload the same file
+        if (this.fileInputElement && this.fileInputElement.current) {
+          this.fileInputElement.current.value = '';
+        }
+        this.props.onCloseClick && this.props.onCloseClick(fileIndex);
+      },
     );
   };
 
@@ -205,6 +213,10 @@ export default class FileUpload extends React.Component {
     const { dataTransfer } = event;
     const files = dataTransfer.items || dataTransfer.files;
     this.setState({ isFileDraggedInside: false }); // Reset the state
+
+    try {
+      this.props.onFileDrop && this.props.onFileDrop();
+    } catch (err) {}
 
     for (let index in files) {
       let file;
@@ -253,6 +265,7 @@ export default class FileUpload extends React.Component {
       dropZoneCavityClassName,
       imgFilePreviewUrl,
       removeFileButtonLabel,
+      hideLoader,
     } = this.props;
     let { isDocPreUploaded } = this.state;
 
@@ -317,6 +330,7 @@ export default class FileUpload extends React.Component {
                     onChange={this.handleFileInputChange}
                     accept={accept && accept.map((fileType) => fileTypesMap[fileType])}
                     disabled={disabled}
+                    ref={this.fileInputElement}
                     hidden
                   />
                 </React.Fragment>
@@ -349,6 +363,9 @@ export default class FileUpload extends React.Component {
                 size={size}
                 preUploadedImgFileUrl={imgFilePreviewUrl}
                 removeFileButtonLabel={removeFileButtonLabel}
+                hideLoader={
+                  hideLoader && (index !== files.length - 1 || stagedFileStatus !== 'process')
+                }
               >
                 {renderStagedChildren(index)}
               </Staged>

@@ -2,7 +2,7 @@ import { readableFileSize } from 'common/utils/rzp-utils';
 
 const avlblFileTypeIcons = ['pdf', 'jpg', 'png', 'csv', 'xlsx'];
 
-const getFileTypeIcon = fileName => {
+const getFileTypeIcon = (fileName) => {
   let fileType = fileName.split('.');
   fileType = fileType[fileType.length - 1];
 
@@ -16,8 +16,7 @@ export default class Staged extends React.Component {
       nextProps.uploadedBytes !== this.props.uploadedBytes &&
       document.getElementById(this.props.name + '--progress')
     ) {
-      document.getElementById(this.props.name + '--progress').style.transform =
-        'none'; // Halt previous transform
+      document.getElementById(this.props.name + '--progress').style.transform = 'none'; // Halt previous transform
     }
   }
 
@@ -43,7 +42,7 @@ export default class Staged extends React.Component {
     }
 
     const progress = -70 + 70 * PercProgress; // At t0, translateX = -100%. At t1 of start, we start from translateX = -70%;
-    duration = Math.abs(progress) * 5 / 100; // 100% translate in 5s and rest in proportions
+    duration = (Math.abs(progress) * 5) / 100; // 100% translate in 5s and rest in proportions
 
     this.lastPercProgress = PercProgress;
 
@@ -63,6 +62,7 @@ export default class Staged extends React.Component {
       isDocPreUploaded,
       preUploadedImgFileUrl,
       removeFileButtonLabel,
+      hideLoader = false,
     } = this.props;
 
     const loader = this.getProgress();
@@ -72,9 +72,7 @@ export default class Staged extends React.Component {
         {!isDocPreUploaded && (
           <img
             class="Dropzone-file-icon"
-            src={`/dist/css/assets/files/file-type-${getFileTypeIcon(
-              file ? file.name : ''
-            )}.svg`}
+            src={`/dist/css/assets/files/file-type-${getFileTypeIcon(file ? file.name : '')}.svg`}
             alt=""
           />
         )}
@@ -96,9 +94,7 @@ export default class Staged extends React.Component {
                 {file.name} {showFileSize && readableFileSize(file.size)}
               </p>
               {showStagedFileStatus && (
-                <p class="text-muted text-small">
-                  {stagedStatusMsgMap[currentStatus]}
-                </p>
+                <p class="text-muted text-small">{stagedStatusMsgMap[currentStatus]}</p>
               )}
             </React.Fragment>
           )}
@@ -114,17 +110,18 @@ export default class Staged extends React.Component {
           ) : (
             <span class="icon i-close Dropzone-close" onClick={onCloseClick} />
           ))}
-
-        <div class="Loader">
-          <div
-            class="Loader-progress"
-            id={name + '--progress'}
-            style={{
-              transform: 'translateX(' + loader.progress + '%)',
-              transitionDuration: loader.duration + 's',
-            }}
-          />
-        </div>
+        {hideLoader ? null : (
+          <div class="Loader">
+            <div
+              class="Loader-progress"
+              id={name + '--progress'}
+              style={{
+                transform: 'translateX(' + loader.progress + '%)',
+                transitionDuration: loader.duration + 's',
+              }}
+            />
+          </div>
+        )}
       </div>
     );
   }

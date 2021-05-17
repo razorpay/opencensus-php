@@ -53,50 +53,50 @@ const getStateBanner = (loanApplicationDetails, ref, changeActiveState, isCashAd
         return null;
       }
       break;
-    case 'PREVERIFICATION_UPLOAD_PENDING':
-      if (
-        loanApplicationDetails.bureau_report_details.data.bureau_report &&
-        loanApplicationDetails.bureau_report_details.data.bureau_report.ntc_score
-      ) {
-        return (
-          <Banner
-            title="Congratulations"
-            description={
-              <span>
-                We couldn't find any credit records on your name. But, you may still be eligible for
-                {isCashAdvanceProduct ? ' Cash Advance' : ' a loan'}. &nbsp;
-                <Button.Transparent
-                  class="no-margin"
-                  onClick={() => changeActiveState(APPLICATION_STATES.CREDIT_PULL_PENDING)}
-                >
-                  View Credit Report
-                </Button.Transparent>
-              </span>
-            }
-            type="success"
-            ref={ref}
-          />
-        );
-      }
-      return (
-        <Banner
-          title="Congratulations"
-          description={
-            <span>
-              Based on your credit history, you are eligible for{' '}
-              {isCashAdvanceProduct ? 'Cash Advance' : 'a loan'}. &nbsp;
-              <Button.Transparent
-                class="no-margin"
-                onClick={() => changeActiveState(APPLICATION_STATES.CREDIT_PULL_PENDING)}
-              >
-                View Credit Report
-              </Button.Transparent>
-            </span>
-          }
-          type="success"
-          ref={ref}
-        />
-      );
+    // case 'PREVERIFICATION_UPLOAD_PENDING':
+    //   if (
+    //     loanApplicationDetails.bureau_report_details.data.bureau_report &&
+    //     loanApplicationDetails.bureau_report_details.data.bureau_report.ntc_score
+    //   ) {
+    //     return (
+    //       <Banner
+    //         title="Congratulations"
+    //         description={
+    //           <span>
+    //             We couldn't find any credit records on your name. But, you may still be eligible for
+    //             {isCashAdvanceProduct ? ' Cash Advance' : ' a loan'}. &nbsp;
+    //             <Button.Transparent
+    //               class="no-margin"
+    //               onClick={() => changeActiveState(APPLICATION_STATES.CREDIT_PULL_PENDING)}
+    //             >
+    //               View Credit Report
+    //             </Button.Transparent>
+    //           </span>
+    //         }
+    //         type="success"
+    //         ref={ref}
+    //       />
+    //     );
+    //   }
+    //   return (
+    //     <Banner
+    //       title="Congratulations"
+    //       description={
+    //         <span>
+    //           Based on your credit history, you are eligible for{' '}
+    //           {isCashAdvanceProduct ? 'Cash Advance' : 'a loan'}. &nbsp;
+    //           <Button.Transparent
+    //             class="no-margin"
+    //             onClick={() => changeActiveState(APPLICATION_STATES.CREDIT_PULL_PENDING)}
+    //           >
+    //             View Credit Report
+    //           </Button.Transparent>
+    //         </span>
+    //       }
+    //       type="success"
+    //       ref={ref}
+    //     />
+    //   );
     case 'PREVERIFICATION_FAILED':
       return (
         <Banner

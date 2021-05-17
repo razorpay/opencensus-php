@@ -1,7 +1,7 @@
 import React from 'react';
 
-const DescriptionWrapper = ({ description, meta, selected }) => {
-  if (selected && meta) return meta;
+const DescriptionWrapper = ({ description, meta, expanded, selected }) => {
+  if ((selected && meta) || expanded) return meta;
 
   return <p class="toggle-description">{description}</p>;
 };
@@ -17,14 +17,17 @@ const ToggleWithDescription = ({
   description,
   onClick,
   selected,
-  size = 'large',
   style,
   name,
-  disabled = false,
   hint,
+  disabled = false,
   loading = false,
   showRadioInput = true,
+  expanded = false,
+  size = 'large',
   radioPosition = 'right',
+  className = '',
+  icon = '',
   meta,
 }) => {
   return (
@@ -34,7 +37,7 @@ const ToggleWithDescription = ({
       }}
       class={`toggle-with-description ${disabled ? 'disabled' : ''} ${
         selected ? 'selected' : ''
-      } ${size}`}
+      } ${size} ${className}`}
       role="button"
       style={{
         ...style,
@@ -42,9 +45,13 @@ const ToggleWithDescription = ({
     >
       <div class="title-content-wrapper flex">
         <div class="toggle-title flex">
-          {radioPosition === 'left' && (
+          {icon ? (
+            <span>
+              <i className={icon} />
+            </span>
+          ) : radioPosition === 'left' ? (
             <input type="radio" className="radio-pointer" name={name} checked={selected} />
-          )}
+          ) : null}
           {typeof title === 'string' ? (
             <p className={`${selected ? 'selected' : ''} ${radioPosition === 'left' ? 'm-l' : ''}`}>
               {title}
@@ -71,7 +78,12 @@ const ToggleWithDescription = ({
           }
         })()}
       </div>
-      <DescriptionWrapper description={description} meta={meta} selected={selected} />
+      <DescriptionWrapper
+        description={description}
+        meta={meta}
+        selected={selected}
+        expanded={expanded}
+      />
     </div>
   );
 };

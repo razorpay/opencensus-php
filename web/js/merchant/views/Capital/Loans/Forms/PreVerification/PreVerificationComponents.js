@@ -1,15 +1,17 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import moment from 'moment';
 
 import Popover, { PopoverBody } from 'common/ui/Popover';
+import Button from 'common/new-ui/Button';
 
-export const NetbankingMeta = () => {
+export const NetbankingMeta = ({ text, onClick }) => {
   return (
     <div className="toggle-active-meta perfios-meta">
-      <div className="toggle-active-meta__title">
-        Upload statements securely from the account connected to Razorpay. None of you login details
-        will be stored.
-      </div>
+      <p>{text}</p>
+      <Button.Primary onClick={onClick}>
+        Retry
+        <i className="i i-arrow-forward" />
+      </Button.Primary>
     </div>
   );
 };
@@ -25,42 +27,50 @@ export const NativeUploadMeta = () => {
   let currentMonthRange = `01 ${currentMonth}, ${currentYear}`;
 
   if (now.date() !== startOfCurrentMonth.date()) {
-    currentMonthRange = `01 ${currentMonth} - ${now.date()} ${currentMonth}, ${currentYear}`;
+    currentMonthRange = `01 ${currentMonth} - ${now.date()} ${currentMonth}, ${currentYear} (${now.diff(
+      startOfCurrentMonth,
+      'days',
+    )} Days)`;
   }
 
   startOfCurrentMonth.subtract(1, 'days');
 
   while (startOfCurrentMonth > endDate) {
-    const month = startOfCurrentMonth.format('MMMM');
+    const month = startOfCurrentMonth.format('MMM');
     const year = startOfCurrentMonth.year();
 
-    months.push(`${month}, ${year}`);
+    months.push(`${month} ${year}`);
     startOfCurrentMonth.subtract(1, 'months');
   }
 
   const monthsRange = months.map((month, index) => {
     return (
-      <span index={index}>
-        {month}
-        {index < months.length - 1 ? ',' : ''}
-      </span>
+      <div index={index}>
+        <i className="i i-document" />
+        <span>{month}</span>
+      </div>
     );
   });
 
-  const content = [<span>{currentMonthRange} &</span>, <Fragment>{monthsRange}</Fragment>];
+  const content = [
+    ...monthsRange,
+    <div key="date-range">
+      <i className="i i-document" />
+      <span>{currentMonthRange}</span>
+    </div>,
+  ];
 
   return (
     <div className="toggle-active-meta native-meta">
-      <div className="toggle-active-meta__title">
-        Upload PDF statements that include transactions for the months:
-      </div>
-      <ul>
+      <div className="toggle-active-meta__title">Statement Requirements:</div>
+      <ul className="native-meta__requirements">
+        <li>Use official bank statements(No Excel or CSV)</li>
+        <li>Use .PDF file format</li>
+        <li>Upload statements for the following months</li>
+      </ul>
+      <ul className="native-meta__date-range">
         {content.map((item, index) => {
-          return (
-            <li style={{ fontWeight: 'bold', textTransform: 'uppercase' }} key={index}>
-              {item}
-            </li>
-          );
+          return <li key={index}>{item}</li>;
         })}
       </ul>
     </div>

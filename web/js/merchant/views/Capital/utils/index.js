@@ -102,3 +102,22 @@ export const validateMobileNumber = (input) => {
 
   return 'Please enter valid mobile number';
 };
+
+export const createFormData = (form = {}) => {
+  let formData = new FormData();
+
+  Object.keys(form).map((key) => {
+    formData.append(key, form[key]);
+  });
+
+  return formData;
+};
+
+export const toBase64 = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = (error) => reject(error);
+  });
+};

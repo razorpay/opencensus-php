@@ -1,5 +1,7 @@
 .loan-details-container {
   overflow: auto;
+  background-color: #F5F7FA;
+
   .loan-application-modal-header {
     height: 52px;
     background: #fff;
@@ -417,187 +419,156 @@
   }
 }
 
-.loan-application-form-section {
-  .documents-upload-container{
-    padding: 16px 20px;
-    .actions{
-      margin: 24px 0;
-      .Button--primary{
-        margin: 0 0 0 12px;
-      }
-    }
-    .title{
+.Modal-container--perfios__modal-wrapper {
+  width:512px;
+  
+  .perfios__modal-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 24px 40px;
+  }
+
+  h1 {
+    font-weight: bold;
+    font-size: 18px;
+    line-height: 22px;
+    color: #162F56;
+    margin:0;
+  }
+
+  h3 {
+    font-weight: normal;
+    font-size: 14px;
+    line-height: 20px;
+    color: rgba(22, 47, 86, 0.87);
+    margin: 2px 0 0 0;
+  }
+
+  .perfios__modal-inner--wrapper {
+    margin-top: 20px;
+    padding: 40px 32px;
+    background: #FFFFFF;
+    border: 1px solid rgba(173, 188, 201, 0.24);
+    border-radius: 3px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+
+    button {
+      padding: 8px 48px;
       font-weight: bold;
-      font-size: 18px;
-      line-height: 24px;
-      color: rgba(22, 47, 86, 0.87);
+      font-size: 14px;
+      line-height: 20px;
     }
-    header{
-      padding: 0;
-      margin-top: 4px;
-      border-width: 0 0 1px 0;
-      line-height: 32px;
-      a {
-        .i{
-          margin-right: 4px;
-        }
-        &:first-child {
-          margin-left: 0px;
-        }
-        margin: 0 10px;
-      }
-    }
-    .documents-upload-tabs-wrapper {
-      width: 540px
-      .documents-upload-tab {
-        &.inactive{
-          position: absolute;
-          top: -99999px;
-          left: -999999px;
-        }
-        .Form{
-          .InputGroup{
-            .Input-content {
-              width: 350px;
-              .Dropzone .Dropzone-content{
-                font-size: 14px
-              }
-              .document-upload-options-wrapper {
-                .toggle-with-description {
-                  width: 350px !important;
-                  .title-content-wrapper .loader-ring {
-                    display: inline-block;
-                    position: relative;
-                    width: 20px;
-                    height: 20px;
-                    div {
-                      box-sizing: border-box;
-                      display: block;
-                      position: absolute;
-                      width: 16px;
-                      height: 16px;
-                      margin: 4px;
-                      border: 2px solid #00B749;
-                      border-radius: 50%;
-                      animation: spinning-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-                      border-color: #00B749 transparent transparent transparent;
 
-                      @keyframes spinning-ring {
-                        0% {
-                          transform: rotate(0deg);
-                        }
-                        100% {
-                          transform: rotate(360deg);
-                        }
-                      }
-                      &:nth-child(1) {
-                        animation-delay: -0.45s;
-                      }
-                      &:nth-child(2) {
-                        animation-delay: -0.3s;
-                      }
-                      &:nth-child(3) {
-                        animation-delay: -0.15s;
-                      }
-                    }
-                  }
-
-                  .toggle-active-meta {
-                    background: rgba(102, 155, 224, 0.08);
-                    padding: 10px 14px;
-                    margin: 10px -14px -14px -14px;
-                    font-size: 12px;
-                    color: rgba(50, 110, 206, 0.74);
-
-                    .toggle-active-meta__title {
-                      width: 100%;
-
-                      &:before {
-                        content: '';
-                        float: left;
-                        border-left: 3px solid rgba(11, 112, 231, 0.74);;
-                        opacity: 1;
-                        margin: 1px 0px 0px -15px;
-                        height: 32px;
-                        border-radius: 2px;
-                      }
-                    }
-
-                    &.native-meta {
-                      ul {
-                        padding-left: 15px;
-                        margin-top: 10px;
-
-                        li {
-                          line-height: 18px;
-
-                          &:first-child {
-                            margin-bottom: 3px;
-                          }
-
-                          span {
-                            margin-right: 5px;
-                            font-size: 11px;
-                          }
-                        }
-                      }
-                    }
-                  }
-
-                  .netbanking-hint-wrapper {
-                    position: relative;
-
-                    .hint-popover.rzp-popover.rzp-tooltip {
-                      position: absolute !important;
-
-                      .rzp-popover-body {
-                        padding: 5px;
-
-                        p {
-                          color: rgba(255, 255, 255, 0.76);
-                          font-size: 11px;
-                          font-weight: bold;
-
-                          i {
-                            color: #E0B000;
-                            margin-right: 10px;
-
-                            &.fa-share-alt {
-                              margin-right: 6px;
-                            }
-                          }
-                        }
-                      }
-                    }
-
-                    .netbanking-hint {
-                      background: rgba(224, 176, 0, 0.08);
-                      border-radius: 16px;
-                      padding: 5px 6px;
-                      font-size: 9px;
-                      margin-left: 5px;
-                      display: flex;
-                      justify-content: center;
-                      align-items: center;
-                      color: #E0B000;
-                      font-weight: bold;
-
-                      i {
-                        margin-top: -2px;
-                        margin-right: 2px;
-                        color: #E0B000;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
+    .perfios__modal-inner--text {
+      font-size: 14px;
+      line-height: 20px;
+      text-align: center;
+      font-weight: normal;
+      color: rgba(22, 47, 86, 0.74);
+      margin: 32px 0 16px 0;
+      max-width: 368px;
+      span {
+        font-weight: 700;
       }
     }
   }
-}
+
+  .perfios__modal-inner--header {
+    align-items: center;
+    position:relative;
+    justify-content: center;
+    width: calc(100% - 162px);
+    z-index :10
+  }
+
+
+
+  .perfios__modal-logo-wrapper{
+    width: 43.43px;
+    height: 43.43px;
+    border: 1px solid rgba(11, 112, 231, 0.16);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+  }
+
+  .perfios__modal-razorpaylogo{
+    animation: smooth-collide-inner 800ms 1s forwards;
+    transform: translateX(-100%);
+
+    @keyframes smooth-collide-inner {
+        0% {
+          transform: translateX(-100%)
+        }
+
+        100% {
+          transform: translateX(9%);
+        }
+      }
+
+    img {
+      width: 17.63px;
+      height: 19.83px;
+    }
+  }
+
+  .perfios__modal-perfios--logo{
+    animation: smooth-collide-outside 800ms 1s forwards;
+    transform: translateX(100%);
+    background-color: white;
+
+    @keyframes smooth-collide-outside {
+        0% {
+          transform: translateX(100%)
+        }
+
+        100% {
+          transform: translateX(-9%);
+        }
+      }
+
+
+    img {
+      width: 31.21px;
+      height: 10.86px;
+    }
+  }
+
+
+  .perfios__modal-footer {
+    margin-top: 16px;
+    align-self: flex-start;
+
+    .perfios__modal-footer-lockcontainer{
+     align-items: center;
+      img{
+        width: 9px;
+        height: 12px;
+      }
+    }
+
+    .perfios__modal-footer--info{
+      color: rgba(36, 168, 50, .87);
+      font-weight: bold;
+      font-size: 12px;
+      line-height: 18px;
+      margin-left: 4.5px;
+    }
+
+    .perfios__modal-footer--text {
+      font-weight: normal;
+      font-size: 12px;
+      line-height: 17px;
+      color: rgba(22, 47, 86, .63);
+      margin-top: 3px;
+    }
+  }
+ }
 
 .loan-application-form-section{
   .pending-note-wrapper{
