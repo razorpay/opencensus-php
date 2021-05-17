@@ -4,7 +4,6 @@ import Slider from 'common/new-ui/Slider';
 import S0 from './steps/S0';
 import S1 from './steps/S1';
 import S2 from './steps/S2';
-import S2New from './steps/S2-new';
 import S3 from './steps/S3';
 import User from 'merchant/models/User';
 import { updateSession } from 'merchant/reducers/session';
@@ -35,24 +34,30 @@ export default class BaseScreen extends React.Component {
   state = { role: null };
   constructor(props) {
     super(props);
+    const defaultVariant = 'not_in_exp';
     const purePlatformExperimentVariant = this.props.user.getPurePlatformExperimentVariant;
     this.state = {
       role: null,
       isPurePlatformSignupEnabled: purePlatformExperimentVariant === 'exposed',
+      experimentVariant: purePlatformExperimentVariant || defaultVariant,
     };
   }
 
   componentDidMount() {
-    let defaultVariant = 'not_in_exp';
-    const variant = this.props.user.getPurePlatformExperimentVariant || defaultVariant;
     this.props.tracking.trackEvent(
       window.rzpQ.onbr().interaction('partnerships.pure_platform_signup', {
         merchantId: this.props.user.merchant.id,
-        variant: variant,
+        variant: this.state.experimentVariant,
       }),
     );
-    const hotjarTag = `pure_platform_experiment_${variant}`;
+    const hotjarTag = `pure_platform_experiment_${this.state.experimentVariant}`;
     triggerHotjarRecording('pure_platform_experiment', ['pure_platform_experiment', hotjarTag]);
+    window.trackHubs({
+      name: 'update_property',
+      data: {
+        partner_signup_start: true,
+      },
+    });
   }
 
   onRoleSelect = (role) => {
@@ -61,6 +66,7 @@ export default class BaseScreen extends React.Component {
       window.rzpQ.onbr().interaction('partnerships.partner_type.selected', {
         merchantId: this.props.user.merchant.id,
         partnerType: role,
+        variant: this.state.experimentVariant,
       }),
     );
 
@@ -76,6 +82,8 @@ export default class BaseScreen extends React.Component {
     this.props.tracking.trackEvent(
       window.rzpQ.onbr().clicked('partnerships.partner_signup.completed', {
         merchantId: this.props.user.merchant.id,
+        variant: this.state.experimentVariant,
+        partnerType: this.state.role,
       }),
     );
     this.props.tracking.trackEvent(
@@ -173,34 +181,38 @@ export default class BaseScreen extends React.Component {
                   sliderProps={sliderProps}
                   tracking={this.props.tracking}
                   merchantId={this.props.user.merchant.id}
+                  experimentVariant={this.state.experimentVariant}
                 />
               )
             : null}
           {(sliderProps) => (
-            <S1 key={1} sliderProps={sliderProps} onNext={this.handleNewUserGetStarted} />
+            <S1
+              key={1}
+              sliderProps={sliderProps}
+              onNext={this.handleNewUserGetStarted}
+              experimentVariant={this.state.experimentVariant}
+            />
           )}
-          {(sliderProps) =>
-            this.state.isPurePlatformSignupEnabled ? (
-              <S2New
-                key={2}
-                sliderProps={sliderProps}
-                onRoleSelect={this.onRoleSelect}
-                role={this.state.role}
-                abort={this.handleCloseClick}
-                tracking={this.props.tracking}
-                merchantId={this.props.user.merchant.id}
-              />
-            ) : (
-              <S2
-                key={4}
-                sliderProps={sliderProps}
-                onRoleSelect={this.onRoleSelect}
-                role={this.state.role}
-                abort={this.handleCloseClick}
-              />
-            )
-          }
-          {(sliderProps) => <S3 key={3} sliderProps={sliderProps} onNext={this.onCompleteClick} />}
+          {(sliderProps) => (
+            <S2
+              key={2}
+              sliderProps={sliderProps}
+              onRoleSelect={this.onRoleSelect}
+              role={this.state.role}
+              abort={this.handleCloseClick}
+              tracking={this.props.tracking}
+              merchantId={this.props.user.merchant.id}
+              experimentVariant={this.state.experimentVariant}
+            />
+          )}
+          {(sliderProps) => (
+            <S3
+              key={3}
+              sliderProps={sliderProps}
+              onNext={this.onCompleteClick}
+              experimentVariant={this.state.experimentVariant}
+            />
+          )}
         </Slider>
         {!this.props.disableClose && (
           <button

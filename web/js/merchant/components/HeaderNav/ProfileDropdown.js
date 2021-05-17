@@ -110,17 +110,11 @@ export default class ProfileDropdown extends Component {
       component: <PartnerOnbr closeModal={this.props.closeModal} disableClose={false} />,
     });
 
-    window.trackHubs({
-      name: 'update_property',
-      data: {
-        partner_signup_start: true,
-      },
-    });
-
     this.props.tracking.trackEvent(
       window.rzpQ.onbr().clicked('partnerships.partner_signup.start', {
         merchantId: this.props.user.merchant.id,
         clickSource: 'merchant_dashboard',
+        variant: this.props.user.getPurePlatformExperimentVariant || 'not_in_exp',
       }),
     );
   };

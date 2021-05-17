@@ -6,6 +6,7 @@ const S0 = (props) => {
     props.tracking.trackEvent(
       window.rzpQ.onbr().interaction('partnerships.partner.welcome', {
         merchantId: props.merchantId,
+        variant: props.experimentVariant,
       }),
     );
 
@@ -15,6 +16,15 @@ const S0 = (props) => {
         partner_dashboard_welcome_module: true,
       },
     });
+  };
+
+  const handleLearnMoreClick = () => {
+    props.tracking.trackEvent(
+      window.rzpQ.onbr().interaction('partnerships.partner.welcome.learn_about_program', {
+        merchantId: props.merchantId,
+        variant: props.experimentVariant,
+      }),
+    );
   };
 
   return (
@@ -41,6 +51,7 @@ const S0 = (props) => {
               color: '#518FF0',
               marginTop: '40px',
             }}
+            onClick={handleLearnMoreClick}
           >
             Learn more about Partner Program <i className="i i-external-link " />
           </a>
