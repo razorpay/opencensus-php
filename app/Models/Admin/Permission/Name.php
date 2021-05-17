@@ -647,6 +647,9 @@ class Name
     // Perform general purpose read operations e.g. query cache stats, elasticsearch meta etc.
     const DEVELOPERS_READ                              = 'developers_read';
 
+    // Ledger service permissions
+    const LEDGER_SERVICE_ACTIONS                       = 'ledger_service_actions';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,

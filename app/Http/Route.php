@@ -2419,6 +2419,12 @@ class Route
         'create_FTA_payout_service'               => ['post',     'payouts_service/create_fta/{payout_id}',                 'PayoutController@createFTAForPayoutService'                   ],
         'create_ledger_payout_service'            => ['post',     'payouts_service/create_ledger',                          'PayoutController@createPayoutServiceTransaction'              ],
         'create_reversal_entry'                   => ['post',     'payouts_service/reversal/create',                        'ReversalController@createReversalEntryForPayoutService'       ],
+
+        // Ledger Routes
+        'create_ledger_account'                   => ['post',      'ledger_service/create_account',                         'LedgerController@createAccount'],
+        'create_ledger_accounts_in_bulk'          => ['post',      'ledger_service/create_accounts_in_bulk',                'LedgerController@createAccountsInBulk'],
+        'activate_ledger_account'                 => ['post',      'ledger_service/activate_account',                       'LedgerController@activateAccount'],
+        'update_ledger_account_detail'            => ['post',      'ledger_service/update_account_detail',                  'LedgerController@updateAccountDetail'],
     ];
 
     public static $public = [
@@ -4623,6 +4629,11 @@ class Route
         'freshchat_get_chat_timings_config',
         'freshchat_put_chat_holidays_config',
         'freshchat_get_chat_holidays_config',
+
+        'create_ledger_account',
+        'create_ledger_accounts_in_bulk',
+        'activate_ledger_account',
+        'update_ledger_account_detail',
     ];
 
     public static $routePermission = [
@@ -5513,6 +5524,12 @@ class Route
         'partner_activation_update'                => Permission::EDIT_PARTNERS,
         'partner_activation_status'                => Permission::EDIT_ACTIVATE_PARTNER,
         'partner_actions'                          => Permission::PARTNER_ACTIONS,
+
+        // Ledger Service Routes
+        'create_ledger_account'                           => Permission::LEDGER_SERVICE_ACTIONS,
+        'create_ledger_accounts_in_bulk'                  => Permission::LEDGER_SERVICE_ACTIONS,
+        'activate_ledger_account'                         => Permission::LEDGER_SERVICE_ACTIONS,
+        'update_ledger_account_detail'                    => Permission::LEDGER_SERVICE_ACTIONS,
     ];
 
     public static $bankingRoutePermissions = [
@@ -8483,6 +8500,12 @@ class Route
             'workflow_payout_amount_rules_edit',
             'workflow_payout_amount_rules_get_admin',
             'workflow_update',
+
+            // ledger service
+            'create_ledger_account',
+            'create_ledger_accounts_in_bulk',
+            'activate_ledger_account',
+            'update_account_detail',
         ],
 
         //
@@ -9175,6 +9198,13 @@ class Route
             'create_FTA_payout_service',
             'create_ledger_payout_service',
             'internal_merchant_fetch',
+        ],
+
+        'ledger' => [
+            'activate_ledger_account',
+            'create_ledger_account',
+            'create_ledger_accounts_in_bulk',
+            'update_account_detail',
         ]
     ];
 

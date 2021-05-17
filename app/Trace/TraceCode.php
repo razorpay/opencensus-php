@@ -4463,6 +4463,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_UPDATE_AFTER_FTA_RECON_SERVICE_DATA_SYNC_FAILED = 'PAYOUT_UPDATE_AFTER_FTA_RECON_SERVICE_DATA_SYNC_FAILED';
     const REARCH_CRITIERIA_CHECK_FAILED                         = 'REARCH_CRITIERIA_CHECK_FAILED';
 
+    # Ledger
+    const LEDGER_RESPONSE                                       = 'LEDGER_RESPONSE';
+    const LEDGER_REQUEST                                        = 'LEDGER_REQUEST';
+    const LEDGER_FAILURE_EXCEPTION                              = 'LEDGER_FAILURE_EXCEPTION';
+
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

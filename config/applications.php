@@ -929,7 +929,7 @@ return [
         'maker_email' => env('MERCHANT_RISK_ALERT_WORKFLOW_MAKER_EMAIL', 'shashank@razorpay.com'),
         'secret'      => env('MERCHANT_RISK_ALERTS_SECRET')
     ],
-    
+
     'sms_sync'  =>  [
         'secret'   => env('SMS_SYNC_SECRET')
     ],
@@ -944,6 +944,17 @@ return [
         'user'          => env('TEMPLATING_SERVICE_AUTH_KEY'),
         'password'      => env('TEMPLATING_SERVICE_AUTH_SECRET'),
         'url'           => env('TEMPLATING_SERVICE_URL'),
+    ],
+
+    'ledger' => [
+        'enabled'   => env('LEDGER_ENABLED', false),
+        'url'       => [
+            'live' => env('LEDGER_LIVE_URL'),
+            'test' => env('LEDGER_TEST_URL'),
+        ],
+        // Key and secret through which api will call ledger
+        'ledger_key'        => env('LEDGER_KEY'),
+        'ledger_secret'     => env('LEDGER_SECRET'),
     ],
 
     'banking_account_service' => [

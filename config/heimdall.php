@@ -852,6 +852,10 @@ return [
                 'description' => 'Perform general purpose read operations e.g. query cache stats, elasticsearch meta etc',
                 'assignable'  => true,
             ],
+            Permission::LEDGER_SERVICE_ACTIONS => [
+                'description' => 'Allows performing various create/update operations on Ledger service such as account create etc',
+                'assignable'  => true,
+            ],
         ],
 
         // Permissions

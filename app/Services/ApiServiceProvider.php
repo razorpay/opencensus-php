@@ -475,6 +475,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerCacheManager();
 
+        $this->registerLedger();
     }
 
     /**
@@ -537,6 +538,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             'cache',
             'cache.store',
             'cache.psr6',
+            'ledger',
         ];
     }
 
@@ -1407,6 +1409,18 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->app->singleton('cache.psr6', function ($app) {
             return new Psr16Adapter($app['cache.store']);
+        });
+    }
+
+    protected function registerLedger()
+    {
+        $this->app->bind('ledger', function($app)
+        {
+            $enabled = $app['config']->get('applications.ledger.enabled');
+
+            $implementation = $enabled ? Ledger::class : Mock\Ledger::class;
+
+            return new $implementation($app);
         });
     }
 }
