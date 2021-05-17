@@ -48,7 +48,7 @@ _dcs.account = '9421167';
 
 <script>
   // @Todo: remove onload and onerror after debugging the missing display_google_auth event issue
-  function scriptEvent(eventName, scriptSrc, type) {
+  function trackScriptEvent(eventName, type) {
     try {
       if (window.rzpQ) {
         switch (type) {
@@ -56,7 +56,6 @@ _dcs.account = '9421167';
             window.rzpQ.push(
               window.rzpQ.now().onbr().success(eventName, {
                 mode: 'live',
-                src: scriptSrc,
               }),
             );
             break;
@@ -64,17 +63,16 @@ _dcs.account = '9421167';
             window.rzpQ.push(
               window.rzpQ.now().onbr().failed(eventName, {
                 mode: 'live',
-                src: scriptSrc,
               }),
             );
             break;
           default:
-            console.error("er::", scriptSrc);
+            console.error("error script event");
         }
       } else {
         var checkRzpqInterval = setInterval(() => {
           if (window.rzpQ) {
-            scriptEvent(eventName, scriptSrc, type);
+            trackScriptEvent(eventName, type);
             clearInterval(checkRzpqInterval);
           }
         }, 200);
@@ -83,20 +81,19 @@ _dcs.account = '9421167';
       console.error("err::", err);
     }
   }
-  var gAuthOneTapscript = document.createElement('script');
-  var onetapScriptSrc = 'https://accounts.google.com/gsi/client';
-  gAuthOneTapscript.async = true;
-  document.documentElement.appendChild(gAuthOneTapscript);
-  gAuthOneTapscript.onerror = function () {
+
+  function oneTapError() {
     window.isOneTapScriptFailed = true;
-    scriptEvent('signup.google_onetap_script_load', onetapScriptSrc, 'failed');
+    trackScriptEvent('signup.google_onetap_script_load', 'failed');
   };
-  gAuthOneTapscript.onload = function () {
+  function oneTapSuccess() {
     window.isOneTapScriptFailed = false;
-    scriptEvent('signup.google_onetap_script_load', onetapScriptSrc, 'success');
+    trackScriptEvent('signup.google_onetap_script_load', 'success');
   };
-  gAuthOneTapscript.src = onetapScriptSrc;
+  trackScriptEvent('signup.google_onetap_script_attach', 'success');
 </script>
+
+<script async defer src="https://accounts.google.com/gsi/client" onerror="oneTapError()" onload="oneTapSuccess()"></script>
 
 <script>
   document.domain = window.location.hostname.split(".").slice(-2).join(".");
