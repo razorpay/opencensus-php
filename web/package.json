@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@commander/services": "1.0.3",
-    "@commander/shield": "0.0.1202",
+    "@commander/shield": "0.0.1203",
     "@razorpay/blade": "https://github.com/razorpay/blade.git#1584244",
     "@types/react-is": "17.0.0",
     "@types/yup": "0.29.10",
