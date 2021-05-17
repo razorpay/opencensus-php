@@ -132,8 +132,6 @@ final class Constants
 
     const BENEFICIARY_REQUIRED          = 'beneficiary_required';
 
-    const BENEFICIARY_BANK_NAME          = 'beneficiary_bank_name';
-
     const FUND_ACCOUNT_VALIDATION        = 'fund_account_validation';
 
     const PREFERRED_SOURCE_ACCOUNT_ID    = 'preferred_source_account_id';

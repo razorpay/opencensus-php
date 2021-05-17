@@ -226,7 +226,6 @@ class CreateAccount extends Base
             Constants::IS_VIRTUAL_ACCOUNT         => $ba->isVirtual(),
             Constants::BENEFICIARY_ADDRESS        => $ba->getBeneficiaryAddress1(),
             Constants::BENEFICIARY_COUNTRY        => $ba->getBeneficiaryCountry(),
-            Constants::BENEFICIARY_BANK_NAME      => $ba->getBankName(),
         ];
     }
 
@@ -243,7 +242,6 @@ class CreateAccount extends Base
             Constants::BENEFICIARY_MOBILE         => $ba->getBeneficiaryMobile(),
             Constants::BENEFICIARY_ADDRESS        => $ba->getBeneficiaryAddress1(),
             Constants::BENEFICIARY_COUNTRY        => Country::getCountryCode(strtolower($ba->getBeneficiaryCountry())),
-            Constants::BENEFICIARY_BANK_NAME      => $ba->getChannel(),
         ];
     }
 
