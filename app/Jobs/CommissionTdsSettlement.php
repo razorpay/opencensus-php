@@ -11,6 +11,7 @@ use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Partner\Commission\Invoice;
+use RZP\Models\Partner\Metric as PartnerMetric;
 
 class CommissionTdsSettlement extends Job
 {
@@ -94,6 +95,8 @@ class CommissionTdsSettlement extends Job
                 return;
             }
 
+            $timeStarted = microtime(true);
+
             $core = new Commission\Core;
 
             $afterId = null;
@@ -154,6 +157,12 @@ class CommissionTdsSettlement extends Job
 
                 CommissionInvoiceAction::dispatch($this->mode, $invoice->getStatus(), $invoice->getId());
             }
+
+            $timeTaken = microtime(true) - $timeStarted;
+
+            $timeTakenMilliSeconds = (int) $timeTaken * 1000;
+
+            $this->trace->histogram(PartnerMetric::COMMISSION_TDS_SETTLEMENT_PROCESS_TIME_MS, $timeTakenMilliSeconds);
 
             $this->delete();
         }

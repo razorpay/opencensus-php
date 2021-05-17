@@ -4453,6 +4453,13 @@ class Core extends Base\Core
 
         $this->app->hubspot->trackSubmerchantSignUp($partner->getEmail());
 
+        $dimension = [
+            'partner_type' => $partner->getPartnerType(),
+            'source'       => PartnerConstants::BULK_LINKING_ADMIN
+        ];
+
+        $this->trace->count(Partner\Metric::SUBMERCHANT_CREATE_TOTAL, $dimension);
+
         return $output;
     }
 

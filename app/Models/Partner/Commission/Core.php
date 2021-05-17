@@ -10,6 +10,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
 use RZP\Models\Transaction;
+use RZP\Models\Partner\Metric;
 use RZP\Models\Merchant\Detail;
 use RZP\Jobs\CommissionCapture;
 use RZP\Models\Merchant\Balance;
@@ -326,6 +327,8 @@ class Core extends Base\Core
             $commission->setStatus(Status::CAPTURED);
 
             $this->repo->saveOrFail($commission);
+
+            $this->trace->count(Metric::COMMISSION_CAPTURE_TOTAL, $commission->getMetricDimensions());
 
             return $commission;
         });

@@ -18,6 +18,7 @@ use RZP\Models\Pricing\Plan;
 use RZP\Jobs\CommissionCapture;
 use RZP\Exception\LogicException;
 use RZP\Models\Partner\Commission;
+use RZP\Models\Partner\Metric;
 use RZP\Constants as BaseConstants;
 use RZP\Models\Transaction\FeeBreakup;
 use RZP\Models\Partner\Commission\Component;
@@ -698,6 +699,8 @@ class Calculator extends Base\Core
             $this->repo->saveOrFail($commissionComponent);
 
             $this->traceContext(TraceCode::COMMISSION_SAVED, ['commission_id' => $commission->getId()]);
+
+            $this->trace->count(Metric::COMMISSION_CREATED_TOTAL, $commission->getMetricDimensions());
 
             $this->traceContext(TraceCode::COMMISSION_COMPONENTS_SAVED, ['commission_component_id' => $commissionComponent->getId()]);
 

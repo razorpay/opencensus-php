@@ -76,6 +76,7 @@ use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Models\Payment\Config as PaymentConfig;
 use RZP\Mail\Merchant\CreateSubMerchantPartner;
 use RZP\Constants\{Mode, Entity as CE, Product};
+use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
 use RZP\Models\Admin\Permission\Name as Permission;
@@ -295,6 +296,13 @@ class Service extends Base\Service
         ]);
 
         $this->app->hubspot->trackSubmerchantSignUp($merchant->getEmail());
+
+        $dimension = [
+            'partner_type' => $merchant->getPartnerType(),
+            'source'       => $source
+        ];
+
+        $this->trace->count(PartnerMetric::SUBMERCHANT_CREATE_TOTAL, $dimension);
 
         if ($isLinkedAccount === true)
         {
@@ -4155,6 +4163,13 @@ class Service extends Base\Service
             $data);
 
         $this->app->hubspot->trackSubmerchantSignUp($partner->getEmail());
+
+        $dimension = [
+            'partner_type' => $partner->getPartnerType(),
+            'source'       => PartnerConstants::LINKING_ADMIN
+        ];
+
+        $this->trace->count(PartnerMetric::SUBMERCHANT_CREATE_TOTAL, $dimension);
 
         return $accessMap;
     }

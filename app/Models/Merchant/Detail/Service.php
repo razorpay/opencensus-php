@@ -30,6 +30,7 @@ use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Merchant\Document as Document;
 use RZP\Models\Merchant\Referral as Referral;
 use RZP\Models\Merchant\Notify as NotifyTrait;
+use RZP\Models\Partner\Metric as PartnerMetric;
 use \RZP\Models\State\Entity as StateChangeEntity;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Models\Merchant\Document\FileHandler\Factory;
@@ -1048,6 +1049,13 @@ class Service extends Base\Service
                 $data);
 
             $this->app->hubspot->trackSubmerchantSignUp($partner->getEmail());
+
+            $dimension = [
+                'partner_type' => $partner->getPartnerType(),
+                'source'       => PartnerConstants::REFERRAL
+            ];
+
+            $this->trace->count(PartnerMetric::SUBMERCHANT_CREATE_TOTAL, $dimension);
         }
 
         unset($input[Entity::REFERRAL_CODE]);

@@ -234,4 +234,12 @@ class Entity extends Base\PublicEntity
 
         $query->where($partnerIdColumn, $merchantId);
     }
+
+    public function getMetricDimensions(array $extra = []): array
+    {
+        return $extra + [
+                'type'   => $this->getType(),
+                'status' => $this->getStatus(),
+            ];
+    }
 }

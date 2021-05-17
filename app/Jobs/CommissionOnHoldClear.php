@@ -6,6 +6,7 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Trace\TraceCode;
 use RZP\Models\Partner\Commission;
+use RZP\Models\Partner\Metric as PartnerMetric;
 
 class CommissionOnHoldClear extends Job
 {
@@ -37,6 +38,8 @@ class CommissionOnHoldClear extends Job
         try
         {
             $core = new Commission\Core;
+
+            $timeStarted = microtime(true);
 
             $txn           = null;
             $successTxnIds = [];
@@ -79,6 +82,12 @@ class CommissionOnHoldClear extends Job
             {
                 (new Commission\CommissionOnHoldUtility())->dispatchForSettlement($txn, $successTxnIds);
             }
+
+            $timeTaken = microtime(true) - $timeStarted;
+
+            $timeTakenMilliSeconds = (int) $timeTaken * 1000;
+
+            $this->trace->histogram(PartnerMetric::COMMISSION_ON_HOLD_CLEAR_PROCESS_TIME_MS, $timeTakenMilliSeconds);
 
             $this->delete();
         }

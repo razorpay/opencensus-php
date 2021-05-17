@@ -8,6 +8,7 @@ use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Partner\Constants as PartnerConstants;
+use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Trace\TraceCode;
 use RZP\Models\Promotion;
 use RZP\Models\Merchant\Promotion as MerchantPromotion;
@@ -254,6 +255,13 @@ class Core extends Base\Core
                 $data);
 
             $this->app->hubspot->trackSubmerchantSignUp($partner->getEmail());
+
+            $dimension = [
+                'partner_type' => $partner->getPartnerType(),
+                'source'       => PartnerConstants::COUPON
+            ];
+
+            $this->trace->count(PartnerMetric::SUBMERCHANT_CREATE_TOTAL, $dimension);
         }
     }
 }
