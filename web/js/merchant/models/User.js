@@ -525,8 +525,7 @@ export default class User {
   }
 
   get iscaptureSettingsRevampEnabled() {
-    // return this.getExpStatus('capture_settings_revamp');
-    return false;
+    return this.getExpStatus('capture_settings_revamp');
   }
 
   get isCovidReliefFlowEnabled() {

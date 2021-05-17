@@ -401,12 +401,19 @@ export default function (state = initialState, action) {
         ...initialState,
       });
 
-    case `${FETCH_LATE_AUTH_CONFIG}::SUCCESS`:
+    case `${FETCH_LATE_AUTH_CONFIG}::SUCCESS`: {
+      // only show default configs
+      const filteredItems = action.payload.data.items.filter((item) => item.is_default === true);
+
       return set(state, 'lateAuthConfig', {
         loading: false,
-        data: action.payload.data,
+        data: {
+          ...action.payload.data,
+          items: filteredItems,
+        },
         error: null,
       });
+    }
 
     case `${FETCH_LATE_AUTH_CONFIG}::ERROR`:
       return set(state, 'lateAuthConfig', {

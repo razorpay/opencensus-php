@@ -2,6 +2,7 @@
   height 600px
   display flex
   flex-direction column
+  box-shadow: 0px 0px 8px rgb(0, 0, 0, 0.3)
 
   .modal-header
     background-color white
@@ -55,9 +56,13 @@
         border 1px solid rgba(173, 188, 201, 0.47)
         height 90%
         width 90%
+        background-color #fdfdfd
+
+        strong
+          cursor pointer
 
         &.highlight-box
-          background-color #f9fafb
+          background-color #fdfdfd
 
         .Input
           width 80%
@@ -73,10 +78,10 @@
           display flex
           flex .5
           flex-direction row
-          padding-top 10px
+          padding-top 15px
 
           p:nth-child(3)
-            margin-top 30px
+            margin-top 25px
 
           .left-col
             display flex
@@ -92,8 +97,13 @@
             flex .9
 
             .custom-pricing__contact-support
-              margin-top 20px
-              margin-bottom 40px
+              margin-top -15px
+              margin-bottom 13px
+              border 1px solid #ebeff1
+              padding 4px 4px 4px 10px
+              margin-right 8px
+              font-size 12px
+              background-color white
 
               >div
                 padding 5px 0px
@@ -115,7 +125,7 @@
           padding-left 10px
           border-left 3px solid #528FF0
           margin 10px
-          font-size 14px
+          font-size 13px
           font-weight 400
         }
 
@@ -174,4 +184,187 @@
   color #7B8199
   font-weight 400
   font-size 12px
-  // padding 2px 0px
+
+@keyframes opacityanimation {
+  from {opacity : 0;}
+  to {opacity : 100;}
+}
+
+.m-t-negative
+  margin-top -16px
+
+.graphical-explain-div
+  position: absolute;
+  top: 6%;
+  left: 100%;
+  background-color: #FAFAFA;
+  box-shadow: inset 0px 0px 4px -1px rgb(0, 0, 0, 0.3);
+  width: 86%;
+  height: 528px;
+
+  &--header
+    padding: 27px 0px 14px 22px;
+    font-weight: bold;
+    font-size: 14px;
+    line-height: 20px;
+    color: #515978;
+    border-bottom: 1px solid rgba(173, 188, 201, 0.47);
+
+  &--blocks
+    padding-top: 20px;
+    padding-left: 16px;
+    padding-right: 16px;
+
+  &--info
+    background: rgba(243, 246, 248, 0.3);
+    border: 1px solid rgba(173, 188, 201, 0.47);
+    padding: 8px 11px;
+    img
+      margin-right: 12px;
+
+  &--info-primary-header
+    font-weight: bold;
+    font-size: 14px;
+    line-height: 20px;
+    color: #3395FF;
+
+  &--info-secondary-header
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #38465D;
+    font-size: 13px;
+    line-height: 16px;
+    width: 80%;
+    span
+      text-transform: none;
+      font-style: italic;
+      font-weight: normal;
+      padding-left: 31px;
+      span
+        padding-left: 0px;
+        font-weight: bold;
+    .refund-speed
+      font-style: normal;
+      font-weight: bold;
+      padding-left: 0px;
+
+  &--indication-1
+    border-left: 1px solid #ADBCC9;
+    height: 84px;
+    margin-left: 25px;
+    margin-top: 5px;
+
+  &--indication-1-dashed
+    height: 104px;
+    margin-top: -68px;
+    border-left-style: dashed;
+
+  &--indication-2
+    width: 28px;
+    border-top: 1px solid #ADBCC9;
+    position: relative;
+    left: 9.3%;
+
+  &--indication-2-dashed
+    border-top-style: dashed;
+
+  &--steps
+    position: relative;
+    left: 19.3%;
+    top: -48px;
+    div
+      &:first-child
+        font-weight: 600;
+        font-size: 12px;
+        line-height: 15px;
+        color: #38465D;
+        margin-bottom: 10px;
+        margin-left: -14px;
+        span
+          font-weight: normal;
+    &--show-animation
+      animation-name: opacityanimation;
+      animation-duration: 2s;
+
+.payment-capture-panel
+  .capture-panel-content
+    .left-panel
+      div
+        &:nth-child(3)
+          padding-bottom: 10px;
+      .panel-header
+        padding-top: 6px;
+        h4
+          b
+            font-size: 14px;
+            text-transform: uppercase;
+          .i.i-done
+            margin-left: 8px;
+            color: #528FF0;
+            font-size: 88%;
+            vertical-align: middle;
+      .panel-description
+        .capture-change-btn
+          position: absolute;
+          right: 6%;
+          padding: 8px 24px;
+          margin-top: -10px;
+
+  .capture-details
+    font-size: 13px;
+    line-height: 18px;
+    margin-top: 11px;
+
+    .details-toggler
+      color: #528ff0;
+      margin-left: 5px;
+      cursor: pointer;
+
+    &--block
+      margin-top: 24px;
+      p
+        &:first-child
+          font-size: 14px;
+
+    &--steps
+      margin-top: 46px;
+      margin-bottom: -20px;
+
+    &--each-step
+      position: relative;
+      top: -12px;
+
+    &--steps-img
+      width: 31px;
+      height: 31px;
+
+    &--dot
+      width: 8px;
+      height: 8px;
+      background: #7B8199;
+      border-radius: 50%;
+      display: inline-block;
+      margin: 0px 24px;
+
+    &--step-detail
+      font-size: 14px;
+      line-height: 17px;
+      font-weight: 500;
+      color: #7B8199;
+      position: relative;
+      left: 10.5%;
+      top: -24px;
+      margin-right: 90px;
+
+    &--line
+      height: 70px;
+      border-right: 1px solid #E5E5E5;
+      width: 1px;
+      margin-left: 58px;
+      margin-top: -42px;
+
+.note__orders-api
+  margin-top 15px
+  padding 10px 0px 0px 0px
+  border-top 1px solid #ECEFF0
+  margin-bottom -8px

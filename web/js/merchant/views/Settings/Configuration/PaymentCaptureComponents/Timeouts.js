@@ -1,6 +1,6 @@
 import { parseTimeoutValues, renderTimeoutAsString } from './util';
 
-function Timeouts({ onEditTimeoutClick, config, role }) {
+function Timeouts({ config, role }) {
   const capture_options = config.capture_options;
 
   return (

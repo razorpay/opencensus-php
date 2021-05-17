@@ -20,10 +20,10 @@ const PAYMENT_METHODS = {
 };
 
 @connect(
-  state => ({
+  (state) => ({
     settings: state.subscriptions.settings,
   }),
-  { fetchSettings, saveSettings, showNotification }
+  { fetchSettings, saveSettings, showNotification },
 )
 export default class SubscriptionsSettings extends React.Component {
   state = {};
@@ -32,9 +32,8 @@ export default class SubscriptionsSettings extends React.Component {
     this.props.fetchSettings();
   }
 
-  onToggleChange = methodName => (isChecked, cb) => {
-    const paymentMethod =
-      findBy(this.props.settings.items, 'name', methodName) || {};
+  onToggleChange = (methodName) => (isChecked, cb) => {
+    const paymentMethod = findBy(this.props.settings.items, 'name', methodName) || {};
 
     const checked = paymentMethod.setting_enabled === '1';
 
@@ -54,9 +53,7 @@ export default class SubscriptionsSettings extends React.Component {
 
         this.props.showNotification({
           type: 'success',
-          message: `Payment method ${methodName} ${
-            checked ? 'disabled' : 'enabled'
-          } successfully`,
+          message: `Payment method ${methodName} ${checked ? 'disabled' : 'enabled'} successfully`,
         });
       })
       .catch(({ errors }) => {
@@ -146,27 +143,15 @@ export default class SubscriptionsSettings extends React.Component {
   }
 }
 
-const ToggleCard = ({
-  title,
-  checked,
-  children,
-  description,
-  onToggleChange,
-}) => {
+const ToggleCard = ({ title, checked, children, description, onToggleChange }) => {
   return (
     <div class="panel panel-default ToggleCard">
       <div class="panel-heading">
         <span class="title">{title}</span>
 
         <span class="pull-right toggler-btn">
-          <SwitchField
-            checked={checked}
-            onChange={onToggleChange}
-            type="prime"
-          />
-          <strong
-            class={classList('m-l', checked ? 'text-primary' : 'text-faded')}
-          >
+          <SwitchField checked={checked} onChange={onToggleChange} type="prime" />
+          <strong class={classList('m-l', checked ? 'text-primary' : 'text-faded')}>
             {checked ? 'Enabled' : 'Disabled'}
           </strong>
         </span>
@@ -180,7 +165,7 @@ const ToggleCard = ({
   );
 };
 
-const isEnabled = methodName => settings => {
+const isEnabled = (methodName) => (settings) => {
   const paymentMethod = findBy(settings.items, 'name', methodName) || {};
 
   return paymentMethod.setting_enabled === '1';

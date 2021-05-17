@@ -5,8 +5,9 @@ import { bindActionCreators } from 'redux';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
 import Input from 'common/new-ui/Input';
-import { handleTimeoutValues } from './data';
+import { getTimeoutOptions, TIMEOUT_VALUES } from './data';
 import RefundSpeed from './RefundSpeed';
+import { GraphicalExplanation } from './GraphicalExplanation';
 
 function CaptureMode(props) {
   const [captureMode, setcaptureMode] = useState(() => {
@@ -24,16 +25,25 @@ function CaptureMode(props) {
     } else {
       tvalue = captureOptions.manual_expiry_period;
     }
-    return tvalue;
+    return parseInt(tvalue, 10);
   });
 
   const onTimeoutValueChange = (e) => {
-    const _tValue = parseInt(e.target.value);
+    const _tValue = parseInt(e.target.value, 10);
     settimeoutValue(_tValue);
   };
 
   const onClickNext = () => {
-    const _tValue = parseInt(timeoutValue);
+    const _tValue = parseInt(timeoutValue, 10);
+
+    window.rzpAnalytics({
+      eventCategory: 'Dashboard - Payments Capture Settings v2',
+      eventAction: 'Next',
+      eventLabel:
+        captureMode === 'automatic'
+          ? 'Change | Automatic Capture | Next'
+          : 'Change | Manual Capture | Next',
+    });
 
     if (captureMode === 'manual') {
       props.openModal({
@@ -72,96 +82,118 @@ function CaptureMode(props) {
   };
 
   return (
-    <div class="capture-mode-container">
-      <ModalHeader title="Capture Settings" onCloseClick={onClose} />
-      <div class="content">
-        <div class={`upper-panel ${captureMode ? 'flex-7' : ''}`}>
-          <div class="panel-rows">
-            <div class={`${captureMode ? handleLayout().upper : ``}`}>
-              <div class="left-col">
-                <input
-                  type="radio"
-                  onClick={(_) => {
-                    setcaptureMode(`automatic`);
-                  }}
-                  checked={captureMode === 'automatic'}
-                />
-              </div>
-              <div class="right-col">
-                <strong>Automatic Capture</strong>
-                <p class="highlight__subtext">
-                  Sit back, relax! Authorised payments will be captured automatically.
-                </p>
+    <>
+      <div class="capture-mode-container">
+        <ModalHeader title="Capture Settings" onCloseClick={onClose} />
+        <div class="content">
+          <div class={`upper-panel ${captureMode ? 'flex-7' : ''}`}>
+            <div class="panel-rows">
+              <div class={`${captureMode ? handleLayout().upper : ``}`}>
+                <div class="left-col">
+                  <input
+                    type="radio"
+                    onClick={(_) => {
+                      setcaptureMode(`automatic`);
+                    }}
+                    checked={captureMode === 'automatic'}
+                  />
+                </div>
+                <div class="right-col">
+                  <strong
+                    onClick={(_) => {
+                      setcaptureMode(`automatic`);
+                    }}
+                  >
+                    Automatic Capture
+                  </strong>
+                  <p class="highlight__subtext">
+                    Sit back, relax! Authorised payments will be captured automatically.
+                  </p>
 
-                {captureMode === `automatic` && (
-                  <>
-                    <p style={{ fontSize: '12px' }}>Capture all payments authorised within</p>
-                    <Input.Select
-                      options={handleTimeoutValues(timeoutValue)}
-                      defaultValue={timeoutValue}
-                      onChange={onTimeoutValueChange}
-                    />
-                    <p class="highlight__subtext">Min 12 min and maximum 5 days</p>
-                  </>
-                )}
+                  {captureMode === `automatic` && (
+                    <>
+                      <p style={{ fontSize: '12px' }}>Capture all payments authorised within</p>
+                      <Input.Select
+                        options={getTimeoutOptions(TIMEOUT_VALUES, timeoutValue)}
+                        defaultValue={timeoutValue}
+                        onChange={onTimeoutValueChange}
+                      />
+                      <p class="highlight__subtext">Minimum 12 mins and maximum 5 days</p>
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
-            <div class={`highlight-border-top ${captureMode ? handleLayout().lower : ``}`}>
-              <div class="left-col">
-                <input
-                  type="radio"
-                  onClick={(_) => {
-                    setcaptureMode(`manual`);
-                  }}
-                  checked={captureMode === 'manual'}
-                />
-              </div>
-              <div class="right-col">
-                <strong>Manual Capture</strong>
-                <p class="highlight__subtext">
-                  Payments have to be captured manually by you via the API or the dashboard
-                </p>
+              <div class={`highlight-border-top ${captureMode ? handleLayout().lower : ``}`}>
+                <div class="left-col">
+                  <input
+                    type="radio"
+                    onClick={(_) => {
+                      setcaptureMode(`manual`);
+                    }}
+                    checked={captureMode === 'manual'}
+                  />
+                </div>
+                <div class="right-col">
+                  <strong
+                    onClick={(_) => {
+                      setcaptureMode(`manual`);
+                    }}
+                  >
+                    Manual Capture
+                  </strong>
+                  <p class="highlight__subtext">
+                    Payments have to be captured manually by you via the API or the dashboard
+                  </p>
 
-                {captureMode === `manual` && (
-                  <React.Fragment>
-                    <p style={{ fontSize: '12px' }}>Capture payments manually authorised within</p>
-                    <Input.Select
-                      options={handleTimeoutValues(timeoutValue)}
-                      defaultValue={timeoutValue}
-                      onChange={onTimeoutValueChange}
-                    />
-                    <p class="highlight__subtext">Min 12 min and maximum 5 days</p>
-                  </React.Fragment>
-                )}
+                  {captureMode === `manual` && (
+                    <React.Fragment>
+                      <p style={{ fontSize: '12px' }}>
+                        Capture payments manually authorised within
+                      </p>
+                      <Input.Select
+                        options={getTimeoutOptions(TIMEOUT_VALUES, timeoutValue)}
+                        defaultValue={timeoutValue}
+                        onChange={onTimeoutValueChange}
+                      />
+                      <p class="highlight__subtext">Minimum 12 mins and maximum 5 days</p>
+                    </React.Fragment>
+                  )}
+                </div>
               </div>
             </div>
           </div>
+          <div class={`lower-panel ${captureMode ? `flex-3` : ''}`}>
+            <div class="note">
+              <p>
+                <strong>Note</strong> : Payments not captured within 5 days of creation will be auto
+                refunded
+              </p>
+            </div>
+          </div>
         </div>
-        <div class={`lower-panel ${captureMode ? `flex-3` : ''}`}>
-          <div class="note">
-            <p>
-              <strong>Note</strong> : Payments not captured within 5 days of creation will be auto
-              refunded
-            </p>
+        <div class="actions">
+          <div class="stepper">
+            <span class="active" />
+            <span />
+          </div>
+          <div>
+            <button
+              class="btn btn-primary"
+              onClick={onClickNext}
+              disabled={captureMode ? false : true}
+            >
+              Next
+            </button>
           </div>
         </div>
       </div>
-      <div class="actions">
-        <div class="stepper">
-          <span class="active" />
-          <span />
-        </div>
-        <div>
-          <button
-            class="btn btn-primary"
-            onClick={onClickNext}
-            disabled={captureMode ? false : true}
-          >
-            Next
-          </button>
-        </div>
-      </div>
-    </div>
+      <GraphicalExplanation
+        captureMode={captureMode}
+        timeoutValue={timeoutValue}
+        animation1={true}
+        animation2={true}
+      />
+    </>
   );
 }
 
