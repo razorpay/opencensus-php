@@ -32,6 +32,8 @@ class Constants
 
     const SHOP_ESTABLISHMENT_CONDITION = self::DEFAULT_CONDITION;
 
+    const MSME_DOC_VERIFICATION_CONDITION = self::DEFAULT_CONDITION;
+
     const CIN_CONDITION = self::DEFAULT_CONDITION;
 
     const ESIGN_AADHAAR_CONDITION = [
@@ -78,6 +80,7 @@ class Constants
                 Operator::OR  => [
                     Entity::GSTIN_VERIFICATION_STATUS               => self::GSTIN_CONDITION,
                     Entity::SHOP_ESTABLISHMENT_VERIFICATION_STATUS  => self::SHOP_ESTABLISHMENT_CONDITION,
+                    Entity::MSME_DOC_VERIFICATION_STATUS            => self::MSME_DOC_VERIFICATION_CONDITION
                 ],
                 Operator::AND => self::BANK_DETAILS_VERIFICATION_CONDITION
             ]
