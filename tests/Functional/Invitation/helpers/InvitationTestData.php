@@ -5,6 +5,50 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
+    'testPostSendInvitationToNonExistingUserInX' => [
+        'request' => [
+            'url'    => '/invitations',
+            'method' => 'POST',
+            'content' => [
+                'email'       => 'testnonexistentuserinvite@razorpay.com',
+                'role'        => 'admin',
+                'sender_name' => 'sender_name'
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url')
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '100XInviteMerc',
+                'email'       => 'testnonexistentuserinvite@razorpay.com',
+                'role'        => 'admin'
+            ]
+        ]
+    ],
+
+    'testPostSendInvitationToNewUserInX' => [
+        'request' => [
+            'url'    => '/invitations',
+            'method' => 'POST',
+            'content' => [
+                'email'       => 'testteamxinvite@razorpay.com',
+                'role'        => 'admin',
+                'sender_name' => 'sender_name'
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url')
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '100XInviteMerc',
+                'email'       => 'testteamxinvite@razorpay.com',
+                'role'        => 'admin'
+            ]
+        ]
+    ],
+
     'testPostSendInvitationToNewUser' => [
         'request' => [
             'url'    => '/invitations',

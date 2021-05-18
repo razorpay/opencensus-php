@@ -12,6 +12,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Invitation\Invite as InvitationMail;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
+use RZP\Mail\Invitation\RazorpayX\Invite as xInvitationMail;
 use RZP\Models\Merchant\MerchantUser\Entity as MerchantUserEntity;
 
 class InvitationTest extends TestCase
@@ -20,6 +21,10 @@ class InvitationTest extends TestCase
     use RequestResponseFlowTrait;
 
     const DEFAULT_MERCHANT_ID = '1000InviteMerc';
+
+    const DEFAULT_X_MERCHANT_ID = '100XInviteMerc';
+
+    const EXISTING_MERCHANT_FOR_INVITED_USER_ID = '10000000000001';
 
     protected $merchantUser;
 
@@ -34,6 +39,162 @@ class InvitationTest extends TestCase
         $this->merchantUser = $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID);
 
         $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_MERCHANT_ID, $this->merchantUser->getId());
+    }
+
+    public function createXMerchantUser()
+    {
+        $this->fixtures->create('merchant',[ 'id' => self::DEFAULT_X_MERCHANT_ID ]);
+
+        $this->fixtures->create('merchant',[ 'id' => self::EXISTING_MERCHANT_FOR_INVITED_USER_ID ]);
+
+        $xMerchantUser = $this->createUserForMerchantWithoutCreatingMerchantUser(['email' => 'testteamxinvite@razorpay.com']);
+
+        $this->fixtures->create('merchant_detail', [
+            'activation_status' => 'activated',
+            'merchant_id'       => self::DEFAULT_X_MERCHANT_ID,
+            'business_type'     => '2',
+        ]);
+
+        return $xMerchantUser;
+    }
+
+    public function createUserForMerchantWithoutCreatingMerchantUser(array $attributes = [])
+    {
+        $user = $this->fixtures->user->createEntityInTestAndLive('user', $attributes);
+
+        return $user;
+    }
+
+    public function testPostSendInvitationToNonExistingUserInX()
+    {
+        Mail::fake();
+
+        $xMerchantUser = $this->createXMerchantUser();
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_X_MERCHANT_ID, $xMerchantUser->getId());
+
+        $this->startTest();
+
+        Mail::assertQueued(xInvitationMail::class, function ($mail)
+        {
+            $this->assertEquals('emails.invitation.razorpayx.invite_new_user', $mail->view);
+
+            return true;
+        });
+    }
+
+    public function testPostSendInvitationToNewUserInX()
+    {
+        Mail::fake();
+
+        $xMerchantUser = $this->createXMerchantUser();
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_X_MERCHANT_ID, $xMerchantUser->getId());
+
+        $this->startTest();
+
+        Mail::assertQueued(xInvitationMail::class, function ($mail)
+        {
+            $this->assertEquals('emails.invitation.razorpayx.invite_existing_user', $mail->view);
+
+            return true;
+        });
+    }
+
+    public function testPostSendInvitationToPgAdminInX()
+    {
+        Mail::fake();
+
+        $this->testData[__FUNCTION__] = $this->testData['testPostSendInvitationToNewUserInX'];
+
+        $xMerchantUser = $this->createXMerchantUser();
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_X_MERCHANT_ID, $xMerchantUser->getId());
+
+        $userId = $xMerchantUser['id'];
+
+        DB::table('merchant_users')
+            ->insert([
+                'merchant_id'    => self::EXISTING_MERCHANT_FOR_INVITED_USER_ID,
+                'user_id'        => $userId,
+                'product'        => 'primary',
+                'role'           => 'admin',
+                'created_at'  => Carbon::now()->getTimestamp(),
+                'updated_at'  => Carbon::now()->getTimestamp(),
+            ]);
+
+        $this->startTest();
+
+        Mail::assertQueued(xInvitationMail::class, function ($mail)
+        {
+            $this->assertEquals('emails.invitation.razorpayx.invite_existing_user', $mail->view);
+
+            return true;
+        });
+    }
+
+    public function testPostSendInvitationToPgOwnerInX()
+    {
+        Mail::fake();
+
+        $this->testData[__FUNCTION__] = $this->testData['testPostSendInvitationToNewUserInX'];
+
+        $xMerchantUser = $this->createXMerchantUser();
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_X_MERCHANT_ID, $xMerchantUser->getId());
+
+        $userId = $xMerchantUser['id'];
+
+        DB::table('merchant_users')
+            ->insert([
+                'merchant_id'    => self::EXISTING_MERCHANT_FOR_INVITED_USER_ID,
+                'user_id'        => $userId,
+                'product'        => 'primary',
+                'role'           => 'owner',
+                'created_at'  => Carbon::now()->getTimestamp(),
+                'updated_at'  => Carbon::now()->getTimestamp(),
+            ]);
+
+        $this->startTest();
+
+        Mail::assertQueued(xInvitationMail::class, function ($mail)
+        {
+            $this->assertEquals('emails.invitation.razorpayx.invite_existing_user', $mail->view);
+
+            return true;
+        });
+    }
+
+    public function testPostSendInvitationToExistingUserInX()
+    {
+        Mail::fake();
+
+        $this->testData[__FUNCTION__] = $this->testData['testPostSendInvitationToNewUserInX'];
+
+        $xMerchantUser = $this->createXMerchantUser();
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_X_MERCHANT_ID, $xMerchantUser->getId());
+
+        $userId = $xMerchantUser['id'];
+
+        DB::table('merchant_users')
+            ->insert([
+                'merchant_id'    => self::EXISTING_MERCHANT_FOR_INVITED_USER_ID,
+                'user_id'        => $userId,
+                'product'        => 'banking',
+                'role'           => 'owner',
+                'created_at'  => Carbon::now()->getTimestamp(),
+                'updated_at'  => Carbon::now()->getTimestamp(),
+            ]);
+
+        $this->startTest();
+
+        Mail::assertQueued(xInvitationMail::class, function ($mail)
+        {
+            $this->assertEquals('emails.invitation.razorpayx.invite_existing_x_user', $mail->view);
+
+            return true;
+        });
     }
 
     public function testPostSendInvitationToNewUserCustomBrandingOrg()

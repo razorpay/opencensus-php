@@ -57,6 +57,8 @@ class Constants
     const PARTNER_SUBMERCHANT_INVITE    = 'partner_submerchant_invite';
     const PARTNER_SUBMERCHANT_INVITE_INTERNAL    = 'partner_submerchant_invite_internal';
     const NBPLUS_TECH                   = 'nbplus_tech';
+    const BANKING                       = 'banking';
+    const OWNER                         = 'owner';
 
     const PARTNER_ON_BOARDING_REPLY = 'partner_on_boarding_reply';
 

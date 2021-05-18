@@ -3,6 +3,7 @@
 namespace RZP\Models\Invitation;
 
 use Mail;
+use Illuminate\Support\Collection;
 
 use RZP\Exception;
 use RZP\Models\Base;
@@ -29,6 +30,8 @@ class Core extends Base\Core
         $senderName = $this->getSenderName($input);
 
         $invitedUser = $this->repo->user->getUserFromEmail(strtolower($input[Entity::EMAIL]));
+
+        $allMerchantsForInvitedUser = optional($invitedUser)->merchants;
 
         if (empty($invitedUser) === false)
         {
@@ -72,7 +75,9 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::INVITATION_CREATE, $invitation->toArrayPublic());
 
-        $this->sendEmail($invitation, $senderName);
+        $invitedUserExists = (empty($invitedUser) === false);
+
+        $this->sendEmail($invitation, $senderName, $invitedUserExists, $allMerchantsForInvitedUser);
 
         return $invitation;
     }
@@ -108,7 +113,13 @@ class Core extends Base\Core
 
         $senderName = $this->getSenderName($input);
 
-        $this->sendEmail($invitation, $senderName);
+        $invitedUser = $this->repo->user->getUserFromEmail($invitation->getEmail());
+
+        $allMerchantsForInvitedUser = optional($invitedUser)->merchants;
+
+        $invitedUserExists = (empty($invitedUser) === false);
+
+        $this->sendEmail($invitation, $senderName, $invitedUserExists, $allMerchantsForInvitedUser);
 
         return $invitation;
     }
@@ -243,7 +254,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function sendEmail(Entity $invitation, string $senderName)
+    protected function sendEmail(Entity $invitation, string $senderName, bool $invitedUserExists, Collection $allMerchantsForInvitedUser = null)
     {
         $product = $invitation->getProduct();
 
@@ -275,7 +286,7 @@ class Core extends Base\Core
         }
         elseif ($product === Product::BANKING)
         {
-            $inviteMailer = new RazorpayXInvitationMail($invitation->getId(), $senderName);
+            $inviteMailer = new RazorpayXInvitationMail($invitation->getId(), $senderName, $invitedUserExists, $allMerchantsForInvitedUser);
 
             Mail::queue($inviteMailer);
         }

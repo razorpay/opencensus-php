@@ -1,8 +1,9 @@
 <?php
 
-namespace RZP\Mail\Invitation\RazorpayX;
+namespace RZP\Mail\Invitation\Razorpayx;
 
 use App;
+use RZP\Constants\Product;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
 
@@ -12,7 +13,11 @@ class Invite extends Mailable
 
     const SUBJECT            = 'Invitation to join %s | RazorpayX';
 
-    const TEMPLATE_PATH      = 'emails.invitation.razorpayx.invite';
+    const NEW_USER_TEMPLATE_PATH      = 'emails.invitation.razorpayx.invite_new_user';
+
+    const EXISTING_X_USER_TEMPLATE_PATH      = 'emails.invitation.razorpayx.invite_existing_x_user';
+
+    const EXISTING_USER_TEMPLATE_PATH      = 'emails.invitation.razorpayx.invite_existing_user';
 
     const INVITE_LINK_FORMAT = '%s/auth?invitation=%s';
 
@@ -22,7 +27,11 @@ class Invite extends Mailable
 
     protected $senderName;
 
-    public function __construct($invitationId, $senderName)
+    protected $invitedUserExists;
+
+    protected $allMerchantsForInvitedUser;
+
+    public function __construct($invitationId, $senderName, bool $invitedUserExists, $allMerchantsForInvitedUser = null)
     {
         parent::__construct();
 
@@ -33,6 +42,10 @@ class Invite extends Mailable
         $this->invitation = $app['repo']->invitation->find($invitationId);
 
         $this->senderName = $senderName;
+
+        $this->invitedUserExists = $invitedUserExists;
+
+        $this->allMerchantsForInvitedUser = $allMerchantsForInvitedUser;
     }
 
     protected function addSender()
@@ -111,8 +124,49 @@ class Invite extends Mailable
 
     protected function addHtmlView()
     {
-        $this->view(self::TEMPLATE_PATH);
+        /*
+         * Case where invited user is already registered on X
+         * Invited user has a record in merchant_user table with product as banking
+         */
+        if ($this->isAnExistingUserOnX($this->allMerchantsForInvitedUser))
+        {
+            $this->view(self::EXISTING_X_USER_TEMPLATE_PATH);
+        }
+        /*
+         * Case where invited user is not registered on X but registered on PG
+         * The invited user has a record in user table
+         */
+        elseif ($this->invitedUserExists)
+        {
+            $this->view(self::EXISTING_USER_TEMPLATE_PATH);
+        }
+        /*
+         * Case where user hasn't registered on any product
+         * The invited user doesn't have a record in user table
+         */
+        else
+        {
+            $this->view(self::NEW_USER_TEMPLATE_PATH);
+        }
 
         return $this;
+    }
+
+    protected function isAnExistingUserOnX($allMerchantsForInvitedUser)
+    {
+        if (empty($allMerchantsForInvitedUser) === true)
+        {
+            return false;
+        }
+
+        foreach ($allMerchantsForInvitedUser as $merchantUserMap)
+        {
+            if (optional($merchantUserMap->pivot)->product === Constants::BANKING)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
