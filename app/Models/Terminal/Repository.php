@@ -328,7 +328,7 @@ class Repository extends Base\Repository
             {
                 $data['message'] = $ex->getMessage();
 
-                $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_FIND_FAILED, $data);
+                $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
             }
         }
 
@@ -355,8 +355,12 @@ class Repository extends Base\Repository
 
         if ($variantFlag === 'proxy' and $fromTerminalsService === true)
         {
+            $data = ["function" => "find", "params" => $params];
+
             try
             {
+                $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
                 $path = "v1/admin/terminals/?";
 
                 foreach ($params as $queryParam => $value)
@@ -366,11 +370,16 @@ class Repository extends Base\Repository
 
                 $response = $this->app['terminals_service']->proxyTerminalService('', "GET", $path);
 
+                foreach ($response as $index => $value)
+                {
+                    $response[$index]["id"] = str_replace("term_", "", $response[$index]["id"]);
+                }
+
                 $tsTerminals = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response);
 
                 if (Terminal\Service::compareTerminalCollection($terminals, $tsTerminals) === false)
                 {
-                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $params);
+                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
                 }
 
                 return $tsTerminals;
@@ -1889,9 +1898,12 @@ class Repository extends Base\Repository
 
                 $terminal2 = $tsTerminals->first();
 
-                if (Terminal\Service::compareTerminalEntity($terminal, $terminal2) === false)
+                if (isset($terminal) and isset($terminal2))
                 {
-                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+                    if (Terminal\Service::compareTerminalEntity($terminal, $terminal2) === false)
+                    {
+                        $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+                    }
                 }
 
                 return $terminal2;
