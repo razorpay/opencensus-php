@@ -60,4 +60,60 @@ return [
             ]
         ],
     ],
+
+    'testGetContactTypeInternal' => [
+        'request'  => [
+            'url'     => '/contacts_internal/types',
+            'method'  => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => "collection",
+                'items' => [
+                    [
+                        'type' => 'customer'
+                    ],
+                    [
+                        'type' => 'employee'
+                    ],
+                    [
+                        'type' => 'vendor'
+                    ],
+                    [
+                        'type' => 'self'
+                    ],
+                ]
+            ]
+        ],
+    ],
+
+    'testGetCustomContactTypeInternal' => [
+        'request'  => [
+            'url'     => '/contacts_internal/types',
+            'method'  => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => "collection",
+                'count'     => 5,
+                'items' => [
+                    [
+                        'type' => 'customer'
+                    ],
+                    [
+                        'type' => 'employee'
+                    ],
+                    [
+                        'type' => 'vendor'
+                    ],
+                    [
+                        'type' => 'self'
+                    ],
+                    [
+                        'type' => 'Contact Type 1'
+                    ]
+                ]
+            ]
+        ],
+    ],
 ];

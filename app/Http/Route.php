@@ -1909,6 +1909,7 @@ class Route
         'contact_delete'                           => ['delete',   'contacts/{id}',                                  'ContactController@delete'                                          ],
         'contact_types_get'                        => ['get',      'contacts/types',                                 'ContactController@getTypes'                                        ],
         'contact_types_post'                       => ['post',     'contacts/types',                                 'ContactController@postType'                                        ],
+        'contact_types_get_internal'               => ['get',      'contacts_internal/types',                        'ContactController@getTypes'                                        ],
 
         // Fund Account Validation
         'fund_account_validate'                    => ['post',     'fund_accounts/validations',                      'FundAccountValidationController@create'                            ],
@@ -3076,6 +3077,7 @@ class Route
         'merchant_mtu_update',
         'webhook_send_email',
         'transaction_settled_data_fix',
+        'contact_types_get_internal',
         'contact_get_internal',
         'contact_create_internal',
         'fund_account_create_internal',
@@ -8583,6 +8585,7 @@ class Route
         ],
 
         'payout_links' => [
+            'contact_types_get_internal',
             'contact_get_internal',
             'contact_create_internal',
             'fund_account_create_internal',

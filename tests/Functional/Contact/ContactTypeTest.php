@@ -79,4 +79,52 @@ class ContactTypeTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testGetContactTypeInternal()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = $merchant['id'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->payoutLinksAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetCustomContactTypeInternal()
+    {
+        $merchantID = "10000000000000";
+
+        $contactType = "Contact Type 1";
+
+        //Create custom contact type
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/contacts/types',
+            'content' => [
+                'type'        => $contactType
+            ]
+        ];
+
+        $this->ba->privateAuth();
+
+        $this->sendRequest($request);
+
+        //Test custom contact type
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = $merchantID;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->payoutLinksAppAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(in_array(['type' => $contactType], $response['items'], true), true);
+    }
 }
