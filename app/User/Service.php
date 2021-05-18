@@ -1445,6 +1445,7 @@ class Service extends Base\Service
             'paymentpages_mli',
             'show_commission_balance',
             'custom_notes',
+            'capture_settings_revamp',
             'sellerapp_PL_batch_upload',
             'nps_survey_banner',
             'new_pp_success_modal',
