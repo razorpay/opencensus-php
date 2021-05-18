@@ -1175,12 +1175,20 @@ angular
   ])
   .factory('tracking', [
     function () {
-      var utm = null;
-      var gclid = null;
-      var browser_details = {};
+      let utm = null;
+      let gclid = null;
+      let browser_details = {};
+      /* The attributed utm property as per GA's logic.
+        This UTM property will tell to which campaign
+        the user is attributed to.
+        The logic is written in static repo.
+        https://github.com/razorpay/static/blob/master/src/analytics/js/getAttributedUtms.js
+     */
+      let attrib_utm = null;
       if (typeof window.razorpayAnalytics !== 'undefined') {
         utm = razorpayAnalytics.utils.getLandingParams();
         gclid = razorpayAnalytics.utils.getCookie('gclid');
+        attrib_utm = razorpayAnalytics.utils.getCookie('lastAttribUtm');
         if (typeof razorpayAnalytics.utils.getBrowserDetails !== 'undefined') {
           browser_details = razorpayAnalytics.utils.getBrowserDetails();
         }
@@ -1192,6 +1200,7 @@ angular
         reffering_url: document.referrer,
         url: document.location.href,
         session_id: window.session_id,
+        attrib_utm,
       };
       angular.extend(commonProperties, browser_details);
       function pushEvents(data) {
