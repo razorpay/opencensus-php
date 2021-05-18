@@ -8112,6 +8112,7 @@ class Route
             'scrooge_refunds_bulk_reference1_update',
             'scrooge_refunds_download',
             'scrooge_refunds_download_gateway_file',
+            'scrooge_refunds_download_gateway_report',
             'scrooge_refunds_enqueue',
             'scrooge_refunds_get',
             'scrooge_refunds_get_multiple',
