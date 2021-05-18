@@ -1,0 +1,24 @@
+name: UAT Workflow
+#on:
+#  push:
+#    branches:
+#      - uat_rebase_test
+on:
+  schedule:
+    - cron:  '30 * * * *'
+
+jobs:
+  pull_request:
+    runs-on: [self-hosted]
+    steps:
+      - name: checkout
+        uses: razorpay/checkout-action@08eef2bd6ada50786812e7351457a762856a532f
+      # Trigger back-merge master
+      - name: backmerge-master
+        id: backmerge
+        uses: devmasx/merge-branch@a1752b9ba42bb417ec19be7dc974e2faf77d3ef2
+        with:
+          type: now
+          from_branch: master
+          target_branch: uat_rebase_test
+          github_token: ${{ secrets.CI_BOT_TOKEN }}
