@@ -70,12 +70,43 @@ class BankingAccountService
             ];
         }
 
-        if($path === 'poll/status/123456' and $method === 'GET')
+        else if($path === 'poll/status/123456' and $method === 'GET')
         {
             $result = [
                 'data' => [
                     'status' => 'ACTIVE',
                 ]
+            ];
+        }
+
+        else if($path === 'business/10000000000000/person/' and $method === 'POST')
+        {
+            $result = [
+                'data' => [
+                    'id' => '20000000000000',
+                ]
+            ];
+        }
+
+        else if($path === 'business/10000000000000/applications/10000000000000' and $method === 'PATCH')
+        {
+            $result = [
+                'data' => [
+                    'id' => '30000000000000',
+                    'application_specific_fields' => [
+                        'isBusinessGovtBodyOrLiasedOnUnrecognisedStockOrInternationalOrg' => 'N',
+                        'isIndianFinancialInstitution'                                    => 'Y',
+                        'isOwnerNotIndianCitizen'                                         => 'N',
+                        'isTaxResidentOutsideIndia'                                       => 'Y',
+                        'role_in_business'                                                => 'ACCOUNTANT',
+                    ],
+                    'signatories' => [
+                        0 => [
+                            'person_id'      => '20000000000000',
+                            'signatory_type' => 'AUTHORIZED_SIGNATORY',
+                        ],
+                    ],
+                ],
             ];
         }
 

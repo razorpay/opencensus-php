@@ -99,8 +99,7 @@ class Service extends Base\Service
 
         $response =  $this->bankingAccountService->sendRequestAndProcessResponse($uri, $method, $input);
 
-        if(isset($response['error']) === true and
-           empty($personId) === false)
+        if(empty($personId) === false)
         {
             //personId is attached back to the response to avoid duplicate creation of person again.
             $response[Constants::PERSON_ID] = $personId;

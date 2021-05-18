@@ -4,12 +4,14 @@ namespace RZP\Services;
 
 use Cache;
 use ApiResponse;
+use RZP\Exception;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Http\Request\Requests;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Exception\IntegrationException;
 use RZP\Models\Merchant\Balance\AccountType;
@@ -57,6 +59,8 @@ class BankingAccountService
      */
     public function fetchAccountDetails(string $merchantId)
     {
+        $this->isBusinessExists($merchantId);
+
         $repo = new BalanceRepo();
 
         $balance = $repo->getBalanceByMerchantIdChannelAndAccountType($merchantId, Channel::ICICI, AccountType::DIRECT);
@@ -124,23 +128,28 @@ class BankingAccountService
      */
     public function fetchFtsFundAccountIdFromBas(string $merchantId, string $channel, string $accountNumber)
     {
-        $bankingAccount = $this->fetchBankingAccountByAccountNumberAndChannel($merchantId, $accountNumber, $channel);
+        $this->isBusinessExists($merchantId);
 
-        return $bankingAccount['fts_fund_account_id'];
+        $key = 'bas_fts_fund_account_id_' . $accountNumber . '_' . $channel;
+
+        $ftsFundAccId = Cache::get($key);
+
+        if (empty($ftsFundAccId) === true)
+        {
+            $bankingAccount = $this->fetchBankingAccountByAccountNumberAndChannel($merchantId, $accountNumber, $channel);
+
+            $ftsFundAccId = $bankingAccount['fts_fund_account_id'];
+
+            $expiresAt = Carbon::now()->addMinutes(30);
+
+            Cache::put($key, $ftsFundAccId, $expiresAt);
+        }
+
+        return $ftsFundAccId;
     }
 
     public function fetchBankingAccountByAccountNumberAndChannel($merchantId, $accountNumber, $channel)
     {
-        /*$key = 'bas_banking_account_' . $accountNumber . '_' . $channel;
-
-        $bankingAccount = json_decode(Cache::get($key), true);
-
-        if (empty($bankingAccount) === false and
-            $bankingAccount['status'] === 'ACTIVE')
-        {
-            return $bankingAccount;
-        }*/
-
         $businessId = $this->getBusinessId($merchantId);
 
         $path = 'business/'. $businessId .'/banking_account_by_account_number/' . $accountNumber;
@@ -150,14 +159,6 @@ class BankingAccountService
         ];
 
         $response = $this->sendRequestAndProcessResponse($path, 'GET', [], $headers);
-
-        /*$expiresAt = Carbon::now()->addMinutes(30);
-
-        $key = 'bas_banking_account_' . $accountNumber . '_' . $channel;
-
-        $value = $this->bankingAccountCacheFields($response['data']);
-
-        Cache::put($key, json_encode($value), $expiresAt);*/
 
         return $response['data'];
     }
@@ -173,12 +174,27 @@ class BankingAccountService
         /* @var BalanceEntity $balance */
         $balance = $this->app['repo']->balance->findOrFailById($balanceId);
 
-        $bankingAccount = $this->fetchBankingAccountByAccountNumberAndChannel($balance->getMerchantId(), $balance->getAccountNumber(), $balance->getChannel());
+        $this->isBusinessExists($balance->getMerchantId());
+
+        $key = 'bas_banking_account_id_' . $balance->getAccountNumber() . '_' . $balance->getChannel();
+
+        $bankingAccountId = Cache::get($key);
+
+        if (empty($bankingAccountId) === true)
+        {
+            $bankingAccount = $this->fetchBankingAccountByAccountNumberAndChannel($balance->getMerchantId(), $balance->getAccountNumber(), $balance->getChannel());
+
+            $bankingAccountId = $bankingAccount['id'];
+
+            $expiresAt = Carbon::now()->addMinutes(30);
+
+            Cache::put($key, $bankingAccountId, $expiresAt);
+        }
 
         //FE searches the id with this prefix
         $bcc = BankingAccountEntity::getIdPrefix();
 
-        return $bcc . $bankingAccount['id'];
+        return $bcc . $bankingAccountId;
     }
 
     public function sendRequestAndProcessResponse($path, $method, $content, $headers = [])
@@ -341,6 +357,19 @@ class BankingAccountService
         /* @var Entity $merchantDetail */
         $merchantDetail = $this->app['repo']->merchant_detail->findOrFail($merchantId);
 
-        return $merchantDetail->getBasBusinessId();
+        $businessId = $merchantDetail->getBasBusinessId();
+
+        if(empty($businessId) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_BAS_BUSINESS_ID_NOT_CREATED);
+        }
+
+        return $businessId;
+    }
+
+    public function isBusinessExists(string $merchantId)
+    {
+        $this->getBusinessId($merchantId);
     }
 }

@@ -63,14 +63,7 @@ class BankingAccountServiceTest extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $attribute =
-            [
-                'activation_status' => 'activated',
-                'merchant_id'       => '10000000000000',
-                'business_type'     => '2',
-            ];
-
-        $this->fixtures->create('merchant_detail', $attribute);
+        $this->createMerchantDetailWithBusinessId();
 
         $this->startTest();
 
@@ -139,5 +132,43 @@ class BankingAccountServiceTest extends TestCase
                               ]);
 
         $this->startTest();
+    }
+
+    public function testBusinessApplicationSignatories()
+    {
+        $this->ba->proxyAuth();
+
+        $attributes = [
+            'bas_business_id'   => '10000000000000',
+        ];
+
+        $this->createMerchantDetailWithBusinessId($attributes);
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $response = $this->startTest();
+
+        $this->assertEquals('20000000000000', $response['person_id']);
+
+        $this->assertEquals('30000000000000', $response['data']['id']);
+
+        $this->assertEquals('AUTHORIZED_SIGNATORY', $response['data']['signatories'][0]['signatory_type']);
+
+        $this->assertEquals('20000000000000', $response['data']['signatories'][0]['person_id']);
+
+        $this->assertArraySelectiveEquals($request['content']['application_specific_fields'], $response['data']['application_specific_fields']);
+    }
+
+    public function createMerchantDetailWithBusinessId(array $attributes = [])
+    {
+        $default = [
+            'activation_status' => 'activated',
+            'merchant_id'       => '10000000000000',
+            'business_type'     => '2',
+        ];
+
+        $attributes = array_merge($default, $attributes);
+
+        return $this->fixtures->create('merchant_detail', $attributes);
     }
 }
