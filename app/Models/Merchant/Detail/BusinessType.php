@@ -68,7 +68,7 @@ class BusinessType
     const UNREGISTERED = 'unregistered';
 
     // business type is divided into two category which decides on-boarding experience
-    protected static $businessTypeBuckets = [
+    public static $businessTypeBuckets = [
         self::REGISTERED   => [
             self::PROPRIETORSHIP,
             self::PARTNERSHIP,
@@ -94,7 +94,7 @@ class BusinessType
         self::TRUST
     ];
 
-    protected static $ValidateCompanyPanBusinessType = [
+    public static $ValidateCompanyPanBusinessType = [
         self::PRIVATE_LIMITED,
         self::PUBLIC_LIMITED,
         self::LLP,
@@ -111,7 +111,7 @@ class BusinessType
         self::PROPRIETORSHIP
     ];
 
-    protected static $ValidateCINBusinessType = [
+    public static $ValidateCINBusinessType = [
         self::PRIVATE_LIMITED,
         self::PUBLIC_LIMITED,
         self::LLP,

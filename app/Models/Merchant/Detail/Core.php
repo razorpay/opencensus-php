@@ -54,6 +54,7 @@ use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Base\PublicEntity as PublicEntity;
 use RZP\Mail\Merchant\Rejection as RejectionEmail;
 use RZP\Models\Workflow\Action\Core as ActionCore;
+use RZP\Models\Merchant\Product as MerchantProduct;
 use RZP\Mail\Merchant\RazorpayX\L2SubmissionGreylist;
 use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
 use RZP\Mail\Merchant\RazorpayX\L2SubmissionWhitelist;
@@ -1853,6 +1854,8 @@ class Core extends Base\Core
 
         (new Activation\Core())->autoActivatePartnerIfApplicable($merchant, $merchantDetails);
 
+        (new MerchantProduct\Core())->updatePaymentGatewayConfigStatusIfApplicable($merchantDetails);
+
         return $merchantDetails;
     }
 
@@ -2049,7 +2052,7 @@ class Core extends Base\Core
         return false;
     }
 
-    public function getValidationFields(Entity $merchantDetails): array
+    public function getValidationFields(Entity $merchantDetails, bool $addMissingRequirements = false): array
     {
         // @todo: Activation flow will define its own validation fields
 
@@ -2066,6 +2069,23 @@ class Core extends Base\Core
         }
 
         $merchant = $merchantDetails->merchant;
+
+        if($addMissingRequirements === true)
+        {
+            $businessType = $merchantDetails->getBusinessType();
+
+            array_push($validationFields, Entity::PROMOTER_PAN);
+
+            if(in_array($businessType, BusinessType::$ValidateCompanyPanBusinessType) === true)
+            {
+                array_push($validationFields, Entity::COMPANY_PAN);
+            }
+
+            if(in_array($businessType, BusinessType::$ValidateCINBusinessType) === true)
+            {
+                array_push($validationFields, Entity::COMPANY_CIN);
+            }
+        }
 
         if ($merchant->isLinkedAccount() === true)
         {
@@ -3136,13 +3156,13 @@ class Core extends Base\Core
         return true;
     }
 
-    private function setVerificationDetails(Entity $merchantDetails, Merchant\Entity $merchant, array $response)
+    public function setVerificationDetails(Entity $merchantDetails, Merchant\Entity $merchant, array $response, bool $addMissingValidationFields = false)
     {
         $requiredFields = [];
 
         $merchantDetailsArr = $merchantDetails->toArray();
 
-        [$validationFields, $validationSelectiveRequiredFields, $validationOptionalFields] = $this->getValidationFields($merchantDetails);
+        [$validationFields, $validationSelectiveRequiredFields, $validationOptionalFields] = $this->getValidationFields($merchantDetails, $addMissingValidationFields);
 
         $totalFields = count($validationFields) + count($validationSelectiveRequiredFields);
 

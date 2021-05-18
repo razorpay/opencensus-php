@@ -133,6 +133,8 @@ class Entity
     const SETTLEMENT_DETAILS         = 'settlement_details';
     const CREDITNOTE_INVOICE         = 'creditnote_invoice';
     const MERCHANT_PROMOTION         = 'merchant_promotion';
+    const MERCHANT_PRODUCT           = 'merchant_product';
+    const MERCHANT_PRODUCT_REQUEST   = 'merchant_product_request';
     const CREDIT_TRANSACTION         = 'credit_transaction';
     const CREDIT_BALANCE             = 'credit_balance';
     const MERCHANT_EMI_PLANS         = 'merchant_emi_plans';
@@ -657,6 +659,8 @@ class Entity
         self::CREDIT_TRANSACTION        => \RZP\Models\Merchant\Credits\Transaction::class,
         self::CREDIT_BALANCE            => \RZP\Models\Merchant\Credits\Balance::class,
         self::MERCHANT_PROMOTION        => \RZP\Models\Merchant\Promotion::class,
+        self::MERCHANT_PRODUCT          => \RZP\Models\Merchant\Product::class,
+        self::MERCHANT_PRODUCT_REQUEST  => \RZP\Models\Merchant\Product\Request::class,
         self::MERCHANT_INVOICE          => \RZP\Models\Merchant\Invoice::class,
         self::MERCHANT_E_INVOICE        => \RZP\Models\Merchant\Invoice\EInvoice::class,
         self::MERCHANT_EMI_PLANS        => \RZP\Models\Merchant\EmiPlans::class,

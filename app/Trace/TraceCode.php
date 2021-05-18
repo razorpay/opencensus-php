@@ -2469,8 +2469,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ACCOUNT_CREATION_REQUEST                              = 'ACCOUNT_CREATION_REQUEST';
     const ACCOUNT_CREATION_RESPONSE                             = 'ACCOUNT_CREATION_RESPONSE';
 
+    //V2 Onboarding APIs trace codes
     const ACCOUNT_CREATION_V2_REQUEST                           = 'ACCOUNT_CREATION_V2_REQUEST';
     const ACCOUNT_CREATION_V2_RESPONSE                          = 'ACCOUNT_CREATION_V2_RESPONSE';
+    const MERCHANT_PRODUCT_ALREADY_EXISTS                       = 'MERCHANT_PRODUCT_ALREADY_EXISTS';
+    const MERCHANT_PRODUCT_STATUS_UPDATE_FAILURE                = 'MERCHANT_PRODUCT_STATUS_UPDATE_FAILURE';
+    const MERCHANT_PRODUCT_STATUS_AUTO_UPDATE                   = 'MERCHANT_PRODUCT_STATUS_AUTO_UPDATE';
 
     // Lamdba Processor
     const LAMBDA_REQUEST                                        = 'LAMBDA_REQUEST';

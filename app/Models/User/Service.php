@@ -1198,17 +1198,25 @@ class Service extends Base\Service
 
     /**
      * Marks that user has given consent to Razorpay to send WhatsApp messages
-     * @param  array $input
+     *
+     * @param array $input
+     * @param null  $user
+     *
      * @return mixed
      * @throws Exception\LogicException
      */
-    public function optInForWhatsapp(array $input)
+    public function optInForWhatsapp(array $input, $user = null)
     {
         $this->trace->info(TraceCode::MERCHANT_WHATSAPP_OPT_IN, ['input' => $input]);
 
         $this->validator->validateInput('opt_in_whatsapp', $input);
 
-        $contact = $this->user->getContactMobile();
+        if(empty($user) === true)
+        {
+            $user = $this->user;
+        }
+
+        $contact = $user->getContactMobile();
 
         if (empty($contact) === true)
         {
@@ -1220,17 +1228,25 @@ class Service extends Base\Service
 
     /**
      * Marks that user has revoked their consent to Razorpay to send WhatsApp messages.
-     * @param  array $input
+     *
+     * @param array $input
+     * @param null  $user
+     *
      * @return mixed
      * @throws Exception\BadRequestException
      */
-    public function optOutForWhatsapp(array $input)
+    public function optOutForWhatsapp(array $input, $user = null)
     {
         $this->trace->info(TraceCode::MERCHANT_WHATSAPP_OPT_OUT, ['input' => $input]);
 
         (new Validator)->validateInput('opt_out_whatsapp', $input);
 
-        $contact = $this->user->getContactMobile();
+        if(empty($user) === true)
+        {
+            $user = $this->user;
+        }
+
+        $contact = $user->getContactMobile();
 
         if (empty($contact) === true)
         {
@@ -1240,13 +1256,18 @@ class Service extends Base\Service
         return app('stork_service')->optOutForWhatsapp($this->mode, $contact, $input['source']);
     }
 
-    public function optInStatusForWhatsapp(array $input)
+    public function optInStatusForWhatsapp(array $input, $user = null)
     {
         $this->trace->info(TraceCode::MERCHANT_WHATSAPP_OPT_IN_STATUS, ['input' => $input]);
 
         (new Validator)->validateInput('opt_in_status_whatsapp', $input);
 
-        $contact = $this->user->getContactMobile();
+        if(empty($user) === true)
+        {
+            $user = $this->user;
+        }
+
+        $contact = $user->getContactMobile();
 
         if(empty($contact) === true)
         {

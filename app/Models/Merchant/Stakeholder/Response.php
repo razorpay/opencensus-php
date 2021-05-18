@@ -31,7 +31,6 @@ class Response extends Base\Core
         ];
 
         $attributes = [
-            Entity::ID                   => Entity::ID,
             Entity::NAME                 => Entity::NAME,
             Entity::EMAIL                => Entity::EMAIL,
             Entity::PERCENTAGE_OWNERSHIP => Entity::PERCENTAGE_OWNERSHIP,

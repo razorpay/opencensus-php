@@ -126,6 +126,7 @@ class Table
     const MERCHANT_TERMINAL          = 'merchant_terminal';
     const BATCH_FUND_TRANSFER        = 'daily_settlements';
     const MERCHANT_PROMOTION         = 'merchant_promotion';
+    const MERCHANT_PRODUCT           = 'merchant_products';
     const COMMISSION_INVOICE         = 'commission_invoice';
     const CREDIT_TRANSACTION         = 'credit_transaction';
     const SETTLEMENT_DETAILS         = 'settlement_details';
@@ -352,6 +353,10 @@ class Table
 
     // X WalletAccounts
     const WALLET_ACCOUNT    = 'wallet_accounts';
+
+    // Account management & config
+    const MERCHANT_PRODUCTS         = 'merchant_products';
+    const MERCHANT_PRODUCT_REQUEST  = 'merchant_product_requests';
 
     protected static $entityToTableMap = [
         Entity::AXIS_MIGS                          => self::MIGS,

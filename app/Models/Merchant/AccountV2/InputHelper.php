@@ -88,6 +88,8 @@ class InputHelper
         if (isset($input[Constants::CUSTOMER_FACING_BUSINESS_NAME]) === true)
         {
             $detailInput[Detail\Entity::BUSINESS_DBA] = $input[Constants::CUSTOMER_FACING_BUSINESS_NAME];
+
+            $detailInput[Detail\Entity::CONTACT_NAME] = $input[Constants::CUSTOMER_FACING_BUSINESS_NAME];
         }
 
         if (isset($input[Constants::LEGAL_BUSINESS_NAME]) === true)
@@ -150,7 +152,16 @@ class InputHelper
         if (isset($input[Constants::LEGAL_INFO]) === true)
         {
             $ownerInfo[Detail\Entity::COMPANY_PAN] = $input[Constants::LEGAL_INFO][Constants::PAN];
-            $ownerInfo[Detail\Entity::GSTIN]       = $input[Constants::LEGAL_INFO][Constants::GST];
+
+            if (isset($input[Constants::LEGAL_INFO][Constants::GST]) === true)
+            {
+                $ownerInfo[Detail\Entity::GSTIN] = $input[Constants::LEGAL_INFO][Constants::GST];
+            }
+
+            if (isset($input[Constants::LEGAL_INFO][Constants::CIN]) === true)
+            {
+                $ownerInfo[Detail\Entity::COMPANY_CIN] = $input[Constants::LEGAL_INFO][Constants::CIN];
+            }
         }
 
         if (isset($input[Constants::APPS][Constants::WEBSITES]) === true)
@@ -236,12 +247,12 @@ class InputHelper
 
             $registeredAddress = $input[Constants::PROFILE][Constants::ADDRESSES][Constants::REGISTERED];
 
-            $addresses = self::getAddressMapping($mapping,$registeredAddress, $addresses);
+            $addresses = self::getAddressMapping($mapping, $registeredAddress, $addresses);
         }
 
         if (isset($input[Constants::PROFILE][Constants::ADDRESSES][Constants::OPERATION]) === true)
         {
-            $mapping = [
+            $mapping          = [
                 Constants::STREET1     => Detail\Entity::BUSINESS_OPERATION_ADDRESS,
                 Constants::STREET2     => Detail\Entity::BUSINESS_OPERATION_ADDRESS_L2,
                 Constants::CITY        => Detail\Entity::BUSINESS_OPERATION_CITY,

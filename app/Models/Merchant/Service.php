@@ -5468,7 +5468,7 @@ class Service extends Base\Service
         ];
     }
 
-    private function setDefaultLateAuthConfigForMerchant($merchant)
+    public function setDefaultLateAuthConfigForMerchant($merchant)
     {
         $defaultConfig = array(
             'capture' => "automatic",

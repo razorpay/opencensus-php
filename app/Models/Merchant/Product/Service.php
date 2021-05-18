@@ -1,0 +1,152 @@
+<?php
+
+namespace RZP\Models\Merchant\Product;
+
+use App;
+use RZP\Models\Base;
+use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
+use RZP\Models\Merchant\Account;
+use RZP\Models\Merchant\Product\Config;
+use RZP\Models\Merchant\Account\Entity as AccountEntity;
+use RZP\Models\Merchant\Product\Util\ProductRequestHelper;
+use RZP\Models\Merchant\Product\Util\ProductResponseHelper;
+use RZP\Models\Merchant\Product\Request\Service as AuditService;
+use RZP\Models\Merchant\Product\Util\Constants as Constants;
+
+class Service extends Base\Service
+{
+
+    public function getConfig(string $merchantId, string $merchantProductConfigId)
+    {
+        $merchant = $this->validateAndSetMerchantContext($merchantId);
+
+        Entity::verifyIdAndStripSign($merchantProductConfigId);
+
+        $merchantProduct = $this->repo->merchant_product->findOrFail($merchantProductConfigId);
+
+        $response = $this->core()->getConfig($merchant, $merchantProduct);
+
+        return ProductResponseHelper::handleResponse($merchantProduct, $response);
+    }
+
+    public function updateConfig(string $merchantId, string $merchantProductConfigId, array $request)
+    {
+        $merchant = $this->validateAndSetMerchantContext($merchantId);
+
+        Entity::verifyIdAndStripSign($merchantProductConfigId);
+
+        $merchantProduct = $this->repo->merchant_product->findOrFailPublic($merchantProductConfigId);
+
+        $productName = $merchantProduct->getProduct();
+
+        $transformedRequest = ProductRequestHelper::handleRequest($productName, $request);
+
+        $response = $this->core()->updateConfig($merchant, $merchantProduct, $transformedRequest);
+
+        $this->audit($request, $merchantProductConfigId, Constants::COMPLETED, Constants::GENERAL);
+
+        return ProductResponseHelper::handleResponse($merchantProduct, $response);
+    }
+
+    public function createConfig(string $merchantId, array $payload): array
+    {
+        $merchant = $this->validateAndSetMerchantContext($merchantId);
+
+        $productName = $payload['name'];
+
+        $merchantProduct = $this->repo->merchant_product->fetchMerchantProductConfigByProductName($merchantId, $productName);
+
+        if (empty($merchantProduct) === false)
+        {
+            $this->trace->info(TraceCode::MERCHANT_PRODUCT_ALREADY_EXISTS,
+                               $merchantProduct->toArrayPublic());
+
+            //$response = $this->getConfig($merchantId, $merchantProduct->getId());
+            $response = $this->getConfig(AccountEntity::getSignedId($merchantId), $merchantProduct->getPublicId());
+        }
+
+        else
+        {
+            $payload = $this->getPayload($payload);
+
+            $merchantProduct = (new Entity)->generateId();
+
+            $response = $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantProduct, $payload, $productName) {
+
+                $input = ['merchant_id' => $merchant->getId(), 'product_name' => $productName];
+
+                $merchantProduct->setActivationStatus(Status::REQUESTED);
+
+                $merchantProduct->build($input);
+
+                $this->repo->merchant_product->saveOrFail($merchantProduct);
+
+                $response = $this->core()->createConfig($merchant, $merchantProduct, $payload);
+
+                $this->audit($payload, $merchantProduct->getId(), Constants::COMPLETED, Constants::GENERAL);
+
+                $response['id'] = $merchantProduct->getId();
+
+                return ProductResponseHelper::handleResponse($merchantProduct, $response);
+            });
+        }
+
+        return $response;
+    }
+
+    private function getPayload(array $input): array
+    {
+        $productName = $input['name'];
+
+        unset($input['name']);
+
+        if( empty($input) === true)
+        {
+            $input = $this->getDefaultConfiguration($productName);
+        }
+
+        return $input;
+    }
+
+    public function getDefaultConfiguration(string $productName): array
+    {
+        $data = [];
+
+        switch ($productName)
+        {
+            case Name::PAYMENT_GATEWAY:
+                $data = Config\Defaults::PAYMENT_GATEWAY;
+                break;
+        }
+
+        return $data;
+    }
+
+    private function validateAndSetMerchantContext(string & $merchantId): Merchant\Entity
+    {
+        $this->app = App::getFacadeRoot();
+
+        AccountEntity::verifyIdAndStripSign($merchantId);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        // This means auth can be private auth of partner or partner auth of partner without X-Account-Id
+        if($this->merchant->getId() !== $merchantId)
+        {
+            (new Account\Core)->validatePartnerAccess($this->merchant, $merchantId);
+
+            $this->app['basicauth']->setPartnerMerchantId($this->merchant->getId());
+
+        }
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        return $merchant;
+    }
+
+    private function audit(array $input, string $merchantProductId, string $status, string $type)
+    {
+        (new AuditService())->log($input, $merchantProductId, $status, $type);
+    }
+}

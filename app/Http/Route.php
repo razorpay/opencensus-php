@@ -1762,6 +1762,10 @@ class Route
         'account_edit_v2'                          => ['patch',    'accounts/{id}',                                  'AccountControllerV2@editAccount'                                   ],
         'account_delete_v2'                        => ['delete',   'accounts/{id}',                                  'AccountControllerV2@deleteAccount'                                 ],
 
+        'product_config_fetch_v2'                     => ['get',      'accounts/{id}/products/{merchantProductId}',                     'ProductConfigController@fetchConfigForMerchant'                  ],
+        'product_config_update_v2'                    => ['patch',    'accounts/{id}/products/{merchantProductId}',                     'ProductConfigController@updateConfigForMerchant'                 ],
+        'product_config_create_v2'                    => ['post',     'accounts/{id}/products/',                                        'ProductConfigController@createConfigForMerchant'                 ],
+
         // Pincode Service
         'pincode_get'                              => ['get',      'pincodes/{id}',                                  'PincodeSearchController@get'                                       ],
         'cities_get'                               => ['get',      'cities',                                         'CityController@getCities'                                       ],
@@ -1815,7 +1819,12 @@ class Route
         'partner_activation_details'               => ['get',      'partner/activation',                             'PartnerActivationController@getPartnerActivationDetails'           ],
         'partner_activation_save'                  => ['post',     'partner/activation',                             'PartnerActivationController@savePartnerActivationDetails'          ],
         'partner_activation_migrate'               => ['post',     'partner/activation/migrate',                     'MerchantController@createPartnerActivationForPartners'             ],
-        'partner_actions'                          => ['put',      'partner/{id}/action',                           'PartnerActivationController@performAction'                         ],
+        'partner_actions'                          => ['put',      'partner/{id}/action',                            'PartnerActivationController@performAction'                         ],
+
+
+
+
+
         'merchant_sync_stakeholder'                => ['post',     'merchants/stakeholders/sync',                    'MerchantController@syncStakeholderFromMerchant'                    ],
 
         'commissions_get_multiple'                 => ['get',      'commissions',                                    'CommissionController@list'                                         ],
@@ -2833,6 +2842,10 @@ class Route
         'link_stakeholder_documents_v2',
         'get_account_documents_v2',
         'get_stakeholder_documents_v2',
+
+        'product_config_fetch_v2',
+        'product_config_update_v2',
+        'product_config_create_v2',
     ];
 
     // Only routes defined in internalApps go here
@@ -9763,7 +9776,10 @@ class Route
         'link_account_documents_v2',
         'link_stakeholder_documents_v2',
         'get_account_documents_v2',
-        'get_stakeholder_documents_v2'
+        'get_stakeholder_documents_v2',
+        'product_config_fetch_v2',
+        'product_config_update_v2',
+        'product_config_create_v2'
     ];
 
     // Routes for header X_DASHBOARD_USER_2FA_VERIFIED should be true

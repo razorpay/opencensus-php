@@ -120,6 +120,13 @@ class Response extends Core
             $data[Constants::LEGAL_INFO][Constants::GST] = $gstin;
         }
 
+        $cin = $accountDetails->getCompanyCin();
+
+        if (empty($cin) === false)
+        {
+            $data[Constants::LEGAL_INFO][Constants::CIN] = $cin;
+        }
+
         return $data;
     }
 

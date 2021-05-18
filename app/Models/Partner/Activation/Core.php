@@ -180,7 +180,7 @@ class Core extends Base\Core
     {
         try
         {
-            if ($merchantDetails->getActivationStatus() === Constants::ACTIVATED and $merchant->isPartner())
+            if (($merchantDetails->getActivationStatus() === Constants::ACTIVATED) and ($merchant->isPartner() === true))
             {
                 $partnerActivation = $this->createOrFetchPartnerActivationForMerchant($merchant);
 

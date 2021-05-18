@@ -8,6 +8,7 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Merchant\AccountV2;
 use RZP\Models\Merchant\Stakeholder;
 
 
@@ -121,6 +122,8 @@ class Service extends Base\Service
         }
 
         $this->uploadActivationFileByPartner($merchant, $entity, $input);
+
+        (new AccountV2\Core())->submitDetailsAndActivateIfApplicable($merchant);
 
         return (new DocumentResponse)->documentsResponse($merchant, $entity->getEntity(), $entity->getId());
     }

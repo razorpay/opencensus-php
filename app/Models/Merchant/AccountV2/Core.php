@@ -3,12 +3,13 @@
 namespace RZP\Models\Merchant\AccountV2;
 
 use RZP\Exception;
+use RZP\Models\User;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Account\Entity;
 use RZP\Models\Merchant\Account\Constants;
-use RZP\Trace\TraceCode;
 
 class Core extends Merchant\Core
 {
@@ -26,7 +27,7 @@ class Core extends Merchant\Core
         {
             $subMerchant = $this->createSubmerchantAndAssociatedEntities($partner, $input);
 
-            $this->submitDetailsAndActivateIfApplicable($partner, $subMerchant);
+            $this->submitDetailsAndActivateIfApplicable($subMerchant);
 
             return $subMerchant;
         });
@@ -65,6 +66,8 @@ class Core extends Merchant\Core
         {
             $subMerchant = $this->fillSubMerchant($accountId, $input);
             $subMerchant = $this->fillSubMerchantDetails($subMerchant, $input);
+
+            $this->submitDetailsAndActivateIfApplicable($subMerchant);
 
             $this->upsertMerchantEmails($subMerchant, $input);
 
@@ -117,6 +120,8 @@ class Core extends Merchant\Core
 
         $merchantDetailsCore->saveMerchantDetails($detailInput, $subMerchant);
 
+        $this->updateUserIfApplicable($detailInput, $subMerchant->getEmail());
+
         return $subMerchant;
     }
 
@@ -158,7 +163,7 @@ class Core extends Merchant\Core
         }
     }
 
-    protected function submitDetailsAndActivateIfApplicable(Merchant\Entity $partner, Merchant\Entity $subMerchant)
+    public function submitDetailsAndActivateIfApplicable(Merchant\Entity $subMerchant)
     {
         $merchantDetailCore = new Detail\Core;
 
@@ -178,6 +183,19 @@ class Core extends Merchant\Core
         if ($subMerchant->isSuspended() === true)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_SUSPENDED,  null);
+        }
+    }
+
+    private function updateUserIfApplicable(array $input, string $subMerchantEmail): void
+    {
+        if(isset($input[Detail\Entity::CONTACT_MOBILE]) === true)
+        {
+            $subMerchantUser = $this->repo->user->getUserFromEmail($subMerchantEmail);
+
+            $payload = [Detail\Entity::CONTACT_MOBILE => $input[Detail\Entity::CONTACT_MOBILE]];
+
+            (new User\Core)->edit($subMerchantUser, $payload);
+
         }
     }
 }

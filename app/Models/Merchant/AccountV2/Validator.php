@@ -86,6 +86,7 @@ class Validator extends Merchant\Validator
     protected static $legalInfoRules = [
         Constants::PAN => 'sometimes|companyPan',
         Constants::GST => 'sometimes|gstin',
+        Constants::CIN => 'sometimes|string',
     ];
 
     protected static $brandRules = [

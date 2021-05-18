@@ -40,11 +40,11 @@ class StakeholderTest extends OAuthTestCase
         $response = $this->runRequestResponseFlow($testData);
 
         $testData = $this->testData['testFetchStakeholder'];
-        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() .'/stakeholders/sth_'. $response['id'];
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() .'/stakeholders/'. $response['id'];
         $this->runRequestResponseFlow($testData);
 
         $testData = $this->testData['testUpdateStakeholderCompleteRequest'];
-        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() .'/stakeholders/sth_'. $response['id'];
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() .'/stakeholders/'. $response['id'];
         $this->runRequestResponseFlow($testData);
 
         $testData = $this->testData['testFetchAllAccountStakeholders'];
@@ -89,7 +89,7 @@ class StakeholderTest extends OAuthTestCase
         $response = $this->runRequestResponseFlow($testData);
 
         $testData = $this->testData['testUpdateStakeholderThinToCompleteRequest'];
-        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() .'/stakeholders/sth_'. $response['id'];
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() .'/stakeholders/'. $response['id'];
         $this->runRequestResponseFlow($testData);
     }
 }

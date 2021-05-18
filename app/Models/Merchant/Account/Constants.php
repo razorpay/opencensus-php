@@ -115,6 +115,7 @@ class Constants
     const STREET2             = 'street2';
     const PAN                 = 'pan';
     const GST                 = 'gst';
+    const CIN                 = 'cin';
     const USER_AGENT          = 'user_agent';
     const DATE                = 'date';
     const IP                  = 'ip';
