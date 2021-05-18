@@ -1973,13 +1973,6 @@ class Base extends BaseCore
                 return false;
             }
 
-            // queued payout check
-            if ((isset($input[Payout\Entity::QUEUE_PAYOUT_CREATE_REQUEST]) === true) and
-                ($input[Payout\Entity::QUEUE_PAYOUT_CREATE_REQUEST] === true))
-            {
-                return false;
-            }
-
             if (empty($sourceDetails) === false)
             {
                 return false;
