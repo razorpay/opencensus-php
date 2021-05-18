@@ -680,6 +680,10 @@ class Core extends Base\Core
 
         $gatewayErrorCode = $input['gateway_error_code'] ?? '';
 
+        $sourceAccountID = $input[Entity::SOURCE_ACCOUNT_ID] ?? null;
+
+        $bankAccountType = $input[Entity::BANK_ACCOUNT_TYPE] ?? null;
+
         $ftaData = [
             'bank_account_id'          => $fta->getBankAccountId(),
             'vpa_id'                   => $fta->getVpaId(),
@@ -695,6 +699,8 @@ class Core extends Base\Core
             'bank_response_code'       => $fta->getBankResponseCode(),
             'failure_reason'           => $fta->getFailureReason(),
             'channel'                  => $fta->getChannel(),
+            Entity::SOURCE_ACCOUNT_ID  => $sourceAccountID,
+            Entity::BANK_ACCOUNT_TYPE  => $bankAccountType,
             Entity::GATEWAY_ERROR_CODE => $gatewayErrorCode,
         ] + $extraInfo;
 

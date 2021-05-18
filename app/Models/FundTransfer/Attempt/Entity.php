@@ -32,6 +32,8 @@ class Entity extends Base\PublicEntity
     const WALLET_ACCOUNT_ID      = 'wallet_account_id';
     const BATCH_FUND_TRANSFER_ID = 'batch_fund_transfer_id';
     const CHANNEL                = 'channel';
+    const SOURCE_ACCOUNT_ID      = 'source_account_id';
+    const BANK_ACCOUNT_TYPE      = 'bank_account_type';
     const VERSION                = 'version';
     const BANK_STATUS_CODE       = 'bank_status_code';
     const BANK_RESPONSE_CODE     = 'bank_response_code';
