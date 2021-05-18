@@ -24,7 +24,7 @@ jobs:
     # Get the API Instance from Spinnaker
     - name: Get API Instance from Spinnaker
       env:
-        GIT_TOKEN :  ${{ secrets.CI_BOT_TOKEN }}
+        GIT_TOKEN : ${{ secrets.CI_BOT_TOKEN }}
       id: script
       run: |
         echo "API_INSTANCE=$(sh ./.github/actions/getSpinnakerConfig.sh)" >> $GITHUB_ENV
@@ -134,12 +134,21 @@ jobs:
             })
             const latestCommit = response.data.head.sha
             return String(latestCommit)
-    - name: Run bvt suite if PR approved
-      if: startsWith(github.event.pull_request.head.ref,'beta_') != true
+    - name: Get Build Image Workflow Status
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        BRANCH: ${{ github.event.pull_request.head.ref }}
+        WORKFLOW: build_images.yml
+      run: |
+        echo "WORKFLOW_STATUS=$(sh ./.github/actions/getWorkflowStatus.sh)" >> $GITHUB_ENV
+    - name: Check Workflow Status
+      run: echo $WORKFLOW_STATUS
+    - name: Run bvt suite if PR approved && Build Image workflow succeeded 
+      if: env.WORKFLOW_STATUS == 'success' && startsWith(github.event.pull_request.head.ref,'beta_') != true
       env:
         SPINNAKER_PASSWORD: ${{ secrets.SPINNAKER_PASSWORD }}
         WEBHOOK_TRIGGER : api-pr-commit
-        GITHUB_TOKEN:  ${{ github.token }}
+        GITHUB_TOKEN: ${{ github.token }}
         HOTFIX: ${{ steps.hotfix.outputs.flag }}
         REVERT: ${{ steps.revert.outputs.flag }}
         ROAST_PR_COMMIT: ${{steps.latest-commit.outputs.result}}
