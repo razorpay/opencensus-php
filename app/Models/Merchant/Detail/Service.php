@@ -663,11 +663,11 @@ class Service extends Base\Service
      *
      * @return array
      */
-    public function getActivationStatusChangeLog(string $merchantId): array
+    public function getActivationStatusChangeLog(string $merchantId, $mode = null): array
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $activationStatusChangeLog = (new Merchant\Core)->getActivationStatusChangeLog($merchant);
+        $activationStatusChangeLog = (new Merchant\Core)->getActivationStatusChangeLog($merchant, $mode);
 
         return $activationStatusChangeLog->toArrayPublic();
     }
@@ -1593,12 +1593,24 @@ class Service extends Base\Service
 
     public function getFirstL2SubmissionDate()
     {
-        $activationStatusChangeLogs = $this->getActivationStatusChangeLog($this->merchant->getId())['items'];
+        $activationStatusChangeLogs = $this->getActivationStatusChangeLog($this->merchant->getId(), Mode::LIVE)['items'];
+
+        $this->trace->info(
+            TraceCode::SHOW_CREATE_TICKET_POPUP_DEBUG,
+            [
+                'action_state_logs without filter' => $activationStatusChangeLogs,
+            ]);
 
         $activationStatusChangeLogs = array_filter($activationStatusChangeLogs, function ($activationStatusChangeLog)
         {
             return ($activationStatusChangeLog[StateChangeEntity::NAME] === Status::UNDER_REVIEW);
         });
+
+        $this->trace->info(
+            TraceCode::SHOW_CREATE_TICKET_POPUP_DEBUG,
+            [
+                'action_state_logs after filter' => $activationStatusChangeLogs,
+            ]);
 
         return empty($activationStatusChangeLogs) === false ? $activationStatusChangeLogs[0][StateChangeEntity::CREATED_AT] : 0;
     }

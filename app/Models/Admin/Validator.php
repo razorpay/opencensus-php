@@ -156,6 +156,7 @@ class Validator extends Base\Validator
         ConfigKey::SLAVE_ROUTES                                                        => 'filled|array',
         ConfigKey::BANKING_ACCOUNT_STATEMENT_PROCESS_DELAY                             => 'filled|integer',
         ConfigKey::MIN_HOURS_TO_START_TICKET_CREATION_AFTER_ACTIVATION_FORM_SUBMISSION => 'filled|integer',
+        ConfigKey::MAX_ACTIVATION_PROGRESS_FOR_POPUP_RANGE1                            => 'filled|integer',
         ConfigKey::REARCH_CARD_PAYMENTS                                                => 'filled|boolean',
 
     ];

@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Merchant;
 
+use RZP\Models\Admin\ConfigKey;
+use \RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Merchant\Detail\Status as ActivationStatus;
 
@@ -326,13 +328,13 @@ final class Constants
 
             self::X_HOURS_AFTER_ACTIVATION_FORM_SUBMISSION => [
                 self::SHOW_POPUP => true,
-                self::MESSAGE    => "We received your activation form on :submission_at. Your documents and KYC details are under review.It usually takes 3-4 working days for our team to review your documents. We will reach out if we need any other clarification. Please go through our FAQs if you have any other queries.",
+                self::MESSAGE    => "We received your activation form on :submission_at. Your documents and KYC details are under review. It usually takes 3-4 working days for our team to review your documents. We will reach out if we need any other clarification. Please go through our FAQs if you have any other queries.",
                 self::CTA_LIST   => [self::CONTINUE_WITH_TICKET, self::FAQS],
             ],
 
             self::X_HOURS_WITHIN_ACTIVATION_FORM_SUBMISSION => [
                 self::SHOW_POPUP => true,
-                self::MESSAGE    => "We received your activation form on :submission_at. Your documents and KYC details are under review.It usually takes 3-4 working days for our team to review your documents. We will reach out if we need any clarification. Please go through our FAQs if you have any other queries.",
+                self::MESSAGE    => "We received your activation form on :submission_at. Your documents and KYC details are under review. It usually takes 3-4 working days for our team to review your documents. We will reach out if we need any clarification. Please go through our FAQs if you have any other queries.",
                 self::CTA_LIST   => [self::THANKS, self::FAQS],
             ],
         ],
@@ -356,7 +358,7 @@ final class Constants
 
             self::DEFAULT => [
                 self::SHOW_POPUP => true,
-                self::MESSAGE    => "We regret to inform you that we will not be able to support your business as the bank has not approved your activation form.Your account is terminated with a hold on the funds for the chargeback period of 120 days from the date of rejection. Please go through our FAQs if you have any other queries.",
+                self::MESSAGE    => "We regret to inform you that we will not be able to support your business as the bank has not approved your activation form. Your account is terminated with a hold on the funds for the chargeback period of 120 days from the date of rejection. Please go through our FAQs if you have any other queries.",
                 self::CTA_LIST   => [self::CONTINUE_WITH_TICKET, self::FAQS],
             ]
         ]
@@ -365,13 +367,13 @@ final class Constants
     const TICKET_CREATION_POPUP_DATA_FOR_ACTIVATION_PROGRESS_RANGES = [
         [
             self::MIN_ACTIVATION_PROGRESS => 0,
-            self::MAX_ACTIVATION_PROGRESS => 0,
+            self::MAX_ACTIVATION_PROGRESS => ConfigKey::MAX_ACTIVATION_PROGRESS_FOR_POPUP_RANGE1,
             self::SHOW_POPUP              => true,
             self::MESSAGE                 => "Please fill the KYC details to serve you better. It usually takes 3-4 working days for our team to review your documents post submission. We will reach out if we need any clarifications. Please go through our FAQs if you have any other queries",
             self::CTA_LIST                => [self::FAQS, self::FILL_ACTIVATION_FORM],
         ],
         [
-            self::MIN_ACTIVATION_PROGRESS => 1,
+            self::MIN_ACTIVATION_PROGRESS => ConfigKey::MAX_ACTIVATION_PROGRESS_FOR_POPUP_RANGE1,
             self::MAX_ACTIVATION_PROGRESS => 100,
             self::SHOW_POPUP              => true,
             self::MESSAGE                 => "Please fill the KYC details to serve you better. It usually takes 3-4 working days for our team to review your documents post submission. We will reach out to you if we need any clarifications.",

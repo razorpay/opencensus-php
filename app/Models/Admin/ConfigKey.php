@@ -223,6 +223,9 @@ class ConfigKey
     const MIN_HOURS_TO_START_TICKET_CREATION_AFTER_ACTIVATION_FORM_SUBMISSION
         = self::PREFIX . 'min_hours_to_start_ticket_creation_after_activation_form_submission';
 
+    const MAX_ACTIVATION_PROGRESS_FOR_POPUP_RANGE1
+        = self::PREFIX . 'max_activation_progress_for_popup_range1';
+
     const PUBLIC_KEYS = [
         self::TERMINAL_SELECTION_LOG_VERBOSE,
         self::PRICING_RULE_SELECTION_LOG_VERBOSE,
@@ -317,6 +320,7 @@ class ConfigKey
         self::ICICI_ENABLE_RATE_LIMIT_FLOW,
         self::REARCH_CARD_PAYMENTS,
         self::MIN_HOURS_TO_START_TICKET_CREATION_AFTER_ACTIVATION_FORM_SUBMISSION,
+        self::MAX_ACTIVATION_PROGRESS_FOR_POPUP_RANGE1,
     ];
 
     const REDIS_CONFIG_MAP = [

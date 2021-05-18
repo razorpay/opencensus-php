@@ -1241,8 +1241,13 @@ class Core extends Base\Core
      *
      * @return PublicCollection
      */
-    public function getActivationStatusChangeLog(Entity $merchant): PublicCollection
+    public function getActivationStatusChangeLog(Entity $merchant, $mode = null): PublicCollection
     {
+        if (empty($mode) === false)
+        {
+            return $merchant->setConnection($mode)->getActivationStatusChangeLog();
+        }
+
         return $merchant->getActivationStatusChangeLog();
     }
 

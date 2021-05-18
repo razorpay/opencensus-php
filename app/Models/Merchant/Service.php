@@ -5945,8 +5945,22 @@ class Service extends Base\Service
 
             foreach ($activationProgressRanges as $activationProgressRange)
             {
-                if ($activationProgress >= $activationProgressRange[Constants::MIN_ACTIVATION_PROGRESS] &&
-                    $activationProgress <= $activationProgressRange[Constants::MAX_ACTIVATION_PROGRESS])
+                $minPercent = is_numeric($activationProgressRange[Constants::MIN_ACTIVATION_PROGRESS]) === true ? $activationProgressRange[Constants::MIN_ACTIVATION_PROGRESS] :
+                    ($this->getActivationProgressRequired($activationProgressRange[Constants::MIN_ACTIVATION_PROGRESS]) + 1);
+
+                $maxPercent = is_numeric($activationProgressRange[Constants::MAX_ACTIVATION_PROGRESS]) === true ? $activationProgressRange[Constants::MAX_ACTIVATION_PROGRESS] :
+                    $this->getActivationProgressRequired($activationProgressRange[Constants::MAX_ACTIVATION_PROGRESS]);
+
+                $this->trace->info(
+                    TraceCode::SHOW_CREATE_TICKET_POPUP_DEBUG,
+                    [
+                        'minimum Percent' => $minPercent,
+                        'maximum Percent' => $maxPercent,
+                        'activation Progress'   => $activationProgress,
+                    ]);
+
+                if ($activationProgress >= $minPercent &&
+                    $activationProgress <= $maxPercent)
                 {
                     $dataForPopup = $activationProgressRange;
                 }
@@ -5954,7 +5968,19 @@ class Service extends Base\Service
         }
 
         return $dataForPopup;
-}
+    }
+
+    protected function getActivationProgressRequired($key) : int
+    {
+        $maxActivationProgressForFirstRange = (int)((new AdminService)->getConfigKey(['key' => $key]));
+
+        if (empty($maxActivationProgressForFirstRange) === true)
+        {
+            return 0;
+        }
+
+        return $maxActivationProgressForFirstRange;
+    }
 
     /**
      * @return int
@@ -5983,6 +6009,13 @@ class Service extends Base\Service
 
         $currentTimestamp = Carbon::now()->getTimestamp();
 
+        $this->trace->info(
+            TraceCode::SHOW_CREATE_TICKET_POPUP_DEBUG,
+            [
+                'minimum_difference_in_seconds'              => $differenceInSeconds,
+                'current_time_difference_in_seconds'         => $currentTimestamp,
+            ]);
+
         if ($differenceInSeconds < $currentTimestamp - $l2FirstSubmissionDateTime)
         {
             $dataForPopup = $dataForUnderReview[Constants::X_HOURS_AFTER_ACTIVATION_FORM_SUBMISSION];
@@ -5998,6 +6031,12 @@ class Service extends Base\Service
     protected function getPopupDataForNeedsClarification(): array
     {
         $isDedupe = (new Detail\DeDupe\Core)->isMerchantImpersonated($this->merchant);
+
+        $this->trace->info(
+            TraceCode::SHOW_CREATE_TICKET_POPUP_DEBUG,
+            [
+                'is Dedupe ' => $isDedupe,
+            ]);
 
         $dataForNeedsClarification = Constants::TICKET_CREATION_POPUP_DATA_FOR_ACTIVATION_STATUS[MerchantStatus::NEEDS_CLARIFICATION];
 

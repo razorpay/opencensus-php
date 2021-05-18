@@ -9606,7 +9606,7 @@ class MerchantTest extends TestCase
 
         $testCases = $this->getTestCasesForTestMerchantSupportOptions();
 
-        $this->fixtures->create('state', [
+        $this->fixtures->on('live')->create('state', [
             'entity_id'   => '10000000000000',
             'entity_type' => 'merchant_detail',
             'name'        => 'under_review',
@@ -9643,7 +9643,7 @@ class MerchantTest extends TestCase
                     'content' => [
                         "show_chat"                 =>  false,
                         "show_create_ticket_popup"  =>  true,
-                        "message_body"              =>  "We received your activation form on October 14, 2018. Your documents and KYC details are under review.It usually takes 3-4 working days for our team to review your documents. We will reach out if we need any other clarification. Please go through our FAQs if you have any other queries.",
+                        "message_body"              =>  "We received your activation form on October 14, 2018. Your documents and KYC details are under review. It usually takes 3-4 working days for our team to review your documents. We will reach out if we need any other clarification. Please go through our FAQs if you have any other queries.",
                         "cta_list"                  =>  $popupDataForActivationStatus[ActivationStatus::UNDER_REVIEW][MerchantConstants::X_HOURS_AFTER_ACTIVATION_FORM_SUBMISSION][MerchantConstants::CTA_LIST],
                     ],
                 ],
@@ -9656,7 +9656,7 @@ class MerchantTest extends TestCase
                     'submitted_at'                  => 1539543931,
                     'business_type'                 => 1
                 ],
-                'time'                  => Carbon::createFromDate(2018, 10, 16, Timezone::IST),
+                'time'                  => Carbon::createFromDate(2019, 10, 16, Timezone::IST),
             ],
             [
                 self::REQUEST       => [
@@ -9668,7 +9668,7 @@ class MerchantTest extends TestCase
                         "show_chat"                 =>  false,
                         "show_create_ticket_popup"  =>  true,
                         "cta_list"                  => $popupDataForActivationStatus[ActivationStatus::UNDER_REVIEW][MerchantConstants::X_HOURS_WITHIN_ACTIVATION_FORM_SUBMISSION][MerchantConstants::CTA_LIST],
-                        "message_body"              => "We received your activation form on October 14, 2018. Your documents and KYC details are under review.It usually takes 3-4 working days for our team to review your documents. We will reach out if we need any clarification. Please go through our FAQs if you have any other queries.",
+                        "message_body"              => "We received your activation form on October 14, 2018. Your documents and KYC details are under review. It usually takes 3-4 working days for our team to review your documents. We will reach out if we need any clarification. Please go through our FAQs if you have any other queries.",
                     ],
                 ],
                 self::EDIT_MERCHANT_DETAILS     =>  [
