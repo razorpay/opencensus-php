@@ -59,8 +59,6 @@ class BankingAccountService
      */
     public function fetchAccountDetails(string $merchantId)
     {
-        $this->isBusinessExists($merchantId);
-
         $repo = new BalanceRepo();
 
         $balance = $repo->getBalanceByMerchantIdChannelAndAccountType($merchantId, Channel::ICICI, AccountType::DIRECT);
@@ -69,6 +67,8 @@ class BankingAccountService
         {
             return [];
         }
+
+        $this->isBusinessExists($merchantId);
 
         return $this->fetchBankingAccountByAccountNumberAndChannel($merchantId, $balance->getAccountNumber(), $balance->getChannel());
     }
