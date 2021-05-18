@@ -407,7 +407,7 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::USER_LOGIN, $data);
     }
 
-    public function login(array $input, $validate2fa = true)
+    public function login(array $input)
     {
         $this->getUserEntity()->getValidator()->validateInput('login', $input);
 
@@ -415,7 +415,7 @@ class Core extends Base\Core
 
         $user = $this->getUserByEmailAndVerifyPassword($input[Entity::EMAIL], $input[Entity::PASSWORD]);
 
-        $this->checkSecondFactorAuthAndSendOtp($user, $validate2fa);
+        $this->checkSecondFactorAuthAndSendOtp($user);
 
         (new Core)->trackOnboardingEvent($user->getEmail(),
                                          EventCode::MERCHANT_ONBOARDING_LOGIN_SUCCESS);
@@ -423,13 +423,8 @@ class Core extends Base\Core
         return $this->get($user);
     }
 
-    public function checkSecondFactorAuthAndSendOtp($user, $validate2fa)
+    public function checkSecondFactorAuthAndSendOtp($user)
     {
-        if ($validate2fa === false)
-        {
-            return $this->get($user);
-        }
-
         //check if second factor auth is enabled for the user
         if (($user->isSecondFactorAuth() === true) or
             ($user->isSecondFactorAuthEnforced() === true))
@@ -444,7 +439,7 @@ class Core extends Base\Core
         $this->trace->count(Metric::LOGIN_2FA_SUCCESS);
     }
 
-    public function oauthLogin(array $input, $validate2fa = true)
+    public function oauthLogin(array $input)
     {
         $this->getUserEntity()->getValidator()->validateInput('loginOauth', $input);
 
@@ -471,7 +466,7 @@ class Core extends Base\Core
             });
         }
 
-        $this->checkSecondFactorAuthAndSendOtp($user, $validate2fa);
+        $this->checkSecondFactorAuthAndSendOtp($user);
 
         (new Core)->trackOnboardingEvent($user->getEmail(),
                                          EventCode::MERCHANT_ONBOARDING_LOGIN_SUCCESS);
@@ -615,7 +610,6 @@ class Core extends Base\Core
 
     private function sendOtpForSecondFactorAuthOnLogin(Entity $user)
     {
-
         $this->send2faOtp($user);
 
         $this->trace->info(TraceCode::USER_LOGIN_2FA_OTP_SENT, ['user_id' => $user->getId()]);

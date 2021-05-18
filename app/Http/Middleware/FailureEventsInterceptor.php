@@ -105,10 +105,6 @@ class FailureEventsInterceptor
                 [
                     'event_code' => EventCode::MERCHANT_ONBOARDING_LOGIN_FAILURE,
                 ],
-            'user_login_no2fa'                 =>
-                [
-                    'event_code' => EventCode::MERCHANT_ONBOARDING_LOGIN_FAILURE,
-                ],
             'user_reset_password_create'       =>
                 [
                     'event_code' => EventCode::MERCHANT_ONBOARDING_RESET_PASSWORD_FAILURE,

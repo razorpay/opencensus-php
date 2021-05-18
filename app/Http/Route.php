@@ -1378,8 +1378,6 @@ class Route
         'user_oauth_register'                      => ['post',     'users/oauth-register',                           'UserController@oAuthSignup'                                        ],
         'user_create'                              => ['post',     'users',                                          'UserController@createUser'                                         ],
         'user_login'                               => ['post',     'users/login',                                    'UserController@loginUser'                                          ],
-        'user_login_no2fa'                         => ['post',     'users/login/no2fa',                              'UserController@loginUserNo2fa'                                     ],
-        'user_oauth_login_no2fa'                   => ['post',     'users/oauth-login/no2fa',                        'UserController@oauthLoginUserNo2fa'                                ],
         'user_confirm_by_data'                     => ['put',      'users/confirm_user_by_data',                     'UserController@confirmUserByData'                                  ],
         'user_change_password'                     => ['put',      'users/password',                                 'UserController@changeUserPassword'                                 ],
         'user_edit_self'                           => ['patch',    'users',                                          'UserController@editSelf'                                           ],
@@ -2996,8 +2994,6 @@ class Route
         'user_access',
         'user_fetch',
         'user_login',
-        'user_login_no2fa',
-        'user_oauth_login_no2fa',
         'user_login_2fa_setup_mobile',
         'user_login_2fa_setup_verify_mobile',
         'user_merchant_upgrade',
@@ -8542,8 +8538,6 @@ class Route
         // won't have any merchant or admin in context.
         'dashboard_guest' => [
             'user_login',
-            'user_login_no2fa',
-            'user_oauth_login_no2fa',
             'user_login_2fa_setup_mobile',
             'user_login_2fa_setup_verify_mobile',
             'user_register',
@@ -9537,8 +9531,6 @@ class Route
         'merchant_activation_save',
         'merchant_document_upload',
         'user_login',
-        'user_login_no2fa',
-        'user_oauth_login_no2fa',
         'user_reset_password_create',
     ];
 

@@ -464,11 +464,11 @@ class Service extends Base\Service
         return $user->toArrayPublic();
     }
 
-    public function login(array $input, $validate2fa = true): array
+    public function login(array $input): array
     {
         try
         {
-            return $this->core->login($input, $validate2fa);
+            return $this->core->login($input);
         }
         catch (\Throwable $ex)
         {
@@ -1162,7 +1162,7 @@ class Service extends Base\Service
         return $this->core()->verifyUserThroughEmail($input, $merchant, $user);
     }
 
-    public function oAuthSignup($input, $validate2fa = true): array
+    public function oAuthSignup($input): array
     {
         // should accept only email / oauth_provider.
         $data = $this->register($input, 'createOauth');
@@ -1172,9 +1172,9 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function oAuthLogin($input,$validate2fa = true): array
+    public function oAuthLogin($input): array
     {
-        $data = $this->core->oauthLogin($input, $validate2fa);
+        $data = $this->core->oauthLogin($input);
 
         $this->core->trackOnboardingEvent($input[Entity::EMAIL], EventCode::LOGIN_SUCCESS_WITH_GOOGLE);
 

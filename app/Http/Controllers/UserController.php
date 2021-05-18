@@ -332,29 +332,7 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function loginUserNo2fa()
-    {
-        $input = Request::all();
 
-        $data = $this->service()->login($input, false);
-
-        return ApiResponse::json($data);
-    }
-
-    /**
-     * This function is used to unlock screen with google oauth there should be no 2fa needed
-     * as user already logged in with 2fa
-     *
-     * @return mixed
-     */
-    public function oauthLoginUserNo2fa()
-    {
-        $input = Request::all();
-
-        $data = $this->service()->oAuthLogin($input, false);
-
-        return ApiResponse::json($data);
-    }
 
     public function getUserForMerchant(string $userId)
     {
