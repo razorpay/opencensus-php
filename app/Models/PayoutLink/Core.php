@@ -517,15 +517,6 @@ class Core extends Base\Core
             Entity::OTP      => $input[Entity::OTP]
         ];
 
-        $this->trace->info(
-            TraceCode::PAYOUT_LINK_CUSTOMER_OTP_VERIFY,
-            [
-                Entity::RECEIVER => $receiver,
-                Entity::CONTEXT  => $requestContext,
-                Entity::SOURCE   => Entity::API_POUT_LNK_SRC
-            ]
-        );
-
         $response = $this->raven->verifyOtp($payload);
 
         if ((isset($response['success']) === false) or

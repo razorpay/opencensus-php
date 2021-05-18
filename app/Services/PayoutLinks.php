@@ -453,9 +453,6 @@ class PayoutLinks
 
     public function verifyCustomerOtp(string $payoutLinkId, array $input): array
     {
-        $this->trace->info(TraceCode::PAYOUT_LINK_CUSTOMER_OTP_VERIFY,
-            $input);
-
         $url = $this->getConstructedUrl(self::PAYOUT_LINK_VERIFY_OTP_PATH);
 
         $input[self::PAYOUT_LINK_ID] = $payoutLinkId;
@@ -785,12 +782,20 @@ class PayoutLinks
             'timeout' => 25,
         ];
 
-        $this->trace->info(TraceCode::PAYOUT_LINKS_REQUEST,
-            [
-                'headers' => $headers,
-                'url' => $url,
-                'data' => $data,
-            ]);
+        if (strpos($url, "Payoutlinks/VerifyOTP") !== false) {
+            $this->trace->info(TraceCode::PAYOUT_LINKS_REQUEST,
+                [
+                    'headers' => $headers,
+                    'url' => $url
+                ]);
+        } else {
+            $this->trace->info(TraceCode::PAYOUT_LINKS_REQUEST,
+                [
+                    'headers' => $headers,
+                    'url' => $url,
+                    'data' => $data,
+                ]);
+        }
 
         $response = Requests::$method(
             $url,
