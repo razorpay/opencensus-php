@@ -16,7 +16,6 @@ class Constants
   const METRIC_HISTOGRAM_HTTP_REQUESTS_DURATION    = 'http_requests_duration';
   const USER_LOGIN_COUNT            = 'user_login_count';
   const USER_LOGOUT_COUNT           = 'user_logout_count';
-  const USER_UNLOCK_COUNT           = 'user_unlock_count';
   const USER_SIGNUP_COUNT           = 'user_signup_count';
 
   // Metric Lables

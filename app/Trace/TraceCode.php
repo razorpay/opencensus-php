@@ -36,8 +36,6 @@ class TraceCode
     const SWITCH_MERCHANT                           = 'SWITCH_MERCHANT';
     const USER_LOGOUT                               = 'USER_LOGOUT';
     const USER_RETRIEVE_CREDS                       = 'USER_RETRIEVE_CREDS';
-    const USER_UNLOCK_CALLED                        = 'USER_UNLOCK_CALLED';
-    const USER_UNLOCK_OAUTH_CALLED                  = 'USER_UNLOCK_OAUTH_CALLED';
     const ENABLE_INSTANT_ACTIVATIONS                = 'ENABLE_INSTANT_ACTIVATIONS';
 
 

@@ -608,54 +608,6 @@ class UserController extends Controller
         return ['success' => true];
     }
 
-    public function postUnlockUserScreen()
-    {
-        $encryptedEmail = Cookie::get('rzp_user_email');
-
-        if (empty($encryptedEmail) === false)
-        {
-            $email = Crypt::decrypt($encryptedEmail);
-        }
-
-        $error = ["Incorrect password/Network issue, please reload the page"];
-        $data  = null;
-
-        $traceData = [
-            'email' => $email ?? null,
-            'error' => $error,
-            'data'  => $data,
-        ];
-
-        $this->trace->info(TraceCode::USER_UNLOCK_CALLED, $traceData);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function postOauthUnlockUserScreen()
-    {
-        $input = Input::all();
-
-        try
-        {
-            list($error, $data) = (new User\Service)->oauthUnlock($input);
-        }
-        catch (RecoverableException $e)
-        {
-            $error = [$e->getMessage()];
-            $data  = null;
-        }
-
-        if (empty($error) === true)
-        {
-            $this->metrics->count(MetricConstants::USER_UNLOCK_COUNT,
-                EVENT_TRIGGER_COUNT,
-                [
-                    MetricConstants::LOGIN_METHOD   => MetricConstants::OAUTH,
-                ]);
-        }
-
-        return AppResponse::jsonResponse($error, $data);
-    }
 
     private function getDashboardBaseUrl()
     {

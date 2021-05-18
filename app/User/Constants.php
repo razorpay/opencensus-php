@@ -61,8 +61,6 @@ class Constants
 
     const OAUTH_REGISTER_ROUTE = 'users/oauth-register';
 
-    const OAUTH_UNLOCK_ROUTE = 'users/oauth-login/no2fa';
-
     // Error Codes
     const GOOGLE_SIGN_IN_ERROR = 'Error connecting to Google. Please try again';
 

@@ -153,10 +153,6 @@ class Service extends Base\Service
 
         list($error, $data) = $this->oauthRegister($input);
 
-        //
-        // THe Laravel attempt function defined as
-        // attempt($credentials , $remember , $login )
-        //
         if ((empty($error) === true))
         {
             $credentials = [
@@ -273,49 +269,6 @@ class Service extends Base\Service
         return [$error, []];
     }
 
-    public function postloginNo2fa(array $input)
-    {
-        list($error, $genericUser) = $this->loginOnApiNo2faSetup($input);
-
-        return $this->handleLoginResponse($error, $genericUser);
-    }
-
-    /**
-     * @param array $input
-     *
-     * @return array
-     */
-    public function oauthUnlock(array $input): array
-    {
-        $encryptedEmail = Cookie::get(Constants::RZP_USER_EMAIL);
-
-        if ((empty($encryptedEmail) === false))
-        {
-            $email = Crypt::decrypt($encryptedEmail);
-        }
-
-        $error = [Constants::NETWORK_ISSUE_RELOAD_PAGE];
-        $data  = null;
-
-        $traceData = [
-            Constants::EMAIL => $email ?? null,
-            Constants::ERROR => $error,
-            Constants::DATA  => $data,
-        ];
-
-        $this->trace->info(TraceCode::USER_UNLOCK_OAUTH_CALLED, $traceData);
-
-        return [$error, $data];
-    }
-
-    public function oauthLoginNo2fa(array $input): array
-    {
-        list($error, $genericUser) = $this->oauthLoginOnApiOnRoute($input,
-                                                                   Constants::OAUTH_UNLOCK_ROUTE,
-                                                                   Constants::POST_METHOD);
-
-        return $this->handleOauthLoginResponse($error, $genericUser);
-    }
 
     public function verify2faOtp(array $input, array $options = [])
     {
@@ -1204,14 +1157,6 @@ class Service extends Base\Service
         return $this->loginOnApiOnRoute($input,'users/login/2fa_setup/verify-mobile', 'POST');
     }
 
-    public function loginOnApiNo2faSetup(array $input)
-    {
-        $headers = [
-            self::CAPTCHA_MODE_HEADER   => Request::header(self::CAPTCHA_MODE_HEADER),
-        ];
-
-        return $this->loginOnApiOnRoute($input,'users/login/no2fa', 'POST', ['headers' => $headers]);
-    }
 
     public function getUserFromApi($userId)
     {
