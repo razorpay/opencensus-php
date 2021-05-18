@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import PropTypes from 'prop-types';
 import Button from 'common/new-ui/Button';
 import Amount from 'common/ui/Amount';
@@ -6,6 +6,27 @@ import Time from 'common/ui/Time';
 import trackIS from 'merchant/views/Settlements/InstantSettlements/ga';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import Popover, { PopoverBody } from 'common/ui/Popover';
+import SettleNowLottie from 'merchant/helpers/lottieConfigs/SettleNow.json';
+import SettleNowLottieHover from 'merchant/helpers/lottieConfigs/SettleNowHover.json';
+import settleNowIcon from '../../../../../../icons/merchant/settle-now-thunder.svg';
+import { trackAnimatedSettleBtnImpressions } from '../../Settlements/ga';
+
+const CustomLottie = lazy(() =>
+  import(/* webpackChunkName: "CustomLottie" */ 'common/new-ui/Lottie'),
+);
+
+const DefaultSettlementBtn = ({ handleSettleNowClick, checkIfSettlementDisabled }) => {
+  return (
+    <Button.Primary
+      className="current-balance--settle-btn settle-now settle-now--button"
+      onClick={handleSettleNowClick}
+      disabled={checkIfSettlementDisabled}
+    >
+      <img src={settleNowIcon} alt="settle-now-thunder" className="settlement-icon-thunder" />
+      Settle Now
+    </Button.Primary>
+  );
+};
 
 const CurrentBalance = ({
   balance,
@@ -14,11 +35,22 @@ const CurrentBalance = ({
   isBalanceLoading,
   isSettleNowRestricted,
   settleNowRestrictionMsg,
+  settlementExists,
+  esOndemandSettlementEnabled,
+  merchantId,
 }) => {
+  const [hoverOnSettleButton, setHoverOnSettleButton] = useState(false);
+  const checkIfSettlementDisabled = isSettleNowRestricted || isBalanceLoading || balance < 100;
+
   const handleSettleNowClick = (e) => {
     trackIS.clickCTASettleNow();
     showOndemandSettlementForm(e);
   };
+
+  const handleMouseActivityOverSettleBtn = (type) => {
+    setHoverOnSettleButton(type === 'mouseEnter');
+  };
+
   return (
     <div className="current-balance">
       <div className="current-balance--left">
@@ -37,14 +69,41 @@ const CurrentBalance = ({
           {isBalanceLoading ? <PlaceholderLoader /> : <Amount value={balance} currency="INR" />}
         </div>
         <div>
-          <Button.Primary
-            className="current-balance--settle-btn settle-now"
-            onClick={handleSettleNowClick}
-            disabled={isSettleNowRestricted || isBalanceLoading || balance < 100}
-          >
-            <i className="i i-early-settlement settle-now-early" />
-            Settle Now
-          </Button.Primary>
+          {!settlementExists && esOndemandSettlementEnabled ? (
+            <div
+              className="current-balance--settle-btn .settle-now"
+              onMouseEnter={() => handleMouseActivityOverSettleBtn('mouseEnter')}
+              onMouseLeave={() => handleMouseActivityOverSettleBtn('mouseLeave')}
+            >
+              <Suspense
+                fallback={
+                  <DefaultSettlementBtn
+                    handleSettleNowClick={handleSettleNowClick}
+                    checkIfSettlementDisabled={checkIfSettlementDisabled}
+                  />
+                }
+              >
+                <CustomLottie
+                  onClick={handleSettleNowClick}
+                  animationData={hoverOnSettleButton ? SettleNowLottieHover : SettleNowLottie}
+                  autoplay={hoverOnSettleButton ? false : true}
+                  loop={hoverOnSettleButton ? false : true}
+                  width="138px"
+                  isStopped={hoverOnSettleButton ? !hoverOnSettleButton : false}
+                  disabled={checkIfSettlementDisabled}
+                  trackInitialRenderImpression={trackAnimatedSettleBtnImpressions}
+                  fromWhere="Instant Settlement"
+                  merchantId={merchantId}
+                />
+              </Suspense>
+            </div>
+          ) : (
+            <DefaultSettlementBtn
+              handleSettleNowClick={handleSettleNowClick}
+              checkIfSettlementDisabled={checkIfSettlementDisabled}
+            />
+          )}
+
           {settleNowRestrictionMsg && (
             <Popover
               align="top"
@@ -66,6 +125,7 @@ CurrentBalance.propTypes = {
   updatedAt: PropTypes.number,
   isBalanceLoading: PropTypes.bool,
   isSettleNowRestricted: PropTypes.bool,
+  settlementExists: PropTypes.bool,
 };
 
 export default CurrentBalance;

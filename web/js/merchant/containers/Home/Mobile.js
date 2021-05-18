@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component, Fragment, lazy, Suspense } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import QueryString from 'query-string';
@@ -28,33 +28,83 @@ import {
   EVENT_CATEGORY_DASHBOARD_HOME,
 } from './ga';
 import ShowWhen from 'merchant/components/ShowWhen';
+import { fetchInstantSettlements } from 'merchant/reducers/collection';
+import SettleNowLottie from 'merchant/helpers/lottieConfigs/SettleNow.json';
+import SettleNowLottieHover from 'merchant/helpers/lottieConfigs/SettleNowHover.json';
+import settleNowIcon from '../../../../icons/merchant/settle-now-thunder-dark.svg';
+import LocalStorageService from 'common/utils/localStorage';
+import { trackAnimatedSettleBtnImpressions } from 'merchant/views/Settlements/Settlements/ga';
 
+const CustomLottie = lazy(() =>
+  import(/* webpackChunkName: "CustomLottie" */ 'common/new-ui/Lottie'),
+);
 @connect(
   (state) => ({
     windowWidth: state.app.windowWidth,
     user: state.session.user,
     config: state.config,
   }),
-  { openModal },
+  { openModal, fetchInstantSettlements },
 )
 class AnalyticsMobile extends Component {
+  state = {
+    settlementExists: true,
+    hoverOnSettleButton: false,
+  };
+
   constructor(props) {
     super(props);
     this.showOndemandSettlementForm = this.showOndemandSettlementForm.bind(this);
   }
 
+  componentDidMount() {
+    this.checkIfFirstEverSettlement();
+    this.getSettlementDetails();
+  }
+
+  checkIfFirstEverSettlement = (callbackSettlementStatus) => {
+    if (callbackSettlementStatus === 'settlementDone') {
+      this.setState({ settlementExists: true });
+      LocalStorageService.setItem('settlementExists', true);
+    } else {
+      const settlementExists = JSON.parse(LocalStorageService.getItem('settlementExists'));
+      if (settlementExists) this.setState({ settlementExists });
+      else this.getSettlementDetails();
+    }
+  };
+
+  getSettlementDetails = () => {
+    const { fetchInstantSettlements } = this.props;
+
+    fetchInstantSettlements({ count: 1 })
+      .then(({ data: { items = [] } = {} } = {}) => {
+        this.setState({ settlementExists: items.length > 0 });
+        LocalStorageService.setItem('settlementExists', items.length > 0);
+      })
+      .catch(() => {
+        this.setState({ settlementExists: true });
+      });
+  };
+
+  handleMouseActivityOverSettleBtn = (type) => {
+    this.setState({ hoverOnSettleButton: type === 'mouseEnter' });
+  };
+
   showOndemandSettlementForm() {
-    const { current_balance, ondemand_restrictions, openModal } = this.props;
+    const { current_balance, ondemand_restrictions, openModal, user } = this.props;
     trackSettleNow();
+    const esOndemandSettlementEnabled = user.isFeatureEnabled('es_on_demand');
     const balance = current_balance.data.balance;
     const settlableAmount = ondemand_restrictions && ondemand_restrictions.data.settlable_amount;
     openModal({
       component: (
         <OndemandModal
+          animatedSettlemnetBtn={!this.state.settlementExists && esOndemandSettlementEnabled}
           currentBalance={balance}
           settlableAmount={settlableAmount}
           eventCategory={EVENT_CATEGORY_DASHBOARD_HOME}
           fromWhere="Home"
+          checkIfFirstEverSettlement={this.checkIfFirstEverSettlement}
         />
       ),
       size: 'small',
@@ -62,7 +112,20 @@ class AnalyticsMobile extends Component {
     });
   }
 
+  defaultSettlementBtn = (checkIfSettlementDisabled) => {
+    return (
+      <Button.Secondary
+        class="settle-btn settle-now--mobile settle-now--button"
+        onClick={this.showOndemandSettlementForm}
+        disabled={checkIfSettlementDisabled}
+      >
+        <img src={settleNowIcon} alt="settle-now-thunder" className="settlement-icon-thunder" />
+        Settle Now
+      </Button.Secondary>
+    );
+  };
   render() {
+    const { settlementExists, hoverOnSettleButton } = this.state;
     const {
       config,
       current_balance,
@@ -107,6 +170,9 @@ class AnalyticsMobile extends Component {
     const settlableAmount = ondemand_restrictions && ondemand_restrictions.data.settlable_amount;
     const isSettleNowRestricted =
       ondemand_restrictions && (!attemptsLeft || !settlableAmount || isOndemandRestrictionsLoading);
+    const checkIfSettlementDisabled =
+      isSettleNowRestricted || current_balance.loading || current_balance.data.balance < 100;
+    const esOndemandSettlementEnabled = user.isFeatureEnabled('es_on_demand');
 
     return (
       <div className="home-analytics-mobile">
@@ -152,17 +218,33 @@ class AnalyticsMobile extends Component {
               {this.props.user.isOndemandSettlementEnabled &&
               this.props.user.isAllowedView('early_settlement') ? (
                 <div>
-                  <Button.Secondary
-                    class="settle-btn settle-now--mobile"
-                    onClick={this.showOndemandSettlementForm}
-                    disabled={
-                      isSettleNowRestricted ||
-                      current_balance.loading ||
-                      current_balance.data.balance < 100
-                    }
-                  >
-                    Settle Now
-                  </Button.Secondary>
+                  {!settlementExists && esOndemandSettlementEnabled ? (
+                    <div
+                      className=".settle-btn .settle-now--mobile"
+                      onMouseEnter={() => this.handleMouseActivityOverSettleBtn('mouseEnter')}
+                      onMouseLeave={() => this.handleMouseActivityOverSettleBtn('mouseLeave')}
+                    >
+                      <Suspense fallback={this.defaultSettlementBtn(checkIfSettlementDisabled)}>
+                        <CustomLottie
+                          onClick={this.showOndemandSettlementForm}
+                          animationData={
+                            hoverOnSettleButton ? SettleNowLottieHover : SettleNowLottie
+                          }
+                          autoplay={hoverOnSettleButton ? false : true}
+                          loop={hoverOnSettleButton ? false : true}
+                          width="138px"
+                          isStopped={hoverOnSettleButton ? !hoverOnSettleButton : false}
+                          disabled={checkIfSettlementDisabled}
+                          trackInitialRenderImpression={trackAnimatedSettleBtnImpressions}
+                          fromWhere="Home"
+                          merchantId={user.current}
+                        />
+                      </Suspense>
+                    </div>
+                  ) : (
+                    this.defaultSettlementBtn(checkIfSettlementDisabled)
+                  )}
+
                   {settleNowRestrictionMsg && (
                     <Popover
                       align="top"

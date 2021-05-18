@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Route, Switch, NavLink, Link } from 'react-router-dom';
@@ -9,12 +9,49 @@ import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBa
 import CashAdvanceOrNitroBanner from 'merchant/components/CashAdvanceOrNitroBanner';
 import EarlySettlementsAnnouncement from 'merchant/components/Announcements/EarlySettlements';
 import { handleNegativeBalanceLimit } from 'common/utils/rzp-utils';
+import { fetchInstantSettlements } from 'merchant/reducers/collection';
+import LocalStorageService from 'common/utils/localStorage';
 
-const onInstantSettlementsClick = () => {
-  trackIS.goToTabIS();
-};
+const Settlements = ({
+  user,
+  merchantBalanceConfigs,
+  current_balance,
+  fetchInstantSettlements,
+}) => {
+  const [settlementExists, setSettlementExists] = useState(true);
+  const esOndemandSettlementEnabled = user.isFeatureEnabled('es_on_demand');
 
-const Settlements = ({ user, merchantBalanceConfigs, current_balance }) => {
+  const onInstantSettlementsClick = () => {
+    checkIfFirstEverSettlement();
+    trackIS.goToTabIS();
+  };
+
+  useEffect(() => {
+    checkIfFirstEverSettlement();
+  }, []);
+
+  const checkIfFirstEverSettlement = (callbackSettlementStatus) => {
+    if (callbackSettlementStatus === 'settlementDone') {
+      setSettlementExists(true);
+      LocalStorageService.setItem('settlementExists', true);
+    } else {
+      const settlementExists = JSON.parse(LocalStorageService.getItem('settlementExists'));
+      if (settlementExists) setSettlementExists(settlementExists);
+      else getSettlementDetails();
+    }
+  };
+
+  const getSettlementDetails = () => {
+    fetchInstantSettlements({ count: 1 })
+      .then(({ data: { items = [] } = {} } = {}) => {
+        setSettlementExists(items.length > 0);
+        LocalStorageService.setItem('settlementExists', items.length > 0);
+      })
+      .catch(() => {
+        setSettlementExists(true);
+      });
+  };
+
   return (
     <>
       {/* instant settlements banner */}
@@ -45,7 +82,9 @@ const Settlements = ({ user, merchantBalanceConfigs, current_balance }) => {
 
       <tabbed-container>
         <header>
-          <NavLink to="/settlements">Settlements</NavLink>
+          <NavLink to="/settlements" onClick={checkIfFirstEverSettlement}>
+            Settlements
+          </NavLink>
           {user.isOndemandSettlementEnabled && (
             <NavLink onClick={onInstantSettlementsClick} to="/instantsettlements" exact>
               <i className="i i-early-settlement settle-icon mr-5" />
@@ -55,8 +94,26 @@ const Settlements = ({ user, merchantBalanceConfigs, current_balance }) => {
         </header>
         <content>
           <Switch>
-            <Route path="/instantsettlements" component={InstantSettlements} />
-            <Route path="/settlements" component={SettlementsListContainer} />
+            <Route
+              path="/instantsettlements"
+              render={() => (
+                <InstantSettlements
+                  settlementExists={settlementExists}
+                  esOndemandSettlementEnabled={esOndemandSettlementEnabled}
+                  checkIfFirstEverSettlement={checkIfFirstEverSettlement}
+                />
+              )}
+            />
+            <Route
+              path="/settlements"
+              render={() => (
+                <SettlementsListContainer
+                  settlementExists={settlementExists}
+                  esOndemandSettlementEnabled={esOndemandSettlementEnabled}
+                  checkIfFirstEverSettlement={checkIfFirstEverSettlement}
+                />
+              )}
+            />
           </Switch>
         </content>
       </tabbed-container>
@@ -74,5 +131,5 @@ export default connect(
     current_balance: state.home.current_balance,
     merchantBalanceConfigs: state.home.merchantBalanceConfigs,
   }),
-  null,
+  { fetchInstantSettlements },
 )(Settlements);

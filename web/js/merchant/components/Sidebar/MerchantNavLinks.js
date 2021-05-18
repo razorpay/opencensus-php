@@ -1,10 +1,44 @@
+import { useEffect, useState } from 'react';
+import { connect } from 'react-redux';
 import MainNavLink from 'merchant_common/components/MainNavLink';
 import ShowWhen from 'merchant/components/ShowWhen';
 import LocalStorageService from 'common/utils/localStorage';
+import { fetchInstantSettlements } from 'merchant/reducers/collection';
 
-export default function MerchantNavLinks(props) {
-  const { routes, isReportsPending, isChargeAtWillEnabled, isSettlementEnabled, user } = props;
+function MerchantNavLinks(props) {
+  const {
+    routes,
+    isReportsPending,
+    isChargeAtWillEnabled,
+    isSettlementEnabled,
+    user,
+    fetchInstantSettlements,
+  } = props;
   const showMyAccountCutomBadge = !LocalStorageService.getItem('rtb_page_visited');
+  const esOndemandSettlementEnabled = user.isFeatureEnabled('es_on_demand');
+  const [settlementExists, setSettlementExists] = useState(true);
+
+  useEffect(() => {
+    checkIfFirstEverSettlement();
+  }, []);
+
+  const checkIfFirstEverSettlement = () => {
+    const settlementExists = JSON.parse(LocalStorageService.getItem('settlementExists'));
+    if (settlementExists) setSettlementExists(settlementExists);
+    else getSettlementDetails();
+  };
+
+  const getSettlementDetails = () => {
+    fetchInstantSettlements({ count: 1 })
+      .then(({ data: { items = [] } = {} } = {}) => {
+        setSettlementExists(items.length > 0);
+        LocalStorageService.setItem('settlementExists', items.length > 0);
+      })
+      .catch(() => {
+        setSettlementExists(true);
+      });
+  };
+
   return (
     <>
       <MainNavLink
@@ -23,6 +57,7 @@ export default function MerchantNavLinks(props) {
         additionalCondition={(user) => user.isAllowedMultiple('payments orders refunds')}
       />
       <MainNavLink
+        isNew={!settlementExists && esOndemandSettlementEnabled}
         label="Settlements"
         icon="i i-done-all text-success"
         type="general"
@@ -200,3 +235,5 @@ export default function MerchantNavLinks(props) {
     </>
   );
 }
+
+export default connect((state) => null, { fetchInstantSettlements })(MerchantNavLinks);

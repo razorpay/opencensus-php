@@ -96,7 +96,15 @@ class InstantSettlements extends ListContainer {
   }
 
   showOndemandSettlementForm = (e) => {
-    const { current_balance, ondemand_restrictions, openModal } = this.props;
+    const {
+      current_balance,
+      ondemand_restrictions,
+      openModal,
+      checkIfFirstEverSettlement,
+      settlementExists,
+      esOndemandSettlementEnabled,
+    } = this.props;
+
     const balance = current_balance.data.balance || 0;
     const settlableAmount =
       this.settlementRestricted &&
@@ -105,11 +113,13 @@ class InstantSettlements extends ListContainer {
     openModal({
       component: (
         <OndemandModal
+          animatedSettlemnetBtn={!settlementExists && esOndemandSettlementEnabled}
           currentBalance={balance}
           settlableAmount={settlableAmount}
           fromWhere="Instant Settlements"
           showOndemandSettlementForm={this.showOndemandSettlementForm}
           eventCategory={EVENT_CATEGORY_DASHBOARD_INSTANT_SETTLEMENT}
+          checkIfFirstEverSettlement={checkIfFirstEverSettlement}
         />
       ),
       size: 'small',
@@ -141,6 +151,7 @@ class InstantSettlements extends ListContainer {
       error,
       ondemand_restrictions,
       location: { search },
+      settlementExists,
     } = this.props;
     const { count } = this.state;
     const balance = current_balance.data.balance || 0;
@@ -209,6 +220,9 @@ class InstantSettlements extends ListContainer {
             isBalanceLoading={current_balance.loading}
             isSettleNowRestricted={isSettleNowRestricted}
             settleNowRestrictionMsg={this.settleNowRestrictionMsg}
+            settlementExists={settlementExists}
+            esOndemandSettlementEnabled={this.props.esOndemandSettlementEnabled}
+            merchantId={user.current}
             isOndemandSettlementEnabled={user.isOndemandSettlementEnabled}
           />
           <SettlementMessage

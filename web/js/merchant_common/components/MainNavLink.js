@@ -132,12 +132,17 @@ export default class MainNavLink extends Component {
 
     if (isBeta) {
       tag = <span class="badge bg-primary-fuse pull-right hidden-xs">beta</span>;
+    } else if (isSettlementEnabled) {
+      tag = (
+        <span>
+          <i className="i i-early-settlement settle-icon pull-right temp-icon-2" />
+          {isNew && <span class="badge bg-success pull-right hidden-xs right-margin">new</span>}
+        </span>
+      );
     } else if (isNew) {
       tag = <span class="badge bg-success pull-right hidden-xs">new</span>;
     } else if (customBadge) {
       tag = <span class="badge bg-success pull-right hidden-xs">{customBadge}</span>;
-    } else if (isSettlementEnabled) {
-      tag = <i className="i i-early-settlement settle-icon pull-right temp-icon-2" />;
     } else if (isComingSoon) {
       tag = <span class="badge pull-right hidden-xs coming-soon-badge">Coming Soon!</span>;
     }

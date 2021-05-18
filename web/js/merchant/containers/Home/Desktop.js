@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component, Fragment, lazy, Suspense } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import { Link } from 'react-router-dom';
@@ -45,6 +45,15 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import LocalStorageService from 'common/utils/localStorage';
+import { fetchInstantSettlements } from 'merchant/reducers/collection';
+import SettleNowLottie from 'merchant/helpers/lottieConfigs/SettleNow.json';
+import SettleNowLottieHover from 'merchant/helpers/lottieConfigs/SettleNowHover.json';
+import settleNowIcon from '../../../../icons/merchant/settle-now-thunder.svg';
+import { trackAnimatedSettleBtnImpressions } from 'merchant/views/Settlements/Settlements/ga';
+
+const CustomLottie = lazy(() =>
+  import(/* webpackChunkName: "CustomLottie" */ 'common/new-ui/Lottie'),
+);
 import { fetchUser } from 'merchant/reducers/session';
 import AsyncButton from 'react-async-button';
 
@@ -59,6 +68,7 @@ import AsyncButton from 'react-async-button';
   {
     openModal,
     fetchInternationalProductsStatus,
+    fetchInstantSettlements,
     ...NotificationActions,
     fetchUser,
   },
@@ -67,6 +77,8 @@ class AnalyticsDesktop extends Component {
   state = {
     showNcPopup: true,
     whatsappNotificationStatus: 'off',
+    hoverOnSettleButton: false,
+    settlementExists: true,
   };
   constructor(props) {
     super(props);
@@ -110,7 +122,37 @@ class AnalyticsDesktop extends Component {
       .catch((_) => {
         this.setState({ whatsappNotificationStatus: 'off' });
       });
+
+    this.checkIfFirstEverSettlement();
   }
+
+  checkIfFirstEverSettlement = (callbackSettlementStatus) => {
+    if (callbackSettlementStatus === 'settlementDone') {
+      this.setState({ settlementExists: true });
+      LocalStorageService.setItem('settlementExists', true);
+    } else {
+      const settlementExists = JSON.parse(LocalStorageService.getItem('settlementExists'));
+      if (settlementExists) this.setState({ settlementExists });
+      else this.getSettlementDetails();
+    }
+  };
+
+  getSettlementDetails = () => {
+    const { fetchInstantSettlements } = this.props;
+
+    fetchInstantSettlements({ count: 1 })
+      .then(({ data: { items = [] } = {} } = {}) => {
+        this.setState({ settlementExists: items.length > 0 });
+        LocalStorageService.setItem('settlementExists', items.length > 0);
+      })
+      .catch(() => {
+        this.setState({ settlementExists: true });
+      });
+  };
+
+  handleMouseActivityOverSettleBtn = (type) => {
+    this.setState({ hoverOnSettleButton: type === 'mouseEnter' });
+  };
 
   resetHash = () => {
     this.props.history.push({
@@ -120,17 +162,21 @@ class AnalyticsDesktop extends Component {
   };
 
   showOndemandSettlementForm() {
-    const { current_balance, ondemand_restrictions, openModal } = this.props;
+    const { current_balance, ondemand_restrictions, openModal, user } = this.props;
     trackSettleNow();
+    const esOndemandSettlementEnabled = user.isFeatureEnabled('es_on_demand');
     const balance = current_balance.data.balance;
     const settlableAmount = ondemand_restrictions && ondemand_restrictions.data.settlable_amount;
+
     openModal({
       component: (
         <OndemandModal
+          animatedSettlemnetBtn={!this.state.settlementExists && esOndemandSettlementEnabled}
           currentBalance={balance}
           settlableAmount={settlableAmount}
           eventCategory={EVENT_CATEGORY_DASHBOARD_HOME}
           fromWhere="Home"
+          checkIfFirstEverSettlement={this.checkIfFirstEverSettlement}
         />
       ),
       size: 'small',
@@ -177,6 +223,19 @@ class AnalyticsDesktop extends Component {
     }
   };
 
+  defaultSettlementBtn = (checkIfSettlementDisabled) => {
+    return (
+      <Button.Primary
+        class="settle-btn settle-now--desktop settle-now--button"
+        onClick={this.showOndemandSettlementForm}
+        disabled={checkIfSettlementDisabled}
+      >
+        <img src={settleNowIcon} alt="settle-now-thunder" className="settlement-icon-thunder" />
+        Settle Now
+      </Button.Primary>
+    );
+  };
+
   onClickCovidEnableNow = async () => {
     try {
       await merchantFetch({
@@ -204,6 +263,7 @@ class AnalyticsDesktop extends Component {
   };
 
   render() {
+    const { hoverOnSettleButton, settlementExists } = this.state;
     const {
       mode,
       user,
@@ -259,14 +319,17 @@ class AnalyticsDesktop extends Component {
     const settlableAmount = ondemand_restrictions && ondemand_restrictions.data.settlable_amount;
     const isSettleNowRestricted =
       ondemand_restrictions && (!attemptsLeft || !settlableAmount || isOndemandRestrictionsLoading);
-
+    const checkIfSettlementDisabled =
+      isSettleNowRestricted || current_balance.loading || current_balance.data.balance < 100;
     let balance = current_balance.data.balance;
     let negativeBalanceClassName = '';
+    const esOndemandSettlementEnabled = user.isFeatureEnabled('es_on_demand');
 
     if (balance < 0) {
       balance = Math.abs(current_balance.data.balance);
       negativeBalanceClassName = 'negative-balance';
     }
+
     return (
       <div className="home-analytics-desktop">
         <div
@@ -591,17 +654,33 @@ class AnalyticsDesktop extends Component {
                 {this.props.user.isOndemandSettlementEnabled &&
                 this.props.user.isAllowedView('early_settlement') ? (
                   <div>
-                    <Button.Primary
-                      class="settle-btn settle-now--desktop"
-                      onClick={this.showOndemandSettlementForm}
-                      disabled={
-                        isSettleNowRestricted ||
-                        current_balance.loading ||
-                        current_balance.data.balance < 100
-                      }
-                    >
-                      Settle Now
-                    </Button.Primary>
+                    {!settlementExists && esOndemandSettlementEnabled ? (
+                      <div
+                        onMouseEnter={() => this.handleMouseActivityOverSettleBtn('mouseEnter')}
+                        onMouseLeave={() => this.handleMouseActivityOverSettleBtn('mouseLeave')}
+                        class="settle-btn settle-now--desktop"
+                      >
+                        <Suspense fallback={this.defaultSettlementBtn(checkIfSettlementDisabled)}>
+                          <CustomLottie
+                            onClick={this.showOndemandSettlementForm}
+                            animationData={
+                              hoverOnSettleButton ? SettleNowLottieHover : SettleNowLottie
+                            }
+                            autoplay={hoverOnSettleButton ? false : true}
+                            loop={hoverOnSettleButton ? false : true}
+                            width="138px"
+                            isStopped={hoverOnSettleButton ? !hoverOnSettleButton : false}
+                            disabled={checkIfSettlementDisabled}
+                            trackInitialRenderImpression={trackAnimatedSettleBtnImpressions}
+                            fromWhere="Home"
+                            merchantId={user.current}
+                          />
+                        </Suspense>
+                      </div>
+                    ) : (
+                      this.defaultSettlementBtn(checkIfSettlementDisabled)
+                    )}
+
                     {settleNowRestrictionMsg && (
                       <Popover
                         align="top"

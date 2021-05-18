@@ -37,6 +37,7 @@
     "react-dom": "16.9.0",
     "react-dragula": "1.1.17",
     "react-is": "17.0.1",
+    "react-lottie": "1.2.3",
     "react-modal": "3.11.2",
     "react-motion": "0.5.2",
     "react-power-select": "1.0.0-beta.17",

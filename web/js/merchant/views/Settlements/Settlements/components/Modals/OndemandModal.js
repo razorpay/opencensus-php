@@ -5,7 +5,21 @@ import { closeModal } from 'merchant_common/reducers/modals';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { isInteger } from 'common/utils/validators';
 import ajax from 'merchant/utils/ajax';
-import { trackOndemand, EVENT_CATEGORY_DASHBOARD_EARLY_SETTLEMENT } from '../../ga';
+import {
+  trackOndemand,
+  EVENT_CATEGORY_DASHBOARD_EARLY_SETTLEMENT,
+  trackEsSettlementAction,
+  trackModalOpen,
+  trackEsShowBreakup,
+  trackEsModalCloseCTA,
+  trackEsModalCloseIcon,
+  trackEsModalCloseIconChurn,
+  trackAnimatedSettleBtnClick,
+  trackEsAmountError,
+  trackEsConfirm,
+  trackEsAmountUpdated,
+  trackEsInfoHover,
+} from '../../ga';
 import { fetchCurrentBalance, fetchOndemandRestrictions } from 'merchant/reducers/home';
 import Input from 'common/new-ui/Input';
 import Alert from 'common/ui/Forms/Alert';
@@ -48,6 +62,7 @@ export default class OndemandModal extends Component {
       instantFeePercent: 0,
       tax: 0,
       instantFee: 0,
+      prefilledAmountUpdated: false,
     };
 
     this.inputTooltipRef = null;
@@ -81,9 +96,12 @@ export default class OndemandModal extends Component {
 
   openConfirmSettlement = () => {
     const { hasChangedAmount, checkedBreakup, amount } = this.state;
+    const { user, fromWhere } = this.props;
     this.setState({
       clickedConfirm: true,
     });
+    trackEsConfirm(user.current);
+    if (hasChangedAmount) trackEsAmountUpdated();
 
     this.gaEventDispatcher({
       eventAction: `Confirm`,
@@ -109,6 +127,7 @@ export default class OndemandModal extends Component {
           eventAction: `second confirmation`,
           eventLabel: `Yes,Settle | Second Confirm`,
         });
+        trackEsSettlementAction(user.current, fromWhere, true);
         this.onSubmit();
       },
       abort: () => {
@@ -116,6 +135,7 @@ export default class OndemandModal extends Component {
           eventAction: `second confirmation`,
           eventLabel: `No, Don't | Second Confirm`,
         });
+        trackEsSettlementAction(user.current, fromWhere);
       },
     });
   };
@@ -248,11 +268,15 @@ export default class OndemandModal extends Component {
   };
 
   componentDidMount() {
+    const { user, fromWhere, animatedSettlemnetBtn } = this.props;
     document.addEventListener('keydown', this.escFunction);
     this.gaEventDispatcher({
       eventAction: 'Click Settle Now',
-      eventLabel: `${this.props.fromWhere} | Settle Now`,
+      eventLabel: `${fromWhere} | Settle Now`,
     });
+
+    if (animatedSettlemnetBtn) trackAnimatedSettleBtnClick(user.current, fromWhere);
+    trackModalOpen(user.current);
     this.updateFee();
     this.showInputTooltip();
   }
@@ -260,6 +284,10 @@ export default class OndemandModal extends Component {
   componentWillUnmount() {
     document.removeEventListener('keydown', this.escFunction);
   }
+
+  handleMouseOverTooltip = () => {
+    if (this.props.user.isFeatureEnabled('es_on_demand_restricted')) trackEsInfoHover();
+  };
 
   showInputTooltip = () => {
     if (!LocalStorageService.getItem('es-ondemand-input-tooltip')) {
@@ -280,6 +308,7 @@ export default class OndemandModal extends Component {
   };
 
   fetchBreakup = () => {
+    trackEsShowBreakup(!this.state.clickedConfirm);
     if (this.state.clickedConfirm) {
       this.gaEventDispatcher({
         eventAction: `Show Breakup`,
@@ -355,6 +384,8 @@ export default class OndemandModal extends Component {
         });
         this.props.fetchCurrentBalance();
         this.props.fetchOndemandRestrictions();
+        this.props.checkIfFirstEverSettlement &&
+          this.props.checkIfFirstEverSettlement('settlementDone');
       })
       .catch((response) => {
         this.setState({
@@ -372,7 +403,9 @@ export default class OndemandModal extends Component {
       validAmount: !this.validateAmount(e.target.value),
       breakupShow: false,
       hasChangedAmount: true,
+      prefilledAmountUpdated: true,
     });
+    if (!this.state.prefilledAmountUpdated) trackEsAmountUpdated();
     this.updateFeeDebounced();
   };
 
@@ -391,6 +424,7 @@ export default class OndemandModal extends Component {
       }
       if (this.props.settlableAmount > 0 && val * 100 > this.props.settlableAmount) {
         trackOndemand.trackAmounTooHigh(this.props.fromWhere);
+        trackEsAmountError();
         this.setState({
           errors: [
             <>
@@ -411,6 +445,7 @@ export default class OndemandModal extends Component {
       }
       if (val * 100 > this.props.currentBalance) {
         trackOndemand.trackAmounTooHigh(this.props.fromWhere);
+        trackEsAmountError();
         this.setState({
           errors: [
             <>
@@ -445,16 +480,20 @@ export default class OndemandModal extends Component {
   handleCloseModal = (eventType) => {
     switch (eventType) {
       case 'Close Modal Screen 1':
+        trackEsModalCloseIcon();
         trackOndemand.trackCloseModal(this.props.fromWhere);
         break;
       case 'Close Button':
+        trackEsModalCloseCTA();
         trackOndemand.trackCloseButton(this.props.fromWhere);
         break;
       case 'Close Modal Screen 2':
+        trackEsModalCloseIconChurn(this.props.user.current);
         trackOndemand.trackSuccessCloseModal(this.props.fromWhere);
         break;
     }
     if (!this.state.clickedConfirm) {
+      if (this.state.hasChangedAmount) trackEsAmountUpdated();
       this.gaEventDispatcher({
         eventAction: `Close modal`,
         eventLabel: `${this.state.hasChangedAmount ? 'Changed amount' : 'preFilled amount'} - ${
@@ -523,6 +562,7 @@ export default class OndemandModal extends Component {
                 }}
               />
               <span
+                onMouseEnter={this.handleMouseOverTooltip}
                 data-tooltip={`To help you get started, you can immediately settle up to ${getFormattedAmountNew(
                   settlableAmount || currentBalance,
                   true,

@@ -1473,6 +1473,21 @@ ul.switch-modes-menu.nav.nav-stacked {
   margin-top: 16px;
 }
 
+.lottie-wrapper 
+   > div:first-child 
+      display: flex
+
+
+.lottie-disabled  {
+   cursor: not-allowed !important;
+   pointer-events: none;
+   opacity: 0.5;
+    & > div:first-child {
+     cursor: not-allowed !important;
+    }
+  }
+
+   
 .transfers-onhold-datepicker div.DateInput {
   width: 100%;
 }

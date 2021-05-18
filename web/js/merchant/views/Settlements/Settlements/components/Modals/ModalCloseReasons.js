@@ -5,6 +5,7 @@ import { closeModal } from 'merchant_common/reducers/modals';
 import Button from 'common/new-ui/Button';
 import { CLOSE_OPTIONS } from 'merchant/views/Settlements/Settlements/data';
 import Input from 'common/new-ui/Input';
+import { trackEsChurnReason, trackEsModalCloseAction } from '../../ga';
 
 @connect((state) => ({ user: state.session.user }), {
   closeModal,
@@ -27,19 +28,23 @@ export default class ModalCloseReasons extends Component {
   };
 
   submitCloseReason = () => {
-    const { brief } = this.state;
+    const { brief, closeReason } = this.state;
+    const { user } = this.props;
     const analyticsPayload = {
       eventCategory: this.props.eventCategory,
       eventAction: `Reasons - ${this.props.closeOrigin}`,
-      eventLabel: `${this.state.closeReason} | ${brief}`,
+      eventLabel: `${closeReason} | ${brief}`,
       eventValue: brief,
     };
     window.rzpAnalytics(analyticsPayload);
+    trackEsChurnReason(user.current, `${closeReason}${brief ? ` | Description - ${brief}` : ''}`);
+    trackEsModalCloseAction(user.current, true);
     this.props.closeModal();
   };
 
   handleGoBackClick = (e) => {
     const { showOndemandSettlementForm, closeModal } = this.props;
+    trackEsModalCloseAction(this.props.user.current);
     closeModal();
     setTimeout(() => showOndemandSettlementForm(e), 0);
   };
