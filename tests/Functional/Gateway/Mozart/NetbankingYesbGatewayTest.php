@@ -31,6 +31,8 @@ class NetbankingYesbGatewayTest extends TestCase
         $this->setMockGatewayTrue();
 
         $this->fixtures->create('terminal:shared_netbanking_yesb_terminal');
+
+        $this->markTestSkipped('this flow is depricated and is moved to nbplus service');
     }
 
     public function testPayment()

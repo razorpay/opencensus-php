@@ -3228,6 +3228,9 @@ class Gateway
             self::NETBANKING_DLB,
             self::NETBANKING_SCB,
             self::NETBANKING_FEDERAL,
+            self::NETBANKING_YESB,
+            self::NETBANKING_CUB,
+            self::NETBANKING_SIB,
         ];
 
         $isRouted = in_array($gateway, $gateways, true);

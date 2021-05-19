@@ -39,7 +39,7 @@ class NetbankingSibCombinedFileTest extends TestCase
 
         $this->terminal = $this->fixtures->create('terminal:shared_netbanking_sib_terminal');
 
-        $this->markTestSkipped();
+        $this->markTestSkipped('this flow is depricated and is moved to nbplus service');
     }
 
     public function testNetbankingSibCombinedFile()
