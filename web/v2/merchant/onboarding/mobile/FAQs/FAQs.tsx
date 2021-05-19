@@ -61,7 +61,7 @@ const FAQs: React.FC = () => {
                 </Heading>
               </View>
             </Space>
-            <Panel key="Q1" title="What is Billing label?" expanded>
+            <Panel key="Q1" title="What is Billing label?">
               Billing label is your brand&apos;s identity, it will be displayed on your invoices and
               bills. Please ensure billing label is as close to your business name/website as
               possible.
