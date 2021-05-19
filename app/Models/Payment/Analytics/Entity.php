@@ -7,7 +7,6 @@ use RZP\Models\Payment;
 
 class Entity extends Base\PublicEntity
 {
-    const ID                            = 'id';
     const PAYMENT_ID                    = 'payment_id';
     const MERCHANT_ID                   = 'merchant_id';
     const CHECKOUT_ID                   = 'checkout_id';
@@ -34,7 +33,9 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'payment_analytics';
 
-    public $incrementing = true;
+    protected $primaryKey = 'payment_id';
+
+    const SEARCH_WINDOW = 60 * 60 * 24;
 
     protected $fillable = [
         self::CHECKOUT_ID,
@@ -56,7 +57,6 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $public = [
-        self::ID,
         self::PAYMENT_ID,
         self::MERCHANT_ID,
         self::CHECKOUT_ID,
@@ -80,7 +80,6 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $visible = [
-        self::ID,
         self::PAYMENT_ID,
         self::MERCHANT_ID,
         self::CHECKOUT_ID,

@@ -20,25 +20,25 @@ class Repository extends Base\Repository
         Entity::PAYMENT_ID,
     ];
 
+
+    // called for callback
     public function findForPayment($paymentId)
     {
-        return $this->newQuery()
-                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
-                    ->get();
-    }
+        $timestamp = time() - Entity::SEARCH_WINDOW;
 
-    public function findForLatestPayment($paymentId)
-    {
         return $this->newQuery()
                     ->where(Entity::PAYMENT_ID, '=', $paymentId)
-                    ->orderBy(Entity::CREATED_AT, 'desc')
-                    ->firstOrFail();
+                    ->where(Entity::CREATED_AT, '>=', $timestamp)
+                    ->get();
     }
 
     public function findLatestByPayment($paymentId)
     {
+        $timestamp = time() - Entity::SEARCH_WINDOW;
+
         return $this->newQuery()
                     ->where(Entity::PAYMENT_ID, '=', $paymentId)
+                    ->where(Entity::CREATED_AT, '>=', $timestamp)
                     ->orderBy(Entity::CREATED_AT, 'desc')
                     ->first();
     }
