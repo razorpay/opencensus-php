@@ -973,6 +973,7 @@ class Constants
         self::FAV_FTA_DPRCN_BCK               => true,
         self::PAYOUT_SERVICE_ENABLED          => true,
         self::COVID_19_RELIEF                 => true,
+        self::BENE_NAME_IN_PAYOUT             => true,
     ];
 
     // Entity type constants
