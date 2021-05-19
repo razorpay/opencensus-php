@@ -122,4 +122,57 @@ class Ledger extends BaseLedger
             'body' => $response
         ];
     }
+
+    /**
+     * @param      $input
+     * @param bool $throwExceptionOnFailure
+     *
+     * @return array
+     */
+    public function requestGovernor($input, bool $throwExceptionOnFailure = false): array
+    {
+        $response = [
+            "code"                      => "200",
+            "response"                  => [
+                "additional_attribute" => [
+                    [
+                        "name"  => "transaction_config_id",
+                        "value" => "t0"
+                    ]
+                ],
+                "created_at"            => "2021-05-17T09:27:12.047901+05:30",
+                "created_by"            => "sampleUser",
+                "default_expression"    => null,
+                "description"           => "",
+                "expression"            => [
+                    "operands" => [
+                        [
+                            "operands" => null,
+                            "type" => "variable",
+                            "value" => '$sampleVariable'
+                        ],
+                        [
+                            "operands" => null,
+                            "type" => "string",
+                            "value" => "sampleValue"
+                        ]
+                    ],
+                    "type" => "comparator",
+                    "value" => "=="
+                ],
+                "id"                    => "sample14charId",
+                "indexable"             => true,
+                "mode"                  => "test",
+                "name"                  => "sample_rule",
+                "score"                 => 1,
+                "skip_on_failure"       => false,
+                "updated_at"            => "2021-05-17T09:27:12.047901+05:30"
+            ],
+        ];
+
+        return [
+            'code' => 200,
+            'body' => $response
+        ];
+    }
 }

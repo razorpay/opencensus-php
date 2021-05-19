@@ -35,4 +35,11 @@ class LedgerController extends Controller
 
         return ApiResponse::json($response['body'], $response['code']);
     }
+
+    public function requestGovernor()
+    {
+        $response = $this->app['ledger']->requestGovernor($this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
 }

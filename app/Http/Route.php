@@ -2433,6 +2433,7 @@ class Route
         'create_ledger_accounts_in_bulk'          => ['post',      'ledger_service/create_accounts_in_bulk',                'LedgerController@createAccountsInBulk'],
         'activate_ledger_account'                 => ['post',      'ledger_service/activate_account',                       'LedgerController@activateAccount'],
         'update_ledger_account_detail'            => ['post',      'ledger_service/update_account_detail',                  'LedgerController@updateAccountDetail'],
+        'request_governor'                        => ['post',      'ledger_service/request_governor',                       'LedgerController@requestGovernor'],
     ];
 
     public static $public = [
@@ -4654,6 +4655,7 @@ class Route
         'create_ledger_accounts_in_bulk',
         'activate_ledger_account',
         'update_ledger_account_detail',
+        'request_governor',
     ];
 
     public static $routePermission = [
@@ -5550,6 +5552,7 @@ class Route
         'create_ledger_accounts_in_bulk'                  => Permission::LEDGER_SERVICE_ACTIONS,
         'activate_ledger_account'                         => Permission::LEDGER_SERVICE_ACTIONS,
         'update_ledger_account_detail'                    => Permission::LEDGER_SERVICE_ACTIONS,
+        'request_governor'                                => Permission::LEDGER_SERVICE_ACTIONS,
     ];
 
     public static $bankingRoutePermissions = [
@@ -8527,6 +8530,7 @@ class Route
             'create_ledger_accounts_in_bulk',
             'activate_ledger_account',
             'update_account_detail',
+            'request_governor',
         ],
 
         //
@@ -9225,6 +9229,7 @@ class Route
             'create_ledger_account',
             'create_ledger_accounts_in_bulk',
             'update_account_detail',
+            'request_governor',
         ]
     ];
 

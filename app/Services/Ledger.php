@@ -37,11 +37,14 @@ class Ledger
 
     const AccountDetailBaseURL = '/twirp/rzp.ledger.account_detail.v1.AccountDetailAPI';
 
+    const GovernorURL = '/twirp/rzp.ledger.governor.v1.GovernorAPI';
+
     const URLS = [
         'create'        => 'Create',
         'createInBulk'  => 'CreateInBulk',
         'activate'      => 'Activate',
         'update'        => 'Update',
+        'request'       => 'Request',
     ];
 
     // Headers
@@ -92,7 +95,7 @@ class Ledger
      *
      * @return array
      * @throws Exception\RuntimeException
-     * @throws Requests_Exception
+     * @throws \Throwable
      */
     public function createAccount($input, bool $throwExceptionOnFailure = false): array
     {
@@ -106,7 +109,7 @@ class Ledger
      *
      * @return array
      * @throws Exception\RuntimeException
-     * @throws Requests_Exception
+     * @throws \Throwable
      */
     public function createAccountsInBulk($input, bool $throwExceptionOnFailure = false): array
     {
@@ -120,7 +123,7 @@ class Ledger
      *
      * @return array
      * @throws Exception\RuntimeException
-     * @throws Requests_Exception
+     * @throws \Throwable
      */
     public function activateAccount($input, bool $throwExceptionOnFailure = false): array
     {
@@ -134,11 +137,25 @@ class Ledger
      *
      * @return array
      * @throws Exception\RuntimeException
-     * @throws Requests_Exception
+     * @throws \Throwable
      */
     public function updateAccountDetail($input, bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::AccountDetailBaseURL . '/' . self::URLS['update'],
+            Requests::POST, $input, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param      $input
+     * @param bool $throwExceptionOnFailure
+     *
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function requestGovernor($input, bool $throwExceptionOnFailure = false): array
+    {
+        return $this->sendRequest(self::GovernorURL . '/' . self::URLS['request'],
             Requests::POST, $input, $throwExceptionOnFailure);
     }
 
@@ -150,7 +167,7 @@ class Ledger
      *
      * @return array
      * @throws Exception\RuntimeException
-     * @throws Requests_Exception
+     * @throws \Throwable
      */
     protected function sendRequest(
         string $endpoint,
