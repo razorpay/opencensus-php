@@ -209,3 +209,33 @@ curl -L https://github.com/ApiGen/ApiGen/releases/download/v4.1.0/apigen-4.1.0.p
 
 The documentation will be generated in the docs directory.
 
+# RazorX / Splitz dashboard setup
+
+To run RazorX / Splitz dashboard you'll need to use Redirector extension.
+- Create following rule in redirector
+```
+{
+  "description": "",
+  "exampleUrl": "https://betacdn.np.razorpay.in/dashboard/dist/razorx-entry.js",
+  "exampleResult": "http://localhost:8000/dist/razorx-entry.js",
+  "error": null,
+  "includePattern": "https://*cdn.np.razorpay.in/dashboard/dist/razorx-entry.js",
+  "excludePattern": "",
+  "patternDesc": "",
+  "redirectUrl": "http://localhost:8000/dist/razorx-entry.js",
+  "patternType": "W",
+  "processMatches": "noProcessing",
+  "disabled": false,
+  "grouped": false,
+  "appliesTo": [
+      "script"
+  ]
+}
+```
+- Start ecstatic server in **public** folder using following command
+```
+ecstatic --cache 0 -H 'Access-Control-Allow-Origin: *'
+```
+- Start node server in **web** folder using this command ```STAGE=development REDIRECTOR=true node tools/build.js --project=razorx```
+- Go to https://beta-admin-dashboard.stage.razorpay.in/razorx and turn on redirector.
+
