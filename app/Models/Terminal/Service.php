@@ -740,17 +740,6 @@ class Service extends Base\Service
 
             $this->repo->terminal->lockForUpdateAndReload($terminal);
 
-            if ($terminal->isSyncStatusSuccess() === true)
-            {
-                $data = [
-                    Entity::TERMINAL_ID         => $terminal->getId(),
-                ];
-
-                $this->trace->info(TraceCode::TERMINALS_SERVICE_TERMINAL_ALREADY_SYNCED, $data);
-
-                return $terminal;
-            }
-
             $migrateTerminalResponse = $client->migrateTerminal($terminal);
 
             $fetchTerminalResponse = $client->fetchTerminalById($terminal->getId());
