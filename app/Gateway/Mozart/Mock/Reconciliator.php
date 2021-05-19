@@ -432,6 +432,8 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
     {
         $this->fileToWriteName = 'upi_juspay_mis';
 
+        $this->fileExtension = FileStore\Format::TXT;
+
         $data = [];
 
         // Check refunds first
@@ -473,7 +475,11 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
         // so make it Refund MIS file. Just return the data.
         if (empty($data) === false)
         {
-            return $data;
+            $formattedData = $this->generateText($data, '|');
+
+            $formattedData = implode("|", array_keys($data[0])) . PHP_EOL . $formattedData;
+
+            return $formattedData;
         }
 
         // If no refunds, then it is payment MIS file
@@ -512,7 +518,11 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
             $data[] = $row;
         }
 
-        return $data;
+        $formattedData = $this->generateText($data, '|');
+
+        $formattedData = implode("|", array_keys($data[0])) . PHP_EOL . $formattedData;
+
+        return $formattedData;
     }
 
     protected function cred($input)
@@ -778,7 +788,8 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
         string $type = FileStore\Type::MOCK_RECONCILIATION_FILE,
         string $store = FileStore\Store::S3)
     {
-        if ($this->gateway === PaymentGateway::NETBANKING_SIB)
+        if (($this->gateway === PaymentGateway::NETBANKING_SIB) ||
+            ($this->gateway === PaymentGateway::UPI_JUSPAY))
         {
             return $this->createTxtFile($content, $type, $store);
         }

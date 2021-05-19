@@ -45,4 +45,9 @@ class Reconciliate extends Base\Reconciliate
 
         return true;
     }
+
+    public function getDelimiter()
+    {
+        return '|';
+    }
 }

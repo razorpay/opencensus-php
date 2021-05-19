@@ -13,25 +13,26 @@ use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
-    const RRN                     = 'rrn';
-    const VPA                     = 'vpa';
-    const IFSC                    = 'ifsc';
-    const TXN_ID                  = 'txnid';
-    const RESPCODE                = 'respcode';
-    const RESPONSE                = 'response';
-    const CREDITVPA               = 'creditvpa';
-    const MERCHANT_ID             = 'merchant_id';
-    const COLUMN_MOBILE_NO        = 'mobile_no';
-    const ACCOUNT_CUST_NAME       = 'account_cust_name';
-    const COLUMN_PAYMENT_ID       = 'orderid';
-    const COLUMN_PAYMENT_AMOUNT   = 'amount';
-    const MASKED_ACCOUNT_NUMBER   = 'maskedaccountnumber';
+    const RRN                     = 'RRN';
+    const VPA                     = 'VPA';
+    const IFSC                    = 'IFSC';
+    const TXN_ID                  = 'TXNID';
+    const RESPCODE                = 'RESPCODE';
+    const RESPONSE                = 'RESPONSE';
+    const CREDITVPA               = 'CREDITVPA';
+    const MERCHANT_ID             = 'MERCHANT_ID';
+    const COLUMN_MOBILE_NO        = 'MOBILE_NO';
+    const ACCOUNT_CUST_NAME       = 'ACCOUNT_CUST_NAME';
+    const COLUMN_PAYMENT_ID       = 'ORDERID';
+    const COLUMN_PAYMENT_AMOUNT   = 'AMOUNT';
+    const MASKED_ACCOUNT_NUMBER   = 'MASKEDACCOUNTNUMBER';
 
     const ACCOUNT_DETAILS_VPA   = 'vpa';
     const ACCOUNT_DETAILS_IFSC  = 'ifsc';
     const ACCOUNT_DETAILS_NAME  = 'name';
 
-    const SUCCESS = 'success';
+    const SUCCESS = ['success', 'deemed'];
+
 
     const BLACKLISTED_COLUMNS = [
         self::ACCOUNT_CUST_NAME,
@@ -95,9 +96,9 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     protected function getReconPaymentStatus(array $row)
     {
-        $rowStatus = $row[self::RESPONSE] ?? null;
+        $rowStatus = strtolower($row[self::RESPONSE] ?? null);
 
-        if (strtolower($rowStatus) === self::SUCCESS)
+        if (in_array($rowStatus, self::SUCCESS) === true)
         {
             return Payment\Status::AUTHORIZED;
         }

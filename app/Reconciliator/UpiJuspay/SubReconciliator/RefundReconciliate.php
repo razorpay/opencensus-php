@@ -11,16 +11,16 @@ use Razorpay\Spine\Exception\DbQueryException;
 
 class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 {
-    const RRN                     = 'rrn';
-    const VPA                     = 'vpa';
-    const TXN_ID                  = 'txnid';
-    const RESPONSE                = 'response';
-    const REFUND_ID               = 'refundid';
-    const CREDIT_VPA              = 'creditvpa';
-    const CUSTOMER_NAME           = 'acnt_custname';
-    const ACCOUNT_NUMBER          = 'accountnumber';
-    const COLUMN_MOBILE_NO        = 'mobile_no';
-    const COLUMN_REFUND_AMOUNT    = 'refund_amount';
+    const RRN                     = 'RRN';
+    const VPA                     = 'VPA';
+    const TXN_ID                  = 'TXNID';
+    const RESPONSE                = 'RESPONSE';
+    const REFUND_ID               = 'REFUNDID';
+    const CREDIT_VPA              = 'CREDITVPA';
+    const CUSTOMER_NAME           = 'ACNT_CUSTNAME';
+    const ACCOUNT_NUMBER          = 'ACCOUNTNUMBER';
+    const COLUMN_MOBILE_NO        = 'MOBILE_NO';
+    const COLUMN_REFUND_AMOUNT    = 'REFUND_AMOUNT';
 
     const SUCCESS = 'refund accepted successfully';
 

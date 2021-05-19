@@ -54,7 +54,7 @@ class UpiJusPayReconTest extends TestCase
 
         $fileContents = $this->generateReconFile(['gateway' => $this->gateway]);
 
-        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path'], 'upi_sett_bajaj.xlsx');
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path'], 'upi_sett_bajaj.csv', 'text/plain');
 
         $this->reconcile($uploadedFile, 'UpiJuspay');
 
@@ -94,7 +94,7 @@ class UpiJusPayReconTest extends TestCase
                 'type'    => 'refund',
             ]);
 
-        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path'], 'upi_refund_bajaj.xlsx');
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path'], 'upi_refund_bajaj.csv', 'text/plain');
 
         $this->reconcile($uploadedFile, 'UpiJuspay');
 
