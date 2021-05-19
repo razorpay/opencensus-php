@@ -122,17 +122,7 @@ class BankAccount extends Base
             }
         }
 
-        // Check if feature flag is enabled for the merchant
-        // If yes, directly queue the FAV for FTS transfer without creating the FTA
-        if ($this->validation->merchant->isFeatureEnabled(Features::FAV_FTA_DPRCN_FWD))
-        {
-            $this->dispatchFavToQueue();
-            return;
-        }
-
-        // If feature flag is disabled for the merchant
-        // initiate a fund transfer through the old flow
-        $this->initiateFundTransfer();
+        $this->dispatchFavToQueue();
     }
 
     protected function isRetryRequired(string $ifsc)

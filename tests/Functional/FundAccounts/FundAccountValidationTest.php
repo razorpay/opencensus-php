@@ -65,6 +65,8 @@ class FundAccountValidationTest extends TestCase
 
         $response = $this->startTest();
 
+        $this->processFavToTerminalState(substr($response['id'], 4), 'COMPLETED');
+
         $bankAccount = $this->getLastEntity('bank_account', true);
         $fundAccount = $this->getLastEntity('fund_account', true);
         $fav         = $this->getLastEntity('fund_account_validation', true);
@@ -124,9 +126,11 @@ class FundAccountValidationTest extends TestCase
 
         $response = $this->startTest();
 
-        $fav      = $this->getLastEntity('fund_account_validation', true);
+        $this->processFavToTerminalState(substr($response['id'], 4), 'COMPLETED');
 
         // Queue will be processed by now.
+        $fav      = $this->getLastEntity('fund_account_validation', true);
+
         $this->assertEquals('completed', $fav['status']);
         $this->assertEquals('active', $fav['results']['account_status']);
         $this->assertNotNull($fav['results']['registered_name']);
@@ -207,7 +211,9 @@ class FundAccountValidationTest extends TestCase
 
         $this->ba->privateAuth();
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['items'][0]['results']['registered_name']);
     }
 
     public function testFundAccValidationOnPrepaidModelWithFeeCredits()
@@ -236,13 +242,20 @@ class FundAccountValidationTest extends TestCase
 
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
+        $receipt = 'failed_resp_beneficiary_details_invalid';
+
         $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
-        $this->testData[__FUNCTION__]['request']['content']['receipt'] =  'failed_resp_beneficiary_details_invalid';
+        $this->testData[__FUNCTION__]['request']['content']['receipt'] = $receipt ;
 
         $response = $this->startTest();
 
+        $fav = $this->getLastEntity('fund_account_validation', true);
+
+        $this->processFavToTerminalState(substr($fav['id'],4), 'FAILED', ['receipt' => $receipt]);
+
         $bankAccount = $this->getLastEntity('bank_account', true);
         $fundAccount = $this->getLastEntity('fund_account', true);
+        // Reloading FAV to account for changes after call to processFavToTerminalState()
         $fav         = $this->getLastEntity('fund_account_validation', true);
 
         // Queue will be processed by now.
@@ -475,12 +488,19 @@ class FundAccountValidationTest extends TestCase
 
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
+        $receipt = 'failed_resp_beneficiary_details_invalid';
+
         $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
-        $this->testData[__FUNCTION__]['request']['content']['receipt'] =  'failed_resp_beneficiary_details_invalid';
+        $this->testData[__FUNCTION__]['request']['content']['receipt'] = $receipt ;
 
-        $response = $this->startTest();
+        $this->startTest();
 
-        $fav         = $this->getLastEntity('fund_account_validation', true);
+        $fav = $this->getLastEntity('fund_account_validation', true);
+
+        $this->processFavToTerminalState(substr($fav['id'],4), 'FAILED', ['receipt' => $receipt]);
+
+        // Reloading FAV to account for changes after call to processFavToTerminalState()
+        $fav = $this->getLastEntity('fund_account_validation', true);
 
         // Queue will be processed by now.
         $this->assertEquals('completed', $fav['status']);
@@ -498,12 +518,19 @@ class FundAccountValidationTest extends TestCase
 
         $fundAccountResponse = $this->createFundAccountBankAccount();
 
+        $receipt = 'failed_response_insufficient_funds';
+
         $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
-        $this->testData[__FUNCTION__]['request']['content']['receipt'] =  'failed_response_insufficient_funds';
+        $this->testData[__FUNCTION__]['request']['content']['receipt'] = $receipt ;
 
-        $response = $this->startTest();
+        $this->startTest();
 
-        $fav         = $this->getLastEntity('fund_account_validation', true);
+        $fav = $this->getLastEntity('fund_account_validation', true);
+
+        $this->processFavToTerminalState(substr($fav['id'],4), 'FAILED', ['receipt' => $receipt]);
+
+        // Reloading FAV to account for changes after call to processFavToTerminalState()
+        $fav = $this->getLastEntity('fund_account_validation', true);
 
         // Queue will be processed by now.
         $this->assertEquals('failed', $fav['status']);
@@ -626,6 +653,11 @@ class FundAccountValidationTest extends TestCase
         $this->makeRequestAndGetContent($request);
 
         $fav = $this->getLastEntity('fund_account_validation', true);
+
+        $this->processFavToTerminalState(substr($fav['id'],4), 'COMPLETED');
+        // Reloading FAV to account for changes after call to processFavToTerminalState()
+        $fav = $this->getLastEntity('fund_account_validation', true);
+
         $this->assertEquals(1, $fav['attempts']);
         $this->assertEquals('completed', $fav['status']);
         $this->assertEquals('active', $fav['results']['account_status']);
@@ -1019,8 +1051,13 @@ class FundAccountValidationTest extends TestCase
 
         $this->startTest();
 
+        $fav = $this->getLastEntity('fund_account_validation', true);
+
+        $this->processFavToTerminalState(substr($fav['id'],4));
+
         $bankAccount = $this->getLastEntity('bank_account', true);
         $fundAccount = $this->getLastEntity('fund_account', true);
+        // Reloading FAV to account for changes after call to processFavToTerminalState()
         $fav         = $this->getLastEntity('fund_account_validation', true);
 
         // Queue will be processed by now.
@@ -1076,9 +1113,14 @@ class FundAccountValidationTest extends TestCase
 
         $this->startTest();
 
-        $balance = $this->getLastEntity('balance', true);
+        $fav = $this->getLastEntity('fund_account_validation', true);
+
+        $this->processFavToTerminalState(substr($fav['id'],4));
+
+        $balance     = $this->getLastEntity('balance', true);
         $bankAccount = $this->getLastEntity('bank_account', true);
         $fundAccount = $this->getLastEntity('fund_account', true);
+        // Reloading FAV to account for changes after call to processFavToTerminalState()
         $fav         = $this->getLastEntity('fund_account_validation', true);
 
         // Queue will be processed by now.
@@ -1129,7 +1171,9 @@ class FundAccountValidationTest extends TestCase
         $this->testData[__FUNCTION__]['request']['content']['fund_account']['id'] =  $fundAccountResponse['id'];
         $this->testData[__FUNCTION__]['request']['content']['receipt'] =  'failed_response_insufficient_funds';
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        $this->processFavToTerminalState(substr($response['id'], 4));
 
         $bankAccount = $this->getLastEntity('bank_account', true);
         $fundAccount = $this->getLastEntity('fund_account', true);
@@ -1290,7 +1334,9 @@ class FundAccountValidationTest extends TestCase
 
     public function testFundAccValidationForSpecialCharacterRemovalForNaration()
     {
-        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['name' => 'L&!T @L and T']);
+        $this->fixtures->merchant->editEntity('merchant', '10000000000000',
+                                              ['name' => 'L&!T @L and T', 'billing_label' => '']);
+
         $this->createValidationWithFundAccountEntity();
 
         $this->ba->privateAuth();
@@ -1320,7 +1366,7 @@ class FundAccountValidationTest extends TestCase
         $this->assertEquals(1, $fav['attempts']);
 
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
-        $this->assertEquals($fta['narration'],'LT L and T');
+        $this->assertEquals($fta['narration'],'LT L and T Acc Validation');
         $this->assertEquals($fav['id'], $fta['source']);
     }
 

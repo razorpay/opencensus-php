@@ -43,7 +43,6 @@ return [
                         'notes' => [],
                         'results' => [
                             'account_status' => 'active',
-                            'registered_name' => 'Someone',
                         ],
                     ],
                 ],

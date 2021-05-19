@@ -580,8 +580,13 @@ class Core extends Base\Core
             ],
         ];
 
-        // Add notes as narration if notes exist in the FAV.
+        // Add narration to the request body
         $narration = $this->getNarration($fav);
+
+        if (empty($narration) === false)
+        {
+            $request[FtsRequestFields::TRANSFER][FtsRequestFields::NARRATION] = $narration;
+        }
 
         // - Now fetch the bank account from the fund account associated with the FAV
         // - We are assuming that the associated account is of the type bank account,
@@ -684,7 +689,7 @@ class Core extends Base\Core
         // If formattedLabel is non-empty, pick the first 30 chars, else fallback to 'Razorpay'
         $formattedLabel = ($formattedLabel ? $formattedLabel : 'Razorpay');
 
-        $narration = $formattedLabel . ' FAV';
+        $narration = $formattedLabel . ' Acc Validation';
 
         $narration = str_limit($narration, 30, '');
 
