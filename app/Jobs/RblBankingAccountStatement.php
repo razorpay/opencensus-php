@@ -6,6 +6,7 @@ use App;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Models\Admin;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger;
 use RZP\Models\Admin\ConfigKey;
@@ -74,6 +75,22 @@ class RblBankingAccountStatement extends Job
         try
         {
             parent::handle();
+
+            $newStatementFetchFlowFeature = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::ACCOUNT_STATEMENT_V2_FLOW]);
+
+            if (in_array($this->params['account_number'], $newStatementFetchFlowFeature) === false)
+            {
+                $this->trace->info(
+                    TraceCode::RBL_BANKING_ACCOUNT_STATEMENT_JOB_CALLED_BUT_V2_FEATURE_NOT_ENABLED,
+                    [
+                        'channel'           => $this->params['channel'],
+                        'account_number'    => $this->params['account_number'],
+                    ]);
+
+                $this->delete();
+
+                return;
+            }
 
             $enableRateLimit = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_ENABLE_RATE_LIMIT_FLOW]);
 

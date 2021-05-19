@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Models\Admin;
 use RZP\Models\Payout;
 use RZP\Trace\TraceCode;
 use RZP\Models\External;
@@ -85,6 +86,20 @@ class Core extends Base\Core
         $channel = array_pull($input, Entity::CHANNEL);
 
         $accountNumber = array_pull($input, Entity::ACCOUNT_NUMBER);
+
+        $newStatementFetchFlowFeature = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::ACCOUNT_STATEMENT_V2_FLOW]);
+
+        if (in_array($accountNumber, $newStatementFetchFlowFeature) === true)
+        {
+            $input = [
+                Entity::CHANNEL         => $channel,
+                Entity::ACCOUNT_NUMBER  => $accountNumber,
+            ];
+
+            $this->processStatementForAccountV2($input);
+
+            return ['channel' => $channel, 'account_number' => $accountNumber];
+        }
 
         try
         {
@@ -1857,7 +1872,7 @@ class Core extends Base\Core
 
     protected function getAccountStatementJobForChannel(string $channel, string $accountNumber)
     {
-        $accountNumbers = (new AdminService)->getConfigKey(['key' => ConfigKey::BANKING_ACCOUNT_STATEMENT_FETCH_V2]);
+        $accountNumbers = (new AdminService)->getConfigKey(['key' => ConfigKey::ACCOUNT_STATEMENT_V2_FLOW]);
 
         if (in_array($accountNumber, $accountNumbers) === true)
         {

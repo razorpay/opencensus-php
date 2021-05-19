@@ -98,7 +98,6 @@ class Validator extends Base\Validator
         ConfigKey::WORLDLINE_TID_RANGE_LIST.'.*'      => 'filled|array',
 
         ConfigKey::LOW_BALANCE_RX_EMAIL               => 'filled|array',
-        ConfigKey::BANKING_ACCOUNT_STATEMENT_FETCH_V2 => 'filled|array',
 
         ConfigKey::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT             => 'filled|integer',
         ConfigKey::RX_BAS_FORCED_FETCH_TIME_IN_HOURS                => 'filled|integer',

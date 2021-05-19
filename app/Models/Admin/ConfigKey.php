@@ -85,9 +85,6 @@ class ConfigKey
 
     const LOW_BALANCE_RX_EMAIL                  = self::PREFIX . 'low_balance_rx_email';
 
-    // Currently we are doing rearch of statement fetch and we will use this key to revamp traffic on new flow
-    const BANKING_ACCOUNT_STATEMENT_FETCH_V2  = self::PREFIX . 'banking_account_statement_fetch_v2';
-
     const OFFER_LOG_VERBOSE                     = self::PREFIX . 'offer_log_verbose';
 
     //Banking account current accounts statement fetch for merchants limit on number of merchants for which to update in one run.
@@ -212,7 +209,7 @@ class ConfigKey
     const ACCOUNT_STATEMENT_RECORDS_TO_SAVE_IN_TOTAL = self::PREFIX . 'account_statement_records_to_process_at_once';
 
     // Account numbers for which new flow applies where we divide fetch and process flow
-    const ACCOUNT_STATEMENT_V2_FLOW = 'account_statement_v2_flow';
+    const ACCOUNT_STATEMENT_V2_FLOW = self::PREFIX . 'account_statement_v2_flow';
 
     const REQUEST_LOG_STATE = self::PREFIX . 'request_log_state';
 
@@ -259,7 +256,6 @@ class ConfigKey
         self::PG_ROUTER_SERVICE_ENABLED,
         self::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT,
         self::LOW_BALANCE_RX_EMAIL,
-        self::BANKING_ACCOUNT_STATEMENT_FETCH_V2,
         self::GATEWAY_BALANCE_LAST_FETCHED_AT_RATE_LIMITING,
         self::RBL_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT,
         self::ICICI_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_RATE_LIMIT,
@@ -318,6 +314,7 @@ class ConfigKey
         self::ICICI_STATEMENT_FETCH_RATE_LIMIT_RELEASE_DELAY,
         self::RBL_ENABLE_RATE_LIMIT_FLOW,
         self::ICICI_ENABLE_RATE_LIMIT_FLOW,
+        self::ACCOUNT_STATEMENT_V2_FLOW,
         self::REARCH_CARD_PAYMENTS,
         self::MIN_HOURS_TO_START_TICKET_CREATION_AFTER_ACTIVATION_FORM_SUBMISSION,
         self::MAX_ACTIVATION_PROGRESS_FOR_POPUP_RANGE1,

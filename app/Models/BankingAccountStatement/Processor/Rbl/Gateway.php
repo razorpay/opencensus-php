@@ -543,7 +543,8 @@ class Gateway extends BaseProcessor
 
     protected function allowRecordToSave(Carbon $requestTime, int $offset, array $transactionData)
     {
-        If ($requestTime->subSeconds($offset)->getTimestamp() > $this->getPostedDateFromResponse($transactionData))
+        // https://stackoverflow.com/questions/34413877/php-carbon-class-changing-my-original-variable-value
+        if ($requestTime->copy()->subSeconds($offset)->getTimestamp() > $this->getPostedDateFromResponse($transactionData))
         {
             return true;
         }

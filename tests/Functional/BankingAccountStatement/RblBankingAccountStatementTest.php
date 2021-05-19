@@ -8286,7 +8286,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         (new AdminService)->setConfigKeys([ConfigKey::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT => 1]);
 
-        (new AdminService)->setConfigKeys([ConfigKey::BANKING_ACCOUNT_STATEMENT_FETCH_V2 => ["2224440041626905"]]);
+        (new AdminService)->setConfigKeys([ConfigKey::ACCOUNT_STATEMENT_V2_FLOW => ["2224440041626905"]]);
 
         Queue::fake();
 
@@ -8869,7 +8869,8 @@ class RblBankingAccountStatementTest extends TestCase
             [
                 ConfigKey::RBL_STATEMENT_FETCH_RATE_LIMIT    => 1,
                 ConfigKey::RBL_STATEMENT_FETCH_WINDOW_LENGTH => 3600,
-                ConfigKey::RBL_ENABLE_RATE_LIMIT_FLOW => 1
+                ConfigKey::RBL_ENABLE_RATE_LIMIT_FLOW => 1,
+                ConfigKey::ACCOUNT_STATEMENT_V2_FLOW => ["2224440041626905"],
             ]);
 
         $mockedResponse = $this->getRblDataResponse();
@@ -8966,7 +8967,7 @@ class RblBankingAccountStatementTest extends TestCase
     {
         (new AdminService)->setConfigKeys([ConfigKey::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT => 1]);
 
-        (new AdminService)->setConfigKeys([ConfigKey::BANKING_ACCOUNT_STATEMENT_FETCH_V2 => ["2224440041626905"]]);
+        (new AdminService)->setConfigKeys([ConfigKey::ACCOUNT_STATEMENT_V2_FLOW => ["2224440041626905"]]);
 
         $this->fixtures->create('banking_account_statement',
             [
@@ -9013,6 +9014,8 @@ class RblBankingAccountStatementTest extends TestCase
      */
     public function testRblAccountStatementFetchAndProcessOnGatewayQueueV2Linking()
     {
+        (new AdminService)->setConfigKeys([ConfigKey::ACCOUNT_STATEMENT_V2_FLOW => ["2224440041626905"]]);
+
         $this->fixtures->create('banking_account_statement',
             [
                 'type'                      => 'credit',

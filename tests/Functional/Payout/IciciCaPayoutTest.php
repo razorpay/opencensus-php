@@ -92,7 +92,7 @@ class IciciCaPayoutTest extends TestCase
 
         (new AdminService)->setConfigKeys([ConfigKey::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT => 1]);
 
-        (new AdminService)->setConfigKeys([ConfigKey::BANKING_ACCOUNT_STATEMENT_FETCH_V2 => ["2224440041626905"]]);
+        (new AdminService)->setConfigKeys([ConfigKey::ACCOUNT_STATEMENT_V2_FLOW => ["2224440041626905"]]);
 
         Queue::fake();
 

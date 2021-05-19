@@ -5470,7 +5470,7 @@ class Route
         // Get free_payout attributes for balance
         'admin_get_free_payouts_attributes'           => Permission::VIEW_FREE_PAYOUTS_ATTRIBUTES,
 
-        'banking_account_statement_process_admin'     => Permission::BANKING_ACCOUNT_STATEMENT_RUN_MANUALLY,
+        'banking_account_statement_process_admin'     => Permission::MANAGE_BULK_FEATURE_MAPPING,
         'tax_payments_admin_auth_api'                 => Permission::TAX_PAYMENT_ADMIN_AUTH_EXECUTE,
         'payout_links_admin_auth_api'                 => Permission::TAX_PAYMENT_ADMIN_AUTH_EXECUTE,
         'salesforce_opportunity_details'              => Permission::VIEW_SALESFORCE_OPPORTUNITY_DETAIL,

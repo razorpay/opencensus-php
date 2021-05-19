@@ -97,7 +97,7 @@ class Repository extends Base\Repository
                     ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
                     ->where(Entity::CHANNEL, $channel)
                     ->whereNull(Entity::TRANSACTION_ID)
-                    ->orderBy(Entity::CREATED_AT)
+                    ->orderBy(Entity::ID)
                     ->limit($limit)
                     ->get();
     }

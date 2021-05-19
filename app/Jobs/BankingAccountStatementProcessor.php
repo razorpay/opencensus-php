@@ -4,6 +4,7 @@ namespace RZP\Jobs;
 
 use Carbon\Carbon;
 
+use RZP\Models\Admin;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\SlackNotification;
@@ -58,6 +59,22 @@ class BankingAccountStatementProcessor extends Job
                     'channel'           => $this->params['channel'],
                     'account_number'    => $this->params['account_number']
                 ]);
+
+            $newStatementFetchFlowFeature = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::ACCOUNT_STATEMENT_V2_FLOW]);
+
+            if (in_array($this->params['account_number'], $newStatementFetchFlowFeature) === false)
+            {
+                $this->trace->info(
+                    TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESSOR_JOB_CALLED_BUT_V2_FEATURE_NOT_ENABLED,
+                    [
+                        'channel'           => $this->params['channel'],
+                        'account_number'    => $this->params['account_number'],
+                    ]);
+
+                $this->delete();
+
+                return;
+            }
 
             $workerStartTime = Carbon::now()->getTimestamp();
 
