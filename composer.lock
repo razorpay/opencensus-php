@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "62aad140145a59bdce138edbca179e8e",
+    "content-hash": "0e1ef5c9296232631da4e33b0970222b",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -4920,7 +4920,7 @@
             "time": "2020-01-07T07:47:15+00:00"
         },
         {
-            "name": "mikey179/vfsstream",
+            "name": "mikey179/vfsStream",
             "version": "v1.3.0",
             "source": {
                 "type": "git",
@@ -5582,16 +5582,16 @@
         },
         {
             "name": "opencensus/opencensus",
-            "version": "v0.7.5.8",
+            "version": "v0.7.6.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/opencensus-php.git",
-                "reference": "8a54202127c41da2887e1d6e067431687e7c0fff"
+                "reference": "4daa085e804297cfc3795f639491981d61b087a0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/opencensus-php/zipball/8a54202127c41da2887e1d6e067431687e7c0fff",
-                "reference": "8a54202127c41da2887e1d6e067431687e7c0fff",
+                "url": "https://api.github.com/repos/razorpay/opencensus-php/zipball/4daa085e804297cfc3795f639491981d61b087a0",
+                "reference": "4daa085e804297cfc3795f639491981d61b087a0",
                 "shasum": ""
             },
             "archive": {
@@ -5653,10 +5653,10 @@
             ],
             "description": "OpenCensus Trace Client for PHP",
             "support": {
-                "source": "https://github.com/razorpay/opencensus-php/tree/v0.7.5.8",
+                "source": "https://github.com/razorpay/opencensus-php/tree/v0.7.6.3",
                 "issues": "https://github.com/razorpay/opencensus-php/issues"
             },
-            "time": "2021-05-04T07:39:47+00:00"
+            "time": "2021-05-06T08:00:19+00:00"
         },
         {
             "name": "opencensus/opencensus-exporter-jaeger",
@@ -6765,6 +6765,12 @@
                 "nosql",
                 "predis",
                 "redis"
+            ],
+            "funding": [
+                {
+                    "url": "https://github.com/sponsors/tillkruss",
+                    "type": "github"
+                }
             ],
             "time": "2020-09-11T19:18:05+00:00"
         },
