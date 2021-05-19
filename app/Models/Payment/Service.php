@@ -3614,7 +3614,7 @@ class Service extends Base\Service
         }
         else
         {
-            $filter = ($payment->isCreated() === true) ? Filter::PAYMENTS_CREATED : Filter::PAYMENTS_FAILED;
+            $filter = ($payment->isCreated() === true) ? Payment\Verify\Filter::PAYMENTS_CREATED : Payment\Verify\Filter::PAYMENTS_FAILED;
 
             $result = (new Verify())->verifyPaymentNewRoute($payment, $filter);
 

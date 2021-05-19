@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment;
 
 use Cache;
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Diag\EventCode;
 use RZP\Models\Payment;
@@ -200,7 +201,7 @@ class Core extends Base\Core
             Constants::ENTITY_ID    => $payment->getId(),
             Constants::ENTITY_TYPE  => 'payments',
             Constants::REMINDER_DATA => [
-                Constants::VERIFY_AT      => $payment->getCreatedAt()
+                Constants::VERIFY_AT      => Carbon::now()->getTimestamp()
             ],
             Constants::VERIFY_SERVICE => 'api'
         ];

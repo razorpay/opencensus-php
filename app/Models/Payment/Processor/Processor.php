@@ -4751,6 +4751,8 @@ class Processor
 
         $isVerifyNewFlow = false;
 
+        $isPushedToKafka = null;
+
         $gateway = $payment->getGateway();
 
         if (($gateway !== null) and
@@ -4763,7 +4765,8 @@ class Processor
             );
 
             if ((str_starts_with($variant, 'on') === true) and
-                ($this->app->runningUnitTests() === false)) {
+                ($this->app->runningUnitTests() === false))
+            {
                 $isVerifyNewFlow = true;
 
                 $this->trace->info(
@@ -4772,12 +4775,13 @@ class Processor
                         'payment_id' => $payment->getId(),
                     ]
                 );
-                $isPushedToKafka = (new Payment\Core())->pushPaymentToKafka($payment, $startTime);
 
-                $payment->setIsPushedToKafka($isPushedToKafka);
+                $isPushedToKafka = (new Payment\Core())->pushPaymentToKafka($payment, $startTime);
             }
         }
 
         (new Payment\Metric())->pushVerifyViaOldOrNewFlowMetrics(get_diff_in_millisecond($startTime), $isVerifyNewFlow, $payment->getGateway());
+
+        return $isPushedToKafka;
     }
 }

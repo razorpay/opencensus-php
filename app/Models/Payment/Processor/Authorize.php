@@ -321,11 +321,13 @@ trait Authorize
             // not available when international is not enabled.
             $this->verifyFeesLessThanAmount($payment);
 
+            $isPushedToKafka = $this->pushPaymentToKafkaForVerify($this->payment);
+
+            $payment->setIsPushedToKafka($isPushedToKafka);
+
             $this->repo->saveOrFail($payment);
 
             $this->eventPaymentCreated();
-
-            $this->pushPaymentToKafkaForVerify($this->payment);
 
             $this->validateAndSaveBillingAddressIfApplicable($payment, $input);
 
@@ -2284,6 +2286,10 @@ trait Authorize
             ]
         );
 
+        $isPushedToKafka = $this->pushPaymentToKafkaForVerify($this->payment);
+
+        $payment->setIsPushedToKafka($isPushedToKafka);
+
         $this->repo->saveOrFail($payment);
 
         $this->trace->info(
@@ -2295,8 +2301,6 @@ trait Authorize
         );
 
         $this->eventPaymentCreated();
-
-        $this->pushPaymentToKafkaForVerify($this->payment);
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
 

@@ -281,11 +281,13 @@ trait CardPaymentService
 
         $payment->enableCardPaymentService();
 
+        $isPushedToKafka = $this->pushPaymentToKafkaForVerify($this->payment);
+
+        $payment->setIsPushedToKafka($isPushedToKafka);
+
         $this->repo->saveOrFail($payment);
 
         $this->eventPaymentCreated();
-
-        $this->pushPaymentToKafkaForVerify($this->payment);
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_CREATED, Trace::DEBUG);
 
