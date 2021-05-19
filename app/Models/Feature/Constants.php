@@ -665,6 +665,11 @@ class Constants
      */
     const BENE_NAME_IN_PAYOUT = 'bene_name_in_payout';
 
+    /**
+     * Used to block customer prefill details on PL hosted page
+     */
+    const PL_BLOCK_CUSTOMER_PREFILL = 'pl_block_customer_prefill';
+
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -974,6 +979,7 @@ class Constants
         self::PAYOUT_SERVICE_ENABLED          => true,
         self::COVID_19_RELIEF                 => true,
         self::BENE_NAME_IN_PAYOUT             => true,
+        self::PL_BLOCK_CUSTOMER_PREFILL       => true,
     ];
 
     // Entity type constants
@@ -1429,6 +1435,11 @@ class Constants
         self::COVID_19_RELIEF => [
             'feature'       => self::COVID_19_RELIEF,
             'display_name'  => 'Will show covid 19 related donation after successful payment',
+            'documentation' => '',
+        ],
+        self::PL_BLOCK_CUSTOMER_PREFILL => [
+            'feature'       => self::PL_BLOCK_CUSTOMER_PREFILL,
+            'display_name'  => 'Will not prefill the customer details on Payment Link hosted page',
             'documentation' => '',
         ],
     ];
