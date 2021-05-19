@@ -22,14 +22,13 @@ const FAQs: React.FC = () => {
   const setIsOpen = useActivationFormState((state) => state.setIsFAQOpen);
   const sectionToDisplay = useActivationFormState((state) => state.fAQSection);
   const websiteDetailsRef = useRef<HTMLDivElement>(null);
-  const billingLabelRef = useRef<HTMLDivElement>(null);
   const [expanded, setExpanded] = React.useState<React.ReactText[]>([sectionToDisplay]);
   const setFAQSection = useActivationFormState((state) => state.setFAQSection);
 
   useEffect(() => {
     setTimeout(() => {
-      if (sectionToDisplay === 'Q1' && billingLabelRef.current) {
-        billingLabelRef.current.scrollIntoView();
+      if (sectionToDisplay === 'Q1') {
+        setExpanded([sectionToDisplay]);
       }
       if (sectionToDisplay === 'Q2' && websiteDetailsRef.current) {
         websiteDetailsRef.current.scrollIntoView();
@@ -62,7 +61,7 @@ const FAQs: React.FC = () => {
                 </Heading>
               </View>
             </Space>
-            <Panel _ref={billingLabelRef} key="Q1" title="What is Billing label?">
+            <Panel key="Q1" title="What is Billing label?" expanded>
               Billing label is your brand&apos;s identity, it will be displayed on your invoices and
               bills. Please ensure billing label is as close to your business name/website as
               possible.
