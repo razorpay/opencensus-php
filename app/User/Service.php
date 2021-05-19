@@ -1468,6 +1468,7 @@ class Service extends Base\Service
             'ir_pricing_v2_rollout_4',
             'view_fd_tickets',
             'support_dashboard_rzpsolutions',
+            'capital_freshdesk_integration',
             'show_new_grievance_flow',
             'settlement_ux_revamp_p2',
             'rx_scheduled_payouts_rollout',
