@@ -7427,7 +7427,10 @@ return [
                     'payzapp',
                     'sbibuddy',
                     'phonepe',
-                ]
+                    'paytm',
+                    'paypal',
+                ],
+                'kyc_enabled' => false,
             ],
         ],
     ],

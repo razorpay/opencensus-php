@@ -600,7 +600,7 @@ class MerchantController extends Controller
     // get methods which are disabled for automatic enablement based on the category of the merchant
     public function getAutoDisabledMethods($merchantId)
     {
-        $data['auto_disabled_methods'] = $this->service()->getAutoDisabledMethods($merchantId);
+        $data = $this->service()->getAutoDisabledMethods($merchantId);
 
         return ApiResponse::json($data);
     }

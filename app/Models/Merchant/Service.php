@@ -1868,13 +1868,28 @@ class Service extends Base\Service
 
     public function getAutoDisabledMethods($merchantId)
     {
+        $data = [];
+
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
         $category = $merchant->getCategory();
 
         $category2 = $merchant->getCategory2();
 
-        return DefaultMethodsForCategory::getDefaultDisabledMethodsForInstrumentRequestFromMerchantCategories($category, $category2);
+        $merchantDetails = (new Detail\Core)->getMerchantDetails($merchant);
+
+        $data['auto_disabled_methods']= DefaultMethodsForCategory::getDefaultDisabledMethodsForInstrumentRequestFromMerchantCategories($category, $category2);
+
+        if($merchantDetails['activation_status']!='activated')
+        {
+            $data['kyc_enabled'] = false;
+        }
+        else
+        {
+            $data['kyc_enabled'] = true;
+        }
+
+        return $data;
     }
 
     public function getGSTDetails(): array
