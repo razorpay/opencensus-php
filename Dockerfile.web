@@ -1,6 +1,6 @@
-ARG ONGGI_IMAGE=razorpay/onggi:php-7.2-api-web-v2
-ARG ARMORY_IMAGE=razorpay/armory:wkhtmltopdf-v182
-ARG OPENCENSUS_IMAGE=razorpay/opencensus-php:v2020.10.28
+ARG ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.2-api-web-v2
+ARG ARMORY_IMAGE=c.rzp.io/razorpay/armory:wkhtmltopdf-v182
+ARG OPENCENSUS_IMAGE=c.rzp.io/proxy_dockerhub/razorpay/opencensus-php:v2020.10.28
 
 FROM $ARMORY_IMAGE as wkhtmltopdf
 
