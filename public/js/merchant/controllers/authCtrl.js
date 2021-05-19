@@ -1864,6 +1864,11 @@ app
         return $scope.onShowSignup && $scope.onShowSignup();
       };
 
+      const isCaptchaV3Enabled = () => window.isCaptchaV3Enabled && !isMerchantX;
+      // Captcha Variant 2: New v3 + v2 flow
+      // Captcha Variant 1: Old v2 flow
+      const getCaptchaVariant = () => (isCaptchaV3Enabled() ? 2 : 1);
+
       if (
         ['access.signin', 'access.forgotpwd', 'access.pre_signup', 'access.lockme'].indexOf(
           $state.current.name,
@@ -1889,6 +1894,7 @@ app
               is_landing_page_user: getIsLandingPageUser(),
               is_landing_page_session: getSessionInfo().isLandingPageSession,
               common_session_id: getSessionInfo().commonSessionId,
+              captcha_variant: getCaptchaVariant(),
             });
           }
 
@@ -2066,9 +2072,6 @@ app
         $scope.inlineEmailError = '';
         $scope.inlinePasswordError = '';
       };
-
-      const isCaptchaV3Enabled = () => window.isCaptchaV3Enabled && !isMerchantX;
-      const getCaptchaVariant = () => (isCaptchaV3Enabled() ? 2 : 1);
 
       $scope.sendLoginCredentials = function ($valid) {
         clearErrors();
