@@ -847,9 +847,12 @@ class Core extends Base\Core
 
     protected function validateExistingTokenCard($existingTokens, $newToken)
     {
+        $vaultToken = $newToken->card->getVaultToken();
+
         foreach ($existingTokens as $token)
         {
-            if ($token->getCardId() === $newToken->getCardId())
+            if (($token->hasCard() === true) and
+                ($token->card->getVaultToken() === $vaultToken))
             {
                 return $token;
             }
