@@ -38,7 +38,18 @@ class TransferRecon extends Job
 
         try
         {
-           (new Transfers)->UpdateTransfersWithSettlementId($this->settlementIds);
+            if (isset($this->settlementIds['transaction_ids']) === true)
+            {
+                (new Transfers())->updateTransfersWithSettlementId($this->settlementIds['transaction_ids']);
+            }
+            else if (isset($this->settlementIds['settlement_id']) === true)
+            {
+                (new Transfers())->triggerTransferSettledWebhook($this->settlementIds['settlement_id']);
+            }
+            else
+            {
+                (new Transfers())->updateTransfersWithSettlementIdOldFlow($this->settlementIds);
+            }
         }
         catch (\Throwable $e)
         {

@@ -255,4 +255,14 @@ class Repository extends Base\Repository
 
         return $query;
     }
+
+    public function getIdsByRecipientSettlementId(string $settlementId)
+    {
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+                      ->select(Entity::ID)
+                      ->where(Entity::RECIPIENT_SETTLEMENT_ID, $settlementId)
+                      ->pluck(Entity::ID);
+
+        return $query->toArray();
+    }
 }

@@ -44,7 +44,7 @@ class Service extends Base\Service
         return $transfer->toArrayPublicWithExpand();
     }
 
-    public function UpdateTransfersWithSettlementId($settlementIds)
+    public function updateTransfersWithSettlementIdOldFlow($settlementIds)
     {
         $this->trace->info(
             TraceCode::TRANSFER_RECON_INITIATED,
@@ -641,6 +641,122 @@ class Service extends Base\Service
         );
 
         return $transferOrderIds;
+    }
+
+    /**
+     * This flow is not active currently. With the next deployment,
+     * we will push the changes to insert transaction IDs into the queue
+     * and then this flow will be auto-triggered from the TransferRecon job class.
+     * @param $transactionIds
+     */
+    public function updateTransfersWithSettlementId($transactionIds)
+    {
+        $this->trace->info(
+            TraceCode::TRANSFER_RECON_INITIATED,
+            [
+                'transaction_ids' => $transactionIds,
+            ]
+        );
+
+        $startTime = microtime(true);
+
+        $transferIds = [];
+
+        try
+        {
+            foreach ($transactionIds as $transactionId)
+            {
+                $transaction = $this->repo->transaction->findOrFail($transactionId);
+
+                $this->trace->info(
+                    TraceCode::TRANSACTION_FETCHED_FOR_TRANSFER_RECON,
+                    [
+                        'transaction_id' => $transactionId,
+                    ]
+                );
+
+                if ($transaction->source->getEntityName() !== EntityConstant::PAYMENT)
+                {
+                    continue;
+                }
+
+                $payment = $transaction->source;
+
+                if ($payment->transfer === null)
+                {
+                    continue;
+                }
+
+                $transfer = $payment->transfer;
+
+                $this->trace->info(
+                    TraceCode::TRANSFER_FETCHED_FOR_RECON,
+                    [
+                        'transfer_id' => $transfer->getId(),
+                    ]
+                );
+
+                $settlementId = $transaction->getSettlementId();
+
+                $transfer->setRecipientSettlementId($settlementId);
+
+                $this->repo->saveOrFail($transfer);
+
+                $this->trace->info(
+                    TraceCode::TRANSFER_RECIPIENT_SETTLEMENT_ID_UPDATED,
+                    [
+                        'transfer_id'               => $transfer->getId(),
+                        'recipient_settlement_id'   => $transfer->getRecipientSettlementId(),
+                    ]
+                );
+
+                $transferIds[$settlementId] = array_merge(
+                    $transferIds[$settlementId] ?? [],
+                    array($transfer->getId())
+                );
+            }
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::CRITICAL,
+                TraceCode::TRANSFER_RECON_FAILURE,
+                [
+                    'settlement_ids'    => array_keys($transferIds),
+                    'transfer_ids'      => $transferIds,
+                ]
+            );
+        }
+
+        $endTime = microtime(true);
+
+        $this->trace->info(
+            TraceCode::TRANSFER_RECON_COMPLETE,
+            [
+                'settlement_ids'    => array_keys($transferIds),
+                'transfers_ids'     => $transferIds,
+                'time_taken'        => $endTime - $startTime,
+            ]
+        );
+    }
+
+    public function triggerTransferSettledWebhook(string $settlementId)
+    {
+        $this->trace->info(
+            TraceCode::TRANSFER_SETTLED_WEBHOOK_REQUEST,
+            [
+                'settlement_id' => $settlementId,
+            ]
+        );
+
+        $transferIds = $this->repo->transfer->getIdsByRecipientSettlementId($settlementId);
+
+        Entity::getSignedIdMultiple($transferIds);
+
+        $settlement = $this->repo->settlement->findOrFail($settlementId);
+
+        $this->fireTransferSettledWebhookIfApplicable($transferIds, $settlement);
     }
 
     /**
