@@ -1075,12 +1075,15 @@ class Processor extends Base\Core
     {
         $data =  $this->repo->settlement->findBySettlementId($input['settlement_id']);
 
+        $settlementTrf = $this->repo->settlement_transfer->fetchBySettlementId($input['settlement_id']);
+
         if ($data->count() != 0)
         {
             return [
-                'transaction_id' => $data[0]->getTransactionId(),
-                'duplicate'      => true,
-                'error'          => null,
+                'transaction_id'                        => $data[0]->getTransactionId(),
+                'settlement_transfer_transaction_id'    => (isset($settlementTrf[0]) === true) ? $settlementTrf[0]->transaction->getId() : null,
+                'duplicate'                             => true,
+                'error'                                 => null,
             ];
         }
 
@@ -1104,12 +1107,20 @@ class Processor extends Base\Core
 
             $balance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(), $input['balance_type']);
 
-            $response = $merchantSettler->createSettlementFromNewService($balance, $input);
+            [$response, $settlementTransfer] = $merchantSettler->createSettlementFromNewService($balance, $input);
+
+            $settlementTransferTxnId = null;
+
+            if((isset($settlementTransfer) === true) and (isset($settlementTransfer->transaction) === true))
+            {
+                $settlementTransferTxnId = $settlementTransfer->transaction->getId();
+            }
 
             return [
-                'transaction_id' => $response->getTransactionId(),
-                'duplicate'      => false,
-                'error'          => null,
+                'transaction_id'                        => $response->getTransactionId(),
+                'settlement_transfer_transaction_id'    => $settlementTransferTxnId,
+                'duplicate'                             => false,
+                'error'                                 => null,
             ];
         }
         catch (\Throwable $e)
@@ -1123,9 +1134,10 @@ class Processor extends Base\Core
                 ]);
 
             return [
-                'transaction_id' => null,
-                'duplicate'      => null,
-                'error'          => $e->getMessage(),
+                'transaction_id'                        => null,
+                'settlement_transfer_transaction_id'    => null,
+                'duplicate'                             => null,
+                'error'                                 => $e->getMessage(),
             ];
         }
     }

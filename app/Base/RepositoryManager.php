@@ -136,6 +136,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Merchant\Product\Repository                    $merchant_product;
  * @property Models\Settlement\Repository                          $settlement
  * @property Gateway\Enach\Base\Repository                         $enach
+ * @property Models\Settlement\Transfer\Repository                 $settlement_transfer;
  */
 
 class RepositoryManager extends Illuminate\Support\Manager

@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Models;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Diag\EventCode;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
@@ -716,7 +717,20 @@ class Merchant
 
         $this->setlDetails = new Base\Collection;
 
-        $this->repo->transaction(function() use ($merchantSettleToPartner, $balance, $input)
+        $destinationMerchantId = null;
+
+        if(($params['type'] === Feature\Constants::AGGREGATE_SETTLEMENT) and isset($params['destination_merchant_id']) === true)
+        {
+            $destinationMerchantId = $params['destination_merchant_id'];
+
+            if(empty($destinationMerchantId) === true)
+            {
+                throw new \Exception('empty destination MID sent for aggregate settlement type');
+            }
+
+        }
+
+        $settlementTransfer = $this->repo->transaction(function() use ($merchantSettleToPartner, $balance, $input, $destinationMerchantId)
         {
             //create new settlement entity
             $this->newSettlementEntity($merchantSettleToPartner, $balance, $input);
@@ -733,9 +747,20 @@ class Merchant
             //create transaction corresponding to settlement
             $this->createTransaction($this->setl);
 
+            $settlementTransfer = null;
+
+            if(empty($destinationMerchantId) === false)
+            {
+                $settlementTransfer = (new Transfer\Core)->transfer(
+                    $this->setl,
+                    $destinationMerchantId,
+                    $balance->getType());
+            }
+
+            return $settlementTransfer;
         });
 
-        return $this->setl;
+        return [$this->setl, $settlementTransfer];
     }
 
     protected function createSettlementDetailsFromNewService(array &$details)

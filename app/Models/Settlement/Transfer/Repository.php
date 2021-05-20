@@ -8,4 +8,11 @@ use RZP\Constants\Entity as EntityConstant;
 class Repository extends Base\Repository
 {
     protected $entity = EntityConstant::SETTLEMENT_TRANSFER;
+
+    public function fetchBySettlementId($settlementId)
+    {
+        return $this->newQuery()
+            ->where(Entity::SETTLEMENT_ID, '=', $settlementId)
+            ->get();
+    }
 }
