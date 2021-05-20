@@ -33,6 +33,12 @@ class CreateMerchantProducts extends Migration
             $table->integer(Entity::CREATED_AT);
 
             $table->integer(Entity::UPDATED_AT);
+
+            $table->unique([Entity::MERCHANT_ID, Entity::PRODUCT_NAME]);
+
+            $table->index(Entity::MERCHANT_ID);
+
+            $table->index(Entity::ID);
         });
     }
 
