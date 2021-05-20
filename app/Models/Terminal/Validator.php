@@ -581,6 +581,10 @@ class Validator extends Base\Validator
     ];
 
     protected static $payuEditTerminalRules = [
+        Entity::NETBANKING                 => 'sometimes|boolean|in:0,1',
+        Entity::CARD                       => 'sometimes|boolean|in:0,1',
+        Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
+        Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4',
         Entity::MODE                       => 'sometimes|in:2',
         Entity::STATUS                     => 'sometimes|string|in:deactivated,activated',
         Entity::UPI                        => 'sometimes|boolean|in:0,1',
