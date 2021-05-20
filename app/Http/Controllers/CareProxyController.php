@@ -15,6 +15,7 @@ class CareProxyController extends Controller
     const GET_SLOTS         = 'twirp/rzp.care.callback.v1.CallbackService/GetSlots';
     const CREATE_CALLBACK   = 'twirp/rzp.care.callback.v1.CallbackService/CreateCallback';
     const GET_CALLBACK      = 'twirp/rzp.care.callback.v1.CallbackService/GetCallback';
+    const CHAT_INIT         = 'twirp/rzp.care.chat.v1.ChatService/Init';
 
     //cron
     const INIT_SLOTS             = 'twirp/rzp.care.callback.v1.CallbackService/InitSlots';
@@ -32,6 +33,7 @@ class CareProxyController extends Controller
         self::GET_SLOTS,
         self::CREATE_CALLBACK,
         self::GET_CALLBACK,
+        self::CHAT_INIT,
     ];
 
     const CRON_ROUTES = [
