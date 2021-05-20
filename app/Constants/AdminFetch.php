@@ -2256,6 +2256,17 @@ class AdminFetch
                 ],
             ],
 
+            ENTITY::MERCHANT_REWARD => [
+                'merchant_id' => [
+                    Fetch::LABEL  => 'Merchant Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'reward_id' => [
+                    Fetch::LABEL  => 'Reward Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+            ],
+
             Entity::METHODS => [
                 'amex' => [
                     Fetch::LABEL  => 'Amex',
@@ -2686,6 +2697,17 @@ class AdminFetch
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
                 'notes' => Fetch::FIELD_NOTES,
+            ],
+
+            Entity::REWARD => [
+                'advertiser_id' => [
+                    Fetch::LABEL  => 'Advertiser Id',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
+                'brand_name' => [
+                    Fetch::LABEL  => 'Brand',
+                    Fetch::TYPE   => Fetch::TYPE_STRING,
+                ],
             ],
 
             Entity::REPORT => [
