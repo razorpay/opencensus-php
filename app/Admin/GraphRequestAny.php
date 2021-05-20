@@ -7,6 +7,7 @@ use Config;
 use Request;
 use Session;
 use SplFileInfo;
+use App\Trace\TraceCode;
 use GuzzleHttp\Client as Guzzle;
 use GuzzleHttp\Post\PostFile;
 use GuzzleHttp\Exception\RequestException;
@@ -47,6 +48,8 @@ class GraphRequestAny
 
     function __construct(array $data)
     {
+        $app = \App::getFacadeRoot();
+
         $graphQlServerUrl = Config::get('razorpay.graphql.server_url');
 
         $this->request = new Guzzle([
@@ -54,6 +57,8 @@ class GraphRequestAny
         ]);
 
         $this->data = $data;
+
+        $this->trace = $app['trace'];
 
         $this->processHeaders();
     }
@@ -206,6 +211,16 @@ class GraphRequestAny
             }
 
             $this->headers = array_merge($proxyAuthheaders, $this->headers);
+        }
+        else
+        {
+            $input = Request::all();
+
+            $this->trace->info(TraceCode::GRAPH_REQUEST_OPERATION_WITH_USER_ID,
+            [
+                'user_id'           => Request::header('x-dashboard-user-id'),
+                'operation_name'    => $input['operationName'] ?? null,
+            ]);
         }
     }
 

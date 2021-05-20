@@ -71,6 +71,8 @@ class TraceCode
 
     const GET_USER_FROM_API                         = 'GET_USER_FROM_API';
 
+    const GRAPH_REQUEST_OPERATION_WITH_USER_ID      = 'GRAPH_REQUEST_OPERATION_WITH_USER_ID';
+
     protected static $messages = array(
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',
         self::MISC_TRACE_CODE                       => 'Miscellaneous trace code',
