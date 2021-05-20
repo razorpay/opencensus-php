@@ -22,16 +22,23 @@ const FAQs: React.FC = () => {
   const setIsOpen = useActivationFormState((state) => state.setIsFAQOpen);
   const sectionToDisplay = useActivationFormState((state) => state.fAQSection);
   const websiteDetailsRef = useRef<HTMLDivElement>(null);
+  const bottomSheetRef = useRef<HTMLDivElement>(null);
   const [expanded, setExpanded] = React.useState<React.ReactText[]>([sectionToDisplay]);
   const setFAQSection = useActivationFormState((state) => state.setFAQSection);
 
   useEffect(() => {
     setTimeout(() => {
-      if (sectionToDisplay === 'Q1') {
-        setExpanded([sectionToDisplay]);
-      }
-      if (sectionToDisplay === 'Q2' && websiteDetailsRef.current) {
-        websiteDetailsRef.current.scrollIntoView();
+      if (sectionToDisplay === 'Q2' && websiteDetailsRef.current && bottomSheetRef.current) {
+        // calculate distance between top of modal and the panel element
+        const yDistance =
+          websiteDetailsRef.current.getBoundingClientRect().y -
+          bottomSheetRef.current.getBoundingClientRect().y;
+        // height of Bottom Sheet Header
+        const headerHeight = 36;
+        // height of Accordian Title
+        const titleHeight = 38;
+
+        bottomSheetRef.current.scrollTop = yDistance - (titleHeight + headerHeight);
       }
     });
     setExpanded([sectionToDisplay]);
@@ -47,6 +54,7 @@ const FAQs: React.FC = () => {
       }}
       closeable={true}
       bottomSheetHeaderText="FAQS"
+      bottomSheetRef={bottomSheetRef}
     >
       <>
         <Space margin={[0.75, 0, 1.5, 0]}>

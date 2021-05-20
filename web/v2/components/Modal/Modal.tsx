@@ -19,6 +19,7 @@ export interface ModalPropsT {
   bottomsheet?: boolean;
   bottomSheetHeight?: string;
   bottomSheetHeaderText?: string;
+  bottomSheetRef?: ReactNode;
 }
 
 const Modal: React.FC<ModalPropsT> = ({
@@ -29,6 +30,7 @@ const Modal: React.FC<ModalPropsT> = ({
   bottomsheet = false,
   bottomSheetHeight = 'inherit',
   bottomSheetHeaderText = '',
+  bottomSheetRef = null,
 }) => {
   const dailogRef = useRef(null);
   const dailogContainerRef = useRef(null);
@@ -71,7 +73,11 @@ const Modal: React.FC<ModalPropsT> = ({
             ref={dailogContainerRef}
           >
             {bottomsheet ? (
-              <BottomSheet $y={styles.sheetY} $bottomSheetHeight={bottomSheetHeight}>
+              <BottomSheet
+                ref={bottomSheetRef}
+                $y={styles.sheetY}
+                $bottomSheetHeight={bottomSheetHeight}
+              >
                 {bottomSheetHeaderText ? (
                   <Space padding={[1.5, 0, 1, 0]} margin={[0, 1.25, 0, 3]}>
                     <BottomSheetTextHeader size="xsmall" color="shade.960" weight="bold">
