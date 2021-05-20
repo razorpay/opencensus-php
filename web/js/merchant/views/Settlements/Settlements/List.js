@@ -519,7 +519,10 @@ export default class SettlementsListContainer extends ListContainer {
                                 autoplay={hoverOnSettleButton ? false : true}
                                 loop={hoverOnSettleButton ? false : true}
                                 width="138px"
-                                isStopped={hoverOnSettleButton ? !hoverOnSettleButton : false}
+                                isStopped={
+                                  checkIfSettlementDisabled ||
+                                  (hoverOnSettleButton ? !hoverOnSettleButton : false)
+                                }
                                 disabled={checkIfSettlementDisabled}
                                 trackInitialRenderImpression={trackAnimatedSettleBtnImpressions}
                                 fromWhere="Settlement"
