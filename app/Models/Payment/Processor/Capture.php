@@ -906,7 +906,7 @@ trait Capture
         (new Notify($this->payment))->trigger($event);
     }
 
-    protected function eventOrderPaid()
+    public function eventOrderPaid()
     {
         $payment = $this->payment;
 

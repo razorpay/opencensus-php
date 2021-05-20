@@ -1025,6 +1025,16 @@ class Service extends Base\Service
 
         if ($payment->isExternal() === true)
         {
+            if ($payment->hasOrder() === true)
+            {
+                $order = $payment->order;
+
+                if (isset($order) === true)
+                {
+                    $input[Payment\Entity::ORDER] = $order;
+                }
+            }
+
             $paymentMap = $this->app['pg_router']->paymentCapture($id, $input, true);
 
             $payment = (new Payment\Entity)->forceFill($paymentMap);
@@ -3552,9 +3562,14 @@ class Service extends Base\Service
                     $processor->eventPaymentCaptured();
                     break;
                 case "payment_failed_event":
-                    $processor->eventPaymentFailed();
+                    $processor->eventPaymentFailed(null);
+                    break;
+                case "order_paid":
+                    $processor->eventOrderPaid();
                     break;
                 default:
+                    $this->trace->info(TraceCode::INVALID_WEBHOOK_EVENT_NAME_FROM_PG_ROUTER,
+                        ["event_name" => $event]);
                     return;
             }
 

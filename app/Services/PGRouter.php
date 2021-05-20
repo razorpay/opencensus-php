@@ -76,6 +76,8 @@ class PGRouter
      */
     public function __construct($app)
     {
+        $this->app = $app;
+
         $this->trace = $app['trace'];
 
         $this->config = $app['config']->get('applications.pg_router');
@@ -444,10 +446,10 @@ class PGRouter
         switch ($internalErrorCode)
         {
             case ErrorCode::GATEWAY_ERROR_REQUEST_ERROR:
-                throw new Exception\GatewayRequestException($description);
+                throw new Exception\GatewayRequestException($description,null,false,$errorData);
 
             case ErrorCode::GATEWAY_ERROR_TIMED_OUT:
-                throw new Exception\GatewayTimeoutException($description);
+                throw new Exception\GatewayTimeoutException($description,null,false,$errorData);
 
             default:
                 throw new Exception\GatewayErrorException($internalErrorCode,
@@ -483,6 +485,16 @@ class PGRouter
         $headers = $this->setHeaders();
 
         $headers['PHP_AUTH_USER'] = $this->auth->getPublicKey();
+
+        if (isset($this->app['rzp.mode']) and $this->app['rzp.mode'] === 'test')
+        {
+            $testCaseId = $this->request->header('X-RZP-TESTCASE-ID');
+
+            if (empty($testCaseId) === false)
+            {
+                $headers['X-RZP-TESTCASE-ID'] = $testCaseId;
+            }
+        }
 
         return [
             'url'       => $url,

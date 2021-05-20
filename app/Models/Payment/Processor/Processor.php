@@ -446,6 +446,8 @@ class Processor
             $this->order = $this->fetchOrderFromInput($input);
 
             $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($this->order->getId());
+
+            $input[Payment\Entity::ORDER] = $this->order;
         }
 
         $paymentData = $this->app['pg_router']->validateAndCreatePayment($input, true);

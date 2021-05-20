@@ -3130,6 +3130,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // PG Router Service Tracecodes
     const PGROUTER_DEBUG                                        = 'PGROUTER_DEBUG';
+    const INVALID_WEBHOOK_EVENT_NAME_FROM_PG_ROUTER             = 'INVALID_WEBHOOK_EVENT_NAME_FROM_PG_ROUTER';
 
 
     // Core Payment Service tracecodes
