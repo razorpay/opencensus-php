@@ -36,6 +36,8 @@ use RZP\Mail\User\AccountLockedWrongAttempt as AccountLockedWrongAttemptMail;
 
 class Core extends Base\Core
 {
+    const VERIFY_SUPPORT_CONTACT = 'verify_support_contact';
+
     public function create(array $input, string $operation = 'create'): Entity
     {
         $user = $this->getUserEntity()->build($input, $operation);
@@ -1298,7 +1300,14 @@ class Core extends Base\Core
     {
         $this->trace->info(TraceCode::USERS_SEND_OTP_FOR_ACTION_WITH_CONTACT, compact('input'));
 
-        $otp = $otp ?: $this->generateOtpFromRaven($input, $merchant, $user);
+        if ($input['action'] === self::VERIFY_SUPPORT_CONTACT)
+        {
+            $otp = $otp ?: $this->generateOtpFromRaven($input, $merchant, $user, false);
+        }
+        else
+        {
+            $otp = $otp ?: $this->generateOtpFromRaven($input, $merchant, $user);
+        }
 
         $payload = [
             'receiver' => $input[Entity::CONTACT_MOBILE],
@@ -1312,7 +1321,14 @@ class Core extends Base\Core
 
         $payload['params'] += $this->getExtraRavenSmsPayload($input, $merchant);
 
-        $this->app->raven->sendSms($payload);
+        if ($input['action'] === self::VERIFY_SUPPORT_CONTACT)
+        {
+            $this->app->raven->sendSms($payload, false);
+        }
+        else
+        {
+            $this->app->raven->sendSms($payload);
+        }
 
         return array_only($otp, 'token');
     }
@@ -1422,18 +1438,19 @@ class Core extends Base\Core
     /**
      * Generates otp from remote raven service.
      *
-     * @param  array           $input
-     * @param  Merchant\Entity $merchant
-     * @param  Entity          $user
+     * @param array $input
+     * @param Merchant\Entity $merchant
+     * @param Entity $user
+     * @param bool $mockInTestMode
      * @return array
      */
-    protected function generateOtpFromRaven(array $input, Merchant\Entity $merchant, Entity $user): array
+    protected function generateOtpFromRaven(array $input, Merchant\Entity $merchant, Entity $user, $mockInTestMode = true): array
     {
         $payload = $this->getTokenAndRavenOtpReqParams($input, $merchant, $user);
 
         $token = array_pull($payload, 'token');
 
-        $otp = $this->app->raven->generateOtp($payload);
+        $otp = $this->app->raven->generateOtp($payload, $mockInTestMode);
 
         return $otp + compact('token');
     }

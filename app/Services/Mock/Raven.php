@@ -29,7 +29,7 @@ class Raven extends BaseRaven
         return ['success' => true];
     }
 
-    public function generateOtp(array $input): array
+    public function generateOtp(array $input, $mockInTestMode = true): array
     {
         return [
             self::OTP        => self::MOCK_VALID_OTPS[0],

@@ -90,9 +90,10 @@ class Raven
         return $response;
     }
 
-    public function generateOtp(array $input): array
+    public function generateOtp(array $input, $mockInTestMode = true): array
     {
-        if ($this->mode === Mode::TEST)
+        if (($this->mode === Mode::TEST) and
+            ($mockInTestMode === true))
         {
             return [
                 self::OTP        => self::MOCK_VALID_OTPS[0],
