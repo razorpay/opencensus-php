@@ -1188,7 +1188,13 @@ angular
       if (typeof window.razorpayAnalytics !== 'undefined') {
         utm = razorpayAnalytics.utils.getLandingParams();
         gclid = razorpayAnalytics.utils.getCookie('gclid');
-        attrib_utm = razorpayAnalytics.utils.getCookie('lastAttribUtm');
+
+        try {
+          attrib_utm = JSON.parse(razorpayAnalytics.utils.getCookie('lastAttribUtm'));
+        } catch (e) {
+          console.error('Error parsing lastAttribUtm cookie');
+        }
+
         if (typeof razorpayAnalytics.utils.getBrowserDetails !== 'undefined') {
           browser_details = razorpayAnalytics.utils.getBrowserDetails();
         }
