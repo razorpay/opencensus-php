@@ -998,11 +998,17 @@ class Repository extends Base\Repository
         return $terminals;
     }
 
-    public function getAllBankTransferTerminals($gateway): PublicCollection
+    public function getAllBankTransferTerminals($gateway, $merchantIds = []): PublicCollection
     {
         $query = $this->newQuery()
+                      ->select([Entity::ID, Entity::GATEWAY_MERCHANT_ID, Entity::GATEWAY_MERCHANT_ID2, Entity::MERCHANT_ID])
                       ->where(Entity::BANK_TRANSFER, true)
                       ->where(Entity::GATEWAY, $gateway);
+
+        if (empty($merchantIds) === false)
+        {
+            $query->whereIn(Entity::MERCHANT_ID, $merchantIds);
+        }
 
         $apiTerminals = $query->get();
 
@@ -1023,9 +1029,13 @@ class Repository extends Base\Repository
                 $input = [
                     'gateway' => $gateway,
                     'methods' => [Entity::BANK_TRANSFER],
-                    'deleted' => true,
                     'fetch_where_submerchant' => false,
                 ];
+
+                if (empty($merchantIds) === false)
+                {
+                    $input['merchant_ids'] = $merchantIds;
+                }
 
                 $response = $this->app['terminals_service']->proxyTerminalService($input, "POST", $path);
 
