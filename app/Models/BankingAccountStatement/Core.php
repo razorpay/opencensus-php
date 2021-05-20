@@ -1348,22 +1348,56 @@ class Core extends Base\Core
 
             $startTime = microtime(true);
 
+            /**
+             * Account numbers of merchants onboarded to RBL's single payments api to be added to
+             * RBL_DIRECT_ACCOUNTS_ON_SINGLE_PAYMENTS_API
+             *
+             * Bank is not sending cms ref number in the single payments api response for IFT mode. Hence FTS is appending
+             * gateway reference number at the end of description of IFT transactions. Recon needs to happen by picking
+             * the end 10 characters and match with gateway ref no. in fta table.
+             *
+             * Only for IFT mode.
+             */
+
+            $v2AccountNumbers = (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_DIRECT_ACCOUNTS_ON_SINGLE_PAYMENTS_API]);
+
+            if (in_array($basEntity->getAccountNumber(), $v2AccountNumbers) === true and
+                $basEntity->getChannel() === Channel::RBL)
+            {
+                $description = $basEntity->getDescription();
+
+                $gatewayRefNo = substr($description, -10, 10);
+
+                $identifier = $gatewayRefNo;
+
+                $isV2Enabled = true;
+            }
+            else
+            {
+                $identifier = $bankTxnId;
+
+                $isV2Enabled = false;
+            }
+
             // we are checking both linked and unlinked payouts because debit row might have already been
             // processed.
             $payouts = $this->repo->payout->fetchPayoutsFromCmsRefNumberWithinTimeRangeForIFT(
-                $bankTxnId,
+                $identifier,
                 $basEntity->getPostedDate(),
                 $bankTimeBeforePostedDate,
                 $basEntity->getAmount(),
-                $balance->getId());
+                $balance->getId(),
+                $isV2Enabled);
 
             $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_CMS_REF_NO_FOR_IFT_FOR_CREDIT_MAPPING,
                 [
-                    'cms_ref_no' => $bankTxnId,
-                    'payout_ids' => $payouts->getQueueableIds(),
-                    'bas_id'     => $basEntity->getId(),
-                    'account_no' => $basEntity->getAccountNumber(),
-                    'payouts_fetched_via_cms_ref_no_for_ift_mapping_time' => (microtime(true) - $startTime ) * 1000,
+                    'cms_ref_no'                                          => $bankTxnId,
+                    'payout_ids'                                          => $payouts->getQueueableIds(),
+                    'bas_id'                                              => $basEntity->getId(),
+                    'account_no'                                          => $basEntity->getAccountNumber(),
+                    'identifier'                                          => $identifier,
+                    'is_v2_enabled'                                       => $isV2Enabled,
+                    'payouts_fetched_via_cms_ref_no_for_ift_mapping_time' => (microtime(true) - $startTime) * 1000,
                 ]);
         }
 
@@ -1583,21 +1617,54 @@ class Core extends Base\Core
                                                         ->getTimestamp();
             $startTime = microtime(true);
 
+            /**
+             * Account numbers of merchants onboarded to RBL's single payments api to be added to
+             * RBL_DIRECT_ACCOUNTS_ON_SINGLE_PAYMENTS_API
+             *
+             * Bank is not sending cms ref number in the single payments api response for IFT mode. Hence FTS is appending
+             * gateway reference number at the end of description of IFT transactions. Recon needs to happen by picking
+             * the end 10 characters and match with gateway ref no. in fta table.
+             *
+             * Only for IFT mode.
+             */
+            $v2AccountNumbers = (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_DIRECT_ACCOUNTS_ON_SINGLE_PAYMENTS_API]);
+
+            if (in_array($basEntity->getAccountNumber(), $v2AccountNumbers) === true and
+                $basEntity->getChannel() === Channel::RBL)
+            {
+                $description = $basEntity->getDescription();
+
+                $gatewayRefNo = substr($description, -10, 10);
+
+                $identifier = $gatewayRefNo;
+
+                $isV2Enabled = true;
+            }
+            else
+            {
+                $identifier = $bankTxnId;
+
+                $isV2Enabled = false;
+            }
+
             // fetch only unlinked payouts i.e which do not have txn_id, since we are trying to map given bas
             // record with payout.
             $payouts = $this->repo->payout->fetchUnlinkedPayoutsFromCmsRefNumberWithinTimeRangeForIFT(
-                                                                                       $bankTxnId,
+                                                                                       $identifier,
                                                                                        $basEntity->getPostedDate(),
                                                                                        $bankTimeBeforePostedDate,
                                                                                        $basEntity->getAmount(),
-                                                                                       $balance->getId());
+                                                                                       $balance->getId(),
+                                                                                       $isV2Enabled);
 
             $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_CMS_REF_NO_FOR_IFT_FOR_DEBIT_MAPPING,
                                [
-                                   'cms_ref_no'                            => $bankTxnId,
-                                   'payout_ids'                            => $payouts->getQueueableIds(),
-                                   'bas_id'                                => $basEntity->getId(),
-                                   'account_no'                            => $basEntity->getAccountNumber(),
+                                   'cms_ref_no'                                          => $bankTxnId,
+                                   'payout_ids'                                          => $payouts->getQueueableIds(),
+                                   'bas_id'                                              => $basEntity->getId(),
+                                   'account_no'                                          => $basEntity->getAccountNumber(),
+                                   'identifier'                                          => $identifier,
+                                   'is_v2_enabled'                                       => $isV2Enabled,
                                    'payouts_fetched_via_cms_ref_no_for_ift_mapping_time' => (microtime(true) - $startTime) * 1000
                                ]);
         }

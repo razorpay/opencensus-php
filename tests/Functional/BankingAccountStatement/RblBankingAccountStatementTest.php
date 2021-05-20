@@ -2144,6 +2144,90 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals(0, $feeBreakup->count());
     }
 
+    /**
+     * Bank is not sending cms ref number in the single payments api response for IFT mode. Hence FTS is appending
+     * gateway reference number at the end of description of IFT transactions. Recon needs to happen by picking
+     * the end 10 characters and match with gateway ref no. in fta table.
+     *
+     * Only for IFT mode.
+     */
+    public function testRblAccountStatementTxnMappingForIFTUsingGatewayRefNo()
+    {
+        (new Admin\Service)->setConfigKeys([
+            Admin\ConfigKey::RBL_DIRECT_ACCOUNTS_ON_SINGLE_PAYMENTS_API => ['2224440041626905']]);
+
+        $channel = Channel::RBL;
+
+        $this->setupForRblPayout($channel, 104, FundTransfer\Mode::IFT);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(590, $payout['fees']);
+        $this->assertEquals(90, $payout['tax']);
+        $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout['id'], [
+            'status'       => 'initiated',
+            'amount'       => '104',
+            'utr'          => 'UTIBH20106341692',
+            'initiated_at' => 1451937960]);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], [
+            'cms_ref_no'     => 'S5',
+            'utr'            => 'UTIBH20106341692',
+            'gateway_ref_no' => 'jambond007']);
+
+        $this->fixtures->edit('balance', $payout['balance_id'], ['balance' => 30019995]);
+
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+
+        // Fetch account statement from RBL
+        $mockedResponse = $this->getRblPayoutMappingResponseRTGS();
+
+        // changing utr so it doesn't match regex.
+        // Appending gateway ref. no. at the end of description.
+        $txn = $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][0];
+        $txn['transactionSummary']['txnDesc'] = 'UTIBH20106341692 Vivek Karna HDFCjambond007';
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][0] = $txn;
+
+        $txn['txnBalance']['amountValue'] = '300199.95';
+        $txn['transactionSummary']['txnType'] = 'C';
+        $txn['txnSrlNo'] = '2';
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][1] = $txn;
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $testData = $this->testData['testRblAccountStatementTxnMappingCase1'];
+
+        $this->testData[__FUNCTION__] = $testData;
+        $this->ba->cronAuth();
+        $this->startTest();
+
+        $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
+        $payout = $this->getDbLastEntity('payout');
+        $reversal = $this->getDbLastEntity('reversal');
+
+        $this->assertEquals(EntityConstants::PAYOUT, $basEntries[0]['entity_type']);
+        $this->assertEquals($payout['id'], $basEntries[0]['entity_id']);
+        $this->assertEquals($payout['transaction_id'], $basEntries[0]['transaction_id']);
+        $this->assertEquals(Payout\Status::REVERSED, $payout[Payout\Entity::STATUS]);
+
+        $this->assertEquals(EntityConstants::REVERSAL, $basEntries[1]['entity_type']);
+        $this->assertEquals($payout['id'], $reversal['entity_id']);
+    }
+
     public function testRblAccountStatementTxnMappingCase4()
     {
         $channel = Channel::RBL;
