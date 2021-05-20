@@ -38,6 +38,9 @@ class Razorflow
     const URLS = [
         'invoke_slash_command' => 'InvokeSlashCommand',
     ];
+    
+    // Sensitive fields which are not to be logged
+    const SENSITIVE_FIELDS = ['response_url'];
 
     // Headers
     const ACCEPT        = 'Accept';
@@ -92,10 +95,14 @@ class Razorflow
      */
     public function postSlashCommand(array $input, array $inputHeaders, string $customEndpoint = null, bool $throwExceptionOnFailure = false): array
     {
+        $traceInput = $input;
+
+        $this->removeSensitiveData($traceInput);
+
         $this->trace->info(
             TraceCode::RAZORFLOW_SLACK_REQUEST,
             [
-                'input'   => $input,
+                'input'   => $traceInput,
                 'headers' => $inputHeaders
             ]
         );
@@ -105,7 +112,7 @@ class Razorflow
             $this->trace->info(
                 TraceCode::RAZORFLOW_SLACK_FAILURE,
                 [
-                    'input'    => $input,
+                    'input'    => $traceInput,
                     'headers'  => $inputHeaders,
                     'response' => 'Invalid request',
                 ]
@@ -338,5 +345,16 @@ class Razorflow
             'options'   => $options,
             'content'   => $data
         ];
+    }
+
+    /**
+     * @param array $input
+     */
+    protected function removeSensitiveData(array &$input)
+    {
+        foreach(self::SENSITIVE_FIELDS as $field)
+        {
+            unset($input[$field]);
+        }
     }
 }
