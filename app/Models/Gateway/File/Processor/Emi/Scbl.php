@@ -29,7 +29,7 @@ class Scbl extends Base
             $formattedData[] = [
                 'CARD_NUMBER'                  => $this->getCardNumber($emiPayment->card),
                 'MID'                          => $emiPayment->getId(),
-                'MERCHANT_NAME'                => 'Razorpay Payments',
+                'MERCHANT_NAME'                => $merchant->getDbaName(),
                 'TRXN_AMOUNT'                  => $this->getFormattedAmount($emiPayment->getAmount()),
                 'TRXN_DATE'                    => $this->getFormattedDate($emiPayment->getCaptureTimestamp()),
                 'SETTLEMENT_DATE'              => $this->getFormattedDate($txn->getSettledAt()),
