@@ -11571,4 +11571,23 @@ class PayoutTest extends OAuthTestCase
 
         $this->startTest();
     }
+
+    // Since this is a VA to VA payout and razorx returns control but feature allow Va to va is enabled,
+    // we shall pass this payout
+    public function testBlockVAtoVAPayoutsWithYesbankDestinationAndFeatureEnabled()
+    {
+        $fundAccount = $this->createFundAccountOfYesbankVA();
+
+        $fundAccountId = $fundAccount['id'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account_id'] = $fundAccountId;
+
+        $this->mockRazorxTreatment();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::ALLOW_VA_TO_VA_PAYOUTS]);
+
+        $this->startTest($testData);
+    }
 }

@@ -1622,10 +1622,14 @@ class Base extends BaseCore
                 $this->mode,
                 3);
 
+            $isVaToVaPayoutsAllowed = $this->merchant->isFeatureEnabled(Features::ALLOW_VA_TO_VA_PAYOUTS);
+
             // This will be control when:
             // 1. Merchant is not part of the `on` variant, meaning merchant is not allowed VA to VA payouts
             // 2. If RazorX request fails
-            if ($variant === 'control')
+            // 3. And merchant does not have the feature to allow va to va.
+            if (($variant === 'control') and
+                ($isVaToVaPayoutsAllowed == false))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_VA_TO_VA_PAYOUTS_BLOCKED,

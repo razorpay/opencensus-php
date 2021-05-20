@@ -670,6 +670,10 @@ class Constants
      */
     const PL_BLOCK_CUSTOMER_PREFILL = 'pl_block_customer_prefill';
 
+    /**
+     * allow_va_to_va_payouts for payouts va to va for certain merchant
+     */
+    const ALLOW_VA_TO_VA_PAYOUTS        = 'allow_va_to_va_payouts';
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -980,6 +984,7 @@ class Constants
         self::COVID_19_RELIEF                 => true,
         self::BENE_NAME_IN_PAYOUT             => true,
         self::PL_BLOCK_CUSTOMER_PREFILL       => true,
+        self::ALLOW_VA_TO_VA_PAYOUTS          => true,
     ];
 
     // Entity type constants
