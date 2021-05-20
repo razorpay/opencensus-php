@@ -2372,7 +2372,7 @@ class BasicAuth
      */
     public function getLiveConnection()
     {
-        if ($this->app->environment('testing') === false)
+        if ($this->app->environment('testing') === false && $this->app->environment('testing_docker') === false)
         {
             $mode = Mode::LIVE;
         }

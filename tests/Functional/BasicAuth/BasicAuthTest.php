@@ -748,6 +748,29 @@ class BasicAuthTest extends TestCase
         Route::$routePermission['admin_get_multiple'] = $permission;
     }
 
+    public function testConnectionForTestingEnvironment()
+    {
+        $merchant = $this->fixtures->on('live')->create('merchant:with_keys');
+        $merchantId = $merchant->getId();
+
+        $this->app['env'] = 'testing';
+
+        $merchant1 = $this->getDbEntity('merchant',
+            [
+                'id'   => $merchantId,
+            ], 'live');
+
+        $this->app['env'] = 'testing_docker';
+
+        $merchant2 = $this->getDbEntity('merchant',
+            [
+                'id'   => $merchantId,
+            ], 'live');
+
+        $this->assertEquals($merchant['name'], $merchant1['name']);
+        $this->assertEquals($merchant['name'], $merchant2['name']);
+    }
+
 
     public function startTest($testDataToReplace = array())
     {
