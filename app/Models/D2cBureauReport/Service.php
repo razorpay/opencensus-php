@@ -86,11 +86,6 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::LOS_D2C_BUREAU_REPORT_FETCH, $input);
 
-        if (empty($input[Entity::MERCHANT_ID]) === true)
-        {
-            throw new BadRequestValidationFailureException('merchant_id is required', Entity::MERCHANT_ID, null);
-        }
-
         if (empty($input['d2c_bureau_report_id']) === false)
         {
             $input['d2c_bureau_report_id'] = Entity::verifyIdAndStripSign($input['d2c_bureau_report_id']);
@@ -104,8 +99,27 @@ class Service extends Base\Service
         {
             throw new BadRequestValidationFailureException('no report found for '. json_encode($input));
         }
+        if (empty($input['pan']) === false)
+        {
+            $d2cBureauDetail = (new D2cBureauDetail\Repository)->findByIdMerchantIdAndPan($bureauReport[Entity::D2C_BUREAU_DETAIL_ID], $bureauReport[Entity::MERCHANT_ID], $input['pan']);
+        }
+        else
+        {
+            $d2cBureauDetail = (new D2cBureauDetail\Repository)->findByIdAndMerchantId($bureauReport[Entity::D2C_BUREAU_DETAIL_ID], $bureauReport[Entity::MERCHANT_ID]);
+        }
 
-        return $this->getReportArrayForLos($bureauReport);
+        if ($d2cBureauDetail === null)
+        {
+            throw new BadRequestValidationFailureException('no report found for '. json_encode($input));
+        }
+
+        $bureauReport = $this->getReportArrayForLos($bureauReport);
+
+        $bureauDetailArray = $d2cBureauDetail->toArrayPublic();
+
+        $bureauReport[Entity::REQUEST_OBJECT] = $bureauDetailArray;
+
+        return $bureauReport;
     }
 
     public function getReportArrayForLos($bureauReport)

@@ -23,4 +23,13 @@ class Repository extends Base\Repository
                     ->merchantId($merchantId)
                     ->first();
     }
+
+    public function findByIdMerchantIdAndPan($id, $merchantId, $pan)
+    {
+        return $this->newQuery()
+            ->where(Entity::ID, $id)
+            ->where(Entity::PAN, $pan)
+            ->merchantId($merchantId)
+            ->first();
+    }
 }

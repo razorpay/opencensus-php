@@ -42,7 +42,10 @@ class Repository extends Base\Repository
                                   ->orWhereNotNull(Entity::NTC_SCORE);
                         });
 
-        $query->where(Entity::MERCHANT_ID, $input[Entity::MERCHANT_ID]);
+        if (empty($input['merchant_id']) === false)
+        {
+            $query->where(Entity::MERCHANT_ID, $input[Entity::MERCHANT_ID]);
+        }
 
         if (empty($input['d2c_bureau_report_id']) === false)
         {

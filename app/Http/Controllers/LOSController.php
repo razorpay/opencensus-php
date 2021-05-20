@@ -48,7 +48,11 @@ class LOSController extends Controller
     const GET_NETBANKING_PAYLOAD_REGEX                = 'GET_NETBANKING_LINK_REGEX';
     const PROCESS_BANK_STATEMENT_PAYLOAD              = 'PROCESS_BANK_STATEMENT_PAYLOAD';
     const SUBMIT_OTP_REGEX                            = 'SUBMIT_OTP_REGEX';
+    const SEND_OTP_REGEX                              = 'SEND_OTP_REGEX';
+    const SUBMIT_OTP_NEW_REGEX                        = 'SUBMIT_OTP_NEW_REGEX';
+    const SEND_OTP_NEW_REGEX                          = 'SEND_OTP_NEW_REGEX';
     const GET_BUREAU_REPORT_REGEX                     = 'GET_BUREAU_REPORT_REGEX';
+    const GET_BUREAU_REPORT_NEW_REGEX                 = 'GET_BUREAU_REPORT_NEW_REGEX';
     const SCHEDULE_MERCHANT_VERIFICATION_REGEX        = 'SCHEDULE_MERCHANT_VERIFICATION_REGEX';
     const SCHEDULE_ADMIN_VERIFICATION_REGEX           = 'SCHEDULE_ADMIN_VERIFICATION_REGEX';
     const LIST_OR_SEARCH_REGEX                        = 'LIST_OR_SEARCH_REGEX';
@@ -91,8 +95,12 @@ class LOSController extends Controller
         self::UPLOAD_NACH_REGEX                           => '/rzp\.capital\.los\.nach\.v1\.NachAPI\/UploadNachForm/',
         self::GET_NETBANKING_PAYLOAD_REGEX                => '/rzp\.capital\.los\.fds\.v1\.FDSBankStatementAPI\/GetNetBankingPayload/',
         self::PROCESS_BANK_STATEMENT_PAYLOAD              => '/rzp\.capital\.los\.fds\.v1\.FDSBankStatementAPI\/ProcessBankStatement/',
+        self::SEND_OTP_REGEX                              => '/rzp\.capital\.los\.d2c\.v1\.D2CBureauAPI\/SendOtp/',
         self::SUBMIT_OTP_REGEX                            => '/rzp\.capital\.los\.d2c\.v1\.D2CBureauAPI\/SubmitOtp/',
         self::GET_BUREAU_REPORT_REGEX                     => '/rzp\.capital\.los\.d2c\.v1\.D2CBureauAPI\/GetBureauReport/',
+        self::SEND_OTP_NEW_REGEX                          => '/rzp\.capital\.los\.d2c_new\.v1\.D2CBureauAPI\/SendOtp/',
+        self::SUBMIT_OTP_NEW_REGEX                        => '/rzp\.capital\.los\.d2c_new\.v1\.D2CBureauAPI\/SubmitOtp/',
+        self::GET_BUREAU_REPORT_NEW_REGEX                 => '/rzp\.capital\.los\.d2c_new\.v1\.D2CBureauAPI\/GetBureauReport/',
         self::SCHEDULE_MERCHANT_VERIFICATION_REGEX        => '/rzp\.capital\.los\.admin\.v1\.OfferVerificationAPI\/ScheduleMerchantVerification/',
         self::SCHEDULE_ADMIN_VERIFICATION_REGEX           => '/rzp\.capital\.los\.admin\.v1\.OfferVerificationAPI\/ScheduleAdminVerification/',
         self::FETCH_LEGAL_AGREEMENT_REGEX                 => '/rzp\.capital\.los\.contracts\.v1\.DocSignAPI\/FetchLegalAgreement/',

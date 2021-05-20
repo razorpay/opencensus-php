@@ -33,6 +33,8 @@ class Entity extends Base\PublicEntity
     const CREATED_AT                = 'created_at';
     const UPDATED_AT                = 'updated_at';
 
+    const REQUEST_OBJECT            = 'request_object';
+
     protected $public = [
         self::ID,
         self::PROVIDER,
@@ -41,6 +43,10 @@ class Entity extends Base\PublicEntity
         self::REPORT,
         self::INTERESTED,
         self::CREATED_AT,
+        self::MERCHANT_ID,
+        self::USER_ID,
+        self::UFH_FILE_ID,
+        self::PROVIDER
     ];
 
     // merchant credit report should be exposed to least number of people in org.

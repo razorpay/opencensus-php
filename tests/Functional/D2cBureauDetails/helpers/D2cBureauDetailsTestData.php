@@ -235,7 +235,7 @@ return [
                 'merchant_id'   => '10000000000000',
                 'user_id'       => '20000000000000',
             ],
-         ],
+        ],
         'response' => [
             'content' => [
 //                'id'                => 'd2c_Dg8DrxoP8KXelQ',
@@ -243,14 +243,27 @@ return [
                 'score'             => 752,
                 'ntc_score'         => null,
                 'report'            => [
-                        'active_accounts'                           => '1',
-                        'closed_accounts'                           => '1',
-                        'count_of_accounts'                         => '2',
-                        'total_outstanding_balance'                 => '152000',
-                        'secured_account_outstanding_balance'       => '152000',
-                        'un_secured_account_outstanding_balance'    => '0',
+                    'active_accounts'                           => '1',
+                    'closed_accounts'                           => '1',
+                    'count_of_accounts'                         => '2',
+                    'total_outstanding_balance'                 => '152000',
+                    'secured_account_outstanding_balance'       => '152000',
+                    'un_secured_account_outstanding_balance'    => '0',
                 ],
                 'interested'        => null,
+                'request_object'    => [
+                    'first_name' => 'john',
+                    'last_name' => 'doe',
+                    'date_of_birth' => '1996-10-10',
+                    'gender' => 'male',
+                    'contact_mobile' => '9876543210',
+                    'email' => 'test@razorpay.com',
+                    'address' => 'Adress',
+                    'city' => 'city',
+                    'state' => 'PB',
+                    'pincode' => '123455',
+                    'pan' => 'ABCPE1234F',
+                ]
 //                'created_at'        => 1571374473
             ],
         ],
@@ -264,7 +277,7 @@ return [
                 'merchant_id'   => '10000000000000',
                 'user_id'       => '20000000000000',
             ],
-         ],
+        ],
         'response' => [
             'content' => [
 //                'id'                => 'd2c_Dg8DrxoP8KXelQ',
