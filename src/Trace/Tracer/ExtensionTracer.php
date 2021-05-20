@@ -62,7 +62,11 @@ class ExtensionTracer implements TracerInterface, SpanEventHandlerInterface
     public function __construct(SpanContext $initialContext = null, $exporter = null, $options = [])
     {
         if ($initialContext) {
-            opencensus_trace_set_context($initialContext->traceId(), $initialContext->spanId());
+            opencensus_trace_set_context(
+                $initialContext->traceId(),
+                $initialContext->spanId(),
+                $initialContext->baggage()
+            );
         }
 
         $this->exporter = $exporter;

@@ -31,4 +31,9 @@ class SpanContext {
     {
         return '';
     }
+
+    public function baggage(): array
+    {
+        return [];
+    }
 }

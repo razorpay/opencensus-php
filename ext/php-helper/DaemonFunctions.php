@@ -95,7 +95,7 @@ function opencensus_trace_context(): SpanContext {
  * @param string $traceId The trace id for this request. **Defaults to** a generated value.
  * @param string $parentSpanId [optional] The span id of this request's parent. **Defaults to** `null`.
  */
-function opencensus_trace_set_context($traceId, $parentSpanId = null): void {
+function opencensus_trace_set_context($traceId, $parentSpanId = null, $baggage = null): void {
 
 }
 
