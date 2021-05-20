@@ -10194,7 +10194,6 @@ class Route
         'mock_upi_payment',
         'mock_aeps_payment',
         'mock_event_tracker',
-        'gateway_file_create',
         'scrooge_refund_verify_bulk',
         'merchant_daily_report',
         'merchant_post_beneficiary_file',
