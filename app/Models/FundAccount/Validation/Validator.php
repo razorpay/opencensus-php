@@ -64,6 +64,8 @@ class Validator extends Base\Validator
         FtaEntity::GATEWAY_REF_NO     => 'sometimes|string',
         FtaEntity::GATEWAY_ERROR_CODE => 'sometimes|string',
         FtaEntity::CHANNEL            => 'sometimes|string',
+        FtaEntity::SOURCE_ACCOUNT_ID  => 'sometimes|int',
+        FtaEntity::BANK_ACCOUNT_TYPE  => 'sometimes',
     ];
 
     /**
