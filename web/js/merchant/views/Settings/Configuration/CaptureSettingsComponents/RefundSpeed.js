@@ -132,7 +132,7 @@ function RefundSpeed(props) {
         window.rzpAnalytics({
           eventCategory: 'Dashboard - Payments Capture Settings v2',
           eventAction: 'Error',
-          eventLabel: `${error.message}`,
+          eventLabel: `${error.errors}`,
         });
       });
     props.closeModal();

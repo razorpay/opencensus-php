@@ -480,7 +480,7 @@ export default class PaymentSettings extends Component {
     });
 
     window.rzpAnalytics({
-      eventCategory: 'Documentation/Know more',
+      eventCategory: 'Dashboard - Payments Capture Settings v2',
       eventAction: 'Know More',
       eventLabel: 'Know More',
     });
