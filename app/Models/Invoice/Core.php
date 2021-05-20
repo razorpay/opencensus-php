@@ -50,6 +50,8 @@ class Core extends Base\Core
 
     const BATCH_BULK_QUEUE_OFFSET_LIMIT = 2500;
 
+    const INVOICE_IDEMPOTENCY_REDIS_KEY = 'invoice_idempotency_key_';
+
     protected $lineItemCore;
     protected $pdfGenerator;
     protected $eventService;
@@ -116,6 +118,20 @@ class Core extends Base\Core
         if (isset($input[Entity::IDEMPOTENCY_KEY]) === true)
         {
             $result = $this->repo->invoice->fetchByIdempotentKey($input[Entity::IDEMPOTENCY_KEY]);
+
+            if ($result === null)
+            {
+                $merchantId  = $this->merchant->getId();
+
+                $key = self::INVOICE_IDEMPOTENCY_REDIS_KEY . $merchantId . '_' . $input[Entity::IDEMPOTENCY_KEY];
+
+                $invoiceId = $this->app['cache']->get($key);
+
+                if ($invoiceId !== null)
+                {
+                    $result = $this->repo->invoice->findByIdAndMerchant($invoiceId, $merchantId);
+                }
+            }
 
             if ($result !== null)
             {
