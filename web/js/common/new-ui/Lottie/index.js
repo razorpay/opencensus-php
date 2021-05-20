@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import Lottie from 'react-lottie';
+import { NOOP } from 'merchant/views/Capital/Loans/constants';
 
 const CustomLottie = ({
   animationData,
@@ -27,7 +28,10 @@ const CustomLottie = ({
   };
 
   return (
-    <div onClick={onClick} className={`lottie-wrapper ${disabled ? 'lottie-disabled' : ''}`}>
+    <div
+      onClick={!disabled ? onClick : NOOP}
+      className={`lottie-wrapper ${disabled ? 'lottie-disabled' : ''}`}
+    >
       <Lottie
         options={config}
         width={width ? width : '100%'}

@@ -1,9 +1,11 @@
 import { isMobile } from 'common/utils/validators';
+
 import {
   APPLICATION_STATE_SEQUENCE,
   CAPITAL_PRODUCT_CODES,
   ERROR_STATES,
 } from '../Loans/constants';
+import LocalStorageService from 'common/utils/localStorage';
 
 export const getDisbursalAmount = (creditOffered, processingFeePercentage, taxPercentage) => {
   const processingFee = calculatePercentageAmount(processingFeePercentage, creditOffered);
@@ -120,4 +122,30 @@ export const toBase64 = (file) => {
     reader.onload = () => resolve(reader.result);
     reader.onerror = (error) => reject(error);
   });
+};
+
+export const getSettlementStatus = (merchantId, callbackSettlementStatus) => {
+  const merchantsSettlementStatus =
+    JSON.parse(LocalStorageService.getItem('merchantsSettlementStatus')) || {};
+
+  if (callbackSettlementStatus === 'settlementDone') {
+    const updatedMerchantSettlementStatus = {
+      ...merchantsSettlementStatus,
+      [merchantId]: true,
+    };
+
+    LocalStorageService.setItem(
+      'merchantsSettlementStatus',
+      JSON.stringify(updatedMerchantSettlementStatus),
+    );
+
+    return true;
+  } else {
+    const settlementStatusExists = Object.prototype.hasOwnProperty.call(
+      merchantsSettlementStatus,
+      merchantId,
+    );
+    if (settlementStatusExists) return merchantsSettlementStatus[merchantId];
+    else return true;
+  }
 };

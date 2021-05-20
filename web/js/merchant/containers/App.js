@@ -45,6 +45,7 @@ import Wrapper from 'v2/components/Bootstrap/Wrapper';
 import { fetchActiveTickets } from 'merchant/reducers/config.js';
 import LogoutDialog from 'merchant/components/LogoutDialog';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import { fetchInstantSettlements } from 'merchant/reducers/collection';
 
 @withRouter
 @connect(
@@ -66,6 +67,7 @@ import { closeModal, openModal } from 'merchant_common/reducers/modals';
     resizeWindow,
     openModal,
     closeModal,
+    fetchInstantSettlements,
   },
 )
 @RTracking(
@@ -322,6 +324,15 @@ export default class App extends Component {
         },
       );
       this.state.NonGoLiveNPSEnableTypeForm = NonGoLiveNPSEnableTypeForm; // saving reference typeform
+
+      const merchantsSettlementStatus = JSON.parse(
+        LocalStorageService.getItem('merchantsSettlementStatus'),
+      );
+
+      if (merchantsSettlementStatus) {
+        const currentMerchantExistsInLocalStorage = !(user.current in merchantsSettlementStatus);
+        if (currentMerchantExistsInLocalStorage) this.getSettlementDetails(user.current);
+      } else this.getSettlementDetails(user.current);
     }
   }
 
@@ -376,6 +387,24 @@ export default class App extends Component {
   componentWillUnmount() {
     window.removeEventListener('resize', this.handleResize);
   }
+
+  getSettlementDetails = (merchantId) => {
+    const { fetchInstantSettlements } = this.props;
+
+    fetchInstantSettlements({ count: 1 }).then(({ data: { items = [] } = {} } = {}) => {
+      const merchantsSettlementStatus = JSON.parse(
+        LocalStorageService.getItem('merchantsSettlementStatus'),
+      );
+      const updatedMerchantSettlementStatus = {
+        ...merchantsSettlementStatus,
+        [merchantId]: items.length > 0,
+      };
+      LocalStorageService.setItem(
+        'merchantsSettlementStatus',
+        JSON.stringify(updatedMerchantSettlementStatus),
+      );
+    });
+  };
 
   /**
    * this function check wether the date is inside any of the date ranges or not

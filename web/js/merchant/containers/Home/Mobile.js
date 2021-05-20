@@ -28,12 +28,11 @@ import {
   EVENT_CATEGORY_DASHBOARD_HOME,
 } from './ga';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { fetchInstantSettlements } from 'merchant/reducers/collection';
 import SettleNowLottie from 'merchant/helpers/lottieConfigs/SettleNow.json';
 import SettleNowLottieHover from 'merchant/helpers/lottieConfigs/SettleNowHover.json';
 import settleNowIcon from '../../../../icons/merchant/settle-now-thunder-dark.svg';
-import LocalStorageService from 'common/utils/localStorage';
 import { trackAnimatedSettleBtnImpressions } from 'merchant/views/Settlements/Settlements/ga';
+import { getSettlementStatus } from 'merchant/views/Capital/utils';
 
 const CustomLottie = lazy(() =>
   import(/* webpackChunkName: "CustomLottie" */ 'common/new-ui/Lottie'),
@@ -44,7 +43,7 @@ const CustomLottie = lazy(() =>
     user: state.session.user,
     config: state.config,
   }),
-  { openModal, fetchInstantSettlements },
+  { openModal },
 )
 class AnalyticsMobile extends Component {
   state = {
@@ -59,35 +58,17 @@ class AnalyticsMobile extends Component {
 
   componentDidMount() {
     this.checkIfFirstEverSettlement();
-    this.getSettlementDetails();
   }
 
   checkIfFirstEverSettlement = (callbackSettlementStatus) => {
-    if (callbackSettlementStatus === 'settlementDone') {
-      this.setState({ settlementExists: true });
-      LocalStorageService.setItem('settlementExists', true);
-    } else {
-      const settlementExists = JSON.parse(LocalStorageService.getItem('settlementExists'));
-      if (settlementExists) this.setState({ settlementExists });
-      else this.getSettlementDetails();
-    }
+    const settlementStatus = getSettlementStatus(this.props.user.current, callbackSettlementStatus);
+    this.setState({
+      settlementExists: settlementStatus,
+    });
   };
 
-  getSettlementDetails = () => {
-    const { fetchInstantSettlements } = this.props;
-
-    fetchInstantSettlements({ count: 1 })
-      .then(({ data: { items = [] } = {} } = {}) => {
-        this.setState({ settlementExists: items.length > 0 });
-        LocalStorageService.setItem('settlementExists', items.length > 0);
-      })
-      .catch(() => {
-        this.setState({ settlementExists: true });
-      });
-  };
-
-  handleMouseActivityOverSettleBtn = (type) => {
-    this.setState({ hoverOnSettleButton: type === 'mouseEnter' });
+  handleMouseActivityOverSettleBtn = (type, hoverDisabled) => {
+    if (!hoverDisabled) this.setState({ hoverOnSettleButton: type === 'mouseEnter' });
   };
 
   showOndemandSettlementForm() {
@@ -221,8 +202,18 @@ class AnalyticsMobile extends Component {
                   {!settlementExists && esOndemandSettlementEnabled ? (
                     <div
                       className=".settle-btn .settle-now--mobile"
-                      onMouseEnter={() => this.handleMouseActivityOverSettleBtn('mouseEnter')}
-                      onMouseLeave={() => this.handleMouseActivityOverSettleBtn('mouseLeave')}
+                      onMouseEnter={() =>
+                        this.handleMouseActivityOverSettleBtn(
+                          'mouseEnter',
+                          checkIfSettlementDisabled,
+                        )
+                      }
+                      onMouseLeave={() =>
+                        this.handleMouseActivityOverSettleBtn(
+                          'mouseLeave',
+                          checkIfSettlementDisabled,
+                        )
+                      }
                     >
                       <Suspense fallback={this.defaultSettlementBtn(checkIfSettlementDisabled)}>
                         <CustomLottie

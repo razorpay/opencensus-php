@@ -38,25 +38,23 @@ import {
 import OnHoldBanner from 'common/ui/OnHoldBanner';
 import SettlementDetail from 'merchant/views/Settlements/Settlements/components/SettlementDetail';
 import DedupeModal from 'merchant/components/Home/DedupeModal';
-import { handleNegativeBalanceLimit } from 'common/utils/rzp-utils';
+import { handleNegativeBalanceLimit, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import Time from 'common/ui/Time';
 import NCModal from 'merchant/components/Activation/NCModal';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import LocalStorageService from 'common/utils/localStorage';
-import { fetchInstantSettlements } from 'merchant/reducers/collection';
 import SettleNowLottie from 'merchant/helpers/lottieConfigs/SettleNow.json';
 import SettleNowLottieHover from 'merchant/helpers/lottieConfigs/SettleNowHover.json';
 import settleNowIcon from '../../../../icons/merchant/settle-now-thunder.svg';
 import { trackAnimatedSettleBtnImpressions } from 'merchant/views/Settlements/Settlements/ga';
+import { fetchUser } from 'merchant/reducers/session';
+import AsyncButton from 'react-async-button';
+import { getSettlementStatus } from 'merchant/views/Capital/utils';
 
 const CustomLottie = lazy(() =>
   import(/* webpackChunkName: "CustomLottie" */ 'common/new-ui/Lottie'),
 );
-import { fetchUser } from 'merchant/reducers/session';
-import AsyncButton from 'react-async-button';
-
 @withRouter
 @connect(
   (state) => ({
@@ -68,7 +66,6 @@ import AsyncButton from 'react-async-button';
   {
     openModal,
     fetchInternationalProductsStatus,
-    fetchInstantSettlements,
     ...NotificationActions,
     fetchUser,
   },
@@ -127,31 +124,14 @@ class AnalyticsDesktop extends Component {
   }
 
   checkIfFirstEverSettlement = (callbackSettlementStatus) => {
-    if (callbackSettlementStatus === 'settlementDone') {
-      this.setState({ settlementExists: true });
-      LocalStorageService.setItem('settlementExists', true);
-    } else {
-      const settlementExists = JSON.parse(LocalStorageService.getItem('settlementExists'));
-      if (settlementExists) this.setState({ settlementExists });
-      else this.getSettlementDetails();
-    }
+    const settlementStatus = getSettlementStatus(this.props.user.current, callbackSettlementStatus);
+    this.setState({
+      settlementExists: settlementStatus,
+    });
   };
 
-  getSettlementDetails = () => {
-    const { fetchInstantSettlements } = this.props;
-
-    fetchInstantSettlements({ count: 1 })
-      .then(({ data: { items = [] } = {} } = {}) => {
-        this.setState({ settlementExists: items.length > 0 });
-        LocalStorageService.setItem('settlementExists', items.length > 0);
-      })
-      .catch(() => {
-        this.setState({ settlementExists: true });
-      });
-  };
-
-  handleMouseActivityOverSettleBtn = (type) => {
-    this.setState({ hoverOnSettleButton: type === 'mouseEnter' });
+  handleMouseActivityOverSettleBtn = (type, hoverDisabled) => {
+    if (!hoverDisabled) this.setState({ hoverOnSettleButton: type === 'mouseEnter' });
   };
 
   resetHash = () => {
@@ -656,8 +636,18 @@ class AnalyticsDesktop extends Component {
                   <div>
                     {!settlementExists && esOndemandSettlementEnabled ? (
                       <div
-                        onMouseEnter={() => this.handleMouseActivityOverSettleBtn('mouseEnter')}
-                        onMouseLeave={() => this.handleMouseActivityOverSettleBtn('mouseLeave')}
+                        onMouseEnter={() =>
+                          this.handleMouseActivityOverSettleBtn(
+                            'mouseEnter',
+                            checkIfSettlementDisabled,
+                          )
+                        }
+                        onMouseLeave={() =>
+                          this.handleMouseActivityOverSettleBtn(
+                            'mouseLeave',
+                            checkIfSettlementDisabled,
+                          )
+                        }
                         class="settle-btn settle-now--desktop"
                       >
                         <Suspense fallback={this.defaultSettlementBtn(checkIfSettlementDisabled)}>

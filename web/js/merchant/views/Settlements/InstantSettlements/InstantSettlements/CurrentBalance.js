@@ -48,7 +48,7 @@ const CurrentBalance = ({
   };
 
   const handleMouseActivityOverSettleBtn = (type) => {
-    setHoverOnSettleButton(type === 'mouseEnter');
+    if (!checkIfSettlementDisabled) setHoverOnSettleButton(type === 'mouseEnter');
   };
 
   return (

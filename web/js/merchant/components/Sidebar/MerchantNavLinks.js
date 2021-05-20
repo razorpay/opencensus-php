@@ -3,17 +3,10 @@ import { connect } from 'react-redux';
 import MainNavLink from 'merchant_common/components/MainNavLink';
 import ShowWhen from 'merchant/components/ShowWhen';
 import LocalStorageService from 'common/utils/localStorage';
-import { fetchInstantSettlements } from 'merchant/reducers/collection';
+import { getSettlementStatus } from 'merchant/views/Capital/utils';
 
-function MerchantNavLinks(props) {
-  const {
-    routes,
-    isReportsPending,
-    isChargeAtWillEnabled,
-    isSettlementEnabled,
-    user,
-    fetchInstantSettlements,
-  } = props;
+export default function MerchantNavLinks(props) {
+  const { routes, isReportsPending, isChargeAtWillEnabled, isSettlementEnabled, user } = props;
   const showMyAccountCutomBadge = !LocalStorageService.getItem('rtb_page_visited');
   const esOndemandSettlementEnabled = user.isFeatureEnabled('es_on_demand');
   const [settlementExists, setSettlementExists] = useState(true);
@@ -23,20 +16,8 @@ function MerchantNavLinks(props) {
   }, []);
 
   const checkIfFirstEverSettlement = () => {
-    const settlementExists = JSON.parse(LocalStorageService.getItem('settlementExists'));
-    if (settlementExists) setSettlementExists(settlementExists);
-    else getSettlementDetails();
-  };
-
-  const getSettlementDetails = () => {
-    fetchInstantSettlements({ count: 1 })
-      .then(({ data: { items = [] } = {} } = {}) => {
-        setSettlementExists(items.length > 0);
-        LocalStorageService.setItem('settlementExists', items.length > 0);
-      })
-      .catch(() => {
-        setSettlementExists(true);
-      });
+    const settlementStatus = getSettlementStatus(user.current);
+    setSettlementExists(settlementStatus);
   };
 
   return (
@@ -235,5 +216,3 @@ function MerchantNavLinks(props) {
     </>
   );
 }
-
-export default connect((state) => null, { fetchInstantSettlements })(MerchantNavLinks);

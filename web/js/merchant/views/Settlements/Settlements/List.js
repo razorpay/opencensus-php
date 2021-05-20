@@ -142,8 +142,8 @@ export default class SettlementsListContainer extends ListContainer {
     }
   }
 
-  handleMouseActivityOverSettleBtn = (type) => {
-    this.setState({ hoverOnSettleButton: type === 'mouseEnter' });
+  handleMouseActivityOverSettleBtn = (type, hoverDisabled) => {
+    if (!hoverDisabled) this.setState({ hoverOnSettleButton: type === 'mouseEnter' });
   };
 
   componentDidMount() {
@@ -495,8 +495,18 @@ export default class SettlementsListContainer extends ListContainer {
                         {!settlementExists && esOndemandSettlementEnabled ? (
                           <div
                             className=".settle-btn .settle-now--list"
-                            onMouseEnter={() => this.handleMouseActivityOverSettleBtn('mouseEnter')}
-                            onMouseLeave={() => this.handleMouseActivityOverSettleBtn('mouseLeave')}
+                            onMouseEnter={() =>
+                              this.handleMouseActivityOverSettleBtn(
+                                'mouseEnter',
+                                checkIfSettlementDisabled,
+                              )
+                            }
+                            onMouseLeave={() =>
+                              this.handleMouseActivityOverSettleBtn(
+                                'mouseLeave',
+                                checkIfSettlementDisabled,
+                              )
+                            }
                           >
                             <Suspense
                               fallback={this.defaultSettlementBtn(checkIfSettlementDisabled)}

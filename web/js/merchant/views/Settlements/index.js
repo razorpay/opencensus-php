@@ -9,15 +9,9 @@ import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBa
 import CashAdvanceOrNitroBanner from 'merchant/components/CashAdvanceOrNitroBanner';
 import EarlySettlementsAnnouncement from 'merchant/components/Announcements/EarlySettlements';
 import { handleNegativeBalanceLimit } from 'common/utils/rzp-utils';
-import { fetchInstantSettlements } from 'merchant/reducers/collection';
-import LocalStorageService from 'common/utils/localStorage';
+import { getSettlementStatus } from 'merchant/views/Capital/utils';
 
-const Settlements = ({
-  user,
-  merchantBalanceConfigs,
-  current_balance,
-  fetchInstantSettlements,
-}) => {
+const Settlements = ({ user, merchantBalanceConfigs, current_balance }) => {
   const [settlementExists, setSettlementExists] = useState(true);
   const esOndemandSettlementEnabled = user.isFeatureEnabled('es_on_demand');
 
@@ -31,25 +25,8 @@ const Settlements = ({
   }, []);
 
   const checkIfFirstEverSettlement = (callbackSettlementStatus) => {
-    if (callbackSettlementStatus === 'settlementDone') {
-      setSettlementExists(true);
-      LocalStorageService.setItem('settlementExists', true);
-    } else {
-      const settlementExists = JSON.parse(LocalStorageService.getItem('settlementExists'));
-      if (settlementExists) setSettlementExists(settlementExists);
-      else getSettlementDetails();
-    }
-  };
-
-  const getSettlementDetails = () => {
-    fetchInstantSettlements({ count: 1 })
-      .then(({ data: { items = [] } = {} } = {}) => {
-        setSettlementExists(items.length > 0);
-        LocalStorageService.setItem('settlementExists', items.length > 0);
-      })
-      .catch(() => {
-        setSettlementExists(true);
-      });
+    const settlementStatus = getSettlementStatus(user.current, callbackSettlementStatus);
+    setSettlementExists(settlementStatus);
   };
 
   return (
@@ -131,5 +108,5 @@ export default connect(
     current_balance: state.home.current_balance,
     merchantBalanceConfigs: state.home.merchantBalanceConfigs,
   }),
-  { fetchInstantSettlements },
+  {},
 )(Settlements);
