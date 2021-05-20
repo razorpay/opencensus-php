@@ -35,13 +35,15 @@ const BusinessCategory: React.FC<BusinessCategoryPropsT> = ({
     });
   }, [businessCategoriesData]);
   useEffect(() => {
-    analyticsTrack({
-      objectName: 'SignUp',
-      actionName: 'Business category search',
-      screen: 'home page',
-      eventAction: 'initiated',
-      user,
-    });
+    if (inputValue.length === 1) {
+      analyticsTrack({
+        objectName: 'SignUp',
+        actionName: 'Business category search',
+        screen: 'home page',
+        eventAction: 'initiated',
+        user,
+      });
+    }
   }, [inputValue]);
   return (
     <Select
