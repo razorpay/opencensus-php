@@ -34,13 +34,14 @@ const FAQs: React.FC = () => {
           websiteDetailsRef.current.getBoundingClientRect().y -
           bottomSheetRef.current.getBoundingClientRect().y;
         // height of Bottom Sheet Header
-        const headerHeight = 36;
+        const headerEl = document.getElementById('bottomSheetHeader');
+        const headerHeight = headerEl ? Math.ceil(headerEl.getBoundingClientRect().height) : 0;
         // height of Accordian Title
-        const titleHeight = 38;
+        const titleHeight = 36;
 
         bottomSheetRef.current.scrollTop = yDistance - (titleHeight + headerHeight);
       }
-    });
+    }, 300);
     setExpanded([sectionToDisplay]);
   }, [sectionToDisplay]);
 
