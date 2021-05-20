@@ -49,10 +49,11 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
         //
         // The fee is provided as a separate column.
-        // But we use the column which is the net deduction.
-        // Hence, we don't need to add the service tax to this.
         //
-        return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_FEE]);
+        $fee = Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::COLUMN_FEE]);
+        $tax = $this->getGatewayServiceTax($row);
+
+        return $fee + $tax;
     }
 
     protected function getReconPaymentAmount(array $row)
