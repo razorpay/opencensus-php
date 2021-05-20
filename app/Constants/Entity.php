@@ -127,6 +127,7 @@ class Entity
     const NODAL_BENEFICIARY          = 'nodal_beneficiary';
     const PAYMENT_PAGE_ITEM          = 'payment_page_item';
     const PAYMENT_ANALYTICS          = 'payment_analytics';
+    const NEW_PAYMENT_ANALYTICS      = 'new_payment_analytics';
     const D2C_BUREAU_DETAIL          = 'd2c_bureau_detail';
     const D2C_BUREAU_REPORT          = 'd2c_bureau_report';
     const SETTLEMENT_BUCKET          = 'settlement_bucket';
@@ -656,6 +657,7 @@ class Entity
         self::MERCHANT_EMAIL            => \RZP\Models\Merchant\Email::class,
         self::REFERRALS                 => \RZP\Models\Merchant\Referral::class,
         self::PAYMENT_ANALYTICS         => \RZP\Models\Payment\Analytics::class,
+        self::NEW_PAYMENT_ANALYTICS     => \RZP\Models\Payment\NewAnalytics::class,
         self::CREDIT_TRANSACTION        => \RZP\Models\Merchant\Credits\Transaction::class,
         self::CREDIT_BALANCE            => \RZP\Models\Merchant\Credits\Balance::class,
         self::MERCHANT_PROMOTION        => \RZP\Models\Merchant\Promotion::class,

@@ -4,6 +4,8 @@ namespace RZP\Models\Payment\Analytics;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Payment\NewAnalytics\Transformer;
+use RZP\Models\Payment\NewAnalytics;
 
 class Repository extends Base\Repository
 {
@@ -19,6 +21,11 @@ class Repository extends Base\Repository
     protected $signedIds = [
         Entity::PAYMENT_ID,
     ];
+
+    protected function addQueryOrder($query)
+    {
+        $query->orderBy(Entity::PAYMENT_ID, 'desc');
+    }
 
 
     // called for callback
@@ -52,5 +59,37 @@ class Repository extends Base\Repository
                     ->where(Entity::CREATED_AT, '>=', $timestamp)
                     ->latest()
                     ->get();
+    }
+
+    public function saveOrFail($entity, array $options = array())
+    {
+
+        $entity = $this->transaction(function () use (& $entity, $options)
+        {
+            $entityExist = $entity->exists;
+
+            parent::saveOrFail($entity, $options);
+
+            $newEntity = Transformer::getNewAnalyticsEntity($entity);
+
+            if ($entityExist == false)
+            {
+                $this->repo->saveOrFail($newEntity);
+            }
+            else
+            {
+                $fetchedEntity = (new NewAnalytics\Repository())->findByPaymentId($entity->getPaymentId());
+
+                if ($fetchedEntity !== null)
+                {
+                    $newEntity = Transformer::getUpdatedNewAnalyticsEntity($fetchedEntity, $entity);
+
+                    $this->repo->saveOrFail($newEntity);
+                }
+            }
+            return $entity;
+        });
+
+        return $entity;
     }
 }

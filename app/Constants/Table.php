@@ -246,6 +246,7 @@ class Table
 
     // Payment Analytics
     const PAYMENT_ANALYTICS     = 'payment_analytics';
+    const NEW_PAYMENT_ANALYTICS = 'new_payment_analytics';
 
     // Tax and Tax Groups
 

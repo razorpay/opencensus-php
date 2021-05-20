@@ -1,9 +1,10 @@
 <?php
 
-namespace RZP\Models\Payment\Analytics;
+namespace RZP\Models\Payment\NewAnalytics;
 
 use RZP\Models\Base;
-use RZP\Models\Payment;
+use RZP\Models\Payment\Analytics\Metadata;
+
 
 class Entity extends Base\PublicEntity
 {
@@ -31,13 +32,13 @@ class Entity extends Base\PublicEntity
     const UPDATED_AT                    = 'updated_at';
     const VIRTUAL_DEVICE_ID             = 'virtual_device_id';
 
-    protected $entity = 'payment_analytics';
+    protected $entity = 'new_payment_analytics';
 
     protected $primaryKey = 'payment_id';
 
-    const SEARCH_WINDOW = 60 * 60 * 24;
-
     protected $fillable = [
+        self::PAYMENT_ID,
+        self::MERCHANT_ID,
         self::CHECKOUT_ID,
         self::ATTEMPTS,
         self::LIBRARY,
@@ -54,6 +55,8 @@ class Entity extends Base\PublicEntity
         self::INTEGRATION_VERSION,
         self::REFERER,
         self::USER_AGENT,
+        self::CREATED_AT,
+        self::UPDATED_AT
     ];
 
     protected $public = [
@@ -111,10 +114,10 @@ class Entity extends Base\PublicEntity
 
     // ----------------------- Relations ---------------------------------------
 
-    public function payment()
-    {
-        return $this->belongsTo('RZP\Models\Payment\Entity');
-    }
+//    public function payment()
+//    {
+//        return $this->belongsTo('RZP\Models\Payment\Entity');
+//    }
 
     // ----------------------- Getters -----------------------------------------
 
@@ -358,15 +361,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::RISK_SCORE);
     }
 
-    public function getRiskEngine()
-    {
-        return $this->getAttribute(self::RISK_ENGINE);
-    }
-
-    public function getVirtualDeviceId()
-    {
-        return $this->getAttribute(self::VIRTUAL_DEVICE_ID);
-    }
     protected function getRiskEngineAttribute()
     {
         $value = $this->attributes[self::RISK_ENGINE];

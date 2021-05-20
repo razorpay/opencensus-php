@@ -48,12 +48,20 @@ class AnalyticsTest extends TestCase
         $payment['_']['checkout_id'] = $checkoutId;
 
         $payment = $this->doAuthPayment($payment);
+
         $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
 
         $this->assertEquals($checkoutId, $paymentAnalytic[AnalyticsEntity::CHECKOUT_ID]);
 
         $this->assertEquals(2, $paymentAnalytic[AnalyticsEntity::ATTEMPTS]);
+
+        $newPaymentAnalytic = $this->getLastEntity(E::NEW_PAYMENT_ANALYTICS, true);
+
+        $this->assertEquals($checkoutId, $newPaymentAnalytic[AnalyticsEntity::CHECKOUT_ID]);
+
+        $this->assertEquals(2, $newPaymentAnalytic[AnalyticsEntity::ATTEMPTS]);
     }
+
 
     public function testIntegrationForWoocommerce()
     {
@@ -214,6 +222,12 @@ class AnalyticsTest extends TestCase
         $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
 
         $this->assertTestResponse($paymentAnalytic);
+
+        $newPaymentAnalytic = $this->getLastEntity(E::NEW_PAYMENT_ANALYTICS, true);
+
+        $this->assertEquals("Razorpay UA", $newPaymentAnalytic["user_agent"]);
+
+        $this->assertEquals("https://pay.com/demo", $newPaymentAnalytic["referer"]);
     }
 
     // For S2S payments using rzp redirect flow analytics will get updated on redirect call, so marking this test to be skipped now
