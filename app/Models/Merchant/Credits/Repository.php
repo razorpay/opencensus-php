@@ -76,7 +76,9 @@ class Repository extends Base\Repository
      */
     public function getCreditsSortedByExpiry(int $timestamp, string $merchantId, string $type)
     {
-        return $this->newQuery()
+        assertTrue($this->isTransactionActive());
+
+        return Entity::lockForUpdate()->newQuery()
                     ->merchantId($merchantId)
                     ->where(Entity::TYPE, '=', $type)
                     ->whereRaw(Entity::VALUE . '>' . Entity::USED)
@@ -208,10 +210,9 @@ class Repository extends Base\Repository
      */
     public function getTypeAggregatedMerchantCredits(string $merchantId): array
     {
-        $query = $this->newQuery()
-                      ->selectRaw(
-                          Entity::TYPE . ', ' .
-                          'SUM(' . Entity::VALUE . ' - ' . Entity::USED . ') AS sum')
+        assertTrue($this->isTransactionActive());
+
+        $credits = Entity::lockForUpdate()->newQuery()
                       ->where(Entity::VALUE, '>', 0)
                       ->merchantId($merchantId)
                       ->where(function ($query)
@@ -219,14 +220,17 @@ class Repository extends Base\Repository
                               $query->where(Entity::EXPIRED_AT, '>', time())
                                     ->orWhereNull(Entity::EXPIRED_AT);
                           })
-                      ->groupBy(Entity::TYPE)
                       ->get();
 
         $data = [];
 
-        foreach ($query as $record)
+        foreach ($credits as $credit)
         {
-            $data[$record[Entity::TYPE]] = $record['sum'];
+            if (isset($data[$credit->getType()]) === false)
+            {
+                $data[$credit->getType()] = 0;
+            }
+            $data[$credit->getType()] += $credit->getUnusedCredits();
         }
 
         return $data;
