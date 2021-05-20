@@ -16,6 +16,7 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Models\UpiMandate\Frequency as UPIMandateFrequency;
 
 class SubscriptionPaymentTest extends TestCase
 {
@@ -246,6 +247,10 @@ class SubscriptionPaymentTest extends TestCase
 
         $this->assertEquals($this->upiPayment['vpa'], $token->vpa->getAddress());
         $this->assertEquals($this->upiPayment['vpa'], $payment->getVpa());
+
+        $upiMandate = $this->getDbLastEntity(Entity::UPI_MANDATE);
+
+        $this->assertEquals(UPIMandateFrequency::MONTHLY, $upiMandate->getFrequency());
     }
 
     public function testAutoPaymentUpi()
