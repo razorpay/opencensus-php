@@ -248,10 +248,7 @@ export default class Content extends Component {
 
   isPaymentMethodEnabled = (user) => {
     return (
-      user.activation_status === 'activated' &&
-      user.isOrgRZP === true &&
-      user.isInstrumentRequestAllowed() &&
-      this.props.mode !== 'test'
+      user.isOrgRZP === true && user.isInstrumentRequestAllowed() && this.props.mode !== 'test'
     );
   };
 

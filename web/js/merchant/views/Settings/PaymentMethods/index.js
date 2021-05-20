@@ -57,6 +57,16 @@ const PaymentMethod = ({
     </div>
   ) : (
     <>
+      {!isActivatedUser && (
+        <Banner className="no-margin">
+          <span>
+            <i className="i i-info-outline"></i> KYC verification is mandatory to request for new
+            payment methods. Please complete your
+            <a> activation form</a>, if not done already.
+          </span>
+        </Banner>
+      )}
+
       <div class="content-wrapper" id="settings-payment-methods">
         <div class="panel-heading">
           <span class="title">Manage Payment Methods </span>
