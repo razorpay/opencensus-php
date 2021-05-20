@@ -2,10 +2,14 @@
 
 namespace RZP\Jobs;
 
+use App;
+use RZP\Diag\EventCode;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Constants;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\BvsValidation;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Detail\Status;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
@@ -24,13 +28,17 @@ class UpdateMerchantContext extends Job
 
     protected $merchantId;
 
+    protected $validationId;
+
     protected $updateContextRequirements;
 
-    public function __construct(string $mode, string $merchantId)
+    public function __construct(string $mode, string $merchantId, string $validationId = null)
     {
         parent::__construct($mode);
 
         $this->merchantId = $merchantId;
+
+        $this->validationId = $validationId;
 
         $this->updateContextRequirements = new UpdateContextRequirements();
     }
@@ -124,7 +132,50 @@ class UpdateMerchantContext extends Job
                 ];
 
                 $detailCore->updateActivationStatus($merchant, $activationStatusData, $merchant);
+
+                if($newActivationStatus === Status::NEEDS_CLARIFICATION)
+                {
+                    (new Merchant\Core)->appendTag($merchant, "Auto NC");
+
+                    $this->sendAutoNeedsClarificationEvent($merchant);
+
+                    $this->trace->debug(TraceCode::AUTO_NC_TAG_ADDED, [
+                        'merchant_id'   => $merchant->getId(),
+                        'tags'          => $merchant->tagNames()
+                    ]);
+                }
             }
+        }
+    }
+
+    protected function sendAutoNeedsClarificationEvent($merchant)
+    {
+        if(empty($this->validationId) === true)
+        {
+            return;
+        }
+
+        try
+        {
+            $validation = (new BvsValidation\Core)->getValidation($this->validationId);
+
+            $eventAttributes = [
+                BvsValidation\Entity::ARTEFACT_TYPE         => $validation->getArtefactType(),
+                BvsValidation\Entity::VALIDATION_STATUS     => $validation->getValidationStatus(),
+                BvsValidation\Entity::ERROR_CODE            => $validation->getErrorCode(),
+                BvsValidation\Entity::ERROR_DESCRIPTION     => $validation->getErrorDescription(),
+            ];
+
+            $app = App::getFacadeRoot();
+
+            $app['diag']->trackOnboardingEvent(
+                EventCode::MERCHANT_AUTO_NC, $merchant, null, $eventAttributes);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, null,
+                TraceCode::AUTO_NC_EVENT_FAILED
+            );
         }
     }
 

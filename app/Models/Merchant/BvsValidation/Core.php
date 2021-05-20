@@ -81,6 +81,11 @@ class Core extends Base\Core
         return true;
     }
 
+    public function getValidation(string $validationId)
+    {
+        return $this->repo->bvs_validation->findOrFailPublic($validationId);
+    }
+
     /**
      * @param array $input
      *

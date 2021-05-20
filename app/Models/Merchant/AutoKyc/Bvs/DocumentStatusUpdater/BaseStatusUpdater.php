@@ -119,7 +119,7 @@ abstract class BaseStatusUpdater implements StatusUpdater
 
         if ($isSystemBasedNeedsClarificationEnabled === true)
         {
-            UpdateMerchantContext::dispatch(Mode::LIVE, $merchantId);
+            UpdateMerchantContext::dispatch(Mode::LIVE, $merchantId, $this->consumedValidationId);
 
             return;
         }
