@@ -2873,14 +2873,14 @@ class DatabaseSeeder extends Seeder
     {
         DB::table(Table::TERMINAL)->insert(
             [
-                'id' => 'h1t3hfU4c2A48G',
+                'id' => 'h1t3hfU4c2A47H',
                 'merchant_id' => Account::TEST_ACCOUNT,
                 'gateway' => Gateway::CCAVENUE,
                 'card' => '1',
                 'netbanking' => '0',
-                'gateway_merchant_id' => '323395bf6400747e2f43bbd9a93323',
-                'gateway_secure_secret' => Crypt::encrypt('2d2fe54f576ff428d93019f48695870abebb2327'),
-                'gateway_access_code' => 'AVDE03HL60BW05EDWB',
+                'gateway_merchant_id' => 'test_ccavenue_mid',
+                'gateway_secure_secret' => Crypt::encrypt('test_secure_secret'),
+                'gateway_access_code' => 'test_gateway_access_code',
                 'created_at'            => time(),
                 'updated_at'            => time(),
             ]
