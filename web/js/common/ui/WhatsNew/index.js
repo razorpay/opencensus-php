@@ -404,6 +404,11 @@ export default class WhatsNew extends Component {
       'trusted-badge-mar2021',
       'trusted-badge-enabled',
       'whats-new-april21-m2mrewards-gtm',
+      'whats-new-may21-reten1-dashboard',
+      'whats-new-may21-remar2a-dashboard',
+      'whats-new-may21-remar1-dashboard',
+      'whats-new-may21-reten2-dashboard',
+      'whats-new-may21-remar2-dashboard'
     ];
 
     let cardsList = window.notifications.map((card, idx) => (

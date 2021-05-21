@@ -1547,7 +1547,13 @@ class Service extends Base\Service
             'rx_icici_ca_onboarding',
             'show_csat_survey',
             'rx_mobile_app_announcement',
-            'rx_tally_payouts_enabled'
+            'rx_tally_payouts_enabled',
+            'enable_may_dashboard_notification_retention_1',
+            'enable_may_dashboard_notification_retention_2',
+            'enable_may_dashboard_notification_retention_3',
+            'enable_may_dashboard_notification_retention_4',
+            'enable_my_dashboard_notification_remarketing',
+            'enable_my_dashboard_notification_remarketing_1'
         ];
 
         $experimentsResults = $merchantService->getBulkTreatment($features);
