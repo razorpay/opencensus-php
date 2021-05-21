@@ -119,6 +119,43 @@ class MerchantCreateTest extends TestCase
         $this->checkDisableNativeCurrencyDefaultFeature(Org::RZP_ORG);
     }
 
+    public function testCreateMerchantAndRelationsWithNewLedgerService()
+    {
+        // mock razorx, enabled the razorx experiment for ledger onboarding
+        $this->mockRazorxTreatment();
+
+        // During merchant onboarding, there has been push to SNS topic for onbaording in Ledger service.
+        $this->mockLedgerSnsPush();
+
+        $this->ba->adminAuth();
+
+        $this->merchantId = '1X4hRFHFx4UiXt';
+
+        $content = $this->createMerchant();
+
+        $this->assertEquals($content['convert_currency'], false);
+
+        $this->assertSame($content['activated'], false);
+
+        $this->checkSettlementSchedule($content);
+
+        $this->checkTerminals();
+
+        $this->checkBalances();
+
+        $this->checkBalanceConfigs();
+
+        $this->checkNetbankingBanks();
+
+        $this->checkMethods();
+
+        $this->checkMerchantDetails();
+
+        $this->checkOTPAuthDefaultFeature();
+
+        $this->checkDisableNativeCurrencyDefaultFeature(Org::RZP_ORG);
+    }
+
     protected function createMerchant()
     {
         $testData = $this->testData['testCreateMerchant'];
@@ -1588,4 +1625,16 @@ class MerchantCreateTest extends TestCase
         $this->assertEquals('late_auth_'.$this->merchantId, $testConfig['name']);
     }
 
+    protected function mockLedgerSnsPush()
+    {
+        $sns = \Mockery::mock('RZP\Services\Aws\Sns');
+
+        $this->app->instance('sns', $sns);
+
+        $sns->shouldReceive('publish')
+            ->zeroOrMoreTimes()
+            ->with(\Mockery::type('string'), \Mockery::type('string'));
+
+        $this->app->instance('sns', $sns);
+    }
 }

@@ -17,7 +17,8 @@ First install Brew on your MAC
 - Install PHP 7.2.+ `brew install php@7.2`
 - Finally, install composer: `brew install composer`
 
-Note: The above command installs the latest version of composer, which is incompatible with our codebase right now. Either download composer 1.x.x directly, or use ``composer self-update 1.10.17`` to downgrade to a supported version.
+Note: The above command installs the latest version of composer, which is incompatible with our codebase right now.
+Either download composer 1.x.x directly, or use ``composer self-update 1.10.17`` to downgrade to a supported version.
 
 ###### Verify installation
 - Run `$ php -v`, and check if php 7.2+ is picked up. If a lower version is picked up, adjust the path.

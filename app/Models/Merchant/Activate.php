@@ -626,6 +626,15 @@ class Activate extends Base\Core
             // Create Banking Account
             $bankingAccount = (new BankingAccount\Core)->createOrFetchSharedBankingAccountFromVA($virtualAccount);
 
+            // Call Ledger Entity method which will take care of creating the account for this balance in Ledger.
+            // Flow will come here only if balance is created successfully in API DB.
+            $ledgerExperimentActive = $this->onBoardMerchantOnLedger($merchant, $mode);
+
+            if ($ledgerExperimentActive === true)
+            {
+                (new Merchant\Balance\Ledger\Core)->createXLedgerAccount($merchant, $bankingAccount, $mode);
+            }
+
             (new Counter\Core)->fetchOrCreate($balance);
 
             $this->trace->info(
@@ -764,5 +773,16 @@ class Activate extends Base\Core
         ];
 
         (new Feature\Service)->addFeatures($featureParams);
+    }
+
+    // Returns true if experiment and env variable to onboard merchant on ledger is running.
+    protected function onBoardMerchantOnLedger(Entity $merchant, string $mode): bool
+    {
+        $variant = $this->app->razorx->getTreatment($merchant->getId(),
+            Merchant\RazorxTreatment::LEDGER_ONBOARDING,
+            $mode
+        );
+
+        return (strtolower($variant) === 'on');
     }
 }
