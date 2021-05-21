@@ -2843,6 +2843,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         {
             $issuer = $this->getWallet();
         }
+        else if ($this->isCardlessEmi() === true)
+        {
+            $issuer = $this->getWallet();
+        }
 
         return $issuer;
     }
