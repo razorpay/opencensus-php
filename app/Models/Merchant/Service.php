@@ -5440,43 +5440,17 @@ class Service extends Base\Service
      * @param PaginationEntity $paginationEntity
      * @return array
      */
-    public function fixDataForMerchant(PaginationEntity $paginationEntity): array
+    public function fixData(PaginationEntity $paginationEntity): array
     {
-        $merchantIds = $paginationEntity->getFinalMerchantList();
+        (new Payout\Core)->trimPayoutPurpose($paginationEntity);
 
-        $experimentEnabledMerchants = [];
+        (new FundAccount\Core)->trimBeneficiaryName($paginationEntity);
 
-        $mode = $this->mode;
+        (new FundAccount\Core)->trimAccountNumber($paginationEntity);
 
-        foreach ($merchantIds as $merchantId)
-        {
-            $treatment = $this->app
-                ->razorx
-                ->getTreatment(
-                    $merchantId,
-                    RazorxTreatment::TRIM_MIGRATION_IN_PROGRESS,
-                    $mode
-                );
+        (new Contact\Core)->trimContactType($paginationEntity);
 
-            if ($treatment === 'on')
-            {
-                array_push($experimentEnabledMerchants, $merchantId);
-            }
-        }
-
-        $merchantIds = $experimentEnabledMerchants;
-
-        $merchants = $this->repo->merchant->findMany($merchantIds);
-
-        (new Payout\Core)->trimPayoutPurpose($merchants, $merchantIds, $paginationEntity);
-
-        (new BankAccount\Core)->trimBeneficiaryName($merchantIds, $paginationEntity);
-
-        (new BankAccount\Core)->trimAccountNumber($merchantIds, $paginationEntity);
-
-        (new Contact\Core)->trimContactType($merchants, $merchantIds, $paginationEntity);
-
-        (new Contact\Core)->trimContactName($merchantIds, $paginationEntity);
+        (new Contact\Core)->trimContactName($paginationEntity);
 
         return [
             'status'        => 'updated'

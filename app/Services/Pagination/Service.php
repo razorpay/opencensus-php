@@ -32,7 +32,7 @@ class Service
             return $response;
         }
 
-        $result = (new MerchantService())->fixDataForMerchant($this->entity);
+        $result = (new MerchantService())->fixData($this->entity);
 
         $this->moveAheadIfApplicable();
 
@@ -155,5 +155,16 @@ class Service
             1,
             'x-payouts-core-alerts'
         );
+    }
+
+    public function populateRedisKey($input): array
+    {
+        $this->entity->setAttribute(Entity::RUN_FOR, 'trim_space');
+
+        $configKey = $this->entity->getRedisKey();
+
+        $setConfigInput[$configKey] = $input;
+
+        return (new AdminService)->setConfigKeys($setConfigInput);
     }
 }

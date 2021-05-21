@@ -1336,19 +1336,19 @@ class Repository extends Base\Repository
                      ->get();
     }
 
-    public function fetchPayoutsToTrimForMerchants(array $merchantIds,
-                                                   $from,
-                                                   $to,
-                                                   $limit = 1000)
+    public function fetchPayoutsPurposeToTrim($merchantIds,
+                                              $from,
+                                              $to,
+                                              $limit = 1000)
     {
         return $this->newQuery()
+                    ->whereIn(Entity::MERCHANT_ID, $merchantIds)
                     ->where(Entity::CREATED_AT, '>=', $from)
                     ->where(Entity::CREATED_AT, '<=', $to)
-                    ->whereIn(Entity::MERCHANT_ID, $merchantIds)
                     ->where(
                         DB::raw('CHAR_LENGTH(' . Entity::PURPOSE . ')'),
                         '>',
-                        DB::raw('CHAR_LENGTH(trim(replace(' . Entity::PURPOSE . ',"\n","")))')
+                        DB::raw('CHAR_LENGTH(trim(replace(' . Entity::PURPOSE . ',"\n"," ")))')
                     )
                     ->limit($limit)
                     ->get();

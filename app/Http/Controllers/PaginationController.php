@@ -28,4 +28,13 @@ class PaginationController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function populateRedisKeyForTrimSpace()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->populateRedisKey($input);
+
+        return ApiResponse::json($response);
+    }
 }

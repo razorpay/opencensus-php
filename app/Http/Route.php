@@ -2372,6 +2372,7 @@ class Route
 
         // pagination operations routes
         'fix_merchant_data_cron'                  => ['post',    'pagination/trim_space/start',                             'PaginationController@trimSpacesForMerchant'                   ],
+        'populate_merchant_trim_data_cron'        => ['put',     'pagination/trim_space/populate',                          'PaginationController@populateRedisKeyForTrimSpace'            ],
         // GupShup Incoming Messages Webhook
         'gupshup_incoming_messages_callback'      => ['post',    'gupshup/incoming_messages/callback',                      'GupShupController@handleIncomingMessagesCallback'             ],
         'nps_survey_process_scheduled'            => ['post',    'survey/scheduled/process',                                'NPSSurveyController@initiateSurvey'                           ],
@@ -3860,6 +3861,7 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'populate_merchant_trim_data_cron',
         'advertiser_logo',
         'partner_activation_migrate',
         'mir_instrument_set',
@@ -4661,6 +4663,7 @@ class Route
     ];
 
     public static $routePermission = [
+        'populate_merchant_trim_data_cron'         => Permission::MANAGE_BULK_FEATURE_MAPPING,
         'bvs_service_dashboard'                    => Permission::EDIT_MERCHANT,
         'bvs_Service_admin'                        => Permission::EDIT_MERCHANT,
         'transfer_debug'                           => Permission::DEBUG_TRANSFERS_ROUTES,
@@ -6939,6 +6942,7 @@ class Route
         ],
 
         'admin_dashboard' => [
+            'populate_merchant_trim_data_cron',
             'add_verify_disabled_gateway',
             'order_create_admin',
             'update_payout_status_batch',

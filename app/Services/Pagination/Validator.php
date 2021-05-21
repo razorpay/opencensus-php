@@ -17,7 +17,7 @@ class Validator extends Base\Validator
         Entity::END_TIME                        => 'required|int',
         Entity::DURATION                        => 'required|int',
         Entity::LIMIT                           => 'required|int|min:100|max:10000',
-        Entity::WHITELIST_MERCHANT_IDS          => 'required|array|min:1',
+        Entity::WHITELIST_MERCHANT_IDS          => 'sometimes|filled|array',
         Entity::WHITELIST_MERCHANT_IDS . '.*'   => 'required|alpha_num|size:14',
         Entity::BLACKLIST_MERCHANT_IDS          => 'sometimes|filled|array',
         Entity::BLACKLIST_MERCHANT_IDS . '.*'   => 'required|alpha_num|size:14',

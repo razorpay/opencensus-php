@@ -2806,46 +2806,20 @@ class Core extends Base\Core
     /**
      * Trim payout purpose with leading and trailing spaces
      *
-     * @param $merchants
-     * @param $merchantIds
      * @param PaginationEntity $paginationEntity
      */
-    public function trimPayoutPurpose($merchants, $merchantIds, PaginationEntity $paginationEntity)
+    public function trimPayoutPurpose(PaginationEntity $paginationEntity)
     {
         $this->trace->info(
             TraceCode::START_PAYOUT_PURPOSE_TRIMMING,
             [
-                'merchant_ids'  => $merchantIds,
                 'created_from'  => $paginationEntity->getCurrentStartTime(),
                 'created_till'  => $paginationEntity->getCurrentEndTime()
             ]
         );
 
-        $purposeObj = new Purpose;
-
-        foreach ($merchants as $merchant)
-        {
-            $allCustomKeys = $purposeObj->getCustom($merchant);
-
-            foreach ($allCustomKeys as  $purpose => $type)
-            {
-                if (strlen($purpose) !== strlen(trim($purpose)))
-                {
-                    $purposeObj->trimPurpose($merchant, $purpose, $type);
-
-                    $this->trace->info(
-                        TraceCode::PAYOUT_PURPOSE_TRIMMED,
-                        [
-                            'purpose'     => $purpose,
-                            'merchant_id' => $merchant->getId()
-                        ]
-                    );
-                }
-            }
-        }
-
-        $payouts = $this->repo->payout->fetchPayoutsToTrimForMerchants(
-            $merchantIds,
+        $payouts = $this->repo->payout->fetchPayoutsPurposeToTrim(
+            $paginationEntity->getFinalMerchantList(),
             $paginationEntity->getCurrentStartTime(),
             $paginationEntity->getCurrentEndTime(),
             $paginationEntity->getLimit()
@@ -2853,15 +2827,46 @@ class Core extends Base\Core
 
         $payoutIds = $payouts->getIds();
 
+        $typeFixedForMerchantIds = [];
+
         while (count($payouts) > 0)
         {
             foreach ($payouts as $payout)
             {
                 try
                 {
+                    $purposeObj = new Purpose;
+
+                    $merchant = $payout->merchant;
+
+                    $merchantId = $merchant->getId();
+
+                    if (in_array($merchantId, $typeFixedForMerchantIds, true) === false)
+                    {
+                        $allCustomKeys = $purposeObj->getCustom($merchant);
+
+                        foreach ($allCustomKeys as  $purpose => $type)
+                        {
+                            if (strlen($purpose) !== strlen(trim($purpose)))
+                            {
+                                $purposeObj->trimPurpose($merchant, $purpose, $type);
+
+                                $this->trace->info(
+                                    TraceCode::PAYOUT_PURPOSE_TRIMMED,
+                                    [
+                                        'purpose'     => $purpose,
+                                        'merchant_id' => $merchant->getId()
+                                    ]
+                                );
+                            }
+                        }
+
+                        array_push($typeFixedForMerchantIds, $merchantId);
+                    }
+
                     $purpose = $payout->getPurpose();
 
-                    $trimmedPurpose = trim(str_replace('\n', '', $purpose));
+                    $trimmedPurpose = trim(str_replace('\n', ' ', $purpose));
 
                     $payout->setPurpose($trimmedPurpose);
 
@@ -2889,8 +2894,8 @@ class Core extends Base\Core
                 }
             }
 
-            $newPayouts = $this->repo->payout->fetchPayoutsToTrimForMerchants(
-                $merchantIds,
+            $newPayouts = $this->repo->payout->fetchPayoutsPurposeToTrim(
+                $paginationEntity->getFinalMerchantList(),
                 $paginationEntity->getCurrentStartTime(),
                 $paginationEntity->getCurrentEndTime(),
                 $paginationEntity->getLimit()
@@ -2910,7 +2915,6 @@ class Core extends Base\Core
             else
             {
                 $data = [
-                    'merchant_ids'  => $merchantIds,
                     'created_from'  => $paginationEntity->getCurrentStartTime(),
                     'created_till'  => $paginationEntity->getCurrentEndTime()
                 ];
@@ -2927,7 +2931,6 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::PAYOUT_PURPOSE_TRIMMED_FOR_MERCHANTS,
             [
-                'merchant_ids'  => $merchantIds,
                 'created_from'  => $paginationEntity->getCurrentStartTime(),
                 'created_till'  => $paginationEntity->getCurrentEndTime()
             ]

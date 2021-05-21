@@ -2,6 +2,8 @@
 
 namespace RZP\Models\FundAccount;
 
+use DB;
+
 use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\Contact;
@@ -201,6 +203,96 @@ class Repository extends Base\Repository
                     ->merchantId($merchantId)
                     ->orderBy(Entity::CREATED_AT, 'desc')
                     ->first();
+    }
+
+    /**
+     * Fetch bank accounts with space or line break in beneficiary_name
+     *
+     * @param $from
+     * @param $to
+     * @param int $limit
+     * @return mixed
+     */
+    public function fetchBankAccountsHavingSpaceInBeneficiaryName($merchantIds,
+                                                                  $from,
+                                                                  $to,
+                                                                  $limit = 1000)
+    {
+        $faIdColumn = $this->dbColumn(Entity::ID);
+
+        $faAccountIdColumn = $this->dbColumn(Entity::ACCOUNT_ID);
+
+        $faAccountTypeColumn = $this->dbColumn(Entity::ACCOUNT_TYPE);
+
+        $bankAccountTable = $this->repo->bank_account->getTableName();
+
+        $bankAccountIdColumn = $this->repo->bank_account->dbColumn(BankAccount\Entity::ID);
+
+        $bankAccountBeneficiaryName = $this->repo->bank_account->dbColumn(BankAccount\Entity::BENEFICIARY_NAME);
+
+        $bankAccountCreatedAtColumn = $this->repo->bank_account->dbColumn(BankAccount\Entity::CREATED_AT);
+
+        $bankAccountMerchantIdColumn = $this->repo->bank_account->dbColumn(BankAccount\Entity::MERCHANT_ID);
+
+        return $this->newQuery()
+                    ->select($faIdColumn, $faAccountIdColumn)
+                    ->join($bankAccountTable, $faAccountIdColumn, '=', $bankAccountIdColumn)
+                    ->whereIn($bankAccountMerchantIdColumn, $merchantIds)
+                    ->where($faAccountTypeColumn, '=' ,Type::BANK_ACCOUNT)
+                    ->where($bankAccountCreatedAtColumn, '>=', $from)
+                    ->where($bankAccountCreatedAtColumn, '<=', $to)
+                    ->where(
+                        DB::raw('CHAR_LENGTH(' . $bankAccountBeneficiaryName . ')'),
+                        '>',
+                        DB::raw('CHAR_LENGTH(trim(replace(' . $bankAccountBeneficiaryName . ',"\n"," ")))')
+                    )
+                    ->limit($limit)
+                    ->get();
+    }
+
+    /**
+     * Fetch bank accounts with space or line break in account_ number
+     *
+     * @param $from
+     * @param $to
+     * @param int $limit
+     * @return mixed
+     */
+    public function fetchBankAccountsHavingSpaceInAccountNumber($merchantIds,
+                                                                $from,
+                                                                $to,
+                                                                $limit = 1000)
+    {
+        $faIdColumn = $this->dbColumn(Entity::ID);
+
+        $faAccountIdColumn = $this->dbColumn(Entity::ACCOUNT_ID);
+
+        $faAccountTypeColumn = $this->dbColumn(Entity::ACCOUNT_TYPE);
+
+        $bankAccountTable = $this->repo->bank_account->getTableName();
+
+        $bankAccountIdColumn = $this->repo->bank_account->dbColumn(BankAccount\Entity::ID);
+
+        $bankAccountAccountNumberColumn = $this->repo->bank_account->dbColumn(BankAccount\Entity::ACCOUNT_NUMBER);
+
+        $bankAccountCreatedAtColumn = $this->repo->bank_account->dbColumn(BankAccount\Entity::CREATED_AT);
+
+        $bankAccountMerchantIdColumn = $this->repo->bank_account->dbColumn(BankAccount\Entity::MERCHANT_ID);
+
+        return $this->newQuery()
+                    ->select($faIdColumn, $faAccountIdColumn)
+                    ->join($bankAccountTable, $faAccountIdColumn, '=', $bankAccountIdColumn)
+                    ->whereIn($bankAccountMerchantIdColumn, $merchantIds)
+                    ->where($faAccountTypeColumn, '=' ,Type::BANK_ACCOUNT)
+                    ->where($bankAccountCreatedAtColumn, '>=', $from)
+                    ->where($bankAccountCreatedAtColumn, '<=', $to)
+                    ->where(
+                        DB::raw('CHAR_LENGTH(' . $bankAccountAccountNumberColumn . ')'),
+                        '>',
+                        DB::raw('CHAR_LENGTH(trim(replace(' . $bankAccountAccountNumberColumn . ',"\n","")))')
+                    )
+                    ->limit($limit)
+                    ->get();
     }
 
     public function fetchFundAccountOfTypeWalletAccountForContact(Merchant\Entity $merchant,

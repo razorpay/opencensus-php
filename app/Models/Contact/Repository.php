@@ -198,54 +198,54 @@ class Repository extends Base\Repository
     /**
      * Fetch contacts with space in name
      *
-     * @param array $merchantIds
+     * @param $merchantIds
      * @param $from
      * @param $to
      * @param int $limit
      * @return mixed
      */
-    public function fetchContactsHavingSpaceInName(array $merchantIds,
+    public function fetchContactsHavingSpaceInName($merchantIds,
                                                    $from,
                                                    $to,
                                                    $limit = 1000)
     {
         return $this->newQueryWithoutTimestamps()
-            ->where(Entity::CREATED_AT, '>=', $from)
-            ->where(Entity::CREATED_AT, '<=', $to)
-            ->whereIn(Entity::MERCHANT_ID, $merchantIds)
-            ->where(
-                DB::raw('CHAR_LENGTH(' . Entity::NAME . ')'),
-                '>',
-                DB::raw('CHAR_LENGTH(trim(replace(' . Entity::NAME . ',"\n","")))')
-            )
-            ->limit($limit)
-            ->get();
+                    ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+                    ->where(Entity::CREATED_AT, '>=', $from)
+                    ->where(Entity::CREATED_AT, '<=', $to)
+                    ->where(
+                        DB::raw('CHAR_LENGTH(' . Entity::NAME . ')'),
+                        '>',
+                        DB::raw('CHAR_LENGTH(trim(replace(' . Entity::NAME . ',"\n"," ")))')
+                    )
+                    ->limit($limit)
+                    ->get();
     }
 
     /**
      * Fetch contacts with space in type
      *
-     * @param array $merchantIds
+     * @param $merchantIds
      * @param $from
      * @param $to
      * @param int $limit
      * @return mixed
      */
-    public function fetchContactsHavingSpaceInType(array $merchantIds,
+    public function fetchContactsHavingSpaceInType($merchantIds,
                                                    $from,
                                                    $to,
                                                    $limit = 1000)
     {
         return $this->newQueryWithoutTimestamps()
-            ->where(Entity::CREATED_AT, '>=', $from)
-            ->where(Entity::CREATED_AT, '<=', $to)
-            ->whereIn(Entity::MERCHANT_ID, $merchantIds)
-            ->where(
-                DB::raw('CHAR_LENGTH(' . Entity::TYPE . ')'),
-                '>',
-                DB::raw('CHAR_LENGTH(trim(replace(' . Entity::TYPE . ',"\n","")))')
-            )
-            ->limit($limit)
-            ->get();
+                    ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+                    ->where(Entity::CREATED_AT, '>=', $from)
+                    ->where(Entity::CREATED_AT, '<=', $to)
+                    ->where(
+                        DB::raw('CHAR_LENGTH(' . Entity::TYPE . ')'),
+                        '>',
+                        DB::raw('CHAR_LENGTH(trim(replace(' . Entity::TYPE . ',"\n"," ")))')
+                    )
+                    ->limit($limit)
+                    ->get();
     }
 }

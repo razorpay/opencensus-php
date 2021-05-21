@@ -308,55 +308,26 @@ class Core extends Base\Core
     /**
      * Remove leading and trailing space from type
      *
-     * @param $merchants
-     * @param $merchantIds
      * @param PaginationEntity $paginationEntity
      */
-    public function trimContactType($merchants, $merchantIds, PaginationEntity $paginationEntity)
+    public function trimContactType(PaginationEntity $paginationEntity)
     {
         $this->trace->info(
             TraceCode::START_CONTACT_TYPE_TRIMMING,
             [
-                'merchant_ids'  => $merchantIds,
                 'created_from'  => $paginationEntity->getCurrentStartTime(),
                 'created_till'  => $paginationEntity->getCurrentEndTime()
             ]
         );
 
-        $keysWithWhiteSpaceAlreadyTrimmed = [];
-
-        $typeObj = new Type();
-
-        foreach ($merchants as $merchant)
-        {
-            $allCustomKeys = $typeObj->getCustom($merchant);
-
-            foreach ($allCustomKeys as  $type)
-            {
-                if (strlen($type) !== strlen(trim($type)))
-                {
-                    $typeObj->trimType($type, $merchant);
-
-                    array_push($keysWithWhiteSpaceAlreadyTrimmed, $type);
-
-                    $this->trace->info(
-                        TraceCode::CONTACT_TYPE_TRIMMED_FROM_SETTING,
-                        [
-                            'type'        => $type,
-                            'merchant_id' => $merchant->getId()
-                        ]
-                    );
-                }
-            }
-        }
-
-
         $contacts = $this->repo->contact->fetchContactsHavingSpaceInType(
-            $merchantIds,
+            $paginationEntity->getFinalMerchantList(),
             $paginationEntity->getCurrentStartTime(),
             $paginationEntity->getCurrentEndTime(),
             $paginationEntity->getLimit()
         );
+
+        $typeFixedForMerchantIds = [];
 
         $contactIds = $contacts->getIds();
 
@@ -368,11 +339,40 @@ class Core extends Base\Core
                 {
                     $contactType = $contact->getType();
 
-                    $trimmedContactType = trim(str_replace('\n', '', $contactType));
+                    $trimmedContactType = trim(str_replace('\n', ' ', $contactType));
 
                     if (is_null($contactType) === false)
                     {
                         $contact->setType($trimmedContactType);
+
+                        $merchant = $contact->merchant;
+
+                        $merchantId = $merchant->getId();
+
+                        if (in_array($merchantId, $typeFixedForMerchantIds, true) === false)
+                        {
+                            $typeObj = new Type();
+
+                            $allCustomKeys = $typeObj->getCustom($merchant);
+
+                            foreach ($allCustomKeys as $type)
+                            {
+                                if (strlen($type) !== strlen(trim($type)))
+                                {
+                                    $typeObj->trimType($type, $merchant);
+
+                                    $this->trace->info(
+                                        TraceCode::CONTACT_TYPE_TRIMMED_FROM_SETTING,
+                                        [
+                                            'type' => $type,
+                                            'merchant_id' => $merchant->getId()
+                                        ]
+                                    );
+                                }
+                            }
+
+                            array_push($typeFixedForMerchantIds, $merchantId);
+                        }
                     }
 
                     $contact->saveOrFail();
@@ -398,7 +398,7 @@ class Core extends Base\Core
             }
 
             $newContacts = $this->repo->contact->fetchContactsHavingSpaceInType(
-                $merchantIds,
+                $paginationEntity->getFinalMerchantList(),
                 $paginationEntity->getCurrentStartTime(),
                 $paginationEntity->getCurrentEndTime(),
                 $paginationEntity->getLimit()
@@ -418,7 +418,6 @@ class Core extends Base\Core
             else
             {
                 $data = [
-                    'merchant_ids'  => $merchantIds,
                     'created_from'  => $paginationEntity->getCurrentStartTime(),
                     'created_till'  => $paginationEntity->getCurrentEndTime()
                 ];
@@ -435,7 +434,6 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::CONTACT_TYPE_TRIMMED_FOR_MERCHANTS,
             [
-                'merchant_ids'  => $merchantIds,
                 'created_from'  => $paginationEntity->getCurrentStartTime(),
                 'created_till'  => $paginationEntity->getCurrentEndTime()
             ]
@@ -445,22 +443,20 @@ class Core extends Base\Core
     /**
      * Remove leading and trailing space from name
      *
-     * @param $merchantIds
      * @param PaginationEntity $paginationEntity
      */
-    public function trimContactName($merchantIds, PaginationEntity $paginationEntity)
+    public function trimContactName(PaginationEntity $paginationEntity)
     {
         $this->trace->info(
             TraceCode::START_CONTACT_NAME_TRIMMING,
             [
-                'merchant_ids'  => $merchantIds,
                 'created_from'  => $paginationEntity->getCurrentStartTime(),
                 'created_till'  => $paginationEntity->getCurrentEndTime()
             ]
         );
 
         $contacts = $this->repo->contact->fetchContactsHavingSpaceInName(
-            $merchantIds,
+            $paginationEntity->getFinalMerchantList(),
             $paginationEntity->getCurrentStartTime(),
             $paginationEntity->getCurrentEndTime(),
             $paginationEntity->getLimit()
@@ -476,7 +472,7 @@ class Core extends Base\Core
                 {
                     $contactName = $contact->getName();
 
-                    $trimmedContactName = trim(str_replace('\n', '', $contactName));
+                    $trimmedContactName = trim(str_replace('\n', ' ', $contactName));
 
                     if (is_null($contactName) === false)
                     {
@@ -506,7 +502,7 @@ class Core extends Base\Core
             }
 
             $newContacts = $this->repo->contact->fetchContactsHavingSpaceInName(
-                $merchantIds,
+                $paginationEntity->getFinalMerchantList(),
                 $paginationEntity->getCurrentStartTime(),
                 $paginationEntity->getCurrentEndTime(),
                 $paginationEntity->getLimit()
@@ -526,7 +522,6 @@ class Core extends Base\Core
             else
             {
                 $data = [
-                    'merchant_ids'  => $merchantIds,
                     'created_from'  => $paginationEntity->getCurrentStartTime(),
                     'created_till'  => $paginationEntity->getCurrentEndTime()
                 ];
@@ -543,7 +538,6 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::CONTACT_NAME_TRIMMED_FOR_MERCHANTS,
             [
-                'merchant_ids'  => $merchantIds,
                 'created_from'  => $paginationEntity->getCurrentStartTime(),
                 'created_till'  => $paginationEntity->getCurrentEndTime()
             ]

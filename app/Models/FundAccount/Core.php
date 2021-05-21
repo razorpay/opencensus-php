@@ -23,6 +23,7 @@ use RZP\Services\FTS\CreateAccount;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Contact\Entity as ContactEntity;
+use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\WalletAccount\Validator as WalletAccountValidator;
 
@@ -69,8 +70,8 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::FUND_ACCOUNT_CREATE_REQUEST, $traceRequest);
 
-        if ((isset($input[Entity::ACCOUNT_TYPE]) === true) and 
-            (strtolower($input[Entity::ACCOUNT_TYPE]) ===  Entity::WALLET)) 
+        if ((isset($input[Entity::ACCOUNT_TYPE]) === true) and
+            (strtolower($input[Entity::ACCOUNT_TYPE]) ===  Entity::WALLET))
         {
             $input = $this->constructWalletAccountFundAccountRequest($input);
         }
@@ -480,6 +481,213 @@ class Core extends Base\Core
         }
     }
 
+    /**
+     * Remove leading and trailing space from bank account beneficiary_name
+     *
+     * @param PaginationEntity $paginationEntity
+     */
+    public function trimBeneficiaryName(PaginationEntity $paginationEntity)
+    {
+        $this->trace->info(
+            TraceCode::START_BENEFICIARY_NAME_TRIMMING,
+            [
+                'created_from'  => $paginationEntity->getCurrentStartTime(),
+                'created_till'  => $paginationEntity->getCurrentEndTime()
+            ]
+        );
+
+        $fundAccounts = $this->repo->fund_account->fetchBankAccountsHavingSpaceInBeneficiaryName(
+            $paginationEntity->getFinalMerchantList(),
+            $paginationEntity->getCurrentStartTime(),
+            $paginationEntity->getCurrentEndTime(),
+            $paginationEntity->getLimit()
+        );
+
+        $fundAccountIds = $fundAccounts->getIds();
+
+        while (count($fundAccounts) > 0)
+        {
+            foreach ($fundAccounts as $fundAccount)
+            {
+                try
+                {
+                    $bankAccount = $this->repo->bank_account->findOrFail($fundAccount->getAccountId());
+
+                    $beneficiaryName = $bankAccount->getBeneficiaryName();
+
+                    $trimmedBeneficiaryName = trim(str_replace('\n', ' ', $beneficiaryName));
+
+                    $bankAccount->setBeneficiaryName($trimmedBeneficiaryName);
+
+                    $bankAccount->saveOrFail();
+
+                    $this->trace->info(
+                        TraceCode::BENEFICIARY_NAME_TRIMMED,
+                        [
+                            Entity::ACCOUNT_ID  => $bankAccount->getId()
+                        ]
+                    );
+                }
+                catch (\Throwable $exception)
+                {
+                    $this->trace->traceException(
+                        $exception,
+                        Trace::ERROR,
+                        TraceCode::BENEFICIARY_NAME_TRIM_FAILED,
+                        [
+                            Entity::ACCOUNT_ID  => $bankAccount->getId()
+                        ]
+                    );
+                }
+            }
+
+            $newFundAccounts = $this->repo->fund_account->fetchBankAccountsHavingSpaceInBeneficiaryName(
+                $paginationEntity->getFinalMerchantList(),
+                $paginationEntity->getCurrentStartTime(),
+                $paginationEntity->getCurrentEndTime(),
+                $paginationEntity->getLimit()
+            );
+
+
+            $newFundAccountIds = $newFundAccounts->getIds();
+
+            $nonCommonIdsFromLastFundAccounts = array_diff($newFundAccountIds, $fundAccountIds);
+
+            if ((count($newFundAccounts) === 0) or
+                (count($nonCommonIdsFromLastFundAccounts) > 0))
+            {
+                $fundAccountIds = $newFundAccountIds;
+
+                $fundAccounts = $newFundAccounts;
+            }
+            else
+            {
+                $data = [
+                    'created_from'  => $paginationEntity->getCurrentStartTime(),
+                    'created_till'  => $paginationEntity->getCurrentEndTime()
+                ];
+
+                $this->trace->info(
+                    TraceCode::BENEFICIARY_NAME_TRIM_FOR_MERCHANTS_FAILED,
+                    $data
+                );
+
+                return;
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::BENEFICIARY_NAME_TRIMMED_FOR_MERCHANTS,
+            [
+                'created_from'  => $paginationEntity->getCurrentStartTime(),
+                'created_till'  => $paginationEntity->getCurrentEndTime()
+            ]
+        );
+    }
+
+    /**
+     * Remove leading and trailing space from bank account account_number
+     *
+     * @param PaginationEntity $paginationEntity
+     */
+    public function trimAccountNumber(PaginationEntity $paginationEntity)
+    {
+        $this->trace->info(
+            TraceCode::START_ACCOUNT_NUMBER_TRIMMING,
+            [
+                'created_from'  => $paginationEntity->getCurrentStartTime(),
+                'created_till'  => $paginationEntity->getCurrentEndTime()
+            ]
+        );
+
+        $fundAccounts = $this->repo->fund_account->fetchBankAccountsHavingSpaceInAccountNumber(
+            $paginationEntity->getFinalMerchantList(),
+            $paginationEntity->getCurrentStartTime(),
+            $paginationEntity->getCurrentEndTime(),
+            $paginationEntity->getLimit()
+        );
+
+        $fundAccountIds = $fundAccounts->getIds();
+
+        while (count($fundAccounts) > 0)
+        {
+            foreach ($fundAccounts as $fundAccount)
+            {
+                try
+                {
+                    $bankAccount = $this->repo->bank_account->findOrFail($fundAccount->getAccountId());
+
+                    $accountNumber = $bankAccount->getAccountNumber();
+
+                    $trimmedAccountNumber = trim(str_replace('\n', '', $accountNumber));
+
+                    $bankAccount->setAccountNumber($trimmedAccountNumber);
+
+                    $bankAccount->saveOrFail();
+
+                    $this->trace->info(
+                        TraceCode::ACCOUNT_NUMBER_TRIMMED,
+                        [
+                            Entity::ACCOUNT_ID  => $bankAccount->getId()
+                        ]
+                    );
+                }
+                catch (\Throwable $exception)
+                {
+                    $this->trace->traceException(
+                        $exception,
+                        Trace::ERROR,
+                        TraceCode::ACCOUNT_NUMBER_TRIM_FAILED,
+                        [
+                            Entity::ACCOUNT_ID  => $bankAccount->getId()
+                        ]
+                    );
+                }
+            }
+
+            $newFundAccounts = $this->repo->fund_account->fetchBankAccountsHavingSpaceInAccountNumber(
+                $paginationEntity->getFinalMerchantList(),
+                $paginationEntity->getCurrentStartTime(),
+                $paginationEntity->getCurrentEndTime(),
+                $paginationEntity->getLimit()
+            );
+
+            $newFundAccountIds = $newFundAccounts->getIds();
+
+            $nonCommonIdsFromLastFundAccounts = array_diff($newFundAccountIds, $fundAccountIds);
+
+            if ((count($newFundAccounts) === 0) or
+                (count($nonCommonIdsFromLastFundAccounts) > 0))
+            {
+                $fundAccountIds = $newFundAccountIds;
+
+                $fundAccounts = $newFundAccounts;
+            }
+            else
+            {
+                $data = [
+                    'created_from'  => $paginationEntity->getCurrentStartTime(),
+                    'created_till'  => $paginationEntity->getCurrentEndTime()
+                ];
+
+                $this->trace->info(
+                    TraceCode::ACCOUNT_NUMBER_TRIM_FOR_MERCHANTS_FAILED,
+                    $data
+                );
+
+                return;
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::ACCOUNT_NUMBER_TRIMMED_FOR_MERCHANTS,
+            [
+                'created_from'  => $paginationEntity->getCurrentStartTime(),
+                'created_till'  => $paginationEntity->getCurrentEndTime()
+            ]
+        );
+    }
+
     /*
      * $accountDetails should have different keys for different account types
      * Bank account => name, account number, name
@@ -728,9 +936,9 @@ class Core extends Base\Core
                                 ->validateInput(WalletAccountValidator::BEFORE_CREATE_FUND_ACCOUNT_WALLET_ACCOUNT, $input[Entity::WALLET_ACCOUNT]);
 
                 $input[Entity::WALLET_ACCOUNT][WalletAccount\Entity::PHONE] = $this->reformatPhoneNo($input[Entity::WALLET_ACCOUNT][WalletAccount\Entity::PHONE]);
-               
+
                 unset($input[Entity::WALLET]);
-    
+
                 return $input;
         }
         else
@@ -740,7 +948,7 @@ class Core extends Base\Core
                 Entity::MERCHANT_ID => $this->merchant->getId(),
                 'input' => $input,
             ]);
-        }  
+        }
     }
 
     public function reformatPhoneNo(string $phone)
