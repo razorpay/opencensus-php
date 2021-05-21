@@ -71,7 +71,6 @@ export default function MerchantNavLinks(props) {
         additionalCondition={(user) => user.isAllowedView('payment_pages')}
       />
       <MainNavLink
-        isNew
         type="product"
         label="Payment Button"
         icon="i i-payment-button"
@@ -82,7 +81,6 @@ export default function MerchantNavLinks(props) {
           user.isAllowedMultiple('payment_buttons subscription_buttons') &&
           (user.isPaymentButtonEnabledByRazorX || user.isSubscriptionButtonEnabled)
         }
-        isNew
       />
       <MainNavLink
         label="Route"
