@@ -306,6 +306,13 @@ class Core extends Base\Core
             ]);
 
             $this->app['sns']->publish(json_encode($payload), self::SETTLEMENT_TRANSACTION);
+
+            $this->trace->info(
+                TraceCode::SETTLEMENT_SERVICE_TRANSACTION_PUSH_SUCCESSFUL,
+                [
+                    'transaction_id' => $txn->getId(),
+                    'merchant_id'    => $txn->getMerchantId(),
+                ]);
         }
         catch (\Throwable $e)
         {
