@@ -520,11 +520,6 @@ void opencensus_trace_clear(int reset TSRMLS_DC)
         zend_string_release(OPENCENSUS_G(trace_parent_span_id));
         OPENCENSUS_G(trace_parent_span_id) = NULL;
     }
-
-    if (OPENCENSUS_G(baggage)) {
-        FREE_HASHTABLE(OPENCENSUS_G(baggage));
-        OPENCENSUS_G(baggage) = NULL;
-    }
 }
 
 /**
