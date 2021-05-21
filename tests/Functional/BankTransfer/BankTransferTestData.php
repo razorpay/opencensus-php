@@ -1446,7 +1446,7 @@ return [
             'payee_ifsc'     => null,
             'payer_name'     => 'Name of account holder',
             'payer_account'  => '9876543210123456789',
-            'payer_ifsc'     => 'UTIB0000001',
+            'payer_ifsc'     => 'UTIB0000002',
             'mode'           => 'neft',
             'transaction_id' => 'utr_thisisbestutr',
             'time'           => 148415544000,

@@ -672,6 +672,8 @@ class FundAccountValidationTest extends TestCase
     //it should not pick the fav status from cache..instead it should call fts and do a fresh validation
     public function testFundAccValidationWithAccountNumberThatIsAlreadyProcessedWithOldIfsc()
     {
+        $this->markTestSkipped('The IFSC ORBC0101753 is invalid, skipping this test case for now ');
+
         $this->createValidationWithFundAccountEntity();
 
         $this->ba->privateAuth();
@@ -1334,6 +1336,8 @@ class FundAccountValidationTest extends TestCase
 
     public function testFundAccValidationForSpecialCharacterRemovalForNaration()
     {
+        $this->markTestSkipped('the IFSC being used is invalid, skipping the test till its replaced with valid value');
+
         $this->fixtures->merchant->editEntity('merchant', '10000000000000',
                                               ['name' => 'L&!T @L and T', 'billing_label' => '']);
 

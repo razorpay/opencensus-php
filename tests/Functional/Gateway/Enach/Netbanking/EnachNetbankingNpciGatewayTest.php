@@ -125,7 +125,7 @@ class EnachNetbankingNpciGatewayTest extends TestCase
 
         $paymentInput['bank_account'] = [
             'account_number' => '1111111111111',
-            'ifsc'           => 'UTBI0ITSR41',
+            'ifsc'           => 'UTIB0000001',
             'name'           => 'Test account',
             'account_type'   => 'current',
         ];
