@@ -16,13 +16,13 @@ class Channel
     const ICICI   = FTAChannel::ICICI;
     const KOTAK   = FTAChannel::KOTAK;
 
-    protected static $channels = [
-        self::YESBANK,
+    public static $directTypeChannels = [
         self::RBL,
         self::ICICI,
     ];
 
-    protected static $directTypeChannels = [
+    protected static $channels = [
+        self::YESBANK,
         self::RBL,
         self::ICICI,
     ];

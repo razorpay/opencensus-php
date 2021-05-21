@@ -462,6 +462,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PAYOUTS_FILTER);
     }
 
+    public function getChannel()
+    {
+        return $this->getAttribute(self::CHANNEL);
+    }
+
     public function isPrimaryProduct(): bool
     {
         return ($this->getProduct() === Product::PRIMARY);

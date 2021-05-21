@@ -6,17 +6,21 @@ use Queue;
 use Carbon\Carbon;
 
 use RZP\Models\Admin;
-use RZP\Constants\Timezone;
-use RZP\Models\Pricing\Fee;
+use RZP\Models\Payout;
+use Rzp\Models\FundTransfer;
 use RZP\Services\Mock\Mozart;
 use RZP\Models\BankingAccount;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Tests\Functional\TestCase;
+use RZP\Constants\Mode as EnvMode;
+Use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\GatewayErrorException;
 use RZP\Models\BankingAccount\Gateway\Icici;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Models\BankingAccountStatement\Details;
+use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
+use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Jobs\IciciBankingAccountGatewayBalanceUpdate;
@@ -28,7 +32,7 @@ use RZP\Jobs\IciciBankingAccountStatement as IciciBankingAccountStatementJob;
 class IciciCaPayoutTest extends TestCase
 {
     use PayoutTrait;
-    use PaymentTrait;
+    use AttemptTrait;
     use WorkflowTrait;
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
@@ -103,7 +107,7 @@ class IciciCaPayoutTest extends TestCase
 
     protected function liveSetUp()
     {
-        $this->testDataFilePath = __DIR__ . '/helpers/PayoutTestData.php';
+        $this->testDataFilePath = __DIR__ . '/helpers/IciciCaPayoutTestData.php';
 
         $this->fixtures->on('live')->create('contact', ['id' => '1000001contact', 'active' => 1]);
 
@@ -118,8 +122,6 @@ class IciciCaPayoutTest extends TestCase
             ]);
 
         $this->setUpMerchantForBusinessBankingLive(true, 10000000, 'direct', 'icici');
-
-        $this->fixtures->on('live')->merchant->edit('10000000000000', ['pricing_plan_id' => Fee::DEFAULT_PRICING_PLAN_ID]);
 
         // Merchant needs to be activated to make live requests
         $this->fixtures->on('live')->merchant->edit('10000000000000', ['activated' => 1]);
@@ -233,5 +235,334 @@ class IciciCaPayoutTest extends TestCase
         $baAfterCronRuns = $this->getDbEntityById('banking_account', 'xba00000000002');
 
         $this->assertNull($baAfterCronRuns->getBalanceLastFetchedAt());
+    }
+
+    public function testCreatePayout()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->assertEquals('icici', $payout['channel']);
+        $this->assertEquals('processing', $payout['status']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+        $this->assertNull($transaction);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::INITIATED);
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+    }
+
+    public function testCreatePayoutProcessed()
+    {
+        $this->testCreatePayout();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::PROCESSED);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Payout\Status::PROCESSED, $payout['status']);
+        $this->assertEquals(FundTransfer\Mode::NEFT, $payout['mode']);
+        $this->assertEquals(Attempt\Status::PROCESSED, $attempt['status']);
+        $this->assertEquals(FundTransfer\Mode::NEFT, $attempt['mode']);
+        $this->assertEquals(590, $payout['fees']);
+        $this->assertEquals(90, $payout['tax']);
+    }
+
+    public function testPayoutFailed()
+    {
+        $this->testCreatePayout();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::FAILED);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Payout\Status::FAILED, $payout['status']);
+        $this->assertEquals(FundTransfer\Mode::NEFT, $payout['mode']);
+        $this->assertEquals(Attempt\Status::FAILED, $attempt['status']);
+        $this->assertEquals(FundTransfer\Mode::NEFT, $attempt['mode']);
+    }
+
+    public function testPayoutReversed()
+    {
+        $this->testCreatePayout();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::REVERSED);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Payout\Status::REVERSED, $payout['status']);
+        $this->assertEquals(FundTransfer\Mode::NEFT, $payout['mode']);
+        $this->assertEquals(Attempt\Status::REVERSED, $attempt['status']);
+        $this->assertEquals(FundTransfer\Mode::NEFT, $attempt['mode']);
+
+        $reversal = $this->getDbLastEntity('reversal');
+        $this->assertEquals($payout['id'], $reversal['entity_id']);
+    }
+
+    public function testIciciPayoutUsingCredits()
+    {
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(500, $payout['fees']);
+        $this->assertEquals(0, $payout['tax']);
+        $this->assertEquals('reward_fee', $payout['fee_type']);
+
+        $creditEntities = $this->getDbEntities('credits');
+        $this->assertEquals(100, $creditEntities[0]['used']);
+        $this->assertEquals(400, $creditEntities[1]['used']);
+
+        $creditTxnEntities = $this->getDbEntities('credit_transaction');
+        $this->assertEquals('payout', $creditTxnEntities[0]['entity_type']);
+        $this->assertEquals($payout['id'],  $creditTxnEntities[0]['entity_id']);
+        $this->assertEquals(100, $creditTxnEntities[0]['credits_used']);
+
+        $this->assertEquals('payout', $creditTxnEntities[1]['entity_type']);
+        $this->assertEquals($payout['id'],  $creditTxnEntities[1]['entity_id']);
+        $this->assertEquals(400, $creditTxnEntities[1]['credits_used']);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123456']);
+
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::PROCESSED);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Payout\Status::PROCESSED, $payout['status']);
+        $this->assertEquals(FundTransfer\Mode::NEFT, $payout['mode']);
+        $this->assertEquals(Attempt\Status::PROCESSED, $attempt['status']);
+        $this->assertEquals(FundTransfer\Mode::NEFT, $attempt['mode']);
+    }
+
+    public function testIciciPayoutUsingCreditsFailed()
+    {
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(500, $payout['fees']);
+        $this->assertEquals(0, $payout['tax']);
+
+        $creditEntities = $this->getDbEntities('credits');
+        $this->assertEquals(100, $creditEntities[0]['used']);
+        $this->assertEquals(400, $creditEntities[1]['used']);
+
+        $creditTxnEntities = $this->getDbEntities('credit_transaction');
+        $this->assertEquals('payout', $creditTxnEntities[0]['entity_type']);
+        $this->assertEquals($payout['id'],  $creditTxnEntities[0]['entity_id']);
+        $this->assertEquals(100, $creditTxnEntities[0]['credits_used']);
+
+        $this->assertEquals('payout', $creditTxnEntities[1]['entity_type']);
+        $this->assertEquals($payout['id'],  $creditTxnEntities[1]['entity_id']);
+        $this->assertEquals(400, $creditTxnEntities[1]['credits_used']);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated', 'amount' => '104']);
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['cms_ref_no' => 'S55959']);
+
+        $this->fixtures->edit('balance', $payout['balance_id'], ['balance' => 30019995]);
+
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::FAILED);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Payout\Status::FAILED, $payout['status']);
+        $this->assertEquals(FundTransfer\Mode::NEFT, $payout['mode']);
+        $this->assertEquals(Attempt\Status::FAILED, $attempt['status']);
+        $this->assertEquals(FundTransfer\Mode::NEFT, $attempt['mode']);
+
+        $creditEntities = $this->getDbEntities('credits');
+        $this->assertEquals(0, $creditEntities[0]['used']);
+        $this->assertEquals(0, $creditEntities[1]['used']);
+
+        $creditTxnEntities = $this->getDbEntities('credit_transaction');
+        $this->assertEquals('payout', $creditTxnEntities[0]['entity_type']);
+        $this->assertEquals($payout['id'],  $creditTxnEntities[0]['entity_id']);
+        $this->assertEquals(100, $creditTxnEntities[0]['credits_used']);
+
+        $this->assertEquals('payout', $creditTxnEntities[1]['entity_type']);
+        $this->assertEquals($payout['id'],  $creditTxnEntities[1]['entity_id']);
+        $this->assertEquals(400, $creditTxnEntities[1]['credits_used']);
+
+        $this->assertEquals('payout', $creditTxnEntities[2]['entity_type']);
+        $this->assertEquals($payout['id'],  $creditTxnEntities[2]['entity_id']);
+        $this->assertEquals(-100, $creditTxnEntities[2]['credits_used']);
+
+        $this->assertEquals('payout', $creditTxnEntities[3]['entity_type']);
+        $this->assertEquals($payout['id'],  $creditTxnEntities[3]['entity_id']);
+        $this->assertEquals(-400, $creditTxnEntities[3]['credits_used']);
+
+    }
+
+    public function testIciciPayoutUsingCreditsReversed()
+    {
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $creditEntity = $this->getDbLastEntity('credits');
+
+        $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 600 , 'campaign' => 'test rewards type', 'type' => 'reward_fee', 'product' => 'banking']);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(500, $payout['fees']);
+        $this->assertEquals(0, $payout['tax']);
+
+        $creditEntities = $this->getDbEntities('credits');
+        $this->assertEquals(100, $creditEntities[0]['used']);
+        $this->assertEquals(400, $creditEntities[1]['used']);
+
+        $creditTxnEntities = $this->getDbEntities('credit_transaction');
+        $this->assertEquals('payout', $creditTxnEntities[0]['entity_type']);
+        $this->assertEquals($payout['id'],  $creditTxnEntities[0]['entity_id']);
+        $this->assertEquals(100, $creditTxnEntities[0]['credits_used']);
+
+        $this->assertEquals('payout', $creditTxnEntities[1]['entity_type']);
+        $this->assertEquals($payout['id'],  $creditTxnEntities[1]['entity_id']);
+        $this->assertEquals(400, $creditTxnEntities[1]['credits_used']);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated', 'amount' => '104']);
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['cms_ref_no' => 'S55959']);
+
+        $this->fixtures->edit('balance', $payout['balance_id'], ['balance' => 30019995]);
+
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::REVERSED);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $reversal = $this->getDbLastEntity('reversal');
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Payout\Status::REVERSED, $payout['status']);
+        $this->assertEquals(FundTransfer\Mode::NEFT, $payout['mode']);
+        $this->assertEquals(Attempt\Status::REVERSED, $attempt['status']);
+        $this->assertEquals(FundTransfer\Mode::NEFT, $attempt['mode']);
+
+        $creditEntities = $this->getDbEntities('credits');
+        $this->assertEquals(0, $creditEntities[0]['used']);
+        $this->assertEquals(0, $creditEntities[1]['used']);
+
+        $creditTxnEntities = $this->getDbEntities('credit_transaction');
+        $this->assertEquals('payout', $creditTxnEntities[0]['entity_type']);
+        $this->assertEquals($payout['id'],  $creditTxnEntities[0]['entity_id']);
+        $this->assertEquals(100, $creditTxnEntities[0]['credits_used']);
+
+        $this->assertEquals('payout', $creditTxnEntities[1]['entity_type']);
+        $this->assertEquals($payout['id'],  $creditTxnEntities[1]['entity_id']);
+        $this->assertEquals(400, $creditTxnEntities[1]['credits_used']);
+
+        $this->assertEquals('reversal', $creditTxnEntities[2]['entity_type']);
+        $this->assertEquals($reversal['id'],  $creditTxnEntities[2]['entity_id']);
+        $this->assertEquals(-100, $creditTxnEntities[2]['credits_used']);
+
+        $this->assertEquals('reversal', $creditTxnEntities[3]['entity_type']);
+        $this->assertEquals($reversal['id'],  $creditTxnEntities[3]['entity_id']);
+        $this->assertEquals(-400, $creditTxnEntities[3]['credits_used']);
     }
 }

@@ -979,7 +979,8 @@ class Validator extends Base\Validator
     public function validateChannelAndModeForPayouts(string $merchantId,
                                                      string $channel = null,
                                                      string $destinationType = null,
-                                                     string $mode = null) : bool
+                                                     string $mode = null,
+                                                     string $accountType = null) : bool
     {
         if (($channel === Settlement\Channel::RBL) and
             ($destinationType === FundAccount\Type::CARD))
@@ -998,7 +999,7 @@ class Validator extends Base\Validator
                 }
             }
 
-        return PayoutMode::validateChannelAndModeForPayouts($channel, $destinationType, $mode);
+        return PayoutMode::validateChannelAndModeForPayouts($channel, $destinationType, $mode, $accountType);
     }
 
     public function validateAndUpdateCardMode(array & $input)

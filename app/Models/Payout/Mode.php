@@ -6,6 +6,7 @@ use RZP\Constants;
 use RZP\Error\ErrorCode;
 use RZP\Models\Settlement;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\Balance\AccountType;
 
 class Mode
 {
@@ -121,6 +122,97 @@ class Mode
         ];
     }
 
+    protected static function getAllSupportedPayoutChannelsWithModesWithAccountType()
+    {
+        return [
+            AccountType::SHARED => [
+                Settlement\Channel::YESBANK => [
+                    Constants\Entity::VPA            => [
+                        self::UPI,
+                    ],
+                    Constants\Entity::BANK_ACCOUNT   => [
+                        self::RTGS,
+                        self::IMPS,
+                        self::NEFT,
+                        //self::IFT,
+                    ],
+                    Constants\Entity::CARD           => [
+                        self::IMPS,
+                        self::UPI,
+                        self::NEFT,
+                    ],
+                    Constants\Entity::WALLET_ACCOUNT => [
+                        self::AMAZONPAY,
+                    ]
+                ],
+                Settlement\Channel::CITI    => [
+                    Constants\Entity::BANK_ACCOUNT   => [
+                        self::RTGS,
+                        self::IMPS,
+                        self::NEFT,
+                        self::IFT,
+                    ],
+                    Constants\Entity::CARD           => [
+                        self::IMPS,
+                        self::NEFT,
+                    ],
+                    Constants\Entity::WALLET_ACCOUNT => [
+                        self::AMAZONPAY,
+                    ]
+                ],
+                Settlement\Channel::ICICI   => [
+                    Constants\Entity::VPA            => [
+                        self::UPI,
+                    ],
+                    Constants\Entity::BANK_ACCOUNT   => [
+                        self::IMPS,
+                        self::NEFT,
+                        self::RTGS,
+                    ],
+                    Constants\Entity::CARD           => [
+                        self::IMPS,
+                        self::UPI,
+                        self::NEFT,
+                    ],
+                    Constants\Entity::WALLET_ACCOUNT => [
+                        self::AMAZONPAY,
+                    ]
+                ],
+                Settlement\Channel::M2P     => [
+                    Constants\Entity::CARD => [
+                        self::CARD,
+                    ],
+                ],
+            ],
+            AccountType::DIRECT => [
+                Settlement\Channel::RBL   => [
+                    Constants\Entity::BANK_ACCOUNT => [
+                        self::RTGS,
+                        self::IMPS,
+                        self::NEFT,
+                        self::IFT,
+                    ],
+                    Constants\Entity::CARD         => [
+                        self::IMPS,
+                        self::NEFT,
+                    ]
+                ],
+                Settlement\Channel::ICICI => [
+                    Constants\Entity::BANK_ACCOUNT => [
+                        self::RTGS,
+                        self::IMPS,
+                        self::NEFT,
+                        self::IFT,
+                    ],
+                    Constants\Entity::CARD         => [
+                        self::IMPS,
+                        self::NEFT,
+                    ],
+                ],
+            ]
+        ];
+    }
+
     protected static function isValid(string $mode): bool
     {
         return (in_array($mode, self::$allSupportedModes) === true);
@@ -128,13 +220,30 @@ class Mode
 
     public static function validateChannelAndModeForPayouts(string $channel = null,
                                                             string $destinationType = null,
-                                                            string $mode = null) : bool
+                                                            string $mode = null,
+                                                            string $accountType = null) : bool
     {
         Settlement\Channel::validate($channel);
 
-        $allChannelsWithModes = self::getAllSupportedPayoutChannelsWithModes();
+        $allChannelsWithModes = [];
+        $modesSupportedForChannel = [];
 
-        $modesSupportedForChannel = $allChannelsWithModes[$channel][$destinationType] ?? [];
+
+        // Keeping this here as payouts which are made on primary balance don't have
+        // account type so not touching the logic on which they operate. One example
+        // of this is the test case - testPaymentPayoutPartial
+        if ($accountType === null)
+        {
+            $allChannelsWithModes = self::getAllSupportedPayoutChannelsWithModes();
+
+            $modesSupportedForChannel = $allChannelsWithModes[$channel][$destinationType] ?? [];
+        }
+        else
+        {
+            $allChannelsWithModes = self::getAllSupportedPayoutChannelsWithModesWithAccountType();
+
+            $modesSupportedForChannel = $allChannelsWithModes[$accountType][$channel][$destinationType] ?? [];
+        }
 
         return (in_array($mode, $modesSupportedForChannel, true));
     }

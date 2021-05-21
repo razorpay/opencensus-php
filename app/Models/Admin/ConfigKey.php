@@ -179,6 +179,9 @@ class ConfigKey
     // Count of the number of free direct account payouts allowed per merchant in a month.
     const FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL = self::PREFIX . FreePayout::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT . '_' . Channel::RBL;
 
+    // Count of the number of free direct account payouts for ICICI allowed per merchant in a month.
+    const FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_ICICI = self::PREFIX . FreePayout::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT . '_' . Channel::ICICI;
+
     const FREE_PAYOUTS_SUPPORTED_MODES = self::PREFIX . FreePayout::FREE_PAYOUTS_SUPPORTED_MODES;
 
     const DELAY_RUPAY_CAPTURE    = self::PREFIX . 'delay_rupay_capture';

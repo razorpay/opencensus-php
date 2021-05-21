@@ -8,6 +8,7 @@ use RZP\Models\Payment\Method;
 use RZP\Exception\LogicException;
 use RZP\Models\Payment\Processor;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\BankingAccount\Channel;
 use RZP\Models\VirtualAccount\Receiver;
 
 class Plan extends PublicCollection
@@ -341,8 +342,12 @@ class Plan extends PublicCollection
         return false;
     }
 
-    public function hasBankingDirectAccountNonFreePayoutRule(): bool
+    public function hasBankingDirectAccountNonFreePayoutRule(): array
     {
+        $rblRulePresent = false;
+
+        $iciciRulePresent = false;
+
         /** @var Entity $rule */
         foreach ($this->items as $rule)
         {
@@ -351,11 +356,16 @@ class Plan extends PublicCollection
                 ($rule->isAccountTypeDirect() === true) and
                 ($rule->isPayoutsFilterFreePayout() === false))
             {
-                return true;
+                $channel = $rule->getChannel();
+
+                if ($channel !== null)
+                {
+                    ${$channel . 'RulePresent'} = true;
+                }
             }
         }
 
-        return false;
+        return [$rblRulePresent, $iciciRulePresent];
     }
 
     public function hasBankingSharedAccountFreePayoutRule(): bool

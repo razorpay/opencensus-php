@@ -241,6 +241,13 @@ class Status
                 Attempt\Status::FAILED    => self::FAILED,
                 Attempt\Status::PROCESSED => self::PROCESSED,
             ],
+            Channel::ICICI => [
+                Attempt\Status::CREATED   => self::CREATED,
+                Attempt\Status::INITIATED => self::INITIATED,
+                Attempt\Status::REVERSED  => self::REVERSED,
+                Attempt\Status::FAILED    => self::FAILED,
+                Attempt\Status::PROCESSED => self::PROCESSED,
+            ],
         ],
     ];
 

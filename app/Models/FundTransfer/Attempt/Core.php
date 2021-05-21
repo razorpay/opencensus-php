@@ -712,7 +712,8 @@ class Core extends Base\Core
         $this->sourceReconByFta($fta->source, $ftaData);
 
         if (($fta->getSourceType() === Type::PAYOUT) and
-            (in_array($fta->getChannel(), Settlement\Channel::getNonTransactionChannels(), true) === true))
+            (in_array($fta->getChannel(), Settlement\Channel::getNonTransactionChannels(), true) === true) and
+            ($fta->source->isBalanceAccountTypeDirect() == true))
         {
             return;
         }

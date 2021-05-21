@@ -297,7 +297,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getBankingDirectAccountNonFreePayoutDefaultPricingRules(string $feature, Merchant\Entity $merchant)
+    public function getBankingDirectAccountNonFreePayoutDefaultPricingRules(string $feature, Merchant\Entity $merchant, array $channels)
     {
         $orgId = $merchant->getOrgId();
 
@@ -309,6 +309,7 @@ class Repository extends Base\Repository
                     ->where(Pricing\Entity::ORG_ID, '=', $orgId)
                     ->where(Pricing\Entity::TYPE, Pricing\Type::PRICING)
                     ->whereNull(Pricing\Entity::PAYOUTS_FILTER)
+                    ->whereIn(Pricing\Entity::CHANNEL, $channels)
                     ->get();
     }
 

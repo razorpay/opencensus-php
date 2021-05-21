@@ -13,6 +13,7 @@ use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Balance;
+use RZP\Models\Settlement\Channel;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Constants\Entity as EntityConstants;
@@ -352,9 +353,27 @@ class Fee extends Base\Core
         // If ANY custom pricing rules have been added for banking payouts, we do not attach
         // default pricing rules
         //
-        if ($pricingPlan->hasBankingDirectAccountNonFreePayoutRule() === false)
+        $directChannelsWithRulesAbsent = [];
+
+        list($rblRulePresent, $iciciRulePresent) = $pricingPlan->hasBankingDirectAccountNonFreePayoutRule();
+
+        if ($rblRulePresent === false)
         {
-            $rules       = $this->repo->getBankingDirectAccountNonFreePayoutDefaultPricingRules(Feature::PAYOUT, $merchant);
+            $directChannelsWithRulesAbsent[] = Channel::RBL;
+        }
+
+        if ($iciciRulePresent === false)
+        {
+            $directChannelsWithRulesAbsent[] = Channel::ICICI;
+        }
+
+        if (empty($directChannelsWithRulesAbsent) === false)
+        {
+            $rules = $this->repo->getBankingDirectAccountNonFreePayoutDefaultPricingRules(
+                Feature::PAYOUT,
+                $merchant,
+                $directChannelsWithRulesAbsent);
+
             $pricingPlan = $pricingPlan->merge($rules);
         }
 

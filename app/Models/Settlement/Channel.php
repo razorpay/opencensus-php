@@ -247,6 +247,7 @@ class Channel
     {
         return [
             self::RBL,
+            self::ICICI,
         ];
     }
 
