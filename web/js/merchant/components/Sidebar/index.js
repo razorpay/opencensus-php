@@ -209,7 +209,6 @@ export default class Sidebar extends Component {
                     label="App Store"
                     icon="i i-app-store text-primary"
                     to="/app-store"
-                    isNew
                   />
                 </div>
               </div>
