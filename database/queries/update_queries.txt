@@ -3774,16 +3774,19 @@ UPDATE fund_transfer_attempts
     WHERE id="Ff8ivefzUOVRyK";
 
 // Modifying qr_code table as per new apis
-ALTER TABLE qr_code ADD COLUMN name varchar(255);
-ALTER TABLE qr_code ADD COLUMN usage_type varchar(20);
-ALTER TABLE qr_code ADD COLUMN customer_id varchar(14);
-ALTER TABLE qr_code ADD COLUMN status varchar(20);
-ALTER TABLE qr_code ADD COLUMN description text;
-ALTER TABLE qr_code ADD COLUMN total_amount_received bigint;
-ALTER TABLE qr_code ADD COLUMN payment_received_count int;
-ALTER TABLE qr_code ADD COLUMN notes json;
-ALTER TABLE qr_code ADD COLUMN close_reason varchar(30);
-ALTER TABLE qr_code ADD COLUMN closed_at int;
-ALTER TABLE qr_code ADD COLUMN close_by int;
+ALTER TABLE qr_code
+    ADD name varchar(255),
+    ADD usage_type varchar(14),
+    ADD customer_id varchar(14),
+    ADD status varchar(6),
+    ADD description text,
+    ADD payments_amount_received bigint default 0,
+    ADD payments_received_count int default 0,
+    ADD fixed_amount tinyint default 0,
+    ADD notes json,
+    ADD close_reason varchar(10),
+    ADD closed_at int,
+    ADD close_by int;
+
 ALTER TABLE qr_code MODIFY entity_id varchar(14) DEFAULT NULL;
 ALTER TABLE qr_code MODIFY entity_type varchar(50) DEFAULT NULL;

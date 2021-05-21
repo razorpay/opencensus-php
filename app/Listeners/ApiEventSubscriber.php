@@ -1058,7 +1058,7 @@ class ApiEventSubscriber extends Base\Core
     protected function getQrCodePayload(QrCode\Entity $qrCode)
     {
         $partialPayload[Constants\Entity::QR_CODE] = [
-            'entity' => $qrCode->toArrayPublicAllAttributes()
+            'entity' => $qrCode->toArrayPublic()
         ];
 
         return $partialPayload;

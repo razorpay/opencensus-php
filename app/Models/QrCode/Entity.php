@@ -37,18 +37,6 @@ class Entity extends Base\PublicEntity
     const SHORT_URL       = 'short_url';
     const MPANS_TOKENIZED = 'mpans_tokenized';
 
-    const NAME                   = 'name';
-    const USAGE_TYPE             = 'usage_type';
-    const STATUS                 = 'status';
-    const DESCRIPTION            = 'description';
-    const TOTAL_AMOUNT_RECEIVED  = 'total_amount_received';
-    const PAYMENT_RECEIVED_COUNT = 'payment_received_count';
-    const NOTES                  = 'notes';
-    const CUSTOMER_ID            = 'customer_id';
-    const CLOSE_BY               = 'close_by';
-    const CLOSED_AT              = 'closed_at';
-    const CLOSE_REASON           = 'close_reason';
-
     protected static $sign = 'qr';
 
     protected $entity = 'qr_code';
@@ -61,18 +49,7 @@ class Entity extends Base\PublicEntity
         self::REFERENCE,
         self::QR_STRING,
         self::MPANS_TOKENIZED,
-        self::NAME,
-        self::USAGE_TYPE,
         self::AMOUNT,
-        self::STATUS,
-        self::DESCRIPTION,
-        self::TOTAL_AMOUNT_RECEIVED,
-        self::PAYMENT_RECEIVED_COUNT,
-        self::NOTES,
-        self::CUSTOMER_ID,
-        self::CLOSE_BY,
-        self::CLOSED_AT,
-        self::CLOSE_REASON
     ];
 
     protected $visible = [
@@ -83,18 +60,7 @@ class Entity extends Base\PublicEntity
         self::SHORT_URL,
         self::QR_STRING,
         self::CREATED_AT,
-        self::NAME,
-        self::USAGE_TYPE,
         self::AMOUNT,
-        self::STATUS,
-        self::DESCRIPTION,
-        self::TOTAL_AMOUNT_RECEIVED,
-        self::PAYMENT_RECEIVED_COUNT,
-        self::NOTES,
-        self::CUSTOMER_ID,
-        self::CLOSE_BY,
-        self::CLOSED_AT,
-        self::CLOSE_REASON
     ];
 
     protected $public = [
@@ -103,21 +69,6 @@ class Entity extends Base\PublicEntity
         self::REFERENCE,
         self::SHORT_URL,
         self::CREATED_AT,
-    ];
-
-    protected $nonVaAttributes = [
-        self::NAME,
-        self::USAGE_TYPE,
-        self::AMOUNT,
-        self::STATUS,
-        self::DESCRIPTION,
-        self::TOTAL_AMOUNT_RECEIVED,
-        self::PAYMENT_RECEIVED_COUNT,
-        self::NOTES,
-        self::CUSTOMER_ID,
-        self::CLOSE_BY,
-        self::CLOSED_AT,
-        self::CLOSE_REASON
     ];
 
     protected $casts = [
@@ -182,13 +133,6 @@ class Entity extends Base\PublicEntity
     public function getMorphClass()
     {
         return $this->entity;
-    }
-
-    public function toArrayPublicAllAttributes()
-    {
-        $this->public = array_merge($this->public, $this->nonVaAttributes);
-
-        return parent::toArrayPublic();
     }
 
     /**
@@ -323,25 +267,6 @@ class Entity extends Base\PublicEntity
 
             $this->setMpansTokenized(true);
         }
-    }
-
-    public function setStatus(string $status)
-    {
-        Status::checkStatus($status);
-
-        $this->setAttribute(self::STATUS, $status);
-    }
-
-    public function setCloseReason(string $closeReason)
-    {
-        CloseReason::checkCloseReason($closeReason);
-
-        $this->setAttribute(self::CLOSE_REASON, $closeReason);
-    }
-
-    public function setClosedAt(int $closedAt)
-    {
-        $this->setAttribute(self::CLOSED_AT, $closedAt);
     }
 
     public function setMpansTokenized(bool $areMpansTokenized)

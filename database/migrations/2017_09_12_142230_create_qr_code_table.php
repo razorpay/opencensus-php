@@ -9,6 +9,7 @@ use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Models\QrCode\Entity as QrCode;
 use RZP\Models\VirtualAccount\Entity as VirtualAccount;
+use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as NonVaQrCode;
 
 class CreateQrCodeTable extends Migration
 {
@@ -56,37 +57,40 @@ class CreateQrCodeTable extends Migration
 
             $table->integer(QrCode::UPDATED_AT);
 
-            $table->string(QrCode::NAME)
+            $table->string(NonVaQrCode::NAME)
                   ->nullable();
 
-            $table->string(QrCode::USAGE_TYPE, 20)
+            $table->string(NonVaQrCode::USAGE_TYPE, 14)
                   ->nullable();
 
-            $table->string(QrCode::STATUS, 20)
+            $table->string(NonVaQrCode::STATUS, 6)
                   ->nullable();
 
-            $table->text(QrCode::DESCRIPTION)
+            $table->text(NonVaQrCode::DESCRIPTION)
                   ->nullable();
 
-            $table->bigInteger(QrCode::TOTAL_AMOUNT_RECEIVED)
+            $table->bigInteger(NonVaQrCode::PAYMENTS_AMOUNT_RECEIVED)
                   ->default(0);
 
-            $table->integer(QrCode::PAYMENT_RECEIVED_COUNT)
+            $table->integer(NonVaQrCode::PAYMENTS_RECEIVED_COUNT)
                   ->default(0);
 
-            $table->json(QrCode::NOTES)
+            $table->boolean(NonVaQrCode::FIXED_AMOUNT)
+                  ->default(false);
+
+            $table->json(NonVaQrCode::NOTES)
                   ->nullable();
 
-            $table->string(QrCode::CUSTOMER_ID, Customer\Entity::ID_LENGTH)
+            $table->string(NonVaQrCode::CUSTOMER_ID, Customer\Entity::ID_LENGTH)
                   ->nullable();
 
-            $table->string(QrCode::CLOSE_REASON, 20)
+            $table->string(NonVaQrCode::CLOSE_REASON, 10)
                   ->nullable();
 
-            $table->integer(QrCode::CLOSE_BY)
+            $table->integer(NonVaQrCode::CLOSE_BY)
                   ->nullable();
 
-            $table->integer(QrCode::CLOSED_AT)
+            $table->integer(NonVaQrCode::CLOSED_AT)
                   ->nullable();
 
             $table->index(QrCode::REFERENCE);
