@@ -37,6 +37,122 @@ return [
         ],
     ],
 
+    'testAdminTpvCreateWitInvalidMerchantBalanceId' => [
+        'request'  => [
+            'url'     => '/admin/tpv/create',
+            'method'  => 'post',
+            'content' => [
+                'merchant_id'          => '10000000000111',
+                'balance_id'           => '10000000000000',
+                'status'               => Status::APPROVED,
+                'payer_name'           => 'Razorpay',
+                'payer_account_number' => '98711120003344',
+                'payer_ifsc'           => 'CITI0000006',
+                'created_by'           => 'OPS_A',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_TPV_INVALID_MERCHANT_BALANCE_ID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TPV_INVALID_MERCHANT_BALANCE_ID,
+        ],
+    ],
+
+    'testCreateTpvWithDirectBalanceException' => [
+        'request'  => [
+            'url'     => '/admin/tpv/create',
+            'method'  => 'post',
+            'content' => [
+                'merchant_id'          => '10000000000000',
+                'balance_id'           => '10000000000000',
+                'status'               => Status::APPROVED,
+                'payer_name'           => 'Razorpay',
+                'payer_account_number' => '98711120003344',
+                'payer_ifsc'           => 'CITI0000006',
+                'created_by'           => 'OPS_A',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_TPV_BALANCE_TYPE_DIRECT_NOT_SUPPORTED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TPV_BALANCE_TYPE_DIRECT_NOT_SUPPORTED,
+        ],
+    ],
+
+    'testCreateTpvWithPrimaryBalanceException' => [
+        'request'  => [
+            'url'     => '/admin/tpv/create',
+            'method'  => 'post',
+            'content' => [
+                'merchant_id'          => '10000000000000',
+                'balance_id'           => '100Balance1111',
+                'status'               => Status::APPROVED,
+                'payer_name'           => 'Razorpay',
+                'payer_account_number' => '98711120003344',
+                'payer_ifsc'           => 'CITI0000006',
+                'created_by'           => 'OPS_A',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_TPV_PRIMARY_BALANCE_NOT_SUPPORTED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TPV_PRIMARY_BALANCE_NOT_SUPPORTED,
+        ],
+    ],
+
+    'testCreateTpvWithInvalidBalanceException' => [
+        'request'  => [
+            'url'     => '/admin/tpv/create',
+            'method'  => 'post',
+            'content' => [
+                'merchant_id'          => '10000000000000',
+                'balance_id'           => '10000002223334',
+                'status'               => Status::APPROVED,
+                'payer_name'           => 'Razorpay',
+                'payer_account_number' => '98711120003344',
+                'payer_ifsc'           => 'CITI0000006',
+                'created_by'           => 'OPS_A',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_TPV_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TPV_ERROR,
+        ],
+    ],
+
     'testAdminTpvCreateDuplicateException' => [
         'request'   => [
             'url'     => '/admin/tpv/create',
@@ -143,6 +259,34 @@ return [
                 'type'                 => 'bank_account',
                 'remarks'              => 'Morphed docs'
             ],
+        ],
+    ],
+
+    'testAdminEditTpvWitInvalidMerchantBalanceId' => [
+        'request'  => [
+            'url'     => '/admin/tpv/',
+            'method'  => 'patch',
+            'content' => [
+                'merchant_id'          => '10000000002222',
+                'balance_id'           => '10000000000000',
+                'payer_account_number' => '98711120003344',
+                'status'               => Status::REJECTED,
+                'remarks'              => 'Morphed docs',
+                'payer_ifsc'           => 'CITI0000006',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_TPV_INVALID_MERCHANT_BALANCE_ID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TPV_INVALID_MERCHANT_BALANCE_ID,
         ],
     ],
 
@@ -255,6 +399,32 @@ return [
                 'is_active'            => false,
                 'type'                 => 'bank_account',
             ],
+        ],
+    ],
+
+    'testCreateTpvFromXDashboardWitInvalidMerchantBalanceId' => [
+        'request'  => [
+            'url'     => '/merchant/tpv',
+            'method'  => 'post',
+            'content' => [
+                'balance_id'           => '10000000000000',
+                'payer_name'           => 'Razorpay',
+                'payer_account_number' => '98711120003344',
+                'payer_ifsc'           => 'CITI0000006',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_TPV_INVALID_MERCHANT_BALANCE_ID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TPV_INVALID_MERCHANT_BALANCE_ID,
         ],
     ],
 

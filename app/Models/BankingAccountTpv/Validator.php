@@ -3,6 +3,11 @@
 namespace RZP\Models\BankingAccountTpv;
 
 use RZP\Base;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Models\Merchant\Balance\Type as BalanceType;
+use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 
 class Validator extends Base\Validator
 {
@@ -56,4 +61,35 @@ class Validator extends Base\Validator
         Entity::NOTES                => 'sometimes|string|max:255',
         Entity::TYPE                 => 'sometimes|in:' . Type::BANK_ACCOUNT,
     ];
+
+    public function validateMerchantBalanceId(string $merchantId, string $balanceId)
+    {
+        try
+        {
+            /** @var BalanceEntity $balance */
+            $balance = app('repo')->balance->findOrFailById($balanceId);
+
+            /** @var MerchantEntity $merchant */
+            $merchant = app('repo')->merchant->findOrFail($merchantId);
+        }
+        catch (\Throwable $ex)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TPV_ERROR);
+        }
+
+        $accountTypeDirectBalanceIds = $merchant->directBankingBalances()->pluck('id')->toArray();
+
+        if($balance->getMerchantId() !== $merchantId)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TPV_INVALID_MERCHANT_BALANCE_ID);
+        }
+        else if($balance->getType() === BalanceType::PRIMARY)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TPV_PRIMARY_BALANCE_NOT_SUPPORTED);
+        }
+        else if(in_array($balanceId, $accountTypeDirectBalanceIds) === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TPV_BALANCE_TYPE_DIRECT_NOT_SUPPORTED);
+        }
+    }
 }

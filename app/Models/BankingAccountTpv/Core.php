@@ -22,6 +22,8 @@ class Core extends Base\Core
 {
     protected $mutex;
 
+    protected $validator;
+
     const BANKING_ACCOUNT_TPV_CREATE = 'banking_account_tpv_create_';
 
     const RZP_MERCHANT_ID            = '100000Razorpay';
@@ -31,6 +33,8 @@ class Core extends Base\Core
         parent::__construct();
 
         $this->mutex = $this->app['api.mutex'];
+
+        $this->validator = new Validator();
     }
 
     public function create(array $input, string $message = TraceCode::ADMIN_CREATE_TPV)
@@ -40,6 +44,8 @@ class Core extends Base\Core
         $this->duplicateTpvCheckAndPullFavId($input);
 
         $tpv = (new Entity)->build($input);
+
+        $this->validator->validateMerchantBalanceId($tpv->getMerchantId(), $tpv->getBalanceId());
 
         if ($input[Entity::STATUS] === Status::APPROVED)
         {
@@ -62,6 +68,8 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::ADMIN_EDIT_TPV, $input);
 
         $tpv->edit($input, 'admin_edit');
+
+        $this->validator->validateMerchantBalanceId($tpv->getMerchantId(), $tpv->getBalanceId());
 
         // We don't update the payer bank account number in this api but technically we can do that via this route so
         // updating the trimmed payer account number here as well.

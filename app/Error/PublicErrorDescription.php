@@ -1377,6 +1377,14 @@ class PublicErrorDescription
 
     const BAD_REQUEST_TPV_CREATE_OPERATION_IN_PROGRESS                              = 'Request failed because another request is in progress with the same merchant id';
 
+    const BAD_REQUEST_TPV_INVALID_MERCHANT_BALANCE_ID                               = 'Balance id sent in the request does not belong to the merchant';
+
+    const BAD_REQUEST_TPV_BALANCE_TYPE_DIRECT_NOT_SUPPORTED                         = 'Balance id of type direct is not supported in tpv';
+
+    const BAD_REQUEST_TPV_PRIMARY_BALANCE_NOT_SUPPORTED                             = 'Primary balance is not supported in tpv';
+
+    const BAD_REQUEST_TPV_ERROR                                                     = 'Error in processing the tpv request';
+
     // Templating Service
     const BAD_REQUEST_ERROR_IN_TEMPLATING_RESPONSE                                  = 'Received an Error Response from templating service';
 

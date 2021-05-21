@@ -23,6 +23,13 @@ class BankingAccountTpvTest extends TestCase
         $this->testDataFilePath = __DIR__ . '/BankingAccountTpvTestData.php';
 
         parent::setUp();
+
+        $this->fixtures->edit('balance', '10000000000000', [
+            'balance'       => 10000,
+            'type'          => 'banking',
+            'merchant_id'   => '10000000000000',
+            'account_type'  => 'shared',
+        ]);
     }
 
     public function testAdminTpvCreate()
@@ -59,6 +66,72 @@ class BankingAccountTpvTest extends TestCase
         $this->assertNotNull($fav);
 
         $this->assertNotNull($tpv);
+    }
+
+    public function testAdminTpvCreateWitInvalidMerchantBalanceId()
+    {
+        $this->fixtures->create('merchant', ['id' => '10000000000111']);
+
+        $this->ba->adminAuth();
+
+        $fav = $this->getFundAccountValidationInput();
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['content'][Entity::FUND_ACCOUNT_VALIDATION_ID] = $fav['id'];
+
+        $this->startTest();
+    }
+
+    public function testCreateTpvWithDirectBalanceException()
+    {
+        $this->fixtures->edit('balance', '10000000000000', [
+            'account_type'  => 'direct',
+        ]);
+
+        $this->ba->adminAuth();
+
+        $fav = $this->getFundAccountValidationInput();
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['content'][Entity::FUND_ACCOUNT_VALIDATION_ID] = $fav['id'];
+
+        $this->startTest();
+    }
+
+    public function testCreateTpvWithPrimaryBalanceException()
+    {
+        $this->fixtures->create('balance', [
+            'id'           => '100Balance1111',
+            'balance'      => 10000,
+            'type'         => 'primary',
+            'merchant_id'  => '10000000000000',
+            'account_type' => 'shared',
+        ]);
+
+        $this->ba->adminAuth();
+
+        $fav = $this->getFundAccountValidationInput();
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['content'][Entity::FUND_ACCOUNT_VALIDATION_ID] = $fav['id'];
+
+        $this->startTest();
+    }
+
+    public function testCreateTpvWithInvalidBalanceException()
+    {
+        $this->ba->adminAuth();
+
+        $fav = $this->getFundAccountValidationInput();
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['content'][Entity::FUND_ACCOUNT_VALIDATION_ID] = $fav['id'];
+
+        $this->startTest();
     }
 
     public function testAdminTpvCreateDuplicateException()
@@ -150,6 +223,23 @@ class BankingAccountTpvTest extends TestCase
         $this->assertNotNull($tpv);
     }
 
+    public function testAdminEditTpvWitInvalidMerchantBalanceId()
+    {
+        $this->fixtures->create('merchant', ['id' => '10000000002222']);
+
+        $attributes = $this->getTpvInput();
+
+        $tpv = $this->fixtures->create('banking_account_tpv', $attributes);
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = $request['url'] . $tpv->getId();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testAdminEditTpvInvalidAccountNumber()
     {
         $attributes = $this->getTpvInput();
@@ -231,7 +321,7 @@ class BankingAccountTpvTest extends TestCase
 
     public function testManualAutoApproveTpv()
     {
-        $bankAccount = $this->fixtures->on('live')->create('bank_account', [
+       $this->fixtures->on('live')->create('bank_account', [
             'type'           => 'merchant',
             'merchant_id'    => '10000000000000',
             'entity_id'      => '10000000000000',
@@ -239,7 +329,7 @@ class BankingAccountTpvTest extends TestCase
             'ifsc_code'      => 'RAZRB000000',
         ]);
 
-        $balance = $this->fixtures->on('live')->create('balance',
+        $this->fixtures->on('live')->create('balance',
                                 [
                                     'type'           => 'banking',
                                     'account_type'   => 'shared',
@@ -250,7 +340,7 @@ class BankingAccountTpvTest extends TestCase
 
         $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
 
-        $bankAccount = $this->fixtures->on('live')->create('bank_account', [
+        $this->fixtures->on('live')->create('bank_account', [
             'type'           => 'merchant',
             'merchant_id'    => '100ghi000ghi00',
             'entity_id'      => '100ghi000ghi00',
@@ -258,20 +348,20 @@ class BankingAccountTpvTest extends TestCase
             'ifsc_code'      => 'RAZRB000000',
         ]);
 
-        $balance = $this->fixtures->on('live')->create('balance',
-                                                       [
-                                                           'type'           => 'banking',
-                                                           'account_type'   => 'shared',
-                                                           'account_number' => '983672917383',
-                                                           'merchant_id'    => '100ghi000ghi00',
-                                                           'balance'        => 20000
-                                                       ]);
+        $this->fixtures->on('live')->create('balance',
+                                            [
+                                                'type'           => 'banking',
+                                                'account_type'   => 'shared',
+                                                'account_number' => '983672917383',
+                                                'merchant_id'    => '100ghi000ghi00',
+                                                'balance'        => 20000
+                                            ]);
 
         $request = & $this->testData[__FUNCTION__]['request'];
 
         array_push($request['content'], '100ghi000ghi00', '10000000000000', 'invalidMid');
 
-        $this->ba->adminAuth();
+        $this->ba->adminAuth('live');
 
         $response = $this->startTest();
 
@@ -287,7 +377,7 @@ class BankingAccountTpvTest extends TestCase
                                       'status'               => Status::APPROVED,
                                       'payer_account_number' => '983672917383',
                                       'payer_ifsc'           => 'RAZRB000000',
-                                  ]);
+                                  ], 'live');
 
         $this->assertNotNull($tpv);
 
@@ -295,7 +385,7 @@ class BankingAccountTpvTest extends TestCase
                                   [
                                       'merchant_id'    => 'invalidMid',
                                       'status'         => Status::APPROVED,
-                                  ]);
+                                  ], 'live');
 
         $this->assertNull($tpv);
 
@@ -304,14 +394,14 @@ class BankingAccountTpvTest extends TestCase
                                       'merchant_id'          => '10000000000000',
                                       'status'               => Status::APPROVED,
                                       'payer_account_number' => '10010101011',
-                                  ]);
+                                  ], 'live');
 
         $this->assertNotNull($tpv);
     }
 
     public function testManualAutoApproveTpvFail()
     {
-        $bankAccount = $this->fixtures->on('live')->create('bank_account', [
+        $this->fixtures->on('live')->create('bank_account', [
             'type'           => 'merchant',
             'merchant_id'    => '10000000000000',
             'entity_id'      => '10000000000000',
@@ -319,7 +409,7 @@ class BankingAccountTpvTest extends TestCase
             'ifsc_code'      => 'RAZRB000000',
         ]);
 
-        $balance = $this->fixtures->on('live')->create('balance',
+        $this->fixtures->on('live')->create('balance',
             [
                 'type'           => 'banking',
                 'account_type'   => 'shared',
@@ -330,7 +420,7 @@ class BankingAccountTpvTest extends TestCase
 
         $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
 
-        $bankAccount = $this->fixtures->on('live')->create('bank_account', [
+        $this->fixtures->on('live')->create('bank_account', [
             'type'           => 'merchant',
             'merchant_id'    => '100ghi000ghi00',
             'entity_id'      => '100ghi000ghi00',
@@ -342,7 +432,7 @@ class BankingAccountTpvTest extends TestCase
 
         array_push($request['content'], '100ghi000ghi00', '10000000000000', 'invalidMid');
 
-        $this->ba->adminAuth();
+        $this->ba->adminAuth('live');
 
         $response = $this->startTest();
 
@@ -358,7 +448,7 @@ class BankingAccountTpvTest extends TestCase
                 'status'               => Status::APPROVED,
                 'payer_account_number' => '983672917383',
                 'payer_ifsc'           => 'RAZRB000000',
-            ]);
+            ], 'live');
 
         $this->assertNull($tpv);
 
@@ -366,7 +456,7 @@ class BankingAccountTpvTest extends TestCase
             [
                 'merchant_id'    => 'invalidMid',
                 'status'         => Status::APPROVED,
-            ]);
+            ], 'live');
 
         $this->assertNull($tpv);
 
@@ -375,7 +465,7 @@ class BankingAccountTpvTest extends TestCase
                 'merchant_id'          => '10000000000000',
                 'status'               => Status::APPROVED,
                 'payer_account_number' => '10010101011',
-            ]);
+            ], 'live');
 
         $this->assertNotNull($tpv);
     }
@@ -422,6 +512,28 @@ class BankingAccountTpvTest extends TestCase
         $this->assertNotNull($fav);
 
         $this->assertEquals('100000Razorpay', $fav->getMerchantId());
+    }
+
+    public function testCreateTpvFromXDashboardWitInvalidMerchantBalanceId()
+    {
+        $this->fixtures->create('merchant', ['id' => '10000000000099']);
+
+        $attribute =
+            [
+                'activation_status' => 'activated',
+                'merchant_id'       => '10000000000099',
+                'business_type'     => '2',
+            ];
+
+        $this->fixtures->create('merchant_detail', $attribute);
+
+        $ownerRoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], Role::OWNER);
+
+        $this->ba->proxyAuth('rzp_test_10000000000099', $ownerRoleUser->getId());
+
+        $this->ba->addXOriginHeader();
+
+        $this->startTest();
     }
 
     //all users should be able to create TPV at X dashboard
@@ -613,7 +725,6 @@ class BankingAccountTpvTest extends TestCase
         ]);
 
         return $this->getLastEntity('fund_account_validation', true, 'test');
-
     }
 
     public function getTpvInput(array $input = [])
