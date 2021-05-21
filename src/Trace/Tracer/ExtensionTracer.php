@@ -212,7 +212,9 @@ class ExtensionTracer implements TracerInterface, SpanEventHandlerInterface
         return new SpanContext(
             $context->traceId(),
             $context->spanId(),
-            true
+            true,
+            false,
+            $context->baggage()
         );
     }
 
