@@ -27,11 +27,14 @@ jobs:
       - run: npm config set unsafe-perm true && npm config set cache npm_cache && npm ci --verbose # Automatically installs npm ci in web
         env:
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
       - run: npm run build:e2e
         continue-on-error: true
         env:
             NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+            GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
       - run: npm run test:e2e
         continue-on-error: true
         env:
             NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+            GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}

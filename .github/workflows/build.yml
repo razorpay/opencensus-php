@@ -27,18 +27,21 @@ jobs:
           npm ci # Automatically installs npm ci in web too
         env:
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
 
       - name: Build Signup
         # Automatically installs npm ci in web too
         run: node signup.js
         env:
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
 
       - name: Build All
         # Runs in parellel
         run: cd web && npm run production:build
         env:
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
 
       - name: Remove files
         run: rm -rf .git

@@ -39,6 +39,7 @@ jobs:
           AWS_CDN_BUCKET: "checkout-live"
           AWS_REGION: "ap-south-1"
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
         run: |
           # Requirements for running s3sync.js
           npm install multi-glob aws-sdk
@@ -57,6 +58,7 @@ jobs:
           AWS_CDN_BUCKET: "rzp-1018-nonprod-betacdn"
           AWS_REGION: "ap-south-1"
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
           # CDN_PATH for beta: dashboard, for zeta dashboard/zeta, for automation dashboard/qa
           # Expecting payload with CDN_PATH from spinakker
           CDN_PATH: ${{ github.event.deployment.payload.CDN_PATH }}
