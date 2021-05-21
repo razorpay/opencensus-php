@@ -12,7 +12,7 @@ get_spinnaker_config_value() {
       -H "${SPINNAKER_HEADER}" | jq --raw-output '.[].stages[0].outputs.instance')
   fi
   # Condition to check the current instance values tag
-  if [ $apiInstanceFromSpinnaker = $defaultInstanceValue ]; then
+  if [ "$apiInstanceFromSpinnaker" = "$defaultInstanceValue" ]; then
     defaultInstanceValue="bvt-2"
   fi
 }

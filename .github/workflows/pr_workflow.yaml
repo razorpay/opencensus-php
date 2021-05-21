@@ -5,6 +5,17 @@ on:
     types: [opened, synchronize,reopened,edited]
 
 jobs:
+  # Add cancel job
+  cancel:
+    name: Cancel Previous Runs
+    if: always()
+    runs-on: [self-hosted]
+    timeout-minutes: 3
+    steps:
+      - uses: styfle/cancel-workflow-action@0.9.0
+        with:
+          workflow_id: "pr_workflow.yaml"
+          access_token: ${{ github.token }}
   pull_request:
     runs-on: [self-hosted]
     steps:
