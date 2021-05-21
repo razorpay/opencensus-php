@@ -58,7 +58,8 @@ class ContextTracer implements TracerInterface
                 'traceId' => $initialContext->traceId(),
                 'spanId' => $initialContext->spanId(),
                 'enabled' => $initialContext->enabled(),
-                'fromHeader' => $initialContext->fromHeader()
+                'fromHeader' => $initialContext->fromHeader(),
+                'baggageItems' => $initialContext->baggage(),
             ])->attach();
         }
 
@@ -155,7 +156,8 @@ class ContextTracer implements TracerInterface
             $context->value('traceId'),
             $context->value('spanId'),
             $context->value('enabled'),
-            $context->value('fromHeader', false)
+            $context->value('fromHeader', false),
+            $context->value('baggageItems') ?? []
         );
     }
 

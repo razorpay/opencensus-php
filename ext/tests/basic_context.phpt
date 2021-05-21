@@ -3,7 +3,7 @@ OpenCensus Trace: Basic Context Test
 --FILE--
 <?php
 
-$res = opencensus_trace_set_context('traceid', 1234, ['a' => 'b']);
+$res = opencensus_trace_set_context('traceid', 1234, ['rzpctx-key1' => 'value1']);
 echo "Set context: ${res}\n";
 
 $context = opencensus_trace_context();
@@ -21,5 +21,5 @@ Trace id: traceid
 Span id: 1234
 Array
 (
-    [a] => b
+    [rzpctx-key1] => value1
 )
