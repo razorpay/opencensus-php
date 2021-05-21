@@ -5,8 +5,10 @@ namespace RZP\Http\Controllers;
 use ApiResponse;
 use Razorpay\Trace\Logger;
 use Request;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
+use RZP\Http\Response\Header;
 use RZP\Models\SalesForce\SalesForceEventRequestDTO;
 use RZP\Models\SalesForce\SalesForceEventRequestType;
 use RZP\Models\SalesForce\SalesForceService;
@@ -43,7 +45,27 @@ class SalesForceController extends Controller {
                 TraceCode::SALESFORCE_EVENT_REQUEST_FAILED);
             throw $e;
         }
+
         return ApiResponse::json([], 202);
+    }
+
+    public function sendSalesForceEventWebsite(string $mid) {
+        $this->app['basicauth']->setMerchantById($mid);
+        $this->app['rzp.mode'] = Mode::LIVE;
+        $response = $this->sendSalesForceEvent($mid);
+        $response->headers->set(Header::ACCESS_CONTROL_ALLOW_ORIGIN, $this->app['config']->get('app.razorpay_website_url'));
+        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type');
+        return $response;
+    }
+
+    public function sendSalesForceEventWebsiteCors(string $mid) {
+        $response = ApiResponse::json([]);
+
+        $response->headers->set('Access-Control-Allow-Origin', $this->app['config']->get('app.razorpay_website_url'));
+
+        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type');
+
+        return $response;
     }
 
     public function getMerchantDetailsOnOpportunity(string $mid) {

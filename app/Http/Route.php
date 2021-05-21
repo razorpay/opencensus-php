@@ -2336,6 +2336,8 @@ class Route
         'update_payout_status'                    => ['patch',   'payouts/{id}/manual/status',                              'PayoutController@updatePayoutStatusManually'                  ],
         'update_payout_status_batch'              => ['patch',   'payouts/manual/status_update/batch',                       'PayoutController@updatePayoutStatusManuallyInBatch'                  ],
         'salesforce_event'                        => ['post',    'merchant/{mid}/salesforce_event',                         'SalesForceController@sendSalesForceEvent'                     ],
+        'salesforce_event_website'                => ['post',    'merchant/{mid}/salesforce_event_website',                 'SalesForceController@sendSalesForceEventWebsite'              ],
+        'salesforce_event_website_cors'           => ['options', 'merchant/{mid}/salesforce_event_website',                 'SalesForceController@sendSalesForceEventWebsiteCors'          ],
         'salesforce_opportunity_details'          => ['get',     'merchant/{mid}/salesforce_opportunity_detail',            'SalesForceController@getMerchantDetailsOnOpportunity'         ],
         'banking_account_statement_process_admin' => ['post',    'banking_account_statement/admin/process',                 'BankingAccountStatementController@fetchStatementForAccount'   ],
         'merchant_banking_accounts_webhook'       => ['post',    'merchant/{id}/banking_accounts/',                         'MerchantController@sendBankingAccountsViaWebhook'             ],
@@ -5951,6 +5953,10 @@ class Route
 
         // NPS webhook
         'consume_survey_typeform_webhook',
+
+        //website salesforce event generation
+        'salesforce_event_website',
+        'salesforce_event_website_cors',
     ];
 
     /**

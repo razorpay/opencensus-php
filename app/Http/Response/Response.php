@@ -451,6 +451,8 @@ class Response
             'customer_flagging_post_grievance_options',
             'customer_flagging_entity_details',
             'virtual_account_order_create',
+            'salesforce_event_website',
+            'salesforce_event_website_cors',
         ];
 
         if (in_array($route, $routes, true) === true)
