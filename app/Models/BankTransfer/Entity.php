@@ -489,6 +489,34 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GATEWAY);
     }
 
+    public function getTransactionId()
+    {
+        $transaction = $this->transaction;
+
+        return optional($transaction)->getId();
+    }
+
+    public function getTransactionCurrency()
+    {
+        $transaction = $this->transaction;
+
+        return optional($transaction)->getCurrency();
+    }
+
+    public function getTransactionFee()
+    {
+        $transaction = $this->transaction;
+
+        return optional($transaction)->getFee();
+    }
+
+    public function getTransactionTax()
+    {
+        $transaction = $this->transaction;
+
+        return optional($transaction)->getTax();
+    }
+
     public function getNarration()
     {
         return $this->getAttribute(self::NARRATION);

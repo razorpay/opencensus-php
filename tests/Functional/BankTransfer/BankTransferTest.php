@@ -2557,6 +2557,10 @@ class BankTransferTest extends TestCase
     {
         Mail::fake();
 
+        // During fund loading, there has been push to SNS topic for creating this transaction in Ledger service.
+        // Mocking ledger sns because call to ledger is currently async via SNS. Once it is in sync, this will be removed.
+        $this->mockLedgerSns(1);
+
         $balance = $this->getDbEntity('balance',
                                       [
                                           'merchant_id'  => '10000000000000',

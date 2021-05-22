@@ -32,6 +32,7 @@ use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\BankTransfer\HdfcEcms\StatusCode;
 use RZP\Models\Payment\Processor\TerminalProcessor;
 use RZP\Mail\Merchant\RazorpayX\FundLoadingFailed as FundLoadingFailedMail;
+use RZP\Models\Transaction\Processor\Ledger\FundLoading as LedgerFundLoading;
 
 class Processor extends VirtualAccount\Processor
 {
@@ -50,6 +51,8 @@ class Processor extends VirtualAccount\Processor
     const ACCOUNT_NUMBER = 'account_number';
 
     const IFSC_CODE = 'ifsc_code';
+
+    const BANK_TRANSFER_ID = 'bank_transfer_id';
 
     /**
      * Check if the UTR received has ever been encountered before for the same
@@ -320,6 +323,27 @@ class Processor extends VirtualAccount\Processor
                     'channel'  => Config::get('slack.channels.x_finops'),
                 ]
             );
+        }
+
+        try
+        {
+            // Fetching terminal to get the terminal_id which will be the identifier to uniquely
+            // identify accounts in case of fund loading.
+            $terminal = (new TerminalProcessor())->getTerminalForBankTransfer($bankTransfer);
+
+            // Pushing transaction to ledger which will create this transaction in ledger DB.
+            $this->processLedgerFundLoading($bankTransfer, $terminal->getPublicId(), $terminal->getAccountType());
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::LEDGER_JOURNAL_FUND_LOADING_TERMINAL_ID_NOT_FOUND,
+                [
+                    'error'                => $ex->getMessage(),
+                    self::BANK_TRANSFER_ID => $bankTransfer->getId(),
+                ]);
         }
     }
 
@@ -861,5 +885,28 @@ class Processor extends VirtualAccount\Processor
         $fundLoadingFailedMail = new FundLoadingFailedMail($bankTransferId, $actualMerchantId);
 
         Mail::queue($fundLoadingFailedMail);
+    }
+
+    /**
+     * @param Entity $bankTransfer
+     * @param string $terminalId
+     * @param $terminalAccountType
+     * Push to ledger sns when Fund Loading is initiated. This will create this transaction in ledger DB.
+     */
+    protected function processLedgerFundLoading(Entity $bankTransfer, string $terminalId, $terminalAccountType)
+    {
+        // In case env variable ledger.enabled is false or it's live mode, return.
+        // Currently onboarding for test mode only.
+        if (($this->app['config']->get('applications.ledger.enabled') === false) or
+            ($this->isLiveMode()))
+        {
+           return;
+        }
+
+        (new LedgerFundLoading)->pushTransactionToLedger($bankTransfer,
+                                                         $this->mode,
+                                                         LedgerFundLoading::FUND_LOADING_PROCESSED,
+                                                         $terminalId,
+                                                         $terminalAccountType);
     }
 }

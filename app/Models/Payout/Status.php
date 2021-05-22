@@ -5,6 +5,7 @@ namespace RZP\Models\Payout;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Models\Transaction\Processor\Ledger;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Status
@@ -250,6 +251,23 @@ class Status
             ],
         ],
     ];
+
+    public static $payoutStatusToLedgerEventMap = [
+        self::CREATED   => Ledger\Payout::PAYOUT_INITIATED,
+        self::PROCESSED => Ledger\Payout::PAYOUT_PROCESSED,
+        self::REVERSED  => Ledger\Payout::PAYOUT_REVERSED,
+    ];
+
+    /**
+     * @param string $payoutStatus
+     * @return mixed|string
+     * Return ledger event mapped to a payout status. If no such mapping is found, return
+     * DEFAULT_EVENT. This is then handled in isDefaultEvent() in Transaction/Processor/Ledger
+     */
+    public static function getLedgerEventFromPayoutStatus(string $payoutStatus)
+    {
+        return self::$payoutStatusToLedgerEventMap[$payoutStatus] ?? Ledger\Base::DEFAULT_EVENT;
+    }
 
     public static function getPublicStatusFromInternalStatus($internalStatus): string
     {

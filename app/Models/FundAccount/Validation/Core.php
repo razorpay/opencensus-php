@@ -21,6 +21,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\FundTransfer\Redaction;
 use RZP\Models\Transaction\ReconciledType;
 use RZP\Constants\Entity as EntityConstant;
+use RZP\Models\Transaction\Processor\Ledger;
 use RZP\Services\FTS\Constants as FtsConstants;
 use RZP\Services\FTS\Transfer\RequestFields as FtsRequestFields;
 
@@ -513,6 +514,38 @@ class Core extends Base\Core
             'processed'         => $processed,
             'failed'            => $recordsReceived - $processed,
         ];
+    }
+
+    /**
+     * @param Entity $fundAccountValidation
+     * @param string|null $status
+     * Push to ledger sns when Fund Account Validation status is changed.
+     * Since ledger keeps different records for all fav states, these events are triggered.
+     * Status is sent only in case of reversed. Since FAV doesn't have reversed status, it is sent explicitly
+     * For other cases, status is fetch directly from entity.
+     *
+     * TODO: In case of fav reversal, recon updates FTA to reversed and not FAV. So once FTA gets deprecated, have to check FAV_REVERSAL flow.
+     */
+    public function processLedgerFav(Entity $fundAccountValidation, string $status = null)
+    {
+        // In case env variable ledger.enabled is false or it's live mode, return.
+        // Currently onboarding for test mode only.
+        if (($this->app['config']->get('applications.ledger.enabled') === false) or ($this->isLiveMode()))
+        {
+           return;
+        }
+
+        // Since FAV does not maintain time when it gets processed or failed, defining current time
+        // which will be used as time when that particular FAV event is created in ledger.
+        $transactorDate = time();
+
+        if ($status === null)
+        {
+            $status = $fundAccountValidation->getStatus();
+        }
+        $event = Status::getLedgerEventFromFavStatus($status);
+
+        (new Ledger\FundAccountValidation)->pushTransactionToLedger($fundAccountValidation, $this->mode, $event, $transactorDate);
     }
 
     /**

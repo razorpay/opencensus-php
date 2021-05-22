@@ -63,6 +63,10 @@ return [
             'live' => env('AWS_STORK_TARGET_ARN'),
             'test' => env('AWS_STORK_TARGET_ARN'),
         ],
+        'ledger_transaction_create' => [
+            'live' => env('SNS_LEDGER_TRANSACTION_CREATE_LIVE'),
+            'test' => env('SNS_LEDGER_TRANSACTION_CREATE_TEST'),
+        ],
         'ledger_account_onboarding' => [
             'live' => env('LEDGER_ACCOUNT_ONBOARDING_LIVE'),
             'test' => env('LEDGER_ACCOUNT_ONBOARDING_TEST'),

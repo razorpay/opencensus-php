@@ -421,6 +421,10 @@ class FundAccountValidationTest extends TestCase
     {
         $this->mockRazorxTreatment();
 
+        // During FAV creation, there has been push to SNS topic for creating this transaction in Ledger service.
+        // Mocking ledger sns because call to ledger is currently async via SNS. Once it is in sync, this will be removed.
+        $this->mockLedgerSns(1);
+
         $this->testFundAccValidationWithAccountNumberAndBankAccount();
 
         $fav = $this->getDbLastEntity('fund_account_validation');
@@ -454,6 +458,10 @@ class FundAccountValidationTest extends TestCase
     public function testFundAccValidationWhenFtaStillInitiatedDuringRecon()
     {
         $this->mockRazorxTreatment();
+
+        // During FAV creation, there has been push to SNS topic for creating this transaction in Ledger service.
+        // Mocking ledger sns because call to ledger is currently async via SNS. Once it is in sync, this will be removed.
+        $this->mockLedgerSns(1);
 
         $this->testFundAccValidationWithAccountNumberAndBankAccount();
 

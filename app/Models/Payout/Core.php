@@ -49,6 +49,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccountStatement;
 use RZP\Models\Merchant\Balance\Channel;
 use RZP\Models\Workflow\Service\EntityMap;
+use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Services\Pagination\Entity as PaginationEntity;
@@ -210,6 +211,8 @@ class Core extends Base\Core
                        ->createPayout($input);
 
         $this->dispatchFtaInitiate($payout);
+
+        $this->processLedgerPayout($payout);
 
         return $payout;
     }
@@ -756,6 +759,8 @@ class Core extends Base\Core
                 //
                 $this->dispatchFtaInitiate($payout);
 
+                $this->processLedgerPayout($payout);
+
                 return $payout;
             },
             self::PAYOUT_MUTEX_LOCK_TIMEOUT,
@@ -826,6 +831,8 @@ class Core extends Base\Core
                 //
                 $this->dispatchFtaInitiate($payout);
 
+                $this->processLedgerPayout($payout);
+
                 return $payout;
             },
             self::PAYOUT_MUTEX_LOCK_TIMEOUT,
@@ -845,6 +852,8 @@ class Core extends Base\Core
                 $payout = $this->getProcessor('fund_account_payout')
                                 ->setMerchant($payout->merchant)
                                 ->processPayoutPostCreate($payout, $queueFlag);
+
+                $this->processLedgerPayout($payout);
 
                 return $payout;
             },
@@ -915,6 +924,8 @@ class Core extends Base\Core
                                ->processScheduledPayout($payout);
 
                 $this->dispatchFtaInitiate($payout);
+
+                $this->processLedgerPayout($payout);
 
                 return $payout;
             },
@@ -1507,6 +1518,30 @@ class Core extends Base\Core
 
             $this->app->events->dispatch('api.payout.processed', [$payout]);
         }
+
+        $this->processLedgerPayout($payout);
+    }
+
+    /**
+     * @param Entity $payout
+     * Push to ledger sns when a payout status is changed. This will create this payout in ledger DB.
+     * Since ledger keeps different records for all payout states, these events are triggered.
+     */
+    protected function processLedgerPayout(Entity $payout)
+    {
+        // Currently only shared fundAccount payout is pushed to ledger. So in case of direct, return.
+        // In case env variable ledger.enabled is false or it's live mode, return.
+        // Currently onboarding for test mode only.
+        if (($this->app['config']->get('applications.ledger.enabled') === false) or
+            ($payout->getBalanceAccountType() === AccountType::DIRECT) or
+            ($this->isLiveMode()))
+        {
+            return;
+        }
+
+        $event = Status::getLedgerEventFromPayoutStatus($payout->getStatus());
+
+        (new Transaction\Processor\Ledger\Payout)->pushTransactionToLedger($payout, $this->mode, $event);
     }
 
     /**
@@ -1941,6 +1976,8 @@ class Core extends Base\Core
 
             $this->app->events->dispatch('api.payout.reversed', [$payout]);
         }
+
+        $this->processLedgerPayout($payout);
     }
 
     protected function handlePayoutFailed(Entity $payout,
@@ -2435,6 +2472,8 @@ class Core extends Base\Core
                                ->processPendingPayout($payout, $queueFlag);
 
                 $this->dispatchFtaInitiate($payout);
+
+                $this->processLedgerPayout($payout);
 
                 return $payout;
             },

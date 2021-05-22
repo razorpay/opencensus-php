@@ -328,6 +328,13 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FTS_TRANSFER_ID);
     }
 
+    public function getTransactionId()
+    {
+        $transaction = $this->transaction;
+
+        return optional($transaction)->getId();
+    }
+
     public function getReceipt()
     {
         return $this->getAttribute(self::RECEIPT);

@@ -230,6 +230,19 @@ class TestCase extends ParentTestCase
         return $connector;
     }
 
+    protected function mockLedgerSns($count)
+    {
+        $sns = \Mockery::mock('RZP\Services\Aws\Sns');
+
+        $this->app->instance('sns', $sns);
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $sns->shouldReceive('publish')
+            ->times($count)
+            ->with(\Mockery::type('string'), \Mockery::type('string'));
+    }
+
     /**
      * Asserts that basicauth has exactly same passport value set as expected
      * in `expected_passport` key of test data.

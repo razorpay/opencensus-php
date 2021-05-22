@@ -12,6 +12,7 @@ use RZP\Models\Reversal;
 use RZP\Jobs\FavQueueForFTS;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\BadRequestException;
+use RZP\Models\FundAccount\Validation\Core;
 use RZP\Models\FundAccount\Validation\Status;
 use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Models\BankAccount\OldNewIfscMapping;
@@ -50,6 +51,12 @@ class BankAccount extends Base
 
     public function preProcessValidation()
     {
+        // Push to ledger sns when Fund Account Validation is created.
+        // Only processing BankAccount because transaction is created only for this and not VPA.
+        // Calling ledger at the start because validation is already created upto this stage,
+        // and it's ledger entry can be created irrespective of creating the FTA
+        (new Core)->processLedgerFav($this->validation);
+
         // If merchant is expecting utr, we can not return same utr, so need to hit fresh request
         $isUtrExposeEnabled = $this->validation->merchant->isFeatureEnabled(MerchantFeature::EXPOSE_FA_VALIDATION_UTR);
 
@@ -294,6 +301,8 @@ class BankAccount extends Base
     {
         if (Status::hasFinalStatus($this->validation) === true)
         {
+            $status = $input['fta_status'] ?? $input['status'];
+
             // We should not have reached here
             // but it is possible that we manually
             // marked FAV as failed and later FTA succeeded
@@ -302,9 +311,17 @@ class BankAccount extends Base
                 TraceCode::FUND_ACCOUNT_VALIDATION_ALREADY_PROCESSED,
                 [
                     'fav_id' => $this->validation->getId(),
-                    'fta_status' => $input['fta_status'] ?? $input['status'],
+                    'fta_status' => $status,
                     'fav_status' => $this->validation->getStatus(),
                 ]);
+
+            // Since FAV does not main any reversed state, calling ledger explicitly here
+            // as to create ledger entry when FTA is reversed.
+            // This will only happen when FAV is already in it's final state, i.e., FAILED or COMPLETED.
+            if (Attempt\Status::REVERSED === $status)
+            {
+                (new Core)->processLedgerFav($this->validation, Attempt\Status::REVERSED);
+            }
 
             return;
         }
@@ -361,6 +378,8 @@ class BankAccount extends Base
 
             $this->trace->warn(TraceCode::BENEFICIARY_NAME_NOT_PRESENT, $traceArray);
         }
+
+        (new Core)->processLedgerFav($this->validation);
     }
 
     /**
@@ -389,6 +408,8 @@ class BankAccount extends Base
         $this->markValidationAsFailed();
 
         (new Reversal\Core)->reverseForFundAccountValidation($this->validation);
+
+        (new Core)->processLedgerFav($this->validation);
     }
 
     protected function isStatusCodeInCompletedStateMap($bankStatusCode)
