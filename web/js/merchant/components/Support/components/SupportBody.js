@@ -79,7 +79,7 @@ class SupportBody extends Component {
           },
         });
         // if notifications pending, then enable chat
-        if (!isWorkingDay() && notifyCount < 1) {
+        if (!this.props.supportFlags.show_chat && notifyCount < 1) {
           return;
         }
 
