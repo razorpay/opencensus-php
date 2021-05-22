@@ -242,19 +242,19 @@ class SupportBody extends Component {
             ) > -1 && this.props.supportFlags.show_chat ? (
               <li
                 class={`support-item p-all chat ${
-                  shouldDisable && notifyCount < 1 ? 'disabled' : ''
+                  !this.props.supportFlags.show_chat && notifyCount < 1 ? 'disabled' : ''
                 }`}
                 onClick={() => handleClick('chat')}
               >
                 Chat with us
                 {this.state.timings.length ? (
                   <small class="help-content">
-                    ({date.start} {date.start_zone} - {date.end} {date.end_zone}, working days)
+                    ({date.start} {date.start_zone} - {date.end} {date.end_zone})
                   </small>
                 ) : null}
                 {notifyCount > 0 && <span class="notify-icon m-l">{notifyCount}</span>}
                 <small class="help-block">
-                  {shouldDisable && notifyCount < 1
+                  {!this.props.supportFlags.show_chat && notifyCount < 1
                     ? 'Currently unavailable'
                     : 'For quick questions or help on dashboard'}
                 </small>
