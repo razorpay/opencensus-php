@@ -10,9 +10,9 @@ use RZP\Models\State;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\State\Reason;
-use RZP\Models\Workflow\Action;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Partner\Activation;
+use RZP\Models\Workflow\Action\Core as ActionCore;
 use RZP\Mail\Merchant\NeedsClarificationEmail as ClarificationEmail;
 
 class Core extends Base\Core
@@ -283,6 +283,27 @@ class Core extends Base\Core
 
         $partnerActivation->edit($input);
 
+        $this->repo->transactionOnLiveAndTest(function() use ($input, $merchant) {
+            switch ($input[Entity::ACTIVATION_STATUS])
+            {
+                case Constants::ACTIVATED:
+                    // If merchant gets Activated, onboarding WF's should get auto-approved
+                    (new ActionCore)->handleOnboardingWorkflowActionIfOpen(
+                        $merchant->getId(), 'partner_activation', State\Name::APPROVED);
+                    break;
+                case Constants::REJECTED:
+                    // If merchant gets Rejected, onboarding WF's should get auto-closed
+                    (new ActionCore)->handleOnboardingWorkflowActionIfOpen(
+                        $merchant->getId(), 'partner_activation', State\Name::CLOSED);
+                    break;
+                case Constants::NEEDS_CLARIFICATION:
+                    // If merchant goes to NC, onboarding WF's should get auto-rejected
+                    (new ActionCore)->handleOnboardingWorkflowActionIfOpen(
+                        $merchant->getId(), 'partner_activation', State\Name::REJECTED);
+                    break;
+            }
+        });
+
         $this->repo->transactionOnLiveAndTest(function() use (
             $partnerActivation,
             $input,
@@ -322,9 +343,6 @@ class Core extends Base\Core
 
             if ($input[Entity::ACTIVATION_STATUS] === Constants::NEEDS_CLARIFICATION)
             {
-                (new Action\Core)->autoCloseActivationWorkflowActionIfOpen(
-                    $merchant->getId(), 'partner_activation');
-
                 if (empty($partnerActivation->getKycClarificationReasons()) === false)
                 {
                     $partnerActivation->setLocked(false);

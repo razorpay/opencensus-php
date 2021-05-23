@@ -44,6 +44,7 @@ class Entity extends Base\Entity
     const TAGGED                = 'tagged';
     const OWNER_ID              = 'owner_id';
     const OWNER                 = 'owner';
+    const ASSIGNED_AT           = 'assigned_at';
 
     // Relations
     const WORKFLOW      = 'workflow';
@@ -71,7 +72,8 @@ class Entity extends Base\Entity
         self::STATE,
         self::STATE_CHANGER_ID,
         self::STATE_CHANGER_TYPE,
-        self::STATE_CHANGER_ROLE_ID
+        self::STATE_CHANGER_ROLE_ID,
+        self::ASSIGNED_AT,
     ];
 
     protected $visible = [
@@ -102,6 +104,7 @@ class Entity extends Base\Entity
         self::TAGGED,
         self::OWNER_ID,
         self::OWNER,
+        self::ASSIGNED_AT,
     ];
 
     protected $publicSetters = [
@@ -143,6 +146,7 @@ class Entity extends Base\Entity
         self::STATE_CHANGER_ROLE,
         self::TAGGED,
         self::OWNER,
+        self::ASSIGNED_AT,
     ];
 
     protected $defaults = [
@@ -195,6 +199,11 @@ class Entity extends Base\Entity
     public function owner()
     {
         return $this->belongsTo('RZP\Models\Admin\Admin\Entity');
+    }
+
+    public function setAssignedAt()
+    {
+        $this->setAttribute(self::ASSIGNED_AT, time());
     }
 
     public function maker()

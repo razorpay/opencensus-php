@@ -71,6 +71,8 @@ class CreateWorkflowAction extends Migration
 
             $table->char(Action::STATE, 25);
 
+            $table->integer(Action::ASSIGNED_AT)->nullable();
+
             $table->foreign(Action::WORKFLOW_ID)
                   ->references(Workflow::ID)
                   ->on(Table::WORKFLOW)

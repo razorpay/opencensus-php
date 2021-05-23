@@ -574,6 +574,7 @@ class Core extends Base\Core
                 $admin = $this->repo->admin->findOrFailPublic($input[Entity::OWNER_ID]);
 
                 $action->owner()->associate($admin);
+                $action->setAssignedAt();
             }
             else
             {
@@ -633,7 +634,7 @@ class Core extends Base\Core
      *
      * @throws Exception\BadRequestException
      */
-    public function applyActionRejectionStateChanges(Entity $action, PublicEntity $checkerEntity, Role\Entity $role)
+    public function applyActionRejectionStateChanges(Entity $action, PublicEntity $checkerEntity, Role\Entity $role = null)
     {
         $state = State\Name::REJECTED;
 
@@ -802,8 +803,7 @@ class Core extends Base\Core
 
         if (empty($permissionIdList) === true)
         {
-            throw new
-            Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_PERMISSION);
+            return [];
         }
 
         return array_unique($permissionIdList);
@@ -941,19 +941,33 @@ class Core extends Base\Core
     /**
      * @param string $entityId
      * @param string $entityType
+     * @param string $action
      */
-    public function autoCloseActivationWorkflowActionIfOpen(string $entityId, string $entityType)
+    public function handleOnboardingWorkflowActionIfOpen(string $entityId, string $entityType, string $action)
     {
         $actions = $this->fetchOpenActionOnEntityOperationWithPermissionList(
-            $entityId, $entityType, Constants::AUTO_CLOSE_WF_NAMES_ON_NC);
+            $entityId, $entityType, Constants::ONBOARDING_WORKFLOWS);
 
         // If there are any action in progress
         if (empty($actions) === false)
         {
             $maker = $this->app['workflow']->getWorkflowMaker();
-            foreach ($actions as $action)
+
+            foreach ($actions as $workflowAction)
             {
-                $this->close($action, $maker, true);
+                switch ($action)
+                {
+                    case State\Name::APPROVED:
+                        $this->approveActionForcefully($workflowAction, $maker);
+                        $this->updateStateAndStateChanger($workflowAction, State\Name::EXECUTED, $maker);
+                        break;
+                    case State\Name::REJECTED:
+                        $this->applyActionRejectionStateChanges($workflowAction, $maker, null);
+                        break;
+                    case State\Name::CLOSED:
+                        $this->close($workflowAction, $maker, true);
+                        break;
+                }
             }
         }
     }

@@ -6,9 +6,10 @@ use RZP\Models\Admin\Permission;
 
 class Constants
 {
-    const AUTO_CLOSE_WF_NAMES_ON_NC = [
-        Permission\Name::EDIT_ACTIVATE_MERCHANT,
+    const ONBOARDING_WORKFLOWS = [
+        Permission\Name::NEEDS_CLARIFICATION_RESPONDED,
         Permission\Name::AUTO_KYC_SOFT_LIMIT_BREACH,
+        Permission\Name::AUTO_KYC_SOFT_LIMIT_BREACH_UNREGISTERED,
         Permission\Name::EDIT_ACTIVATE_PARTNER,
     ];
 

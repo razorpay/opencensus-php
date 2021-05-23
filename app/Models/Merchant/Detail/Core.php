@@ -119,6 +119,8 @@ class Core extends Base\Core
 
         $merchantDetails = $this->getMerchantDetails($merchant, $input);
 
+        $oldMerchantDetails = clone $merchantDetails;
+
         $this->convertStatesToStatesCode($input);
 
         $merchantDetails->getValidator()->validateIsNotLocked($merchant);
@@ -140,13 +142,14 @@ class Core extends Base\Core
 
         return $this->mutex->acquireAndRelease(
             $merchant->getId(),
-            function() use ($input, $merchantDetails, $merchant, $originProduct) {
+            function() use ($input, $merchantDetails, $merchant, $originProduct, $oldMerchantDetails) {
 
                 return $this->repo->transactionOnLiveAndTest(function() use (
                     $input,
                     $merchantDetails,
                     $merchant,
-                    $originProduct
+                    $originProduct,
+                    $oldMerchantDetails
                 ) {
 
                     $this->repo->merchant->lockForUpdate($merchant->getId());
@@ -171,7 +174,7 @@ class Core extends Base\Core
                         // If merchant is NC responded then we want to trigger activation workflow
                         if($this->isNcResponded($oldActivationStatus, $merchantDetails->getActivationStatus()))
                         {
-                            $this->triggerActivationWorkflow($merchant);
+                            $this->triggerNeedsClarificationRespondedWorkflow($merchant, $oldMerchantDetails);
                         }
                     }
                     else
@@ -207,7 +210,7 @@ class Core extends Base\Core
         return $count;
     }
 
-    private function triggerActivationWorkflow($merchant)
+    private function triggerNeedsClarificationRespondedWorkflow($merchant, $oldMerchantDetails)
     {
         $statusChangeLogs = (new Merchant\Core)->getActivationStatusChangeLog($merchant);
 
@@ -226,18 +229,21 @@ class Core extends Base\Core
         // The reason routeName and Controller is set here because
         // the workflow being triggered is associated with the different route.
         $this->app['workflow']
-            ->setPermission(Permission\Name::EDIT_ACTIVATE_MERCHANT)
+            ->setPermission(Permission\Name::NEEDS_CLARIFICATION_RESPONDED)
             ->setRouteName(DetailConstants::ACTIVATION_ROUTE_NAME)
             ->setController(DetailConstants::ACTIVATION_CONTROLLER)
             ->setWorkflowMaker($maker)
             ->setMakerFromAuth(false)
             ->setTags($tags)
             ->setRouteParams([Entity::ID => $merchant->getId()])
-            ->setInput($input);
+            ->setInput($input)
+            ->setEntity($merchant->merchantDetail->getEntity())
+            ->setOriginal($oldMerchantDetails)
+            ->setDirty($merchant->merchantDetail);
 
         try
         {
-            $this->updateActivationStatus($merchant, $input, $maker);
+            $this->app['workflow']->handle();
         }
         catch(Exception\EarlyWorkflowResponse $e)
         {
@@ -1710,6 +1716,33 @@ class Core extends Base\Core
 
         $newMerchantDetails = clone $merchantDetails;
 
+        $this->repo->transactionOnLiveAndTest(function () use ($input, $merchant){
+            switch ($input[Entity::ACTIVATION_STATUS])
+            {
+                case Status::ACTIVATED:
+
+                    if ($merchant->isLinkedAccount() === false)
+                    {
+                        // If merchant gets Activated, onboarding WF's should get auto-approved
+                        (new ActionCore)->handleOnboardingWorkflowActionIfOpen(
+                            $merchant->getId(), 'merchant_detail', State\Name::APPROVED);
+                    }
+                    break;
+                case Status::NEEDS_CLARIFICATION:
+
+                    // If merchant goes to NC, onboarding WF's should get auto-rejected
+                    (new ActionCore)->handleOnboardingWorkflowActionIfOpen(
+                        $merchant->getId(), 'merchant_detail', State\Name::REJECTED);
+                    break;
+                case Status::REJECTED:
+
+                    // If merchant gets Rejected, onboarding WF's should get auto-closed
+                    (new ActionCore)->handleOnboardingWorkflowActionIfOpen(
+                        $merchant->getId(), 'merchant_detail', State\Name::CLOSED);
+                    break;
+            }
+        });
+
         $this->repo->transactionOnLiveAndTest(function() use (
                                                             $merchantDetails,
                                                             $oldMerchantDetails,
@@ -1741,7 +1774,6 @@ class Core extends Base\Core
             {
 
                 (new Merchant\Activate)->activate($merchant, false);
-
                 // request for default instruments when merchant is activated
 
                 $this->app['terminals_service']->requestDefaultMerchantInstruments($merchant->getId());
@@ -1761,11 +1793,6 @@ class Core extends Base\Core
 
             if ($input[Entity::ACTIVATION_STATUS] === Status::NEEDS_CLARIFICATION)
             {
-                // If merchant responds to NC, activation workflow is created
-                // This workflow should get auto closed if agent marks NC again
-                (new ActionCore)->autoCloseActivationWorkflowActionIfOpen(
-                    $merchant->getId(), 'merchant_detail');
-
                 //
                 // For Older merchant who are still in old flow ,
                 // kyc clarification will be empty in this case form should not get unlocked

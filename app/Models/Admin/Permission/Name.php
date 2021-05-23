@@ -329,6 +329,9 @@ class Name
     const AUTO_KYC_SOFT_LIMIT_BREACH          = 'auto_kyc_soft_limit_breach';
     const AUTO_KYC_SOFT_LIMIT_BREACH_UNREGISTERED = 'auto_kyc_soft_limit_breach_unregistered';
 
+    // Permission to create NC responded WF
+    const NEEDS_CLARIFICATION_RESPONDED = 'needs_clarification_responded';
+
     // Permission to create workflow for an impersonating merchant found during Dedupe
     const IMPERSONATING_MERCHANT_DEDUPE       = 'impersonating_merchant_dedupe';
 
