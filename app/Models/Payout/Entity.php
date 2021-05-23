@@ -35,7 +35,6 @@ use RZP\Models\Settlement\Channel;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Exception\ServerErrorException;
-use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payout\Mode as PayoutMode;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Exception\UserWorkflowNotApplicableException;
@@ -1828,12 +1827,7 @@ class Entity extends Base\PublicEntity
 
         $mode = $app['rzp.mode'];
 
-        $variant = $app->razorx->getTreatment($this->merchant->getId(),
-                                              RazorxTreatment::REGISTERED_NAME_IN_PAYOUTS_RESPONSE,
-                                              $mode);
-
-        if (($variant === "on") or
-            $this->merchant->isFeatureEnabled(Features::BENE_NAME_IN_PAYOUT) === true)
+        if ($this->merchant->isFeatureEnabled(Features::BENE_NAME_IN_PAYOUT) === true)
         {
             $attributes[self::REGISTERED_NAME] = $this->getRegisteredName();
         }
