@@ -51,6 +51,8 @@ class Core extends Base\Core
     const ACCOUNT_STATEMENT_RECORDS_TO_SAVE_AT_ONCE_DEFAULT = 200;
 
     const ACCOUNT_STATEMENT_RECORDS_TO_SAVE_IN_TOTAL_DEFAULT = 100;
+
+    const FETCH_CONFIG_KEY_RETRY_LIMIT = 3;
     /**
      * Temporary hack. Should not set balance at a class level.
      * This restricts us from processing transactions from
@@ -59,6 +61,14 @@ class Core extends Base\Core
      * @var Merchant\Balance\Entity
      */
     protected $balance;
+
+    /**
+     * Recon for RBL IFT Transactions depends on whether the merchant is onboarded
+     * to the single payments api offered by the bank or not.
+     *
+     * @var bool
+     */
+    protected $isRBLSinglePaymentsApiEnabled = false;
 
     protected $mutex;
 
@@ -137,7 +147,7 @@ class Core extends Base\Core
 
                     $accountStatementDetails = $processor->fetchAccountStatementDetails($input);
 
-                    $this->processAccountStatement($accountStatementDetails, $accountNumber, $merchant, $processor);
+                    $this->processAccountStatement($accountStatementDetails, $accountNumber, $merchant, $processor, $channel);
 
                     $bankingAccount->balance->updateLastFetchedAt();
                 },
@@ -254,6 +264,11 @@ class Core extends Base\Core
         if (empty($saveLimit) == true)
         {
             $saveLimit = self::ACCOUNT_STATEMENT_RECORDS_TO_SAVE_IN_TOTAL_DEFAULT;
+        }
+
+        if ($channel === Channel::RBL)
+        {
+            $this->checkForRblSinglePaymentsApi($accountNumber);
         }
 
         $bankingAccount = (new BankingAccount\Repository)->findByAccountNumberAndChannel($accountNumber, $channel);
@@ -653,6 +668,7 @@ class Core extends Base\Core
      *
      * $processor is gateway depending on channel.
      * @param                 $processor
+     * @param string          $channel
      *
      * @throws Exception\BadRequestException
      */
@@ -660,7 +676,8 @@ class Core extends Base\Core
         array $bankTransactions,
         string $accountNumber,
         Merchant\Entity $merchant,
-        $processor)
+        $processor,
+        string $channel)
     {
         $bankTxnCount = count($bankTransactions);
         $skippedCount = 0;
@@ -668,6 +685,11 @@ class Core extends Base\Core
         // This will be updated in BAS Details table as statement closing balance.
         // initializing to null so that if $closingBalance is null BAS details table update process will no trigger.
         $closingBalance = null;
+
+        if ($channel === Channel::RBL)
+        {
+            $this->checkForRblSinglePaymentsApi($accountNumber);
+        }
 
         foreach ($bankTransactions as $bankTransaction)
         {
@@ -729,6 +751,51 @@ class Core extends Base\Core
                 BASDetails\Entity::STATEMENT_CLOSING_BALANCE => $closingBalance
             ];
             (new BASDetails\Core)->createOrUpdate($basDetailInput);
+        }
+    }
+
+    protected function checkForRblSinglePaymentsApi(string $accountNumber)
+    {
+        $attempts = self::FETCH_CONFIG_KEY_RETRY_LIMIT;
+
+        $v2AccountNumbers = [];
+
+        do
+        {
+            $retry = false;
+
+            try
+            {
+                $v2AccountNumbers = (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_DIRECT_ACCOUNTS_ON_SINGLE_PAYMENTS_API]);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    null,
+                    TraceCode::CONFIG_KEY_FETCH_FAILURE,
+                    [
+                        'account_number'    => $accountNumber,
+                        'message'           => $e->getMessage(),
+                    ]);
+
+                $retry = true;
+            }
+
+            $attempts--;
+        }
+        while ($attempts > 0 and $retry === true);
+
+        if (in_array($accountNumber, $v2AccountNumbers) === true)
+        {
+            $this->isRBLSinglePaymentsApiEnabled = true;
+
+            $this->trace->info(
+                TraceCode::RBL_CA_ENABLED_ON_SINGLE_PAYMENTS_API,
+                [
+                    Entity::ACCOUNT_NUMBER => $accountNumber,
+                    'attempt_number'       => self::FETCH_CONFIG_KEY_RETRY_LIMIT - $attempts,
+                ]);
         }
     }
 
@@ -1359,24 +1426,18 @@ class Core extends Base\Core
              * Only for IFT mode.
              */
 
-            $v2AccountNumbers = (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_DIRECT_ACCOUNTS_ON_SINGLE_PAYMENTS_API]);
-
-            if (in_array($basEntity->getAccountNumber(), $v2AccountNumbers) === true and
-                $basEntity->getChannel() === Channel::RBL)
+            if (($this->isRBLSinglePaymentsApiEnabled === true) and
+                ($basEntity->getChannel() === Channel::RBL))
             {
                 $description = $basEntity->getDescription();
 
                 $gatewayRefNo = substr($description, -10, 10);
 
                 $identifier = $gatewayRefNo;
-
-                $isV2Enabled = true;
             }
             else
             {
                 $identifier = $bankTxnId;
-
-                $isV2Enabled = false;
             }
 
             // we are checking both linked and unlinked payouts because debit row might have already been
@@ -1387,7 +1448,7 @@ class Core extends Base\Core
                 $bankTimeBeforePostedDate,
                 $basEntity->getAmount(),
                 $balance->getId(),
-                $isV2Enabled);
+                $this->isRBLSinglePaymentsApiEnabled);
 
             $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_CMS_REF_NO_FOR_IFT_FOR_CREDIT_MAPPING,
                 [
@@ -1396,7 +1457,7 @@ class Core extends Base\Core
                     'bas_id'                                              => $basEntity->getId(),
                     'account_no'                                          => $basEntity->getAccountNumber(),
                     'identifier'                                          => $identifier,
-                    'is_v2_enabled'                                       => $isV2Enabled,
+                    'is_v2_enabled'                                       => $this->isRBLSinglePaymentsApiEnabled,
                     'payouts_fetched_via_cms_ref_no_for_ift_mapping_time' => (microtime(true) - $startTime) * 1000,
                 ]);
         }
@@ -1627,24 +1688,19 @@ class Core extends Base\Core
              *
              * Only for IFT mode.
              */
-            $v2AccountNumbers = (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_DIRECT_ACCOUNTS_ON_SINGLE_PAYMENTS_API]);
 
-            if (in_array($basEntity->getAccountNumber(), $v2AccountNumbers) === true and
-                $basEntity->getChannel() === Channel::RBL)
+            if (($this->isRBLSinglePaymentsApiEnabled) === true and
+                ($basEntity->getChannel() === Channel::RBL))
             {
                 $description = $basEntity->getDescription();
 
                 $gatewayRefNo = substr($description, -10, 10);
 
                 $identifier = $gatewayRefNo;
-
-                $isV2Enabled = true;
             }
             else
             {
                 $identifier = $bankTxnId;
-
-                $isV2Enabled = false;
             }
 
             // fetch only unlinked payouts i.e which do not have txn_id, since we are trying to map given bas
@@ -1655,7 +1711,7 @@ class Core extends Base\Core
                                                                                        $bankTimeBeforePostedDate,
                                                                                        $basEntity->getAmount(),
                                                                                        $balance->getId(),
-                                                                                       $isV2Enabled);
+                                                                                       $this->isRBLSinglePaymentsApiEnabled);
 
             $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_CMS_REF_NO_FOR_IFT_FOR_DEBIT_MAPPING,
                                [
@@ -1664,7 +1720,7 @@ class Core extends Base\Core
                                    'bas_id'                                              => $basEntity->getId(),
                                    'account_no'                                          => $basEntity->getAccountNumber(),
                                    'identifier'                                          => $identifier,
-                                   'is_v2_enabled'                                       => $isV2Enabled,
+                                   'is_v2_enabled'                                       => $this->isRBLSinglePaymentsApiEnabled,
                                    'payouts_fetched_via_cms_ref_no_for_ift_mapping_time' => (microtime(true) - $startTime) * 1000
                                ]);
         }
