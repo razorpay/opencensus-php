@@ -376,6 +376,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACCOUNT_CODE);
     }
 
+    public function getProcessedAt()
+    {
+        return $this->getAttribute(self::PROCESSED_AT);
+    }
+
     // -------------------- End Getters ---------------------------
 
     // -------------------- Setters ---------------------------

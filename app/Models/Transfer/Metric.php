@@ -18,6 +18,8 @@ class Metric extends Base\Core
     const TRANSFER_PROCESS_FAILED                  = 'transfer_process_failed';
     const TRANSFER_ROUTE                           = 'transfer_route';
     const TRANSFER_TO_TYPE                         = 'transfer_to_type';
+    const TRANSFER_SOURCE                          = 'transfer_source';
+    const TRANSFER_PROCESSING_TIME                 = 'transfer_processing_time';
 
     public function pushCreateSuccessMetrics(array $input = [])
     {
@@ -55,6 +57,15 @@ class Metric extends Base\Core
     public function pushTransferProcessFailedMetrics(\Throwable $e)
     {
         $this->pushExceptionMetrics($e, self::TRANSFER_PROCESS_FAILED, $this->getCreateDefaultDimensions());
+    }
+
+    public function pushTransferProcessingTimeMetrics($sourceType, $processingTime)
+    {
+        $dimensions = [
+            self::TRANSFER_SOURCE => $sourceType,
+        ];
+
+        $this->trace->histogram(self::TRANSFER_PROCESSING_TIME, $processingTime, $dimensions);
     }
 
     private function getCreateDefaultDimensions(array $input = [])

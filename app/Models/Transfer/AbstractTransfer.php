@@ -111,6 +111,10 @@ abstract class AbstractTransfer
 
                     $this->fireTransferFailedWebhookIfApplicable($transfer);
                 }
+                finally
+                {
+                    (new Core())->trackTransferProcessingTime($transfer, $payment);
+                }
             }
 
         return $transfers;

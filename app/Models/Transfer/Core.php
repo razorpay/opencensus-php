@@ -810,4 +810,35 @@ class Core extends Base\Core
 
         return false;
     }
+
+    public function trackTransferProcessingTime(Entity $transfer, Payment\Entity $payment = null)
+    {
+        $transfer->reload();
+
+        if (($transfer->isProcessed() === true) and
+            ($transfer->getAttempts() === 1))
+        {
+            $sourceType = $transfer->getSourceType();
+
+            if ($sourceType === Constant::PAYMENT)
+            {
+                $processingTime = $transfer->getProcessedAt() - $transfer->getCreatedAt();
+            }
+            else if ($sourceType === Constant::ORDER)
+            {
+                $processingTime = $transfer->getProcessedAt() - $payment->getCapturedAt();
+            }
+
+            $this->trace->info(
+                TraceCode::TRANSFER_PROCESSING_TIME,
+                [
+                    'transfer_id'       => $transfer->getPublicId(),
+                    'source_type'       => $sourceType,
+                    'processing_time'   => $processingTime,
+                ]
+            );
+
+            (new Metric())->pushTransferProcessingTimeMetrics($sourceType, $processingTime);
+        }
+    }
 }

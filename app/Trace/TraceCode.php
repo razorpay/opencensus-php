@@ -1999,6 +1999,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TRANSFER_RECIPIENT_SETTLEMENT_ID_UPDATED              = 'TRANSFER_RECIPIENT_SETTLEMENT_ID_UPDATED';
     const TRANSACTION_FETCHED_FOR_SETTLEMENT_ID                 = 'TRANSACTION_FETCHED_FOR_SETTLEMENT_ID';
     const TRANSFER_UPDATE_SETTLEMENT_ID_FAILED                  = 'TRANSFER_UPDATE_SETTLEMENT_ID_FAILED';
+    const TRANSFER_PROCESSING_TIME                              = 'TRANSFER_PROCESSING_TIME';
 
     // Trace Code for Gateway Absence StatusCake
 
