@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\WebhookV2;
 
 use Mail;
 use Carbon\Carbon;
+use Illuminate\Support\Arr;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
@@ -15,6 +16,7 @@ use RZP\Error\ErrorCode;
 use RZP\Modules\Migrate\Migrate;
 use RZP\Models\Event\Entity as EventEntity;
 use RZP\Mail\Merchant\Webhook as WebhookMail;
+use RZP\Models\Merchant\Account\Entity as AccountEntity;
 
 /**
 * API working as a proxy layer. Forwards request to stork with minimum
@@ -103,14 +105,18 @@ class Service extends Base\Service
 
     /**
      * This method handles the merchant's create webhook
-     * use case and just adds a few implict fields to the input.
+     * use case and just adds a few implicit fields to the input.
      * It then calls a common method to create webhook.
-     * @param   array $input
+     * @param array $input
+     * @param string|null $merchantId
      * @return  array
+     * @throws Exception\BadRequestException
      */
-    public function createForMerchant(array $input): array
+    public function createForMerchant(array $input, string $merchantId = null): array
     {
-        $this->traceOperationEntry('create_for_merchant');
+        $merchantId = $merchantId ?? $this->merchant->getId();
+
+        $this->traceOperationEntry('create_for_merchant', [AccountEntity::MERCHANT_ID => $merchantId]);
 
         $input = $this->apiToStorkFormat($input);
 
@@ -118,10 +124,10 @@ class Service extends Base\Service
 
         $this->validator->validateStorkWebhookInput($input, $this->merchant);
 
-        $input[self::OWNER_ID]   = $this->merchant->getId();
+        $input[self::OWNER_ID]   = $merchantId;
         $input[self::OWNER_TYPE] = self::MERCHANT;
 
-        $this->traceOperationExit('create_for_merchant');
+        $this->traceOperationExit('create_for_merchant', [AccountEntity::MERCHANT_ID => $merchantId]);
 
         return $this->create($input);
     }
@@ -143,7 +149,10 @@ class Service extends Base\Service
 
         $res = (new Stork($this->mode, $this->product))->create($input);
 
-        $this->traceStorkOperationSuccess('create', ['webhook_id' => $res[self::ID] ?? '', 'webhook' => $this->getStorkWebhookForTracing($res)]);
+        $merchantId = ($input[self::OWNER_TYPE] === self::MERCHANT) ? $input[self::OWNER_ID] : $this->merchant->getId();
+
+        $this->traceStorkOperationSuccess('create', ['webhook_id' => $res[self::ID] ?? '', 'webhook' => $this->getStorkWebhookForTracing($res),
+                                                              AccountEntity::MERCHANT_ID => $merchantId]);
 
         return $this->storkToApiFormat($res);
     }
@@ -151,13 +160,17 @@ class Service extends Base\Service
     /**
      * Edits the webhook on stork and temporarily edits the webhook
      * entity on API as well. This will be removed in sometime.
-     * @param  string $webhookId
-     * @param  array  $input     - input in stork format
+     * @param string $webhookId
+     * @param array $input - input in stork format
+     * @param string|null $merchantId
      * @return array             - stork's webhook edit response body
+     * @throws Exception\BadRequestException
      */
-    public function update(string $webhookId, array $input): array
+    public function update(string $webhookId, array $input, string $merchantId = null): array
     {
-        $this->traceOperationEntry('update', ['webhook_id' => $webhookId ?? '']);
+        $merchantId = $merchantId ?? $this->merchant->getId();
+
+        $this->traceOperationEntry('update', ['webhook_id' => $webhookId ?? '', AccountEntity::MERCHANT_ID => $merchantId]);
 
         $input = $this->apiToStorkFormat($input);
 
@@ -170,44 +183,47 @@ class Service extends Base\Service
         $isOauthApplicationWebhook === true ? $this->validator->validatePartnerMerchantHasApplicationAccess($this->merchant, $input[self::APPLICATION_ID])  : null;
 
         $input[self::ID]           = $webhookId;
-        $input[self::OWNER_ID]     = $isOauthApplicationWebhook === true ? $input[self::APPLICATION_ID] : $this->merchant->getId();
+        $input[self::OWNER_ID]     = $isOauthApplicationWebhook === true ? $input[self::APPLICATION_ID] : $merchantId;
         $input[self::OWNER_TYPE]   = $isOauthApplicationWebhook === true ? self::APPLICATION : self::MERCHANT;
 
         $this->setUserIdForInputAndKey($input, self::UPDATED_BY);
 
         $res = (new Stork($this->mode, $this->product))->edit($input);
 
-        $this->traceStorkOperationSuccess('update', ['webhook_id' => $res[self::ID] ?? '', 'webhook' => $this->getStorkWebhookForTracing($res)]);
+        $this->traceStorkOperationSuccess('update', ['webhook_id' => $res[self::ID] ?? '', 'webhook' => $this->getStorkWebhookForTracing($res),
+                                                              AccountEntity::MERCHANT_ID => $merchantId]);
 
-        $this->traceOperationExit('update', ['webhook_id' => $res[self::ID] ?? '']);
+        $this->traceOperationExit('update', ['webhook_id' => $res[self::ID] ?? '', AccountEntity::MERCHANT_ID => $merchantId]);
 
         return $this->storkToApiFormat($res);
     }
 
-    public function get(string $webhookId): array
+    public function get(string $webhookId, string $merchantId = null): array
     {
-        $this->traceOperationEntry('get', ['webhook_id' => $webhookId ?? '']);
+        $merchantId = $merchantId ?? $this->merchant->getId();
+
+        $this->traceOperationEntry('get', ['webhook_id' => $webhookId ?? '', AccountEntity::MERCHANT_ID => $merchantId]);
 
         if (($this->app['basicauth']->isHosted() === true) or
             ($this->app['basicauth']->isExpress() === true))
         {
-            $res = (new Stork($this->mode, $this->product))->getWithSecret($webhookId, $this->merchant->getId());
+            $res = (new Stork($this->mode, $this->product))->getWithSecret($webhookId, $merchantId);
         }
         else
         {
-            $res = (new Stork($this->mode, $this->product))->get($webhookId, $this->merchant->getId());
+            $res = (new Stork($this->mode, $this->product))->get($webhookId, $merchantId);
         }
 
-        $this->traceOperationExit('get', ['webhook_id' => $webhookId ?? '']);
+        $this->traceOperationExit('get', ['webhook_id' => $webhookId ?? '', AccountEntity::MERCHANT_ID => $merchantId]);
 
         return $this->storkToApiFormat($res);
     }
 
-    public function list(array $params): array
+    public function list(array $params, string $merchantId = null): array
     {
         $this->traceOperationEntry('list');
 
-        $ownerId = $this->merchant->getId();
+        $ownerId = $merchantId ?? $this->merchant->getId();
 
         if (($this->app['basicauth']->isHosted() === true) or
             ($this->app['basicauth']->isExpress() === true))
@@ -228,12 +244,13 @@ class Service extends Base\Service
 
         $res['items'] = array_map(function ($v) { return $this->storkToApiFormat($v); }, $res['items']);
 
-        $this->traceOperationExit('list');
+        $this->traceOperationExit('list', [AccountEntity::MERCHANT_ID => $ownerId]);
 
         // Hack: When toArrayHosted happens on a collection, it just returns
         // array of entities e.g. [{}, {}]. It is not consistent with toArrayPublic
         // where it returns same wrapped in collection entity
         // e.g. ["entity": "collection", "count": 2, "items": {}, {}].
+
         if (($this->app['basicauth']->isHosted() === true) or
             ($this->app['basicauth']->isExpress() === true))
         {
@@ -246,16 +263,86 @@ class Service extends Base\Service
     /**
      * deletes a webhook having id = $webhookId
      * @param string $webhookId
+     * @param string|null $merchantId
      */
-    public function delete(string $webhookId)
+    public function delete(string $webhookId, string $merchantId = null)
     {
-        $this->traceOperationEntry('delete', ['webhook_id' => $webhookId ?? '']);
+        $merchantId = $merchantId ?? $this->merchant->getId();
 
-        (new Stork($this->mode, $this->product))->delete($webhookId, $this->merchant->getId());
+        $this->traceOperationEntry('delete', ['webhook_id' => $webhookId ?? '', AccountEntity::MERCHANT_ID => $merchantId]);
 
-        $this->traceStorkOperationSuccess('delete', ['webhook_id' => $webhookId ?? '']);
+        (new Stork($this->mode, $this->product))->delete($webhookId, $merchantId);
 
-        $this->traceOperationExit('delete', ['webhook_id' => $webhookId ?? '']);
+        $this->traceStorkOperationSuccess('delete', ['webhook_id' => $webhookId ?? '', AccountEntity::MERCHANT_ID => $merchantId]);
+
+        $this->traceOperationExit('delete', ['webhook_id' => $webhookId ?? '', AccountEntity::MERCHANT_ID => $merchantId]);
+    }
+
+    public function createOnboardingWk(array $input, string $accountId)
+    {
+        $this->validator->validateOnboardingWkAction($accountId, $this->merchant);
+
+        $this->convertEventsToAssocArray($input);
+
+        $res = $this->createForMerchant($input, $accountId);
+
+        return $this->modifyResponseForOnboardingWk($res);
+    }
+
+    public function fetchOnboardingWk(string $webhookId, string $accountId)
+    {
+        $this->validator->validateOnboardingWkAction($accountId, $this->merchant);
+
+        $res = $this->get($webhookId, $accountId);
+
+        return $this->modifyResponseForOnboardingWk($res);
+    }
+
+    public function listOnboardingWk(array $input, string $accountId)
+    {
+        $this->validator->validateOnboardingWkAction($accountId, $this->merchant);
+
+        $res = $this->list($input, $accountId);
+
+        foreach ($res['items'] as &$item)
+        {
+            $this->modifyResponseForOnboardingWk($item);
+        }
+
+        return $res;
+    }
+
+    public function updateOnboardingWk(string $webhookId, array $input, string $accountId)
+    {
+        $this->validator->validateOnboardingWkAction($accountId, $this->merchant);
+
+        $this->convertEventsToAssocArray($input);
+
+        $res = $this->update($webhookId, $input, $accountId);
+
+        return $this->modifyResponseForOnboardingWk($res);
+    }
+
+    public function deleteOnboardingWk(string $webhookId, string $accountId)
+    {
+        $this->validator->validateOnboardingWkAction($accountId, $this->merchant);
+
+        $this->delete($webhookId, $accountId);
+    }
+
+    protected function convertEventsToAssocArray(array &$apiWk)
+    {
+        // convert events array to associative (with each event having binary val '1') if passed
+        // as a sequential array. This currently happens in case of onboarding webhooks
+        if (Arr::isAssoc($apiWk[self::EVENTS]) === false)
+        {
+            foreach ($apiWk[self::EVENTS] as $key => $val)
+            {
+                unset($apiWk[self::EVENTS][$key]);
+
+                $apiWk[self::EVENTS][$val] = 1;
+            }
+        }
     }
 
     /**
@@ -401,6 +488,32 @@ class Service extends Base\Service
 
         unset($apiWk[self::DISABLED]);
         unset($apiWk[self::SUBSCRIPTIONS]);
+        $apiWk[self::EVENTS] = $events;
+
+        return $apiWk;
+    }
+
+    /**
+     * modify the response for onboarding webhooks by converting
+     * the events array from associative to sequential
+     *
+     * @param array $apiWk
+     * @return array
+     */
+    protected function modifyResponseForOnboardingWk(array &$apiWk): array
+    {
+        $events = [];
+
+        foreach ($apiWk[self::EVENTS] as $key => $val)
+        {
+            unset($apiWk[self::EVENTS][$key]);
+
+            if ($val === true)
+            {
+                array_push($events, $key);
+            }
+        }
+
         $apiWk[self::EVENTS] = $events;
 
         return $apiWk;

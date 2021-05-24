@@ -6,7 +6,12 @@ use RZP\Exception;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Base\JitValidator;
+use RZP\Models\Merchant\Entity;
+use RZP\Models\Merchant\AccessMap;
 use RZP\Models\Merchant\Constants;
+use RZP\Models\Merchant\MerchantApplications;
+use RZP\Models\Merchant\Account\Entity as AccountEntity;
+
 use Razorpay\OAuth\Application\Repository as OauthAppRepository;
 use Razorpay\OAuth\Exception\DBQueryException as OauthDBQueryException;
 
@@ -191,6 +196,50 @@ class Validator extends \RZP\Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 "Number of webhook events in file exceed max allowed limit: {$numRows}"
+            );
+        }
+    }
+
+    /**
+     * This method validates the onboarding webhook action by partner for sub-merchant
+     *
+     * @param string $accountId
+     * @param Entity $partner
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateOnboardingWkAction(string &$accountId, Merchant\Entity $partner)
+    {
+        $accountId = AccountEntity::verifyIdAndStripSign($accountId);
+
+        $subMerchant = (new Merchant\Repository())->findOrFailPublic($accountId);
+
+        $this->validatePartnerSubMerchantMapping($partner, $subMerchant);
+    }
+
+    /**
+     * This method checks if there exists a mapping between the partner and sub-merchant
+     *
+     * @param Entity $partner
+     * @param Entity $subMerchant
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validatePartnerSubMerchantMapping(Merchant\Entity $partner, Merchant\Entity $subMerchant)
+    {
+        $appType = (new MerchantApplications\Core())->getDefaultAppTypeForPartner($partner);
+
+        $isMapped = (new AccessMap\Core())->isMerchantMappedToPartnerWithAppType($partner, $subMerchant, $appType);
+
+        if ($isMapped === false)
+        {
+             throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PARTNER_MERCHANT_MAPPING_NOT_FOUND,
+                [
+                    Entity::PARTNER_ID  => $partner->getId(),
+                    Entity::MERCHANT_ID => $subMerchant->getId(),
+                    Constants::APP_TYPE => $appType,
+                ]
             );
         }
     }

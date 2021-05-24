@@ -1763,13 +1763,19 @@ class Route
         'account_edit_v2'                          => ['patch',    'accounts/{id}',                                  'AccountControllerV2@editAccount'                                   ],
         'account_delete_v2'                        => ['delete',   'accounts/{id}',                                  'AccountControllerV2@deleteAccount'                                 ],
 
-        'product_config_fetch_v2'                     => ['get',      'accounts/{id}/products/{merchantProductId}',                     'ProductConfigController@fetchConfigForMerchant'                  ],
-        'product_config_update_v2'                    => ['patch',    'accounts/{id}/products/{merchantProductId}',                     'ProductConfigController@updateConfigForMerchant'                 ],
-        'product_config_create_v2'                    => ['post',     'accounts/{id}/products/',                                        'ProductConfigController@createConfigForMerchant'                 ],
+        'onboarding_webhook_create'                => ['post',     'accounts/{id}/webhooks',                         'OnboardingWebhookController@create'                                ],
+        'onboarding_webhook_fetch'                 => ['get',      'accounts/{id}/webhooks/{webhookId}',             'OnboardingWebhookController@fetch'                                 ],
+        'onboarding_webhook_fetch_all'             => ['get',      'accounts/{id}/webhooks',                         'OnboardingWebhookController@fetchAll'                              ],
+        'onboarding_webhook_update'                => ['patch',    'accounts/{id}/webhooks/{webhookId}',             'OnboardingWebhookController@update'                                ],
+        'onboarding_webhook_delete'                => ['delete',   'accounts/{id}/webhooks/{webhookId}',             'OnboardingWebhookController@delete'                                ],
+
+        'product_config_fetch_v2'                  => ['get',      'accounts/{id}/products/{merchantProductId}',     'ProductConfigController@fetchConfigForMerchant'                    ],
+        'product_config_update_v2'                 => ['patch',    'accounts/{id}/products/{merchantProductId}',     'ProductConfigController@updateConfigForMerchant'                   ],
+        'product_config_create_v2'                 => ['post',     'accounts/{id}/products/',                        'ProductConfigController@createConfigForMerchant'                   ],
 
         // Pincode Service
         'pincode_get'                              => ['get',      'pincodes/{id}',                                  'PincodeSearchController@get'                                       ],
-        'cities_get'                               => ['get',      'cities',                                         'CityController@getCities'                                       ],
+        'cities_get'                               => ['get',      'cities',                                         'CityController@getCities'                                          ],
         'db_meta_query'                            => ['post',     'db_meta_query',                                  'AdminController@dbMetaDataQuery'                                   ],
 
         // Deprecated feature routes - maintaining for BC - Remove after dashboard changes
@@ -2808,6 +2814,13 @@ class Route
         'mpans_issue',
         'mpans_fetch',
 
+        // webhooks for onboarding APIs
+        'onboarding_webhook_create',
+        'onboarding_webhook_fetch',
+        'onboarding_webhook_fetch_all',
+        'onboarding_webhook_update',
+        'onboarding_webhook_delete',
+
         'create_merchant_options',
         'read_merchant_options' ,
         'read_options_by_id',
@@ -3340,6 +3353,11 @@ class Route
         'link_stakeholder_documents_v2',
         'get_account_documents_v2',
         'get_stakeholder_documents_v2',
+        'onboarding_webhook_create',
+        'onboarding_webhook_fetch',
+        'onboarding_webhook_fetch_all',
+        'onboarding_webhook_update',
+        'onboarding_webhook_delete',
 
         // Temp fix to allow partners creating their own QR codes for
         // submerchants to use only one set of credentials everywhere
@@ -6499,6 +6517,11 @@ class Route
             'onboarding_features_create',
             'onboarding_features_fetch_details',
             'onboarding_features_fetch_submission',
+            'onboarding_webhook_create',
+            'onboarding_webhook_fetch',
+            'onboarding_webhook_fetch_all',
+            'onboarding_webhook_update',
+            'onboarding_webhook_delete',
             'order_create',
             'order_edit',
             'order_fetch',
@@ -7799,6 +7822,11 @@ class Route
             'onboarding_features_get_submissions',
             'onboarding_features_update',
             'onboarding_features_update_status',
+            'onboarding_webhook_create',
+            'onboarding_webhook_fetch',
+            'onboarding_webhook_fetch_all',
+            'onboarding_webhook_update',
+            'onboarding_webhook_delete',
             'order_create',
             'order_edit',
             'order_fetch',

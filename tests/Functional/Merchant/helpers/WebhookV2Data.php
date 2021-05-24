@@ -51,6 +51,35 @@ $sampleApiWebhookResponseForApp = array_merge($sampleApiWebhookResponse, [
     'application_id' => '10000000000App',
 ]);
 
+$sampleApiWebhookRequestForOnboarding = [
+    'url'    => 'http://webhook.com/v1/dummy/route',
+    'secret' => 'xxxxx',
+    'owner_id'    => 'submerchantNum',
+    'owner_type'  => 'merchant',
+    'alert_email' => 'alertemail@gmail.com',
+    'events'      => [
+        'payment.authorized',
+        'payment.failed',
+        'payment.dispute.created'
+    ]
+];
+
+$sampleApiWebhookResponseForOnboarding = [
+    'entity'      => 'webhook',
+    'id'          => 'webhook0000001',
+    'owner_id'    => 'submerchantNum',
+    'owner_type'  => 'merchant',
+    'url'              => 'http://webhook.com/v1/dummy/route',
+    'secret_exists'    => true,
+    'active'      => true,
+    'alert_email' => 'alertemail@gmail.com',
+    'events'      => [
+        'payment.authorized',
+        'payment.failed',
+        'payment.dispute.created'
+    ]
+];
+
 $sampleStorkWebhookRequest = [
     'service'       => 'api-test',
     'owner_id'      => '10000000000000',
@@ -116,6 +145,46 @@ $sampleStorkWebhookResponseForBanking = array_merge($sampleStorkWebhookResponse,
         ],
     ],
 ]);
+
+$sampleStorkWebhookRequestForOnboarding = [
+    'service'       => 'api-live',
+    'owner_id'      => 'submerchantNum',
+    'owner_type'    => 'merchant',
+    'alert_email'   => 'alertemail@gmail.com',
+    'url'           => 'http://webhook.com/v1/dummy/route',
+    'secret'        => 'xxxxx',
+    'subscriptions' => [
+        [
+            'eventmeta'  => ['name' => 'payment.authorized'],
+        ],
+        [
+            'eventmeta'  => ['name' => 'payment.failed'],
+        ],
+        [
+            'eventmeta'  => ['name' => 'payment.dispute.created'],
+        ]
+    ],
+];
+
+$sampleStorkWebhookResponseForOnboarding = [
+    'id'            => 'webhook0000001',
+    'owner_id'      => 'submerchantNum',
+    'owner_type'    => 'merchant',
+    'alert_email'   => 'alertemail@gmail.com',
+    'url'           => 'http://webhook.com/v1/dummy/route',
+    'secret_exists' => true,
+    'subscriptions' => [
+        [
+            'eventmeta'  => ['name' => 'payment.authorized'],
+        ],
+        [
+            'eventmeta'  => ['name' => 'payment.failed'],
+        ],
+        [
+            'eventmeta'  => ['name' => 'payment.dispute.created'],
+        ]
+    ],
+];
 
 return [
 
@@ -1078,6 +1147,167 @@ return [
                 'invoice.partially_paid',
                 'invoice.expired',
             ],
+        ],
+    ],
+
+    'testCreateOnboardingWebhook' => [
+        'request' => [
+            'url' => '/accounts/{account_id}/webhooks',
+            'method' => 'POST',
+            'content' => $sampleApiWebhookRequestForOnboarding,
+        ],
+        'response' => [
+            'content' => $sampleApiWebhookResponseForOnboarding,
+        ],
+    ],
+
+    'createWebhookForOnboardingStorkExpectations' => [
+        'expected_request' => [
+            'path'    => '/twirp/rzp.stork.webhook.v1.WebhookAPI/Create',
+            'payload' => [
+                'webhook' => $sampleStorkWebhookRequestForOnboarding,
+            ],
+        ],
+        'mocked_response' => [
+            'code' => 200,
+            'body' => [
+                'webhook' => $sampleStorkWebhookResponseForOnboarding,
+            ],
+        ],
+    ],
+
+    'testGetOnboardingWebhook' => [
+        'request' => [
+            'url' => '/accounts/{account_id}/webhooks/{wk_id}?webhook_id={wk_id}',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => $sampleApiWebhookResponseForOnboarding,
+        ],
+    ],
+
+    'getWebhookForOnboardingStorkExpectations' => [
+        'expected_request' => [
+            'path'    => '/twirp/rzp.stork.webhook.v1.WebhookAPI/Get',
+            'payload' => [
+                'webhook_id' => 'webhook0000001',
+                'service'    => 'api-live',
+                'owner_id'   => 'submerchantNum',
+            ],
+        ],
+        'mocked_response' => [
+            'code' => 200,
+            'body' => [
+                'webhook' => $sampleStorkWebhookResponseForOnboarding,
+            ],
+        ],
+    ],
+
+    'testListOnboardingWebhook' => [
+        'request' => [
+            'url' => '/accounts/{account_id}/webhooks?skip=0&count=25',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    $sampleApiWebhookResponseForOnboarding,
+                ],
+            ]
+        ],
+    ],
+
+    'listWebhookForOnboardingStorkExpectations' => [
+        'expected_request' => [
+            'path'    => '/twirp/rzp.stork.webhook.v1.WebhookAPI/List',
+            'payload' => [
+                'service'  => 'api-live',
+                'owner_id' => 'submerchantNum',
+            ],
+        ],
+        'mocked_response' => [
+            'code' => 200,
+            'body' => [
+                'webhooks' => [
+                    $sampleStorkWebhookResponseForOnboarding,
+                ],
+            ],
+        ],
+    ],
+
+    'testUpdateOnboardingWebhook' => [
+        'request' => [
+            'url' => '/accounts/{account_id}/webhooks/{wk_id}',
+            'method'  => 'PATCH',
+            'content' => array_merge($sampleApiWebhookRequestForOnboarding, ['alert_email' => 'newalertemail@gmail.com', 'secret' => 'yyyyy'])
+        ],
+        'response' => [
+            'content' => array_merge($sampleApiWebhookResponseForOnboarding, ['alert_email' => 'newalertemail@gmail.com', 'secret' => 'yyyyy']),
+        ],
+    ],
+
+    'updateWebhookForOnboardingStorkExpectations' => [
+        'expected_request' => [
+            'path'    => '/twirp/rzp.stork.webhook.v1.WebhookAPI/Update',
+            'payload' => [
+                'webhook' => array_merge($sampleStorkWebhookRequestForOnboarding,  ['id' => 'webhook0000001',
+                                                                                    'alert_email' => 'newalertemail@gmail.com', 'secret' => 'yyyyy']),
+            ],
+        ],
+        'mocked_response' => [
+            'code' => 200,
+            'body' => [
+                'webhook' => array_merge($sampleStorkWebhookResponseForOnboarding, ['alert_email' => 'newalertemail@gmail.com', 'secret' => 'yyyyy']),
+            ],
+        ],
+    ],
+
+    'testDeleteOnboardingWebhook' => [
+        'request' => [
+            'url' => '/accounts/{account_id}/webhooks/{wk_id}',
+            'method'  => 'DELETE',
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
+    'deleteWebhookForOnboardingStorkExpectations' => [
+        'expected_request' => [
+            'path'    => '/twirp/rzp.stork.webhook.v1.WebhookAPI/Delete',
+            'payload' => [
+                'webhook_id' => 'webhook0000001',
+                'service'    => 'api-live',
+                'owner_id'   => 'submerchantNum',
+            ],
+        ],
+        'mocked_response' => [
+            'code' => 200,
+            'body' => [
+            ],
+        ],
+    ],
+
+    'testInvalidOnboardingWebhookActionByPartner' => [
+        'request' => [
+            'url' => '/accounts/{account_id}/webhooks',
+            'method' => 'POST',
+            'content' => array_merge($sampleApiWebhookRequestForOnboarding, ['owner_id' => 'submerchantXXX']),
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PARTNER_MERCHANT_MAPPING_NOT_FOUND,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_MERCHANT_MAPPING_NOT_FOUND,
         ],
     ],
 ];

@@ -3,23 +3,26 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use Illuminate\Http\UploadedFile;
+use Illuminate\Database\Eloquent\Factory;
 
 use Mail;
+use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Traits\TestsWebhookEvents;
-use Illuminate\Database\Eloquent\Factory;
-use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Mail\Merchant\Webhook as WebhookMail;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 
 class WebhookV2Test extends TestCase
 {
-    use RequestResponseFlowTrait;
-    use OAuthTrait;
-    use TestsBusinessBanking;
+    use PartnerTrait;
     use TestsWebhookEvents;
+    use DbEntityFetchTrait;
+    use TestsBusinessBanking;
+    use RequestResponseFlowTrait;
 
     protected function setUp(): void
     {
@@ -458,5 +461,126 @@ class WebhookV2Test extends TestCase
         $this->assertContains('customer.vpa.deleted', $response);
         $this->assertContains('customer.verification.completed', $response);
         $this->assertContains('customer.deregistration.completed', $response);
+    }
+
+    public function testCreateAndFetchOnboardingWebhook()
+    {
+        list($partner, $app) = $this->createPartnerAndApplication();
+        $this->fixtures->merchant->activate($partner->getId());
+
+        $this->createConfigForPartnerApp($app->getId());
+        list($subMerchant) = $this->createSubMerchant($partner, $app);
+
+        $key = $this->fixtures->on(Mode::LIVE)->create('key', ['merchant_id' => $partner->getId()]);
+        $key = 'rzp_live_' . $key->getKey();
+
+        $this->ba->privateAuth($key);
+
+        $testData = $this->testData['testCreateOnboardingWebhook'];
+        $testData['request']['url'] = '/accounts/acc_'. $subMerchant->getId() .'/webhooks';
+
+        $this->expectStorkServiceRequestForAction('createWebhookForOnboarding');
+
+        // creating a sub-merchant webhook
+        $response = $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testGetOnboardingWebhook'];
+        $testData['request']['url'] = '/accounts/acc_'. $subMerchant->getId() . '/webhooks/' . $response['id'];
+
+        $this->expectStorkServiceRequestForAction('getWebhookForOnboarding');
+
+        // fetching a sub-merchant webhook
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testListOnboardingWebhook'];
+        $testData['request']['url'] = '/accounts/acc_'. $subMerchant->getId() . '/webhooks?skip=0&count=25';
+
+        $this->expectStorkServiceRequestForAction('listWebhookForOnboarding');
+
+        // fetching all sub-merchant webhooks
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testUpdateOnboardingWebhook()
+    {
+        list($partner, $app) = $this->createPartnerAndApplication();
+        $this->fixtures->merchant->activate($partner->getId());
+
+        $this->createConfigForPartnerApp($app->getId());
+        list($subMerchant) = $this->createSubMerchant($partner, $app);
+
+        $key = $this->fixtures->on(Mode::LIVE)->create('key', ['merchant_id' => $partner->getId()]);
+        $key = 'rzp_live_' . $key->getKey();
+
+        $this->ba->privateAuth($key);
+
+        $testData = $this->testData['testCreateOnboardingWebhook'];
+        $testData['request']['url'] = '/accounts/acc_'. $subMerchant->getId() .'/webhooks';
+
+        $this->expectStorkServiceRequestForAction('createWebhookForOnboarding');
+
+        // creating a sub-merchant webhook
+        $response = $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testUpdateOnboardingWebhook'];
+        $testData['request']['url'] = '/accounts/acc_'. $subMerchant->getId() . '/webhooks/' . $response['id'];
+
+        $this->expectStorkServiceRequestForAction('updateWebhookForOnboarding');
+
+        // updating a sub-merchant webhook
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testDeleteOnboardingWebhook()
+    {
+        list($partner, $app) = $this->createPartnerAndApplication();
+        $this->fixtures->merchant->activate($partner->getId());
+
+        $this->createConfigForPartnerApp($app->getId());
+        list($subMerchant) = $this->createSubMerchant($partner, $app);
+
+        $key = $this->fixtures->on(Mode::LIVE)->create('key', ['merchant_id' => $partner->getId()]);
+        $key = 'rzp_live_' . $key->getKey();
+
+        $this->ba->privateAuth($key);
+
+        $testData = $this->testData['testCreateOnboardingWebhook'];
+        $testData['request']['url'] = '/accounts/acc_'. $subMerchant->getId() .'/webhooks';
+
+        $this->expectStorkServiceRequestForAction('createWebhookForOnboarding');
+
+        // creating a sub-merchant webhook
+        $response = $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testDeleteOnboardingWebhook'];
+        $testData['request']['url'] = '/accounts/acc_'. $subMerchant->getId() . '/webhooks/' . $response['id'];
+
+        $this->expectStorkServiceRequestForAction('deleteWebhookForOnboarding');
+
+        // deleting a sub-merchant webhook
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testInvalidOnboardingWebhookActionByPartner()
+    {
+        list($partner, $app) = $this->createPartnerAndApplication();
+        $this->fixtures->merchant->activate($partner->getId());
+
+        $this->createConfigForPartnerApp($app->getId());
+
+        $key = $this->fixtures->on(Mode::LIVE)->create('key', ['merchant_id' => $partner->getId()]);
+        $key = 'rzp_live_' . $key->getKey();
+
+        $this->fixtures->create('merchant', ['id' => 'submerchantXXX']);
+        $subMerchantId = 'submerchantXXX';
+
+        $this->ba->privateAuth($key);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/accounts/acc_'. $subMerchantId .'/webhooks';
+
+        // create a webhook for a sub-merchant unmapped to the partner
+        $this->runRequestResponseFlow($testData);
     }
 }
