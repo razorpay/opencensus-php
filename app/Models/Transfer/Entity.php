@@ -112,6 +112,7 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::LINKED_ACCOUNT_NOTES,
         self::STATUS,
+        self::ATTEMPTS,
         self::PROCESSED_AT,
         self::MESSAGE,
         self::ACCOUNT_CODE,
