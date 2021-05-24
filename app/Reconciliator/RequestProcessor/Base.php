@@ -118,6 +118,7 @@ class Base extends Core
     const UPI_HDFC               = 'UpiHdfc';
     const UPI_HULK               = 'UpiHulk';
     const UPI_AXIS               = 'UpiAxis';
+    const UPI_YESBANK            = 'UpiYesBank';
     const AMEX                   = 'Amex';
     const CARDLESS_EMI_FLEXMONEY = 'CardlessEmiFlexMoney';
     const PHONEPE                = 'Phonepe';
@@ -205,6 +206,7 @@ class Base extends Core
         self::UPI_AXIS               => [],
         self::UPI_HDFC               => ['upi@hdfcbank.net'],
         self::UPI_HULK               => [],
+        self::UPI_YESBANK            => [],
         self::AMEX                   => [],
         self::ISG                    => ['kotak.acquirer@insolutionsglobal.com'],
         self::PHONEPE                => [],
