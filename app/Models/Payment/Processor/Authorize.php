@@ -1113,7 +1113,6 @@ trait Authorize
                 $response['metadata'],
                 [
                     'ip' => $this->app['request']->ip(),
-                    'contact' => $payment->getContact(),
                     'resend_timeout' => 30  //Seconds
                 ]);
         }
