@@ -205,8 +205,9 @@ You may also set the initial trace context. Note that doing this after spans hav
  *
  * @param string $traceId The trace id for this request. **Defaults to** a generated value.
  * @param string $parentSpanId [optional] The span id of this request's parent. **Defaults to** `null`.
+ * @param array $baggage [optional] The baggage items array. **Defaults to** `null`.
  */
-function opencensus_trace_set_context($traceId, $parentSpanId = null);
+function opencensus_trace_set_context($traceId, $parentSpanId = null, $baggage = null);
 ```
 
 ### Add attributes to spans

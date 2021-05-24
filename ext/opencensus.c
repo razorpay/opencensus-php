@@ -46,6 +46,7 @@ ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_INFO_EX(arginfo_opencensus_trace_set_context, 0, 0, 1)
     ZEND_ARG_TYPE_INFO(0, traceId, IS_STRING, 0)
     ZEND_ARG_TYPE_INFO(0, parentSpanId, IS_STRING, 1)
+    ZEND_ARG_ARRAY_INFO(0, baggage, 1)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_opencensus_trace_add_attribute, 0, 0, 2)

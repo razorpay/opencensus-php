@@ -34,6 +34,8 @@ class JaegerPropagator implements PropagatorInterface
 
     const CONTEXT_HEADER_FORMAT = '%032s:%016s:%016s:%x';    //traceId, spanId are stored as hex strings in opencensus
 
+    const BAGGAGE_HEADER_PREFIX = 'rzpctx-';
+
     /**
      * @var FormatterInterface
      */
@@ -77,7 +79,7 @@ class JaegerPropagator implements PropagatorInterface
         if (count($data) < 4) {
             return new SpanContext();
         }
-        
+
         $traceId = $data[0];
         $spanId = $data[1];
         $parentSpanId = $data[2];
@@ -87,7 +89,11 @@ class JaegerPropagator implements PropagatorInterface
 
         $fromHeader = true;
 
-        return new SpanContext($traceId, $spanId, $enabled, $fromHeader);
+
+        // get baggage header
+        $baggageItems = $this->getBaggageItemsFromHeader($headers);
+
+        return new SpanContext($traceId, $spanId, $enabled, $fromHeader, $baggageItems);
     }
 
     public function inject(SpanContext $context, HeaderSetter $setter)
@@ -99,9 +105,33 @@ class JaegerPropagator implements PropagatorInterface
 
         $value = sprintf(self::CONTEXT_HEADER_FORMAT, $traceId, $spanId, $parentID, $enabled);
 
+        // set baggage header
+        if (count($context->baggage()) > 0) {
+            foreach ($context->baggage() as $k => $v) {
+                $setter->set(strtolower(self::BAGGAGE_HEADER_PREFIX . $k), $v);
+            }
+        }
+
         if (!headers_sent()) {
             header("$this->header: $value");
         }
         $setter->set($this->header, $value);
+    }
+
+    public function getBaggageItemsFromHeader($headers)
+    {
+        $baggageItems = [];
+
+        foreach ($headers as $k => $v) {
+            $baggageHeader = 'HTTP_' .  strtoupper(str_replace('-', '_', self::BAGGAGE_HEADER_PREFIX));
+            if (stripos($k, $baggageHeader) !== false) {
+                $itemKey = str_replace($baggageHeader, "", $k);
+                if ($itemKey != "") {
+                    $baggageItems[strtolower($itemKey)] = $v;
+                }
+            }
+        }
+
+        return $baggageItems;
     }
 }

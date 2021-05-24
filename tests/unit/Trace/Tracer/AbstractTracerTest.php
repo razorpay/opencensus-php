@@ -34,12 +34,13 @@ abstract class AbstractTracerTest extends TestCase
     public function testMaintainsContext()
     {
         $parentSpanId = 12345;
-        $initialContext = new SpanContext('traceid', $parentSpanId);
+        $initialContext = new SpanContext('traceid', $parentSpanId, true, false, ['rzpctx-key1' => 'value1']);
         $tracer = $this->makeTracer($initialContext);
         $context = $tracer->spanContext();
 
         $this->assertEquals('traceid', $context->traceId());
         $this->assertEquals($parentSpanId, $context->spanId());
+        $this->assertEquals(['rzpctx-key1' => 'value1'], $context->baggage());
 
         $tracer->inSpan(['name' => 'test'], function () use ($parentSpanId, $tracer) {
             $context = $tracer->spanContext();

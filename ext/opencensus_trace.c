@@ -64,6 +64,8 @@ void opencensus_trace_rinit()
 
     OPENCENSUS_G(current_span) = NULL;
     OPENCENSUS_G(trace_id) = NULL;
+    ALLOC_HASHTABLE(OPENCENSUS_G(baggage));
+    zend_hash_init(OPENCENSUS_G(baggage), 16, NULL, NULL, 0);
     OPENCENSUS_G(trace_parent_span_id) = NULL;
 }
 
@@ -76,6 +78,9 @@ void opencensus_trace_rshutdown()
 	/* cleanup recorded spans */
 	opencensus_trace_clear(0 TSRMLS_CC);
 
+    /* cleanup baggage */
+    zend_hash_destroy(OPENCENSUS_G(baggage));
+    FREE_HASHTABLE(OPENCENSUS_G(baggage));
 }
 
 /**
@@ -536,17 +541,24 @@ PHP_FUNCTION(opencensus_trace_clear)
  *
  * @param string $traceId
  * @param string $parentSpanId
+ * @param array  $baggage
  */
 PHP_FUNCTION(opencensus_trace_set_context)
 {
     zend_string *trace_id = NULL, *parent_span_id = NULL;
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "S|S", &trace_id, &parent_span_id) == FAILURE) {
+    HashTable *baggage = NULL;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "S|S|h", &trace_id, &parent_span_id, &baggage) == FAILURE) {
         RETURN_FALSE;
     }
 
     OPENCENSUS_G(trace_id) = zend_string_copy(trace_id);
     if (parent_span_id) {
         OPENCENSUS_G(trace_parent_span_id) = zend_string_copy(parent_span_id);
+    }
+
+    if (baggage) {
+        zend_hash_copy(OPENCENSUS_G(baggage), baggage, (copy_ctor_func_t) zval_add_ref);
     }
 
     RETURN_TRUE;
@@ -569,6 +581,12 @@ PHP_FUNCTION(opencensus_trace_context)
     }
     if (OPENCENSUS_G(trace_id)) {
         zend_update_property_str(opencensus_trace_context_ce, return_value, "traceId", sizeof("traceId") - 1, OPENCENSUS_G(trace_id));
+    }
+
+    if (OPENCENSUS_G(baggage)) {
+        zval baggage;
+        ZVAL_ARR(&baggage, OPENCENSUS_G(baggage));
+        zend_update_property(opencensus_trace_context_ce, return_value, "baggageItems", sizeof("baggageItems") - 1, &baggage);
     }
 }
 

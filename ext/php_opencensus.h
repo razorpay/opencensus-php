@@ -45,6 +45,7 @@ ZEND_BEGIN_MODULE_GLOBALS(opencensus)
     opencensus_trace_span_t *current_span;
     zend_string *trace_id;
     zend_string *trace_parent_span_id;
+    HashTable   *baggage;
 
     /* List of collected spans */
     HashTable *spans;
