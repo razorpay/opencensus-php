@@ -2057,6 +2057,46 @@ class TerminalMigrationTest extends TestCase
         $this->assertEquals($terminal->getId(), $terminal2->getId());
     }
 
+    public function testFindByGatewayAndTerminalData()
+    {
+        DB::table('terminals')->delete();
+
+        $terminal = $this->fixtures->create(
+            'terminal', [
+            'merchant_id' => '10000000000000',
+            'gateway' => 'upi_yesbank'
+        ]);
+
+        $this->razorxValue = 'proxy';
+
+        $this->mockTerminalsServiceSendRequest(function ($path, $content, $method) use ($terminal) {
+            $response = new \Requests_Response;
+
+            $this->assertEquals(Requests::POST, $method);
+
+            $data = [
+                'gateway' => 'upi_yesbank',
+                'deleted' => false
+            ];
+
+            $this->assertEquals(json_encode($data), $content);
+
+            $this->assertEquals("v1/merchants/terminals", $path);
+
+            $data = $this->terminalRepository->getByMerchantId('10000000000000')->toArray();
+
+            $body = json_encode(['data' => $data]);
+
+            $response->body = $body;
+
+            return $response;
+        }, 1);
+
+        $terminal2 = $this->terminalRepository->findByGatewayAndTerminalData('upi_yesbank');
+
+        $this->assertEquals($terminal->getId(), $terminal2->getId());
+    }
+
     public function testSetTerminalBanksOnTerminalService()
     {
         DB::table('terminals')->delete();

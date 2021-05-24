@@ -355,7 +355,7 @@ class Repository extends Base\Repository
 
         if ($variantFlag === 'proxy' and $fromTerminalsService === true)
         {
-            $data = ["function" => "find", "params" => $params];
+            $data = ["function" => "fetch", "params" => $params];
 
             try
             {
@@ -482,7 +482,7 @@ class Repository extends Base\Repository
         {
             $query->withTrashed();
         }
-        $terminal = $query->first();
+        $apiTerminals = $query->get();
 
         try
         {
@@ -510,23 +510,12 @@ class Repository extends Base\Repository
 
                 $terminals = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response);
 
-                $tsTerminal = $terminals->first();
-
-                if ((empty($terminal) == true) or (empty($tsTerminal) == true))
-                {
-                    // return from here only when in sync
-                    $data["isTerminalNull"] = empty($terminal);
-                    $data["isTsTerminalNull"] = empty($tsTerminal);
-                    if ($terminal != $tsTerminal)
-                    {
-                        $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
-                    }
-                }
-                elseif (Terminal\Service::compareTerminalEntity($terminal, $tsTerminal) === false)
+                if (Terminal\Service::compareTerminalCollection($apiTerminals, $terminals) === false)
                 {
                     $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
                 }
-                return $tsTerminal;
+
+                return $terminals->first();
             }
         }
         catch (\Throwable $ex)
@@ -536,7 +525,7 @@ class Repository extends Base\Repository
             $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
         }
 
-        return $terminal;
+        return $apiTerminals->first();
     }
 
     public function findByGatewayMerchantId(string $gatewayMerchantId, string $gateway)
@@ -806,7 +795,7 @@ class Repository extends Base\Repository
                 $path = "v1/merchants/terminals";
 
                 // edge case handling for wallet_paypal
-                if (($content["gateway"] = Payment\Gateway::WALLET_PAYPAL) and (isset($content["status"]) === false))
+                if (($content["gateway"] === Payment\Gateway::WALLET_PAYPAL) and (isset($content["status"]) === false))
                 {
                     $content["status"] = Status::ACTIVATED;
                 }
@@ -1923,7 +1912,7 @@ class Repository extends Base\Repository
 
         $this->addMerchantWhereCondition($query, [$merchantId, Account::SHARED_ACCOUNT]);
 
-        $terminal = $query->first();
+        $apiTerminal = $query->get();
 
         $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
@@ -1950,17 +1939,12 @@ class Repository extends Base\Repository
 
                 $tsTerminals = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response);
 
-                $terminal2 = $tsTerminals->first();
-
-                if (isset($terminal) and isset($terminal2))
+                if (Terminal\Service::compareTerminalCollection($apiTerminal, $tsTerminals) === false)
                 {
-                    if (Terminal\Service::compareTerminalEntity($terminal, $terminal2) === false)
-                    {
-                        $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
-                    }
+                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
                 }
 
-                return $terminal2;
+                return $tsTerminals->first();
             }
             catch (\Throwable $ex)
             {
@@ -1969,7 +1953,7 @@ class Repository extends Base\Repository
             }
         }
 
-        return $terminal;
+        return $apiTerminal->first();
     }
 
 
