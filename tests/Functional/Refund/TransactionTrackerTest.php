@@ -158,7 +158,6 @@ class TransactionTrackerTest extends TestCase
         $this->testData[$callee]['request']['content']['payment_id'] = $rzpPayment['id'];
 
         $this->ba->directAuth();
-
         $this->assertEquals($rzpPayment['id'], $this->testData[$callee]['request']['content']['payment_id']);
         $this->assertPaymentResponse($callee, $rzpPayment, 'rzp_id');
 
@@ -1061,6 +1060,7 @@ class TransactionTrackerTest extends TestCase
 
         $response = $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
 
+        $this->assertArrayNotHasKey("merchant_id", $response['payments'][0]['payment']);
         $this->assertEquals('922114139332', $this->testData[__FUNCTION__]['request']['content']['id']);
         $this->assertEquals($upiPayment['id'], $response['payments'][0]['payment']['id']);
         $this->assertEquals($upiPayment['created_at'], $response['payments'][0]['payment']['created_at']);

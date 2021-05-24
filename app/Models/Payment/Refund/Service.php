@@ -1983,7 +1983,42 @@ class Service extends Base\Service
             ] + $return
         );
 
-        return $return;
+//      Slicing data for security
+        $response = $this->slicingDetailsforSecurity($return);
+
+        return $response;
+    }
+
+    protected function slicingDetailsforSecurity(array $payment_array)
+    {
+        if(empty($payment_array) === false)
+        {
+            $allowedKeys = [RefundConstants::ID,RefundConstants::AMOUNT,RefundConstants::CURRENCY,RefundConstants::PAYMENT_ID,RefundConstants::SCROOGE_CREATED_AT
+                ,RefundConstants::STATUS,RefundConstants::PRIMARY_MESSAGE,RefundConstants::SECONDARY_MESSAGE,RefundConstants::TERTIARY_MESSAGE,
+                RefundConstants::ACQUIRER_DATA,RefundConstants::MERCHANT_NAME,RefundConstants::DAYS,RefundConstants::LATE_AUTH];
+
+            if(empty($payment_array["payments"][0]) === false)
+            {
+                foreach ($payment_array["payments"] as $key=>$payment)
+                {
+                    if(empty($payment["payment"]) === false)
+                    {
+                        $updated_payment = array_intersect_key($payment["payment"], array_flip($allowedKeys));
+                        $payment_array["payments"][$key]["payment"] = $updated_payment;
+                    }
+
+                    if(empty($payment["refunds"]) === false)
+                    {
+                        foreach ($payment_array["payments"][$key]["refunds"] as $refund_key => $refund)
+                        {
+                            $updated_refund = array_intersect_key($refund, array_flip($allowedKeys));
+                            $payment_array["payments"][$key]["refunds"][$refund_key] = $updated_refund;
+                        }
+                    }
+                }
+            }
+        }
+        return $payment_array;
     }
 
     public static function verifyUpiRrn($id)

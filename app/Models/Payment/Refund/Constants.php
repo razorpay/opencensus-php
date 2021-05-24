@@ -57,6 +57,8 @@ class Constants
     const MERCHANT_REFERENCE       = 'merchant_reference';
     const PAYMENT_CREATED_AT       = 'payment_created_at';
     const BUSINESS_SUPPORT_DETAILS = 'business_support_details';
+    const CURRENCY                 = 'currency';
+    const ACQUIRER_DATA            = 'acquirer_data';
 
     const RESPONSE_CODE          = 'code';
     const RESPONSE_BODY          = 'body';
