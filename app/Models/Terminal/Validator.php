@@ -394,6 +394,7 @@ class Validator extends Base\Validator
         Entity::CARD                       => 'sometimes|boolean|in:1',
         Entity::TYPE                       => 'sometimes|array',
         Entity::GATEWAY_ACQUIRER           => 'sometimes|in:ratn',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $amexTerminalRules = [
@@ -954,6 +955,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE        => 'required|string',
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,1,2',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingJsbTerminalRules = [
@@ -979,6 +981,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET      => 'required|string',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
         Entity::TPV                        => 'sometimes|in:0,1,2',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingAusfEditTerminalRules = [
@@ -987,6 +990,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingDlbTerminalRules = [
@@ -994,6 +998,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::GATEWAY_SECURE_SECRET      => 'required|string',
         Entity::TPV                        => 'sometimes|in:0,1,2',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingCubEditTerminalRules = [
@@ -1438,6 +1443,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
         Entity::TYPE                        => 'sometimes|array',
         Entity::CATEGORY                    => 'sometimes|string|numeric|digits:4',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $cardFssTerminalRules = [
