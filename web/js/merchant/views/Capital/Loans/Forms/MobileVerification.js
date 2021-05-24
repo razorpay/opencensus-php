@@ -60,20 +60,28 @@ class MobileVerification extends Component {
     this.setState({
       generatingToken: true,
     });
-    const { loanApplicationDetails } = this.props;
-    const mobile = loanApplicationDetails.promoter_details.data.applicant.phones[0].phone_number;
+
+    const {
+      loanApplicationDetails: {
+        promoter_details: { data: { applicant: { id: applicantId, phones } } = {} } = {},
+      } = {},
+      merchantDetails: { id: merchantId, user },
+    } = this.props;
     const payload = {
-      medium: 'sms',
-      action: 'bureau_verify',
+      applicant_id: applicantId,
+      merchant_id: merchantId,
+      user_id: user.id,
     };
-    payload['contact_mobile'] = parseInt(mobile);
-    let tokenResponse;
+    const mobile = phones && phones.length ? phones[0].phone_number : null;
+    let sendOtpResponse;
+
     try {
-      tokenResponse = await ajax(
+      sendOtpResponse = await ajax(
         {
-          url: 'otp/send',
+          url: 'los/service/twirp/rzp.capital.los.d2c_new.v1.D2CBureauAPI/SendOtp',
           method: 'post',
           data: payload,
+          mode: 'live',
         },
         {},
         '/merchant/api',
@@ -84,13 +92,14 @@ class MobileVerification extends Component {
         message: `A problem occurred while generating OTP. Please try again later.`,
       });
     }
-    if (tokenResponse) {
-      this.token = tokenResponse.data.token;
+
+    if (sendOtpResponse) {
       this.props.showNotification({
         type: 'success',
-        message: `OTP sent to ${mobile} successfully.`,
+        message: `OTP sent ${mobile ? `to ${mobile} ` : ''}successfully.`,
       });
     }
+
     this.setState({
       generatingToken: false,
     });
@@ -105,7 +114,6 @@ class MobileVerification extends Component {
     const payload = {
       application_id: loanApplicationDetails.meta.data.application.id,
       applicant_id: loanApplicationDetails.promoter_details.data.applicant.id,
-      token: this.token,
       otp: this.state.otp,
       merchant_id: this.props.merchantDetails.id,
       user_id: this.props.merchantDetails.user.id,
