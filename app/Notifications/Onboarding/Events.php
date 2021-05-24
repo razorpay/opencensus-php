@@ -18,13 +18,16 @@ class Events
 
     const NEEDS_CLARIFICATION               = 'NEEDS_CLARIFICATION';
 
+    const ACTIVATED_MCC_PENDING             = 'ACTIVATED_MCC_PENDING';
+
     const SMS_TEMPLATES = [
         self::NEEDS_CLARIFICATION              => 'sms.onboarding.needs_clarification',
         self::UNREGISTERED_PAYMENTS_ENABLED    => 'sms.onboarding.unregistered.payments_enabled',
         self::UNREGISTERED_SETTLEMENTS_ENABLED => 'sms.onboarding.unregistered.settlements_enabled',
         self::REGISTERED_PAYMENTS_ENABLED      => 'sms.onboarding.registered.payments_enabled',
         self::REGISTERED_SETTLEMENTS_ENABLED   => 'sms.onboarding.registered.settlements_enabled',
-        self::PENNY_TESTING_FAILURE            => 'sms.onboarding.penny_test_failure'
+        self::PENNY_TESTING_FAILURE            => 'sms.onboarding.penny_test_failure',
+        self::ACTIVATED_MCC_PENDING            => 'sms.onboarding.activated_mcc_pending'
     ];
 
     const WHATSAPP_TEMPLATES = [
@@ -33,6 +36,7 @@ class Events
         self::UNREGISTERED_SETTLEMENTS_ENABLED => 'Congratulations {merchantName}, your KYC is approved and settlements have been enabled for your Razorpay account. Visit your dashboard to accept payments {dashboardUrl}',
         self::REGISTERED_PAYMENTS_ENABLED      => 'Congratulations {merchantName}, you can now start accepting payments by visiting your Razorpay Dashboard at {dashboardUrl}',
         self::REGISTERED_SETTLEMENTS_ENABLED   => 'Congratulations {merchantName}, your account is activated, you can now accept payments and get funds settled to your bank account. Visit your dashboard to accept payments {dashboardUrl}',
-        self::PENNY_TESTING_FAILURE            => "Hi {merchantName}, we couldn't verify your Bank Account, kindly visit your Dashboard and upload scanned copy of cheque/bank statement at {dashboardUrl}"
+        self::PENNY_TESTING_FAILURE            => "Hi {merchantName}, we couldn't verify your Bank Account, kindly visit your Dashboard and upload scanned copy of cheque/bank statement at {dashboardUrl}",
+        self::ACTIVATED_MCC_PENDING            => "Dear Customer, Congratulations! You can now start accepting payments and the payments will be settled in your bank account as per your settlement schedule. Please note that as part of the routine compliance checks mandated by our banking partners, we will review your business model, website details and reach out for further clarifications. You can now visit your dashboard to accept payments at {dashboardUrl}."
     ];
 }

@@ -18,6 +18,7 @@ class Handler extends BaseHandler
         Events::REGISTERED_PAYMENTS_ENABLED          => [Channel::SMS, Channel::WHATSAPP],
         Events::UNREGISTERED_PAYMENTS_ENABLED        => [Channel::SMS, Channel::WHATSAPP],
         Events::PENNY_TESTING_FAILURE                => [Channel::SMS, Channel::WHATSAPP],
+        Events::ACTIVATED_MCC_PENDING                => [Channel::WHATSAPP]
     ];
 
     private $activationStatus;
@@ -52,6 +53,9 @@ class Handler extends BaseHandler
 
         switch ($currentActivationStatus)
         {
+            case Status::ACTIVATED_MCC_PENDING:
+                $event = Events::ACTIVATED_MCC_PENDING;
+                break;
             case Status::NEEDS_CLARIFICATION:
                 $event = Events::NEEDS_CLARIFICATION;
                 break;
