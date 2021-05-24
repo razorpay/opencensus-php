@@ -30,6 +30,7 @@ class Dashboard extends Base
     const SETTLEMENT_RETRY             = '/twirp/rzp.settlements.settlement.v1.SettlementService/Retry';
 
     const REPORT_TRIGGER               = '/twirp/rzp.settlements.report.v1.ReportService/TriggerReport';
+    const TRANSFER_STATUS_UPDATE       = '/twirp/rzp.settlements.transfer.v1.TransferService/UpdateStatus';
 
     const MERCHANT_CONFIG_GET                      = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/Get';
     const MERCHANT_CONFIG_EDIT_FEATURE             = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/UpdateFeature';
@@ -117,6 +118,18 @@ class Dashboard extends Base
     public function triggerReport(array $input) : array
     {
         return $this->makeRequest(self::REPORT_TRIGGER, $input, self::SERVICE_DASHBOARD);
+    }
+
+    /**
+     * transfer status update
+     * @param array $input
+     * @return array
+     * @throws RuntimeException
+     * @throws \Throwable
+     */
+    public function transferStatusUpdate(array $input) : array
+    {
+        return $this->makeRequest(self::TRANSFER_STATUS_UPDATE, $input, self::SERVICE_DASHBOARD);
     }
 
     /**

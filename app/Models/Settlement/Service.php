@@ -1037,6 +1037,11 @@ class Service extends Base\Service
         return app('settlements_dashboard')->triggerReport($input);
     }
 
+    public function transferStatusUpdate(array $input) : array
+    {
+        return app('settlements_dashboard')->transferStatusUpdate($input);
+    }
+
     public function migrateToPayout(array $input) : array
     {
         return app('settlements_dashboard')->migrateToPayout($input);

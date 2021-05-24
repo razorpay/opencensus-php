@@ -458,6 +458,15 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function transferStatusUpdate()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->transferStatusUpdate($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function migrateToPayout()
     {
         $input = Request::all();
