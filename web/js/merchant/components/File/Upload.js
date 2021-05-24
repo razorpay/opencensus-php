@@ -21,6 +21,9 @@ import Staged from './Staged';
  *  - {Array, optional} `acceptedTypes` - array of extensions for files component is allowed to accept
  *                       Note:- Please refer `fileTypesMap` for issues related to mime types
  *
+ *  - {String, optional} `fileName` - File name to be shown for pre uploaded files, only works when defaultValue is present
+ *
+ *  - {String, optional} `downloadUrl` - Download url for pre uploaded files, only works when defaultValue and fileName is present
  */
 export default class FileUpload extends React.Component {
   static defaultProps = {
@@ -262,6 +265,8 @@ export default class FileUpload extends React.Component {
       renderStagedChildren,
       showFileSize,
       size,
+      fileName,
+      downloadUrl,
       dropZoneCavityClassName,
       imgFilePreviewUrl,
       removeFileButtonLabel,
@@ -352,6 +357,8 @@ export default class FileUpload extends React.Component {
               <Staged
                 file={file}
                 key={index}
+                fileName={fileName}
+                downloadUrl={downloadUrl}
                 isDocPreUploaded={isDocPreUploaded}
                 onCloseClick={this.props.showCloseBtn && this.handleCloseClick(index)}
                 isDisabled={disabled}

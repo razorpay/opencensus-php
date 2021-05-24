@@ -593,6 +593,8 @@ Field.File = (_) => {
           showAcceptInfo={_._showAcceptInfo}
           showStagedFileStatus={_._showStagedFileStatus}
           onCloseClick={_.onCloseClick}
+          fileName={_.fileName}
+          downloadUrl={_.downloadUrl}
         />
         <Description text={description} />
       </div>

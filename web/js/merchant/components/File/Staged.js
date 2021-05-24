@@ -56,6 +56,8 @@ export default class Staged extends React.Component {
       showFileSize,
       name,
       size,
+      fileName,
+      downloadUrl,
       isDisabled,
       onCloseClick,
       showStagedFileStatus,
@@ -76,18 +78,31 @@ export default class Staged extends React.Component {
             alt=""
           />
         )}
+        {isDocPreUploaded && fileName && <i class="i i-check-circle pre-uploaded" />}
         <div class="Dropzone-content-desc">
           {isDocPreUploaded ? (
-            <p class="Dropzone-content-desc--primary text-success">
-              {preUploadedImgFileUrl ? (
-                <img src={preUploadedImgFileUrl} height="48" />
-              ) : (
-                <>
-                  <i class="i i-check" />
-                  File Already Uploaded
-                </>
-              )}
-            </p>
+            fileName ? (
+              <p class="Dropzone-content-desc--primary text-muted">
+                {downloadUrl ? (
+                  <a href={downloadUrl} target="_blank">
+                    {fileName}
+                  </a>
+                ) : (
+                  fileName
+                )}
+              </p>
+            ) : (
+              <p class="Dropzone-content-desc--primary text-success">
+                {preUploadedImgFileUrl ? (
+                  <img src={preUploadedImgFileUrl} height="48" />
+                ) : (
+                  <>
+                    <i class="i i-check" />
+                    File Already Uploaded
+                  </>
+                )}
+              </p>
+            )
           ) : (
             <React.Fragment>
               <p class="Dropzone-content-desc--primary text-muted">

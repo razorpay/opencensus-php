@@ -408,7 +408,7 @@ export default class WhatsNew extends Component {
       'whats-new-may21-remar2a-dashboard',
       'whats-new-may21-remar1-dashboard',
       'whats-new-may21-reten2-dashboard',
-      'whats-new-may21-remar2-dashboard'
+      'whats-new-may21-remar2-dashboard',
     ];
 
     let cardsList = window.notifications.map((card, idx) => (

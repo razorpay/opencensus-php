@@ -304,7 +304,7 @@ export default class NotificationsDropdown extends Component {
       'whats-new-may21-remar2a-dashboard',
       'whats-new-may21-remar1-dashboard',
       'whats-new-may21-reten2-dashboard',
-      'whats-new-may21-remar2-dashboard'
+      'whats-new-may21-remar2-dashboard',
     ];
     let cardsList = this.state.notifications.map((card, idx) => (
       <div className="media media-action" key={idx}>
