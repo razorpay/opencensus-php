@@ -472,6 +472,14 @@ class Core extends Base\Core
 
         $reversal->balance()->associate($payout->balance);
 
+        if ($this->shouldHandleRewardForReversalsForSource($reversal) === true)
+        {
+            (new Credits\Transaction\Core)->reverseCreditsForSource(
+                $reversal->getEntityId(),
+                $reversal->getEntityType(),
+                $reversal);
+        }
+
         $skipTxn = $this->shouldSkipReversalTransaction($reversal);
 
         if ($skipTxn === false)
@@ -479,14 +487,6 @@ class Core extends Base\Core
             $reversal = $this->createTransactionFromPayoutReversal($reversal);
 
             (new Transaction\Core)->dispatchEventForTransactionCreated($reversal->transaction);
-        }
-
-        if ($this->shouldHandleRewardForReversalsForSource($reversal) === true)
-        {
-            (new Credits\Transaction\Core)->reverseCreditsForSource(
-                $reversal->getEntityId(),
-                $reversal->getEntityType(),
-                $reversal);
         }
 
         $this->repo->saveOrFail($reversal);
