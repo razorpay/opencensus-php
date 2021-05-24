@@ -11601,4 +11601,81 @@ class PayoutTest extends OAuthTestCase
 
         $this->startTest($testData);
     }
+
+    public function testFiringOfWebhooksAndEmailOnPayoutReversalWithoutUtr()
+    {
+        Mail::fake();
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit(
+            'payout',
+            $payout->getId(),
+            [
+                'status' => 'initiated',
+            ]);
+
+        $this->mockRazorxTreatment('yesbank', 'on', 'on');
+
+        $transactionCreatedEventTestDataKey = $this->testData['testFiringOfWebhooksAndEmailOnPayoutReversalTransactionCreatedEventData'];
+
+        $payoutReversedEventTestDataKey = $this->testData['testFiringOfWebhooksAndEmailOnPayoutReversalPayoutReversedEventData'];
+
+        $this->mockServiceStorkRequest(
+            function ($path, $payload) use ($transactionCreatedEventTestDataKey, $payoutReversedEventTestDataKey)
+            {
+                $this->assertContains($payload['event']['name'], ['transaction.created', 'payout.reversed']);
+                switch ($payload['event']['name'])
+                {
+                    case Event::TRANSACTION_CREATED:
+                        $this->validateStorkWebhookFireEvent('transaction.created', $transactionCreatedEventTestDataKey, $payload);
+                        break;
+
+                    case Event::PAYOUT_REVERSED:
+                        $this->validateStorkWebhookFireEvent('payout.reversed', $payoutReversedEventTestDataKey, $payload);
+                        break;
+
+                }
+
+                return new \Requests_Response();
+            })->times(2);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['source_id'] = $payout->getId();
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->ftsAuth();
+        $this->startTest();
+
+        Mail::assertQueued(PayoutMail::class, function($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals($mail->originProduct, 'banking');
+
+            $this->assertEquals('2001062', $viewData['txn']['amount']); // raw amount
+            $this->assertEquals('20,010.62', amount_format_IN($viewData['txn']['amount'])); // formatted amount
+
+            $payout = $this->getDbLastEntity('payout');
+
+            $this->assertEquals('pout_' . $payout->getId(), $viewData['source']['id']);
+            $this->assertEquals($payout->getFailureReason(), $viewData['source']['failure_reason']);
+
+            $expectedData = [
+                'txn' => [
+                    'entity_id' => $payout->getId(),
+                ]
+            ];
+
+            $this->assertArraySelectiveEquals($expectedData, $viewData);
+
+            $this->assertEquals('emails.transaction.payout_reversed', $mail->view);
+
+            return true;
+        });
+    }
 }

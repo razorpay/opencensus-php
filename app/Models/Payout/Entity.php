@@ -2123,9 +2123,10 @@ class Entity extends Base\PublicEntity
 
     public function shouldNotifyTxnViaEmail(): bool
     {
+        // Mail only for processed and reversed payouts
+        // Ref: \RZP\Mail\Transaction\Payout::getSubject
         return (($this->isBalanceTypeBanking() === true) and
-                // We only send transaction mail when we have UTR available, post reconciliation.
-                ($this->isAttributeNotNull(Entity::UTR) === true));
+                (in_array($this->getStatus(), [Status::PROCESSED, Status::REVERSED], true) === true));
     }
 
     /**
