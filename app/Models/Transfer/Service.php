@@ -643,12 +643,6 @@ class Service extends Base\Service
         return $transferOrderIds;
     }
 
-    /**
-     * This flow is not active currently. With the next deployment,
-     * we will push the changes to insert transaction IDs into the queue
-     * and then this flow will be auto-triggered from the TransferRecon job class.
-     * @param $transactionIds
-     */
     public function updateTransfersWithSettlementId($transactionIds)
     {
         $this->trace->info(

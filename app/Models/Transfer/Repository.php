@@ -258,7 +258,7 @@ class Repository extends Base\Repository
 
     public function getIdsByRecipientSettlementId(string $settlementId)
     {
-        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+        $query = $this->newQuery()
                       ->select(Entity::ID)
                       ->where(Entity::RECIPIENT_SETTLEMENT_ID, $settlementId)
                       ->pluck(Entity::ID);

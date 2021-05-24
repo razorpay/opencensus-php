@@ -9,7 +9,7 @@ use RZP\Models\Transfer\Service as Transfers;
 
 class TransferRecon extends Job
 {
-    protected $settlementIds;
+    protected $txnIds;
 
     protected $merchantId;
 
@@ -22,11 +22,11 @@ class TransferRecon extends Job
      */
     public $timeout = 900;
 
-    public function __construct($settlementIds, string $mode)
+    public function __construct($txnIds, string $mode)
     {
         parent::__construct($mode);
 
-        $this->settlementIds      = $settlementIds;
+        $this->txnIds = $txnIds;
     }
 
     /**
@@ -38,17 +38,18 @@ class TransferRecon extends Job
 
         try
         {
-            if (isset($this->settlementIds['transaction_ids']) === true)
+            if (isset($this->txnIds['transaction_ids']) === true)
             {
-                (new Transfers())->updateTransfersWithSettlementId($this->settlementIds['transaction_ids']);
+                (new Transfers())->updateTransfersWithSettlementId($this->txnIds['transaction_ids']);
             }
-            else if (isset($this->settlementIds['settlement_id']) === true)
+            else if (isset($this->txnIds['settlement_id']) === true)
             {
-                (new Transfers())->triggerTransferSettledWebhook($this->settlementIds['settlement_id']);
+                (new Transfers())->triggerTransferSettledWebhook($this->txnIds['settlement_id']);
             }
             else
             {
-                (new Transfers())->updateTransfersWithSettlementIdOldFlow($this->settlementIds);
+                // Here $this->txnIds actually contains settlement IDs.
+                (new Transfers())->updateTransfersWithSettlementIdOldFlow($this->txnIds);
             }
         }
         catch (\Throwable $e)

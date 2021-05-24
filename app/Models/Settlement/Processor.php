@@ -421,10 +421,10 @@ class Processor extends Base\Core
     protected function createSettlementEntities(
         $groupedTxns, string $channel, array $merchantSettleToPartner, array $params = [], string $balanceType = Balance\Type::PRIMARY): array
     {
-        $settlements        = new Base\PublicCollection;
-        $setlAttempts       = new Base\PublicCollection;
-        $txnsSettledCount   = 0;
-        $settlementIds      = [];
+        $settlements            = new Base\PublicCollection;
+        $setlAttempts           = new Base\PublicCollection;
+        $txnsSettledCount       = 0;
+        $linkedAccountTxnIds    = [];
 
         foreach ($groupedTxns as $key => $txns)
         {
@@ -459,7 +459,10 @@ class Processor extends Base\Core
             {
                 $settlements->push($setl);
 
-                array_push($settlementIds, $setl->getId());
+                if ($setl->merchant->isLinkedAccount() === true)
+                {
+                    $linkedAccountTxnIds = array_merge($linkedAccountTxnIds, $txns->getIds());
+                }
 
                 if ($setlAttempt !== null)
                 {
@@ -476,7 +479,7 @@ class Processor extends Base\Core
             'settlement_count'  => $settlements->count(),
             'attempt_count'     => $setlAttempts->count(),
             'txn_count'         => $txnsSettledCount,
-            'settlement_ids'    => $settlementIds
+            'la_txn_ids'        => $linkedAccountTxnIds,
         ];
 
         $this->trace->count(
@@ -1187,7 +1190,14 @@ class Processor extends Base\Core
 
             (new Core)->triggerSettlementWebhook($setl, $input['redacted_ba']);
 
-            TransferRecon::dispatch([$setl->getId()], $this->mode);
+            $merchant_id = $setl->getMerchantId();
+
+            if (in_array($merchant_id, MerchantModel\Preferences::TRANSFER_SETTLED_WEBHOOK_MIDS) === true)
+            {
+                $input['settlement_id'] = $setl->getId();
+
+                TransferRecon::dispatch($input, $this->mode);
+            }
         }
         catch (\Throwable $e)
         {

@@ -6,6 +6,7 @@ use Config;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Jobs\Transfers\TransferRecon;
 use RZP\Models\Settlement\SlackNotification;
 
 class ProcessSettlementServiceTxns extends Job
@@ -59,12 +60,19 @@ class ProcessSettlementServiceTxns extends Job
 
         try
         {
-            $this->repoManager->settlement->findOrFail($this->data[self::SETTLEMENT_ID]);
+            $settlement = $this->repoManager->settlement->findOrFail($this->data[self::SETTLEMENT_ID]);
 
             $this->repoManager->transaction->updateAsSettled(
                 $this->data[self::TRANSACTION_IDS],
                 $values,
                 true);
+
+            if ($settlement->merchant->isLinkedAccount() === true)
+            {
+                $input['transaction_ids'] = $this->data[self::TRANSACTION_IDS];
+
+                TransferRecon::dispatch($input, $this->mode);
+            }
         }
         catch (\Throwable $e)
         {

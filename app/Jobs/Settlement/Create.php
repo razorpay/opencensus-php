@@ -142,17 +142,18 @@ class Create extends Job
 
             $this->incrementChannelCount($channel, $setlResponse['settlement_count']);
 
-            if (empty($setlResponse['settlement_ids']) === false)
+            if (empty($setlResponse['la_txn_ids']) === false)
             {
-                $settlementIds =  $setlResponse['settlement_ids'];
-
                 $this->trace->info(
                     TraceCode::TRANSFER_SETTLEMENT_PROCESS_SQS_PUSH_INIT,
                     [
-                        'settlementIds' => $settlementIds
-                    ]);
+                        'txn_ids' => $setlResponse['la_txn_ids']
+                    ]
+                );
 
-                TransferRecon::dispatch($settlementIds, $this->mode);
+                $input['transaction_ids'] = $setlResponse['la_txn_ids'];
+
+                TransferRecon::dispatch($input, $this->mode);
             }
         }
         catch (BadRequestException $e)
