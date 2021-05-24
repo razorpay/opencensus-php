@@ -120,6 +120,14 @@ export default class CheckoutRewardsIndex extends Component {
                 <div className="content-wrapper">
                   <HeaderAction>
                     <div className="btn-toolbar pull-right">
+                      <a
+                        href="https://razorpay.com/checkout-rewards-merchant-terms/"
+                        target="_blank"
+                        className="btn btn-link"
+                      >
+                        Merchant Terms
+                      </a>
+
                       <TakeATourButton feature={RZPFeatures.REWARDS} />
                       <DocsLink
                         url="https://razorpay.com/docs/payment-gateway/checkout-rewards/"
