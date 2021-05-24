@@ -7634,6 +7634,7 @@ class Route
             'merchant_edit_email_la',
             'merchant_edit_free_credits',
             'merchant_edit_pre_signup_details',
+            'merchant_edit_risk_attributes',
             'merchant_features_fetch',
             'merchant_features_update',
             'merchant_fetch',
