@@ -272,10 +272,33 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::UMN);
     }
 
+    public function getRecurringType()
+    {
+        return $this->getAttribute(self::RECURRING_TYPE);
+    }
+
+    public function getRecurringValue()
+    {
+        return $this->getAttribute(self::RECURRING_VALUE);
+    }
+
     public function getSequenceNumberAttribute()
     {
         $sequenceNumber = new SequenceNumber($this->getConfirmedAt(), $this->freshTimestamp());
 
         return $sequenceNumber->generate($this->getFrequency());
+    }
+
+    public function toArrayTrace(): array
+    {
+        return array_only($this->toArray(), [
+            self::FREQUENCY,
+            self::USED_COUNT,
+            self::START_TIME,
+            self::END_TIME,
+            self::RECURRING_VALUE,
+            self::RECURRING_TYPE,
+            self::SEQUENCE_NUMBER,
+        ]);
     }
 }

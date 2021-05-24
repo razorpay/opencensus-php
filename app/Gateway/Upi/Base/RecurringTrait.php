@@ -486,6 +486,8 @@ trait RecurringTrait
             'mode'          => $input[Entity::UPI][UpiMetadata\Entity::MODE],
             'response'      => $response->toArrayTrace(),
             'processed'     => $processed,
+            'sno'           => $input['upi_mandate'][UpiMandate\Entity::SEQUENCE_NUMBER],
+            'mandate'       => $mandate->toArrayTrace(),
         ]);
 
         return $processed;
