@@ -22,4 +22,5 @@
         Unfortunately, We regret to inform you that the request for international payment acceptance on {{$rejected_products}} has not been approved by our banking partners and hence we would not be able to enable international payments through these products.
     </p>
     @endif
+    @include('emails.merchant.international_enablement_request.typeform')
 @endsection

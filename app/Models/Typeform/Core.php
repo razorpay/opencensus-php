@@ -370,7 +370,7 @@ class Core extends Base\Core
 
             $notificationData[$actionPermission]['rejection_reason'] = $rejectionReason;
         }
-        
+
         // fill sibling action specific data
         if (is_null($siblingAction) === false)
         {
@@ -421,7 +421,7 @@ class Core extends Base\Core
 
         $internationalEnablementRequestIdPrefix = $this->formatTagName(Constants::INTERNATIONAL_ENABLEMENT_REQUEST_ID_PREFIX);
 
-        foreach ($tagNames as $tagName) 
+        foreach ($tagNames as $tagName)
         {
             if (Str::startsWith($tagName, $internationalEnablementRequestIdPrefix) === true)
             {
@@ -467,7 +467,7 @@ class Core extends Base\Core
 
         $tagNames = $action->tagNames();
 
-        foreach ($tagNames as $tagName) 
+        foreach ($tagNames as $tagName)
         {
             if (Str::startsWith($tagName, $rejectionReasonPrefix) === true)
             {
@@ -589,6 +589,8 @@ class Core extends Base\Core
         $merchantEmail = $merchant->merchantDetail->getContactEmail();
 
         list($mailViewTpl, $mailData, $tags) = $this->getEnablementMailTemplateAndData($merchant, $permissionsData);
+
+        $mailData['merchant_email'] = $merchantEmail;
 
         $mailBody = View::make($mailViewTpl, $mailData)->render();
 
