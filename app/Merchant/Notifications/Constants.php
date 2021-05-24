@@ -807,11 +807,11 @@ class Constants
             ],
         ],
         [
-            'id'          => 'whats-new-may21-reten1-dashboard',
-            'title'       => 'Win Rs. 50000 worth free credits',
-            'description' => 'Accept payments from your customers between 17th - 23rd May and win Rs.50,000* worth Razorpay Credits. *T&Cs Apply',
-            'start_ts'    => 1621403379,
-            'end_ts'      => 1621794599,
+            'id'          => 'whats-new-may21-reten2-dashboard',
+            'title'       => 'Win Rs. 40000 worth free credits',
+            'description' => 'Accept payments from your customers between 24th - 30th May and win Rs.40,000* worth Razorpay Credits. *T&Cs Apply',
+            'start_ts'    => 1621794599,
+            'end_ts'      => 1622399399,
             'icon'        => 'https://dashboard.razorpay.com/dist/css/assets/product_onboarding/rewards_business_growth.svg',
             'buttons'     => [
                 [
@@ -823,7 +823,7 @@ class Constants
                     'type'  => 'primary-inverted',
                     'label' => 'Read more',
                     'id'    => 'announcement-details-l2',
-                    'url'   => '/announcements/whats-new-may21-reten1-dashboard',
+                    'url'   => '/announcements/whats-new-may21-reten2-dashboard',
                 ]
             ],
             'filters'     => [
@@ -832,7 +832,7 @@ class Constants
                 ],
             ],
             'l2_content'  => [
-                'content' => "<div><p>We are glad that you chose Razorpay as your payment partner. We wanted to inform you of a benefit that is enabled for your account that can help your business during these tough times.</p><br/><p>Your Razorpay account is eligible to win any one of the following:</p><br/><ul><li>Rs. 50,000 worth of free credits, if you complete a transaction between 17th May - 23rd May OR</li><li>Rs. 40,000 worth of free credits, if you complete a transaction between 24th May - 30th May OR</li><li> Rs. 10,000 worth of free credits, if you complete a transaction on 31st May</li></ul><br/><p> Use your free credits to accept payments at 0% platform fee.*</p><br/><p>Not just that, 5 lucky winners also stand a chance to win credits worth Rs. 1 lakh by transacting with us between today and 31st May.</p><br/><p>Please note: You are eligible to win free credits only once in a month. The free credits will be added to your Razorpay account on or before 7th June’21.</p><br/><p>We're excited to partner with you on your payments journey and look forward to seeing your business grow!</p><a href='https://lp.razorpay.com/links/razorpay-free-credits-tnc'>*T&Cs apply</a></div>",
+                'content' => "<div><p>We are glad that you chose Razorpay as your payment partner. We wanted to inform you of a benefit that is enabled for your account that can help your business during these tough times.</p><br/><p>Your Razorpay account is eligible to win any one of the following:</p><br/><ul><li style='text-decoration: line-through;'>Rs. 50,000 worth of free credits, if you complete a transaction between 17th May - 23rd May OR</li><li>Rs. 40,000 worth of free credits, if you complete a transaction between 24th May - 30th May OR</li><li> Rs. 10,000 worth of free credits, if you complete a transaction on 31st May</li></ul><br/><p> Use your free credits to accept payments at 0% platform fee.*</p><br/><p>Not just that, 5 lucky winners also stand a chance to win credits worth Rs. 1 lakh by transacting with us between today and 31st May.</p><br/><p>Please note: You are eligible to win free credits only once in a month. The free credits will be added to your Razorpay account on or before 7th June’21.</p><br/><p>We're excited to partner with you on your payments journey and look forward to seeing your business grow!</p><a href='https://lp.razorpay.com/links/razorpay-free-credits-tnc'>*T&Cs apply</a></div>",
                 'buttons'     => [
                     [
                         'type'  => 'button',
@@ -842,12 +842,12 @@ class Constants
                 ],
             ]
         ],
-        [
-            'id'          => 'whats-new-may21-remar1-dashboard',
-            'title'       => 'Win Rs. 50000 worth free credits',
-            'description' => 'Accept payments from your customers between 17th - 23rd May and win Rs.50,000* worth Razorpay Credits. *T&Cs Apply',
-            'start_ts'    => 1621403379,
-            'end_ts'      => 1621794599,
+[
+            'id'          => 'whats-new-may21-remar2a-dashboard',
+            'title'       => 'Win Rs. 40000 worth free credits',
+            'description' => 'Accept payments from your customers between 24th - 30th May and win Rs.40,000* worth Razorpay Credits. *T&Cs Apply',
+            'start_ts'    => 1621794599,
+            'end_ts'      => 1622399399,
             'icon'        => 'https://dashboard.razorpay.com/dist/css/assets/product_onboarding/rewards_business_growth.svg',
             'buttons'     => [
                 [
@@ -859,14 +859,14 @@ class Constants
                     'type'  => 'primary-inverted',
                     'label' => 'Read more',
                     'id'    => 'announcement-details-l2',
-                    'url'   => '/announcements/whats-new-may21-remar1-dashboard',
+                    'url'   => '/announcements/whats-new-may21-remar2a-dashboard',
                 ]
             ],
             'filters'     => [
-                'experiments'   => ['enable_my_dashboard_notification_remarketing_1'],
+                'experiments'   => ['enable_my_dashboard_notification_remarketing'],
             ],
             'l2_content'  => [
-                'content' =>  "<div><p>We are glad that you chose Razorpay as your payment partner. We wanted to inform you of a benefit that is enabled for your account that can help your business during these tough times.</p><br/><p>Your Razorpay account is eligible to win any one of the following:</p><br/><ul><li>Rs. 50,000 worth of free credits, if you complete a transaction between 17th May - 23rd May OR</li><li>Rs. 40,000 worth of free credits, if you complete a transaction between 24th May - 30th May OR</li><li> Rs. 10,000 worth of free credits, if you complete a transaction on 31st May</li></ul><br/><p> Use your free credits to accept payments at 0% platform fee.*</p><br/><p>Not just that, 5 lucky winners also stand a chance to win credits worth Rs. 1 lakh by transacting with us between today and 31st May.</p><br/><p>Please note: You are eligible to win free credits only once in a month. The free credits will be added to your Razorpay account on or before 7th June’21.</p><br/><p>We're excited to partner with you on your payments journey and look forward to seeing your business grow!</p><a href='https://lp.razorpay.com/links/razorpay-free-credits-tnc'>*T&Cs apply</a></div>",
+                'content' => "<div><p>We are glad that you chose Razorpay as your payment partner. We wanted to inform you of a benefit that is enabled for your account that can help your business during these tough times.</p><br/><p>Your Razorpay account is eligible to win any one of the following:</p><br/><ul><li style='text-decoration: line-through;'>Rs. 50,000 worth of free credits, if you complete a transaction between 17th May - 23rd May OR</li><li>Rs. 40,000 worth of free credits, if you complete a transaction between 24th May - 30th May OR</li><li> Rs. 10,000 worth of free credits, if you complete a transaction on 31st May</li></ul><br/><p> Use your free credits to accept payments at 0% platform fee.*</p><br/><p>Not just that, 5 lucky winners also stand a chance to win credits worth Rs. 1 lakh by transacting with us between today and 31st May.</p><br/><p>Please note: You are eligible to win free credits only once in a month. The free credits will be added to your Razorpay account on or before 7th June’21.</p><br/><p>We're excited to partner with you on your payments journey and look forward to seeing your business grow!</p><a href='https://lp.razorpay.com/links/razorpay-free-credits-tnc'>*T&Cs apply</a></div>",
                 'buttons'     => [
                     [
                         'type'  => 'button',
