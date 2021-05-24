@@ -78,6 +78,9 @@ void opencensus_trace_rshutdown()
 	/* cleanup recorded spans */
 	opencensus_trace_clear(0 TSRMLS_CC);
 
+    /* cleanup baggage */
+    zend_hash_destroy(OPENCENSUS_G(baggage));
+    FREE_HASHTABLE(OPENCENSUS_G(baggage));
 }
 
 /**
