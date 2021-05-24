@@ -29,7 +29,7 @@ const FormSection: React.FC<FormSectionProps> = ({
   <Card padding={[2]} margin={last ? 0 : [0, 0, 2, 0]}>
     <Space margin={[0, 0, 3, 0]}>
       <View>
-        <Text size="medium" weight="bold">
+        <Text size="xsmall" weight="bold">
           {title}
         </Text>
         {subtitle ? (

@@ -30,7 +30,20 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
   const [isBlurCalled, setIsBlurCalled] = useState(false);
   const [branchIfscInfo, setBranchIfscInfo] = useState<string>('');
 
+  const [bankAccountNumber, setBankAccountNumber] = useState();
+  const [reAccountNumber, setReAccountNumber] = useState();
+
   const handleSubmit = (updatedDetails) => {
+    const isAccountNumberValid =
+      (bankAccountNumber ? bankAccountNumber : data.bank_account_number) === reAccountNumber;
+
+    if (!isAccountNumberValid && !!updatedDetails.bank_account_number) {
+      delete updatedDetails.bank_account_number;
+    }
+    if (!!updatedDetails.re_enter_bank_account_number) {
+      delete updatedDetails.re_enter_bank_account_number;
+    }
+
     const isComplete = isTabComplete(
       {
         ...data,
@@ -69,6 +82,7 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
       initialValues={{
         bank_account_name: bankAndCompanyDetails.bank_account_name.value,
         bank_account_number: bankAndCompanyDetails.bank_account_number.value,
+        re_enter_bank_account_number: bankAndCompanyDetails.bank_account_number.value,
         bank_branch_ifsc: bankAndCompanyDetails.bank_branch_ifsc.value,
         gstin: bankAndCompanyDetails.gstin.value,
         company_cin: bankAndCompanyDetails.company_cin.value,
@@ -79,6 +93,10 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
             .required('Bank Account Name is a required field')
             .nullable(),
           bank_account_number: Yup.string()
+            .required('Bank Account Number is a required field')
+            .nullable(),
+          re_enter_bank_account_number: Yup.string()
+            .oneOf([Yup.ref('bank_account_number')], "Account number don't match!")
             .required('Bank Account Number is a required field')
             .nullable(),
           bank_branch_ifsc: Yup.string().required('IFSC is a required field').nullable(),
@@ -158,6 +176,9 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                 errorText={
                   formikProps.touched.bank_account_number && formikProps.errors.bank_account_number
                 }
+                onChange={(value) => {
+                  setBankAccountNumber(value);
+                }}
                 onBlur={() => {
                   analyticsTrack({
                     objectName: 'SignUp',
@@ -170,6 +191,24 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                 disabled={isFormLocked}
               />
             </Field>
+            {!data.submitted ? (
+              <Field>
+                <TextInput
+                  width="auto"
+                  name="re_enter_bank_account_number"
+                  label="Re-Enter Account Number"
+                  value={formikProps.values.re_enter_bank_account_number}
+                  errorText={
+                    formikProps.touched.re_enter_bank_account_number &&
+                    formikProps.errors.re_enter_bank_account_number
+                  }
+                  onChange={(value) => {
+                    setReAccountNumber(value);
+                  }}
+                  disabled={isFormLocked}
+                />
+              </Field>
+            ) : null}
             <Field last>
               <TextInput
                 width="auto"

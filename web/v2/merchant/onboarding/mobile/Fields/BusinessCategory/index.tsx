@@ -26,13 +26,16 @@ const BusinessCategory: React.FC<BusinessCategoryPropsT> = ({
   const onInputChange = debounce(setInputValue, 200);
   const [businessCategoriesStatus, businessCategoriesData] = useBusinessCategory(inputValue);
   useEffect(() => {
-    analyticsTrack({
-      objectName: 'SignUp',
-      actionName: 'Business category search',
-      screen: 'home page',
-      eventAction: businessCategoriesData && businessCategoriesData.length ? 'success' : 'failure',
-      user,
-    });
+    if (inputValue && !!businessCategoriesData) {
+      analyticsTrack({
+        objectName: 'SignUp',
+        actionName: 'Business category search',
+        screen: 'home page',
+        eventAction:
+          businessCategoriesData && businessCategoriesData.length ? 'success' : 'failure',
+        user,
+      });
+    }
   }, [businessCategoriesData]);
   useEffect(() => {
     if (inputValue.length === 1) {

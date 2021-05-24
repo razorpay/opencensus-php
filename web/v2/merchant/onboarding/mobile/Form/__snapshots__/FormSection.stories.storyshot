@@ -14,7 +14,7 @@ exports[`Storyshots Onboarding/FormSection Multiple Form Sections 1`] = `
             class="Viewweb__View-sc-1i53gcl-0 iLSGsw Spaceweb__Space-sc-1gh69p2-0 hdmvwf"
           >
             <div
-              class="Textweb__Text-dvo2dp-0 yfwTW"
+              class="Textweb__Text-dvo2dp-0 brRatD"
               color="shade.980"
               data-testid="ds-text"
             >
@@ -155,7 +155,7 @@ exports[`Storyshots Onboarding/FormSection Multiple Form Sections 1`] = `
             class="Viewweb__View-sc-1i53gcl-0 iLSGsw Spaceweb__Space-sc-1gh69p2-0 hdmvwf"
           >
             <div
-              class="Textweb__Text-dvo2dp-0 yfwTW"
+              class="Textweb__Text-dvo2dp-0 brRatD"
               color="shade.980"
               data-testid="ds-text"
             >
@@ -398,7 +398,7 @@ exports[`Storyshots Onboarding/FormSection Single Form Section 1`] = `
             class="Viewweb__View-sc-1i53gcl-0 iLSGsw Spaceweb__Space-sc-1gh69p2-0 hdmvwf"
           >
             <div
-              class="Textweb__Text-dvo2dp-0 yfwTW"
+              class="Textweb__Text-dvo2dp-0 brRatD"
               color="shade.980"
               data-testid="ds-text"
             >
@@ -603,7 +603,7 @@ exports[`Storyshots Onboarding/FormSection Single Form Section Error 1`] = `
             class="Viewweb__View-sc-1i53gcl-0 iLSGsw Spaceweb__Space-sc-1gh69p2-0 hdmvwf"
           >
             <div
-              class="Textweb__Text-dvo2dp-0 yfwTW"
+              class="Textweb__Text-dvo2dp-0 brRatD"
               color="shade.980"
               data-testid="ds-text"
             >
