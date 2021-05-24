@@ -10,6 +10,7 @@ import PaymentLinksList from 'merchant/views/PaymentLinks/PaymentLinks/List';
 import BatchUploadList from 'merchant/views/PaymentLinks/BatchUpload/List';
 
 import PaymentButtonLaunchBanner from 'merchant/components/Announcements/PaymentButtonLaunch';
+import CashAdvanceCampaignBanner from 'merchant/components/Announcements/CashAdvanceCampaign';
 import SwitchToPaymentLinksV2 from 'merchant/components/Announcements/SwitchToPaymentLinksV2';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import { ShowWhenRoute } from 'merchant/components/ShowWhen';
@@ -157,13 +158,21 @@ export default class PaymentLinksContainer extends React.Component {
     }
     return (
       <React.Fragment>
-        <ShowWhen additionalCondition={(user) => !user.isPLSwitchEnabled}>
-          <PaymentButtonLaunchBanner productName="PaymentLinks" />
-        </ShowWhen>
+        <div className="banner-container">
+          <ShowWhen additionalCondition={(user) => !user.isPLSwitchEnabled}>
+            <PaymentButtonLaunchBanner productName="PaymentLinks" />
+          </ShowWhen>
 
-        <ShowWhen additionalCondition={(user) => user.isPLSwitchEnabled}>
-          <SwitchToPaymentLinksV2 source="payment-links-list" />
-        </ShowWhen>
+          <ShowWhen
+            additionalCondition={(user) => user.isLOCEnabled && !user.isWithdrawFeatureEnabled}
+          >
+            <CashAdvanceCampaignBanner productName="PaymentLinks" />
+          </ShowWhen>
+
+          <ShowWhen additionalCondition={(user) => user.isPLSwitchEnabled}>
+            <SwitchToPaymentLinksV2 source="payment-links-list" />
+          </ShowWhen>
+        </div>
 
         <tabbed-container>
           {isQuickGuideOpen && <QuickGuide />}

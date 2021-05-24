@@ -3,6 +3,8 @@ import RTracking from 'react-tracking';
 import { withRouter, Link } from 'react-router-dom';
 import { classList } from 'common/utils/rzp-utils';
 import debounce from 'common/utils/debounce';
+import { connect } from 'react-redux';
+import { sendDataToSalesForce } from 'common/utils/common-api';
 
 const getButtonClass = (type) => {
   switch (type) {
@@ -22,6 +24,12 @@ const isWhatsNewSection = (id) => {
 };
 
 @withRouter
+@connect(
+  (state) => ({
+    user: state.session.user,
+  }),
+  {},
+)
 @RTracking(() => window.rzpQ.component('AnnouncementDetails'))
 export default class AnnouncementDetails extends React.Component {
   state = {
@@ -53,6 +61,19 @@ export default class AnnouncementDetails extends React.Component {
     );
   }
 
+  createSalesforceOpportunity = (url) => {
+    sendDataToSalesForce('LOC-Cross-sell-V1', this.props.user);
+    this.props.history.push(url);
+  };
+
+  handleCTA = ({ id, url }) => {
+    switch (id) {
+      case 'cash-advance-cta-1':
+        this.createSalesforceOpportunity(url);
+        break;
+    }
+  };
+
   onButtonClick = (button, index) => () => {
     const isExternal = /^http(s)?:\/\//.test(button.url);
     const isHash = !isExternal && button.url.indexOf('#') === 0;
@@ -72,7 +93,8 @@ export default class AnnouncementDetails extends React.Component {
         }),
     );
 
-    window.open(urlPath, isExternal ? '_blank' : '_self');
+    if (button.id) this.handleCTA({ id: button.id, url: urlPath });
+    else window.open(urlPath, isExternal ? '_blank' : '_self');
   };
 
   renderActionButtons = (buttons) => {

@@ -23,6 +23,7 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import ScheduledNitroBanner from 'merchant/components/ScheduledNitroBanner';
 import SettlementSchedule from 'merchant/views/Settlements/Settlements/components/SettlementSchedule';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
+import CashAdvanceCampaignBanner from 'merchant/components/Announcements/CashAdvanceCampaign';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import { MobilePopup, UseAppFooter } from 'merchant/components/MobilePopup';
 import LocalStorageService from 'common/utils/localStorage';
@@ -109,14 +110,22 @@ export default class TransactionsContainer extends Component {
 
     return (
       <React.Fragment>
-        <ShowWhen additionalCondition={(user) => user.isProjectNitroEnabled}>
-          <AnnouncementBanner title="Exclusive Offer For You" canBeClosed={false}>
-            <ScheduledNitroBanner
-              fromWhere="transactions"
-              url="https://lp.razorpay.com/razorpayxca-pymnts1"
-            />
-          </AnnouncementBanner>
-        </ShowWhen>
+        <div className="banner-container">
+          <ShowWhen additionalCondition={(user) => user.isProjectNitroEnabled}>
+            <AnnouncementBanner title="Exclusive Offer For You" canBeClosed={false}>
+              <ScheduledNitroBanner
+                fromWhere="transactions"
+                url="https://lp.razorpay.com/razorpayxca-pymnts1"
+              />
+            </AnnouncementBanner>
+          </ShowWhen>
+
+          <ShowWhen
+            additionalCondition={(user) => user.isLOCEnabled && !user.isWithdrawFeatureEnabled}
+          >
+            <CashAdvanceCampaignBanner productName="Transactions" />
+          </ShowWhen>
+        </div>
         <tabbed-container>
           <header id="transactions-header">
             <NavLink

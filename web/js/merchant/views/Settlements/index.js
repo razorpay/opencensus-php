@@ -8,6 +8,7 @@ import InstantSettlements from './InstantSettlements/InstantSettlements';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import CashAdvanceOrNitroBanner from 'merchant/components/CashAdvanceOrNitroBanner';
 import EarlySettlementsAnnouncement from 'merchant/components/Announcements/EarlySettlements';
+import CashAdvanceCampaignBanner from 'merchant/components/Announcements/CashAdvanceCampaign';
 import { handleNegativeBalanceLimit } from 'common/utils/rzp-utils';
 import { getSettlementStatus } from 'merchant/views/Capital/utils';
 
@@ -33,7 +34,9 @@ const Settlements = ({ user, merchantBalanceConfigs, current_balance }) => {
     <>
       {/* instant settlements banner */}
       <div className="settlements-banner-container">
-        <CashAdvanceOrNitroBanner />
+        {user.isLOCEnabled && !user.isWithdrawFeatureEnabled && (
+          <CashAdvanceOrNitroBanner productName="Settlements" />
+        )}
         {user.isISBannerEnabled && <EarlySettlementsAnnouncement userId={user.current} />}
         {current_balance.data.balance < 0 && (
           <AnnouncementBanner title="Add Funds" theme="warning" canBeClosed={true}>
@@ -55,6 +58,8 @@ const Settlements = ({ user, merchantBalanceConfigs, current_balance }) => {
             </Link>
           </AnnouncementBanner>
         )}
+
+        <CashAdvanceCampaignBanner />
       </div>
 
       <tabbed-container>

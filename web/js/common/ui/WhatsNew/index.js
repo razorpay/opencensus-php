@@ -15,6 +15,7 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { openSlider } from 'merchant_common/reducers/slider';
 import Slider from 'common/ui/Slider';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import { sendDataToSalesForce } from 'common/utils/common-api';
 import './WhatsNew.styl';
 
 function _isUnreadNotification(startTS, endTS, lastReadTS) {
@@ -180,7 +181,13 @@ export default class WhatsNew extends Component {
     });
   };
 
-  handleCTA = ({ id }) => {
+  createSalesforceOpportunity = (url) => {
+    sendDataToSalesForce('LOC-Cross-sell-V1', this.props.user);
+
+    this.props.history.push(url);
+  };
+
+  handleCTA = ({ id, url }) => {
     switch (id) {
       case 'announcement-projectNitro-cta1':
       case 'announcement-projectNitro-hyderabad-cta1':
@@ -195,7 +202,8 @@ export default class WhatsNew extends Component {
       case 'NOV20-RZP-FESTIVEOFFER-BUTTON':
         this.props.showAcceptPaymentsModal();
         break;
-      default:
+      case 'cash-advance-cta-1':
+        this.createSalesforceOpportunity(url);
         break;
     }
   };
@@ -404,6 +412,7 @@ export default class WhatsNew extends Component {
       'trusted-badge-mar2021',
       'trusted-badge-enabled',
       'whats-new-april21-m2mrewards-gtm',
+      'whats-new-MAY21-CA-GROWTH',
       'whats-new-may21-reten1-dashboard',
       'whats-new-may21-remar2a-dashboard',
       'whats-new-may21-remar1-dashboard',
@@ -495,6 +504,7 @@ const NotificationCard = ({
   trackEvents,
   ga,
   id,
+  image_url,
   video_url,
   secondary_icon,
   index,
@@ -567,7 +577,7 @@ const NotificationCard = ({
       history.push(btn.url);
     } else if (btn.id) {
       e.preventDefault();
-      onCTAClick({ id: btn.id });
+      onCTAClick({ id: btn.id, url: btn.url });
     }
   };
 
@@ -605,6 +615,11 @@ const NotificationCard = ({
             </span>
           ) : null}
         </div>
+        {image_url?.length ? (
+          <div className="whats-new__video-small">
+            <img src={image_url} />
+          </div>
+        ) : null}
         {video_url && video_url.length ? (
           <div id={`player-${id}`} className="whats-new__video-small">
             <iframe

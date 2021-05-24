@@ -760,6 +760,44 @@ class Constants
             ],
         ],
         [
+            'id'          => 'whats-new-MAY21-CA-GROWTH',
+            'title'       => 'Approved for Cash Advance!',
+            'description' => 'Withdraw additional cash for business needs in seconds 24x7. You are pre-approved for a FREE line of credit from Razorpay.',
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/cash_advance_icon.svg',
+            'image_url'   => 'https://cdn.razorpay.com/static/assets/whats-new/cash-advance/cash-advance-showcase.gif',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Enable now',
+                    'id'    => 'cash-advance-cta-1',
+                    'url'   => '/capital/cash-advance',
+                ],
+                [
+                    'type'  => 'primary-inverted',
+                    'label' => 'Know more',
+                    'id'    => 'announcement-details-l2',
+                    'url'   => '/announcements/whats-new-MAY21-CA-GROWTH/'
+                ],
+            ],
+            'start_ts'    => 1621254600,
+            'end_ts'      => 1625077799,
+            'filters'     => [
+                'features' => ['loc'],
+                'not_features' => ['withdraw_loc'],
+            ],
+            'l2_content'  => [
+                'content'     => "<div><div>Don’t run out of cash and don’t stop growing by getting additional money for urgent business needs at any time or day. Withdraw instantly, repay easily and borrow again when needed.</div><div class='paragraph'><b>Instant cash anytime even on holidays: </b>Get backup for unexpected cash needs without a fresh application process every time</div> <div class='image' style='padding: 10px 0;'><img src='https://cdn.razorpay.com/static/assets/whats-new/cash-advance/cash-advance-dashboard.gif'></div><div class='paragraph'><b>Customer payments in advance: </b>Borrow expected revenue amount and repay from future settlements with actual customer payments</div><div><b>No interest until you use it: </b>Pay interest only when you withdraw the amount and only for the days used before repaying</div><div class='paragraph'><b>Easy but safe and reliable: </b>We have made Cash Advance not just easy to use but also safe and responsible in terms of repayment and risk to you.</div> </div>",
+                'buttons'     => [
+                    [
+                        'type'  => 'button',
+                        'label' => 'Get it now!',
+                        'url'   => '/capital/cash-advance',
+                        'id'    => 'cash-advance-cta-1',
+                    ],
+                ],
+            ],
+        ],
+        [
             'id'          => 'APR23-DX-CSAT',
             'title'       => 'Developers, we want to hear you!',
             'description' => 'Help us deliver the best developer experience for you. All we need is your valuable feedback. This won’t take more than a minute.',
