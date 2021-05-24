@@ -103,6 +103,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GATEWAY_BALANCE);
     }
 
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
+    }
+
     public function getStatementClosingBalance()
     {
         return $this->getAttribute(self::STATEMENT_CLOSING_BALANCE);

@@ -1,8 +1,9 @@
 <?php
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use RZP\Models\Contact;
+use RZP\Constants\Table;
+use RZP\Constants\Timezone;
 use RZP\Services\HubspotClient;
 use RZP\Models\Admin\Permission;
 use RZP\Tests\Functional\TestCase;
@@ -27,6 +28,7 @@ use RZP\Mail\BankingAccount\StatusNotifications\Cancelled;
 use RZP\Mail\BankingAccount\StatusNotifications\Activated;
 use RZP\Mail\BankingAccount\Activation as ActivationMails;
 use RZP\Mail\BankingAccount\StatusNotifications\Processing;
+use RZP\Models\BankingAccountStatement\Details as BasDetails;
 use RZP\Mail\BankingAccount\StatusNotifications\Unserviceable;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
 use RZP\Models\BankingAccount\Gateway\Rbl\Processor as RblProcessor;
@@ -890,6 +892,12 @@ class BankingAccountTest extends TestCase
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
         $this->assertEquals(RZP\Models\BankingAccount\Status::ACTIVATED, $bankingAccount['status']);
+
+        $bankingAccountStatementDetails = $this->getDbLastEntity(Table::BANKING_ACCOUNT_STATEMENT_DETAILS);
+
+        $this->assertNotNull($bankingAccountStatementDetails);
+
+        $this->assertEquals(BasDetails\Status::ACTIVE, $bankingAccountStatementDetails->getStatus());
 
         $bankingAccountActivationDetail = $this->getDbLastEntity('banking_account_activation_detail');
 

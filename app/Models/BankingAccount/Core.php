@@ -795,6 +795,17 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($bankingAccount);
 
+            // create banking account statement details entity
+            $basDetailInput = array(
+                BASDetails\Entity::ACCOUNT_NUMBER   => $bankingAccount->getAccountNumber(),
+                BASDetails\Entity::CHANNEL          => $bankingAccount->getChannel(),
+                BASDetails\Entity::MERCHANT_ID      => $bankingAccount->getMerchantId(),
+                BASDetails\Entity::BALANCE_ID       => $bankingAccount->getBalanceId(),
+                BASDetails\Entity::STATUS           => BASDetails\Status::ACTIVE
+            );
+
+            (new BASDetails\Core)->createOrUpdate($basDetailInput);
+
             $this->createScheduleTaskForFeeRecovery($balance, $merchant);
 
             (new Counter\Core)->fetchOrCreate($balance);
