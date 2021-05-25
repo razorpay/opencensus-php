@@ -13,7 +13,7 @@ export default class WebhooksList extends React.Component {
     const WebhooksListItem = ({ webhook }) => {
       let activeEventsCount = [];
 
-      Object.keys(webhook.events).forEach(function(key) {
+      Object.keys(webhook.events).forEach(function (key) {
         if (webhook.events[key] === true) {
           activeEventsCount.push(key);
         }
@@ -28,10 +28,7 @@ export default class WebhooksList extends React.Component {
           </td>
           <td>
             <span
-              className={
-                'status-label label ' +
-                (webhook.active ? 'label-info' : 'label-disabled')
-              }
+              className={'status-label label ' + (webhook.active ? 'label-info' : 'label-disabled')}
             >
               {webhook.active ? 'Enabled' : 'Disabled'}
             </span>
@@ -65,19 +62,9 @@ export default class WebhooksList extends React.Component {
             emptyTableRow={
               <tr>
                 <td className="text-center empty-table" colSpan={4}>
-                  <div
-                    className="empty-table-message"
-                    style={{ fontSize: '16px' }}
-                  >
+                  <div className="empty-table-message font-size-16">
                     You have not setup any webhook
-                    <div
-                      style={{
-                        fontSize: '14px',
-                        color: '#528ff0',
-                        cursor: 'pointer',
-                      }}
-                      onClick={onNewWebhookClick}
-                    >
+                    <div class="add-new-webhook" onClick={onNewWebhookClick}>
                       Add new Webhook
                     </div>
                   </div>
@@ -86,9 +73,7 @@ export default class WebhooksList extends React.Component {
             }
           >
             {webhooks
-              ? webhooks.map(webhook => (
-                  <WebhooksListItem key={webhook.id} webhook={webhook} />
-                ))
+              ? webhooks.map((webhook) => <WebhooksListItem key={webhook.id} webhook={webhook} />)
               : null}
           </TableBody>
         </table>

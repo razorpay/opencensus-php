@@ -62,9 +62,13 @@ export default class GenericEntity extends Entity {
       method,
       data,
       httpData,
-    }).then((response) => {
-      return new Klass(response.data).deserialize();
-    });
+    })
+      .then((response) => {
+        return new Klass(response.data).deserialize();
+      })
+      .catch((error) => {
+        throw error;
+      });
   }
 
   delete(data) {

@@ -3,14 +3,13 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
 import moment from 'moment';
-
+import LoaderDots from 'common/ui/LoaderDots';
 import Spinner from 'common/ui/Spinner';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import SwitchField from 'common/ui/Forms/SwitchField';
 import Definition from 'common/ui/Definition';
 import Button from 'common/new-ui/Button';
 import Alert from 'common/new-ui/Alert';
-
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
@@ -35,7 +34,9 @@ import WebhookStats from './components/WebhookStats';
 )
 @RTracking(() => window.rzpQ.component('WebhooksContainer'))
 export default class WebhookEntity extends Component {
-  state = {};
+  state = {
+    toggleStatusLoading: false,
+  };
 
   static contextTypes = {
     confirm: PropTypes.func,
@@ -61,6 +62,7 @@ export default class WebhookEntity extends Component {
   }
 
   toggleActive = (isChecked, cb) => {
+    this.setState({ toggleStatusLoading: true });
     const { webhooks } = this.props.webhooks;
     const webhook = webhooks.find((webhook) => webhook.id === this.props.id);
     const newWebhookData = {
@@ -72,12 +74,14 @@ export default class WebhookEntity extends Component {
       .saveWebhook(newWebhookData)
       .then((webhook) => {
         cb(true);
-        this.props.onSave(webhook);
+        this.setState({ toggleStatusLoading: false });
       })
       .catch((err) => {
-        this.setState({
-          errors: err.errors,
+        this.props.showNotification({
+          type: 'error',
+          message: `${err.errors}`,
         });
+        this.setState({ toggleStatusLoading: false });
       });
   };
 
@@ -160,16 +164,10 @@ export default class WebhookEntity extends Component {
         <div className="panel panel-default SliderPanel">
           <div className="panel-heading">
             <strong>Webhook Details</strong>
-            <div style={{ float: 'right', paddingRight: '10px' }}>
+            <div class="webhook-actions">
               <button
                 type="button"
-                className="btn Button--primary--invert btn-lg"
-                style={{
-                  borderRadius: '0px',
-                  padding: '8px 20px',
-                  marginRight: '8px',
-                  color: '#497fd6',
-                }}
+                className="btn Button--primary--invert btn-lg delete-webhook"
                 onClick={() => this.handleDelete(webhooks)}
               >
                 Delete
@@ -185,19 +183,25 @@ export default class WebhookEntity extends Component {
                 <EntityDetailRow label="Webhook URL" value={webhook.url} />
                 <EntityDetailRow label="Status">
                   <span className="toggler-btn">
-                    <SwitchField
-                      defaultChecked={webhook.active}
-                      onChange={(isChecked, cb) => this.toggleActive(isChecked, cb)}
-                      type="prime"
-                    />
-                    {webhook.active ? (
-                      <b className="text-primary" style={{ marginLeft: '4px' }}>
-                        Enabled
-                      </b>
+                    {this.state.toggleStatusLoading ? (
+                      <LoaderDots />
                     ) : (
-                      <b className="text-faded" style={{ marginLeft: '4px' }}>
-                        Disabled
-                      </b>
+                      <>
+                        <SwitchField
+                          defaultChecked={webhook.active}
+                          onChange={(isChecked, cb) => this.toggleActive(isChecked, cb)}
+                          type="prime"
+                        />
+                        {webhook.active ? (
+                          <b className="text-primary" style={{ marginLeft: '4px' }}>
+                            Enabled
+                          </b>
+                        ) : (
+                          <b className="text-faded" style={{ marginLeft: '4px' }}>
+                            Disabled
+                          </b>
+                        )}
+                      </>
                     )}
                   </span>
                 </EntityDetailRow>
@@ -215,7 +219,7 @@ export default class WebhookEntity extends Component {
                   <DocsLink
                     title="Learn more about Webhook secrets"
                     url="https://razorpay.com/docs/webhooks/"
-                    style={{ padding: '0', fontSize: '12px' }}
+                    class="webhook-doclinks"
                   />
                 </EntityDetailRow>
                 <EntityDetailRow label="Active Events">

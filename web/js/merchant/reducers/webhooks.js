@@ -123,6 +123,9 @@ export default function (state = initialState, action) {
       let webhookIndex = state.webhooks.findIndex((webhook) => webhook.id === action.payload.id);
       return set(state, `webhooks.${webhookIndex}`, action.payload);
 
+    case `${WEBHOOK_EDIT}::ERROR`:
+      return set(state, 'error', action.payload.errors);
+
     case `${WEBHOOK_STATS_FETCH}::PENDING`:
       return set(state, 'stats', { ...state.stats, loading: true });
 
