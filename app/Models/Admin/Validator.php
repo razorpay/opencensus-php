@@ -109,6 +109,7 @@ class Validator extends Base\Validator
 
         ConfigKey::RBL_STATEMENT_FETCH_ATTEMPT_LIMIT              => 'filled|integer',
         ConfigKey::RBL_STATEMENT_FETCH_SPECIAL_ATTEMPT_LIMIT      => 'filled|integer',
+        ConfigKey::ICICI_STATEMENT_FETCH_ATTEMPT_LIMIT            => 'filled|integer',
         ConfigKey::RBL_STATEMENT_FETCH_RETRY_LIMIT                => 'filled|integer',
         ConfigKey::BLOCK_X_REGISTRATION                           => 'filled|boolean',
         ConfigKey::BLOCK_YESBANK_RX_FAV                           => 'filled|boolean',
@@ -121,11 +122,13 @@ class Validator extends Base\Validator
         ConfigKey::RBL_STATEMENT_FETCH_WINDOW_LENGTH              => 'filled|integer',
         ConfigKey::ICICI_STATEMENT_FETCH_RATE_LIMIT               => 'filled|integer',
         ConfigKey::ICICI_STATEMENT_FETCH_WINDOW_LENGTH            => 'filled|integer',
+        ConfigKey::ICICI_STATEMENT_FETCH_RETRY_LIMIT              => 'filled|integer',
         ConfigKey::RBL_STATEMENT_CLOSING_BALANCE_DIFF             => 'array',
         ConfigKey::RBL_STATEMENT_FETCH_RATE_LIMIT_RELEASE_DELAY   => 'filled|integer',
         ConfigKey::ICICI_STATEMENT_FETCH_RATE_LIMIT_RELEASE_DELAY => 'filled|integer',
         ConfigKey::RBL_ENABLE_RATE_LIMIT_FLOW                     => 'filled|integer',
         ConfigKey::ICICI_ENABLE_RATE_LIMIT_FLOW                     => 'filled|integer',
+
 
         ConfigKey::CREDIT_CARD_REGEX_FOR_REDACTING    => 'filled|string',
         ConfigKey::EMAIL_REGEX_FOR_REDACTING          => 'filled|string',

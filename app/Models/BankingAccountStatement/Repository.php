@@ -37,6 +37,15 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function findLatestByAccountNumberAndChannel($accountNumber, $channel)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
+                    ->where(Entity::CHANNEL, '=', $channel)
+                    ->latest(Entity::ID)
+                    ->first();
+     }
+
     public function findExistingStatementRecordsForBank(array $records)
     {
         $columns = [];

@@ -97,7 +97,9 @@ abstract class Base extends BaseCore
     protected function getLastBankTransaction()
     {
         /** @var Entity|null $bankTxn */
-        $bankTxn = $this->repo->banking_account_statement->findLatestByAccountNumber($this->getAccountNumber());
+        $bankTxn = $this->repo->banking_account_statement
+                              ->findLatestByAccountNumberAndChannel($this->getAccountNumber(),
+                                                                    $this->channel);
 
         return $bankTxn;
     }

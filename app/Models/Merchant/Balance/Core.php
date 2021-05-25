@@ -519,11 +519,18 @@ class Core extends Base\Core
         $accountType = $balance->getAccountType();
 
         if (($balanceType === Type::BANKING) and
-            ($accountType === AccountType::DIRECT) and
-            ($balance->getChannel() === Channel::RBL))
+            ($accountType === AccountType::DIRECT))
         {
-            return -1 * BalanceConfig\Entity::BANKING_MAX_NEGATIVE_FOR_RBL;
+            if ($balance->getChannel() === Channel::RBL)
+            {
+                return -1 * BalanceConfig\Entity::BANKING_MAX_NEGATIVE_FOR_RBL;
+            }
+            else if ($balance->getChannel() === Channel::ICICI)
+            {
+                return -1 * BalanceConfig\Entity::BANKING_MAX_NEGATIVE_FOR_ICICI;
+            }
         }
+
 
         $negativeLimit = 0;
 

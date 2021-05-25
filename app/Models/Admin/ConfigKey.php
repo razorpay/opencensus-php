@@ -113,10 +113,17 @@ class ConfigKey
     // last transaction mentioned to fetch more data.
     const RBL_STATEMENT_FETCH_ATTEMPT_LIMIT         = self::PREFIX . 'rbl_statement_fetch_attempt_limit';
 
+    // ICICI_STATEMENT_FETCH_ATTEMPT_LIMIT is defining the number of attempt count for account statement fetch
+    // per request. ICICI has internal pagination with flag for statement fetch and we need to refetch with
+    // last transaction mentioned to fetch more data.
+    const ICICI_STATEMENT_FETCH_ATTEMPT_LIMIT         = self::PREFIX . 'icici_statement_fetch_attempt_limit';
+
     // special attempt limit for merchants transacting more.
     const RBL_STATEMENT_FETCH_SPECIAL_ATTEMPT_LIMIT = self::PREFIX . 'rbl_statement_fetch_special_attempt_limit';
 
     const RBL_STATEMENT_FETCH_RETRY_LIMIT           = self::PREFIX . 'rbl_statement_fetch_retry_limit';
+
+    const ICICI_STATEMENT_FETCH_RETRY_LIMIT           = self::PREFIX . 'icici_statement_fetch_retry_limit';
 
     const BLOCK_YESBANK_WALLET_PAYOUTS          = self::PREFIX . 'block_yesbank_wallet_payouts';
 
@@ -204,6 +211,9 @@ class ConfigKey
     // This will be used to get the number of records to fetch at once in bulk
     const RBL_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE = self::PREFIX . 'rbl_account_statement_records_to_fetch_at_once';
 
+    // This will be used to get the number of records to fetch at once in bulk
+    const ICICI_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE = self::PREFIX . 'icici_account_statement_records_to_fetch_at_once';
+
     // This will be used to get the number of records to process[link with entities] at once in bulk
     const ACCOUNT_STATEMENT_RECORDS_TO_PROCESS_AT_ONCE = self::PREFIX . 'account_statement_records_to_process_at_once';
 
@@ -288,6 +298,7 @@ class ConfigKey
         self::ENABLE_NB_KOTAK_ENCRYPTED_FLOW,
         self::FREE_SHARED_ACCOUNT_PAYOUTS_COUNT,
         self::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL,
+        self::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_ICICI,
         self::FREE_PAYOUTS_SUPPORTED_MODES,
         self::ENABLE_PAYMENT_DOWNTIME_CARD,
         self::ENABLE_PAYMENT_DOWNTIME_CARD_ISSUER,
@@ -315,10 +326,14 @@ class ConfigKey
         self::REQUEST_LOG_STATE,
         self::RBL_BANKING_ACCOUNT_STATEMENT_CRON_ATTEMPT_DELAY,
         self::SLAVE_ROUTES,
+        self::ICICI_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE,
+        self::RBL_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE,
         self::RBL_STATEMENT_FETCH_RATE_LIMIT_RELEASE_DELAY,
         self::ICICI_STATEMENT_FETCH_RATE_LIMIT_RELEASE_DELAY,
         self::RBL_ENABLE_RATE_LIMIT_FLOW,
         self::ICICI_ENABLE_RATE_LIMIT_FLOW,
+        self::ICICI_STATEMENT_FETCH_ATTEMPT_LIMIT,
+        self::ICICI_STATEMENT_FETCH_RETRY_LIMIT,
         self::ACCOUNT_STATEMENT_V2_FLOW,
         self::REARCH_CARD_PAYMENTS,
         self::MIN_HOURS_TO_START_TICKET_CREATION_AFTER_ACTIVATION_FORM_SUBMISSION,

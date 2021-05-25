@@ -26,6 +26,7 @@ class Entity extends Base\PublicEntity
     // 10 lakhs common for each merchant.
     // for more ref https://docs.google.com/document/d/1b_CsSdwC4n-Sld46g7i2TxhtCZQ6Kdeh8VK39HGyk2s/edit
     const BANKING_MAX_NEGATIVE_FOR_RBL = 100000000;
+    const BANKING_MAX_NEGATIVE_FOR_ICICI = 100000000;
 
     const ID                                   = 'id';
     const BALANCE_ID                           = 'balance_id';
