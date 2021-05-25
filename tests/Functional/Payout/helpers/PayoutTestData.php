@@ -12689,4 +12689,32 @@ return [
             ],
         ],
     ],
+
+    'testCreateM2PPayoutForMerchantDirectAccountCardMode' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'fund_account_id' => 'fa_EIXgVWknyiroq6',
+                'amount'          => 100,
+                'mode'            => 'card',
+                'currency'        => 'INR',
+                'account_number'  => '2224440041626905',
+                'purpose'         => 'payout'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'RBL does not support card payouts to CARD',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED,
+        ],
+    ],
 ];

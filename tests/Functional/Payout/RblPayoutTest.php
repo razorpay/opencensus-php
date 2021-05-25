@@ -7,12 +7,17 @@ use Carbon\Carbon;
 
 use RZP\Models\Admin;
 use RZP\Models\Payout;
+use RZP\Models\Feature;
+use RZP\Models\Card\Type;
 use RZP\Constants\Timezone;
 use RZP\Models\Pricing\Fee;
+use RZP\Models\Card\Issuer;
+use RZP\Models\Card\Network;
 use RZP\Services\Mock\Mozart;
 use RZP\Models\BankingAccount;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\BankingAccount\Gateway\Rbl;
+use RZP\Models\Merchant\Balance\FreePayout;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Jobs\RblBankingAccountGatewayBalanceUpdate;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
@@ -533,6 +538,99 @@ class RblPayoutTest extends TestCase
 
     public function testRblPayoutWithInvalidMode()
     {
+        $this->startTest();
+    }
+
+    public function testCreateM2PPayoutForMerchantDirectAccountCardMode()
+    {
+        $contact = $this->getDbLastEntity('contact');
+
+        $balanceAttributes = [
+            'balance' => 10000000,
+            'balanceType' => 'direct',
+            'channel' => 'rbl',
+        ];
+
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            $balanceAttributes["balance"],
+            '10000000000000',
+            $balanceAttributes["balanceType"] ,
+            $balanceAttributes["channel"]
+        );
+
+        $virtualAccount = $this->fixtures->create('virtual_account');
+        $secondBankAccount    = $this->fixtures->create(
+            'bank_account',
+            [
+                'type'           => 'virtual_account',
+                'entity_id'      => $virtualAccount->getId(),
+                'account_number' => '2224440041626906',
+                'ifsc_code'      => 'RAZRB000000',
+            ]);
+
+        $virtualAccount->bankAccount()->associate($secondBankAccount);
+        $virtualAccount->balance()->associate($bankingBalance);
+        $virtualAccount->save();
+
+        $bankingBalance->setAccountNumber($virtualAccount->bankAccount->getAccountNumber());
+        $bankingBalance->save();
+
+        $this->fixtures->create('counter', [
+            'account_type'          => 'direct',
+            'balance_id'            => $bankingBalance->getId(),
+            'free_payouts_consumed' => FreePayout::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL,
+        ]);
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->create('iin', [
+            'iin'     => 340169,
+            'network' => Network::$fullName[Network::MC],
+            'type'    => Type::DEBIT,
+            'issuer'  => Issuer::YESB
+        ]);
+
+        $fundAccountRequest = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts',
+            'content' => [
+                "account_type" => "card",
+                "contact_id"   => "cont_" . $contact["id"],
+                "card"         => [
+                    "name"         => "Prashanth YV",
+                    "number"       => "340169570990137",
+                    "cvv"          => "212",
+                    "expiry_month" => 10,
+                    "expiry_year"  => 21,
+                ]
+            ]
+        ];
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::S2S,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->ba->privateAuth();
+
+        $fundAccount = $this->makeRequestAndGetContent($fundAccountRequest);
+
+        $this->assertEquals(Issuer::YESB, $fundAccount['card']['issuer']);
+        $this->assertEquals(Network::$fullName[Network::MC], $fundAccount['card']['network']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account_id']  = $fundAccount['id'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
         $this->startTest();
     }
 }
