@@ -25,7 +25,7 @@ class Payout extends Base
      */
     public function sendStatusUpdate(array $input, string $mode) : array
     {
-        $this->makeRequest(self::STATUS_UPDATE, $input, self::SERVICE_PAYOUT, $mode);
+        return $this->makeRequest(self::STATUS_UPDATE, $input, self::SERVICE_PAYOUT, $mode);
     }
 
     public function pushPayoutStatusUpdate(Entity $payout, string $mode)
