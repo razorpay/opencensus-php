@@ -7,12 +7,14 @@ The production dashboard uses the following:
 
 Builds are done using Drone. See the `.drone.yml` file for details on these.
 
-#### Pre-requisites
+### Pre-requisites
 
 * Install [composer](https://getcomposer.org/download/) PHP package manager
 * Install [`node`](https://github.com/creationix/nvm) (`v12`)
 
-After cloning the repo follow these steps:
+Before running `npm install`, we have to setup some tokens to be able to fetch packages from our private registries-
+
+**Setup for private packages from [Razorpay Registry](https://registry.razorpay.com/)** -
 - Login to [registry.razorpay.com](https://registry.razorpay.com/)
 - Copy the token. You'll see this on the screen
 `npm config set //registry.razorpay.com/:_authToken "LONG_HASHED_TOKEN_STRING"` the string after `authToken` is your token
@@ -21,6 +23,19 @@ After cloning the repo follow these steps:
   export NPM_RAZORPAY_TOKEN="<YOUR_TOKEN>"
   ```
 - Run `source ~/.bashrc` or `source ~/.zshrc` based on in what file you added your token.
+
+**Setup for private packages from [Razorpay's GitHub Registry](https://github.com/orgs/razorpay/packages)** -
+
+* Generate a Personal Access Token on GitHub by [visiting this link](https://github.com/settings/tokens/new)
+  - Check all the scopes
+  - Click on Generate token
+  - Copy the token.
+  - From Enable SSO, click `Authorize` button next to Razorpay logo.
+* Open `~/.bashrc` or `~/.zshrc` in your editor and add this line 
+  ```
+  export GITHUB_ACCESS_TOKEN="<YOUR_TOKEN>"
+  ```
+* Run `source ~/.bashrc` or `source ~/.zshrc` based on the file you added your token.
 
 # Setup instructions with Docker (for local development)
 
