@@ -6,7 +6,7 @@ export const INVOICE_CREATE = 'INVOICE_CREATE';
 export const INVOICE_EDIT = 'INVOICE_EDIT';
 export const INVOICE_DELETED = 'INVOICE_DELETED';
 
-export const fetchInvoices = params => {
+export const fetchInvoices = (params) => {
   let invoice = new Invoice();
   return {
     type: INVOICES_FETCH,
@@ -14,7 +14,7 @@ export const fetchInvoices = params => {
   };
 };
 
-export const saveInvoice = (params, headers = {}, isIntentDuplicate) => {
+export const saveInvoice = (params, headers = {}) => {
   let invoice = new Invoice(params);
 
   return {
@@ -24,7 +24,7 @@ export const saveInvoice = (params, headers = {}, isIntentDuplicate) => {
       {
         headers,
       },
-      isIntentDuplicate
+      false,
     ),
   };
 };
@@ -38,14 +38,14 @@ export const updatePPInReduxList = (newLink, isNew) => {
 };
 
 /* Hook to populate payment-page list fetched separately from api */
-export const populateRPLReduxList = newLinksList => {
+export const populateRPLReduxList = (newLinksList) => {
   return {
     type: 'PP_FETCH',
     payload: newLinksList,
   };
 };
 
-export const deleteInvoice = params => {
+export const deleteInvoice = (params) => {
   let invoice = new Invoice(params);
   return {
     type: INVOICE_DELETED,
@@ -60,7 +60,7 @@ let initialState = {
   count: 0,
 };
 
-export default function(state = initialState, action) {
+export default function (state = initialState, action) {
   switch (action.type) {
     case `${INVOICES_FETCH}::PENDING`:
       return merge(state, {
@@ -85,16 +85,10 @@ export default function(state = initialState, action) {
       return set(state, 'invoices', unshift(state.invoices, action.payload));
 
     case 'PP_CREATE':
-      return set(
-        state,
-        'paymentPages',
-        unshift(state.paymentPages, action.payload)
-      );
+      return set(state, 'paymentPages', unshift(state.paymentPages, action.payload));
 
     case 'PP_EDIT':
-      let entityIndex = state.paymentPages.findIndex(
-        entity => entity.id === action.payload.id
-      );
+      let entityIndex = state.paymentPages.findIndex((entity) => entity.id === action.payload.id);
       return set(state, `paymentPages.${entityIndex}`, action.payload);
 
     case 'PP_FETCH':
@@ -104,16 +98,11 @@ export default function(state = initialState, action) {
       });
 
     case `${INVOICE_EDIT}::SUCCESS`:
-      let invoiceIndex = state.invoices.findIndex(
-        invoice => invoice.id === action.payload.id
-      );
+      let invoiceIndex = state.invoices.findIndex((invoice) => invoice.id === action.payload.id);
       return set(state, `invoices.${invoiceIndex}`, action.payload);
 
     case INVOICE_DELETED:
-      var invoicesList = remove(
-        state.invoices,
-        invoice => invoice.id === action.payload.id
-      );
+      var invoicesList = remove(state.invoices, (invoice) => invoice.id === action.payload.id);
       return set(state, 'invoices', invoicesList);
 
     default:
