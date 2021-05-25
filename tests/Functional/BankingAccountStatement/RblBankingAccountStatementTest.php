@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\BankingAccountStatement;
 
+use DB;
 use App;
 use Mail;
 use Queue;
@@ -12,6 +13,7 @@ use RZP\Models\Admin;
 use RZP\Models\Payout;
 use RZP\Services\Mozart;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Table;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer;
 use RZP\Models\BankingAccount;
@@ -8209,6 +8211,7 @@ class RblBankingAccountStatementTest extends TestCase
     // Since time of update will depend on when this test is performed, assertion of exact epoch value is not done.
     public function testGatewayBalanceCreateInBASDetailsTable()
     {
+        $this->markTestSkipped('not needed anymore in new flow');
         /** @var BankingAccount\Entity $baBeforeTest */
         $baBeforeTest = $this->getDbEntity(EntityConstants::BANKING_ACCOUNT, [BaEntity::ACCOUNT_NUMBER => '2224440041626905', BaEntity::CHANNEL => BankingAccount\Channel::RBL]);
 
@@ -8254,14 +8257,13 @@ class RblBankingAccountStatementTest extends TestCase
 
     public function testGatewayBalanceUpdateInBASDetailsTable()
     {
-        $this->testGatewayBalanceCreateInBASDetailsTable();
-
         $basDetail = $this->getDbLastEntity('banking_account_statement_details');
 
         $this->assertNotNull($basDetail);
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(5);
 
+        $this->ba->cronAuth();
         $this->testData[__FUNCTION__] = $this->testData['testGatewayBalanceCreateInBASDetailsTable'];
         $this->startTest();
 
@@ -8272,7 +8274,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $basDetail = $this->getDbEntities('banking_account_statement_details');
 
-        $this->assertCount(2, $basDetail);
+        $this->assertCount(1, $basDetail);
 
         $this->assertEquals(500, $basDetail[0][BasDetails\Entity::GATEWAY_BALANCE]);
 

@@ -51,6 +51,7 @@ use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Mail\Transaction\Payout as PayoutMail;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
+use RZP\Models\BankingAccountStatement\Details;
 use RZP\Jobs\PayoutPostCreateProcessLowPriority;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
@@ -946,6 +947,15 @@ class PayoutTest extends OAuthTestCase
             'account_type'          =>  'current',
         ];
 
+        $this->fixtures->on('live')->create('banking_account_statement_details',[
+            Details\Entity::ID             => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $secondBankingBalance->getId(),
+            Details\Entity::ACCOUNT_NUMBER => '2224440041626999',
+            Details\Entity::CHANNEL        => Details\Channel::RBL,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
+
         $secondBankingAccount = $this->createBankingAccount($secondBankingAccountAttributes, 'live');
 
         // Create two queued payouts
@@ -1338,6 +1348,15 @@ class PayoutTest extends OAuthTestCase
 
         $secondBankingAccount = $this->createBankingAccount($secondBankingAccountAttributes);
 
+        $this->fixtures->create('banking_account_statement_details',[
+            Details\Entity::ID             => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $secondBankingBalance->getId(),
+            Details\Entity::ACCOUNT_NUMBER => '2224440041626906',
+            Details\Entity::CHANNEL        => Details\Channel::RBL,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
+
         $this->fixtures->create(
             'counter',
             [
@@ -1427,6 +1446,15 @@ class PayoutTest extends OAuthTestCase
         ];
 
         $secondBankingAccount = $this->createBankingAccount($secondBankingAccountAttributes);
+
+        $this->fixtures->create('banking_account_statement_details',[
+            Details\Entity::ID             => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $secondBankingBalance->getId(),
+            Details\Entity::ACCOUNT_NUMBER => '2224440041626906',
+            Details\Entity::CHANNEL        => Details\Channel::RBL,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
 
         // Create two queued payouts
 
@@ -4555,6 +4583,15 @@ class PayoutTest extends OAuthTestCase
 
         $bankingAccount = $this->createBankingAccount($bankingAccountParams);
 
+        $this->fixtures->create('banking_account_statement_details',[
+            Details\Entity::ID             => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $balance['id'],
+            Details\Entity::ACCOUNT_NUMBER => '2224440041626906',
+            Details\Entity::CHANNEL        => Details\Channel::RBL,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
+
         $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
 
         $balanceId = $balance['id'];
@@ -4631,6 +4668,15 @@ class PayoutTest extends OAuthTestCase
         ];
 
         $bankingAccount = $this->createBankingAccount($bankingAccountParams);
+
+        $this->fixtures->create('banking_account_statement_details',[
+            Details\Entity::ID             => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $balance['id'],
+            Details\Entity::ACCOUNT_NUMBER => '2224440041626906',
+            Details\Entity::CHANNEL        => Details\Channel::RBL,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
 
         $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
 
@@ -5319,6 +5365,15 @@ class PayoutTest extends OAuthTestCase
         ];
 
         $secondBankingAccount = $this->createBankingAccount($secondBankingAccountAttributes, 'live');
+
+        $this->fixtures->on('live')->create('banking_account_statement_details',[
+            Details\Entity::ID             => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $secondBankingBalance->getId(),
+            Details\Entity::ACCOUNT_NUMBER => '2224440041626999',
+            Details\Entity::CHANNEL        => Details\Channel::RBL,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
 
         // Create two queued payouts
 

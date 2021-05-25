@@ -3,9 +3,11 @@
 namespace RZP\Models\BankingAccountStatement\Details;
 
 use RZP\Exception;
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 
 class Core extends Base\Core
 {
@@ -28,11 +30,12 @@ class Core extends Base\Core
 
         $channel = $input[Entity::CHANNEL];
 
+        /* @var Entity $basDetailEntity */
         $basDetailEntity = $this->repo->banking_account_statement_details->fetchByAccountNumberAndChannel($accountNumber, $channel);
 
         if ($basDetailEntity === null)
         {
-            $this->create($input);
+            return $this->create($input);
         }
         else
         {
@@ -40,16 +43,22 @@ class Core extends Base\Core
 
             try
             {
-                $this->mutex->acquireAndRelease(
+                $basDetailEntity = $this->mutex->acquireAndRelease(
                     'banking_account_statement_details_' . $basDetailEntity->getId(),
                     function() use ($basDetailEntity, $input) {
 
                         // update gateway balance is called each time gateway balance is fetched by cron. We save the
                         // value fetched by cron only if it is not equal to existing value.
-                        if ((array_key_exists(Entity::GATEWAY_BALANCE, $input) === true) and
-                            ($input[Entity::GATEWAY_BALANCE] !== $basDetailEntity->getGatewayBalance()))
+                        if (array_key_exists(Entity::GATEWAY_BALANCE, $input) === true)
                         {
-                            $this->updateGatewayBalance($basDetailEntity, $input[Entity::GATEWAY_BALANCE]);
+                            if ($input[Entity::GATEWAY_BALANCE] !== $basDetailEntity->getGatewayBalance())
+                            {
+                                $basDetailEntity = $this->updateGatewayBalance($basDetailEntity, $input[Entity::GATEWAY_BALANCE]);
+                            }
+
+                            $basDetailEntity->setBalanceLastFetchedAt(Carbon::now(Timezone::IST)->getTimestamp());
+
+                            $this->repo->saveOrFail($basDetailEntity);
                         }
 
                         // update statement closing balance will be performed only when new records are fetched from bank
@@ -59,6 +68,8 @@ class Core extends Base\Core
                         {
                             $this->updateStatementClosingBalance($basDetailEntity, $input[Entity::STATEMENT_CLOSING_BALANCE]);
                         }
+
+                        return $basDetailEntity;
                     },
                     30,
                     ErrorCode::BAD_REQUEST_ANOTHER_BANKING_ACCOUNT_STATEMENT_DETAILS_OPERATION_IN_PROGRESS,
@@ -84,6 +95,8 @@ class Core extends Base\Core
                     throw $e;
                 }
             }
+
+            return $basDetailEntity;
         }
     }
 
@@ -108,8 +121,6 @@ class Core extends Base\Core
         $basDetail->setGatewayBalance($gatewayBalance);
 
         $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_DETAILS_UPDATE_GATEWAY_BALANCE, $basDetail->toArray());
-
-        $this->repo->saveOrFail($basDetail);
 
         return $basDetail;
     }

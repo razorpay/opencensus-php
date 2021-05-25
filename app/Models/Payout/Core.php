@@ -562,9 +562,18 @@ class Core extends Base\Core
             ]);
     }
 
-    public function fetchAndUpdateGatewayBalance(BankingAccount\Entity $merchantBankingAccount)
+    public function fetchAndUpdateGatewayBalanceIfStale(Merchant\Balance\Entity $balanceEntity)
     {
-        $balanceLastFetchedAt = $merchantBankingAccount->getBalanceLastFetchedAt();
+        $input = [
+            Merchant\Balance\Entity::CHANNEL        => $balanceEntity->getChannel(),
+            Merchant\Balance\Entity::MERCHANT_ID    => $balanceEntity->getMerchantId(),
+            Merchant\Balance\Entity::ACCOUNT_NUMBER => $balanceEntity->getAccountNumber()
+        ];
+
+        /** @var BankingAccountStatement\Details\Entity $basDetail */
+        $basDetails = $balanceEntity->bankingAccountStatementDetails;
+
+        $balanceLastFetchedAt = $basDetails->getBalanceLastFetchedAt();
 
         $nowTime = Carbon::now(Timezone::IST);
 
@@ -580,10 +589,10 @@ class Core extends Base\Core
 
         if ($diffTime > $lastFetchedAtRateLimit)
         {
-            $merchantBankingAccount = (new BankingAccount\Core)->fetchAndUpdateGatewayBalance($merchantBankingAccount);
+            $basDetails = (new BankingAccount\Core)->fetchAndUpdateGatewayBalanceWrapper($input);
         }
 
-        return $merchantBankingAccount;
+        return $basDetails;
     }
 
     /**
@@ -619,15 +628,7 @@ class Core extends Base\Core
 
             if ($balanceEntity->isAccountTypeDirect() === true)
             {
-                /** @var BankingAccount\Entity $merchantBankingAccount */
-                $merchantBankingAccount = $balanceEntity->bankingAccount;
-
-                $merchantBankingAccount = $this->fetchAndUpdateGatewayBalance($merchantBankingAccount);
-
-                if ($merchantBankingAccount->isGatewayBalanceFetchCronMoreUpdated() === true)
-                {
-                    $balanceAmount = $merchantBankingAccount->getGatewayBalance();
-                }
+                $balanceAmount = $this->getLatestBalanceForDirectAccount($balanceEntity);
             }
 
             $dispatchedData = $this->dispatchApplicablePayouts($balanceAmount, $payouts);
@@ -647,6 +648,21 @@ class Core extends Base\Core
         );
 
         return $traceData;
+    }
+
+    public function getLatestBalanceForDirectAccount(Merchant\Balance\Entity $balanceEntity)
+    {
+        /** @var BankingAccountStatement\Details\Entity $basDetailsUpdated */
+        $basDetailsUpdated = $this->fetchAndUpdateGatewayBalanceIfStale($balanceEntity);
+
+        $balanceAmount = $balanceEntity->getBalanceWithLockedBalance();
+
+        if ($basDetailsUpdated->isGatewayBalanceFetchCronMoreUpdated() === true)
+        {
+            $balanceAmount = $basDetailsUpdated->getGatewayBalance();
+        }
+
+        return $balanceAmount;
     }
 
     /**
@@ -686,15 +702,7 @@ class Core extends Base\Core
 
                 if ($balanceEntity->isAccountTypeDirect() === true)
                 {
-                    /** @var BankingAccount\Entity $merchantBankingAccount */
-                    $merchantBankingAccount = $balanceEntity->bankingAccount;
-
-                    $merchantBankingAccount = $this->fetchAndUpdateGatewayBalance($merchantBankingAccount);
-
-                    if ($merchantBankingAccount->isGatewayBalanceFetchCronMoreUpdated() === true)
-                    {
-                        $balanceAmount = $merchantBankingAccount->getGatewayBalance();
-                    }
+                    $balanceAmount = $this->getLatestBalanceForDirectAccount($balanceEntity);
                 }
 
                 $totalQueuedPayouts = $this->repo->payout->fetchCountOfQueuedPayoutsForBalance($balanceId);

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout\Direct;
 
+use RZP\Models\Payout;
 use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -77,7 +78,9 @@ class Base extends FundAccountPayout\Base
 
     protected function getMerchantBalanceToCheckForQueued(Entity $payout)
     {
-        return $payout->balance->getBalance();
+        $merchantBalance = (new Payout\Core)->getLatestBalanceForDirectAccount($payout->balance);
+
+        return $merchantBalance;
     }
 
     /**

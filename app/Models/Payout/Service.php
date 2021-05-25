@@ -662,7 +662,7 @@ class Service extends Base\Service
 
         // Filters the balance IDs for balances where gateway balance changed in last 24 hours
         $balanceIdsFilteredOnGatewayBalanceUpdate = $this->repo
-                                                         ->banking_account
+                                                         ->banking_account_statement_details
                                                          ->getBalanceIdsWhereGatewayBalanceUpdatedRecently($balanceIds);
 
         $balanceIdList = array_unique(array_merge($balanceIdsFilteredOnBalanceUpdate,

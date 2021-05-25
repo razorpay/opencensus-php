@@ -40,6 +40,7 @@ use RZP\Models\BankingAccount\Channel as BAChannel;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\BankingAccount\Activation\Notification\Event;
 use RZP\Models\BankingAccount\Detail as BankingAccountDetail;
+use RZP\Models\BankingAccountStatement\Channel as BasChannel;
 use RZP\Models\BankingAccountStatement\Details as BASDetails;
 use RZP\Models\BankingAccount\Activation\Notification\Notifier;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
@@ -1034,17 +1035,17 @@ class Core extends Base\Core
     {
         $validator = new Validator();
 
-        $validator->validateInput(Validator::FETCH_GATEWAY_BALANCE, $input);
+        $validator->setStrictFalse()->validateInput(Validator::FETCH_GATEWAY_BALANCE, $input);
 
         $channel    = $input[Entity::CHANNEL];
         $merchantId = $input[Entity::MERCHANT_ID];
 
-        /** @var Entity $bankingAccount */
-        $bankingAccount = $this->repo->banking_account->getBankingAccountByMerchantIdAndChannel($merchantId, $channel);
+        $basDetails = $this->repo->banking_account_statement_details
+            ->getDirectBasDetailEntityByMerchantIdAndChannel($merchantId, $channel);
 
-        $bankingAccount = $this->fetchAndUpdateGatewayBalance($bankingAccount);
+        $response = $this->fetchAndUpdateGatewayBalance($basDetails);
 
-        return $bankingAccount;
+        return $response;
     }
 
     /**
@@ -1052,48 +1053,52 @@ class Core extends Base\Core
      * which is agreed upon in SLA. This function will be used to fetch balance from gateway before making normal/queued
      * payouts depending upon balance_last_fetched_at.
      *
-     * @param Entity $bankingAccount
+     * @param BASDetails\Entity $basDetails
      *
      * @return mixed
      */
-    public function fetchAndUpdateGatewayBalance(Entity $bankingAccount)
+    public function fetchAndUpdateGatewayBalance(BASDetails\Entity $basDetails)
     {
-        $channel = $bankingAccount->getChannel();
+        $channel = $basDetails->getChannel();
 
-        $gatewayProcessor = $this->getProcessor($channel);
+        $merchantId = $basDetails->getMerchantId();
+
+        $accountNumber = $basDetails->getAccountNumber();
+
+        $processorParams = [
+            Entity::CHANNEL        => $channel,
+            Entity::MERCHANT_ID    => $merchantId,
+            Entity::ACCOUNT_NUMBER => $accountNumber,
+        ];
+
+        $gatewayProcessor = $this->getProcessor($channel, $processorParams);
 
         // every gateway processor must implement fetchGatewayBalance function. This function sends Mozart request
         // to fetch balance from gateway and return balance.
         try
         {
-            $balance = $gatewayProcessor->fetchGatewayBalance($bankingAccount);
-
-            $bankingAccount->setGatewayBalance($balance);
-
-            $bankingAccount->setBalanceLastFetchedAt(Carbon::now()->getTimestamp());
-
-            $this->repo->saveOrFail($bankingAccount);
+            $balance = $gatewayProcessor->fetchGatewayBalance();
 
             $this->trace->info(
                 TraceCode::BANKING_ACCOUNT_FETCH_AND_UPDATE_GATEWAY_BALANCE_REQUEST_SUCCEEDED,
                 [
                     Entity::CHANNEL                 => $channel,
-                    Entity::MERCHANT_ID             => $bankingAccount->getMerchantId(),
-                    Entity::ACCOUNT_NUMBER          => $bankingAccount->getAccountNumber(),
-                    Entity::GATEWAY_BALANCE         => $bankingAccount->getGatewayBalance(),
-                    Entity::BALANCE_LAST_FETCHED_AT => $bankingAccount->getBalanceLastFetchedAt(),
+                    Entity::MERCHANT_ID             => $basDetails->getMerchantId(),
+                    Entity::ACCOUNT_NUMBER          => $basDetails->getAccountNumber(),
+                    Entity::GATEWAY_BALANCE         => $basDetails->getGatewayBalance(),
+                    Entity::BALANCE_LAST_FETCHED_AT => $basDetails->getBalanceLastFetchedAt(),
                 ]);
 
             // Once gateway balance is fetched, this has to be updated in BAS Details table as well. Statement fetch will be initiated based on that table.
             $basDetailInput = array(
-                BASDetails\Entity::ACCOUNT_NUMBER   => $bankingAccount->getAccountNumber(),
-                BASDetails\Entity::CHANNEL          => $bankingAccount->getChannel(),
-                BASDetails\Entity::MERCHANT_ID      => $bankingAccount->getMerchantId(),
-                BASDetails\Entity::BALANCE_ID       => $bankingAccount->getBalanceId(),
-                BASDetails\Entity::GATEWAY_BALANCE  => $bankingAccount->getGatewayBalance()
+                BASDetails\Entity::ACCOUNT_NUMBER   => $basDetails->getAccountNumber(),
+                BASDetails\Entity::CHANNEL          => $basDetails->getChannel(),
+                BASDetails\Entity::MERCHANT_ID      => $basDetails->getMerchantId(),
+                BASDetails\Entity::BALANCE_ID       => $basDetails->getBalanceId(),
+                BASDetails\Entity::GATEWAY_BALANCE  => $balance
                 );
 
-            (new BASDetails\Core)->createOrUpdate($basDetailInput);
+            $basDetails = (new BASDetails\Core)->createOrUpdate($basDetailInput);
         }
         catch (\Throwable $exception)
         {
@@ -1101,14 +1106,14 @@ class Core extends Base\Core
                 TraceCode::BANKING_ACCOUNT_FETCH_AND_UPDATE_GATEWAY_BALANCE_REQUEST_FAILED,
                 [
                     Entity::CHANNEL                 => $channel,
-                    Entity::MERCHANT_ID             => $bankingAccount->getMerchantId(),
-                    Entity::ACCOUNT_NUMBER          => $bankingAccount->getAccountNumber(),
-                    Entity::GATEWAY_BALANCE         => $bankingAccount->getGatewayBalance(),
-                    Entity::BALANCE_LAST_FETCHED_AT => $bankingAccount->getBalanceLastFetchedAt(),
+                    Entity::MERCHANT_ID             => $basDetails->getMerchantId(),
+                    Entity::ACCOUNT_NUMBER          => $basDetails->getAccountNumber(),
+                    Entity::GATEWAY_BALANCE         => $basDetails->getGatewayBalance(),
+                    Entity::BALANCE_LAST_FETCHED_AT => $basDetails->getBalanceLastFetchedAt(),
                 ]);
         }
 
-        return $bankingAccount;
+        return $basDetails;
     }
 
     public function getActivationStatusChangeLog(Entity $bankingAccount)
@@ -1186,7 +1191,7 @@ class Core extends Base\Core
         return $bankingAccount;
     }
 
-    public function getProcessor(string $channel): Gateway\Processor
+    public function getProcessor(string $channel, array $processorParams = []): Gateway\Processor
     {
         $processor = __NAMESPACE__ . '\\' . 'Gateway';
 
@@ -1194,7 +1199,7 @@ class Core extends Base\Core
 
         if (class_exists($processor) === true)
         {
-            return new $processor;
+            return new $processor($processorParams);
         }
         else
         {
@@ -1385,7 +1390,7 @@ class Core extends Base\Core
         $limit = $this->getGatewayBalanceUpdateRateLimit($channel);
 
         // get list of merchants based upon channel and balance last fetched at
-        $merchantIds = $this->repo->banking_account
+        $merchantIds = $this->repo->banking_account_statement_details
                                   ->getMerchantIdsByChannel($channel, $limit);
 
         foreach ($merchantIds as $merchantId)

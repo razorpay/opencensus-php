@@ -149,16 +149,29 @@ class Entity extends Base\PublicEntity
 
         $channel = $attributes[self::CHANNEL];
 
-        if (($accountType === AccountType::DIRECT) and
-            ($channel === Channel::RBL))
+        if ($accountType === AccountType::DIRECT)
         {
-            $bankingAccount = $this->bankingAccount;
-
-            // in normal scenario we are sending balance table's balance but if the gateway balance is
-            // more updated, then we use that instead
-            if ($bankingAccount->isGatewayBalanceFetchCronMoreUpdated() === true)
+            if ($channel === Channel::RBL)
             {
-                $attributes[self::BALANCE] = $bankingAccount->getGatewayBalance();
+                $bankingAccount = $this->bankingAccount;
+
+                // in normal scenario we are sending balance table's balance but if the gateway balance is
+                // more updated, then we use that instead
+                if ($bankingAccount->isGatewayBalanceFetchCronMoreUpdated() === true)
+                {
+                    $attributes[self::BALANCE] = $bankingAccount->getGatewayBalance();
+                }
+            }
+            else if ($channel === Details\Channel::ICICI)
+            {
+                $basDetails = $this->bankingAccountStatementDetails;
+
+                // in normal scenario we are sending balance table's balance but if the gateway balance is
+                // more updated, then we use that instead
+                if ($basDetails->isGatewayBalanceFetchCronMoreUpdated() === true)
+                {
+                    $attributes[self::BALANCE] = $basDetails->getGatewayBalance();
+                }
             }
         }
     }
@@ -169,14 +182,30 @@ class Entity extends Base\PublicEntity
 
         $channel = $attributes[self::CHANNEL];
 
-        if (($accountType === AccountType::DIRECT) and
-            ($channel === Channel::RBL))
+        if ($accountType === AccountType::DIRECT)
         {
-            $bankingAccount = $this->bankingAccount;
-
-            if ($bankingAccount->isGatewayBalanceFetchCronMoreUpdated() === true)
+            if ($channel === Channel::RBL)
             {
-                $attributes[self::LAST_FETCHED_AT] = $bankingAccount->getBalanceLastFetchedAt();
+                $bankingAccount = $this->bankingAccount;
+
+                // in normal scenario we are sending balance table's balance but if the gateway balance is
+                // more updated, then we use that instead
+                if ($bankingAccount->isGatewayBalanceFetchCronMoreUpdated() === true)
+                {
+                    $attributes[self::LAST_FETCHED_AT] = $bankingAccount->getBalanceLastFetchedAt();
+                }
+            }
+            else if ($channel === Details\Channel::ICICI)
+            {
+                /** @var Details\Entity $basDetails */
+                $basDetails = $this->bankingAccountStatementDetails;
+
+                // in normal scenario we are sending balance table's balance but if the gateway balance is
+                // more updated, then we use that instead
+                if ($basDetails->isGatewayBalanceFetchCronMoreUpdated() === true)
+                {
+                    $attributes[self::LAST_FETCHED_AT] = $basDetails->getBalanceLastFetchedAt();
+                }
             }
         }
     }

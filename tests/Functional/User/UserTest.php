@@ -26,6 +26,7 @@ use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Mail\User\AccountVerification;
+use RZP\Models\BankingAccountStatement\Details;
 use RZP\Tests\Traits\TestsStorkServiceRequests;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -2494,6 +2495,15 @@ class UserTest extends TestCase
                                                             $attributes = ['id' => '30000000000000'],
                                                             $role = 'owner',
                                                             $mode = 'test');
+
+        $this->fixtures->create('banking_account_statement_details',[
+            Details\Entity::ID             => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $this->bankingBalance->getId(),
+            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
+            Details\Entity::CHANNEL        => Details\Channel::ICICI,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
 
         $this->ba->dashboardGuestAppAuth();
 

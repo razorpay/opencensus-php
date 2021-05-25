@@ -11,7 +11,7 @@ class Fields
     const SOURCE_ACCOUNT_NUMBER = 'account_number';
     const CREDENTIALS           = 'credentials';
     const CORP_ID               = 'CrpId';
-    const CORP_USER             = 'CrpUser';
+    const CORP_USER             = 'CrpUsr';
     const AGGR_ID               = 'AGGR_ID';
     const AGGR_NAME             = 'AGGR_NAME';
     const URN                   = 'URN';

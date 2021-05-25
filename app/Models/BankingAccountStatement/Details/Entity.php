@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Constants\Table;
+use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Balance;
 use RZP\Constants\Entity as EntityConstants;
 
@@ -26,6 +27,7 @@ class Entity extends Base\PublicEntity
     const GATEWAY_BALANCE_CHANGE_AT           = 'gateway_balance_change_at';
     const STATEMENT_CLOSING_BALANCE_CHANGE_AT = 'statement_closing_balance_change_at';
     const LAST_STATEMENT_ATTEMPT_AT           = 'last_statement_attempt_at';
+    const BALANCE_LAST_FETCHED_AT             = 'balance_last_fetched_at';
 
     const ACCOUNT_NUMBER_LENGTH = 40;
 
@@ -50,6 +52,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_BALANCE_CHANGE_AT,
         self::STATEMENT_CLOSING_BALANCE_CHANGE_AT,
         self::LAST_STATEMENT_ATTEMPT_AT,
+        self::BALANCE_LAST_FETCHED_AT,
     ];
 
     protected $visible = [
@@ -64,6 +67,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_BALANCE,
         self::GATEWAY_BALANCE_CHANGE_AT,
         self::LAST_STATEMENT_ATTEMPT_AT,
+        self::BALANCE_LAST_FETCHED_AT,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
@@ -80,7 +84,7 @@ class Entity extends Base\PublicEntity
     {
         $this->attributes[self::GATEWAY_BALANCE] = $gatewayBalance;
 
-        $currentTime = Carbon::now()->getTimestamp();
+        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
 
         $this->setAttribute(self::GATEWAY_BALANCE_CHANGE_AT, $currentTime);
     }
@@ -89,7 +93,7 @@ class Entity extends Base\PublicEntity
     {
         $this->attributes[self::STATEMENT_CLOSING_BALANCE] = $statementClosingBalance;
 
-        $currentTime = Carbon::now()->getTimestamp();
+        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
 
         $this->setAttribute(self::STATEMENT_CLOSING_BALANCE_CHANGE_AT, $currentTime);
     }
@@ -133,9 +137,19 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BALANCE_ID);
     }
 
+    public function getChannel()
+    {
+        return $this->getAttribute(self::CHANNEL);
+    }
+
     public function getLastStatementAttemptAt()
     {
         return $this->getAttribute(self::LAST_STATEMENT_ATTEMPT_AT);
+    }
+
+    public function getBalanceLastFetchedAt()
+    {
+        return $this->getAttribute(self::BALANCE_LAST_FETCHED_AT);
     }
 
     // ============================= END GETTERS ===========================
@@ -159,9 +173,14 @@ class Entity extends Base\PublicEntity
 
     public function setLastStatementAttemptAt()
     {
-        $currentTime = Carbon::now()->getTimestamp();
+        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
 
         $this->setAttribute(self::LAST_STATEMENT_ATTEMPT_AT, $currentTime);
+    }
+
+    public function setBalanceLastFetchedAt(int $currentTime)
+    {
+        $this->setAttribute(self::BALANCE_LAST_FETCHED_AT, $currentTime);
     }
 
     // ============================= END SETTERS ===========================
@@ -169,5 +188,16 @@ class Entity extends Base\PublicEntity
     public function balance()
     {
         return $this->belongsTo(Balance\Entity::class);
+    }
+
+    public function isGatewayBalanceFetchCronMoreUpdated(): bool
+    {
+        $balance = $this->balance;
+
+        $gatewayBalanceLastFetchedAt = $this->getBalanceLastFetchedAt();
+
+        $accStatementLastFetchedAt = $balance->getLastFetchedAtAttribute();
+
+        return ($gatewayBalanceLastFetchedAt > $accStatementLastFetchedAt);
     }
 }

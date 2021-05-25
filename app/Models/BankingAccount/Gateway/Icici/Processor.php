@@ -2,6 +2,8 @@
 
 namespace RZP\Models\BankingAccount\Gateway\Icici;
 
+use App;
+
 use RZP\Services\Mozart;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -9,7 +11,9 @@ use RZP\Models\BankingAccount;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankingAccount\Entity;
 use RZP\Exception\BadRequestException;
+use RZP\Services\BankingAccountService;
 use RZP\Exception\GatewayErrorException;
+use RZP\Models\BankingAccountStatement\Details as BasDetails;
 use RZP\Models\BankingAccount\Gateway\Processor as BaseProcessor;
 
 class Processor extends BaseProcessor
@@ -30,19 +34,43 @@ class Processor extends BaseProcessor
         ErrorCode::SERVER_ERROR_MOZART_INTEGRATION_ERROR,
     ];
 
-    protected function formatDataForMozartBalanceFetchApi(BankingAccount\Entity $bankingAccount)
+    protected $accountCredentials;
+
+    protected $accountNumber;
+
+    public function __construct(array $setUpForBalanceFetch = [])
+    {
+        parent::__construct();
+
+        if (empty($setUpForBalanceFetch) === false)
+        {
+            $app = App::getFacadeRoot();
+
+            /* @var BankingAccountService $bas */
+            $bas = $app['banking_account_service'];
+
+            $merchantId    = $setUpForBalanceFetch[BasDetails\Entity::MERCHANT_ID];
+            $accountNumber = $setUpForBalanceFetch[BasDetails\Entity::ACCOUNT_NUMBER];
+            $channel       = $setUpForBalanceFetch[BasDetails\Entity::CHANNEL];
+
+            $this->accountCredentials = $bas->fetchBankingCredentials($merchantId, $channel, $accountNumber);
+
+            $this->accountNumber = $accountNumber;
+        }
+    }
+
+    protected function formatDataForMozartBalanceFetchApi()
     {
         //AGGR_ID, AGGR_NAME, BENEFICIARY_API_KEY are common for all merchants . so fetching these from credstash
-
         $data = [
             Fields::SOURCE_ACCOUNT => [
-                Fields::SOURCE_ACCOUNT_NUMBER => $bankingAccount->getAccountNumber(),
+                Fields::SOURCE_ACCOUNT_NUMBER => $this->accountNumber,
                 Fields::CREDENTIALS           => [
-                    Fields::CORP_ID             => $bankingAccount->getReference1(),
-                    Fields::CORP_USER           => $bankingAccount->getDetailsDataUsingKey(Fields::USER_ID),
+                    Fields::CORP_ID             => $this->accountCredentials[Fields::CORP_ID],
+                    Fields::CORP_USER           => $this->accountCredentials[Fields::CORP_USER],
                     Fields::AGGR_ID             => $this->config['banking_account']['icici'][Fields::AGGR_ID_CONFIG],
                     Fields::AGGR_NAME           => $this->config['banking_account']['icici'][Fields::AGGR_NAME_CONFIG],
-                    Fields::URN                 => $bankingAccount->getDetailsDataUsingKey(Fields::URN_DB),
+                    Fields::URN                 => $this->accountCredentials[Fields::URN],
                     Fields::BENEFICIARY_API_KEY => $this->config['banking_account']['icici'][Fields::BENEFICIARY_API_KEY_CONFIG],
                 ],
             ]
@@ -61,9 +89,9 @@ class Processor extends BaseProcessor
         return false;
     }
 
-    protected function verifyCredentials(BankingAccount\Entity $bankingAccount)
+    protected function verifyCredentials()
     {
-        $request = $this->formatDataForMozartBalanceFetchApi($bankingAccount);
+        $request = $this->formatDataForMozartBalanceFetchApi();
 
         $retryCount = 0;
 
@@ -185,9 +213,9 @@ class Processor extends BaseProcessor
      *
      * @throws BadRequestException
      */
-    public function fetchGatewayBalance(BankingAccount\Entity $bankingAccount): int
+    public function fetchGatewayBalance(): int
     {
-        $response = $this->verifyCredentials($bankingAccount);
+        $response = $this->verifyCredentials();
 
         $balance = $this->fetchBalanceFromMozartResponse($response);
 

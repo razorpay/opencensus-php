@@ -12,13 +12,14 @@ use RZP\Constants\Timezone;
 use RZP\Models\BankingAccount;
 use RZP\Models\Merchant\Balance;
 use RZP\Exception\LogicException;
+use RZP\Models\Base\PublicEntity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankingAccount\Entity;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\GatewayErrorException;
-use RZP\Models\BankingAccount\Activation\Comment;
 use RZP\Models\BankingAccount\Constants;
-use RZP\Models\Base\PublicEntity;
+use RZP\Models\BankingAccount\Activation\Comment;
+use RZP\Models\BankingAccountStatement\Details as BASDetails;
 
 class Processor extends BankingAccount\Gateway\Processor
 {
@@ -55,9 +56,27 @@ class Processor extends BankingAccount\Gateway\Processor
 
     protected $mozartErrorInformation = ['UserID or Password Not Correct '];
 
+    /** @var Entity $bankingAccount */
+    protected $bankingAccount;
+
+    public function __construct(array $setUpForBalanceFetch = [])
+    {
+        parent::__construct();
+
+        if (empty($setUpForBalanceFetch) === false)
+        {
+            $merchantId = $setUpForBalanceFetch[Entity::MERCHANT_ID];
+
+            $channel = $setUpForBalanceFetch[Entity::CHANNEL];
+
+            /** @var Entity $bankingAccount */
+            $this->bankingAccount = $this->repo->banking_account->getBankingAccountByMerchantIdAndChannel($merchantId, $channel);
+        }
+    }
+
     public function processActivation(Entity $bankingAccount, array $input): Entity
     {
-        $balance = $this->fetchGatewayBalance($bankingAccount);
+        $balance = $this->fetchGatewayBalanceForBankingAccount($bankingAccount);
 
         $this->checkBalanceForActivation($balance);
 
@@ -209,17 +228,35 @@ class Processor extends BankingAccount\Gateway\Processor
     }
 
     /**
-     * @param Entity $bankingAccount
      *
      * @return int
      *
      * @throws BadRequestException
      */
-    public function fetchGatewayBalance(BankingAccount\Entity $bankingAccount): int
+    public function fetchGatewayBalanceForBankingAccount(BankingAccount\Entity $bankingAccount): int
     {
         $response = $this->verifyCredentials($bankingAccount);
 
         $balance = $this->fetchBalanceFromMozartResponse($response);
+
+        return $balance;
+    }
+
+    /**
+     *
+     * @return int
+     *
+     * @throws BadRequestException
+     */
+    public function fetchGatewayBalance(): int
+    {
+        $balance = $this->fetchGatewayBalanceForBankingAccount($this->bankingAccount);
+
+        $this->bankingAccount->setGatewayBalance($balance);
+
+        $this->bankingAccount->setBalanceLastFetchedAt(Carbon::now()->getTimestamp());
+
+        $this->repo->saveOrFail($this->bankingAccount);
 
         return $balance;
     }

@@ -18,6 +18,7 @@ use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Fixtures\Entity\User;
+use RZP\Models\BankingAccountStatement\Details;
 use RZP\Models\Admin\Org\Repository as OrgRepository;
 
 trait PayoutTrait
@@ -579,6 +580,15 @@ trait PayoutTrait
                                                                          'product'     => 'primary',
                                                                          'role'        => 'owner',
                                                                      ], 'live');
+
+        $this->fixtures->on('live')->create('banking_account_statement_details',[
+            Details\Entity::ID             => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $this->bankingBalance->getId(),
+            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
+            Details\Entity::CHANNEL        => Details\Channel::RBL,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
     }
 
     protected function validateStorkWebhookFireEvent($event, $testData, $storkPayload, $mode='test')

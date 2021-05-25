@@ -12,9 +12,9 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Services\CardVault;
 use RZP\Models\BankingAccount\Entity;
-use RZP\Models\BankingAccount\Channel;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\RecordAlreadyExists;
+use RZP\Models\BankingAccountStatement\Channel;
 
 abstract class Processor extends Base\Core
 {
@@ -430,5 +430,5 @@ abstract class Processor extends Base\Core
     abstract protected function generateRequestForSourceAccount(Entity $bankingAccount);
 
     // every gateway processor must implement this function for fetching balance from gateway
-    abstract public function fetchGatewayBalance(Entity $bankingAccount);
+    abstract public function fetchGatewayBalance();
 }

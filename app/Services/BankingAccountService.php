@@ -15,6 +15,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Exception\IntegrationException;
 use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Models\BankingAccount\Gateway\Icici;
 use RZP\Models\BankingAccountService\Channel;
 use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 use RZP\Models\BankingAccountService\Constants as Fields;
@@ -98,9 +99,9 @@ class BankingAccountService
         if (isset($response['data']) === true)
         {
             $response = [
-                Fields::CORP_ID   => $response['data']['corp_id'],
-                Fields::CORP_USER => $response['data']['user_id'],
-                Fields::URN       => $response['data']['urn'],
+                Icici\Fields::CORP_ID   => $response['data']['corp_id'],
+                Icici\Fields::CORP_USER => $response['data']['user_id'],
+                Icici\Fields::URN       => $response['data']['urn'],
             ];
         }
         else

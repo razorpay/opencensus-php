@@ -14,6 +14,7 @@ use RZP\Models\BankingAccount\Entity;
 use RZP\Models\BankingAccount\Channel;
 use RZP\Models\Merchant\Balance\FreePayout;
 use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Models\BankingAccountStatement\Details;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
@@ -78,6 +79,15 @@ class FeeRecoveryTest extends TestCase
             'bank_reference_number' => '',
             'account_ifsc'          => 'RATN0000156',
             'balance_id'            => $this->balance->getId()
+        ]);
+
+        $this->fixtures->create('banking_account_statement_details',[
+            Details\Entity::ID             => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $this->bankingBalance->getId(),
+            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
+            Details\Entity::CHANNEL        => Details\Channel::RBL,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
         ]);
 
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(100);

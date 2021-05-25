@@ -3,7 +3,9 @@
 namespace RZP\Models\BankingAccountStatement\Details;
 
 use RZP\Constants;
+use Carbon\Carbon;
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 
 class Repository extends Base\Repository
 {
@@ -38,5 +40,77 @@ class Repository extends Base\Repository
                     ->where($statusColumn, '=', Status::ACTIVE)
                     ->oldest(Entity::LAST_STATEMENT_ATTEMPT_AT)
                     ->get();
+    }
+
+    public function getMerchantIdsByChannel($channel, $limit)
+    {
+        $basDetailsBalanceIdColumn     = $this->dbColumn(Entity::BALANCE_ID);
+        $channelColumn                 = $this->dbColumn(Entity::CHANNEL);
+        $merchantIdColumn              = $this->dbColumn(Entity::MERCHANT_ID);
+
+        $balanceIdColumn                = $this->repo->balance->dbColumn(Entity::ID);
+        $accountTypeColumn              = $this->repo->balance->dbColumn(Merchant\Balance\Entity::ACCOUNT_TYPE);
+        $balanceTypeColumn              = $this->repo->balance->dbColumn(Merchant\Balance\Entity::TYPE);
+
+        $basDetailsAttr = $this->dbColumn('*');
+
+        return $this->newQuery()
+                    ->select($basDetailsAttr)
+                    ->where($channelColumn, '=', $channel)
+                    ->where(Entity::STATUS, '=', Status::ACTIVE)
+                    ->join(Constants\Table::BALANCE, $basDetailsBalanceIdColumn, '=', $balanceIdColumn)
+                    ->where($accountTypeColumn, '=', Merchant\Balance\AccountType::DIRECT)
+                    ->where($balanceTypeColumn, '=', Merchant\Balance\Type::BANKING)
+                    ->oldest(Entity::BALANCE_LAST_FETCHED_AT)
+                    ->limit($limit)
+                    ->pluck($merchantIdColumn);
+    }
+
+    public function getDirectBasDetailEntityByMerchantIdAndChannel($merchantId, string $channel)
+    {
+        $basDetailsBalanceIdColumn     = $this->dbColumn(Entity::BALANCE_ID);
+        $channelColumn                 = $this->dbColumn(Entity::CHANNEL);
+        $merchantIdColumn              = $this->dbColumn(Entity::MERCHANT_ID);
+
+        $balanceIdColumn                = $this->repo->balance->dbColumn(Entity::ID);
+        $accountTypeColumn              = $this->repo->balance->dbColumn(Merchant\Balance\Entity::ACCOUNT_TYPE);
+        $balanceTypeColumn              = $this->repo->balance->dbColumn(Merchant\Balance\Entity::TYPE);
+
+        $basDetailsAttr = $this->dbColumn('*');
+
+        return $this->newQuery()
+                    ->select($basDetailsAttr)
+                    ->where($merchantIdColumn, '=', $merchantId)
+                    ->join(Constants\Table::BALANCE, $basDetailsBalanceIdColumn, '=', $balanceIdColumn)
+                    ->where($accountTypeColumn, '=', Merchant\Balance\AccountType::DIRECT)
+                    ->where($balanceTypeColumn, '=', Merchant\Balance\Type::BANKING)
+                    ->where($channelColumn, '=', $channel)
+                    ->first();
+    }
+
+    /**
+     * Filter out Balance Id for balances where gateway balance has updated in last 24 hours
+     *
+     * @param array $balanceIdList
+     *
+     * @return mixed
+     */
+    public function getBalanceIdsWhereGatewayBalanceUpdatedRecently(array $balanceIdList)
+    {
+        $statusColumn    = $this->dbColumn(Entity::STATUS);
+        $balanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
+        $updatedAtColumn = $this->dbColumn(Entity::UPDATED_AT);
+
+        $oneDayEarlierTimeStamp = Carbon::now(Constants\Timezone::IST)->subHours(24)->getTimestamp();
+
+        return $this->newQuery()
+                    ->select($balanceIdColumn)
+                    ->whereIn($balanceIdColumn, $balanceIdList)
+                    ->where($updatedAtColumn, '>=', $oneDayEarlierTimeStamp)
+                    ->where($statusColumn, '=', Status::ACTIVE)
+                    ->distinct()
+                    ->get()
+                    ->pluck(Entity::BALANCE_ID)
+                    ->toArray();
     }
 }

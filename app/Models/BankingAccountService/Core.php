@@ -60,9 +60,9 @@ class Core extends Base\Core
 
         $balance = $this->createBalance($merchant, $attributes);
 
-        $this->trace->info(TraceCode::BANKING_ACCOUNT_SERVICE_BALANCE_CREATE, $balance->toArrayPublic());
-
         $this->createBankingAccountStatementDetails($merchantId, $input, $balance->getId());
+
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_SERVICE_BALANCE_CREATE, $balance->toArrayPublic());
 
         return $balance;
     }

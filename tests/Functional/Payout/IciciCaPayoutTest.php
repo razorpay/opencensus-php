@@ -205,7 +205,9 @@ class IciciCaPayoutTest extends TestCase
 
         $this->assertEquals(50000, $basDetailsAfterCronRuns->getGatewayBalance());
 
-        $this->assertNotNull($baAfterCronRuns->getBalanceLastFetchedAt());
+        $this->assertNotNull($basDetailsAfterCronRuns->getBalanceLastFetchedAt());
+
+        $this->assertNotNull($basDetailsAfterCronRuns->getGatewayBalanceChangeAt());
     }
 
     public function testGatewayBalanceFetchWithGatewayFailure()

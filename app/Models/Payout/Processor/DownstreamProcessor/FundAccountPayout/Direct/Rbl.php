@@ -16,9 +16,7 @@ class Rbl extends Base
         // We fetch balance from gateway if balance last fetched at was a while ago(using threshold to decide that).
         // We then use this balance amount to create payout or queue it if low balance.
 
-        $merchantBankingAccount = $payout->bankingAccount;
-
-        $merchantBankingAccount = (new Payout\Core)->fetchAndUpdateGatewayBalance($merchantBankingAccount);
+        $merchantBankingAccount = (new Payout\Core)->fetchAndUpdateGatewayBalanceIfStale($payout->balance);
 
         $merchantBalance = $payout->balance->getBalance();
 

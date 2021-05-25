@@ -19,6 +19,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Models\Merchant\Balance\FreePayout;
 use RZP\Tests\Functional\Fixtures\Entity\User;
+use RZP\Models\BankingAccountStatement\Details;
 use RZP\Jobs\RblBankingAccountGatewayBalanceUpdate;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -61,16 +62,25 @@ class RblPayoutTest extends TestCase
         $this->setUpMerchantForBusinessBanking(false, 10000000, 'direct', 'rbl');
 
         $bankingAccountParams = [
-            'id' => 'xba00000000000',
-            'merchant_id' => '10000000000000',
-            'account_ifsc' => 'RATN0000088',
+            'id'             => 'xba00000000000',
+            'merchant_id'    => '10000000000000',
+            'account_ifsc'   => 'RATN0000088',
             'account_number' => '2224440041626905',
-            'status' => 'active',
-            'channel' => 'rbl',
-            'balance_id' => $this->bankingBalance->getId(),
+            'status'         => 'active',
+            'channel'        => 'rbl',
+            'balance_id'     => $this->bankingBalance->getId(),
         ];
 
         $this->createBankingAccount($bankingAccountParams);
+
+        $this->fixtures->create('banking_account_statement_details',[
+            Details\Entity::ID             => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $this->bankingBalance->getId(),
+            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
+            Details\Entity::CHANNEL        => Details\Channel::RBL,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
 
         $this->flushCache();
 
@@ -109,6 +119,15 @@ class RblPayoutTest extends TestCase
                                                                          'product'     => 'primary',
                                                                          'role'        => 'owner',
                                                                      ], 'live');
+
+        $this->fixtures->on('live')->create('banking_account_statement_details',[
+            Details\Entity::ID             => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $this->bankingBalance->getId(),
+            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
+            Details\Entity::CHANNEL        => Details\Channel::RBL,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
     }
 
     protected function createPendingPayout(array $attributes = [], string $authKey = null)
@@ -230,6 +249,10 @@ class RblPayoutTest extends TestCase
             'balance_last_fetched_at' => $oldDateTime->getTimestamp(),
         ] );
 
+        $this->fixtures->edit('banking_account_statement_details', 'xbas0000000002', [
+            'balance_last_fetched_at' => $oldDateTime->getTimestamp(),
+        ] );
+
         $this->mockMozartResponseForFetchingBalanceFromRblGateway(50000);
 
         $this->startTest();
@@ -240,6 +263,10 @@ class RblPayoutTest extends TestCase
         $oldDateTime = Carbon::create(2020, 01, 21, 12, 23, null, Timezone::IST);
 
         $this->fixtures->edit('banking_account', 'xba00000000000', [
+            'balance_last_fetched_at' => $oldDateTime->getTimestamp(),
+        ] );
+
+        $this->fixtures->edit('banking_account_statement_details', 'xbas0000000002', [
             'balance_last_fetched_at' => $oldDateTime->getTimestamp(),
         ] );
 
@@ -270,6 +297,10 @@ class RblPayoutTest extends TestCase
         $this->fixtures->edit('banking_account', 'xba00000000000', [
             'balance_last_fetched_at' => $oldDateTime->getTimestamp(),
         ]);
+
+        $this->fixtures->edit('banking_account_statement_details', 'xbas0000000002', [
+            'balance_last_fetched_at' => $oldDateTime->getTimestamp(),
+        ] );
 
         $summary = $this->makePayoutSummaryRequest();
 
@@ -521,11 +552,21 @@ class RblPayoutTest extends TestCase
 
         $this->assertNull($baBeforeTest->getBalanceLastFetchedAt());
 
+        $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
+
         $response = $this->setupRblDispatchGatewayBalanceUpdateForMerchants();
 
         /** @var BankingAccount\Entity $baAfterCronRuns */
         $baAfterCronRuns = $this->getDbEntityById('banking_account', 'xba00000000000');
 
+        /** @var Details\Entity $baAfterCronRuns */
+        $basDetailsAfterCronRuns = $this->getDbEntity('banking_account_statement_details',
+                                                      ['account_number' => 2224440041626905]);
+
+        $this->assertEquals(50000, $basDetailsAfterCronRuns->getGatewayBalance());
+        $this->assertNotNull($basDetailsAfterCronRuns->getBalanceLastFetchedAt());
+        $this->assertNotNull($basDetailsAfterCronRuns->getGatewayBalanceChangeAt());
+        $this->assertEquals(50000, $baAfterCronRuns->getGatewayBalance());
         $this->assertNotNull($baAfterCronRuns->getBalanceLastFetchedAt());
     }
 

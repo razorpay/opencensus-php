@@ -2,6 +2,7 @@
 
 namespace RZP\Services\Mock;
 
+use RZP\Models\BankingAccount\Gateway\Icici;
 use RZP\Models\BankingAccountService\Constants as Fields;
 
 class BankingAccountService
@@ -40,9 +41,9 @@ class BankingAccountService
     {
         //ICICI test ca credentials required for payouts testing in dark.
         return [
-            Fields::CORP_ID   => 'RAZORPAY12345',
-            Fields::CORP_USER => 'USER12345',
-            Fields::URN       => 'URN12345',
+            Icici\Fields::CORP_ID   => 'RAZORPAY12345',
+            Icici\Fields::CORP_USER => 'USER12345',
+            Icici\Fields::URN       => 'URN12345',
         ];
     }
 
