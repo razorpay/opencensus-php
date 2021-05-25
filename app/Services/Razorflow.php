@@ -38,7 +38,7 @@ class Razorflow
     const URLS = [
         'invoke_slash_command' => 'InvokeSlashCommand',
     ];
-    
+
     // Sensitive fields which are not to be logged
     const SENSITIVE_FIELDS = ['response_url'];
 
@@ -102,7 +102,6 @@ class Razorflow
         $this->trace->info(
             TraceCode::RAZORFLOW_SLACK_REQUEST,
             [
-                'input'   => $traceInput,
                 'headers' => $inputHeaders
             ]
         );
@@ -112,7 +111,6 @@ class Razorflow
             $this->trace->info(
                 TraceCode::RAZORFLOW_SLACK_FAILURE,
                 [
-                    'input'    => $traceInput,
                     'headers'  => $inputHeaders,
                     'response' => 'Invalid request',
                 ]
