@@ -179,6 +179,7 @@
     <header class="text-right">
         <span>
             <img class="logo" src="https://cdn.razorpay.com/static/assets/razorpayx/logos/rx-dark-logo.png" style="padding-bottom: 14px;padding-right: 30px;">
+            <img class="logo" src="https://cdn.razorpay.com/static/assets/razorpayx/banking-account-statement/icici_logo.jpg" style="width:194px;height:80px;">
         </span>
     </header>
 

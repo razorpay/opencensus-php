@@ -61,7 +61,7 @@ class Xlsx extends Generator
 
     const LOGO_CELL_RANGE               = 'A1:E1';
 
-    const LOGO_PATH                     = '/img/header_logo.png';
+    const LOGO_PATH                     = '/img/icici_logo.jpg';
 
 
     const LOGO_POSTITION                = 'D1';
@@ -285,7 +285,13 @@ class Xlsx extends Generator
 
         $drawing->setCoordinates(self::LOGO_POSTITION);
 
+        $drawing->setResizeProportional(false);
+
+        $drawing->setWidthAndHeight(250,90);
+
         $drawing->setOffsetY(18);
+
+        $drawing->setOffsetX(110);
 
         $drawing->setWorksheet($sheet);
     }
