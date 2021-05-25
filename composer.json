@@ -71,6 +71,7 @@
         "google/apiclient": "^2.7",
         "maatwebsite/excel": "3.1.25",
         "phpoffice/phpspreadsheet": "^1.16",
+        "razorpay/outbox-php": "^0.1.1",
         "laravel/helpers": "^1.4",
         "lcobucci/jwt": "3.3.*"
     },
@@ -119,6 +120,10 @@
         {
             "type": "vcs",
             "url": "git@github.com:razorpay/opencensus-php-exporter-jaeger.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:razorpay/outbox-php.git"
         },
         {
             "type": "vcs",

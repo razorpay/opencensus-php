@@ -163,6 +163,7 @@ return array(
          * application service providers.
          */
         Aws\Laravel\AwsServiceProvider::class,
+        Razorpay\Outbox\OutboxServiceProvider::class,
         Razorpay\Slack\Laravel\ServiceProvider::class,
         Schuppo\PasswordStrength\PasswordStrengthServiceProvider::class,
         anlutro\LaravelSettings\ServiceProvider::class,

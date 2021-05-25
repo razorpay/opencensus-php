@@ -3,20 +3,21 @@
 namespace RZP\Models\Merchant\AccessMap;
 
 use DB;
-use Throwable;
+use Config;
 
 use RZP\Exception;
+use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Http\OAuthScopes;
+use RZP\Models\Merchant\MerchantApplications;
 
 use Razorpay\OAuth\Token;
 use Razorpay\OAuth\Application;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Models\Merchant\MerchantApplications;
 
 class Core extends Base\Core
 {
@@ -39,9 +40,52 @@ class Core extends Base\Core
             $merchantMapping->entity()->associate($entity);
         }
 
-        $this->repo->saveOrFail($merchantMapping);
+        $applicationType = $this->getMerchantApplicationType($merchantMapping);
+
+        $this->repo->transaction(function () use ($merchantMapping, $applicationType) {
+            $this->repo->saveOrFail($merchantMapping);
+
+            $this->createOutboxJob("create_impersonation_grant", $merchantMapping, $applicationType);
+        });
 
         return $merchantMapping;
+    }
+
+    private function getMerchantApplicationType($merchantMapping)
+    {
+        $oauthApplicationId = $merchantMapping->entity->getId();
+        $merchantApplications = $this->repo
+            ->merchant_application
+            ->fetchMerchantApplication($oauthApplicationId, MerchantApplications\Entity::APPLICATION_ID);
+
+        if ($merchantApplications->count() === 0)
+        {
+            throw new Exception\LogicException('merchant application missing. This should not have happened.');
+        }
+
+
+        return $merchantApplications->get(0)->getApplicationType();
+    }
+
+    /**
+     * Partners with managed merchant_application can send request on behalf of sub-merchant.
+     * Here we create outbox entry to POST merchant access map in edge for authentication.
+     * While, table here will act as source of truth.
+     * @param string $jobName
+     * @param Entity $merchantMapping
+     * @param string $applicationType
+     */
+    private function createOutboxJob(string $jobName, Entity $merchantMapping, string $applicationType)
+    {
+        if ($applicationType === MerchantApplications\Entity::MANAGED)
+        {
+            app('outbox')->send($jobName, [
+                "principal_type"    => Merchant\Constants::PARTNER,
+                "principal_id"      => $merchantMapping->getEntityOwnerId(),
+                "subordinate_type"  => Constants\Entity::MERCHANT,
+                "subordinate_id"    => $merchantMapping->getMerchantId(),
+            ]);
+        }
     }
 
     /**
@@ -104,9 +148,14 @@ class Core extends Base\Core
 
         if (empty($mapping) === false)
         {
-            $resp = $this->repo->merchant_access_map->deleteOrFail($mapping);
+            $applicationType = $this->getMerchantApplicationType($mapping);
 
-            return $resp;
+            return $this->repo->transaction(function () use ($mapping, $applicationType)
+                {
+                    $this->createOutboxJob("delete_impersonation_grant", $mapping, $applicationType);
+
+                    return $this->repo->merchant_access_map->deleteOrFail($mapping);
+                });
         }
     }
 

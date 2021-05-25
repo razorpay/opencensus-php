@@ -22,17 +22,32 @@ class OAuthAppMerchantMapTest extends OAuthTestCase
 
     public function testOAuthAppMerchantMap()
     {
+        $application = $this->createOAuthApplication(["partner_type" => "pure_platform"]);
+
         $this->expectstorkInvalidateAffectedOwnersCacheRequest('10000000000000');
 
-        $this->startTest();
+        $testDataToReplace = [
+                'request'  => [
+                    'content' => [
+                        'application_id' => $application->getId(),
+                    ]
+                ],
+                'response' => [
+                    'content'     => [
+                        'entity_id'   => $application->getId(),
+                    ],
+                ],
+        ];
+
+        $this->startTest($testDataToReplace);
 
         $liveMapping = $this->getMapping('live');
 
         $testMapping = $this->getMapping('test');
 
-        $this->assertEquals('10000000000App', $liveMapping['entity_id']);
+        $this->assertEquals($application->getId(), $liveMapping['entity_id']);
 
-        $this->assertEquals('10000000000App', $testMapping['entity_id']);
+        $this->assertEquals($application->getId(), $testMapping['entity_id']);
     }
 
     public function testOAuthAppMerchantMapIncorrectEntityId()
@@ -65,9 +80,23 @@ class OAuthAppMerchantMapTest extends OAuthTestCase
 
     public function testOAuthAppMerchantMapDuplicateWithDeleted()
     {
-        $this->fixtures->create('merchant_access_map', ['deleted_at' => Carbon::now()->getTimestamp()]);
+        $application = $this->createOAuthApplication(["partner_type" => "pure_platform"]);
 
-        $this->startTest();
+        $this->fixtures->create('merchant_access_map', ['entity_id' => $application->getId(), 'deleted_at' => Carbon::now()->getTimestamp()]);
+
+        $testDataToReplace = [
+            'request'  => [
+                'content' => [
+                    'application_id' => $application->getId(),
+                ]
+            ],
+            'response' => [
+                'content'     => [
+                    'entity_id'   => $application->getId(),
+                ],
+            ],
+        ];
+        $this->startTest($testDataToReplace);
 
         $liveMappings = $this->getMappings('live')['items'];
 
@@ -80,11 +109,21 @@ class OAuthAppMerchantMapTest extends OAuthTestCase
 
     public function testOAuthAppDeleteMerchantMap()
     {
-        $this->fixtures->create('merchant_access_map', ['id' => 'BWkmyutEXIuvvX']);
+        $application = $this->createOAuthApplication(["partner_type" => "pure_platform"]);
+
+        $this->fixtures->create('merchant_access_map', ['id' => 'BWkmyutEXIuvvX', 'entity_id' => $application->getId()]);
 
         $this->expectstorkInvalidateAffectedOwnersCacheRequest('10000000000000');
 
-        $this->startTest();
+        $testDataToReplace = [
+            'request'  => [
+                'url'     => '/merchants/10000000000000/applications/' . $application->getId(),
+            ],
+            'response' => [
+            ],
+        ];
+
+        $this->startTest($testDataToReplace);
 
         $liveMapping = $this->getMapping('live');
 

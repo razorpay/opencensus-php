@@ -68,7 +68,7 @@ trait OAuthTrait
 
     public function createOAuthApplicationAndGetClientByEnv(string $env = 'dev')
     {
-        $application = $this->createOAuthApplication();
+        $application = $this->createOAuthApplication(["partner_type" => "pure_platform"]);
 
         return $this->getAppClientByEnv($application, $env);
     }

@@ -6,11 +6,15 @@ use RZP;
 use Cache;
 use Swift_Mailer;
 use Buzz\Client\MultiCurl;
+use Razorpay\Outbox\Job\Core;
 use RZP\Services\DruidService;
 use Razorpay\OAuth\Application;
-use Illuminate\Support\Facades\Redis;
 use Illuminate\Database\Connection;
+use Razorpay\Outbox\Job\Repository;
+use Illuminate\Support\Facades\Redis;
+use Razorpay\Outbox\Encoder\JsonEncoder;
 use Http\Discovery\Psr17FactoryDiscovery;
+use Razorpay\Outbox\Encrypt\AES256GCMEncrypt;
 use Symfony\Component\Cache\Adapter\Psr16Adapter;
 use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -355,6 +359,13 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton('paymentlinkservice', function($app)
         {
             return new PaymentLinkService($app);
+        });
+
+        $this->app->singleton('outbox', function () {
+            $encrypter = new AES256GCMEncrypt(env("OUTBOX_ENCRYPTION_KEY"));
+            $encoder   = new JsonEncoder();
+            $repo      = new Repository(\Database\Connection::LIVE);
+            return new Core($encrypter, $encoder, $repo);
         });
 
         $this->registerShield();
