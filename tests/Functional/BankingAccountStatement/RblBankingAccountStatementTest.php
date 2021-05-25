@@ -7410,6 +7410,8 @@ class RblBankingAccountStatementTest extends TestCase
     //gets linked to external . manually credit row is linked with that payout reversal
     public function testRblSourceUpdateFromReversedToReversed()
     {
+        $this->markTestSkipped('dependency on return utr is removed. hence this test is not needed');
+
         $channel = Channel::RBL;
 
         $this->setupForRblPayout($channel);
@@ -7468,6 +7470,8 @@ class RblBankingAccountStatementTest extends TestCase
         $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
 
         $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123457']);
+
+        sleep(1);
 
         // Update status
         $ftsCreateTransfer = new FtsFundTransfer(
