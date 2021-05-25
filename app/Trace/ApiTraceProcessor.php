@@ -89,6 +89,7 @@ class ApiTraceProcessor
         'password',
         'client_secret',
         'payer_account_number',
+        'otp',
     ];
 
     public function __construct($app)
