@@ -137,7 +137,11 @@ class Tracing
             'direct_tax_payments_tds_category_opt',
             'direct_tax_payments_create',
             'direct_tax_payments_create_options',
-            'direct_tax_payments_pg_webhook'
+            'direct_tax_payments_pg_webhook',
+
+            // payout API routes
+            'payout_create',
+            'payout_create_with_otp'
     ]);
     }
 
