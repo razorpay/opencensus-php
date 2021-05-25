@@ -39,8 +39,6 @@ class CreateMerchantProductRequests extends Migration
 
             $table->integer(Entity::UPDATED_AT);
 
-            $table->index(Entity::ID);
-
             $table->index(Entity::MERCHANT_PRODUCT_ID);
             });
     }
