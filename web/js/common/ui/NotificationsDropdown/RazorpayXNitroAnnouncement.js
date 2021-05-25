@@ -65,22 +65,6 @@ export const nitroCampaignId = () => {
       version: 'nitro_hyderabad_v3',
       version_description: 'Nitro for hyderabad',
     },
-    project_nitro: {
-      version: 'nitro_bangalore_v1',
-      version_description: 'Nitro for bangalore',
-    },
-    project_nitro_1: {
-      version: 'nitro_bangalore_v1',
-      version_description: 'Nitro for bangalore',
-    },
-    project_nitro_feb_2021: {
-      version: 'nitro_bangalore_v1',
-      version_description: 'Nitro for bangalore',
-    },
-    project_nitro_feb_2021_1: {
-      version: 'nitro_bangalore_v1',
-      version_description: 'Nitro for bangalore',
-    },
     nitro_midmarket_mumbai_v1: {
       version: 'nitro_midmarket_mumbai_v1',
       version_description: 'Nitro for mumbai mid market',
@@ -125,6 +109,42 @@ export const nitroCampaignId = () => {
     H6qHJJnYOtwfoc: {
       version: 'nitro_surat_v1',
       version_description: 'Nitro for surat',
+    },
+
+    // Beta Nitro v3
+    HF0Ml2IU6gH9rt: {
+      version: 'project-nitro-gandhinagar-v1',
+      version_description: 'Nitro for gandhinagar',
+    },
+    HF0NZThSDtgNGB: {
+      version: 'project-nitro-vadodara-v1',
+      version_description: 'Nitro for vadodara',
+    },
+    HF0OIJAqllZPRu: {
+      version: 'project-nitro-ahmedabad-v1',
+      version_description: 'Nitro for ahmedabad',
+    },
+    HF0Ox4LNEgYHbV: {
+      version: 'project-nitro-bangalore-v1',
+      version_description: 'Nitro for bangalore',
+    },
+
+    // Prod Nitro v3
+    HExafLb492K7LU: {
+      version: 'project-nitro-gandhinagar-v1',
+      version_description: 'Nitro for gandhinagar',
+    },
+    HExehMbAqYqlWF: {
+      version: 'project-nitro-vadodara-v1',
+      version_description: 'Nitro for vadodara',
+    },
+    HExiHP6GBUEVcu: {
+      version: 'project-nitro-ahmedabad-v1',
+      version_description: 'Nitro for ahmedabad',
+    },
+    HExnzHcFfimA6u: {
+      version: 'project-nitro-bangalore-v1',
+      version_description: 'Nitro for bangalore',
     },
   };
 

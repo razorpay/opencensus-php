@@ -184,7 +184,7 @@ class Constants
                 ],
             ],
             'filters'     => [
-                'experiments'         => ['project_nitro', 'project_nitro_1', 'project_nitro_feb_2021', 'project_nitro_feb_2021_1', 'nitro_hyderabad_v2', 'nitro_hyderabad_v3', 'nitro_midmarket_mumbai_v1'],
+                'experiments'         => ['nitro_hyderabad_v2', 'nitro_hyderabad_v3', 'nitro_midmarket_mumbai_v1'],
             ],
         ],
         [
@@ -206,7 +206,7 @@ class Constants
                 ],
             ],
             'filters'     => [
-                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_HYDERABAD_SPLITZ', 'ANNOUNCEMENT_NITRO_KOLKATA_V1_SPLITZ', 'ANNOUNCEMENT_NITRO_CHENNAI_V1_SPLITZ', 'ANNOUNCEMENT_NITRO_SURAT_V1_SPLITZ', 'ANNOUNCEMENT_NITRO_JAIPUR_V1_SPLITZ'],
+                'splitz_experiments'         => self::nitroSplitzExperimentsList,
             ],
         ],
         [
@@ -944,13 +944,6 @@ class Constants
         'projectNitro'=>[
             [
                 'data'  => [
-                    'version'             =>  'nitro_bangalore_v1',
-                    'version_description' => 'Nitro for bangalore',
-                    ],
-                'experiments'         => ['project_nitro', 'project_nitro_1', 'project_nitro_feb_2021', 'project_nitro_feb_2021_1'],
-            ],
-            [
-                'data'  => [
                     'version'     =>  'nitro_hyderabad_v2',
                     "version_description" => 'Nitro for hyderabad',
                 ],
@@ -997,6 +990,34 @@ class Constants
                     "version_description" => 'Nitro for chennai',
                 ],
                 'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_CHENNAI_V1_SPLITZ'],
+            ],
+            [
+                'data'  => [
+                    'version'     =>  'project-nitro-gandhinagar-v1',
+                    "version_description" => 'Nitro for gandhinagar',
+                ],
+                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_GANDHINAGAR_V1_SPLITZ'],
+            ],
+            [
+                'data'  => [
+                    'version'     =>  'project-nitro-vadodara-v1',
+                    "version_description" => 'Nitro for vadodara',
+                ],
+                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_VADODARA_V1_SPLITZ'],
+            ],
+            [
+                'data'  => [
+                    'version'     =>  'project-nitro-ahmedabad-v1',
+                    "version_description" => 'Nitro for ahmedabad',
+                ],
+                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_AHMEDABAD_V1_SPLITZ'],
+            ],
+            [
+                'data'  => [
+                    'version'     =>  'project-nitro-bangalore-v1',
+                    "version_description" => 'Nitro for bangalore',
+                ],
+                'splitz_experiments'         => ['ANNOUNCEMENT_NITRO_BANGALORE_V1_SPLITZ'],
             ],
             [
                 'data'  => [
@@ -1087,6 +1108,18 @@ class Constants
                 'splitz_experiments'         => ['ANNOUNCEMENT_CHECKOUT_REWARDS_LIVE_SPLITZ'],
             ]
         ]
+    ];
+
+    const nitroSplitzExperimentsList = [
+        'ANNOUNCEMENT_NITRO_HYDERABAD_SPLITZ', 
+        'ANNOUNCEMENT_NITRO_KOLKATA_V1_SPLITZ', 
+        'ANNOUNCEMENT_NITRO_CHENNAI_V1_SPLITZ', 
+        'ANNOUNCEMENT_NITRO_SURAT_V1_SPLITZ', 
+        'ANNOUNCEMENT_NITRO_JAIPUR_V1_SPLITZ',
+        'ANNOUNCEMENT_NITRO_GANDHINAGAR_V1_SPLITZ',
+        'ANNOUNCEMENT_NITRO_VADODARA_V1_SPLITZ',
+        'ANNOUNCEMENT_NITRO_AHMEDABAD_V1_SPLITZ',
+        'ANNOUNCEMENT_NITRO_BANGALORE_V1_SPLITZ',
     ];
 
     public static function getNotifications(): array

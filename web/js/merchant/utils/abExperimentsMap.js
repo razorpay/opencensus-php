@@ -16,6 +16,10 @@ export default {
     'H75RfvQFecKHsT', // Chennai Nitro
     'H75Qu5SInWp3SQ', // Jaipur Nitro
     'H75Q0JHjnUd5xs', // Surat Nitro
+    'HF0Ml2IU6gH9rt', // Gandhinagar Nitro
+    'HF0NZThSDtgNGB', // Vadodara Nitro
+    'HF0OIJAqllZPRu', // Ahmedabad Nitro
+    'HF0Ox4LNEgYHbV', // Bangalore Nitro
 
     // prod experiment ids
     'GxtSf8y77iWw9e',
@@ -23,6 +27,10 @@ export default {
     'H6qJ2X77dqHG9I', // Chennai Nitro
     'H6qIJWTzrqt54X', // Jaipur Nitro
     'H6qHJJnYOtwfoc', // Surat Nitro
+    'HExafLb492K7LU', // Gandhinagar Nitro
+    'HExehMbAqYqlWF', // Vadodara Nitro
+    'HExiHP6GBUEVcu', // Ahmedabad Nitro
+    'HExnzHcFfimA6u', // Bangalore Nitro
   ],
   pure_platform_signup: [
     // beta experiment ids
