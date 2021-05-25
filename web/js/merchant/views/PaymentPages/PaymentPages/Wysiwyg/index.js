@@ -758,9 +758,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
             style={{ color: '#fff' }}
             onClick={this.togglePageSettings}
           >
-            {user.isPaymentPagePluginsSettingsEnabled && (
-              <span class="badge bg-success hidden-xs m-r">New</span>
-            )}
+            <span class="badge bg-success hidden-xs m-r">New</span>
             Page Settings
           </Button.Transparent>
           <AsyncBtn.Primary
@@ -842,7 +840,6 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
             handleAction={this.handleSaveSettings}
             isNew={this.props.id}
             isTestMode={this.props.mode.toLowerCase() === 'test'}
-            showPluginsSettings={this.props.user.isPaymentPagePluginsSettingsEnabled}
           />
         )}
 

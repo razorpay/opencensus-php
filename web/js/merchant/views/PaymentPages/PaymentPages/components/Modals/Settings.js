@@ -313,27 +313,25 @@ export default class extends React.Component {
                   )}
                 </div>
               </div>
-              {this.props.showPluginsSettings && (
-                <div class="settings-section">
-                  <div class="Input-label">
-                    Plugins and Add ons <span class="badge bg-success hidden-xs m-r">New</span>
-                  </div>
-                  <div class="cta-section">
-                    <div class="body">
-                      {isPluginConfigured ? (
-                        <div>
-                          Facebook ID: {paymentPageEntity.settings.pp_fb_pixel_tracking_id || '-'}
-                          <br />
-                          GA ID: {paymentPageEntity.settings.pp_ga_pixel_tracking_id || '-'}
-                        </div>
-                      ) : (
-                        'Add your Facebook Pixel or Google tracking ID to track your page metrics'
-                      )}
-                    </div>
-                    <span class="action">{PluginsBtn}</span>
-                  </div>
+              <div class="settings-section">
+                <div class="Input-label">
+                  Plugins and Add ons <span class="badge bg-success hidden-xs m-r">New</span>
                 </div>
-              )}
+                <div class="cta-section">
+                  <div class="body">
+                    {isPluginConfigured ? (
+                      <div>
+                        Facebook ID: {paymentPageEntity.settings.pp_fb_pixel_tracking_id || '-'}
+                        <br />
+                        GA ID: {paymentPageEntity.settings.pp_ga_pixel_tracking_id || '-'}
+                      </div>
+                    ) : (
+                      'Add your Facebook Pixel or Google tracking ID to track your page metrics'
+                    )}
+                  </div>
+                  <span class="action">{PluginsBtn}</span>
+                </div>
+              </div>
               <footer>
                 <Button.Transparent
                   type="button"

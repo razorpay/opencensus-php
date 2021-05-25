@@ -1539,7 +1539,6 @@ class Service extends Base\Service
             'rx_disable_taxpayment_payoutflow',
             'onboarding_v2',
             'capture_settings_revamp',
-            'pp_plugins_settings',
             'pl_description_required',
             'pp_description_required',
             'pure_platform_signup',
