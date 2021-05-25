@@ -42,7 +42,19 @@ class CreateBankingAccountActivationDetailTable extends Migration
             $table->string(Entity::MERCHANT_CITY)
                   ->nullable();
 
+            $table->string(Entity::MERCHANT_STATE)
+                  ->nullable();
+
             $table->string(Entity::MERCHANT_REGION)
+                  ->nullable();
+
+            $table->string(Entity::BUSINESS_PAN)
+                  ->nullable();
+
+            $table->string(Entity::BUSINESS_NAME)
+                  ->nullable();
+
+            $table->string(Entity::BUSINESS_TYPE)
                   ->nullable();
 
             $table->unsignedBigInteger(Entity::AVERAGE_MONTHLY_BALANCE)
@@ -62,6 +74,15 @@ class CreateBankingAccountActivationDetailTable extends Migration
 
             $table->boolean(Entity::IS_DOCUMENTS_WALKTHROUGH_COMPLETE)
                   ->default(0);
+
+            $table->boolean(Entity::CONTACT_VERIFIED)
+                  ->default(0);
+
+            $table->boolean(Entity::DECLARATION_STEP)
+                  ->nullable();
+
+            $table->string(Entity::BUSINESS_PAN_VALIDATION)
+                  ->nullable();
 
             $table->string(Entity::SALES_TEAM)
                   ->nullable();

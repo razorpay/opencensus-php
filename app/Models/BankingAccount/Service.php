@@ -42,6 +42,15 @@ class Service extends Base\Service
         $this->pincodeSearch = $pincodeSearch ?? $this->app['pincodesearch'];
     }
 
+    public function fetch(string $id): array
+    {
+        $bankingAccount = $this->repo->banking_account->findByPublicId($id);
+
+        $bankingAccount->load('bankingAccountActivationDetails');
+
+        return $bankingAccount->toArrayPublic();
+    }
+
     public function create(array $input): array
     {
         $this->trace->info(
@@ -50,9 +59,75 @@ class Service extends Base\Service
                 'input' => $input,
             ]);
 
-        $account = $this->core->createBankingAccount($input, $this->merchant);
+        (new Validator)->setStrictFalse()->validateInput(Validator::PRE_PROCESS, $input);
+
+        // Pulling the activation details out as they are stored as part of
+        // a different entity.
+        // These details are only to be sent from admin auth.
+        $activationDetailInput = $this->core->extractAndValidateActivationDetailInput($input);
+
+        $activationDetailInput = $this->preProcessActivationDetailCreateInput($activationDetailInput);
+
+        $account = $this->core->createBankingAccount($input, $this->merchant, $activationDetailInput, 'create_normal');
 
         return $account->toArrayPublic();
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     * @throws BadRequestException
+     */
+    public function createByMerchant(array $input): array
+    {
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_CREATE_FROM_DASHBOARD,
+            [
+                'input' => $input,
+            ]);
+
+        (new Validator)->setStrictFalse()->validateInput(Validator::PRE_PROCESS_DASHBOARD, $input);
+
+        $resp = $this->checkPincodeAndBusinessType($input);
+
+        $activationDetailInput = $this->core->extractAndValidateActivationDetailInput($input);
+
+        $activationDetailInput = $this->preProcessActivationDetailCreateInput($activationDetailInput);
+
+        if ($resp['serviceability'] === false OR $resp['business_type_supported'] === false)
+        {
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_UNSERVICEABLE_REQUEST,
+                [
+                    $input
+                ]);
+
+            return $resp;
+        }
+
+        if (is_null($activationDetailInput) === false)
+        {
+            (new Activation\Detail\Validator)->setStrictFalse()->validateInput('preProcess', $activationDetailInput);
+
+            $activationDetailInput = $this->core->autofillStateAndCityFromPincode($activationDetailInput, $input);
+
+            if (isset($activationDetailInput[ActivationDetail\Entity::SALES_TEAM]) === true)
+            {
+                $activationDetailInput = $this->autofillSelfServeFields($activationDetailInput);
+            }
+        }
+        else
+        {
+            throw new BadRequestValidationFailureException(
+                'The activation Detail is required',
+                'ActivationDetailInput');
+        }
+
+        $account = $this->core->createBankingAccount($input, $this->merchant, $activationDetailInput, 'create_dashboard');
+
+        // Adding rbl Pincode serviceability and businessType supported to response
+        return array_merge($account->toArrayPublic() , $resp);
     }
 
     /**
@@ -93,7 +168,60 @@ class Service extends Base\Service
             $this->core->notifyMerchantAboutUpdatedStatus($bankingAccount);
         }
 
-        return $account->toArrayPublic();
+        return array_merge($account->toArrayPublic());
+    }
+
+    public function updateByMerchant(string $id, array $input): array
+    {
+        /** @var Entity $bankingAccount */
+        $bankingAccount = $this->repo->banking_account->findByPublicId($id);
+
+        $previousStatus = $bankingAccount->getStatus();
+
+        $channel = $bankingAccount->getChannel();
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_EDIT,
+            [
+                'id'      => $bankingAccount->getId(),
+                'channel' => $channel,
+                'input'   => $input,
+            ]);
+
+        (new Validator)->setStrictFalse()->validateInput(Validator::INTERNAL_EDIT, $input);
+
+        $bankingAccount->load('bankingAccountActivationDetails');
+
+        $resp = $this->checkPincodeAndBusinessType($input);
+
+        if ($resp['serviceability'] === false OR $resp['business_type_supported'] === false)
+        {
+            return $bankingAccount->toArrayPublic() + $resp;
+        }
+
+        $activationDetailInput = $this->core->extractAndValidateActivationDetailInput($input);
+
+        if (is_null($activationDetailInput) === false)
+        {
+            $activationDetailInput = $this->core->autofillStateAndCityFromPincode($activationDetailInput, $input);
+
+            $activationDetailInput = ['activation_detail' => $activationDetailInput];
+
+            $input = $input + $activationDetailInput;
+        }
+
+        $admin = $this->app['basicauth']->getAdmin() ?? (($this->app->bound('batchAdmin') === true)? $this->app['batchAdmin'] : null);
+
+        $account = $this->core->updateBankingAccount($bankingAccount, $input, $admin, false, true);
+
+        $currentStatus = $bankingAccount->getStatus();
+
+        if ($previousStatus !== $currentStatus)
+        {
+            $this->core->notifyMerchantAboutUpdatedStatus($bankingAccount);
+        }
+
+        return array_merge($account->toArrayPublic(), $resp);
     }
 
     public function activate(string $id, array $input)
@@ -659,6 +787,58 @@ class Service extends Base\Service
         return $stateChangeLogBeforeProcessedState;
     }
 
+    protected function checkBusinessType(string $businessType): bool
+    {
+        return in_array($businessType, ActivationDetail\Validator::$allowedBusinessCategories);
+    }
+
+    /**
+     * If input is null true is returned
+     *
+     * @param array $input
+     *
+     * @return array
+     * @throws BadRequestException
+     * @throws BadRequestValidationFailureException
+     * @throws Exception\RuntimeException
+     * @throws IntegrationException
+     */
+    protected function checkPincodeAndBusinessType(array $input): array
+    {
+        $serviceability = null;
+
+        if (isset($input['pincode']) === true)
+        {
+            $pincode = $input[Entity::PINCODE];
+
+            $serviceability = $this->CheckServiceableByRBL($pincode);
+        }
+
+        $businessTypeSupported = true;
+
+        if (isset($input['activation_detail']) === true)
+        {
+            if (isset($input['activation_detail'][ActivationDetail\Entity::BUSINESS_CATEGORY]) === true)
+            {
+                $businessTypeSupported = $this->checkBusinessType($input['activation_detail'][ActivationDetail\Entity::BUSINESS_CATEGORY]);
+            }
+        }
+
+        if ($serviceability === null)
+        {
+            return [
+                'business_type_supported' => $businessTypeSupported,
+                'serviceability' => true,
+                'errorMessage' => null
+            ] ;
+        }
+        return [
+            'business_type_supported' => $businessTypeSupported,
+            'serviceability' => $serviceability['serviceability'],
+            'errorMessage' => $serviceability['errorMessage']
+        ] ;
+    }
+
     /**
      * Get banking account from account number
      *
@@ -700,5 +880,37 @@ class Service extends Base\Service
             Entity::BALANCE_TYPE         => $bankingAccount->balance->getType(),
             Entity::FTS_FUND_ACCOUNT_ID  => $bankingAccount->getFtsFundAccountId()
         ];
+    }
+
+    protected function preProcessActivationDetailCreateInput(array $input = null): ?array
+    {
+        if (empty($input) === true)
+        {
+            return $input;
+        }
+
+        if (isset($input[ActivationDetail\Entity::ASSIGNEE_TEAM]) === false)
+        {
+            // defaulting to Ops as they are the default assignee
+            $input[ActivationDetail\Entity::ASSIGNEE_TEAM] = 'ops';
+        }
+
+        return $input;
+    }
+
+    private function autofillSelfServeFields(array $activation_detail): array
+    {
+        if ($activation_detail[ActivationDetail\Entity::SALES_TEAM] === ActivationDetail\Validator::SELF_SERVE)
+        {
+            $activation_detail[ActivationDetail\Entity::AVERAGE_MONTHLY_BALANCE] = 20000;
+
+            $activation_detail[ActivationDetail\Entity::ACCOUNT_TYPE] = ActivationDetail\Validator::BUSINESS_PLUS;
+
+            $activation_detail[ActivationDetail\Entity::INITIAL_CHEQUE_VALUE] = 20000;
+
+            $activation_detail[ActivationDetail\Entity::EXPECTED_MONTHLY_GMV] = 20000;
+        }
+
+        return $activation_detail;
     }
 }

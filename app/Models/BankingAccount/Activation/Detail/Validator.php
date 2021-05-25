@@ -21,6 +21,45 @@ class Validator extends Base\Validator
     const PARTNERSHIP = 'partnership';
     const ONE_PERSON_COMPANY = 'one_person_company';
 
+    // Types of Business Types
+    const FINANCIAL_SERVICES                    = 'financial_services';
+    const EDUCATION                             = 'education';
+    const HEALTHCARE                            = 'healthcare';
+    const UTILITIES                             = 'utilities';
+    const GOVERNMENT                            = 'government';
+    const LOGISTICS                             = 'logistics';
+    const TOURS_AND_TRAVEL                      = 'tours_and_travel';
+    const TRANSPORT                             = 'transport';
+    const ECOMMERCE                             = 'ecommerce';
+    const FOOD                                  = 'food';
+    const IT_AND_SOFTWARE                       = 'it_and_software';
+    const GAMING                                = 'gaming';
+    const MEDIA_AND_ENTERTAINMENT               = 'media_and_entertainment';
+    const SERVICES                              = 'services';
+    const HOUSING                               = 'housing';
+    const NOT_FOR_PROFIT                        = 'not_for_profit';
+    const SOCIAL                                = 'social';
+    const OTHERS                                = 'others';
+    const  COUPONS                              = 'coupons';
+    const  REPAIR_AND_CLEANING                  = 'repair_and_cleaning';
+    const  ACCOUNTING                           = 'accounting';
+    const  TELECOMMUNICATION_SERVICE            = 'telecommunication_service';
+    const  SERVICE_CENTRE                       = 'service_centre';
+    const  COWORKING                            = 'coworking';
+    const  CAB_HAILING                          = 'cab_hailing';
+    const  GROCERY                              = 'grocery';
+    const  PAAS                                 = 'paas';
+    const  SAAS                                 = 'saas';
+    const  WEB_DEVELOPMENT                      = 'web_development';
+    const  CHARITY                              = 'charity';
+    const  FASHION_AND_LIFESTYLE                = 'fashion_and_lifestyle';
+    const  DROP_SHIPPING                        = 'drop_shipping';
+    const  CONSULTING_AND_OUTSOURCING           = 'consulting_and_outsourcing';
+    const  CATERING                             = 'catering';
+    const  HEALTH_COACHING                      = 'health_coaching';
+    const  COMPUTER_PROGRAMMING_DATA_PROCESSING = 'computer_programming_data_processing';
+    const  UTILITIES_ELECTRIC_GAS_OIL_WATER     = 'utilities_electric_gas_oil_water';
+
     // Types of Accounts for RBL
     const INSIGNIA = 'insignia';
     const PREMIUM = 'premium';
@@ -52,6 +91,7 @@ class Validator extends Base\Validator
         Entity::MERCHANT_POC_EMAIL                  => 'sometimes|string|max:255',
         Entity::MERCHANT_POC_PHONE_NUMBER           => 'sometimes|string|max:255',
         Entity::MERCHANT_CITY                       => 'sometimes|string|max:255',
+        Entity::MERCHANT_STATE                      => 'sometimes|string|max:255',
         Entity::MERCHANT_DOCUMENTS_ADDRESS          => 'sometimes|string|max:255',
         Entity::MERCHANT_REGION                     => 'sometimes|string|max:255',
         Entity::EXPECTED_MONTHLY_GMV                => 'sometimes|integer|min:0',
@@ -63,7 +103,11 @@ class Validator extends Base\Validator
         Entity::SALES_TEAM                          => 'sometimes|string|max:255|custom',
         Entity::SALES_POC_PHONE_NUMBER              => 'sometimes|string|max:255',
         Entity::COMMENT                             => 'sometimes|string',
-        Entity::ASSIGNEE_TEAM                       => 'sometimes|string|in:ops,bank,sales'
+        Entity::ASSIGNEE_TEAM                       => 'sometimes|string|in:ops,bank,sales',
+        Entity::BUSINESS_NAME                       => 'sometimes|string|max:255',
+        Entity::BUSINESS_TYPE                       => 'sometimes|string|max:255|custom',
+        Entity::BUSINESS_PAN                        => 'sometimes|string|size:10',
+        Entity::DECLARATION_STEP                    => 'sometimes|boolean'
     ];
 
     // for older BankingAccounts, entity will not be created (as this was recently made mandatory for BankingAccountCreation)
@@ -94,12 +138,43 @@ class Validator extends Base\Validator
         Entity::ASSIGNEE_TEAM                       => 'sometimes|string|in:ops,bank,sales' // if created via InitiateOnboarding, default assignee is chosen. If adding for existing CAs, then it will be empty.
     ];
 
+    // For current account form on dashboard
+    protected static $createDashboardRules = [
+        Entity::BANKING_ACCOUNT_ID                  => 'required|string|size:14',
+        Entity::MERCHANT_POC_NAME                   => 'sometimes|string|max:255',
+        Entity::MERCHANT_POC_DESIGNATION            => 'sometimes|string|max:255',
+        Entity::MERCHANT_POC_EMAIL                  => 'sometimes|string|max:255',
+        Entity::MERCHANT_POC_PHONE_NUMBER           => 'sometimes|string|max:255',
+        Entity::MERCHANT_CITY                       => 'sometimes|string|max:255',
+        Entity::MERCHANT_STATE                      => 'sometimes|string|max:255',
+        Entity::MERCHANT_DOCUMENTS_ADDRESS          => 'sometimes|string|max:255',
+        Entity::MERCHANT_REGION                     => 'sometimes|string|max:255',
+        Entity::EXPECTED_MONTHLY_GMV                => 'sometimes|integer|min:0',
+        Entity::INITIAL_CHEQUE_VALUE                => 'sometimes|integer|min:0',
+        Entity::BUSINESS_CATEGORY                   => 'required|string|max:255|custom',
+        Entity::AVERAGE_MONTHLY_BALANCE             => 'sometimes|integer|min:0',
+        Entity::ACCOUNT_TYPE                        => 'sometimes|string|max:255',
+        Entity::IS_DOCUMENTS_WALKTHROUGH_COMPLETE   => 'sometimes|boolean',
+        Entity::SALES_TEAM                          => 'required|string|custom',
+        Entity::ASSIGNEE_TEAM                       => 'sometimes|string|in:ops,bank,sales',
+        Entity::BUSINESS_NAME                       => 'sometimes|string|max:255',
+        Entity::BUSINESS_TYPE                       => 'sometimes|string|max:255|custom',
+        Entity::BUSINESS_PAN                        => 'sometimes|string|size:10',
+        Entity::DECLARATION_STEP                    => 'sometimes|boolean'
+    ];
+
+    protected static $preProcessRules = [
+        Entity::BUSINESS_CATEGORY                   => 'required|string|max:255|custom',
+        Entity::SALES_TEAM                          => 'required|string|max:255|custom'
+    ];
+
     protected static $editRules = [
         Entity::MERCHANT_POC_NAME                   => 'sometimes|string|max:255',
         Entity::MERCHANT_POC_DESIGNATION            => 'sometimes|string|max:255',
         Entity::MERCHANT_POC_EMAIL                  => 'sometimes|string|max:255',
         Entity::MERCHANT_POC_PHONE_NUMBER           => 'sometimes|string|max:255',
         Entity::MERCHANT_CITY                       => 'sometimes|string|max:255',
+        Entity::MERCHANT_STATE                      => 'sometimes|string|max:255',
         Entity::MERCHANT_DOCUMENTS_ADDRESS          => 'sometimes|string|max:255',
         Entity::MERCHANT_REGION                     => 'sometimes|string|max:255',
         Entity::EXPECTED_MONTHLY_GMV                => 'sometimes|integer|min:0',
@@ -115,18 +190,70 @@ class Validator extends Base\Validator
         Entity::RM_PHONE_NUMBER                     => 'sometimes|string|max:255',
         Entity::ACCOUNT_OPEN_DATE                   => 'sometimes|epoch|nullable',
         Entity::ACCOUNT_LOGIN_DATE                  => 'sometimes|epoch|nullable',
+        Entity::BUSINESS_NAME                       => 'sometimes|string|max:255',
+        Entity::BUSINESS_TYPE                       => 'sometimes|string|max:255|custom',
+        Entity::BUSINESS_PAN                        => 'sometimes|string|size:10',
+        Entity::DECLARATION_STEP                    => 'sometimes|boolean'
+    ];
+
+    protected static $verifyOtpRules = [
+        \RZP\Models\User\Entity::OTP                  => 'required|filled|min:4',
+        \RZP\Models\User\Entity::TOKEN                => 'required|unsigned_id',
+        \RZP\Models\User\Entity::ACTION               => 'sometimes|filled|in:verify_contact',
+        \RZP\Models\User\Entity::CONTACT_MOBILE       => 'required|max:15|contact_syntax',
     ];
 
     protected static $salesPocIdRules = [
         Entity::SALES_POC_ID                  => 'required|string',
     ];
 
-    protected static $allowedBusinessCategories = [
+    public static $allowedBusinessCategories = [
         self::PRIVATE_PUBLIC_LIMITED_COMPANY,
         self::SOLE_PROPRIETORSHIP,
         self::LIMITED_LIABILITY_PARTNERSHIP,
         self::PARTNERSHIP,
         self::ONE_PERSON_COMPANY
+    ];
+
+    public static $allowedBusinessTypes = [
+        self::FINANCIAL_SERVICES,
+        self::EDUCATION,
+        self::HEALTHCARE,
+        self::UTILITIES,
+        self::GOVERNMENT,
+        self::LOGISTICS,
+        self::TOURS_AND_TRAVEL,
+        self::TRANSPORT,
+        self::ECOMMERCE,
+        self::FOOD,
+        self::IT_AND_SOFTWARE,
+        self::GAMING,
+        self::MEDIA_AND_ENTERTAINMENT,
+        self::SERVICES,
+        self::HOUSING,
+        self::NOT_FOR_PROFIT,
+        self::SOCIAL,
+        self::OTHERS,
+        self::FASHION_AND_LIFESTYLE,
+        self::GROCERY,
+        self::COUPONS,
+        self::REPAIR_AND_CLEANING,
+        self::ACCOUNTING,
+        self::ACCOUNTING,
+        self::TELECOMMUNICATION_SERVICE,
+        self::SERVICE_CENTRE,
+        self::COWORKING,
+        self::CAB_HAILING,
+        self::PAAS,
+        self::SAAS,
+        self::WEB_DEVELOPMENT,
+        self::CHARITY,
+        self::DROP_SHIPPING,
+        self::CONSULTING_AND_OUTSOURCING,
+        self::CATERING,
+        self::HEALTH_COACHING,
+        self::COMPUTER_PROGRAMMING_DATA_PROCESSING,
+        self::UTILITIES_ELECTRIC_GAS_OIL_WATER
     ];
 
     protected static $allowedAccountTypesForRBL = [
@@ -159,6 +286,16 @@ class Validator extends Base\Validator
             throw new BadRequestValidationFailureException(
                 'The business category field is invalid.',
                 Entity::BUSINESS_CATEGORY);
+        }
+    }
+
+    public function validateBusinessType($attribute, $value)
+    {
+        if (in_array($value, self::$allowedBusinessTypes) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'The business type field is invalid.',
+                Entity::BUSINESS_TYPE);
         }
     }
 

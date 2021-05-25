@@ -238,7 +238,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function extractAndValidateActivationDetailInput(array &$input, $entity = null)
+    public function extractAndValidateActivationDetailInput(array &$input, $entity = null)
     {
         if (isset($input['activation_detail']) === true)
         {
@@ -260,26 +260,18 @@ class Core extends Base\Core
         return null;
     }
 
-    protected function preProcessActivationDetailCreateInput(array $input = null)
+    /**
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     * @param array|null      $activationDetailInput
+     * @param string          $validatorOP
+     *
+     * @return Entity
+     * @throws BadRequestException
+     * @throws LogicException
+     */
+    public function createBankingAccount(array $input, Merchant\Entity $merchant, ?array $activationDetailInput, string $validatorOP): Entity
     {
-        if (empty($input) === true)
-        {
-            return $input;
-        }
-
-        if (isset($input[ActivationDetail\Entity::ASSIGNEE_TEAM]) === false)
-        {
-            // defaulting to Ops as they are the default assignee
-            $input[ActivationDetail\Entity::ASSIGNEE_TEAM] = 'ops';
-        }
-
-        return $input;
-    }
-
-    public function createBankingAccount(array $input, Merchant\Entity $merchant): Entity
-    {
-        (new Validator)->setStrictFalse()->validateInput(Validator::PRE_PROCESS, $input);
-
         $channel = $input[Entity::CHANNEL];
 
         // Currently we are just checking if there exists even one account of the merchant for the selected
@@ -302,13 +294,6 @@ class Core extends Base\Core
                 ],
                 'Current Account already exists for MID on channel '. $channel);
         }
-
-        // Pulling the activation details out as they are stored as part of
-        // a different entity.
-        // These details are only to be sent from admin auth.
-        $activationDetailInput = $this->extractAndValidateActivationDetailInput($input);
-
-        $activationDetailInput = $this->preProcessActivationDetailCreateInput($activationDetailInput);
 
         $bankingAccount = new Entity;
 
@@ -341,13 +326,13 @@ class Core extends Base\Core
                 $bankingAccount->toArray(),
             ]);
 
-        $this->repo->transaction(function() use ($bankingAccount, $merchant, $bankContent, $activationDetailInput)
+        $this->repo->transaction(function() use ($bankingAccount, $merchant, $bankContent, $activationDetailInput, $validatorOP)
         {
             $this->repo->saveOrFail($bankingAccount);
 
             if ($activationDetailInput !== null)
             {
-                $this->activationDetailService->createForBankingAccount($bankingAccount->getPublicId(), $activationDetailInput);
+                $this->activationDetailService->createForBankingAccount($bankingAccount->getPublicId(), $activationDetailInput, $validatorOP);
             }
 
             $stateCore = new State\Core;
@@ -519,15 +504,18 @@ class Core extends Base\Core
      *              }
      *      }
      * }
-     * @param Entity $bankingAccount
-     * @param array $input
+     *
+     * @param Entity                 $bankingAccount
+     * @param array                  $input
      * @param Base\PublicEntity|null $entity
-     * @param bool $isAutomatedUpdate
+     * @param bool                   $isAutomatedUpdate
+     * @param bool                   $fromDashboard
+     *
      * @return Entity
      * @throws BadRequestException
      * @throws LogicException
      */
-    public function updateBankingAccount(Entity $bankingAccount, array $input, Base\PublicEntity $entity = null, bool $isAutomatedUpdate = false)
+    public function updateBankingAccount(Entity $bankingAccount, array $input, Base\PublicEntity $entity = null, bool $isAutomatedUpdate = false, bool $fromDashboard = false)
     {
         $channel = $bankingAccount->getChannel();
 
@@ -558,7 +546,14 @@ class Core extends Base\Core
 
         $oldStatus = $bankingAccount->getStatus();
 
-        $bankingAccount->edit($input);
+        if($fromDashboard === true)
+        {
+            $bankingAccount->edit($input, 'edit_Dashboard');
+        }
+        else
+        {
+            $bankingAccount->edit($input);
+        }
 
         // we need to store change log only when the
         // status has changed.
@@ -668,6 +663,8 @@ class Core extends Base\Core
         // toArrayPublic, which populates only the pre fetched
         // relations. So explicitly fetching this relation here
         $bankingAccount->load('bankingAccountDetails');
+
+        $bankingAccount->load('bankingAccountActivationDetails');
 
         return $bankingAccount;
     }
@@ -1576,5 +1573,36 @@ class Core extends Base\Core
     public function getLocationFromPincode($pincode): array
     {
         return (new GoogleMapApi())->getLocationFromPincode($pincode);
+    }
+
+    public function autofillStateAndCityFromPincode(array $activation_detail, array $input): array
+    {
+        if (isset($input['pincode']) === false)
+        {
+            return $activation_detail;
+        }
+
+        $pinCode = $input['pincode'];
+
+        $pincodeSearch = $this->app['pincodesearch'];
+
+        try
+        {
+            $resp = $pincodeSearch->fetchCityAndStateFromPincode($pinCode);
+        }
+        catch (BadRequestException | BadRequestValidationFailureException | IntegrationException $e)
+        {
+            $this->trace->error(TraceCode::PINCODE_SEARCH_ERROR, [$pinCode, $e->getMessage()]);
+
+            return $activation_detail;
+        }
+
+        $activation_detail[Activation\Detail\Entity::MERCHANT_CITY] = $resp['city'];
+
+        $activation_detail[Activation\Detail\Entity::MERCHANT_STATE] = $resp['state'];
+
+        $activation_detail[ActivationDetail\Entity::MERCHANT_REGION] = (new Activation\Detail\Region)->getRegionFromState($resp['state']);
+
+        return $activation_detail;
     }
 }

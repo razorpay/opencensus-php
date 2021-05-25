@@ -50,6 +50,8 @@ class BankingAccountTest extends TestCase
 
         $this->app['redis']->sadd('rbl_pincode_set', $pincodeList);
 
+        $this->app['config']->set('applications.banking_account.mock', true);
+
         $this->ba->proxyAuth();
     }
 
@@ -171,6 +173,56 @@ class BankingAccountTest extends TestCase
         Mail::assertQueued(XProActivation::class);
 
         return $bankingAccount;
+    }
+
+    public function testCreateBankingAccountWithActivationDetailFormDashboard()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        Mail::fake();
+
+        $this->startTest();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals(AccountType::CURRENT, $bankingAccount->getAccountType());
+
+        $this->assertEquals(null, $bankingAccount['last_statement_attempt_at']);
+
+        $activationDetailEntity = $this->getDbEntity('banking_account_activation_detail', [
+            'banking_account_id' => $bankingAccount->getId()
+        ]);
+
+        $this->assertNotNull($activationDetailEntity);
+
+        Mail::assertQueued(XProActivation::class);
+
+        return $bankingAccount;
+    }
+
+    public function testCreateBankingAccountWithUnserviceableBusinessCategoryFormDashboard()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        Mail::fake();
+
+        $this->startTest();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertNull($bankingAccount);
     }
 
     public function testCreateBankingAccountWithActivationDetailWithSalesTeamAsCapitalSme()
@@ -1878,6 +1930,181 @@ class BankingAccountTest extends TestCase
         $this->assertEquals(RZP\Models\BankingAccount\Status::PICKED, $bankingAccount->getStatus());
     }
 
+    public function testUpdateBankingAccountPincode()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $bankingAccount = $this->createBankingAccountFromDashboard();
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts_dashboard/' . $bankingAccount['id'],
+                'method'  => 'PATCH',
+            ],
+        ];
+
+        $this->startTest($dataToReplace);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals('560031', $bankingAccount->getPincode());
+    }
+
+    public function testPanValidation()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $mid = $merchantDetail->merchant['id'];
+
+        $this->ba->proxyAuth('rzp_test_' . $mid);
+
+        $bankingAccount = $this->createBankingAccountFromDashboard();
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts_dashboard/' . $bankingAccount['id'],
+                'method'  => 'PATCH',
+            ],
+        ];
+
+        Config::set('applications.kyc.mock', true);
+        Config::set('services.bvs.mock', true);
+        Config::set('services.bvs.response', 'success');
+
+        $this->startTest($dataToReplace);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $expectedValues = [
+            'artefact_type' => 'business_pan',
+            'owner_id'      => $mid,
+        ];
+
+        $bvsValidation = $this->getDbEntity('bvs_validation', ['owner_id' => $mid, 'owner_type' => 'merchant']);
+
+        $this->validateSuccessBvsValidation($bvsValidation, $expectedValues);
+
+        $this->assertEquals('560030', $bankingAccount->getPincode());
+    }
+
+    public function testPanValidationForPersonalPan()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $mid = $merchantDetail->merchant['id'];
+
+        $this->ba->proxyAuth('rzp_test_' . $mid);
+
+        $activationDetail = ['activation_detail' => [
+            ActivationDetail\Entity::BUSINESS_CATEGORY => 'sole_proprietorship',
+            ActivationDetail\Entity::SALES_TEAM        => 'self_serve']
+        ];
+
+        $bankingAccount = $this->createBankingAccountFromDashboard($activationDetail);
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts_dashboard/' . $bankingAccount['id'],
+                'method'  => 'PATCH',
+            ],
+        ];
+
+        Config::set('applications.kyc.mock', true);
+        Config::set('services.bvs.mock', true);
+        Config::set('services.bvs.response', 'success');
+
+        $this->startTest($dataToReplace);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $expectedValues = [
+            'artefact_type' => 'personal_pan',
+            'owner_id'      => $mid,
+        ];
+
+        $bvsValidation = $this->getDbEntity('bvs_validation', ['owner_id' => $mid, 'owner_type' => 'merchant']);
+
+        $this->validateSuccessBvsValidation($bvsValidation, $expectedValues);
+
+        $this->assertEquals('560030', $bankingAccount->getPincode());
+    }
+
+    public function validateSuccessBvsValidation(\RZP\Models\Merchant\BvsValidation\Entity $bvsValidation,
+                                                 array $expectedValues = [])
+    {
+        $this->assertNotNull($bvsValidation->getValidationId());
+        $this->assertEmpty($bvsValidation->getErrorCode());
+        $this->assertEmpty($bvsValidation->getErrorDescription());
+        $this->bvsValidation($bvsValidation, $expectedValues);
+    }
+
+    private function bvsValidation(\RZP\Models\Merchant\BvsValidation\Entity $bvsValidation,
+                                   array $expectedValues = [])
+    {
+        //
+        // resetting time based data
+        //
+        unset($expectedValues['created_at']);
+        unset($expectedValues['updated_at']);
+
+        foreach ($expectedValues as $key => $value)
+        {
+            $this->assertEquals($value, $bvsValidation->getAttribute($key));
+        }
+    }
+
+    public function testGetBankingAccount()
+    {
+        $activationDetails = [
+            'activation_detail' => [
+            'merchant_poc_name' => 'Sample Name',
+            'merchant_poc_designation' => 'Financial Consultant',
+            'merchant_poc_email' => 'sample@sample.com',
+            'merchant_poc_phone_number' => '9876556789',
+            'merchant_documents_address' => 'x, y, z',
+            'business_type' => 'ecommerce',
+            'account_type' => 'insignia',
+            'merchant_city' => 'Bangalore',
+            'is_documents_walkthrough_complete' => true,
+            'merchant_region' => 'South',
+            'expected_monthly_gmv' => 10000,
+            'average_monthly_balance' => 0,
+            'business_category' => 'partnership',
+            'sales_team' => 'self_serve',
+            ]
+        ];
+
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $bankingAccount = $this->createBankingAccountFromDashboard($activationDetails);
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts/' . $bankingAccount['id'],
+                'method'  => 'GET',
+
+            ],
+        ];
+
+        $this->startTest($dataToReplace);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals('560030', $bankingAccount->getPincode());
+    }
+
     public function testUpdateBankingAccountToInitiatedWithInternalComments()
     {
         $bankingAccount = $this->createBankingAccount();
@@ -1918,6 +2145,30 @@ class BankingAccountTest extends TestCase
         $request = [
             'method'  => 'post',
             'url'     => '/banking_accounts',
+            'content' => $data
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
+    protected function createBankingAccountFromDashboard(array $attributes = [])
+    {
+        $data = [
+            Entity::PINCODE => '560030',
+            Entity::CHANNEL => 'rbl',
+            'activation_detail' => [
+                ActivationDetail\Entity::BUSINESS_CATEGORY => 'partnership',
+                ActivationDetail\Entity::SALES_TEAM        => 'self_serve'
+            ]
+        ];
+
+        $data = array_merge($data, $attributes);
+
+        $request = [
+            'method'  => 'post',
+            'url'     => '/banking_accounts_dashboard',
             'content' => $data
         ];
 
@@ -3930,6 +4181,56 @@ class BankingAccountTest extends TestCase
         ]);
 
         $role->permissions()->attach($permission->getId());
+    }
+
+    public function testSendOtpToContact()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $this->createBankingAccountFromDashboard();
+
+        $this->startTest();
+    }
+
+    public function testVerifyOtpForContact()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $data = [
+            Entity::PINCODE => '560030',
+            Entity::CHANNEL => 'rbl',
+            "activation_detail" => [
+                "business_category"=> "partnership", 'sales_team' => 'self_serve',
+                ]
+        ];
+
+        $request = [
+            'method'  => 'post',
+            'url'     => '/banking_accounts_dashboard',
+            'content' => $data,
+            'server'  => [
+                'X-Dashboard-User-Id' => '20000000000000',
+            ],
+        ];
+
+        $bankingAccount = $this->makeRequestAndGetContent($request);
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts/verify_otp/' . $bankingAccount['id'],
+                'method'  => 'POST',
+            ],
+        ];
+
+        $this->startTest($dataToReplace);
     }
 
     public function testFetchBankingAccountForPayoutService()

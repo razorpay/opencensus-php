@@ -15,7 +15,6 @@ abstract class Base implements RequestDispatcher
     protected $merchantDetails;
 
     protected $documentCore;
-
     public function __construct(Merchant\Entity $merchant, DetailEntity $merchantDetails)
     {
         $this->merchantCore = new Merchant\Core();

@@ -4,14 +4,17 @@
 namespace RZP\Models\BankingAccount\Activation\Detail;
 
 use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 use RZP\Models\BankingAccount;
 use RZP\Models\BankingAccount\State;
+use RZP\Exception\BadRequestException;
+use RZP\Exception\IntegrationException;
 use RZP\Models\BankingAccount\Activation\Comment;
 use RZP\Models\BankingAccount\Activation\Notification\Event;
 use RZP\Models\BankingAccount\Activation\Notification\Notifier;
-
+use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
+use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 
 class Service extends Base\Service
 {
@@ -30,21 +33,27 @@ class Service extends Base\Service
         $this->notifier = $notifier;
     }
 
-    public function createForBankingAccount(string $bankingAccountId, array $input)
+    public function createForBankingAccount(string $bankingAccountId, array $input, string $validatorOP = 'create_normal')
     {
         /** @var BankingAccount\Entity $bankingAccount */
         $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccountId);
 
         $input[Entity::BANKING_ACCOUNT_ID] = $bankingAccount->getId();
 
-        (new Validator)->setStrictFalse()->validateInput(Validator::SALES_POC_ID, $input);
+        if ($validatorOP === 'create_normal')
+        {
+            (new Validator)->setStrictFalse()->validateInput(Validator::SALES_POC_ID, $input);
+        }
 
-        $activationDetail = $this->repo->transaction(function () use ($bankingAccount, $input)
+        $activationDetail = $this->repo->transaction(function () use ($bankingAccount, $input, $validatorOP)
         {
             // Adding Sales POC to admin_audit_map table
-            $this->addSalesPOCToBankingAccountIfApplicable($bankingAccount, $input);
+            if (isset($input[Entity::SALES_POC_ID]) === true)
+            {
+                $this->addSalesPOCToBankingAccountIfApplicable($bankingAccount, $input);
+            }
 
-            $activationDetail = $this->core->create($input);
+            $activationDetail = $this->core->create($input, $validatorOP);
 
             $this->addCommentIfApplicable($bankingAccount, $input);
 
@@ -52,6 +61,23 @@ class Service extends Base\Service
         });
 
         return $activationDetail->toArrayPublic();
+    }
+
+    /**
+     * @param string $id
+     * @param array  $input
+     *
+     * @return array
+     */
+    public function verifyOtpForContact(string $id, array $input): array
+    {
+        $bankingAccount = $this->repo->banking_account->findByPublicId($id);
+
+        $activationDetail = $this->repo->banking_account_activation_detail->findByBankingAccountId($bankingAccount->getId());
+
+        $this->core->verifyOtpForContact($input, $this->auth->getMerchant(), $this->auth->getUser(), $activationDetail);
+
+        return (new BankingAccount\Service())->fetch($id);
     }
 
     protected function extractCommentInput(array & $input)
@@ -90,7 +116,7 @@ class Service extends Base\Service
         if ($activationDetail === null)
         {
             // has not been created yet. Create an entry with NULLs
-            $activationDetail = $this->core->create([Entity::BANKING_ACCOUNT_ID => $bankingAccount->getId()], true);
+            $activationDetail = $this->core->create([Entity::BANKING_ACCOUNT_ID => $bankingAccount->getId()], 'create_null');
         }
 
         if ($isAutomatedUpdate === false)
@@ -109,6 +135,8 @@ class Service extends Base\Service
             $this->addSalesPOCToBankingAccountIfApplicable($bankingAccount, $input);
 
             $activationDetail = $this->core->update($activationDetail, $input);
+
+            $this->initiatePanVerification($activationDetail, $input);
 
             if ($activationDetail->isAssigneeTeamUpdated() === true)
             {
@@ -180,6 +208,42 @@ class Service extends Base\Service
                 Comment\Entity::TYPE => 'internal', // TODO: check if this needs to be external
                 Comment\Entity::ADDED_AT => time()
             ]);
+        }
+    }
+
+    private function initiatePanVerification(Entity $activationDetail, array $input)
+    {
+        $businessType = $activationDetail->getBusinessCategory();
+
+        if ($businessType === Validator::SOLE_PROPRIETORSHIP)
+        {
+            // Either Business Pan or Merchant Poc Name or both are updated
+            if ((isset($input[Entity::MERCHANT_POC_NAME]) === true and is_null($activationDetail->getBusinessPan()) === false) or
+                (isset($input[Entity::BUSINESS_PAN]) === true and is_null($activationDetail->getMerchantPocName()) === false))
+            {
+                $activationDetail->setPanVerificationStatus(BvsValidationConstants::PENDING);
+
+                $panVerifier = new requestDispatcher\PersonalPanForBankingAccount($this->merchant,($this->merchant)->merchantDetail, $activationDetail);
+
+                $panVerifier->triggerBVSRequest();
+
+                $this->repo->saveOrFail($activationDetail);
+            }
+        }
+        else
+        {
+            if ((isset($input[Entity::BUSINESS_PAN]) === true and is_null($activationDetail->getBusinessName()) === false) or
+                (isset($input[Entity::BUSINESS_NAME]) === true and is_null($activationDetail->getBusinessPan()) === false))
+            {
+                $activationDetail->setPanVerificationStatus(BvsValidationConstants::PENDING);
+
+                $panVerifier = new requestDispatcher\BusinessPanForBankingAccount($this->merchant,($this->merchant)->merchantDetail, $activationDetail);
+
+                $panVerifier->triggerBVSRequest();
+
+                $this->repo->saveOrFail($activationDetail);
+
+            }
         }
     }
 }

@@ -223,7 +223,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $sendOtpWithContactRules = [
-        Entity::ACTION          => 'required|filled|in:bureau_verify,verify_support_contact',
+        Entity::ACTION          => 'required|filled|in:bureau_verify,verify_support_contact,verify_contact',
         Entity::TOKEN           => 'sometimes|filled',
         Entity::CONTACT_MOBILE  => 'required|max:15|contact_syntax',
         Entity::MEDIUM          => 'sometimes|filled|in:sms',

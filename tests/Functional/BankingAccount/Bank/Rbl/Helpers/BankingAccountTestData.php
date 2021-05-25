@@ -105,6 +105,68 @@ return [
         ],
     ],
 
+    'testCreateBankingAccountWithActivationDetailFormDashboard' => [
+        'request'  => [
+            'url'     => '/banking_accounts_dashboard',
+            'method'  => 'POST',
+            'server' => [
+                'X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'content' => [
+                'channel' => 'rbl',
+                'pincode' => '560034',
+                'activation_detail' => [
+                    'merchant_poc_name' => 'Sample Name',
+                    'merchant_poc_designation' => 'Financial Consultant',
+                    'merchant_poc_email' => 'sample@sample.com',
+                    'merchant_poc_phone_number' => '9876556789',
+                    'merchant_documents_address' => 'x, y, z',
+                    'initial_cheque_value' => 100,
+                    'account_type' => 'insignia',
+                    'merchant_city' => 'Bangalore',
+                    'business_type' => 'ecommerce',
+                    'is_documents_walkthrough_complete' => true,
+                    'merchant_region' => 'South',
+                    'expected_monthly_gmv' => 10000,
+                    'average_monthly_balance' => 0,
+                    'business_category' => 'partnership',
+                    'sales_team' => 'self_serve',
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'channel'     => 'rbl',
+                'status'      => 'created'
+            ],
+        ],
+    ],
+
+    'testCreateBankingAccountWithUnserviceableBusinessCategoryFormDashboard' => [
+        'request'  => [
+            'url'     => '/banking_accounts_dashboard',
+            'method'  => 'POST',
+            'server' => [
+                'X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'content' => [
+                'channel' => 'rbl',
+                'pincode' => '560034',
+                'activation_detail' => [
+                    'business_category' => 'llp',
+                    'sales_team'        => 'self_serve'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'serviceability' => true,
+                'business_type_supported' => false,
+                'errorMessage' => null
+              ],
+          ],
+      ],
+
     'testCheckServiceableByRBL' => [
         'request'  => [
             'url'     => '/banking_accounts/serviceability/rbl/pincode/221002',
@@ -740,6 +802,89 @@ return [
                 'merchant_id'                  => '10000000000000',
                 'channel'                      => 'rbl',
                 BankingAccount\Entity::STATUS => BankingAccount\Status::INITIATED,
+            ],
+        ],
+    ],
+
+    'testUpdateBankingAccountPincode' => [
+        'request'  => [
+            'url'     => '/banking_accounts_dashboard',
+            'method'  => 'PATCH',
+            'server' => [
+                'X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'content' => [
+                'pincode'   => '560031'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'channel'                      => 'rbl',
+                BankingAccount\Entity::PINCODE => '560031',
+            ],
+        ],
+    ],
+
+    'testPanValidation' => [
+        'request'  => [
+            'url'     => '/banking_accounts_dashboard',
+            'method'  => 'PATCH',
+            'content' => [
+                'activation_detail' => [
+                    BankingAccount\Activation\Detail\Entity::BUSINESS_PAN => 'RZP4A2345L',
+                    BankingAccount\Activation\Detail\Entity::BUSINESS_NAME=> 'RZP.Co'
+                    ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'channel'                      => 'rbl',
+                BankingAccount\Entity::PINCODE => '560030',
+            ],
+        ],
+    ],
+
+    'testPanValidationForPersonalPan' => [
+        'request'  => [
+            'url'     => '/banking_accounts_dashboard',
+            'method'  => 'PATCH',
+            'content' => [
+                'activation_detail' => [
+                    BankingAccount\Activation\Detail\Entity::BUSINESS_PAN => 'RZP4A2345L',
+                    BankingAccount\Activation\Detail\Entity::BUSINESS_NAME => 'RZP.Co',
+                    BankingAccount\Activation\Detail\Entity::MERCHANT_POC_NAME => 'Random Name',
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'channel'                      => 'rbl',
+                BankingAccount\Entity::PINCODE => '560030',
+            ],
+        ],
+    ],
+
+    'testGetBankingAccount' => [
+        'request'  => [
+            'url'     => '/banking_accounts',
+            'method'  => 'GET',
+            'server' => [
+                'X-Dashboard-User-Id' => '20000000000000',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'channel'                      => 'rbl',
+                BankingAccount\Entity::PINCODE => '560030',
+                'banking_account_activation_details' => [
+                    'merchant_poc_name' => 'Sample Name',
+                    'merchant_poc_designation' => 'Financial Consultant',
+                    'merchant_poc_email' => 'sample@sample.com',
+                    'merchant_poc_phone_number' => '9876556789',
+                    'merchant_documents_address' => 'x, y, z',
+                    'business_category' => 'partnership',
+                    'sales_team' => 'self_serve',
+                ],
             ],
         ],
     ],
@@ -2263,6 +2408,49 @@ return [
         ],
     ],
 
+    'testSendOtpToContact' => [
+    'request' => [
+        'server' => [
+            'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+        ],
+        'url'     => '/otp/send',
+        'method'  => 'POST',
+        'content' => [
+            'action' => 'verify_contact',
+            'contact_mobile' => 9999999999
+        ]
+    ],
+    'response' => [
+        'content' => [
+            // 'token' => 'BUIj3m2Nx2VvVj'
+        ]
+    ],
+    ],
+
+    'testVerifyOtpForContact' => [
+        'request' => [
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+            'url'     => '/banking_accounts/verify_otp/',
+            'method'  => 'POST',
+            'content' => [
+                'otp' => '0007',
+                'action' => 'verify_contact',
+                'contact_mobile' => 9999999999,
+                'token' => 'BUIj3m2Nx2VvVj'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'channel'                      => 'rbl',
+                BankingAccount\Entity::PINCODE => '560030',
+                'banking_account_activation_details' => [
+                    'contact_verified' => 1
+                ],
+            ],
+          ],
+      ],
     'testFetchBankingAccountForPayoutService' => [
         'request' => [
             'url'     => '/banking_accounts/',

@@ -47,6 +47,8 @@ class Entity extends Base\PublicEntity
 
     const MERCHANT_CITY = 'merchant_city';
 
+    const MERCHANT_STATE = 'merchant_state';
+
     const MERCHANT_DOCUMENTS_ADDRESS = 'merchant_documents_address';
 
     // east, west, north, south
@@ -59,6 +61,18 @@ class Entity extends Base\PublicEntity
 
     // One of https://razorpay.com/docs/razorpayx/current-account
     const BUSINESS_CATEGORY = 'business_category';
+
+    const BUSINESS_TYPE = 'business_type';
+
+    const BUSINESS_NAME = 'business_name';
+
+    /**
+     * Stores Personal Pan if Business category is sole_proprietorship
+     * else stores Business Pan
+     */
+    const BUSINESS_PAN = 'business_pan';
+
+    const CONTACT_VERIFIED = 'contact_verified';
 
     const AVERAGE_MONTHLY_BALANCE = 'average_monthly_balance';
 
@@ -96,6 +110,11 @@ class Entity extends Base\PublicEntity
 
     const SALES_POC_EMAIL = 'sales_poc_email';
 
+    // Indicates Application is filled completely from merchant dashboard
+    const DECLARATION_STEP = 'declaration_step';
+
+    const BUSINESS_PAN_VALIDATION = 'business_pan_validation';
+
     protected $entity = 'banking_account_activation_detail';
 
     protected $table  = Table::BANKING_ACCOUNT_ACTIVATION_DETAIL;
@@ -111,6 +130,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_POC_PHONE_NUMBER,
         self::MERCHANT_DOCUMENTS_ADDRESS,
         self::MERCHANT_CITY,
+        self::MERCHANT_STATE,
         self::MERCHANT_REGION,
         self::EXPECTED_MONTHLY_GMV,
         self::INITIAL_CHEQUE_VALUE,
@@ -126,6 +146,10 @@ class Entity extends Base\PublicEntity
         self::RM_PHONE_NUMBER,
         self::ACCOUNT_OPEN_DATE,
         self::ACCOUNT_LOGIN_DATE,
+        self::BUSINESS_NAME,
+        self::BUSINESS_TYPE,
+        self::BUSINESS_PAN,
+        self::DECLARATION_STEP,
     ];
 
     protected $visible = [
@@ -137,10 +161,15 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_POC_PHONE_NUMBER,
         self::MERCHANT_DOCUMENTS_ADDRESS,
         self::MERCHANT_CITY,
+        self::MERCHANT_STATE,
         self::MERCHANT_REGION,
         self::EXPECTED_MONTHLY_GMV,
         self::INITIAL_CHEQUE_VALUE,
         self::BUSINESS_CATEGORY,
+        self::BUSINESS_NAME,
+        self::BUSINESS_TYPE,
+        self::BUSINESS_PAN,
+        self::CONTACT_VERIFIED,
         self::AVERAGE_MONTHLY_BALANCE,
         self::ACCOUNT_TYPE,
         self::IS_DOCUMENTS_WALKTHROUGH_COMPLETE,
@@ -149,6 +178,8 @@ class Entity extends Base\PublicEntity
         self::ASSIGNEE_TEAM,
         self::COMMENT,
         self::RM_NAME,
+        self::DECLARATION_STEP,
+        self::BUSINESS_PAN_VALIDATION,
         self::RM_PHONE_NUMBER,
         self::ACCOUNT_OPEN_DATE,
         self::ACCOUNT_LOGIN_DATE,
@@ -164,16 +195,23 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_POC_PHONE_NUMBER,
         self::MERCHANT_DOCUMENTS_ADDRESS,
         self::MERCHANT_CITY,
+        self::MERCHANT_STATE,
         self::MERCHANT_REGION,
         self::EXPECTED_MONTHLY_GMV,
         self::INITIAL_CHEQUE_VALUE,
         self::BUSINESS_CATEGORY,
+        self::BUSINESS_NAME,
+        self::BUSINESS_TYPE,
+        self::BUSINESS_PAN,
+        self::CONTACT_VERIFIED,
         self::AVERAGE_MONTHLY_BALANCE,
         self::ACCOUNT_TYPE,
         self::IS_DOCUMENTS_WALKTHROUGH_COMPLETE,
         self::SALES_TEAM,
         self::SALES_POC_PHONE_NUMBER,
         self::ASSIGNEE_TEAM,
+        self::DECLARATION_STEP,
+        self::BUSINESS_PAN_VALIDATION,
         self::COMMENT,
         self::RM_NAME,
         self::RM_PHONE_NUMBER,
@@ -200,6 +238,46 @@ class Entity extends Base\PublicEntity
     public function getAssigneeTeam()
     {
         return $this->getAttributeValue(self::ASSIGNEE_TEAM);
+    }
+
+    public function getContactVerified()
+    {
+        return $this->getAttributeValue(self::CONTACT_VERIFIED);
+    }
+
+    public function getBusinessPan()
+    {
+        return $this->getAttributeValue(self::BUSINESS_PAN);
+    }
+
+    public function getBusinessName()
+    {
+        return $this->getAttributeValue(self::BUSINESS_NAME);
+    }
+
+    public function getPanVerificationStatus()
+    {
+        return $this->getAttributeValue(self::BUSINESS_PAN_VALIDATION);
+    }
+
+    public function getMerchantPocName()
+    {
+        return $this->getAttributeValue(self::MERCHANT_POC_NAME);
+    }
+
+    public function getBusinessCategory()
+    {
+        return $this->getAttributeValue(self::BUSINESS_CATEGORY);
+    }
+
+    public function setPanVerificationStatus(string $status)
+    {
+        $this->setAttribute(self::BUSINESS_PAN_VALIDATION, $status);
+    }
+
+    public function setContactMobileVerified(bool $verified)
+    {
+        $this->setAttribute(self::CONTACT_VERIFIED, $verified);
     }
 
     public function getAssigneeName()

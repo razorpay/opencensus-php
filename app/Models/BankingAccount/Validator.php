@@ -13,6 +13,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 class Validator extends Base\Validator
 {
     const PRE_PROCESS           = 'pre_process';
+    const PRE_PROCESS_DASHBOARD = 'pre_process_dashboard';
     const INTERNAL_EDIT         = 'internal_edit';
     const PROCESSED_STATUS      = 'processed_status';
     const SERVICEABLE_PINCODE   = 'serviceable_pincode';
@@ -35,6 +36,11 @@ class Validator extends Base\Validator
 
     protected static $preProcessRules = [
         Entity::CHANNEL => 'required|string|custom',
+    ];
+
+    protected static $preProcessDashboardRules = [
+        Entity::CHANNEL => 'required|string|custom',
+        Entity::PINCODE => 'required_if:channel,rbl'
     ];
 
     protected static $sharedCreateRules = [
@@ -106,6 +112,26 @@ class Validator extends Base\Validator
         Entity::USERNAME                        => 'filled|string',
         Entity::PASSWORD                        => 'filled|string',
         Entity::REFERENCE1                      => 'filled|string',
+        Entity::INTERNAL_COMMENT                => 'sometimes|max:255',
+        Entity::DETAILS                         => 'sometimes|array',
+    ];
+
+    // For Current Account form on dashboard
+    protected static $editDashboardRules = [
+        Entity::ACCOUNT_NUMBER                  => 'filled|alpha_num|between:5,40',
+        Entity::ACCOUNT_IFSC                    => 'filled|alpha_num|size:11',
+        Entity::PINCODE                         => 'filled|string',
+        Entity::BENEFICIARY_PIN                 => 'filled|string',
+        Entity::BENEFICIARY_CITY                => 'filled|string',
+        Entity::BENEFICIARY_COUNTRY             => 'filled|string',
+        Entity::BENEFICIARY_STATE               => 'filled|string',
+        Entity::ACCOUNT_ACTIVATION_DATE         => 'sometimes|integer|nullable',
+        Entity::BENEFICIARY_ADDRESS1            => 'filled|string',
+        Entity::BENEFICIARY_ADDRESS2            => 'filled|string',
+        Entity::BENEFICIARY_ADDRESS3            => 'filled|string',
+        Entity::BENEFICIARY_MOBILE              => 'filled|string',
+        Entity::BENEFICIARY_EMAIL               => 'filled|string',
+        Entity::BENEFICIARY_NAME                => 'filled|custom',
         Entity::INTERNAL_COMMENT                => 'sometimes|max:255',
         Entity::DETAILS                         => 'sometimes|array',
     ];

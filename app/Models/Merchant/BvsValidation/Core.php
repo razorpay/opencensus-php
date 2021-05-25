@@ -8,9 +8,12 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
+use RZP\Exception\LogicException;
 use RZP\Jobs\UpdateMerchantContext;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
+use RZP\Models\Merchant\BvsValidation\Entity as ValidationEntity;
+use RZP\Models\BankingAccount\Activation\Detail\Entity as BankingAccountActivationEntity;
 
 class Core extends Base\Core
 {
@@ -151,6 +154,40 @@ class Core extends Base\Core
         $statusUpdater->updateValidationStatus();
 
         $this->repo->saveOrFail($merchantDetails);
+    }
+
+    protected function UpdateValidationStatusForBankingAccount(string $merchantId, Entity $validation)
+    {
+        [$merchant, $merchantDetails] = (New Detail\Core())->getMerchantAndSetBasicAuth($merchantId);
+
+        $artefactType = $validation->getArtefactType();
+
+        $validationId = $validation->getValidationId();
+
+        switch ($artefactType)
+        {
+            case Constant::BUSINESS_PAN:
+                $statusUpdater = new DocumentStatusUpdater\BusinessPanForCA(
+                    $merchant,
+                    BankingAccountActivationEntity::BUSINESS_PAN_VALIDATION,
+                    $artefactType,
+                    $validationId);
+                break;
+            case Constant::PERSONAL_PAN:
+                $statusUpdater = new DocumentStatusUpdater\PersonalPanForCA(
+                    $merchant,
+                    BankingAccountActivationEntity::BUSINESS_PAN_VALIDATION,
+                    $artefactType,
+                    $validationId);
+                break;
+            default :
+                throw new LogicException(
+                    ErrorCode::SERVER_ERROR_UNHANDLED_ARTEFACT_TYPE,
+                    null,
+                    [ValidationEntity::ARTEFACT_TYPE => $artefactType]);
+        }
+
+        $statusUpdater->updateValidationStatus();
     }
 
     protected function GstinSelfServeCallbackHandler(string $merchantId, Entity $validation): void

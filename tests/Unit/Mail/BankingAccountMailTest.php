@@ -20,6 +20,8 @@ class BankingAccountMailTest extends TestCase
 
     protected function createBankingAccount(array $attributes = [])
     {
+        $this->app['config']->set('applications.banking_account.mock', true);
+
         $data = [
             Entity::PINCODE => '560030',
             Entity::CHANNEL => 'rbl'

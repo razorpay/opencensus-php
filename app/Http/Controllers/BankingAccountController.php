@@ -24,6 +24,24 @@ class BankingAccountController extends Controller
 
     use Traits\HasCrudMethods;
 
+    public function createDashboard()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createByMerchant($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function updateDashboard(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->updateByMerchant($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
     public function activate(string $id)
     {
         $input = Request::all();
@@ -165,6 +183,15 @@ class BankingAccountController extends Controller
     public function resetWebhookData(string $id)
     {
         $response = $this->service()->resetWebhookData($id);
+
+        return ApiResponse::json($response);
+    }
+
+    public function verifyOtp(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->activationDetailService->verifyOtpForContact($id, $input);
 
         return ApiResponse::json($response);
     }
