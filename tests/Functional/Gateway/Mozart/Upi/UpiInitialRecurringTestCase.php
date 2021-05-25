@@ -763,6 +763,166 @@ class UpiInitialRecurringTestCase extends TestCase
         $this->assertNotNull($payment[Payment\Entity::REFERENCE16]);
     }
 
+    /***** Tests for as presented mandates *******/
+
+    public function testRecurringMandateCreateForAsPresented($encrypted=false, $tpv=false, $bankAccount=[])
+    {
+        // If $tpv flag set to true then create order for TPV with bank_account details
+        if ($tpv === true) {
+            $orderId = $this->createUpiRecurringTpvOrder([
+                'bank_account' => $bankAccount
+            ]);
+        }
+        else
+        {
+            $orderId = $this->createUpiRecurringOrder([
+                'token'   => [
+                    'max_amount'        => 150000,
+                    'frequency'         => 'as_presented',
+                    'start_time'        => Carbon::now()->getTimestamp(),
+                    'end_time'          => null,
+                    'recurring_value'   => null,
+                ]
+            ]);
+        }
+
+        $upiMandate = $this->getDbLastEntity('upi_mandate');
+        $this->assertArraySubset([
+            Entity::ORDER_ID        => substr($orderId, 6),
+            Entity::CUSTOMER_ID     => '100000customer',
+            Entity::FREQUENCY       => 'as_presented',
+            Entity::RECURRING_VALUE =>  null,
+            Entity::RECURRING_TYPE  => 'before',
+            Entity::STATUS          => Status::CREATED,
+            Entity::USED_COUNT      => 0,
+        ], $upiMandate->toArray(), true);
+
+        $this->payment['order_id'] = $orderId;
+
+        $this->payment['customer_id'] = 'cust_100000customer';
+
+        $response = $this->doAuthPayment($this->payment);
+
+        // Just to validate that a proper coproto is being send
+        $this->assertArraySubset([
+            'type'      => 'async',
+            'request'   => [
+                'method' => 'get'
+            ],
+        ], $response);
+
+        $payment = $this->getDbLastPayment();
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $upiMandate->reload();
+
+        $token = $this->getDbLastEntity('token');
+
+        $this->assertArraySubset([
+            Token\Entity::RECURRING_STATUS => 'initiated'
+        ], $token->toArray());
+
+        $this->assertArraySubset([
+            Payment\Entity::ORDER_ID        => substr($orderId, 6),
+            Payment\Entity::CUSTOMER_ID     => '100000customer',
+            Payment\Entity::STATUS          => 'created',
+        ], $payment->toArray());
+
+        $this->assertArraySubset([
+            Entity::ORDER_ID        => substr($orderId, 6),
+            Entity::CUSTOMER_ID     => '100000customer',
+            Entity::FREQUENCY       => 'as_presented',
+            Entity::RECURRING_VALUE =>  null,
+            Entity::RECURRING_TYPE  => 'before',
+            Entity::STATUS          => Status::CREATED,
+            Entity::TOKEN_ID        => $token['id'],
+            Entity::USED_COUNT      => 1,
+        ], $upiMandate->toArray());
+
+        $this->assertArraySubset([
+            Base\Entity::ACTION        => 'authenticate',
+            Base\Entity::TYPE          => 'collect',
+            Base\Entity::PAYMENT_ID    => $payment['id'],
+            Base\Entity::GATEWAY_DATA  => [
+                'act'       => 'create',
+                'ano'       => 1,
+                'sno'       => 1,
+            ]
+        ], $upi->toArray());
+
+        $this->mandateCreateCallback($payment, $encrypted);
+
+        $payment->reload();
+
+        $upiMandate->reload();
+
+        $token->reload();
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertArraySubset([
+            Payment\Entity::ORDER_ID        => substr($orderId, 6),
+            Payment\Entity::CUSTOMER_ID     => '100000customer',
+            Payment\Entity::STATUS          => 'created',
+        ], $payment->toArray());
+
+        $this->assertArraySubset([
+            Entity::ORDER_ID        => substr($orderId, 6),
+            Entity::CUSTOMER_ID     => '100000customer',
+            Entity::FREQUENCY       => 'as_presented',
+            Entity::RECURRING_VALUE => null,
+            Entity::RECURRING_TYPE  => 'before',
+            Entity::TOKEN_ID        => $token['id'],
+            Entity::STATUS          => Status::CONFIRMED,
+            Entity::USED_COUNT      => 1,
+            Entity::GATEWAY_DATA    => [
+                Entity::VPA         => $this->payment['vpa'],
+            ],
+        ], $upiMandate->toArray());
+
+        $this->assertArraySubset([
+            Base\Entity::ACTION      => 'authorize',
+            Base\Entity::TYPE        => 'collect',
+            Base\Entity::PAYMENT_ID  => $payment['id'],
+            Base\Entity::GATEWAY_DATA  => [
+                'act'       => 'execte',
+                'ano'       => 1,
+                'sno'       => 1,
+                'ext'       => null,
+            ],
+        ], $upi->toArray());
+
+        $this->assertArraySubset([
+            Token\Entity::RECURRING_STATUS => 'initiated'
+        ], $token->toArray());
+
+        $this->firstDebitCallback($payment);
+
+        $payment->reload();
+
+        $token->reload();
+
+        $upi->reload();
+
+        $upiMetadata = $this->getDbLastEntity('upi_metadata');
+
+        $this->assertArraySubset([
+            MetaData::INTERNAL_STATUS => 'authorized'
+        ], $upiMetadata->toArray());
+
+        $this->assertArraySubset([
+            Token\Entity::RECURRING        => true,
+            Token\Entity::RECURRING_STATUS => 'confirmed'
+        ], $token->toArray());
+
+        $this->assertNotNull($upiMandate[Entity::UMN]);
+        $this->assertNotNull($upiMandate[Entity::RRN]);
+        $this->assertNotNull($upiMandate[Entity::NPCI_TXN_ID]);
+
+        $this->assertNotNull($payment[Payment\Entity::REFERENCE16]);
+    }
+
     /************************************ HELPERS ***************************************/
 
     protected function revokeUpiRecurringMandate(string $tokenId)

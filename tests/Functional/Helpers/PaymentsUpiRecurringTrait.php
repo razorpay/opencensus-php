@@ -311,7 +311,7 @@ trait PaymentsUpiRecurringTrait
             'status'        => UpiMandate\Status::CONFIRMED,
             'umn'           => 'FirstUpiRecPayment@razorpay',
             'rrn'           => '001000100001',
-            'confirmed_at'  => $this->getMockConfirmedAt(UpiMandate\Frequency::MONTHLY),
+            'confirmed_at'  => $this->getMockConfirmedAt($this->upiMandate->getFrequency()),
             'npci_txn_id'   => 'RZP12345678910111213141516',
             'used_count'    => 1,
         ], $mInput);
@@ -433,6 +433,10 @@ trait PaymentsUpiRecurringTrait
 
             case UpiMandate\Frequency::DAILY:
                 $confirmedAt = Carbon::now()->subDays(2);
+                break;
+            case UpiMandate\Frequency::AS_PRESENTED:
+                //Choose a time between now() and 10 minutes.
+                $confirmedAt = Carbon::now()->addMinute(2);
                 break;
 
             default:

@@ -284,6 +284,11 @@ class Entity extends Base\PublicEntity
 
     public function getSequenceNumberAttribute()
     {
+        if ($this->getFrequency() === Frequency::AS_PRESENTED)
+        {
+            return $this->getUsedCount();
+        }
+
         $sequenceNumber = new SequenceNumber($this->getConfirmedAt(), $this->freshTimestamp());
 
         return $sequenceNumber->generate($this->getFrequency());
