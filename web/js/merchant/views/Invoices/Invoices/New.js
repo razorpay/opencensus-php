@@ -1006,9 +1006,13 @@ export default class InvoicesNewContainer extends Component {
     });
 
     return this.props
-      .saveInvoice(props, {
-        'Content-Type': 'application/json',
-      })
+      .saveInvoice(
+        props,
+        {
+          'Content-Type': 'application/json',
+        },
+        this.isIntentDuplicate,
+      )
       .then((invoice) => {
         this.setState({
           isSaving: false,

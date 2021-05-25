@@ -14,7 +14,7 @@ export const fetchInvoices = (params) => {
   };
 };
 
-export const saveInvoice = (params, headers = {}) => {
+export const saveInvoice = (params, headers = {}, isIntentDuplicate) => {
   let invoice = new Invoice(params);
 
   return {
@@ -24,7 +24,7 @@ export const saveInvoice = (params, headers = {}) => {
       {
         headers,
       },
-      false,
+      isIntentDuplicate,
     ),
   };
 };
