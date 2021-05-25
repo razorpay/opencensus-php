@@ -979,7 +979,7 @@ const uploadFields = [
       const additionalDocMapKey = `${userSelectedCategory}-${userSelectedSubcategory}`;
       const additionalDoc = ADDITIONAL_DOCS_LABEL_VALUE_MAP[additionalDocMapKey][additionalDocKey];
 
-      return additionalDoc.label;
+      return additionalDoc ? additionalDoc.label : '';
     },
     getName: (activation) => activation.state.additional_doc,
     _cmp: Input.File,
