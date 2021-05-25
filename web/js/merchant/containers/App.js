@@ -329,10 +329,25 @@ export default class App extends Component {
         LocalStorageService.getItem('merchantsSettlementStatus'),
       );
 
-      if (merchantsSettlementStatus) {
-        const currentMerchantExistsInLocalStorage = !(user.current in merchantsSettlementStatus);
-        if (currentMerchantExistsInLocalStorage) this.getSettlementDetails(user.current);
-      } else this.getSettlementDetails(user.current);
+      if (!merchantsSettlementStatus) this.getSettlementDetails(user.current);
+      else {
+        const settlementStatus = merchantsSettlementStatus[user.current];
+        const isMerchantPresent = user.current in merchantsSettlementStatus;
+        const isAnimationDisabled =
+          isMerchantPresent && !settlementStatus && settlementStatus !== 'disableAnimation';
+
+        if (!isMerchantPresent) this.getSettlementDetails(user.current);
+        else if (isAnimationDisabled) {
+          const updatedMerchantSettlementStatus = {
+            ...merchantsSettlementStatus,
+            [user.current]: 'disableAnimationOnReload',
+          };
+          LocalStorageService.setItem(
+            'merchantsSettlementStatus',
+            JSON.stringify(updatedMerchantSettlementStatus),
+          );
+        }
+      }
     }
   }
 

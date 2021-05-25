@@ -125,21 +125,26 @@ export const toBase64 = (file) => {
 };
 
 export const getSettlementStatus = (merchantId, callbackSettlementStatus) => {
+  const parseSettlementCallbackStatus = () => {
+    if (callbackSettlementStatus === 'settlementDone') return true;
+    else if (callbackSettlementStatus === 'disableAnimation') return false;
+  };
+  const settlementCallbackStatus = parseSettlementCallbackStatus();
+
   const merchantsSettlementStatus =
     JSON.parse(LocalStorageService.getItem('merchantsSettlementStatus')) || {};
 
-  if (callbackSettlementStatus === 'settlementDone') {
+  if (callbackSettlementStatus) {
     const updatedMerchantSettlementStatus = {
       ...merchantsSettlementStatus,
-      [merchantId]: true,
+      [merchantId]: settlementCallbackStatus ? true : 'disableAnimation',
     };
 
     LocalStorageService.setItem(
       'merchantsSettlementStatus',
       JSON.stringify(updatedMerchantSettlementStatus),
     );
-
-    return true;
+    return settlementCallbackStatus ? true : 'disableAnimation';
   } else {
     const settlementStatusExists = Object.prototype.hasOwnProperty.call(
       merchantsSettlementStatus,

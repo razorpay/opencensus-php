@@ -24,6 +24,7 @@ import trackIS, {
   EVENT_CATEGORY_DASHBOARD_INSTANT_SETTLEMENT,
 } from 'merchant/views/Settlements/InstantSettlements/ga';
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
+import LocalStorageService from 'common/utils/localStorage';
 
 @withRouter
 @connect(
@@ -95,7 +96,7 @@ class InstantSettlements extends ListContainer {
     trackIS.clickCTAISClear();
   }
 
-  showOndemandSettlementForm = (e) => {
+  showOndemandSettlementForm = () => {
     const {
       current_balance,
       ondemand_restrictions,
@@ -103,6 +104,7 @@ class InstantSettlements extends ListContainer {
       checkIfFirstEverSettlement,
       settlementExists,
       esOndemandSettlementEnabled,
+      user,
     } = this.props;
 
     const balance = current_balance.data.balance || 0;
@@ -110,6 +112,7 @@ class InstantSettlements extends ListContainer {
       this.settlementRestricted &&
       ondemand_restrictions &&
       ondemand_restrictions.data.settlable_amount;
+
     openModal({
       component: (
         <OndemandModal
@@ -152,6 +155,7 @@ class InstantSettlements extends ListContainer {
       ondemand_restrictions,
       location: { search },
       settlementExists,
+      checkIfFirstEverSettlement,
     } = this.props;
     const { count } = this.state;
     const balance = current_balance.data.balance || 0;
@@ -224,6 +228,7 @@ class InstantSettlements extends ListContainer {
             esOndemandSettlementEnabled={this.props.esOndemandSettlementEnabled}
             merchantId={user.current}
             isOndemandSettlementEnabled={user.isOndemandSettlementEnabled}
+            checkIfFirstEverSettlement={checkIfFirstEverSettlement}
           />
           <SettlementMessage
             user={user}

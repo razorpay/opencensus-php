@@ -15,6 +15,7 @@ import {
   trackEsModalCloseIcon,
   trackEsModalCloseIconChurn,
   trackAnimatedSettleBtnClick,
+  trackAnimatedSettleBtnClickType,
   trackEsAmountError,
   trackEsConfirm,
   trackEsAmountUpdated,
@@ -275,7 +276,15 @@ export default class OndemandModal extends Component {
       eventLabel: `${fromWhere} | Settle Now`,
     });
 
-    if (animatedSettlemnetBtn) trackAnimatedSettleBtnClick(user.current, fromWhere);
+    if (animatedSettlemnetBtn) {
+      trackAnimatedSettleBtnClick(user.current, fromWhere);
+      trackAnimatedSettleBtnClickType(
+        user.current,
+        fromWhere,
+        user.isFeatureEnabled('es_on_demand_restricted'),
+      );
+    }
+
     trackModalOpen(user.current);
     this.updateFee();
     this.showInputTooltip();

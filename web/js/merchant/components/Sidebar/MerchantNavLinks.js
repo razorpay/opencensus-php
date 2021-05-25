@@ -17,7 +17,9 @@ export default function MerchantNavLinks(props) {
 
   const checkIfFirstEverSettlement = () => {
     const settlementStatus = getSettlementStatus(user.current);
-    setSettlementExists(settlementStatus);
+    const isDisabled =
+      settlementStatus === 'disableAnimation' || settlementStatus === 'disableAnimationOnReload';
+    setSettlementExists(isDisabled ? false : settlementStatus);
   };
 
   return (

@@ -27,7 +27,9 @@ const Settlements = ({ user, merchantBalanceConfigs, current_balance }) => {
 
   const checkIfFirstEverSettlement = (callbackSettlementStatus) => {
     const settlementStatus = getSettlementStatus(user.current, callbackSettlementStatus);
-    setSettlementExists(settlementStatus);
+    const isDisabled =
+      settlementStatus === 'disableAnimation' || settlementStatus === 'disableAnimationOnReload';
+    setSettlementExists(isDisabled || settlementStatus);
   };
 
   return (
@@ -64,7 +66,7 @@ const Settlements = ({ user, merchantBalanceConfigs, current_balance }) => {
 
       <tabbed-container>
         <header>
-          <NavLink to="/settlements" onClick={checkIfFirstEverSettlement}>
+          <NavLink to="/settlements" onClick={() => checkIfFirstEverSettlement()}>
             Settlements
           </NavLink>
           {user.isOndemandSettlementEnabled && (

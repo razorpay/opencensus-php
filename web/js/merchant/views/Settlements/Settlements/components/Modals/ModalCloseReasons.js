@@ -50,7 +50,6 @@ export default class ModalCloseReasons extends Component {
   };
 
   render() {
-    const { showOndemandSettlementForm } = this.props;
     const { brief } = this.state;
     return (
       <div class="reasons-close-modal">

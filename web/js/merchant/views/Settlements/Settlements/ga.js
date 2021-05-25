@@ -72,6 +72,15 @@ export const trackAnimatedSettleBtnClick = (MID, source) => {
   });
 };
 
+export const trackAnimatedSettleBtnClickType = (MID, source, type) => {
+  trackGAEvents({
+    eventAction: `Animated CTA Clicks`,
+    eventLabel: `ES Animated CTA | source - ${source} | type - ${
+      type ? 'es_restricted' : 'ondemand'
+    } | clicked by - ${MID}`,
+  });
+};
+
 export const trackModalOpen = (MID) => {
   trackGAEvents({
     eventAction: `ES Modal Open`,
