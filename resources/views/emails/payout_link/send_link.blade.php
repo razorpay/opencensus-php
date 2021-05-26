@@ -270,7 +270,7 @@
                                                                         <div class="content branding rzp" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; padding-bottom: 16px;">
                                                                             <div class="branding-content" style="text-align: center; width: fit-content; margin: 0 auto; font-size: 12px; line-height: 1.5;">
                                                                                 <div class="content-element font-color-otp" style="color: #646D8B; display: inline-block; vertical-align: middle;">Secured by</div>
-                                                                                <div class="content-element logo" style="display: inline-block; vertical-align: middle; margin-left: 10px; height: 18px; width: 85px;"><img src="https://cdn.razorpay.com/static/assets/razorpayx/logos/rx-dark-logo.png" style="height: 100%; width: 100%;"></div>
+                                                                                <div class="content-element logo" style="display: inline-block; vertical-align: middle; margin-left: 10px; margin-bottom:4px; height: 28px; width: 85px;"><img src="https://cdn.razorpay.com/x/RzpX_logo_dark.png" style="height: 100%; width: 100%;"></div>
                                                                             </div>
                                                                         </div>
                                                                     </div>
