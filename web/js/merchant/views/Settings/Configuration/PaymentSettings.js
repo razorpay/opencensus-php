@@ -16,6 +16,7 @@ import { triggerHotjarRecording } from 'common/utils/hotjar';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import CaptureMode from './CaptureSettingsComponents/CaptureMode';
+import { getCustomURL } from 'merchant/components/DocsLink';
 import { parseTimeoutValues } from './CaptureSettingsComponents/data';
 import { renderTimeoutAsString } from './PaymentCaptureComponents/util';
 
@@ -493,6 +494,9 @@ export default class PaymentSettings extends Component {
     } = this.props.lateAuthConfig;
     const { isToggleActive, isDetailsToggleActive } = this.state;
     const { role } = this.props.user;
+    const {
+      org: { custom_code },
+    } = this.props;
 
     if (error || !items) {
       return null;
@@ -528,7 +532,9 @@ export default class PaymentSettings extends Component {
 
           <span class="toggler-btn">
             <a
-              href="https://razorpay.com/docs/payment-gateway/payments/capture-settings/"
+              href={getCustomURL(
+                'https://razorpay.com/docs/payment-gateway/payments/capture-settings/',
+              )}
               target="_blank"
               rel="noreferrer"
               onClick={this.onKnowMoreClick}
@@ -656,7 +662,7 @@ export default class PaymentSettings extends Component {
                   <strong>Note:</strong> Capture settings are applicable only if{' '}
                   <a
                     style={{ paddingRight: '2px' }}
-                    href="https://razorpay.com/docs/api/orders"
+                    href={getCustomURL('https://razorpay.com/docs/api/orders')}
                     target="_blank"
                     rel="noreferrer"
                   >
@@ -678,7 +684,7 @@ export default class PaymentSettings extends Component {
                     payment. Capture values passed in the{' '}
                     <a
                       style={{ paddingRight: '2px' }}
-                      href="https://razorpay.com/docs/api/orders"
+                      href={getCustomURL('https://razorpay.com/docs/api/orders')}
                       target="_blank"
                       rel="noreferrer"
                     >
@@ -823,7 +829,7 @@ export default class PaymentSettings extends Component {
                     payment. Capture values passed in the{' '}
                     <a
                       style={{ paddingRight: '2px' }}
-                      href="https://razorpay.com/docs/api/orders"
+                      href={getCustomURL('https://razorpay.com/docs/api/orders')}
                       target="_blank"
                       rel="noreferrer"
                     >

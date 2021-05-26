@@ -96,10 +96,10 @@ export default class HeaderNav extends Component {
       <nav class="navbar navbar-default navbar-fixed-top">
         <div class="container-fluid">
           <div className="navbar-collapse" id="headerNav">
-            {!showMobileNav && !user.isOrgRZP && (
+            {!showMobileNav && !user.isOrgRZP && !user.isOrgAxis && (
               <img
                 src="/img/branding/powered-by-razorpay-dashboard.png"
-                class="rzp-branding-logo"
+                class="rzp-branding-logo logo-header"
                 alt="Powered by Razorpay"
               />
             )}
@@ -128,7 +128,9 @@ export default class HeaderNav extends Component {
               )}
               <ShowWhen
                 additionalCondition={(user) =>
-                  user.isOrgAllowedFunctionality('external_links') && !user.isWhatsNewSectionEnabled
+                  user.isOrgAllowedFunctionality('external_links') &&
+                  !user.isWhatsNewSectionEnabled &&
+                  !user.isOrgAxis
                 }
               >
                 <li id="notifications-dropdown">

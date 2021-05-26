@@ -21,7 +21,7 @@ Modal.defaultStyles.content = {
   borderRadius: '5px',
 };
 
-@connect((state) => state.modal, ModalActions)
+@connect((state) => ({ ...state.modal, org: state.session.org }), ModalActions)
 export default class ModalDialog extends Component {
   render() {
     let props = this.props;
@@ -36,7 +36,7 @@ export default class ModalDialog extends Component {
           onRequestClose={props.disableClose ? null : props.closeModal}
           closeTimeoutMS={300}
           shouldCloseOnOverlayClick={false}
-          class={`Modal ${props.size ? `Modal--${props.size}` : ''}${
+          class={`${props.org.custom_code} Modal ${props.size ? `Modal--${props.size}` : ''}${
             props.className ? ` ${props.className}` : ''
           }`}
           contentLabel="Modal"

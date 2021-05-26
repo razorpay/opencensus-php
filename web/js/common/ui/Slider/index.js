@@ -7,7 +7,13 @@ import { isNone } from 'common/utils/rzp-utils';
 import { classList } from 'common/utils/rzp-utils';
 
 @withRouter
-@connect((state) => state.slider, SliderActions)
+@connect(
+  (state) => ({
+    ...state.slider,
+    org: state.session.org,
+  }),
+  SliderActions,
+)
 export default class ModalSlider extends Component {
   // Closes the slider
   //  1. When slider `Close` button is clicked
@@ -63,7 +69,7 @@ export default class ModalSlider extends Component {
         isOpen={this.props.isOpen}
         closeTimeoutMS={300}
         overlayClassName={className}
-        class="ModalSlider__Content"
+        class={classList('ModalSlider__Content', this.props.org.custom_code)}
         contentLabel="SliderModal"
         ariaHideApp={false}
       >

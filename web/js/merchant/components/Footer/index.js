@@ -1,62 +1,57 @@
+import React from 'react';
 import { trackLinkClick } from './ga';
-import { Link } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
+import { getCustomURL } from 'merchant/components/DocsLink';
 
-export default ({ user }) => {
+const footer_links = [
+  {
+    label: 'Merchant Agreement',
+    link: 'https://razorpay.com/agreement/',
+  },
+  {
+    label: 'Terms of Use',
+    link: 'https://razorpay.com/terms/',
+  },
+  {
+    label: 'Privacy Policy',
+    link: 'https://razorpay.com/privacy/',
+  },
+];
+
+const FooterLine = ({ user }) => {
   const currentYear = new Date().getFullYear();
+
   return (
-    <React.Fragment>
-      {!user.isOrgRZP && (
+    <footer class="pagefooter">
+      {user.isOrgAxis && (
         <img
           src="/img/branding/powered-by-razorpay-dashboard.png"
-          class="rzp-branding-logo"
+          class="rzp-branding-logo logo-footer"
           alt="Powered by Razorpay"
-          style={{ marginLeft: 14 }}
         />
       )}
-      <footer class="pagefooter">
-        © {`${user.isOrgRZP ? '2017' : '2018'}-${currentYear}`} Copyright
-        Razorpay
-        <ShowWhen
-          additionalCondition={user =>
-            user.isOrgAllowedFunctionality('external_links')
-          }
-        >
+      © {`${user.isOrgRZP ? '2017' : '2018'}-${currentYear}`} Copyright Razorpay
+      <ShowWhen additionalCondition={(_) => user.isOrgAllowedFunctionality('external_links')}>
+        {' '}
+        ·{' '}
+        {footer_links.map((link_obj) => (
           <React.Fragment>
-            ·{' '}
             <u>
               <a
-                href="https://razorpay.com/agreement/"
+                href={getCustomURL(link_obj.link)}
+                rel="noopener noreferrer"
                 target="_blank"
                 onClick={trackLinkClick}
               >
-                Merchant Agreement
-              </a>
-            </u>{' '}
-            ·{' '}
-            <u>
-              <a
-                href="https://razorpay.com/terms/"
-                target="_blank"
-                onClick={trackLinkClick}
-              >
-                Terms of Use
-              </a>
-            </u>{' '}
-            ·{' '}
-            <u>
-              <a
-                href="https://razorpay.com/privacy/"
-                target="_blank"
-                onClick={trackLinkClick}
-              >
-                Privacy Policy
+                {link_obj.label}
               </a>
             </u>{' '}
             ·{' '}
           </React.Fragment>
-        </ShowWhen>
-      </footer>
-    </React.Fragment>
+        ))}
+      </ShowWhen>
+    </footer>
   );
 };
+
+export default FooterLine;

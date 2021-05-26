@@ -16,6 +16,7 @@ import { classList } from 'common/utils/rzp-utils';
     return {
       isCallEnabled: state.config.isCallEnabled,
       user: state.session.user,
+      org: state.session.org,
     };
   },
   {
@@ -96,7 +97,7 @@ export default class Support extends Component {
   };
 
   render() {
-    const { user, history } = this.props;
+    const { user, org, history } = this.props;
     const { notifyCount, isOpened, isHidden } = this.state;
     // Temporarily disabled till further notice for improving support quality index for calls,
     const isCallEnabled = false;
@@ -105,7 +106,8 @@ export default class Support extends Component {
     const isOnBoardingRevampScreen = history.location.pathname.includes('onboarding');
     const DASHBOARD_HOST_REGEX = /(dashboard.*\.razorpay\.(com|in)|localhost)$/;
 
-    if (!DASHBOARD_HOST_REGEX.test(location.hostname)) {
+    // Don't show support for Axis org
+    if (!DASHBOARD_HOST_REGEX.test(location.hostname) || org.custom_code === 'axis') {
       return null;
     }
 

@@ -27,6 +27,7 @@ const THEMES = {
   axis: {
     navBg: '#2e3345',
     primary: '#528ff0',
+    backgroundShade: '#fff8f8',
   },
 };
 
@@ -42,26 +43,6 @@ const THEMES = {
 //   actText: 'white',
 // }
 
-export const applyTheme = (org) => {
-  var style = document.createElement('style');
-  style.type = 'text/css';
-  var rules = makeTheme(
-    Object.assign(
-      base,
-      org.merchant_styles
-        ? { ...THEMES[org.custom_code], ...org.merchant_styles }
-        : THEMES[org.custom_code],
-    ),
-    org.custom_code,
-  );
-  if (style.styleSheet) {
-    style.styleSheet.cssText = rules;
-  } else {
-    style.appendChild(document.createTextNode(rules));
-  }
-  document.getElementsByTagName('head')[0].appendChild(style);
-};
-
 const makeTheme = (it, org) => `
 #react-root.bob .brand-logo img {
   width: 100%;
@@ -71,20 +52,39 @@ const makeTheme = (it, org) => `
 .${org} .btn-primary,
 .${org} .btn-primary:active,
 .${org} .btn-primary:active:hover,
-.${org} .btn-primary[disabled]:hover {
+.${org} .btn.btn-primary,
+.${org} .btn-primary,
+.${org} .OnBoarding .Button-Container .Button.Forward-Button,
+.${org} .SliderDots .SliderDots-dot.SliderDots-dot--active,
+.${org} .Button--primary.Button,
+.${org} .Button--primary,
+.${org} :checked + .Input-checkbox,
+.${org} .btn-primary[disabled]:hover,
+.${org} .OnBoarding .Button-Container .Button.Forward-Button,
+.${org} .Button--primary:not(:disabled):hover  {
   background-color: ${it.primary};
   border-color: ${it.primary};
 }
 
-.${org} tabbed-container header a.active {
+.${org} .Button--primary--invert,
+.${org} .Input:not(.Input--disabled) .Input-el:focus,
+.${org} .PowerSelect--focused,
+.${org} .rc-calendar-today .rc-calendar-date
+{
+  border-color: ${it.primary} !important;
+}
+
+.${org} tabbed-container header a.active,
+.${org} .Button--transparent,
+.${org} .Button--transparent:not(:disabled):hover {
   border-color: ${it.primary};
   color: ${it.primary};
 }
 
 .${org} .btn-primary:hover,
 .${org} .btn-primary:active,
-.${org} .btn-primary:focus, {
-  background-color: ${it.transparent};
+.${org} .btn-primary:focus {
+  background-color: ${it.primary};
 }
 
 ${it.actStatus ? `.${org} .activation-status{color:${it.actStatus}};` : ''}
@@ -169,8 +169,7 @@ color:${it.sideBarIconActive};
   background-color: ${it.transparent};
 }
 
-.${org} .btn.btn-primary {
-  background-color: ${it.primary};
+.${org} .SliderDots .SliderDots-dot {
   border-color: ${it.primary}
 }
 
@@ -183,4 +182,56 @@ color:${it.sideBarIconActive};
 .${org} fieldset[disabled] .form-control {
   background-color: ${it.primaryTransparent};
 }
+
+.${org} .Wizard aside li.active {
+  background-color: ${it.primary};
+}
+
+.${org} .btn-link,
+.${org} a.breadcrumb__backNav--link,
+.${org} a:not(.btn-primary):not(.NavLink):not(.Button):not(.btn),
+.${org} .Button--Link,
+.${org} .OnBoarding--Features .Header .Header-external-links,
+.${org} .link,
+.${org} .TemplateCard .link,
+.${org} .OnBoarding .SliderDots .Button {
+  color: ${it.primary};
+}
+
+.${org} a.btn-primary {
+  color: #fff;
+}
+
+// HINT: don't have info on the light primary color value, to make UI good we are adding this
+.${org} .btn-link:hover,
+.${org} a:hover:not(.btn-primary):not(.NavLink):not(.Button) {
+  color: ${it.primary};
+  opacity: 0.85;
+}
+
+.${org} .payment-capture-panel .panel-content .is-active,
+.${org} .refund-panel .refund-panel-col.active {
+  border: 1px solid ${it.primary};
+  background-color: ${it.backgroundShade}
+}
 `;
+
+export const applyTheme = (org) => {
+  const style = document.createElement('style');
+  style.type = 'text/css';
+  const rules = makeTheme(
+    Object.assign(
+      base,
+      org.merchant_styles
+        ? { ...THEMES[org.custom_code], ...org.merchant_styles }
+        : THEMES[org.custom_code],
+    ),
+    org.custom_code,
+  );
+  if (style.styleSheet) {
+    style.styleSheet.cssText = rules;
+  } else {
+    style.appendChild(document.createTextNode(rules));
+  }
+  document.getElementsByTagName('head')[0].appendChild(style);
+};

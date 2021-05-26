@@ -1,17 +1,14 @@
 import PropTypes from 'prop-types';
 import Modal from 'react-modal';
+import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
 
-const ConfirmModal = (props, context) => {
-  let confirmModelStyle = {
-    overlay: Object.assign({}, Modal.defaultStyles.overlay, {
-      zIndex: 10000,
-    }),
-    content: Object.assign({}, Modal.defaultStyles.content, {
-      width: '325px',
-    }),
+const ConfirmModal = (props) => {
+  const confirmModelStyle = {
+    overlay: { ...Modal.defaultStyles.overlay, zIndex: 10000 },
+    content: { ...Modal.defaultStyles.content, width: '325px' },
   };
-  let { header, message, className } = props.options;
+  const { header, message, className } = props.options;
 
   return (
     <div>
@@ -20,7 +17,7 @@ const ConfirmModal = (props, context) => {
         style={confirmModelStyle}
         onRequestClose={props.onAbort}
         closeTimeoutMS={300}
-        class={`Modal Modal--small Modal--confirm ${className}`}
+        class={`${props.org.custom_code} Modal Modal--small Modal--confirm ${className}`}
         contentLabel="ConfirmModal"
         ariaHideApp={false}
       >
@@ -62,4 +59,10 @@ ConfirmModal.propTypes = {
   onAffirm: PropTypes.func,
 };
 
-export default ConfirmModal;
+const mapStateToProps = (state) => {
+  return {
+    org: state.session.org,
+  };
+};
+
+export default connect(mapStateToProps, null)(ConfirmModal);

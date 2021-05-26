@@ -16,7 +16,7 @@ import { fetchRefundPricing, createLateAuthConfig } from 'merchant/reducers/conf
 import RTracking from 'react-tracking';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-
+import { getCustomURL } from 'merchant/components/DocsLink';
 @connect(
   (state) => {
     return {
@@ -155,6 +155,9 @@ export default class DefaultRefundSpeed extends Component {
   };
 
   render() {
+    const {
+      org: { custom_code },
+    } = this.props;
     return (
       <div id="default-refund-container" class="panel panel-default refund-panel">
         <div class="panel-heading pl10" style={{ paddingTop: 0 }}>
@@ -163,7 +166,9 @@ export default class DefaultRefundSpeed extends Component {
             <a
               class="highlight know-more"
               target="_blank"
-              href="https://razorpay.com/docs/payment-gateway/refunds/#setting-the-default-speed-of-refunds"
+              href={getCustomURL(
+                'https://razorpay.com/docs/payment-gateway/refunds/#setting-the-default-speed-of-refunds',
+              )}
               onClick={() =>
                 analyticsTrack({
                   objectName: 'know more',
@@ -187,7 +192,7 @@ export default class DefaultRefundSpeed extends Component {
                 borderLeft: '1px solid rgba(22, 47, 86, 0.1)',
                 paddingLeft: '9px',
               }}
-              href="https://razorpay.com/docs/payment-gateway/instant-refunds/api"
+              href={getCustomURL('https://razorpay.com/docs/payment-gateway/instant-refunds/api')}
               onClick={() =>
                 analyticsTrack({
                   objectName: 'api reference guide',

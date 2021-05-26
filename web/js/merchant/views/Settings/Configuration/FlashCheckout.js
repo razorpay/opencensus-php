@@ -6,7 +6,7 @@ import { updateFeatures } from 'merchant/reducers/config';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
 import SwitchField from 'common/ui/Forms/SwitchField';
-
+import { getCustomURL } from 'merchant/components/DocsLink';
 @connect(
   (state) => {
     return {
@@ -122,6 +122,9 @@ export default class FlashCheckout extends Component {
 
   render() {
     let { fcEnabled } = this.state;
+    const {
+      org: { custom_code },
+    } = this.props;
 
     return (
       <div class="panel panel-default">
@@ -152,7 +155,7 @@ export default class FlashCheckout extends Component {
                   <a
                     class="highlight"
                     target="_blank"
-                    href="https://razorpay.com/flashcheckout/"
+                    href={getCustomURL('https://razorpay.com/flashcheckout/')}
                     onClick={() =>
                       analyticsTrack({
                         objectName: 'know more',

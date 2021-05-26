@@ -1,16 +1,21 @@
 import React, { Component } from 'react';
-
+import { connect } from 'react-redux';
 import AnnouncementBanner from 'common/ui/AnnouncementBanner';
-import LocalStorageService from 'common/utils/localStorage';
-
+import { getItem, setItem } from 'common/utils/localStorage';
 import { classList } from 'common/utils/rzp-utils';
 
-export default class extends Component {
+@connect(
+  (state) => ({
+    user: state.session.user,
+  }),
+  null,
+)
+export default class AnnouncementBannerComponent extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      hidden: !!LocalStorageService.getItem(this.props.bannerKey),
+      hidden: !!getItem(this.props.bannerKey),
     };
 
     this.handleClose = this.handleClose.bind(this);
@@ -18,7 +23,7 @@ export default class extends Component {
 
   handleClose() {
     if (this.props.bannerKey) {
-      LocalStorageService.setItem(this.props.bannerKey, 1);
+      setItem(this.props.bannerKey, 1);
       this.setState({
         hidden: true,
       });
@@ -31,6 +36,7 @@ export default class extends Component {
 
   render() {
     const {
+      user,
       className,
       handleClose,
       canBeClosed,
@@ -39,7 +45,8 @@ export default class extends Component {
       ...props
     } = this.props;
 
-    if (this.props.hidden || this.state.hidden) {
+    // If hidden or org is Axis, don't show banners
+    if (this.props.hidden || this.state.hidden || user.isOrgAxis) {
       return null;
     }
 

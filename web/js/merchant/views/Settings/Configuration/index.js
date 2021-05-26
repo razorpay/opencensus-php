@@ -28,6 +28,7 @@ import CovidKnowMore from 'common/ui/CovidKnowMore';
       refund_pricing: state.config.refund_pricing,
       configState: state.config,
       mode: state.session.mode,
+      org: state.session.org,
     };
   },
   { ...ConfigActions, ...NotificationActions, openModal, closeModal, fetchUser },
@@ -251,6 +252,7 @@ export default class CongfigurationContainer extends Component {
       mode,
       user,
       configState: { config, loading },
+      org,
     } = this.props;
 
     let showInternationalPaymentsCard = false;
@@ -280,12 +282,12 @@ export default class CongfigurationContainer extends Component {
               onSwitchChange={this.handleCovidReliefOptinAndOut}
               isLoading={this.state.isLoading}
             />
-            {user.isOrgAllowedFunctionality('flashcheckout') && <FlashCheckout />}
-            <PaymentSettings />
-            <DefaultRefundSpeed />
+            {user.isOrgAllowedFunctionality('flashcheckout') && <FlashCheckout org={org} />}
+            <PaymentSettings org={org} />
+            <DefaultRefundSpeed org={org} />
 
-            {showInternationalPaymentsCard && (
-              <InternationalPayments user={user} mode={mode} config={config} />
+            {mode === 'live' && showInternationalPaymentsCard && (
+              <InternationalPayments user={user} mode={mode} config={config} org={org} />
             )}
 
             <EmailNotifications form="configForm" onSave={this.saveConfig} />
