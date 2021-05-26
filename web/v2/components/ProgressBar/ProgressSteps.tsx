@@ -1,9 +1,9 @@
 import React from 'react';
-import View from '@razorpay/blade/src/atoms/View';
-import Flex from '@razorpay/blade/src/atoms/Flex';
-import Text from '@razorpay/blade/src/atoms/Text';
-import Space from '@razorpay/blade/src/atoms/Space';
-import Icon from '@razorpay/blade/src/atoms/Icon';
+import View from '@razorpay/blade-old/src/atoms/View';
+import Flex from '@razorpay/blade-old/src/atoms/Flex';
+import Text from '@razorpay/blade-old/src/atoms/Text';
+import Space from '@razorpay/blade-old/src/atoms/Space';
+import Icon from '@razorpay/blade-old/src/atoms/Icon';
 
 export interface ProgressStepsPropsT {
   headerText?: string;

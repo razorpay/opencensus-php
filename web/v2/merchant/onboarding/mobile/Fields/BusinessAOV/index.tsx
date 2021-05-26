@@ -1,5 +1,5 @@
 import React from 'react';
-import Text from '@razorpay/blade/src/atoms/Text';
+import Text from '@razorpay/blade-old/src/atoms/Text';
 import { Select, Option } from 'v2/components/Select';
 import { FormikErrors } from 'formik';
 import useAovRange from '../../hooks/useAovRange';

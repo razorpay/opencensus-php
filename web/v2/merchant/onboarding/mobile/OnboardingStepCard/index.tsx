@@ -1,10 +1,10 @@
 import React from 'react';
-import Space from '@razorpay/blade/src/atoms/Space';
-import Text from '@razorpay/blade/src/atoms/Text';
-import View from '@razorpay/blade/src/atoms/View';
-import Flex from '@razorpay/blade/src/atoms/Flex';
+import Space from '@razorpay/blade-old/src/atoms/Space';
+import Text from '@razorpay/blade-old/src/atoms/Text';
+import View from '@razorpay/blade-old/src/atoms/View';
+import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import Link from '@commander/shield/src/shared/Link';
-import Button from '@razorpay/blade/src/atoms/Button';
+import Button from '@razorpay/blade-old/src/atoms/Button';
 import Card from '../../../../components/Card';
 import { StepList } from '../Step';
 import { StepPropsT } from '../Step/Step';

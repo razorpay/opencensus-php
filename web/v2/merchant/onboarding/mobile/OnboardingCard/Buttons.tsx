@@ -1,9 +1,9 @@
 import React from 'react';
-import Space from '@razorpay/blade/src/atoms/Space';
-import View from '@razorpay/blade/src/atoms/View';
-import Flex from '@razorpay/blade/src/atoms/Flex';
-import Button from '@razorpay/blade/src/atoms/Button';
-import Icon from '@razorpay/blade/src/atoms/Icon';
+import Space from '@razorpay/blade-old/src/atoms/Space';
+import View from '@razorpay/blade-old/src/atoms/View';
+import Flex from '@razorpay/blade-old/src/atoms/Flex';
+import Button from '@razorpay/blade-old/src/atoms/Button';
+import Icon from '@razorpay/blade-old/src/atoms/Icon';
 import Link from '@commander/shield/src/shared/Link';
 
 interface ButtonPropsT {

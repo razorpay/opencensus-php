@@ -1,7 +1,7 @@
 import React from 'react';
 import { Story, Meta } from '@storybook/react/types-6-0.d';
-import View from '@razorpay/blade/src/atoms/View';
-import TextInput from '@razorpay/blade/src/atoms/TextInput';
+import View from '@razorpay/blade-old/src/atoms/View';
+import TextInput from '@razorpay/blade-old/src/atoms/TextInput';
 import Field from './Field';
 
 export default {

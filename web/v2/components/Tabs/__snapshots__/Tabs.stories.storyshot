@@ -5,19 +5,19 @@ exports[`Storyshots Tabs Tabs Default 1`] = `
   <div>
     <div>
       <div
-        class="Viewweb__View-sc-1i53gcl-0 iLSGsw"
+        class="Viewweb__View-sc-1o0hmxm-0 eayzPs"
       >
         <div
-          class="Viewweb__View-sc-1i53gcl-0 Tabs__TabBar-sc-1sq2qa7-0 kXmtNm Sizeweb__Size-t4oux4-0 fGgZzx Flexweb__Flex-h5ddrw-0 bpsvBt"
+          class="Viewweb__View-sc-1o0hmxm-0 Tabs__TabBar-sc-1sq2qa7-0 kXmtNm Sizeweb__Size-sc-1e5yf1-0 jdvRfl Flexweb__Flex-sc-1yhcoea-0 fRwLwk"
         >
           <div
-            class="Viewweb__View-sc-1i53gcl-0 iLSGsw Spaceweb__Space-sc-1gh69p2-0 igvkP Flexweb__Flex-h5ddrw-0 bQzkNt"
+            class="Viewweb__View-sc-1o0hmxm-0 eayzPs Spaceweb__Space-sc-1abqisc-0 koghqy Flexweb__Flex-sc-1yhcoea-0 bFyCSI"
           >
             <div
-              class="Viewweb__View-sc-1i53gcl-0 Tab__StyledTabTitle-e7rfax-0 dpUwFm Flexweb__Flex-h5ddrw-0 huCbhy"
+              class="Viewweb__View-sc-1o0hmxm-0 Tab__StyledTabTitle-e7rfax-0 dpUwFm Flexweb__Flex-sc-1yhcoea-0 kQSsmj"
             >
               <div
-                class="Viewweb__View-sc-1i53gcl-0 iLSGsw Spaceweb__Space-sc-1gh69p2-0 hxlVtt"
+                class="Viewweb__View-sc-1o0hmxm-0 eayzPs Spaceweb__Space-sc-1abqisc-0 iroewE"
               >
                 <svg
                   fill="none"
@@ -49,7 +49,7 @@ exports[`Storyshots Tabs Tabs Default 1`] = `
                 </svg>
               </div>
               <div
-                class="Textweb__Text-dvo2dp-0 lYNSl"
+                class="Textweb__Text-sc-1qrdpx3-0 bVMFIi"
                 color="shade.960"
                 data-testid="ds-text"
               >
@@ -58,13 +58,13 @@ exports[`Storyshots Tabs Tabs Default 1`] = `
             </div>
           </div>
           <div
-            class="Viewweb__View-sc-1i53gcl-0 iLSGsw Spaceweb__Space-sc-1gh69p2-0 igvkP Flexweb__Flex-h5ddrw-0 bQzkNt"
+            class="Viewweb__View-sc-1o0hmxm-0 eayzPs Spaceweb__Space-sc-1abqisc-0 koghqy Flexweb__Flex-sc-1yhcoea-0 bFyCSI"
           >
             <div
-              class="Viewweb__View-sc-1i53gcl-0 Tab__StyledTabTitle-e7rfax-0 dpUwFm Flexweb__Flex-h5ddrw-0 huCbhy"
+              class="Viewweb__View-sc-1o0hmxm-0 Tab__StyledTabTitle-e7rfax-0 dpUwFm Flexweb__Flex-sc-1yhcoea-0 kQSsmj"
             >
               <div
-                class="Textweb__Text-dvo2dp-0 lYNSl"
+                class="Textweb__Text-sc-1qrdpx3-0 bVMFIi"
                 color="shade.960"
                 data-testid="ds-text"
               >
@@ -73,13 +73,13 @@ exports[`Storyshots Tabs Tabs Default 1`] = `
             </div>
           </div>
           <div
-            class="Viewweb__View-sc-1i53gcl-0 iLSGsw Spaceweb__Space-sc-1gh69p2-0 igvkP Flexweb__Flex-h5ddrw-0 bQzkNt"
+            class="Viewweb__View-sc-1o0hmxm-0 eayzPs Spaceweb__Space-sc-1abqisc-0 koghqy Flexweb__Flex-sc-1yhcoea-0 bFyCSI"
           >
             <div
-              class="Viewweb__View-sc-1i53gcl-0 Tab__StyledTabTitle-e7rfax-0 dpUwFm Flexweb__Flex-h5ddrw-0 huCbhy"
+              class="Viewweb__View-sc-1o0hmxm-0 Tab__StyledTabTitle-e7rfax-0 dpUwFm Flexweb__Flex-sc-1yhcoea-0 kQSsmj"
             >
               <div
-                class="Viewweb__View-sc-1i53gcl-0 iLSGsw Spaceweb__Space-sc-1gh69p2-0 hxlVtt"
+                class="Viewweb__View-sc-1o0hmxm-0 eayzPs Spaceweb__Space-sc-1abqisc-0 iroewE"
               >
                 <svg
                   fill="none"
@@ -111,7 +111,7 @@ exports[`Storyshots Tabs Tabs Default 1`] = `
                 </svg>
               </div>
               <div
-                class="Textweb__Text-dvo2dp-0 lYNSl"
+                class="Textweb__Text-sc-1qrdpx3-0 bVMFIi"
                 color="shade.960"
                 data-testid="ds-text"
               >
@@ -120,13 +120,13 @@ exports[`Storyshots Tabs Tabs Default 1`] = `
             </div>
           </div>
           <div
-            class="Viewweb__View-sc-1i53gcl-0 iLSGsw Spaceweb__Space-sc-1gh69p2-0 igvkP Flexweb__Flex-h5ddrw-0 bQzkNt"
+            class="Viewweb__View-sc-1o0hmxm-0 eayzPs Spaceweb__Space-sc-1abqisc-0 koghqy Flexweb__Flex-sc-1yhcoea-0 bFyCSI"
           >
             <div
-              class="Viewweb__View-sc-1i53gcl-0 Tab__StyledTabTitle-e7rfax-0 dpUwFm Flexweb__Flex-h5ddrw-0 huCbhy"
+              class="Viewweb__View-sc-1o0hmxm-0 Tab__StyledTabTitle-e7rfax-0 dpUwFm Flexweb__Flex-sc-1yhcoea-0 kQSsmj"
             >
               <div
-                class="Textweb__Text-dvo2dp-0 lYNSl"
+                class="Textweb__Text-sc-1qrdpx3-0 bVMFIi"
                 color="shade.960"
                 data-testid="ds-text"
               >
@@ -135,13 +135,13 @@ exports[`Storyshots Tabs Tabs Default 1`] = `
             </div>
           </div>
           <div
-            class="Viewweb__View-sc-1i53gcl-0 iLSGsw Spaceweb__Space-sc-1gh69p2-0 igvkP Flexweb__Flex-h5ddrw-0 bQzkNt"
+            class="Viewweb__View-sc-1o0hmxm-0 eayzPs Spaceweb__Space-sc-1abqisc-0 koghqy Flexweb__Flex-sc-1yhcoea-0 bFyCSI"
           >
             <div
-              class="Viewweb__View-sc-1i53gcl-0 Tab__StyledTabTitle-e7rfax-0 dpUwFm Flexweb__Flex-h5ddrw-0 huCbhy"
+              class="Viewweb__View-sc-1o0hmxm-0 Tab__StyledTabTitle-e7rfax-0 dpUwFm Flexweb__Flex-sc-1yhcoea-0 kQSsmj"
             >
               <div
-                class="Textweb__Text-dvo2dp-0 kchohl"
+                class="Textweb__Text-sc-1qrdpx3-0 bHviSS"
                 color="primary.800"
                 data-testid="ds-text"
               >
@@ -149,18 +149,18 @@ exports[`Storyshots Tabs Tabs Default 1`] = `
               </div>
             </div>
             <div
-              class="Viewweb__View-sc-1i53gcl-0 Tab__Highlight-e7rfax-1 eDsppQ Sizeweb__Size-t4oux4-0 ifWIsh"
+              class="Viewweb__View-sc-1o0hmxm-0 Tab__Highlight-e7rfax-1 eDsppQ Sizeweb__Size-sc-1e5yf1-0 SkzBF"
             />
           </div>
         </div>
         <div
-          class="Viewweb__View-sc-1i53gcl-0 Tabs__StyledSeparator-sc-1sq2qa7-2 kxNZTq"
+          class="Viewweb__View-sc-1o0hmxm-0 Tabs__StyledSeparator-sc-1sq2qa7-2 kxNZTq"
         />
         <div
-          class="Viewweb__View-sc-1i53gcl-0 Tabs__TabContentContainer-sc-1sq2qa7-1 hVlczp Spaceweb__Space-sc-1gh69p2-0 gmQKaB"
+          class="Viewweb__View-sc-1o0hmxm-0 Tabs__TabContentContainer-sc-1sq2qa7-1 hVlczp Spaceweb__Space-sc-1abqisc-0 kGlNWI"
         >
           <div
-            class="Viewweb__View-sc-1i53gcl-0 TabContent__StyledTabContent-sc-2m2y0o-0 jIXWSf"
+            class="Viewweb__View-sc-1o0hmxm-0 TabContent__StyledTabContent-sc-2m2y0o-0 jIXWSf"
           >
             <div>
               Hello Documents

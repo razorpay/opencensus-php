@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { getColor } from '@razorpay/blade/src/_helpers/theme';
+import { getColor } from '@razorpay/blade-old/src/_helpers/theme';
 
 export const Root = styled.ul`
   width: 100%;

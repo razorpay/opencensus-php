@@ -1,8 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
-import View from '@razorpay/blade/src/atoms/View';
-import Space from '@razorpay/blade/src/atoms/Space';
-import { getColor } from '@razorpay/blade/src/_helpers/theme';
+import View from '@razorpay/blade-old/src/atoms/View';
+import Space from '@razorpay/blade-old/src/atoms/Space';
+import { getColor } from '@razorpay/blade-old/src/_helpers/theme';
 
 const styles = {
   backgroundColor({ theme, backgroundColor: _backgroundColor }) {

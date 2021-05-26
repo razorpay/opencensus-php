@@ -1,6 +1,6 @@
 import React from 'react';
 import { Story, Meta } from '@storybook/react/types-6-0.d';
-import Button from '@razorpay/blade/src/atoms/Button';
+import Button from '@razorpay/blade-old/src/atoms/Button';
 import Modal, { ModalPropsT } from './Modal';
 import { ModalBody, ModalHeader, ModalFooter } from './Styled';
 

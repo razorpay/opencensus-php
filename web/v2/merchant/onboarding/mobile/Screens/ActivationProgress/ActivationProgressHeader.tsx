@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
-import Space from '@razorpay/blade/src/atoms/Space';
-import View from '@razorpay/blade/src/atoms/View';
-import Flex from '@razorpay/blade/src/atoms/Flex';
-import Text from '@razorpay/blade/src/atoms/Text';
+import Space from '@razorpay/blade-old/src/atoms/Space';
+import View from '@razorpay/blade-old/src/atoms/View';
+import Flex from '@razorpay/blade-old/src/atoms/Flex';
+import Text from '@razorpay/blade-old/src/atoms/Text';
 import Link from '@commander/shield/src/shared/Link';
 import SaveAndExitModal from '../../SaveAndExitModal';
 import HeaderBackground from './images/header_background.svg';

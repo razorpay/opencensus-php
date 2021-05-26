@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { colors, spacings } from '@razorpay/blade/src/tokens';
+import { colors, spacings } from '@razorpay/blade-old/src/tokens';
 export const DashedButton = styled.label`
   input[type='file'] {
     display: none;

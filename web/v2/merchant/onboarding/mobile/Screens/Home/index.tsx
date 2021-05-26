@@ -1,7 +1,7 @@
 import React from 'react';
-import Text from '@razorpay/blade/src/atoms/Text';
-import View from '@razorpay/blade/src/atoms/View';
-import Space from '@razorpay/blade/src/atoms/Space';
+import Text from '@razorpay/blade-old/src/atoms/Text';
+import View from '@razorpay/blade-old/src/atoms/View';
+import Space from '@razorpay/blade-old/src/atoms/Space';
 import { useApp } from 'v2/context/App';
 import AcceptPaymentsCard from '../../AcceptPaymentsCard';
 import OnboardingCard from '../../OnboardingCard';

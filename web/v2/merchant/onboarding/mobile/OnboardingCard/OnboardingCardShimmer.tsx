@@ -1,12 +1,12 @@
 import React from 'react';
 import styled from 'styled-components';
-import View from '@razorpay/blade/src/atoms/View';
-import Size from '@razorpay/blade/src/atoms/Size';
-import Flex from '@razorpay/blade/src/atoms/Flex';
-import Text from '@razorpay/blade/src/atoms/Text';
-import Space from '@razorpay/blade/src/atoms/Space';
-import Button from '@razorpay/blade/src/atoms/Button';
-import { getColor } from '@razorpay/blade/src/_helpers/theme';
+import View from '@razorpay/blade-old/src/atoms/View';
+import Size from '@razorpay/blade-old/src/atoms/Size';
+import Flex from '@razorpay/blade-old/src/atoms/Flex';
+import Text from '@razorpay/blade-old/src/atoms/Text';
+import Space from '@razorpay/blade-old/src/atoms/Space';
+import Button from '@razorpay/blade-old/src/atoms/Button';
+import { getColor } from '@razorpay/blade-old/src/_helpers/theme';
 import Card from '../../../../components/Card';
 import FormIcon from './Icons/FormIcon.svg';
 

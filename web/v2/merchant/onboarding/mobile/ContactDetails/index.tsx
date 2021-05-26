@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
-import TextInput from '@razorpay/blade/src/atoms/TextInput';
+import TextInput from '@razorpay/blade-old/src/atoms/TextInput';
 import { FormSection, Field, GetTouchedFields } from '../Form';
 import { useActivationFormState, isTabComplete } from '../context/store';
 import useActivation, { getRequestData } from '../hooks/useActivation';

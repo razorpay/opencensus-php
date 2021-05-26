@@ -1,10 +1,10 @@
 import React, { ReactElement, ReactNode, ReactText, useEffect, useState } from 'react';
-import TextInput from '@razorpay/blade/src/atoms/TextInput';
-import View from '@razorpay/blade/src/atoms/View';
-import Text from '@razorpay/blade/src/atoms/Text';
-import Space from '@razorpay/blade/src/atoms/Space';
-import Icon from '@razorpay/blade/src/atoms/Icon';
-import Flex from '@razorpay/blade/src/atoms/Flex';
+import TextInput from '@razorpay/blade-old/src/atoms/TextInput';
+import View from '@razorpay/blade-old/src/atoms/View';
+import Text from '@razorpay/blade-old/src/atoms/Text';
+import Space from '@razorpay/blade-old/src/atoms/Space';
+import Icon from '@razorpay/blade-old/src/atoms/Icon';
+import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import { FormikErrors } from 'formik';
 import { Modal, ModalBody } from '../Modal';
 import toArray from '../../services/children/to-array';

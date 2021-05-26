@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import View from '@razorpay/blade/src/atoms/View';
+import View from '@razorpay/blade-old/src/atoms/View';
 
 export const Divider = styled.div`
   background: rgba(22, 47, 86, 0.24);

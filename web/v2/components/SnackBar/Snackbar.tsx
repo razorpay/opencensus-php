@@ -1,13 +1,13 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Transition } from 'react-transition-group';
-import Icon from '@razorpay/blade/src/atoms/Icon';
-import Space from '@razorpay/blade/src/atoms/Space';
-import View from '@razorpay/blade/src/atoms/View';
-import Text from '@razorpay/blade/src/atoms/Text';
-import Flex from '@razorpay/blade/src/atoms/Flex';
-import { getColor } from '@razorpay/blade/src/_helpers/theme';
-import Button from '@razorpay/blade/src/atoms/Button';
+import Icon from '@razorpay/blade-old/src/atoms/Icon';
+import Space from '@razorpay/blade-old/src/atoms/Space';
+import View from '@razorpay/blade-old/src/atoms/View';
+import Text from '@razorpay/blade-old/src/atoms/Text';
+import Flex from '@razorpay/blade-old/src/atoms/Flex';
+import { getColor } from '@razorpay/blade-old/src/_helpers/theme';
+import Button from '@razorpay/blade-old/src/atoms/Button';
 
 export interface SnackbarT {
   icon: string;

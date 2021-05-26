@@ -1,11 +1,11 @@
 import React, { useRef, useEffect } from 'react';
 import styled from 'styled-components';
-import Link from '@razorpay/blade/src/atoms/Link';
-import Text from '@razorpay/blade/src/atoms/Text';
-import View from '@razorpay/blade/src/atoms/View';
-import Space from '@razorpay/blade/src/atoms/Space';
-import Heading from '@razorpay/blade/src/atoms/Heading';
-import { getColor } from '@razorpay/blade/src/_helpers/theme';
+import Link from '@razorpay/blade-old/src/atoms/Link';
+import Text from '@razorpay/blade-old/src/atoms/Text';
+import View from '@razorpay/blade-old/src/atoms/View';
+import Space from '@razorpay/blade-old/src/atoms/Space';
+import Heading from '@razorpay/blade-old/src/atoms/Heading';
+import { getColor } from '@razorpay/blade-old/src/_helpers/theme';
 import { Modal, ModalBody } from '../../../../components/Modal';
 import Panel from '../../../../components/Accordian/Panel';
 import StatelessAccordian from '../../../../components/Accordian/StatelessAccordian';

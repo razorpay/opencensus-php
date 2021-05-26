@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import shallow from 'zustand/shallow';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
-import View from '@razorpay/blade/src/atoms/View';
+import View from '@razorpay/blade-old/src/atoms/View';
 import OnboardingStepCard from '../../OnboardingStepCard';
 import { useActivationFormState } from '../../context/store';
 import useActivation from '../../hooks/useActivation';

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import View from '@razorpay/blade/src/atoms/View';
-import Flex from '@razorpay/blade/src/atoms/Flex';
-import Size from '@razorpay/blade/src/atoms/Size';
-import Space from '@razorpay/blade/src/atoms/Space';
+import View from '@razorpay/blade-old/src/atoms/View';
+import Flex from '@razorpay/blade-old/src/atoms/Flex';
+import Size from '@razorpay/blade-old/src/atoms/Size';
+import Space from '@razorpay/blade-old/src/atoms/Space';
 import TabContent from './TabContent';
 
 const TabBar = styled(View)`

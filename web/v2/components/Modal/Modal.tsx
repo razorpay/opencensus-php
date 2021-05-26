@@ -1,6 +1,6 @@
 import React, { useRef, ReactNode } from 'react';
-import Button from '@razorpay/blade/src/atoms/Button';
-import Space from '@razorpay/blade/src/atoms/Space';
+import Button from '@razorpay/blade-old/src/atoms/Button';
+import Space from '@razorpay/blade-old/src/atoms/Space';
 import { Motion, spring, presets } from 'react-motion';
 import Layer from '../Layer/Layer';
 import {

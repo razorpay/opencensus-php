@@ -1,8 +1,8 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import Size from '@razorpay/blade/src/atoms/Size';
-import Text from '@razorpay/blade/src/atoms/Text';
+import Size from '@razorpay/blade-old/src/atoms/Size';
+import Text from '@razorpay/blade-old/src/atoms/Text';
 import Link from '@commander/shield/src/shared/Link';
-import View from '@razorpay/blade/src/atoms/View';
+import View from '@razorpay/blade-old/src/atoms/View';
 import styled from 'styled-components';
 import ErrorImage from './error_illustration.svg';
 

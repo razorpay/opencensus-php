@@ -1,12 +1,12 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useQuery } from 'react-query';
-import View from '@razorpay/blade/src/atoms/View';
-import Flex from '@razorpay/blade/src/atoms/Flex';
-import Text from '@razorpay/blade/src/atoms/Text';
-import Space from '@razorpay/blade/src/atoms/Space';
-import { getColor } from '@razorpay/blade/src/_helpers/theme';
-import { spacings } from '@razorpay/blade/src/tokens';
+import View from '@razorpay/blade-old/src/atoms/View';
+import Flex from '@razorpay/blade-old/src/atoms/Flex';
+import Text from '@razorpay/blade-old/src/atoms/Text';
+import Space from '@razorpay/blade-old/src/atoms/Space';
+import { getColor } from '@razorpay/blade-old/src/_helpers/theme';
+import { spacings } from '@razorpay/blade-old/src/tokens';
 import { fetch } from 'v2/services/rest/rest-fetch';
 import { ProgressBar } from 'v2/components/ProgressBar';
 import { useSnackbar } from 'v2/components/SnackBar/SnackbarContext';

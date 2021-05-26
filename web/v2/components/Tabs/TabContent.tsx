@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Motion, spring } from 'react-motion';
-import View from '@razorpay/blade/src/atoms/View';
+import View from '@razorpay/blade-old/src/atoms/View';
 
 const StyledTabContent = styled(View)`
   transform: ${(props) => `translateX(${props.left}px)`};

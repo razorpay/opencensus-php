@@ -5,10 +5,10 @@ exports[`Storyshots Onboarding/Home Default 1`] = `
   <div>
     <div>
       <div
-        class="Viewweb__View-sc-1i53gcl-0 iLSGsw"
+        class="Viewweb__View-sc-1o0hmxm-0 eayzPs"
       >
         <div
-          class="Textweb__Text-dvo2dp-0 vULlk Spaceweb__Space-sc-1gh69p2-0 dpHaHf"
+          class="Textweb__Text-sc-1qrdpx3-0 gWbxSD Spaceweb__Space-sc-1abqisc-0 ffxNUi"
           color="shade.950"
           data-testid="ds-text"
         >
@@ -16,26 +16,26 @@ exports[`Storyshots Onboarding/Home Default 1`] = `
           !
         </div>
         <div
-          class="Viewweb__View-sc-1i53gcl-0 iLSGsw Spaceweb__Space-sc-1gh69p2-0 enVxXa"
+          class="Viewweb__View-sc-1o0hmxm-0 eayzPs Spaceweb__Space-sc-1abqisc-0 fsHGcL"
         />
         <div
-          class="Viewweb__View-sc-1i53gcl-0 iLSGsw"
+          class="Viewweb__View-sc-1o0hmxm-0 eayzPs"
           role="shimmer"
         >
           <div
-            class="Viewweb__View-sc-1i53gcl-0 Card__StyledCard-sc-92xey2-0 eLLuyo Spaceweb__Space-sc-1gh69p2-0 iLqYOW"
+            class="Viewweb__View-sc-1o0hmxm-0 Card__StyledCard-sc-92xey2-0 eLLuyo Spaceweb__Space-sc-1abqisc-0 eiHYzf"
           >
             <div
-              class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 kNGuEF"
+              class="Viewweb__View-sc-1o0hmxm-0 eayzPs Flexweb__Flex-sc-1yhcoea-0 eSXEJE"
             >
               <div
-                class="Viewweb__View-sc-1i53gcl-0 OnboardingCardShimmer__HeadingContainer-l2wo0a-1 kZVKbG"
+                class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__HeadingContainer-l2wo0a-1 kZVKbG"
               >
                 <div
-                  class="Viewweb__View-sc-1i53gcl-0 OnboardingCardShimmer__HeadingContainer-l2wo0a-1 kZVKbG Spaceweb__Space-sc-1gh69p2-0 dqSztZ"
+                  class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__HeadingContainer-l2wo0a-1 kZVKbG Spaceweb__Space-sc-1abqisc-0 ekUIxk"
                 >
                   <div
-                    class="Textweb__Text-dvo2dp-0 djUVTE"
+                    class="Textweb__Text-sc-1qrdpx3-0 iAZzAb"
                     color="shade.980"
                     data-testid="ds-text"
                   >
@@ -43,7 +43,7 @@ exports[`Storyshots Onboarding/Home Default 1`] = `
                   </div>
                 </div>
                 <div
-                  class="Textweb__Text-dvo2dp-0 cqcyer Spaceweb__Space-sc-1gh69p2-0 frUmoX"
+                  class="Textweb__Text-sc-1qrdpx3-0 dFPmAI Spaceweb__Space-sc-1abqisc-0 eWXaAy"
                   color="shade.950"
                   data-testid="ds-text"
                 >
@@ -56,30 +56,30 @@ exports[`Storyshots Onboarding/Home Default 1`] = `
               />
             </div>
             <div
-              class="Viewweb__View-sc-1i53gcl-0 OnboardingCardShimmer__Separator-l2wo0a-0 hfyoWN"
+              class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Separator-l2wo0a-0 hfyoWN"
             />
             <div
-              class="Viewweb__View-sc-1i53gcl-0 iLSGsw"
+              class="Viewweb__View-sc-1o0hmxm-0 eayzPs"
             >
               <div
-                class="Viewweb__View-sc-1i53gcl-0 OnboardingCardShimmer__Container-l2wo0a-2 FHbmD Sizeweb__Size-t4oux4-0 kFJeBx Spaceweb__Space-sc-1gh69p2-0 hYxSZp"
+                class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Container-l2wo0a-2 FHbmD Sizeweb__Size-sc-1e5yf1-0 cBoAPd Spaceweb__Space-sc-1abqisc-0 hKFrEA"
               />
               <div
-                class="Viewweb__View-sc-1i53gcl-0 OnboardingCardShimmer__Container-l2wo0a-2 FHbmD Sizeweb__Size-t4oux4-0 gXFOFq"
+                class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Container-l2wo0a-2 FHbmD Sizeweb__Size-sc-1e5yf1-0 dmNVka"
               />
               <br />
               <br />
               <div
-                class="Viewweb__View-sc-1i53gcl-0 iLSGsw Spaceweb__Space-sc-1gh69p2-0 hxFaaj"
+                class="Viewweb__View-sc-1o0hmxm-0 eayzPs Spaceweb__Space-sc-1abqisc-0 bqJhhe"
               >
                 <button
-                  class="Buttonweb__StyledButton-sc-1bczm74-0 lfvpmZ Spaceweb__Space-sc-1gh69p2-0 cBHCOI Sizeweb__Size-t4oux4-0 fNlmaA Flexweb__Flex-h5ddrw-0 gLQXFx"
+                  class="Buttonweb__StyledButton-sc-18xf15a-0 eKmDKL Spaceweb__Space-sc-1abqisc-0 dBqoYd Sizeweb__Size-sc-1e5yf1-0 bcdMJc Flexweb__Flex-sc-1yhcoea-0 fXsEZI"
                   data-testid="ds-button"
                   disabled=""
                   type="button"
                 >
                   <div
-                    class="Textweb__Text-dvo2dp-0 eRXRZt"
+                    class="Textweb__Text-sc-1qrdpx3-0 bnCvli"
                     color="light.950"
                     data-testid="ds-text"
                   >

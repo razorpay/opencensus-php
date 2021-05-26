@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
-import View from '@razorpay/blade/src/atoms/View';
-import Space from '@razorpay/blade/src/atoms/Space';
+import View from '@razorpay/blade-old/src/atoms/View';
+import Space from '@razorpay/blade-old/src/atoms/Space';
 import { Motion, spring, presets } from 'react-motion';
 import { FullPageLoader } from 'v2/components/Loader';
 import useActivation from '../../hooks/useActivation';

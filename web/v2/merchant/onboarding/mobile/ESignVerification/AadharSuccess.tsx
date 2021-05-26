@@ -1,8 +1,8 @@
 import React from 'react';
-import View from '@razorpay/blade/src/atoms/View';
-import Text from '@razorpay/blade/src/atoms/Text';
-import Space from '@razorpay/blade/src/atoms/Space';
-import TextInput from '@razorpay/blade/src/atoms/TextInput';
+import View from '@razorpay/blade-old/src/atoms/View';
+import Text from '@razorpay/blade-old/src/atoms/Text';
+import Space from '@razorpay/blade-old/src/atoms/Space';
+import TextInput from '@razorpay/blade-old/src/atoms/TextInput';
 
 const AadharSuccess: React.FC = () => {
   return (

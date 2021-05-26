@@ -1,8 +1,8 @@
 import React from 'react';
 import { Formik } from 'formik';
-import Space from '@razorpay/blade/src/atoms/Space';
-import View from '@razorpay/blade/src/atoms/View';
-import Button from '@razorpay/blade/src/atoms/Button';
+import Space from '@razorpay/blade-old/src/atoms/Space';
+import View from '@razorpay/blade-old/src/atoms/View';
+import Button from '@razorpay/blade-old/src/atoms/Button';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
 import useActivation from '../hooks/useActivation';
 import useBusinessCategory from '../hooks/useBusinessCategory';

@@ -1,5 +1,5 @@
 import React from 'react';
-import Button from '@razorpay/blade/src/atoms/Button';
+import Button from '@razorpay/blade-old/src/atoms/Button';
 import { useActivationFormState } from '../context/store';
 import FAQs from './FAQs';
 

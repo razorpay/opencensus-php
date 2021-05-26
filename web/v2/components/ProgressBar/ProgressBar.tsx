@@ -1,9 +1,9 @@
 import React from 'react';
 import styled from 'styled-components';
-import { getColor } from '@razorpay/blade/src/_helpers/theme';
-import theme from '@razorpay/blade/src/tokens/theme.web';
-import spacing from '@razorpay/blade/src/tokens/spacings';
-import Space from '@razorpay/blade/src/atoms/Space';
+import { getColor } from '@razorpay/blade-old/src/_helpers/theme';
+import theme from '@razorpay/blade-old/src/tokens/theme.web';
+import spacing from '@razorpay/blade-old/src/tokens/spacings';
+import Space from '@razorpay/blade-old/src/atoms/Space';
 
 export interface ProgressBarPropsT {
   percentDone: number;

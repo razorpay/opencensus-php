@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import * as Yup from 'yup';
 import { Formik, Form } from 'formik';
-import Text from '@razorpay/blade/src/atoms/Text';
-import View from '@razorpay/blade/src/atoms/View';
-import Space from '@razorpay/blade/src/atoms/Space';
-import TextInput from '@razorpay/blade/src/atoms/TextInput';
-import Button from '@razorpay/blade/src/atoms/Button';
-import Flex from '@razorpay/blade/src/atoms/Flex';
+import Text from '@razorpay/blade-old/src/atoms/Text';
+import View from '@razorpay/blade-old/src/atoms/View';
+import Space from '@razorpay/blade-old/src/atoms/Space';
+import TextInput from '@razorpay/blade-old/src/atoms/TextInput';
+import Button from '@razorpay/blade-old/src/atoms/Button';
+import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import { useMutation } from 'react-query';
 import { fetch } from 'v2/services/rest/rest-fetch';
 import useActivation from '../hooks/useActivation';

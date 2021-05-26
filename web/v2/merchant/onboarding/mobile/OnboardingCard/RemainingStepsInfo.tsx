@@ -1,7 +1,7 @@
 import React from 'react';
-import Button from '@razorpay/blade/src/atoms/Button';
-import Space from '@razorpay/blade/src/atoms/Space';
-import View from '@razorpay/blade/src/atoms/View';
+import Button from '@razorpay/blade-old/src/atoms/Button';
+import Space from '@razorpay/blade-old/src/atoms/Space';
+import View from '@razorpay/blade-old/src/atoms/View';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
 import { useActivationFormState } from '../context/store';
 import { isUnregisteredBusiness } from '../services/utils';

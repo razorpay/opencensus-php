@@ -5,20 +5,20 @@ exports[`Storyshots ErrorBoundary With SDK 1`] = `
   <div>
     <div>
       <div
-        class="Viewweb__View-sc-1i53gcl-0 ErrorBoundary__Container-sc-1m2tqz3-0 hVoDuP Sizeweb__Size-t4oux4-0 igFyWQ"
+        class="Viewweb__View-sc-1o0hmxm-0 ErrorBoundary__Container-sc-1m2tqz3-0 hVoDuP Sizeweb__Size-sc-1e5yf1-0 lbvSVc"
       >
         <img
           src="error_illustration.svg"
         />
         <p
-          class="Textweb__Text-dvo2dp-0 eoXbnU"
+          class="Textweb__Text-sc-1qrdpx3-0 jzkJFn"
           color="shade.980"
           data-testid="ds-text"
         >
           We're sorry — something's gone wrong.
         </p>
         <div
-          class="Textweb__Text-dvo2dp-0 hqzAEM"
+          class="Textweb__Text-sc-1qrdpx3-0 kdjpwT"
           color="shade.980"
           data-testid="ds-text"
         >
@@ -32,7 +32,7 @@ exports[`Storyshots ErrorBoundary With SDK 1`] = `
              click here 
           </a>
           <span
-            class="Textweb__Text-dvo2dp-0 hqzAEM"
+            class="Textweb__Text-sc-1qrdpx3-0 kdjpwT"
             color="shade.980"
             data-testid="ds-text"
           >
@@ -40,7 +40,7 @@ exports[`Storyshots ErrorBoundary With SDK 1`] = `
           </span>
         </div>
         <div
-          class="Textweb__Text-dvo2dp-0 hqzAEM"
+          class="Textweb__Text-sc-1qrdpx3-0 kdjpwT"
           color="shade.980"
           data-testid="ds-text"
         >
@@ -66,10 +66,10 @@ exports[`Storyshots ErrorBoundary Without SDK 1`] = `
   <div>
     <div>
       <div
-        class="Viewweb__View-sc-1i53gcl-0 iLSGsw Sizeweb__Size-t4oux4-0 igFyWQ"
+        class="Viewweb__View-sc-1o0hmxm-0 eayzPs Sizeweb__Size-sc-1e5yf1-0 lbvSVc"
       >
         <div
-          class="Textweb__Text-dvo2dp-0 kgLoKE"
+          class="Textweb__Text-sc-1qrdpx3-0 dcXoif"
           color="shade.980"
           data-testid="ds-text"
         >

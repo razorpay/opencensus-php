@@ -5,51 +5,51 @@ exports[`Storyshots Onboarding/ESignVerification Default 1`] = `
   <div>
     <div>
       <div
-        class="Viewweb__View-sc-1i53gcl-0 Card__StyledCard-sc-92xey2-0 eLLuyo Spaceweb__Space-sc-1gh69p2-0 bYxcUy"
+        class="Viewweb__View-sc-1o0hmxm-0 Card__StyledCard-sc-92xey2-0 eLLuyo Spaceweb__Space-sc-1abqisc-0 ekWiIX"
       >
         <form
           action="#"
         >
           <div
-            class="Viewweb__View-sc-1i53gcl-0 iLSGsw Spaceweb__Space-sc-1gh69p2-0 cwrkNt"
+            class="Viewweb__View-sc-1o0hmxm-0 eayzPs Spaceweb__Space-sc-1abqisc-0 bnvEug"
           >
             <div
-              class="Textweb__Text-dvo2dp-0 bMeUFS"
+              class="Textweb__Text-sc-1qrdpx3-0 hGqXyd"
               color="shade.970"
               data-testid="ds-text"
             >
               Aadhar Verification
             </div>
             <div
-              class="Textweb__Text-dvo2dp-0 cqcyer"
+              class="Textweb__Text-sc-1qrdpx3-0 dFPmAI"
               color="shade.950"
               data-testid="ds-text"
             >
               An OTP will be sent to number linked with your Aadhar
             </div>
             <div
-              class="Viewweb__View-sc-1i53gcl-0 Styled__StyledView-cgqkio-1 heBOuW Spaceweb__Space-sc-1gh69p2-0 dUVIfM"
+              class="Viewweb__View-sc-1o0hmxm-0 Styled__StyledView-cgqkio-1 heBOuW Spaceweb__Space-sc-1abqisc-0 eiPEMl"
             >
               <div
-                class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 hrYFpH"
+                class="Viewweb__View-sc-1o0hmxm-0 eayzPs Flexweb__Flex-sc-1yhcoea-0 lgHtgi"
               >
                 <div
-                  class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 hHzdeI"
+                  class="Viewweb__View-sc-1o0hmxm-0 eayzPs Flexweb__Flex-sc-1yhcoea-0 hogGzB"
                 >
                   <div
-                    class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 laciwS"
+                    class="Viewweb__View-sc-1o0hmxm-0 eayzPs Flexweb__Flex-sc-1yhcoea-0 hfOCsH"
                   >
                     <div
-                      class="Viewweb__View-sc-1i53gcl-0 TextInputweb__InteractionContainer-th1lpa-3 lgHHqS"
+                      class="Viewweb__View-sc-1o0hmxm-0 TextInputweb__InteractionContainer-sc-18gz688-3 hMqHIj"
                     >
                       <div
-                        class="Viewweb__View-sc-1i53gcl-0 TextInputweb__FillContainer-th1lpa-2 gwRKpx Spaceweb__Space-sc-1gh69p2-0 gseDFa Sizeweb__Size-t4oux4-0 jMNahJ"
+                        class="Viewweb__View-sc-1o0hmxm-0 TextInputweb__FillContainer-sc-18gz688-2 jxHNUe Spaceweb__Space-sc-1abqisc-0 fAtZGf Sizeweb__Size-sc-1e5yf1-0 dCxfKl"
                       >
                         <div
-                          class="Viewweb__View-sc-1i53gcl-0 Labelweb__FloatView-sc-164wi1o-0 fRrBNK Spaceweb__Space-sc-1gh69p2-0 iJxdDV"
+                          class="Viewweb__View-sc-1o0hmxm-0 Labelweb__FloatView-sc-1eubdu6-0 kxSngp Spaceweb__Space-sc-1abqisc-0 zryoY"
                         >
                           <label
-                            class="Textweb__Text-dvo2dp-0 Labelweb__StyledText-sc-164wi1o-1 fSAEiu"
+                            class="Textweb__Text-sc-1qrdpx3-0 Labelweb__StyledText-sc-1eubdu6-1 dtOgfF"
                             color="shade.980"
                             data-testid="ds-text"
                             value=""
@@ -59,10 +59,10 @@ exports[`Storyshots Onboarding/ESignVerification Default 1`] = `
                           </label>
                         </div>
                         <div
-                          class="Viewweb__View-sc-1i53gcl-0 TextInputweb__InputContainer-th1lpa-0 cXrEYp Sizeweb__Size-t4oux4-0 hHYXCZ Flexweb__Flex-h5ddrw-0 bXkbdN"
+                          class="Viewweb__View-sc-1o0hmxm-0 TextInputweb__InputContainer-sc-18gz688-0 bxHyXK Sizeweb__Size-sc-1e5yf1-0 ivlOax Flexweb__Flex-sc-1yhcoea-0 kSCwNs"
                         >
                           <input
-                            class="TextInputweb__StyledInput-th1lpa-1 hGuyeE Sizeweb__Size-t4oux4-0 bPaCzX Spaceweb__Space-sc-1gh69p2-0 elJMNa Flexweb__Flex-h5ddrw-0 cndXnK"
+                            class="TextInputweb__StyledInput-sc-18gz688-1 hxHBWr Sizeweb__Size-sc-1e5yf1-0 exhaHT Spaceweb__Space-sc-1abqisc-0 gvLSev Flexweb__Flex-sc-1yhcoea-0 fCJFon"
                             data-testid="ds-text-input"
                             name="aadharNumber"
                             placeholder="Enter text here"
@@ -72,22 +72,22 @@ exports[`Storyshots Onboarding/ESignVerification Default 1`] = `
                         </div>
                       </div>
                       <div
-                        class="Viewweb__View-sc-1i53gcl-0 Lineweb__Line-msfe36-0 dLqxdC"
+                        class="Viewweb__View-sc-1o0hmxm-0 Lineweb__Line-sc-1xfvg0y-0 kNJYXM"
                       />
                     </div>
                   </div>
                 </div>
               </div>
               <div
-                class="Viewweb__View-sc-1i53gcl-0 iLSGsw Spaceweb__Space-sc-1gh69p2-0 iduAJl"
+                class="Viewweb__View-sc-1o0hmxm-0 eayzPs Spaceweb__Space-sc-1abqisc-0 iEeqkg"
               >
                 <button
-                  class="Buttonweb__StyledButton-sc-1bczm74-0 cMPIjb Spaceweb__Space-sc-1gh69p2-0 heaQVx Sizeweb__Size-t4oux4-0 eYZBwS Flexweb__Flex-h5ddrw-0 iZAQVi"
+                  class="Buttonweb__StyledButton-sc-18xf15a-0 iUdSet Spaceweb__Space-sc-1abqisc-0 eLwos Sizeweb__Size-sc-1e5yf1-0 bohIbC Flexweb__Flex-sc-1yhcoea-0 biKCWz"
                   data-testid="ds-button"
                   type="submit"
                 >
                   <div
-                    class="Textweb__Text-dvo2dp-0 fegqB"
+                    class="Textweb__Text-sc-1qrdpx3-0 ifmaki"
                     color="primary.800"
                     data-testid="ds-text"
                   >
@@ -110,10 +110,10 @@ exports[`Storyshots Onboarding/ESignVerification Default 1`] = `
                 </button>
               </div>
               <div
-                class="Viewweb__View-sc-1i53gcl-0 iLSGsw Spaceweb__Space-sc-1gh69p2-0 ecUaFp"
+                class="Viewweb__View-sc-1o0hmxm-0 eayzPs Spaceweb__Space-sc-1abqisc-0 dUDNUk"
               >
                 <div
-                  class="Textweb__Text-dvo2dp-0 dMKfEI"
+                  class="Textweb__Text-sc-1qrdpx3-0 idgjnn"
                   color="shade.960"
                   data-testid="ds-text"
                 >
@@ -133,24 +133,24 @@ exports[`Storyshots Onboarding/ESignVerification Default 1`] = `
               </div>
             </div>
             <div
-              class="Styled__Divider-cgqkio-0 kjEHCV Spaceweb__Space-sc-1gh69p2-0 dZliiW"
+              class="Styled__Divider-cgqkio-0 kjEHCV Spaceweb__Space-sc-1abqisc-0 jNVQBD"
             />
             <div
-              class="Viewweb__View-sc-1i53gcl-0 iLSGsw Spaceweb__Space-sc-1gh69p2-0 dNbJKF"
+              class="Viewweb__View-sc-1o0hmxm-0 eayzPs Spaceweb__Space-sc-1abqisc-0 dELwZA"
             >
               <div
-                class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 hRPkye"
+                class="Viewweb__View-sc-1o0hmxm-0 eayzPs Flexweb__Flex-sc-1yhcoea-0 iyJkr"
               >
                 <label
-                  class="Viewweb__View-sc-1i53gcl-0 Labelweb__Label-sc-1jyfflj-0 FnzkB Flexweb__Flex-h5ddrw-0 bXkbdN"
+                  class="Viewweb__View-sc-1o0hmxm-0 Labelweb__Label-rq06rg-0 fWvWEc Flexweb__Flex-sc-1yhcoea-0 kSCwNs"
                 >
                   <input
-                    class="Inputweb__Input-dxda5r-0 guvfAn"
+                    class="Inputweb__Input-vlwi0r-0 hORnkh"
                     data-testid="ds-checkbox"
                     type="checkbox"
                   />
                   <div
-                    class="Viewweb__View-sc-1i53gcl-0 Backdropweb__Backdrop-sc-18fq2ai-0 fjCtQz Sizeweb__Size-t4oux4-0 gFbSlU"
+                    class="Viewweb__View-sc-1o0hmxm-0 Backdropweb__Backdrop-sc-26g88e-0 jeOdol Sizeweb__Size-sc-1e5yf1-0 esSlSU"
                   >
                     <svg
                       fill="none"
@@ -168,7 +168,7 @@ exports[`Storyshots Onboarding/ESignVerification Default 1`] = `
                     </svg>
                   </div>
                   <div
-                    class="Textweb__Text-dvo2dp-0 gRymcG Spaceweb__Space-sc-1gh69p2-0 bryIoN"
+                    class="Textweb__Text-sc-1qrdpx3-0 fOMNhN Spaceweb__Space-sc-1abqisc-0 clARrY"
                     color="shade.980"
                     data-testid="ds-text"
                   >

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import * as Yup from 'yup';
 import { Formik } from 'formik';
-import View from '@razorpay/blade/src/atoms/View';
-import Space from '@razorpay/blade/src/atoms/Space';
-import TextInput from '@razorpay/blade/src/atoms/TextInput';
-import Checkbox from '@razorpay/blade/src/atoms/Checkbox';
+import View from '@razorpay/blade-old/src/atoms/View';
+import Space from '@razorpay/blade-old/src/atoms/Space';
+import TextInput from '@razorpay/blade-old/src/atoms/TextInput';
+import Checkbox from '@razorpay/blade-old/src/atoms/Checkbox';
 import { FormSection, Field, GetTouchedFields } from '../Form';
 import { useActivationFormState, isVisible, isTabComplete } from '../context/store';
 import useActivation, { getRequestData } from '../hooks/useActivation';

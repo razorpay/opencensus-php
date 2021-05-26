@@ -5,13 +5,13 @@ exports[`Storyshots Onboarding/Step Default 1`] = `
   <div>
     <div>
       <div
-        class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 fsyzhh"
+        class="Viewweb__View-sc-1o0hmxm-0 eayzPs Flexweb__Flex-sc-1yhcoea-0 eYznJc"
       >
         <div
-          class="Viewweb__View-sc-1i53gcl-0 Step__StepContainer-sc-7e13dj-0 jmyDBD Spaceweb__Space-sc-1gh69p2-0 kPDxdK Flexweb__Flex-h5ddrw-0 huCbhy"
+          class="Viewweb__View-sc-1o0hmxm-0 Step__StepContainer-sc-7e13dj-0 jmyDBD Spaceweb__Space-sc-1abqisc-0 jqKMMb Flexweb__Flex-sc-1yhcoea-0 kQSsmj"
         >
           <div
-            class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 bpsvBt Spaceweb__Space-sc-1gh69p2-0 jwKLqd Sizeweb__Size-t4oux4-0 idTfFo"
+            class="Viewweb__View-sc-1o0hmxm-0 eayzPs Flexweb__Flex-sc-1yhcoea-0 fRwLwk Spaceweb__Space-sc-1abqisc-0 fqjClE Sizeweb__Size-sc-1e5yf1-0 hMFjeU"
           >
             <img
               alt="pending"
@@ -19,7 +19,7 @@ exports[`Storyshots Onboarding/Step Default 1`] = `
             />
           </div>
           <div
-            class="Textweb__Text-dvo2dp-0 jkfOqK Flexweb__Flex-h5ddrw-0 cndXnK"
+            class="Textweb__Text-sc-1qrdpx3-0 gbSCch Flexweb__Flex-sc-1yhcoea-0 fCJFon"
             color="shade.970"
             data-testid="ds-text"
           >
@@ -57,13 +57,13 @@ exports[`Storyshots Onboarding/Step Step Completed 1`] = `
   <div>
     <div>
       <div
-        class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 fsyzhh"
+        class="Viewweb__View-sc-1o0hmxm-0 eayzPs Flexweb__Flex-sc-1yhcoea-0 eYznJc"
       >
         <div
-          class="Viewweb__View-sc-1i53gcl-0 Step__StepContainer-sc-7e13dj-0 jmyDBD Spaceweb__Space-sc-1gh69p2-0 kPDxdK Flexweb__Flex-h5ddrw-0 huCbhy"
+          class="Viewweb__View-sc-1o0hmxm-0 Step__StepContainer-sc-7e13dj-0 jmyDBD Spaceweb__Space-sc-1abqisc-0 jqKMMb Flexweb__Flex-sc-1yhcoea-0 kQSsmj"
         >
           <div
-            class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 bpsvBt Spaceweb__Space-sc-1gh69p2-0 jwKLqd Sizeweb__Size-t4oux4-0 idTfFo"
+            class="Viewweb__View-sc-1o0hmxm-0 eayzPs Flexweb__Flex-sc-1yhcoea-0 fRwLwk Spaceweb__Space-sc-1abqisc-0 fqjClE Sizeweb__Size-sc-1e5yf1-0 hMFjeU"
           >
             <img
               alt="completed"
@@ -71,7 +71,7 @@ exports[`Storyshots Onboarding/Step Step Completed 1`] = `
             />
           </div>
           <div
-            class="Textweb__Text-dvo2dp-0 jkfOqK Flexweb__Flex-h5ddrw-0 cndXnK"
+            class="Textweb__Text-sc-1qrdpx3-0 gbSCch Flexweb__Flex-sc-1yhcoea-0 fCJFon"
             color="shade.970"
             data-testid="ds-text"
           >
@@ -109,13 +109,13 @@ exports[`Storyshots Onboarding/Step Step Error 1`] = `
   <div>
     <div>
       <div
-        class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 fsyzhh"
+        class="Viewweb__View-sc-1o0hmxm-0 eayzPs Flexweb__Flex-sc-1yhcoea-0 eYznJc"
       >
         <div
-          class="Viewweb__View-sc-1i53gcl-0 Step__StepContainer-sc-7e13dj-0 llewxw Spaceweb__Space-sc-1gh69p2-0 kPDxdK Flexweb__Flex-h5ddrw-0 huCbhy"
+          class="Viewweb__View-sc-1o0hmxm-0 Step__StepContainer-sc-7e13dj-0 llewxw Spaceweb__Space-sc-1abqisc-0 jqKMMb Flexweb__Flex-sc-1yhcoea-0 kQSsmj"
         >
           <div
-            class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 bpsvBt Spaceweb__Space-sc-1gh69p2-0 jwKLqd Sizeweb__Size-t4oux4-0 idTfFo"
+            class="Viewweb__View-sc-1o0hmxm-0 eayzPs Flexweb__Flex-sc-1yhcoea-0 fRwLwk Spaceweb__Space-sc-1abqisc-0 fqjClE Sizeweb__Size-sc-1e5yf1-0 hMFjeU"
           >
             <img
               alt="error"
@@ -123,7 +123,7 @@ exports[`Storyshots Onboarding/Step Step Error 1`] = `
             />
           </div>
           <div
-            class="Textweb__Text-dvo2dp-0 jkfOqK Flexweb__Flex-h5ddrw-0 cndXnK"
+            class="Textweb__Text-sc-1qrdpx3-0 gbSCch Flexweb__Flex-sc-1yhcoea-0 fCJFon"
             color="shade.970"
             data-testid="ds-text"
           >
@@ -145,7 +145,7 @@ exports[`Storyshots Onboarding/Step Step Error 1`] = `
           </svg>
         </div>
         <div
-          class="Textweb__Text-dvo2dp-0 iDwqd Spaceweb__Space-sc-1gh69p2-0 jRQAyF"
+          class="Textweb__Text-sc-1qrdpx3-0 BOLhS Spaceweb__Space-sc-1abqisc-0 kLSJBQ"
           color="negative.900"
           data-testid="ds-text"
         >
@@ -168,13 +168,13 @@ exports[`Storyshots Onboarding/Step Step Locked 1`] = `
   <div>
     <div>
       <div
-        class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 fsyzhh"
+        class="Viewweb__View-sc-1o0hmxm-0 eayzPs Flexweb__Flex-sc-1yhcoea-0 eYznJc"
       >
         <div
-          class="Viewweb__View-sc-1i53gcl-0 Step__StepContainer-sc-7e13dj-0 jyMcxZ Spaceweb__Space-sc-1gh69p2-0 kPDxdK Flexweb__Flex-h5ddrw-0 huCbhy"
+          class="Viewweb__View-sc-1o0hmxm-0 Step__StepContainer-sc-7e13dj-0 jyMcxZ Spaceweb__Space-sc-1abqisc-0 jqKMMb Flexweb__Flex-sc-1yhcoea-0 kQSsmj"
         >
           <div
-            class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 bpsvBt Spaceweb__Space-sc-1gh69p2-0 jwKLqd Sizeweb__Size-t4oux4-0 idTfFo"
+            class="Viewweb__View-sc-1o0hmxm-0 eayzPs Flexweb__Flex-sc-1yhcoea-0 fRwLwk Spaceweb__Space-sc-1abqisc-0 fqjClE Sizeweb__Size-sc-1e5yf1-0 hMFjeU"
           >
             <img
               alt="locked"
@@ -182,7 +182,7 @@ exports[`Storyshots Onboarding/Step Step Locked 1`] = `
             />
           </div>
           <div
-            class="Textweb__Text-dvo2dp-0 fXDTpq Flexweb__Flex-h5ddrw-0 cndXnK"
+            class="Textweb__Text-sc-1qrdpx3-0 eJOkfd Flexweb__Flex-sc-1yhcoea-0 fCJFon"
             color="shade.950"
             data-testid="ds-text"
           >

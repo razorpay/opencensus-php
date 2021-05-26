@@ -5,10 +5,10 @@ exports[`Storyshots ProgressSteps Progress Bar With Controls 1`] = `
   <div>
     <div>
       <div
-        class="Viewweb__View-sc-1i53gcl-0 iLSGsw"
+        class="Viewweb__View-sc-1o0hmxm-0 eayzPs"
       >
         <div
-          class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 bpsvBt"
+          class="Viewweb__View-sc-1o0hmxm-0 eayzPs Flexweb__Flex-sc-1yhcoea-0 fRwLwk"
           data-testid="progressSteps"
         >
           <svg
@@ -89,10 +89,10 @@ exports[`Storyshots ProgressSteps Progress Steps 1`] = `
   <div>
     <div>
       <div
-        class="Viewweb__View-sc-1i53gcl-0 iLSGsw"
+        class="Viewweb__View-sc-1o0hmxm-0 eayzPs"
       >
         <div
-          class="Viewweb__View-sc-1i53gcl-0 iLSGsw Flexweb__Flex-h5ddrw-0 bpsvBt"
+          class="Viewweb__View-sc-1o0hmxm-0 eayzPs Flexweb__Flex-sc-1yhcoea-0 fRwLwk"
           data-testid="progressSteps"
         >
           <svg

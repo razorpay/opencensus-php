@@ -5,12 +5,12 @@ exports[`Storyshots Modal Bottom Sheet 1`] = `
   <div>
     <div>
       <button
-        class="Buttonweb__StyledButton-sc-1bczm74-0 euGXoT Spaceweb__Space-sc-1gh69p2-0 cBHCOI Sizeweb__Size-t4oux4-0 fGgZzx Flexweb__Flex-h5ddrw-0 iZAQVi"
+        class="Buttonweb__StyledButton-sc-18xf15a-0 kRiGXp Spaceweb__Space-sc-1abqisc-0 dBqoYd Sizeweb__Size-sc-1e5yf1-0 jdvRfl Flexweb__Flex-sc-1yhcoea-0 biKCWz"
         data-testid="ds-button"
         type="button"
       >
         <div
-          class="Textweb__Text-dvo2dp-0 hFSNKL"
+          class="Textweb__Text-sc-1qrdpx3-0 gdNKCE"
           color="light.900"
           data-testid="ds-text"
         >
@@ -30,7 +30,7 @@ exports[`Storyshots Modal Bottom Sheet 1`] = `
             style="transform: translateY(100%);"
           >
             <div
-              class="Textweb__Text-dvo2dp-0 Styled__BodyText-sc-1kl130u-6 bXvHYx"
+              class="Textweb__Text-sc-1qrdpx3-0 Styled__BodyText-sc-1kl130u-6 bXvHYx"
               color="shade.980"
               data-testid="ds-text"
             >
@@ -52,12 +52,12 @@ exports[`Storyshots Modal Default Modal 1`] = `
   <div>
     <div>
       <button
-        class="Buttonweb__StyledButton-sc-1bczm74-0 euGXoT Spaceweb__Space-sc-1gh69p2-0 cBHCOI Sizeweb__Size-t4oux4-0 fGgZzx Flexweb__Flex-h5ddrw-0 iZAQVi"
+        class="Buttonweb__StyledButton-sc-18xf15a-0 kRiGXp Spaceweb__Space-sc-1abqisc-0 dBqoYd Sizeweb__Size-sc-1e5yf1-0 jdvRfl Flexweb__Flex-sc-1yhcoea-0 biKCWz"
         data-testid="ds-button"
         type="button"
       >
         <div
-          class="Textweb__Text-dvo2dp-0 hFSNKL"
+          class="Textweb__Text-sc-1qrdpx3-0 gdNKCE"
           color="light.900"
           data-testid="ds-text"
         >
@@ -91,21 +91,21 @@ exports[`Storyshots Modal Modal With Controls 1`] = `
             role="dialog"
           >
             <div
-              class="Textweb__Text-dvo2dp-0 Styled__HeaderText-sc-1kl130u-5 clEJne"
+              class="Textweb__Text-sc-1qrdpx3-0 Styled__HeaderText-sc-1kl130u-5 clEJne"
               color="shade.980"
               data-testid="ds-text"
             >
                Default Modal Header 
             </div>
             <div
-              class="Textweb__Text-dvo2dp-0 Styled__BodyText-sc-1kl130u-6 bXvHYx"
+              class="Textweb__Text-sc-1qrdpx3-0 Styled__BodyText-sc-1kl130u-6 bXvHYx"
               color="shade.980"
               data-testid="ds-text"
             >
               Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged
             </div>
             <div
-              class="Textweb__Text-dvo2dp-0 Styled__FooterText-sc-1kl130u-7 jbARAn"
+              class="Textweb__Text-sc-1qrdpx3-0 Styled__FooterText-sc-1kl130u-7 jbARAn"
               color="shade.980"
               data-testid="ds-text"
             >
@@ -116,7 +116,7 @@ exports[`Storyshots Modal Modal With Controls 1`] = `
               data-testid="modalCloseButton"
             >
               <button
-                class="Buttonweb__StyledButton-sc-1bczm74-0 gnfbXK Spaceweb__Space-sc-1gh69p2-0 bypYnm Sizeweb__Size-t4oux4-0 eYZBwS Flexweb__Flex-h5ddrw-0 iZAQVi"
+                class="Buttonweb__StyledButton-sc-18xf15a-0 ehsbkM Spaceweb__Space-sc-1abqisc-0 hzCRsH Sizeweb__Size-sc-1e5yf1-0 bohIbC Flexweb__Flex-sc-1yhcoea-0 biKCWz"
                 data-testid="ds-button"
                 type="button"
               >

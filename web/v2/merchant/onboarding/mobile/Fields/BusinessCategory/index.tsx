@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import Text from '@razorpay/blade/src/atoms/Text';
-import Icon from '@razorpay/blade/src/atoms/Icon';
+import Text from '@razorpay/blade-old/src/atoms/Text';
+import Icon from '@razorpay/blade-old/src/atoms/Icon';
 import { Select, GrpOption, Option } from 'v2/components/Select';
 import { FormikErrors } from 'formik';
 import { debounce } from '../../services/utils';

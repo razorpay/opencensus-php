@@ -1,10 +1,10 @@
 import React from 'react';
 import styled from 'styled-components';
-import View from '@razorpay/blade/src/atoms/View';
-import Space from '@razorpay/blade/src/atoms/Space';
-import Button from '@razorpay/blade/src/atoms/Button';
+import View from '@razorpay/blade-old/src/atoms/View';
+import Space from '@razorpay/blade-old/src/atoms/Space';
+import Button from '@razorpay/blade-old/src/atoms/Button';
 import Link from '@commander/shield/src/shared/Link';
-import Text from '@razorpay/blade/src/atoms/Text';
+import Text from '@razorpay/blade-old/src/atoms/Text';
 import { Modal, ModalBody } from '../../../../components/Modal';
 
 export interface ExitPopupProps {

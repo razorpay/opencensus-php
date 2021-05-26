@@ -1,8 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
-import Space from '@razorpay/blade/src/atoms/Space';
-import View from '@razorpay/blade/src/atoms/View';
-import Text from '@razorpay/blade/src/atoms/Text';
+import Space from '@razorpay/blade-old/src/atoms/Space';
+import View from '@razorpay/blade-old/src/atoms/View';
+import Text from '@razorpay/blade-old/src/atoms/Text';
 import Card from '../../../../components/Card';
 
 const StyledView = styled(View)`

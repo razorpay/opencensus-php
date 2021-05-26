@@ -1,6 +1,6 @@
 import React from 'react';
-import View from '@razorpay/blade/src/atoms/View';
-import Space from '@razorpay/blade/src/atoms/Space';
+import View from '@razorpay/blade-old/src/atoms/View';
+import Space from '@razorpay/blade-old/src/atoms/Space';
 
 interface FieldProps {
   visible?: boolean;

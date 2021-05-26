@@ -1,8 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
-import View from '@razorpay/blade/src/atoms/View';
-import Size from '@razorpay/blade/src/atoms/Size';
-import { getColor } from '@razorpay/blade/src/_helpers/theme';
+import View from '@razorpay/blade-old/src/atoms/View';
+import Size from '@razorpay/blade-old/src/atoms/Size';
+import { getColor } from '@razorpay/blade-old/src/_helpers/theme';
 import Card from '../../../../components/Card';
 
 const Container = styled(View)`

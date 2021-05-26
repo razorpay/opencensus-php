@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
-import Text from '@razorpay/blade/src/atoms/Text';
-import { getColor } from '@razorpay/blade/src/_helpers/theme';
+import Text from '@razorpay/blade-old/src/atoms/Text';
+import { getColor } from '@razorpay/blade-old/src/_helpers/theme';
 
 export const DialogContainer = styled.div`
   position: fixed;

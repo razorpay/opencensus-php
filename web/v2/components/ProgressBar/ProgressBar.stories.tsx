@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import Button from '@razorpay/blade/src/atoms/Button';
+import Button from '@razorpay/blade-old/src/atoms/Button';
 import { Story } from '@storybook/react/types-6-0.d';
-import spacing from '@razorpay/blade/src/tokens/spacings';
+import spacing from '@razorpay/blade-old/src/tokens/spacings';
 import ProgressBarContinuous, { ProgressBarPropsT } from './ProgressBar';
 
 export default {

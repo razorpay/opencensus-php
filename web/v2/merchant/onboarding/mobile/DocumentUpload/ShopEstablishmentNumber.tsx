@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Formik } from 'formik';
-import TextInput from '@razorpay/blade/src/atoms/TextInput';
+import TextInput from '@razorpay/blade-old/src/atoms/TextInput';
 import { isDocumentTabComplete } from 'v2/merchant/onboarding/mobile/services/utils';
 import { Field, GetTouchedFields } from '../Form';
 import { useActivationFormState } from '../context/store';

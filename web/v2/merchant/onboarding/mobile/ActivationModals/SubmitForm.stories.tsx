@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Button from '@razorpay/blade/src/atoms/Button';
+import Button from '@razorpay/blade-old/src/atoms/Button';
 import SubmitForm from './SubmitForm';
 
 export default {

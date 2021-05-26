@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
 import { ThemeProvider } from 'styled-components';
-import { lightTheme as theme } from '@razorpay/blade/src/tokens/theme.web';
+import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme.web';
 import { QueryCache, ReactQueryCacheProvider } from 'react-query';
 import { SnackbarProvider } from 'v2/components/SnackBar/SnackbarContext';
 import { AppProvider, AppContextTypes } from '../../context/App';

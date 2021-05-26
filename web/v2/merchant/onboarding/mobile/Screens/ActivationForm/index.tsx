@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import View from '@razorpay/blade/src/atoms/View';
-import Heading from '@razorpay/blade/src/atoms/Heading';
-import Flex from '@razorpay/blade/src/atoms/Flex';
-import Space from '@razorpay/blade/src/atoms/Space';
-import Icon from '@razorpay/blade/src/atoms/Icon';
-import Button from '@razorpay/blade/src/atoms/Button';
+import View from '@razorpay/blade-old/src/atoms/View';
+import Heading from '@razorpay/blade-old/src/atoms/Heading';
+import Flex from '@razorpay/blade-old/src/atoms/Flex';
+import Space from '@razorpay/blade-old/src/atoms/Space';
+import Icon from '@razorpay/blade-old/src/atoms/Icon';
+import Button from '@razorpay/blade-old/src/atoms/Button';
 import Link from '@commander/shield/src/shared/Link';
 import { FullPageLoader } from 'v2/components/Loader';
 import { withRouter, RouteComponentProps } from 'react-router-dom';

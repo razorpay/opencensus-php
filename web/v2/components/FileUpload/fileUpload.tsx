@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import Button from '@razorpay/blade/src/atoms/Button';
-import Text from '@razorpay/blade/src/atoms/Text';
-import Size from '@razorpay/blade/src/atoms/Size';
-import Space from '@razorpay/blade/src/atoms/Space';
-import View from '@razorpay/blade/src/atoms/View';
-import Flex from '@razorpay/blade/src/atoms/Flex';
+import Button from '@razorpay/blade-old/src/atoms/Button';
+import Text from '@razorpay/blade-old/src/atoms/Text';
+import Size from '@razorpay/blade-old/src/atoms/Size';
+import Space from '@razorpay/blade-old/src/atoms/Space';
+import View from '@razorpay/blade-old/src/atoms/View';
+import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import ProgressBarContinuous from '../ProgressBar/ProgressBar';
 import UploadIcon from './FileUploadIcon.svg';
 import CheckedIcon from './CheckedIcon.svg';
