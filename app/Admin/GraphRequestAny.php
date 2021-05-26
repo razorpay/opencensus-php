@@ -2,6 +2,7 @@
 
 namespace App\Admin;
 
+use App\User;
 use Auth;
 use Config;
 use Request;
@@ -86,6 +87,12 @@ class GraphRequestAny
             $errors = [$exception->getMessage()];
 
             return [$errors, null];
+        }
+        catch(\Exception $exception)
+        {
+            $error = $this->getErrorResponse($exception->getMessage());
+
+            return [$error, []];
         }
     }
 
@@ -202,15 +209,35 @@ class GraphRequestAny
                 'X-Dashboard-User-Session-Id'   => Session::getId(),
             ];
 
-            $currentMerchant = $user->currentMerchant();
+            $this->headers = array_merge($proxyAuthheaders, $this->headers);
 
-            if ($currentMerchant)
+            $this->appendMerchantHeaderIfValid($user);
+        }
+    }
+
+    private function appendMerchantHeaderIfValid($user)
+    {
+        $merchantIdInHeader = Request::header('x-dashboard-merchant-id');
+
+        if ($merchantIdInHeader !== null)
+        {
+            $merchantInSession = $user
+                ->merchants
+                ->where('id', $merchantIdInHeader)
+                ->first();
+
+            if ($merchantInSession)
             {
-                $proxyAuthheaders['X-Dashboard-User-Role']      = $currentMerchant->role;
-                $proxyAuthheaders['X-Dashboard-Merchant-Id']    = $currentMerchant->id;
+                if ($merchantInSession->id === $merchantIdInHeader)
+                {
+                    $this->headers['X-Dashboard-Merchant-Id'] = $merchantInSession->id;
+                }
+            }
+            else
+            {
+                throw new \Exception('Unauthorized Access');
             }
 
-            $this->headers = array_merge($proxyAuthheaders, $this->headers);
         }
         else
         {
@@ -224,5 +251,24 @@ class GraphRequestAny
         }
     }
 
+    private function getErrorResponse($message)
+    {
+        $baseAppUrl = config('app.url');
 
+        return [
+            'errors'    => [
+                [
+                    'message'   => $message,
+                    'extensions'    => [
+                        'code'          => 'UNAUTHENTICATED',
+                        'url'           => $baseAppUrl.'/user/signin',
+                        'status'        => 401,
+                        'statusText'    => 'Unauthorized',
+                    ]
+                ]
+            ],
+
+            'data'      => null,
+        ];
+    }
 }
