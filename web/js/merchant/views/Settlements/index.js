@@ -36,9 +36,7 @@ const Settlements = ({ user, merchantBalanceConfigs, current_balance }) => {
     <>
       {/* instant settlements banner */}
       <div className="settlements-banner-container">
-        {user.isLOCEnabled && !user.isWithdrawFeatureEnabled && (
-          <CashAdvanceOrNitroBanner productName="Settlements" />
-        )}
+        {user.isLOCEnabled && !user.isWithdrawFeatureEnabled && <CashAdvanceCampaignBanner />}
         {user.isISBannerEnabled && <EarlySettlementsAnnouncement userId={user.current} />}
         {current_balance.data.balance < 0 && (
           <AnnouncementBanner title="Add Funds" theme="warning" canBeClosed={true}>
@@ -61,7 +59,7 @@ const Settlements = ({ user, merchantBalanceConfigs, current_balance }) => {
           </AnnouncementBanner>
         )}
 
-        <CashAdvanceCampaignBanner />
+        <CashAdvanceOrNitroBanner productName="Settlements" />
       </div>
 
       <tabbed-container>
