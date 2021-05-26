@@ -11,7 +11,9 @@ use RZP\Base;
 use RZP\Exception;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -121,6 +123,11 @@ class Validator extends Base\Validator
 
     protected static $change2faSettingValidators = [
         Entity::PASSWORD,
+    ];
+
+    protected static $resetIncorrectPasswordCountRules = [
+        'emails'   => 'required|array|max:500',
+        'emails.*' => 'required|email',
     ];
 
     protected static $confirmRules = [
@@ -364,6 +371,34 @@ class Validator extends Base\Validator
         OauthProvider::validate($oauthProvider);
     }
 
+    public function incrementRequestCount(string $merchantEmail)
+    {
+        $app = App::getFacadeRoot();
+
+        try
+        {
+            $redis = $app['redis']->Connection('mutex_redis');
+
+            $index = $redis->incr($merchantEmail);
+
+            // add expiry for first increment of the key
+            if ($index === 1)
+            {
+                $redis->expire($merchantEmail, Constants::INCORRECT_LOGIN_TTL);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $app['trace']->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::USER_INCORRECT_PASSWORD_REDIS_ERROR,
+                ['key' => $merchantEmail]);
+
+            return;
+        }
+    }
+
     /**
      * Google captcha validation.
      *
@@ -373,18 +408,29 @@ class Validator extends Base\Validator
      */
     protected function validateCaptcha(array $input)
     {
-        //
-        // Captcha is Required When both captcha_disable and oauth_provider not present,
-        // and in case of oauth_provider it's their security which prevents the malicious attack
-        // So no need of Captcha there
-        //
-        if (($this->isCaptchaDisabled($input) === true) or
-            ($this->isOauthEnabled($input) === true))
+        $app = App::getFacadeRoot();
+
+        if ($this->isCaptchaDisabled($input) === true)
         {
+            $this->incrementRequestCount($input[Entity::EMAIL]);
+
+            // check if attempts is greater than threshold
+            // if yes throw error captcha is required.
+            $count = $this->getIncorrectPasswordCount($input[Entity::EMAIL]);
+
+            if ($count > Constants::INCORRECT_LOGIN_THRESHOLD_COUNT)
+            {
+                $app['trace']->info(TraceCode::USER_LOGIN_INCORRECT_PASSWORD_EXHAUSTED, [$input[Entity::EMAIL]]);
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INCORRECT_LOGIN_ATTEMPT
+                );
+            }
+
+            $app['trace']->info(TraceCode::USER_LOGIN_CAPTCHA_DISABLED, [$input[Entity::EMAIL]]);
+
             return;
         }
-
-        $app = App::getFacadeRoot();
 
         $emailData['email'] = $input[Entity::EMAIL];
 
@@ -476,7 +522,7 @@ class Validator extends Base\Validator
      *
      * @return bool
      */
-    protected function isCaptchaDisabled(array $input): bool
+    public function isCaptchaDisabled(array $input): bool
     {
         if ((empty($input[Entity::CAPTCHA_DISABLE]) === false) and
             ($input[Entity::CAPTCHA_DISABLE] === self::DISABLE_CAPTCHA_SECRET))
@@ -701,5 +747,27 @@ class Validator extends Base\Validator
     public function validateOauthRequest(array $input)
     {
         $this->validateInputValues('oauth_request', $input);
+    }
+
+    public function getIncorrectPasswordCount(string $merchantEmail): int
+    {
+        $app = App::getFacadeRoot();
+
+        $redis = $app['redis']->Connection('mutex_redis');
+
+        try
+        {
+            return $redis->get($merchantEmail) ?? 0;
+        }
+        catch (\Throwable $e)
+        {
+            $app['trace']->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::USER_INCORRECT_PASSWORD_REDIS_ERROR,
+                ['key' => $merchantEmail]);
+
+            return 0;
+        }
     }
 }

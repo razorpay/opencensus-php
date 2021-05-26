@@ -1393,6 +1393,7 @@ class Route
         'user_opt_in_status_whatsapp'              => ['get',      'users/whatsapp/opt_in_status',                   'UserController@optInStatusForWhatsapp'                             ],
         'user_opt_out_whatsapp'                    => ['post',     'users/whatsapp/opt_out',                         'UserController@optOutForWhatsapp'                                  ],
         'user_details'                             => ['get',      'users',                                          'UserController@getUserDetails'                                     ],
+        'user_delete_incorrect_password_count'     => ['post',     'users/incorrect_password_count',                 'UserController@removeIncorrectPasswordCount'                       ],
 
         // mobile setup for 2fa
         'user_login_2fa_setup_mobile'              => ['patch',    'users/2fa_setup/contact_mobile',                 'UserController@setup2faContactMobile'                              ],
@@ -3917,6 +3918,7 @@ class Route
         'los_service_admin',
         'emi_plans_migrate',
         'ufh_admin_upload_file',
+        'user_delete_incorrect_password_count',
         'd2c_create_csv_report',
         'offline_verification_service_get',
         'offline_verification_service_put',
@@ -5366,6 +5368,7 @@ class Route
 
         'merchant_restrict'                        => Permission::MERCHANT_RESTRICT,
         'user_account_lock_unlock_admin'           => Permission::USER_ACCOUNT_LOCK_UNLOCK,
+        'user_delete_incorrect_password_count'     => Permission::USER_ACCOUNT_LOCK_UNLOCK,
 
         'p2p_admin_add_handle'                      => Permission::P2P_MANAGE_MERCHANT,
         'p2p_admin_update_handle'                   => Permission::P2P_MANAGE_MERCHANT,
@@ -8486,6 +8489,7 @@ class Route
             'user_confirm',
             'user_confirm_by_data',
             'user_create',
+            'user_delete_incorrect_password_count',
             'user_edit_self',
             'user_fetch',
             'user_fetch_admin',

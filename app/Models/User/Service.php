@@ -1283,4 +1283,11 @@ class Service extends Base\Service
 
         return (new Core())->getDetails($input);
     }
+
+    public function removeIncorrectPasswordCount(array $input)
+    {
+        (new Validator)->validateInput('reset_incorrect_password_count', $input);
+
+        return (new Core())->removeIncorrectPasswordCount($input['emails']);
+    }
 }

@@ -54,6 +54,13 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function removeIncorrectPasswordCount()
+    {
+        $input = Request::all();
+
+        return $this->service()->removeIncorrectPasswordCount($input);
+    }
+
     /**
      * Edit user action for logged in user (via Dashboard headers).
      * @return \Illuminate\Http\Response

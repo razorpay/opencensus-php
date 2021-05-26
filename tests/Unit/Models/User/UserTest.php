@@ -8,6 +8,7 @@ use Illuminate\Hashing\BcryptHasher;
 use Illuminate\Support\Facades\Mail as Mail;
 
 use RZP\Exception\LogicException;
+use Illuminate\Support\Facades\Redis;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use Tests\Unit\TestCase;
 use RZP\Models\User\Core;
@@ -55,6 +56,18 @@ class UserTest extends TestCase
         $this->createTestDependencyMocks();
 
         $this->userService = new UserService($this->coreMock, $this->userValidator, $this->merchantServiceMock);
+    }
+
+    public function mockRedis()
+    {
+        $redisMock = $this->getMockBuilder(Redis::class)->setMethods(['get'])
+                          ->getMock();
+
+        Redis::shouldReceive('connection')
+             ->andReturn($redisMock);
+
+        $redisMock->method('get')
+                  ->will($this->returnValue(0));
     }
 
     public function testUserRegister()
@@ -157,6 +170,8 @@ class UserTest extends TestCase
             'confirmed' => false,
         ];
 
+        $this->mockRedis();
+
         $this->basicAuthMock->shouldReceive('isAdminAuth')->andReturn(false);
 
         $this->basicAuthMock->shouldReceive('isPublicAuth')->andReturn(false);
@@ -191,6 +206,8 @@ class UserTest extends TestCase
             'restricted' => false,
             'confirmed' => false,
         ];
+
+        $this->mockRedis();
 
         $this->userRepoMock->shouldReceive('findOrFailPublic')->with('100002Razorpay')->andReturn($this->userEntityMock);
 
@@ -238,6 +255,8 @@ class UserTest extends TestCase
             'restricted' => false,
             'confirmed' => false,
         ];
+
+        $this->mockRedis();
 
         $this->userRepoMock->shouldReceive('findOrFailPublic')->with('100002Razorpay')->andReturn($this->userEntityMock);
 
@@ -302,6 +321,8 @@ class UserTest extends TestCase
             ],
         ];
 
+        $this->mockRedis();
+
         $this->userRepoMock->shouldReceive('findOrFailPublic')->with('100002Razorpay')->andReturn($this->userEntityMock);
 
         $this->userRepoMock->shouldReceive('findOrFailPublic')->with('100003Razorpay')->andReturn($this->userEntityMock);
@@ -358,6 +379,8 @@ class UserTest extends TestCase
             'confirmed' => false,
         ];
 
+        $this->mockRedis();
+
         $this->merchantEntityMock->shouldReceive('getId')->andReturn('1cXSLlUU8V9sXl');
 
         $this->userRepoMock->shouldReceive('findOrFailPublic')->with('100002Razorpay')->andReturn($this->userEntityMock);
@@ -408,6 +431,8 @@ class UserTest extends TestCase
             'confirmed' => false,
         ];
 
+        $this->mockRedis();
+
         $this->userEntityMock->shouldReceive('edit')->andReturn([]);
 
         $this->userEntityMock->shouldReceive('getId')->andReturn('100002Razorpay');
@@ -456,6 +481,8 @@ class UserTest extends TestCase
         ];
 
         Mail::fake();
+
+        $this->mockRedis();
 
         $orgRepoMock = Mockery::mock('RZP\Models\Admin\Org\Repository');
 
@@ -577,6 +604,8 @@ class UserTest extends TestCase
         $orgRepoMock = Mockery::mock('RZP\Models\Admin\Org\Repository');
 
         $mailMock = Mockery::mock('RZP\Mail');
+
+        $this->mockRedis();
 
         $this->repoMock->shouldReceive('driver')->with('user')->andReturn($this->userRepoMock);
 
@@ -812,6 +841,8 @@ class UserTest extends TestCase
             'restricted' => false,
             'confirmed' => false,
         ];
+
+        $this->mockRedis();
 
         $this->basicAuthMock->shouldReceive('isAdminAuth')->andReturn(false);
 
@@ -1493,6 +1524,8 @@ class UserTest extends TestCase
         $this->userEntityMock->shouldReceive('getValidator')->andReturn($this->userValidator);
 
         $this->userValidator->shouldReceive('validateInput')->andReturn([]);
+
+        $this->userValidator->shouldReceive('isCaptchaDisabled')->andReturn(true);
 
         $this->repoMock->shouldReceive('driver')->with('user')->andReturn($this->userRepoMock);
 

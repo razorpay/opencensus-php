@@ -768,6 +768,7 @@ class PublicErrorDescription
     const BAD_REQUEST_OLD_PASSWORD_MISMATCH                                     = 'Old Password mismatch';
     const BAD_REQUEST_CAPTCHA_FAILED                                            = 'Captcha Failed';
     const BAD_REQUEST_CAPTCHA_SCORE_LOW                                         = 'Low captcha score';
+    const BAD_REQUEST_INCORRECT_LOGIN_ATTEMPT                                   = 'Incorrect Password login attempt exhausted. Please contact support or login via dashboard';
     const BAD_REQUEST_TOKEN_ABSENT_FOR_RECURRING_PAYMENT                        = 'Token absent for recurring payment';
     const BAD_REQUEST_TOKEN_NOT_FOUND                                           = 'Token not found.';
 

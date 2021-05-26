@@ -15,12 +15,15 @@ use RZP\Mail\User\Otp;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\Admin;
 use RZP\Models\User\Entity;
+use RZP\Error\PublicErrorCode;
 use RZP\Models\User\Constants;
 use RZP\Services\RazorXClient;
 use RZP\Services\HubspotClient;
 use RZP\Mail\User\PasswordReset;
 use RZP\Models\Admin\Permission;
 use RZP\Tests\Functional\TestCase;
+use Illuminate\Support\Facades\Redis;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\User\Entity as UserEntity;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -1113,6 +1116,30 @@ class UserTest extends TestCase
         $testData['request']['content'] = $content;
 
         $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testLoginWithIncorrectPasswordCount()
+    {
+        $user = $this->fixtures->create('user', [
+            'password'         => 'hello123',
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'    => $user['email'],
+            'password' => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+        $redis = Redis::connection('mutex_redis')->client();
+
+        $counter = $redis->set($user['email'], Constants::INCORRECT_LOGIN_THRESHOLD_COUNT);
 
         $this->startTest();
     }

@@ -30,6 +30,7 @@ use RZP\Models\Admin\Admin\Token;
 use RZP\Http\UserRolePermissionsMap;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccountService;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Modules\SecondFactorAuth\Constants as AuthConstants;
 use RZP\Mail\User\ContactMobileUpdated as ContactMobileUpdatedMail;
 use RZP\Mail\User\AccountLockedWrongAttempt as AccountLockedWrongAttemptMail;
@@ -409,6 +410,31 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::USER_LOGIN, $data);
     }
 
+    public function delIncorrectPasswordCount(string $merchantEmail)
+    {
+        try
+        {
+            $redis = $this->app->redis->Connection('mutex_redis');
+
+            return $redis->del($merchantEmail);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::USER_INCORRECT_PASSWORD_REDIS_ERROR,
+                ['key' => $merchantEmail]);
+
+            return 0;
+        }
+    }
+
+    public function trackIncorrectPasswordCount(array $input): bool
+    {
+        return $this->getUserEntity()->getValidator()->isCaptchaDisabled($input);
+    }
+
     public function login(array $input)
     {
         $this->getUserEntity()->getValidator()->validateInput('login', $input);
@@ -416,6 +442,14 @@ class Core extends Base\Core
         $this->traceLoginRoute($input);
 
         $user = $this->getUserByEmailAndVerifyPassword($input[Entity::EMAIL], $input[Entity::PASSWORD]);
+
+        $incorrectPasswordCountTrack = $this->trackIncorrectPasswordCount($input);
+
+        // if login successful, delete incorrect password counter.
+        if ($incorrectPasswordCountTrack === true)
+        {
+            $this->delIncorrectPasswordCount($input[Entity::EMAIL]);
+        }
 
         $this->checkSecondFactorAuthAndSendOtp($user);
 
@@ -839,7 +873,9 @@ class Core extends Base\Core
      *
      * @param string $email
      * @param string $password
+     *
      * @return Entity
+     * @throws BadRequestException
      */
     protected function getUserByEmailAndVerifyPassword(string $email, string $password): Entity
     {
@@ -2075,5 +2111,34 @@ class Core extends Base\Core
         ];
 
         return [$merchantDetails];
+    }
+
+    public function removeIncorrectPasswordCount(array $emails)
+    {
+        $success = [];
+        $failed  = [];
+
+        foreach ($emails as $email)
+        {
+            if ($this->delIncorrectPasswordCount($email) === 1)
+            {
+                $success[] = $email;
+            }
+            else
+            {
+                $failed[] = $email;
+            }
+        }
+
+        $summary = [
+            'failed_count'  => count($failed),
+            'success_count' => count($success),
+            'success'       => $success,
+            'failed'        => $failed,
+        ];
+
+        $this->trace->info(TraceCode::ADMIN_REMOVE_INCORRECT_PASSWORD_COUNT_SUMMARY, $summary);
+
+        return $summary;
     }
 }

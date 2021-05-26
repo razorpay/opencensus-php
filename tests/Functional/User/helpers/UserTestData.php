@@ -965,6 +965,28 @@ return [
         ],
     ],
 
+    'testLoginWithIncorrectPasswordCount' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INCORRECT_LOGIN_ATTEMPT,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INCORRECT_LOGIN_ATTEMPT,
+        ],
+    ],
+    
+
     'testFailedLogin2faNotSetup' => [
         'request' => [
             'url'     => '/users/login',
