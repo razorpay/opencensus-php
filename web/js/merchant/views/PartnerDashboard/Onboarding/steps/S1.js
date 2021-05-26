@@ -8,7 +8,7 @@ const S1 = (props) => {
         <div class="title">Welcome to your Partner Dashboard</div>
         <div className="line-box brd-primary">
           <p className="info info-green">
-            Get ₹500 referral bonus and 0.1% commission on all your referrals.
+            Get ₹1000 bonus and 0.25% commission for domestic transactions, 0.1% commission  for international transactions on all your referrals.
           </p>
         </div>
         <div style={{ marginTop: '21px', padding: '2px' }}>
