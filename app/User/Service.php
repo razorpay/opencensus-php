@@ -401,6 +401,11 @@ class Service extends Base\Service
                 return [['Captcha validation Failed, Please refresh page and try again.', self::LOGIN_UNAUTHENTICATED], null];
             }
 
+            if (in_array('Incorrect Password login attempt exhausted. Please contact support or login via dashboard', $error) === true)
+            {
+                return [['Incorrect Password login attempt exhausted. Please contact support or login via dashboard', self::LOGIN_UNAUTHENTICATED], null];
+            }
+
             //temporarily added and will be removed after the root cause is fixed.
             if (in_array('No db records found.', $error) === true)
             {
