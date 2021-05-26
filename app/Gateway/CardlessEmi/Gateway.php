@@ -286,11 +286,18 @@ class Gateway extends Base\Gateway
     {
         $contact = $input['payment']['contact'];
 
-        $cacheKey = $this->provider . '_' . $contact . '_' . $this->terminal[Terminal\Entity::MERCHANT_ID];
+        $cacheKey = $this->provider . '_' . $contact . '_' . $input['payment']['merchant_id'];
 
         $redirectUrlKey = sprintf(self::REDIRECT_URL_CACHE_KEY, $cacheKey);
 
         $url = $this->app['cache']->get($redirectUrlKey);
+
+        // If the redirection URL is not fetched from the cache then fail the payment
+        if($url === null)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_REQUEST_ERROR);
+        }
 
         $request['url'] = $url;
 
