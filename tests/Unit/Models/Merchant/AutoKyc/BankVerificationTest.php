@@ -48,6 +48,6 @@ class BankVerificationTest extends TestCase
         ]);
 
         $isAutoKycDone = (new DetailCore)->isAutoKycDone($merchantDetail);
-        $this->assertTrue($isAutoKycDone);
+        $this->assertFalse($isAutoKycDone);
     }
 }

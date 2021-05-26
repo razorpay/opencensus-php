@@ -47,10 +47,7 @@ class Constants
     ];
 
     const BANK_DETAILS_VERIFICATION_CONDITION = [
-        Operator::OR => [
-            Entity::BANK_DETAILS_VERIFICATION_STATUS        => self::DEFAULT_CONDITION,
-            Entity::BANK_DETAILS_DOC_VERIFICATION_STATUS    => self::DEFAULT_CONDITION
-        ]
+        Entity::BANK_DETAILS_VERIFICATION_STATUS        => self::DEFAULT_CONDITION,
     ];
 
     const AUTO_KYC_VERIFICATION_CONDITIONS = [
