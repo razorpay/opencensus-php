@@ -71,6 +71,10 @@ class TraceCode
 
     const GET_USER_FROM_API                         = 'GET_USER_FROM_API';
 
+    const PUSHED_HUBSPOT_EVENT_TO_API               = 'PUSHED_HUBSPOT_EVENT_TO_API';
+
+    const PUSHED_HUBSPOT_EVENT_TO_API_FAILED        = 'PUSHED_HUBSPOT_EVENT_TO_API_FAILED';
+
     const GRAPH_REQUEST_OPERATION_WITH_USER_ID      = 'GRAPH_REQUEST_OPERATION_WITH_USER_ID';
 
     protected static $messages = array(

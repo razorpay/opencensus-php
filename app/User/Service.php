@@ -1617,21 +1617,92 @@ class Service extends Base\Service
 
         $isBankingRequest = ApiUrl::isBankingOriginRequest();
 
-        if (array_key_exists('business_banking_signup_at', $merchant) === false)
+        if (array_key_exists('business_banking_signup_at', $merchant) === false or $isBankingRequest === false)
         {
             return $data;
         }
 
-        if($data['experiments']['rx_ca_self_serve_flow'] !== ['result' => 'on']
-            and $merchant['business_banking_signup_at'] < strtotime('- 60 days') and $isBankingRequest)
+        /*
+         * This flag is to tell FE whether to show NeoStone, SelfServe or None flow
+         * to current account applicants
+         */
+        $flag = null;
+
+        $from_ca_page = $this->checkIfFromCaPage($merchant);
+
+        /*
+         * Front-End uses self-serve as experiment if none of the
+         * experiment are on
+         * if signed up from CA website
+              if signed up before {NEOSTONE_GO_LIVE_DATE}
+              {
+                flag = ca_self_serve
+                EXP => rx_ca_self_serve_flow = on/off
+                       rx_ca_self_serve_flow_neo = off
+              else use new RazorX experiment
+                flag = if (true for X%) neostone else ca_self_serve
+            else
+              use existing CA self serve RazorX experiment
+              if user signed-up 60 days ago
+                Exp => rx_non_self_serve_ca_flow = on/off
+                       rx_ca_self_serve_flow = on/off
+                flag = 30% ca_self_serve
+                flag = 70% none
+         *
+         */
+
+        if ($from_ca_page === true)
         {
-            $data['experiments']['rx_non_self_serve_ca_flow'] =
-                $merchantService->getTreatment('rx_non_self_serve_ca_flow');
+            if ($merchant['business_banking_signup_at'] < strtotime('25 May 2021'))
+            {
+                $data['experiments']['rx_ca_self_serve_flow_neo'] = ['result' => 'off'];
+
+                $flag = 'ca_self_serve';
+            }
+            else
+            {
+                // Here there is a chance that both rx_ca_self_serve_flow_neo and rx_ca_self_serve_flow
+                // experiment may be on
+                $data['experiments']['rx_ca_self_serve_flow_neo'] =
+                    $merchantService->getTreatment('rx_ca_self_serve_flow_neo');
+
+                if ($data['experiments']['rx_ca_self_serve_flow_neo'] === ['result' => 'on'])
+                {
+                    $flag = 'neostone';
+
+                    //Un-comment this after neostone hubspot testing is done
+                    //$this->fireNeoStoneEventToHubspot($merchant);
+                }
+                else
+                {
+                    $flag = 'ca_self_serve';
+                }
+            }
         }
         else
         {
-            $data['experiments']['rx_non_self_serve_ca_flow'] = ['result' => 'off'];
+            if($data['experiments']['rx_ca_self_serve_flow'] !== ['result' => 'on']
+               and $merchant['business_banking_signup_at'] < strtotime('- 60 days'))
+            {
+                $data['experiments']['rx_non_self_serve_ca_flow'] =
+                    $merchantService->getTreatment('rx_non_self_serve_ca_flow');
+            }
+            else
+            {
+                $data['experiments']['rx_non_self_serve_ca_flow'] = ['result' => 'off'];
+            }
+
+            if ($data['experiments']['rx_ca_self_serve_flow'] === ['result' => 'on'])
+            {
+                $flag = 'ca_self_serve';
+            }
+            else
+            {
+                $flag = 'none';
+            }
         }
+
+        $data['ca_experiment_flag'] = $flag;
 
         return $data;
     }
@@ -1718,5 +1789,71 @@ class Service extends Base\Service
             'activated' =>  $data['activated'] ?? 'fallback',
             'line'      =>  $line,
         ]);
+    }
+
+    private function checkIfFromCaPage(array $merchant): bool
+    {
+        if (array_key_exists('attributes', $merchant) === true)
+        {
+            $attributes = $merchant['attributes']['items'];
+
+            foreach ($attributes as $attribute)
+            {
+                if ($attribute['type'] === 'ca_page_visited')
+                {
+                    return $attribute['value'] === '1';
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * $payload = [
+     *  merchant_email, HubspotFlags
+     * ]
+     *
+     * @param array  $payload
+     * @param string $merchantId
+     */
+    private function fireEventToHubspotViaApi(array $payload, string $merchantId)
+    {
+        $request = new ApiRequestAny(['client_type' => 'merchant']);
+
+        list($error, $data) = $request->processInput($payload)->send("merchants/fire_hubspot_event", "POST");
+
+        if (empty($error) === true)
+        {
+            $this->trace->error(TraceCode::PUSHED_HUBSPOT_EVENT_TO_API_FAILED, [
+                'error'                 => $error,
+                'merchant_id'           => $merchantId,
+            ]);
+
+            return;
+        }
+
+        $this->trace->info(TraceCode::PUSHED_HUBSPOT_EVENT_TO_API, [
+            'merchant_id'           => $merchantId,
+            'payload'               => $payload
+        ]);
+    }
+
+    private function fireNeoStoneEventToHubspot(array $merchant)
+    {
+        if (isset($merchant['email']) === false)
+        {
+            return;
+        }
+
+        $merchantEmail = $merchant['email'];
+
+        $merchantId = $merchant['id'];
+
+        $input = [
+            'merchant_email'       => $merchantEmail,
+            'ca_neostone_eligible' => 'TRUE'
+        ];
+
+        $this->fireEventToHubspotViaApi($input, $merchantId);
     }
 }
