@@ -63,4 +63,11 @@ abstract class Base implements RequestDispatcher
             }
         }
     }
+
+    public function fetchValidationDetails()
+    {
+        $input = $this->getRequestPayload();
+
+        return (new AutoKyc\Bvs\Core())->fetchValidationDetails($this->merchantDetails->getEntityId(), $input);
+    }
 }

@@ -17,6 +17,10 @@ class GetValidationRequest extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>string validation_id = 1;</code>
      */
     protected $validation_id = '';
+    /**
+     * Generated from protobuf field <code>repeated string enrichment_details_fields = 2;</code>
+     */
+    private $enrichment_details_fields;
 
     /**
      * Constructor.
@@ -25,6 +29,7 @@ class GetValidationRequest extends \Google\Protobuf\Internal\Message
      *     Optional. Data for populating the Message object.
      *
      *     @type string $validation_id
+     *     @type string[]|\Google\Protobuf\Internal\RepeatedField $enrichment_details_fields
      * }
      */
     public function __construct($data = NULL) {
@@ -50,6 +55,28 @@ class GetValidationRequest extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->validation_id = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>repeated string enrichment_details_fields = 2;</code>
+     * @return \Google\Protobuf\Internal\RepeatedField
+     */
+    public function getEnrichmentDetailsFields()
+    {
+        return $this->enrichment_details_fields;
+    }
+
+    /**
+     * Generated from protobuf field <code>repeated string enrichment_details_fields = 2;</code>
+     * @param string[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @return $this
+     */
+    public function setEnrichmentDetailsFields($var)
+    {
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::STRING);
+        $this->enrichment_details_fields = $arr;
 
         return $this;
     }

@@ -14,4 +14,6 @@ interface Processor extends AutoKycProcessor
     public function GetEnrichments(): array;
 
     public function GetRules(): array;
+
+    public function FetchDetails(string $validationId): Response;
 }

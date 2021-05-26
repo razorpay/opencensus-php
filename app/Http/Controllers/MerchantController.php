@@ -952,6 +952,14 @@ class MerchantController extends Controller
 
 // --------------------- End Credits API Handlers -----------------------------------------
 
+    public function getBvsValidationArtefactDetails(string $merchantId, string $validationArtefact)
+    {
+        $response = $this->service(E::MERCHANT_DETAIL)->getBvsValidationArtefactDetails(
+            $merchantId, $validationArtefact
+        );
+
+        return ApiResponse::json($response);
+    }
 
     // Activation Form Handlers
     public function getActivationDetails()

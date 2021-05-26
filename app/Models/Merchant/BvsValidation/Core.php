@@ -89,6 +89,13 @@ class Core extends Base\Core
         return $this->repo->bvs_validation->findOrFailPublic($validationId);
     }
 
+    public function getLatestArtefactValidation(string $merchantId, string $artefact, string $validationUnit)
+    {
+        return $this->repo->bvs_validation->getLatestValidationForArtefactAndValidationUnit(
+            $merchantId, $artefact, $validationUnit
+        );
+    }
+
     /**
      * @param array $input
      *

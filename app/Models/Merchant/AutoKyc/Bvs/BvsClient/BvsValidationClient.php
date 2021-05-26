@@ -30,6 +30,30 @@ class BvsValidationClient extends BaseClient
         $this->ValidationApiClient = New validationV1\ValidationAPIClient($this->host, $this->httpClient);
     }
 
+    public function getValidation(array $payload)
+    {
+        $this->trace->info(TraceCode::BVS_GET_VALIDATION_REQUEST, $payload);
+
+        $validationRequest = $this->getValidationRequest($payload);
+
+        try
+        {
+            $response = $this->ValidationApiClient->GetValidation($this->apiClientCtx, $validationRequest);
+
+            $this->trace->info(
+                TraceCode::BVS_GET_VALIDATION_RESPONSE,
+                ['validationId' => $response->getValidationId()]);
+
+            return $response;
+        }
+        catch (Error $e)
+        {
+            $this->trace->traceException($e, null, TraceCode::BVS_INTEGRATION_ERROR, $e->getMetaMap());
+
+            throw new IntegrationException('Could not receive proper response from BVS service');
+        }
+    }
+
     /**
      * @param array $validation
      *
@@ -106,6 +130,15 @@ class BvsValidationClient extends BaseClient
         $createValidation->setRules($rules);
 
         return $createValidation;
+    }
+
+    protected function getValidationRequest(array $payload): validationV1\GetValidationRequest
+    {
+        $requestPayload = new validationV1\GetValidationRequest();
+
+        $requestPayload->setValidationId($payload[Constant::VALIDATION_ID]);
+        $requestPayload->setEnrichmentDetailsFields($payload[Constant::ENRICHMENT_DETAIL_FIELDS]);
+        return $requestPayload;
     }
 
     /**

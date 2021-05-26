@@ -37,6 +37,8 @@ class Constant
     const LLPIN             = 'llpin';
     const PROBE_ID          = 'probe_id';
 
+    const ENRICHMENT_DETAIL_FIELDS = "enrichment_details_fields";
+
     const BANK_ACCOUNT         = 'bank_account';
     const ACCOUNT_NUMBER       = 'account_number';
     const IFSC                 = 'ifsc';

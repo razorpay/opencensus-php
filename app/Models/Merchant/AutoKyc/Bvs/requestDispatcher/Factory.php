@@ -9,6 +9,21 @@ use RZP\Models\Merchant\Document\Type;
 
 class Factory
 {
+    public function getBvsRequestDispatcherForArtefact(
+        string $artefact, Merchant\Entity $merchant, Detail\Entity $merchantDetails): Base
+    {
+        switch ($artefact)
+        {
+            case Merchant\AutoKyc\Bvs\Constant::BANK_ACCOUNT:
+
+                return new BankAccount($merchant, $merchantDetails);
+
+            default:
+
+                throw new Exception\LogicException('artefact type not supported in this flow: '. $artefact);
+        }
+    }
+
     public function getBvsRequestDispatcherForDocument($documentType, Merchant\Entity $merchant, Detail\Entity $merchantDetails)
     {
         switch ($documentType)

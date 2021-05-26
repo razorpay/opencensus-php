@@ -2,18 +2,8 @@
 
 namespace RZP\Models\Merchant\AutoKyc\Bvs\Config;
 
-class Bank_account_with_business_or_promoter_pan extends BaseConfig
+class Bank_account_with_business_or_promoter_pan extends Bank_account
 {
-    protected $enrichment = [
-        'online_provider' => [
-            'required_fields' => [
-                'account_number',
-                'ifsc',
-                'account_holder_names',
-            ],
-        ],
-    ];
-
     protected $rule_v2 = [
         'version'    => 'v2',
         'rules_list' => [

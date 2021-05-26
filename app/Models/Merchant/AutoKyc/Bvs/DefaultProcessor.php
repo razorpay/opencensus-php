@@ -73,6 +73,18 @@ class DefaultProcessor implements Processor
         return new BaseResponse\ValidationBaseResponse($response);
     }
 
+    public function FetchDetails(string $validationId): Response
+    {
+        $payload = [
+            Constant::VALIDATION_ID             => $validationId,
+            Constant::ENRICHMENT_DETAIL_FIELDS  => $this->bvsRuleConfig->getEnrichmentDetails()
+        ];
+
+        $response = (new BvsClient\BvsValidationClient())->getValidation($payload);
+
+        return new BaseResponse\ValidationDetailsResponse($response);
+    }
+
     /**
      * @return array
      */

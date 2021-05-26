@@ -861,7 +861,7 @@ class Route
 
         'bvs_service_dashboard'                    => ['any',      'bvs/dashboard/{path?}',                          'BvsProxyController@handleDashboardProxyRequests'                       ],
         'bvs_service_admin'                        => ['any',      'bvs/admin/{path?}',                              'BvsProxyController@handleAdminProxyRequests'                       ],
-
+        'bvs_validation_artifact_details'          => ['get',      'merchants/{merchantId}/bvs/{validationArtefact}/details', 'MerchantController@getBvsValidationArtefactDetails'       ],
         'loc_bulk_withdrawal_update'               => ['post',     'loc/withdrawals/bulk/update',                    'LOCController@postLocBulkWithdrawalUpdate'                         ],
         'leegality_webhook'                        => ['post',     'leegality/webhook',                              'LOSController@handleLeegalityWebhook'                              ],
         'reminder_admin'                           => ['any',      'reminders/admin/{path?}',                        'RemindersController@remindersAdmin'                                ],
@@ -3907,6 +3907,7 @@ class Route
         'loc_service_admin',
         'capital_cards_admin',
         'bvs_service_admin',
+        'bvs_validation_artifact_details',
         'wallet_service_admin',
         'capital_collections_admin',
         'capital_collections_dev_admin',
@@ -4693,6 +4694,7 @@ class Route
     public static $routePermission = [
         'populate_merchant_trim_data_cron'         => Permission::MANAGE_BULK_FEATURE_MAPPING,
         'bvs_service_dashboard'                    => Permission::EDIT_MERCHANT,
+        'bvs_validation_artifact_details'          => Permission::VIEW_MERCHANT,
         'bvs_Service_admin'                        => Permission::EDIT_MERCHANT,
         'transfer_debug'                           => Permission::DEBUG_TRANSFERS_ROUTES,
         'virtual_account_debug'                    => Permission::DEBUG_VIRTUAL_ACCOUNT,
@@ -7142,6 +7144,7 @@ class Route
             'bulk_submerchant_assign',
             'bvs_Service_admin',
             'bvs_service_dashboard',
+            'bvs_validation_artifact_details',
             'can_merchant_submit_support_call_request',
             'capital_cards_admin',
             'capital_cards_service',

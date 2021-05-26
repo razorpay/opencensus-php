@@ -140,11 +140,21 @@ class Artefact extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.google.protobuf.Struct notes = 4;</code>
-     * @return \Google\Protobuf\Struct
+     * @return \Google\Protobuf\Struct|null
      */
     public function getNotes()
     {
-        return $this->notes;
+        return isset($this->notes) ? $this->notes : null;
+    }
+
+    public function hasNotes()
+    {
+        return isset($this->notes);
+    }
+
+    public function clearNotes()
+    {
+        unset($this->notes);
     }
 
     /**
@@ -184,11 +194,21 @@ class Artefact extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.google.protobuf.Struct details = 6;</code>
-     * @return \Google\Protobuf\Struct
+     * @return \Google\Protobuf\Struct|null
      */
     public function getDetails()
     {
-        return $this->details;
+        return isset($this->details) ? $this->details : null;
+    }
+
+    public function hasDetails()
+    {
+        return isset($this->details);
+    }
+
+    public function clearDetails()
+    {
+        unset($this->details);
     }
 
     /**

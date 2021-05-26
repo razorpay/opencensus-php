@@ -8,6 +8,8 @@ use RZP\Models\Merchant\RazorxTreatment;
 class BaseConfig implements BvsConfig
 {
 
+    protected $enrichmentDetails = [];
+
     protected $enrichment = [];
 
     protected $rule_v2 = [];
@@ -40,5 +42,16 @@ class BaseConfig implements BvsConfig
         assertTrue(empty($this->enrichment) === false);
 
         return $this->enrichment;
+    }
+
+    /**
+     * @return array
+     * @throws \RZP\Exception\AssertionException
+     */
+    public function getEnrichmentDetails()
+    {
+        assertTrue(empty($this->enrichmentDetails) === false);
+
+        return $this->enrichmentDetails;
     }
 }

@@ -29,6 +29,10 @@ class ValidationResponse extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>string error_description = 4;</code>
      */
     protected $error_description = '';
+    /**
+     * Generated from protobuf field <code>.google.protobuf.Struct enrichment_details = 5;</code>
+     */
+    protected $enrichment_details = null;
 
     /**
      * Constructor.
@@ -40,6 +44,7 @@ class ValidationResponse extends \Google\Protobuf\Internal\Message
      *     @type string $status
      *     @type string $error_code
      *     @type string $error_description
+     *     @type \Google\Protobuf\Struct $enrichment_details
      * }
      */
     public function __construct($data = NULL) {
@@ -131,6 +136,38 @@ class ValidationResponse extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->error_description = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>.google.protobuf.Struct enrichment_details = 5;</code>
+     * @return \Google\Protobuf\Struct|null
+     */
+    public function getEnrichmentDetails()
+    {
+        return isset($this->enrichment_details) ? $this->enrichment_details : null;
+    }
+
+    public function hasEnrichmentDetails()
+    {
+        return isset($this->enrichment_details);
+    }
+
+    public function clearEnrichmentDetails()
+    {
+        unset($this->enrichment_details);
+    }
+
+    /**
+     * Generated from protobuf field <code>.google.protobuf.Struct enrichment_details = 5;</code>
+     * @param \Google\Protobuf\Struct $var
+     * @return $this
+     */
+    public function setEnrichmentDetails($var)
+    {
+        GPBUtil::checkMessage($var, \Google\Protobuf\Struct::class);
+        $this->enrichment_details = $var;
 
         return $this;
     }

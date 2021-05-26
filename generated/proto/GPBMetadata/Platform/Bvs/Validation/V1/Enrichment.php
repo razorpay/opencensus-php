@@ -15,9 +15,21 @@ class Enrichment
           return;
         }
         \GPBMetadata\Google\Protobuf\Struct::initOnce();
-        $pool->internalAddGeneratedFile(hex2bin(
-            "0ab1020a2b706c6174666f726d2f6276732f76616c69646174696f6e2f76312f656e726963686d656e742e70726f746f121a706c6174666f726d2e6276732e76616c69646174696f6e2e763122b5010a0a456e726963686d656e7412130a0b61727465666163745f6964180120012809120c0a047479706518022001280912260a056e6f74657318032001280b32172e676f6f676c652e70726f746f6275662e537472756374120e0a06726561736f6e18042001280912280a0764657461696c7318052001280b32172e676f6f676c652e70726f746f6275662e537472756374120e0a0673746174757318062001280912120a0a6572726f725f636f646518072001280942265a0c76616c69646174696f6e7631ca0215527a705c4276735c56616c69646174696f6e5c5631620670726f746f33"
-        ), true);
+        $pool->internalAddGeneratedFile(
+            '
+±
++platform/bvs/validation/v1/enrichment.protoplatform.bvs.validation.v1"µ
+
+Enrichment
+artefact_id (	
+type (	&
+notes (2.google.protobuf.Struct
+reason (	(
+details (2.google.protobuf.Struct
+status (	
+
+error_code (	B&Zvalidationv1ÊRzp\\Bvs\\Validation\\V1bproto3'
+        , true);
 
         static::$is_initialized = true;
     }

@@ -61,11 +61,21 @@ class Rule extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.google.protobuf.Struct rule_def = 2;</code>
-     * @return \Google\Protobuf\Struct
+     * @return \Google\Protobuf\Struct|null
      */
     public function getRuleDef()
     {
-        return $this->rule_def;
+        return isset($this->rule_def) ? $this->rule_def : null;
+    }
+
+    public function hasRuleDef()
+    {
+        return isset($this->rule_def);
+    }
+
+    public function clearRuleDef()
+    {
+        unset($this->rule_def);
     }
 
     /**

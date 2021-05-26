@@ -14,9 +14,22 @@ class CompanySearch
         if (static::$is_initialized == true) {
           return;
         }
-        $pool->internalAddGeneratedFile(hex2bin(
-            "0aee020a2a706c6174666f726d2f6276732f70726f62652f76312f636f6d70616e795f7365617263682e70726f746f1215706c6174666f726d2e6276732e70726f62652e7631222d0a14436f6d70616e795365617263685265717565737412150a0d7365617263685f737472696e67180120012809227d0a15436f6d70616e79536561726368526573706f6e736512350a07726573756c747318012003280b32242e706c6174666f726d2e6276732e70726f62652e76312e436f6d70616e79526573756c7412120a0a6572726f725f636f646518022001280912190a116572726f725f6465736372697074696f6e18032001280922550a0d436f6d70616e79526573756c7412140a0c636f6d70616e795f6e616d6518012001280912170a0f6964656e746974795f6e756d62657218022001280912150a0d6964656e746974795f74797065180320012809421c5a0770726f62657631ca0210527a705c4276735c50726f62655c5631620670726f746f33"
-        ), true);
+        $pool->internalAddGeneratedFile(
+            '
+î
+*platform/bvs/probe/v1/company_search.protoplatform.bvs.probe.v1"-
+CompanySearchRequest
+search_string (	"}
+CompanySearchResponse5
+results (2$.platform.bvs.probe.v1.CompanyResult
+
+error_code (	
+error_description (	"U
+CompanyResult
+company_name (	
+identity_number (	
+identity_type (	BZprobev1ÊRzp\\Bvs\\Probe\\V1bproto3'
+        , true);
 
         static::$is_initialized = true;
     }

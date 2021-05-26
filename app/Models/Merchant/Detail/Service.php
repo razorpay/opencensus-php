@@ -1614,4 +1614,16 @@ class Service extends Base\Service
 
         return empty($activationStatusChangeLogs) === false ? $activationStatusChangeLogs[0][StateChangeEntity::CREATED_AT] : 0;
     }
+
+    public function getBvsValidationArtefactDetails(string $merchantId, string $validationArtefact)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $factory = new Merchant\AutoKyc\Bvs\requestDispatcher\Factory();
+
+        $requestDispatcher =  $factory->getBvsRequestDispatcherForArtefact(
+            $validationArtefact, $merchant, $merchant->merchantDetail);
+        
+        return $requestDispatcher->fetchValidationDetails();
+    }
 }

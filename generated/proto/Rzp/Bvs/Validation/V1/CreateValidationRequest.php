@@ -44,11 +44,21 @@ class CreateValidationRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.platform.bvs.validation.v1.Artefact artefact = 1;</code>
-     * @return \Rzp\Bvs\Validation\V1\Artefact
+     * @return \Rzp\Bvs\Validation\V1\Artefact|null
      */
     public function getArtefact()
     {
-        return $this->artefact;
+        return isset($this->artefact) ? $this->artefact : null;
+    }
+
+    public function hasArtefact()
+    {
+        return isset($this->artefact);
+    }
+
+    public function clearArtefact()
+    {
+        unset($this->artefact);
     }
 
     /**
@@ -88,11 +98,21 @@ class CreateValidationRequest extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>.platform.bvs.validation.v1.Rules rules = 3;</code>
-     * @return \Rzp\Bvs\Validation\V1\Rules
+     * @return \Rzp\Bvs\Validation\V1\Rules|null
      */
     public function getRules()
     {
-        return $this->rules;
+        return isset($this->rules) ? $this->rules : null;
+    }
+
+    public function hasRules()
+    {
+        return isset($this->rules);
+    }
+
+    public function clearRules()
+    {
+        unset($this->rules);
     }
 
     /**

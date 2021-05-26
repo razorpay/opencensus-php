@@ -3,7 +3,9 @@
 namespace RZP\Models\Merchant\AutoKyc\Bvs;
 
 use App;
+use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail\Metric;
 use RZP\Models\Merchant\BvsValidation;
@@ -15,6 +17,23 @@ use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\CompanySearchBaseResponse;
 
 class Core extends Base\Core
 {
+    public function fetchValidationDetails(string $merchantId, array $input)
+    {
+        $validationObj = (new BvsValidation\Core)->getLatestArtefactValidation(
+            $merchantId, $input[Constant::ARTEFACT_TYPE], $input[Constant::VALIDATION_UNIT]);
+
+        if(empty($validationObj) === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+        }
+
+        $processor = (new Factory())->getProcessor($input);
+
+        $response = $processor->FetchDetails($validationObj->getValidationId());
+
+        return $response->getResponseData();
+    }
+
     /**
      * All BVS Artefact verification should be triggered from this function.
      * This function triggers request to bvs and creates new entry in bvs_validation table if no error.
