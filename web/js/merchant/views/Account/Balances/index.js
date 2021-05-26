@@ -250,6 +250,7 @@ export default class AddFundsContainer extends Component {
     const current_balance = this.props.account_balance.data.balance || 0;
     const items = this.props.reserve_balance.data.items;
     const reserveBalance = this.getReserveBalanceAmount(items);
+    const { user } = this.props;
 
     return (
       <div class="content-wrapper content-sm" style={{ backgroundColor: '#f9fafb' }}>
@@ -272,9 +273,11 @@ export default class AddFundsContainer extends Component {
               </div>
             </div>
             <div class="balances-add-funds">
-              <button class="btn btn-outline" onClick={this.handlAddFunds}>
-                Add Funds
-              </button>
+              {!user.isOrgAxis && (
+                <button class="btn btn-outline" onClick={this.handlAddFunds}>
+                  Add Funds
+                </button>
+              )}
             </div>
           </div>
 
@@ -306,18 +309,20 @@ export default class AddFundsContainer extends Component {
                 <Amount value={Math.abs(this.getReserveBalanceAmount(items))} currency={'INR'} />
               </div>
             </div>
-            <div class="balances-add-funds">
-              {this.state.ticketGenerated ||
-              this.props.ticket_status.data.ticket_status === 'Processing' ? (
-                <button class="btn btn-primary">Processing...</button>
-              ) : this.props.ticket_status.data.ticket_status === 'Resolved' ||
-                this.props.ticket_status.data.ticket_status === 'Closed' ||
-                reserveBalance > 0 ? null : (
-                <button class="btn btn-outline" onClick={this.handleActivate}>
-                  Activate
-                </button>
-              )}
-            </div>
+            {!user.isOrgAxis && (
+              <div class="balances-add-funds">
+                {this.state.ticketGenerated ||
+                this.props.ticket_status.data.ticket_status === 'Processing' ? (
+                  <button class="btn btn-primary">Processing...</button>
+                ) : this.props.ticket_status.data.ticket_status === 'Resolved' ||
+                  this.props.ticket_status.data.ticket_status === 'Closed' ||
+                  reserveBalance > 0 ? null : (
+                  <button class="btn btn-outline" onClick={this.handleActivate}>
+                    Activate
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           <div class="bal-cont-footer">

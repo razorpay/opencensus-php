@@ -239,7 +239,9 @@ export default class AccountsListContainer extends ListContainer {
               <span>Export All (CSV)</span>
             </button>
 
-            <ShowWhen additionalCondition={(user) => user.isAllowedEdit('accounts')}>
+            <ShowWhen
+              additionalCondition={(user) => user.isAllowedEdit('accounts') && !user.isOrgAxis}
+            >
               <button class="btn btn-primary" onClick={this.showAddAccountModal}>
                 <i class="i i-plus" />
                 <span>Add Account</span>

@@ -39,20 +39,26 @@ const BankAccountDetails = ({
     <div class="panel panel-default" ref={bankAccountSectionRef}>
       <div class="panel-heading">
         Bank Account
-        {isSettlementOnHold && (
-          <span class="pull-right" style={{ color: 'gray' }}>
-            Request Change
-            <small class="help-content">
-              <i class="i i-info-outline" />
-              <Popover align="top" theme="dark">
-                <PopoverBody>
-                  <div>The bank account cannot be updated, since your funds are on hold.</div>
-                </PopoverBody>
-              </Popover>
-            </small>
-          </span>
-        )}
-        {showRequestChange &&
+        {settlement_amount.no_settlement &&
+          settlement_amount.no_settlement.on_hold &&
+          !user.isOrgAxis && (
+            <span class="pull-right" style={{ color: 'gray' }}>
+              Request Change
+              <small class="help-content">
+                <i class="i i-info-outline" />
+                <Popover align="top" theme="dark">
+                  <PopoverBody>
+                    <div>The bank account cannot be updated, since your funds are on hold.</div>
+                  </PopoverBody>
+                </Popover>
+              </small>
+            </span>
+          )}
+        {((settlement_amount.no_settlement && !settlement_amount.no_settlement.on_hold) ||
+          !settlement_amount.no_settlement) &&
+          isBankAccountChangeAllowed !== null &&
+          !user.blockBankAccountUpdate() &&
+          !user.isOrgAxis &&
           (isBankAccountChangeAllowed ? (
             <a
               class="pull-right"
