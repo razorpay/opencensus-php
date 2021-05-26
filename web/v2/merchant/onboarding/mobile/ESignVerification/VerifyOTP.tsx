@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import * as Yup from 'yup';
-import { Formik, Form } from 'formik';
+import { Formik, Form, useFormikContext } from 'formik';
 import Text from '@razorpay/blade-old/src/atoms/Text';
 import View from '@razorpay/blade-old/src/atoms/View';
 import Space from '@razorpay/blade-old/src/atoms/Space';
 import TextInput from '@razorpay/blade-old/src/atoms/TextInput';
 import Button from '@razorpay/blade-old/src/atoms/Button';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
+import Link from '@commander/shield/src/shared/Link';
 import { useMutation } from 'react-query';
 import { fetch } from 'v2/services/rest/rest-fetch';
 import useActivation from '../hooks/useActivation';
@@ -18,7 +19,6 @@ interface VerifyOtpPropsT {
   goToNextScreen: ({ nextScreen: string }) => void;
   setAadharInputError: (data: string) => void;
   aadharNumber: string;
-  pin: string;
   inputCaptcha: string;
 }
 
@@ -31,11 +31,22 @@ const verifyAadhar = async (data) => {
   return fetchData;
 };
 
+const AutoSubmit: React.FC = () => {
+  const { submitForm, values }: any = useFormikContext();
+
+  useEffect(() => {
+    if (values.enteredOTP.length === 6) {
+      submitForm();
+    }
+  }, [values, submitForm]);
+
+  return null;
+};
+
 const VerifyOTP: React.FC<VerifyOtpPropsT> = ({
   goToNextScreen,
   setAadharInputError,
   aadharNumber,
-  pin,
   inputCaptcha,
 }) => {
   const [apiError, setApiError] = useState('');
@@ -72,15 +83,21 @@ const VerifyOTP: React.FC<VerifyOtpPropsT> = ({
           const nextScreen = 'GetOTP';
           goToNextScreen({ nextScreen });
         }
+
+        if (response.error_code === 'NO_PROVIDER_ERROR') {
+          const nextScreen = 'AadharError';
+          goToNextScreen({ nextScreen });
+        }
       }
     },
   });
 
   const handleSubmit = async (payload) => {
+    const randomPin = Math.floor(1000 + Math.random() * 9000).toString();
     const data = {
       otp: payload.enteredOTP,
       captcha: inputCaptcha,
-      file_password: pin,
+      file_password: randomPin,
     };
     await fetchOTP(data);
   };
@@ -105,7 +122,7 @@ const VerifyOTP: React.FC<VerifyOtpPropsT> = ({
           <Space margin={[4, 0, 5, 0]}>
             <View>
               <Text size="medium" weight="bold" color="shade.970">
-                Aadhar Verification
+                Aadhar Verification ( Via OTP )
               </Text>
               <Text size="xsmall" color="shade.950">
                 An OTP will be sent to number linked with your Aadhar
@@ -153,6 +170,7 @@ const VerifyOTP: React.FC<VerifyOtpPropsT> = ({
                     user,
                   });
                 }}
+                disabled={formikProps.isSubmitting}
               />
 
               <Space margin={[4, 0, 0]}>
@@ -161,9 +179,22 @@ const VerifyOTP: React.FC<VerifyOtpPropsT> = ({
 
               <Space padding={[1.5, 0]}>
                 <View>
-                  <Button variant="secondary" size="small" type="submit">
-                    Submit OTP
-                  </Button>
+                  {formikProps.isSubmitting ? (
+                    <Button variant="secondary" size="small" type="submit">
+                      Submitting OTP ...
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="secondary"
+                      size="small"
+                      icon="chevronRight"
+                      iconAlign="right"
+                      type="submit"
+                      disabled
+                    >
+                      Submit &amp; Verify
+                    </Button>
+                  )}
                 </View>
               </Space>
               <Flex alignItems="center">
@@ -176,7 +207,7 @@ const VerifyOTP: React.FC<VerifyOtpPropsT> = ({
                       variant="tertiary"
                       size="small"
                       onClick={() => {
-                        const nextScreen = 'AadharInput';
+                        const nextScreen = 'GetOTP';
                         goToNextScreen({ nextScreen });
                       }}
                     >
@@ -185,6 +216,23 @@ const VerifyOTP: React.FC<VerifyOtpPropsT> = ({
                   </View>
                 </Space>
               </Flex>
+              <AutoSubmit />
+              <Divider />
+              <Space padding={[1.5, 0, 2]}>
+                <View>
+                  <Text size="xsmall" color="shade.960">
+                    By verifying, you consent to share your aadhar details with us and agree to{' '}
+                    <Link
+                      size="xsmall"
+                      href="https://razorpay.com/privacy/"
+                      target="_blank"
+                      onClick={() => {}}
+                    >
+                      privacy policy
+                    </Link>{' '}
+                  </Text>
+                </View>
+              </Space>
             </View>
           </Space>
         </Form>

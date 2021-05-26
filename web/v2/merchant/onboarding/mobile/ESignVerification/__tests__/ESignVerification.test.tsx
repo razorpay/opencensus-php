@@ -2,7 +2,7 @@ import React from 'react';
 import 'regenerator-runtime/runtime';
 import '@testing-library/jest-dom/extend-expect';
 import ESignVerification from '../index';
-import AadharInput from '../AadharInput';
+import AadharError from '../AadharError';
 import GetOTP from '../GetOTP';
 import VerifyOTP from '../VerifyOTP';
 import AadharSuccess from '../AadharSuccess';
@@ -16,7 +16,7 @@ describe('ESignVerification', () => {
   it('calls getcaptcha onClick prop when clicked', () => {
     render(<ESignVerification disabled={false} />, {});
     fireEvent.click(
-      screen.getByText(/Verify with OTP/i),
+      screen.getByText(/Submit & Get OTP/i),
       new MouseEvent('click', {
         bubbles: true,
         cancelable: true,
@@ -34,100 +34,17 @@ describe('ESignVerification', () => {
   });
 });
 
-describe('AadharInput', () => {
-  it.skip("should throw an validation message if Aadhar field doesn't have  12 digit number", async () => {
-    const { getByText, getAllByTestId } = render(
-      <AadharInput
-        setAadharNumber={() => {}}
-        goToNextScreen={() => {}}
-        aadharError=""
-        setAadharInputError={() => {}}
-        disabled={false}
-      />,
-      {},
-    );
-    const aadharNumberInput = getAllByTestId('ds-text-input')[0];
-    await waitFor(() => {
-      fireEvent.change(aadharNumberInput, {
-        target: {
-          value: '123456',
-        },
-      });
-    });
-
-    await waitFor(() => {
-      fireEvent.blur(aadharNumberInput);
-    });
-
-    const errorMessageNode = getByText(/Aadhar should be of 12 digits/i);
-    expect(aadharNumberInput).toMatchSnapshot();
-    expect(errorMessageNode).toBeInTheDocument();
-  });
-
-  it('should show the disabled form when checkbox is true', async () => {
-    const { getByRole } = render(
-      <AadharInput
-        setAadharNumber={() => {}}
-        goToNextScreen={() => {}}
-        aadharError=""
-        setAadharInputError={() => {}}
-        disabled={false}
-      />,
-      {},
-    );
-    const disableAadharFlowContainer = getByRole('checkbox', { checked: false });
-    await waitFor(() => {
-      fireEvent.change(disableAadharFlowContainer, { target: { checked: true } });
-    });
-    expect(
-      <AadharInput
-        setAadharNumber={() => {}}
-        goToNextScreen={() => {}}
-        aadharError=""
-        setAadharInputError={() => {}}
-        disabled={false}
-      />,
-    ).toMatchSnapshot();
-  });
-
-  it.skip('should submit the form of aadharinput', async () => {
-    const goToNextScreen = jest.fn();
-
-    const { getByText, getAllByTestId } = render(
-      <AadharInput
-        setAadharNumber={() => {}}
-        goToNextScreen={goToNextScreen}
-        aadharError=""
-        setAadharInputError={() => {}}
-        disabled={false}
-      />,
-      {},
-    );
-    const aadharNumberInput = getAllByTestId('ds-text-input')[0];
-    const formSubmitNode = getByText(/Verify with OTP/i);
-
-    fireEvent.change(aadharNumberInput, { target: { value: 123456789012 } });
-    await waitFor(() => {
-      fireEvent.click(formSubmitNode);
-    });
-
-    expect(goToNextScreen).toHaveBeenCalledTimes(1);
-  });
-});
-
 describe('GetOTP', () => {
   it.skip("should throw an validation message if get otp pin number field doesn't have  4 digit number", async () => {
     const { getByText, getAllByTestId } = render(
       <GetOTP
-        setPin={() => {}}
         setOTP={() => {}}
         otp=""
-        aadharNumber=""
         setAadharNumber={() => {}}
         goToNextScreen={() => {}}
         setUserEnteredCaptcha={() => {}}
-        setAadharInputError={() => {}}
         aadharError=""
+        disabled={false}
       />,
       {},
     );
@@ -151,15 +68,13 @@ describe('GetOTP', () => {
   it.skip('calls Get OTP onClick prop when clicked', () => {
     render(
       <GetOTP
-        setPin={() => {}}
         setOTP={() => {}}
         otp=""
-        aadharNumber=""
         setAadharNumber={() => {}}
         goToNextScreen={() => {}}
         setUserEnteredCaptcha={() => {}}
-        setAadharInputError={() => {}}
         aadharError=""
+        disabled={false}
       />,
       {},
     );
@@ -178,7 +93,6 @@ describe('VerifyOTP', () => {
     const { getByText, getAllByTestId } = render(
       <VerifyOTP
         goToNextScreen={() => {}}
-        pin=""
         aadharNumber=""
         inputCaptcha=""
         setAadharInputError={() => {}}
@@ -205,7 +119,6 @@ describe('VerifyOTP', () => {
     render(
       <VerifyOTP
         goToNextScreen={() => {}}
-        pin=""
         aadharNumber=""
         inputCaptcha=""
         setAadharInputError={() => {}}
@@ -225,5 +138,11 @@ describe('VerifyOTP', () => {
 describe('AadharSuccess', () => {
   it('should show the success screen', () => {
     expect(<AadharSuccess />).toMatchSnapshot();
+  });
+});
+
+describe('AadharError', () => {
+  it('should show the Error screen', () => {
+    expect(<AadharError />).toMatchSnapshot();
   });
 });

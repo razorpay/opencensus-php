@@ -234,18 +234,25 @@ export const handlers = [
   ),
 
   rest.post(
-    'http://localhost:6006/merchant/api/test/bbvs/dashboard/twirp/platform.bvs.probe.v1.ProbeAPI/AadhaarSubmitOtp',
+    'http://localhost:6006/merchant/api/test/bvs/dashboard/twirp/platform.bvs.probe.v1.ProbeAPI/AadhaarSubmitOtp',
     (req, res, ctx) => {
-      return res(
-        ctx.status(200),
-        ctx.delay(50),
-        ctx.json({
+      let response = {
+        status_code: 200,
+        data: {
+          is_valid: true,
+        },
+      };
+      if (req.body.otp != '123456') {
+        response = {
           status_code: 200,
           data: {
-            is_valid: true,
+            error_code: 'INCORRECT_OTP',
+            error_description:
+              ' hyperverge gateway request failed with http code - 400  internal code  - 11203, error - OTP/TOTP Fail 2 attempts remaining.',
           },
-        }),
-      );
+        };
+      }
+      return res(ctx.status(200), ctx.delay(1000), ctx.json(response));
     },
   ),
 ];

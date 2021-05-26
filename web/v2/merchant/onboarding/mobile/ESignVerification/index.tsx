@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import AadharInput from './AadharInput';
 import GetOTP from './GetOTP';
 import VerifyOTP from './VerifyOTP';
 import AadharSuccess from './AadharSuccess';
@@ -7,6 +6,7 @@ import Card from '../../../../components/Card';
 import useActivation from '../hooks/useActivation';
 import { analyticsTrack } from '../../../../services/tracking/segment';
 import { useApp } from 'v2/context/App';
+import AadharError from './AadharError';
 
 interface ESignPropsT {
   disabled?: boolean;
@@ -14,8 +14,7 @@ interface ESignPropsT {
 
 const ESignVerification: React.FC<ESignPropsT> = ({ disabled = false }) => {
   const [aadharNumber, setHasAadharNumber] = useState('');
-  const [pin, setHasPin] = useState('');
-  const [nextStep, setNextStep] = useState('');
+  const [nextStep, setNextStep] = useState('GetOTP');
   const [otp, setHasOTP] = useState('');
   const [inputCaptcha, setInputCaptcha] = useState('');
   const [aadharError, setAadharInputError] = useState('');
@@ -43,10 +42,6 @@ const ESignVerification: React.FC<ESignPropsT> = ({ disabled = false }) => {
     setHasAadharNumber(aadharNum);
   };
 
-  const setPin = (pinInput) => {
-    setHasPin(pinInput);
-  };
-
   const setOTP = (otpInput) => {
     setHasOTP(otpInput);
   };
@@ -56,22 +51,19 @@ const ESignVerification: React.FC<ESignPropsT> = ({ disabled = false }) => {
       case 'GetOTP':
         return (
           <GetOTP
-            setPin={setPin}
             setOTP={setOTP}
             otp={otp}
-            aadharNumber={aadharNumber}
             setAadharNumber={setAadharNumber}
             goToNextScreen={goToNextScreen}
             setUserEnteredCaptcha={setInputCaptcha}
-            setAadharInputError={setAadharInputError}
             aadharError={aadharError}
+            disabled={disabled}
           />
         );
       case 'VerifyOTP':
         return (
           <VerifyOTP
             goToNextScreen={goToNextScreen}
-            pin={pin}
             aadharNumber={aadharNumber}
             inputCaptcha={inputCaptcha}
             setAadharInputError={setAadharInputError}
@@ -79,13 +71,17 @@ const ESignVerification: React.FC<ESignPropsT> = ({ disabled = false }) => {
         );
       case 'AadharSuccess':
         return <AadharSuccess />;
+      case 'AadharError':
+        return <AadharError />;
       default:
         return (
-          <AadharInput
+          <GetOTP
+            setOTP={setOTP}
+            otp={otp}
             setAadharNumber={setAadharNumber}
             goToNextScreen={goToNextScreen}
+            setUserEnteredCaptcha={setInputCaptcha}
             aadharError={aadharError}
-            setAadharInputError={setAadharInputError}
             disabled={disabled}
           />
         );

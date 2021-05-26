@@ -176,23 +176,31 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
 
   const shouldShowEsignFlow =
     data.business_type === '11' || data.business_type === '1' || data.business_type === '3';
+  const shouldShowAddressProofField = !(
+    shouldShowEsignFlow &&
+    data.stakeholder &&
+    data.stakeholder.aadhaar_linked
+  );
+  const isAnyDocumentNeeded = data.business_type !== '11' || shouldShowAddressProofField;
   return (
     <>
       {shouldShowEsignFlow && <ESignVerification disabled={isFormLocked} />}
-      <Card padding={[2]} margin={[0, 0, 2, 0]}>
-        <Flex>
-          <View>
-            <Space margin={[0, 1, 0, 0]}>
-              <View>
-                <Icon name="info" fill="shade.800" size="small" />
-              </View>
-            </Space>
-            <Text size="small" color="shade.940">
-              JPG, PNG or PDF of max size 2 MB. Make sure to upload all the pages of the documents
-            </Text>
-          </View>
-        </Flex>
-      </Card>
+      {isAnyDocumentNeeded ? (
+        <Card padding={[2]} margin={[0, 0, 2, 0]}>
+          <Flex>
+            <View>
+              <Space margin={[0, 1, 0, 0]}>
+                <View>
+                  <Icon name="info" fill="shade.800" size="small" />
+                </View>
+              </Space>
+              <Text size="small" color="shade.940">
+                JPG, PNG or PDF of max size 2 MB. Make sure to upload all the pages of the documents
+              </Text>
+            </View>
+          </Flex>
+        </Card>
+      ) : null}
       <Formik
         initialValues={{
           aadhar_front: getFormikInitialValues(documents.aadhar_front),
@@ -244,7 +252,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
       >
         {(formikProps) => (
           <form>
-            {isVisible('address_proof', data) && (
+            {isVisible('address_proof', data) && shouldShowAddressProofField && (
               <FormSection title="Authorised Signatory's Address Proof">
                 <Field>
                   <Select

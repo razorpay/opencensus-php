@@ -8,7 +8,7 @@ const AadharSuccess: React.FC = () => {
   return (
     <View>
       <Text size="medium" weight="bold" color="shade.970">
-        Aadhar Verification
+        Aadhar Verification ( Via OTP )
       </Text>
       <Text size="xsmall" color="positive.900">
         We have recieved your Aadhar details successfully
