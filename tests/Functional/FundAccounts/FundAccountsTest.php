@@ -107,6 +107,14 @@ class FundAccountsTest extends TestCase
         $this->assertArrayHasKey(Error::METADATA, $response['error']);
     }
 
+    public function testCreateFundAccountBankAccountWithEmoji()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $response = $this->startTest();
+
+    }
+
     public function testCreateFundAccountBankAccountWithInvalidAccountNumber()
     {
         $this->fixtures->create('contact', ['id' => '1000000contact']);

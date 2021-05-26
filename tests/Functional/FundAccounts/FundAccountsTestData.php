@@ -145,6 +145,35 @@ return [
         ],
     ],
 
+    'testCreateFundAccountBankAccountWithEmoji' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'bank_account',
+                'contact_id'   => 'cont_1000000contact',
+                'bank_account'      => [
+                    'ifsc'           => 'SBIN0007105',
+                    'name'           => 'Amit M 😊',
+                    'account_number' => '111000111',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content'   => [
+                'error' => [
+                    'code'  => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   =>  'The name format is invalid.',
+                ],
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreateFundAccountBankAccountWithInvalidName' => [
         'request'  => [
             'content' => [
