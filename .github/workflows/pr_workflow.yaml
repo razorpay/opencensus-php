@@ -2,7 +2,7 @@ name: PR validate UT and Roast Workflow
 
 on:
   pull_request:
-    types: [opened, synchronize,reopened,edited]
+    types: [opened, synchronize,reopened]
 
 jobs:
   # Add cancel job
@@ -154,7 +154,7 @@ jobs:
         echo "WORKFLOW_STATUS=$(sh ./.github/actions/getWorkflowStatus.sh)" >> $GITHUB_ENV
     - name: Check Workflow Status
       run: echo $WORKFLOW_STATUS
-    - name: Run bvt suite if PR approved && Build Image workflow succeeded 
+    - name: Run bvt suite if PR approved && Build Image workflow succeeded
       if: env.WORKFLOW_STATUS == 'success' && startsWith(github.event.pull_request.head.ref,'beta_') != true
       env:
         SPINNAKER_PASSWORD: ${{ secrets.SPINNAKER_PASSWORD }}
