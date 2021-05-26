@@ -269,9 +269,6 @@ ${/* .${org} a:hover:not(.btn-primary):not(.NavLink):not(.Button):not(.btn) */ '
   border-top-color: ${it.primary};
 }
 
-.${org} .checkbox-knob--prime.checked:before {
-  background: ${it.primary};
-}
 `;
 
 export const applyTheme = (org) => {
