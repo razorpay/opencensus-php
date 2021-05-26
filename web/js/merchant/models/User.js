@@ -16,6 +16,20 @@ import {
   antiOrgsFeatures,
 } from 'merchant/helpers/permissions';
 
+const PRODUCT_KEY_MAPS = [
+  'invoices',
+  'payment_links',
+  'payment_pages',
+  'payment_buttons',
+  'subscription_buttons',
+  'marketplace',
+  'subscriptions',
+  'qr_codes',
+  'virtual_accounts',
+  'offers',
+  'checkoutrewards',
+];
+
 // TODO: Rename fn. name
 export function setFeatures(features) {
   const enabledFeatures = filterBy(features, 'value', true);
@@ -95,6 +109,18 @@ export default class User {
     }
   }
 
+  isProductHiddenForWhiteLabelledOrg(moduleName) {
+    if (!PRODUCT_KEY_MAPS.includes(moduleName)) {
+      return false;
+    }
+
+    if (!this.isWhiteLabelledOrg) {
+      return false;
+    }
+
+    return !this.findTag(`white_labelled_${moduleName}`);
+  }
+
   isOrgAllowedFunctionality(featureName) {
     const restrictedFeaturesForOrg = antiOrgsFeatures[getOrg().custom_code];
 
@@ -114,6 +140,10 @@ export default class User {
       isEditAllowed = false;
     }
 
+    if (this.isProductHiddenForWhiteLabelledOrg(moduleName)) {
+      isEditAllowed = false;
+    }
+
     return isEditAllowed;
   }
 
@@ -121,6 +151,10 @@ export default class User {
     let isViewAllowed = _isAllowed(this.userRole, moduleName, roleViewPermissions);
 
     if (this.isViewRestrictedByRazorX(moduleName)) {
+      isViewAllowed = false;
+    }
+
+    if (this.isProductHiddenForWhiteLabelledOrg(moduleName)) {
       isViewAllowed = false;
     }
 
@@ -866,6 +900,10 @@ export default class User {
     const currentOrg = getOrg().custom_code;
 
     return currentOrg === 'axis';
+  }
+
+  get isWhiteLabelledOrg() {
+    return this.isOrgAxis;
   }
 
   get showOnDemandDeduction() {
