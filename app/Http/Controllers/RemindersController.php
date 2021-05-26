@@ -34,6 +34,7 @@ class RemindersController extends Controller
             '^configs\/[[:alnum:]]{14}$',
         ],
         self::POST => [
+            '^batch$',
             '^merchant_config$',
             '^merchant_settings$',
             '^configs$',
@@ -58,6 +59,7 @@ class RemindersController extends Controller
             '^configs\/[[:alnum:]]{14}$',
         ],
         self::POST => [
+            '^batch$',
             '^merchant_config$',
             '^merchant_settings$',
             '^configs$',
