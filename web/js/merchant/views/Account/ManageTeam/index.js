@@ -82,11 +82,15 @@ export default class ManageTeamContainer extends React.Component {
     });
   }
   render() {
+    let { user } = this.props;
+
     return (
       <div class="content-wrapper content-sm" id="settings-content">
-        <ShowWhen myRole="owner">
-          <Merchant2FASettings />
-        </ShowWhen>
+        {!user.org_enforced_second_factor_auth && (
+          <ShowWhen myRole="owner">
+            <Merchant2FASettings />
+          </ShowWhen>
+        )}
         <HeaderAction>
           <div class="btn-toolbar pull-right">
             <DocsLink url="https://razorpay.com/docs/team-support/" />

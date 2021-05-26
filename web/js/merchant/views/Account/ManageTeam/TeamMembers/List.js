@@ -15,11 +15,11 @@ import Actions from './Actions';
 const actions = {
   title: '',
   columnClass: 'text-right',
-  value: member => <Actions member={member} />,
+  value: (member) => <Actions member={member} />,
 };
 
 @connect(
-  state => ({
+  (state) => ({
     currentUser: state.session.user.user,
     ...state.team,
   }),
@@ -28,7 +28,7 @@ const actions = {
     unlockMember,
     unverifyContact,
     showNotification,
-  }
+  },
 )
 export default class MembersListContainer extends ListContainer {
   static contextTypes = {
@@ -37,7 +37,7 @@ export default class MembersListContainer extends ListContainer {
 
   member = {
     title: 'Member',
-    value: member => (
+    value: (member) => (
       <>
         {member.name && <p>{member.name}</p>}
         <p class="text-muted no-margin">{member.email}</p>
@@ -54,11 +54,13 @@ export default class MembersListContainer extends ListContainer {
 
   contactPhone = {
     title: 'Phone Number',
-    value: member => (
+    value: (member) => (
       <>
         <p>{member.contact_mobile || '--'}</p>
-        {member.id !== this.props.currentUser.id &&
-          (!!member.contact_mobile && member.contact_mobile_verified) && (
+        {!member.org_enforced_second_factor_auth &&
+          member.id !== this.props.currentUser.id &&
+          !!member.contact_mobile &&
+          member.contact_mobile_verified && (
             <RaiseContactMobileLost
               memberId={member.id}
               memberEmail={member.email}
@@ -111,8 +113,8 @@ function AccountLocked({ unlockMember, memberId, showNotification }) {
 
   return (
     <span class="status-label label-pale-warning m-t">
-      <i class="i i-info-circle text-warning" /> Account blocked due to multiple
-      wrong login attempts{' '}
+      <i class="i i-info-circle text-warning" /> Account blocked due to multiple wrong login
+      attempts{' '}
       <AsyncButton
         text="Unlock"
         pendingText="Unlocking"
@@ -150,12 +152,7 @@ function RaiseContactMobileLost({
     confirm({
       header: 'Invalidate 2FA',
       affirmativeLabel: 'Confirm',
-      message: (
-        <>
-          This will invalidate 2FA for the user {memberEmail}. Click confirm to
-          continue
-        </>
-      ),
+      message: <>This will invalidate 2FA for the user {memberEmail}. Click confirm to continue</>,
       action: unverify,
     });
   };

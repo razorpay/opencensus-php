@@ -3,22 +3,14 @@
     2-Step Verification
   </div>
   <div class="auth-text m-t-sm">
-    An SMS with 6-digit OTP has been sent to your phone number. OTP will expire in 5 mins.
+    A 6-digit OTP has been sent to your {{second_factor_auth_mode}}. OTP will expire in 5 mins.
   </div>
 
   <form class="auth-form" name="secondFAForm" ng-submit="verify2FaOtp()">
     <label class="form-label auth-subheading" for="otp">Enter the OTP</label>
 
-    <input
-      type="text"
-      name="otp"
-      placeholder="Six digit OTP"
-      id="otp"
-      ng-model="secondFA.data.otp"
-      class="form-control auth-form-input"
-      maxlength="6"
-      required
-    >
+    <input type="text" name="otp" placeholder="Six digit OTP" id="otp" ng-model="secondFA.data.otp"
+      class="form-control auth-form-input" maxlength="6" required>
 
 
     <div class="auth-text">
@@ -28,10 +20,13 @@
       </span>
     </div>
 
-    <button ng-disabled="login.resendingOtp" class="btn btn-primary form-control m-t" type="submit" >
+    <button ng-disabled="login.resendingOtp" class="btn btn-primary form-control m-t" type="submit">
       Confirm
     </button>
-    <div class="loading-animation"><div class="spinner-container" style="background-image: url('img/loading-bubbles.svg')"></div></div>
+    <div class="loading-animation">
+      <div class="spinner-container" style="background-image: url('img/loading-bubbles.svg')"></div>
+    </div>
   </form>
-  <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+  <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}
+  </alert>
 </div>

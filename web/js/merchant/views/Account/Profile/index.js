@@ -451,7 +451,7 @@ export default class Profile extends Component {
         <div class="profile-container">
           <Alert type="error" message={this.state.errors} showDismiss={false} />
 
-          <User2FASettings />
+          {user && !user.user.org_enforced_second_factor_auth && <User2FASettings />}
 
           <div class="panel panel-default">
             {user.current && (

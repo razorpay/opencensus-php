@@ -101,6 +101,12 @@ app
         btn: 'google-button',
       };
 
+      var OTP_AUTH_MODE = {
+        sms: 'phone number',
+        email: 'email',
+        sms_and_email: 'phone number and email',
+      };
+
       // initialize onetap only when not X and if optimize experiment(isOneTapExpOn) returns true
       if ($scope.currentService != 'X' && window.isOneTapExpOn) {
         $scope.isOneTapExpOn = true;
@@ -108,6 +114,7 @@ app
 
       $scope.organization = {};
       $scope.isOrgCheckDone = false;
+      $scope.isOwner = false;
       organization.fetchCurrentOrg().then(function (data) {
         $scope.login_logo = data.login_logo_url || 'img/logo_full.png';
         $scope.isOrgCheckDone = true;
@@ -115,7 +122,11 @@ app
         $scope.isOrgRZP = $scope.organization.custom_code === 'rzp';
         $scope.isOrgHDFC = $scope.organization.custom_code === 'hdfc';
         $scope.isOrgAXIS = $scope.organization.custom_code === 'axis';
+        $scope.isOrgAXIS = $scope.organization.custom_code === 'axis';
+        $scope.second_factor_auth_mode =
+          OTP_AUTH_MODE[$scope.organization.second_factor_auth_mode] || 'phone number/email';
       });
+
       $scope.forms = {};
 
       $scope.isLoggedIn = false;
@@ -2018,6 +2029,7 @@ app
           $scope.signup.settings.partner_intent || $scope.signup.merchantData.business_type == 11
         );
       };
+
       $scope.goToForgotPwd = function () {
         tracking.pushEvents({
           event_name: 'non_login_actions',
@@ -2975,6 +2987,7 @@ app
           }
 
           case 'BAD_REQUEST_LOCKED_USER_LOGIN': {
+            $scope.isOwner = !!error?._internal?.user_details?.is_owner;
             $scope.goToLoginStep(7);
             break;
           }

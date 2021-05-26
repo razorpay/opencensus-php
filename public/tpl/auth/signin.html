@@ -1,6 +1,7 @@
 <div class="auth-overflow-container">
-  <div class="login-translate-container"
-    ng-style="{'transform': 'translateX(' + ((-320)*login.currentStep) + 'px)', 'width': '2880'}">
+  <div class="login-translate-container" ng-style="{'transform': 'translateX(' + ((-320)*login.currentStep) + 'px)', 'width': '2880'}">
+
+    <!-- Forgot Password (0) -->
     <div class="auth-step">
       <div class="auth-heading">
         Forgot Password
@@ -9,8 +10,7 @@
         Enter your email and we will send you a password reset link
       </div>
 
-      <form class="auth-form reset-form" name="forgotPwdForm" xng-submit="goToStep(1)"
-        ng-submit="forgotPwdSubmit(forgotPwdForm.$valid)">
+      <form class="auth-form reset-form" name="forgotPwdForm" xng-submit="goToStep(1)" ng-submit="forgotPwdSubmit(forgotPwdForm.$valid)">
         <label class="form-label auth-subheading" for="email">Email</label>
         <input override-tab type="email" placeholder="example@xyz.com" name="email" id="email"
           ng-model="login.data.email" class="form-control auth-form-input" required ng-focus="onResetEmailChange()">
@@ -28,6 +28,8 @@
         {{alert.msg}}
       </alert>
     </div>
+
+    <!-- Login (1) -->
     <div class="auth-step">
       <div class="auth-heading">
         {{lockme ? "Dashboard Locked" : "Login to Dashboard"}}
@@ -117,35 +119,37 @@
       </div>
     </div>
 
+    <!-- Questions (2) -->
     <div class="auth-step" ng-if="!email_not_verified">
       <div ng-include="'tpl/auth/questions.html'"></div>
     </div>
 
+    <!-- Email Verification (3) -->
     <div class="auth-step">
       <div ng-include="'tpl/auth/verify.html'"></div>
     </div>
 
-    <!-- 2fa UI -->
+    <!-- 2fa UI (4) -->
     <div class="auth-step">
       <div ng-include="'tpl/auth/enter-2fa.html'"></div>
     </div>
 
-    <!-- Setup mobile for 2fa -->
+    <!-- Setup mobile for 2fa (5) -->
     <div class="auth-step">
       <div ng-include="'tpl/auth/setup-mobile.html'"></div>
     </div>
 
-    <!-- Verify mobile -->
+    <!-- Verify mobile (6) -->
     <div class="auth-step">
       <div ng-include="'tpl/auth/verify-mobile-2fa.html'"></div>
     </div>
 
-    <!-- account is blocked -->
+    <!-- account is blocked (7) -->
     <div class="auth-step">
       <div ng-include="'tpl/auth/account_block.html'"></div>
     </div>
 
-    <!-- contact admin -->
+    <!-- contact admin (8) -->
     <div class="auth-step">
       <div ng-include="'tpl/auth/contact_admin.html'"></div>
     </div>

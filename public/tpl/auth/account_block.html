@@ -3,15 +3,24 @@
     Account Blocked
   </div>
   <div class="auth-text m-t text-center">
-    <img ng-src="img/2FA_Blocked.svg" alt="Your 2FA is blocked" ng-style="{height: '175px'}"/>
+    <img ng-src="img/2FA_Blocked.svg" alt="Your 2FA is blocked" ng-style="{height: '175px'}" />
   </div>
-  <div class="auth-text m-t">
-    <strong>Contact your admin</strong>
+  <div class="auth-text m-t" ng-if="!isOwner">
+    <strong>Contact your Owner</strong>
   </div>
   <div class="auth-text m-t">
     Your account has been blocked due to too many wrong OTP attempts.
   </div>
-  <div class="auth-text m-t">
-    Please contact your admin to unblock your account
+  <div class="auth-text m-t" ng-if="!isOwner">
+    Please contact your owner to unblock your account.
+  </div>
+  <div class="auth-text m-t" ng-if="isOwner">
+    Please Reset your password to unlock your account.
+    <div class="m-t m-b">
+      <a class="highlight-clickable-text forgot-password-text" href="" ng-if="isOwner"
+        ng-click="forgotPwdSubmit(forgotPwdForm.$valid)">
+        Click to Reset password
+      </a>
+    </div>
   </div>
 </div>
