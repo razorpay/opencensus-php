@@ -633,6 +633,10 @@ class Service extends Base\Service
 
         $input[E::ORG] = $this->serializeOrgPropertiesForHostedForPaymentLinkService();
 
+        $input['view_preferences'] = $this->getViewPreferencesForPaymentLinkService($this->merchant);
+
+        $input['is_test_mode'] = ($this->mode === Mode::TEST);
+
         $mailable = new PaymentLinkServiceBase($input);
 
         try
@@ -703,8 +707,15 @@ class Service extends Base\Service
             'business_registered_address_text' => $merchant->getBusinessRegisteredAddressAsText(', '),
             'image'                            => $merchant->getFullLogoUrlWithSize(Merchant\Logo::LARGE_SIZE),
             'business_registered_address'      => optional($merchant->merchantDetail)->getBusinessRegisteredAddress(),
-            'apps_exempt_customer_flagging'    => $exemptCustomerFlagging,
+            'exempt_customer_flagging'         => $exemptCustomerFlagging,
         ];
+    }
+
+    protected function getViewPreferencesForPaymentLinkService(Merchant\Entity $merchant)
+    {
+        $exemptCustomerFlagging = $merchant->isFeatureEnabled(Feature\Constants::APPS_EXEMPT_CUSTOMER_FLAGGING);
+
+        return ['exempt_customer_flagging' => $exemptCustomerFlagging];
     }
 
     /**

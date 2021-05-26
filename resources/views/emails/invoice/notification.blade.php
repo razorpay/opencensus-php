@@ -24,6 +24,12 @@
 
         $amountPaidFormatted = number_format($amountPaid / 100, 2);
         $amountDueFormatted  = number_format($amountDue / 100, 2);
+
+        $reportEmailUrl = 'https://razorpay.com/support/payments/report-merchant/?e=' . base64_encode($invoice['id']) . '&m=' . base64_encode($invoice['customer_details']['customer_email']) . '&s=' . base64_encode('customer_email');
+        $showReportMailFlag = false;
+        if (isset($view_preferences['exempt_customer_flagging']) === true) {
+            $showReportMailFlag = !$is_test_mode and !$view_preferences['exempt_customer_flagging'];
+        }
     @endphp
 
   </p>
@@ -288,7 +294,10 @@
                                         @elseif($invoice['type_label'] === 'Invoice')
                                           @include('emails.partials.support')
                                         @else
-                                            Sign up at <a href="https://razorpay.com/payment-links" target="_blank" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E;">razorpay.com/payment-links</a> to create payment links and accept payments for your business.
+                                            Sign up with <a href="https://razorpay.com/payment-links" target="_blank" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E;">Razorpay</a> to accept payments via links for your business.
+                                            @if($showReportMailFlag === true)
+                                                Please report this email if you find it to be suspicious<a href={{$reportEmailUrl}} target="_blank" rel="noopener" style="color: #528FF0; text-decoration: none;"><img src="https://cdn.razorpay.com/static/assets/email/flag.png" width="13px" style="vertical-align: middle; margin: 0 3px;" alt="report flag" />Report Email</a>
+                                            @endif
                                         @endif
                                     </div>
                                 </td>
