@@ -24,6 +24,8 @@ class Axis extends Base
 
     const FILE_NAME = 'Axis_EMandate_Debit';
 
+    const BASE_STORAGE_DIRECTORY = 'Axis/Emandate/Netbanking/';
+
     const STEP      = 'debit';
 
     public function __construct()
@@ -75,5 +77,17 @@ class Axis extends Base
     protected function getFormattedAmount($amount)
     {
         return $amount / 100;
+    }
+
+    protected function getFileToWriteNameWithoutExt(array $data)
+    {
+        $time = Carbon::now(Timezone::IST)->format('dmYHis');
+
+        if ($this->isTestMode() === true)
+        {
+            return static::FILE_NAME . '_' . $time . '_' . $this->mode;
+        }
+
+        return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . '_' . $time;
     }
 }

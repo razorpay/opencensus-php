@@ -649,6 +649,7 @@ class Type
             self::AXIS_NETBANKING_CLAIMS,
             self::RBL_NETBANKING_CLAIM,
             self::INDUSIND_NETBANKING_CLAIM,
+            self::AXIS_EMANDATE_DEBIT,
         ],
 
         self::DATA_LAKE_SEGMENTS_BUCKET_CONFIG => [
