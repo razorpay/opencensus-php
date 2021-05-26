@@ -27,6 +27,8 @@ class RefundFile extends Base\RefundFile
 
     protected static $fileToWriteName = 'Icici_Upi_Refunds';
 
+    const BASE_STORAGE_DIRECTORY = 'Icici/Refund/Upi/';
+
     protected static $headers = array(
         self::BANKADJREF,
         self::FLAG,
@@ -108,5 +110,12 @@ class RefundFile extends Base\RefundFile
         }
 
         return $data;
+    }
+
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        return static::BASE_STORAGE_DIRECTORY . static::$fileToWriteName . '_' . $this->mode . '_' . $time;
     }
 }

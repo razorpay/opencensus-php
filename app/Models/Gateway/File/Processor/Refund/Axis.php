@@ -26,6 +26,7 @@ class Axis extends Base
     const CORPORATE_GATEWAY_CODE     = Netbanking::UTIB_C;
     const NON_CORPORATE_GATEWAY_CODE = IFSC::UTIB;
     const PAYMENT_TYPE_ATTRIBUTE     = Payment\Entity::BANK;
+    const BASE_STORAGE_DIRECTORY     = 'Axis/Refund/Netbanking/';
 
     const HEADERS = [
         'Payee id', // pid
@@ -149,9 +150,9 @@ class Axis extends Base
 
         if ($this->isTestMode() === true)
         {
-            return $name . '_' . $time . '_' . $this->mode . '_1';
+            return static::BASE_STORAGE_DIRECTORY . $name . '_' . $time . '_' . $this->mode . '_1';
         }
 
-        return $name . '_' . $time . '_1';
+        return static::BASE_STORAGE_DIRECTORY . $name . '_' . $time . '_1';
     }
 }

@@ -3,7 +3,6 @@
 namespace RZP\Models\Gateway\File\Processor\Refund\Failed;
 
 use Carbon\Carbon;
-
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
@@ -15,7 +14,7 @@ class UpiIcici extends Base
     const EXTENSION              = FileStore\Format::CSV;
     const FILE_NAME              = 'Icici_Upi_Failed_Refunds';
     const FILE_TYPE              = FileStore\Type::ICICI_UPI_REFUND;
-    const BASE_STORAGE_DIRECTORY = 'UpiIcici/Refund/Failed/';
+    const BASE_STORAGE_DIRECTORY = 'Icici/Refund/Upi/Failed/';
 
     protected function formatDataForFile(array $data)
     {

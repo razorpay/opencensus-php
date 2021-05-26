@@ -16,10 +16,11 @@ class Rbl extends NetbankingBase
 {
     use FileHandler;
 
-    const FILE_NAME = 'Rbl_Netbanking_Claims';
-    const EXTENSION = FileStore\Format::TXT;
-    const FILE_TYPE = FileStore\Type::RBL_NETBANKING_CLAIM;
-    const GATEWAY   = Payment\Gateway::NETBANKING_RBL;
+    const FILE_NAME              = 'Rbl_Netbanking_Claims';
+    const EXTENSION              = FileStore\Format::TXT;
+    const FILE_TYPE              = FileStore\Type::RBL_NETBANKING_CLAIM;
+    const GATEWAY                = Payment\Gateway::NETBANKING_RBL;
+    const BASE_STORAGE_DIRECTORY = 'Rbl/Claims/Netbanking/';
 
     protected function formatDataForFile(array $data)
     {
@@ -127,6 +128,6 @@ class Rbl extends NetbankingBase
     {
         $time = Carbon::now(Timezone::IST)->format('d-m-Y');
 
-        return static::FILE_NAME . '_' . $this->mode . '_' . $time;
+        return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . '_' . $this->mode . '_' . $time;
     }
 }

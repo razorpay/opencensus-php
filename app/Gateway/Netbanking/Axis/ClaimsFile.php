@@ -12,6 +12,8 @@ class ClaimsFile extends Base\RefundFile
 {
     protected static $fileToWriteName = 'IConnect_Claim_RAZORPAY';
 
+    const BASE_STORAGE_DIRECTORY = 'Axis/Claims/Netbanking/';
+
     const EMAIL_BODY = 'Please forward the Axis Netbanking claims file to the operations team';
 
     protected static $headers = [
@@ -112,9 +114,9 @@ class ClaimsFile extends Base\RefundFile
 
         if ($this->mode === Mode::TEST)
         {
-            return static::$fileToWriteName . '_' . $time . '_' . $this->mode . '_1';
+            return static::BASE_STORAGE_DIRECTORY . static::$fileToWriteName . '_' . $time . '_' . $this->mode . '_1';
         }
 
-        return static::$fileToWriteName . '_' . $time . '_1';
+        return static::BASE_STORAGE_DIRECTORY . static::$fileToWriteName . '_' . $time . '_1';
     }
 }

@@ -14,6 +14,8 @@ class RefundFile extends Base\RefundFile
 
     const EMAIL_BODY = 'Please forward the Axis Netbanking refunds file to the operations team';
 
+    const BASE_STORAGE_DIRECTORY     = 'Axis/Refund/Netbanking/';
+
     protected static $headers = [
         'Payee id', // pid
         'Payee name', // RAZORPAY
@@ -116,9 +118,9 @@ class RefundFile extends Base\RefundFile
 
         if ($this->mode === Mode::TEST)
         {
-            return static::$fileToWriteName . '_' . $time . '_' . $this->mode . '_1';
+            return static::BASE_STORAGE_DIRECTORY . static::$fileToWriteName . '_' . $time . '_' . $this->mode . '_1';
         }
 
-        return static::$fileToWriteName . '_' . $time . '_1';
+        return static::BASE_STORAGE_DIRECTORY . static::$fileToWriteName . '_' . $time . '_1';
     }
 }

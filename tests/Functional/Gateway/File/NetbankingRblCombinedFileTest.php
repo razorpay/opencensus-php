@@ -80,11 +80,11 @@ class NetbankingRblCombinedFileTest extends TestCase
             'items' => [
                 [
                     'type' => 'rbl_netbanking_claim',
-                    'location' => 'Rbl_Netbanking_Claims_test' . '_' . $time . '.txt',
+                    'location' => 'Rbl/Claims/Netbanking/Rbl_Netbanking_Claims_test' . '_' . $time . '.txt',
                 ],
                 [
                     'type' => 'rbl_netbanking_refund',
-                    'location' => 'Rbl_Netbanking_Refunds_test' . '_' . $time . '.xlsx',
+                    'location' => 'Rbl/Refund/Netbanking/Rbl_Netbanking_Refunds_test' . '_' . $time . '.xlsx',
                 ],
             ],
         ];

@@ -19,6 +19,8 @@ class RefundFile extends Base\RefundFile
 
     const EMAIL_BODY = 'Please forward the Indusind Netbanking refunds file to UBPS operations team';
 
+    const BASE_STORAGE_DIRECTORY = 'Indusind/Refund/Netbanking/';
+
     // The columns of the file
     protected static $headers = [
         RefundFileFields::SERIAL_NO,
@@ -101,9 +103,9 @@ class RefundFile extends Base\RefundFile
 
         if ($this->mode === Mode::TEST)
         {
-            return static::$fileToWriteName . $time . $this->mode;
+            return static::BASE_STORAGE_DIRECTORY . static::$fileToWriteName . $time . $this->mode;
         }
 
-        return static::$fileToWriteName . $time;
+        return static::BASE_STORAGE_DIRECTORY . static::$fileToWriteName . $time;
     }
 }

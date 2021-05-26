@@ -15,6 +15,8 @@ class RefundFile extends Base\RefundFile
 {
     protected static $fileToWriteName = 'Airtelmoney_Wallet_Refunds';
 
+    const BASE_STORAGE_DIRECTORY = 'AirtelMoney/Refund/';
+
     protected static $headers = array(
         'Sr No',
         'Transaction date',
@@ -82,5 +84,12 @@ class RefundFile extends Base\RefundFile
         }
 
         return $data;
+    }
+
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        return static::BASE_STORAGE_DIRECTORY . static::$fileToWriteName . '_' . $this->mode . '_' . $time;
     }
 }

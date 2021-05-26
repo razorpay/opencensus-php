@@ -19,6 +19,8 @@ class Reconciliator extends Base\RefundFile
 
     const GATEWAY_ENTITY = 'gateway';
 
+    const BASE_STORAGE_DIRECTORY = 'Rbl/Recon/Netbanking/';
+
     protected static $fileToWriteName = 'Rbl_Netbanking_Reconciliation';
 
     protected static $headers = [
@@ -137,5 +139,12 @@ class Reconciliator extends Base\RefundFile
         }
 
         return $this->generate($inputData);
+    }
+
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        return static::BASE_STORAGE_DIRECTORY . static::$fileToWriteName . '_' . $this->mode . '_' . $time;
     }
 }

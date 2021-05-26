@@ -22,6 +22,7 @@ class Indusind extends Base
     const GATEWAY                = Payment\Gateway::NETBANKING_INDUSIND;
     const GATEWAY_CODE           = IFSC::INDB;
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
+    const BASE_STORAGE_DIRECTORY = 'Indusind/Refund/Netbanking/';
 
     protected $type = Payment\Entity::BANK;
 
@@ -61,10 +62,10 @@ class Indusind extends Base
 
         if ($this->isTestMode() === true)
         {
-            return static::FILE_NAME . $time . $this->mode;
+            return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . $time . $this->mode;
         }
 
-        return static::FILE_NAME . $time;
+        return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . $time;
     }
 
     public function sendFile($data)

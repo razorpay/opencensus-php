@@ -76,11 +76,11 @@ class NetbankingAxisCombinedFileTest extends TestCase
             'items' => [
                 [
                     'type' => 'axis_netbanking_claims',
-                    'location' => 'IConnect_Claim_RAZORPAY' . '_' . $time . '_' . 'test_1.txt'
+                    'location' => 'Axis/Claims/Netbanking/IConnect_Claim_RAZORPAY' . '_' . $time . '_' . 'test_1.txt'
                 ],
                 [
                     'type' => 'axis_netbanking_refund',
-                    'location' => 'IConnect_Refund_RAZORPAY' . '_' . $time . '_' . 'test_1.txt',
+                    'location' => 'Axis/Refund/Netbanking/IConnect_Refund_RAZORPAY' . '_' . $time . '_' . 'test_1.txt',
                 ],
             ],
         ];
@@ -199,11 +199,11 @@ class NetbankingAxisCombinedFileTest extends TestCase
             'items' => [
                 [
                     'type' => 'axis_netbanking_claims',
-                    'location' => 'IConnect_Claim_RAZORPAY_CORP' . '_' . $time . '_' . 'test_1.txt'
+                    'location' => 'Axis/Claims/Netbanking/IConnect_Claim_RAZORPAY_CORP' . '_' . $time . '_' . 'test_1.txt'
                 ],
                 [
                     'type' => 'axis_netbanking_refund',
-                    'location' => 'IConnect_Refund_RAZORPAY_CORP' . '_' . $time . '_' . 'test_1.txt',
+                    'location' => 'Axis/Refund/Netbanking/IConnect_Refund_RAZORPAY_CORP' . '_' . $time . '_' . 'test_1.txt',
                 ],
             ],
         ];

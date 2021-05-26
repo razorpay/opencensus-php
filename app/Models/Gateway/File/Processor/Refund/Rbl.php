@@ -19,6 +19,7 @@ class Rbl extends Base
     const GATEWAY                = Payment\Gateway::NETBANKING_RBL;
     const GATEWAY_CODE           = IFSC::RATN;
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
+    const BASE_STORAGE_DIRECTORY = 'Rbl/Refund/Netbanking/';
 
     protected $type = Payment\Entity::BANK;
 
@@ -74,6 +75,6 @@ class Rbl extends Base
     {
         $time = Carbon::now(Timezone::IST)->format('d-m-Y');
 
-        return static::FILE_NAME . '_' . $this->mode . '_' . $time;
+        return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . '_' . $this->mode . '_' . $time;
     }
 }

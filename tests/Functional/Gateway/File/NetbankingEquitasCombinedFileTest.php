@@ -81,7 +81,7 @@ class NetbankingEquitasCombinedFileTest extends TestCase
             'items' => [
                 [
                     'type' => 'equitas_netbanking_refund',
-                    'location' => 'Equitas_Netbanking_Refunds' . '_' . $time . '.txt',
+                    'location' => 'Equitas/Refund/Netbanking/Equitas_Netbanking_Refunds' . '_' . $time . '.txt',
                 ],
             ],
         ];

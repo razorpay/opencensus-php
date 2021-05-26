@@ -16,6 +16,8 @@ class ClaimsFile extends Base\RefundFile
 
     const GATEWAY_ENTITY = 'gateway';
 
+    const BASE_STORAGE_DIRECTORY = 'Rbl/Claims/Netbanking/';
+
     protected static $fileToWriteName = 'Rbl_Netbanking_Claims';
 
     protected static $headers = [
@@ -133,5 +135,12 @@ class ClaimsFile extends Base\RefundFile
         }
 
         return $row[self::GATEWAY_ENTITY][Entity::ERROR_MESSAGE];
+    }
+
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        return static::BASE_STORAGE_DIRECTORY . static::$fileToWriteName . '_' . $this->mode . '_' . $time;
     }
 }

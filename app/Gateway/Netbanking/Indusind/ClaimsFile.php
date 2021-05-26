@@ -13,6 +13,8 @@ class ClaimsFile extends Base\RefundFile
 {
     protected static $fileToWriteName = 'PGClaimRazorpay';
 
+    Const BASE_STORAGE_DIRECTORY = 'Indusind/Claims/Netbanking/';
+
     public function generate($input)
     {
         list($totalAmount , $count, $data) =  $this->getClaimsData($input);
@@ -87,9 +89,9 @@ class ClaimsFile extends Base\RefundFile
 
         if ($this->mode === Mode::TEST)
         {
-            return static::$fileToWriteName . $time . $this->mode;
+            return static::BASE_STORAGE_DIRECTORY . static::$fileToWriteName . $time . $this->mode;
         }
 
-        return static::$fileToWriteName . $time;
+        return static::BASE_STORAGE_DIRECTORY . static::$fileToWriteName . $time;
     }
 }

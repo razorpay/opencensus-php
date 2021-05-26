@@ -20,6 +20,7 @@ class Equitas extends Base
     const GATEWAY                = Payment\Gateway::NETBANKING_EQUITAS;
     const GATEWAY_CODE           = IFSC::ESFB;
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
+    const BASE_STORAGE_DIRECTORY = 'Equitas/Refund/Netbanking/';
 
     const MERCHANT_ID           = 'PID';
     const REFUND_DATE           = 'Refund Date';
@@ -83,7 +84,7 @@ class Equitas extends Base
     {
         $date = Carbon::now(Timezone::IST)->format('d-m-y');
 
-        return self::FILE_NAME . '_' . $date;
+        return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . '_' . $date;
     }
 
     protected function getMerchantId($input)

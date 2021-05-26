@@ -12,6 +12,8 @@ class RefundFile extends Base\RefundFile
 {
     protected static $fileToWriteName = 'Rbl_Netbanking_Refunds';
 
+    const BASE_STORAGE_DIRECTORY = 'Rbl/Refund/Netbanking/';
+
     protected static $headers = [
         RefundFields::SERIAL_NO,
         RefundFields::REFUND_ID,
@@ -94,5 +96,12 @@ class RefundFile extends Base\RefundFile
         }
 
         return [$totalAmount, $data];
+    }
+
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        return static::BASE_STORAGE_DIRECTORY . static::$fileToWriteName . '_' . $this->mode . '_' . $time;
     }
 }

@@ -14,6 +14,8 @@ class RefundFile extends Base\RefundFile
 {
     protected static $fileToWriteName = 'FBK_REFUND';
 
+    const BASE_STORAGE_DIRECTORY = 'Federal/Refund/Netbanking/';
+
     const EMAIL_BODY = 'Please forward the Federal Netbanking refunds file to the operations team';
 
     protected static $headers = [
@@ -106,6 +108,6 @@ class RefundFile extends Base\RefundFile
     {
         $date = $time = Carbon::now(Timezone::IST)->format('d_m_Y');
 
-        return self::$fileToWriteName . '_' . $date;
+        return static::BASE_STORAGE_DIRECTORY . static::$fileToWriteName . '_' . $date;
     }
 }

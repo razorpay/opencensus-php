@@ -16,6 +16,8 @@ class Reconciliator extends Base\RefundFile
 
     const ACCOUNT_NUMBER = '309002069863';
 
+    const BASE_STORAGE_DIRECTORY = 'Equitas/Recon/Netbanking/';
+
     public function generateReconciliation($input = null)
     {
         $input = [
@@ -97,5 +99,12 @@ class Reconciliator extends Base\RefundFile
     public function content(& $content, $action = null)
     {
         return $content;
+    }
+
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        return static::BASE_STORAGE_DIRECTORY . static::$fileToWriteName . '_' . $this->mode . '_' . $time;
     }
 }

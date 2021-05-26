@@ -22,6 +22,7 @@ class Federal extends Base
     const GATEWAY                = Payment\Gateway::NETBANKING_FEDERAL;
     const GATEWAY_CODE           = IFSC::FDRL;
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
+    const BASE_STORAGE_DIRECTORY = 'Federal/Refund/Netbanking/';
 
     protected function formatDataForFile(array $data)
     {
@@ -54,7 +55,7 @@ class Federal extends Base
     {
         $date = Carbon::now(Timezone::IST)->format('d_m_Y');
 
-        return self::FILE_NAME . '_' . $date;
+        return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . '_' . $date;
     }
 
     protected function fetchBankPaymentId($data)

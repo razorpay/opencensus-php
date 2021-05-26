@@ -21,6 +21,7 @@ class Axis extends Base
     const EXTENSION               = FileStore\Format::TXT;
     const FILE_TYPE               = FileStore\Type::AXIS_NETBANKING_CLAIMS;
     const GATEWAY                 = Payment\Gateway::NETBANKING_AXIS;
+    const BASE_STORAGE_DIRECTORY  = 'Axis/Claims/Netbanking/';
 
     const HEADERS = [
         'PayeeId', // pid
@@ -94,9 +95,9 @@ class Axis extends Base
 
         if ($this->isTestMode() === true)
         {
-            return $name . '_' . $time . '_' . $this->mode . '_1';
+            return static::BASE_STORAGE_DIRECTORY . $name . '_' . $time . '_' . $this->mode . '_1';
         }
 
-        return $name . '_' . $time . '_1';
+        return static::BASE_STORAGE_DIRECTORY . $name . '_' . $time . '_1';
     }
 }

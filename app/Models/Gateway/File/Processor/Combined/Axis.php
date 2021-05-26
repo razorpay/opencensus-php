@@ -82,7 +82,7 @@ class Axis extends Base
 
         $fileData = [
             'url'  => $signedUrl,
-            'name' => $file->getLocation(),
+            'name' => basename($file->getLocation()),
         ];
 
         return $fileData;

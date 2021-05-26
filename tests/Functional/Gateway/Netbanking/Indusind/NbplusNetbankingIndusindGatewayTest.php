@@ -98,11 +98,11 @@ class NbplusNetbankingIndusindCombinedFileTest extends NbPlusPaymentServiceNetba
             'items'  => [
                 [
                     'type' => 'indusind_netbanking_claim',
-                    'location' => 'PGClaimRazorpay' . $time . 'test.txt'
+                    'location' => 'Indusind/Claims/Netbanking/PGClaimRazorpay' . $time . 'test.txt'
                 ],
                 [
                     'type' => 'indusind_netbanking_refund',
-                    'location' => 'PGRefundRAZORPAY' . $time . 'test.txt',
+                    'location' => 'Indusind/Refund/Netbanking/PGRefundRAZORPAY' . $time . 'test.txt',
                 ],
             ]
         ];

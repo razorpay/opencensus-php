@@ -14,10 +14,11 @@ class Indusind extends NetbankingBase
 {
     use FileHandler;
 
-    const FILE_NAME = 'PGClaimRazorpay';
-    const EXTENSION = FileStore\Format::TXT;
-    const FILE_TYPE = FileStore\Type::INDUSIND_NETBANKING_CLAIM;
-    const GATEWAY   = Payment\Gateway::NETBANKING_INDUSIND;
+    const FILE_NAME              = 'PGClaimRazorpay';
+    const EXTENSION              = FileStore\Format::TXT;
+    const FILE_TYPE              = FileStore\Type::INDUSIND_NETBANKING_CLAIM;
+    const GATEWAY                = Payment\Gateway::NETBANKING_INDUSIND;
+    const BASE_STORAGE_DIRECTORY = 'Indusind/Claims/Netbanking/';
 
     protected function formatDataForFile(array $data)
     {
@@ -52,9 +53,9 @@ class Indusind extends NetbankingBase
 
         if ($this->isTestMode() === true)
         {
-            return self::FILE_NAME . $time . $this->mode;
+            return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . $time . $this->mode;
         }
 
-        return self::FILE_NAME . $time;
+        return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . $time;
     }
 }
