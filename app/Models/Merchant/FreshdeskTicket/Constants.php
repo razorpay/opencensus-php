@@ -22,7 +22,7 @@ class Constants
     const PAYMENT_ID                = 'cf_razorpay_payment_id';
     const REFUND_ID                 = 'cf_refund_id';
     const ORDER_ID                  = 'cf_order_id';
-    const MERCHANT_ID               = 'cf_merchant_id';
+    const CF_MERCHANT_ID            = 'cf_merchant_id';
     const PAYMENT_CUSTOMER_EMAIL    = 'cf_payment_email';
     const PAYMENT_CUSTOMER_PHONE    = 'cf_payment_phone';
     const CF_MERCHANT_ID_DASHBOARD  = 'cf_merchant_id_dashboard';

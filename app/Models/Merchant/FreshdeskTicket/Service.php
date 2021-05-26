@@ -770,8 +770,8 @@ class Service extends Base\Service
 
         if (empty($payment) === false)
         {
-            $customFields[Constants::PAYMENT_ID] = $payment->getPublicId();
-            $customFields[Constants::MERCHANT_ID] = $payment->getMerchantId();
+            $customFields[Constants::PAYMENT_ID]     = $payment->getPublicId();
+            $customFields[Constants::CF_MERCHANT_ID] = $payment->getMerchantId();
 
             $data = $payment->toArrayPublic();
 
@@ -952,7 +952,9 @@ class Service extends Base\Service
 
         $input['phone'] = $this->merchant->merchantDetail->getContactMobile();
 
-        $input['custom_fields']['cf_merchant_id_dashboard'] = $this->getQueryParamMerchantIdForSearchAPI();
+        $input['custom_fields'][Constants::CF_MERCHANT_ID_DASHBOARD] = $this->getQueryParamMerchantIdForSearchAPI();
+
+        $input['custom_fields'][Constants::CF_MERCHANT_ID] = $this->auth->getMerchantId();
 
         $input['priority'] = 1;
 

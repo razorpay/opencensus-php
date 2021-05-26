@@ -321,6 +321,7 @@ class FreshdeskTicketV2Test extends TestCase
                 'custom_fields' => [
                     'cf_requester_category'    => 'Merchant',
                     'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                    'cf_merchant_id'           => '10000000000000',
                 ],
                 'email' =>  'test@razorpay.com',
                 'phone' => '9876543210',
@@ -369,6 +370,7 @@ class FreshdeskTicketV2Test extends TestCase
                     'cf_requestor_subcategory'    =>  'Cash Advance',
                     'cf_requestor_category'       =>  'Merchant',
                     'cf_merchant_id_dashboard'    =>  'merchant_dashboard_10000000000000',
+                    'cf_merchant_id'              => '10000000000000',
                 ],
             ],
             [
@@ -555,6 +557,7 @@ class FreshdeskTicketV2Test extends TestCase
                     'cf_requester_category'    => 'Invalid',
                     'cf_requestor_subcategory' => 'activation',
                     'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                    'cf_merchant_id'           => '10000000000000',
                 ],
                 'email'     =>  'test@razorpay.com',
                 'phone'     => '9876543210',
@@ -766,6 +769,7 @@ class FreshdeskTicketV2Test extends TestCase
                     'cf_requester_category' => 'Merchant',
                     'cf_requestor_subcategory' => 'Activation',
                     'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                    'cf_merchant_id'           => '10000000000000',
                 ],
                 'priority' => 1,
             ],
@@ -908,6 +912,7 @@ class FreshdeskTicketV2Test extends TestCase
                         'cf_requester_category'    => 'Merchant',
                         'cf_requestor_subcategory' => 'Activation',
                         'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                        'cf_merchant_id'           => '10000000000000',
                     ],
                     'email' =>  'test@razorpay.com',
                     'phone' => '9876543210',
@@ -922,6 +927,7 @@ class FreshdeskTicketV2Test extends TestCase
                         'cf_requester_category'    => 'Merchant',
                         'cf_requestor_subcategory' => 'Activation',
                         'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                        'cf_merchant_id'           => '10000000000000',
                     ],
                     'priority' =>  1,
                 ]
@@ -944,6 +950,7 @@ class FreshdeskTicketV2Test extends TestCase
                         'custom_fields' => [
                             'cf_requester_category'    => 'Merchant',
                             'cf_requestor_subcategory' => 'Activation',
+                            'cf_merchant_id'           => '10000000000000',
                             'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
                         ],
                         'priority' =>  1,
@@ -962,6 +969,7 @@ class FreshdeskTicketV2Test extends TestCase
                         'cf_requester_category'    => 'Merchant',
                         'cf_requestor_subcategory' => 'Activation',
                         'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                        'cf_merchant_id'           => '10000000000000',
                     ],
                     'email' =>  'test@razorpay.com',
                     'phone' => '9876543210',
@@ -976,6 +984,7 @@ class FreshdeskTicketV2Test extends TestCase
                             'cf_requester_category'    => 'Merchant',
                             'cf_requestor_subcategory' => 'Activation',
                             'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                            'cf_merchant_id'           => '10000000000000',
                         ],
                         'priority' =>  1,
                     ]
