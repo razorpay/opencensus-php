@@ -129,6 +129,10 @@ class Core extends Base\Core
 
             $response [] = array_merge($reward->toArrayPublic(), $merchantReward->toArrayPublic());
         }
+        $created_at_column = array_column($response, 'created_at');
+
+        //sort by reward created_at column in desc order
+        array_multisort($created_at_column, SORT_DESC, $response);
 
         return $response;
     }
