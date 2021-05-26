@@ -267,6 +267,11 @@ trait CardPaymentService
             );
         }
 
+        if (isset($response['status_code']) and $response['status_code'] == 401)
+        {
+            throw new Exception\ServerErrorException('CPS Authentication Failed', ErrorCode::SERVER_ERROR_CARD_PAYMENT_SERVICE_FAILURE);
+        }
+
         $this->app['card.payments']->checkForErrors($response);
     }
 

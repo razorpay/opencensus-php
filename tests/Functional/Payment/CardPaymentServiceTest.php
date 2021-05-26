@@ -374,6 +374,32 @@ class CardPaymentServiceTest extends TestCase
         $this->disbaleCpsConfig();
     }
 
+    public function testCardPaymentServiceUnauthorizedAccess()
+    {
+        $this->razorxValue = 'cardps';
+        $this->enableCpsConfig();
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->mockCpsUnauthorizedAccess();
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $this->makeRequestAndCatchException(
+            function() use ($paymentArray)
+            {
+                $this->doAuthPayment($paymentArray);
+            },
+            \RZP\Exception\ServerErrorException::class);
+
+        $this->disbaleCpsConfig();
+    }
+
     public function testVerifyError()
     {
         $this->razorxValue = "cardps";
@@ -1747,6 +1773,24 @@ class CardPaymentServiceTest extends TestCase
                 return null;
         }
 
+    }
+
+    protected function mockCpsUnauthorizedAccess()
+    {
+        $cardService = $this->getMockBuilder(CardPaymentService::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['sendRawRequest'])
+            ->getMock();
+        $this->app->instance('card.payments', $cardService);
+        $response = new Requests_Response();
+        $response->status_code = 401;
+        $response->headers = ['Content-Type' => 'application/json'];
+        $body = '{
+                  "success": false,
+                  "error": "Unauthorized: Invalid Username or Password"
+                }';
+        $response->body = $body;
+        $this->app['card.payments']->method('sendRawRequest')->willReturn($response);
     }
 
     protected function mockCpsErrorVerify($terminal, $responder)
