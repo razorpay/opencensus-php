@@ -27,8 +27,14 @@ const THEMES = {
   axis: {
     navBg: '#2e3345',
     primary: '#528ff0',
+    secondary: '#FFFFFF',
     backgroundShade: '#fff8f8',
+    link: '#528ff0',
   },
+};
+
+export const LOGOS = {
+  axis: 'https://cdn.razorpay.com/static/assets/hostedpages/axis_logo.svg',
 };
 
 // TODO: revert changes later
@@ -74,17 +80,50 @@ const makeTheme = (it, org) => `
   border-color: ${it.primary} !important;
 }
 
-.${org} tabbed-container header a.active,
-.${org} .Button--transparent,
-.${org} .Button--transparent:not(:disabled):hover {
-  border-color: ${it.primary};
+.${org} .btn-secondary,
+.${org} .btn-secondary:active,
+.${org} .btn-secondary:active:hover,
+.${org} .btn.btn-secondary,
+.${org} .btn-secondary,
+.${org} .Button--secondary.Button,
+.${org} .Button--secondary,
+.${org} .btn-secondary[disabled]:hover,
+.${org} .Button--secondary:not(:disabled):hover  {
+  background-color: transparent;
   color: ${it.primary};
+  border-color: ${it.primary};
 }
 
 .${org} .btn-primary:hover,
 .${org} .btn-primary:active,
 .${org} .btn-primary:focus {
   background-color: ${it.primary};
+}
+
+.${org} .btn-outline,
+.${org} .btn-outline:hover {
+  color: ${it.primary};
+  border: 1px solid ${it.primary};
+}
+
+.${org} tabbed-container header a.active,
+.${org} .Button--primary--invert,
+.${org} .Button--transparent,
+.${org} .Button--transparent:not(:disabled):hover {
+  border-color: ${it.primary};
+  color: ${it.primary};
+}
+
+.${org} tabbed-container header a:hover {
+  color: ${it.primary};
+}
+
+.${org} div.panel.recent-activity-cont .panel-topbar tabbed-container .row a.active {
+  border-color: ${it.primary};
+  color: ${it.primary};
+}
+.${org} div.panel.recent-activity-cont .panel-topbar tabbed-container .row a:hover {
+  color: ${it.primary};
 }
 
 ${it.actStatus ? `.${org} .activation-status{color:${it.actStatus}};` : ''}
@@ -154,9 +193,8 @@ color:${it.sideBarIconActive};
 
 .${org} .alert-danger {
   background-color: ${it.errorBackground};
-  color: ${it.secondary};
+  color: ${it.tertiary};
 }
-
 
 .${org} .bg-dark .text-warning-lter,
 .${org} .bg-dark .nav > li > a,
@@ -189,12 +227,12 @@ color:${it.sideBarIconActive};
 
 .${org} .btn-link,
 .${org} a.breadcrumb__backNav--link,
-.${org} a:not(.btn-primary):not(.NavLink):not(.Button):not(.btn),
+${/* .${org} a:not(.btn-primary):not(.NavLink):not(.Button):not(.btn) */ ''},
 .${org} .Button--Link,
 .${org} .OnBoarding--Features .Header .Header-external-links,
 .${org} .link,
 .${org} .TemplateCard .link,
-.${org} .OnBoarding .SliderDots .Button {
+.${org} .OnBoarding .SliderDots .Button{
   color: ${it.primary};
 }
 
@@ -204,7 +242,8 @@ color:${it.sideBarIconActive};
 
 // HINT: don't have info on the light primary color value, to make UI good we are adding this
 .${org} .btn-link:hover,
-.${org} a:hover:not(.btn-primary):not(.NavLink):not(.Button) {
+.${org} .Button--primary--invert:hover,
+${/* .${org} a:hover:not(.btn-primary):not(.NavLink):not(.Button):not(.btn) */ ''} {
   color: ${it.primary};
   opacity: 0.85;
 }
@@ -213,6 +252,25 @@ color:${it.sideBarIconActive};
 .${org} .refund-panel .refund-panel-col.active {
   border: 1px solid ${it.primary};
   background-color: ${it.backgroundShade}
+}
+
+.${org} .navbar-default .navbar-nav > li > a {
+  color: ${it.link};
+}
+
+.${org} .keymetrics > .nav.nav-tabs li.active > a > div,
+.${org} .keymetrics > .nav.nav-tabs li > a:hover > div,
+.${org} .keymetrics > .nav.nav-tabs li > a > div > div.mini-chart.no-data.active .min-chart-content,
+.${org} .panel.dasboard-home-panel div.panel-actions .panel-action-item.btn-group .btn-default.active {
+  border-color: ${it.primary};
+}
+
+.${org} .keymetrics > .nav.nav-tabs li.active > a > div:after {
+  border-top-color: ${it.primary};
+}
+
+.${org} .checkbox-knob--prime.checked:before {
+  background: ${it.primary};
 }
 `;
 
