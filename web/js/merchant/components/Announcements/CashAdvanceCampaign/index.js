@@ -2,13 +2,16 @@ import { Link } from 'react-router-dom';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 
 import { getMode, getUser } from 'merchant/store';
+import { getCustomURL } from '../../DocsLink';
 import { sendDataToSalesForce } from 'common/utils/common-api';
 
 const bannerText = 'Get additional cash from Razorpay in 10 seconds whenever you need it!';
 const cardId = 'Subscription Button Launch';
 
 const cta2Text = 'Learn More';
-const cta2Link = 'https://razorpay.com/capital/cash-advance';
+const cta2Link = getCustomURL(
+  'https://razorpay.com/docs/payment-button/subscription-buttons/?click=dshbrd-notif-sb',
+);
 
 const cta1Text = 'Enable Cash Advance';
 const cta1Link = '/capital/cash-advance ';

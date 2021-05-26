@@ -868,6 +868,14 @@ export default class User {
     return currentOrg === 'axis';
   }
 
+  get isWhiteLabelledOrg() {
+    return this.isOrgAxis;
+  }
+
+  get orgCustomCode() {
+    return getOrg().custom_code;
+  }
+
   get showOnDemandDeduction() {
     return this.isFeatureEnabled('show_on_demand_deduction');
   }
@@ -903,6 +911,19 @@ export default class User {
     // Eg: disable-edit-reports (if corresponding experiment is "on", it can't be edited for those merchants)
     return this.getExpStatus(`disable-edit-${moduleName}`);
   }
+
+  isProductHiddenForWhiteLabelledOrg(moduleName) {
+    if (!PRODUCT_KEY_MAPS.includes(moduleName)) {
+      return false;
+    }
+
+    if (!this.isWhiteLabelledOrg) {
+      return false;
+    }
+
+    return !this.findTag(`white_labelled_${moduleName}`);
+  }
+
   isInstrumentRequestAllowed() {
     return this.getExpStatus('instrument_request_merchant_dashboard');
   }

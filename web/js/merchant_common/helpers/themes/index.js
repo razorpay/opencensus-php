@@ -122,6 +122,7 @@ const makeTheme = (it, org) => `
   border-color: ${it.primary};
   color: ${it.primary};
 }
+
 .${org} div.panel.recent-activity-cont .panel-topbar tabbed-container .row a:hover {
   color: ${it.primary};
 }

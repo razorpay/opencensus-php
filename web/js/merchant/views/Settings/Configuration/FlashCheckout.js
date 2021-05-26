@@ -155,7 +155,11 @@ export default class FlashCheckout extends Component {
                   <a
                     class="highlight"
                     target="_blank"
-                    href={getCustomURL('https://razorpay.com/flashcheckout/')}
+                    href={
+                      custom_code === 'axis'
+                        ? 'https://axisbank-docs.razorpay.com/payment-gateway/dashboard-guide/settings/configuration/#enable-flash-checkout'
+                        : 'https://razorpay.com/flashcheckout/'
+                    }
                     onClick={() =>
                       analyticsTrack({
                         objectName: 'know more',
