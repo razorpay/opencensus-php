@@ -13,6 +13,7 @@ use RZP\Models\FundTransfer\Holidays;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Gateway\File\Processor;
 use RZP\Exception\GatewayFileException;
+use RZP\Models\FileStore\Storage\Base\Bucket;
 
 abstract class Base extends Processor\Base
 {
@@ -119,5 +120,14 @@ abstract class Base extends Processor\Base
         }
 
         return $date->timestamp;
+    }
+
+    protected function getBucketConfig($fileType)
+    {
+        $config = $this->app['config']->get('filestore.aws');
+
+        $bucketType = Bucket::getBucketConfigName($fileType, $this->env);
+
+        return $config[$bucketType];
     }
 }

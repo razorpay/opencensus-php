@@ -5,6 +5,7 @@ namespace RZP\Models\Gateway\File\Processor\Nach\Register;
 use Mail;
 use Storage;
 use Imagick;
+use ZipArchive;
 use DOMDocument;
 use Carbon\Carbon;
 
@@ -14,6 +15,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
+use RZP\Exception\RuntimeException;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\FundTransfer\Holidays;
@@ -35,14 +37,13 @@ class PaperNachIcici extends Base
 {
     use FileHandler;
 
-    const STEP          = 'register';
-    //TODO Raise BAD ticket to get this renamed
-    const S3_PATH       = 'icici/nach/debit/';
-    const FILE_NAME     = 'MMS-CREATE-ICIC-ICIC401790-{$date}-{$code}';
-    const EXTENSION     = FileStore\Format::ZIP;
-    const FILE_TYPE     = FileStore\Type::ICICI_NACH_REGISTER;
-    const GATEWAY       = Payment\Gateway::NACH_ICICI;
-    const ZIP_FILE_SIZE = 50;
+    const STEP                   = 'register';
+    const FILE_NAME              = 'MMS-CREATE-ICIC-ICIC401790-{$date}-{$code}';
+    const EXTENSION              = FileStore\Format::ZIP;
+    const FILE_TYPE              = FileStore\Type::ICICI_NACH_REGISTER;
+    const GATEWAY                = Payment\Gateway::NACH_ICICI;
+    const BASE_STORAGE_DIRECTORY = 'Icici/Nach/Register/';
+    const ZIP_FILE_SIZE          = 50;
 
     const IMAGE_SIZE_LIMIT = 99000;
 
@@ -179,9 +180,13 @@ class PaperNachIcici extends Base
             $fileInfo[] = $fullFileName;
         }
 
+        $bucketConfig = $this->getBucketConfig(FileStore\Type::ICICI_NACH_REGISTER);
+
         $data = [
-            BeamService::BEAM_PUSH_FILES   => $fileInfo,
-            BeamService::BEAM_PUSH_JOBNAME => BeamConstants::ICICI_ENACH_NB_JOB_NAME
+            BeamService::BEAM_PUSH_FILES         => $fileInfo,
+            BeamService::BEAM_PUSH_JOBNAME       => BeamConstants::ICICI_ENACH_NB_JOB_NAME,
+            BeamService::BEAM_PUSH_BUCKET_NAME   => $bucketConfig['name'],
+            BeamService::BEAM_PUSH_BUCKET_REGION => $bucketConfig['region'],
         ];
 
         // In seconds
@@ -472,5 +477,57 @@ class PaperNachIcici extends Base
         $pad_str = str_pad($value, $size, $padString, $padType);
 
         return substr($pad_str, 0, $size);
+    }
+
+    protected function generateZipFile($zipFileTarget)
+    {
+        $files = Storage::files($zipFileTarget);
+
+        $zipFileLocalName = basename($zipFileTarget);
+
+        $zipFileLocalPath = $this->getLocalSaveDir() . DIRECTORY_SEPARATOR . $zipFileLocalName . '.zip';
+
+        $zipFileS3Name = self::BASE_STORAGE_DIRECTORY . basename($zipFileTarget);
+
+        $zip = new ZipArchive();
+
+        if ($zip->open($zipFileLocalPath, ZipArchive::CREATE) !== true) {
+            throw new RuntimeException(
+                'Could not create Papernach zip file',
+                [
+                    'filename' => $zipFileLocalPath
+                ]);
+        }
+
+        $basePath = storage_path('app') . '/';
+
+        foreach ($files as $file)
+        {
+            $filePath = $basePath . $file;
+
+            $zip->addFile($filePath, basename($file));
+        }
+
+        $zip->close();
+
+        $zipCreator = new FileStore\Creator;
+
+        $zipCreator->extension(static::EXTENSION)
+            ->localFilePath($zipFileLocalPath)
+            ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[static::EXTENSION][0])
+            ->name($zipFileS3Name)
+            ->store(FileStore\Store::S3)
+            ->type(static::FILE_TYPE)
+            ->entity($this->gatewayFile)
+            ->metadata(static::FILE_METADATA)
+            ->save();
+
+        $file = $zipCreator->getFileInstance();
+
+        $this->fileStore[] = $file->getId();
+
+        $this->gatewayFile->setFileGeneratedAt($file->getCreatedAt());
+
+        unlink($zipFileLocalPath);
     }
 }

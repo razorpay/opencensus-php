@@ -33,11 +33,12 @@ use RZP\Gateway\Enach\Npci\Combined\Icici\Debit\DebitFileHeadings as Headings;
 
 class CombinedNachIcici extends Debit\Base
 {
-    const EXTENSION         = FileStore\Format::TXT;
-    const FILE_TYPE         = FileStore\Type::ICICI_NACH_COMBINED_DEBIT;
-    const FILE_NAME         = 'icici/nach/debit/ACH-DR-ICIC-ICIC401790-{$date}-{$batchCode}-INP';
-    const STEP              = 'debit';
-    const USER_NAME         = 'RZP';
+    const EXTENSION              = FileStore\Format::TXT;
+    const FILE_TYPE              = FileStore\Type::ICICI_NACH_COMBINED_DEBIT;
+    const FILE_NAME              = 'ACH-DR-ICIC-ICIC401790-{$date}-{$batchCode}-INP';
+    const STEP                   = 'debit';
+    const USER_NAME              = 'RZP';
+    const BASE_STORAGE_DIRECTORY = 'Icici/Nach/Debit/';
 
     // not required anymore. keeping for historical reasons
     const FILE_METADATA = [
@@ -189,9 +190,13 @@ class CombinedNachIcici extends Debit\Base
             $fileInfo[] = $fullFileName;
         }
 
+        $bucketConfig = $this->getBucketConfig(FileStore\Type::ICICI_NACH_COMBINED_DEBIT);
+
         $data = [
-            BeamService::BEAM_PUSH_FILES   => $fileInfo,
-            BeamService::BEAM_PUSH_JOBNAME => BeamConstants::ICICI_ENACH_NB_JOB_NAME
+            BeamService::BEAM_PUSH_FILES         => $fileInfo,
+            BeamService::BEAM_PUSH_JOBNAME       => BeamConstants::ICICI_ENACH_NB_JOB_NAME,
+            BeamService::BEAM_PUSH_BUCKET_NAME   => $bucketConfig['name'],
+            BeamService::BEAM_PUSH_BUCKET_REGION => $bucketConfig['region'],
         ];
 
         // In seconds
@@ -240,7 +245,7 @@ class CombinedNachIcici extends Debit\Base
 
         $fileName = strtr($data['fileName'], ['{$date}' => $date, '{$batchCode}' => $batchCode]);
 
-        return $fileName;
+        return self::BASE_STORAGE_DIRECTORY . $fileName;
     }
 
     protected function getFileHeader(array $fileData)
