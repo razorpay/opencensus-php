@@ -58,7 +58,11 @@ class FlexMoneyGatewayTest extends CardlessEmiGatewayTest
 
         $response = $this->doAuthPayment($payment);
 
+        $paymentAnalytics = $this->getLastEntity('payment_analytics', true);
+
         $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['id'],'pay_'.$paymentAnalytics['payment_id']);
 
         $this->assertTestResponse($payment, 'testPaymentFlexMoneySubprovider');
 

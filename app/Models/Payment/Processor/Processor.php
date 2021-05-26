@@ -844,6 +844,8 @@ class Processor
 
             $payment->setBaseAmount($payment->getAmount());
 
+            $this->setAnalyticsLog($payment);
+
             $this->repo->saveOrFail($payment);
 
             return $payment;
