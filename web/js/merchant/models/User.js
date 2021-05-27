@@ -3,7 +3,7 @@ import QueryString from 'query-string';
 import { filterBy, getURLQueryParams } from 'common/utils/rzp-utils';
 import { RZPFeatures } from 'merchant/helpers/data';
 import abExperimentsMap from 'merchant/utils/abExperimentsMap';
-
+import isEmpty from '@universe/utils/isEmpty';
 import { fetchFeaturesAjax } from 'merchant/reducers/config';
 import { getOrg } from 'merchant/store';
 import { getOnBoardingDataFromLocalState } from 'merchant/components/OnBoarding';
@@ -358,17 +358,10 @@ export default class User {
   get isProjectNitroEnabled() {
     // moving nitro to splitz phase wise, so keeping checks for both splitz and razorx experiments currently.
 
-    const splitzExperiments = window.rzp_user?.splitz_experiments;
+    const splitzExperimentVariant = getSplitzExperimentVariant('project_nitro');
 
-    if (splitzExperiments) {
-      const splitzExperimentVariant =
-        splitzExperiments[
-          Object.keys(splitzExperiments).find((key) => abExperimentsMap.project_nitro.includes(key))
-        ];
-
-      if (splitzExperimentVariant?.variables) {
-        return splitzExperimentVariant.variables?.result === 'on';
-      }
+    if (splitzExperimentVariant?.variables) {
+      return splitzExperimentVariant.variables?.result === 'on';
     }
 
     return (
@@ -1033,14 +1026,16 @@ function _isAllowed(userRole, moduleName, permissionsMap) {
 
 function getSplitzExperimentVariant(experimentName) {
   const splitzExperiments = window.rzp_user?.splitz_experiments;
+  let splitzExperimentVariant = null;
 
   if (splitzExperiments) {
-    const splitzExperimentVariant =
-      splitzExperiments[
-        Object.keys(splitzExperiments).find((key) => abExperimentsMap[experimentName].includes(key))
-      ];
-
-    return splitzExperimentVariant || {};
+    Object.keys(splitzExperiments).forEach((experimentId) => {
+      const splitzExperiment = splitzExperiments[experimentId];
+      if (abExperimentsMap[experimentName]?.includes(experimentId) && !isEmpty(splitzExperiment)) {
+        splitzExperimentVariant = splitzExperiment;
+      }
+    });
   }
-  return {};
+
+  return splitzExperimentVariant || {};
 }

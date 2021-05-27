@@ -168,8 +168,8 @@ class Constants
         [
             'title'       => 'Get 1.65% pricing with RazorpayX',
             'description' => 'Open a current account with RazorpayX & reduce your transaction fee to 1.65%.',
-            'start_ts'    => 1612788789,
-            'end_ts'      => 1617167373,
+            'start_ts'    => 1621987200,
+            'end_ts'      => 1629936000,
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro.svg',
             'id'          => 'projectNitro',
             'campaign'    => 'nitro',
@@ -190,8 +190,8 @@ class Constants
         [
             'title'       => 'Get 1.65% pricing with RazorpayX',
             'description' => 'Open a current account with RazorpayX & reduce your transaction fee to 1.65%.',
-            'start_ts'    => 1612788789,
-            'end_ts'      => 1617167373,
+            'start_ts'    => 1621987200,
+            'end_ts'      => 1629936000,
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro.svg',
             'id'          => 'projectNitro',
             'campaign'    => 'nitro',
@@ -1111,10 +1111,10 @@ class Constants
     ];
 
     const nitroSplitzExperimentsList = [
-        'ANNOUNCEMENT_NITRO_HYDERABAD_SPLITZ', 
-        'ANNOUNCEMENT_NITRO_KOLKATA_V1_SPLITZ', 
-        'ANNOUNCEMENT_NITRO_CHENNAI_V1_SPLITZ', 
-        'ANNOUNCEMENT_NITRO_SURAT_V1_SPLITZ', 
+        'ANNOUNCEMENT_NITRO_HYDERABAD_SPLITZ',
+        'ANNOUNCEMENT_NITRO_KOLKATA_V1_SPLITZ',
+        'ANNOUNCEMENT_NITRO_CHENNAI_V1_SPLITZ',
+        'ANNOUNCEMENT_NITRO_SURAT_V1_SPLITZ',
         'ANNOUNCEMENT_NITRO_JAIPUR_V1_SPLITZ',
         'ANNOUNCEMENT_NITRO_GANDHINAGAR_V1_SPLITZ',
         'ANNOUNCEMENT_NITRO_VADODARA_V1_SPLITZ',
