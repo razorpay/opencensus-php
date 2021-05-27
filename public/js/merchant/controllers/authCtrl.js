@@ -1890,6 +1890,8 @@ app
       // Captcha Variant 2: New v3 + v2 flow
       // Captcha Variant 1: Old v2 flow
       const getCaptchaVariant = () => (isCaptchaV3Enabled() ? 2 : 1);
+      $scope.renderRecaptchaScriptExecuted = false; // if renderRecaptchaScript() function is executed
+      $scope.loginFakedCalledOnce = false; // if a captcha fallback was called with `Faked` token
 
       if (
         ['access.signin', 'access.forgotpwd', 'access.pre_signup', 'access.lockme'].indexOf(
@@ -2063,6 +2065,10 @@ app
       };
 
       window.onloadCallback = function () {
+        fireDLSuccessEvents('login.captcha_script_load', {
+          captcha_variant: getCaptchaVariant(),
+          version: $scope.authVersion,
+        });
         grecaptcha.render('login-recaptcha', {
           sitekey: window.INVISIBLE_CAPTCHA_SITE_KEY,
           callback: onCaptchaSubmit,
@@ -2071,18 +2077,34 @@ app
       };
 
       const renderRecaptchaScript = function (loadCheckbox) {
+        $scope.renderRecaptchaScriptExecuted = true;
         let captchaScript = 'https://www.google.com/recaptcha/api.js';
         if (!loadCheckbox)
           captchaScript = captchaScript.concat(
             '?onload=onloadCallback&render=' + window.RECAPTCHA_V3_SITE_KEY,
           );
         if (!checkScriptExists(captchaScript)) {
+          if (!loadCheckbox) {
+            fireDLInitiatedEvents('login.captcha_script_load', {
+              captcha_variant: getCaptchaVariant(),
+              version: $scope.authVersion,
+            });
+          }
           let script = document.createElement('script');
           script.src = captchaScript;
           script.id = 'recaptcha';
           script.async = true;
           script.defer = true;
           document.documentElement.appendChild(script);
+          if (!loadCheckbox) {
+            script.onerror = (e) => {
+              fireDLFailureEvents('login.captcha_script_load', {
+                captcha_variant: getCaptchaVariant(),
+                version: $scope.authVersion,
+                error: 'Script initiated but could not load',
+              });
+            };
+          }
         }
       };
 
@@ -2169,6 +2191,16 @@ app
                 grecaptcha.reset();
                 grecaptcha.execute();
               } else {
+                if (!$scope.renderRecaptchaScriptExecuted && !$scope.loginFakedCalledOnce) {
+                  // If we get this, renderRecaptchaScript() did not execute for some reason causing grecaptcha to be undefined.
+                  // Only fire this event once
+                  fireDLFailureEvents('login.captcha_script_load', {
+                    captcha_variant: getCaptchaVariant(),
+                    version: $scope.authVersion,
+                    error: 'renderRecaptchaScript did not execute',
+                  });
+                }
+                $scope.loginFakedCalledOnce = true;
                 login('Faked');
               }
               updateSpinnerState('hide');
