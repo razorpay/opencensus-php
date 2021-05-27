@@ -2987,7 +2987,7 @@ app
           }
 
           case 'BAD_REQUEST_LOCKED_USER_LOGIN': {
-            $scope.isOwner = !!error?._internal?.user_details?.is_owner;
+            $scope.isOwner = !!(((error || {})._internal || {}).user_details || {}).is_owner;
             $scope.goToLoginStep(7);
             break;
           }
