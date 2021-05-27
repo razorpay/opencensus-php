@@ -349,7 +349,7 @@ final class Constants
 
             self::NON_DEDUPE_MERCHANT => [
                 self::SHOW_POPUP => true,
-                self::MESSAGE    => "Our team has requested for some clarifications to proceed with your KYC. Kindly share the requested information to fast track the process. If you have any other concerns, please feel free to raise a ticket. ",
+                self::MESSAGE    => "Your account activation is pending. After reviewing the documents and KYC details submitted by you, our team has requested for some clarifications. Kindly share the requested information to serve you better. If you have any other concerns, please feel free to raise a ticket.",
                 self::CTA_LIST   => [self::CONTINUE_WITH_TICKET, self::NEEDS_CLARIFICATION],
             ]
         ],
@@ -361,7 +361,7 @@ final class Constants
                 self::MESSAGE    => "We regret to inform you that we will not be able to support your business as the bank has not approved your activation form. Your account is terminated with a hold on the funds for the chargeback period of 120 days from the date of rejection. Please go through our FAQs if you have any other queries.",
                 self::CTA_LIST   => [self::CONTINUE_WITH_TICKET, self::FAQS],
             ]
-        ]
+        ],
     ];
 
     const TICKET_CREATION_POPUP_DATA_FOR_ACTIVATION_PROGRESS_RANGES = [
@@ -369,14 +369,14 @@ final class Constants
             self::MIN_ACTIVATION_PROGRESS => 0,
             self::MAX_ACTIVATION_PROGRESS => ConfigKey::MAX_ACTIVATION_PROGRESS_FOR_POPUP_RANGE1,
             self::SHOW_POPUP              => true,
-            self::MESSAGE                 => "Please fill the KYC details to serve you better. It usually takes 3-4 working days for our team to review your documents post submission. We will reach out if we need any clarifications. Please go through our FAQs if you have any other queries",
+            self::MESSAGE                 => "Your account activation is pending. Please submit the KYC form to serve you better. It usually takes 3-4 working days for our team to review your documents post submission. We will reach out if we need any clarification. Please go through our FAQs if you have any other queries.",
             self::CTA_LIST                => [self::FAQS, self::FILL_ACTIVATION_FORM],
         ],
         [
             self::MIN_ACTIVATION_PROGRESS => ConfigKey::MAX_ACTIVATION_PROGRESS_FOR_POPUP_RANGE1,
             self::MAX_ACTIVATION_PROGRESS => 100,
             self::SHOW_POPUP              => true,
-            self::MESSAGE                 => "Please fill the KYC details to serve you better. It usually takes 3-4 working days for our team to review your documents post submission. We will reach out to you if we need any clarifications.",
+            self::MESSAGE                 => "Your account activation is pending. Please submit the KYC form to serve you better. It usually takes 3-4 working days for our team to review your documents post submission. We will reach out if we need any clarification. If you have any other concerns, please feel free to raise a ticket.",
             self::CTA_LIST                => [self::CONTINUE_WITH_TICKET, self::COMPLETE_ACTIVATION_FORM],
         ],
     ];
