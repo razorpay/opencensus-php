@@ -61,9 +61,9 @@ class Constants
 
     // oauth constants end
 
-    const INCORRECT_LOGIN_TTL = 86400; // 24 hours
+    const INCORRECT_LOGIN_TTL = 7200; // 2 hours
 
-    const INCORRECT_LOGIN_THRESHOLD_COUNT = 3;
+    const INCORRECT_LOGIN_THRESHOLD_COUNT = 5;
 
     public static $attributionList = [
         self::UTM_SOURCE,
