@@ -224,6 +224,11 @@ export default class InvoicesNewContainer extends Component {
         data.receipt = '';
         data.status = 'draft';
 
+        // setting string values to empty string if null to avoid error from backend on save
+        data.description = data.description || '';
+        data.comment = data.comment || '';
+        data.terms = data.terms || '';
+
         return data;
       })
       .catch((err) => {
