@@ -5,7 +5,7 @@ FROM $ARMORY_IMAGE as wkhtmltopdf
 
 FROM $ONGGI_IMAGE as opencensus-ext
 WORKDIR /
-ARG OPENCENSUS_VERSION_TAG=v0.7.6.3
+ARG OPENCENSUS_VERSION_TAG=v0.7.6.4
 RUN set -eux && \
     wget -O - https://github.com/razorpay/opencensus-php/tarball/"${OPENCENSUS_VERSION_TAG}" | tar xz --strip=1
 RUN cd /ext && phpize && ./configure --enable-opencensus && make install
