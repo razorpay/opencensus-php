@@ -1393,22 +1393,55 @@ class Gateway extends Base\Gateway
     }
     public function mockCheckAccountResponseForSharpTerminal($input)
     {
+        $interest_rate = 18;
+
+        $no_of_months = 12;
+
+        $interest_rate_per_month = ($interest_rate / ($no_of_months * 100));
+
+        $emi_durations = [3, 6, 9, 12];
+
+        $principal_amount = $input["amount"];
+
+        $emi_plans = [];
+
+        foreach($emi_durations as $emi_duration)
+        {
+            $emi_plan = ($principal_amount * $interest_rate_per_month * pow(1 + $interest_rate_per_month, $emi_duration)) / (pow(1 + $interest_rate_per_month, $emi_duration) - 1);
+
+            array_push($emi_plans, $emi_plan);
+        }
+
         $content = [
         'account_exists'  => true,
         'emi_plans'       => [
             [
                 'entity'           => 'emi_plan',
-                'duration'         => 3,
-                'interest'         => 13,
+                'duration'         => $emi_durations[0],
+                'interest'         => $interest_rate,
                 'currency'         => 'INR',
-                'amount_per_month' => '1000.20'
+                'amount_per_month' => $emi_plans[0],
             ],
             [
                 'entity'           => 'emi_plan',
-                'duration'         => 6,
-                'interest'         => 19,
+                'duration'         => $emi_durations[1],
+                'interest'         => $interest_rate,
                 'currency'         => 'INR',
-                'amount_per_month' => '1000.20'
+                'amount_per_month' => $emi_plans[1],
+            ],
+            [
+                'entity'           => 'emi_plan',
+                'duration'         => $emi_durations[2],
+                'interest'         => $interest_rate,
+                'currency'         => 'INR',
+                'amount_per_month' => $emi_plans[2],
+            ],
+            [
+                'entity'           => 'emi_plan',
+                'duration'         => $emi_durations[3],
+                'interest'         => $interest_rate,
+                'currency'         => 'INR',
+                'amount_per_month' => $emi_plans[3],
             ],
         ],
         'loan_agreement'      => 'link_to_loan_agreement',
