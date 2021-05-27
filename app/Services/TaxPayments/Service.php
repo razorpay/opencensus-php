@@ -474,16 +474,12 @@ class Service
             $headers[self::X_APP_MODE] = $this->app['rzp.mode'] ? $this->app['rzp.mode'] : Mode::LIVE;
         }
 
-        $dataLogged = $data;
-
-        unset($dataLogged['file']);
-
         $this->trace->info(TraceCode::TAX_PAYMENT_REQUEST,
                            [
                                'headers' => $headers,
-                               'url'     => $url,
-                               'data'    => $dataLogged,
+                               'url'     => $url
                            ]);
+
         $response = Requests::request(
             $url,
             $headers,

@@ -557,16 +557,12 @@ class Service
             'timeout' => $this->config['timeout']
         ];
 
-        $dataLogged = $data;
-
-        unset($dataLogged['file']);
-
         $this->trace->info(TraceCode::VENDOR_PAYMENT_REQUEST,
             [
                 'headers' => $headers,
                 'url' => $url,
-                'data' => $dataLogged,
             ]);
+
         $response = Requests::request(
             $url,
             $headers,
