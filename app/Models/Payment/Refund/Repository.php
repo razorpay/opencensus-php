@@ -957,4 +957,40 @@ class Repository extends Base\Repository
 
         return $dbColumns;
     }
+
+    public function saveOrFail($refund, array $options = array())
+    {
+        $payment = $this->stripPaymentRelationIfApplicable($refund);
+
+        parent::saveOrFail($refund, $options);
+
+        $this->associatePaymentIfApplicable($refund, $payment);
+    }
+
+    public function associatePaymentIfApplicable($refund, $payment)
+    {
+        if ($payment === null)
+        {
+            return;
+        }
+
+        $refund->payment()->associate($payment);
+    }
+
+    protected function stripPaymentRelationIfApplicable($refund)
+    {
+        $payment = $refund->payment;
+
+        if (($payment == null) ||
+            ($payment->isExternal() === false))
+        {
+            return;
+        }
+
+        $refund->payment()->dissociate();
+
+        $refund->setPaymentId($payment->getId());
+
+        return $payment;
+    }
 }

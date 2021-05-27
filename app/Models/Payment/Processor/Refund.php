@@ -2054,7 +2054,6 @@ trait Refund
     public function processRefundRetry(Payment\Refund\Entity $refund, array $input = [])
     {
         $payment = $refund->payment;
-
         //
         // Refunds are typically retried in groups using long-running
         // loops. This ensures that if a refund has been updated by a
@@ -3653,7 +3652,6 @@ trait Refund
             // The following checks have already been made in scrooge. Keeping these for sanity.
             // Therefore, Scrooge must not send a validation error.
             //
-
             $iin = $payment->card->iinRelation;
 
             if (($payment->hasCard() === true) and

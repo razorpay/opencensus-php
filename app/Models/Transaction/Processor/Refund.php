@@ -61,6 +61,7 @@ class Refund extends Base
     protected function getSettledAtTimestampForRefund()
     {
         $payment = $this->source->payment;
+
         $refund  = $this->source;
 
         $nowTimestamp = Carbon::now(Timezone::IST)->getTimestamp();

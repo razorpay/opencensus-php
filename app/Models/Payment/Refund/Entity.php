@@ -601,6 +601,20 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FEE);
     }
 
+    public function getPaymentAttribute()
+    {
+        if (empty($this->payment()->first()) === false)
+        {
+            return $this->payment()->first();
+        }
+
+        $payment = (new Payment\Repository)->findOrFailPublic($this->getPaymentId());
+
+        $this->payment()->associate($payment);
+
+        return $payment;
+    }
+
     public function getTax()
     {
         return $this->getAttribute(self::TAX);
@@ -844,6 +858,11 @@ class Entity extends Base\PublicEntity
         assertTrue($fee >= 0);
 
         $this->setAttribute(self::FEE, $fee);
+    }
+
+    public function setPaymentId($paymentId)
+    {
+        $this->setAttribute(self::PAYMENT_ID, $paymentId);
     }
 
     public function setTax(int $tax)

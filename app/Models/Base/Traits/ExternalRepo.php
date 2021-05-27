@@ -36,7 +36,6 @@ trait ExternalRepo
         }
 
         return $this->fetchExternalEntity($id, $merchant->getId(), $params);
-
     }
 
     public function findByIdAndMerchant(string $id, Merchant\Entity $merchant,array $params = []): PublicEntity
@@ -58,7 +57,6 @@ trait ExternalRepo
         }
 
         return $this->fetchExternalEntity($id, $merchant->getId(), $params);
-
     }
 
     public function findByIdAndMerchantId($id, $merchantId)
@@ -101,6 +99,27 @@ trait ExternalRepo
         }
 
         return $this->fetchExternalEntity($id, "", $params);
+    }
+
+    public function findOrFailPublic($id, $columns = array('*'))
+    {
+        $this->entityName = $this->entity;
+
+        try
+        {
+            $entity = parent::findOrFailPublic($id, $columns);
+
+            return $entity;
+        }
+        catch (\Throwable $e)
+        {
+            if (Entity::validateExternalRepoEntity($this->entityName) === false || $this->validateExternalFetchEnabled() == false)
+            {
+                throw $e;
+            }
+        }
+
+        return $this->fetchExternalEntity($id, "");
     }
 
     private function validateExternalFetchEnabled()

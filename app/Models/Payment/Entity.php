@@ -44,6 +44,7 @@ use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\VirtualAccount\Receiver;
 use RZP\Models\Base\Traits\ExternalOwner;
+use RZP\Models\Base\Traits\ExternalEntity;
 use RZP\Models\Payment\Analytics\Metadata;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Processor\Constants;
@@ -71,7 +72,7 @@ use RZP\Models\Partner\Commission\CommissionSourceInterface;
  */
 class Entity extends Base\PublicEntity implements CommissionSourceInterface
 {
-    use NotesTrait, ExternalOwner;
+    use NotesTrait, ExternalOwner, ExternalEntity;
 
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';

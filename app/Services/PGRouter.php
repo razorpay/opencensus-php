@@ -206,11 +206,10 @@ class PGRouter
      */
     public function fetch(string $id, string $merchantId, array $input)
     {
-        $endpoint = 'v1/payments/'.$id;
+        $endpoint = 'v1/payments/' . $id;
 
-        if (empty($merchantId) === false)
-        {
-            $endpoint .= '?merchant_id='.$merchantId;
+        if (empty($merchantId) === false) {
+            $endpoint .= '?merchant_id=' . $merchantId;
         }
 
         $payment = $this->sendRequest($endpoint, Requests::GET, [], false);
@@ -230,6 +229,15 @@ class PGRouter
         return null;
     }
 
+    public function save(string $id, array $input)
+    {
+        $endpoint = 'v1/payments/'.$id;
+
+        $this->sendRequest($endpoint, Requests::POST, $input, false);
+
+        return null;
+    }
+
     /**
      * @param string $endpoint
      * @param string $method
@@ -238,7 +246,7 @@ class PGRouter
      *
      * @return array
      */
-    protected function sendRequest(
+    public function sendRequest(
         string $endpoint,
         string $method,
         array $data = [],

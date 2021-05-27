@@ -170,11 +170,6 @@ class CreateRefunds extends Migration
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
 
-            $table->foreign(Refund::PAYMENT_ID)
-                  ->references(Payment::ID)
-                  ->on(Table::PAYMENT)
-                  ->on_delete('restrict');
-
             $table->foreign(Refund::TRANSACTION_ID)
                   ->references(Transaction::ID)
                   ->on(Table::TRANSACTION)

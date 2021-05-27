@@ -33,8 +33,10 @@ use RZP\Models\VirtualAccount;
 use RZP\Models\Offer\EntityOffer;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Pricing\Calculator;
+
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Base\Traits\ExternalCore;
 use RZP\Constants\Entity as EntityName;
 use RZP\Models\Base\Traits\ExternalRepo;
 use RZP\Models\Gateway\Downtime\DowntimeDetection;
@@ -42,7 +44,7 @@ use RZP\Models\Merchant\Invoice\Type as InvoiceType;
 
 class Repository extends Base\Repository
 {
-    use ExternalRepo;
+    use ExternalRepo, ExternalCore;
 
     protected $entity = 'payment';
 
@@ -2372,20 +2374,34 @@ class Repository extends Base\Repository
 
     public function saveOrFail($payment, array $options = array())
     {
-        $emiPlan = $this->stripEmiRelation($payment);
+       if ($payment->isExternal() === false)
+       {
+          $emiPlan = $this->stripEmiRelation($payment);
 
-        parent::saveOrFail($payment, $options);
+          parent::saveOrFail($payment, $options);
 
-        $this->addEmiRelationIfApplicable($payment, $emiPlan);
+          $this->addEmiRelationIfApplicable($payment, $emiPlan);
+
+          return $payment;
+        }
+
+        $this->saveExternalEntity($payment);
     }
 
     public function save($payment, array $options = array())
     {
-        $emiPlan = $this->stripEmiRelation($payment);
+        if ($payment->isExternal() === false)
+        {
+          $emiPlan = $this->stripEmiRelation($payment);
 
-        parent::save($payment, $options);
+          parent::save($payment, $options);
 
-        $this->addEmiRelationIfApplicable($payment, $emiPlan);
+          $this->addEmiRelationIfApplicable($payment, $emiPlan);
+
+          return $payment;
+        }
+
+        $this->saveExternalEntity($payment);
     }
 
     public function stripEmiRelation(& $payment)

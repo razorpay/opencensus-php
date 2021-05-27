@@ -80,11 +80,6 @@ class CreateHdfcGateway extends Migration
             $table->integer('created_at');
             $table->integer('updated_at');
 
-            $table->foreign('payment_id')
-                  ->references('id')
-                  ->on('payments')
-                  ->on_delete('restrict');
-
             $table->index('refund_id');
             $table->index('gateway_transaction_id');
             $table->index('gateway_payment_id');
