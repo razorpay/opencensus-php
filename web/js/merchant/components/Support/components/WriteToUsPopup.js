@@ -1,6 +1,8 @@
-import react from 'react';
+import react,{useEffect} from 'react';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { withRouter, RouteComponentProps } from 'react-router-dom';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 function WriteToUsPopup({ businessName, supportFlags, closeModal, rzpTicketSystem, id, history }) {
   let data = {
@@ -9,12 +11,42 @@ function WriteToUsPopup({ businessName, supportFlags, closeModal, rzpTicketSyste
   };
   const msg = data.message_body;
   const handleContinueWithTicketClick = () => {
+    analyticsTrack({
+      objectName: 'SLA Information pop up CTA',
+      actionName: 'Clicked',
+      screen: 'homepage',
+      properties: {
+        cta:'Continue With Ticket',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     closeModal();
     rzpTicketSystem.openModal(`#${id}`);
   };
   const handleFaqs = () => {
+    analyticsTrack({
+      objectName: 'SLA Information pop up CTA',
+      actionName: 'Clicked',
+      screen: 'homepage',
+      properties: {
+        cta:'Bworse Faqs',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     window.open('https://razorpay.com/knowledgebase/#merchant', '_blank');
   };
+
+  useEffect(() => {
+    analyticsTrack({
+      objectName: 'SLA information pop up screen',
+      actionName: 'viewed',
+      screen: 'homepage',
+      properties: {
+        ctas:supportFlags.cta_list,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+  }, []);
 
   const MAP = {
     continue_with_ticket: (
@@ -27,6 +59,15 @@ function WriteToUsPopup({ businessName, supportFlags, closeModal, rzpTicketSyste
         className="btn btn-primary "
         type="button"
         onClick={() => {
+          analyticsTrack({
+            objectName: 'SLA Information pop up CTA',
+            actionName: 'Clicked',
+            screen: 'homepage',
+            properties: {
+              cta:'Complete KYC',
+              ...getCommonAnalyticsProperties(window.rzp_user),
+            },
+          });
           history.push('/onboarding/steps');
           closeModal();
         }}
@@ -39,6 +80,15 @@ function WriteToUsPopup({ businessName, supportFlags, closeModal, rzpTicketSyste
         className="btn btn-primary "
         type="button"
         onClick={() => {
+          analyticsTrack({
+            objectName: 'SLA Information pop up CTA',
+            actionName: 'Clicked',
+            screen: 'homepage',
+            properties: {
+              cta:'Complete KYC',
+              ...getCommonAnalyticsProperties(window.rzp_user),
+            },
+          });
           history.push('/onboarding/steps');
           closeModal();
         }}
@@ -51,6 +101,15 @@ function WriteToUsPopup({ businessName, supportFlags, closeModal, rzpTicketSyste
         className="btn btn-primary "
         type="button"
         onClick={() => {
+          analyticsTrack({
+            objectName: 'SLA Information pop up CTA',
+            actionName: 'Clicked',
+            screen: 'homepage',
+            properties: {
+              cta:'Complete KYC',
+              ...getCommonAnalyticsProperties(window.rzp_user),
+            },
+          });
           history.push('activation');
           closeModal();
         }}
