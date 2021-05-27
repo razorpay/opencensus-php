@@ -6,13 +6,18 @@ get_spinnaker_config_value() {
     --header "Authorization: Bearer ${GIT_TOKEN}")
   cookies="$(cat /tmp/cookies | awk '/SESSION/ { print $NF }')"
   SPINNAKER_HEADER="Cookie: SESSION=$cookies"
+  bvt1_pipeline_id="1206c395-2c51-4567-aa8a-ff5c3f8b9a72"
+  bvt2_pipeline_id="751ba446-f187-4772-bb27-28cedfa0b864"
+  # For now we using 2 parallel BVT pipelines. hence pulling the child pipeline queue length. In future once we have more BVT pipelines, we can have below approach
+  # Pull the Running PR count from parent pipeline and get the instance count - bvt1, bvt2 and so on. Store it in array and allocate instance accordingly
   if [ "$statusCode" = 200 ]; then
-    # fetching the instance of latest running pipeline from Spinnaker. If no pipeline is running then default set to BVT-1
-     apiInstanceFromSpinnaker=$(curl --location --request GET "https://deploy-api.razorpay.com/executions?pipelineConfigIds=842e0854-3a08-4e67-9881-a9ea1d005b31&limit=1&statuses=RUNNING" \
-      -H "${SPINNAKER_HEADER}" | jq --raw-output '.[].stages[0].outputs.instance')
+     bvt1_pipeline_count=$(curl --location --request GET "https://deploy-api.razorpay.com/executions?pipelineConfigIds=${bvt1_pipeline_id}&statuses=NOT_STARTED&limit=50&statuses=RUNNING" \
+      -H "${SPINNAKER_HEADER}" | jq length)
+     bvt2_pipeline_count=$(curl --location --request GET "https://deploy-api.razorpay.com/executions?pipelineConfigIds=${bvt2_pipeline_id}&statuses=NOT_STARTED&limit=50&statuses=RUNNING" \
+      -H "${SPINNAKER_HEADER}" | jq length)
   fi
   # Condition to check the current instance values tag
-  if [ "$apiInstanceFromSpinnaker" = "$defaultInstanceValue" ]; then
+  if [ "$bvt1_pipeline_count" -gt "$bvt2_pipeline_count" ]; then
     defaultInstanceValue="bvt-2"
   fi
 }
