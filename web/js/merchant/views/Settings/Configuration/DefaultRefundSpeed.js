@@ -16,6 +16,7 @@ import { fetchRefundPricing, createLateAuthConfig } from 'merchant/reducers/conf
 import RTracking from 'react-tracking';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { CreateTicketEmitter } from '../../TicketSupport/utils';
 import { getCustomURL } from 'merchant/components/DocsLink';
 @connect(
   (state) => {
@@ -355,11 +356,19 @@ export default class DefaultRefundSpeed extends Component {
 const raiseTicket = () => {
   if (window.rzpTicketSystem) {
     const rzpTicketSystem = window.rzpTicketSystem;
-    rzpTicketSystem.setPrefill('#request', ['merchant', 'other']);
-    rzpTicketSystem.openModal('#ticket');
-    setTimeout(() => {
-      rzpTicketSystem.modal.next();
-    }, 0);
+    CreateTicketEmitter.emit(
+      'create-ticket',
+      'ticket',
+      () => {
+        rzpTicketSystem.setPrefill('#request', ['merchant', 'other']);
+      },
+      () => {
+        setTimeout(() => {
+          rzpTicketSystem.modal.next();
+        }, 0);
+      },
+    );
+
     setTimeout(() => {
       var el = document.getElementsByName('request-description')[0];
       el.value = 'Hello Team,\n' + 'I’d like to enable Instant Refund feature';

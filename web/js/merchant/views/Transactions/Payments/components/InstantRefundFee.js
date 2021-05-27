@@ -9,12 +9,7 @@ import Amount from 'common/ui/Amount';
 import { Fragment } from 'react';
 import { updateConfig } from 'merchant/reducers/config';
 
-import {
-  isBlank,
-  rupeesToPaise,
-  paiseToRupees,
-  titleCase,
-} from 'common/utils/rzp-utils';
+import { isBlank, rupeesToPaise, paiseToRupees, titleCase } from 'common/utils/rzp-utils';
 import {
   refundPayment,
   fetchItem as fetchPayment,
@@ -23,10 +18,11 @@ import {
 } from 'merchant/reducers/payments/details';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
+import { CreateTicketEmitter } from '../../../TicketSupport/utils';
 const selector = formValueSelector('refundModal');
 
 @connect(
-  state => {
+  (state) => {
     let partial = selector(state, 'partial');
     let reverse_all = selector(state, 'reverse_all');
     let payable_amount = selector(state, 'amount');
@@ -49,7 +45,7 @@ const selector = formValueSelector('refundModal');
     updateConfig,
     fetchTransfers,
     ...NotificationsActions,
-  }
+  },
 )
 export default class InstantRefundFee extends Component {
   static contextTypes = {
@@ -82,51 +78,33 @@ export default class InstantRefundFee extends Component {
           onCloseClick={this.props.closeModal}
           title={
             <div style={{ color: '#515978' }}>
-              <i style={{ marginRight: '5px' }} class="i i-instant-refund" />{' '}
-              Fee for instant refund
+              <i style={{ marginRight: '5px' }} class="i i-instant-refund" /> Fee for instant refund
             </div>
           }
         />
-        <div
-          class="modal-body"
-          style={{ paddingTop: '10px', paddingBottom: '5px' }}
-        >
+        <div class="modal-body" style={{ paddingTop: '10px', paddingBottom: '5px' }}>
           <Fragment>
             <div class="panel panel-default refund-fee-structure">
-              <div
-                class="panel-heading grey"
-                style={{ fontWeight: 600, color: '#515978' }}
-              >
+              <div class="panel-heading grey" style={{ fontWeight: 600, color: '#515978' }}>
                 We charge minimal fee on each refund
               </div>
               <div class="panel-body" style={{ paddingBottom: '8px' }}>
                 {!this.props.pricing.custom_pricing ? (
                   <div class="instant-breakup">
                     <div class="flex">
-                      <div
-                        style={{ marginBottom: '5px' }}
-                        class="w50 text-left t-heading"
-                      >
+                      <div style={{ marginBottom: '5px' }} class="w50 text-left t-heading">
                         Refund Amount
                       </div>
-                      <div
-                        style={{ marginBottom: '5px' }}
-                        class="w50 text-right t-heading"
-                      >
+                      <div style={{ marginBottom: '5px' }} class="w50 text-right t-heading">
                         Processing Fees
                       </div>
                     </div>
                     {rules.map((r, i) => (
                       <div key={i} class="flex">
                         <div class="text-left amt" style={{ flexGrow: 1 }}>
-                          ₹{' '}
-                          {i > 0
-                            ? r.amount_range_min / 100 + 1
-                            : r.amount_range_min / 100}{' '}
+                          ₹ {i > 0 ? r.amount_range_min / 100 + 1 : r.amount_range_min / 100}{' '}
                           {i == rules.length - 1 ? 'and' : '-'}{' '}
-                          {i == rules.length - 1
-                            ? `above`
-                            : r.amount_range_max / 100}{' '}
+                          {i == rules.length - 1 ? `above` : r.amount_range_max / 100}{' '}
                         </div>
                         <div class="text-right" style={{ flexGrow: 1 }}>
                           <Amount
@@ -189,16 +167,22 @@ export default class InstantRefundFee extends Component {
 const raiseTicket = () => {
   if (window.rzpTicketSystem) {
     const rzpTicketSystem = window.rzpTicketSystem;
-    rzpTicketSystem.setPrefill('#request', ['merchant', 'other']);
-    rzpTicketSystem.openModal('#ticket');
-    setTimeout(() => {
-      rzpTicketSystem.modal.next();
-    }, 0);
+    CreateTicketEmitter.emit(
+      'create-ticket',
+      'ticket',
+      () => {
+        rzpTicketSystem.setPrefill('#request', ['merchant', 'other']);
+      },
+      () => {
+        setTimeout(() => {
+          rzpTicketSystem.modal.next();
+        }, 0);
+      },
+    );
+
     setTimeout(() => {
       var el = document.getElementsByName('request-description')[0];
-      el.value =
-        'Hello Team,\n' +
-        'I’d like to know my custom pricing for instant refunds.';
+      el.value = 'Hello Team,\n' + 'I’d like to know my custom pricing for instant refunds.';
       el.focus();
     }, 1000);
   }

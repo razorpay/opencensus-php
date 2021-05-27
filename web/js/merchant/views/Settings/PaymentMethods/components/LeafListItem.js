@@ -30,6 +30,7 @@ import {
   CANCELLED,
   GREYED,
 } from '../constants';
+import { CreateTicketEmitter } from '../../../TicketSupport/utils';
 
 class LeafListItem extends React.Component {
   constructor(props) {
@@ -279,12 +280,21 @@ class LeafListItem extends React.Component {
   };
 
   handleRaiseRequest = () => {
-    const rzpTicketSystem = window.rzpTicketSystem;
-    rzpTicketSystem.setPrefill('#request', ['merchant', 'other']);
-    rzpTicketSystem.openModal('#ticket');
-    setTimeout(() => {
-      rzpTicketSystem.modal.next();
-    }, 0);
+    if (window.rzpTicketSystem) {
+      const rzpTicketSystem = window.rzpTicketSystem;
+      CreateTicketEmitter.emit(
+        'create-ticket',
+        'ticket',
+        () => {
+          rzpTicketSystem.setPrefill('#request', ['merchant', 'other']);
+        },
+        () => {
+          setTimeout(() => {
+            rzpTicketSystem.modal.next();
+          }, 0);
+        },
+      );
+    }
   };
 
   render() {

@@ -18,6 +18,7 @@ import {
 } from 'merchant/reducers/payments/details';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
+import { CreateTicketEmitter } from '../../../TicketSupport/utils';
 const selector = formValueSelector('refundModal');
 
 @connect(
@@ -132,11 +133,19 @@ export default class InstantRefundPricingTable extends Component {
 const raiseTicket = () => {
   if (window.rzpTicketSystem) {
     const rzpTicketSystem = window.rzpTicketSystem;
-    rzpTicketSystem.setPrefill('#request', ['merchant', 'other']);
-    rzpTicketSystem.openModal('#ticket');
-    setTimeout(() => {
-      rzpTicketSystem.modal.next();
-    }, 0);
+    CreateTicketEmitter.emit(
+      'create-ticket',
+      'ticket',
+      () => {
+        rzpTicketSystem.setPrefill('#request', ['merchant', 'other']);
+      },
+      () => {
+        setTimeout(() => {
+          rzpTicketSystem.modal.next();
+        }, 0);
+      },
+    );
+
     setTimeout(() => {
       var el = document.getElementsByName('request-description')[0];
       el.value = 'Hello Team,\n' + 'I’d like to know my custom pricing for instant refunds.';

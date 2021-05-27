@@ -1,4 +1,5 @@
 import React from 'react';
+import { CreateTicketEmitter } from '../../TicketSupport/utils';
 import trackAutomatedCA from './ga/automated';
 
 const SuccesfullyEnabledModal = ({ onClose }) => {
@@ -10,11 +11,19 @@ const SuccesfullyEnabledModal = ({ onClose }) => {
     trackAutomatedCA.clickContactSupportInSuccessfullyEnabled({});
     if (window.rzpTicketSystem) {
       const rzpTicketSystem = window.rzpTicketSystem;
-      rzpTicketSystem.setPrefill('#request', ['merchant', 'other']);
-      rzpTicketSystem.openModal('#ticket');
-      setTimeout(() => {
-        rzpTicketSystem.modal.next();
-      }, 0);
+
+      CreateTicketEmitter.emit(
+        'create-ticket',
+        'ticket',
+        () => {
+          rzpTicketSystem.setPrefill('#request', ['merchant', 'other']);
+        },
+        () => {
+          setTimeout(() => {
+            rzpTicketSystem.modal.next();
+          }, 0);
+        },
+      );
     }
   };
   const handleModalCloseClick = () => {

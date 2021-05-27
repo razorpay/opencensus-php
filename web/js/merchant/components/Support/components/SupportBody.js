@@ -11,6 +11,7 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
 import WriteToUsPopup from './WriteToUsPopup';
+import { CreateTicketEmitter } from '../../../views/TicketSupport/utils';
 
 const isWorkingDay = () => {
   return window.RZP && window.RZP.holidays && window.RZP.holidays.isExtendedWorkingDay;
@@ -39,7 +40,46 @@ class SupportBody extends Component {
     window.open('https://razorpay.com/docs/payment-gateway/dashboard-guide/', '_blank');
   };
 
+  createTicket = (id, pcb, lcb) => {
+    const user = this.props.user;
+    const rzpTicketSystem = window.rzpTicketSystem;
+    if (rzpTicketSystem) {
+      if (pcb) {
+        pcb();
+      }
+      analyticsTrack({
+        objectName: 'contact us',
+        actionName: 'clicked',
+        screen: 'my account',
+        properties: {
+          location: 'balances',
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      });
+      if (this.props.supportFlags.show_create_ticket_popup) {
+        this.props.openModal({
+          size: 'small',
+          component: (
+            <WriteToUsPopup
+              businessName={user.name}
+              id={id}
+              supportFlags={this.props.supportFlags}
+              rzpTicketSystem={rzpTicketSystem}
+              closeModal={this.props.closeModal}
+            />
+          ),
+        });
+      } else rzpTicketSystem.openModal(`#${id}`);
+      if (lcb) {
+        lcb();
+      }
+    }
+  };
+
   componentDidMount() {
+    CreateTicketEmitter.on('create-ticket', (id, pcb, lcb) => {
+      this.createTicket(id, pcb, lcb);
+    });
     let params = {
       url: 'merchants/chat/timings_config',
       headers: {
@@ -98,20 +138,7 @@ class SupportBody extends Component {
         },
       });
       onToggle();
-      if (this.props.supportFlags.show_create_ticket_popup) {
-        this.props.openModal({
-          size: 'small',
-          component: (
-            <WriteToUsPopup
-              businessName={user.name}
-              id={id}
-              supportFlags={this.props.supportFlags}
-              rzpTicketSystem={rzpTicketSystem}
-              closeModal={this.props.closeModal}
-            />
-          ),
-        });
-      } else rzpTicketSystem.openModal(`#${id}`);
+      this.createTicket(id);
     } else {
       console.log('RZP TICKET SYSTEM INIT FAILED');
     }

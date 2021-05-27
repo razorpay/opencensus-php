@@ -2,6 +2,7 @@ import React from 'react';
 import RTracking from 'react-tracking';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { CreateTicketEmitter } from '../../views/TicketSupport/utils';
 
 const SupportButton = ({ type, buttonLabel, category, openSection, tracking }) => {
   const handleClick = () => {
@@ -20,11 +21,21 @@ const SupportButton = ({ type, buttonLabel, category, openSection, tracking }) =
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
-    rzpTicketSystem.setPrefill('#request', [category, openSection]);
-    rzpTicketSystem.openModal('#ticket');
-    setTimeout(() => {
-      rzpTicketSystem.modal.nextButton.click();
-    }, 0);
+    if (window.rzpTicketSystem) {
+      const rzpTicketSystem = window.rzpTicketSystem;
+      CreateTicketEmitter.emit(
+        'create-ticket',
+        'ticket',
+        () => {
+          rzpTicketSystem.setPrefill('#request', [category, openSection]);
+        },
+        () => {
+          setTimeout(() => {
+            rzpTicketSystem.modal.nextButton.click();
+          }, 0);
+        },
+      );
+    }
   };
 
   if (type === 'button') {

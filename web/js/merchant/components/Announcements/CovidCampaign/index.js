@@ -1,6 +1,7 @@
 import React from 'react';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import { trackMarketingExperimentBanner } from '../ga';
+import { CreateTicketEmitter } from '../../../views/TicketSupport/utils';
 
 export default ({ userId }) => {
   trackMarketingExperimentBanner('CovidCampaign', 'Appear');
@@ -8,14 +9,14 @@ export default ({ userId }) => {
   const raiseTicket = () => {
     if (window.rzpTicketSystem) {
       const rzpTicketSystem = window.rzpTicketSystem;
-      rzpTicketSystem.setPrefill('#request', [
-        'merchant',
-        'covid-19-relief-query',
-      ]);
-      rzpTicketSystem.openModal('#ticket');
-      setTimeout(() => {
-        rzpTicketSystem.modal.next();
-      }, 0);
+
+      CreateTicketEmitter.emit('create-ticket', 'ticket', null, () => {
+        rzpTicketSystem.setPrefill('#request', ['merchant', 'covid-19-relief-query']);
+        setTimeout(() => {
+          rzpTicketSystem.modal.next();
+        }, 0);
+      });
+
       setTimeout(() => {
         document.getElementsByName('request-description')[0].value =
           'Hello Team,\n' +
@@ -33,15 +34,13 @@ export default ({ userId }) => {
     >
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <div>
-          We’re here to help you ensure business continuity in wake of
-          COVID-19.&nbsp; Reach out to us to check the eligibility for free
-          credits or same day settlements.&nbsp; Drop us a note at&nbsp;
+          We’re here to help you ensure business continuity in wake of COVID-19.&nbsp; Reach out to
+          us to check the eligibility for free credits or same day settlements.&nbsp; Drop us a note
+          at&nbsp;
           <a
             href="mailto:covid-19relief@razorpay.com"
             target="_blank"
-            onClick={() =>
-              trackMarketingExperimentBanner('CovidCampaign', 'Click Link')
-            }
+            onClick={() => trackMarketingExperimentBanner('CovidCampaign', 'Click Link')}
           >
             covid-19relief@razorpay.com
           </a>

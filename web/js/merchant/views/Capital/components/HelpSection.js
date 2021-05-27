@@ -3,6 +3,7 @@ import { CAPITAL_LINKS } from '../Loans/constants';
 import Button from 'common/new-ui/Button';
 import getApplicationProgressPercentage from '../utils/ProgressPercentageCalculator';
 import { isCashAdvanceProduct } from '../utils';
+import { CreateTicketEmitter } from '../../TicketSupport/utils';
 
 function HelpSection({
   applicationId,
@@ -42,11 +43,19 @@ function HelpSection({
       ) {
         rzpTicketSystem.setEnvironment('capital');
       }
-      rzpTicketSystem.setPrefill('#request', ['merchant', 'other']);
-      rzpTicketSystem.openModal('#ticket');
-      setTimeout(() => {
-        rzpTicketSystem.modal.next();
-      }, 0);
+      CreateTicketEmitter.emit(
+        'create-ticket',
+        'ticket',
+        () => {
+          rzpTicketSystem.setPrefill('#request', ['merchant', 'other']);
+        },
+        () => {
+          setTimeout(() => {
+            rzpTicketSystem.modal.next();
+          }, 0);
+        },
+      );
+
       setTimeout(() => {
         document.getElementsByName('request-description')[0].value = `${
           applicationId === 'new' ? '' : `[${product} Application ID:${applicationId}]`

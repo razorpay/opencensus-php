@@ -15,6 +15,8 @@ import Amount from 'common/ui/Amount';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { loadCheckout } from 'merchant/utils/fetchKeysAndCheckout';
 import { analyticsTrack } from 'common/utils/analytics';
+import { CreateTicketEmitter } from '../../TicketSupport/utils';
+
 @connect(
   (state) => ({
     ...state.session,
@@ -202,11 +204,19 @@ export default class AddFundsContainer extends Component {
     if (window.rzpTicketSystem && window.rzpTicketSystem.addEventListener) {
       const rzpTicketSystem = window.rzpTicketSystem;
       window.rzpTicketSystem.addEventListener('ticket-created', this.handleTicketCreation);
-      rzpTicketSystem.setPrefill('#request', ['merchant', 'account-configuration-changes']);
-      rzpTicketSystem.openModal('#ticket');
-      setTimeout(() => {
-        rzpTicketSystem.modal.next();
-      }, 0);
+      CreateTicketEmitter.emit(
+        'create-ticket',
+        'ticket',
+        () => {
+          rzpTicketSystem.setPrefill('#request', ['merchant', 'account-configuration-changes']);
+        },
+        () => {
+          setTimeout(() => {
+            rzpTicketSystem.modal.next();
+          }, 0);
+        },
+      );
+
       setTimeout(() => {
         document.getElementsByName('request-description')[0].value =
           'Please activate reserve balance and share VA details';
@@ -225,6 +235,8 @@ export default class AddFundsContainer extends Component {
     });
   }
 
+  cra;
+
   handleContactUs = () => {
     analyticsTrack({
       objectName: 'contact us',
@@ -238,11 +250,18 @@ export default class AddFundsContainer extends Component {
     if (window.rzpTicketSystem) {
       const rzpTicketSystem = window.rzpTicketSystem;
       window.rzpTicketSystem.addEventListener('ticket-created', this.handleTicketCreation);
-      rzpTicketSystem.setPrefill('#request', ['merchant', 'account-configuration-changes']);
-      rzpTicketSystem.openModal('#ticket');
-      setTimeout(() => {
-        rzpTicketSystem.modal.next();
-      }, 0);
+      CreateTicketEmitter.emit(
+        'create-ticket',
+        'ticket',
+        () => {
+          rzpTicketSystem.setPrefill('#request', ['merchant', 'account-configuration-changes']);
+        },
+        () => {
+          setTimeout(() => {
+            rzpTicketSystem.modal.next();
+          }, 0);
+        },
+      );
     }
   };
 

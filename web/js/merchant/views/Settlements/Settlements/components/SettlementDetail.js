@@ -5,6 +5,7 @@ import ModalHeader from 'common/ui/ModalHeader';
 import Amount from 'common/ui/Amount';
 import Time from 'common/ui/Time';
 import { closeModal } from 'merchant_common/reducers/modals';
+import { CreateTicketEmitter } from '../../../TicketSupport/utils';
 @connect((state) => state, {
   closeModal,
 })
@@ -24,11 +25,18 @@ export default class SettlementDetail extends Component {
 
     if (window.rzpTicketSystem) {
       const rzpTicketSystem = window.rzpTicketSystem;
-      rzpTicketSystem.setPrefill('#request', ['merchant', 'settlement-related']);
-      rzpTicketSystem.openModal('#ticket');
-      setTimeout(() => {
-        rzpTicketSystem.modal.next();
-      }, 0);
+      CreateTicketEmitter.emit(
+        'create-ticket',
+        'ticket',
+        () => {
+          rzpTicketSystem.setPrefill('#request', ['merchant', 'settlement-related']);
+        },
+        () => {
+          setTimeout(() => {
+            rzpTicketSystem.modal.next();
+          }, 0);
+        },
+      );
     }
   };
 

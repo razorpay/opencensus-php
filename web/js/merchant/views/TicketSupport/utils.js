@@ -1,6 +1,7 @@
 import moment from 'moment';
 import { statuses } from './components/data';
 import { getAttachmentExpiryTime } from 'common/utils/rzp-utils';
+import * as EventEmitter from 'eventemitter3';
 
 export function getEscalationType(ticket) {
   const STATUS = statuses[ticket.status] && statuses[ticket.status].name;
@@ -47,3 +48,5 @@ export function getExpiryTime(awsURL) {
   // Return time in milliseconds
   return expiryTime.diff(moment(), 'ms');
 }
+
+export const CreateTicketEmitter = new EventEmitter();

@@ -9,6 +9,7 @@ import User, { setFeatures } from 'merchant/models/User';
 import * as SessionActions from 'merchant/reducers/session';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import ModalCloseReasons from 'merchant/views/Settlements/Settlements/components/Modals/ModalCloseReasons';
+import { CreateTicketEmitter } from '../../../../TicketSupport/utils';
 
 @connect(
   (state) => ({
@@ -65,11 +66,18 @@ export default class ScheduledModal extends Component {
     });
     if (window.rzpTicketSystem) {
       const rzpTicketSystem = window.rzpTicketSystem;
-      rzpTicketSystem.setPrefill('#request', ['merchant', 'international-early-settlement']);
-      rzpTicketSystem.openModal('#ticket');
-      setTimeout(() => {
-        rzpTicketSystem.modal.next();
-      }, 0);
+      CreateTicketEmitter.emit(
+        'create-ticket',
+        'ticket',
+        () => {
+          rzpTicketSystem.setPrefill('#request', ['merchant', 'international-early-settlement']);
+        },
+        () => {
+          setTimeout(() => {
+            rzpTicketSystem.modal.next();
+          }, 0);
+        },
+      );
     }
   };
 

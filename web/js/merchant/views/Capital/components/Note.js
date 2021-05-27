@@ -1,5 +1,6 @@
 import React from 'react';
 import Button from 'common/new-ui/Button';
+import { CreateTicketEmitter } from '../../TicketSupport/utils';
 
 function Note({
   message,
@@ -21,11 +22,19 @@ function Note({
       ) {
         rzpTicketSystem.setEnvironment('capital');
       }
-      rzpTicketSystem.setPrefill('#request', ['merchant', 'other']);
-      rzpTicketSystem.openModal('#ticket');
-      setTimeout(() => {
-        rzpTicketSystem.modal.next();
-      }, 0);
+      CreateTicketEmitter.emit(
+        'create-ticket',
+        'ticket',
+        () => {
+          rzpTicketSystem.setPrefill('#request', ['merchant', 'other']);
+        },
+        () => {
+          setTimeout(() => {
+            rzpTicketSystem.modal.next();
+          }, 0);
+        },
+      );
+
       setTimeout(() => {
         document.getElementsByName('request-description')[0].value = `${
           applicationId === 'new' ? '' : `[${product} Application ID:${applicationId}]`

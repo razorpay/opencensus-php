@@ -44,7 +44,6 @@ export default class MerchantConfigForm extends PureComponent {
     return (
       <form
         onSubmit={(...a) => {
-          debugger;
           analyticsTrack({
             objectName: 'display name edit popup',
             actionName: 'clicked',
