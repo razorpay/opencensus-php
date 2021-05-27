@@ -11,9 +11,10 @@ use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\IntegrationException;
 use RZP\Exception\GatewayErrorException;
-use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\BankingAccountStatement\Type;
 use RZP\Models\Settlement\SlackNotification;
+use RZP\Models\BankingAccount\Gateway\Icici;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\BankingAccountStatement\Entity;
 use RZP\Models\BankingAccountStatement\Channel;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -68,10 +69,16 @@ class Gateway extends BaseProcessor
      */
     const DEBIT_REGEX_RTGS = '/^RTGS\/(.*?)\//';
 
+    const MAX_ATTEMPTS_TO_FETCH_CREDENTIALS_FROM_BAS = 3;
 
-    public function __construct(string $channel, string $accountNumber)
+    /** @var BasDetails\Entity */
+    protected $basDetails;
+
+    public function __construct(string $channel, string $accountNumber, BasDetails\Entity $basDetails)
     {
         $this->setSource(Source::FETCH_API);
+
+        $this->basDetails = $basDetails;
 
         parent::__construct($channel, $accountNumber);
     }
@@ -100,14 +107,7 @@ class Gateway extends BaseProcessor
 
         $lastBankTransaction = $lastBankTransactionData? $lastBankTransactionData->toArray() : [];
 
-        if (array_key_exists(Entity::MERCHANT_ID, $lastBankTransaction) === true)
-        {
-            $merchantId = $lastBankTransaction[Entity::MERCHANT_ID];
-        }
-        else
-        {
-            $merchantId = "";
-        }
+        $merchantId = $this->basDetails->getMerchantId();
 
         $attemptLimit = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::ICICI_STATEMENT_FETCH_ATTEMPT_LIMIT]);
 
@@ -138,12 +138,14 @@ class Gateway extends BaseProcessor
 
         $previousLasttrid = null;
 
+        $credentials = $this->getCredentialsFromBAS();
+
         do
         {
             // We don't have any bank response for the first request.
             $lastFormattedResponse = last($finalFormattedResponse) ?: $lastBankTransaction;
 
-            $requestData = $this->getRequestDataForMozart($lastFormattedResponse, $previousLasttrid);
+            $requestData = $this->getRequestDataForMozart($lastFormattedResponse, $previousLasttrid, $credentials);
 
             try
             {
@@ -219,7 +221,57 @@ class Gateway extends BaseProcessor
         return $finalFormattedResponse;
     }
 
-    protected function getRequestDataForMozart(array $lastTransaction, $previousLasttrid)
+    // Account Credentials are stored in Banking Account Service.
+    // Credentials are fetched by making request to the service.
+    protected function getCredentialsFromBAS()
+    {
+        $attempts = self::MAX_ATTEMPTS_TO_FETCH_CREDENTIALS_FROM_BAS;
+
+        /** @var \RZP\Services\BankingAccountService $bas */
+        $bas = $this->app['banking_account_service'];
+
+        do
+        {
+            $retry = false;
+
+            try
+            {
+                $credentials = $bas->fetchBankingCredentials($this->basDetails->getMerchantId(), $this->channel, $this->accountNumber);
+            }
+            catch (\Throwable $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::ERROR,
+                    TraceCode::BANKING_ACCOUNT_STATEMENT_CREDENTIALS_FETCH_FROM_BAS_FAILURE,
+                    [
+                        Entity::ACCOUNT_NUMBER => $this->accountNumber,
+                        Entity::CHANNEL        => $this->channel,
+                    ]);
+
+                $attempts--;
+
+                if ($attempts <= 0)
+                {
+                    throw $ex;
+                }
+
+                $retry = true;
+            }
+
+        } while (($retry === true) and ($attempts > 0));
+
+        $this->validateCredentialsResponse($credentials);
+
+        return $credentials;
+    }
+
+    protected function validateCredentialsResponse(array $input)
+    {
+        (new Validator)->validateInput('icici_credentials', $input);
+    }
+
+    protected function getRequestDataForMozart(array $lastTransaction, $previousLasttrid, array $credentials)
     {
         $from_date = $this->getStatementStartTime($lastTransaction);
 
@@ -234,10 +286,10 @@ class Gateway extends BaseProcessor
             Fields::SOURCE_ACCOUNT => [
                 Fields::ACCOUNT_NUMBER => $this->accountNumber,
                 Fields::CREDENTIALS => [
-                    Fields::CORP_ID                  => 'v5',
-                    Fields::USER_ID                  => 'v6',
+                    Fields::CORP_ID                  => $credentials[Icici\Fields::CORP_ID],
+                    Fields::USER_ID                  => $credentials[Icici\Fields::CORP_USER],
                     Fields::AGGR_ID                  => $this->config['banking_account']['icici'][Fields::AGGR_ID_CONFIG],
-                    Fields::URN                      => 'v8',
+                    Fields::URN                      => $credentials[Icici\Fields::URN],
                     Fields::ACCOUNT_STATEMENT_APIKEY => $this->config['banking_account']['icici'][Fields::ACCOUNT_STATEMENT_API_KEY_CONFIG],
                 ]
             ],
@@ -320,7 +372,10 @@ class Gateway extends BaseProcessor
 
     protected function getStatementStartTime(array $lastTransaction)
     {
-        $startTime = 1;
+        // BAS Details entity is created at the time of activation. Hence when we fetch statement of the merchant
+        // for the first time, starting fetching of statement from 2 months before activation. 2 months is decided
+        // assuming all accounts onboarded will be new accounts and not existing accounts.
+        $startTime = Carbon::createFromTimestamp($this->basDetails->getCreatedAt())->subMonths(2)->getTimestamp();
 
         if (empty($lastTransaction) === false)
         {

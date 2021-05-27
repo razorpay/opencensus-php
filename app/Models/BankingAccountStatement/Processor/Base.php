@@ -73,8 +73,6 @@ abstract class Base extends BaseCore
 
     protected function fetchAccountStatementDetailsViaFetchApi(array $input)
     {
-        $this->validateInputForMozartRequest($input);
-
         $formattedResponse = $this->sendRequestAndGetResponse($input);
 
         return $formattedResponse;

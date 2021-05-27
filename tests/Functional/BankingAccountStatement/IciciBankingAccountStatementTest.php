@@ -62,18 +62,6 @@ class IciciBankingAccountStatementTest extends TestCase
 
         $this->setUpMerchantForBusinessBanking(false, 0, 'direct', 'icici');
 
-        $bankingAccountParams = [
-            'id'             => 'xba00000000002',
-            'merchant_id'    => '10000000000000',
-            'account_ifsc'   => 'ICIC0000047',
-            'account_number' => '2224440041626905',
-            'status'         => 'activated',
-            'channel'        => 'icici',
-            'balance_id'     => $this->bankingBalance->getId(),
-        ];
-
-        $this->createBankingAccount($bankingAccountParams);
-
         $this->fixtures->create('banking_account_statement_details',[
             BasDetails\Entity::ID                                  => 'xbas0000000002',
             BasDetails\Entity::MERCHANT_ID                         => '10000000000000',
@@ -82,6 +70,10 @@ class IciciBankingAccountStatementTest extends TestCase
             BasDetails\Entity::CHANNEL                             => BasDetails\Channel::ICICI,
             BasDetails\Entity::STATUS                              => BasDetails\Status::ACTIVE,
         ]);
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        (new AdminService)->setConfigKeys([ConfigKey::ACCOUNT_STATEMENT_V2_FLOW => ["2224440041626905"]]);
     }
 
     protected function setMozartMockResponse($mockedResponse)
@@ -571,7 +563,17 @@ class IciciBankingAccountStatementTest extends TestCase
 
     public function testUtrMappingForNEFT()
     {
-        $this->fixtures->edit('balance', $this->bankingBalance->getId(), ['balance' => '1000000']);
+        $this->fixtures->create('banking_account_statement',
+                                [
+                                    'type'                      => 'credit',
+                                    'amount'                    => '1000000',
+                                    'channel'                   => 'icici',
+                                    'account_number'            => '2224440041626905',
+                                    'bank_transaction_id'       => 'SDHDH',
+                                    'balance'                   => 1000000,
+                                    'transaction_date'          => 1584987183,
+                                    'posted_date'               => 1584987183,
+                                ]);
 
         $this->setupForIciciPayout(Channel::ICICI, 100, FundTransfer\Mode::NEFT);
 
@@ -633,12 +635,12 @@ class IciciBankingAccountStatementTest extends TestCase
         $externalEntries = $this->getDbEntities('external', ['balance_id' => $payout['balance_id']]);
         $payout = $this->getDbLastEntity('payout');
 
-        $this->assertEquals(EntityConstants::PAYOUT, $basEntries[0]['entity_type']);
-        $this->assertEquals($payout['id'], $basEntries[0]['entity_id']);
-        $this->assertEquals($payout['transaction_id'], $basEntries[0]['transaction_id']);
-        $this->assertEquals($payout['utr'], $basEntries[0]['utr']);
+        $this->assertEquals(EntityConstants::PAYOUT, $basEntries[1]['entity_type']);
+        $this->assertEquals($payout['id'], $basEntries[1]['entity_id']);
+        $this->assertEquals($payout['transaction_id'], $basEntries[1]['transaction_id']);
+        $this->assertEquals($payout['utr'], $basEntries[1]['utr']);
 
-        $this->assertEquals(0, count($externalEntries));
+        $this->assertEquals(1, count($externalEntries));
         $this->assertEquals(EntityConstants::PAYOUT, $payoutTxn['type']);
         $this->assertEquals($payoutTxn['id'], $payout['transaction_id']);
 
@@ -653,7 +655,17 @@ class IciciBankingAccountStatementTest extends TestCase
 
     public function testUtrMappingForIMPS()
     {
-        $this->fixtures->edit('balance', $this->bankingBalance->getId(), ['balance' => '1000000']);
+        $this->fixtures->create('banking_account_statement',
+                                [
+                                    'type'                      => 'credit',
+                                    'amount'                    => '1000000',
+                                    'channel'                   => 'icici',
+                                    'account_number'            => '2224440041626905',
+                                    'bank_transaction_id'       => 'SDHDH',
+                                    'balance'                   => 1000000,
+                                    'transaction_date'          => 1584987183,
+                                    'posted_date'               => 1584987183,
+                                ]);
 
         $this->setupForIciciPayout(Channel::ICICI, 100, FundTransfer\Mode::IMPS);
 
@@ -717,12 +729,12 @@ class IciciBankingAccountStatementTest extends TestCase
         $externalEntries = $this->getDbEntities('external', ['balance_id' => $payout['balance_id']]);
         $payout = $this->getDbLastEntity('payout');
 
-        $this->assertEquals(EntityConstants::PAYOUT, $basEntries[0]['entity_type']);
-        $this->assertEquals($payout['id'], $basEntries[0]['entity_id']);
-        $this->assertEquals($payout['transaction_id'], $basEntries[0]['transaction_id']);
-        $this->assertEquals($payout['utr'], $basEntries[0]['utr']);
+        $this->assertEquals(EntityConstants::PAYOUT, $basEntries[1]['entity_type']);
+        $this->assertEquals($payout['id'], $basEntries[1]['entity_id']);
+        $this->assertEquals($payout['transaction_id'], $basEntries[1]['transaction_id']);
+        $this->assertEquals($payout['utr'], $basEntries[1]['utr']);
 
-        $this->assertEquals(0, count($externalEntries));
+        $this->assertEquals(1, count($externalEntries));
         $this->assertEquals(EntityConstants::PAYOUT, $payoutTxn['type']);
         $this->assertEquals($payoutTxn['id'], $payout['transaction_id']);
 
@@ -737,7 +749,17 @@ class IciciBankingAccountStatementTest extends TestCase
 
     public function testUtrMappingForRTGS()
     {
-        $this->fixtures->edit('balance', $this->bankingBalance->getId(), ['balance' => '35000000']);
+        $this->fixtures->create('banking_account_statement',
+                                [
+                                    'type'                      => 'credit',
+                                    'amount'                    => '35000000',
+                                    'channel'                   => 'icici',
+                                    'account_number'            => '2224440041626905',
+                                    'bank_transaction_id'       => 'SDHDH',
+                                    'balance'                   => 35000000,
+                                    'transaction_date'          => 1584987183,
+                                    'posted_date'               => 1584987183,
+                                ]);
 
         $this->setupForIciciPayout(Channel::ICICI, 20000000, FundTransfer\Mode::RTGS);
 
@@ -799,12 +821,12 @@ class IciciBankingAccountStatementTest extends TestCase
         $externalEntries = $this->getDbEntities('external', ['balance_id' => $payout['balance_id']]);
         $payout = $this->getDbLastEntity('payout');
 
-        $this->assertEquals(EntityConstants::PAYOUT, $basEntries[0]['entity_type']);
-        $this->assertEquals($payout['id'], $basEntries[0]['entity_id']);
-        $this->assertEquals($payout['transaction_id'], $basEntries[0]['transaction_id']);
-        $this->assertEquals($payout['utr'], $basEntries[0]['utr']);
+        $this->assertEquals(EntityConstants::PAYOUT, $basEntries[1]['entity_type']);
+        $this->assertEquals($payout['id'], $basEntries[1]['entity_id']);
+        $this->assertEquals($payout['transaction_id'], $basEntries[1]['transaction_id']);
+        $this->assertEquals($payout['utr'], $basEntries[1]['utr']);
 
-        $this->assertEquals(0, count($externalEntries));
+        $this->assertEquals(1, count($externalEntries));
         $this->assertEquals(EntityConstants::PAYOUT, $payoutTxn['type']);
         $this->assertEquals($payoutTxn['id'], $payout['transaction_id']);
 

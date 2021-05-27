@@ -106,6 +106,8 @@ class Core extends Base\Core
                 Entity::ACCOUNT_NUMBER  => $accountNumber,
             ];
 
+            $this->fetchAccountStatementV2($input);
+
             $this->processStatementForAccountV2($input);
 
             return ['channel' => $channel, 'account_number' => $accountNumber];
@@ -143,7 +145,7 @@ class Core extends Base\Core
 
                     $merchant = $bankingAccount->merchant;
 
-                    $processor = $this->getProcessor($channel, $accountNumber);
+                    $processor = $this->getProcessor($channel, $accountNumber, $basDetailEntity);
 
                     $accountStatementDetails = $processor->fetchAccountStatementDetails($input);
 
@@ -197,29 +199,23 @@ class Core extends Base\Core
                 'banking_account_statement_fetch_' . $accountNumber . '_' . $channel,
                 function () use ($channel, $accountNumber, $input)
                 {
-                    $bankingAccount = (new BankingAccount\Repository)->findByAccountNumberAndChannel($accountNumber, $channel);
-
-                    $currentTime = Carbon::now()->getTimestamp();
-
-                    $bankingAccount->setLastStatementAttemptAt($currentTime);
-
-                    $this->repo->saveOrFail($bankingAccount);
-
                     $basDetailEntity = $this->repo->banking_account_statement_details->fetchByAccountNumberAndChannel($accountNumber, $channel);
 
                     $basDetailEntity->setLastStatementAttemptAt();
 
                     $this->repo->saveOrFail($basDetailEntity);
 
-                    $merchant = $bankingAccount->merchant;
+                    $merchant = $basDetailEntity->merchant;
 
-                    $processor = $this->getProcessor($channel, $accountNumber);
+                    $processor = $this->getProcessor($channel, $accountNumber, $basDetailEntity);
+
+                    $input[Entity::MERCHANT_ID] = $merchant->getId();
 
                     $bankTransactions = $processor->fetchAccountStatementDetails($input);
 
                     $this->saveAccountStatementDetails($bankTransactions, $merchant, $channel, $accountNumber, $processor);
 
-                    $bankingAccount->balance->updateLastFetchedAt();
+                    $basDetailEntity->balance->updateLastFetchedAt();
                 },
                 300,
                 ErrorCode::BAD_REQUEST_ANOTHER_BANKING_ACCOUNT_STATEMENT_FETCH_IN_PROGRESS
@@ -266,14 +262,14 @@ class Core extends Base\Core
             $saveLimit = self::ACCOUNT_STATEMENT_RECORDS_TO_SAVE_IN_TOTAL_DEFAULT;
         }
 
+        $basDetails = (new BASDetails\Repository)->fetchByAccountNumberAndChannel($accountNumber, $channel);
+
         if ($channel === Channel::RBL)
         {
             $this->checkForRblSinglePaymentsApi($accountNumber);
         }
 
-        $bankingAccount = (new BankingAccount\Repository)->findByAccountNumberAndChannel($accountNumber, $channel);
-
-        $merchant = $bankingAccount->merchant;
+        $merchant = $basDetails->merchant;
 
         try
         {
@@ -652,13 +648,13 @@ class Core extends Base\Core
         return new $statementGenerator($accountNumber, $channel, $fromDate, $toDate);
     }
 
-    protected function getProcessor(string $channel, string $accountNumber): Processor\Base
+    protected function getProcessor(string $channel, string $accountNumber, BASDetails\Entity $basDetailEntity = null): Processor\Base
     {
         $processor = __NAMESPACE__ . '\\' . 'Processor';
 
         $processor .= '\\' . studly_case($channel) . '\\' . 'Gateway';
 
-        return new $processor($channel, $accountNumber);
+        return new $processor($channel, $accountNumber, $basDetailEntity);
     }
 
     /**

@@ -2580,21 +2580,21 @@ class Core extends Base\Core
             TraceCode::PAYOUT_HAS_DIFFERENT_CHANNEL_AT_FTS,
             $traceInfo);
 
-        if ($payoutChannel ===  Channel::RBL)
+        if ($payout->isBalanceAccountTypeDirect() === true)
         {
             //
-            // For RBL payouts, there shouldn't be any mismatch in channel at FTS
+            // For direct payouts, there shouldn't be any mismatch in channel at FTS
             // So this signifies bug in logic, hence raising an alert and failing webhook
             //
             (new Settlement\SlackNotification)->send(
-                'FTS sent different channel for rbl payouts',
+                'FTS sent different channel for ' . $payoutChannel . ' payouts',
                 $traceInfo,
                 null,
                 1,
                 'rx_ca_rbl_alerts');
 
             throw new Exception\LogicException(
-                'Different channel passed by FTS for rbl payouts',
+                'Different channel passed by FTS for CA payouts',
                 null,
                 $traceInfo);
         }

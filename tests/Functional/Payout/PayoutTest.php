@@ -6050,7 +6050,7 @@ class PayoutTest extends OAuthTestCase
             ]);
         },
         \RZP\Exception\LogicException::class,
-        'Different channel passed by FTS for rbl payouts');
+        'Different channel passed by FTS for CA payouts');
 
         $updatedPayout = $this->getDbEntityById('payout',$payoutId)->toArray();
 

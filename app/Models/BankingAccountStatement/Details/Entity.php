@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Constants\Table;
+use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Balance;
 use RZP\Constants\Entity as EntityConstants;
@@ -185,10 +186,19 @@ class Entity extends Base\PublicEntity
 
     // ============================= END SETTERS ===========================
 
+    // ============================= RELATIONS ===========================
+
     public function balance()
     {
         return $this->belongsTo(Balance\Entity::class);
     }
+
+    public function merchant()
+    {
+        return $this->belongsTo(Merchant\Entity::class);
+    }
+
+    // ============================= END RELATIONS ===========================
 
     public function isGatewayBalanceFetchCronMoreUpdated(): bool
     {

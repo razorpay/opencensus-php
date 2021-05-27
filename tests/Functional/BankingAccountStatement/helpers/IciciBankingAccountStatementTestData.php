@@ -12,16 +12,12 @@ return [
     'testIciciAccountStatementCase1' => [
         'request'  => [
             'method'  => 'POST',
-            'url'     => '/banking_account_statement/process',
-            'content' => [
-                'account_number'  => '2224440041626905',
-                'channel'         => 'icici',
-            ],
+            'url'     => '/banking_account_statement/process/icici',
+            'content' => [],
         ],
         'response' => [
             'content' => [
-                'account_number' => '2224440041626905',
-                'channel'        => 'icici'
+                'accounts_processed' => ['2224440041626905']
             ],
         ],
     ],

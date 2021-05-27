@@ -20,6 +20,7 @@ use RZP\Models\BankingAccountStatement\Entity;
 use RZP\Models\BankingAccountStatement\Channel;
 use RZP\Models\BankingAccountStatement\Category;
 use RZP\Models\BankingAccountStatement\Processor\Source;
+use RZP\Models\BankingAccountStatement\Details as BasDetails;
 use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
 use RZP\Models\BankingAccountStatement\Processor\Base as BaseProcessor;
 use RZP\Models\BankingAccountStatement\Core as BankingAccountStatementCore;
@@ -51,9 +52,14 @@ class Gateway extends BaseProcessor
 
     const OFFSET_FOR_SAVING_RECORD = 60;
 
-    public function __construct(string $channel, string $accountNumber)
+    /** @var BasDetails\Entity */
+    protected $basDetails;
+
+    public function __construct(string $channel, string $accountNumber, BasDetails\Entity $basDetails)
     {
         $this->setSource(Source::FETCH_API);
+
+        $this->basDetails = $basDetails;
 
         parent::__construct($channel, $accountNumber);
     }

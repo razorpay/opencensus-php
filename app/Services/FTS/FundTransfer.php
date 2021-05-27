@@ -26,6 +26,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Holidays as TransferHoliday;
 use RZP\Models\Settlement\Holidays as SettlementHoliday;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Payout as Payout;
 
 class FundTransfer extends Base
@@ -334,13 +335,17 @@ class FundTransfer extends Base
 
         $source = $this->fta->source;
 
-        if (($channel === Channel::RBL) and ($sourceType === Entity::PAYOUT))
+        if ($sourceType === Entity::PAYOUT)
         {
-            if (method_exists($source, 'getSourceFtsFundAccountId'))
+            if (($channel === Channel::RBL or $channel === Channel::ICICI) and
+                ($source->balance->getAccountType() === Balance\AccountType::DIRECT))
             {
-                $request[Constants::TRANSFER] += [
-                    Constants::PREFERRED_SOURCE_ACCOUNT_ID => (int) $this->fta->source->getSourceFtsFundAccountId(),
-                ];
+                if (method_exists($source, 'getSourceFtsFundAccountId'))
+                {
+                    $request[Constants::TRANSFER] += [
+                        Constants::PREFERRED_SOURCE_ACCOUNT_ID => (int) $this->fta->source->getSourceFtsFundAccountId(),
+                    ];
+                }
             }
         }
 

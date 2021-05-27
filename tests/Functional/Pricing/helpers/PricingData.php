@@ -1046,7 +1046,7 @@ return [
             'status_code' => 400,
         ],
     ],
-    
+
     'testAddPricingPlanRuleBySBIAdmin' => [
         'request'   => [
             'content' => [

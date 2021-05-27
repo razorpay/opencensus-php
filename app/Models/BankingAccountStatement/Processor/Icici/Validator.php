@@ -3,6 +3,7 @@
 namespace RZP\Models\BankingAccountStatement\Processor\Icici;
 
 use RZP\Base;
+use RZP\Models\BankingAccount\Gateway\Icici;
 use RZP\Models\BankingAccountStatement\Processor\Icici\RequestResponseFields as F;
 
 class Validator extends Base\Validator
@@ -26,5 +27,11 @@ class Validator extends Base\Validator
         F::RECORD . '.*.' . F::TYPE             => 'required|in:DR,CR',
         F::RECORD . '.*.' . F::VALUEDATE        => 'required|date_format:' . Gateway::DATE_FORMAT,
 
+    ];
+
+    protected static $iciciCredentialsRules = [
+        Icici\Fields::CORP_USER => 'required',
+        Icici\Fields::CORP_ID   => 'required',
+        Icici\Fields::URN       => 'required'
     ];
 }

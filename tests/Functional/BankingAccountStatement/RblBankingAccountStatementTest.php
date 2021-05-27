@@ -8443,10 +8443,6 @@ class RblBankingAccountStatementTest extends TestCase
 
         $txnActual = $this->txnEntity->toArray();
 
-        $baAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
-
-        $this->assertNotNull($baAfterTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
-
         $basdAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
 
         $this->assertNotNull($basdAfterTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
@@ -8558,10 +8554,6 @@ class RblBankingAccountStatementTest extends TestCase
         $this->txnEntity = $this->getDbEntityById(EntityConstants::TRANSACTION, $externalTxnId);
 
         $txnActual = $this->txnEntity->toArray();
-
-        $baAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
-
-        $this->assertNotNull($baAfterTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
 
         $basdAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
 
@@ -8705,10 +8697,6 @@ class RblBankingAccountStatementTest extends TestCase
         $this->txnEntity = $this->getDbEntityById(EntityConstants::TRANSACTION, $externalTxnId);
 
         $txnActual = $this->txnEntity->toArray();
-
-        $baAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
-
-        $this->assertNotNull($baAfterTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
 
         $basdAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
 
@@ -8926,10 +8914,6 @@ class RblBankingAccountStatementTest extends TestCase
         $this->txnEntity = $this->getDbEntityById(EntityConstants::TRANSACTION, $externalTxnId);
 
         $txnActual = $this->txnEntity->toArray();
-
-        $baAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
-
-        $this->assertNotNull($baAfterTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
 
         $basdAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
 
@@ -9197,10 +9181,6 @@ class RblBankingAccountStatementTest extends TestCase
         $this->txnEntity = $this->getDbEntityById(EntityConstants::TRANSACTION, $externalTxnId);
 
         $txnActual = $this->txnEntity->toArray();
-
-        $baAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT, true);
-
-        $this->assertNotNull($baAfterTest[BaEntity::LAST_STATEMENT_ATTEMPT_AT]);
 
         $basdAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
 
