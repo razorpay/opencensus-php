@@ -297,6 +297,36 @@ return [
         ],
     ],
 
+    'testCreateContactLiveModeNonKycActivatedNonCaActivated' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test / Contact',
+                'type'         => 'self',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_FOR_LIVE_REQUEST,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => PublicErrorCode::BAD_REQUEST_ERROR,
+        ]
+    ],
+
     'testCreateContact' => [
         'request'  => [
             'content' => [

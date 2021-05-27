@@ -123,4 +123,53 @@ class KeyTest extends TestCase
         $this->ba->proxyAuth('rzp_test_' . $id, $user->toArrayPublic(), 'sellerapp');
         $this->startTest();
     }
+
+    public function testCaActivatedMerchantCanCreateKeys()
+    {
+        $merchant = $this->fixtures->create('merchant', ['has_key_access' => true]);
+
+        $id = $merchant['id'];
+
+        $user = $this->fixtures->user->createBankingUserForMerchant($id);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'       => $id,
+            'business_type'     => '2'
+        ]);
+
+        $params = [
+            'account_number'        => '2224440041626905',
+            'merchant_id'           =>  $id,
+            'account_type'          => 'current',
+            'channel'               => 'rbl',
+            'status'                => 'activated',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156'
+        ];
+
+        $this->fixtures->on('live')->create('banking_account', $params);
+
+        $this->ba->proxyAuth('rzp_live_' . $id, $user->getId());
+
+        $this->startTest();
+    }
+
+    public function testNonCaActivatedMerchantCannotCreateKeys()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $id = $merchant['id'];
+
+        $user = $this->fixtures->user->createBankingUserForMerchant($id);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'       => $id,
+            'business_type'     => '2'
+        ]);
+
+        $this->ba->proxyAuth('rzp_live_' . $id, $user->getId());
+
+        $this->startTest();
+    }
 }

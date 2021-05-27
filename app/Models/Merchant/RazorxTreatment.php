@@ -99,6 +99,9 @@ final class RazorxTreatment
     // Access control to allow pg request after new acl
     const RAZORPAY_X_ACL_DENY_UNAUTHORISED = 'razorpay_x_acl_deny_unauthorised';
 
+    // Allow CA activated merchants to hit X related routes
+    const RAZORPAY_X_AUTHORISE_CA_ACTIVATED_MERCHANT_TO_ACCESS_X_PRIVATE_ROUTES = 'razorpay_x_authorise_ca_activated_merchant_to_access_x_private_routes';
+
     // restrict user to one role per merchant and product
     const RESTRICT_USER_TO_ONE_ROLE_PER_MERCHANT_AND_PRODUCT = 'restrict_user_to_one_role_per_merchant_and_product';
 

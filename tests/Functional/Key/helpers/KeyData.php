@@ -83,4 +83,41 @@ return [
             'status_code' => 200,
         ],
     ],
+    'testCaActivatedMerchantCanCreateKeys' => [
+        'request' => [
+            'url'    => '/keys',
+            'method' => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'key'
+            ],
+        ],
+        'status_code' => 200
+    ],
+    'testNonCaActivatedMerchantCannotCreateKeys' => [
+        'request' => [
+            'url'    => '/keys',
+            'method' => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_NO_KEY_ACCESS,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NO_KEY_ACCESS,
+        ]
+    ]
 ];

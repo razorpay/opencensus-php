@@ -3,9 +3,11 @@
 namespace RZP\Http\BasicAuth;
 
 use ApiResponse;
+use Razorpay\Trace\Logger as Trace;
 use Razorpay\OAuth\Client as OAuthClient;
 
 use RZP\Exception;
+use RZP\Http\Route;
 use RZP\Models\Key;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
@@ -14,6 +16,7 @@ use RZP\Trace\TraceCode;
 use RZP\Http\RequestContext;
 use RZP\Base\RepositoryManager;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Merchant\RazorxTreatment;
 
 
 abstract class AuthCreds
@@ -70,6 +73,8 @@ abstract class AuthCreds
      */
     protected $reqCtx;
 
+    protected $razorx;
+
     /**
      * Key and secret sent by client for
      * basic auth.
@@ -121,6 +126,8 @@ abstract class AuthCreds
         $this->key = $key;
 
         $this->reqCtx = $app['request.ctx'];
+
+        $this->razorx = $app->razorx;
 
         // By default username, and public_key are same if not public_key gets updated in setPublicKey func further.
         $this->app['basicauth']->setPassportCredentialClaims($this->key, $this->key);
@@ -224,10 +231,67 @@ abstract class AuthCreds
 
         if ($this->merchant->isActivated() === false)
         {
+            $isPrivateXRouteAccessible = $this->canNonKycActivatedMerchantAccessPrivateXRoutes();
+
+            if ($isPrivateXRouteAccessible === true)
+            {
+                return;
+            }
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ERROR, null, null,
                 PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_FOR_LIVE_REQUEST);
         }
+    }
+
+    /**
+     * This is to check if a non kyc activated merchant can access private banking routes.
+     * If a merchant is ca activated, then they can access private banking routes
+     * @return boolean
+     */
+    public function canNonKycActivatedMerchantAccessPrivateXRoutes(): bool
+    {
+        $isMerchantCaActivated = $this->repo->banking_account->isMerchantCaActivated($this->merchant->getId(), ['rbl']);
+
+        if ($isMerchantCaActivated === true)
+        {
+            $route = $this->app['api.route']->getCurrentRouteName();
+
+            $isBankingRouteAndPrivate = $this->isBankingRouteAndPrivate($route);
+
+            if ($isBankingRouteAndPrivate === true)
+            {
+                return true;
+            }
+
+            //TODO : Need to remove this experiment after sometime
+            $variant = $this->razorx->getTreatment($route,
+                RazorxTreatment::RAZORPAY_X_AUTHORISE_CA_ACTIVATED_MERCHANT_TO_ACCESS_X_PRIVATE_ROUTES,
+                $this->getMode());
+
+            $log = [
+                'merchant_id'  => $this->merchant->getId(),
+                'experiment'   => $variant,
+                'mode'         => $this->getMode(),
+                'route_name'   => $route
+            ];
+
+            $this->trace->error(
+                TraceCode::UNAUTHORISED_PRIVATE_ROUTE_ACCESS_BY_CA_ACTIVATED_MERCHANT, $log);
+
+            // Allow unauthorized access when variant is on
+            if (strtolower($variant) === 'on')
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function isBankingRouteAndPrivate(string $route): bool
+    {
+        return in_array($route, Route::PRIVATE_BANKING_ROUTES, true);
     }
 
     public function getSecret()

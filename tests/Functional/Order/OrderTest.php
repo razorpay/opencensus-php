@@ -10,8 +10,10 @@ use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Entity;
 use RZP\Models\Merchant\Account;
+use RZP\Tests\Traits\MocksRazorx;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\FeeBearer;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Functional\Helpers\RazorxTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Feature\Constants as FeatureConstants;
@@ -21,6 +23,7 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 class OrderTest extends TestCase
 {
     use RazorxTrait;
+    use MocksRazorx;
     use PaymentTrait;
     use DbEntityFetchTrait;
 
@@ -47,6 +50,94 @@ class OrderTest extends TestCase
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $this->gateway = 'sharp';
+    }
+
+    public function testCreateOrderLiveModeNonKycActivatedNonCaActivatedExperimentOff()
+    {
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
+    public function testCreateOrderLiveModeKycActivatedNonCaActivatedExperimentOff()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testCreateOrder'];
+
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['activated' => 1]);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
+    public function testCreateOrderLiveModeNonKycActivatedCaActivatedExperimentOff()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testCreateOrderLiveModeNonKycActivatedNonCaActivatedExperimentOff'];
+
+        $params = [
+            'account_number'        => '2224440041626905',
+            'merchant_id'           => '10000000000000',
+            'account_type'          => 'current',
+            'channel'               => 'rbl',
+            'status'                => 'activated',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156'
+        ];
+
+        $this->fixtures->on('live')->create('banking_account', $params);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
+    public function testCreateOrderLiveModeKycActivatedCaActivatedExperimentOff()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testCreateOrder'];
+
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['activated' => 1]);
+
+        $params = [
+            'account_number'        => '2224440041626905',
+            'merchant_id'           => '10000000000000',
+            'account_type'          => 'current',
+            'channel'               => 'rbl',
+            'status'                => 'activated',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156'
+        ];
+
+        $this->fixtures->on('live')->create('banking_account', $params);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
+    public function testCreateOrderLiveModeNonKycActivatedCaActivatedExperimentOn()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testCreateOrder'];
+
+        $this->mockRazorxTreatmentV2(RazorxTreatment::RAZORPAY_X_AUTHORISE_CA_ACTIVATED_MERCHANT_TO_ACCESS_X_PRIVATE_ROUTES, 'on');
+
+        $params = [
+            'account_number'        => '2224440041626905',
+            'merchant_id'           => '10000000000000',
+            'account_type'          => 'current',
+            'channel'               => 'rbl',
+            'status'                => 'activated',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156'
+        ];
+
+        $this->fixtures->on('live')->create('banking_account', $params);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
     }
 
     public function testCreateOrder()

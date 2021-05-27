@@ -9679,6 +9679,38 @@ class Route
         'fund_account_validate',
     ];
 
+    /**
+     * Banking specific private routes that user can access on API
+     */
+    const PRIVATE_BANKING_ROUTES = [
+        //contact related routes
+        'contact_create',
+        'contact_list',
+        'contact_get',
+        'contact_update',
+
+        // fund_account related routes
+        'fund_account_create',
+        'fund_account_list',
+        'fund_account_get',
+
+        //payout related routes
+        'payout_create',
+        'payout_fetch_multiple',
+        'payout_fetch_by_id',
+        'payout_cancel',
+
+        //payout_links related routes
+        'payout_links_create',
+        'payout_links_fetch_multiple',
+        'payout_links_fetch_by_id',
+        'payout_links_cancel',
+
+        //transaction related routes
+        'transaction_statement_fetch',
+        'transaction_statement_fetch_multiple'
+    ];
+
     //
     // Banking specific routes for which sensitive data will be scrubbed from logs.
     //

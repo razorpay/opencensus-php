@@ -2,15 +2,16 @@
 
 namespace RZP\Models\Key;
 
+use Crypt;
 use Illuminate\Support\Facades\Redis;
 
-use RZP\Constants\Mode;
-use Crypt;
-use RZP\Models\Base;
-use RZP\Models\Key;
-use RZP\Models\Merchant;
 use RZP\Exception;
+use RZP\Models\Key;
+use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
+use RZP\Constants\Product;
 use RZP\Http\Throttle\Constant as Throttle;
 
 class Core extends Base\Core
@@ -54,9 +55,16 @@ class Core extends Base\Core
         if (($mode === Mode::LIVE) and
             ($merchant->isActivated() === false))
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_KEY_CREATE_FAILED);
+            // We need to allow key generation in case merchant is ca activated and request is coming from banking
+            $isMerchantCaActivated = $this->repo->banking_account->isMerchantCaActivated($merchant->getId(), ['rbl']);
 
+            $isRequestOriginBanking = ($this->app->basicauth->getRequestOriginProduct() === Product::BANKING);
+
+            if ($isMerchantCaActivated === false || $isRequestOriginBanking === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_KEY_CREATE_FAILED);
+            }
         }
 
         $key->merchant()->associate($merchant);

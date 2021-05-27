@@ -6,6 +6,31 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
+        'testCreateOrderLiveModeNonKycActivatedNonCaActivatedExperimentOff' => [
+        'request' => [
+            'content' => [
+                'amount'        => 50000,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42'
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_FOR_LIVE_REQUEST,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => PublicErrorCode::BAD_REQUEST_ERROR,
+        ]
+    ],
+
     'testCreateOrder' => [
         'request' => [
             'content' => [

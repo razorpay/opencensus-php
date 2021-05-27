@@ -4522,6 +4522,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LEDGER_REQUEST                                        = 'LEDGER_REQUEST';
     const LEDGER_FAILURE_EXCEPTION                              = 'LEDGER_FAILURE_EXCEPTION';
 
+    # API key configuration for CA activated merchants variant
+    const UNAUTHORISED_PRIVATE_ROUTE_ACCESS_BY_CA_ACTIVATED_MERCHANT = 'UNAUTHORISED_PRIVATE_ROUTE_ACCESS_BY_CA_ACTIVATED_MERCHANT';
+
 
     const INVALID_DATE_EXTRACTED_FROM_BANK                      = 'INVALID_DATE_EXTRACTED_FROM_BANK';
 

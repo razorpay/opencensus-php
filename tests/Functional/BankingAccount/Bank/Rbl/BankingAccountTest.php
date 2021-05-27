@@ -1031,6 +1031,73 @@ class BankingAccountTest extends TestCase
         });
     }
 
+    public function testMerchantHasKeyAccessWithCaActivatedAndWithoutKyc()
+    {
+        Mail::fake();
+
+        $this->testData[__FUNCTION__] = $this->testData['testActivateWithoutKYC'];
+
+        $this->mockRaven();
+
+        $attribute = ['activation_status' => 'deactivated' , 'business_website' => 'www.businesswebsite.com'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        (new User())->createBankingUserForMerchant($merchantDetail->merchant['id'], [
+            'contact_mobile' => '8888888888',
+        ]);
+
+        $this->testCreateActivationDetail();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->fixtures->edit('banking_account', $bankingAccount->getId(), [
+            'account_number'        => '1234567890',
+            'beneficiary_state'     => 'karnataka',
+            'beneficiary_country'   => 'india',
+            'status'                => RZP\Models\BankingAccount\Status::PROCESSED,
+            'sub_status'            => RZP\Models\BankingAccount\Status::API_ONBOARDING_IN_PROGRESS
+        ]);
+
+        $this->setupDataForActivation($bankingAccount);
+
+        $schedule = $this->setupDefaultScheduleForFeeRecovery();
+
+        $dataToReplace = [
+            'request' => [
+                'url' => '/banking_accounts/' . $bankingAccount->getPublicId() . '/activate'
+            ]
+        ];
+
+        $this->mockFundAccountService();
+
+        $expectedHubspotCall = false;
+        $this->mockHubspotAndAssertForChangeEvent($expectedHubspotCall);
+
+        $this->mockCardVault(function ()
+        {
+            return [
+                'success' => true,
+                'token'   => 'random'
+            ];
+        });
+
+        $mozartResponse = $this->getMozartMockedResponse(camel_case(Rbl\Action::ACCOUNT_BALANCE . '_' .
+            Rbl\Status::SUCCESS));
+
+        $this->setMozartMockResponse($mozartResponse);
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertTrue($bankingAccount->merchant->getHasKeyAccess());
+    }
+
     public function testActivateWithoutKYC()
     {
         Mail::fake();
