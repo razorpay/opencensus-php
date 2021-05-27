@@ -1641,7 +1641,6 @@ class BasicAuth
     {
         return ($this->getInternalApp() === 'capital_cards_client');
     }
-
     public function isCapitalLOCApp(): bool
     {
         return ($this->getInternalApp() === 'loc');

@@ -847,6 +847,7 @@ class Route
         'loc_razorpayx_webhook'                    => ['post',     'loc/withdrawal/update',                          'LOCController@razorpayXWebhook'                                    ],
         'loc_cron'                                 => ['post',     'loc/cron/{path?}',                               'LOCController@handleCron'                                          ],
         'capital_cards_service'                    => ['any',      'capital_cards/service/{path?}',                  'CapitalCardsController@handleProxyRequests'                        ],
+        'capital_cards_m2p_webhook'                => ['any',      'capital_cards/m2p/{path?}',                      'CapitalCardsController@handleWebhook'                              ],
         'capital_cards_admin'                      => ['any',      'capital_cards/admin/{path?}',                    'CapitalCardsController@handleAdminRequests'                        ],
         'capital_collections_service'              => ['any',      'capital_collections/service/{path?}',            'CapitalCollectionsController@handleProxyRequests'                  ],
         'capital_collections_admin'                => ['any',      'capital_collections/admin/{path?}',              'CapitalCollectionsController@handleAdminRequests'                  ],
@@ -3124,7 +3125,8 @@ class Route
         // Razorpay Capital
         // Financial Data Service
         'financial_data_service_perfios_webhook',
-
+        // Capital Cards
+        'capital_cards_m2p_webhook',
         'payout_approve_internal',
         'payout_reject_internal',
 
@@ -8957,6 +8959,9 @@ class Route
             'los_mail',
             'los_d2c_bureau_details_create',
             'los_d2c_bureau_report_fetch',
+        ],
+        'capital_cards_m2p' =>[
+            'capital_cards_m2p_webhook',
         ],
 
         'capital_cards_client' => [

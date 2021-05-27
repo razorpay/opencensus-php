@@ -277,7 +277,6 @@ return [
     'ecom' => [
         'secret' => env('ECOM_WEBHOOK_SECRET'),
     ],
-
     'perfios' => [
         'secret' => env('FINANCIAL_DATA_SERVICE_PERFIOS_WEBHOOK_SECRET'),
     ],
@@ -297,7 +296,9 @@ return [
     'capital_collections_client' => [
         'secret' => env('CAPITAL_COLLECTIONS_PASSWORD'),
     ],
-
+    'capital_cards_m2p' => [
+        'secret' => env('CAPITAL_CARDS_M2P_WEBHOOK_SECRET','api')
+    ],
     'leegality' => [
         'secret' => env('LEEGALITY_WEBHOOK_SECRET')
     ],
