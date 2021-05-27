@@ -53,4 +53,91 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED,
         ],
     ],
+
+    'testTransactionCreatedWebhookForSuccessfulMappingToPayout' => [
+        'entity'   => 'event',
+        'event'    => 'transaction.created',
+        'contains' => [
+            'transaction',
+        ],
+        'payload'  => [
+            'transaction' => [
+                'entity' => [
+                    'entity' => 'transaction',
+                    'source'   => [
+                        'entity' => 'payout',
+                        'status' => 'processed',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testPayoutProcessedWebhookForSuccessfulMappingToPayout' => [
+        'entity'   => 'event',
+        'event'    => 'payout.processed',
+        'contains' => [
+            'payout',
+        ],
+        'payload'  => [
+            'payout' => [
+                'entity' => [
+                    'entity' => 'payout',
+                    'status' => 'processed',
+                ],
+            ],
+        ],
+    ],
+
+    'testTransactionCreatedWebhookForSuccessfulMappingToExternal' => [
+        'entity'   => 'event',
+        'event'    => 'transaction.created',
+        'contains' => [
+            'transaction',
+        ],
+        'payload'  => [
+            'transaction' => [
+                'entity' => [
+                    'entity' => 'transaction',
+                    'source'   => [
+                        'entity' => 'external',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testPayoutReversedWebhookForSuccessfulMappingToReversal' => [
+        'entity'   => 'event',
+        'event'    => 'payout.reversed',
+        'contains' => [
+            'payout',
+        ],
+        'payload'  => [
+            'payout' => [
+                'entity' => [
+                    'entity' => 'payout',
+                    'status' => 'reversed',
+                ],
+            ],
+        ],
+    ],
+
+    'testTransactionCreatedWebhookForSuccessfulMappingToReversal' => [
+        'entity'   => 'event',
+        'event'    => 'transaction.created',
+        'contains' => [
+            'transaction',
+        ],
+        'payload'  => [
+            'transaction' => [
+                'entity' => [
+                    'entity' => 'transaction',
+                    'source'   => [
+                        'entity' => 'reversal',
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];

@@ -14,6 +14,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\BankingAccount\Channel;
 use RZP\Exception\GatewayErrorException;
+use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\BankingAccount\Entity as BaEntity;
@@ -36,6 +37,7 @@ class IciciBankingAccountStatementTest extends TestCase
     use PaymentTrait;
     use WorkflowTrait;
     use DbEntityFetchTrait;
+    use TestsWebhookEvents;
     use TestsBusinessBanking;
 
     protected $fundAccount;
@@ -267,6 +269,59 @@ class IciciBankingAccountStatementTest extends TestCase
         return $response;
     }
 
+    protected function getIciciDataResponseForReversal()
+    {
+        $response = [
+            "data" => [
+                "ACCOUNTNO" => "2224440041626905",
+                "AGGR_ID"   => "RZP1234",
+                "CORP_ID"   => "RAZORPAY",
+                "RESPONSE"  => "SUCCESS",
+                "Record"    => [
+                    [
+                        "AMOUNT"        => "10,000.00",
+                        "BALANCE"       => "10,000.00",
+                        "CHEQUENO"      => [],
+                        "REMARKS"       => "MMT/IMPS/104910349740/Shippuden/Naruto",
+                        "TRANSACTIONID" => "S71034864",
+                        "TXNDATE"       => "18-02-2021 10:59:00",
+                        "TYPE"          => "CR",
+                        "VALUEDATE"     => "18-02-2021"
+                    ],
+                    [
+                        "AMOUNT"        => "1.00",
+                        "BALANCE"       => "9,999.00",
+                        "CHEQUENO"      => [],
+                        "REMARKS"       => "INF/NEFT/023629961691/SBIN0050103/TestIcici/Boruto",
+                        "TRANSACTIONID" => "S86758818",
+                        "TXNDATE"       => "19-02-2021 04:29:52",
+                        "TYPE"          => "DR",
+                        "VALUEDATE"     => "19-02-2021",
+                    ],
+                    [
+                        "AMOUNT"        => "1.00",
+                        "BALANCE"       => "10,000.00",
+                        "CHEQUENO"      => [],
+                        "REMARKS"       => "NEFT-RETURN-23629961691DC-Naruto-ACCOUNT DOES NOT EXIST  R03",
+                        "TRANSACTIONID" => "S87272425",
+                        "TXNDATE"       => "19-02-2021 07:31:16",
+                        "TYPE"          => "CR",
+                        "VALUEDATE"     => "19-02-2021",
+                    ]
+                ],
+                "URN"       => "SR189932540",
+                "USER_ID"   => "Sasuke"
+            ],
+            "error"             => null,
+            "external_trace_id" => "0fd2229a19bf561b600847afb283c551",
+            "mozart_id"         => "c0qd3ta055u5f78fipug",
+            "next"              => [],
+            "success"           => true
+        ];
+
+        return $response;
+    }
+
     public function testDispatchIciciAccountStatementFetch($channel = Channel::ICICI)
     {
         $this->ba->cronAuth();
@@ -474,11 +529,8 @@ class IciciBankingAccountStatementTest extends TestCase
 
         $request = [
             'method'  => 'POST',
-            'url'     => '/banking_account_statement/process',
-            'content' => [
-                'account_number'  => '2224440041626905',
-                'channel'         => 'icici',
-            ],
+            'url'     => '/banking_account_statement/process/icici',
+            'content' => [],
         ];
 
         // first run
@@ -627,6 +679,9 @@ class IciciBankingAccountStatementTest extends TestCase
         $this->testData[__FUNCTION__] = $testData;
 
         $this->ba->cronAuth();
+
+        $eventTestDataKey = 'testTransactionCreatedWebhookForSuccessfulMappingToPayout';
+        $this->expectWebhookEventWithContents('transaction.created', $eventTestDataKey);
 
         $this->startTest();
 
@@ -853,6 +908,98 @@ class IciciBankingAccountStatementTest extends TestCase
         $testData = $this->testData[__FUNCTION__];
 
         $testData['request']['content']['fund_account_id'] =  'fa_' . $this->fundAccount->getId();
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+    }
+
+    public function testWebhookEventForIciciAccountStatementForSuccessfulMappingToExternal()
+    {
+        $mockedResponse = $this->getIciciDataResponse();
+
+        unset($mockedResponse[F::DATA][F::RECORD][1]);
+        unset($mockedResponse[F::DATA][F::RECORD][2]);
+        $mockedResponse[F::DATA][F::RECORD] = $mockedResponse[F::DATA][F::RECORD][0];
+        $this->setMozartMockResponse($mockedResponse);
+
+        $basdBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->assertNull($basdBeforeTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
+
+        $testData = $this->testData['testIciciAccountStatementCase1'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->cronAuth();
+
+        $eventTestDataKey = 'testTransactionCreatedWebhookForSuccessfulMappingToExternal';
+        $this->expectWebhookEventWithContents('transaction.created', $eventTestDataKey);
+
+        $this->startTest();
+    }
+
+    public function testWebhookEventForIciciAccountStatementForSuccessfulMappingToReversal()
+    {
+        $this->setupForIciciPayout(Channel::ICICI, 100, FundTransfer\Mode::NEFT);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(590, $payout['fees']);
+        $this->assertEquals(90, $payout['tax']);
+        $this->assertEquals('Bbg7cl6t6I3XB7', $payout['pricing_rule_id']);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated',
+                                                        'utr' => '023629961691' ]);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '023629961691' ]);
+
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::FAILED);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Payout\Status::FAILED, $payout['status']);
+        $this->assertEquals(FundTransfer\Mode::NEFT, $payout['mode']);
+        $this->assertEquals(Attempt\Status::FAILED, $attempt['status']);
+        $this->assertEquals(FundTransfer\Mode::NEFT, $attempt['mode']);
+
+        $mockedResponse = $this->getIciciDataResponseForReversal();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $this->ba->cronAuth();
+
+        $eventTestDataKey = 'testPayoutReversedWebhookForSuccessfulMappingToReversal';
+
+        $this->expectWebhookEventWithContents('payout.reversed', $eventTestDataKey);
+
+        $eventTestDataKey1 = 'testTransactionCreatedWebhookForSuccessfulMappingToReversal';
+        $data = & $this->testData['testTransactionCreatedWebhookForSuccessfulMappingToReversal'];
+        $data['payload']['transaction']['entity']['source']['payout_id'] = 'pout_' . $payout->getId();
+
+        $this->expectWebhookEventWithContents('transaction.created', $eventTestDataKey1);
+
+        $testData = $this->testData['testIciciAccountStatementCase1'];
 
         $this->testData[__FUNCTION__] = $testData;
 
