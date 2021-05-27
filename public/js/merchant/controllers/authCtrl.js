@@ -742,6 +742,13 @@ app
         signinHandler(idToken, email, G_AUTH_TYPES.btn);
       }
 
+      // segment identify call to bind our backend userid with segment's userId
+      function segmentUserIdentify(idObject) {
+        if (idObject && idObject.id) {
+          tracking.segmentIdentify(idObject.id);
+        }
+      }
+
       function signinHandler(idToken, email, authType) {
         $scope.idToken = idToken;
         $scope.googleAuthEmail = email;
@@ -766,6 +773,7 @@ app
               user
                 .identity(true)
                 .then(function (userDetails) {
+                  segmentUserIdentify(userDetails.user);
                   userIdentitySuccess(userDetails);
                 })
                 .catch(function (errors) {
@@ -920,6 +928,7 @@ app
             user
               .identity(true)
               .then(function (userDetails) {
+                segmentUserIdentify(userDetails.user);
                 userIdentitySuccess(userDetails);
               })
               .catch(function (errors) {
@@ -1248,6 +1257,8 @@ app
                 $scope.signup.userid = data.user.id;
                 $scope.signup.mid = data.current;
                 setCookie('midExists', !!data.current);
+
+                segmentUserIdentify(data.user);
                 fireDLSuccessEvents('signup.create_account', {
                   mode: $scope.eventsMode,
                   version: 1,
@@ -2208,6 +2219,8 @@ app
                 },
               });
             }
+
+            segmentUserIdentify(data.data);
 
             $scope.successFullSignin();
           } else {

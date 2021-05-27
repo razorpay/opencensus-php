@@ -1242,6 +1242,15 @@ angular
           window.analytics.track(eventName, properties);
         }
       }
+      /* Pass our backend userid to segment so that
+        it can mapped to their own userId property which
+        can help in stictching all events to our unique value(userid)
+      */
+      function segmentIdentify(id, properties) {
+        if (window.analytics) {
+          window.analytics.identify(id, properties);
+        }
+      }
       function transformAndTriggerSegmentEvents(eventName, properties) {
         var eventNameTitleCase = titleCase(eventName.replace(/[_.]/g, ' '));
         emitSegment(eventNameTitleCase, properties);
@@ -1249,6 +1258,7 @@ angular
       return {
         pushEvents: pushEvents,
         transformAndTriggerSegmentEvents: transformAndTriggerSegmentEvents,
+        segmentIdentify: segmentIdentify,
       };
     },
   ]);
