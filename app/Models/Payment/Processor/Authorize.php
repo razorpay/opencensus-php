@@ -452,6 +452,13 @@ trait Authorize
             // $currentTerminal = Terminal\Entity::findOrFail('2czHdeTG32rFhB');
             $payment->associateTerminal($currentTerminal);
 
+            if ($payment->getIsPushedToKafka() === null)
+            {
+                $isPushedToKafka = $this->pushPaymentToKafkaForVerify($this->payment);
+
+                $payment->setIsPushedToKafka($isPushedToKafka);
+            }
+
             // assigning $gatewayInput to $terminalGatewayInput because we need to
             // persist gateway input in redirection flow,in
             // runPostGatewaySelectionPreProcessing() other attributes and
@@ -2284,10 +2291,6 @@ trait Authorize
                 'line'      => "Models/Payment/Processor/Authorize.php:1917"
             ]
         );
-
-        $isPushedToKafka = $this->pushPaymentToKafkaForVerify($this->payment);
-
-        $payment->setIsPushedToKafka($isPushedToKafka);
 
         $this->repo->saveOrFail($payment);
 

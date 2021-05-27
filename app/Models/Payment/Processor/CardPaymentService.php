@@ -286,9 +286,12 @@ trait CardPaymentService
 
         $payment->enableCardPaymentService();
 
-        $isPushedToKafka = $this->pushPaymentToKafkaForVerify($this->payment);
+        if ($payment->getIsPushedToKafka() === null)
+        {
+            $isPushedToKafka = $this->pushPaymentToKafkaForVerify($this->payment);
 
-        $payment->setIsPushedToKafka($isPushedToKafka);
+            $payment->setIsPushedToKafka($isPushedToKafka);
+        }
 
         $this->repo->saveOrFail($payment);
 
