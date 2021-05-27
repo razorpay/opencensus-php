@@ -585,6 +585,13 @@ class Constants
      */
     const LOGOUT_ADMIN_INACTIVITY = 'logout_admin_inactivity';
 
+    /*
+     * Org level features for featured route access
+     */
+    const ORG_BANK_ACCOUNT_UPDATE_SS         = 'bank_account_update_ss';
+    const ORG_FRESHDESK_CREATE_TICKET        = 'freshdesk_create_ticket';
+    const ORG_SUB_MERCHANT_CREATE            = 'sub_merchant_create';
+
     /**
      * Marks the seller eligible for automated loc as per https://jira.corp.razorpay.com/browse/CAP-519
      */
@@ -976,6 +983,9 @@ class Constants
         self::DISABLE_X_AMAZONPAY             => true,
         self::CAW_RECURRING_CHARGE_AXIS       => true,
         self::CAPITAL_CARDS_COLLECTIONS       => true,
+        self::ORG_BANK_ACCOUNT_UPDATE_SS      => true,
+        self::ORG_FRESHDESK_CREATE_TICKET     => true,
+        self::ORG_SUB_MERCHANT_CREATE         => true,
         self::PAYOUT_PROCESS_ASYNC_LP         => true,
         self::PAYOUT_PROCESS_ASYNC            => true,
         self::FAV_FTA_DPRCN_FWD               => true,

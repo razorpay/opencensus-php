@@ -104,6 +104,12 @@ class Authenticate
         // Post process after authentication completes
         $ret = (new FeatureAccess)->verifyFeatureAccess($ret, $bearerToken);
 
+        // null value indicates failure flow : do not validate further if previous validation failed
+        if ($ret === null)
+        {
+            $ret = (new FeatureAccess)->verifyOrgLevelFeatureAccess();
+        }
+
         // Non-null value indicates failure flow
         if ($ret !== null)
         {

@@ -8,6 +8,8 @@ use RZP\Models\Merchant;
 use Illuminate\Foundation\Application;
 
 use RZP\Models\Feature;
+use RZP\Models\Merchant\Entity;
+use RZP\Trace\TraceCode;
 use RZP\Base\RepositoryManager;
 
 class FeatureAccess
@@ -52,6 +54,8 @@ class FeatureAccess
         $this->repo = $this->app['repo'];
 
         $this->route = $this->app['api.route'];
+
+        $this->trace =  $this->app['trace'];
 
         $this->merchant = $this->ba->getMerchant();
     }
@@ -110,6 +114,47 @@ class FeatureAccess
 
         // if app shouldn't access the route on the merchant behalf or
         // merchant is accessing the route directly and merchant doesn't have access
+        return ApiResponse::routeNotFound();
+    }
+
+    /**
+     * Checks if the accessed route is a feature route.
+     * If yes:
+     *  Checks if the org has denied access to the feature :
+     *    if org has any of route feature : access unavailable
+     *
+     *  $authReturn will either be null or store an error object
+     *
+     * Null return indicates available access
+     *
+     * @return null
+     */
+    public function verifyOrgLevelFeatureAccess()
+    {
+        $orgLevelRouteFeatures = $this->route->getCurrentRouteOrgLevelFeatures();
+
+        // The current route does not require any feature to be check. Allow access.
+        if ((empty($orgLevelRouteFeatures) === true) or
+            (isset($this->merchant) === false))
+        {
+            return null;
+        }
+
+        $orgEnableFeatures = $this->merchant->org->getEnabledFeatures();
+
+        $orgRouteFeatures = array_intersect($orgLevelRouteFeatures, $orgEnableFeatures);
+
+        // if org has not any enabled feature for route : allow access
+        if (empty($orgRouteFeatures) === true)
+        {
+            return null;
+        }
+
+        $this->trace->info(TraceCode::ORG_LEVEL_FEATURE_ACCESS_VALIDATION_FAILURE, [
+            Entity::ORG_ID      => $this->merchant->getOrgId(),
+            Entity::MERCHANT_ID => $this->merchant->getId(),
+        ]);
+
         return ApiResponse::routeNotFound();
     }
 

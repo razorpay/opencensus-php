@@ -431,6 +431,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTA_DUPLICATE_TRANSFER                                = 'FTA_DUPLICATE_TRANSFER';
     const INVALID_EMAIL_CANNOT_MASK                             = 'INVALID_EMAIL_CANNOT_MASK';
 
+    const ORG_LEVEL_FEATURE_ACCESS_VALIDATION_FAILURE           = 'ORG_LEVEL_FEATURE_ACCESS_VALIDATION_FAILURE';
+
     const RAZORX_VARIANT_3DS                                    = 'RAZORX_VARIANT_3DS';
     const RAZORX_VARIANT_SHIELD                                 = 'RAZORX_VARIANT_SHIELD';
 

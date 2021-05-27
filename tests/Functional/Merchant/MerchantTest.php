@@ -9095,6 +9095,77 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testOrgLevelFeatureAccessForSubMerchantCreate()
+    {
+        $request = [
+            'url'    => '/submerchants',
+            'method' => 'post'
+        ];
+
+        $routeFeatureName = 'sub_merchant_create';
+
+        $this->startTestForOrgLevelFeatureAccessValidation($request, $routeFeatureName);
+    }
+
+    public function testOrgLevelFeatureAccessForReserveBalanceTicket()
+    {
+        $request = [
+            'url'    => '/fd/reserve_balance/tickets',
+            'method' => 'post'
+        ];
+
+        $routeFeatureName = 'freshdesk_create_ticket';
+
+        $this->startTestForOrgLevelFeatureAccessValidation($request, $routeFeatureName);
+    }
+
+    public function testOrgLevelFeatureAccessForBankAccountUpdate()
+    {
+        $request = [
+            'url'    => '/merchants/bank_account/update',
+            'method' => 'post'
+        ];
+
+        $routeFeatureName = 'bank_account_update_ss';
+
+        $this->startTestForOrgLevelFeatureAccessValidation($request, $routeFeatureName);
+    }
+
+    public function testOrgLevelFeatureAccessForCreatingFreshDeskTicket()
+    {
+        $request = [
+            'url'    => '/fd/support_dashboard/ticket',
+            'method' => 'post'
+        ];
+
+        $routeFeatureName = 'freshdesk_create_ticket';
+
+        $this->startTestForOrgLevelFeatureAccessValidation($request, $routeFeatureName);
+    }
+
+    protected function startTestForOrgLevelFeatureAccessValidation($request, $routeFeature)
+    {
+        $testData = $this->testData['testOrgLevelFeatureAccess'];
+
+        $testData['request'] = $request;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $attributes = [
+            'name'        => $routeFeature,
+            'entity_id'   => $merchant->getOrgId(),
+            'entity_type' => 'org'
+        ];
+
+        $this->fixtures->create('feature', $attributes);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id']);
+
+        $this->startTest();
+    }
+
     public function testCreatedMerchantHasPlServiceFeatureFlag()
     {
         $content = $this->createMerchant();

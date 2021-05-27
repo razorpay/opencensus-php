@@ -9432,6 +9432,17 @@ class Route
         'merchant_gstin_self_serve_update'     => [Feature::GSTIN_SELF_SERVE],
     ];
 
+    /**
+     * A route can belong to multiple features, mapped here
+     *  if feature is enabled for a org: then access will be denied
+     */
+    public static $routeNameToOrgLevelFeaturesMap = [
+        'merchant_bank_account_update' => [Feature::ORG_BANK_ACCOUNT_UPDATE_SS],
+        'fd_create_ticket'             => [Feature::ORG_FRESHDESK_CREATE_TICKET],
+        'fd_reserve_balance_ticket'    => [Feature::ORG_FRESHDESK_CREATE_TICKET],
+        'merchant_sub_create'          => [Feature::ORG_SUB_MERCHANT_CREATE],
+    ];
+
     /*
      * Routes that can be accessed by other org admins.
      * primarily razorpay org
@@ -10807,6 +10818,20 @@ class Route
     }
 
     /**
+     * Returns an array of feature names to which the current route is mapped under
+     *
+     * @param $route
+     *
+     * @return array
+     */
+    public static function getOrgLevelFeaturesForRoute($route) : array
+    {
+        $features = self::$routeNameToOrgLevelFeaturesMap;
+
+        return $features[$route] ?? [];
+    }
+
+    /**
      * Returns the array of features, one of which is required to
      * access the current route.
      *
@@ -10820,6 +10845,22 @@ class Route
         // This fetches an array of all features mapped to the route
         //
         return self::getFeaturesForRoute($currentRoute);
+    }
+
+    /**
+     * Returns the array of features, one of which is required to
+     * access the current route.
+     *
+     * @return array
+     */
+    public function getCurrentRouteOrgLevelFeatures(): array
+    {
+        $currentRoute = $this->getCurrentRouteName();
+        //
+        // A route can belong to multiple features
+        // This fetches an array of all features mapped to the route
+        //
+        return self::getOrgLevelFeaturesForRoute($currentRoute);
     }
 
     public function isS2SPaymentRoute(): bool
