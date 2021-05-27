@@ -96,17 +96,33 @@ class migration extends Job
                                   $this->merchantId,
                                   [
                                       Constants::DAILY_SETTLEMENT,
+                                      Constants::NEW_SETTLEMENT_SERVICE,
                                   ])
                               ->toArray();
 
-        if (in_array(Constants::DAILY_SETTLEMENT, $featureResult) === true)
+        $skip = false;
+        $skipReason = null;
+
+        if(in_array(Constants::DAILY_SETTLEMENT, $featureResult) === true)
+        {
+            $skip = true;
+            $skipReason = 'not supported features assigned';
+        }
+
+        if(in_array(Constants::NEW_SETTLEMENT_SERVICE, $featureResult) === true)
+        {
+            $skip = true;
+            $skipReason = 'merchant is already migrated';
+        }
+
+        if($skip === true)
         {
             $this->trace->info(
                 TraceCode::SETTLEMENT_SERVICE_MIGRATION_SKIPPED,
                 [
                     'merchant_id'   => $this->merchantId,
                     'input'         => $input,
-                    'reason'        => 'not supported features assigned',
+                    'reason'        => $skipReason,
                     'features'      => $featureResult,
                 ]);
 
