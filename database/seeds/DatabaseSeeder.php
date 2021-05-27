@@ -1277,8 +1277,8 @@ class DatabaseSeeder extends Seeder
         $this->createNetbankingFsbTerminal();
         $this->createPayuTerminal();
         $this->createCashfreeTerminal();
-        $this->createCcavenueTerminal();
         $this->createNetbankingDcbTerminal();
+        $this->createCcavenueTerminal();
     }
 
     protected function createNetbankingCorporationTerminals()
@@ -2818,6 +2818,24 @@ class DatabaseSeeder extends Seeder
         );
     }
 
+    protected function createCcavenueTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => 'h1t3hfU4c2A11G',
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::CCAVENUE,
+                'card'                  => '1',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'test_ccavenue_mid',
+                'gateway_secure_secret' => Crypt::encrypt('test_secure_secret'),
+                'gateway_access_code'   => Crypt::encrypt('test_access_code'),
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            ]
+        );
+    }
+
     protected function createNetbankingDcbTerminal()
     {
         DB::table(Table::TERMINAL)->insert(
@@ -2868,24 +2886,5 @@ class DatabaseSeeder extends Seeder
             ]
         );
     }
-
-    protected function createCcavenueTerminal()
-    {
-        DB::table(Table::TERMINAL)->insert(
-            [
-                'id' => 'h1t3hfU4c2A47H',
-                'merchant_id' => Account::TEST_ACCOUNT,
-                'gateway' => Gateway::CCAVENUE,
-                'card' => '1',
-                'netbanking' => '0',
-                'gateway_merchant_id' => 'test_ccavenue_mid',
-                'gateway_secure_secret' => Crypt::encrypt('test_secure_secret'),
-                'gateway_access_code' => 'test_gateway_access_code',
-                'created_at'            => time(),
-                'updated_at'            => time(),
-            ]
-        );
-    }
-
 
 }

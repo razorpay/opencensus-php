@@ -586,6 +586,63 @@ class Netbanking
                 self::YESB_C,
             ]
         ],
+        Gateway::CCAVENUE => [
+            'retail' => [
+                IFSC::AIRP,
+                IFSC::ANDB,
+                IFSC::AUBL,
+                self::BARB_C,
+                self::BARB_R,
+                IFSC::BBKM,
+                IFSC::BDBL,
+                IFSC::BKID,
+                IFSC::CBIN,
+                IFSC::CIUB,
+                IFSC::CNRB,
+                IFSC::CORP,
+                IFSC::COSB,
+                IFSC::CSBK,
+                IFSC::DCBL,
+                IFSC::DEUT,
+                IFSC::DLXB,
+                IFSC::ESFB,
+                IFSC::FDRL,
+                IFSC::HDFC,
+                IFSC::IBKL,
+                IFSC::ICIC,
+                IFSC::IDFB,
+                IFSC::IDIB,
+                IFSC::INDB,
+                IFSC::IOBA,
+                IFSC::JAKA,
+                IFSC::JSBP,
+                IFSC::KARB,
+                IFSC::KKBK,
+                IFSC::KVBL,
+                self::LAVB_R,
+                IFSC::MAHB,
+                IFSC::NKGS,
+                IFSC::ORBC,
+                IFSC::PSIB,
+                self::PUNB_C,
+                self::PUNB_R,
+                IFSC::RATN,
+                IFSC::SBIN,
+                IFSC::SCBL,
+                IFSC::SIBL,
+                IFSC::SRCB,
+                IFSC::SURY,
+                IFSC::SVCB,
+                IFSC::SYNB,
+                IFSC::TMBL,
+                IFSC::UBIN,
+                IFSC::UCBA,
+                IFSC::UTBI,
+                IFSC::UTIB,
+                IFSC::VIJB,
+                IFSC::YESB,
+            ],
+        ],
         Gateway::NETBANKING_ICICI => [
             'retail' => [
                 IFSC::ICIC,
@@ -1016,6 +1073,11 @@ class Netbanking
         return self::$gatewaySupportedBanks[Gateway::CASHFREE]['retail'];
     }
 
+    public static function getCcavenueSupportedBanks()
+    {
+        return self::$gatewaySupportedBanks[Gateway::CCAVENUE]['retail'];
+    }
+
     public static function getDirectlyNetbankingBanks()
     {
         return array_merge(self::$self, self::$selfCorp);
@@ -1118,6 +1180,11 @@ class Netbanking
     public static function isCashfreeSupportedBank($bank)
     {
         return in_array($bank, self::getCashfreeSupportedBanks(), true) === true;
+    }
+
+    public static function isCcavenueSupportedBank($bank)
+    {
+        return in_array($bank, self::getCcavenueSupportedBanks(), true) === true;
     }
 
     public static function isNetbankingBankDirectlySupported($bank)

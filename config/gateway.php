@@ -129,6 +129,7 @@ return [
     'mock_first_data'             => env('FIRST_DATA_MOCK'),
     'mock_atom'                   => env('ATOM_MOCK'),
     'mock_payu'                   => env('PAYU_MOCK'),
+    'mock_ccavenue'               => env('CCAVENUE_MOCK'),
     'mocK_cashfree'               => env('CASHFREE_MOCK'),
     'mocK_ccavenue'               => env('CCAVENUE_MOCK'),
     'mock_hitachi'                => env('HITACHI_MOCK'),

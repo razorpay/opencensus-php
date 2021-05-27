@@ -263,11 +263,12 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE                     => 'required|string',
         Entity::TYPE                                    => 'required|array',
         Entity::TYPE . '.direct_settlement_with_refund' => 'required|in:1',
-        Entity::PROCURER                                => 'sometimes|string|in:razorpay,merchant',
         Entity::MODE                                    => 'sometimes|in:2',
-        Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed'
+        Entity::NETWORK_CATEGORY                        => 'sometimes|string',
+        Entity::CATEGORY                                => 'sometimes|string|numeric|digits:4',
+        Entity::PROCURER                                => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                                  => 'sometimes|in:pending,activated,deactivated,failed',
     ];
-
     protected static $hdfcTerminalRules = [
         Entity::GATEWAY                    => 'required|in:hdfc',
         Entity::GATEWAY_MERCHANT_ID        => 'required|integer|digits_between:4,8',
@@ -603,11 +604,15 @@ class Validator extends Base\Validator
 
     protected static $ccavenueEditTerminalRules = [
         Entity::MODE                       => 'sometimes|in:2',
-        Entity::STATUS                     => 'sometimes|string|in:deactivated,activated',
         Entity::ENABLED                    => 'sometimes|in:0,1',
-        Entity::CARD                       => 'sometimes|boolean|in:0,1',
         Entity::TYPE                       => 'sometimes|array',
+        Entity::NETBANKING                 => 'sometimes|boolean|in:0,1',
+        Entity::CARD                       => 'sometimes|boolean|in:0,1',
+        Entity::NETWORK_CATEGORY           => 'sometimes|string',
+        Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
+
 
     protected static $mpgsEditTerminalRules = [
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',

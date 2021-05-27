@@ -1148,6 +1148,7 @@ class Gateway
             self::ATOM,
             self::PAYU,
             self::CASHFREE,
+            self::CCAVENUE,
             self::NETBANKING_SIB,
             self::NETBANKING_CBI,
             self::NETBANKING_IDFC,
@@ -2271,6 +2272,7 @@ class Gateway
         Gateway::ATOM,
         Gateway::PAYU,
         Gateway::CASHFREE,
+        Gateway::CCAVENUE,
     ];
 
     /**
@@ -3231,6 +3233,7 @@ class Gateway
             self::NETBANKING_YESB,
             self::NETBANKING_CUB,
             self::NETBANKING_SIB,
+            self::CCAVENUE,
         ];
 
         $isRouted = in_array($gateway, $gateways, true);
@@ -3298,6 +3301,7 @@ class Gateway
             self::NETBANKING_SCB,
             self::NETBANKING_IBK,
             self::NETBANKING_CBI,
+            self::CCAVENUE,
             self::NETBANKING_FEDERAL,
             self::NETBANKING_CANARA,
             self::NETBANKING_KOTAK,

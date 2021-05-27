@@ -376,11 +376,11 @@ class Terminal extends Base
             'merchant_id'           => '10000000000000',
             'gateway'               => 'ccavenue',
             'card'                  => 1,
-            'netbanking'            => 0,
+            'netbanking'            => 1,
             'gateway_merchant_id'   => 'abcd',
             'network_category'      => 'ecommerce',
             'gateway_secure_secret' => 'secret',
-            'gateway_access_code'   => 'dummy'
+            'gateway_access_code'   => 'qwerty890'
         ];
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
