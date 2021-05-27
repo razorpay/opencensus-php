@@ -144,6 +144,7 @@ class Repository extends Base\Repository
     public function getRecentMerchantPaymentsForCheckoutId($checkoutId)
     {
         $timestamp = time() - Entity::PAYMENT_WINDOW;
+        $currentTimestamp = time();
 
         $pid = $this->dbColumn(Payment\Entity::ID);
         $paPaymentId = $this->repo
@@ -157,10 +158,16 @@ class Repository extends Base\Repository
                                ->payment_analytics
                                ->dbColumn(Analytics\Entity::CHECKOUT_ID);
 
+        $paymentAnalyticsCreatedAtAttr = $this->repo
+                                              ->payment_analytics
+                                              ->dbColumn(Analytics\Entity::CREATED_AT);
+
         return $this->newQuery()
                     ->select($paymentColumns)
                     ->join($paTable, $pid, '=', $paPaymentId)
                     ->where($checkoutIdAttr, '=', $checkoutId)
+                    ->where($paymentAnalyticsCreatedAtAttr, '<', $currentTimestamp)
+                    ->where($paymentAnalyticsCreatedAtAttr, '>', $timestamp)
                     ->createdAtGreaterThan($timestamp)
                     ->latest()
                     ->get();
