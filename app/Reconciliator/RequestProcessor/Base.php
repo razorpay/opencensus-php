@@ -221,6 +221,7 @@ class Base extends Core
         self::HDFC_DEBIT_EMI         => ['emailintimation@hdfcbank.com'],
         self::UPI_JUSPAY             => ['crs.upimerchantsettlement@axisbank.com'],
         self::UPI_AIRTEL             => [],
+        self::UPI_YESBANK            => [],
         self::CRED                   => [],
         self::VIRTUAL_ACC_ICICI      => [],
         self::NETBANKING_DLB         => ['Alerts@dhanbank.co.in'],

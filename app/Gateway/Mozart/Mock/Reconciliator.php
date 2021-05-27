@@ -23,7 +23,8 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
     {
         $payment = $data['payment'];
 
-        if ($this->gateway === PaymentGateway::UPI_JUSPAY)
+        if (($this->gateway === PaymentGateway::UPI_JUSPAY) or
+            ($this->gateway === PaymentGateway::UPI_YESBANK))
         {
             return;
         }
@@ -523,6 +524,66 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
         $formattedData = implode("|", array_keys($data[0])) . PHP_EOL . $formattedData;
 
         return $formattedData;
+    }
+
+    protected function upi_yesbank($input)
+    {
+        $this->fileToWriteName = 'upi_yesbank_mis';
+
+        $data = [];
+
+        // todo: Check refunds first
+
+        // If no refunds, then it is payment MIS file
+        // put payment rows in data
+        foreach ($input as $row)
+        {
+            $row = [
+                'PG Merchant ID'         => 'YES0000000000001',
+                'Legal Name'             => 'ABC Group PVT LTD',
+                'Store Name'             => 'DEF',
+                'MCC'                    => '1234',
+                'Order No'               => $row['payment']['id'],
+                'Trans Ref No.'          => '2000000000',
+                'Customer Ref No.'       => '25700000000',
+                'NPCI Response Code'     => '0',
+                'Trans Type'             => 'CREDIT',
+                'DR/CR'                  => 'Credit',
+                'Transaction Status'     => 'SUCCESS',
+                'Transaction Remarks'    => 'MIC2000000000000000007A11111120T081829E0360',
+                'Transaction Date'       => '11/9/2020 8:25',
+                'Transaction Amount'     => ($row['payment']['amount'] / 100),
+                'Payer A/c No.'          => '1.00E+15',
+                'Payer Virtual Address'  => '1234567890@yesbank',
+                'Payer A/C Name'         => 'Pramod Kumar',
+                'Payer IFSC Code'        => 'YESB0129700',
+                'Payee A/C No'           => '',
+                'Payee Virtual Address'  => 'abc@yesbank',
+                'Payee A/C Name'         => '',
+                'Payee IFSC Code'        => 'YESB0000001',
+                'Pay Type'               => 'P2M',
+                'Device Type'            => '',
+                'App'                    => '',
+                'Device OS'              => '',
+                'Device Mobile No'       => '4.57E+09',
+                'Device Location'        => '',
+                'Ip Address'             => '',
+                'Settlement Status'      => 'Unreconcilied',
+                'Settlement Date'        => '',
+                'MSF Amount'             => '0',
+                'MSF Tax Amount'         => '0',
+                'Payout Status'          => 'Payout Completed'
+            ];
+
+            if (empty($row) === true)
+            {
+                continue;
+            }
+
+            $data[] = $row;
+        }
+
+        return $data;
     }
 
     protected function cred($input)
