@@ -10,6 +10,7 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import { updateUser } from 'merchant_common/reducers/user';
 import { caReqEventType } from 'merchant/containers/Home/OnboardingCard/data';
 import abExperimentsMap from 'merchant/utils/abExperimentsMap';
+import isEmpty from '@universe/utils/isEmpty';
 
 const BENEFITS = {
   other: [
@@ -124,8 +125,9 @@ export const nitroCampaignId = () => {
   };
 
   const getExpStatus = (name) => {
-    if (abExperimentsMap.project_nitro.includes(name)) {
-      return (window.rzp_user?.splitz_experiments || {})[name]?.variables?.result === 'on';
+    const splitzExperiment = window.rzp_user?.splitz_experiments[name];
+    if (abExperimentsMap.project_nitro.includes(name) && !isEmpty(splitzExperiment)) {
+      return splitzExperiment?.variables?.result === 'on';
     }
     return ((window.rzp_user.experiments || {})[name] || {}).result === 'on';
   };
