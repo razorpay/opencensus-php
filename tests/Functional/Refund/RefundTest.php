@@ -1596,8 +1596,7 @@ class RefundTest extends TestCase
                 'speed_requested'  => 'normal',
                 'speed_decisioned' => 'normal',
                 'speed_processed'  => 'normal',
-                'status'           => 'processed',
-                'notes'            => ['key'=>'val'],
+                'status'           => 'processed'
             ]
         );
 
@@ -1612,25 +1611,6 @@ class RefundTest extends TestCase
         $refunds = $this->getEntities('refund');
         $rfnds = ['entity' => 'collection', 'count' => 1, 'items' => [$actual]];
         $this->assertArraySelectiveEquals($rfnds, $refunds);
-    }
-
-    public function testRefundEmptyNotes()
-    {
-        $this->fixtures->merchant->addFeatures(['expose_arn_refund']);
-        $payment = $this->fixtures->create('payment:captured');
-        $rfnd = $this->fixtures->create('refund:from_payment', ['payment' => $payment]);
-        $this->fixtures->refund->edit(
-            $rfnd['id'],
-            [
-                'notes'            => [],
-            ]
-        );
-
-        $rfnd = $this->getDbEntityById('refund', $rfnd['id']);
-
-        $actual = $rfnd->toArrayPublic();
-        
-        $this->assertEquals("{}",json_encode($actual['notes']));
     }
 
     public function testFetchRefundByIdWithCustomBrandingWithManualRefund()

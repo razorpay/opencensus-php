@@ -1487,11 +1487,6 @@ class Entity extends Base\PublicEntity
     {
         $response = parent::toArrayPublic();
 
-        if (empty($response[self::NOTES])) 
-        {
-            $response[self::NOTES] = (object) array();
-        }
-        
         return $this->processArrayPublicAndReturn($response);
     }
 
