@@ -7,6 +7,7 @@ use Config;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Payment;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Services\NbPlus\Netbanking;
@@ -24,7 +25,7 @@ class Bob extends Base
 
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
     const GATEWAY                = Payment\Gateway::NETBANKING_BOB;
-    const GATEWAY_CODE           = [Payment\Processor\Netbanking::BARB_R, Payment\Processor\Netbanking::BARB_C];
+    const GATEWAY_CODE           = [Payment\Processor\Netbanking::BARB_R, Payment\Processor\Netbanking::BARB_C, IFSC::VIJB];
 
     protected function formatDataForFile(array $inputData)
     {

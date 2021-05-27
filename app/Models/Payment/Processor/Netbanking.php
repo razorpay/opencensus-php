@@ -82,6 +82,7 @@ class Netbanking
         IFSC::UTBI   => 'PNB (Erstwhile-United Bank of India)',
         IFSC::CORP   => 'Union Bank of India (Erstwhile Corporation Bank)',
         IFSC::ALLA   => 'Indian Bank (Erstwhile Allahabad Bank)',
+        IFSC::VIJB   => 'Bank of Baroda - Retail Banking (Erstwhile Vijaya Bank)'
     ];
 
     const ACCOUNT_NUMBER_LENGTHS = [
@@ -132,6 +133,7 @@ class Netbanking
         IFSC::CORP,    // due to bank merger, will be routed through UBIN direct integration
         IFSC::AUBL,
         IFSC::DLXB,
+        IFSC::VIJB,
     ];
 
     protected static $selfCorp = [
@@ -616,13 +618,15 @@ class Netbanking
         ],
         Gateway::NETBANKING_BOB => [
             'retail' => [
-                self::BARB_R
+                self::BARB_R,
+                IFSC::VIJB,
             ],
             'corp' => [
                 self::BARB_C
             ],
             'tpv' => [
-                self::BARB_R
+                self::BARB_R,
+                IFSC::VIJB,
             ]
         ],
         Gateway::NETBANKING_SIB => [
