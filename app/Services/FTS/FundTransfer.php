@@ -9,6 +9,7 @@ use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Http\Request\Requests;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Exception\LogicException;
 use RZP\Models\Bank\IFSC as IFSC;
@@ -26,7 +27,6 @@ use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Holidays as TransferHoliday;
 use RZP\Models\Settlement\Holidays as SettlementHoliday;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
-use RZP\Models\Merchant\Balance;
 use RZP\Models\Payout as Payout;
 
 class FundTransfer extends Base
@@ -337,10 +337,10 @@ class FundTransfer extends Base
 
         if ($sourceType === Entity::PAYOUT)
         {
-            if (($channel === Channel::RBL or $channel === Channel::ICICI) and
+            if ((in_array($channel, Channel::getNonTransactionChannels(), true) === true) and
                 ($source->balance->getAccountType() === Balance\AccountType::DIRECT))
             {
-                if (method_exists($source, 'getSourceFtsFundAccountId'))
+                if (method_exists($source, 'getSourceFtsFundAccountId') === true)
                 {
                     $request[Constants::TRANSFER] += [
                         Constants::PREFERRED_SOURCE_ACCOUNT_ID => (int) $this->fta->source->getSourceFtsFundAccountId(),
