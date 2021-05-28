@@ -10,6 +10,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use Illuminate\Support\Facades\App;
 use RZP\Models\SubscriptionRegistration;
+use RZP\Models\SubscriptionRegistration\Metric;
 
 /**
  * Class TokenRegistrationAutoCharge
@@ -72,6 +73,10 @@ class TokenRegistrationAutoCharge extends Job
                     }
                     catch (\Throwable $e)
                     {
+                        $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_AUTO_PAYMENT_FAILED,
+                                            $this->tokenRegistration->getMetricDimensions(
+                                                ['failure_reason' => $e->getCode()]));
+
                         $this->trace->traceException(
                             $e,
                             Logger::ERROR,
@@ -81,6 +86,9 @@ class TokenRegistrationAutoCharge extends Job
                             ]
                         );
 
+                        $this->tokenRegistration->setFailureReason($e->getCode());
+
+                        $this->repo->saveOrFail($this->tokenRegistration);
                     }
                 },
                 self::MUTEX_LOCK_TIMEOUT,

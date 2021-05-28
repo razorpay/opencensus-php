@@ -7,15 +7,18 @@ use Mockery;
 use Queue;
 use Carbon\Carbon;
 
+use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
-use RZP\Constants\Entity as E;
-use RZP\Services\BatchMicroService;
 use RZP\Services\RazorXClient;
+use RZP\Constants\Entity as E;
 use RZP\Tests\Functional\TestCase;
+use RZP\Services\BatchMicroService;
 use RZP\Jobs\TokenRegistrationAutoCharge;
+use RZP\Tests\Functional\Invoice\InvoiceTestTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Tests\Functional\Invoice\InvoiceTestTrait;
 
 class SubscriptionRegistrationTest extends TestCase
 {
@@ -395,6 +398,92 @@ class SubscriptionRegistrationTest extends TestCase
         Queue::assertPushed(TokenRegistrationAutoCharge::class);
 
         $this->assertEquals(1, count($result));
+    }
+
+    public function testAutoChargeEmandateTokenFailureReason()
+    {
+        $beforeMidDay = Carbon::now(Timezone::IST)->midDay()->subHour(1)->getTimestamp();
+
+        $tokenAttributes = [
+            'id'            => 'FwDj8vdozfJouZ',
+            'method'        => 'emandate',
+            'token'         => 'aamVRCBCAC122F',
+            'created_at'    => $beforeMidDay,
+            'confirmed_at'  => $beforeMidDay,
+        ];
+
+        $this->fixtures->create('token', $tokenAttributes);     // to be picked
+
+        $subrAttributes = [
+            'token_id'             => 'FwDj8vdozfJouZ',
+            'first_payment_amount' => 1100,
+            'max_amount'           => 10000,
+            'notes'                => [ 'address' => 'sometext' ],
+            'method'               => 'emandate',
+            'auth_type'            => 'netbanking',
+            'status'               => 'authenticated',
+            'attempts'             => 0,
+        ];
+
+        $subReg = $this->fixtures->create('subscription_registration', $subrAttributes);   // to be picked
+
+        // simulate test run at 4:00 PM
+        Carbon::setTestNow(Carbon::now(Timezone::IST)->setTime(16, 0));
+
+        $order = $this->fixtures->create('order');
+
+        $invoiceAtrributes = [
+            'entity_id'   => $subReg->getId(),
+            'entity_type' => 'subscription_registration',
+            'order_id'    => $order->getId()
+        ];
+
+        $this->fixtures->create('invoice', $invoiceAtrributes);
+
+        $app = \App::getFacadeRoot();
+        $app['basicauth']->setBasicType('public');
+
+        // Payment will fail as there won't be any recurring feature enabled
+        // $this->fixtures->merchant->addFeatures(['charge_at_will']);
+
+        $autoChargeJob = new TokenRegistrationAutoCharge(Mode::TEST, $subReg);
+        $autoChargeJob->handle();
+
+        $subReg = $this->getDbLastEntity('subscription_registration');
+
+        $this->assertEquals(1, $subReg->getAttempts());
+        $this->assertEquals('authenticated', $subReg->getStatus());
+        $this->assertEquals(ErrorCode::BAD_REQUEST_MERCHANT_RECURRING_PAYMENTS_NOT_SUPPORTED, $subReg->getFailureReason());
+    }
+
+    public function testAutoChargeEmandateTokenInvalidForChargeFailureReason()
+    {
+        // Auto charge will fail as token associated with subscription registration does not exist (or token got deleted)
+        $subrAttributes = [
+            'token_id'             => 'FwDj8vdozfJouZ',
+            'first_payment_amount' => 1100,
+            'max_amount'           => 10000,
+            'notes'                => [ 'address' => 'sometext' ],
+            'method'               => 'emandate',
+            'auth_type'            => 'netbanking',
+            'status'               => 'authenticated',
+            'attempts'             => 0,
+        ];
+
+        $subReg = $this->fixtures->create('subscription_registration', $subrAttributes);   // to be picked
+
+        // simulate test run at 4:00 PM
+        Carbon::setTestNow(Carbon::now(Timezone::IST)->setTime(16, 0));
+
+        $autoChargeJob = new TokenRegistrationAutoCharge(Mode::TEST, $subReg);
+        $autoChargeJob->handle();
+
+        $subReg = $this->getDbLastEntity('subscription_registration');
+
+        $this->assertEquals(1, $subReg->getAttempts());
+        $this->assertEquals('authenticated', $subReg->getStatus());
+        $this->assertEquals('BAD_REQUEST_TOKEN_REGISTRATION_NOT_VALID_FOR_AUTO_CHARGE',
+                            $subReg->getFailureReason());
     }
 
     public function testPayAuthLinkAndCopyNotes()

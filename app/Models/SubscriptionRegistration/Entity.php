@@ -234,6 +234,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMOUNT);
     }
 
+    public function getFailureReason()
+    {
+        return $this->getAttribute(self::FAILURE_REASON);
+    }
+
     public function getCurrency()
     {
         return $this->getAttribute(self::CURRENCY);
@@ -359,6 +364,11 @@ class Entity extends Base\PublicEntity
     public function setStatus(string $status)
     {
         $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function setFailureReason(string $reason)
+    {
+        $this->setAttribute(self::FAILURE_REASON, $reason);
     }
 
     public function setFirstPaymentAmountAttribute($amount)

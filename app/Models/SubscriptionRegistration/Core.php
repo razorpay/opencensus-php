@@ -732,7 +732,13 @@ class Core extends Base\Core
         {
             $tokenRegistration->incrementAttempts();
 
+            $tokenRegistration->setFailureReason('BAD_REQUEST_TOKEN_REGISTRATION_NOT_VALID_FOR_AUTO_CHARGE');
+
             $this->repo->saveOrFail($tokenRegistration);
+
+            $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_AUTO_PAYMENT_FAILED,
+                                $tokenRegistration->getMetricDimensions(
+                                    ['failure_reason' => $tokenRegistration->getFailureReason()]));
 
             $this->trace->info(TraceCode::TOKEN_REGISTRATION_NOT_VALID_FOR_AUTO_CHARGE,
                 [
@@ -778,7 +784,8 @@ class Core extends Base\Core
         {
             $paymentSuccess = false;
 
-            $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_AUTO_PAYMENT_FAILED, $tokenRegistration->getMetricDimensions());
+            $this->trace->count(Metric::SUBSCRIPTION_REGISTRATION_AUTO_PAYMENT_FAILED,
+                                $tokenRegistration->getMetricDimensions(['failure_reason' => $ex->getCode()]));
 
             $this->trace->traceException(
                 $ex,
@@ -788,6 +795,10 @@ class Core extends Base\Core
                     'token_registration_id' => $tokenRegistration->getPublicId(),
                 ]
             );
+
+            $tokenRegistration->setFailureReason($ex->getCode());
+
+            $this->repo->saveOrFail($tokenRegistration);
         }
 
         if ($paymentSuccess === true)
