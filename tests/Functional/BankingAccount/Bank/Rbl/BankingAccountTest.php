@@ -2033,9 +2033,11 @@ class BankingAccountTest extends TestCase
 
         $bankingAccount = $this->createBankingAccountFromDashboard();
 
+        $bankingAccountId = $bankingAccount['id'];
+
         $dataToReplace = [
             'request'  => [
-                'url'     => '/banking_accounts_dashboard/' . $bankingAccount['id'],
+                'url'     => '/banking_accounts_dashboard/' . $bankingAccountId,
                 'method'  => 'PATCH',
             ],
         ];
@@ -2050,10 +2052,10 @@ class BankingAccountTest extends TestCase
 
         $expectedValues = [
             'artefact_type' => 'business_pan',
-            'owner_id'      => $mid,
+            'owner_id'      => $bankingAccount->getId(),
         ];
 
-        $bvsValidation = $this->getDbEntity('bvs_validation', ['owner_id' => $mid, 'owner_type' => 'merchant']);
+        $bvsValidation = $this->getDbEntity('bvs_validation', ['owner_id' => $bankingAccount->getId(), 'owner_type' => 'banking_account'], 'live');
 
         $this->validateSuccessBvsValidation($bvsValidation, $expectedValues);
 
@@ -2094,10 +2096,10 @@ class BankingAccountTest extends TestCase
 
         $expectedValues = [
             'artefact_type' => 'personal_pan',
-            'owner_id'      => $mid,
+            'owner_id'      => $bankingAccount->getId(),
         ];
 
-        $bvsValidation = $this->getDbEntity('bvs_validation', ['owner_id' => $mid, 'owner_type' => 'merchant']);
+        $bvsValidation = $this->getDbEntity('bvs_validation', ['owner_id' => $bankingAccount->getId(), 'owner_type' => 'banking_account']);
 
         $this->validateSuccessBvsValidation($bvsValidation, $expectedValues);
 

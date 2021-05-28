@@ -227,7 +227,7 @@ class Entity extends Base\PublicEntity
 
     public function getBankingAccountId()
     {
-        $this->getAttributeValue(self::BANKING_ACCOUNT_ID);
+        return $this->getAttributeValue(self::BANKING_ACCOUNT_ID);
     }
 
     public function bankingAccount()

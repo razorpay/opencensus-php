@@ -39,8 +39,9 @@ class BusinessPanForCA extends BaseStatusUpdater
 
     public function updateValidationStatus(): void
     {
-        $validation = $this->repo->bvs_validation->getLatestArtefactValidationForOwnerId(
-            $this->merchantId,
+        $validation = $this->repo->bvs_validation->getLatestArtefactValidationForOwnerIdAndOwnerType(
+            $this->bankingAccountActivationDetail->getBankingAccountId(),
+            Constant::BANKING_ACCOUNT,
             $this->artefactType);
 
         if (empty($validation) === false)

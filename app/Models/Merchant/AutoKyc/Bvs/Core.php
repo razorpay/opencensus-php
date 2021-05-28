@@ -39,15 +39,18 @@ class Core extends Base\Core
      * This function triggers request to bvs and creates new entry in bvs_validation table if no error.
      * Return null if verification failed because of any reason.
      *
-     * @param string $merchantId
-     * @param array $input
+     * ownerId will be merchantId for PG request and bankingAccountId for bankingRequest
+     *
+     * @param string $ownerId
+     * @param array  $input
+     *
      * @return BvsValidation\Entity|null
      */
-    public function verify(string $merchantId, array $input): ?BvsValidation\Entity
+    public function verify(string $ownerId, array $input): ?BvsValidation\Entity
     {
         $this->trace->info(TraceCode::BVS_VERIFICATION_REQUEST, ['input' => $input]);
 
-        $input[Constant::OWNER_ID] = $merchantId;
+        $input[Constant::OWNER_ID] = $ownerId;
 
         $validation                  = null;
         $validationTriggeringSuccess = true;
@@ -189,6 +192,11 @@ class Core extends Base\Core
             BvsValidation\Entity::OWNER_TYPE      => Constant::MERCHANT,
             BvsValidation\Entity::PLATFORM        => Constant::PG,
         ];
+
+        if (array_key_exists(Constant::OWNER_TYPE, $input) === true)
+        {
+            $validationObject[BvsValidation\Entity::OWNER_TYPE] = $input[BvsValidation\Entity::OWNER_TYPE];
+        }
 
         $validationObject = array_merge($validationObject, $response->getResponseData());
 

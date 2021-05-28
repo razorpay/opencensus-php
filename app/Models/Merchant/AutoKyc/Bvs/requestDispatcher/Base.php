@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
 
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\AutoKyc;
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 
 abstract class Base implements RequestDispatcher
@@ -55,7 +56,20 @@ abstract class Base implements RequestDispatcher
         {
             $payload = $this->getRequestPayload();
 
-            $bvsValidation = (new AutoKyc\Bvs\Core())->verify($this->merchantDetails->getEntityId(), $payload);
+            if (array_key_exists(Constant::OWNER_ID, $payload) === true)
+            {
+                $ownerId = array_pull($payload, Constant::OWNER_ID);
+
+                $payload[Constant::OWNER_TYPE] = Constant::BANKING_ACCOUNT;
+            }
+            else
+            {
+                $ownerId = $this->merchantDetails->getEntityId();
+
+                $payload[Constant::OWNER_TYPE] = Constant::MERCHANT;
+            }
+
+            $bvsValidation = (new AutoKyc\Bvs\Core())->verify($ownerId, $payload);
 
             if ($bvsValidation != null)
             {

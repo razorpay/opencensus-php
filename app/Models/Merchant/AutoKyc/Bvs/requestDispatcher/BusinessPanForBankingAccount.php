@@ -30,6 +30,7 @@ class BusinessPanForBankingAccount extends Base
             Constant::CONFIG_NAME     => Constant::BUSINESS_PAN,
             Constant::VALIDATION_UNIT => BvsValidationConstants::IDENTIFIER,
             Constant::CUSTOM_CALLBACK_HANDLER => 'updateValidationStatusForBankingAccount',
+            Constant::OWNER_ID => $this->bankingDetail->getBankingAccountId(),
             Constant::DETAILS         => [
                 Constant::PAN_NUMBER => $this->bankingDetail->getBusinessPan(),
                 Constant::NAME       => $this->bankingDetail->getBusinessName(),

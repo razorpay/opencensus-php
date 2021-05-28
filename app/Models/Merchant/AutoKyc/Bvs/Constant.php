@@ -101,7 +101,12 @@ class Constant
     const CLIENT            = 'client';
     const MERCHANT_ID       = 'merchant_id';
 
+
+    // Platform
     const PG       = 'pg';
+
+    // Owner Types
+    const BANKING_ACCOUNT = 'banking_account';
     const MERCHANT = 'merchant';
 
     const ARTEFACT_TYPE = 'artefact_type';
