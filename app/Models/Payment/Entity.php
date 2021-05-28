@@ -4624,7 +4624,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $discount = $this->getDiscountIfApplicable();
 
         if ($discount !== null) {
-            $discountRatio = round($discount / $this->getBaseAmount(), 4);
+            $discountRatio = $discount / $this->getBaseAmount();
         }
 
         return $discountRatio;
