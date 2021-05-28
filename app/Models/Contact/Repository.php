@@ -27,35 +27,6 @@ class Repository extends Base\Repository
      * @param  Merchant\Entity $merchant
      * @return Entity|null
      */
-    public function getContactWithTrimmedSimilarDetails(array $input, Merchant\Entity $merchant)
-    {
-        $contactTypeColumn          = $this->dbColumn(Entity::TYPE);
-        $contactNameColumn          = $this->dbColumn(Entity::NAME);
-        $contactEmailColumn         = $this->dbColumn(Entity::EMAIL);
-        $contactContactColumn       = $this->dbColumn(Entity::CONTACT);
-        $contactReferenceIdColumn   = $this->dbColumn(Entity::REFERENCE_ID);
-
-        // In case all of the input parameters exactly match
-        // with any existing contact, we return the same contact
-        // to the merchant. Name and type are inclusive here.
-        // Using slave connection to reduce load on master cpu bcz of trim func in query
-        return $this->newQueryWithConnection($this->getSlaveConnection())
-                    ->where(DB::raw('trim('. $contactContactColumn .')'), $input[Entity::CONTACT] ?? null)
-                    ->where(DB::raw('trim('. $contactEmailColumn .')'), $input[Entity::EMAIL] ?? null)
-                    ->where(DB::raw('trim('. $contactReferenceIdColumn .')'), $input[Entity::REFERENCE_ID] ?? null)
-                    ->merchantId($merchant->getId())
-                    ->where(DB::raw('trim('. $contactTypeColumn .')'), ($input[Entity::TYPE] ?? null))
-                    ->where(DB::raw('trim('. $contactNameColumn .')'), ($input[Entity::NAME] ?? null))
-                    ->where(Entity::ACTIVE, 1)
-                    ->first();
-    }
-
-    /**
-     * Get contact if exists with similar details.
-     * @param  array           $input
-     * @param  Merchant\Entity $merchant
-     * @return Entity|null
-     */
     public function getContactWithSimilarDetails(array $input, Merchant\Entity $merchant)
     {
         // In case all of the input parameters exactly match

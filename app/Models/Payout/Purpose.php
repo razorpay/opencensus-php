@@ -62,7 +62,7 @@ class Purpose
     {
         $merchant = $payout->merchant;
 
-        $trimmedPurpose = $this->trimSpacesIfMerchantEnabled($purpose, $merchant->getId());
+        $trimmedPurpose = $this->trimSpaces($purpose);
 
         // If $purpose is one of the defaults, set and return
         if (self::isInDefaults($trimmedPurpose) === true)
@@ -89,7 +89,7 @@ class Purpose
         //
         $custom = $this->getCustom($merchant);
 
-        $trimmedCustom = $this->trimSpacesIfMerchantEnabled($custom, $merchant->getId());
+        $trimmedCustom = $this->trimSpaces($custom);
 
         if (isset($trimmedCustom[$trimmedPurpose]) === true)
         {
@@ -111,7 +111,7 @@ class Purpose
 
     public function validatePurpose(Merchant\Entity $merchant, string $purpose)
     {
-        $trimPurpose = $this->trimSpacesIfMerchantEnabled($purpose, $merchant->getId());
+        $trimPurpose = $this->trimSpaces($purpose);
 
         if(self::isInDefaults($trimPurpose) === true)
         {
@@ -124,7 +124,7 @@ class Purpose
         //
         $custom = $this->getCustom($merchant);
 
-        $trimCustoms = $this->trimSpacesIfMerchantEnabled($custom, $merchant->getId());
+        $trimCustoms = $this->trimSpaces($custom);
 
         if (isset($trimCustoms[$trimPurpose]) === true)
         {
@@ -179,7 +179,7 @@ class Purpose
 
         $merchantId = $merchant->getId();
 
-        $allCustomKeysTrimmed = $this->trimSpacesIfMerchantEnabled($allCustomKeys, $merchantId);
+        $allCustomKeysTrimmed = $this->trimSpaces($allCustomKeys);
 
         $maxPurposes = Validator::MAX_PURPOSES_ALLOWED;
 
@@ -190,7 +190,7 @@ class Purpose
                 Entity::PURPOSE_TYPE);
         }
 
-        $trimmedPurpose = $this->trimSpacesIfMerchantEnabled($purpose, $merchantId);
+        $trimmedPurpose = $this->trimSpaces($purpose);
 
         // If purpose is 'rzp_fees' we won't allow adding it as a custom purpose
         if (self::isInInternal($trimmedPurpose) === true)
@@ -209,7 +209,7 @@ class Purpose
         }
 
         $data = [
-            $trimmedPurpose => $this->trimSpacesIfMerchantEnabled($type, $merchantId)
+            $trimmedPurpose => $this->trimSpaces($type)
         ];
 
         $this->getSettingsAccessor($merchant)

@@ -51,17 +51,7 @@ class Core extends Base\Core
 
         $merchantId = $merchant->getId();
 
-        $treatment = $this->app->razorx->getTreatment(
-            $merchantId,
-            RazorxTreatment::BLOCKED_MERCHANT_FOR_TRIM_SPACE,
-            $this->mode,
-            Entity::CONTACT_RX_RETRY_COUNT
-        );
-
-        if ($treatment !== 'on')
-        {
-            $input = $this->trimSpaces($input);
-        }
+        $input = $this->trimSpaces($input);
 
         if (isset($input[Entity::IDEMPOTENCY_KEY]) === true)
         {
@@ -84,21 +74,6 @@ class Core extends Base\Core
         if ($createDuplicate === false)
         {
             $contact = $this->repo->contact->getContactWithSimilarDetails($input, $merchant);
-
-            if ($contact === null)
-            {
-                $treatmentTrimMigrationCompleted = $this->app->razorx->getTreatment(
-                    $merchantId,
-                    RazorxTreatment::TRIM_MIGRATION_IN_PROGRESS,
-                    $this->mode,
-                    Entity::CONTACT_RX_RETRY_COUNT
-                );
-
-                if ($treatmentTrimMigrationCompleted === 'on')
-                {
-                    $contact = $this->repo->contact->getContactWithTrimmedSimilarDetails($input, $merchant);
-                }
-            }
 
             if ($contact !== null)
             {
@@ -173,7 +148,7 @@ class Core extends Base\Core
 
         (new Validator)->validateInput('edit', $input);
 
-        $input = $this->trimSpacesIfMerchantEnabled($input, $this->merchant->getId());
+        $input = $this->trimSpaces($input);
 
         $this->setTypeIfApplicable($contact, $input);
 

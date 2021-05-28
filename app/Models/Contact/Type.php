@@ -62,7 +62,7 @@ final class Type
     {
         $merchant = $contact->merchant;
 
-        $trimmedType = $this->trimSpacesIfMerchantEnabled($type, $merchant->getId());
+        $trimmedType = $this->trimSpaces($type);
 
         // If $type is one of the defaults, set and return
         if (self::isInDefaults($trimmedType) === true)
@@ -78,7 +78,7 @@ final class Type
         //
         $custom = $this->getCustom($merchant);
 
-        $trimmedCustom = $this->trimSpacesIfMerchantEnabled($custom, $merchant->getId());
+        $trimmedCustom = $this->trimSpaces($custom);
 
         if (in_array($trimmedType, $trimmedCustom, true) === true)
         {
@@ -101,7 +101,7 @@ final class Type
     {
         $merchantId = $contact->merchant->getId();
 
-        $trimmedType = $this->trimSpacesIfMerchantEnabled($type, $merchantId);
+        $trimmedType = $this->trimSpaces($type);
 
         if (self::isInInternal($trimmedType) === true)
         {
@@ -143,9 +143,9 @@ final class Type
 
         $merchantId = $merchant->getId();
 
-        $allCustomKeysTrimmed = $this->trimSpacesIfMerchantEnabled($allCustomKeys, $merchantId);
+        $allCustomKeysTrimmed = $this->trimSpaces($allCustomKeys);
 
-        $trimmedType = $this->trimSpacesIfMerchantEnabled($type, $merchantId);
+        $trimmedType = $this->trimSpaces($type);
 
         $maxTypes = Validator::MAX_TYPES_ALLOWED;
 

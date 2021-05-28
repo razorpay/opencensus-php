@@ -132,7 +132,7 @@ class Core extends Base\Core
     {
         (new Validator)->validateIfscCode($input, $this->mode);
 
-        $trimmedInput = $this->trimSpacesIfMerchantEnabled($input, $merchant->getId());
+        $trimmedInput = $this->trimSpaces($input);
 
         $ba = $this->createBankAccountForSource(
                         $trimmedInput,

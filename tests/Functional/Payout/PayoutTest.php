@@ -6478,13 +6478,13 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('payout reversed at bank', $payout['failure_reason']);
     }
 
-    // check trimming in payout creation when experiment is not on for merchant.
+    // check trimming in payout creation.
     public function testCreatePayoutWithUnnecessarySpacesTrimmedInPurpose()
     {
         $this->startTest();
     }
 
-    // check trimming in payout purpose creation when experiment is not on for merchant.
+    // check trimming in payout purpose creation.
     public function testCreatePayoutWithOtpAndUnnecessarySpacesTrimmedInPurpose()
     {
         $this->ba->proxyAuth();
@@ -6492,7 +6492,7 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
-    // check trimming in payout purpose creation when experiment is not on for merchant.
+    // check trimming in payout purpose creation.
     public function testCreatePayoutPurposeWithSpacesTrimmed()
     {
         $customPurpose = ' leading trailing ';
@@ -6508,73 +6508,13 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(in_array(['purpose' => trim($customPurpose), 'purpose_type'  => 'refund'], $response['items'], true), true);
     }
 
-    // don't trim in payout creation when experiment is on for merchant.
-    public function testCreatePayoutPurposeWithSpaces()
-    {
-        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
-
-        $this->app->instance('razorx', $razorx);
-
-        $razorx->shouldReceive('getTreatment')
-            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
-            {
-                if($featureFlag === (RazorxTreatment::IMPS_MODE_PAYOUT_FILTER))
-                {
-                    return 'yesbank';
-                }
-                return 'on';
-            });
-
-        $customPurpose = ' leading trailing ';
-
-        $purpose = & $this->testData[__FUNCTION__]['request']['content']['purpose'];
-
-        $purpose = $customPurpose;
-
-        $this->ba->privateAuth();
-
-        $response = $this->startTest();
-
-        $this->assertEquals(in_array(['purpose' => $customPurpose, 'purpose_type'  => 'refund'], $response['items'], true), true);
-    }
-
-    // check trimming in payout purpose creation when experiment is not on for merchant.
+    // check trimming in payout purpose creation.
     public function testBulkPayoutWithNotesAndSpacesTrimmed()
     {
         $this->ba->batchAuth();
 
         $headers = [
             'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
-            'HTTP_X_Creator_Type' => 'user',
-            'HTTP_X_Creator_Id'   => 'MerchantUser01'
-        ];
-
-        $this->testData[__FUNCTION__]['request']['server'] = $headers;
-
-        $this->startTest();
-    }
-
-    // don't trim in payout creation when experiment is on for merchant.
-    public function testBulkPayoutWithNotesAndSpaces()
-    {
-        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
-
-        $this->app->instance('razorx', $razorx);
-
-        $razorx->shouldReceive('getTreatment')
-               ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
-               {
-                   if($featureFlag === (RazorxTreatment::IMPS_MODE_PAYOUT_FILTER))
-                   {
-                       return 'yesbank';
-                   }
-                   return 'on';
-               });
-
-        $this->ba->batchAuth();
-
-        $headers = [
-            'HTTP_X_Batch_Id' => 'C0zv9I46W4wiOq',
             'HTTP_X_Creator_Type' => 'user',
             'HTTP_X_Creator_Id'   => 'MerchantUser01'
         ];

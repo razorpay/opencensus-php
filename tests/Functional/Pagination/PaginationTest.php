@@ -155,10 +155,6 @@ class PaginationTest extends TestCase
 
         $contact2 = $this->getLastEntity('contact', true);
 
-        $this->assertTrue(in_array($customPurpose, $payoutPurposeBeforeUpdate['items'], true));
-
-        $this->assertTrue(in_array($customType, $contactTypeBeforeUpdate['items'], true));
-
         $this->testData[__FUNCTION__]['request']['content']['merchant_ids'] = [$createdMerchant['id']];
 
         $this->ba->cronAuth();

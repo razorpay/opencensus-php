@@ -1052,29 +1052,7 @@ class ContactsTest extends TestCase
         $this->startTest();
     }
 
-    // don't trim in contact create when experiment is on for merchant.
-    public function testCreateContactWithUnnecessarySpacesInNameAndType()
-    {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->willReturn('on');
-
-        $customType = $this->testAddCustomContactTypeWithSpaces();
-
-        $type = & $this->testData[__FUNCTION__]['request']['content']['type'];
-
-        $type = $customType;
-
-        $this->startTest();
-    }
-
-    // check trimming in contact create when experiment is not on for merchant and proxy auth.
+    // check trimming in contact create proxy auth.
     public function testCreateContactWithUnnecessarySpacesTrimmedInNameAndTypeAndProxyAuth()
     {
         $this->ba->proxyAuth();
@@ -1082,7 +1060,7 @@ class ContactsTest extends TestCase
         $this->startTest();
     }
 
-    // check trimming in contact update when experiment is not on for merchant.
+    // check trimming in contact update.
     public function testUpdateContactWithUnnecessarySpacesTrimmedInNameAndType()
     {
         $this->fixtures->create('contact', ['id' => '1000000contact', 'type' => 'self', 'reference_id' => '213']);
@@ -1095,33 +1073,9 @@ class ContactsTest extends TestCase
         $this->startTest();
     }
 
-    // check trimming in contact type creation when experiment is not on for merchant.
+    // check trimming in contact type creation.
     public function testAddCustomContactTypeWithSpacesTrimmed()
     {
-        $type = & $this->testData[__FUNCTION__]['request']['content']['type'];
-
-        $customType = ' leading trailing ';
-
-        $type = $customType;
-
-        $this->startTest();
-
-        return $customType;
-    }
-
-    // don't trim in contact type creation when experiment is on for merchant.
-    public function testAddCustomContactTypeWithSpaces()
-    {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('on');
-
         $type = & $this->testData[__FUNCTION__]['request']['content']['type'];
 
         $customType = ' leading trailing ';
@@ -1145,19 +1099,6 @@ class ContactsTest extends TestCase
         $type = trim($customType);
 
         $description = sprintf($description, $type);
-
-        $this->startTest();
-    }
-
-    // don't trim in contact type creation when experiment is on for merchant.
-    // test duplicate creation with space and without spaces type
-    public function testAddCustomContactTypeThatAlreadyExistsSpacesType()
-    {
-        $customType = $this->testAddCustomContactTypeWithSpaces();
-
-        $type = & $this->testData[__FUNCTION__]['request']['content']['type'];
-
-        $type = trim($customType);
 
         $this->startTest();
     }
@@ -1210,13 +1151,6 @@ class ContactsTest extends TestCase
         $this->fixtures->on('live')->merchant->edit('10000000000000', ['activated' => 1,]);
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
-
-        $this->startTest();
-    }
-
-    public function testCheckDuplicateContactCreation()
-    {
-        $this->testCreateContactWithUnnecessarySpacesInNameAndType();
 
         $this->startTest();
     }
