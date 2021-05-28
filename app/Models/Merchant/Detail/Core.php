@@ -1703,6 +1703,8 @@ class Core extends Base\Core
 
         $rejectionReasons = [];
 
+        $shouldSave = true;
+
         if (empty($input[Entity::REJECTION_REASONS]) === false)
         {
             $rejectionReasons = $input[Entity::REJECTION_REASONS];
@@ -1749,7 +1751,8 @@ class Core extends Base\Core
                                                             $newMerchantDetails,
                                                             $input,
                                                             $rejectionReasons,
-                                                            $maker, $merchant)
+                                                            $maker, $merchant,
+                                                            $shouldSave)
         {
             if (($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED) and
                 ($merchant->isLinkedAccount() === false))
@@ -1763,7 +1766,7 @@ class Core extends Base\Core
                      ->setOriginal($oldMerchantDetails)
                      ->setDirty($newMerchantDetails);
 
-                (new Merchant\Activate)->activate($merchant);
+                (new Merchant\Activate)->activate($merchant, true, $shouldSave);
 
                 // request for default instruments when merchant is activated
                 $this->app['terminals_service']->requestDefaultMerchantInstruments($merchant->getId());
@@ -1772,8 +1775,10 @@ class Core extends Base\Core
             if (($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED_MCC_PENDING) and
                 ($merchant->isLinkedAccount() === false))
             {
+                (new Merchant\Activate)->activate($merchant, false, $shouldSave);
 
-                (new Merchant\Activate)->activate($merchant, false);
+                $shouldSave = true;
+
                 // request for default instruments when merchant is activated
 
                 $this->app['terminals_service']->requestDefaultMerchantInstruments($merchant->getId());
@@ -1803,6 +1808,11 @@ class Core extends Base\Core
 
                     $this->sendNeedsClarificationEmail($merchant);
                 }
+            }
+
+            if ($shouldSave === false)
+            {
+                return;
             }
 
             $this->trace->info(
@@ -1850,6 +1860,11 @@ class Core extends Base\Core
             }
         });
 
+        if ($shouldSave === false)
+        {
+            return $merchantDetails;
+        }
+
         $customProperties['activation_status'] = $currentActivationStatus;
 
         $this->app['diag']->trackOnboardingEvent(EventCode::ACT_CHANGE_ACTIVATION_STATUS_SUCCESS,
@@ -1866,7 +1881,7 @@ class Core extends Base\Core
         $isWhatsappEnabled = (new Merchant\Core())->isRazorxExperimentEnable($merchant->getId(),
             RazorxTreatment::WHATSAPP_NOTIFICATIONS);
 
-        if($isWhatsappEnabled === true)
+        if ($isWhatsappEnabled === true)
         {
             $args = [
                 'activationStatus'  => $currentActivationStatus,
@@ -2147,9 +2162,11 @@ class Core extends Base\Core
         //
         $merchantDetails->load('merchant');
 
-        $merchant = $merchantDetails->merchant;
-
         $merchantDetails->load('avgOrderValue');
+
+        $merchantDetails->load('tnc');
+
+        $merchant = $merchantDetails->merchant;
 
         if ($merchant->isLinkedAccount() === true)
         {
@@ -2189,6 +2206,11 @@ class Core extends Base\Core
         $response['isAutoKycDone']                              = $this->isAutoKycDone($merchantDetails);
         $response['isHardLimitReached']                         = empty($hardEscalationLevel3) ? false : true;
         $response['isDedupe']                                   = $this->dedupeCore->isDedupeBlocked($merchant);
+
+        if ($this->isMerchantTncApplicable($merchant) === true)
+        {
+            $response[Entity::MERCHANT_TNC] = (new Merchant\Tnc\Core)->getTncDetails($merchantDetails->tnc);
+        }
 
         $response = $this->appendBankingSpecificDetails($response, $merchant);
 
@@ -4110,5 +4132,28 @@ class Core extends Base\Core
     public function setMerchantCoreForRazorx($mcore)
     {
         $this->mcore = $mcore;
+    }
+
+    public function isMerchantTncApplicable(Merchant\Entity $merchant)
+    {
+        if (empty($merchant->merchantDetail->getAttribute(
+            Entity::BUSINESS_WEBSITE)) === false)
+        {
+            return false;
+        }
+
+        if ($merchant->isBusinessBankingEnabled() === true)
+        {
+            return false;
+        }
+
+        if ((new Merchant\Core())->isRazorxExperimentEnable(
+            $merchant->getId(),
+            RazorxTreatment::MERCHANT_TNC) === false)
+        {
+            return false;
+        }
+
+        return true;
     }
 }

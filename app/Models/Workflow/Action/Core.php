@@ -715,6 +715,21 @@ class Core extends Base\Core
         return $actions;
     }
 
+    public function fetchApprovedActionOnEntityOperation(
+        string $entityId,
+        string $entityName,
+        string $permissionName,
+        string $orgId = null)
+    {
+        $permissionId = $this->fetchPermissionId($permissionName, $orgId);
+
+        $actions = $this->repo
+            ->workflow_action
+            ->getApprovedActionOnEntityOperation($entityId, $entityName, $permissionId);
+
+        return $actions;
+    }
+
     public function fetchOpenActionOnEntityOperationWithPermissionList(
         string $entityId,
         string $entityName,

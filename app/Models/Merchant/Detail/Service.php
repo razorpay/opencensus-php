@@ -32,13 +32,15 @@ use RZP\Models\Merchant\Referral as Referral;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Partner\Metric as PartnerMetric;
 use \RZP\Models\State\Entity as StateChangeEntity;
+use RZP\Models\Merchant\AutoKyc\Bvs\Core as BvsCore;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Models\Merchant\Document\FileHandler\Factory;
 use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\Merchant\Document\Core as DocumentCore;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
-use RZP\Models\Merchant\AutoKyc\Bvs\Core as BvsCore;
+use RZP\Models\Merchant\Detail\BusinessSubcategory as Sub;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant as BvsConstant;
+use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApp;
 use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
@@ -1583,6 +1585,64 @@ class Service extends Base\Service
         }
 
         return $response;
+    }
+
+    public function getMerchantTncById($id): array
+    {
+        $tnc = $this->repo->merchant_tnc->findOrFailPublic($id);
+
+        $merchantDetail = $tnc->merchantDetail;
+
+        $merchantEmail = (new Merchant\Email\Service())->proxyGetSupportDetails($tnc->merchantDetail->merchant);
+
+        $publicTncDetails = [
+            'link' => (new Merchant\Tnc\Core)->getMerchantTncLink($id)
+        ];
+
+        foreach (DetailConstants::PUBLIC_TNC_DETAILS as $var => $entities)
+        {
+            foreach ($entities as $entity)
+            {
+                if (isset(${$var}[$entity]))
+                {
+                    $publicTncDetails[$entity] = ${$var}[$entity];
+                }
+                else
+                {
+                    $publicTncDetails[$entity] = null;
+                }
+            }
+        }
+
+        $businessCategory = $merchantDetail[Entity::BUSINESS_CATEGORY];
+
+        $businessSubcategory = $merchantDetail[Entity::BUSINESS_SUBCATEGORY];
+
+        $publicTncDetails[Entity::BUSINESS_CATEGORY] = BusinessCategory::DESCRIPTIONS[$businessCategory];
+
+        $publicTncDetails[Entity::BUSINESS_SUBCATEGORY] = Sub::DESCRIPTIONS[$businessSubcategory];
+
+        return $publicTncDetails;
+    }
+
+    public function saveMerchantTnc(array $input)
+    {
+        if ((new Merchant\Detail\Core)->isMerchantTncApplicable($this->merchant) === true)
+        {
+            $emailInput = [
+                'email' => $input['support_email']
+            ];
+
+            unset($input['support_email']);
+
+            (new Merchant\Email\Service)->proxyEditSupportDetails($this->merchant, $emailInput);
+
+            return (new Merchant\Tnc\Core)->createOrEditTnc($this->merchant->merchantDetail, $input);
+        }
+        else
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_TNC_NOT_APPLICABLE);
+        }
     }
 
     public function createPartnerActivationForPartners(array $input)

@@ -2076,6 +2076,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MERCHANT_CREATE_AVG_ORDER_VALUE_DETAILS               = 'MERCHANT_CREATE_AVG_ORDER_VALUE_DETAILS';
     const AVG_ORDER_VALUE_DOES_NOT_EXIST                        = 'AVG_ORDER_VALUE_DOES_NOT_EXIST';
+    const MERCHANT_TNC_CREATE_DETAILS                           = 'MERCHANT_TNC_CREATE_DETAILS';
+    const MERCHANT_TNC_DOES_NOT_EXIST                           = 'MERCHANT_TNC_DOES_NOT_EXIST';
 
     // temporary tracecodes, will be removed
     const  MERCHANT_DETAILS_EDIT_REQUEST                        =  'MERCHANT_DETAILS_EDIT_REQUEST';

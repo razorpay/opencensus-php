@@ -5,7 +5,7 @@ namespace RZP\Models\Merchant\Stakeholder;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use RZp\Models\Merchant;
+use RZP\Models\Merchant;
 use RZP\Constants\Country;
 use RZP\Constants\IndianStates;
 use RZP\Exception\BadRequestException;

@@ -3,14 +3,6 @@
 namespace RZP\Models\Merchant\AvgOrderValue;
 
 use RZP\Base;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZp\Models\Merchant;
-use RZP\Constants\Country;
-use RZP\Constants\IndianStates;
-use RZP\Exception\BadRequestException;
-use RZP\Exception\BadRequestValidationFailureException;
-use RZP\Tests\Functional\Gateway\Enach\Netbanking\EnachNetbankingNpciIciciTest;
 
 class Validator extends Base\Validator
 {

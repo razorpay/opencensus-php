@@ -2059,6 +2059,22 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getMerchantTnc($tncId)
+    {
+        $response = $this->service(E::MERCHANT_DETAIL)->getMerchantTncById($tncId);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postMerchantTnc()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->saveMerchantTnc($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function createPartnerActivationForPartners()
     {
         $input = Request::all();

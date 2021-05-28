@@ -1400,4 +1400,6 @@ class PublicErrorDescription
     const BAD_REQUEST_FTA_CREATION_FOR_PAYOUT_SERVICE_IN_PROGRESS                   = 'Request failed because another fta creation for the same request is in progress';
     const BAD_REQUEST_LEDGER_CREATION_FOR_PAYOUT_SERVICE_IN_PROGRESS                = 'Request failed because another ledger creation for the same request is in progress';
     const BAD_REQUEST_REVERSAL_CREATION_FOR_PAYOUT_SERVICE_IN_PROGRESS              = 'Request failed because another reversal creation for the same request is in progress';
+
+    const BAD_REQUEST_MERCHANT_TNC_NOT_APPLICABLE                                   = 'Request for creation of Merchant TnC failed because it is not applicable to the current merchant';
 }

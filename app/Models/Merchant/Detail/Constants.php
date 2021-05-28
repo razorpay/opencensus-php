@@ -4,6 +4,8 @@ namespace RZP\Models\Merchant\Detail;
 
 
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Merchant\Tnc\Entity as TncEntity;
+use RZP\Models\Merchant\Email\Entity as EmailEntity;
 
 class Constants
 {
@@ -245,6 +247,30 @@ class Constants
         [
             self::ACCOUNT_PREFIX => "567890",
             self::IFSC_PREFIX    => IFSC::RATN
+        ]
+    ];
+
+    const PUBLIC_TNC_DETAILS = [
+        'tnc' => [
+            TncEntity::DELIVERABLE_TYPE,
+            TncEntity::SHIPPING_PERIOD,
+            TncEntity::REFUND_REQUEST_PERIOD,
+            TncEntity::REFUND_PROCESS_PERIOD,
+            TncEntity::WARRANTY_PERIOD,
+            TncEntity::UPDATED_AT,
+        ],
+        'merchantDetail' => [
+            Entity::BUSINESS_NAME,
+            Entity::BUSINESS_REGISTERED_ADDRESS,
+            Entity::BUSINESS_REGISTERED_PIN,
+            Entity::BUSINESS_REGISTERED_CITY,
+            Entity::BUSINESS_REGISTERED_STATE,
+            Entity::BUSINESS_CATEGORY,
+            Entity::BUSINESS_SUBCATEGORY,
+            Entity::BUSINESS_MODEL,
+        ],
+        'merchantEmail' => [
+            EmailEntity::EMAIL,
         ]
     ];
 }

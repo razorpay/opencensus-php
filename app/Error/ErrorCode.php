@@ -2149,6 +2149,8 @@ class ErrorCode
 
     const SERVER_ERROR_EDGE_PROXY_NO_CONFIG                                         = 'SERVER_ERROR_EDGE_PROXY_NO_CONFIG';
 
+    const BAD_REQUEST_MERCHANT_TNC_NOT_APPLICABLE                                   = 'BAD_REQUEST_MERCHANT_TNC_NOT_APPLICABLE';
+
     static function getConstants()
     {
         $oClass = new \ReflectionClass(__CLASS__);

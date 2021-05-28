@@ -549,7 +549,9 @@ class Route
         'merchant_activation_status'               => ['patch',    'merchant/activation/{id}/activation_status',     'MerchantController@updateActivationStatus'                         ],
         'merchant_activation_status_change_log'    => ['get',      'merchant/activation/{id}/status_change_log',     'MerchantController@getActivationStatusChangeLog'                   ],
         'merchant_get_rejection_reasons'           => ['get',      'merchant/activation/rejection_reasons',          'MerchantController@getRejectionReasons'                            ],
-        'merchant_aov_config'                      => ['get',      'merchant/aov-config',                            'MerchantController@getAovConfig'                            ],
+        'merchant_aov_config'                      => ['get',      'merchant/aov-config',                            'MerchantController@getAovConfig'                                   ],
+        'merchant_tnc_details'                     => ['get',      'merchant/tnc/{id}',                              'MerchantController@getMerchantTnc'                                 ],
+        'merchant_tnc_save'                        => ['post',     'merchant/tnc',                                   'MerchantController@postMerchantTnc'                                 ],
         'merchant_batches'                         => ['post',     'merchant/{id}/batches',                          'MerchantController@createBatches'                                  ],
         'merchant_payout_mail'                     => ['post',     'merchant/payout/mail',                           'MerchantController@sendPayoutMail'                                 ],
         'merchant_post_preferences'                => ['post',     'merchant/preferences/{group}',                   'MerchantController@postMerchantPreferences'                        ],
@@ -3286,6 +3288,8 @@ class Route
         'create_FTA_payout_service',
         'create_ledger_payout_service',
         'payout_links_batch_process',
+
+        'merchant_tnc_details',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -3508,6 +3512,7 @@ class Route
         'merchant_get_disabled_banks',
         'merchant_activation_upload_file',
         'merchant_activation_save',
+        'merchant_tnc_save',
         'merchant_activation_update_website',
         'merchant_one_time_token',
         'merchant_activation_business_categories',
@@ -6402,6 +6407,7 @@ class Route
             'merchant_activation_details',
             'merchant_activation_needs_clarification',
             'merchant_activation_save',
+            'merchant_tnc_save',
             'merchant_activation_status_partner',
             'merchant_activation_update_partner',
             'merchant_activation_update_website',
@@ -7608,6 +7614,7 @@ class Route
             'merchant_activation_needs_clarification',
             'merchant_activation_reviewers',
             'merchant_activation_save',
+            'merchant_tnc_save',
             'merchant_activation_status',
             'merchant_activation_status_change_log',
             'merchant_activation_status_partner',
@@ -8650,6 +8657,7 @@ class Route
             'admin_forgot_password',
             'admin_reset_password',
             'user_confirm_by_data',
+            'merchant_tnc_details',
         ],
 
         'dashboard_internal' => [
@@ -9633,6 +9641,7 @@ class Route
         'merchant_instant_activation_post',
         'merchant_activation_upload_file',
         'merchant_activation_save',
+        'merchant_tnc_save',
         'merchant_document_upload',
         'user_login',
         'user_reset_password_create',

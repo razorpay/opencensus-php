@@ -39,20 +39,23 @@ class Activate extends Base\Core
      *
      * @param Entity $merchant
      *
+     * @param bool $triggerWorkflow
+     * @param bool $shouldSave
      * @return Detail\Entity
      *
-     * @throws Exception\BadRequestException
+     * @throws BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
      * @throws Exception\LogicException
      * @throws Throwable
      */
-    public function activate(Entity $merchant, bool $triggerWorkflow = true): Detail\Entity
+    public function activate(Entity $merchant, bool $triggerWorkflow = true, bool &$shouldSave = true): Detail\Entity
     {
         // Merchants who have been activated (instantly activated whitelisted merchants)
         if ($merchant->isActivated() === true)
         {
             $this->trace->info(TraceCode::ALREADY_ACTIVATED, $merchant->toArrayPublic());
 
-            return $this->markKycVerified($merchant, $triggerWorkflow);
+            return $this->markKycVerified($merchant, $triggerWorkflow, $shouldSave);
         }
         //
         // For merchants who never went through the instant activations flow, and,
@@ -60,24 +63,48 @@ class Activate extends Base\Core
         //
         $this->trace->info(TraceCode::NOT_ACTIVATED, $merchant->toArrayPublic());
 
-        return $this->activateAndMarkKycVerified($merchant, $triggerWorkflow);
+        return $this->activateAndMarkKycVerified($merchant, $triggerWorkflow, $shouldSave);
     }
 
     /**
-     * @param Entity        $merchant
+     * @param Entity $merchant
      *
+     * @param bool $triggerWorkflow
+     * @param bool $shouldSave
      * @return Detail\Entity
      *
-     * @throws Exception\BadRequestException
+     * @throws BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\LogicException
      * @throws Throwable
      */
-    public function activateAndMarkKycVerified(Entity $merchant, bool $triggerWorkflow = true): Detail\Entity
+    public function activateAndMarkKycVerified(Entity $merchant, bool $triggerWorkflow = true, bool &$shouldSave = true): Detail\Entity
     {
         $merchantDetail = $merchant->merchantDetail;
 
         $merchant->getValidator()->validateBeforeActivate();
 
         $this->validateMethodsAndPricing($merchant);
+
+        if ($triggerWorkflow === true)
+        {
+            // Triggering workflow for the activation_status change in merchantDetail entity
+            $this->app['workflow']
+                ->handle();
+        }
+
+        $isMerchantTncApplicable = (new Merchant\Detail\Core)->isMerchantTncApplicable($merchant);
+
+        if (($isMerchantTncApplicable === true) and
+            ($merchantDetail->tnc === null) and
+            ($triggerWorkflow === true))
+        {
+            $shouldSave = false;
+
+            (new Merchant\Core)->appendTag($merchant, 'activated_by_ops');
+
+            return $merchantDetail;
+        }
 
         if ($this->shouldCreateBankAccount($merchantDetail) === true)
         {
@@ -100,13 +127,6 @@ class Activate extends Base\Core
             ($merchant->getHasKeyAccess() === false))
         {
             $merchant->setHasKeyAccess(true);
-        }
-
-        if ($triggerWorkflow)
-        {
-            // Triggering workflow for the activation_status change in merchantDetail entity
-            $this->app['workflow']
-                ->handle();
         }
 
         $merchantCore = new Merchant\Core;
@@ -220,19 +240,42 @@ class Activate extends Base\Core
     }
 
     /**
-     * @param Entity        $merchant
+     * @param Entity $merchant
      *
+     * @param bool $triggerWorkflow
+     * @param bool $shouldSave
      * @return Detail\Entity
-     * @throws Exception\BadRequestException
+     * @throws BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
      * @throws Exception\LogicException
      * @throws Throwable
      */
-    public function markKycVerified(Entity $merchant, bool $triggerWorkflow = true): Detail\Entity
+    public function markKycVerified(Entity $merchant, bool $triggerWorkflow = true, bool &$shouldSave = true): Detail\Entity
     {
         $merchantDetail = $merchant->merchantDetail;
 
         // @todo: add a check - should be through an instantly_activated state
         $merchant->getValidator()->validateBeforeKycVerified();
+
+        if ($triggerWorkflow)
+        {
+            // Triggering workflow for the activation_status change in merchantDetail entity
+            $this->app['workflow']
+                ->handle();
+        }
+
+        $isMerchantTncApplicable = (new Merchant\Detail\Core)->isMerchantTncApplicable($merchant);
+
+        if (($isMerchantTncApplicable === true) and
+            ($merchantDetail->tnc === null) and
+            ($triggerWorkflow === true))
+        {
+            $shouldSave = false;
+
+            (new Merchant\Core)->appendTag($merchant, 'activated_by_ops');
+
+            return $merchantDetail;
+        }
 
         if ($this->shouldCreateBankAccount($merchantDetail) === true)
         {
@@ -242,13 +285,6 @@ class Activate extends Base\Core
         }
 
         $merchant->releaseFunds();
-
-        if ($triggerWorkflow)
-        {
-            // Triggering workflow for the activation_status change in merchantDetail entity
-            $this->app['workflow']
-                ->handle();
-        }
 
         $merchantCore = new Merchant\Core;
 

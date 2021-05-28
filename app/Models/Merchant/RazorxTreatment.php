@@ -190,6 +190,9 @@ final class RazorxTreatment
     // experiment to enable dedupe functionality
     const DEDUPE_FUNCTIONALITY = 'DEDUPE_FUNCTIONALITY';
 
+    // experiment to add merchant TnC urls for their website
+    const MERCHANT_TNC = 'merchant_tnc';
+
     // experiment to enable whatsapp notifications for settlements
     const WHATSAPP_NOTIFICATIONS_SETTLEMENTS = 'whatsapp_notification_enablement';
 

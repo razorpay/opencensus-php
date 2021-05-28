@@ -14,6 +14,7 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Workflow\Constants;
 use RZP\Models\Workflow\Action\Checker;
+use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
@@ -159,6 +160,19 @@ class Repository extends Base\Repository
                     ->where(Entity::PERMISSION_ID, $permissionId)
                     ->whereIn(Entity::STATE, State\Name::OPEN_ACTION_STATES)
                     ->get();
+    }
+
+    public function getApprovedActionOnEntityOperation(
+        string $entityId,
+        string $entityName,
+        string $permissionId)
+    {
+        return $this->newQuery()
+            ->where(Entity::ENTITY_ID, $entityId)
+            ->where(Entity::ENTITY_NAME, $entityName)
+            ->where(Entity::PERMISSION_ID, $permissionId)
+            ->where(Entity::APPROVED, '=', 1)
+            ->get();
     }
 
     public function getOpenActionOnEntityOperationWithPermissionList(

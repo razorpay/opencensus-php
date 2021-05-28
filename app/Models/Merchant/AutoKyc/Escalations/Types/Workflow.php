@@ -39,9 +39,16 @@ class Workflow extends BaseEscalationType
 
         $permissionName = Permission\Name::AUTO_KYC_SOFT_LIMIT_BREACH;
 
+        $tags = [];
+
         if ($merchant->merchantDetail->isUnregisteredBusiness())
         {
             $permissionName = Permission\Name::AUTO_KYC_SOFT_LIMIT_BREACH_UNREGISTERED;
+        }
+
+        if ($merchant->merchantDetail->tnc !== null)
+        {
+            $tags[] = 'tnc_generated';
         }
 
         // The reason routeName and Controller is set here because
@@ -53,6 +60,7 @@ class Workflow extends BaseEscalationType
             ->setWorkflowMaker($merchant)
             ->setWorkflowMakerType(MakerType::MERCHANT)
             ->setMakerFromAuth(false)
+            ->setTags($tags)
             ->setRouteParams([DetailEntity::ID => $merchant->getId()])
             ->setInput($input);
         try
