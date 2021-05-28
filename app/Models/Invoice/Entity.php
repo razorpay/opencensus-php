@@ -1035,8 +1035,26 @@ class Entity extends Base\PublicEntity
 
     public function isTypeOfSubscriptionRegistration(): bool
     {
-        return (($this->getEntityType() !== null) and
-               ($this->getRelation('entity') instanceof SubscriptionRegistration\Entity));
+        if ($this->getEntityType() === null)
+        {
+            return false;
+        }
+
+        try
+        {
+            $relation = $this->getRelation('entity');
+        }
+        catch (\Exception $e)
+        {
+            if ($this->getEntityType() === 'subscription_registration')
+            {
+                return true;
+            }
+
+            return false;
+        }
+        
+        return ($this->getRelation('entity') instanceof SubscriptionRegistration\Entity);
     }
 
     public function isAuthlinkInvoice(): bool
