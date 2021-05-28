@@ -653,6 +653,9 @@ class Name
     // Ledger service permissions
     const LEDGER_SERVICE_ACTIONS                       = 'ledger_service_actions';
 
+    // Settlement Service permissions
+    const SETTLEMENT_SERVICE_MERCHANT_CONFIG_EDIT = 'settlement_service_merchant_config_edit';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,

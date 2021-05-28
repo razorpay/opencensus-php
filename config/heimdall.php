@@ -466,6 +466,10 @@ return [
             Permission::RETRY_SETTLEMENT                    => '',
             Permission::MERCHANT_INVOICE_EDIT               => '',
             Permission::MERCHANT_INVOICE_CONTROL            => '',
+            Permission::SETTLEMENT_SERVICE_MERCHANT_CONFIG_EDIT => [
+                'description' => 'This permission will be used to edit merchant config in new settlement service',
+                'assignable'  => true,
+            ],
             Permission::SEND_NEWSLETTER                     => '',
             Permission::TRIGGER_DUMMY_ERROR                 => '',
             Permission::MAKE_API_CALL                       => '',

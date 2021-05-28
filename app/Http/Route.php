@@ -4919,7 +4919,7 @@ class Route
         // TODO: get clarity on permissions
         'setl_merchant_config_get'                 => Permission::VIEW_ALL_ENTITY,
         'setl_merchant_config_create'              => Permission::SETTLEMENT_BULK_UPDATE,
-        'setl_merchant_config_update'              => Permission::SCHEDULE_ASSIGN,
+        'setl_merchant_config_update'              => Permission::SETTLEMENT_SERVICE_MERCHANT_CONFIG_EDIT,
         'setl_get_scheduleableEntities'            => Permission::VIEW_ALL_ENTITY,
         'setl_bank_account_create'                 => Permission::EDIT_MERCHANT_BANK_DETAIL,
         'setl_bank_account_update'                 => Permission::EDIT_MERCHANT_BANK_DETAIL,
