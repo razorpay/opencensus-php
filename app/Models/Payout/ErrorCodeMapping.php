@@ -166,7 +166,8 @@ class ErrorCodeMapping
         'BENE_INCORRECT_IFSC'                   => 'Payout failed as the IFSC code is invalid. Please change the IFSC code and retry.',
         'FTS_ATTEMPT_INITIATE_FAILED'           => 'Payout failed due to technical failure. Please retry after 30 min.',
         'FTS_ATTEMPT_CREATE_FAILED'             => 'Payout failed due to technical failure. Please retry after 30 min.',
-        'CUSTOMER_DOES_NOT_EXIST'               => 'Customer account does not exist with the wallet provider for the given phone number.'
+        'CUSTOMER_DOES_NOT_EXIST'               => 'Customer account does not exist with the wallet provider for the given phone number.',
+        'MERCHANT_INSUFFICIENT_FUND'            => 'Payout failed due to insufficient funds in the bank account.'
     ];
 
     public static $alternateFailureReasonMapping = [
