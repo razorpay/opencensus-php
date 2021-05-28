@@ -7,9 +7,10 @@ use Carbon\Carbon;
 
 use RZP\Models\Admin;
 use RZP\Models\Payout;
+use RZP\Constants\Timezone;
+use RZP\Models\Pricing\Fee;
 use Rzp\Models\FundTransfer;
 use RZP\Services\Mock\Mozart;
-use RZP\Models\BankingAccount;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Tests\Functional\TestCase;
 use RZP\Constants\Mode as EnvMode;
@@ -37,13 +38,13 @@ class IciciCaPayoutTest extends TestCase
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
 
+    private $ownerRoleUser;
+
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/IciciCaPayoutTestData.php';
 
         parent::setUp();
-
-        $this->fixtures->create('org:razorpay_org_live');
 
         $this->fixtures->on('test')->create('contact', ['id' => '1000001contact', 'active' => 1]);
 
@@ -59,18 +60,6 @@ class IciciCaPayoutTest extends TestCase
 
         $this->setUpMerchantForBusinessBanking(false, 10000000, 'direct', 'icici');
 
-        $bankingAccountParams = [
-            'id'             => 'xba00000000002',
-            'merchant_id'    => '10000000000000',
-            'account_ifsc'   => 'ICIC0000047',
-            'account_number' => '2224440041626905',
-            'status'         => 'activated',
-            'channel'        => 'icici',
-            'balance_id'     => $this->bankingBalance->getId(),
-        ];
-
-        $this->createBankingAccount($bankingAccountParams);
-
         $this->fixtures->create('banking_account_statement_details',[
             Details\Entity::ID             => 'xbas0000000002',
             Details\Entity::MERCHANT_ID    => '10000000000000',
@@ -81,6 +70,23 @@ class IciciCaPayoutTest extends TestCase
         ]);
 
         $this->app['config']->set('applications.banking_account_service.mock', true);
+    }
+
+    public function testCreatingPendingPayoutsForIciciWithSupportedModeChannelDestinationTypeCombo()
+    {
+        $this->liveSetUp();
+        $this->setupWorkflowForLiveMode();
+        $this->disableWorkflowMocks();
+
+        $oldDateTime = Carbon::create(2019, 7, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+
+        Carbon::setTestNow();
     }
 
     public function testIciciAccountStatementFetchV2()
@@ -123,6 +129,8 @@ class IciciCaPayoutTest extends TestCase
 
         $this->setUpMerchantForBusinessBankingLive(true, 10000000, 'direct', 'icici');
 
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['pricing_plan_id' => Fee::DEFAULT_PRICING_PLAN_ID]);
+
         // Merchant needs to be activated to make live requests
         $this->fixtures->on('live')->merchant->edit('10000000000000', ['activated' => 1]);
 
@@ -133,6 +141,15 @@ class IciciCaPayoutTest extends TestCase
                                                                          'product'     => 'primary',
                                                                          'role'        => 'owner',
                                                                      ], 'live');
+
+        $this->fixtures->on('live')->create('banking_account_statement_details',[
+            Details\Entity::ID             => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $this->bankingBalance->getId(),
+            Details\Entity::ACCOUNT_NUMBER => '2224440041626905',
+            Details\Entity::CHANNEL        => Details\Channel::ICICI,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
     }
 
     protected function mockMozartResponseForFetchingBalanceFromIciciGateway($amount, $exception = null): void
@@ -187,19 +204,17 @@ class IciciCaPayoutTest extends TestCase
 
     public function testProcessGatewayBalanceUpdate()
     {
-        /** @var BankingAccount\Entity $baBeforeTest */
-        $baBeforeTest = $this->getDbEntityById('banking_account', 'xba00000000002');
+        /** @var Details\Entity $basDetailsBeforeCronRuns */
+        $basDetailsBeforeCronRuns = $this->getDbEntity('banking_account_statement_details',
+                                                      ['account_number' => 2224440041626905]);
 
-        $this->assertNull($baBeforeTest->getBalanceLastFetchedAt());
+        $this->assertEquals(0, $basDetailsBeforeCronRuns->getBalanceLastFetchedAt());
 
         $this->mockMozartResponseForFetchingBalanceFromIciciGateway(500);
 
         $response = $this->setupIciciDispatchGatewayBalanceUpdateForMerchants();
 
-        /** @var BankingAccount\Entity $baAfterCronRuns */
-        $baAfterCronRuns = $this->getDbEntityById('banking_account', 'xba00000000002');
-
-        /** @var Details\Entity $baAfterCronRuns */
+        /** @var Details\Entity $basDetailsAfterCronRuns */
         $basDetailsAfterCronRuns = $this->getDbEntity('banking_account_statement_details',
                                                       ['account_number' => 2224440041626905]);
 
@@ -223,20 +238,21 @@ class IciciCaPayoutTest extends TestCase
             "internal_error_code"       => "GATEWAY_ERROR_UNKNOWN_ERROR",
         ];
 
-        /** @var BankingAccount\Entity $baBeforeTest */
-        $baBeforeTest = $this->getDbEntityById('banking_account', 'xba00000000002');
+        /** @var Details\Entity $basDetailsBeforeCronRuns */
+        $basDetailsBeforeCronRuns = $this->getDbEntity('banking_account_statement_details',
+                                                      ['account_number' => 2224440041626905]);
 
-        $this->assertNull($baBeforeTest->getBalanceLastFetchedAt());
+        $this->assertEquals(0, $basDetailsBeforeCronRuns->getBalanceLastFetchedAt());
 
         $this->mockMozartResponseForFetchingBalanceFromIciciGateway(null, $exception);
 
         $response = $this->setupIciciDispatchGatewayBalanceUpdateForMerchants();
 
-        /** @var BankingAccount\Entity $baAfterCronRuns */
+        /** @var Details\Entity $basDetailsAfterCronRuns */
+        $basDetailsAfterCronRuns = $this->getDbEntity('banking_account_statement_details',
+                                                      ['account_number' => 2224440041626905]);
 
-        $baAfterCronRuns = $this->getDbEntityById('banking_account', 'xba00000000002');
-
-        $this->assertNull($baAfterCronRuns->getBalanceLastFetchedAt());
+        $this->assertEquals(0, $basDetailsAfterCronRuns->getBalanceLastFetchedAt());
     }
 
     public function testCreatePayout()
@@ -566,5 +582,216 @@ class IciciCaPayoutTest extends TestCase
         $this->assertEquals('reversal', $creditTxnEntities[3]['entity_type']);
         $this->assertEquals($reversal['id'],  $creditTxnEntities[3]['entity_id']);
         $this->assertEquals(-400, $creditTxnEntities[3]['credits_used']);
+    }
+
+    // Case when payout amount is greater than balance in CA and queue_if_low_balance = true
+    public function testApprovePendingPayoutWithQueueFlagBalanceLess()
+    {
+        $response = $this->createPendingPayoutAndApprovePayoutUptoSecondLevel(50);
+
+        $this->assertEquals('queued', $response['status']);
+    }
+
+    // Case when payout amount is less than balance in CA and queue_if_low_balance = true
+    public function testApprovePendingPayoutWithQueueFlagBalanceGreater()
+    {
+        $response = $this->createPendingPayoutAndApprovePayoutUptoSecondLevel(500);
+
+        $this->assertEquals('processing', $response['status']);
+    }
+
+    // Case when payout amount is less than balance in CA and queue_if_low_balance = false
+    public function testApprovePendingPayoutWithQueueFlagFalseAndBalanceGreater()
+    {
+        $response = $this->createPendingPayoutAndApprovePayoutUptoSecondLevel(500, 0);
+
+        $this->assertEquals('processing', $response['status']);
+    }
+
+    // Case when payout amount is greater than balance in CA and queue_if_low_balance = false. it will fail at fts
+    // with current implementation of payout module for CA
+    public function testApprovePendingPayoutWithQueueFlagFalseAndBalanceLess()
+    {
+        $response = $this->createPendingPayoutAndApprovePayoutUptoSecondLevel(50, 0);
+
+        $this->assertEquals('processing', $response['status']);
+    }
+
+    protected function createPendingPayoutAndApprovePayoutUptoSecondLevel(int $gatewayBalance, $queueFlag = 1)
+    {
+        $this->liveSetUp();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payouts/' . $payout['id'] . '/approve',
+            'content' => [
+                'token'                => 'BUIj3m2Nx2VvVj',
+                'otp'                  => '0007',
+                'queue_if_low_balance' => $queueFlag,
+            ],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->app['config']->set('database.default', 'live');
+
+        // Make Request to Approve pending payout for second level from Finance L3 role
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->finL3RoleUser->getId());
+
+        $this->mockMozartResponseForFetchingBalanceFromIciciGateway($gatewayBalance);
+
+        $oldDateTime = Carbon::create(2019, 7, 21, 12, 23, 41, Timezone::IST);
+
+        $this->fixtures->edit('balance', $this->bankingBalance->getId(), [
+            'updated_at' => $oldDateTime->getTimestamp(),
+        ] );
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
+    public function testBulkApprovePayoutWithComment()
+    {
+        $this->liveSetUp();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $payout1 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+        $payout2 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['content']['payout_ids'] = [$payout1['id'], $payout2['id']];
+
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        $this->startTest();
+
+        $actionChecker = $this->getDbLastEntity('action_checker', 'live');
+        $this->assertEquals(true, $actionChecker['approved']);
+        $this->assertEquals($testData['request']['content']['user_comment'], $actionChecker['user_comment']);
+    }
+
+    // Case when both payouts amount is less than balance in CA and queue_if_low_balance = false
+    public function testBulkApprovePendingPayoutWithQueueFlagFalseAndBalanceGreater()
+    {
+        list($payoutId1, $payoutId2) = $this->createBulkPendingPayoutAndApprovePayoutsUptoSecondLevel(500, 0);
+
+        $payout1 = $this->getDbEntityById('payout', $payoutId1)->toArray();
+        $payout2 = $this->getDbEntityById('payout', $payoutId2)->toArray();
+
+        //if FTS_MOCK = false then these status will be initiated
+        if (env('FTS_MOCK') === true)
+        {
+            $this->assertEquals('created', $payout2['status']);
+            $this->assertEquals('created', $payout1['status']);
+        }
+        else
+        {
+            $this->assertEquals('initiated', $payout2['status']);
+            $this->assertEquals('initiated', $payout1['status']);
+        }
+    }
+
+    // Case when both payouts amount is less than balance in CA and queue_if_low_balance = true
+    public function testBulkApprovePendingPayoutWithQueueFlagTrueAndBalanceGreater()
+    {
+        list($payoutId1, $payoutId2) = $this->createBulkPendingPayoutAndApprovePayoutsUptoSecondLevel(500);
+
+        $payout1 = $this->getDbEntityById('payout', $payoutId1)->toArray();
+        $payout2 = $this->getDbEntityById('payout', $payoutId2)->toArray();
+
+        //if FTS_MOCK = false then these status will be initiated
+        if (env('FTS_MOCK') === true)
+        {
+            $this->assertEquals('created', $payout2['status']);
+            $this->assertEquals('created', $payout1['status']);
+        }
+        else
+        {
+            $this->assertEquals('initiated', $payout2['status']);
+            $this->assertEquals('initiated', $payout1['status']);
+        }
+    }
+
+    // Case when both payout amount is greater than balance in CA and queue_if_low_balance = false
+    // it will fail at fts with current implementation of payout module for CA
+    public function testBulkApprovePendingPayoutWithQueueFlagFalseAndBalanceLess()
+    {
+        list($payoutId1, $payoutId2) = $this->createBulkPendingPayoutAndApprovePayoutsUptoSecondLevel(50, 0);
+
+        $payout1 = $this->getDbEntityById('payout', $payoutId1)->toArray();
+        $payout2 = $this->getDbEntityById('payout', $payoutId2)->toArray();
+
+        $this->assertEquals('created', $payout1['status']);
+        $this->assertEquals('created', $payout2['status']);
+    }
+
+    // Case when both payout amount is greater than balance in CA and queue_if_low_balance = true
+    public function testBulkApprovePendingPayoutWithQueueFlagTrueAndBalanceLess()
+    {
+        list($payoutId1, $payoutId2) = $this->createBulkPendingPayoutAndApprovePayoutsUptoSecondLevel(50);
+
+        $payout1 = $this->getDbEntityById('payout', $payoutId1)->toArray();
+        $payout2 = $this->getDbEntityById('payout', $payoutId2)->toArray();
+
+        $this->assertEquals('queued', $payout1['status']);
+        $this->assertEquals('queued', $payout2['status']);
+    }
+
+    protected function createBulkPendingPayoutAndApprovePayoutsUptoSecondLevel(int $gatewayBalance, $queueFlag = 1)
+    {
+        $this->liveSetUp();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $payout1 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $payout2 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payouts/approve/bulk',
+            'content' => [
+                'payout_ids'           => [$payout1['id'], $payout2['id']],
+                'token'                => 'BUIj3m2Nx2VvVj',
+                'otp'                  => '0007',
+                'queue_if_low_balance' => $queueFlag,
+            ],
+        ];
+
+        $oldDateTime = Carbon::create(2019, 7, 21, 12, 23, 41, Timezone::IST);
+
+        $this->fixtures->edit('balance', $this->bankingBalance->getId(), [
+            'updated_at' => $oldDateTime->getTimestamp(),
+        ] );
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->app['config']->set('database.default', 'live');
+
+        // Make Request to Approve pending payout for second level from Finance L3 role
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->finL3RoleUser->getId());
+
+        $this->fixtures->edit('balance', $this->bankingBalance->getId(), [
+            'updated_at' => $oldDateTime->getTimestamp(),
+        ] );
+
+        $this->mockMozartResponseForFetchingBalanceFromIciciGateway($gatewayBalance);
+
+        $this->makeRequestAndGetContent($request);
+
+        return [$payout1['id'], $payout2['id']];
     }
 }
