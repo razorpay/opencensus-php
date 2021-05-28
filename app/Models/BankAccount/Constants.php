@@ -17,4 +17,8 @@ class Constants
     const BANK_ACCOUNT_CHANGE_REQUEST_EMAIL                 = 'RZP\Mail\Merchant\AccountChangeRequest';
     const BANK_ACCOUNT_CHANGED_EMAIL                        = 'RZP\Mail\Merchant\AccountChange';
     const BANK_ACCOUNT_CHANGE_PENNY_TESTING_FAILURE_EMAIL   = 'RZP\Mail\Merchant\AccountChangePennyTestingFailure';
+    const ACCOUNT_STATUS                                    = 'account_status';
+    const REGISTERED_NAME                                   = 'registered_name';
+    const IS_NAME_MATCHED                                   = 'is_name_matched';
+    const ACTIVE                                            = 'active';
 }

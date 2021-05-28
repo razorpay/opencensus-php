@@ -192,7 +192,17 @@ class PennyTesting extends Base\Core
     {
         $status = $this->updateAndReturnBankDetailVerificationStatus($input, $merchant, $merchantDetails);
 
-        (new BankAccount\Core)->handlePennyTestingEventForBankAccountUpdate($input, $merchant, $status);
+        $nameValidationData = $this->validateNameForBankAccount($input, $merchantDetails);
+
+        $isNameMatched = $nameValidationData[Constants::IS_NAME_MATCHED] ?? false;
+
+        $pennyTestAndFuzzyMatchResult = [
+            Constants::ACCOUNT_STATUS  => $input[Constants::ACCOUNT_STATUS],
+            Constants::REGISTERED_NAME => $input[Constants::REGISTERED_NAME],
+            Constants::IS_NAME_MATCHED => $isNameMatched,
+        ];
+
+        (new BankAccount\Core)->handlePennyTestingEventForBankAccountUpdate($input, $merchant, $status, $pennyTestAndFuzzyMatchResult);
     }
 
 

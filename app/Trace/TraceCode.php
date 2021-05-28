@@ -4044,6 +4044,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BENEFICIARY_NAME_TRIMMED_FOR_MERCHANTS                        = 'BENEFICIARY_NAME_TRIMMED_FOR_MERCHANTS';
     const BENEFICIARY_NAME_TRIM_FOR_MERCHANTS_FAILED                    = 'BENEFICIARY_NAME_TRIM_FOR_MERCHANTS_FAILED';
 
+    const BANK_ACCOUNT_UPDATE_WORKFLOW_COMMENT                          = 'BANK_ACCOUNT_UPDATE_WORKFLOW_COMMENT';
+    const BANK_ACCOUNT_UPDATE_WORKFLOW_ACTION_NOT_FOUND                 = 'BANK_ACCOUNT_UPDATE_WORKFLOW_ACTION_NOT_FOUND';
+
     const START_CONTACT_NAME_TRIMMING                                   = 'START_CONTACT_NAME_TRIMMING';
     const CONTACT_NAME_TRIMMED                                          = 'CONTACT_NAME_TRIMMED';
     const CONTACT_NAME_TRIM_FAILED                                      = 'CONTACT_NAME_TRIM_FAILED';

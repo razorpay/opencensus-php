@@ -36,7 +36,7 @@ class Core extends Base\Core
      *
      * @return Entity
      */
-    protected function create(array $input): Entity
+    public function create(array $input): Entity
     {
         $comment = new Entity;
 

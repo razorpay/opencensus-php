@@ -3151,6 +3151,59 @@ class MerchantTest extends TestCase
 
     }
 
+    public function testAddCommentForBankAccountUpdateWorkflow()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testUpdateBankAccountViaPennyTesting'];
+
+        $this->setupWorkflowForBankAccountUpdate();
+
+        $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true, [
+            'promoter_pan_name' => 'pan_name'
+        ]);
+
+        $this->startTest();
+
+        $fav = $this->getDbLastEntity('fund_account_validation', 'test');
+
+        // account status is active, but registered name will not match with pan name : workflow will be created
+        $this->fixtures->edit('fund_account_validation', $fav['id'], [
+            'status'            => 'processed',
+            'account_status'    => 'active',
+            'registered_name'   => 'invalid name',
+        ]);
+
+        FundAccountValidation::dispatch('test', $fav['id']);
+
+        // as a workflow is created, assert bank account is not changed for the merchant still
+        $this->assertBankAccountForMerchant($merchantId, [
+            'entity'            => 'bank_account',
+            'ifsc'              => 'RZPB0000000',
+            'account_number'    => '10010101011',
+        ]);
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        // get workflow action details in Admin Auth
+        $this->ba->adminAuth('test');
+
+        $request = [
+            'method' => 'GET',
+            'url'    => '/w-actions/' . $workflowAction['id'] . '/details',
+            'content' => []
+        ];
+
+        $this->addPermissionToBaAdmin(PermissionName::VIEW_WORKFLOW_REQUESTS);
+
+        $res = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($res['id'], $workflowAction['id']);
+
+        $expectedComment = 'penny_test_result : passed, registered_name : invalid name, is_name_matched : false, dedupe_status : false';
+
+        $this->assertEquals($res['comments'][0]['comment'], $expectedComment);
+    }
+
+
     public function testUpdateBankAccountPennyTestingFailWorkflowApprove()
     {
         $this->testData[__FUNCTION__] = $this->testData['testUpdateBankAccountViaPennyTesting'];
@@ -9500,7 +9553,7 @@ class MerchantTest extends TestCase
         );
     }
 
-    protected function setupMerchantForBankAccountUpdateTestViaPennyTesting($testcasename, $createBankAccount = true)
+    protected function setupMerchantForBankAccountUpdateTestViaPennyTesting($testcasename, $createBankAccount = true, $merchantDetails = [])
     {
         Mail::fake();
 
@@ -9510,10 +9563,12 @@ class MerchantTest extends TestCase
 
         $merchantId = $merchant['id'];
 
-        $this->fixtures->create('merchant_detail:valid_fields', [
+        $merchantDetails = array_merge($merchantDetails, [
             'merchant_id'           => $merchantId,
             'address_proof_url'     => 'old_address_proof_file_url',
         ]);
+
+        $this->fixtures->create('merchant_detail:valid_fields', $merchantDetails);
 
         if ($createBankAccount === true)
         {
