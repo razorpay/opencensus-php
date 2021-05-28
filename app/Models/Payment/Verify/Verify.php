@@ -819,7 +819,55 @@ class Verify extends Base\Core
 
         $verifyFetchTime = $verifyFetchEndTime - $verifyFetchStartTime;
 
-        return $this->verifyMultiplePayments($payments, '', [], $verifiableCount, $verifyFetchTime);
+        $summary = $this->verifyMultiplePayments($payments, '', [], $verifiableCount, $verifyFetchTime);
+
+        $apiPaymentIds = $payments->pluck(Payment\Entity::ID)->toArray();
+
+        $possibleRearchPaymentIds = array_diff($paymentIds,$apiPaymentIds);
+
+        return $this->verifyRearchPaymentsInBulk($possibleRearchPaymentIds,$summary);
+    }
+
+    protected function verifyRearchPaymentsInBulk(array $paymentIds, $summary)
+    {
+        foreach ($paymentIds as $paymentId)
+        {
+            try
+            {
+                $response = $this->app['pg_router']->paymentVerify($paymentId, false);
+
+                if (isset($response) === false)
+                {
+                    $summary[Result::ERROR] = $summary[Result::ERROR] + 1;
+                }
+                elseif (isset($response["id"]) === false)
+                {
+                    $summary[Result::ERROR] = $summary[Result::ERROR] + 1;
+                }
+                elseif (isset($response["id"]) === true)
+                {
+                    $summary[Result::SUCCESS] = $summary[Result::SUCCESS] + 1;
+
+                    if ($response["status"] === Payment\Status::AUTHORIZED)
+                    {
+                        $summary[Result::AUTHORIZED] = $summary[Result::AUTHORIZED] + 1;
+                    }
+                }
+            }
+            catch (\Exception $ex)
+            {
+                $summary[Result::ERROR] = $summary[Result::ERROR] + 1;
+
+                $this->trace->info(
+                    TraceCode::PG_ROUTER_REQUEST_FAILURE,
+                    [
+                        'payment_id'        => $paymentId,
+                        'action'            => "bulk_verify",
+                    ]);
+            }
+        }
+
+        return $summary;
     }
 
     public function verifyPaymentsWithIdsNewRoute(array $paymentIds)

@@ -7,6 +7,7 @@ use Mail;
 use Crypt;
 use Config;
 use Carbon\Carbon;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Constants\Timezone;
 use RZP\Constants\Mode;
 use RZP\Base\RuntimeManager;
@@ -339,7 +340,15 @@ class Service extends Base\Service
         {
             $merchant = $this->repo->merchant->findOrFail($response['merchant_id']);
 
-            $data['merchant'] = $merchant;
+            $data[EntityConstants::MERCHANT] = $merchant;
+
+            $merchantDetail = $merchant->merchantDetail;
+
+            $data[EntityConstants::MERCHANT][EntityConstants::MERCHANT_DETAIL] = isset($merchantDetail) === true ? $merchantDetail->toArrayPublic() : [];
+
+            $data[EntityConstants::MERCHANT][Merchant\Entity::FEATURES] = $merchant->getEnabledFeatures();
+
+            $data[EntityConstants::MERCHANT][EntityConstants::METHODS] = $this->repo->methods->getMethodsForMerchant($merchant);
         }
 
         if ((isset($response['card_id']) === true) and

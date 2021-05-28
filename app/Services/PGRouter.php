@@ -56,6 +56,8 @@ class PGRouter
 
     const PGRouterPaymentCancel = '/v1/payments/%s/cancel';
 
+    const PG_ROUTER_FAILURE_STATUS_CODE = "pg_router_failure_status_code";
+
     // Headers
     const ACCEPT            = 'Accept';
     const X_MODE            = 'X-Mode';
@@ -267,14 +269,6 @@ class PGRouter
                 "statusCode" =>  $response->status_code
             ]);
 
-        if ($decodedResponse === null)
-        {
-            return [
-                'body' => $decodedResponse,
-                'code' => $response->status_code,
-            ];
-        }
-
         return $this->parseResponse($decodedResponse, $response->status_code, $throwExceptionOnFailure);
     }
 
@@ -362,7 +356,7 @@ class PGRouter
     }
 
     /**
-     * @param array $response
+     * @param $response
      * @param $statusCode
      * @param bool $throwExceptionOnFailure
      *
@@ -371,17 +365,22 @@ class PGRouter
      * @throws Exception\InvalidArgumentException
      * @throws Exception\ServerErrorException
      */
-    protected function parseResponse(array $response, $statusCode, bool $throwExceptionOnFailure = false): array
+    protected function parseResponse($response, $statusCode, bool $throwExceptionOnFailure = false): array
     {
-        if ($throwExceptionOnFailure === true)
-        {
-            $this->checkForErrors($response);
-        }
-
         if (in_array($statusCode, [503], true) === true)
         {
             //TODO: Check if we have to disable admin config for rearch routing logic
             throw new Exception\ServerErrorException('PG Router Service is unreachable', ErrorCode::SERVER_ERROR_PGROUTER_SERVICE_FAILURE);
+        }
+
+        if ($response === null)
+        {
+            throw new Exception\ServerErrorException('PG Router Response cannot be null', ErrorCode::SERVER_ERROR_PGROUTER_SERVICE_FAILURE);
+        }
+
+        if ($throwExceptionOnFailure === true)
+        {
+            $this->checkForErrors($response,$statusCode);
         }
 
         return [
@@ -390,7 +389,7 @@ class PGRouter
         ];
     }
 
-    public function checkForErrors($response)
+    public function checkForErrors($response, $statusCode)
     {
         if (isset($response['error']) === false)
         {
@@ -427,6 +426,12 @@ class PGRouter
 
         $internalErrorCode = $response['internal']['code'];
 
+        $dimensions =[
+            "status_code" => $statusCode,
+            "internal_error_code"=>$internalErrorCode
+        ];
+        $this->trace->count(self::PG_ROUTER_FAILURE_STATUS_CODE, $dimensions);
+
         $class = Error::getErrorClassFromErrorCode($errorCode);
 
         switch ($class)
@@ -437,7 +442,7 @@ class PGRouter
 
             case ErrorClass::BAD_REQUEST:
                 throw new Exception\BadRequestException(
-                    $internalErrorCode, null, $errorData);
+                    $internalErrorCode, null, $errorData, $description);
 
             case ErrorClass::SERVER:
                 throw new Exception\ServerErrorException('Error with PG Router service',
