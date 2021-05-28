@@ -459,6 +459,10 @@ trait Migrate
             $terminal->setDeletedAt($t["deleted_at"]);
         }
 
+        if (empty($t["direct"]) === false) {
+            $terminal->setDirectForMerchant($t["direct"]);
+        }
+
         $terminal->syncEntity();
 
         return $terminal;
