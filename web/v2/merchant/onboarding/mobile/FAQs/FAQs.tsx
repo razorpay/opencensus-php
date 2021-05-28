@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useLayoutEffect } from 'react';
 import styled from 'styled-components';
 import Link from '@razorpay/blade-old/src/atoms/Link';
 import Text from '@razorpay/blade-old/src/atoms/Text';
@@ -22,17 +22,24 @@ const FAQs: React.FC = () => {
   const setIsOpen = useActivationFormState((state) => state.setIsFAQOpen);
   const sectionToDisplay = useActivationFormState((state) => state.fAQSection);
   const websiteDetailsRef = useRef<HTMLDivElement>(null);
-  const billingLabelRef = useRef<HTMLDivElement>(null);
+  const modalBottomSheetRef = useRef<HTMLDivElement>(null);
   const [expanded, setExpanded] = React.useState<React.ReactText[]>([sectionToDisplay]);
   const setFAQSection = useActivationFormState((state) => state.setFAQSection);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setTimeout(() => {
-      if (sectionToDisplay === 'Q1' && billingLabelRef.current) {
-        billingLabelRef.current.scrollIntoView();
-      }
-      if (sectionToDisplay === 'Q2' && websiteDetailsRef.current) {
-        websiteDetailsRef.current.scrollIntoView();
+      if (modalBottomSheetRef.current) {
+        if (sectionToDisplay === 'Q2' && websiteDetailsRef.current) {
+          // calculate distance between top of modal and the panel element
+          const yDistance =
+            websiteDetailsRef.current.getBoundingClientRect().y -
+            modalBottomSheetRef.current.getBoundingClientRect().y;
+          // height of Bottom Sheet Header in Modal
+          const headerEl = document.getElementById('bottomSheetHeader');
+          const headerHeight = headerEl ? Math.ceil(headerEl.getBoundingClientRect().height) : 0;
+
+          modalBottomSheetRef.current.scrollTop = yDistance - headerHeight;
+        }
       }
     });
     setExpanded([sectionToDisplay]);
@@ -48,6 +55,7 @@ const FAQs: React.FC = () => {
       }}
       closeable={true}
       bottomSheetHeaderText="FAQS"
+      bottomSheetRef={modalBottomSheetRef}
     >
       <>
         <Space margin={[0.75, 0, 1.5, 0]}>
@@ -62,19 +70,19 @@ const FAQs: React.FC = () => {
                 </Heading>
               </View>
             </Space>
-            <Panel _ref={billingLabelRef} key="Q1" title="What is Billing label?">
+            <Panel key="Q1" title="What is Billing label?">
               Billing label is your brand&apos;s identity, it will be displayed on your invoices and
               bills. Please ensure billing label is as close to your business name/website as
               possible.
             </Panel>
             <Space padding={[1.5, 0, 0.5]}>
-              <View>
+              <View ref={websiteDetailsRef}>
                 <Heading size="medium" color="shade.970">
                   Website Details
                 </Heading>
               </View>
             </Space>
-            <Panel _ref={websiteDetailsRef} key="Q2" title="How can I add api keys to my website?">
+            <Panel key="Q2" title="How can I add api keys to my website?">
               Following are the mandatory requirements to access and api keys to your website:
               <br />
               1.Privacy Policy page

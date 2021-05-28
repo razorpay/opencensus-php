@@ -262,28 +262,26 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                   disabled={isFormLocked}
                 />
               </Field>
-              {!hasGSTIN ? (
-                <Field last>
-                  <TextInput
-                    width="auto"
-                    name="gstin"
-                    label="GST Identification Number (GSTIN)"
-                    helpText="Should match either of your registered address or operational address"
-                    value={formikProps.values.gstin}
-                    errorText={formikProps.touched.gstin && formikProps.errors.gstin}
-                    onBlur={() => {
-                      analyticsTrack({
-                        objectName: 'SignUp',
-                        actionName: 'Gst Identification Number',
-                        screen: 'home page',
-                        eventAction: 'initiated',
-                        user,
-                      });
-                    }}
-                    disabled={isFormLocked}
-                  />
-                </Field>
-              ) : null}
+              <Field last>
+                <TextInput
+                  width="auto"
+                  name="gstin"
+                  label="GST Identification Number (GSTIN)"
+                  helpText="Should match either of your registered address or operational address"
+                  value={formikProps.values.gstin}
+                  errorText={formikProps.touched.gstin && formikProps.errors.gstin}
+                  onBlur={() => {
+                    analyticsTrack({
+                      objectName: 'SignUp',
+                      actionName: 'Gst Identification Number',
+                      screen: 'home page',
+                      eventAction: 'initiated',
+                      user,
+                    });
+                  }}
+                  disabled={isFormLocked || hasGSTIN}
+                />
+              </Field>
               {!isUnregisteredBusiness(businessOverviewDetails.business_type.value) ? (
                 <Space margin={[1.75, 0, 0, 0]}>
                   <View>
