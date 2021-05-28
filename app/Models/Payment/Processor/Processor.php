@@ -466,6 +466,8 @@ class Processor
 
             $this->setMethodForInput($input);
 
+            $this->setMethodForSubscription($input);
+
             $this->appendMetadataForPayment($input);
 
             $this->preProcessForUpiIfApplicable($input);
@@ -714,7 +716,26 @@ class Processor
             }
         }
 
-        if (($this->subscription->hasCurrentInvoice() === true) and
+        if($this->subscription !== null and
+           $this->subscription->getStatus() === Constants::CREATED and
+           $input[Payment\Entity::METHOD] === Payment\Method::EMANDATE and
+           isset($input[Payment\Entity::TOKEN]) === false)
+        {
+            $orderPayLoad = [
+                Order\Entity::AMOUNT          => 0,
+                Order\Entity::CURRENCY        => $input['currency'],
+                Order\Entity::METHOD          => Payment\Method::EMANDATE,
+                Order\Entity::PAYMENT_CAPTURE => true,
+                Order\Entity::PRODUCT_ID      => $this->subscription->getId(),
+                Order\Entity::PRODUCT_TYPE    => Constants::SUBSCRIPTION
+            ];
+
+            $order = (new Order\Core)->create($orderPayLoad, $this->merchant);
+
+            $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($order->getId());
+        }
+
+        else if (($this->subscription->hasCurrentInvoice() === true) and
             (isset($input[Payment\Entity::ORDER_ID]) === false))
         {
             $currentInvoiceId = $this->subscription->getCurrentInvoiceId();
@@ -1066,7 +1087,8 @@ class Processor
         // Adding subscription_registration_charge_token to enable
         // token charging via dashboard.
         if (($currentRouteName === 'payment_create_recurring') or
-            ($currentRouteName === 'subscription_registration_charge_token'))
+            ($currentRouteName === 'subscription_registration_charge_token') or
+            ($currentRouteName === 'payment_create_subscriptions'))
         {
             return null;
         }
@@ -1496,6 +1518,46 @@ class Processor
         else
         {
             $input[Payment\Entity::METHOD] = Payment\Method::CARD;
+        }
+    }
+
+    protected function setMethodForSubscription(& $input)
+    {
+        if ((isset($input[Payment\Entity::SUBSCRIPTION_ID]) === true) and
+            (isset($input[Payment\Entity::TOKEN]) === true) and
+            (isset($input[Payment\Entity::METHOD]) === true) and
+            ($input[Payment\Entity::METHOD] === Payment\Method::EMANDATE))
+        {
+            $tokenId = $input[Payment\Entity::TOKEN];
+
+            $subscriptionId = $input[Payment\Entity::SUBSCRIPTION_ID];
+
+            Subscription\Entity::verifyIdAndStripSign($subscriptionId);
+
+            $token = (new Customer\Token\Core)->getByTokenIdAndSubscriptionId($tokenId, $subscriptionId);
+
+            //
+            // It cannot be global token because customer_id is also being sent.
+            // If customer_id is being sent, it has to be local customer.
+            // If it's local customer, the token being sent should also be local
+            // token. If it's local token, the token's merchant should match the
+            // payment request's merchant.
+            //
+            if ($token->getMerchantId() !== $this->merchant->getId())
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_ID,
+                    'token');
+            }
+
+            $tokenMethod = $token->getMethod();
+
+            $input[Payment\Entity::METHOD] = $tokenMethod;
+
+            if ($tokenMethod === Payment\Method::EMANDATE)
+            {
+                $input[Payment\Entity::BANK] = $token->getBank();
+            }
         }
     }
 

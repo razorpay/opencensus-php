@@ -3308,7 +3308,8 @@ trait Authorize
     {
         return ($payment->hasSubscription() === true) and
             (($payment->isCardRecurring() === true) or
-                ($payment->isUpiRecurring() === true));
+                ($payment->isUpiRecurring() === true) or
+                ($payment->isEmandate() === true));
     }
 
     /**
@@ -4131,6 +4132,10 @@ trait Authorize
                     $gatewayInput['upi_mandate'] = $upiMandate->toArray();
                 }
             }
+            else if ($payment->isEmandate() === true)
+            {
+                $token = $this->savePaymentMethodForSubscription($payment, null, $input);
+            }
 
             if ($token !== null)
             {
@@ -4730,6 +4735,12 @@ trait Authorize
                 $saveMethodInput[Token\Entity::START_TIME] = $this->upiMandate->getStartTime() ?? null;
             }
         }
+        else if ($payment->isEmandate() === true)
+        {
+            $saveMethodInput[Token\Entity::METHOD] = Payment\Method::EMANDATE;
+
+            $saveMethodInput[Token\Entity::BANK] = $payment->getBank();
+        }
 
         $token = (new Token\Core)->createForSubscription(
             $saveMethodInput,
@@ -5223,6 +5234,35 @@ trait Authorize
                 ]);
 
             return;
+        }
+
+        // For Subscription eMandate token, we need to create a local customer and assign
+        if ($payment->customer === null and
+            $payment->isEmandate() === true and
+            $payment->isRecurringTypeInitial() === true and
+            $payment->hasSubscription() === true)
+        {
+            $customerCore = new Customer\Core();
+
+            $customerCreateInput = [
+                'email' => $payment->getEmail(),
+                'contact' => $payment->getContact(),
+            ];
+
+            $customer = $customerCore->createLocalCustomer($customerCreateInput, $payment->merchant, false);
+
+            $payment->customer()->associate($customer);
+
+            $this->repo->payment->saveOrFail($payment);
+
+            $token  = $payment->getGlobalOrLocalTokenEntity();
+
+            if ($token->customer ===null)
+            {
+                $token->customer()->associate($customer);
+
+                $this->repo->token->saveOrFail($token);
+            }
         }
 
         (new Token\Core)->updateTokenFromEmandateGatewayData($token, $gatewayData);

@@ -14,6 +14,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Modules\Subscriptions\Mock;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Payment\Method as PaymentMethod;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\UpiMandate\Frequency as UPIMandateFrequency;
@@ -44,6 +45,11 @@ class SubscriptionPaymentTest extends TestCase
      * @var array
      */
     protected $upiPayment;
+
+    /**
+     * @var array
+     */
+    protected $eMandatePayment;
 
     /**
      * @var Offer\Entity
@@ -79,6 +85,24 @@ class SubscriptionPaymentTest extends TestCase
         unset($this->upiPayment['customer_id']);
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        // -- Add eMandate payment details BEGINS---
+        $this->eMandatePayment = array_merge($this->getEmandatePaymentArray('HDFC', 'netbanking', 0), [
+            'amount'          => 0,
+            'subscription_id' => 'sub_FVOmqpnh3WyQ09',
+        ]);
+
+        unset($this->eMandatePayment['customer_id']);
+
+        $this->eMandatePayment['bank_account'] = [
+            'account_number' => '914010009305862',
+            'ifsc'           => 'HDFC0000123',
+            'name'           => 'Test account',
+            'account_type'   => 'savings',
+        ];
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'emandate');
+        // -- Add eMandate payment details END---
     }
 
     public function testCreateInitialPaymentCard()
@@ -593,6 +617,82 @@ class SubscriptionPaymentTest extends TestCase
         $this->assertEquals($this->subscription->getId(), $invoice->getSubscriptionId());
         $this->assertNotNull($invoice->getOfferAmount());
         $this->assertNotNull($invoice->getComment());
+    }
+
+    public function testCreateInitialPaymentEMandate()
+    {
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/ajax',
+            'content' => $this->eMandatePayment,
+        ];
+
+        $this->ba->publicAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getDbLastEntity(Entity::PAYMENT);
+
+        $this->assertEquals($this->subscription->getId(), $payment->getSubscriptionId());
+        $this->assertTrue($payment->isAuthorized());
+        $this->assertFalse(empty($payment->getTokenId()));
+        $this->assertEquals($this->subscription->getCustomerId(), $payment->customer_id);
+        $this->assertTrue($payment->isRecurringTypeInitial());
+
+        $token = $this->getDbLastEntity(Entity::TOKEN);
+
+        $this->assertEquals($payment->getTokenId(), $token->getId());
+        $this->assertEquals($token->getMethod(), PaymentMethod::EMANDATE);
+        $this->assertEquals($this->subscription->getCustomerId(), $token->customer_id);
+        $this->assertEquals($this->subscription->getId(), $token->getEntityId());
+        $this->assertEquals(Entity::SUBSCRIPTION, $token->getEntityType());
+
+        //$this->assertEquals(Token\RecurringStatus::CONFIRMED, $token->getRecurringStatus());
+    }
+
+    public function testCreateDebitPaymentEMandate()
+    {
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/ajax',
+            'content' => $this->eMandatePayment,
+        ];
+        $this->ba->publicAuth();
+        $this->makeRequestAndGetContent($request);
+        $token = $this->getDbLastEntity(Entity::TOKEN);
+        $token->setRecurringStatus('confirmed');
+        $token->saveOrFail();
+        $order = $this->fixtures->create('order', [
+            Order\Entity::AMOUNT          => 30000,
+            Order\Entity::PAYMENT_CAPTURE => true
+        ]);
+        $debitPayment = array_merge($this->eMandatePayment, [
+            'token'     => $token->getPublicId(),
+            'order_id'  => $order->getPublicId(),
+            'amount'    => $order->getAmount(),
+            'recurring' => '1'
+        ]);
+        $this->subscription->recurring_type = 'auto';
+        $this->fixtures->edit(
+            'token',
+            $token->getPublicId(),
+            [
+                Token\Entity::GATEWAY_TOKEN    => 'HDFC6000000005844847',
+                Token\Entity::RECURRING        => 1,
+                Token\Entity::RECURRING_STATUS => Token\RecurringStatus::CONFIRMED,
+            ]);
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/subscriptions',
+            'content' => $debitPayment,
+        ];
+        $this->ba->subscriptionsAuth();
+        $this->makeRequestAndGetContent($request);
+        $payment = $this->getDbLastEntity(Entity::PAYMENT);
+        $this->assertEquals($this->subscription->getId(), $payment->getSubscriptionId());
+        $this->assertTrue($payment->isAuthorized());
+        $this->assertFalse(empty($payment->getTokenId()));
+        $this->assertTrue($payment->isRecurringTypeAuto());
     }
 
     protected function mockSubscription()

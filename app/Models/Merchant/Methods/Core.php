@@ -348,10 +348,8 @@ class Core extends Base\Core
         Methods\Entity $methods,
         array & $recurringData)
     {
-        //
-        // We don't allow emandate for subscriptions currently.
-        //
-        if ($merchant->isFeatureEnabled(Constants::CHARGE_AT_WILL) === false)
+        if ($merchant->isFeatureEnabled(Constants::CHARGE_AT_WILL) === false and
+            $merchant->isFeatureEnabled(Constants::SUBSCRIPTIONS) === false)
         {
             return;
         }
