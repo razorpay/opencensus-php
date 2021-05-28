@@ -2120,7 +2120,16 @@ class Route
         'throttle_get_config'                     => ['get',      'throttle/config',                                           'ThrottleController@fetchConfig'                            ],
         'throttle_delete_config'                  => ['delete',   'throttle/config',                                           'ThrottleController@deleteConfig'                           ],
 
-
+        'edge_list_services'                      => ['get',      'edge/services',                                             'EdgeThrottleController@getServices'                        ],
+        'edge_list_routes'                        => ['get',      'edge/service/{service}/routes',                             'EdgeThrottleController@getRoutes'                          ],
+        'edge_create_rate_limit_rule'             => ['post',     'edge/rate_limiter/rule',                                    'EdgeThrottleController@createRule'                         ],
+        'edge_list_rate_limit_rules'              => ['get',      'edge/rate_limiter/rules',                                   'EdgeThrottleController@listRules'                          ],
+        'edge_update_rate_limit_rule'             => ['patch',    'edge/rate_limiter/rule/{id}',                               'EdgeThrottleController@updateRule'                         ],
+        'edge_delete_rate_limit_rule'             => ['delete',   'edge/rate_limiter/rule/{id}',                               'EdgeThrottleController@deleteRule'                         ],
+        'edge_create_rate_limit_limit'            => ['post',     'edge/rate_limiter/rule/{rule_id}/limit',                    'EdgeThrottleController@createLimit'                        ],
+        'edge_list_rate_limit_limits'             => ['get',      'edge/rate_limiter/limits',                                  'EdgeThrottleController@listLimits'                         ],
+        'edge_update_rate_limit_limit'            => ['patch',    'edge/rate_limiter/limit/{id}',                              'EdgeThrottleController@updateLimit'                        ],
+        'edge_delete_rate_limit_limit'            => ['delete',   'edge/rate_limiter/limit/{id}',                              'EdgeThrottleController@deleteLimit'                        ],
 
 
         //merchant document related routes
@@ -4423,6 +4432,18 @@ class Route
         'throttle_delete_config',
         'throttle_get_config',
 
+        // edge throttling control APIs
+        'edge_list_services',
+        'edge_list_routes',
+        'edge_create_rate_limit_rule',
+        'edge_list_rate_limit_rules',
+        'edge_update_rate_limit_rule',
+        'edge_delete_rate_limit_rule',
+        'edge_create_rate_limit_limit',
+        'edge_list_rate_limit_limits',
+        'edge_update_rate_limit_limit',
+        'edge_delete_rate_limit_limit',
+
 
         // Excel Store routes
         'excel_store_list_pages',
@@ -5338,6 +5359,16 @@ class Route
         'throttle_create_config'                   => Permission::EDIT_THROTTLE_SETTINGS,
         'throttle_delete_config'                   => Permission::EDIT_THROTTLE_SETTINGS,
         'throttle_get_config'                      => Permission::EDIT_THROTTLE_SETTINGS,
+        'edge_list_services'                       => Permission::EDIT_THROTTLE_SETTINGS,
+        'edge_list_routes'                         => Permission::EDIT_THROTTLE_SETTINGS,
+        'edge_create_rate_limit_rule'              => Permission::EDIT_THROTTLE_SETTINGS,
+        'edge_list_rate_limit_rules'               => Permission::EDIT_THROTTLE_SETTINGS,
+        'edge_update_rate_limit_rule'              => Permission::EDIT_THROTTLE_SETTINGS,
+        'edge_delete_rate_limit_rule'              => Permission::EDIT_THROTTLE_SETTINGS,
+        'edge_create_rate_limit_limit'             => Permission::EDIT_THROTTLE_SETTINGS,
+        'edge_list_rate_limit_limits'              => Permission::EDIT_THROTTLE_SETTINGS,
+        'edge_update_rate_limit_limit'             => Permission::EDIT_THROTTLE_SETTINGS,
+        'edge_delete_rate_limit_limit'             => Permission::EDIT_THROTTLE_SETTINGS,
 
         'excel_store_list_pages'                   => Permission::ACCESS_EXCEL_STORE,
         'excel_store_create_page'                  => Permission::ACCESS_EXCEL_STORE,
@@ -7302,6 +7333,16 @@ class Route
             'dummy_critical_error',
             'dummy_return_callback',
             'dummy_route',
+            'edge_list_services',
+            'edge_list_routes',
+            'edge_create_rate_limit_rule',
+            'edge_list_rate_limit_rules',
+            'edge_update_rate_limit_rule',
+            'edge_delete_rate_limit_rule',
+            'edge_create_rate_limit_limit',
+            'edge_list_rate_limit_limits',
+            'edge_update_rate_limit_limit',
+            'edge_delete_rate_limit_limit',
             'edit_merchant_balance_config',
             'edit_throttle_settings',
             'emi_generate_excel',

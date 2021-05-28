@@ -87,6 +87,11 @@ return [
         'private_key' => env('CREDCASE_SIGNER_PRIVATE_KEY'),
     ],
 
+    'throttler' => [
+        'host'   => env('EDGE_THROTTLER_HOST'),
+        'apikey' => env('EDGE_THROTTLER_API_KEY'),
+    ],
+
     //check razorpay/business_verification_service
     'business_verification_service' => [
         'mock'         => env('BVS_MOCK', false),

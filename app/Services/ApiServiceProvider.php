@@ -1317,6 +1317,18 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
             return new MultiCurl(Psr17FactoryDiscovery::findResponseFactory(), $options);
         });
+
+        $this->app->singleton('throttler_http_client', function ($app)
+        {
+            if ($app->runningUnitTests() === true)
+            {
+                return new Psr18ClientMock;
+            }
+
+            return new MultiCurl(Psr17FactoryDiscovery::findResponseFactory(), [
+                'timeout' => 5,
+            ]);
+        });
     }
 
     // phpcs:ignore Generic.NamingConventions.CamelCapsFunctionName.ScopeNotCamelCaps
