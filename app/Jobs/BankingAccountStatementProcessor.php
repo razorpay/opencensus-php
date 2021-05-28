@@ -82,7 +82,7 @@ class BankingAccountStatementProcessor extends Job
 
             $workerEndTime = Carbon::now()->getTimestamp();
 
-            $this->trace->info(TraceCode::BAS_FETCH_PROCESSED_BY_QUEUE,
+            $this->trace->info(TraceCode::BAS_PROCESSED_BY_QUEUE,
                 [
                     'account_number'     => $this->params['account_number'],
                     'channel'            => $this->params['channel'],

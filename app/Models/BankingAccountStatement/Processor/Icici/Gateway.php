@@ -69,6 +69,10 @@ class Gateway extends BaseProcessor
      */
     const DEBIT_REGEX_RTGS = '/^RTGS\/(.*?)\//';
 
+    protected $mozartNonRetriableCode = [
+        TraceCode::BANKING_ACCOUNT_STATEMENT_TRANSACTIONS_DO_NOT_EXIST_WITH_THE_GIVEN_CRITERIA,
+    ];
+
     const MAX_ATTEMPTS_TO_FETCH_CREDENTIALS_FROM_BAS = 3;
 
     /** @var BasDetails\Entity */
@@ -91,6 +95,16 @@ class Gateway extends BaseProcessor
         }
 
         return $bankResponse;
+    }
+
+    protected function shouldRetryMozartRequest(string $errorCode): bool
+    {
+        if (in_array($errorCode, $this->mozartNonRetriableCode, true) === true)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     protected function sendRequestAndGetResponse(array $input)
@@ -142,6 +156,7 @@ class Gateway extends BaseProcessor
 
         do
         {
+            $isRetriableGatewayException = true;
             // We don't have any bank response for the first request.
             $lastFormattedResponse = last($finalFormattedResponse) ?: $lastBankTransaction;
 
@@ -171,11 +186,42 @@ class Gateway extends BaseProcessor
                             Entity::CHANNEL        => $this->channel,
                         ]);
 
-                    $statementRetry ++ ;
+                    $errorCodeAndDescription = $ex->getGatewayErrorCodeAndDesc();
+                    $errorCode = $errorCodeAndDescription[0];
 
-                    if ($statementRetry <= $statementRetryLimit )
+                    $shouldRetry = $this->shouldRetryMozartRequest($errorCode);
+
+                    if ($shouldRetry === true)
                     {
-                        $fetchMore = true;
+                        if ($statementRetry < $statementRetryLimit)
+                        {
+                            $this->trace->info(
+                                TraceCode::MOZART_SERVICE_RETRY,
+                                [
+                                    'message'              => $ex->getMessage(),
+                                    'data'                 => $ex->getData(),
+                                    Entity::ACCOUNT_NUMBER => $this->accountNumber,
+                                    Entity::CHANNEL        => $this->channel
+                                ]);
+
+                            $statementRetry++;
+
+                            $fetchMore = true;
+
+                            $isRetriableGatewayException = true;
+
+                            continue;
+                        }
+                        else
+                        {
+                            throw $ex;
+                        }
+                    }
+                    else
+                    {
+                        $fetchMore = false;
+
+                        $isRetriableGatewayException = false;
 
                         continue;
                     }
@@ -192,9 +238,9 @@ class Gateway extends BaseProcessor
                             Entity::CHANNEL        => $this->channel,
                             'response'             => $bankResponse ?? [],
                         ]);
-                }
 
-                throw $ex;
+                    throw $ex;
+                }
             }
 
             $previousLasttrid = $this->getLasttridFromBankResponse($bankResponse, $previousLasttrid);
@@ -211,7 +257,8 @@ class Gateway extends BaseProcessor
 
         // Adding a dispatch delay of 120 seconds as account statement process takes
         // around 1 min for processing and save.
-        if (($this->hasMoreData($bankResponse) === true))
+        if (($isRetriableGatewayException === true) and
+            ($this->hasMoreData($bankResponse) === true))
         {
             $delay = self::ICICI_ACCOUNT_STATEMENT_DISPATCH_DELAY;
 

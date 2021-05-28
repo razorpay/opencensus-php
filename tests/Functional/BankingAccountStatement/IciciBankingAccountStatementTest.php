@@ -5,8 +5,10 @@ namespace Functional\BankingAccountStatement;
 use Queue;
 use Mockery;
 
+use Carbon\Carbon;
 use RZP\Models\Payout;
 use RZP\Services\Mozart;
+use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Constants\Mode as EnvMode;
@@ -108,6 +110,30 @@ class IciciBankingAccountStatementTest extends TestCase
             ],
             "external_trace_id" => "a9a748272640c86f123b58f4601bab8b",
             "mozart_id"         => "c0qe3r2055u5f78fipv0",
+            "next"              => [],
+            "success"           => false
+        ];
+
+        return $response;
+    }
+
+    protected function getIciciNoRecordsFoundGatewayExceptionResponse()
+    {
+        $response = [
+            "data" => [
+                "MESSAGE"  => "The transactions do not exist for the account with the entered criteria.",
+                "RESPONSE" => "Failure",
+                "_raw"     => '{\\"MESSAGE\\":\\"The transactions do not exist for the account with the entered criteria.\\",\\"RESPONSE\\":\\"Failure\\"}'
+            ],
+            "error" => [
+                "description"               => "",
+                "gateway_error_code"        => "The transactions do not exist for the account with the entered criteria.",
+                "gateway_error_description" => "(No error description was mapped for this error code)",
+                "gateway_status_code"       => 200,
+                "internal_error_code"       => "GATEWAY_ERROR_UNKNOWN_ERROR"
+            ],
+            "external_trace_id" => "64905671187e1fba1f40983e64ad9c26",
+            "mozart_id"         => "c2lpkg7ga874cqjaleq0",
             "next"              => [],
             "success"           => false
         ];
@@ -1004,5 +1030,39 @@ class IciciBankingAccountStatementTest extends TestCase
         $this->testData[__FUNCTION__] = $testData;
 
         $this->startTest();
+    }
+
+    public function testIciciAccountStatementGatewayException()
+    {
+        $oldDateTime = Carbon::create(2021, 3, 27, 12, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $mockedResponse = $this->getIciciNoRecordsFoundGatewayExceptionResponse();
+
+        $basdBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->assertNull($basdBeforeTest[BasDetails\Entity::STATEMENT_CLOSING_BALANCE_CHANGE_AT]);
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'method'  => 'post',
+            'url'     => '/banking_account_statement/process',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'channel'         => 'icici',
+            ],
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $basdAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->assertNull($basdAfterTest[BasDetails\Entity::STATEMENT_CLOSING_BALANCE_CHANGE_AT]);
+
+        Carbon::setTestNow();
     }
 }
