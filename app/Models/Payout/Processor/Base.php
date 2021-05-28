@@ -1211,7 +1211,7 @@ class Base extends BaseCore
         $payoutFromCA = false;
 
         if ($this->balance->isAccountTypeDirect() === true and $this->balance->isTypeBanking() === true
-                        and (new Merchant\Core())->isCurrentAccountActivated($this->merchant->getMerchantId())=== true)
+                        and (new Merchant\Core())->isCurrentAccountActivated($this->merchant)=== true)
         {
             $payoutFromCA = true;
         }

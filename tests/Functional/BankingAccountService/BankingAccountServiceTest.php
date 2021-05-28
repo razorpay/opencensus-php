@@ -59,6 +59,58 @@ class BankingAccountServiceTest extends TestCase
         $this->assertNotNull($basd);
     }
 
+    public function testCreateBankingEntitiesAndAddPayoutFeature()
+    {
+        $attributes = [
+            'bas_business_id'   => '10000000000000',
+            'activation_status' => 'deactivated',
+        ];
+
+        $this->createMerchantDetailWithBusinessId($attributes);
+
+        $feature = $this->getDbEntity('feature',
+            [
+                'entity_id'    => '10000000000000',
+                'name'         => 'payout',
+                'entity_type'  => 'merchant'
+            ]);
+
+        $this->assertNull($feature);
+
+        $response = $this->startTest();
+
+        $balance = $this->getDbEntity('balance',
+            [
+                'merchant_id'    => '10000000000000',
+                'channel'        => 'icici',
+                'account_type'   => 'direct',
+                'account_number' => '12345678903833',
+            ]);
+
+        $this->assertNotNull($balance);
+
+        $this->assertEquals($balance->getId(), $response['balance_id']);
+
+        $basd = $this->getDbEntity('banking_account_statement_details',
+            [
+                'merchant_id'    => '10000000000000',
+                'channel'        => 'icici',
+                'balance_id'     => $balance->getId(),
+                'account_number' => '12345678903833',
+            ]);
+
+        $this->assertNotNull($basd);
+
+        $feature = $this->getDbEntity('feature',
+            [
+                'entity_id'    => '10000000000000',
+                'name'         => 'payout',
+                'entity_type'  => 'merchant'
+            ]);
+
+        $this->assertEquals('payout', $feature['name']);
+    }
+
     public function testCreateBusinessId()
     {
         $this->ba->proxyAuth();

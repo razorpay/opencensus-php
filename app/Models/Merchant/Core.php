@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Monolog\Logger;
 use RZP\Jobs\SyncStakeholder;
 use RZP\Listeners\ApiEventSubscriber;
+use RZP\Models\BankingAccount\AccountType;
 use RZP\Models\BankingAccount\Status;
 use Razorpay\OAuth\Application as OAuthApp;
 
@@ -50,6 +51,7 @@ use RZP\Models\Settings\Accessor;
 use RZP\Models\Partner\Activation;
 use RZP\Models\Settlement\Channel;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\BankingAccountService;
 
 use RZP\Models\Merchant\LegalEntity;
 use RZP\Models\Base\PublicCollection;
@@ -69,6 +71,7 @@ use RZP\Models\Workflow\Action as WorkflowAction;
 use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Models\Partner\Validator as PartnerValidator;
 use RZP\Models\Partner\Constants as PartnerConstants;
+use RZP\Models\Merchant\Balance\Repository as BalanceRepo;
 use RZP\Models\Merchant\Detail\BusinessSubCategoryMetaData;
 use RZP\Models\Merchant\Detail\InternationalActivationFlow;
 use RZP\Mail\Merchant\SecondFactorAuth as SecondFactorAuthMail;
@@ -4742,10 +4745,35 @@ class Core extends Base\Core
         return array($va_status, $ca_status);
     }
 
-    public function isCurrentAccountActivated(string $merchantId): bool
+    public function isCurrentAccountActivated(Entity $merchant): bool
     {
-        $currentAccountStatus = ($this->getBankingAccountStatus($merchantId))[1];
+        return $this->checkIfCurrentAccountIsActivated($merchant);
+    }
 
-        return ($currentAccountStatus === Status::ACTIVATED);
+    public function checkIfCurrentAccountIsActivated(Entity $merchant)
+    {
+        $bankingAccounts = $this->repo->banking_account->fetchActivatedBankingAccountByMerchantIdAccountTypeAndChannel($merchant->getMerchantId(), \RZP\Models\BankingAccount\Channel::RBL, AccountType::CURRENT);
+
+        //Rbl
+        if(empty($bankingAccounts) === false)
+        {
+            return true;
+        }
+        else
+        {
+            //Icici
+            $repo = new BalanceRepo();
+
+            $balance = $repo->getBalanceByMerchantIdChannelAndAccountType($merchant->getMerchantId(), BankingAccountService\Channel::ICICI, Balance\AccountType::DIRECT);
+
+            $businessId = '';
+
+            if(empty($merchant->merchantDetail) === false)
+            {
+                $businessId = $merchant->merchantDetail->getBasBusinessId();
+            }
+
+            return (empty($balance) === false && empty($businessId) === false);
+        }
     }
 }

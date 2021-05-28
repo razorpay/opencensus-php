@@ -259,6 +259,13 @@ class IciciCaPayoutTest extends TestCase
     {
         $this->ba->privateAuth();
 
+        $attributes = [
+            'bas_business_id'   => '10000000000000',
+            'merchant_id'       => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_detail', $attributes);
+
         $this->startTest();
 
         $payout = $this->getLastEntity('payout', true);

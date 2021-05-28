@@ -4,6 +4,7 @@ namespace RZP\Models\BankingAccount;
 
 use Mail;
 use Carbon\Carbon;
+
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Contact;
@@ -45,6 +46,7 @@ use RZP\Models\BankingAccountStatement\Details as BASDetails;
 use RZP\Models\BankingAccount\Activation\Notification\Notifier;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
 use RZP\Mail\BankingAccount\StatusNotifications\Factory as StatusUpdateMailerFactory;
+use RZP\Constants\Mode;
 
 class Core extends Base\Core
 {
@@ -821,11 +823,15 @@ class Core extends Base\Core
 
             $this->updateBankingAccount($bankingAccount, $updateInput, $admin, true);
 
+            // For Adding payout feature without RZP KYC
+            (new Activate())->addPayoutFeatureIfApplicable($bankingAccount->merchant, Mode::LIVE, true);
+
+            $this->trace->info(TraceCode::PAYOUT_FEATURE_ADDED, [
+                Merchant\Constants::MERCHANT_ID => $merchant->getId()
+            ]);
+
             return $bankingAccount;
         });
-
-        // For Adding payout feature without RZP KYC
-        (new Activate())->addPayoutFeatureForCurrentAccount($bankingAccount->merchant);
 
         $merchantDetail = $bankingAccount->merchant->merchantDetail;
 

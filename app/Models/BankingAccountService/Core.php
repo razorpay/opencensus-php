@@ -4,6 +4,7 @@ namespace RZP\Models\BankingAccountService;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Merchant\Balance\Repository as BalanceRepo;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
@@ -13,6 +14,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankingAccountStatement;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
+use RZP\Constants\Mode;
 
 class Core extends Base\Core
 {
@@ -50,21 +52,46 @@ class Core extends Base\Core
 
     public function createBalanceAndBankingAccountStatementDetails($merchantId, $input)
     {
-        $merchant = $this->repo->merchant->findOrFail($merchantId);
+        try
+        {
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        $attributes = [
-            Merchant\Balance\Entity::ACCOUNT_TYPE        => Merchant\Balance\AccountType::DIRECT,
-            Merchant\Balance\Entity::CHANNEL             => $input[Constants::CHANNEL],
-            Merchant\Balance\Entity::ACCOUNT_NUMBER      => $input[Constants::ACCOUNT_NUMBER],
-        ];
+            $attributes = [
+                Merchant\Balance\Entity::ACCOUNT_TYPE        => Merchant\Balance\AccountType::DIRECT,
+                Merchant\Balance\Entity::CHANNEL             => $input[Constants::CHANNEL],
+                Merchant\Balance\Entity::ACCOUNT_NUMBER      => $input[Constants::ACCOUNT_NUMBER],
+            ];
 
-        $balance = $this->createBalance($merchant, $attributes);
+            $balance = $this->createBalance($merchant, $attributes);
 
-        $this->createBankingAccountStatementDetails($merchantId, $input, $balance->getId());
+            $this->createBankingAccountStatementDetails($merchantId, $input, $balance->getId());
 
-        $this->trace->info(TraceCode::BANKING_ACCOUNT_SERVICE_BALANCE_CREATE, $balance->toArrayPublic());
+            $this->trace->info(TraceCode::BANKING_ACCOUNT_SERVICE_BALANCE_CREATE, $balance->toArrayPublic());
 
-        return $balance;
+            (new Merchant\Activate())->addPayoutFeatureIfApplicable($merchant, Mode::LIVE, true);
+
+            $this->trace->info(TraceCode::PAYOUT_FEATURE_ADDED, [
+                Merchant\Constants::MERCHANT_ID => $merchantId
+            ]);
+
+            return $balance;
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::BANKING_ACCOUNT_SERVICE_ERROR_CREATING_BANKING_ACCOUNT_DEPENDENT_ENTITIES,
+                [
+                    'merchant_id'        => $merchantId,
+                    'account_number'     => $input[Constants::ACCOUNT_NUMBER],
+                    'channel'            => $input[Constants::CHANNEL],
+                    'error'              => $e->getMessage()
+                ]);
+
+            throw $e;
+
+        }
     }
 
     public function createBalance(Merchant\Entity $merchant, $attributes)

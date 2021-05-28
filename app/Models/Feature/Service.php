@@ -452,8 +452,9 @@ class Service extends Base\Service
         //
         // Allow only the admins to provide the entity_type and entity_id from the input.
         // If the merchant is hitting the route directly, only allow him to update his own account features.
-        //
-        if ($this->app['basicauth']->isAdminAuth() === true)
+        //Allowing Banking account service to add the feature
+        if (($this->app['basicauth']->isAdminAuth() === true) or
+            ($this->app['basicauth']->isBankingAccountServiceApp() === true))
         {
             $entityType = $entityType ?? $input[Entity::ENTITY_TYPE];
 

@@ -485,4 +485,14 @@ class Repository extends Base\Repository
                     ->where(Entity::MERCHANT_ID, $merchantId)
                     ->firstOrFail();
     }
+
+    public function fetchActivatedBankingAccountByMerchantIdAccountTypeAndChannel(string $merchantId, string $channel, string $accountType)
+    {
+        return $this->newQuery()
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->where(Entity::CHANNEL, $channel)
+            ->where(Entity::ACCOUNT_TYPE, $accountType)
+            ->where(Entity::STATUS, Status::ACTIVATED)
+            ->first();
+    }
 }

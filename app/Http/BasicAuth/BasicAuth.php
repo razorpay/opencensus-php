@@ -1651,6 +1651,11 @@ class BasicAuth
         return ($this->getInternalApp() === 'payment_links');
     }
 
+    public function isBankingAccountServiceApp(): bool
+    {
+        return ($this->getInternalApp() === 'banking_account_service');
+    }
+
     public function getOAuthApplicationId()
     {
         return $this->applicationId;
