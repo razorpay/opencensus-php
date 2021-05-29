@@ -43,10 +43,10 @@ export default class ModalCloseReasons extends Component {
   };
 
   handleGoBackClick = (e) => {
-    const { showOndemandSettlementForm, closeModal } = this.props;
+    const { goBackToInitialModalView, closeModal } = this.props;
     trackEsModalCloseAction(this.props.user.current);
     closeModal();
-    setTimeout(() => showOndemandSettlementForm(e), 0);
+    setTimeout(() => goBackToInitialModalView && goBackToInitialModalView(e), 0);
   };
 
   render() {

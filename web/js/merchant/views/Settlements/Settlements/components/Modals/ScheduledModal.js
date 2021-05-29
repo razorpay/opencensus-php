@@ -319,7 +319,11 @@ export default class ScheduledModal extends Component {
     return (
       <div class="container-scheduled-modal">
         {modalClosed ? (
-          <ModalCloseReasons eventCategory={this.props.eventCategory} closeOrigin="Scheduled" />
+          <ModalCloseReasons
+            eventCategory={this.props.eventCategory}
+            closeOrigin="Scheduled"
+            goBackToInitialModalView={this.props.goBackToInitialModalView}
+          />
         ) : autoEnabled ? (
           this.renderPostEnablement()
         ) : (

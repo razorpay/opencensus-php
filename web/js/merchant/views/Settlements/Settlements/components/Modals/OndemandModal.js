@@ -651,7 +651,7 @@ export default class OndemandModal extends Component {
   };
 
   render() {
-    const { showOndemandSettlementForm } = this.props;
+    const { goBackToInitialModalView } = this.props;
     const { closeClicked, isSaved } = this.state;
     return (
       <div class="container-ondemand-modal">
@@ -664,7 +664,7 @@ export default class OndemandModal extends Component {
             )
           ) : (
             <ModalCloseReasons
-              showOndemandSettlementForm={showOndemandSettlementForm}
+              goBackToInitialModalView={goBackToInitialModalView}
               closeOrigin="OnDemand"
               eventCategory={this.props.eventCategory}
             />

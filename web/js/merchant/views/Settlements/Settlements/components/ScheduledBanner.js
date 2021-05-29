@@ -28,6 +28,7 @@ export default class ScheduledBanner extends Component {
           eventCategory={this.props.eventCategory}
           fromWhere={this.props.fromWhere}
           onExit={this.props.onExit}
+          goBackToInitialModalView={this.openAutomatic}
         />
       ),
       size: 'small',

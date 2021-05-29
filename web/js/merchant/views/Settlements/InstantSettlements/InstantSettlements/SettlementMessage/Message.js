@@ -14,6 +14,7 @@ const Message = ({ heading, description, image, showEnableNowButton, openModal }
         <ScheduledModal
           eventCategory={EVENT_CATEGORY_DASHBOARD_INSTANT_SETTLEMENT}
           fromWhere="Instant Settlements"
+          goBackToInitialModalView={handleEnableNowClick}
         />
       ),
       size: 'small',

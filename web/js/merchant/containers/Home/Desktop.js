@@ -148,6 +148,7 @@ class AnalyticsDesktop extends Component {
           eventCategory={EVENT_CATEGORY_DASHBOARD_HOME}
           fromWhere="Home"
           checkIfFirstEverSettlement={this.checkIfFirstEverSettlement}
+          goBackToInitialModalView={this.showOndemandSettlementForm}
         />
       ),
       size: 'small',

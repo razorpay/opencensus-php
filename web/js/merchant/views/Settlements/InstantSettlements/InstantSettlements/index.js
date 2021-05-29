@@ -120,7 +120,7 @@ class InstantSettlements extends ListContainer {
           currentBalance={balance}
           settlableAmount={settlableAmount}
           fromWhere="Instant Settlements"
-          showOndemandSettlementForm={this.showOndemandSettlementForm}
+          goBackToInitialModalView={this.showOndemandSettlementForm}
           eventCategory={EVENT_CATEGORY_DASHBOARD_INSTANT_SETTLEMENT}
           checkIfFirstEverSettlement={checkIfFirstEverSettlement}
         />

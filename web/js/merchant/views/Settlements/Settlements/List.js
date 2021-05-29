@@ -265,7 +265,7 @@ export default class SettlementsListContainer extends ListContainer {
           settlableAmount={settlableAmount}
           currentBalance={balance}
           fromWhere={e.clickOrigin ? 'Announcement' : 'Settlements'}
-          showOndemandSettlementForm={this.showOndemandSettlementForm}
+          goBackToInitialModalView={this.showOndemandSettlementForm}
           eventCategory={EVENT_CATEGORY_DASHBOARD_EARLY_SETTLEMENT}
           checkIfFirstEverSettlement={checkIfFirstEverSettlement}
         />
