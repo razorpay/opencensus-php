@@ -319,6 +319,7 @@ class Route
         'merchant_update_key_access'               => ['put',      'merchants/{id}/update_key_access',               'MerchantController@updateKeyAccess'                                ],
         'merchant_edit_free_credits'               => ['post',     'merchants/{id}/credits',                         'MerchantController@postAmountCredits',                             ],
         'merchant_fetch_users'                     => ['get',      'merchants-users',                                'MerchantController@getUsers',                                      ],
+        'merchant_fetch_internal_users'            => ['get',      'merchants/{id}/internal-users',                  'MerchantController@getInternalUsers',                              ],
         'merchant_fetch_schedule_tasks'            => ['get',      'schedule_tasks/{type}',                          'ScheduleController@getScheduleTasks',                              ],
         'merchant_user_reset_password'             => ['put',      'users/{id}/password',                            'UserController@resetUserPassword',                                 ],
         'merchant_patch_beneficiary_code'          => ['patch',    'merchants/beneficiary/code',                     'MerchantController@patchMerchantBeneficiaryCode'                   ],
@@ -2982,6 +2983,7 @@ class Route
         'merchant_post_beneficiary_file',
         'merchant_secret',
         'merchant_associated_accounts_fetch',
+        'merchant_fetch_internal_users',
         'mock_hdfc_auth_enrolled',
         'mock_hdfc_enroll',
         'mock_hdfc_payment',
@@ -9016,6 +9018,7 @@ class Route
         'capital_cards_client' => [
             'user_fetch',
             'user_fetch_entity',
+            'merchant_fetch_internal_users',
         ],
 
         'capital_collections_client' => [
@@ -9027,6 +9030,7 @@ class Route
             'internal_balance_fetch_by_id',
             'internal_balance_fetch_multiple_by_ids',
             'user_fetch_entity',
+            'merchant_fetch_internal_users',
         ],
 
         'loc'  => [

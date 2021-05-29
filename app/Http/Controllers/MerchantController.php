@@ -1049,6 +1049,17 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getInternalUsers($merchantId)
+    {
+        $headers = Request::header();
+
+        $product = $headers['x-product-name'][0];
+
+        $data = $this->service()->getInternalUsers($merchantId, $product);
+
+        return ApiResponse::json($data);
+    }
+
     public function getGSTDetails()
     {
         $response = $this->service()->getGSTDetails();

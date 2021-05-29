@@ -3247,6 +3247,15 @@ class Service extends Base\Service
         return $users;
     }
 
+    public function getInternalUsers($merchantId, $product)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $users = $this->core()->getUsers($merchant, $product);
+
+        return $users;
+    }
+
     public function createBatches(string $merchantId, array $input): array
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
