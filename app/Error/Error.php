@@ -351,13 +351,6 @@ class Error extends Support\Fluent
 
     protected function setErrorDetailsFromCentralRepo($code, $method = '')
     {
-        $this->trace->info(TraceCode::STARTED_READING_FROM_CENTRAL_REPO,
-            [
-                'payment_method'       => $method,
-                'internal_error_code'  => $code,
-            ]
-        );
-
         $errorCodeJson = $this->errorMapper->getErrorMapping($code,$method);
 
         if (isset($errorCodeJson) === false)
@@ -409,7 +402,7 @@ class Error extends Support\Fluent
 
             $this->setEnglishDescription($errorCodeJson['error_description']);
         }
-        
+
         $this->setPublicErrorCode($errorCodeJson['public_error_code']);
 
         $this->setSource($source);
