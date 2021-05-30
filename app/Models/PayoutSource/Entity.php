@@ -22,6 +22,7 @@ class Entity extends Base\PublicEntity
     const VENDOR_PAYMENTS = 'vendor_payments';
     const TAX_PAYMENTS    = 'tax_payments';
     const SETTLEMENTS     = 'settlements';
+    const XPAYROLL        = 'xpayroll';
 
     // Relations
     const PAYOUT = 'payout';
@@ -37,6 +38,7 @@ class Entity extends Base\PublicEntity
         self::VENDOR_PAYMENTS,
         self::TAX_PAYMENTS,
         self::SETTLEMENTS,
+        self::XPAYROLL
     ];
 
     protected $fillable   = [

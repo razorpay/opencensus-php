@@ -74,9 +74,11 @@ use RZP\Models\Gateway\File as GatewayFile;
 use RZP\Models\PaymentLink\PaymentPageItem;
 use RZP\Services\Beam\Service as BeamService;
 use RZP\Base\Database\Connectors\MySqlConnector;
-use RZP\Models\Merchant\Request as MerchantRequest;
-use RZP\Services\VendorPayments\Service as VendorPaymentService;
 use RZP\Models\Base\EntityInstrumentationObserver;
+use RZP\Models\Merchant\Request as MerchantRequest;
+use RZP\Services\XPayroll\Service as XPayrollService;
+use RZP\Services\VendorPayments\Service as VendorPaymentService;
+
 
 class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvider
 {
@@ -485,6 +487,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->registerBankingAccountService();
 
         $this->registerCacheManager();
+
+        $this->registerXPayrollService();
 
         $this->registerLedger();
     }
@@ -1273,6 +1277,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton('einvoice_client', function($app)
         {
             return new EInvoice($app);
+        });
+    }
+
+    protected function registerXPayrollService(){
+
+        $this->app->singleton('xpayroll', function($app)
+        {
+            return new XPayrollService($app);
         });
     }
 

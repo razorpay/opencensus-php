@@ -241,7 +241,7 @@ class UserAccess
             $product = ProductType::BANKING;
         }
 
-        $bankingApps = ['vendor_payments', 'payout_links', 'fts', 'workflows'];
+        $bankingApps = ['vendor_payments', 'payout_links', 'fts', 'workflows','xpayroll'];
 
         if (in_array($this->ba->getInternalApp(), $bankingApps, true) === true)
         {

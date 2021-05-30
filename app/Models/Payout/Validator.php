@@ -906,9 +906,10 @@ class Validator extends Base\Validator
 
     protected function validateIfFieldShouldBeSentWithCompositeApi(array $input, string $fieldName, $fieldValue)
     {
-        // In settlements service, all payouts will be made via composite API,
-        // so we'll allow composite API for settlements app
-        if ((new Service)->isSettlementsApp() === true)
+        // In settlements & XPayroll service, all payouts will be made via composite API,
+        // so we'll allow composite API for these apps
+        if (((new Service)->isSettlementsApp() === true) or
+            ((new Service)->isXPayrollApp() === true))
         {
             return;
         }

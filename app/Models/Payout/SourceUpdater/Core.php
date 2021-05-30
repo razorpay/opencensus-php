@@ -115,6 +115,17 @@ class Core
 
             foreach ($subscriberList as $subscriber)
             {
+                /**
+                 * Note: Some of the updaters may throw error if they are not able to send the data.
+                 * This may cause this loop to break. As there is a retry mechanism at RZP\Jobs\PayoutSourceUpdaterJob::handle, the current function
+                 * will be retried. This may cause resending the same status update to few source updaters.
+                 * Eg. If XPayroll service is throwing error here via RZP\Models\Payout\SourceUpdater\XPayrollUpdater,
+                 * it will stop propagation after XPayroll, and will send multiple status updates to subscribers prior to XPayroll.
+                 *
+                 * Some changes are required in this flow. Ideally retry should happen to only those subscribers who threw error.
+                 *
+                 * Slack thread: https://razorpay.slack.com/archives/CR3K6S6C8/p1621336941015300
+                 */
                 $subscriber->update();
             }
         }

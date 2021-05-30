@@ -4527,6 +4527,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_UPDATE_AFTER_FTA_RECON_SERVICE_DATA_SYNC_FAILED = 'PAYOUT_UPDATE_AFTER_FTA_RECON_SERVICE_DATA_SYNC_FAILED';
     const REARCH_CRITIERIA_CHECK_FAILED                         = 'REARCH_CRITIERIA_CHECK_FAILED';
 
+    // XPayroll
+    const XPAYROLL_PAYOUT_UPDATER_ERROR                       = 'XPAYROLL_PAYOUT_UPDATER_ERROR';
+    const XPAYROLL_PAYOUT_REQUEST                             = 'XPAYROLL_PAYOUT_REQUEST';
+    const XPAYROLL_PAYOUT_REQUEST_ERROR                       = 'XPAYROLL_PAYOUT_REQUEST_ERROR';
+    const XPAYROLL_PAYOUT_REQUEST_RESPONSE                    = 'XPAYROLL_PAYOUT_REQUEST_RESPONSE';
+
     # Ledger
     const LEDGER_RESPONSE                                       = 'LEDGER_RESPONSE';
     const LEDGER_REQUEST                                        = 'LEDGER_REQUEST';

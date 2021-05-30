@@ -169,8 +169,12 @@ return [
         'secret'  => env('THIRDWATCH_SERVICE_SECRET')
     ],
 
-    'opfin' => [
-        'secret'  => env('OPFIN_SERVICE_SECRET')
+
+    'xpayroll' => [
+        // the secret used by the Opfin to call apis under internal auth
+        // this same secret is used as the password to call APIs on the micro-service
+        'secret'  => env('OPFIN_SERVICE_SECRET'),
+        'baseUrl' => env('OPFIN_SERVICE_URL')
     ],
 
     'scrooge' => [

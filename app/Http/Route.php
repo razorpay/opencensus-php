@@ -3300,7 +3300,7 @@ class Route
         'create_ledger_payout_service',
         'payout_links_batch_process',
 
-        'merchant_tnc_details',
+        'merchant_tnc_details'
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -9084,8 +9084,10 @@ class Route
             'user_details',
         ],
 
-        'opfin' => [
+        'xpayroll' => [
             'user_details',
+            'payout_create_internal',
+            'banking_accounts_list_internal'
         ],
 
         'razorflow' => [

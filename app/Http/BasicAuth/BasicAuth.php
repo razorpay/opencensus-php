@@ -1553,6 +1553,11 @@ class BasicAuth
         return $this->internalApp === 'vendor_payments';
     }
 
+    public function isXPayrollApp()
+    {
+        return $this->internalApp === 'xpayroll';
+    }
+
     public function isPayoutLinkApp()
     {
         return $this->internalApp === 'payout_links';

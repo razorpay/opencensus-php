@@ -41,6 +41,12 @@ class Factory
                     array_push($subscriberList, (new SettlementsUpdater($payout, $mode)));
 
                     break;
+
+                case PayoutSourceEntity::XPAYROLL:
+
+                    array_push($subscriberList, (new XPayrollUpdater($payout, $mode)));
+
+                    break;
             }
         }
 
