@@ -265,6 +265,8 @@ class Razorflow
     {
         unset($request['options']['auth']);
 
+        array_unset_recursive($request, 'response_url');
+
         $this->trace->info(TraceCode::RAZORFLOW_REQUEST, $request);
     }
 
