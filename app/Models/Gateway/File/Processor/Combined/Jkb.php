@@ -181,4 +181,21 @@ class Jkb extends Base
                 $e);
         }
     }
+
+    protected function getFileData(string $type)
+    {
+        $file = $this->gatewayFile
+                     ->files()
+                     ->where(FileStore\Entity::TYPE, $type)
+                     ->first();
+
+        $signedUrl = (new FileStore\Accessor)->getSignedUrlOfFile($file);
+
+        $fileData = [
+            'url'  => $signedUrl,
+            'name' => $file->getLocation(),
+        ];
+
+        return $fileData;
+    }
 }

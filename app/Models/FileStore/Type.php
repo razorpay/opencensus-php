@@ -523,7 +523,6 @@ class Type
             self::BATCH_INPUT,
             self::BATCH_OUTPUT,
             self::BATCH_VALIDATED,
-            self::JKB_NETBANKING_REFUND,
             self::UBI_NETBANKING_REFUND,
         ],
 
@@ -594,6 +593,7 @@ class Type
             self::FSB_NETBANKING_REFUND,
             self::ICICI_NACH_REGISTER,
             self::ICICI_NACH_COMBINED_DEBIT,
+            self::JKB_NETBANKING_REFUND,
             self::AIRTELMONEY_WALLET_FAILED_REFUND,
             self::AXIS_MIGS_FAILED_REFUND,
             self::ICIC_FIRST_DATA_FAILED_REFUND,

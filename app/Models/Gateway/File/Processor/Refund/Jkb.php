@@ -34,10 +34,12 @@ class Jkb extends Base
     const GATEWAY_CODE           = IFSC::JAKA;
     const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
 
+    const BASE_STORAGE_DIRECTORY = 'Jkb/Refund/Netbanking/outgoing/';
+
     protected function formatDataForFile(array $data)
     {
         $formattedData = [];
-        
+
         foreach ($data as $row)
         {
             $date = Carbon::createFromTimestamp($row['refund']['created_at'], Timezone::IST)->format('YmdHis');
@@ -68,7 +70,7 @@ class Jkb extends Base
     {
         $dateTime = Carbon::now(Timezone::IST)->format('d-m-Y');
 
-        return static::FILE_NAME . $dateTime;
+        return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . $dateTime;
     }
 
     protected function addGatewayEntitiesToDataWithPaymentIds(array $data, array $paymentIds)
