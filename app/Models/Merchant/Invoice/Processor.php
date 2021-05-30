@@ -13,6 +13,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Report\Types\BankingInvoiceReport;
 use RZP\Models\Reversal\Entity as ReversalEntity;
+use RZP\Models\Merchant\Invoice\EInvoice\DocumentTypes;
 use RZP\Models\FundAccount\Validation\Entity as FAVEntity;
 
 class Processor extends Base\Core
@@ -154,6 +155,8 @@ class Processor extends Base\Core
 
                       if($mismatchingSellerEntity === false)
                       {
+                          $this->checkIfCreditNoteAmountGreaterThanInvoiceAmount($data);
+
                           $invoiceCore->dispatchForXEInvoice($data, $this->month, $this->year, $merchant->getId());
                       }
                       else {
@@ -165,6 +168,12 @@ class Processor extends Base\Core
                               ]
                           );
                       }
+                    }
+                    else
+                    {
+                        $invoiceCore = new Core;
+                        $data = $invoiceCore->getXEInvoiceData($this->month, $this->year, $merchant);
+                        $this->checkIfCreditNoteAmountGreaterThanInvoiceAmount($data);
                     }
                }
                catch (\Throwable $e)
@@ -181,6 +190,26 @@ class Processor extends Base\Core
                }
                break;
             }
+        }
+    }
+
+    private function checkIfCreditNoteAmountGreaterThanInvoiceAmount($data)
+    {
+        $invoiceAmount = $data[BankingInvoiceReport::ROWS][DocumentTypes::INV]
+        [BankingInvoiceReport::COMBINED][BankingInvoiceReport::GRAND_TOTAL];
+
+        $creditNoteAmount = $data[BankingInvoiceReport::ROWS][DocumentTypes::CRN]
+        [BankingInvoiceReport::COMBINED][BankingInvoiceReport::GRAND_TOTAL];
+
+        if($creditNoteAmount > $invoiceAmount)
+        {
+            $this->trace->info(TraceCode::EINVOICE_CRN_AMOUNT_GREATER_THAN_INV_FOR_X,
+                [
+                    'merchant_id' => $this->merchant->getId(),
+                    'month' => $this->month,
+                    'year' => $this->year,
+                ]
+            );
         }
     }
 

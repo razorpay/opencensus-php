@@ -347,6 +347,23 @@ return [
         ],
     ],
 
+    'testBankingInvoiceDownloadFromMerchantDashboardForCARbl' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/reports/invoice/banking',
+            'content' => [
+                "month"          => 5,
+                "year"           => 2021,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'file_id' => null,
+                'error_message' => 'Error:PDF not generated',
+            ],
+        ],
+    ],
+
     'testBankingInvoiceDownloadFromAdminDashboard' => [
         'request'  => [
             'method'  => 'POST',

@@ -50,9 +50,17 @@ class Service extends Base\Service
 
         $emailAddresses = array_pull($input, Entity::TO_EMAILS);
 
-        list($ufhResponse, $data) = $this->core()->generateInvoiceReport($input);
+        list($ufhResponse, $data, $error) = $this->core()->generateInvoiceReport($input);
 
         $data = array_merge($data, $input);
+
+        if($error != null)
+        {
+            return [
+                'file_id' => null,
+                'error_message' => $error,
+            ];
+        }
 
         if (boolval($sendEmail) === true)
         {

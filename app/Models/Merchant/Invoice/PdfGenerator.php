@@ -37,6 +37,7 @@ class PdfGenerator extends Base\Core
     const PAGE_NAME           = 'pageName';
 
     const MERCHANT_INVOICE_PG_PDF_PREFIX = 'merchant_pg_invoices';
+    const SELLER_ENTITY = 'seller_entity';
 
     protected $data;
 
@@ -97,7 +98,8 @@ class PdfGenerator extends Base\Core
                 ->with(self::GSTIN, $data[BankingInvoiceReport::GSTIN])
                 ->with(self::BILLING_PERIOD, $data[BankingInvoiceReport::BILLING_PERIOD])
                 ->with(self::ROWS, $data[BankingInvoiceReport::ROWS][$page])
-                ->with(self::PAGE_NAME, $page);
+                ->with(self::PAGE_NAME, $page)
+                ->with(self::SELLER_ENTITY, $data[BankingInvoiceReport::ROWS][$page][BankingInvoiceReport::SELLER_ENTITY]);
 
             if(isset($data[BankingInvoiceReport::E_INVOICE_DETAILS][$page]))
             {

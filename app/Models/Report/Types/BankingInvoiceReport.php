@@ -49,6 +49,7 @@ class BankingInvoiceReport extends BaseReport
     const BUSINESS_REGISTERED_PIN   = 'business_registered_pin';
     const COMBINED                  = 'combined';
     const E_INVOICE_DETAILS         = 'e_invoice_details';
+    const SELLER_ENTITY             = 'seller_entity';
 
     const VALIDATION_RULES          = [
         'year'           => 'required|digits:4',
@@ -315,6 +316,8 @@ class BankingInvoiceReport extends BaseReport
             $allRow[self::COMBINED] = $finalRow;
 
             $data[$type] = $allRow;
+
+            $data[$type][self::SELLER_ENTITY] = null;
         }
 
         $invoiceReport = [

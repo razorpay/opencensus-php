@@ -116,14 +116,23 @@
 
                         <td class="text-right">
                             <strong class="text-black-o-40">From:</strong><br />
-                            <span class="text-black-o-80 font-weight-600">Razorpay Software Pvt. Ltd. </span><br>
-                            #22, 1st Floor, SJR Cyber,<br />
-                            Laskar Hosur Road, Adugodi,<br />
-                            Bangalore, Karnataka - 560 030.<br /><br />
-                            <span class="font-weight-600 text-black-o-60">GSTIN</span> - 29AAGCR4375J1ZU<br />
-                            <span class="font-weight-600 text-black-o-60">Pan No.</span> - AAGCR4375J<br />
-                            <span class="font-weight-600 text-black-o-60">CIN No.</span> - U72200KA2013PTC097389<br/>
-
+                            @if($seller_entity === 'RSPL')
+                                    <span class="text-black-o-80 font-weight-600">Razorpay Software Pvt. Ltd. </span><br>
+                                    #22, 1st Floor, SJR Cyber,<br />
+                                    Laskar Hosur Road, Adugodi,<br />
+                                    Bangalore, Karnataka - 560 030.<br /><br />
+                                    <span class="font-weight-600 text-black-o-60">GSTIN</span> - 29AAGCR4375J1ZU<br />
+                                    <span class="font-weight-600 text-black-o-60">Pan No.</span> - AAGCR4375J<br />
+                                    <span class="font-weight-600 text-black-o-60">CIN No.</span> - U72200KA2013PTC097389<br/>
+                                @else
+                                    <span class="text-black-o-80 font-weight-600">RZPX PRIVATE LIMITED </span><br>
+                                    #22, 1st Floor, SJR Cyber,<br />
+                                    Laskar Hosur Road, Adugodi,<br />
+                                    Bangalore, Karnataka - 560 030.<br /><br />
+                                    <span class="font-weight-600 text-black-o-60">GSTIN</span> - 29AAKCR4702K1Z1<br />
+                                    <span class="font-weight-600 text-black-o-60">Pan No.</span> - AAKCR4702K<br />
+                                    <span class="font-weight-600 text-black-o-60">CIN No.</span> - U72900KA2020PTC139072<br/>
+                            @endif
                             <div style=“position:absolute;bottom:350px;“>
                                 @if (isset($e_invoice_details['QRCodeUrl']))
                                     <img style=“height:140px;width:140px;” src={{{$e_invoice_details['QRCodeUrl']}}}/>
@@ -177,8 +186,9 @@
                     @foreach($rows as $key => $rowItem)
 
                         <?php $isTotalRow = $key === "combined"; ?>
+                        <?php $isSellerEntityRow = $key === "seller_entity"; ?>
 
-                        @if (!$isTotalRow)
+                        @if (!$isTotalRow and !$isSellerEntityRow)
                             <tr>
                                 <td class="sno">
                                     {{$rowIndex + 1}}
@@ -199,7 +209,7 @@
                                     @include('merchant/invoice/components/currency',['value' => $rowItem['amount']])
                                 </td>
                             </tr>
-                        @else
+                        @elseif(!$isSellerEntityRow)
                             <tr class="invoice-total-row">
                                 <td colspan="3" class="text-right font-weight-600 text-black-o-80">
                                     Total Amount

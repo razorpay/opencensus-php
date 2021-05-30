@@ -250,6 +250,59 @@ class Core extends Base\Core
            }
         }
 
+        if($input['month'] >= 5 and $input['year'] >= 2021)
+        {
+            foreach($data[BankingInvoiceReport::ROWS] as $type => $lineItem)
+            {
+                $accounts = array_except($lineItem, BankingInvoiceReport::COMBINED);
+
+                $virtualAccountInvoiceAmount = 0;
+                $rblAccountInvoiceAmount = 0;
+
+                foreach ($accounts as $account => $attributes)
+                {
+                    if($attributes[BankingInvoiceReport::ACCOUNT_TYPE] === Balance\AccountType::DIRECT
+                        and $attributes[BankingInvoiceReport::CHANNEL] === Balance\Channel::RBL)
+                    {
+                        if($attributes[BankingInvoiceReport::AMOUNT] > $rblAccountInvoiceAmount)
+                        {
+                            $rblAccountInvoiceAmount = $attributes[Entity::AMOUNT];
+                        }
+                    }
+                    else if($attributes[BankingInvoiceReport::ACCOUNT_TYPE] === Balance\AccountType::SHARED)
+                    {
+                        if($attributes[BankingInvoiceReport::AMOUNT] > $virtualAccountInvoiceAmount)
+                        {
+                            $virtualAccountInvoiceAmount = $attributes[Entity::AMOUNT];
+                        }
+                    }
+                }
+                if($rblAccountInvoiceAmount > 0)
+                {
+                    if($virtualAccountInvoiceAmount === 0){
+                        $data[BankingInvoiceReport::ROWS][$type][BankingInvoiceReport::SELLER_ENTITY] = 'RSPL';
+                    }
+                    else{
+                        return [
+                            null,
+                            $data,
+                            'Error:PDF not generated',
+                        ];
+                    }
+                }
+                else{
+                    $data[BankingInvoiceReport::ROWS][$type][BankingInvoiceReport::SELLER_ENTITY] = 'RZPL';
+                }
+            }
+        }
+        else
+        {
+            foreach($data[BankingInvoiceReport::ROWS] as $type => $lineItem)
+            {
+                $data[BankingInvoiceReport::ROWS][$type][BankingInvoiceReport::SELLER_ENTITY] = 'RSPL';
+            }
+        }
+
         $pathToTemporaryFile = (new PdfGenerator)->generateBankingInvoice($data);
 
         $fileAccessUrl = $this->uploadViaUfh($pathToTemporaryFile, $invoiceEntity);
@@ -257,6 +310,7 @@ class Core extends Base\Core
         return [
             $fileAccessUrl,
             $data,
+            null,
         ];
     }
 
