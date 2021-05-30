@@ -98,6 +98,7 @@ class migration extends Job
                                       Constants::DAILY_SETTLEMENT,
                                       Constants::NEW_SETTLEMENT_SERVICE,
                                   ])
+                              ->pluck(Feature\Entity::NAME)
                               ->toArray();
 
         $skip = false;
