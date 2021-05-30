@@ -7,6 +7,8 @@ use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Invoice\EInvoice;
+use RZP\Models\Report\Types\BankingInvoiceReport;
+use RZP\Models\Merchant\Invoice\EInvoice\Constants;
 
 
 class XEInvoice extends Job
@@ -22,6 +24,8 @@ class XEInvoice extends Job
     protected $params;
 
     protected $documentTypeData;
+
+    protected $sellerEntity;
 
     /**
      * @var string
@@ -40,6 +44,9 @@ class XEInvoice extends Job
         $this->documentTypeData = $documentTypeData;
 
         $this->params       = $params;
+
+        $this->sellerEntity = $this->getSellerEntity($documentTypeData);
+
     }
 
     /**
@@ -107,16 +114,24 @@ class XEInvoice extends Job
 
         if ($eInvoiceEntity->getStatus() !== EInvoice\Status::STATUS_GENERATED)
         {
+            $newSellerEntity = $this->sellerEntity;
             if ($eInvoiceEntity->getDocumentType() === EInvoice\DocumentTypes::CRN)
             {
-                $isCorrectInvoiceNumber = $this->XEInvoiceCore->correctInvoiceNumberForCreditNote($eInvoiceEntity);
+                [$isCorrectInvoiceNumber, $newSellerEntity] = $this->XEInvoiceCore->
+                correctInvoiceNumberForCreditNote($eInvoiceEntity, $newSellerEntity);
 
                 if ($isCorrectInvoiceNumber === false)
                 {
                     return;
                 }
             }
-            [$response, $failure] = $this->XEInvoiceCore->generateEInvoice($eInvoiceEntity);
+            if($newSellerEntity === Constants::RSPL)
+            {
+                [$response, $failure] = $this->XEInvoiceCore->generateEInvoice($eInvoiceEntity, $newSellerEntity);
+            }
+            else {
+                return;
+            }
 
             if ($failure === false) {
 
@@ -191,5 +206,26 @@ class XEInvoice extends Job
         }
 
         return $data;
+    }
+
+    protected function getSellerEntity($documentTypeData)
+    {
+        foreach($documentTypeData as $type => $lineItems)
+        {
+            $accounts = array_except($lineItems, BankingInvoiceReport::COMBINED);
+
+            foreach ($accounts as $account => $attributes)
+            {
+                if($attributes[BankingInvoiceReport::ACCOUNT_TYPE] === 'direct'
+                and $attributes[BankingInvoiceReport::CHANNEL] === 'rbl')
+                {
+                    if($attributes[BankingInvoiceReport::AMOUNT] > 0)
+                    {
+                        return EInvoice\Constants::RSPL;
+                    }
+                }
+            }
+        }
+        return EInvoice\Constants::RZPL;
     }
 }

@@ -115,7 +115,7 @@ class XEInvoice extends Core
             return true;
         }
 
-        if(($item[BankingInvoiceReport::IGST] === 0) and ($item[BankingInvoiceReport::SGST] === 0) and ($item[BankingInvoiceReport::CGST] === 0))
+        if(($item[BankingInvoiceReport::IGST] == 0) and ($item[BankingInvoiceReport::SGST] == 0) and ($item[BankingInvoiceReport::CGST] == 0))
         {
             return true;
         }
@@ -172,7 +172,7 @@ class XEInvoice extends Core
         return ($fromTimestamp >= self::EINVOICE_START_TIMESTAMP);
     }
 
-    public function correctInvoiceNumberForCreditNote(Entity $eInvoiceEntity) : bool
+    public function correctInvoiceNumberForCreditNote(Entity $eInvoiceEntity, $sellerEntity)
     {
         $input = [
             Entity::MONTH          => $eInvoiceEntity->getMonth(),
@@ -198,19 +198,19 @@ class XEInvoice extends Core
             $invoiceTime = Carbon::createFromDate($input[Entity::YEAR],
                 $input[Entity::MONTH], 1, Timezone::IST)->startOfMonth()->subMonth();
 
-            $invoiceNumber = $this->getInvoiceNumberGreaterThanAmountAndRegisteredOnGSPPortal($creditNoteAmount,
+            [$invoiceNumber, $sellerEntity] = $this->getInvoiceNumberGreaterThanAmountAndRegisteredOnGSPPortal($creditNoteAmount,
                 $invoiceTime, $eInvoiceEntity);
 
             if (empty($invoiceNumber))
             {
-                return false;
+                return [false, $sellerEntity];
             }
 
             $eInvoiceEntity->invoice_number = $invoiceNumber;
 
             $eInvoiceEntity->save();
         }
-        return true;
+        return [true, $sellerEntity];
     }
 
     protected function getInvoiceNumberGreaterThanAmountAndRegisteredOnGSPPortal($creditNoteAmount, $invoiceTime, $eInvoiceEntity)
@@ -235,7 +235,7 @@ class XEInvoice extends Core
 
                 if (empty($isRegisteredOnGspPortal) === false)
                 {
-                    return $data[BankingInvoiceReport::INVOICE_NUMBER];
+                    return [$data[BankingInvoiceReport::INVOICE_NUMBER], Constants::RSPL];
                 }
             }
 
@@ -248,6 +248,6 @@ class XEInvoice extends Core
             'month'      => $eInvoiceEntity->getMonth(),
             'year'       => $eInvoiceEntity->getYear(),
         ]);
-        return null;
+        return [null, Constants::RSPL];
     }
 }

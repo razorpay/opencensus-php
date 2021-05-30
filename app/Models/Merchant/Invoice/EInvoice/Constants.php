@@ -59,6 +59,28 @@ final class Constants
     const RZP_PINCODE = 560030;
     const RZP_STATE_CODE = "29";
 
+    const RSPL = 'rspl';
+    const RZPL = 'rzpl';
+
+    const SELLER_ENTITY_DETAILS = [
+        self::RSPL       =>   [
+                            self::GSTIN         =>  '29AAGCR4375J1ZU',
+                            self::LEGAL_NAME    =>  'Razorpay Software Private Limited',
+                            self::ADDRESS_1     =>  'First Floor SJR Cyber 22 laskar hosur road Adugodi',
+                            self::LOCATION      =>  'Bangalore',
+                            self::PINCODE       =>   560030,
+                            self::STATE_CODE    =>  '29',
+        ],
+        self::RZPL      =>   [
+                            self::GSTIN         =>  '29AAKCR4702K1Z1',
+                            self::LEGAL_NAME    =>  'RZPX PRIVATE LIMITED',
+                            self::ADDRESS_1     =>  'First Floor SJR Cyber 22 laskar hosur road Adugodi',
+                            self::LOCATION      =>  'Bangalore',
+                            self::PINCODE       =>   560030,
+                            self::STATE_CODE    =>  '29',
+        ],
+    ];
+
     const REFERENCE_DETAILS = 'reference_details';
     const INVOICE_REMARKS = 'invoice_remarks';
     const INVOICE_PERIOD_START_DATE = 'invoice_period_start_date';

@@ -11,6 +11,7 @@ use RZP\Constants\Timezone;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payout\Entity as PayoutEntity;
+use RZP\Models\Report\Types\BankingInvoiceReport;
 use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Models\FundAccount\Validation\Entity as FAVEntity;
 
@@ -149,7 +150,21 @@ class Processor extends Base\Core
 
                       $data = $invoiceCore->getXEInvoiceData($this->month, $this->year, $merchant);
 
-                      $invoiceCore->dispatchForXEInvoice($data, $this->month, $this->year, $merchant->getId());
+                      $mismatchingSellerEntity = $this->isMismatchingSellerEntity($data);
+
+                      if($mismatchingSellerEntity === false)
+                      {
+                          $invoiceCore->dispatchForXEInvoice($data, $this->month, $this->year, $merchant->getId());
+                      }
+                      else {
+                          $this->trace->info(TraceCode::EINVOICE_MISMATCHING_SELLER_FOR_X,
+                              [
+                                  'merchant_id' => $this->merchant->getId(),
+                                  'month' => $this->month,
+                                  'year' => $this->year,
+                              ]
+                          );
+                      }
                     }
                }
                catch (\Throwable $e)
@@ -758,5 +773,41 @@ class Processor extends Base\Core
         else {
             return $date->endOfMonth();
         }
+    }
+
+    private function isMismatchingSellerEntity($invoiceData)
+    {
+        foreach($invoiceData[BankingInvoiceReport::ROWS] as $type => $lineItem)
+        {
+            $accounts = array_except($lineItem, BankingInvoiceReport::COMBINED);
+
+            $virtualAccountInvoiceAmount = 0;
+            $rblAccountInvoiceAmount = 0;
+
+            foreach ($accounts as $account => $attributes)
+            {
+                if($attributes[BankingInvoiceReport::ACCOUNT_TYPE] === 'shared')
+                {
+                    if($attributes[BankingInvoiceReport::AMOUNT] > $virtualAccountInvoiceAmount)
+                    {
+                        $virtualAccountInvoiceAmount = $attributes[Entity::AMOUNT];
+                    }
+                }
+                else if($attributes[BankingInvoiceReport::ACCOUNT_TYPE] === 'direct'
+                    and $attributes[BankingInvoiceReport::CHANNEL] === 'rbl')
+                {
+                    if($attributes[BankingInvoiceReport::AMOUNT] > $rblAccountInvoiceAmount)
+                    {
+                        $rblAccountInvoiceAmount = $attributes[Entity::AMOUNT];
+                    }
+                }
+            }
+
+            if($rblAccountInvoiceAmount > 0 and $virtualAccountInvoiceAmount > 0)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }

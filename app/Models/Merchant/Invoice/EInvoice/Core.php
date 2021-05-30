@@ -48,7 +48,7 @@ class Core extends Base\Core
         return $eInvoiceEntity;
     }
 
-    public function generateEInvoice(Entity $eInvoiceEntity)
+    public function generateEInvoice(Entity $eInvoiceEntity, $sellerEntity = Constants::RSPL)
     {
         $input = null;
         $response = null;
@@ -59,7 +59,7 @@ class Core extends Base\Core
 
         try
         {
-            $input = $this->getEInvoiceRequestData($eInvoiceEntity);
+            $input = $this->getEInvoiceRequestData($eInvoiceEntity, $sellerEntity);
 
             $eInvoiceEntity->setStatus(Status::STATUS_INITIATED);
 
@@ -119,18 +119,18 @@ class Core extends Base\Core
         $this->repo->saveOrFail($eInvoiceEntity);
     }
 
-    public function getEInvoiceRequestData(Entity $eInvoiceEntity)
+    public function getEInvoiceRequestData(Entity $eInvoiceEntity, $sellerEntity = Constants::RSPL)
     {
         [$itemList, $valueDetails] = $this->getItemList($eInvoiceEntity);
 
         $data = [
-            Constants::ACCESS_TOKEN         => $this->getAccessToken(),
-            Constants::USER_GSTIN           => $this->getUserGstin(),
+            Constants::ACCESS_TOKEN         => $this->getAccessToken($sellerEntity),
+            Constants::USER_GSTIN           => $this->getUserGstin($sellerEntity),
             Constants::TRANSACTION_DETAILS  => [
                 Constants::SUPPLY_TYPE => Constants::B2B,
             ],
             Constants::DOCUMENT_DETAILS => $this->getDocumentDetails($eInvoiceEntity),
-            Constants::SELLER_DETAILS   => $this->getSellerDetails(),
+            Constants::SELLER_DETAILS   => $this->getSellerDetails($sellerEntity),
             Constants::BUYER_DETAILS    => $this->getBuyerDetails($eInvoiceEntity),
             Constants::VALUE_DETAILS    => $valueDetails,
             Constants::ITEM_LIST        => $itemList,
@@ -148,16 +148,16 @@ class Core extends Base\Core
         return $data;
     }
 
-    protected function getAccessToken()
+    protected function getAccessToken($sellerEntity)
     {
         $config = $this->app['config']->get('applications.einvoice.access_token');
 
-        return $config[$this->mode]['static_access_token'];
+        return $config[$sellerEntity][$this->mode]['static_access_token'];
     }
 
-    protected function getUserGstin()
+    protected function getUserGstin($sellerEntity)
     {
-        return Constants::RZP_GSTIN;
+        return Constants::SELLER_ENTITY_DETAILS[$sellerEntity][Constants::GSTIN];
     }
 
     protected function getDocumentDetails(Entity $eInvoiceEntity)
@@ -175,16 +175,17 @@ class Core extends Base\Core
         ];
     }
 
-    protected function getSellerDetails()
+    protected function getSellerDetails($sellerEntity)
     {
-        [$address1, $address2] = $this->getFormattedAddress(Constants::RZP_ADDRESS);
+        [$address1, $address2] = $this->getFormattedAddress(
+            Constants::SELLER_ENTITY_DETAILS[$sellerEntity][Constants::ADDRESS_1]);
 
         $data = [
-            Constants::GSTIN        => Constants::RZP_GSTIN,
-            Constants::LEGAL_NAME   => Constants::RZP_LEGAL_NAME,
-            Constants::LOCATION     => Constants::RZP_LOCATION,
-            Constants::PINCODE      => Constants::RZP_PINCODE,
-            Constants::STATE_CODE   => Constants::RZP_STATE_CODE,
+            Constants::GSTIN        => Constants::SELLER_ENTITY_DETAILS[$sellerEntity][Constants::GSTIN],
+            Constants::LEGAL_NAME   => Constants::SELLER_ENTITY_DETAILS[$sellerEntity][Constants::LEGAL_NAME],
+            Constants::LOCATION     => Constants::SELLER_ENTITY_DETAILS[$sellerEntity][Constants::LOCATION],
+            Constants::PINCODE      => Constants::SELLER_ENTITY_DETAILS[$sellerEntity][Constants::PINCODE],
+            Constants::STATE_CODE   => Constants::SELLER_ENTITY_DETAILS[$sellerEntity][Constants::STATE_CODE],
             Constants::ADDRESS_1    => $address1,
         ];
 
