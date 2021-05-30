@@ -75,7 +75,7 @@ class Core extends Base\Core
      * @param Entity $merchantMapping
      * @param string $applicationType
      */
-    private function createOutboxJob(string $jobName, Entity $merchantMapping, string $applicationType)
+    public function createOutboxJob(string $jobName, Entity $merchantMapping, string $applicationType)
     {
         if ($applicationType === MerchantApplications\Entity::MANAGED)
         {

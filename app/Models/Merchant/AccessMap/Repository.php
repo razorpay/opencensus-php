@@ -5,9 +5,9 @@ namespace RZP\Models\Merchant\AccessMap;
 use DB;
 
 use RZP\Models\Base;
-use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
+use \RZP\Models\Merchant\MerchantApplications;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
 use RZp\Models\Merchant\MerchantApplications as MerchantApp;
 
@@ -203,4 +203,20 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getAllMappingsByApplicationType(string $appType, string $afterId, int $chunk)
+    {
+        $accessMapEntityId = $this->repo->merchant_access_map->dbColumn("entity_id");
+        $accessMapId = $this->repo->merchant_access_map->dbColumn(Entity::ID);
+        $merchantApplicationId = $this->repo->merchant_application->dbColumn(Entity::APPLICATION_ID);
+
+        return $this->newQuery()
+            ->select($accessMapId)
+            ->where($accessMapId, '>', $afterId)
+            ->where(Entity::ENTITY_TYPE, Entity::APPLICATION)
+            ->where(MerchantApplications\Entity::TYPE, $appType)
+            ->join(Table::MERCHANT_APPLICATION, $accessMapEntityId, '=', $merchantApplicationId)
+            ->orderBy($accessMapId)
+            ->take($chunk)
+            ->get();
+    }
 }

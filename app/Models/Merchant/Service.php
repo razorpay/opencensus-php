@@ -120,6 +120,12 @@ class Service extends Base\Service
         'source.mids.*' => 'string|unsigned_id',
     ];
 
+    const IMPERSONATION_ACCESS_MAPS_REQUEST_RULES = [
+        'source'       => 'array',
+        'source.ids'   => 'array|min:1|max:10000',
+        'source.ids.*' => 'string|unsigned_id',
+    ];
+
     const MERCHANT_DATA_NOT_FOUND_ON_DRUID              = 'merchant data not found on druid';
     const SEGMENT_DATA_USER_BUSINESS_CATEGORY           = 'user_business_category';
     const SEGMENT_DATA_ACTIVATION_STATUS                = 'activation_status';
@@ -5538,6 +5544,23 @@ class Service extends Base\Service
 
         $source  = new AccessMap\MigrateSource;
         $target  = new AccessMap\MigrateStorkTarget;
+        $migrate = new Migrate($source, $target);
+
+        $sourceOpts = $input['source'] ?? [];
+        $targetOpts = $input['target'] ?? [];
+
+        return $migrate->migrateAsync($sourceOpts, $targetOpts, false);
+    }
+
+    public function migrateImpersonationGrants(array $input): array
+    {
+        $this->trace->info(TraceCode::IMPERSONATION_MIGRATE_REQUEST, $input);
+
+        (new JitValidator)->rules(self::IMPERSONATION_ACCESS_MAPS_REQUEST_RULES)
+            ->caller($this)->input($input)->validate();
+
+        $source  = new AccessMap\MigrateImpersonationSource;
+        $target  = new AccessMap\MigrateKongTarget;
         $migrate = new Migrate($source, $target);
 
         $sourceOpts = $input['source'] ?? [];

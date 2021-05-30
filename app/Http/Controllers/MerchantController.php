@@ -1980,6 +1980,13 @@ class MerchantController extends Controller
         return ApiResponse::json($summary);
     }
 
+    public function migrateImpersonationGrants()
+    {
+        $summary = $this->service()->migrateImpersonationGrants($this->input);
+
+        return ApiResponse::json($summary);
+    }
+
     public function postPartnerAccessMapBulk()
     {
         $input = Request::all();

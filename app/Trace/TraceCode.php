@@ -2253,6 +2253,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ACCESS_MAP_EVENT_SAVED                                = 'ACCESS_MAP_EVENT_SAVED';
     const ACCESS_MAP_EVENT_DELETED                              = 'ACCESS_MAP_EVENT_DELETED';
     const BOOTSTRAP_ACCESS_MAPS_CACHE_REQUEST                   = 'BOOTSTRAP_ACCESS_MAPS_CACHE_REQUEST';
+    const IMPERSONATION_MIGRATE_REQUEST                         = 'IMPERSONATION_MIGRATE_REQUEST';
 
     const GET_SOURCE_TRANSACTION_DETAILS                        = 'GET_SOURCE_TRANSACTION_DETAILS';
 
