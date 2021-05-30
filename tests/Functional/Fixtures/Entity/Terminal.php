@@ -326,7 +326,19 @@ class Terminal extends Base
         return $this->create($attributes);
     }
 
-    public function createPayuTerminal()
+    public function createPayuIntentTerminal()
+    {
+        $attributes = [
+            'type'                      => [
+                'non_recurring' => '1',
+                'pay'           => '1',
+            ]
+        ];
+
+        return $this->createPayuTerminal($attributes);
+    }
+
+    public function createPayuTerminal(array $override)
     {
         $attributes = [
             'merchant_id'           => '10000000000000',
@@ -338,7 +350,7 @@ class Terminal extends Base
             'network_category'      => 'ecommerce',
             'gateway_secure_secret' => 'secret',
         ];
-
+        $attributes = array_merge($attributes, $override);
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 

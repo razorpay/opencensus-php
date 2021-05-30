@@ -2409,6 +2409,7 @@ class Gateway
         Gateway::UPI_YESBANK,
         Gateway::CASHFREE,
         Gateway::PAYTM,
+        Gateway::PAYU,
     ];
 
     public static $upiQrGateways = [

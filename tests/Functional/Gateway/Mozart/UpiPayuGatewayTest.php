@@ -41,9 +41,4 @@ class UpiPayuGatewayTest extends TestCase
 
         $this->fixtures->merchant->activate();
     }
-
-    public function testUpiIntentPaymentCreateSuccess()
-    {
-        $this->markTestSkipped('Skipping Not implemented right now will remove once implement');
-    }
 }
