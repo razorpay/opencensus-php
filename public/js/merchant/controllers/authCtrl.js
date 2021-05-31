@@ -745,9 +745,11 @@ app
       }
 
       // segment identify call to bind our backend userid with segment's userId
-      function segmentUserIdentify(idObject) {
-        if (idObject && idObject.id) {
-          tracking.segmentIdentify(idObject.id);
+      function segmentUserIdentify(userInfo) {
+        try {
+          tracking.segmentIdentify(userInfo.user.id, { mid: userInfo.current });
+        } catch (e) {
+          console.log('Segment identify error:', e);
         }
       }
 
@@ -775,7 +777,6 @@ app
               user
                 .identity(true)
                 .then(function (userDetails) {
-                  segmentUserIdentify(userDetails.user);
                   userIdentitySuccess(userDetails);
                 })
                 .catch(function (errors) {
@@ -930,7 +931,6 @@ app
             user
               .identity(true)
               .then(function (userDetails) {
-                segmentUserIdentify(userDetails.user);
                 userIdentitySuccess(userDetails);
               })
               .catch(function (errors) {
@@ -950,6 +950,7 @@ app
       };
 
       const userIdentitySuccess = function (userDetails) {
+        segmentUserIdentify(userDetails);
         setCookie('midExists', !!userDetails.current);
         var signinSuccessCb = authCallbacks.getSigninCallback();
 
@@ -1260,7 +1261,7 @@ app
                 $scope.signup.mid = data.current;
                 setCookie('midExists', !!data.current);
 
-                segmentUserIdentify(data.user);
+                segmentUserIdentify(data);
                 fireDLSuccessEvents('signup.create_account', {
                   mode: $scope.eventsMode,
                   version: 1,
@@ -2254,8 +2255,6 @@ app
               });
             }
 
-            segmentUserIdentify(data.data);
-
             $scope.successFullSignin();
           } else {
             // if login fails but captchaMode is v3 and fails due to low score, trigger v2
@@ -2379,6 +2378,7 @@ app
         user
           .identity(true)
           .then(function (userDetails) {
+            segmentUserIdentify(userDetails);
             var signinSuccessCb = authCallbacks.getSigninCallback();
 
             setExperimentsFlags(userDetails.experiments); // set razorX experiment flags
