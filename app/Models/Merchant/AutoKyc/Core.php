@@ -67,25 +67,6 @@ class Core extends Base\Core
             DEConstants::KYC_ID     => $entity->getKycId(),
         ];
 
-        $isPoiBvsRazorxExperimentEnable = (new Merchant\Core())->isRazorxExperimentEnable(
-            $this->merchant->getId(),
-            RazorxTreatment::BVS_AUTO_KYC);
-
-        if ($isPoiBvsRazorxExperimentEnable === true)
-        {
-            $payload = [
-                Constant::ARTEFACT_TYPE   => Constant::PERSONAL_PAN,
-                Constant::CONFIG_NAME     => Constant::PERSONAL_PAN,
-                Constant::VALIDATION_UNIT => BvsValidationConstants::IDENTIFIER,
-                Constant::DETAILS         => [
-                    Constant::PAN_NUMBER => $input[DEConstants::PAN_NUMBER],
-                    Constant::NAME       => $input[DEConstants::PROMOTER_PAN_NAME],
-                ],
-            ];
-
-            (new Bvs\Core())->verify($entity->getEntityId(), $payload);
-        }
-
         $response = $this->process($poiInput, DEConstants::POI);
 
         $poiVerifier = new POIVerifier($input[DEConstants::PROMOTER_PAN_NAME], $response);

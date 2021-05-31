@@ -46,6 +46,8 @@ class Factory
             new LlpinAuth($merchant, $merchantDetails),
             new CinAuth($merchant, $merchantDetails),
             new BankAccount($merchant, $merchantDetails),
+            new CompanyPan($merchant, $merchantDetails),
+            new PersonalPan($merchant, $merchantDetails)
         ];
     }
 }

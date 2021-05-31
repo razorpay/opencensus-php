@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\BvsValidation\Entity;
 use RZP\Models\Merchant\BvsValidation\Constants;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 
@@ -15,12 +16,11 @@ class POI extends BaseStatusUpdater
      * POI constructor.
      *
      * @param MerchantEntity $merchant
-     * @param string         $documentType
-     * @param string         $consumedValidationId
+     * @param Entity         $consumedValidation
      */
-    public function __construct(MerchantEntity $merchant, string $documentType, string $consumedValidationId)
+    public function __construct(MerchantEntity $merchant, Entity $consumedValidation)
     {
-        parent::__construct($merchant, $documentType, $consumedValidationId);
+        parent::__construct($merchant, $consumedValidation);
 
         $this->documentTypeStatusKey = Detail\Entity::POI_VERIFICATION_STATUS;
     }
@@ -53,5 +53,12 @@ class POI extends BaseStatusUpdater
         $this->updateMerchantContext();
 
         $this->sendConsumedValidationResultEvent();
+    }
+
+    public function updateStatusToPending(): void
+    {
+        $this->merchantDetails->setAttribute($this->documentTypeStatusKey, Constants::PENDING);
+
+        $this->updateStakeholderStatusIfApplicable(Constants::PENDING);
     }
 }

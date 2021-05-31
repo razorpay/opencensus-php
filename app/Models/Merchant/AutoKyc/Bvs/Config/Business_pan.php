@@ -18,7 +18,7 @@ class Business_pan extends BaseConfig
             '0' => [
                 'rule_type' => 'string_comparison_rule',
                 'rule_def'  => [
-                    'fuzzy_wuzzy' => [
+                    'fuzzy_suzzy' => [
                         [
                             'var' => 'artefact.details.name.value'
                         ],
@@ -31,5 +31,4 @@ class Business_pan extends BaseConfig
             ],
         ],
     ];
-
 }

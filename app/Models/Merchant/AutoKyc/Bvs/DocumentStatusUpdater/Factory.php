@@ -27,7 +27,6 @@ class Factory
     public function getInstance(MerchantEntity $merchant, ValidationEntity $validation): StatusUpdater
     {
         $artefactType = $validation->getArtefactType();
-        $validationId = $validation->getValidationId();
 
         switch ($artefactType)
         {
@@ -37,22 +36,28 @@ class Factory
                 return new DefaultStatusUpdater(
                     $merchant,
                     Entity::CIN_VERIFICATION_STATUS,
-                    $artefactType,
-                    $validationId);
+                    $validation);
 
             case Constant::GSTIN:
 
                 return new DefaultStatusUpdater(
                     $merchant,
                     Entity::GSTIN_VERIFICATION_STATUS,
-                    $artefactType,
-                    $validationId);
+                    $validation);
 
             case Constant::BUSINESS_PAN :
 
-                return $this->getStatusUpdater($merchant,
-                                               $validation,
-                                               Entity::COMPANY_PAN_DOC_VERIFICATION_STATUS);
+                $documentStatusKey = Entity::COMPANY_PAN_VERIFICATION_STATUS;
+
+                if ($validation->getValidationUnit() === Constants::PROOF)
+                {
+                    $documentStatusKey = Entity::COMPANY_PAN_DOC_VERIFICATION_STATUS;
+                }
+
+                return new DefaultStatusUpdater(
+                    $merchant,
+                    $documentStatusKey,
+                    $validation);
 
             case Constant::PERSONAL_PAN :
 
@@ -69,21 +74,20 @@ class Factory
             case Constant::VOTERS_ID:
             case Constant::PASSPORT:
 
-                return new POA($merchant, $artefactType, $validationId);
+                return new POA($merchant, $validation);
 
             case Constant::SHOP_ESTABLISHMENT :
 
                 return new DefaultStatusUpdater(
                     $merchant,
                     Entity::SHOP_ESTABLISHMENT_VERIFICATION_STATUS,
-                    $artefactType,
-                    $validationId);
+                    $validation);
 
             case Constant::MSME:
 
                 return new DefaultStatusUpdater(
                     $merchant, Entity::MSME_DOC_VERIFICATION_STATUS,
-                    $artefactType, $validationId);
+                    $validation);
 
             default :
 
@@ -111,12 +115,11 @@ class Factory
             return new DefaultStatusUpdater(
                 $merchant,
                 StakeholderEntity::AADHAAR_VERIFICATION_WITH_PAN_STATUS,
-                $artefactType,
-                $validationId,
+                $validation,
                 E::STAKEHOLDER);
         }
 
-        return new POA($merchant, $artefactType, $validationId);
+        return new POA($merchant, $validation);
     }
 
     /**
@@ -127,69 +130,30 @@ class Factory
      */
     public function getStatusUpdaterForPersonalPan(MerchantEntity $merchant, ValidationEntity $validation): StatusUpdater
     {
-        $artefactType = $validation->getArtefactType();
-        $validationId = $validation->getValidationId();
-
         if ($validation->getValidationUnit() === Constants::PROOF)
         {
             return new DefaultStatusUpdater(
                 $merchant,
                 Entity::PERSONAL_PAN_DOC_VERIFICATION_STATUS,
-                $artefactType,
-                $validationId);
+                $validation);
         }
 
-        return new POI($merchant, $artefactType, $validationId);
-    }
-
-    /**
-     * @param MerchantEntity   $merchant
-     * @param ValidationEntity $validation
-     *
-     * @param string           $documentTypeStatusKey
-     *
-     * @return StatusUpdater
-     * @throws LogicException
-     */
-    public function getStatusUpdater(MerchantEntity $merchant, ValidationEntity $validation, string $documentTypeStatusKey): StatusUpdater
-    {
-        $artefactType   = $validation->getArtefactType();
-        $validationUnit = $validation->getValidationUnit();
-        $validationId   = $validation->getValidationId();
-
-        if ($validationUnit === Constants::PROOF)
-        {
-
-            return new DefaultStatusUpdater(
-                $merchant,
-                $documentTypeStatusKey,
-                $artefactType,
-                $validationId);
-        }
-
-        throw new LogicException(
-            ErrorCode::SERVER_ERROR_UNHANDLED_ARTEFACT_TYPE,
-            null,
-            [
-                ValidationEntity::ARTEFACT_TYPE   => $artefactType,
-                ValidationEntity::VALIDATION_UNIT => $validationUnit
-            ]);
+        return new DefaultStatusUpdater(
+        $merchant,
+        Entity::POI_VERIFICATION_STATUS,
+        $validation);
     }
 
     public function getStatusUpdaterForBankAccount(MerchantEntity $merchant, ValidationEntity $validation): StatusUpdater
     {
-        $artefactType = $validation->getArtefactType();
-        $validationId = $validation->getValidationId();
-
         if ($validation->getValidationUnit() === Constants::PROOF)
         {
             return new DefaultStatusUpdater(
                 $merchant,
                 Entity::BANK_DETAILS_DOC_VERIFICATION_STATUS,
-                $artefactType,
-                $validationId);
+                $validation);
         }
 
-        return new BankAccount($merchant, $artefactType, $validationId);
+        return new BankAccount($merchant, $validation);
     }
 }

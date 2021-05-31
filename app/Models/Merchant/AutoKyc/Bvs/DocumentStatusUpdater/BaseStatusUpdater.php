@@ -14,9 +14,9 @@ use RZP\Models\Merchant\Stakeholder;
 use RZP\Models\Merchant\Detail\Core;
 use RZP\Models\Merchant\Detail\Status;
 use RZP\Models\Merchant\RazorxTreatment;
-use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\BvsValidation\Entity;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\BvsValidation\Constants;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
@@ -58,6 +58,11 @@ abstract class BaseStatusUpdater implements StatusUpdater
     /**
      * @var string
      */
+    protected $validationUnit;
+
+    /**
+     * @var string
+     */
     protected $documentTypeStatusKey;
 
     const VALIDATION_STATUS_FUNCTION_MAPPING = [
@@ -71,10 +76,9 @@ abstract class BaseStatusUpdater implements StatusUpdater
      * BaseStatusUpdater constructor.
      *
      * @param MerchantEntity $merchant
-     * @param string         $artefactType
-     * @param string         $consumedValidationId
+     * @param Validation     $consumedValidation
      */
-    public function __construct(MerchantEntity $merchant, string $artefactType, string $consumedValidationId)
+    public function __construct(MerchantEntity $merchant, Entity $consumedValidation)
     {
         $this->app = App::getFacadeRoot();
 
@@ -88,9 +92,11 @@ abstract class BaseStatusUpdater implements StatusUpdater
 
         $this->merchantId = $this->merchantDetails->getMerchantId();
 
-        $this->artefactType = $artefactType;
+        $this->artefactType = $consumedValidation->getArtefactType();
 
-        $this->consumedValidationId = $consumedValidationId;
+        $this->validationUnit = $consumedValidation->getValidationUnit();
+
+        $this->consumedValidationId = $consumedValidation->getValidationId();
     }
 
     /**
@@ -106,7 +112,7 @@ abstract class BaseStatusUpdater implements StatusUpdater
             return;
         }
 
-        $merchantId =  $this->merchantDetails->getId();
+        $merchantId = $this->merchantDetails->getId();
 
         $isSystemBasedNeedsClarificationEnabled = (new MerchantCore())->isRazorxExperimentEnable(
             $merchantId,
@@ -266,7 +272,8 @@ abstract class BaseStatusUpdater implements StatusUpdater
 
     /**
      * @param Validation $validation
-     * @param string $documentValidationStatus
+     * @param string     $documentValidationStatus
+     *
      * @return array
      */
     protected function getValidationEventProperties(Validation $validation, string $documentValidationStatus): array

@@ -65,9 +65,14 @@ class Factory
 
         $artefactType = Constant::FIELD_ARTEFACT_DETAILS_MAP[$referenceKey][Constant::ARTEFACT_TYPE] ?? '';
 
+        $validationUnit = Constant::FIELD_ARTEFACT_DETAILS_MAP[$referenceKey][Constant::VALIDATION_UNIT] ?? '';
+
         $validation = $this->repo->bvs_validation->getLatestArtefactValidationForOwnerId(
             $this->merchantDetails->getMerchantId(),
-            $artefactType);
+            $artefactType,
+            $validationUnit,
+            Constant::MERCHANT
+        );
 
         if (empty($validation) === true)
         {

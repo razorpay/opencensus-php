@@ -16,16 +16,23 @@ class Repository extends Base\Repository
      * @param string $ownerId
      * @param string $artefactType
      *
+     * @param string $validationUnit
+     *
      * @return mixed
      */
-    public function getLatestArtefactValidationForOwnerId(string $ownerId, string $artefactType)
+    public function getLatestArtefactValidationForOwnerId(
+        string $ownerId, string $artefactType, string $validationUnit, string $ownerType)
     {
-        $ownerIdColumn      = $this->repo->bvs_validation->dbColumn(Entity::OWNER_ID);
-        $artefactTypeColumn = $this->repo->bvs_validation->dbColumn(Entity::ARTEFACT_TYPE);
+        $ownerIdColumn        = $this->repo->bvs_validation->dbColumn(Entity::OWNER_ID);
+        $artefactTypeColumn   = $this->repo->bvs_validation->dbColumn(Entity::ARTEFACT_TYPE);
+        $validationUnitColumn = $this->repo->bvs_validation->dbColumn(Entity::VALIDATION_UNIT);
+        $ownerTypeColumn    = $this->repo->bvs_validation->dbColumn(Entity::OWNER_TYPE);
 
         return $this->newQuery()
                     ->where($ownerIdColumn, $ownerId)
                     ->where($artefactTypeColumn, $artefactType)
+                    ->where($validationUnitColumn, $validationUnit)
+                    ->where($ownerTypeColumn, $ownerType)
                     ->orderBy(Entity::CREATED_AT, 'desc')
                     ->first();
     }

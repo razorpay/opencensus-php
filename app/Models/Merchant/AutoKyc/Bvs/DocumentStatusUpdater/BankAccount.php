@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\BvsValidation\Entity;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 
 class BankAccount extends DefaultStatusUpdater
@@ -11,14 +12,12 @@ class BankAccount extends DefaultStatusUpdater
      * BankAccount constructor.
      *
      * @param MerchantEntity $merchant
-     * @param string         $artefactType
-     * @param string         $consumedValidationId
+     * @param Entity         $consumedValidation
      */
     public function __construct(MerchantEntity $merchant,
-                                string $artefactType,
-                                string $consumedValidationId)
+                                Entity $consumedValidation)
     {
-        parent::__construct($merchant, Detail\Entity::BANK_DETAILS_VERIFICATION_STATUS, $artefactType, $consumedValidationId);
+        parent::__construct($merchant, Detail\Entity::BANK_DETAILS_VERIFICATION_STATUS, $consumedValidation);
     }
 
     public function getUpdatedActivationStatus(): string

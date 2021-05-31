@@ -171,6 +171,10 @@ class Constant
             self::ARTEFACT_TYPE   => self::BANK_ACCOUNT,
             self::VALIDATION_UNIT => Constants::IDENTIFIER,
         ],
+        Constant::BUSINESS_PAN => [
+            self::ARTEFACT_TYPE   => self::BUSINESS_PAN,
+            self::VALIDATION_UNIT => Constants::IDENTIFIER,
+        ],
     ];
 
     const ENABLE_VERIFICATION_AFTER_FORM_SUBMISSION = [
@@ -184,5 +188,6 @@ class Constant
         Entity::BANK_ACCOUNT_NUMBER       => [
             self::RAZORX_EXPERIMENT => RazorxTreatment::BVS_PENNY_TESTING,
         ],
+        Constant::BUSINESS_PAN            => [],
     ];
 }

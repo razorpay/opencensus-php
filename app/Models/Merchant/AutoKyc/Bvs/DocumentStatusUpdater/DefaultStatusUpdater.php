@@ -7,6 +7,7 @@ use App;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\BvsValidation\Entity;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\BvsValidation\Constants;
 use RZP\Models\Merchant\Entity as MerchantEntity;
@@ -28,17 +29,15 @@ class DefaultStatusUpdater extends BaseStatusUpdater
      *
      * @param MerchantEntity $merchant
      * @param string $documentTypeStatusKey
-     * @param string $artefactType
-     * @param string $consumedValidationId
+     * @param Entity $consumedValidation
      * @param string $entity
      */
     public function __construct(MerchantEntity $merchant,
                                 string $documentTypeStatusKey,
-                                string $artefactType,
-                                string $consumedValidationId,
+                                Entity $consumedValidation,
                                 string $entity=E::MERCHANT_DETAIL)
     {
-        parent::__construct($merchant, $artefactType, $consumedValidationId);
+        parent::__construct($merchant, $consumedValidation);
 
         $this->documentTypeStatusKey = $documentTypeStatusKey;
 
@@ -49,7 +48,10 @@ class DefaultStatusUpdater extends BaseStatusUpdater
     {
         $validation = $this->repo->bvs_validation->getLatestArtefactValidationForOwnerId(
             $this->merchantId,
-            $this->artefactType);
+            $this->artefactType,
+            $this->validationUnit,
+            Constant::MERCHANT
+        );
 
         if (empty($validation) === false)
         {
