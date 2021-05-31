@@ -587,7 +587,7 @@ class DefaultMethodsForCategory
             ],
             '8661'  =>  [
                 Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
+                    self::BLACKLISTED_METHODS => [ENTITY::AMEX, Entity::EMI],
                     self::GREYLISTED_METHODS =>[],
                     self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
                 ]
