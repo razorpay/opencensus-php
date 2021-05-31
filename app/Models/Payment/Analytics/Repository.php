@@ -2,10 +2,13 @@
 
 namespace RZP\Models\Payment\Analytics;
 
+use RZP\Constants\Environment;
 use RZP\Models\Base;
 use RZP\Models\Payment;
-use RZP\Models\Payment\NewAnalytics\Transformer;
+use RZP\Base\ConnectionType;
 use RZP\Models\Payment\NewAnalytics;
+use RZP\Models\Base\PublicCollection;
+use RZP\Models\Payment\NewAnalytics\Transformer;
 
 class Repository extends Base\Repository
 {
@@ -27,6 +30,20 @@ class Repository extends Base\Repository
         $query->orderBy(Entity::PAYMENT_ID, 'desc');
     }
 
+    public function fetch(array $params,
+                          string $merchantId = null,
+                          string $connectionType = null): PublicCollection
+    {
+        // in prod, irrespective of connection in argument, for payment analytics we will always fetch from warehouse/tidb
+        if ($this->app['env'] === Environment::PRODUCTION)
+        {
+            $connectionType = ConnectionType::DATA_WAREHOUSE_NO_FALLBACK;
+        }
+
+        $entities = parent::fetch($params, $merchantId, $connectionType);
+
+        return $entities;
+    }
 
     // called for callback
     public function findForPayment($paymentId)

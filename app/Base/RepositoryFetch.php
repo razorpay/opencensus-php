@@ -231,6 +231,9 @@ trait RepositoryFetch
                     return $this->getDataWarehouseConnection();
                 }
                 return $this->getSlaveConnection();
+
+            case ConnectionType::DATA_WAREHOUSE_NO_FALLBACK:
+                return $this->getDataWarehouseConnectionNoFallback();
         }
 
         return null;

@@ -1063,6 +1063,20 @@ class Repository extends \Razorpay\Spine\Repository
         return $connection;
     }
 
+    protected function getDataWarehouseConnectionNoFallback()
+    {
+        if ($this->app['env'] === Environment::TESTING)
+        {
+            return Config::get('database.default');
+        }
+
+        $mode = $this->app['rzp.mode'];
+
+        $connection = ($mode === Mode::TEST) ? Connection::DATA_WAREHOUSE_TEST : Connection::DATA_WAREHOUSE_LIVE;
+
+        return $connection;
+    }
+
     protected function getDataWarehouseConnectionWithReplicationLagCheck()
     {
         if ($this->useDataWarehouseConnection(self::ASYNC_PROCESS_FETCH) === true)
