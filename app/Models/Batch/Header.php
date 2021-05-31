@@ -867,6 +867,16 @@ class Header
     const TERMINAL_CREATION_STATUS               = 'Status';
     const TERMINAL_CREATION_CAPABILITY           = 'Capability';
 
+    // Upi Terminal Onboarding Headers
+    const UPI_TERMINAL_ONBOARDING_MERCHANT_ID   =   'Merchant Id';
+    const UPI_TERMINAL_ONBOARDING_GATEWAY       =   'Gateway';
+    const UPI_TERMINAL_ONBOARDING_VPA           =   'Vpa';
+    const UPI_TERMINAL_ONBOARDING_GATEWAY_TERMINAL_ID  = 'Gateway Terminal ID';
+    const UPI_TERMINAL_ONBOARDING_GATEWAY_ACCESS_CODE  = 'Gateway Access Code';
+    const UPI_TERMINAL_ONBOARDING_EXPECTED             = 'Expected';
+    const UPI_TERMINAL_ONBOARDING_VPA_HANDLE           = 'Vpa Handle';
+
+
     // Pricing Rules Addition Headers
     const PRICING_RULE_MERCHANT_ID              = 'merchant_id';
     const PRICING_RULE_PRODUCT                  = 'product';
@@ -1256,6 +1266,29 @@ class Header
                 self::TERMINAL_CREATION_VISA_MPAN,
                 self::TERMINAL_CREATION_RUPAY_MPAN,
                 self::TERMINAL_CREATION_ACCOUNT_NUMBER,
+            ],
+        ],
+
+        Type::UPI_TERMINAL_ONBOARDING   =>  [
+            self::INPUT => [
+                self::UPI_TERMINAL_ONBOARDING_MERCHANT_ID,
+                self::UPI_TERMINAL_ONBOARDING_GATEWAY,
+                self::UPI_TERMINAL_ONBOARDING_VPA,
+                self::UPI_TERMINAL_ONBOARDING_GATEWAY_TERMINAL_ID,
+                self::UPI_TERMINAL_ONBOARDING_GATEWAY_ACCESS_CODE,
+                self::UPI_TERMINAL_ONBOARDING_EXPECTED,
+                self::UPI_TERMINAL_ONBOARDING_VPA_HANDLE,
+            ],
+            self::OUTPUT => [
+                self::UPI_TERMINAL_ONBOARDING_MERCHANT_ID,
+                self::UPI_TERMINAL_ONBOARDING_GATEWAY,
+                self::UPI_TERMINAL_ONBOARDING_VPA,
+                self::UPI_TERMINAL_ONBOARDING_GATEWAY_TERMINAL_ID,
+                self::UPI_TERMINAL_ONBOARDING_GATEWAY_ACCESS_CODE,
+                self::UPI_TERMINAL_ONBOARDING_EXPECTED,
+                self::UPI_TERMINAL_ONBOARDING_VPA_HANDLE,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
             ],
         ],
 

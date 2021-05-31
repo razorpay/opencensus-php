@@ -5193,7 +5193,7 @@ class Service extends Base\Service
 
         $currency = isset($input['currency_code']) ? [$input['currency_code']] : [];
 
-        $response = $this->app['terminals_service']->initiateOnboarding($id, $input['gateway'], null, $currency, $input);
+        $response = $this->app['terminals_service']->initiateOnboarding($id, $input['gateway'], null, null, $currency, $input);
 
         return $response;
     }

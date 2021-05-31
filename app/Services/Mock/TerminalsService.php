@@ -7,7 +7,7 @@ use RZP\Services\TerminalsService as BaseTerminalsService;
 class TerminalsService extends BaseTerminalsService
 {
 
-    public function initiateOnboarding(string $merchantId, string $gateway, $identifiers = null, array $currency = [], array $otherInputs = []): array
+    public function initiateOnboarding(string $merchantId, string $gateway, $identifiers = null, $features = null, array $currency = [], array $otherInputs = []): array
     {
         $terminals = $this->getTerminalsByMerchantIdAndGateway($merchantId, $gateway); // reusing the same terminal for all gateway onboarding tests
 
@@ -21,6 +21,9 @@ class TerminalsService extends BaseTerminalsService
                 break;
             case 'fulcrum':
                 $response['data']['gateway_acquirer'] = 'ratn';
+                break;
+            case 'upi_juspay':
+                $response['terminal'] = $terminals[0];
                 break;
             case 'wallet_paypal':
                 $response = [

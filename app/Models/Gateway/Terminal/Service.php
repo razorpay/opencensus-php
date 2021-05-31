@@ -95,7 +95,7 @@ class Service extends Base\Service
         };
 
         $terminalServiceResp = $this->app['terminals_service']->initiateOnboarding($merchant->getId(), $input['gateway'],
-            $identifiers, $currency);
+            $identifiers, null, $currency);
 
         $terminalId = $terminalServiceResp["terminal"]["id"];
 

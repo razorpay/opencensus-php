@@ -147,6 +147,8 @@ class Type
 
     const PAYOUT_LINK_BULK            = 'payout_link_bulk';
 
+    const UPI_TERMINAL_ONBOARDING     = 'upi_terminal_onboarding';
+
     //
     // Support admin action for bulk retrying refunds via FTA to custom sources
     //
@@ -206,6 +208,7 @@ class Type
         self::SUBMERCHANT_PARTNER_CONFIG_UPSERT,
         self::SUBMERCHANT_TYPE_UPDATE,
         self::RETRY_REFUNDS_TO_BA,
+        self::UPI_TERMINAL_ONBOARDING,
         self::WEBSITE_CHECKER,
     ];
 
@@ -289,6 +292,7 @@ class Type
         self::ADJUSTMENT,
         self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG,
         self::CREDIT,
+        self::UPI_TERMINAL_ONBOARDING,
     ];
 
     /**
@@ -383,6 +387,7 @@ class Type
         self::REFUND,
         self::LINKED_ACCOUNT_CREATE,
         self::RETRY_REFUNDS_TO_BA,
+        self::UPI_TERMINAL_ONBOARDING,
         self::PAYMENT_TRANSFER,
         self::RECURRING_CHARGE_AXIS,
     ];
@@ -430,6 +435,7 @@ class Type
         self::REFUND,
         self::LINKED_ACCOUNT_CREATE,
         self::RETRY_REFUNDS_TO_BA,
+        self::UPI_TERMINAL_ONBOARDING,
         self::PAYMENT_TRANSFER,
         self::SUB_MERCHANT,
         self::RECURRING_CHARGE_AXIS,

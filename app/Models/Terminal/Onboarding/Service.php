@@ -13,12 +13,14 @@ use RZP\Models\Terminal\Status;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
+use RZP\Error\PublicErrorCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Gateway;
 use RZP\Exception\BaseException;
 use RZP\Models\Mpan\Entity as MpanEntity;
 use RZP\Models\Gateway\Terminal\Constants;
 use RZP\Models\Terminal\Entity as TerminalEntity;
+use RZP\Models\Batch\Processor\UpiTerminalOnboarding;
 use RZP\Models\Gateway\Terminal\Service as GatewayTerminalService;
 
 class Service extends Base\Service
@@ -166,6 +168,71 @@ class Service extends Base\Service
         $response = $this->app['terminals_service']->initiateOnboarding($merchant->getId(), $input['gateway'], null, [], $input);
 
         return $response;
+    }
+
+    public function postUpiTerminalOnboardingBulk($input)
+    {
+        $response = new Base\PublicCollection;
+
+        foreach ($input as $row)
+        {
+            $rowOutput = $this->processUpiTerminalCreationBulkRow($row);
+
+            $response->add($rowOutput);
+        }
+
+        return $response;
+    }
+
+    public function processUpiTerminalCreationBulkRow(array $row)
+    {
+        $this->trace->info(
+            TraceCode::UPI_TERMINAL_ONBOARDING_REQUEST,
+            [
+                'row'   =>  $row
+            ]);
+
+        $result = [
+            Constants::IDEMPOTENCY_KEY        => $row[Constants::IDEMPOTENCY_KEY],
+            Constants::BATCH_SUCCESS          => false,
+            Constants::BATCH_HTTP_STATUS_CODE => 500,
+            Constants::TERMINAL_ID            => '',
+            Constants::BATCH_ERROR => [
+                Constants::BATCH_ERROR_CODE        => '',
+                Constants::BATCH_ERROR_DESCRIPTION => '',
+            ],
+        ];
+
+        $result = array_merge($result, $row);
+
+        try
+        {
+            (new UpiTerminalOnboarding())->processEntry($row);
+
+            $result[Constants::BATCH_SUCCESS] = true;
+            $result[Constants::TERMINAL_ID]  =  $row[Constants::TERMINAL_ID];
+            $result[Constants::BATCH_HTTP_STATUS_CODE] = 201;
+        }
+        catch(BaseException $exception)
+        {
+            $result[Constants::BATCH_ERROR] = [
+                Constants::BATCH_ERROR_DESCRIPTION => $exception->getMessage(),
+                Constants::BATCH_ERROR_CODE => $exception->getPublicError(),
+            ];
+
+            $result[Constants::BATCH_HTTP_STATUS_CODE] = $exception->getCode();
+        }
+        catch (\Throwable $throwable)
+        {
+            $result[Constants::BATCH_ERROR] = [
+                Constants::BATCH_ERROR_DESCRIPTION => $throwable->getMessage(),
+                Constants::BATCH_ERROR_CODE => PublicErrorCode::SERVER_ERROR,
+            ];
+
+            $result[Constants::BATCH_HTTP_STATUS_CODE] = $throwable->getCode();
+        }
+
+        return $result;
     }
 
     public function processTerminalOnboardCallback(string $gateway, array $input)

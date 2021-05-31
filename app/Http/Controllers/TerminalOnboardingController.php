@@ -55,6 +55,15 @@ class TerminalOnboardingController extends Controller
         return $response;
     }
 
+    public function postUpiTerminalOnboardingBulk()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->postUpiTerminalOnboardingBulk($input);
+
+        return ApiResponse::json($response->toArrayWithItems());
+    }
+
     public function postTerminalOnboardCallback(string $gateway, string $mode)
     {
         $input = Request::all();

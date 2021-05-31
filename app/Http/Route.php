@@ -394,6 +394,7 @@ class Route
         'terminal_migrate_cron'                    => ['post',     'terminals/migrate_cron',                         'TerminalController@postTerminalsMigrateCron'                       ],
         'terminal_create_bulk'                     => ['post',     'terminals/bulk',                                 'TerminalController@postTerminalsBulk'                              ],
         'terminal_service_sync_delete'             => ['post',     'terminals/sync/deleted',                         'TerminalController@syncDeletedTerminalsOnTerminalService'          ],
+        'upi_terminal_onboarding_bulk'             => ['post',     'upi_terminal_onboarding/bulk',                   'TerminalOnboardingController@postUpiTerminalOnboardingBulk'                  ],
         // terminal service proxies
         'terminals_proxy_delete_submerchant'       => ['delete',   'terminals/proxy/terminal/submerchant',           'TerminalController@proxyV1TerminalService'                         ],
         'terminals_proxy_create_submerchant'       => ['post',     'terminals/proxy/terminal/submerchant',           'TerminalController@proxyV1TerminalService'                         ],
@@ -3169,6 +3170,7 @@ class Route
         'credits_create_bulk_batch',
         'terminal_create_bulk',
         'mpans_bulk',
+        'upi_terminal_onboarding_bulk',
         'payment_links_bulk_expire',
         'fts_bulk_attempts_initiate',
         'fts_bulk_beneficiary_initiate',
@@ -9194,6 +9196,7 @@ class Route
             'credits_create_bulk_batch',
             'terminal_create_bulk',
             'mpans_bulk',
+            'upi_terminal_onboarding_bulk',
             'banking_account_activation_details_via_batch',
             'create_payment_config_bulk_via_batch',
             'linked_account_create_batch',
