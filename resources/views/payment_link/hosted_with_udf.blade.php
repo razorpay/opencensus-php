@@ -7,6 +7,7 @@
     $dark_theme_color           = '#383838';
     $light_theme_color          = '#efefef';
     $is_error_view              = isset($request_params['error']['description']);
+    $is_performance_optimized   = $data['view_preferences']['page_load_optimization_enabled'] === 'on' ? true : false;
 ?>
 
 
@@ -86,7 +87,9 @@
             <script src="https://cdn.razorpay.com/static/analytics/bundle.js" defer></script>
             <script src="https://cdn.razorpay.com/static/assets/color.js"></script>
             <script src="{{env('AWS_CF_CDN_URL')}}/static/hosted/wysiwyg.js" onload="renderPaymentPage()" async defer></script>
-            <script src="https://checkout.razorpay.com/v1/checkout.js" async defer></script>
+            @if ($is_performance_optimized === false) 
+                <script src="https://checkout.razorpay.com/v1/checkout.js" async defer></script>
+            @endif
         @else
             @include('payment_link.partials.post_screen')
         @endif
@@ -102,5 +105,15 @@
                 </div>
             @endif
         </div>
+        <!-- Adding checkout scripts after initial load -->
+        @if ($is_error_view === false and $is_performance_optimized === true)
+            <script>
+                window.addEventListener('load', function() {
+                    var script = document.createElement("script");
+                    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+                    document.body.appendChild(script);
+                });
+            </script>
+        @endif
     </body>
 </html>
