@@ -3,9 +3,13 @@
 namespace Functional\Merchant\Products;
 
 use Mail;
+use Event;
 use RZP\Constants\Mode;
 use RZP\Models\User\Role;
+use RZP\Models\Merchant\Account;
 use Illuminate\Http\UploadedFile;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -16,6 +20,7 @@ class PaymentGatewayConfigTest extends OAuthTestCase
     use PartnerTrait;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
+    use WebhookTrait;
 
     const RZP_ORG = '100000razorpay';
 
@@ -23,6 +28,7 @@ class PaymentGatewayConfigTest extends OAuthTestCase
     {
         $this->testDataFilePath = __DIR__ . '/helpers/PaymentGatewayConfigTestData.php';
         parent::setUp();
+        $this->mockStorkService();
     }
 
     public function testCreateDefaultPaymentGatewayConfig()
@@ -309,6 +315,61 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
     }
 
+    public function testPartnerProductStatusEvent()
+    {
+        $this->setupPrivateAuthForPartner();
+
+        $testData = $this->testData['createRegisteredBusinessTypeAccount'];
+
+        $accountResponse = $this->runRequestResponseFlow($testData);
+
+        $accountId = $accountResponse['id'];
+
+        $merchantId = substr($accountId, 4);
+
+        $this->fixtures->on('live')->edit('merchant_detail', $merchantId, ['activation_status' => 'under_review']);
+        $this->fixtures->on('test')->edit('merchant_detail', $merchantId, ['activation_status' => 'under_review']);
+
+        $testData = $this->testData['testCreateDefaultPaymentGatewayConfig'];
+
+        $testData['request']['url'] = '/v2/accounts/acc_' . $merchantId . '/products';
+
+        $merchantProductResponse = $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testMerchantActivationStatus'];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/activation_status";
+
+        $this->ba->adminAuth();
+
+        $this->mockServiceStorkRequest(
+            function($path, $payload) use ($merchantProductResponse, $merchantId) {
+                $this->validateStorkWebhookFireEvent($merchantProductResponse, $payload, $merchantId);
+
+                return new \Requests_Response();
+            });
+
+        $this->runRequestResponseFlow($testData);
+
+    }
+
+    protected function validateStorkWebhookFireEvent($testData, $storkPayload, $merchantId)
+    {
+        if ($storkPayload['event']['name'] === 'account.product_status')
+        {
+            $this->assertEquals('merchant', $storkPayload['event']['owner_type']);
+            $this->assertEquals($merchantId, $storkPayload['event']['owner_id']);
+            $merchantProductInPayload = [
+                'id'                => $testData['id'],
+                'merchant_id'       => 'acc_' . $merchantId,
+                'activation_status' => 'needs_clarification'
+            ];
+            $completePayload          = json_decode($storkPayload['event']['payload'], true);
+            $storkActualPayload       = $completePayload['payload'];
+            $this->assertArraySelectiveEquals($storkActualPayload['merchant_product']['entity'], $merchantProductInPayload);
+        }
+    }
+
     private function validateMerchantProductRequest($merchantProduct, $merchantProductRequest, $partnerId = 'DefaultPartner')
     {
         $expected = [
@@ -337,6 +398,8 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         $key = 'rzp_live_' . $key->getKey();
 
         $this->ba->privateAuth($key);
+
+        return $key;
     }
 
     protected function updateUploadDocumentData(string $callee)

@@ -8,6 +8,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Product\Util;
 use RZP\Models\Merchant\Product\Config;
+use RZP\Models\Merchant\Product\Requirements;
 
 class Core extends Base\Core
 {
@@ -147,6 +148,8 @@ class Core extends Base\Core
                 $paymentGatewayMerchantProduct->setActivationStatus($paymentGatewayMerchantProductStatus);
 
                 $this->repo->merchant_product->saveOrFail($paymentGatewayMerchantProduct);
+
+                (new Events\Service())->notifyProductActivationStatus($merchantDetails, $paymentGatewayMerchantProduct);
             }
 
         }

@@ -15,5 +15,6 @@ class Status
     ];
 
     //status
-    const REQUESTED = 'requested';
+    const REQUESTED           = 'requested';
+    const NEEDS_CLARIFICATION = 'needs_clarification';
 }

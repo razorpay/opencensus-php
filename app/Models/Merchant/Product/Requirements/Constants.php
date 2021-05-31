@@ -51,13 +51,17 @@ class Constants
         ]
     ];
 
-    const SETTLEMENT_FIELDS = [Detail\Entity::BANK_BRANCH_IFSC,
-                               Detail\Entity::BANK_ACCOUNT_NAME,
-                               Detail\Entity::BANK_ACCOUNT_NUMBER];
+    const SETTLEMENT_FIELDS = [
+        Detail\Entity::BANK_BRANCH_IFSC,
+        Detail\Entity::BANK_ACCOUNT_NAME,
+        Detail\Entity::BANK_ACCOUNT_NUMBER
+    ];
 
-    const BUSINESS_REQUIREMENT_FIELDS = [Detail\Entity::BUSINESS_CATEGORY,
-                                         Detail\Entity::BUSINESS_SUBCATEGORY,
-                                         Detail\Entity::BUSINESS_TYPE];
+    const BUSINESS_REQUIREMENT_FIELDS = [
+        Detail\Entity::BUSINESS_CATEGORY,
+        Detail\Entity::BUSINESS_SUBCATEGORY,
+        Detail\Entity::BUSINESS_TYPE
+    ];
 
     //Requirements array constants
     const INTERNAL_STATUS = [BvsValidation\Constants::INITIATED, BvsValidation\Constants::PENDING, BvsValidation\Constants::FAILED];

@@ -22,6 +22,7 @@ use RZP\Models\CardMandate;
 use RZP\Models\Customer\Token;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Payment\Downtime;
+use RZP\Models\Merchant\Product;
 use RZP\Models\Order\ProductType;
 use RZP\Models\BankingAccount\Entity;
 use RZP\Exception\ServerErrorException;
@@ -31,6 +32,7 @@ use RZP\Models\Workflow\Service\Adapter;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\PayoutLink\Entity as PayoutLinkEntity;
+use RZP\Models\Merchant\Account\Entity as AccountEntity;
 use RZP\Models\Merchant\WebhookV2\Metric as WebhookMetric;
 
 class ApiEventSubscriber extends Base\Core
@@ -195,6 +197,13 @@ class ApiEventSubscriber extends Base\Core
         }
 
         $this->dispatchEventToPlService($merchant);
+    }
+
+    protected function onAccountProductStatus($merchantProduct)
+    {
+        $payload = $this->getMerchantProductPayload($merchantProduct);
+
+        $this->dispatchEventToStork($payload);
     }
 
     protected function onAccountUnsuspended($merchant)
@@ -1123,6 +1132,24 @@ class ApiEventSubscriber extends Base\Core
         $payload = [
             Constants\Entity::ACCOUNT => [
                 'entity' => $merchant->toArrayPublic(),
+            ],
+        ];
+
+        return $payload;
+    }
+
+    protected function getMerchantProductPayload(Product\Entity $merchantProduct)
+    {
+        $entity = [];
+
+        $entity[Product\Entity::ID]                = $merchantProduct->getPublicId();
+        $entity[Product\Entity::MERCHANT_ID]       = AccountEntity::getSignedId($merchantProduct->getMerchantId());
+        $entity[Product\Entity::ACTIVATION_STATUS] = $merchantProduct->getStatus();
+
+        $payload                                   = [
+            Constants\Entity::MERCHANT_PRODUCT => [
+                'entity' => $entity,
+                'data'   => $this->withPayload
             ],
         ];
 

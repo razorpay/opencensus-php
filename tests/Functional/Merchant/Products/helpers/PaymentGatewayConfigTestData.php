@@ -914,4 +914,18 @@ return [
             ],
         ]
     ],
+
+    'testMerchantActivationStatus' => [
+        'request' => [
+            'content' => [
+                'activation_status'  => 'needs_clarification',
+            ],
+            'method' => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'activation_status'  => 'needs_clarification',
+            ],
+        ],
+    ],
 ];

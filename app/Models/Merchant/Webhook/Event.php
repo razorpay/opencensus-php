@@ -111,6 +111,9 @@ class Event
     const PAYOUT_DOWNTIME_STARTED           = 'payout.downtime.started';
     const PAYOUT_DOWNTIME_RESOLVED          = 'payout.downtime.resolved';
 
+    //V2 Onboarding events
+    const ACCOUNT_PRODUCT_STATUS            = 'account.product_status';
+
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
         self::PAYMENT_FAILED,
@@ -207,6 +210,7 @@ class Event
         self::P2P_DEREGISTRATION_COMPLETED,
         self::PAYOUT_DOWNTIME_STARTED,
         self::PAYOUT_DOWNTIME_RESOLVED,
+        self::ACCOUNT_PRODUCT_STATUS,
     ];
 
     /**
@@ -311,6 +315,7 @@ class Event
         self::P2P_DEREGISTRATION_COMPLETED,
         self::PAYOUT_DOWNTIME_STARTED,
         self::PAYOUT_DOWNTIME_RESOLVED,
+        self::ACCOUNT_PRODUCT_STATUS,
     ];
 
     // We have exhausted all the below bits for webhook events, add in $bitPosition2 for any new events
@@ -408,6 +413,7 @@ class Event
         self::QR_CODE_CLOSED                    => 24,
         self::QR_CODE_CREATED                   => 25,
         self::QR_CODE_CREDITED                  => 26,
+        self::ACCOUNT_PRODUCT_STATUS            => 27,
     ];
 
     /**
@@ -507,6 +513,7 @@ class Event
         self::P2P_DEREGISTRATION_COMPLETED      => [Product::PRIMARY],
         self::PAYOUT_DOWNTIME_STARTED           => [Product::BANKING],
         self::PAYOUT_DOWNTIME_RESOLVED          => [Product::BANKING],
+        self::ACCOUNT_PRODUCT_STATUS            => [Product::PRIMARY],
     ];
 
     /**
@@ -583,6 +590,7 @@ class Event
         self::ACCOUNT_REJECTED                  => Entity::MERCHANT,
         self::ACCOUNT_PAYMENTS_ENABLED          => Entity::MERCHANT,
         self::ACCOUNT_PAYMENTS_DISABLED         => Entity::MERCHANT,
+        self::ACCOUNT_PRODUCT_STATUS            => Entity::MERCHANT_PRODUCT,
         self::PAYOUT_LINK_ISSUED                => Entity::PAYOUT_LINK,
         self::PAYOUT_LINK_PROCESSED             => Entity::PAYOUT_LINK,
         self::PAYOUT_LINK_PROCESSING            => Entity::PAYOUT_LINK,
