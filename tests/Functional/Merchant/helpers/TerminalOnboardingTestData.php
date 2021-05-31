@@ -32,7 +32,7 @@ return [
                     'gateway_access_code' => 'website'
                 ],
                 'secrets' => [
-                    'gateway_secure_secret' => 'merchant_provided_paytm_key'
+                    'gateway_secure_secret' => 'merchant_provided_paytm_sec'
                 ]
             ]
         ],

@@ -286,11 +286,6 @@ class TerminalsService
         {
             $content[self::GATEWAY_ACQUIRER] = $otherInputs[self::GATEWAY_ACQUIRER];
         }
-        // for paytm
-        if (isset($otherInputs[self::IDENTIFIERS]) === true)
-        {
-            $content[self::IDENTIFIERS] = $otherInputs[self::IDENTIFIERS];
-        }
         if (isset($otherInputs[self::SECRETS]) === true)
         {
             $content[self::SECRETS] = $otherInputs[self::SECRETS];

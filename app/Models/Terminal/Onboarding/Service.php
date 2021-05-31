@@ -165,7 +165,9 @@ class Service extends Base\Service
 
         (new Validator)->validateInput(self::ONBOARDING_INPUT, $input);
 
-        $response = $this->app['terminals_service']->initiateOnboarding($merchant->getId(), $input['gateway'], null, [], $input);
+        $identifiers = isset($input['identifiers']) ? $input['identifiers'] : null;
+
+        $response = $this->app['terminals_service']->initiateOnboarding($merchant->getId(), $input['gateway'], $identifiers, null, [], $input);
 
         return $response;
     }

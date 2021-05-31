@@ -25,6 +25,12 @@ class TerminalsService extends BaseTerminalsService
             case 'upi_juspay':
                 $response['terminal'] = $terminals[0];
                 break;
+            case 'paytm':
+                // To test that correct params are being passed to TS
+                assert($otherInputs['secrets']['gateway_secure_secret'] === "merchant_provided_paytm_sec");
+                assert($identifiers['gateway_merchant_id'] === "merchant_provided_paytm_key");
+                assert($identifiers['gateway_terminal_id'] === "industry_type_id");
+                break;
             case 'wallet_paypal':
                 $response = [
                     "links" => "https://www.sandbox.paypal.com/IN/merchantsignup/partner/onboardingentry?token=MWRiYWM1NDQtZWJlZC00M2VjLTlkMGMtZmM2MjRmYzc0N2M4ZW5NUGdxS2FUb0ozcTRRYmtSUkd5bXNtYnJiOUs0Y2ZYQU9JZURVL29SWT12MQ==&context_token=4909428984085513216"
