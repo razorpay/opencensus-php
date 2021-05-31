@@ -437,6 +437,16 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    // Test for upi_juspay terminal create validation
+    public function testCreateTerminalUpiJuspay()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testCreateTerminalWithInvalidNetworkCategory()
     {
         $url = '/merchants/100000Razorpay/terminals';

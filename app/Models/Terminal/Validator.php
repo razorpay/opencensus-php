@@ -211,13 +211,17 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACQUIRER           => 'sometimes|in:axis',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
+        Entity::GATEWAY_TERMINAL_ID        => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes',
         Entity::VPA                        => 'required|string',
         Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4',
         Entity::UPI                        => 'required|boolean|in:1',
         Entity::TYPE                       => 'sometimes|array',
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::EXPECTED                   => 'sometimes_if:type.pay,1|boolean|in:1',
+        Entity::MODE                       => 'sometimes',
     ];
 
     protected static $atomTerminalRules = [

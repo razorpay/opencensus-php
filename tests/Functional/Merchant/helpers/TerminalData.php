@@ -904,6 +904,41 @@ return [
         ]
     ],
 
+    'testCreateTerminalUpiJuspay' =>  [
+        'request' => [
+            'content' => [
+                'gateway' => 'upi_juspay',
+                'mode' => '3',
+                'gateway_merchant_id'   => '100000Razorpay',
+                'gateway_merchant_id2'  => 'rzpChannelId123',
+                'gateway_terminal_id'   => 'xmerchantid',
+                'vpa'       => 'shubh123@abfspay',
+                'procurer'  =>  'razorpay',
+                'upi'       => '1',
+                'expected'  => '1',
+                'gateway_acquirer'      => 'axis',
+                'gateway_secure_secret' => 'supersecret',
+                'type'                  => [
+                    'collect'       => '1',
+                    'pay'          => '1',
+                    'non_recurring' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'gateway' => 'upi_juspay',
+                'gateway_merchant_id'   => '100000Razorpay',
+                'gateway_merchant_id2'  => 'rzpChannelId123',
+                'gateway_terminal_id'   => 'xmerchantid',
+                'enabled'               => true,
+                'status'                => 'activated',
+            ]
+        ],
+        'status_code'   => 200,
+    ],
+
     'testCreateTerminalWithPendingStatus' => [
         'request' => [
             'content' => [
