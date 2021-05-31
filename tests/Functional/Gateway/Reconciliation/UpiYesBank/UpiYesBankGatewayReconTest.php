@@ -63,6 +63,85 @@ class UpiYesBankGatewayReconTest extends TestCase
         }
     }
 
+    public function testUpiYesBankRefundRecon()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $this->makeUpiYesBankPaymentsSince(1, $createdAt);
+
+        $payment = $this->getDbLastPayment();
+
+        $refund = $this->createDependentEntitiesForRefund($payment);
+
+        $fileContents = $this->generateReconFile(
+            [
+                'gateway' => $this->gateway,
+                'type'    => 'refund'
+            ]);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile($uploadedFile, 'UpiYesBank');
+
+        $this->refundReconAsserts($refund);
+
+        $batch = $this->getDbLastEntityToArray('batch');
+
+        $this->assertArraySelectiveEquals(
+            [
+                'type'            => 'reconciliation',
+                'gateway'         => 'UpiYesBank',
+                'status'          => Status::PROCESSED,
+                'total_count'     => 1,
+                'success_count'   => 1,
+                'processed_count' => 1,
+                'failure_count'   => 0,
+            ],
+            $batch
+        );
+    }
+
+    protected function createDependentEntitiesForRefund($payment)
+    {
+        $refundArray = [
+            'payment_id'  => $payment['id'],
+            'merchant_id' => '10000000000000',
+            'amount'      => $payment['amount'],
+            'base_amount' => $payment['amount'],
+            'status'      => 'processed',
+            'gateway'     => $this->gateway,
+        ];
+
+        $refund = $this->fixtures->create('refund', $refundArray)->toArray();
+
+        $this->fixtures->create(
+            'mozart',
+            array(
+                'payment_id' => $payment['id'],
+                'action'     => 'refund',
+                'refund_id'  => $refund['id'],
+                'gateway'    => 'upi_yesbank',
+                'amount'     => $payment['amount'],
+                'raw'        => json_encode(
+                    [
+                        'status' 				=> 'refund_initiated_successfully',
+                        'apiStatus' 			=> 'SUCCESS',
+                        'merchantId' 			=> '',
+                        'refundAmount' 			=> $payment['amount'],
+                        'responseCode' 			=> 'SUCCESS',
+                        'responseMessage' 		=> 'SUCCESS',
+                        'merchantRequestId' 	=> $payment['id'],
+                        'transactionAmount' 	=> $payment['amount'],
+                        'gatewayResponseCode' 	=> '00',
+                        'gatewayTransactionId' 	=> 'FT2022712537204137',
+                    ]
+                )
+            )
+        );
+
+        return $refund;
+    }
+
     private function makeUpiYesBankPaymentsSince(int $count, int $createdAt)
     {
         for ($i = 0; $i < $count; $i++)
@@ -92,6 +171,24 @@ class UpiYesBankGatewayReconTest extends TestCase
         $this->assertEquals('25700000000', $updatedPayment['reference16']);
 
         $transactionEntity = $this->getDbEntity('transaction', ['entity_id' => $updatedPayment['id']]);
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+    }
+
+    protected function refundReconAsserts(array $refund)
+    {
+        $updatedRefund = $this->getDbEntity('refund', ['id' => $refund['id']]);
+
+        $this->assertNotNull($updatedRefund['reference1']);
+
+        $gatewayEntity = $this->getDbEntity(
+            'mozart',
+            [
+                'payment_id' => $updatedRefund['payment_id'],
+                'action'     => 'refund',
+            ]);
+
+        $transactionEntity = $this->getDbEntity('transaction', ['entity_id' => $updatedRefund['id']]);
 
         $this->assertNotNull($transactionEntity['reconciled_at']);
     }

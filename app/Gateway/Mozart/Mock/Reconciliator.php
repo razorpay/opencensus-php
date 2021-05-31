@@ -532,7 +532,59 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
 
         $data = [];
 
-        // todo: Check refunds first
+        // Check refunds first
+        $refunds = $this->repo->refund->fetch([
+            'gateway' => 'upi_yesbank',
+        ]);
+
+        foreach ($refunds as $row)
+        {
+            $row = [
+                'PG Merchant ID'         => 'YES0000000000001',
+                'Legal Name'             => 'ABC Group PVT LTD',
+                'Store Name'             => 'DEF',
+                'MCC'                    => '1234',
+                'Order No'               => $row['id'],
+                'Trans Ref No.'          => '2000000000',
+                'Customer Ref No.'       => '25700000000',
+                'NPCI Response Code'     => '0',
+                'Trans Type'             => 'DEBIT',
+                'DR/CR'                  => 'Debit',
+                'Transaction Status'     => 'SUCCESS',
+                'Transaction Remarks'    => 'MIC2000000000000000007A11111120T081829E0360',
+                'Transaction Date'       => '11/9/2020 8:25',
+                'Transaction Amount'     => ($row['amount'] / 100),
+                'Payer A/c No.'          => '1.00E+15',
+                'Payer Virtual Address'  => '1234567890@yesbank',
+                'Payer A/C Name'         => 'Pramod Kumar',
+                'Payer IFSC Code'        => 'YESB0129700',
+                'Payee A/C No'           => '',
+                'Payee Virtual Address'  => 'abc@yesbank',
+                'Payee A/C Name'         => '',
+                'Payee IFSC Code'        => 'YESB0000001',
+                'Pay Type'               => 'P2M',
+                'Device Type'            => '',
+                'App'                    => '',
+                'Device OS'              => '',
+                'Device Mobile No'       => '4.57E+09',
+                'Device Location'        => '',
+                'Ip Address'             => '',
+                'Settlement Status'      => 'Unreconcilied',
+                'Settlement Date'        => '',
+                'MSF Amount'             => '0',
+                'MSF Tax Amount'         => '0',
+                'Payout Status'          => 'Payout Completed'
+            ];
+
+            $data[] = $row;
+        }
+
+        // Put payment rows only if refunds are not there.
+        // so make it Refund MIS file. Just return the data.
+        if (empty($data) === false)
+        {
+            return $data;
+        }
 
         // If no refunds, then it is payment MIS file
         // put payment rows in data

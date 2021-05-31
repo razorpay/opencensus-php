@@ -34,6 +34,7 @@ class Converter extends Base\Core
         RequestProcessor\Base::FREECHARGE,
         RequestProcessor\Base::UPI_AIRTEL,
         RequestProcessor\Base::UPI_AXIS,
+        RequestProcessor\Base::UPI_YESBANK,
         RequestProcessor\Base::CARD_FSS_BOB,
         RequestProcessor\Base::NETBANKING_SBI,
         RequestProcessor\Base::NETBANKING_IDFC,

@@ -27,7 +27,10 @@ class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
         {
             return BaseReconciliate::PAYMENT;
         }
-        // Todo: Add refund condition when we are going to add RefundReconciliate
+        else if (strtolower($row[self::COLUMN_ENTITY_TYPE]) === self::COLUMN_REFUND)
+        {
+            return BaseReconciliate::REFUND;
+        }
         return self::NA;
     }
 }
