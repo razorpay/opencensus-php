@@ -3,9 +3,12 @@
 namespace RZP\Models\Merchant\Product\Config;
 
 use App;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Services\TerminalsService;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Product\Util;
+
 
 class PaymentMethods
 {
@@ -29,7 +32,9 @@ class PaymentMethods
     {
         $this->app = App::getFacadeRoot();
 
-        $this->terminalService = new TerminalsService($this->app);
+        $this->trace = $this->app['trace'];
+
+        $this->terminalService = $this->app['terminals_service'];
 
         $this->merchantService = new Merchant\Service();
     }
@@ -40,13 +45,16 @@ class PaymentMethods
         $response = $this->terminalService->proxyTerminalService(
             [],
             \Requests::GET,
-            'v2/merchant_instrument_request?merchant_id=' . $merchant->getId(),
+
+            'v2/merchant_instrument_status?merchant_id=' . $merchant->getId(),
             ['timeout' => 1],
             $this->getMerchantHeadersForInstrumentRequest());
 
-        $response = [];
+//        $response[Util\Constants::FEATURES] = $this->getFeatures();
 
-        $response[Util\Constants::FEATURES] = $this->getFeatures();
+        $this->trace->info(TraceCode::TERMINALS_SERVICE_RESPONSE, [
+            'response' => $response
+        ]);
 
         return $response;
     }
@@ -55,16 +63,37 @@ class PaymentMethods
     {
         $merchant = $this->app['basicauth']->getMerchant();
 
-        $input['merchant_id'] = $merchant->getId();
+        $responses = [];
 
-        $response = $this->app['terminals_service']->proxyTerminalService(
-            $input,
-            \Requests::POST,
-            'v2/merchant_instrument_request',
-            ['timeout' => 0.5],
-            $this->getMerchantHeadersForInstrumentRequest());
+        foreach ($input as $row)
+        {
+            try {
+                $request['merchant_id'] = $merchant->getId();
 
-        return $response;
+                $request['instrument'] = $row;
+
+                $response = $this->app['terminals_service']->proxyTerminalService(
+                    $request,
+                    \Requests::POST,
+                    'v2/merchant_instrument_request',
+                    ['timeout' => 0.5],
+                    $this->getMerchantHeadersForInstrumentRequest());
+
+                $this->trace->info(TraceCode::TERMINALS_SERVICE_RESPONSE, $response);
+
+                array_push($responses, $response);
+            }
+            catch (\Exception $exp)
+            {
+                $this->trace->traceException($exp,
+                    Trace::ERROR,
+                    TraceCode::TERMINALS_SERVICE_INTEGRATION_ERROR
+                );
+            }
+        }
+
+        return $responses;
+
     }
 
     private function getMerchantHeadersForInstrumentRequest(): array

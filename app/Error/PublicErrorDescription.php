@@ -1404,4 +1404,11 @@ class PublicErrorDescription
     const BAD_REQUEST_REVERSAL_CREATION_FOR_PAYOUT_SERVICE_IN_PROGRESS              = 'Request failed because another reversal creation for the same request is in progress';
 
     const BAD_REQUEST_MERCHANT_TNC_NOT_APPLICABLE                                   = 'Request for creation of Merchant TnC failed because it is not applicable to the current merchant';
+
+    // Onboarding APIs
+    const BAD_REQUEST_WALLET_INSTRUMENT_INVALID                                     = 'Invalid wallet instrument code';
+    const BAD_REQUEST_UPI_INSTRUMENT_INVALID                                        = 'Invalid upi instrument code';
+    const BAD_REQUEST_BANK_INSTRUMENT_INVALID                                       = 'Invalid bank instrument code';
+    const BAD_REQUEST_PAYLATER_INSTRUMENT_INVALID                                   = 'Invalid paylater instrument code';
+    const BAD_REQUEST_EMI_INSTRUMENT_INVALID                                        = 'Invalid emi instrument code';
 }

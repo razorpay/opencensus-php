@@ -49,7 +49,23 @@ class Constants
     const AUTOMATIC_EXPIRY_PERIOD = 'automatic_expiry_period';
     const MANUAL_EXPIRY_PERIOD    = 'manual_expiry_period';
 
+    // payment methods constant
+    const NETBANKING = 'netbanking';
+    const RETAIL = 'retail';
+    const CORPORATE = 'corporate';
+    const CARDS = 'cards';
+    const UPI = 'upi';
+    const WALLET = 'wallet';
+    const PAYLATER = 'paylater';
+    const INSTRUMENT = 'instrument';
+    const TYPE = 'type';
+    const BANK = 'bank';
+    const EMI = 'emi';
+
     // Product request constants
+    const STATUS = 'status';
+    const ENABLED = 'enabled';
+    const ACTIVATED = 'activated';
     const REQUESTED = 'requested';
     const COMPLETED = 'completed';
     const FAILED    = 'failed';
@@ -57,4 +73,72 @@ class Constants
     // Configuration types
     const GENERAL = 'general';
     const PAYMENT_METHODS = 'payment_methods';
+
+    // Wallets
+    const AIRTELMONEY = "airtelmoney";
+    const AMAZONPAY = "amazonpay";
+    const FREECHARGE = "freecharge";
+    const JIOMONEY = "jiomoney";
+    const SBIBUDDY = "sbibuddy";
+    const MPESA = "mpesa";
+    const OLAMONEY = "olamoney";
+    const PAYZAPP = "payzapp";
+    const PHONEPE = "phonepe";
+    const PHONEPESWITCH = "phonepeswitch";
+    const MOBIKWIK = "mobikwik";
+    const PAYTM = "paytm";
+    const PAYUMONEY = "payumoney";
+
+    public static $wallets = [
+        self::AIRTELMONEY,
+        self::AMAZONPAY,
+        self::FREECHARGE,
+        self::JIOMONEY,
+        self::MOBIKWIK,
+        self::MPESA,
+        self::OLAMONEY,
+        self::PAYTM,
+        self::PAYZAPP,
+        self::PAYUMONEY,
+        self::PHONEPE,
+        self::PHONEPESWITCH,
+        self::SBIBUDDY,
+    ];
+
+    // UPI
+    const GOOGLE_PAY = "google_pay";
+
+    public static $upiCodes = [
+        self::UPI,
+        self::GOOGLE_PAY
+    ];
+
+    // paylater
+    const EPAYLATER = "epaylater";
+    const GETSIMPL  = "getsimpl";
+
+    public static $paylaterCodes = [
+        self::EPAYLATER,
+        self::GETSIMPL
+    ];
+
+    //emi
+    const CARDLESS_EMI = "cardless_emi";
+    const CARD_EMI     = "card_emi";
+    const ZESTMONEY    = "zestmoney";
+    const EARLYSALARY  = "earlysalary";
+    const DEBIT        = "debit";
+    const CREDIT       = "credit";
+    const PARTNER      = "partner";
+
+    public static $cardlessEmiCodes = [
+        self::ZESTMONEY,
+        self::EARLYSALARY
+    ];
+
+    public static $cardEmiCodes = [
+        self::DEBIT,
+        self::CREDIT
+    ];
+
 }

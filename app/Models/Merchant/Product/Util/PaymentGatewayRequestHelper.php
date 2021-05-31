@@ -13,7 +13,7 @@ class PaymentGatewayRequestHelper
         Constants::CHECKOUT        => Constants::ACCOUNT_CONFIG,
         Constants::REFUND          => Constants::REFUND,
         Constants::SETTLEMENTS     => Constants::BANK_DETAILS,
-        Constants::METHODS         => Constants::PAYMENT_METHODS,
+        Constants::PAYMENT_METHODS => Constants::PAYMENT_METHODS,
         Constants::CONFIGURATION   => Constants::CONFIGURATION
     ];
 
@@ -171,7 +171,7 @@ class PaymentGatewayRequestHelper
         return $transformedRequest;
     }
 
-    private static function transformMethods(array $input): array
+    private static function transformPaymentMethods(array $input): array
     {
         return $input;
     }

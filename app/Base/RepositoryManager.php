@@ -135,6 +135,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\BankingAccountTpv\Repository                   $banking_account_tpv;
  * @property Models\Partner\Activation\Repository                  $partner_activation;
  * @property Models\Merchant\Product\Repository                    $merchant_product;
+ * @property Models\Merchant\Product\Request\Repository            $merchant_product_request;
  * @property Models\Settlement\Repository                          $settlement
  * @property Gateway\Enach\Base\Repository                         $enach
  * @property Models\Settlement\Transfer\Repository                 $settlement_transfer;

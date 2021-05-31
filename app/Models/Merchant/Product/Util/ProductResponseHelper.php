@@ -14,7 +14,9 @@ class ProductResponseHelper
         switch ($productName)
         {
             case Product\Name::PAYMENT_GATEWAY:
-                $response = PaymentGatewayResponseHandler::handleResponse($merchantProduct, $response);
+            
+                $response = self::getPaymentGatewayResponse($merchantProduct, $response);
+
                 break;
 
         }
@@ -32,4 +34,27 @@ class ProductResponseHelper
 
         return $response;
     }
+
+    /**
+     * @param Product\Entity $merchantProduct
+     * @param array $response
+     * @return array
+     */
+    private static function getPaymentGatewayResponse(Product\Entity $merchantProduct, array $response): array
+    {
+        $activeConfig = [];
+        $pendingConfig = [];
+        if(isset($response[Constants::PAYMENT_METHODS]))
+        {
+            [$activeConfig, $pendingConfig] = PaymentMethodsResponseHandler::handleResponse($response[Constants::PAYMENT_METHODS]);
+            unset($response[Constants::PAYMENT_METHODS]);
+        }
+        $response = PaymentGatewayResponseHandler::handleResponse($merchantProduct, $response);
+
+        $response[Constants::ACTIVE_CONFIGURATION] =  array_merge($response[Constants::ACTIVE_CONFIGURATION], $activeConfig);
+        $response[Constants::REQUESTED_CONFIGURATION] =  array_merge($response[Constants::REQUESTED_CONFIGURATION], $pendingConfig);
+
+        return $response;
+    }
+
 }

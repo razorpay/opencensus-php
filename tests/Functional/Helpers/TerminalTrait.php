@@ -27,6 +27,13 @@ trait TerminalTrait
         return $terminalsServiceMock;
     }
 
+    protected function mockTerminalsServiceProxyRequest($response)
+    {
+        $this->terminalsServiceMock->shouldReceive('proxyTerminalService')
+            ->andReturn($response);
+    }
+
+
     protected function mockTerminalsServiceSendRequest($closure, $times = 2)
     {
         $this->terminalsServiceMock->shouldReceive('sendRequest')
@@ -203,7 +210,7 @@ trait TerminalTrait
                 'id' => 'trmnlTestRunId',
                 'terminal_id' => 'GzGbeCf6yWzenn',
                 'created_by' => 'admin@razorpay.com',
-                'payment_test_summary' => 
+                'payment_test_summary' =>
                 [
                   'success' => 0,
                   'failed' => 0,
@@ -211,7 +218,7 @@ trait TerminalTrait
                   'in_progress' => 0,
                   'timed_out' => 0,
                 ],
-                'refund_test_summary' => 
+                'refund_test_summary' =>
                 [
                   'success' => 0,
                   'failed' => 0,
@@ -219,7 +226,7 @@ trait TerminalTrait
                   'in_progress' => 0,
                   'timed_out' => 0,
                 ],
-                'verify_test_summary' => 
+                'verify_test_summary' =>
                 [
                   'success' => 0,
                   'failed' => 0,

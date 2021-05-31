@@ -3,12 +3,14 @@
 namespace RZP\Models\Merchant\Product;
 
 use RZP\Models\Base;
-use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
+use RZP\Jobs\MerchantProductsConfig;
 use RZP\Models\Merchant\Product\Util;
 use RZP\Models\Merchant\Product\Config;
 use RZP\Models\Merchant\Product\Requirements;
+use RZP\Models\Merchant\Product\Request\Service as AuditService;
 
 class Core extends Base\Core
 {
@@ -24,9 +26,11 @@ class Core extends Base\Core
 
     public function __construct()
     {
-        $this->paymentsGeneralConfig = new Config\PaymentsGeneralConfig();
-        $this->paymentMethods        = new Config\PaymentMethods();
         parent::__construct();
+
+        $this->paymentsGeneralConfig = new Config\PaymentsGeneralConfig();
+
+        $this->paymentMethods        = new Config\PaymentMethods();
     }
 
     public function createConfig(Merchant\Entity $merchant, Entity $merchantProduct, array $input)
@@ -38,7 +42,7 @@ class Core extends Base\Core
         switch ($productName)
         {
             case Name::PAYMENT_GATEWAY :
-                $input    = Util\PaymentGatewayRequestHelper::handleRequest($input);
+
                 $response = $this->createPaymentGatewayConfig($merchant, $merchantProduct, $input);
                 break;
         }
@@ -70,18 +74,20 @@ class Core extends Base\Core
 
         $response[Util\Constants::REQUIREMENTS] = $this->paymentsGeneralConfig->getRequirements($merchant, $merchantProduct);
 
-        //$response[Util\Constants::PAYMENT_METHODS] = $this->paymentMethods->get($merchant);
+        $response[Util\Constants::PAYMENT_METHODS] = $this->paymentMethods->get($merchant);
 
         return $response;
     }
 
-    private function createPaymentGatewayConfig(Merchant\Entity $merchant, Entity $merchantProduct, array $input): array
+    private function createPaymentGeneralConfig(Merchant\Entity $merchant, Entity $merchantProduct, array $input): array
     {
         $response = [];
 
         $response = array_merge($response, $this->paymentsGeneralConfig->createConfig($merchant, $input));
 
         $response[Util\Constants::REQUIREMENTS] = $this->paymentsGeneralConfig->getRequirements($merchant, $merchantProduct);
+
+        $this->audit($input, $merchantProduct->getId(),Util\Constants::COMPLETED, Util\Constants::GENERAL);
 
         if (count($response[Util\Constants::REQUIREMENTS]) > 0)
         {
@@ -91,6 +97,20 @@ class Core extends Base\Core
         }
 
         return $response;
+    }
+
+    private function createPaymentMethodsConfig(Merchant\Entity $merchant, Entity $merchantProduct, array $input)
+    {
+        if(array_key_exists(Util\Constants::PAYMENT_METHODS, $input) === false)
+        {
+            return;
+        }
+
+        $request = (new Util\PaymentMethodsRequestHandler())->handleRequest($input[Util\Constants::PAYMENT_METHODS]);
+
+        $log = $this->audit($input, $merchantProduct->getId(),Util\Constants::REQUESTED, Util\Constants::PAYMENT_METHODS);
+
+         MerchantProductsConfig::dispatch($this->mode, $log->getId(), $request);
     }
 
     public function updateConfig(Merchant\Entity $merchant, Entity $merchantProduct, array $input): array
@@ -113,16 +133,18 @@ class Core extends Base\Core
     {
         $response = [];
 
-        if (isset($input[Util\Constants::CONFIGURATION]) === true)
+        if (isset($input[Util\Constants::PAYMENT_METHODS]) === true)
         {
-            $paymentMethodsConfig = $input[Util\Constants::CONFIGURATION][Util\Constants::METHODS];
+            $paymentMethodsConfig = $input[Util\Constants::PAYMENT_METHODS];
 
             unset($input[Util\Constants::PAYMENT_METHODS]);
 
-            $response = array_merge($response, $this->paymentMethods->update($merchant, $paymentMethodsConfig));
+            $this->createPaymentMethodsConfig($merchant, $merchantProduct, [Util\Constants::PAYMENT_METHODS => $paymentMethodsConfig]);
         }
 
         $response = array_merge($response, $this->paymentsGeneralConfig->updateConfig($merchant, $input));
+
+        $this->audit($input, $merchantProduct->getId(), Util\Constants::COMPLETED, Util\Constants::GENERAL);
 
         $response[Util\Constants::REQUIREMENTS] = $this->paymentsGeneralConfig->getRequirements($merchant, $merchantProduct);
 
@@ -166,5 +188,41 @@ class Core extends Base\Core
                 'merchant_id' => $merchantDetails->getMerchantId()
             ]);
         }
+    }
+
+    private function audit(array $input, string $merchantProductId, string $status, string $type)
+    {
+        return (new AuditService)->log($input, $merchantProductId, $status, $type);
+    }
+
+    /**
+     * @param array $input
+     * @param $request
+     * @param Merchant\Entity $merchant
+     * @param Entity $merchantProduct
+     * @return array
+     */
+    private function createPaymentGatewayConfig(Merchant\Entity $merchant, Entity $merchantProduct, array $input): array
+    {
+        if (array_key_exists(Util\Constants::PAYMENT_METHODS, $input)) {
+
+//            $request = [];
+
+//            $request[Util\Constants::PAYMENT_METHODS] = $input[Util\Constants::PAYMENT_METHODS];
+
+            unset($input[Util\Constants::PAYMENT_METHODS]);
+
+//            $response = $this->createPaymentMethodsConfig($merchant, $merchantProduct, $request);
+        }
+
+
+
+        $input = Util\PaymentGatewayRequestHelper::handleRequest($input);
+
+        $response = $this->createPaymentGeneralConfig($merchant, $merchantProduct, $input);
+
+        $response[Util\Constants::PAYMENT_METHODS] = $this->paymentMethods->get($merchant);
+
+        return $response;
     }
 }

@@ -8,6 +8,6 @@ class Service extends Base\Service
 {
     public function log(array $input, string $merchantProductId, string $status, string $type)
     {
-        $this->core()->create($input, $this->merchant, $merchantProductId, $status, $type);
+        return $this->core()->create($input, $this->merchant, $merchantProductId, $status, $type);
     }
 }

@@ -8,6 +8,7 @@ use Razorpay\IFSC\IFSC;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Product\Util;
+use RZP\Trace\TraceCode;
 
 class Validator extends Base\Validator
 {
@@ -19,6 +20,7 @@ class Validator extends Base\Validator
         Util\Constants::PAYMENT_CAPTURE => 'sometimes|array',
         Util\Constants::NOTIFICATIONS   => 'sometimes|array',
         Util\Constants::REFUND          => 'sometimes|array',
+        Util\Constants::PAYMENT_METHODS => 'sometimes|array',
     ];
 
     protected static $notificationsRules  = [
@@ -54,7 +56,8 @@ class Validator extends Base\Validator
         'payment_capture',
         'settlements',
         'checkout',
-        'refund'
+        'refund',
+        'payment_methods',
     ];
 
     public function validateAccountNumber($attribute, $bankAccountNumber)
@@ -132,6 +135,16 @@ class Validator extends Base\Validator
         $settlementsInput = $input[Util\Constants::SETTLEMENTS];
 
         $this->validateInput('settlements', $settlementsInput);
+    }
+
+    protected function validatePaymentMethods(array $input)
+    {
+        if(isset($input[Util\Constants::PAYMENT_METHODS]) === false)
+        {
+            return;
+        }
+
+        (new PaymentMethodsValidator())->validateInput('paymentMethods', $input[Util\Constants::PAYMENT_METHODS]);
     }
 
 }

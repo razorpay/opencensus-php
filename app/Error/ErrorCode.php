@@ -2154,6 +2154,14 @@ class ErrorCode
 
     const BAD_REQUEST_MERCHANT_TNC_NOT_APPLICABLE                                   = 'BAD_REQUEST_MERCHANT_TNC_NOT_APPLICABLE';
 
+
+    // Onboarding APIs
+    const BAD_REQUEST_WALLET_INSTRUMENT_INVALID                                     = 'BAD_REQUEST_WALLET_INSTRUMENT_INVALID';
+    const BAD_REQUEST_UPI_INSTRUMENT_INVALID                                        = 'BAD_REQUEST_UPI_INSTRUMENT_INVALID';
+    const BAD_REQUEST_BANK_INSTRUMENT_INVALID                                       = 'BAD_REQUEST_BANK_INSTRUMENT_INVALID';
+    const BAD_REQUEST_PAYLATER_INSTRUMENT_INVALID                                   = 'BAD_REQUEST_PAYLATER_INSTRUMENT_INVALID';
+    const BAD_REQUEST_EMI_INSTRUMENT_INVALID                                        = 'BAD_REQUEST_EMI_INSTRUMENT_INVALID';
+
     // XPayroll
     const BAD_REQUEST_TO_XPAYROLL_SERVICE                                           = 'BAD_REQUEST_TO_XPAYROLL_SERVICE';
 

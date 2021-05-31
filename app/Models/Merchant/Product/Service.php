@@ -13,7 +13,6 @@ use RZP\Models\Merchant\Product\Config;
 use RZP\Models\Merchant\Account\Entity as AccountEntity;
 use RZP\Models\Merchant\Product\Util\ProductRequestHelper;
 use RZP\Models\Merchant\Product\Util\ProductResponseHelper;
-use RZP\Models\Merchant\Product\Request\Service as AuditService;
 use RZP\Models\Merchant\Product\Util\Constants as Constants;
 
 class Service extends Base\Service
@@ -45,8 +44,6 @@ class Service extends Base\Service
         $transformedRequest = ProductRequestHelper::handleRequest($productName, $request);
 
         $response = $this->core()->updateConfig($merchant, $merchantProduct, $transformedRequest);
-
-        $this->audit($request, $merchantProductConfigId, Constants::COMPLETED, Constants::GENERAL);
 
         return ProductResponseHelper::handleResponse($merchantProduct, $response);
     }
@@ -84,8 +81,6 @@ class Service extends Base\Service
                 $this->repo->merchant_product->saveOrFail($merchantProduct);
 
                 $response = $this->core()->createConfig($merchant, $merchantProduct, $payload);
-
-                $this->audit($payload, $merchantProduct->getId(), Constants::COMPLETED, Constants::GENERAL);
 
                 return ProductResponseHelper::handleResponse($merchantProduct, $response);
             });
@@ -142,11 +137,6 @@ class Service extends Base\Service
         $this->app['basicauth']->setMerchant($merchant);
 
         return $merchant;
-    }
-
-    private function audit(array $input, string $merchantProductId, string $status, string $type)
-    {
-        (new AuditService())->log($input, $merchantProductId, $status, $type);
     }
 
     private function validateAndGetMerchantProduct(string $merchantId, string $merchantProductConfigId): Entity

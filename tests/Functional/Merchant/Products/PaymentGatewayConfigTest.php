@@ -5,21 +5,25 @@ namespace Functional\Merchant\Products;
 use Mail;
 use Event;
 use RZP\Constants\Mode;
+use RZP\Constants\Entity;
 use RZP\Models\User\Role;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Detail;
 use Illuminate\Http\UploadedFile;
+use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
-use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Partner\PartnerTrait;
+use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Merchant\Product\Config\PaymentMethods;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
 class PaymentGatewayConfigTest extends OAuthTestCase
 {
     use PartnerTrait;
+    use TerminalTrait;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
     use HeimdallTrait;
@@ -27,16 +31,24 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
     const RZP_ORG = '100000razorpay';
 
+    protected $terminalsServiceMock;
+
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/PaymentGatewayConfigTestData.php';
+
         parent::setUp();
+
+        $this->terminalsServiceMock = $this->getTerminalsServiceMock();
+
         $this->mockStorkService();
     }
 
     public function testCreateDefaultPaymentGatewayConfig()
     {
         Mail::fake();
+
+        $this->mockTerminalServiceResponse();
 
         $this->setupPrivateAuthForPartner();
 
@@ -63,6 +75,8 @@ class PaymentGatewayConfigTest extends OAuthTestCase
     public function testFetchDefaultPaymentGatewayConfig()
     {
         Mail::fake();
+
+        $this->mockTerminalServiceResponse();
 
         $this->setupPrivateAuthForPartner();
 
@@ -92,6 +106,8 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         Mail::fake();
 
         $this->setupPrivateAuthForPartner();
+
+        $this->mockTerminalServiceResponse();
 
         $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
 
@@ -133,6 +149,8 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         Mail::fake();
 
         $this->setupPrivateAuthForPartner();
+
+        $this->mockTerminalServiceResponse();
 
         $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
 
@@ -225,6 +243,8 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         Mail::fake();
 
         $this->setupPrivateAuthForPartner();
+
+        $this->mockTerminalServiceResponse();
 
         $testData = $this->testData['createRegisteredBusinessTypeAccount'];
 
@@ -334,6 +354,8 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         Mail::fake();
 
         $key = $this->setupPrivateAuthForPartner();
+
+        $this->mockTerminalServiceResponse();
 
         $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
 
@@ -463,6 +485,8 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
         $testData = $this->testData['createRegisteredBusinessTypeAccount'];
 
+        $this->mockTerminalServiceResponse();
+
         $accountResponse = $this->runRequestResponseFlow($testData);
 
         $accountId = $accountResponse['id'];
@@ -554,6 +578,60 @@ class PaymentGatewayConfigTest extends OAuthTestCase
             filesize(__DIR__ . '/../../Storage/k.png'),
             null,
             true);
+    }
+
+    private function mockTerminalServiceResponse(): void
+    {
+        $data = '[
+                {
+                "merchant_instrument_request_id": "",
+                "merchant_id": "H9sTmdNiFOOFCC",
+                "instrument": "pg.netbanking.retail.scbl",
+                "status": "activated",
+                "comment": "",
+                "created_at": 0,
+                "updated_at": 0,
+                "special_pricing": "",
+                "tags": null
+            },
+            {
+                "merchant_instrument_request_id": "",
+                "merchant_id": "H9sTmdNiFOOFCC",
+                "instrument": "pg.netbanking.retail.aubl",
+                "status": "activated",
+                "comment": "",
+                "created_at": 0,
+                "updated_at": 0,
+                "special_pricing": "",
+                "tags": null
+            },
+            {
+                "merchant_instrument_request_id": "",
+                "merchant_id": "H9sTmdNiFOOFCC",
+                "instrument": "pg.netbanking.retail.abpb",
+                "status": "requestable",
+                "comment": "",
+                "created_at": 0,
+                "updated_at": 0,
+                "special_pricing": "",
+                "tags": null
+            },
+            {
+                "merchant_instrument_request_id": "",
+                "merchant_id": "H9sTmdNiFOOFCC",
+                "instrument": "pg.netbanking.retail.airp",
+                "status": "activated",
+                "comment": "",
+                "created_at": 0,
+                "updated_at": 0,
+                "special_pricing": "",
+                "tags": null
+            }
+                ]';
+
+        $data = json_decode($data, true);
+
+        $this->mockTerminalsServiceProxyRequest($data);
     }
 
     protected function setAdminForInternalAuth()
