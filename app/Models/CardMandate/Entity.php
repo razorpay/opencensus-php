@@ -16,7 +16,6 @@ class Entity extends Base\PublicEntity
     const MANDATE_CARD_ISSUER        = 'mandate_card_issuer';
     const MANDATE_CARD_INTERNATIONAL = 'mandate_card_international';
     const MANDATE_SUMMARY_URL        = 'mandate_summary_url';
-    const MANDATE_REGISTER_ID        = 'mandate_register_id';
     const STATUS                     = 'status';
     const DEBIT_TYPE                 = 'debit_type';
     const CURRENCY                   = 'currency';
@@ -29,6 +28,7 @@ class Entity extends Base\PublicEntity
     const FREQUENCY                  = 'frequency';
     const PAUSED_BY                  = 'paused_by';
     const CANCELLED_BY               = 'cancelled_by';
+    const MANDATE_HUB                = 'mandate_hub';
 
     protected $entity = 'card_mandate';
 
@@ -39,7 +39,6 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
-        self::MANDATE_REGISTER_ID,
         self::MANDATE_SUMMARY_URL,
         self::STATUS,
         self::CREATED_AT,
@@ -48,7 +47,6 @@ class Entity extends Base\PublicEntity
     protected $visible = [
         self::ID,
         self::MERCHANT_ID,
-        self::MANDATE_REGISTER_ID,
         self::MANDATE_SUMMARY_URL,
         self::STATUS,
         self::CREATED_AT,
@@ -58,16 +56,6 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         self::STATUS => Status::CREATED,
     ];
-
-    public function setMandateSummaryUrl($url)
-    {
-        $this->setAttribute(self::MANDATE_SUMMARY_URL, $url);
-    }
-
-    public function setMandateRegisterId($url)
-    {
-        $this->setAttribute(self::MANDATE_REGISTER_ID, $url);
-    }
 
     public function setMandateId($url)
     {
@@ -85,19 +73,104 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
+    public function setMandateCardId($value)
+    {
+        $this->setAttribute(self::MANDATE_CARD_ID, $value);
+    }
+
+    public function setMandateCardName($value)
+    {
+        $this->setAttribute(self::MANDATE_CARD_NAME, $value);
+    }
+
+    public function setMandateCardLast4($value)
+    {
+        $this->setAttribute(self::MANDATE_CARD_LAST4, $value);
+    }
+
+    public function setMandateCardNetwork($value)
+    {
+        $this->setAttribute(self::MANDATE_CARD_NETWORK, $value);
+    }
+
+    public function setMandateCardType($value)
+    {
+        $this->setAttribute(self::MANDATE_CARD_TYPE, $value);
+    }
+
+    public function setMandateCardIssuer($value)
+    {
+        $this->setAttribute(self::MANDATE_CARD_ISSUER, $value);
+    }
+
+    public function setMandateCardInternational($value)
+    {
+        $this->setAttribute(self::MANDATE_CARD_INTERNATIONAL, $value);
+    }
+
+    public function setMandateSummaryUrl($value)
+    {
+        $this->setAttribute(self::MANDATE_SUMMARY_URL, $value);
+    }
+
+    public function setDebitType($value)
+    {
+        $this->setAttribute(self::DEBIT_TYPE, $value);
+    }
+
+    public function setCurrency($value)
+    {
+        $this->setAttribute(self::CURRENCY, $value);
+    }
+
+    public function setMaxAmount($value)
+    {
+        $this->setAttribute(self::MAX_AMOUNT, $value);
+    }
+
+    public function setAmount($value)
+    {
+        $this->setAttribute(self::AMOUNT, $value);
+    }
+
+    public function setStartAt($value)
+    {
+        $this->setAttribute(self::START_AT, $value);
+    }
+
+    public function setEndAt($value)
+    {
+        $this->setAttribute(self::END_AT, $value);
+    }
+
+    public function setTotalCycles($value)
+    {
+        $this->setAttribute(self::TOTAL_CYCLES, $value);
+    }
+
+    public function setMandateInterval($value)
+    {
+        $this->setAttribute(self::MANDATE_INTERVAL, $value);
+    }
+
+    public function setFrequency($value)
+    {
+        $this->setAttribute(self::FREQUENCY, $value);
+    }
+
+    public function setMandateHub($value)
+    {
+        $this->setAttribute(self::MANDATE_HUB, $value);
+    }
+
     public function getMaxAmount()
     {
-        return Constants::MANDATE_HQ_MAX_AMOUNT_DEFAULT;
+        return Constants::MANDATE_HUB_MAX_AMOUNT_DEFAULT;
     }
 
     public function getMandateSummaryUrl()
     {
         return $this->getAttribute(self::MANDATE_SUMMARY_URL);
-    }
-
-    public function getMandateRegisterId()
-    {
-        return $this->getAttribute(self::MANDATE_REGISTER_ID);
     }
 
     public function getMandateId()
@@ -108,6 +181,16 @@ class Entity extends Base\PublicEntity
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
+    }
+
+    public function getMandateHub()
+    {
+        return $this->getAttribute(self::MANDATE_HUB);
+    }
+
+    public function isActive(): bool
+    {
+        return $this->getAttribute(self::STATUS) === Status::ACTIVE;
     }
 
     // Relations

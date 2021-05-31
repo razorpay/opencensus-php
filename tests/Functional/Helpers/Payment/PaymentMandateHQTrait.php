@@ -18,7 +18,7 @@ trait PaymentMandateHQTrait
 
         $paymentId = $content['payment_id'];
 
-        $url = (new CardMandate\Core)->getRedirectUrlForPayment($paymentId);
+        $url = (new CardMandate\MandateHubs\MandateHQ\MandateHQ)->getRedirectUrlForPayment($paymentId);
 
         $approved = $this->mandateConfirm ?? 'true';
 

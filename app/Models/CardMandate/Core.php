@@ -4,11 +4,14 @@ namespace RZP\Models\CardMandate;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Card;
 use RZP\Models\Payment;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
+use RZP\Models\CardMandate\MandateHubs\Mandate;
+use RZP\Models\CardMandate\MandateHubs\MandateHQ;
+use RZP\Models\CardMandate\MandateHubs\MandateStatus;
 
 class Core extends Base\Core
 {
@@ -36,13 +39,11 @@ class Core extends Base\Core
 
         $cardMandate->merchant()->associate($payment->merchant);
 
-        $mandateHqInput = $this->getMandateHQRegisterInput($payment);
+        $mandateHub = (new MandateHubs\MandateHubSelector)->GetMandateHubForPayment($payment);
 
-        $mandateHqResponse = $this->app->mandateHQ->registerMandate($mandateHqInput);
+        $mandate = $mandateHub->RegisterMandate($payment);
 
-        $cardMandate->setMandateRegisterId($mandateHqResponse[Constants::MANDATE_HQ_MANDATE_REGISTER_ID]);
-
-        $cardMandate->setMandateSummaryUrl($mandateHqResponse[Constants::MANDATE_HQ_REDIRECT_URL]);
+        $this->fillDataFromMandateRegisterResponse($cardMandate, $mandate);
 
         $this->repo->saveOrFail($cardMandate);
 
@@ -91,7 +92,7 @@ class Core extends Base\Core
             throw new BadRequestException(ErrorCode::BAD_REQUEST_CARD_MANDATE_IS_NOT_ACTIVE_PAUSED);
         }
 
-        if ($cardMandate->getStatus() === Status::EXPIRED)
+        if ($cardMandate->getStatus() === Status::COMPLETED)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_CARD_MANDATE_IS_NOT_ACTIVE_EXPIRED);
         }
@@ -147,21 +148,59 @@ class Core extends Base\Core
         ]);
     }
 
-    public function processCallBack($mandateId, $status)
+    public function processMandateHQCallBack($input)
     {
         $this->trace->info(TraceCode::CARD_MANDATE_ACTION_PROCESS_CALLBACK, [
-            'mandate_id'  => $mandateId,
-            'status'      => $status,
+            'input' => $input,
         ]);
 
-        $cardMandate = $this->repo->card_mandate->findByMandateIdOrFail($mandateId);
+        (new MandateHQ\Validator)->validateInput('process_call_back', $input);
+
+        $contains = $input[MandateHQ\Constants::WEBHOOK_CONTAINS];
+
+        if (in_array(MandateHQ\Constants::WEBHOOK_ENTITY_MANDATE, $contains))
+        {
+            $mandateResponse = $input[MandateHQ\Constants::WEBHOOK_PAYLOAD][MandateHQ\Constants::WEBHOOK_ENTITY_MANDATE];
+            $mandate = MandateHQ\MandateHQ::getMandateFromMandateHqResponse($mandateResponse[MandateHQ\Constants::WEBHOOK_ENTITY]);
+
+            $this->updateMandateFromCallbackResponse($mandate);
+        }
+
+        if (in_array(MandateHQ\Constants::WEBHOOK_ENTITY_NOTIFICATION, $contains))
+        {
+            $notificationResponse = $input[MandateHQ\Constants::WEBHOOK_PAYLOAD][MandateHQ\Constants::WEBHOOK_ENTITY_NOTIFICATION];
+            $notification = MandateHQ\MandateHQ::getNotificationFromMandateHqResponse($notificationResponse[MandateHQ\Constants::WEBHOOK_ENTITY]);
+
+            (new CardMandateNotification\Core)->updateNotificationFromCallbackResponse($notification);
+        }
+    }
+
+    protected function updateMandateFromCallbackResponse(Mandate $mandate)
+    {
+        $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
+
+        $mandateId = $mandate->getAttribute(Mandate::MANDATE_ID);
+
+        $cardMandate = $this->repo->card_mandate->findByMandateId($mandateId);
+
+        if ($cardMandate === null)
+        {
+            $this->app['basicauth']->setModeAndDbConnection(Mode::TEST);
+
+            $cardMandate = $this->repo->card_mandate->findByMandateId($mandateId);
+        }
+
+        if ($cardMandate === null)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+        }
 
         $this->repo->transaction(
-            function () use ($cardMandate, $status)
+            function () use ($cardMandate, $mandate)
             {
                 $this->repo->card_mandate->lockForUpdateAndReload($cardMandate);
 
-                $cardMandate->setStatus($status);
+                $cardMandate->setStatus($this->getCardMandateStatusFromMandateStatus($mandate->getStatus()));
 
                 $cardMandate->saveOrFail();
             });
@@ -169,9 +208,30 @@ class Core extends Base\Core
         return $cardMandate;
     }
 
-    public function postAuthorizeConfirmMandate(Payment\Entity $payment)
+    protected function getCardMandateStatusFromMandateStatus($status)
     {
-        $this->trace->info(TraceCode::CARD_MANDATE_CONFIRM_REQUEST, [
+        switch ($status)
+        {
+            case MandateStatus::CREATED:
+                return Status::CREATED;
+            case MandateStatus::ACTIVATED:
+                return Status::ACTIVE;
+            case MandateStatus::PAUSED:
+                return Status::PAUSED;
+            case MandateStatus::CANCELLED:
+                return Status::CANCELLED;
+            case MandateStatus::COMPLETED:
+                return Status::COMPLETED;
+            default:
+                throw new Exception\ServerErrorException('should not have reached here',
+                    ErrorCode::SERVER_ERROR,
+                ['mandate_status' => $status]);
+        }
+    }
+
+    public function reportInitialPayment(Payment\Entity $payment)
+    {
+        $this->trace->info(TraceCode::CARD_MANDATE_PAYMENT_INITIAL_REPORT, [
             'payment_id'  => $payment->getId(),
         ]);
 
@@ -181,74 +241,38 @@ class Core extends Base\Core
 
         $cardMandate = $this->repo->card_mandate->findByIdAndMerchant($cardMandateId, $payment->merchant);
 
-        $mandateHqResponse = $this->app->mandateHQ->confirmMandate($cardMandate->getMandateRegisterId());
+        $mandateHub = (new MandateHubs\MandateHubSelector)->GetMandateHubForCardMandate($cardMandate);
 
-        $cardMandate->setMandateId($mandateHqResponse[Constants::MANDATE_HQ_MANDATE_ID]);
+        $mandateHub->ReportInitialPayment($cardMandate, $payment);
 
-        $cardMandate->setStatus(Status::ACTIVE);
+        if ($payment->isCaptured() === true)
+        {
+            $cardMandate->setStatus(Status::ACTIVE);
 
-        $cardMandate->saveOrFail();
+            $cardMandate->saveOrFail();
 
-        $this->trace->info(TraceCode::CARD_MANDATE_CONFIRMED, [
-            'card_mandate_id'     => $cardMandate->getId(),
-            'card_mandate_status' => $cardMandate->getStatus(),
-        ]);
+            $this->trace->info(TraceCode::CARD_MANDATE_CONFIRMED, [
+                'card_mandate_id'     => $cardMandate->getId(),
+                'card_mandate_status' => $cardMandate->getStatus(),
+            ]);
+        }
     }
 
-    protected function getMandateHQRegisterInput(Payment\Entity $payment)
+    public function reportSubsequentPayment(Payment\Entity $payment)
     {
-        $url = $this->getRedirectUrlForPayment($payment->getPublicId());
+        $this->trace->info(TraceCode::CARD_MANDATE_PAYMENT_INITIAL_REPORT, [
+            'payment_id'  => $payment->getId(),
+        ]);
 
         $token = $payment->localToken;
 
-        $card = $payment->card;
+        $cardMandateId = $token->getCardMandateId();
 
-        $maxAmount = $token->getMaxAmount();
+        $cardMandate = $this->repo->card_mandate->findByIdAndMerchant($cardMandateId, $payment->merchant);
 
-        if ($maxAmount === null)
-        {
-            $maxAmount = Constants::MANDATE_HQ_MAX_AMOUNT_DEFAULT;
-        }
+        $mandateHub = (new MandateHubs\MandateHubSelector)->GetMandateHubForCardMandate($cardMandate);
 
-        $endTime = $token->card->getExpiryTimestamp();
-
-        return [
-            Constants::MANDATE_HQ_INSTRUMENT => [
-                Constants::MANDATE_HQ_INSTRUMENT_ID     => $this->getCardNumber($card),
-                Constants::MANDATE_HQ_INSTRUMENT_EXPIRY => $card->getExpiryMonth() . '/' . substr($card->getExpiryYear(), -2),
-                Constants::MANDATE_HQ_INSTRUMENT_METHOD => Constants::MANDATE_HQ_INSTRUMENT_METHOD_CARD,
-                Constants::MANDATE_HQ_INSTRUMENT_TYPE   => Constants::MANDATE_HQ_INSTRUMENT_TYPE_CARD
-            ],
-            Constants::MANDATE_HQ_MERCHANT                => $payment->merchant->getName(),
-            Constants::MANDATE_HQ_MAX_AMOUNT              => $maxAmount,
-            Constants::MANDATE_HQ_AMOUNT                  => $payment->getAmount(),
-            Constants::MANDATE_HQ_CURRENCY                => $payment->getCurrency(),
-            Constants::MANDATE_HQ_FREQUENCY               => Constants::MANDATE_HQ_FREQUENCY_AD_HOC,
-            Constants::MANDATE_HQ_CALLBACK                => $url,
-            Constants::MANDATE_HQ_END_TIME                => $endTime,
-            Constants::MANDATE_HQ_DEBIT_TYPE              => Constants::MANDATE_HQ_DEBIT_TYPE_MAX_AMOUNT
-        ];
-    }
-
-    protected function getCardNumber(Card\Entity $card)
-    {
-        $cardToken = $card->getCardVaultToken();
-
-        return (new Card\CardVault)->getCardNumber($cardToken);
-    }
-
-    public function getRedirectUrlForPayment($paymentId)
-    {
-        $params = [
-            'id'   => $paymentId,
-            'hash' => $this->getHashOf($paymentId),
-        ];
-
-        $redirectRouteName = Constants::MANDATE_HQ_REDIRECT_ROUTE_NAME;
-
-        return $this->route->getUrlWithPublicAuthInQueryParam(
-            $redirectRouteName,
-            $params);
+        return $mandateHub->reportSubsequentPayment($cardMandate, $payment);
     }
 
     /**
@@ -273,5 +297,28 @@ class Core extends Base\Core
             throw new Exception\BadRequestValidationFailureException(
                 'Callback payment hash does not match. Please notify the admin of this error.');
         }
+    }
+
+    protected function fillDataFromMandateRegisterResponse(Entity $cardMandate, MandateHubs\Mandate $mandate)
+    {
+        $cardMandate->setMandateId($mandate->getAttribute(Mandate::MANDATE_ID));
+        $cardMandate->setMandateSummaryUrl($mandate->getAttribute(Mandate::MANDATE_SUMMARY_URL));
+        $cardMandate->setMandateCardName($mandate->getAttribute(Mandate::MANDATE_CARD_NAME));
+        $cardMandate->setMandateCardLast4($mandate->getAttribute(Mandate::MANDATE_CARD_LAST4));
+        $cardMandate->setMandateCardNetwork($mandate->getAttribute(Mandate::MANDATE_CARD_NETWORK));
+        $cardMandate->setMandateCardType($mandate->getAttribute(Mandate::MANDATE_CARD_TYPE));
+        $cardMandate->setMandateCardIssuer($mandate->getAttribute(Mandate::MANDATE_CARD_ISSUER));
+        $cardMandate->setMandateCardInternational($mandate->getAttribute(Mandate::MANDATE_CARD_INTERNATIONAL));
+        $cardMandate->setDebitType($mandate->getAttribute(Mandate::DEBIT_TYPE));
+        $cardMandate->setCurrency($mandate->getAttribute(Mandate::CURRENCY));
+        $cardMandate->setMaxAmount($mandate->getAttribute(Mandate::MAX_AMOUNT));
+        $cardMandate->setAmount($mandate->getAttribute(Mandate::AMOUNT));
+        $cardMandate->setStartAt($mandate->getAttribute(Mandate::START_AT));
+        $cardMandate->setEndAt($mandate->getAttribute(Mandate::END_AT));
+        $cardMandate->setTotalCycles($mandate->getAttribute(Mandate::TOTAL_CYCLES));
+        $cardMandate->setMandateInterval($mandate->getAttribute(Mandate::MANDATE_INTERVAL));
+        $cardMandate->setFrequency($mandate->getAttribute(Mandate::FREQUENCY));
+
+        $cardMandate->setMandateHub($mandate->getMandateHub());
     }
 }

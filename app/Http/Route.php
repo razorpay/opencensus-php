@@ -3267,7 +3267,6 @@ class Route
 
         // Mandate HQ
         'get_issuer_from_iin',
-        'mandate_hq_callback',
 
         'nach_batch_process',
 
@@ -6034,6 +6033,9 @@ class Route
         'accounting_payouts_callback',
         'reward_terms',
         'reward_redirect_url',
+
+        // Mandate HQ Webhook Callback
+        'mandate_hq_callback',
 
         // Direct Tax-Payment
         'direct_tax_payments_tds_category_public',
@@ -8988,7 +8990,6 @@ class Route
 
         'mandate_hq' => [
             'get_issuer_from_iin',
-            'mandate_hq_callback',
         ],
 
         'kotak' => [

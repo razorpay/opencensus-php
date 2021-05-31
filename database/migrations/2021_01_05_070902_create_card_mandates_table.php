@@ -29,15 +29,15 @@ class CreateCardMandatesTable extends Migration
             $table->string(Entity::MANDATE_SUMMARY_URL, self::VARCHAR_LEN)
                   ->nullable();
 
-            $table->string(Entity::MANDATE_REGISTER_ID, self::VARCHAR_LEN)
-                  ->nullable();
-
             $table->string(Entity::MANDATE_ID, self::VARCHAR_LEN)
                   ->nullable();
 
             $table->string(Entity::STATUS, self::VARCHAR_LEN);
 
             $table->string(Entity::MANDATE_CARD_ID, 20)
+                  ->nullable();
+
+            $table->string(Entity::MANDATE_CARD_NAME, self::VARCHAR_LEN)
                   ->nullable();
 
             $table->string(Entity::MANDATE_CARD_LAST4, 4)
@@ -86,6 +86,9 @@ class CreateCardMandatesTable extends Migration
                   ->nullable();
 
             $table->string(Entity::CANCELLED_BY, 30)
+                  ->nullable();
+
+            $table->string(Entity::MANDATE_HUB, 30)
                   ->nullable();
 
             $table->unsignedInteger(Entity::CREATED_AT);

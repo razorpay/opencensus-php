@@ -485,24 +485,7 @@ class Service extends Base\Service
 
     public function handleMandateHQCallback($input)
     {
-        $id = $input['id'] ?? '';
-        $status = $input['status'] ?? '';
-        $entity = $input['entity'] ?? '';
-
-        if ($entity === 'mandate')
-        {
-            (new CardMandate\Core)->processCallBack($id, $status);
-        }
-        elseif ($entity === 'notification')
-        {
-            (new CardMandateNotification\Core)->processCallBack($id, $status);
-        }
-        else
-        {
-            throw new Exception\BadRequestValidationFailureException('invalid entity');
-        }
-
-        return [];
+        return (new CardMandate\Core)->processMandateHQCallBack($input);
     }
 
     public function redirectToAuthorize($id)

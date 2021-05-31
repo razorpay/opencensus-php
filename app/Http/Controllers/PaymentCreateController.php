@@ -13,6 +13,7 @@ use RZP\Models\Settlement\Merchant;
 use View;
 use Crypt;
 
+use RZP\Exception;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Constants\Entity as E;
 use RZP\Constants\Environment;
@@ -20,6 +21,8 @@ use RZP\Diag\EventCode;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Trace\Tracer;
+use RZP\Error\ErrorCode;
+use RZP\Constants\HashAlgo;
 use RZP\Models\Locale\Core as LocaleCore;
 
 class PaymentCreateController extends Controller
@@ -684,6 +687,19 @@ class PaymentCreateController extends Controller
 
     public function handleMandateHQCallback()
     {
+        $rawContent = Request::getContent();
+
+        $headers = Request::header();
+
+        $receivedSignature = $headers['x-razorpay-signature'][0] ?? '';
+
+        $expectedSignature = hash_hmac(HashAlgo::SHA256,  $rawContent, config('applications.mandate_hq.webhook_secret'));
+
+        if ($receivedSignature !== $expectedSignature)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
+
         $input = Request::all();
 
         $data = $this->service(E::PAYMENT)->handleMandateHQCallback($input);

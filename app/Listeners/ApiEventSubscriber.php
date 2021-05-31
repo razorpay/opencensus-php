@@ -24,6 +24,7 @@ use RZP\Models\VirtualAccount;
 use RZP\Models\Payment\Downtime;
 use RZP\Models\Merchant\Product;
 use RZP\Models\Order\ProductType;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankingAccount\Entity;
 use RZP\Exception\ServerErrorException;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
@@ -306,15 +307,6 @@ class ApiEventSubscriber extends Base\Core
             $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
         }
 
-        if ($payment->isCardMandateRecurringInitialPayment() === true)
-        {
-            (new CardMandate\Core)->postAuthorizeConfirmMandate($payment);
-        }
-        elseif ($payment->hasCardMandateNotification() === true)
-        {
-            (new CardMandate\CardMandateNotification\Core)->notifyAfterDebit($payment);
-        }
-
         $this->notifySubscriptionRegistrationPaymentAuthorized($payment);
 
         $this->dispatchEventToStork($payload);
@@ -331,6 +323,15 @@ class ApiEventSubscriber extends Base\Core
             $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
         }
 
+        if ($payment->isCardMandateRecurringInitialPayment() === true)
+        {
+            (new CardMandate\Core)->reportInitialPayment($payment);
+        }
+        elseif ($payment->hasCardMandateNotification() === true)
+        {
+            (new CardMandate\Core)->reportSubsequentPayment($payment);
+        }
+
         $this->dispatchEventToStork($payload);
     }
 
@@ -339,6 +340,15 @@ class ApiEventSubscriber extends Base\Core
         if ($payment->hasPaymentLink() === true)
         {
             (new PaymentLink\Core)->postPaymentCaptureUpdatePaymentPage($payment);
+        }
+
+        if ($payment->isCardMandateRecurringInitialPayment() === true)
+        {
+            (new CardMandate\Core)->reportInitialPayment($payment);
+        }
+        elseif ($payment->hasCardMandateNotification() === true)
+        {
+            (new CardMandate\Core)->reportSubsequentPayment($payment);
         }
 
         $payload = $this->getPaymentPayload($payment);

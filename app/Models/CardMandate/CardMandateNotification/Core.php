@@ -4,15 +4,17 @@ namespace RZP\Models\CardMandate\CardMandateNotification;
 
 use Carbon\Carbon;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Models\Reminders;
 use RZP\Models\CardMandate;
 use RZP\Constants\Entity as E;
 use RZP\Exception\LogicException;
-use RZP\Exception\BadRequestValidationFailureException;
 
 class Core extends Base\Core
 {
@@ -24,24 +26,22 @@ class Core extends Base\Core
         $cardMandateNotification->cardMandate()->associate($cardMandate);
         $cardMandateNotification->payment()->associate($payment);
 
-        $mandateHqResponse = $this->app->mandateHQ->createPreDebitNotification($cardMandate->getMandateId(),
-            [
-                Constants::MANDATE_HQ_AMOUNT => $payment->getAmount(),
-            ]);
+        $mandateHub = (new CardMandate\MandateHubs\MandateHubSelector)->GetMandateHubForCardMandate($cardMandate);
 
-        $mandateHQstatus = $mandateHqResponse[Constants::MANDATE_HQ_STATUS];
+        $notification = $mandateHub->CreatePreDebitNotification($cardMandate, $payment);
 
-        $notificationId = $mandateHqResponse[Constants::MANDATE_HQ_NOTIFICATION_ID];
+        $cardMandateNotification->setNotificationId($notification->getId());
 
-        $cardMandateNotification->setNotificationId($notificationId);
+        $status = $this->getStatusFromNotificationStatus($notification->getStatus());
 
-        $status = $this->getStatusFromMandateHQStatus($mandateHQstatus);
-
-        $cardMandateNotification->setStatus($status);
-
-        if ($cardMandateNotification->getStatus() === Status::NOTIFIED)
+        if ($status !== Status::CREATED)
         {
-            $cardMandateNotification->setNotifiedAt(Carbon::now()->timestamp);
+            $cardMandateNotification->setStatus($status);
+        }
+
+        if ($status === Status::NOTIFIED)
+        {
+            $cardMandateNotification->setNotifiedAt($notification->getNotifiedAt());
         }
 
         $cardMandateNotification->saveOrFail();
@@ -71,28 +71,6 @@ class Core extends Base\Core
 
         $cardMandateNotification = $payment->cardMandateNotification;
 
-        $mandateId = $cardMandateNotification->cardMandate->getMandateId();
-
-        $verifyInput = [
-            Constants::MANDATE_HQ_AMOUNT          => $payment->getAmount(),
-            Constants::MANDATE_HQ_NOTIFICATION_ID => $cardMandateNotification->getNotificationId(),
-        ];
-
-        $mandateHqResponse = $this->app->mandateHQ->verifyNotification($mandateId, $verifyInput);
-
-        if ($mandateHqResponse[Constants::MANDATE_HQ_SUCCESS] === true)
-        {
-            $cardMandateNotification->setStatus(Status::VERIFIED);
-
-            $cardMandateNotification->setVerifiedAt(Carbon::now()->timestamp);
-        }
-        else
-        {
-            $cardMandateNotification->setStatus(Status::VERIFICATION_FAILED);
-        }
-
-        $cardMandateNotification->saveOrFail();
-
         $this->trace->info(TraceCode::CARD_MANDATE_VERIFY_NOTIFICATION_RESPONSE, [
             'payment_id'                   => $payment->getId(),
             'card_mandate_notification_id' => $cardMandateNotification->getId(),
@@ -102,64 +80,39 @@ class Core extends Base\Core
         return $cardMandateNotification;
     }
 
-    public function notifyAfterDebit(Payment\Entity $payment)
+    public function updateNotificationFromCallbackResponse(CardMandate\MandateHubs\Notification $notification): Entity
     {
-        $cardMandateNotification = $payment->cardMandateNotification;
+        $this->trace->info(TraceCode::CARD_MANDATE_NOTIFICATION_PROCESS_CALL_BACK, [
+            'notification_id' => $notification->getId(),
+        ]);
+
+        $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
+
+        $cardMandateNotification = $this->repo->card_mandate_notification->findByNotificationId($notification->getId());
 
         if ($cardMandateNotification === null)
         {
-            return;
+            $this->app['basicauth']->setModeAndDbConnection(Mode::TEST);
+
+            $cardMandateNotification = $this->repo->card_mandate_notification->findByNotificationId($notification->getId());
         }
 
-        if ($cardMandateNotification->getStatus() !== Status::VERIFIED)
+        if ($cardMandateNotification === null)
         {
-            throw new BadRequestValidationFailureException(
-                'card mandate notification is not in proper status'
-            );
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
         }
 
-        $mandateId = $cardMandateNotification->cardMandate->getMandateId();
-        $notificationId = $cardMandateNotification->getNotificationId();
-
-        $this->app->mandateHQ->postDebitNotify($mandateId, $notificationId);
+        $status = $this->getStatusFromNotificationStatus($notification->getStatus());
 
         $this->repo->transaction(
-            function () use ($cardMandateNotification)
-            {
-                $this->repo->card_mandate_notification->lockForUpdateAndReload($cardMandateNotification);
-
-                if ($cardMandateNotification->getStatus() !== Status::VERIFIED)
-                {
-                    throw new BadRequestValidationFailureException(
-                        'card mandate notification is not in proper status'
-                    );
-                }
-
-                $cardMandateNotification->setStatus(Status::POST_DEBIT_NOTIFIED);
-
-                $cardMandateNotification->saveOrFail();
-            });
-    }
-
-    public function processCallBack($notificationId, $status): Entity
-    {
-        $this->trace->info(TraceCode::CARD_MANDATE_NOTIFICATION_PROCESS_CALL_BACK, [
-            'notification_id' => $notificationId,
-        ]);
-
-        $cardMandateNotification = $this->repo->card_mandate_notification->findByNotificationIdOrFail($notificationId);
-
-        $status = $this->getStatusFromMandateHQStatus($status);
-
-        $this->repo->transaction(
-            function () use ($cardMandateNotification, $status) {
+            function () use ($cardMandateNotification, $status, $notification) {
                 $this->repo->card_mandate_notification->lockForUpdateAndReload($cardMandateNotification);
 
                 $cardMandateNotification->setStatus($status);
 
                 if ($cardMandateNotification->getStatus() === Status::NOTIFIED)
                 {
-                    $cardMandateNotification->setNotifiedAt(Carbon::now()->timestamp);
+                    $cardMandateNotification->setNotifiedAt($notification->getNotifiedAt());
                 }
 
                 $cardMandateNotification->saveOrFail();
@@ -174,7 +127,7 @@ class Core extends Base\Core
             $cardMandateNotification->saveOrFail();
         }
 
-        if  ($cardMandateNotification->getStatus() === Status::FAILED)
+        if ($cardMandateNotification->getStatus() === Status::FAILED)
         {
             $this->handleNotificationFailed($cardMandateNotification, $cardMandateNotification->payment);
         }
@@ -229,18 +182,17 @@ class Core extends Base\Core
         return $reminderId;
     }
 
-    protected function getStatusFromMandateHQStatus($status)
+    protected function getStatusFromNotificationStatus($status)
     {
         switch ($status)
         {
-            case Constants::MANDATE_HQ_STATUS_CREATED:
-            case Constants::MANDATE_HQ_STATUS_PENDING:
+            case CardMandate\MandateHubs\NotificationStatus::CREATED:
+                return Status::CREATED;
+            case CardMandate\MandateHubs\NotificationStatus::PENDING:
                 return Status::PENDING;
-            case Constants::MANDATE_HQ_STATUS_DEBIT_PENDING:
+            case CardMandate\MandateHubs\NotificationStatus::NOTIFIED:
                 return Status::NOTIFIED;
-            case Constants::MANDATE_HQ_STATUS_COMPLETED:
-                return Status::POST_DEBIT_NOTIFIED;
-            case Constants::MANDATE_HQ_STATUS_FAILED:
+            case CardMandate\MandateHubs\NotificationStatus::FAILED:
                 return Status::FAILED;
             default:
                 throw new LogicException('Should not have reached here. Status: ' . $status);

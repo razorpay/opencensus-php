@@ -11,11 +11,9 @@ class MandateHQ
     const REQUEST_TIMEOUT = 60;
 
     const MANDATE_HQ_URLS = [
-        'register_mandate'              => 'mandate/mandate_request',
-        'confirm_mandate'               => 'issuer/%s/confirm',
-        'create_pre_debit_notification' => 'issuer/mandates/%s/notify',
-        'post_debit_notify'             => 'issuer/mandates/%s/post_debit_notify',
-        'verify_notification'           => 'issuer/%s/verify',
+        'register_mandate'              => 'v1/mandates/register',
+        'create_pre_debit_notification' => 'v1/mandates/%s/notifications',
+        'report_payment'                => 'v1/mandates/%s/payments',
     ];
 
     protected $baseUrl;
@@ -39,38 +37,7 @@ class MandateHQ
 
     public function registerMandate($input)
     {
-        $response = $this->sendRequest(self::MANDATE_HQ_URLS['register_mandate'], 'post', $input);
-
-        $error = $response['error'] ?? [];
-
-        $success = $error['success'] ?? true;
-
-        if ($success === false)
-        {
-            throw new Exception\ServerErrorException(
-                'Mandate HQ error',
-                ErrorCode::SERVER_ERROR_MANDATE_HQ_REQUEST_FAILED,
-                [
-                    'error' => $error
-                ]
-            );
-        }
-
-        return $response;
-    }
-
-    public function confirmMandate($mandateRegisterId)
-    {
-        $url = sprintf(self::MANDATE_HQ_URLS['confirm_mandate'], $mandateRegisterId);
-
-        return $this->sendRequest($url, 'post', []);
-    }
-
-    public function verifyNotification($mandateId, $input)
-    {
-        $url = sprintf(self::MANDATE_HQ_URLS['verify_notification'], $mandateId);
-
-        return $this->sendRequest($url, 'post', $input);
+        return $this->sendRequest(self::MANDATE_HQ_URLS['register_mandate'], 'post', $input);
     }
 
     public function createPreDebitNotification($mandateId, $input)
@@ -80,11 +47,9 @@ class MandateHQ
         return $this->sendRequest($url, 'post', $input);
     }
 
-    public function postDebitNotify($mandateId, $notificationId)
+    public function reportPayment($mandateId, $input)
     {
-        $input = ['notification_id' => $notificationId];
-
-        $url = sprintf(self::MANDATE_HQ_URLS['post_debit_notify'], $mandateId);
+        $url = sprintf(self::MANDATE_HQ_URLS['report_payment'], $mandateId);
 
         return $this->sendRequest($url, 'post', $input);
     }

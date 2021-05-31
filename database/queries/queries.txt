@@ -6251,6 +6251,9 @@ ALTER TABLE `partner_configs` CHANGE COLUMN `tds_percentage` `tds_percentage` IN
 ALTER TABLE payouts
     ADD COLUMN is_payout_service TINYINT(1) DEFAULT 0;
 
+ALTER TABLE card_mandates
+    ADD COLUMN mandate_hub varchar(30);
+
 ALTER TABLE workflow_actions
     ADD COLUMN assigned_at INTEGER DEFAULT NULL;
 

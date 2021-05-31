@@ -12,7 +12,7 @@ class Status
     const ACTIVE            = 'active';
     const PAUSED            = 'paused';
     const CANCELLED         = 'cancelled'; // cancelled after mandate is active or paused.
-    const EXPIRED           = 'expired';
+    const COMPLETED         = 'completed';
 
     static $stateTran = [
         self::CREATED => [
@@ -25,16 +25,16 @@ class Status
         self::ACTIVE => [
             self::PAUSED,
             self::CANCELLED,
-            self::EXPIRED,
+            self::COMPLETED,
         ],
         self::PAUSED => [
             self::ACTIVE,
             self::CANCELLED,
-            self::EXPIRED,
+            self::COMPLETED,
         ],
         self::MANDATE_CANCELLED => [],
         self::CANCELLED => [],
-        self::EXPIRED => [],
+        self::COMPLETED => [],
     ];
 
     public static function isValid(string $status): bool

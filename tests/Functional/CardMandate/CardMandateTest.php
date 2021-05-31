@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\CardMandate;
 
 use Mockery;
 
+use Carbon\Carbon;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Entity as E;
 use RZP\Models\CardMandate\Status;
@@ -53,6 +54,7 @@ class CardMandateTest extends TestCase
 
         $order = $this->fixtures->create('order', [
             'amount' => 50000,
+            'payment_capture' => 1,
         ]);
         $this->paymentInput['card']['number'] = '4000184186218826';
         $this->paymentInput['order_id'] = $order->getPublicId();
@@ -67,7 +69,7 @@ class CardMandateTest extends TestCase
     {
         $this->mockRegisterMandate();
 
-        $this->mockConfirmMandate();
+        $this->mockReportPayment();
 
         $request = [
             'method'  => 'POST',
@@ -80,7 +82,7 @@ class CardMandateTest extends TestCase
         $this->assertNotNull($response['razorpay_payment_id'] ?? null);
 
         $payment = $this->getDbLastEntity(E::PAYMENT);
-        $this->assertEquals('authorized', $payment->getStatus());
+        $this->assertEquals('captured', $payment->getStatus());
         $this->assertEquals('initial', $payment->getRecurringType());
         $this->assertNotNull($payment->getTokenId());
 
@@ -92,7 +94,6 @@ class CardMandateTest extends TestCase
         $this->assertNotEmpty($cardMandate);
         $this->assertNotEmpty($cardMandate->getMandateSummaryUrl());
         $this->assertEquals('active', $cardMandate->getStatus());
-        $this->assertEquals('ratn_GX3VC146gmBVNe', $cardMandate->getMandateRegisterId());
         $this->assertEquals('ratn_PP3VC146gmBVGG', $cardMandate->getMandateId());
     }
 
@@ -101,6 +102,8 @@ class CardMandateTest extends TestCase
         $this->mockRegisterMandate();
 
         $this->mandateConfirm = 'false';
+
+        $this->mockReportPayment();
 
         $exception = false;
         try
@@ -130,7 +133,6 @@ class CardMandateTest extends TestCase
         $cardMandate = $this->getDbLastEntity(E::CARD_MANDATE);
         $this->assertNotEmpty($cardMandate);
         $this->assertEquals('mandate_cancelled', $cardMandate->getStatus());
-        $this->assertEmpty($cardMandate->getMandateId());
     }
 
     public function testCreateCardMandateAutoPayment()
@@ -148,6 +150,11 @@ class CardMandateTest extends TestCase
         unset($paymentInput[Payment::BANK]);
 
         $paymentInput[Payment::TOKEN] = $tokenId;
+        $order = $this->fixtures->create('order', [
+            'amount' => 50000,
+            'payment_capture' => 1,
+        ]);
+        $paymentInput[Payment::ORDER_ID] = $order->getPublicId();
 
         $this->ba->privateAuth();
 
@@ -164,8 +171,6 @@ class CardMandateTest extends TestCase
         $this->assertNotNull($cardMandateNotification->reminder_id);
         $this->assertNotEmpty($cardMandateNotification->notified_at);
 
-        $this->mockVerifyNotification();
-
         $this->mockPostDebitNotification();
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
@@ -175,10 +180,10 @@ class CardMandateTest extends TestCase
         $this->startTest();
 
         $cardMandateNotification = $this->getDbLastEntity('card_mandate_notification');
-        $this->assertEquals('post_debit_notified', $cardMandateNotification->getStatus());
+        $this->assertEquals('notified', $cardMandateNotification->getStatus());
 
         $payment = $this->getDbLastEntity('payment');
-        $this->assertEquals('authorized', $payment->getStatus());
+        $this->assertEquals('captured', $payment->getStatus());
     }
 
     public function testCreateCardMandateAutoPaymentVerificationFailed()
@@ -196,6 +201,11 @@ class CardMandateTest extends TestCase
         unset($paymentInput[Payment::BANK]);
 
         $paymentInput[Payment::TOKEN] = $tokenId;
+        $order = $this->fixtures->create('order', [
+            'amount' => 50000,
+            'payment_capture' => 1,
+        ]);
+        $paymentInput[Payment::ORDER_ID] = $order->getPublicId();
 
         $this->ba->privateAuth();
 
@@ -212,16 +222,15 @@ class CardMandateTest extends TestCase
         $this->assertNotNull($cardMandateNotification->reminder_id);
         $this->assertNotEmpty($cardMandateNotification->notified_at);
 
-        $this->mockVerifyNotification(false);
-
         $url = $this->testData[__FUNCTION__]['request']['url'];
         $this->testData[__FUNCTION__]['request']['url'] = sprintf($url, $payment->getId());
         $this->ba->reminderAppAuth();
 
-        $this->startTest();
+        $cardMandate = $this->getDbLastEntity('card_mandate_notification');
+        $cardMandate->status = 'cancelled';
+        $cardMandate->saveOrFail();
 
-        $cardMandateNotification = $this->getDbLastEntity('card_mandate_notification');
-        $this->assertEquals('verification_failed', $cardMandateNotification->getStatus());
+        $this->startTest();
 
         $payment = $this->getDbLastEntity('payment');
         $this->assertEquals('failed', $payment->getStatus());
@@ -282,22 +291,8 @@ class CardMandateTest extends TestCase
         $this->mockCreatePreDebitNotification();
 
         $cardMandate = $this->getDbLastEntity('card_mandate');
-
-        $request = array(
-            'method'  => 'POST',
-            'url'     => '/mandate_hq/callback',
-            'content' => [
-                'entity' => 'mandate',
-                'id' => $cardMandate->mandate_id,
-                'status' => 'paused',
-            ],
-        );
-
-        $this->ba->mandateHQAuth();
-        $this->makeRequestAndGetContent($request);
-
-        $cardMandate = $this->getDbLastEntity('card_mandate');
-        $this->assertEquals('paused', $cardMandate->status);
+        $cardMandate->setStatus(Status::PAUSED);
+        $cardMandate->saveOrFail();
 
         $paymentEntity = $this->getLastEntity('payment', true);
 
@@ -348,7 +343,7 @@ class CardMandateTest extends TestCase
         }
 
         $this->fixtures->edit('card_mandate', $cardMandate->getId(), [
-            'status' => Status::EXPIRED,
+            'status' => Status::COMPLETED,
         ]);
 
         $exception = false;
@@ -368,20 +363,6 @@ class CardMandateTest extends TestCase
         }
     }
 
-    protected function mockVerifyNotification($success = true)
-    {
-        $callable = function () use ($success)
-        {
-            return [
-                'success' => $success,
-                'error_code' => "",
-                'error_message' => ""
-            ];
-        };
-
-        return $this->mockMandateHQ($callable, 'verifyNotification');
-    }
-
     protected function mockPostDebitNotification($success = true)
     {
         $callable = function () use ($success)
@@ -399,34 +380,23 @@ class CardMandateTest extends TestCase
         $callable = function ()
         {
             return [
-                'error' => [
-                    'success' => true,
-                    'error_code' => "",
-                    'error_message' => ""
-                ],
                 'redirect_url' => "https://mandate-manager.stage.razorpay.in/issuer/hdfc_GX3VC146gmBVNe/hostedpage",
-                'mandate_register_id' => "ratn_GX3VC146gmBVNe"
+                'id' => "ratn_PP3VC146gmBVGG",
+                "status" => "created",
             ];
         };
 
         return $this->mockMandateHQ($callable);
     }
 
-    protected function mockConfirmMandate()
+    protected function mockReportPayment()
     {
         $callable = function ()
         {
-            return [
-                'error' => [
-                    'success' => true,
-                    'error_code' => "",
-                    'error_message' => ""
-                ],
-                'mandateId' => 'ratn_PP3VC146gmBVGG'
-            ];
+            return [];
         };
 
-        return $this->mockMandateHQ($callable, 'confirmMandate');
+        return $this->mockMandateHQ($callable, 'reportPayment');
     }
 
     protected function mockCreatePreDebitNotification($success = true)
@@ -434,13 +404,9 @@ class CardMandateTest extends TestCase
         $callable = function () use ($success)
         {
             return [
-                'error' => [
-                    'success' => $success,
-                    'error_code' => "",
-                    'error_message' => ""
-                ],
-                'notification_id' => 'ratn_PP3VC146gmBVGG',
-                'status' => $success ? 'debit_pending' : 'failed',
+                'id' => 'ratn_PP3VC146gmBVGG',
+                'status' => $success ? 'delivered' : 'failed',
+                'delivered_at' => Carbon::now()->timestamp,
             ];
         };
 
