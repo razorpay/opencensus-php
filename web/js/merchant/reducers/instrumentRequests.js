@@ -587,6 +587,11 @@ let initialState = {
                   status: 'Request',
                   slug: 'dlxb_c',
                 },
+                {
+                  name: 'Kotak Mahindra Bank',
+                  status: 'Request',
+                  slug: 'kkbk_c',
+                },
               ],
             },
           ],
