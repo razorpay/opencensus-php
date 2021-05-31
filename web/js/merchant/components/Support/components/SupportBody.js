@@ -41,21 +41,20 @@ class SupportBody extends Component {
   };
 
   createTicket = (id, pcb, lcb) => {
+    analyticsTrack({
+      objectName: 'create ticket',
+      actionName: 'clicked',
+      screen: 'home page',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     const user = this.props.user;
     const rzpTicketSystem = window.rzpTicketSystem;
     if (rzpTicketSystem) {
       if (pcb) {
         pcb();
       }
-      analyticsTrack({
-        objectName: 'contact us',
-        actionName: 'clicked',
-        screen: 'my account',
-        properties: {
-          location: 'balances',
-          ...getCommonAnalyticsProperties(window.rzp_user),
-        },
-      });
       if (this.props.supportFlags.show_create_ticket_popup) {
         this.props.openModal({
           size: 'small',
@@ -138,6 +137,15 @@ class SupportBody extends Component {
         },
       });
       onToggle();
+      analyticsTrack({
+        objectName: 'contact us',
+        actionName: 'clicked',
+        screen: 'my account',
+        properties: {
+          location:'widget',
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      });
       this.createTicket(id);
     } else {
       console.log('RZP TICKET SYSTEM INIT FAILED');
