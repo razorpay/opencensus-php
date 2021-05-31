@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Netbanking\Axis\Emandate;
 
+use Requests_Hooks;
 use RZP\Constants\HashAlgo;
 use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
@@ -414,6 +415,8 @@ trait EmandateTrait
             ]
         );
 
+        $request['options']['hooks'] = $this->getRequestHooks();
+
         $response = $this->sendGatewayRequest($request);
 
         $this->trace->info(
@@ -584,5 +587,19 @@ trait EmandateTrait
         }
 
         return $this->getLiveMerchantId();
+    }
+
+    protected function getRequestHooks()
+    {
+        $hooks = new Requests_Hooks();
+
+        $hooks->register('curl.before_send', [$this, 'setCurlOptions']);
+
+        return $hooks;
+    }
+
+    public function setCurlOptions($curl)
+    {
+        curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
     }
 }
