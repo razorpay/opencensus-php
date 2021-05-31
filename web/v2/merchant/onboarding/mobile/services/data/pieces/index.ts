@@ -98,3 +98,7 @@ export const bankAndCompanyDetails = {
   company_cin: 'K79807HN8900PGH809707',
   gstin: 'Qwoquiouytyuiip',
 };
+
+export const BusinessModelPicker = {
+  business_subcategory: 'others',
+};

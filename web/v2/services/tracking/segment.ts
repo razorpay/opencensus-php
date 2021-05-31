@@ -80,49 +80,50 @@ export const analyticsTrack = ({
       ...commonProperties,
     });
   }
-
-  switch (eventAction) {
-    case 'initiated':
-      window.rzpQ.push(
-        window.rzpQ
-          .now()
-          .onbr()
-          .initiated(dataLakeEventName, {
-            ...commonProperties,
-          }),
-      );
-      break;
-    case 'success':
-      window.rzpQ.push(
-        window.rzpQ
-          .now()
-          .onbr()
-          .success(dataLakeEventName, {
-            ...commonProperties,
-          }),
-      );
-      break;
-    case 'failed':
-      window.rzpQ.push(
-        window.rzpQ
-          .now()
-          .onbr()
-          .failed(dataLakeEventName, {
-            ...commonProperties,
-          }),
-      );
-      break;
-    case 'dropped':
-      window.rzpQ.push(
-        window.rzpQ
-          .now()
-          .onbr()
-          .dropped(dataLakeEventName, {
-            ...commonProperties,
-          }),
-      );
-      break;
-    default:
-      break;
+  if (window.rzpQ && window.rzpQ.push) {
+    switch (eventAction) {
+      case 'initiated':
+        window.rzpQ.push(
+          window.rzpQ
+            .now()
+            .onbr()
+            .initiated(dataLakeEventName, {
+              ...commonProperties,
+            }),
+        );
+        break;
+      case 'success':
+        window.rzpQ.push(
+          window.rzpQ
+            .now()
+            .onbr()
+            .success(dataLakeEventName, {
+              ...commonProperties,
+            }),
+        );
+        break;
+      case 'failed':
+        window.rzpQ.push(
+          window.rzpQ
+            .now()
+            .onbr()
+            .failed(dataLakeEventName, {
+              ...commonProperties,
+            }),
+        );
+        break;
+      case 'dropped':
+        window.rzpQ.push(
+          window.rzpQ
+            .now()
+            .onbr()
+            .dropped(dataLakeEventName, {
+              ...commonProperties,
+            }),
+        );
+        break;
+      default:
+        break;
+    }
   }
 };

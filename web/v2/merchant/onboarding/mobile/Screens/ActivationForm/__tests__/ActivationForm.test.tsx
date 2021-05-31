@@ -1,0 +1,70 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import React from 'react';
+import '@testing-library/jest-dom/extend-expect';
+import ActivationForm from '..';
+import { waitForElementToBeRemoved, screen, render, fireEvent, waitFor } from 'test-utils';
+
+/* eslint-disable func-names */
+window.HTMLElement.prototype.scrollIntoView = function () {};
+
+const waitForLoaderToFinish = () =>
+  waitForElementToBeRemoved(() => [...screen.queryAllByRole('loader')], { timeout: 4000 });
+
+test('ActivationForm Flow', async () => {
+  jest.setTimeout(30000);
+  render(<ActivationForm />, {});
+  await waitForLoaderToFinish();
+  expect(screen.getByText('Contact Name')).toBeInTheDocument();
+  const nextButton = screen.getByText('Next');
+  const [contactNameInput, contactEmailInput, contactNumber]: any = screen.getAllByTestId(
+    'ds-text-input',
+  );
+
+  fireEvent.change(contactNameInput, { target: { value: 'Neeraj' } });
+  fireEvent.change(contactEmailInput, { target: { value: 'Neeraj@abc.com' } });
+  fireEvent.change(contactNumber, { target: { value: '1234567890' } });
+  expect(contactNameInput.value).toBe('Neeraj');
+  expect(contactEmailInput.value).toBe('Neeraj@abc.com');
+  expect(contactNumber.value).toBe('1234567890');
+  fireEvent.click(nextButton);
+  expect(screen.getByText('About Your Business')).toBeInTheDocument();
+  const [businessTypeInput, businessCategorySelect, billingLabelInput]: any = screen.getAllByTestId(
+    'ds-text-input',
+  );
+  fireEvent.click(businessTypeInput);
+  expect(screen.getByText('Private Limited')).toBeInTheDocument();
+  fireEvent.click(screen.getByText('Private Limited'));
+  fireEvent.change(billingLabelInput, { target: { value: 'Some Label' } });
+  expect(businessTypeInput.value).toBe('Private Limited');
+  expect(billingLabelInput.value).toBe('Some Label');
+  fireEvent.click(nextButton);
+  await waitFor(() => {
+    expect(screen.getByText('Business PAN')).toBeInTheDocument();
+  });
+
+  expect(screen.getByText('Authorised Signatory PAN')).toBeInTheDocument();
+  /* eslint-disable one-var */
+  const [
+      businessPanInput,
+      buseinessNameInput,
+      authSignatoryProofInput,
+      authSignatoryNameInput,
+      pincodeInput,
+      cityInput,
+      stateInput,
+    ]: any = screen.getAllByTestId('ds-text-input'),
+    addressInput = screen.getByTestId('ds-text-area');
+
+  fireEvent.change(businessPanInput, { target: { value: 'ABCDE1234F' } });
+  fireEvent.change(buseinessNameInput, { target: { value: 'Neeraj' } });
+  fireEvent.change(authSignatoryProofInput, { target: { value: 'AAPFA3421J' } });
+  fireEvent.change(authSignatoryNameInput, { target: { value: 'testName' } });
+  expect(businessPanInput.value).toBe('ABCDE1234F');
+  expect(buseinessNameInput.value).toBe('Neeraj');
+  expect(authSignatoryProofInput.value).toBe('AAPFA3421J');
+  expect(authSignatoryNameInput.value).toBe('testName');
+  fireEvent.change(addressInput, { target: { value: 'Flat no 12, opp Adugodi Police Station' } });
+  fireEvent.change(pincodeInput, { target: { value: '530068' } });
+  fireEvent.change(cityInput, { target: { value: 'Bangalore' } });
+  fireEvent.change(stateInput, { target: { value: 'Karnataka' } });
+});

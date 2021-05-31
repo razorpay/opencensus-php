@@ -64,10 +64,7 @@ export const handlers = [
                 matched = true;
               }
             });
-            if (matched) {
-              return true;
-            }
-            return false;
+            return matched;
           }),
         }),
       );

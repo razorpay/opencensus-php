@@ -1,19 +1,36 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import OnboardingCard from '../index';
+import { useQuery } from 'react-query';
 import * as Messages from '../Constants';
 import * as PaymentsDB from '../../services/data/PaymentsDB';
 import * as ActivationDB from '../../services/data/ActivationDB';
 import * as DataPieces from '../../services/data/pieces';
+import OnboardingCardShimmer from '../OnboardingCardShimmer';
+import useActivation from '../../hooks/useActivation';
+import CurrentActivationProgress from 'v2/merchant/onboarding/mobile/OnboardingCard/CurrentActivationProgress';
 import { render, screen, waitForElementToBeRemoved } from 'test-utils';
+import { fetch } from 'v2/services/rest/rest-fetch';
 
 afterEach(() => {
   ActivationDB.reset();
   PaymentsDB.reset();
 });
 
+const fetchPayments = async () => {
+  const data = await fetch<any>({ url: 'payments' });
+  return data;
+};
+
 const waitForLoadingToFinish = () =>
   waitForElementToBeRemoved(() => [...screen.queryAllByRole('shimmer')], { timeout: 4000 });
+
+const App: React.FC = () => {
+  const { status: activationQueryStatus, data: activationData } = useActivation();
+  const { status: paymentsQueryStatus, data: paymentsData } = useQuery('payments', fetchPayments);
+  if (activationQueryStatus === 'loading' || paymentsQueryStatus === 'loading')
+    return <OnboardingCardShimmer />;
+  return <CurrentActivationProgress data={activationData} payments={paymentsData} />;
+};
 
 test('should render correct message for poi_verification_status = incorrect_details', async () => {
   ActivationDB.update({
@@ -21,7 +38,7 @@ test('should render correct message for poi_verification_status = incorrect_deta
     ...DataPieces.OnboardingMileStoneBizPicker,
     ...DataPieces.POIStatus.incorrect_details,
   });
-  render(<OnboardingCard />, {});
+  render(<App />, {});
   await waitForLoadingToFinish();
   expect(
     screen.getByText(Messages.POI_VERIFICATION_STATUS.incorrect_details.title),
@@ -37,7 +54,7 @@ test('should render correct message for poi_verification_status = failed', async
     ...DataPieces.OnboardingMileStoneBizPicker,
     ...DataPieces.POIStatus.failed,
   });
-  render(<OnboardingCard />, {});
+  render(<App />, {});
   await waitForLoadingToFinish();
   expect(screen.getByText(Messages.POI_VERIFICATION_STATUS.failed.title)).toBeInTheDocument();
   expect(screen.getByText(Messages.POI_VERIFICATION_STATUS.failed.description)).toBeInTheDocument();
@@ -49,7 +66,7 @@ test('should render correct message for poi_verification_status = pending', asyn
     ...DataPieces.OnboardingMileStoneBizPicker,
     ...DataPieces.POIStatus.pending,
   });
-  render(<OnboardingCard />, {});
+  render(<App />, {});
   await waitForLoadingToFinish();
   expect(screen.getByText(Messages.POI_VERIFICATION_STATUS.pending.title)).toBeInTheDocument();
   expect(
@@ -64,7 +81,7 @@ test.skip('should render correct message for bank_details_verification_status = 
     ...DataPieces.POIStatus.pending,
     bank_details_verification_status: 'failed',
   });
-  render(<OnboardingCard />, {});
+  render(<App />, {});
   await waitForLoadingToFinish();
   expect(
     screen.getByText(Messages.BANK_DETAILS_VERIFICATION_STATUS.failed.title),
@@ -82,7 +99,7 @@ test.skip('should render correct message for activation_status = under_review', 
     ...DataPieces.POIStatus.pending,
     activation_status: 'under_review',
   });
-  render(<OnboardingCard />, {});
+  render(<App />, {});
   await waitForLoadingToFinish();
   expect(
     screen.getByText(Messages.ACTIVATION_STATUS_UNDER_REVIEW.registered.title),
@@ -100,7 +117,7 @@ test.skip('should render correct message for activation_status = needs_clarifica
     ...DataPieces.POIStatus.pending,
     activation_status: 'needs_clarification',
   });
-  render(<OnboardingCard />, {});
+  render(<App />, {});
   await waitForLoadingToFinish();
   expect(
     screen.getByText(Messages.ACTIVATION_STATUS_NEEDS_CLARIFICATION.title),
@@ -118,7 +135,7 @@ test.skip('should render correct message for activation_status = activated', asy
     ...DataPieces.POIStatus.pending,
     activation_status: 'activated',
   });
-  render(<OnboardingCard />, {});
+  render(<App />, {});
   await waitForLoadingToFinish();
   expect(screen.getByText(Messages.ACTIVATION_STATUS_ACTIVATED.title)).toBeInTheDocument();
   expect(screen.getByText(Messages.ACTIVATION_STATUS_ACTIVATED.description)).toBeInTheDocument();
@@ -130,7 +147,7 @@ test('should render correct message for AF = greylist and IAF = greylist when mu
     ...DataPieces.regBusinessOverview,
     ...DataPieces.OnboardingMileStoneBizPicker,
   });
-  render(<OnboardingCard />, {});
+  render(<App />, {});
   await waitForLoadingToFinish();
   expect(
     screen.getByText(Messages.REMAINING_STEPS.af_gl.iaf_gl.multiple.title),
@@ -149,7 +166,7 @@ test.skip('should render correct message for AF = greylist and IAF = greylist wh
     ...DataPieces.bankAndCompanyDetails,
     ...DataPieces.OnboardingMileStoneBizPicker,
   });
-  render(<OnboardingCard />, {});
+  render(<App />, {});
   await waitForLoadingToFinish();
   expect(screen.getByText(Messages.REMAINING_STEPS.af_gl.iaf_gl.single.title)).toBeInTheDocument();
   expect(
@@ -163,7 +180,7 @@ test('should render correct message for AF = greylist and IAF = blacklist when m
     ...DataPieces.regBusinessOverview,
     ...DataPieces.OnboardingMileStoneBizPicker,
   });
-  render(<OnboardingCard />, {});
+  render(<App />, {});
   await waitForLoadingToFinish();
   expect(
     screen.getByText(Messages.REMAINING_STEPS.af_gl.iaf_bl.multiple.title),
@@ -182,7 +199,7 @@ test.skip('should render correct message for AF = greylist and IAF = blacklist w
     ...DataPieces.bankAndCompanyDetails,
     ...DataPieces.OnboardingMileStoneBizPicker,
   });
-  render(<OnboardingCard />, {});
+  render(<App />, {});
   await waitForLoadingToFinish();
   expect(screen.getByText(Messages.REMAINING_STEPS.af_gl.iaf_bl.single.title)).toBeInTheDocument();
   expect(
@@ -195,7 +212,7 @@ test('should render correct message for AF = whitelist and IAF = whitelist when 
     ...DataPieces.ActivationFlowWW,
     ...DataPieces.OnboardingMileStoneBizPicker,
   });
-  render(<OnboardingCard />, {});
+  render(<App />, {});
   await waitForLoadingToFinish();
   expect(
     screen.getByText(Messages.REMAINING_STEPS.af_wl.iaf_wl.enable_payments.multiple.title),
@@ -212,7 +229,7 @@ test.skip('should render correct message for AF = whitelist and IAF = whitelist 
     ...DataPieces.contactDetails,
     ...DataPieces.regBusinessOverview,
   });
-  render(<OnboardingCard />, {});
+  render(<App />, {});
   await waitForLoadingToFinish();
   expect(
     screen.getByText(Messages.REMAINING_STEPS.af_wl.iaf_wl.enable_payments.single.title),
@@ -230,7 +247,7 @@ test('should render correct message for AF = whitelist and IAF = whitelist when 
     ...DataPieces.businessDetails,
     ...DataPieces.OnboardingMileStoneL1,
   });
-  render(<OnboardingCard />, {});
+  render(<App />, {});
   await waitForLoadingToFinish();
   expect(
     screen.getByText(
@@ -254,7 +271,7 @@ test('should render correct message for AF = whitelist and IAF = whitelist when 
     ...DataPieces.bankAndCompanyDetails,
     ...DataPieces.OnboardingMileStoneL1,
   });
-  render(<OnboardingCard />, {});
+  render(<App />, {});
   await waitForLoadingToFinish();
   expect(
     screen.getByText(
@@ -277,7 +294,7 @@ test('should render correct message for AF = whitelist and IAF = whitelist when 
     ...DataPieces.regBusinessOverview,
     ...DataPieces.OnboardingMileStoneL1,
   });
-  render(<OnboardingCard />, {});
+  render(<App />, {});
   await waitForLoadingToFinish();
   expect(
     screen.getByText(
@@ -303,7 +320,7 @@ test('should render correct message for AF = whitelist and IAF = whitelist when 
     ...DataPieces.bankAndCompanyDetails,
     ...DataPieces.OnboardingMileStoneL1,
   });
-  render(<OnboardingCard />, {});
+  render(<App />, {});
   await waitForLoadingToFinish();
   expect(
     screen.getByText(
@@ -325,7 +342,7 @@ test('should render correct message for AF = whitelist and IAF = greylist when m
     ...DataPieces.OnboardingMileStoneBizPicker,
     business_type: 1,
   });
-  render(<OnboardingCard />, {});
+  render(<App />, {});
   await waitForLoadingToFinish();
   expect(
     screen.getByText(Messages.REMAINING_STEPS.af_wl.iaf_gl.enable_payments.multiple.title),
@@ -342,7 +359,7 @@ test.skip('should render correct message for AF = whitelist and IAF = greylist w
     ...DataPieces.regBusinessOverview,
     ...DataPieces.OnboardingMileStoneBizPicker,
   });
-  render(<OnboardingCard />, {});
+  render(<App />, {});
   await waitForLoadingToFinish();
   expect(
     screen.getByText(Messages.REMAINING_STEPS.af_wl.iaf_gl.enable_payments.single.title),
@@ -361,7 +378,7 @@ test('should render correct message for AF = whitelist and IAF = greylist when m
     ...DataPieces.businessDetails,
     ...DataPieces.OnboardingMileStoneL1,
   });
-  render(<OnboardingCard />, {});
+  render(<App />, {});
   await waitForLoadingToFinish();
   expect(
     screen.getByText(Messages.REMAINING_STEPS.af_wl.iaf_gl.enable_settlements.multiple.title),
@@ -381,7 +398,7 @@ test('should render correct message for AF = whitelist and IAF = greylist when o
     ...DataPieces.bankAndCompanyDetails,
     ...DataPieces.OnboardingMileStoneL1,
   });
-  render(<OnboardingCard />, {});
+  render(<App />, {});
   await waitForLoadingToFinish();
   expect(
     screen.getByText(Messages.REMAINING_STEPS.af_wl.iaf_gl.enable_settlements.single.title),
@@ -397,7 +414,7 @@ test('should render correct message for unregistered when multiple payment enabl
     ...DataPieces.OnboardingMileStoneBizPicker,
     business_type: '11',
   });
-  render(<OnboardingCard />, {});
+  render(<App />, {});
   await waitForLoadingToFinish();
   expect(
     screen.getByText(Messages.REMAINING_STEPS.unregistered.enable_payments.multiple.title),
@@ -414,7 +431,7 @@ test.skip('should render correct message for unregistered when only one payment 
     ...DataPieces.unregBusinessOverview,
     ...DataPieces.OnboardingMileStoneBizPicker,
   });
-  render(<OnboardingCard />, {});
+  render(<App />, {});
   await waitForLoadingToFinish();
   expect(
     screen.getByText(Messages.REMAINING_STEPS.unregistered.enable_payments.single.title),
@@ -432,7 +449,7 @@ test('should render correct message for unregistered when multiple settlement en
     ...DataPieces.businessDetails,
     ...DataPieces.OnboardingMileStoneL1,
   });
-  render(<OnboardingCard />, {});
+  render(<App />, {});
   await waitForLoadingToFinish();
   expect(
     screen.getByText(Messages.REMAINING_STEPS.unregistered.enable_settlements.multiple.title),
@@ -451,7 +468,7 @@ test('should render correct message for unregistered when only one settlement en
     ...DataPieces.bankAndCompanyDetails,
     ...DataPieces.OnboardingMileStoneL1,
   });
-  render(<OnboardingCard />, {});
+  render(<App />, {});
   await waitForLoadingToFinish();
   expect(
     screen.getByText(Messages.REMAINING_STEPS.unregistered.enable_settlements.single.title),
