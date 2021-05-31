@@ -1032,6 +1032,7 @@ class Gateway
         Payment\Gateway::NETBANKING_AUSF,
         Payment\Gateway::UPI_YESBANK,
         Payment\Gateway::NETBANKING_DLB,
+        Payment\Gateway::BAJAJFINSERV,
         Payment\Gateway::FULCRUM,
     ];
 

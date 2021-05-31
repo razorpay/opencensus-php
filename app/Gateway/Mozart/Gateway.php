@@ -6,7 +6,6 @@ use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
-use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Upi\Mozart;
@@ -1055,6 +1054,7 @@ class Gateway extends Base\Gateway
             case Payment\Gateway::UPI_AIRTEL:
                 return json_decode($input, true);
             case Payment\Gateway::UPI_JUSPAY:
+            case Payment\Gateway::CRED:
             case Payment\Gateway::UPI_CITI:
                 return $input;
             case Payment\Gateway::UPI_SBI:
@@ -1067,8 +1067,6 @@ class Gateway extends Base\Gateway
                 return $response;
             case Payment\Gateway::NETBANKING_KVB:
                 return $this->preProcessServerCallbackForKvb($input, $mode);
-            case Payment\Gateway::CRED:
-                return $input;
             default :
                 throw new Exception\LogicException(
                     'Invalid gateway passed for prcessing S2S callback');
@@ -1118,16 +1116,15 @@ class Gateway extends Base\Gateway
     {
         switch ($gateway)
         {
-            case 'upi_airtel':
+            case Payment\Gateway::UPI_AIRTEL:
                 return $response[UpiAirtelResponseFields::PAYMENT_ID];
-            case 'upi_citi':
+            case Payment\Gateway::UPI_CITI:
                 return $response[UpiCiti\Fields::PUSH_NOTIFICATION_TO_SSG][UpiCiti\Fields::ORDER_NO];
+            case Payment\Gateway::NETBANKING_KVB:
             case Payment\Gateway::NETBANKING_YESB:
                 return $response['data']['paymentId'];
             case Payment\Gateway::WALLET_PHONEPE:
                 return $response['data']['transactionId'];
-            case Payment\Gateway::NETBANKING_KVB:
-                return $response['data']['paymentId'];
             case Payment\Gateway::UPI_JUSPAY:
                 return $this->getPaymentIdForUpiJuspay($response);
             case Payment\Gateway::CRED:
@@ -1154,7 +1151,6 @@ class Gateway extends Base\Gateway
                     break;
             }
         }
-
 
         if ($this->isFileBasedRefund($input['payment']['gateway']) === true)
         {
@@ -1266,10 +1262,6 @@ class Gateway extends Base\Gateway
         }
 
         $verify = new Verify($this->gateway, $input);
-
-        $gatewayName = $input['payment']['gateway'];
-
-        //$this->disableVerifyCronForGateway($gatewayName, $verify);
 
         return $this->runPaymentVerifyFlow($verify);
     }

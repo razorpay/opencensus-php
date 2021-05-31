@@ -2,13 +2,12 @@
 
 namespace RZP\Gateway\Wallet\Freecharge;
 
-use Carbon\Carbon;
 use Config;
 use View;
 use RZP\Error;
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Constants\Mode;
-use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\HashAlgo;
@@ -20,7 +19,6 @@ use RZP\Models\Payment\Processor;
 use RZP\Gateway\Base\VerifyResult;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Gateway\Base as GatewayBase;
-use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Models\Payment as PaymentModel;
 use RZP\Models\Payment\Gateway as PaymentGateway;
@@ -148,8 +146,6 @@ class Gateway extends Base\Gateway
      *
      * @return array
      * @throws Exception\GatewayErrorException
-     * @throws Exception\GatewayRequestException
-     * @throws Exception\GatewayTimeoutException
      * @throws Exception\RuntimeException
      */
     public function otpResend(array $input)
@@ -1366,5 +1362,5 @@ class Gateway extends Base\Gateway
         // return success as true
         return true;
     }
-    
+
 }
