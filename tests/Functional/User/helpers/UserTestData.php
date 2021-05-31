@@ -372,6 +372,62 @@ return [
         ],
     ],
 
+    'testOauthLoginForSourceAsXAndroid' => [
+        'request'  => [
+            'url'     => '/users/oauth-login',
+            'method'  => 'POST',
+            'content' => [
+                'email'          => 'hello123@gmail.com',
+                'oauth_provider' => "[\"google\"]",
+                'id_token'       => 'valid id token',
+                'oauth_source'   => 'x_android',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'          => null,
+                'contact_mobile_verified' => false,
+                'confirmed'               => true,
+                'merchants'               => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testOauthLoginForSourceAsXIos' => [
+        'request'  => [
+            'url'     => '/users/oauth-login',
+            'method'  => 'POST',
+            'content' => [
+                'email'          => 'hello123@gmail.com',
+                'oauth_provider' => "[\"google\"]",
+                'id_token'       => 'valid id token',
+                'oauth_source'   => 'x_ios',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'          => null,
+                'contact_mobile_verified' => false,
+                'confirmed'               => true,
+                'merchants'               => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testOauthLoginWithMissingIdToken' => [
         'request'  => [
             'url'     => '/users/oauth-login',
@@ -985,7 +1041,6 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_INCORRECT_LOGIN_ATTEMPT,
         ],
     ],
-    
 
     'testFailedLogin2faNotSetup' => [
         'request' => [

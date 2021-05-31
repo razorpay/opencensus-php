@@ -78,6 +78,12 @@ class GoogleOauthVerify
             case Constants::EPOS:
                 return $this->getMerchantOauthClientIdEpos();
 
+            case Constants::X_IOS:
+                return $this->getMerchantOauthClientIdXIos();
+
+            case Constants::X_ANDROID:
+                return $this->getMerchantOauthClientIdXAndroid();
+
             default:
                 //
                 // default is dashboard.
@@ -104,5 +110,15 @@ class GoogleOauthVerify
     protected function getMerchantOauthClientIdIos()
     {
         return config(Constants::OAUTH_MERCHANT_OAUTH_CLIENT_ID_IOS);
+    }
+
+    protected function getMerchantOauthClientIdXAndroid()
+    {
+        return config(Constants::OAUTH_MERCHANT_OAUTH_CLIENT_ID_X_ANDROID);
+    }
+
+    protected function getMerchantOauthClientIdXIos()
+    {
+        return config(Constants::OAUTH_MERCHANT_OAUTH_CLIENT_ID_X_IOS);
     }
 }
