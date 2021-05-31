@@ -20,7 +20,7 @@ jobs:
         run: |
           echo "Don't cancel old workflow"
   gateway_2_test_suite:
-    runs-on: [self-hosted]
+    runs-on: [self-hosted, api]
     needs: [cancel]
     container:
       image: c.rzp.io/razorpay/onggi:php-7.2-api-web-v2
