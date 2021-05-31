@@ -48,7 +48,7 @@ class ErrorCode
         self::FUNDS_TRANSFER_TERMINATED_BY_USER   => Error\ErrorCode::BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER,
         self::NOT_AUTHORIZED                      => Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
         self::ACCOUNT_INVALID                     => Error\ErrorCode::BAD_REQUEST_PAYMENT_INVALID_ACCOUNT,
-        self::OTP_INCORRECT                       => Error\ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        self::OTP_INCORRECT                       => Error\ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
         self::UNAUTHORIZED                        => Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
     ];
 
