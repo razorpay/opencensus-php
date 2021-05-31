@@ -1893,9 +1893,7 @@ export default class ActivationWizard extends React.Component {
                 icon = 'i-warning';
                 Component = Alert.Warning;
                 msg = `There are issues with your activation form. Please check your mail and respond at the earliest.`;
-                secondaryMsg = (
-                  <React.Fragment>In case of any queries, please {ticketLink}</React.Fragment>
-                );
+                secondaryMsg = '';
               } else if (data.activation_status === 'rejected') {
                 // **3. Alert: Form Rejected
 
@@ -1932,9 +1930,7 @@ export default class ActivationWizard extends React.Component {
                 icon = 'i-outline-lock';
                 msg =
                   'Your activation form is under review. We will let you know once your account gets activated.';
-                secondaryMsg = (
-                  <React.Fragment>In case of any queries, please {ticketLink}</React.Fragment>
-                );
+                secondaryMsg = '';
               } else if (isFormSubmitted) {
                 // **5. Alert: Form is Submitted
 
