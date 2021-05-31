@@ -544,20 +544,23 @@ app
           const isWebsiteSession = document.referrer.match(
             '^(https?:\\/\\/|(www\\.))?razorpay.com',
           );
+          const isDashboardSession = document.referrer.match(
+            '^(https?:\\/\\/|(www\\.))?dashboard.razorpay.com',
+          );
 
           /*
            Check if there is no common session present,
            if yes, then populate the same
-           if no, check if the session started from website
-           if yes, use website's session id from the cookie
+           if no, check if the session started from website or dashboard signup
+           if yes, use website's or dashboard's session id from the cookie
            and make isLandingPageSession as false because the
-           session started from website and landing page was website
+           session started from website or dashboard and landing page was website or dashboard
            if no, create a new session id and populate the same in the cookie,
            so that website can consume it and make isLandingPageSession as
-           true bcz the session started on website
+           true bcz the session started on website or dashboard
             */
           if (!commonSessionId) {
-            if (isWebsiteSession) {
+            if (isWebsiteSession || isDashboardSession) {
               commonSessionId = commonSessionIdCookie;
               isLandingPageSession = false;
             } else {
