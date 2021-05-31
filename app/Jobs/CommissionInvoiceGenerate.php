@@ -71,7 +71,15 @@ class CommissionInvoiceGenerate extends Job
 
             $this->trace->info(TraceCode::COMMISSION_INVOICE_GENERATE_SUMMARY, $summary);
 
-            $this->delete();
+            // if there are any failed ids, we will retry
+            if ($summary['failed_count'] > 0)
+            {
+                $this->checkRetry();
+            }
+            else
+            {
+                $this->delete();
+            }
         }
         catch(\Throwable $e)
         {

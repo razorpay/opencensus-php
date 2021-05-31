@@ -11,6 +11,7 @@ use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Models\LineItem;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
@@ -31,6 +32,7 @@ class Core extends Base\Core
     const MAX_ALLOWED_PDF_GEN_ATTEMPTS = 2;
     const COMMISSION_GENERATE_MID_LIMIT = 100;
     const COMMISSION_INVOICE_ACTION_DELAY = 120; // seconds
+    const COMMISSION_INVOICE_GENERATE_MUTEX_TIMEOUT = 3600; // seconds
 
     /**
      * @var PdfGenerator
@@ -303,14 +305,6 @@ class Core extends Base\Core
                 'partner' => $partner->getId(),
             ]);
 
-        $previousMonth = Carbon::now(Timezone::IST)->subMonth();
-
-        $year  = $input[Entity::YEAR] ?? $previousMonth->year;
-        $month = $input[Entity::MONTH] ?? $previousMonth->month;
-
-        $regenerateIfExists = (bool) ($input[Entity::REGENERATE_IF_EXISTS] ?? false);
-        $forceRegenerate    = (bool) ($input[Entity::FORCE_REGENERATE] ?? false);
-
         $balance = $partner->commissionBalance;
 
         if ($balance === null)
@@ -323,6 +317,26 @@ class Core extends Base\Core
 
             return;
         }
+
+        $resource = 'COMMISSION_INVOICE_GENERATE_'. $partner->getId();
+
+        $this->app['api.mutex']->acquireAndRelease(
+            $resource, function () use ($partner, $input) {
+                $this->generate($partner, $input);
+            },
+            self::COMMISSION_INVOICE_GENERATE_MUTEX_TIMEOUT,
+            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS);
+    }
+
+    protected function generate(Merchant\Entity $partner, array $input)
+    {
+        $previousMonth = Carbon::now(Timezone::IST)->subMonth();
+
+        $year  = $input[Entity::YEAR] ?? $previousMonth->year;
+        $month = $input[Entity::MONTH] ?? $previousMonth->month;
+
+        $regenerateIfExists = (bool) ($input[Entity::REGENERATE_IF_EXISTS] ?? false);
+        $forceRegenerate    = (bool) ($input[Entity::FORCE_REGENERATE] ?? false);
 
         $invoices = $this->repo->commission_invoice->fetchInvoices($partner->getId(), $month, $year);
 
@@ -351,10 +365,10 @@ class Core extends Base\Core
             else
             {
                 $this->trace->info(TraceCode::COMMISSION_INVOICE_REGENERATE_SKIPPED,
-                   [
-                       'partner'     => $partner->getId(),
-                       'invoice_ids' => $invoices->getIds(),
-                   ]);
+                    [
+                        'partner'     => $partner->getId(),
+                        'invoice_ids' => $invoices->getIds(),
+                    ]);
 
                 return;
             }
@@ -374,9 +388,9 @@ class Core extends Base\Core
             if ($created === false)
             {
                 $this->trace->info(TraceCode::COMMISSION_INVOICE_SKIPPED_LINE_ITEMS_NOT_CREATED,
-                                   [
-                                       'partner'     => $partner->getId(),
-                                   ]);
+                    [
+                        'partner'     => $partner->getId(),
+                    ]);
 
                 return;
             }

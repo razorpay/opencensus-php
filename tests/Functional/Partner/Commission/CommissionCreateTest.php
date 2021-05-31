@@ -359,6 +359,12 @@ class CommissionCreateTest extends TestCase
 
         $this->startTest($testData);
 
+        // calling generate invoice twice should still create only one invoice
+        $this->startTest($testData);
+
+        $invoices = $this->getDbEntities('commission_invoice');
+        $this->assertCount(1, $invoices);
+
         // check that invoice is created with line items and amounts
         $invoice = $this->getDbLastEntity('commission_invoice');
 
