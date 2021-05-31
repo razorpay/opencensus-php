@@ -50,7 +50,13 @@ export default (props) => {
                 <CreditDetailsNew
                   totalCredits={balanceData.credits}
                   title="Amount Credits"
-                  description="Transactions worth amount credits will be free of charge."
+                  description={
+                    <>
+                      Transactions made upto the credit amount in your account will be free of
+                      charge. The credits are not valid for credit card transactions if your
+                      business type is <strong>not registered.</strong>
+                    </>
+                  }
                   creditItems={creditItems.amount}
                   toggleText={'Past Coupons'}
                   trackToggleHistory={props.trackToggleHistory}
