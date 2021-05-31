@@ -2,16 +2,20 @@
 
 namespace RZP\Models\Merchant\AccountV2;
 
-use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Account\Constants;
+use RZP\Models\Merchant\Detail\NeedsClarification;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Merchant\Validator
 {
     protected static $createAccountRules = [
         Constants::REFERENCE_ID                    => 'sometimes',
         Constants::EMAIL                           => 'required|email',
-        Constants::PHONE                           => 'sometimes|numeric',
+        Constants::PHONE                           => 'required|numeric',
         Constants::LEGAL_BUSINESS_NAME             => 'required|string',
         Constants::CUSTOMER_FACING_BUSINESS_NAME   => 'sometimes|string',
         Constants::BUSINESS_TYPE                   => 'required|string',
@@ -310,6 +314,39 @@ class Validator extends Merchant\Validator
         foreach ($iosInput as $android)
         {
             $this->validateInput('appsIos', $android);
+        }
+    }
+
+    public function validateNeedsClarificationRespondedIfApplicable(Merchant\Entity $merchant, array $input)
+    {
+        $merchantDetails = $merchant->merchantDetail;
+
+        if (empty($merchantDetails) === true || $merchantDetails->getActivationStatus() !== Detail\Status::NEEDS_CLARIFICATION)
+        {
+            return;
+        }
+
+        $clarificationReasons = (new NeedsClarification\Core)->getNonAcknowledgedNCFields($merchant, $merchantDetails);
+
+        //If all the NC fields are acknowledged, form gets auto-submitted. All the new field update will be rejected by form lock validation.
+        //So silently skip validation here
+        if($clarificationReasons[Merchant\Constants::COUNT] === 0)
+        {
+            return;
+        }
+
+        $ncFields = $clarificationReasons['fields'] ?? [];
+
+        $extraFields = array_diff_key($input, $ncFields);
+
+        if (count($extraFields) > 0)
+        {
+            $tracePayload = [
+                'provided_fields' => $input,
+                'accepted_fields' => array_keys($ncFields)
+            ];
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ONLY_NEEDS_CLARIFICATION_FIELDS_ARE_ALLOWED, null, $tracePayload);
         }
     }
 }

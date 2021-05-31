@@ -11,9 +11,17 @@ class PaymentGatewayRequestHelper
         Constants::PAYMENT_CAPTURE => Constants::PAYMENT_CONFIG,
         Constants::NOTIFICATIONS   => Constants::NOTIFICATIONS,
         Constants::CHECKOUT        => Constants::ACCOUNT_CONFIG,
+        Constants::REFUND          => Constants::REFUND,
         Constants::SETTLEMENTS     => Constants::BANK_DETAILS,
         Constants::METHODS         => Constants::PAYMENT_METHODS,
         Constants::CONFIGURATION   => Constants::CONFIGURATION
+    ];
+
+    const CHECKOUT_FIELD_MAPPING = [
+        Constants::LOGO                       => Merchant\Entity::LOGO_URL,
+        Constants::THEME_COLOR                => Merchant\Entity::BRAND_COLOR,
+        Merchant\Entity::MAX_PAYMENT_AMOUNT   => Merchant\Entity::MAX_PAYMENT_AMOUNT,
+        Merchant\Entity::DEFAULT_REFUND_SPEED => Merchant\Entity::DEFAULT_REFUND_SPEED
     ];
 
     public static function handleRequest(array $request)
@@ -39,22 +47,32 @@ class PaymentGatewayRequestHelper
         $request['config'] = [];
 
         $configOptions = [
-            'refund_speed' => $configValue['refund_speed']
+            Constants::REFUND_SPEED => $configValue[Constants::REFUND_SPEED]
         ];
 
-        if ($configValue['mode'] === 'manual')
+        if ($configValue[Constants::MODE] === Constants::MANUAL)
         {
-            $request['config']['capture'] = $configValue['mode'];
+            $request['config']['capture'] = $configValue[Constants::MODE];
 
-            $configOptions['manual_expiry_period'] = $configValue['manual_expiry_period'];
+            if (isset($configValue[Constants::MANUAL_EXPIRY_PERIOD]) === true)
+            {
+                $configOptions[Constants::MANUAL_EXPIRY_PERIOD] = $configValue[Constants::MANUAL_EXPIRY_PERIOD];
+            }
         }
-        if ($configValue['mode'] === 'automatic')
+
+        if ($configValue[Constants::MODE] === Constants::AUTOMATIC)
         {
-            $request['config']['capture'] = $configValue['mode'];
+            $request['config']['capture'] = $configValue[Constants::MODE];
 
-            $configOptions['manual_expiry_period']    = $configValue['manual_expiry_period'];
+            if (isset($configValue[Constants::MANUAL_EXPIRY_PERIOD]) === true)
+            {
+                $configOptions[Constants::MANUAL_EXPIRY_PERIOD] = $configValue[Constants::MANUAL_EXPIRY_PERIOD];
+            }
 
-            $configOptions['automatic_expiry_period'] = $configValue['automatic_expiry_period'];
+            if (isset($configValue[Constants::AUTOMATIC_EXPIRY_PERIOD]) === true)
+            {
+                $configOptions[Constants::AUTOMATIC_EXPIRY_PERIOD] = $configValue[Constants::AUTOMATIC_EXPIRY_PERIOD];
+            }
         }
 
         $request['config']['capture_options'] = $configOptions;
@@ -66,14 +84,19 @@ class PaymentGatewayRequestHelper
     {
         $request = [];
 
-        if(isset($configValue['sms']) === true)
+        if (isset($configValue[Constants::SMS]) === true)
         {
-            $request['sms'] = ['enable' => $configValue['sms']];
+            $request[Constants::SMS] = ['enable' => $configValue['sms']];
         }
 
-        if(isset($configValue['whatsapp']) === true)
+        if (isset($configValue[Constants::WHATSAPP]) === true)
         {
-            $request['whatsapp'] = $configValue['whatsapp'];
+            $request[Constants::WHATSAPP] = $configValue[Constants::WHATSAPP];
+        }
+
+        if (isset($configValue[Constants::EMAIL]) === true)
+        {
+            $request[Merchant\Entity::TRANSACTION_REPORT_EMAIL] = $configValue[Constants::EMAIL];
         }
 
         return $request;
@@ -81,43 +104,54 @@ class PaymentGatewayRequestHelper
 
     private static function transformCheckout(array $input): array
     {
-        if(isset($input['flash_checkout']) === true)
+        $transformedInput = [];
+
+        if (isset($input[Constants::FLASH_CHECKOUT]) === true)
         {
             $flashCheckoutPayload = [];
 
-            $flashCheckoutPayload['features'] = [];
+            $flashCheckoutPayload[Constants::FEATURES] = [];
 
-            $flashCheckoutPayload['features']['noflashcheckout'] = ! $input['flash_checkout'];
+            $flashCheckoutPayload[Constants::FEATURES][Constants::NOFLASHCHECKOUT] = !$input[Constants::FLASH_CHECKOUT];
 
-            $input['flash_checkout'] = $flashCheckoutPayload;
+            $transformedInput[Constants::FLASH_CHECKOUT] = $flashCheckoutPayload;
         }
-        if(isset($input[Merchant\Entity::BRAND_COLOR]) === true)
+
+        foreach (self::CHECKOUT_FIELD_MAPPING as $field => $actualField)
         {
-            $color = $input[Merchant\Entity::BRAND_COLOR];
-
-            $input[Merchant\Entity::BRAND_COLOR] = substr($color, 1);
+            if (isset($input[$field]) === true)
+            {
+                $transformedInput[$actualField] = $input[$field];
+            }
         }
 
-        return $input;
+        if (isset($transformedInput[Merchant\Entity::BRAND_COLOR]) === true)
+        {
+            $color = $transformedInput[Merchant\Entity::BRAND_COLOR];
+
+            $transformedInput[Merchant\Entity::BRAND_COLOR] = substr($color, 1);
+        }
+
+        return $transformedInput;
     }
 
     private static function transformSettlements(array $input): array
     {
         $request = [];
 
-        if(isset($input['account_number']) === true)
+        if (isset($input[Constants::ACCOUNT_NUMBER]) === true)
         {
-            $request[Detail\Entity::BANK_ACCOUNT_NUMBER] = $input['account_number'];
+            $request[Detail\Entity::BANK_ACCOUNT_NUMBER] = $input[Constants::ACCOUNT_NUMBER];
         }
 
-        if(isset($input['ifsc_code']) === true)
+        if (isset($input[Constants::IFSC_CODE]) === true)
         {
-            $request[Detail\Entity::BANK_BRANCH_IFSC] = $input['ifsc_code'];
+            $request[Detail\Entity::BANK_BRANCH_IFSC] = $input[Constants::IFSC_CODE];
         }
 
-        if(isset($input['name']) === true)
+        if (isset($input[Constants::BENEFICIARY_NAME]) === true)
         {
-            $request[Detail\Entity::BANK_ACCOUNT_NAME] = $input['name'];
+            $request[Detail\Entity::BANK_ACCOUNT_NAME] = $input[Constants::BENEFICIARY_NAME];
         }
 
         return $request;
@@ -139,22 +173,11 @@ class PaymentGatewayRequestHelper
 
     private static function transformMethods(array $input): array
     {
-        //$transformedFeatures = [];
-        //
-        //$transformedInput = [];
-        //
-        //foreach ($input as $method => $config)
-        //{
-        //    if(isset($config[Constants::FEATURES]) === true)
-        //    {
-        //        $featureArray = $config[Constants::FEATURES];
-        //
-        //        $transformedFeatures = array_merge($transformedFeatures, self::getTransformedFeaturePayload($featureArray));
-        //    }
-        //}
-        //
-        //$transformedInput[Constants::FEATURES] = $transformedFeatures;
+        return $input;
+    }
 
+    private static function transformRefund(array $input): array
+    {
         return $input;
     }
 
@@ -164,7 +187,7 @@ class PaymentGatewayRequestHelper
 
         $featurePayload[Constants::FEATURES] = [];
 
-        foreach($input as $featureData => $value)
+        foreach ($input as $featureData => $value)
         {
             $featurePayload[Constants::FEATURES][$featureData] = $value;
         }

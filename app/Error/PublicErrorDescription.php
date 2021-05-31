@@ -1356,7 +1356,9 @@ class PublicErrorDescription
     // Accounts/ stakeholder V2 document upload error descriptions
     const BAD_REQUEST_DOCUMENT_UPLOAD_OPERATION_IN_PROGRESS                         = 'Document upload already in progress';
     const BAD_REQUEST_INVALID_FILE_ACCESS                                           = 'Invalid file id provided or merchant is unauthorized to access the fileId(s) provided';
-
+    const BAD_REQUEST_ONLY_NEEDS_CLARIFICATION_FIELDS_ARE_ALLOWED                   = 'Only fields requested for needs clarification are allowed for update';
+    const BAD_REQUEST_ONLY_NEEDS_CLARIFICATION_DOCUMENTS_ARE_ALLOWED                = 'Only documents requested for needs clarification are allowed for upload';
+    const BAD_REQUEST_MERCHANT_PRODUCT_CONFIG_DOESNT_EXIST                          = 'The provided product config id doesnt exist for the merchant';
 
     const BAD_REQUEST_OFFER_SUBSCRIPTION_NOT_ENABLED                                = 'Offers On Subscription not enabled for the merchant';
     const BAD_REQUEST_OFFER_SUBSCRIPTION_PAYLOAD_ABSENT                             = 'Subscription data not present in Offer';

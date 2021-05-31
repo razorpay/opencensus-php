@@ -10,6 +10,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Account\Entity;
 use RZP\Models\Merchant\Account\Constants;
+use RZP\Models\Merchant\Detail\NeedsClarification;
 
 class Core extends Merchant\Core
 {
@@ -26,8 +27,6 @@ class Core extends Merchant\Core
         $account = $this->repo->transactionOnLiveAndTest(function () use ($input, $partner)
         {
             $subMerchant = $this->createSubmerchantAndAssociatedEntities($partner, $input);
-
-            $this->submitDetailsAndActivateIfApplicable($subMerchant);
 
             return $subMerchant;
         });
@@ -60,14 +59,18 @@ class Core extends Merchant\Core
 
         $this->validateAccountSuspension($accountId);
 
-        (new Validator)->validateInput('edit_account', $input);
+        $subMerchantDetails = $this->repo->merchant_detail->findOrFailPublic($accountId);
 
-        $account = $this->repo->transactionOnLiveAndTest(function () use ($input, $partner, $accountId)
+        if(empty($subMerchantDetails) === false && $subMerchantDetails->getActivationStatus() !== Detail\Status::NEEDS_CLARIFICATION)
+        {
+            (new Validator)->validateInput('edit_account', $input);
+        }
+        $account = $this->repo->transactionOnLiveAndTest(function () use ($input, $partner, $accountId, $subMerchantDetails)
         {
             $subMerchant = $this->fillSubMerchant($accountId, $input);
             $subMerchant = $this->fillSubMerchantDetails($subMerchant, $input);
 
-            $this->submitDetailsAndActivateIfApplicable($subMerchant);
+            $this->submitDetailsAndActivateIfApplicable($subMerchant, $subMerchantDetails);
 
             $this->upsertMerchantEmails($subMerchant, $input);
 
@@ -118,11 +121,32 @@ class Core extends Merchant\Core
 
         $merchantDetailsCore = new Detail\Core;
 
+        (new Validator())->validateNeedsClarificationRespondedIfApplicable($subMerchant, $detailInput);
+
         $merchantDetailsCore->saveMerchantDetails($detailInput, $subMerchant);
 
         $this->updateUserIfApplicable($detailInput, $subMerchant->getEmail());
 
+        $this->updateNCFieldsAcknowledgedIfApplicable($detailInput, $subMerchant);
+
         return $subMerchant;
+    }
+
+    public function updateNCFieldsAcknowledgedIfApplicable(array $input, Merchant\Entity $subMerchant)
+    {
+        $subMerchantDetails = $subMerchant->merchantDetail;
+
+        if (empty($subMerchantDetails) === true || $subMerchantDetails->getActivationStatus() !== Detail\Status::NEEDS_CLARIFICATION)
+        {
+            return;
+        }
+
+        $needsClarificationCore = new NeedsClarification\Core();
+
+        foreach($input as $field => $value)
+        {
+            $needsClarificationCore->updateNCFieldAcknowledged($field, $subMerchantDetails);
+        }
     }
 
     protected function upsertMerchantEmails(Merchant\Entity $subMerchant, array $input)
@@ -163,16 +187,33 @@ class Core extends Merchant\Core
         }
     }
 
-    public function submitDetailsAndActivateIfApplicable(Merchant\Entity $subMerchant)
+    public function submitDetailsAndActivateIfApplicable(Merchant\Entity $subMerchant, Detail\Entity $merchantDetails)
     {
         $merchantDetailCore = new Detail\Core;
 
-        // auto submit the activation form if all requirements are met
         $input = [
             Detail\Entity::SUBMIT => '1',
         ];
 
-        $merchantDetailCore->saveMerchantDetails($input, $subMerchant);
+        if(empty($merchantDetails) === true)
+        {
+            return;
+        }
+
+        if($merchantDetails->getActivationStatus() !== Detail\Status::NEEDS_CLARIFICATION)
+        {
+            // auto submit the activation form if all requirements are met
+            $merchantDetailCore->saveMerchantDetails($input, $subMerchant);
+        }
+        else
+        {
+            $nonAcknowledgedNCFields = (new NeedsClarification\Core)->getNonAcknowledgedNCFields($subMerchant, $merchantDetails);
+
+            if($nonAcknowledgedNCFields[Merchant\Constants::COUNT] === 0)
+            {
+                $merchantDetailCore->saveMerchantDetails($input, $subMerchant);
+            }
+        }
 
     }
 

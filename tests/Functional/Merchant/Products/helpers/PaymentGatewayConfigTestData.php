@@ -1,5 +1,8 @@
 <?php
 
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+
 return [
     'createUnregisteredBusinessTypeAccount' => [
         'request'  => [
@@ -153,6 +156,10 @@ return [
                         'whatsapp' => false
                     ],
                     'checkout'        => [
+                        'theme_color'    => '#FFFFFF',
+                        'flash_checkout' => true
+                    ],
+                    'refund'          => [
                         'default_refund_speed' => 'normal'
                     ]
                 ]
@@ -178,6 +185,10 @@ return [
                         'whatsapp' => false
                     ],
                     'checkout'        => [
+                        'theme_color'    => '#FFFFFF',
+                        'flash_checkout' => true
+                    ],
+                    'refund'          => [
                         'default_refund_speed' => 'normal'
                     ]
                 ]
@@ -215,8 +226,11 @@ return [
                         'whatsapp' => false
                     ],
                     'checkout'        => [
-                        'default_refund_speed' => 'normal',
-                        'flash_checkout'       => false
+                        'theme_color'    => '#FFFFFF',
+                        'flash_checkout' => false
+                    ],
+                    'refund'          => [
+                        'default_refund_speed' => 'normal'
                     ],
                     'settlements'     => [
                         'account_number' => '051610100039258',
@@ -282,9 +296,9 @@ return [
             'method'  => 'PATCH',
             'content' => [
                 'settlements' => [
-                    'account_number' => '123576432234',
-                    'ifsc_code' => 'HDFC0000317',
-                    'name'           => 'bank account name'
+                    'account_number'   => '123576432234',
+                    'ifsc_code'        => 'HDFC0000317',
+                    'beneficiary_name' => 'bank account name'
                 ],
             ],
         ],
@@ -301,12 +315,15 @@ return [
                         'whatsapp' => false
                     ],
                     'checkout'        => [
+                        'theme_color' => '#FFFFFF'
+                    ],
+                    'refund'          => [
                         'default_refund_speed' => 'normal'
                     ],
                     'settlements'     => [
-                        'account_number' => '123576432234',
-                        'ifsc_code' => 'HDFC0000317',
-                        'name'           => 'bank account name'
+                        'account_number'   => '123576432234',
+                        'ifsc_code'        => 'HDFC0000317',
+                        'beneficiary_name' => 'bank account name'
                     ],
                 ],
                 'requirements'         => [
@@ -339,9 +356,9 @@ return [
             'method'  => 'PATCH',
             'content' => [
                 'settlements' => [
-                    'account_number' => '123576432234',
-                    'ifsc_code' => 'HDFC0000317',
-                    'name'           => 'bank account name'
+                    'account_number'   => '123576432234',
+                    'ifsc_code'        => 'HDFC0000317',
+                    'beneficiary_name' => 'bank account name'
                 ],
             ],
         ],
@@ -358,12 +375,15 @@ return [
                         'whatsapp' => false
                     ],
                     'checkout'        => [
+                        'theme_color' => '#FFFFFF'
+                    ],
+                    'refund'        => [
                         'default_refund_speed' => 'normal'
                     ],
                     'settlements'     => [
-                        'account_number' => '123576432234',
-                        'ifsc_code' => 'HDFC0000317',
-                        'name'           => 'bank account name'
+                        'account_number'   => '123576432234',
+                        'ifsc_code'        => 'HDFC0000317',
+                        'beneficiary_name' => 'bank account name'
                     ],
                 ],
                 'requirements'         => [
@@ -913,6 +933,89 @@ return [
                 ]
             ],
         ]
+    ],
+
+    'testRequirementsInNCState' => [
+        'request'  => [
+            'url'    => '/v2/accounts/{accountId}/products/{merchantProductId}',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'requirements' => [
+                    [
+                        'field_reference' => 'individual_proof_of_address.aadhar_front',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
+                        'status'          => 'required',
+                        'reason_code'     => 'needs_clarification',
+                        'description'     => 'The document attached is not legible. Please resubmit a clearer copy'
+                    ],
+                    [
+                        'field_reference' => 'name',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders/{stakeholderId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'needs_clarification'
+                    ],
+                ]
+            ]
+        ]
+    ],
+
+    'testUpdateAccountNonNCFields' => [
+        'request'   => [
+            'url'     => '/v2/accounts/{accountId}',
+            'method'  => 'PATCH',
+            'content' => [
+                'profile' => [
+                    'addresses' => [
+                        'registered' => [
+                            'street1'     => '507, Koramangala 1st block',
+                            'street2'     => 'MG Road',
+                            'city'        => 'Hyderabad',
+                            'state'       => 'Telangana',
+                            'postal_code' => 560034,
+                            'country'     => 'IN'
+                        ]
+                    ]
+                ]
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Only fields requested for needs clarification are allowed for update',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ONLY_NEEDS_CLARIFICATION_FIELDS_ARE_ALLOWED,
+        ],
+    ],
+
+    'testUploadNonNCDocument' => [
+        'request'   => [
+            'url'     => '/v2/accounts/{accountId}/stakeholder/{stakeholderId}/documents',
+            'method'  => 'POST',
+            'content' => [
+                'document_type' => 'aadhar_back',
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Only documents requested for needs clarification are allowed for upload',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ONLY_NEEDS_CLARIFICATION_DOCUMENTS_ARE_ALLOWED,
+        ],
     ],
 
     'testMerchantActivationStatus' => [

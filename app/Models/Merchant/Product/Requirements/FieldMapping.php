@@ -31,7 +31,10 @@ class FieldMapping
             Detail\Entity::COMPANY_PAN                    => 'legal_info.pan',
             Detail\Entity::COMPANY_CIN                    => 'legal_info.cin',
             Detail\Entity::GSTIN                          => 'legal_info.gst',
-            Detail\Entity::BUSINESS_DBA                   => 'customer_facing_business_name'
+            Detail\Entity::BUSINESS_DBA                   => 'customer_facing_business_name',
+            Detail\Entity::CONTACT_EMAIL                  => 'email',
+            Detail\Entity::CONTACT_MOBILE                 => 'phone',
+            Detail\Entity::BUSINESS_NAME                  => 'legal_business_name',
         ],
         Entity::STAKEHOLDER => [
             Stakeholder\Entity::NAME                      => 'name',

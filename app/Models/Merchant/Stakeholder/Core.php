@@ -2,13 +2,14 @@
 
 namespace RZP\Models\Merchant\Stakeholder;
 
-use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
 use RZP\Models\Address;
-use RZP\Models\Merchant;
-use RZP\Models\Merchant\Detail;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\AccountV2;
+use RZP\Exception\BadRequestException;
+
 
 class Core extends Base\Core
 {
@@ -64,12 +65,24 @@ class Core extends Base\Core
             $merchant = $this->repo->merchant->findOrFail($merchantId);
             $merchantDetailInput = Helper::getMerchantDetailInput($input);
 
+            $accountV2Core = new AccountV2\Core;
+            $accountV2Validator = new AccountV2\Validator();
+
             $merchantDetailCore  = new Detail\Core;
+
+            $accountV2Validator->validateNeedsClarificationRespondedIfApplicable($merchant, $merchantDetailInput);
 
             if (empty($merchantDetailInput) === false)
             {
                 $merchantDetailCore->saveMerchantDetails($merchantDetailInput, $merchant);
+
+                $merchantDetails = $merchant->merchantDetail;
+
+                $accountV2Core->updateNCFieldsAcknowledgedIfApplicable($merchantDetailInput, $merchant);
+
+                $accountV2Core->submitDetailsAndActivateIfApplicable($merchant, $merchantDetails);
             }
+
 
             $stakeholderInput = Helper::getStakeholderInput($input);
 

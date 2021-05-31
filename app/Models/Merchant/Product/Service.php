@@ -3,9 +3,11 @@
 namespace RZP\Models\Merchant\Product;
 
 use App;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Product\Config;
 use RZP\Models\Merchant\Account\Entity as AccountEntity;
@@ -23,7 +25,7 @@ class Service extends Base\Service
 
         Entity::verifyIdAndStripSign($merchantProductConfigId);
 
-        $merchantProduct = $this->repo->merchant_product->findOrFail($merchantProductConfigId);
+        $merchantProduct = $this->validateAndGetMerchantProduct($merchant->getId(), $merchantProductConfigId);
 
         $response = $this->core()->getConfig($merchant, $merchantProduct);
 
@@ -36,7 +38,7 @@ class Service extends Base\Service
 
         Entity::verifyIdAndStripSign($merchantProductConfigId);
 
-        $merchantProduct = $this->repo->merchant_product->findOrFailPublic($merchantProductConfigId);
+        $merchantProduct = $this->validateAndGetMerchantProduct($merchant->getId(), $merchantProductConfigId);
 
         $productName = $merchantProduct->getProduct();
 
@@ -62,7 +64,6 @@ class Service extends Base\Service
             $this->trace->info(TraceCode::MERCHANT_PRODUCT_ALREADY_EXISTS,
                                $merchantProduct->toArrayPublic());
 
-            //$response = $this->getConfig($merchantId, $merchantProduct->getId());
             $response = $this->getConfig(AccountEntity::getSignedId($merchantId), $merchantProduct->getPublicId());
         }
 
@@ -85,8 +86,6 @@ class Service extends Base\Service
                 $response = $this->core()->createConfig($merchant, $merchantProduct, $payload);
 
                 $this->audit($payload, $merchantProduct->getId(), Constants::COMPLETED, Constants::GENERAL);
-
-                $response['id'] = $merchantProduct->getId();
 
                 return ProductResponseHelper::handleResponse($merchantProduct, $response);
             });
@@ -148,5 +147,23 @@ class Service extends Base\Service
     private function audit(array $input, string $merchantProductId, string $status, string $type)
     {
         (new AuditService())->log($input, $merchantProductId, $status, $type);
+    }
+
+    private function validateAndGetMerchantProduct(string $merchantId, string $merchantProductConfigId): Entity
+    {
+        $merchantProduct = $this->repo->merchant_product->fetchMerchantProductConfigByProductId($merchantId, $merchantProductConfigId);
+
+        if (empty($merchantProduct) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_PRODUCT_CONFIG_DOESNT_EXIST,
+                null,
+                [
+                    'account_id'                 => AccountEntity::getSignedId($merchantId),
+                    'merchant_product_config_id' => Entity::getSignedId($merchantProductConfigId),
+                ]);
+        }
+
+        return $merchantProduct;
     }
 }

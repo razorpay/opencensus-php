@@ -9,6 +9,7 @@ use RZP\Models\Settlement;
 use RZP\Models\Payment\Config;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Product;
+use RZP\Models\Merchant\AccountV2;
 use RZP\Models\Merchant\Product\Util;
 use RZP\Models\Merchant\Product\Requirements;
 
@@ -68,13 +69,35 @@ class PaymentsGeneralConfig extends Base\Service
     {
         $response = [];
 
-        $response[Util\Constants::ACCOUNT_CONFIG] = $this->getAccountConfig($merchant);
+        $accountConfig = $this->getAccountConfig($merchant);
+
+        $refundConfig = [];
 
         $response[Util\Constants::PAYMENT_CAPTURE] = $this->getPaymentConfig($merchant);
 
         $response[Util\Constants::BANK_DETAILS] = $this->getBankDetails($merchant);
 
-        $response[Util\Constants::NOTIFICATIONS] = $this->getNotificationDetails($merchant);
+        $notificationsConfig = $this->getNotificationDetails($merchant);;
+
+        if(isset($accountConfig[Util\Constants::NOTIFICATIONS]) === true)
+        {
+            $notificationsConfig = array_merge($notificationsConfig, $accountConfig[Util\Constants::NOTIFICATIONS]);
+
+            unset($accountConfig[Util\Constants::NOTIFICATIONS]);
+        }
+
+        if(isset($accountConfig[Util\Constants::REFUND]) === true)
+        {
+            $refundConfig = $accountConfig[Util\Constants::REFUND];
+
+            unset($accountConfig[Util\Constants::REFUND]);
+        }
+
+        $response[Util\Constants::ACCOUNT_CONFIG] = $accountConfig;
+
+        $response[Util\Constants::REFUND] = $refundConfig;
+
+        $response[Util\Constants::NOTIFICATIONS] = $notificationsConfig;
 
         return $response;
 
@@ -116,6 +139,24 @@ class PaymentsGeneralConfig extends Base\Service
 
         $response[Util\Constants::FLASH_CHECKOUT] = !$noFlashCheckoutValue;
 
+        if( isset($response[Merchant\Entity::DEFAULT_REFUND_SPEED]) === true)
+        {
+            $response[Util\Constants::REFUND] = [
+                Merchant\Entity::DEFAULT_REFUND_SPEED => $response[Merchant\Entity::DEFAULT_REFUND_SPEED]
+            ];
+
+            unset($response[Merchant\Entity::DEFAULT_REFUND_SPEED]);
+        }
+
+        if( isset($response[Merchant\Entity::TRANSACTION_REPORT_EMAIL]) === true)
+        {
+            $response[Util\Constants::NOTIFICATIONS] = [
+                Util\Constants::EMAIL => $response[Merchant\Entity::TRANSACTION_REPORT_EMAIL]
+            ];
+
+            unset($response[Merchant\Entity::TRANSACTION_REPORT_EMAIL]);
+        }
+
         return $response;
     }
 
@@ -127,7 +168,7 @@ class PaymentsGeneralConfig extends Base\Service
 
         $response[Util\Constants::IFSC_CODE] = $merchantDetails[Merchant\Detail\Entity::BANK_BRANCH_IFSC];
 
-        $response[Util\Constants::NAME] = $merchantDetails[Merchant\Detail\Entity::BANK_ACCOUNT_NAME];
+        $response[Util\Constants::BENEFICIARY_NAME] = $merchantDetails[Merchant\Detail\Entity::BANK_ACCOUNT_NAME];
 
         return $response;
     }
@@ -200,6 +241,15 @@ class PaymentsGeneralConfig extends Base\Service
                 $this->userService->optOutForWhatsapp($payload, $merchantUser);
             }
         }
+
+        if (isset($configValue[Merchant\Entity::TRANSACTION_REPORT_EMAIL]) === true)
+        {
+            $input = [
+                Merchant\Entity::TRANSACTION_REPORT_EMAIL => $configValue[Merchant\Entity::TRANSACTION_REPORT_EMAIL]
+            ];
+
+            $this->merchantService->editConfig($input);
+        }
     }
 
     private function updateAccountConfig(Merchant\Entity $merchant, array $input)
@@ -226,6 +276,16 @@ class PaymentsGeneralConfig extends Base\Service
         $this->paymentConfigService->update($input);
     }
 
+    private function updateRefund(Merchant\Entity $merchant, array $input)
+    {
+        if(empty($input) === true)
+        {
+            return;
+        }
+
+        $this->merchantService->editConfig($input);
+    }
+
     private function updateBankDetails(Merchant\Entity $merchant, array $input)
     {
         if(empty($input) === true)
@@ -233,6 +293,18 @@ class PaymentsGeneralConfig extends Base\Service
             return;
         }
 
+        $accountCore = (new AccountV2\Core());
+
+        $accountV2Validator = (new AccountV2\Validator());
+
+        $accountV2Validator->validateNeedsClarificationRespondedIfApplicable($merchant, $input);
+
         $this->merchantDetailCore->saveMerchantDetails($input, $merchant);
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        $accountCore->updateNCFieldsAcknowledgedIfApplicable($input, $merchant);
+
+        $accountCore->submitDetailsAndActivateIfApplicable($merchant, $merchantDetails);
     }
 }

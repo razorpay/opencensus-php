@@ -83,6 +83,13 @@ class Core extends Base\Core
 
         $response[Util\Constants::REQUIREMENTS] = $this->paymentsGeneralConfig->getRequirements($merchant, $merchantProduct);
 
+        if (count($response[Util\Constants::REQUIREMENTS]) > 0)
+        {
+            $merchantProduct->setActivationStatus(Status::NEEDS_CLARIFICATION);
+
+            $this->repo->merchant_product->saveOrFail($merchantProduct);
+        }
+
         return $response;
     }
 

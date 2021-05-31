@@ -137,6 +137,12 @@ class Constants
         self::CIN             => 'cin',
     ];
 
+    const BANK_DETAIL_FIELDS = [
+        Entity::BANK_ACCOUNT_NAME,
+        Entity::BANK_ACCOUNT_NUMBER,
+        Entity::BANK_BRANCH_IFSC
+    ];
+
     // Using this blacked listed banks to block bank account details
     // update in merchant details
     const BLACKLISTED_BANKS = [];

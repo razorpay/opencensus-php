@@ -364,6 +364,7 @@ return [
                 'email'               => 'testcreateaccountaa@razorpay.com',
                 'legal_business_name' => 'Acme Corp Pvt Ltd',
                 'business_type'       => 'partnership',
+                'phone'               => '9999999999',
                 'profile' => [
                     'category'       => 'healthcare',
                     'subcategory'    => 'clinic',
@@ -385,6 +386,7 @@ return [
                 'type'                => 'standard',
                 'status'              => 'created',
                 'email'               => 'testcreateaccountaa@razorpay.com',
+                'phone'               => '9999999999',
                 'legal_business_name' => 'Acme Corp Pvt Ltd',
                 'customer_facing_business_name'   => 'Acme Corp Pvt Ltd',
                 'business_type'       => 'partnership',

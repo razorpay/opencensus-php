@@ -3,19 +3,22 @@
 namespace RZP\Models\Merchant\Product\Requirements;
 
 use App;
+use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Constants\Environment;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Product;
 use RZP\Models\Merchant\Document;
+use RZP\Models\Merchant\AccountV2;
 use RZP\Models\Merchant\Stakeholder;
 use RZP\Models\Merchant\Product\Util;
-use RZP\Models\Merchant\BvsValidation;
+use RZP\Models\Merchant\Detail\NeedsClarification;
 use RZP\Models\Merchant\Detail\SelectiveRequiredFields as SelectiveRequiredFields;
 
-class BaseProcessor
+class BaseProcessor extends Base\Service
 {
     /**
      * @var Detail\Core
@@ -29,17 +32,23 @@ class BaseProcessor
      */
     private $documentCore;
 
-    private $app;
+    /**
+     * @var Detail\NeedsClarification\Core
+     */
+    private $clarificationCore;
 
     public function __construct()
     {
-        $this->app = App::getFacadeRoot();
-        
+        parent::__construct();
+
         $this->merchantDetailCore = new Detail\Core();
 
         $this->documentCore = new Document\Core();
 
+        $this->clarificationCore = new Detail\NeedsClarification\Core();
+
         $this->validationFields = [];
+
     }
 
     /**
@@ -97,74 +106,6 @@ class BaseProcessor
             return $requirements;
         }
 
-    }
-
-    /**
-     * This function returns fields grouped based on type provided with allPossibleRequirements
-     * returns:
-     * [
-     *      'fields' => [
-     *          'bank_account_number => [
-     *                   'field' => 'bank_account_number',
-     *                   'entity => 'merchant'
-     *              ],
-     *              .
-     *              .
-     *       ],
-     *      'document_fields' => [
-     *          'business_pan_url => [
-     *                  'field' => 'business_pan_url',
-     *                  'entity => 'merchant'
-     *              ],
-     *              .
-     *              .
-     *      ]
-     * ]
-     *
-     * @param array $allPossibleRequiredFields
-     *
-     * @return array
-     */
-    private function getRequiredFieldsByType(array $allPossibleRequiredFields): array
-    {
-        $validationFields = $allPossibleRequiredFields[0];
-
-        $documentFields = [];
-
-        $fields = [];
-
-        foreach ($validationFields as $field)
-        {
-            $this->populateFieldData($field, $documentFields, $fields);
-        }
-
-        $selectiveFields = $allPossibleRequiredFields[1];
-
-        foreach ($selectiveFields as $groupName => $group)
-        {
-            foreach ($group as $key1 => $set)
-            {
-                foreach ($set as $field)
-                {
-                    $this->populateFieldData($field, $documentFields, $fields);
-                }
-            }
-        }
-
-        $optionalFields = $allPossibleRequiredFields[2];
-
-        foreach ($optionalFields as $field)
-        {
-            $this->populateFieldData($field, $documentFields, $fields);
-        }
-
-        $response = [];
-
-        $response[Constants::DOCUMENT_FIELDS] = $documentFields;
-
-        $response[Constants::FIELDS] = $fields;
-
-        return $response;
     }
 
     /**
@@ -246,6 +187,8 @@ class BaseProcessor
 
             if ($verificationResponse['can_submit'] === true)
             {
+                (new AccountV2\Core())->submitDetailsAndActivateIfApplicable($merchant, $merchantDetails);
+
                 return [];
             }
             else
@@ -254,30 +197,97 @@ class BaseProcessor
 
                 $requirementsByType = $this->getRequiredFieldsByTypeFromPendingVerificationFields($allRequiredFields);
 
-                $documentFieldRequirements = $this->getDocumentFieldRequirements($merchant, $merchantDetails, $requirementsByType[Constants::DOCUMENT_FIELDS], false);
+                $documentFieldRequirements = $this->getDocumentFieldRequirements($merchant, $merchantDetails, $requirementsByType[Constants::DOCUMENT_FIELDS], false, []);
 
-                $fieldRequirements = $this->getFieldRequirements($merchant, $merchantDetails, $requirementsByType[Constants::FIELDS]);
+                $fieldRequirements = $this->getFieldRequirements($merchantDetails, $requirementsByType[Constants::FIELDS], []);
 
                 $requirements = array_merge($requirements, $documentFieldRequirements, $fieldRequirements);
 
             }
         }
-        else if($merchantDetails->getActivationStatus() === Detail\Status::NEEDS_CLARIFICATION)
+        else
         {
-            $requiredFields = $this->validationFields;
+            if ($merchantDetails->getActivationStatus() === Detail\Status::NEEDS_CLARIFICATION)
+            {
+                $nonAcknowledgedNCFields = $this->clarificationCore->getNonAcknowledgedNCFields($merchant, $merchantDetails);
 
-            $requirementsByType = $this->getRequiredFieldsByType($requiredFields);
+                $clarificationReasons = $this->getFormattedNonAcknowledgedNCFields($nonAcknowledgedNCFields, $merchantDetails);
 
-            $documentFieldRequirements = $this->getDocumentFieldRequirements($merchant, $merchantDetails, [], true);
+                $ncFields = $clarificationReasons[Constants::FIELDS] ?? [];
 
-            $fieldRequirements = $this->getFieldRequirements($merchant, $merchantDetails, $requirementsByType[Constants::FIELDS]);
+                $ncFieldDetails = $this->getRequiredFieldsByTypeFromPendingVerificationFields(array_keys($ncFields));
 
-            $requirements = array_merge($requirements, $documentFieldRequirements, $fieldRequirements);
+                $ncFieldDetails = $ncFieldDetails[Constants::FIELDS] ?? [];
+
+                $documentFieldRequirements = $this->getDocumentFieldRequirements($merchant, $merchantDetails, [], true, $clarificationReasons);
+
+                $fieldRequirements = $this->getFieldRequirements($merchantDetails, $ncFieldDetails, $clarificationReasons);
+
+                $requirements = array_merge($requirements, $documentFieldRequirements, $fieldRequirements);
+            }
         }
 
         return $requirements;
     }
 
+    private function getFormattedNonAcknowledgedNCFields(array $nonRespondedFields, Detail\Entity $merchantDetails): array
+    {
+        $clarificationReasons = $this->clarificationCore->getFormattedKycClarificationReasons(
+            $merchantDetails->getKycClarificationReasons());
+
+        $ncFields = $clarificationReasons[Constants::FIELDS] ?? [];
+
+        $ncDocuments = $clarificationReasons[Constants::DOCUMENTS] ?? [];
+
+        $ncFields = array_intersect_key($ncFields, $nonRespondedFields[NeedsClarification\Constants::FIELDS]);
+
+        $ncDocuments = array_intersect_key($ncDocuments, $nonRespondedFields[NeedsClarification\Constants::DOCUMENTS]);
+
+        $bankProofFormattedReasons = $this->getFormattedBankProofNCFields($nonRespondedFields, $ncFields);
+
+        if( empty($bankProofFormattedReasons) === false)
+        {
+            $ncDocuments = array_merge($ncDocuments, $bankProofFormattedReasons);
+        }
+
+        $pendingNCFields = [];
+
+        $pendingNCFields[Constants::FIELDS] = $ncFields;
+
+        $pendingNCFields[Constants::DOCUMENTS] = $ncDocuments;
+
+        $this->trace->info(TraceCode::MERCHANT_FORMATTED_NON_ACKNOWLEDGED_NC_FIELDS, $pendingNCFields);
+
+        return $pendingNCFields;
+    }
+
+    private function getFormattedBankProofNCFields(array $nonRespondedFields, array $ncFormattedFieldRequirements)
+    {
+        if (count($nonRespondedFields[Constants::DOCUMENTS]) === 0)
+        {
+            return [];
+        }
+
+        $bankNCFields = array_intersect(array_keys($ncFormattedFieldRequirements), Detail\Constants::BANK_DETAIL_FIELDS);
+
+        if (empty($bankNCFields) === true)
+        {
+            return [];
+        }
+
+        $bankNCField = $bankNCFields[0];
+
+        $formattedRequirement = $ncFormattedFieldRequirements[$bankNCField];
+
+        if (array_key_exists(Document\Type::CANCELLED_CHEQUE, $nonRespondedFields[Constants::DOCUMENTS]) === true)
+        {
+            return [
+                Document\Type::CANCELLED_CHEQUE => $formattedRequirement
+            ];
+        }
+
+        return [];
+    }
 
     /**
      * This function is a driver function to evaluate documents required for the account
@@ -286,32 +296,43 @@ class BaseProcessor
      * @param Detail\Entity   $merchantDetails
      * @param array           $fields
      * @param bool            $submitted
+     * @param array           $clarificationReasons
      *
      * @return array
      * @throws \RZP\Exception\LogicException
      */
-    private function getDocumentFieldRequirements(Merchant\Entity $merchant, Detail\Entity $merchantDetails, array $fields, bool $submitted): array
+    private function getDocumentFieldRequirements(Merchant\Entity $merchant, Detail\Entity $merchantDetails, array $fields, bool $submitted, array $clarificationReasons): array
     {
         $requirements = [];
 
-        $documentByType = $this->documentCore->documentResponse($merchant);
+        $missingDocumentRequirements = [];
 
-        //$documentByType = [];
+        $documentRequirementsFromSubmittedDocuments = [];
 
-        //foreach ($documents as $document)
-        //{
-        //    $documentByType[$document->getDocumentType()] = $document;
-        //}
+        if ($submitted === false)
+        {
+            $documentByType = $this->documentCore->documentResponse($merchant);
 
-        $missingDocuments = ($submitted === true) ? [] : array_diff_key($fields, $documentByType);
+            $missingDocuments = array_diff_key($fields, $documentByType);
 
-        $submittedDocuments = ($submitted === true) ? $this->getRequiredFieldsByTypeFromPendingVerificationFields(array_keys($documentByType)) : [];
+            $missingDocumentRequirements = $this->getMissingDocumentRequirements($merchantDetails, $missingDocuments);
+        }
+        else
+        {
+            $ncFormattedDocumentReasons = $clarificationReasons[Constants::DOCUMENTS] ?? [];
 
-        $submittedDocuments = $submittedDocuments[Constants::DOCUMENT_FIELDS] ?? [];
+            $ncDocumentsFieldData = $this->getRequiredFieldsByTypeFromPendingVerificationFields(array_keys($ncFormattedDocumentReasons));
 
-        $missingDocumentRequirements = $this->getMissingDocumentRequirements($merchantDetails, $missingDocuments);
+            $ncDocumentsFieldData = $ncDocumentsFieldData[Constants::DOCUMENT_FIELDS] ?? [];
 
-        $documentRequirementsFromSubmittedDocuments = $this->getDocumentRequirementsFromSubmittedDocuments($merchant, $merchantDetails, $submittedDocuments);
+            $documentRequirementsFromSubmittedDocuments = $this->getNCDocumentRequirements($merchantDetails, $ncDocumentsFieldData, $ncFormattedDocumentReasons);
+
+        }
+
+        $this->trace->info(TraceCode::MERCHANT_DOCUMENT_REQUIREMENTS, [
+            'missing_document_requirements'         => $missingDocumentRequirements,
+            'requirements_from_submitted_documents' => $documentRequirementsFromSubmittedDocuments
+        ]);
 
         $requirements = array_merge($requirements, $missingDocumentRequirements, $documentRequirementsFromSubmittedDocuments);
 
@@ -355,12 +376,6 @@ class BaseProcessor
      *       "reason_code": "document_missing"
      *  }]
      *
-     * ------------------------------- After form submission -------------------------------
-     *
-     * 1. We fetch the submitted documents
-     *   If the document has status associated to it and it has negative status(incorrect_details, not_matched), we
-     *   show up the doc again in requirements
-     *
      * @param Detail\Entity $merchantDetails
      * @param array         $requiredDocuments
      *
@@ -398,47 +413,48 @@ class BaseProcessor
     }
 
     /**
+     * ------------------------------- After form submission -------------------------------
      * This function returns document required fields after L2 form submission.
-     * If document uploaded contain a status key associated to it and has some negative verification status, then it
-     * shows up in requirements.
+     * If document is marked as NC through auto NC or by manual verification, we show it in requirements
      *
-     * @param Merchant\Entity $merchant
-     * @param Detail\Entity   $merchantDetails
-     * @param array           $submittedDocuments
+     * @param Detail\Entity $merchantDetails
+     * @param array         $ncDocuments
+     * @param array         $formattedNCDocumentsReasons
      *
      * @return array
-     * @throws \RZP\Exception\LogicException
      */
-    private function getDocumentRequirementsFromSubmittedDocuments(Merchant\Entity $merchant, Detail\Entity $merchantDetails, array $submittedDocuments): array
+    private function getNCDocumentRequirements(Detail\Entity $merchantDetails, array $ncDocuments, array $formattedNCDocumentsReasons): array
     {
-        $requirementsFromSubmittedDocuments = [];
+        $ncDocumentRequirements = [];
 
-        foreach ($submittedDocuments as $documentType => $fieldData)
+        foreach ($ncDocuments as $documentType => $fieldData)
         {
-            $requirement = [Constants::FIELD_REFERENCE => Document\Type::DOCUMENT_TYPE_TO_PROOF_TYPE_MAPPING[$documentType] . '.' . $documentType];
+            $fieldReference = Document\Type::DOCUMENT_TYPE_TO_PROOF_TYPE_MAPPING[$documentType] . '.' . $documentType;
+
+            if (in_array($documentType, SelectiveRequiredFields::BANK_PROOF_DOCUMENTS) === true)
+            {
+                $fieldReference = Document\Type::DOCUMENT_TYPE_TO_PROOF_TYPE_MAPPING[$documentType];
+            }
+
+            $requirement = [Constants::FIELD_REFERENCE => $fieldReference];
 
             $entity = $fieldData[Constants::ENTITY];
 
             $requirement[Constants::RESOLUTION_URL] = Constants::ENTITY_RESOLUTION_URL_MAPPING[$entity][Constants::DOCUMENT];
 
-            $statusKey = $this->getArtefactStatusUpdateKey($documentType);
-
-            if ($statusKey !== Constants::NOT_APPLICABLE)
+            if (array_key_exists($documentType, $formattedNCDocumentsReasons) === true)
             {
-                $reasonCode = $this->getDocumentValidationReason($merchantDetails->getAttribute($statusKey));
+                $requirement[Constants::REASON_CODE] = Detail\Status::NEEDS_CLARIFICATION;
 
-                if (empty($reasonCode) === false)
-                {
-                    $requirement[Constants::REASON_CODE] = $reasonCode;
+                $requirement[Constants::DESCRIPTION] = $formattedNCDocumentsReasons[$documentType][0][NeedsClarification\Constants::REASON_DESCRIPTION];
 
-                    $requirement[Constants::STATUS] = Constants::REQUIRED;
+                $requirement[Constants::STATUS] = Constants::REQUIRED;
 
-                    $requirementsFromSubmittedDocuments[] = $requirement;
-                }
+                $ncDocumentRequirements[] = $requirement;
             }
         }
 
-        return $requirementsFromSubmittedDocuments;
+        return $ncDocumentRequirements;
     }
 
     /**
@@ -466,16 +482,18 @@ class BaseProcessor
      *            If status associated with field is needed to be re-submitted, then it shows up in requirements.
      *            (Happens after L2 form submission)
      *
-     * @param Merchant\Entity $merchant
      * @param Detail\Entity   $merchantDetail
      * @param array           $fields
      *
+     * @param array           $clarificationReasons
+     *
      * @return array
-     * @throws \RZP\Exception\LogicException
      */
-    private function getFieldRequirements(Merchant\Entity $merchant, Detail\Entity $merchantDetail, array $fields): array
+    private function getFieldRequirements(Detail\Entity $merchantDetail, array $fields, array $clarificationReasons): array
     {
         $requirements = [];
+
+        $needsClarificationFields = $clarificationReasons[Constants::FIELDS] ?? [];
 
         $stakeholderExists = (new Stakeholder\Core())->checkIfStakeholderExists($merchantDetail);
 
@@ -530,25 +548,21 @@ class BaseProcessor
             }
             else
             {
-                $statusKey = $this->getArtefactStatusUpdateKey($field);
-
-                if ($statusKey !== Constants::NOT_APPLICABLE)
+                if($entityStr === Entity::STAKEHOLDER)
                 {
-                    $status = $entity->getAttribute($statusKey);
-
-                    if (empty($status) === false && in_array($status, Constants::INTERNAL_STATUS) === false)
-                    {
-                        $reasonCode = $this->getFieldValidationReason($status);
-
-                        $requirement[Constants::STATUS] = Constants::REQUIRED;
-
-                        $requirement[Constants::REASON_CODE] = $reasonCode;
-
-                        $requirements[] = $requirement;
-                    }
-
+                    $field = Constants::STAKEHOLDER_MERCHANT_DETAILS_MAPPING[$field];
                 }
 
+                if (array_key_exists($field, $needsClarificationFields) === true)
+                {
+                    $requirement[Constants::REASON_CODE] = Constants::NEEDS_CLARIFICATION;
+
+                    $requirement[Constants::DESCRIPTION] = $needsClarificationFields[$field][0][NeedsClarification\Constants::REASON_DESCRIPTION];
+
+                    $requirement[Constants::STATUS] = Constants::REQUIRED;
+
+                    $requirements[] = $requirement;
+                }
             }
         }
 
@@ -570,42 +584,6 @@ class BaseProcessor
         }
 
         return $entityStr;
-    }
-
-    private function getDocumentValidationReason($status): string
-    {
-        $reasonCode = '';
-
-        if ($status === BvsValidation\Constants::INCORRECT_DETAILS)
-        {
-            $reasonCode = Constants::DOCUMENT_INVALID;
-        }
-
-        if ($status === BvsValidation\Constants::NOT_MATCHED)
-        {
-            $reasonCode = Constants::DOCUMENT_DETAILS_MISMATCH;
-        }
-
-        return $reasonCode;
-    }
-
-    private function getFieldValidationReason(string $status): string
-    {
-        $reasonCode = '';
-
-        if ($status === BvsValidation\Constants::INCORRECT_DETAILS)
-        {
-            $reasonCode = Constants::FIELD_INVALID;
-        }
-        else
-        {
-            if ($status === BvsValidation\Constants::NOT_MATCHED)
-            {
-                $reasonCode = Constants::FIELD_MISMATCH;
-            }
-        }
-
-        return $reasonCode;
     }
 
     /**
@@ -673,11 +651,11 @@ class BaseProcessor
         }
         else
         {
-            if (array_key_exists($field, Constants::STAKEHOLDER_MERCHANT_DETAILS_MAPPING))
+            if (array_key_exists($field, Constants::MERCHANT_DETAILS_STAKEHOLDER_MAPPING))
             {
                 $entity = Entity::STAKEHOLDER;
 
-                $field = Constants::STAKEHOLDER_MERCHANT_DETAILS_MAPPING[$field];
+                $field = Constants::MERCHANT_DETAILS_STAKEHOLDER_MAPPING[$field];
             }
             else
             {

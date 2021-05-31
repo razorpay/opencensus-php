@@ -266,6 +266,7 @@ class Core extends Base\Core
                 Entity::ID            => $document->getId(),
                 Entity::FILE_STORE_ID => $document->getFileStoreId(),
                 Entity::MERCHANT_ID   => $document->getMerchantId(),
+                Entity::CREATED_AT    => $document->getCreatedAt()
             ];
 
             if (isset($documentsResponse[$document->getDocumentType()]) === false)

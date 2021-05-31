@@ -11,6 +11,7 @@ class PaymentGatewayResponseHandler
     const RESPONSE_CONFIG_KEYS = [
         Merchant\Entity::ID             => Merchant\Entity::ID,
         Util\Constants::ACCOUNT_CONFIG  => Util\Constants::CHECKOUT,
+        Util\Constants::REFUND          => Util\Constants::REFUND,
         Util\Constants::PAYMENT_CAPTURE => Util\Constants::PAYMENT_CAPTURE,
         Util\Constants::BANK_DETAILS    => Util\Constants::SETTLEMENTS,
         Util\Constants::NOTIFICATIONS   => Util\Constants::NOTIFICATIONS,
@@ -23,11 +24,10 @@ class PaymentGatewayResponseHandler
         Util\Constants::PAYMENT_CAPTURE,
     ];
 
-    const ACCOUNT_CONFIG_KEYS = [
-        Merchant\Entity::LOGO_URL,
-        Merchant\Entity::BRAND_COLOR,
-        Merchant\Entity::DEFAULT_REFUND_SPEED,
-        Util\Constants::FLASH_CHECKOUT
+    const ACCOUNT_CONFIG_KEY_MAPPING = [
+        Merchant\Entity::LOGO_URL             => Constants::LOGO,
+        Merchant\Entity::BRAND_COLOR          => Constants::THEME_COLOR,
+        Util\Constants::FLASH_CHECKOUT        => Util\Constants::FLASH_CHECKOUT
     ];
 
     const WORKFLOW_NEEDED_CONFIGURATION = [
@@ -59,11 +59,11 @@ class PaymentGatewayResponseHandler
     {
         $response = [];
 
-        foreach (self::ACCOUNT_CONFIG_KEYS as $key)
+        foreach (self::ACCOUNT_CONFIG_KEY_MAPPING as $key => $publicKey)
         {
-            if (isset($configValue[$key]))
+            if (isset($configValue[$key]) === true)
             {
-                $response[$key] = $configValue[$key];
+                $response[$publicKey] = $configValue[$key];
             }
         }
 
@@ -101,7 +101,7 @@ class PaymentGatewayResponseHandler
                 continue;
             }
 
-            if ($merchantProduct->getStatus() != 'activated')
+            if ($merchantProduct->getStatus() !== Product\Status::ACTIVATED)
             {
                 if (in_array($configKey, self::WORKFLOW_NEEDED_CONFIGURATION))
                 {

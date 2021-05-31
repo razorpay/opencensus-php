@@ -17,17 +17,22 @@ class Validator extends Base\Validator
         Util\Constants::SETTLEMENTS     => 'sometimes|array',
         Util\Constants::CHECKOUT        => 'sometimes|array',
         Util\Constants::PAYMENT_CAPTURE => 'sometimes|array',
-        Util\Constants::NOTIFICATIONS   => 'sometimes|array'
+        Util\Constants::NOTIFICATIONS   => 'sometimes|array',
+        Util\Constants::REFUND          => 'sometimes|array',
     ];
 
     protected static $notificationsRules  = [
         Util\Constants::WHATSAPP => 'sometimes|boolean',
         Util\Constants::SMS      => 'sometimes|boolean',
+        Util\Constants::EMAIL    => 'sometimes|array',
     ];
 
-    protected static $checkoutRules       = [
-        Merchant\Entity::BRAND_COLOR          => 'sometimes|regex:(^#[0-9a-fA-F]{6}$)',
-        Util\Constants::FLASH_CHECKOUT        => 'sometimes|boolean',
+    protected static $checkoutRules = [
+        Util\Constants::THEME_COLOR    => 'sometimes|regex:(^#[0-9a-fA-F]{6}$)',
+        Util\Constants::FLASH_CHECKOUT => 'sometimes|boolean',
+    ];
+
+    protected static $refundRules = [
         Merchant\Entity::DEFAULT_REFUND_SPEED => 'sometimes|filled|string|in:normal,optimum'
     ];
 
@@ -38,10 +43,10 @@ class Validator extends Base\Validator
         Util\Constants::REFUND_SPEED            => 'required|string|in:normal,optimum'
     ];
 
-    protected static $settlementsRules    = [
-        Util\Constants::NAME           => 'sometimes|regex:/^[a-zA-Z0-9\s]+$/|min:4|max:120',
-        Util\Constants::IFSC_CODE      => 'sometimes|alpha_num|max:11|custom',
-        Util\Constants::ACCOUNT_NUMBER => 'sometimes|regex:/^[a-zA-Z0-9]+$/|between:5,20|custom',
+    protected static $settlementsRules = [
+        Util\Constants::BENEFICIARY_NAME => 'sometimes|regex:/^[a-zA-Z0-9\s]+$/|min:4|max:120',
+        Util\Constants::IFSC_CODE        => 'sometimes|alpha_num|max:11|custom',
+        Util\Constants::ACCOUNT_NUMBER   => 'sometimes|regex:/^[a-zA-Z0-9]+$/|between:5,20|custom',
     ];
 
     protected static $pgValidators = [
@@ -49,6 +54,7 @@ class Validator extends Base\Validator
         'payment_capture',
         'settlements',
         'checkout',
+        'refund'
     ];
 
     public function validateAccountNumber($attribute, $bankAccountNumber)
@@ -66,6 +72,18 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(self::INVALID_IFSC_CODE_MESSAGE);
         }
+    }
+
+    public function validateRefund(array $input)
+    {
+        if(isset($input[Util\Constants::REFUND]) === false)
+        {
+            return;
+        }
+
+        $refundInput = $input[Util\Constants::REFUND];
+
+        $this->validateInput('refund', $refundInput);
     }
 
     protected function validateNotifications(array $input)

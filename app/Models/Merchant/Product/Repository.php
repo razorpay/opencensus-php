@@ -18,4 +18,12 @@ class Repository extends BaseRepository
                     ->where(Entity::PRODUCT_NAME, '=', $productName)
                     ->first();
     }
+
+    public function fetchMerchantProductConfigByProductId(string $merchantId, string $merchantProductId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->where(Entity::ID, '=', $merchantProductId)
+                    ->first();
+    }
 }

@@ -12,11 +12,15 @@ use RZP\Models\Merchant\Stakeholder\Entity;
 
 class Constants
 {
-    const STAKEHOLDER_MERCHANT_DETAILS_MAPPING = [
+    const MERCHANT_DETAILS_STAKEHOLDER_MAPPING = [
         Detail\Entity::PROMOTER_PAN_NAME => Entity::NAME,
         Detail\Entity::PROMOTER_PAN      => Entity::POI_IDENTIFICATION_NUMBER
     ];
 
+    const STAKEHOLDER_MERCHANT_DETAILS_MAPPING = [
+        Entity::NAME                      => Detail\Entity::PROMOTER_PAN_NAME,
+        Entity::POI_IDENTIFICATION_NUMBER => Detail\Entity::PROMOTER_PAN,
+    ];
     const ACCOUNT_DOCUMENTS_RESOLUTION_URL     = '/accounts/{accountId}/documents';
     const STAKEHOLDER_DOCUMENTS_RESOLUTION_URL = '/accounts/{accountId}/stakeholders/{stakeholderId}/documents';
     const ACCOUNTS_RESOLUTION_URL              = '/accounts/{accountId}';
@@ -73,6 +77,7 @@ class Constants
     const ENTITY          = 'entity';
     const FIELD           = 'field';
     const DOCUMENT        = 'document';
+    const DESCRIPTION     = 'description';
 
     //Reason codes
     const FIELD_MISSING             = 'field_missing';
@@ -83,10 +88,12 @@ class Constants
     const FIELD_MISMATCH            = 'field_mismatch';
 
     //status
-    const REQUIRED = 'required';
+    const REQUIRED            = 'required';
+    const NEEDS_CLARIFICATION = 'needs_clarification';
 
     //Helper variables
     const FIELDS          = 'fields';
+    const DOCUMENTS       = 'documents';
     const DOCUMENT_FIELDS = 'document_fields';
     const UPDATE          = '_update';
     const CREATE          = '_create';

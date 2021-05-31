@@ -16,5 +16,6 @@ class Status
 
     //status
     const REQUESTED           = 'requested';
+    const ACTIVATED           = 'activated';
     const NEEDS_CLARIFICATION = 'needs_clarification';
 }

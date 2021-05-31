@@ -4,7 +4,11 @@ namespace RZP\Models\Merchant\Document;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
+use RZP\Models\Merchant\Detail;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Merchant\Detail\NeedsClarification;
 
 class Validator extends Base\Validator
 {
@@ -92,6 +96,37 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Maximum file size supported : ' . (self::MAXIMUM_FILE_SIZE) / (1024 * 1024) . 'MB'
             );
+        }
+    }
+
+    public function validateNeedsClarificationRespondedIfApplicable(Merchant\Entity $merchant, array $input)
+    {
+        $merchantDetails = $merchant->merchantDetail;
+
+        if (empty($merchantDetails) === true || $merchantDetails->getActivationStatus() !== Detail\Status::NEEDS_CLARIFICATION)
+        {
+            return;
+        }
+
+        $clarificationReasons = (new NeedsClarification\Core)->getNonAcknowledgedNCFields($merchant, $merchantDetails);
+
+        if($clarificationReasons[Merchant\Constants::COUNT] === 0)
+        {
+            return;
+        }
+
+        $ncDocuments = $clarificationReasons['documents'] ?? [];
+
+        $documentType = $input[Constants::DOCUMENT_TYPE];
+
+        if (array_key_exists($documentType, $ncDocuments) === false)
+        {
+            $tracePayload = [
+                'provided_document_type' => $documentType,
+                'accepted_document_types' => array_keys($ncDocuments)
+            ];
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ONLY_NEEDS_CLARIFICATION_DOCUMENTS_ARE_ALLOWED, null, $tracePayload);
         }
     }
 }

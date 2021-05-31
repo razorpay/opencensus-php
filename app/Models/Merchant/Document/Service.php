@@ -7,9 +7,11 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity as E;
+use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\AccountV2;
 use RZP\Models\Merchant\Stakeholder;
+use RZP\Models\Merchant\Detail\NeedsClarification;
 
 
 class Service extends Base\Service
@@ -112,6 +114,8 @@ class Service extends Base\Service
 
         $validator->validateInput('uploadDocument', $input);
 
+        $validator->validateNeedsClarificationRespondedIfApplicable($merchant, $input);
+
         $validator->validateFileSize($input[Entity::FILE]);
 
         $documents = Type::getValidDocumentForEntity($entity->getEntity());
@@ -123,7 +127,20 @@ class Service extends Base\Service
 
         $this->uploadActivationFileByPartner($merchant, $entity, $input);
 
-        (new AccountV2\Core())->submitDetailsAndActivateIfApplicable($merchant);
+        $merchantDetails = $merchant->merchantDetail;
+
+        $accountV2Core = (new AccountV2\Core());
+
+        if($merchantDetails->getActivationStatus() === Detail\Status::NEEDS_CLARIFICATION)
+        {
+            $documentType = $input[Entity::DOCUMENT_TYPE];
+
+            $ncAcknowledgementPayload = [$documentType => "uploaded"];
+
+            $accountV2Core->updateNCFieldsAcknowledgedIfApplicable($ncAcknowledgementPayload, $merchant);
+        }
+
+        $accountV2Core->submitDetailsAndActivateIfApplicable($merchant, $merchantDetails);
 
         return (new DocumentResponse)->documentsResponse($merchant, $entity->getEntity(), $entity->getId());
     }

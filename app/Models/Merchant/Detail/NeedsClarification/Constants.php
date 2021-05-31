@@ -15,6 +15,7 @@ class Constants
     const DOCUMENTS          = 'documents';
     const DISPLAY_NAME       = 'display_name';
     const REASON_MAPPING     = 'reason_mapping';
+    const ACKNOWLEDGED       = 'acknowledged';
 
     // needs clarification field names
     const BANK_ACCOUNT_NUMBER           = 'bank_account_number';

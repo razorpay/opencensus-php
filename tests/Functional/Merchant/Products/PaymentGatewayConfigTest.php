@@ -7,6 +7,7 @@ use Event;
 use RZP\Constants\Mode;
 use RZP\Models\User\Role;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Merchant\Detail;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
@@ -14,12 +15,14 @@ use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
 class PaymentGatewayConfigTest extends OAuthTestCase
 {
     use PartnerTrait;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
+    use HeimdallTrait;
     use WebhookTrait;
 
     const RZP_ORG = '100000razorpay';
@@ -315,6 +318,145 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
     }
 
+    /**
+     * The following testcase does the following
+     * 1. Create a unregistered account
+     * 2. Create default payment gateway config
+     * 3. Create a stakeholder
+     * 4. Mark few fields as NC by fixtures
+     * 5. Verify only NC marked fields/ documents are appearing in requirements
+     * 6. Validate validation error if extra fields / documents are passed other than NC fields / documents
+     * 7. Update a valid NC field.
+     * 8. Validate latest kyc clarificaiton reason for that NC field has been updated with `acknowledged = true`
+     */
+    public function testNeedsClarificationForUnregisteredBusiness()
+    {
+        Mail::fake();
+
+        $key = $this->setupPrivateAuthForPartner();
+
+        $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
+
+        $accountResponse = $this->runRequestResponseFlow($testData);
+
+        $accountId = $accountResponse['id'];
+
+        $testData = $this->testData['testCreateDefaultPaymentGatewayConfig'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $merchantProductId = $response['id'];
+
+        $merchantId = substr($accountId, 4);
+
+        $testData = $this->testData['testCreateStakeholderForThinRequest'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/stakeholders';
+
+        $stakeholderResponse = $this->runRequestResponseFlow($testData);
+
+        $stakeholderId = $stakeholderResponse['id'];
+
+        $testData = $this->testData['testUpdateStakeholderDetails'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/stakeholders/' . $stakeholderId;
+
+        $this->runRequestResponseFlow($testData);
+
+        // This is not the exact flow via APIs, mocking the flow with fixtures
+        $this->updateKycClarificationsAndMarkMerchantAsNC($merchantId, 'live');
+
+        $this->updateKycClarificationsAndMarkMerchantAsNC($merchantId, 'test');
+
+        $testData = $this->testData['testRequirementsInNCState'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
+
+        $this->ba->privateAuth($key);
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testUpdateAccountNonNCFields'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId;
+
+        $this->runRequestResponseFlow($testData);
+
+        $this->updateUploadDocumentData('testUploadNonNCDocument');
+
+        $testData = $this->testData['testUploadNonNCDocument'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/stakeholders/' . $stakeholderId . '/documents';
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testUpdateStakeholderDetails'];
+
+        $testData['request']['content'] = ['name' => 'abcd'];
+
+        $testData['response']['content'] = ['name' => 'abcd'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/stakeholders/' . $stakeholderId;
+
+        $this->runRequestResponseFlow($testData);
+
+        $this->verifyKycClarificationReasonAcknowledged('promoter_pan_name' , $merchantId);
+
+        $this->updateUploadDocumentData('testPostStakeholderDocumentAadharFront');
+
+        $testData = $this->testData['testPostStakeholderDocumentAadharFront'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/stakeholders/' . $stakeholderId . '/documents';
+
+        $testData['response']['content'] = [];
+
+        $this->runRequestResponseFlow($testData);
+
+        $this->verifyKycClarificationReasonAcknowledged('aadhar_front' , $merchantId);
+    }
+
+    private function verifyKycClarificationReasonAcknowledged(string $field, string $merchantId)
+    {
+        $merchantDetails = $this->getDbEntity('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $kycClarificationReasons = $merchantDetails->getKycClarificationReasons();
+
+        $clarificationReasons = $kycClarificationReasons['clarification_reasons'];
+
+        $this->assertTrue($clarificationReasons[$field][0]['acknowledged']);
+    }
+
+    private function updateKycClarificationsAndMarkMerchantAsNC(string $merchantId, string $mode)
+    {
+        $this->fixtures->on($mode)->edit('merchant_detail', $merchantId, [
+            'kyc_clarification_reasons' => [
+                'clarification_reasons' => [
+                    'aadhar_front'      => [[
+                                                'reason_type' => 'predefined',
+                                                'field_value' => 'adnakdad',
+                                                'reason_code' => 'illegible_doc',
+                                                'is_current'  => true,
+                                                'from'        => 'admin'
+                                            ],
+                    ],
+                    'promoter_pan_name' => [[
+                                                'reason_type' => 'predefined',
+                                                'field_value' => 'adnakdad',
+                                                'reason_code' => 'signatory_name_not_matched',
+                                                'is_current'  => true,
+                                                'from'        => 'admin'
+                                            ],
+                    ],
+                ],
+            ],
+            'activation_status'         => 'needs_clarification',
+            'submitted'                 => 1,
+            'locked'                    => 0
+        ]);
+    }
+
     public function testPartnerProductStatusEvent()
     {
         $this->setupPrivateAuthForPartner();
@@ -412,6 +554,13 @@ class PaymentGatewayConfigTest extends OAuthTestCase
             filesize(__DIR__ . '/../../Storage/k.png'),
             null,
             true);
+    }
+
+    protected function setAdminForInternalAuth()
+    {
+        $this->org = $this->fixtures->create('org');
+
+        $this->authToken = $this->getAuthTokenForOrg($this->org);
     }
 }
 

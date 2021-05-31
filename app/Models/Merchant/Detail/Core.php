@@ -2127,6 +2127,15 @@ class Core extends Base\Core
             {
                 array_push($validationFields, Entity::COMPANY_CIN);
             }
+
+            // If the personalPanDocuments group is not fulfilled, \RZP\Models\Merchant\Detail\Core::calculateRequiredDocumentFields would pick the first requirement in group as required field
+            // This is just a work around to support V2 onboarding flow to prioritize personal_pan document. So reversing the array.
+            if ($businessType === BusinessType::PROPRIETORSHIP)
+            {
+                $personalPanDocuments = $validationSelectiveRequiredFields[SelectiveRequiredFields::PERSONAL_PAN_DOCUMENTS];
+
+                $validationSelectiveRequiredFields[SelectiveRequiredFields::PERSONAL_PAN_DOCUMENTS] = array_reverse($personalPanDocuments);
+            }
         }
 
         if ($merchant->isLinkedAccount() === true)

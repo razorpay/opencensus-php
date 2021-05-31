@@ -116,6 +116,11 @@ class SelectiveRequiredFields
         ],
     ];
 
+    const BANK_PROOF_DOCUMENTS = [
+        Type::CANCELLED_CHEQUE,
+        Type::BANK_STATEMENT
+    ];
+
     /**
      * list of all selective required fields
      */

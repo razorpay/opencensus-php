@@ -6,12 +6,15 @@ class Defaults
 {
     const PAYMENT_GATEWAY = [
 
-        'notifications'   => [
+        'notifications' => [
             'sms'      => false,
             'whatsapp' => false
         ],
-        'checkout'        => [
+        'refund'        => [
             'default_refund_speed' => 'normal'
+        ],
+        'checkout' => [
+            'theme_color' => '#FFFFFF'
         ]
     ];
 }

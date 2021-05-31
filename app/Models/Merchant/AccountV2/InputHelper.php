@@ -151,16 +151,20 @@ class InputHelper
 
         if (isset($input[Constants::LEGAL_INFO]) === true)
         {
-            $ownerInfo[Detail\Entity::COMPANY_PAN] = $input[Constants::LEGAL_INFO][Constants::PAN];
+            $legalInfo = $input[Constants::LEGAL_INFO];
 
-            if (isset($input[Constants::LEGAL_INFO][Constants::GST]) === true)
-            {
-                $ownerInfo[Detail\Entity::GSTIN] = $input[Constants::LEGAL_INFO][Constants::GST];
-            }
+            $fieldMapping = [
+                Constants::PAN => Detail\Entity::COMPANY_PAN,
+                Constants::GST => Detail\Entity::GSTIN,
+                Constants::CIN => Detail\Entity::COMPANY_CIN
+            ];
 
-            if (isset($input[Constants::LEGAL_INFO][Constants::CIN]) === true)
+            foreach ($fieldMapping as $field => $value)
             {
-                $ownerInfo[Detail\Entity::COMPANY_CIN] = $input[Constants::LEGAL_INFO][Constants::CIN];
+                if (isset($legalInfo[$field]) === true)
+                {
+                    $ownerInfo[$value] = $legalInfo[$field];
+                }
             }
         }
 

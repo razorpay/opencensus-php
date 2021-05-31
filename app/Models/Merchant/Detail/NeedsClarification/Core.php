@@ -3,9 +3,13 @@
 namespace RZP\Models\Merchant\Detail\NeedsClarification;
 
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
+use RZP\Models\Merchant\Document;
 use RZP\Models\Merchant\Detail\Status;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\Constants as MerchantConstant;
+use RZP\Models\Merchant\Detail\SelectiveRequiredFields;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Document\Type as DocumentType;
 use RZP\Models\Merchant\Detail\Core as MerchantDetailCore;
@@ -250,5 +254,159 @@ class Core extends Base\Core
         $requirement[Constants::REASON_DESCRIPTION] = $reasonMetaData[NeedsClarificationMetaData::DESCRIPTION];
 
         return $requirement;
+    }
+
+    public function getNonAcknowledgedNCFields(Merchant\Entity $merchant, DetailEntity $merchantDetails): array
+    {
+        $documentResponse = (new Document\Core())->documentResponse($merchant);
+
+        $latestClarificationFields = $this->getLatestKycClarificationReasons($merchantDetails);
+
+        $nonAcknowledgedNCFields = [];
+
+        $nonAcknowledgedNCFields[Constants::DOCUMENTS] = [];
+
+        $nonAcknowledgedNCFields[Constants::FIELDS] = [];
+
+        $count = 0;
+
+        foreach ($latestClarificationFields as $field => $clarificationDetails)
+        {
+            $group = DocumentType::isValid($field) === true ? Constants::DOCUMENTS : Constants::FIELDS;
+
+            if ($this->isNCFieldAcknowledged($clarificationDetails) === false)
+            {
+                $count = $count + 1;
+
+                $nonAcknowledgedNCFields[$group][$field] = $clarificationDetails;
+
+                //special case, in case of bank account number NC, UI prompts for cancelled cheque also. so adding it here
+                if (($this->isBankDetailsNCField($field) === true) && ($this->isNCAcknowledgedForBankDocumentProofs($documentResponse, $clarificationDetails) === false))
+                {
+                    $nonAcknowledgedNCFields[Constants::DOCUMENTS][DocumentType::CANCELLED_CHEQUE] = $clarificationDetails;
+
+                    $count = $count + 1;
+                }
+            }
+        }
+
+        $nonAcknowledgedNCFields[Merchant\Constants::COUNT] = $count;
+
+        $this->trace->info(TraceCode::MERCHANT_NON_ACKNOWLEDGED_NC_FIELDS, $nonAcknowledgedNCFields);
+
+        return $nonAcknowledgedNCFields;
+    }
+
+    private function isNCAcknowledgedForBankDocumentProofs(array $documentResponse, array $clarificationDetails)
+    {
+        $bankDocumentProofAcknowledged = false;
+
+        foreach (SelectiveRequiredFields::BANK_PROOF_DOCUMENTS as $documentType)
+        {
+            if(array_key_exists($documentType, $documentResponse) === true)
+            {
+                $cancelledChequeDocuments = $documentResponse[$documentType];
+
+                $latestUploaded = $cancelledChequeDocuments[count($cancelledChequeDocuments) - 1];
+
+                if ($latestUploaded[Document\Entity::CREATED_AT] > $clarificationDetails[Document\Entity::CREATED_AT])
+                {
+                    $bankDocumentProofAcknowledged = true;
+                }
+            }
+        }
+
+        return $bankDocumentProofAcknowledged;
+    }
+
+    private function isBankDetailsNCField(string $fieldName)
+    {
+        $bankDetailsField = false;
+
+        if(in_array($fieldName, DetailConstant::BANK_DETAIL_FIELDS) === true)
+        {
+            $bankDetailsField = true;
+        }
+
+        return $bankDetailsField;
+    }
+
+    private function isNCFieldAcknowledged(array $clarificationDetails): bool
+    {
+        $acknowledged = false;
+
+        if((array_key_exists(Constants::ACKNOWLEDGED, $clarificationDetails) && $clarificationDetails[Constants::ACKNOWLEDGED] === true) ||
+           $clarificationDetails[MerchantConstant::REASON_FROM] === MerchantConstant::MERCHANT)
+        {
+            $acknowledged = true;
+        }
+
+        return $acknowledged;
+    }
+
+    private function getLatestKycClarificationReasons(DetailEntity $merchantDetails): array
+    {
+        $kycClarificationReasons = $merchantDetails->getKycClarificationReasons();
+
+        $latestReasons = [];
+
+        if (empty($kycClarificationReasons) === true)
+        {
+            return $latestReasons;
+        }
+
+        $clarificationReasons = $kycClarificationReasons[DetailEntity::CLARIFICATION_REASONS] ?? [];
+
+        foreach ($clarificationReasons as $field => $clarificationDetails)
+        {
+            foreach ($clarificationDetails as $clarification)
+            {
+                if ($clarification[Merchant\Constants::IS_CURRENT] === true)
+                {
+                    $latestReasons[$field] = $clarification;
+                }
+            }
+        }
+
+        return $latestReasons;
+    }
+
+    public function updateNCFieldAcknowledged(string $field, DetailEntity $merchantDetails): bool
+    {
+        $kycClarificationReasons = $merchantDetails->getKycClarificationReasons();
+
+        if(empty($kycClarificationReasons) === true)
+        {
+            return false;
+        }
+
+        $clarificationReasons = $kycClarificationReasons[DetailEntity::CLARIFICATION_REASONS] ?? [];
+
+        if(array_key_exists($field, $clarificationReasons) === false)
+        {
+            return false;
+        }
+
+        $reasons = $clarificationReasons[$field];
+
+        $latestReasonIndex = count($reasons) - 1;
+
+        $clarificationReasons[$field][$latestReasonIndex][Constants::ACKNOWLEDGED] = true;
+
+        $kycClarificationReasons[DetailEntity::CLARIFICATION_REASONS] = $clarificationReasons;
+
+        $merchantDetails->setKycClarificationReasons($kycClarificationReasons);
+
+        $this->repo->merchant_detail->saveOrFail($merchantDetails);
+
+        $tracePayload = [
+            'merchant_id'       => $merchantDetails->getMerchantId(),
+            'field'             => $field,
+            'updatedKycReasons' => $clarificationReasons[$field][$latestReasonIndex]
+        ];
+
+        $this->trace->info(TraceCode::MERCHANT_ACKNOWLEDGED_NC_FIELD, $tracePayload);
+
+        return true;
     }
 }
