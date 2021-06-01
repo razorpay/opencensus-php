@@ -11,16 +11,19 @@ use RZP\Gateway\Hitachi;
 use RZP\Models\Payment\Gateway;
 use RZP\Services\DowntimeMetric;
 use RZP\Services\RazorXClient;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Mpi\Enstage\Field;
 use RZP\Gateway\Hitachi\ResponseFields;
 use RZP\Gateway\Mpi\Blade\Mock\CardNumber;
 use RZP\Exception\PaymentVerificationException;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class HitachiGatewayTest extends TestCase
 {
     use PaymentTrait;
+    use dbEntityFetchTrait;
 
     protected $razorX;
 
@@ -118,7 +121,7 @@ class HitachiGatewayTest extends TestCase
         $this->assertEquals([
             $this->gateway => [
                 DowntimeMetric::Success    => [
-                    DowntimeMetric::NoError      => 1,
+                    DowntimeMetric::NoError      => 2,
                 ]
             ]
         ], $this->app['gateway_downtime_metric']->getMetrics());
@@ -129,7 +132,7 @@ class HitachiGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $this->assertNull($payment['transaction_id']);
 
-        $gatewayPayment = $this->getLastEntity('hitachi', true);
+        $gatewayPayment = $this->getDbEntity('hitachi', ['action' => 'authorize'])->toArrayAdmin();
 
         $this->assertArraySelectiveEquals(
             $this->testData['testHitachiAuthEntity'], $gatewayPayment);
@@ -267,7 +270,7 @@ class HitachiGatewayTest extends TestCase
         $this->assertNull($payment['transaction_id']);
         $this->assertEquals('100HitachiTmnl', $payment['terminal_id']);
 
-        $gatewayPayment = $this->getLastEntity('hitachi', true);
+        $gatewayPayment = $this->getDbEntity('hitachi', ['action' => 'authorize'])->toArrayAdmin();
 
         $this->assertArraySelectiveEquals(
             $this->testData['testHitachiAuthEntity'], $gatewayPayment);
@@ -321,7 +324,7 @@ class HitachiGatewayTest extends TestCase
         $this->assertNull($payment['transaction_id']);
         $this->assertEquals('100HitachiTmnl', $payment['terminal_id']);
 
-        $gatewayPayment = $this->getLastEntity('hitachi', true);
+        $gatewayPayment = $this->getDbEntity('hitachi', ['action' => 'authorize'])->toArrayAdmin();
 
         $this->assertArraySelectiveEquals(
             $this->testData['testHitachiAuthEntity'], $gatewayPayment);
@@ -445,7 +448,7 @@ class HitachiGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $this->assertNull($payment['transaction_id']);
 
-        $gatewayPayment = $this->getLastEntity('hitachi', true);
+        $gatewayPayment = $this->getDbEntity('hitachi', ['action' => 'authorize'])->toArrayAdmin();
 
         $this->assertArraySelectiveEquals(
             $this->testData['testHitachiAuthEntity'], $gatewayPayment);
@@ -492,7 +495,7 @@ class HitachiGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $this->assertNull($payment['transaction_id']);
 
-        $gatewayPayment = $this->getLastEntity('hitachi', true);
+        $gatewayPayment = $this->getDbEntity('hitachi', ['action' => 'authorize'])->toArrayAdmin();
 
         $this->assertArraySelectiveEquals(
             $this->testData['testHitachiAuthEntity'], $gatewayPayment);
@@ -539,7 +542,7 @@ class HitachiGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $this->assertNull($payment['transaction_id']);
 
-        $gatewayPayment = $this->getLastEntity('hitachi', true);
+        $gatewayPayment = $this->getDbEntity('hitachi', ['action' => 'authorize'])->toArrayAdmin();
 
         $this->assertArraySelectiveEquals(
             $this->testData['testHitachiAuthEntity'], $gatewayPayment);
@@ -626,7 +629,7 @@ class HitachiGatewayTest extends TestCase
                 $this->verifyPayment($payment['id']);
             });
 
-        $hitachi = $this->getLastEntity('hitachi', true);
+        $hitachi = $this->getDbEntity('hitachi', ['action' => 'authorize'])->toArrayAdmin();
 
         $this->assertEquals('F', $hitachi[Hitachi\Entity::STATUS]);
     }
@@ -653,6 +656,11 @@ class HitachiGatewayTest extends TestCase
 
     public function testCaptureFailure()
     {
+        //All card payments are gateway captured for Razorpay Org ID, so using a different org
+        $this->fixtures->org->createHdfcOrg();
+
+        $this->fixtures->merchant->edit('10000000000000', ['org_id' => Org::HDFC_ORG]);
+
         $this->assertEquals([], $this->app['gateway_downtime_metric']->getMetrics());
 
         $this->doAuthPayment($this->payment);
@@ -792,6 +800,11 @@ class HitachiGatewayTest extends TestCase
 
     public function testReverseFailureDuetoFormatError()
     {
+        //All card payments are gateway captured for Razorpay Org ID, so using a different org
+        $this->fixtures->org->createHdfcOrg();
+
+        $this->fixtures->merchant->edit('10000000000000', ['org_id' => Org::HDFC_ORG]);
+
         $this->doAuthPayment($this->payment);
 
         $payment = $this->getLastEntity('payment', true);
@@ -1372,7 +1385,7 @@ class HitachiGatewayTest extends TestCase
         $this->assertNull($payment['transaction_id']);
         $this->assertEquals('100HitachiTmnl', $payment['terminal_id']);
 
-        $gatewayPayment = $this->getLastEntity('hitachi', true);
+        $gatewayPayment = $this->getDbEntity('hitachi', ['action' => 'authorize'])->toArrayAdmin();
 
         $this->assertArraySelectiveEquals(
             $this->testData['testHitachiAuthEntity'], $gatewayPayment);

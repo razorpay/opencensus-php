@@ -11,6 +11,7 @@ use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Base\PublicEntity;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -1340,6 +1341,11 @@ class TransactionTrackerTest extends TestCase
 
     public function testVoidRefundFetchDetailsForCustomerFromRazorpayIdProcessedRefundCaseTimePassed()
     {
+        //All card payments are gateway captured for Razorpay Org ID, so using a different org
+        $this->fixtures->org->createHdfcOrg();
+
+        $this->fixtures->merchant->edit('10000000000000', ['org_id' => Org::HDFC_ORG]);
+
         $this->fixtures->merchant->addFeatures('void_refunds');
 
         $this->fixtures->create('terminal:shared_hitachi_terminal', [
@@ -1408,6 +1414,11 @@ class TransactionTrackerTest extends TestCase
 
     public function testVoidRefundFetchDetailsForCustomerFromRazorpayIdProcessedRefundCase()
     {
+        //All card payments are gateway captured for Razorpay Org ID, so using a different org
+        $this->fixtures->org->createHdfcOrg();
+
+        $this->fixtures->merchant->edit('10000000000000', ['org_id' => Org::HDFC_ORG]);
+
         $this->fixtures->merchant->addFeatures('void_refunds');
 
         $this->fixtures->create('terminal:shared_hitachi_terminal', [

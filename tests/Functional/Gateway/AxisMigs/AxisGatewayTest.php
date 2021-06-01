@@ -11,6 +11,7 @@ use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\Fixtures;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
@@ -58,7 +59,7 @@ class AxisGatewayTest extends TestCase
         $this->assertNull($payment['transaction_id']);
         $this->assertEquals(TwoFactorAuth::PASSED, $payment[Entity::TWO_FACTOR_AUTH]);
 
-        $migs = $this->getDbLastEntityPublic('axis_migs');
+        $migs = $this->getDbEntity('axis_migs', ['action' => 'authorize'])->toArrayAdmin();
 
         $this->assertArraySelectiveEquals(
             $this->testData['testPaymentAxisMigsEntity'], $migs);
@@ -211,6 +212,11 @@ class AxisGatewayTest extends TestCase
 
     public function testAuthorizedPaymentRefund()
     {
+        //All card payments are gateway captured for Razorpay Org ID, so using a different org
+        $this->fixtures->org->createHdfcOrg();
+
+        $this->fixtures->merchant->edit('10000000000000', ['org_id' => Org::HDFC_ORG]);
+
         $payment = $this->getDefaultPaymentArray();
 
         $response = $this->doAuthPayment($payment);
@@ -575,6 +581,11 @@ class AxisGatewayTest extends TestCase
 
     public function testForceAuthorizePayment()
     {
+        //All card payments are gateway captured for Razorpay Org ID, so using a different org
+        $this->fixtures->org->createHdfcOrg();
+
+        $this->fixtures->merchant->edit('10000000000000', ['org_id' => Org::HDFC_ORG]);
+
         $payment = $this->doAuthPayment();
         $migs = $this->getDbLastEntityPublic('axis_migs');
         $txnNo = (int) $migs['vpc_TransactionNo'] - 1;
@@ -678,7 +689,7 @@ class AxisGatewayTest extends TestCase
 
         $paymentId = Payment\Entity::verifyIdAndSilentlyStripSign($paymentId);
 
-        $migs = $this->getLastEntity('axis_migs', true);
+        $migs = $this->getDbEntity('axis_migs', ['action' => 'authorize'])->toArrayAdmin();
 
         $migsData = $this->testData['recurringEntity'];
 

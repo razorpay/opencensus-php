@@ -11,6 +11,8 @@ use Dashboard\Payment;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Services\RazorXClient;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Traits\MocksRazorx;
 use RZP\Tests\Functional\TestCase;
 use RZP\Jobs\Capture as CaptureJob;
 use RZP\Mail\Merchant\BalancePositiveAlert;
@@ -35,6 +37,7 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class CaptureTest extends TestCase
 {
+    use MocksRazorx;
     use PaymentTrait;
     use DbEntityFetchTrait;
 
@@ -282,6 +285,75 @@ class CaptureTest extends TestCase
         $this->assertEquals('paysecure', $payment['gateway']);
     }
 
+    public function testGatewayCaptureForAllPaymentsRazorpayOrgMastercard()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+
+        $this->mockRazorxTreatmentV2(Merchant\RazorxTreatment::PAYMENT_GATEWAY_CAPTURE_ASYNC_MC, 'on');
+
+        $response = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTrue($payment['gateway_captured']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->capturePayment($payment['id'], $payment['amount']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('hdfc', $payment['gateway']);
+    }
+
+    public function testGatewayCaptureRazorpayOrgMastercardRazorxOff()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+
+        $this->mockRazorxTreatmentV2(Merchant\RazorxTreatment::PAYMENT_GATEWAY_CAPTURE_ASYNC_MC, 'off');
+
+        $response = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNull($payment['gateway_captured']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->capturePayment($payment['id'], $payment['amount']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('hdfc', $payment['gateway']);
+    }
+
+    public function testNotGatewayCaptureForAllPaymentsNonRazorpayOrg()
+    {
+        //All card payments are gateway captured for Razorpay Org ID, so using a different org
+        $this->fixtures->org->createHdfcOrg();
+
+        $this->fixtures->merchant->edit('10000000000000', ['org_id' => Org::HDFC_ORG]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '4264511038488895';
+
+        $response = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNull($payment['gateway_captured']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->capturePayment($payment['id'], $payment['amount']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('hdfc', $payment['gateway']);
+    }
+
     public function testDelayCaptureRupay()
     {
         Mail::fake();
@@ -337,6 +409,11 @@ class CaptureTest extends TestCase
 
     public function testCaptureFailedWithoutQueue()
     {
+        //All card payments are gateway captured for Razorpay Org ID, so using a different org
+        $this->fixtures->org->createHdfcOrg();
+
+        $this->fixtures->merchant->edit('10000000000000', ['org_id' => Org::HDFC_ORG]);
+
         $payment = $this->defaultAuthPayment();
 
         $this->gateway = 'hdfc';

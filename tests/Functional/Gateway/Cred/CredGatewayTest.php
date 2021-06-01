@@ -714,7 +714,7 @@ class CybersourceGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('cybersource', $payment['gateway']);
 
-        $this->assertEquals(2, count($this->getDbEntities('cybersource')));
+        $this->assertEquals(3, count($this->getDbEntities('cybersource')));
 
         $cybs = $this->getLastEntity('cybersource', true);
 

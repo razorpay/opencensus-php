@@ -21,6 +21,8 @@ class HdfcGatewayTest extends TestCase
     use PaymentTrait;
     use DbEntityFetchTrait;
 
+    const ACTION_AUTHORIZE = '4';
+
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/HdfcGatewayTestData.php';
@@ -96,7 +98,7 @@ class HdfcGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals($payment['transaction_id'], null);
 
-        $hdfc = $this->getLastEntity('hdfc', true);
+        $hdfc = $this->getDbEntity('hdfc', ['action' => $this::ACTION_AUTHORIZE])->toArrayAdmin();
 
         $this->assertEquals('6', $hdfc['eci']);
 
@@ -144,7 +146,7 @@ class HdfcGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals($payment['transaction_id'], null);
 
-        $hdfc = $this->getLastEntity('hdfc', true);
+        $hdfc = $this->getDbEntity('hdfc', ['action' => $this::ACTION_AUTHORIZE])->toArrayAdmin();
 
         $this->assertEquals('Y', $hdfc['enroll_result']);
 
@@ -301,7 +303,7 @@ class HdfcGatewayTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals($payment['transaction_id'], null);
 
-        $hdfc = $this->getLastEntity('hdfc', true);
+        $hdfc = $this->getDbEntity('hdfc', ['action' => $this::ACTION_AUTHORIZE])->toArrayAdmin();
 
         $this->assertEquals('Y', $hdfc['enroll_result']);
 
@@ -493,7 +495,7 @@ class HdfcGatewayTest extends TestCase
 
         $paymentId = Payment::verifyIdAndSilentlyStripSign($paymentId);
 
-        $hdfc = $this->getLastEntity('hdfc', true);
+        $hdfc = $this->getDbEntity('hdfc', ['action' => $this::ACTION_AUTHORIZE])->toArrayAdmin();
 
         $this->assertNotNull($hdfc['ref']);
         $this->assertNotNull($hdfc['auth']);
@@ -565,7 +567,7 @@ class HdfcGatewayTest extends TestCase
 
         $paymentId = Payment::verifyIdAndSilentlyStripSign($paymentId);
 
-        $hdfc = $this->getLastEntity('hdfc', true);
+        $hdfc = $this->getDbEntity('hdfc', ['action' => $this::ACTION_AUTHORIZE])->toArrayAdmin();
 
         $this->assertNotNull($hdfc['ref']);
         $this->assertNotNull($hdfc['auth']);
@@ -970,7 +972,8 @@ class HdfcGatewayTest extends TestCase
         $input['force'] = '1';
         $this->refundAuthorizedPayment($payment['id'], $input);
 
-        $hdfcEntity = $this->getLastEntity('hdfc', true);
+        $hdfcEntity = $this->getDbEntity('hdfc', ['action' => $this::ACTION_AUTHORIZE])->toArrayAdmin();
+
         $this->assertEquals('authorized', $hdfcEntity['status']);
         $this->assertEquals('APPROVED', $hdfcEntity['result']);
 

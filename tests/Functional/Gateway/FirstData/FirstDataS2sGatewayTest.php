@@ -9,11 +9,13 @@ use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\FirstData\SoapWrapper;
 use RZP\Tests\Functional\Fixtures\Entity\Terminal;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class FirstDataS2sGatewayTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     /**
      * Instance of a terminal from the fixtures
@@ -221,7 +223,7 @@ class FirstDataS2sGatewayTest extends TestCase
     {
         $payment = $this->doAuthPayment($this->payment);
 
-        $gatewayEntity = $this->getLastEntity('first_data', true);
+        $gatewayEntity = $this->getDbEntity('first_data', ['action' => 'authorize'])->toArrayAdmin();
 
         $this->assertEquals('AUTHORIZED', $gatewayEntity['status']);
 
@@ -339,7 +341,7 @@ class FirstDataS2sGatewayTest extends TestCase
 
         $paymentId = $response['razorpay_payment_id'];
 
-        $gatewayEntity = $this->getLastEntity('first_data', true);
+        $gatewayEntity = $this->getDbEntity('first_data', ['action' => 'authorize'])->toArrayAdmin();
 
         $this->assertEquals(Status::AUTHORIZED, $gatewayEntity['status']);
 
@@ -415,7 +417,7 @@ class FirstDataS2sGatewayTest extends TestCase
 
         $paymentId = $response['razorpay_payment_id'];
 
-        $gatewayEntity = $this->getLastEntity('first_data', true);
+        $gatewayEntity = $this->getDbEntity('first_data', ['action' => 'authorize'])->toArrayAdmin();
 
         $this->assertEquals(Status::AUTHORIZED, $gatewayEntity['status']);
 

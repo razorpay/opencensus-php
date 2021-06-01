@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Constants\Timezone;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Fixtures\Entity\Terminal;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -644,13 +645,13 @@ class FirstDataGatewayTest extends TestCase
 
         $payment['card']['number'] = '4160210902353047';
 
+        $this->getErrorInCapture();
         $this->doAuthPayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->getErrorInCapture();
 
         $this->runRequestResponseFlow($data, function() use ($payment) {
             $this->capturePayment($payment['id'], $payment['amount']);
@@ -698,6 +699,11 @@ class FirstDataGatewayTest extends TestCase
 
     public function testCaptureTimeout()
     {
+        //All card payments are gateway captured for Razorpay Org ID, so using a different org
+        $this->fixtures->org->createHdfcOrg();
+
+        $this->fixtures->merchant->edit('10000000000000', ['org_id' => Org::HDFC_ORG]);
+
         $payment = $this->getDefaultPaymentArray();
 
         $payment['card']['number'] = '4160210902353047';

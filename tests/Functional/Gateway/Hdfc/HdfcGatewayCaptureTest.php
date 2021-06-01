@@ -6,12 +6,17 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class HdfcGatewayCaptureTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
+
+    const ACTION_CAPTURE = '5';
 
     protected function setUp(): void
     {
@@ -28,6 +33,11 @@ class HdfcGatewayCaptureTest extends TestCase
 
     public function testCaptureDeniedByRisk()
     {
+        //All card payments are gateway captured for Razorpay Org ID, so using a different org
+        $this->fixtures->org->createHdfcOrg();
+
+        $this->fixtures->merchant->edit('10000000000000', ['org_id' => Org::HDFC_ORG]);
+
         $payment = $this->doAuthPayment();
 
         $this->hdfcPaymentFailedDueToDeniedByRisk();
@@ -54,6 +64,11 @@ class HdfcGatewayCaptureTest extends TestCase
      */
     public function testForcedCapture()
     {
+        //All card payments are gateway captured for Razorpay Org ID, so using a different org
+        $this->fixtures->org->createHdfcOrg();
+
+        $this->fixtures->merchant->edit('10000000000000', ['org_id' => Org::HDFC_ORG]);
+
         $payment = $this->doAuthPayment();
         $payment = $this->getLastEntity('payment', true);
 
@@ -62,7 +77,8 @@ class HdfcGatewayCaptureTest extends TestCase
         $payment = $this->capturePayment($payment['id'], $payment['amount']);
         $this->assertEquals($payment['status'], 'captured');
 
-        $hdfcPayment = $this->getLastEntity('hdfc', true);
+        $hdfcPayment = $this->getDbEntity('hdfc', ['action' => $this::ACTION_CAPTURE])->toArrayAdmin();
+
         $this->assertEquals($hdfcPayment['error_code2'], 'GW00176');
 
         $this->resetGatewayDriver();
@@ -87,6 +103,11 @@ class HdfcGatewayCaptureTest extends TestCase
 
     public function testCaptureTimeout()
     {
+        //All card payments are gateway captured for Razorpay Org ID, so using a different org
+        $this->fixtures->org->createHdfcOrg();
+
+        $this->fixtures->merchant->edit('10000000000000', ['org_id' => Org::HDFC_ORG]);
+
         $this->defaultAuthPayment();
 
         $payment = $this->getLastEntity('payment', true);

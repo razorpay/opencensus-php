@@ -16,6 +16,7 @@ use RZP\Services\RazorXClient;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Payment\RefundRrnUpdated;
@@ -2518,6 +2519,11 @@ class RefundTest extends TestCase
 
     public function testRefundRetryWithUnsignedId()
     {
+        //All card payments are gateway captured for Razorpay Org ID, so using a different org
+        $this->fixtures->org->createHdfcOrg();
+
+        $this->fixtures->merchant->edit('10000000000000', ['org_id' => Org::HDFC_ORG]);
+
         $this->defaultAuthPayment();
 
         $payment = $this->getLastEntity('payment', true);
@@ -2573,6 +2579,11 @@ class RefundTest extends TestCase
 
     public function testRefundOnHdfcPaymentCaptureTimedOut()
     {
+        //All card payments are gateway captured for Razorpay Org ID, so using a different org
+        $this->fixtures->org->createHdfcOrg();
+
+        $this->fixtures->merchant->edit('10000000000000', ['org_id' => Org::HDFC_ORG]);
+
         $this->defaultAuthPayment();
 
         $payment = $this->getLastEntity('payment', true);

@@ -267,4 +267,9 @@ final class RazorxTreatment
     const SHOW_CREATE_TICKET_POPUP = 'show_create_ticket_popup';
 
     const  PAYMENT_LINK_END_STATE_VIEW_CHANGE = 'payment_link_end_state_view_change';
+
+    /**
+     * Experiment to indicate if a payment should go via capture queue for Master Card Network
+     */
+    const PAYMENT_GATEWAY_CAPTURE_ASYNC_MC = 'payment_gateway_capture_asyc_mc';
 }

@@ -7,7 +7,9 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Models\Merchant\RazorxTreatment;
 use Illuminate\Support\Facades\Queue;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Cybersource\Fields;
 use RZP\Jobs\CorePaymentServiceSync;
@@ -650,6 +652,11 @@ class CybersourceGatewayTest extends TestCase
 
     public function testAuthorizeFailedPayment()
     {
+        //All card payments are gateway captured for Razorpay Org ID, so using a different org
+        $this->fixtures->org->createHdfcOrg();
+
+        $this->fixtures->merchant->edit('10000000000000', ['org_id' => Org::HDFC_ORG]);
+
         $enrolledCard = [
             'card' => [
                 'number'    => '4000000000000002',
@@ -1298,6 +1305,11 @@ class CybersourceGatewayTest extends TestCase
 
     public function testAuthorizedPaymentRefundWithVerifyV2Disabled()
     {
+        //All card payments are gateway captured for Razorpay Org ID, so using a different org
+        $this->fixtures->org->createHdfcOrg();
+
+        $this->fixtures->merchant->edit('10000000000000', ['org_id' => Org::HDFC_ORG]);
+
         $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal_without_secret2');
 
         $this->fixtures->merchant->addFeatures('reverse');

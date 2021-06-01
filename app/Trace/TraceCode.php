@@ -3156,6 +3156,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CPS_GATEWAY_TRANSACTION_JOB_EXCEPTION                 = 'CPS_GATEWAY_TRANSACTION_JOB_EXCEPTION';
     const CPS_ROUTE_CONFIG                                      = 'CPS_ROUTE_CONFIG';
     const CPS_RAZORX_VARIANT                                    = 'CPS_RAZORX_VARIANT';
+    const GATEWAY_CAPTURE_RAZORX_VARIANT                        = 'GATEWAY_CAPTURE_RAZORX_VARIANT';
     const CPS_SWITCH_ROUTE                                      = 'CPS_SWITCH_ROUTE';
 
     const CARD_PAYMENT_SERVICE_SWITCH_ROUTE                     = 'CARD_PAYMENT_SERVICE_SWITCH_ROUTE';
