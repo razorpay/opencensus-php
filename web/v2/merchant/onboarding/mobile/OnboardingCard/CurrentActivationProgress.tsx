@@ -224,8 +224,9 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; pay
     }
   } else {
     if (
-      data.poi_verification_status === 'incorrect_details' ||
-      data.poi_verification_status === 'not_matched'
+      (data.poi_verification_status === 'incorrect_details' ||
+        data.poi_verification_status === 'not_matched') &&
+      !user.canSkipPoiValidation
     ) {
       return (
         <>
@@ -240,7 +241,7 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; pay
       );
     }
 
-    if (data.poi_verification_status === 'failed') {
+    if (data.poi_verification_status === 'failed' && !user.canSkipPoiValidation) {
       return (
         <>
           <Info
@@ -256,11 +257,20 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; pay
 
     if (data.poi_verification_status === 'pending') {
       return (
-        <Info
-          title={Messages.POI_VERIFICATION_STATUS.pending.title}
-          description={Messages.POI_VERIFICATION_STATUS.pending.description}
-          titleColor="neutral.960"
-        />
+        <>
+          <Info
+            title={Messages.POI_VERIFICATION_STATUS.pending.title}
+            description={Messages.POI_VERIFICATION_STATUS.pending.description}
+            titleColor="neutral.960"
+          />
+          {!data.submitted && user.canSkipPoiValidation && (
+            <Buttons.LinkButton
+              onClick={onCTAClick}
+              title="Fill Remaining Details"
+              icon="arrowRight"
+            />
+          )}
+        </>
       );
     }
   }

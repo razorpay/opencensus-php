@@ -1538,6 +1538,7 @@ class Service extends Base\Service
             'nitro_midmarket_mumbai_v1',
             'upi_intent_notification',
             'rx_disable_taxpayment_payoutflow',
+            'bvs_personal_pan_validation',
             'onboarding_v2',
             'capture_settings_revamp',
             'pl_description_required',

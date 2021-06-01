@@ -996,6 +996,10 @@ export default class User {
     return getSplitzExperimentVariant('pure_platform_signup')?.name;
   }
 
+  get canSkipPoiValidation() {
+    return this.getExpStatus('bvs_personal_pan_validation');
+  }
+
   get canSkipPOADocument() {
     return this.getExpStatus('SKIP_POA_DOCUMENT_FUNCTIONALITY');
   }

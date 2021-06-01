@@ -57,6 +57,7 @@ export default class ActivationCard extends Component {
         locked,
         isHardLimitReached,
         merchant,
+        canSkipPoiValidation,
       } = nextProps,
       { isL1Submitted, isWhitelistFlow, isBlacklistFlow, isGraylistFlow } = instantActivation;
 
@@ -172,7 +173,7 @@ export default class ActivationCard extends Component {
       status = possibleStatuses.active;
       if (poi_verification_status && isUnregisteredBusiness) {
         status = possibleStatuses.blocked;
-        if (poi_verification_status == 'failed') {
+        if (poi_verification_status == 'failed' && !canSkipPoiValidation) {
           content = (
             <div>
               Unable to verify PAN with the central database at the moment.
@@ -195,8 +196,9 @@ export default class ActivationCard extends Component {
             </div>
           );
         } else if (
-          poi_verification_status == 'incorrect_details' ||
-          poi_verification_status == 'not_matched'
+          (poi_verification_status == 'incorrect_details' ||
+            poi_verification_status == 'not_matched') &&
+          !canSkipPoiValidation
         ) {
           content = (
             <div>

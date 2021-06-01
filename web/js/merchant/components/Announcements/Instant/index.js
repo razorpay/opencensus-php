@@ -91,7 +91,7 @@ export default class InstantActivationAnnouncements extends Component {
               <Link to="/activation">Fill KYC Form</Link>
             </span>
           );
-        } else if (user.poi_verification_status == 'failed') {
+        } else if (user.poi_verification_status == 'failed' && !user.canSkipPoiValidation) {
           theme = 'danger';
           title = 'Unable To Verify PAN';
           content = (
@@ -109,8 +109,9 @@ export default class InstantActivationAnnouncements extends Component {
             </React.Fragment>
           );
         } else if (
-          user.poi_verification_status == 'incorrect_details' ||
-          user.poi_verification_status == 'not_matched'
+          (user.poi_verification_status == 'incorrect_details' ||
+            user.poi_verification_status == 'not_matched') &&
+          !user.canSkipPoiValidation
         ) {
           theme = 'danger';
           title = 'PAN Verification Failed';

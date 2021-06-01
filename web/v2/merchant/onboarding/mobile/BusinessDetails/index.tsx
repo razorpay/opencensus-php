@@ -152,7 +152,7 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
     data.poi_verification_status === 'not_matched' ||
     data.poi_verification_status === 'failed';
 
-  const shouldShowPoiError = !data.submitted && hasPoiStatus;
+  const shouldShowPoiError = !data.submitted && hasPoiStatus && !user.canSkipPoiValidation;
   useEffect(() => {
     if (hasPoiStatus) {
       analyticsTrack({

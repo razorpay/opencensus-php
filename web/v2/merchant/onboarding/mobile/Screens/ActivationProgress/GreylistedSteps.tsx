@@ -62,7 +62,7 @@ const GreylistedSteps: React.FC<RouteComponentProps> = ({ history }) => {
     data.poi_verification_status === 'incorrect_details' ||
     data.poi_verification_status === 'not_matched';
 
-  const shouldShowPoiError = !data.submitted && hasPoiStatus;
+  const shouldShowPoiError = !data.submitted && hasPoiStatus && !user.canSkipPoiValidation;
 
   return (
     <View>

@@ -16,6 +16,7 @@ import {
   EnableSettlements as EnableSettlementModal,
   SubmitForm as SubmitFormModal,
 } from '../../ActivationModals';
+import { useApp } from 'v2/context/App';
 // import { L1_FORM_FIELD_NAMES } from '../../Constants/OnboardingConstants'; /*temporally commented
 
 const Screen = styled(View)`
@@ -28,6 +29,7 @@ const WhitelistedSteps: React.FC<RouteComponentProps> = ({ history }) => {
     postData,
     // instantPostData,
   } = useActivation();
+  const { user } = useApp();
   const {
     isContactDetailsCompleted,
     isBusinessOverviewCompleted,
@@ -138,7 +140,7 @@ const WhitelistedSteps: React.FC<RouteComponentProps> = ({ history }) => {
     data.poi_verification_status === 'incorrect_details' ||
     data.poi_verification_status === 'not_matched';
 
-  const shouldShowPoiError = !data.submitted && hasPoiStatus;
+  const shouldShowPoiError = !data.submitted && hasPoiStatus && !user.canSkipPoiValidation;
   return (
     <Screen>
       <OnboardingStepCard

@@ -406,6 +406,9 @@ const businessDetails = [
       info: 'Mandatory for Companies. PAN details should be of the mentioned business only.',
       validator: validateCompanyPAN,
       checkValidityFromAPI: (activation) => {
+        if (activation.props.user.canSkipPoiValidation) {
+          return null;
+        }
         const errMsg =
           'The number entered doesn’t exist in the PAN database. Please verify and enter again';
         return checkValidityFromAPI(
@@ -494,6 +497,9 @@ const businessDetails = [
       getLabel: (activation) =>
         isUnregisteredBusiness(activation) ? 'PAN' : 'Authorised Signatory PAN',
       checkValidityFromAPI: (activation) => {
+        if (activation.props.user.canSkipPoiValidation) {
+          return null;
+        }
         const errMsg =
           'The number entered doesn’t exist in the PAN database. Please verify and enter again';
         return checkValidityFromAPI(
@@ -524,7 +530,7 @@ const businessDetails = [
         }
       },
       checkValidityFromAPI: (activation) => {
-        if (!isUnregisteredBusiness(activation)) {
+        if (!isUnregisteredBusiness(activation) || activation.props.user.canSkipPoiValidation) {
           return null;
         }
         const errMsg = 'Please ensure you are entering the same spelling as on your PAN card';
