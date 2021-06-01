@@ -105,6 +105,16 @@ class CreateMerchants extends Migration
                   ->unsigned()
                   ->nullable();
 
+            $table->bigInteger(Merchant::AMOUNT_CREDITS_THRESHOLD)
+                ->unsigned()
+                ->default(null)
+                ->nullable();
+
+            $table->bigInteger(Merchant::REFUND_CREDITS_THRESHOLD)
+                ->unsigned()
+                ->default(null)
+                ->nullable();
+
             $table->tinyInteger(Merchant::REFUND_SOURCE)
                   ->default(RefundSource::getValueForRefundSourceString(RefundSource::BALANCE));
 

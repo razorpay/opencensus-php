@@ -127,6 +127,8 @@ class MailTags
     const DAILY_FILE                       = 'daily_file';
     const DAILY_REPORT                     = 'daily_report';
     const FEE_CREDITS_ALERT                = 'fee_credits_alert';
+    const AMOUNT_CREDITS_ALERT             = 'amount_credits_alert';
+    const REFUND_CREDITS_ALERT             = 'refund_credits_alert';
     const RX_LOW_BALANCE_ALERT             = 'rx_low_balance_alert';
     const IRCTC_REFUND_REPORT              = 'irctc_refund_report';
     const AUTH_REMINDER                    = 'auth_reminder';

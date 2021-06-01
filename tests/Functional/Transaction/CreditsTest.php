@@ -5,6 +5,8 @@ namespace RZP\Tests\Functional\Transaction;
 use Mail;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Merchant\FeeCreditsAlert;
+use RZP\Mail\Merchant\AmountCreditsAlert;
+use RZP\Mail\Merchant\RefundCreditsAlert;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class CreditsTest extends TestCase
@@ -490,6 +492,157 @@ class CreditsTest extends TestCase
         $this->assertEquals(9998 - $txn['fee_credits'], $balance['fee_credits']);
 
         Mail::assertNotQueued(FeeCreditsAlert::class);
+    }
+
+    // We authorize, check the fields and capture the payment. We then check if
+    // credits are crossing threshold and an alert is triggered.
+    public function testRefundCreditsThresholdAlerts()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('credits', [
+            'type'        => 'refund',
+            'value'       => 110000,
+        ]);
+
+        $this->fixtures->merchant->editRefundCredits('110000', '10000000000000');
+
+        $this->fixtures->merchant->editRefundCreditsThreshold('70000', '10000000000000');
+
+        // Check if mail is getting triggered when 1st Threshold is crossed
+        $this->fixtures->merchant->edit('10000000000000', ['refund_source' => 'credits']);
+
+        $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
+
+        $payment = $this->getDefaultNetbankingPaymentArray("HDFC");
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $this->refundPayment($payment['id']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals(110000 - $payment['amount'], $balance['refund_credits']);
+
+        Mail::assertQueued(RefundCreditsAlert::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals(['test@razorpay.com'], $viewData['email']);
+
+            $this->assertEquals(10000000000000, $viewData['merchant_id']);
+
+            $this->assertEquals('dashboard.razorpay.in', $viewData['org_hostname']);
+
+            $this->assertEquals('emails.merchant.refund_credits_alert', $mail->view);
+
+            return true;
+        });
+
+        $payment2 = $this->getDefaultNetbankingPaymentArray();
+
+        $payment2['amount'] = 40000;
+
+        $payment2 = $this->doAuthAndCapturePayment($payment2);
+
+        $this->refundPayment($payment2['id']);
+
+        $balance2 = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals(110000 - $payment['amount'] - $payment2['amount'], $balance2['refund_credits']);
+
+        Mail::assertQueued(RefundCreditsAlert::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            if ($viewData['refund_credits'] === '₹ 200')
+            {
+                $this->assertEquals(['test@razorpay.com'], $viewData['email']);
+
+                $this->assertEquals(10000000000000, $viewData['merchant_id']);
+
+                $this->assertEquals('emails.merchant.refund_credits_alert', $mail->view);
+
+                return true;
+            }
+
+            return false;
+        });
+    }
+
+    public function testAmountCreditsAlertNotFiredCases()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('credits', [
+            'type'        => 'refund',
+            'value'       => 20000,
+        ]);
+
+        $this->fixtures->merchant->edit('10000000000000', ['refund_source' => 'credits']);
+
+        $this->fixtures->merchant->editRefundCredits('20000', '10000000000000');
+        $this->fixtures->merchant->editRefundCreditsThreshold('9999', '10000000000000');
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment['amount'] = 10000;
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $this->refundPayment($payment['id']);
+
+        Mail::assertNotQueued(RefundCreditsAlert::class);
+    }
+
+    public function testAmountCreditsThresholdAlerts()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('credits', [
+            'type'        => 'amount',
+            'value'       => 500000,
+        ]);
+
+        $this->fixtures->merchant->editAmountCreditsThreshold('399999', '10000000000000');
+
+        $initialBalance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
+
+        $payment = $this->getDefaultNetbankingPaymentArray("HDFC");
+        $payment['amount'] = 100000;
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals($initialBalance['balance'] + $payment['amount'], $balance['balance']);
+
+        Mail::assertNotQueued(AmountCreditsAlert::class);
+
+        $payment2 = $this->getDefaultNetbankingPaymentArray("HDFC");
+        $payment2['amount'] = 3000;
+        $payment2 = $this->doAuthAndCapturePayment($payment2);
+
+        $balance2 = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals($initialBalance['balance'] + $payment['amount'] + $payment2['amount'], $balance2['balance']);
+
+        Mail::assertQueued(AmountCreditsAlert::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            if ($viewData['amount_credits'] === '₹ 3970')
+            {
+                $this->assertEquals(['test@razorpay.com'], $viewData['email']);
+
+                $this->assertEquals(10000000000000, $viewData['merchant_id']);
+
+                $this->assertEquals('emails.merchant.amount_credits_alert', $mail->view);
+
+                return true;
+            }
+
+            return false;
+        });
     }
 
     public function testRefundCredits()

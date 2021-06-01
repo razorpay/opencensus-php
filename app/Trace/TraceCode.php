@@ -2590,6 +2590,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PARTNER_ACTIVATION_MIGRATION_JOB_DELETE               = 'PARTNER_ACTIVATION_MIGRATION_JOB_DELETE';
 
     const FEE_CREDITS_THRESHOLD_ALERT                           = 'FEE_CREDITS_THRESHOLD_ALERT';
+    const AMOUNT_CREDITS_THRESHOLD_ALERT                        = 'AMOUNT_CREDITS_THRESHOLD_ALERT';
+    const REFUND_CREDITS_THRESHOLD_ALERT                        = 'REFUND_CREDITS_THRESHOLD_ALERT';
 
     // Excel reader debug trace codes
     const EXCEL_READER_IMPORT_CONFIG                            = 'EXCEL_READER_IMPORT_CONFIG';

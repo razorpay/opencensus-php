@@ -715,14 +715,24 @@ class Merchant extends Base
         return $this->fixtures->edit('balance', $id, ['fee_credits' => $credits]);
     }
 
+    public function editRefundCredits($credits, $id = '10000000000000')
+    {
+        return $this->fixtures->edit('balance', $id, ['refund_credits' => $credits]);
+    }
+
     public function editFeeCreditsThreshold($credits, $id = '10000000000000')
     {
         return $this->edit($id, ['fee_credits_threshold' => $credits]);
     }
 
-    public function editRefundCredits($credits, $id = '10000000000000')
+    public function editAmountCreditsThreshold($credits, $id = '10000000000000')
     {
-        return $this->fixtures->edit('balance', $id, ['refund_credits' => $credits]);
+        return $this->edit($id, ['amount_credits_threshold' => $credits]);
+    }
+
+    public function editRefundCreditsThreshold($credits, $id = '10000000000000')
+    {
+        return $this->edit($id, ['refund_credits_threshold' => $credits]);
     }
 
     public function editCreditsforNodalAccount($credits, $type = Credits\Type::AMOUNT)

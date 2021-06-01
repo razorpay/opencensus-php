@@ -120,6 +120,8 @@ class Entity extends Base\PublicEntity
     const SUSPENDED_AT                   = 'suspended_at';
     const NOTES                          = 'notes';
     const FEE_CREDITS_THRESHOLD          = 'fee_credits_threshold';
+    const AMOUNT_CREDITS_THRESHOLD       = 'amount_credits_threshold';
+    const REFUND_CREDITS_THRESHOLD       = 'refund_credits_threshold';
     const PRODUCT                        = 'product';
     const DEFAULT_REFUND_SPEED           = 'default_refund_speed';
     const SECOND_FACTOR_AUTH             = 'second_factor_auth';
@@ -336,6 +338,8 @@ class Entity extends Base\PublicEntity
         self::WHITELISTED_IPS_LIVE,
         self::WHITELISTED_IPS_TEST,
         self::FEE_CREDITS_THRESHOLD,
+        self::AMOUNT_CREDITS_THRESHOLD,
+        self::REFUND_CREDITS_THRESHOLD,
         self::DISPLAY_NAME,
         self::DASHBOARD_WHITELISTED_IPS_LIVE,
         self::DASHBOARD_WHITELISTED_IPS_TEST,
@@ -356,6 +360,8 @@ class Entity extends Base\PublicEntity
         self::INVOICE_LABEL_FIELD,
         self::AUTO_CAPTURE_LATE_AUTH,
         self::FEE_CREDITS_THRESHOLD,
+        self::AMOUNT_CREDITS_THRESHOLD,
+        self::REFUND_CREDITS_THRESHOLD,
         self::DISPLAY_NAME,
         self::DEFAULT_REFUND_SPEED,
         self::FEE_BEARER,
@@ -422,6 +428,8 @@ class Entity extends Base\PublicEntity
         self::WHITELISTED_DOMAINS,
         self::MERCHANT_DETAIL,
         self::FEE_CREDITS_THRESHOLD,
+        self::AMOUNT_CREDITS_THRESHOLD,
+        self::REFUND_CREDITS_THRESHOLD,
         self::DISPLAY_NAME,
         self::ACTIVATION_SOURCE,
         self::BUSINESS_BANKING,
@@ -467,6 +475,8 @@ class Entity extends Base\PublicEntity
         self::WHITELISTED_IPS_TEST           => [],
         self::WHITELISTED_DOMAINS            => [],
         self::FEE_CREDITS_THRESHOLD          => null,
+        self::AMOUNT_CREDITS_THRESHOLD       => null,
+        self::REFUND_CREDITS_THRESHOLD       => null,
         self::CATEGORY                       => 0,
         self::WEBSITE                        => null,
         self::INTERNATIONAL                  => 0,
@@ -500,6 +510,8 @@ class Entity extends Base\PublicEntity
         self::WHITELISTED_IPS_TEST           => 'array',
         self::WHITELISTED_DOMAINS            => 'array',
         self::FEE_CREDITS_THRESHOLD          => 'int',
+        self::AMOUNT_CREDITS_THRESHOLD       => 'int',
+        self::REFUND_CREDITS_THRESHOLD       => 'int',
         self::BUSINESS_BANKING               => 'bool',
         self::SECOND_FACTOR_AUTH             => 'bool',
         self::RESTRICTED                     => 'bool',
@@ -1768,6 +1780,16 @@ class Entity extends Base\PublicEntity
     public function getFeeCreditsThreshold()
     {
         return $this->getAttribute(self::FEE_CREDITS_THRESHOLD);
+    }
+
+    public function getAmountCreditsThreshold()
+    {
+        return $this->getAttribute(self::AMOUNT_CREDITS_THRESHOLD);
+    }
+
+    public function getRefundCreditsThreshold()
+    {
+        return $this->getAttribute(self::REFUND_CREDITS_THRESHOLD);
     }
 
     public function getRefundSource()

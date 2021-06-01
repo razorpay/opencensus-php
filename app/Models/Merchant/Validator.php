@@ -135,6 +135,8 @@ class Validator extends Base\Validator
         Entity::DASHBOARD_WHITELISTED_IPS_TEST . '.*' => 'distinct|required_with:' .
                                                          Entity::DASHBOARD_WHITELISTED_IPS_TEST . '|ipv4',
         Entity::FEE_CREDITS_THRESHOLD                 => 'sometimes|integer|nullable',
+        Entity::AMOUNT_CREDITS_THRESHOLD              => 'sometimes|integer|nullable',
+        Entity::REFUND_CREDITS_THRESHOLD              => 'sometimes|integer|nullable',
         Entity::PARTNERSHIP_URL                       => 'sometimes|max:2000',
         'reset_methods'                               => 'sometimes|boolean',
     ];
@@ -173,6 +175,8 @@ class Validator extends Base\Validator
         Entity::HANDLE                   => 'sometimes|nullable|min:3|max:4|custom|unique:merchants,handle,null',
         Entity::DISPLAY_NAME             => 'sometimes|nullable|string|min:3|max:255',
         Entity::FEE_CREDITS_THRESHOLD    => 'sometimes|integer|nullable',
+        Entity::AMOUNT_CREDITS_THRESHOLD => 'sometimes|integer|nullable',
+        Entity::REFUND_CREDITS_THRESHOLD => 'sometimes|integer|nullable',
         Entity::DEFAULT_REFUND_SPEED     => 'sometimes|filled|string|in:normal,optimum',
         Entity::FEE_BEARER               => 'sometimes|in:customer,platform',
         Entity::NOTES                    => 'sometimes|notes',

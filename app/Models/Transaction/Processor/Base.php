@@ -24,6 +24,8 @@ use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\Base as BaseCollection;
 use RZP\Mail\Merchant\FeeCreditsAlert;
 use RZP\Exception\BadRequestException;
+use RZP\Mail\Merchant\AmountCreditsAlert;
+use RZP\Mail\Merchant\RefundCreditsAlert;
 use RZP\Models\Base\Entity as BaseEntity;
 use RZP\Models\Payment\Processor\Capture;
 use RZP\Models\Merchant\Balance\BalanceConfig;
@@ -429,6 +431,8 @@ abstract class Base extends BaseCore
 
         $amount = $this->txn->getAmount();
 
+        $amountCreditsThreshold = $this->merchantBalance->merchant->getAmountCreditsThreshold();
+
         $amountCredits = $this->getMerchantCreditsOfType(Credits\Type::AMOUNT);
 
         // Removing Assert for now, as there is a race condition. if 2 payments
@@ -458,6 +462,47 @@ abstract class Base extends BaseCore
 
         // Nodal balance needs to be saved because of amount credit update
         // $this->repo->balance->updateBalance($nodalBalance);
+
+        // only check for credit threshold if it's not null
+        if ($amountCreditsThreshold !== null)
+        {
+            $this->sendAmountCreditAlertIfNeeded(
+                $amount, $amountCredits, $amountCreditsThreshold, $this->merchantBalance->merchant);
+        }
+    }
+
+    private function sendAmountCreditAlertIfNeeded(
+        int $amount,
+        int $amountCredits,
+        int $amountCreditsThreshold,
+        Merchant\Entity $merchant)
+    {
+        // $alertRatios should be sorted array always
+        $alertRatios = [0.1, 0.25, 0.5, 0.75, 1];
+
+        foreach ($alertRatios as $alertRatio)
+        {
+            if (($amountCredits >= ($alertRatio * $amountCreditsThreshold)) and
+                (($amountCredits - $amount) < ($alertRatio * $amountCreditsThreshold)))
+            {
+                $data = [
+                    'email'             => $merchant->getTransactionReportEmail(),
+                    'merchant_id'       => $merchant->getId(),
+                    'merchant_dba'      => $merchant->getBillingLabel(),
+                    'amount_credits'    => '₹ '.(($amountCredits - $amount) / 100),
+                    'org_hostname'      => $merchant->org->getPrimaryHostName(),
+                    'timestamp'         => Carbon::now(Timezone::IST)->format('d-m-Y H:i:s'),
+                ];
+
+                $this->trace->info(TraceCode::AMOUNT_CREDITS_THRESHOLD_ALERT, $data);
+
+                $createAlertMail = new AmountCreditsAlert($data);
+
+                Mail::queue($createAlertMail);
+
+                break;
+            }
+        }
     }
 
     /**
@@ -653,6 +698,8 @@ abstract class Base extends BaseCore
 
         $merchantId = $this->merchantBalance->merchant->getId();
 
+        $refundCreditsThreshold = $this->merchantBalance->merchant->getRefundCreditsThreshold();
+
         $refundCredits = $this->merchantBalance->getRefundCredits();
 
         $data = [
@@ -694,6 +741,47 @@ abstract class Base extends BaseCore
                                                         $this->txn->getType());
         //create a credit transaction for the same
         $this->createCreditTransaction($amount, Credits\Type::REFUND);
+
+        // only check for credit threshold if it's not null
+        if ($refundCreditsThreshold !== null)
+        {
+            $this->sendRefundCreditAlertIfNeeded(
+                $amount, $refundCredits, $refundCreditsThreshold, $this->merchantBalance->merchant);
+        }
+    }
+
+    private function sendRefundCreditAlertIfNeeded(
+        int $amount,
+        int $refundCredits,
+        int $refundCreditsThreshold,
+        Merchant\Entity $merchant)
+    {
+        // $alertRatios should be sorted array always
+        $alertRatios = [0.1, 0.25, 0.5, 0.75, 1];
+
+        foreach ($alertRatios as $alertRatio)
+        {
+            if (($refundCredits >= ($alertRatio * $refundCreditsThreshold)) and
+                (($refundCredits - $amount) < ($alertRatio * $refundCreditsThreshold)))
+            {
+                $data = [
+                    'email'        => $merchant->getTransactionReportEmail(),
+                    'merchant_id'  => $merchant->getId(),
+                    'merchant_dba'  => $merchant->getBillingLabel(),
+                    'refund_credits'  => '₹ '.(($refundCredits - $amount) / 100),
+                    'org_hostname' => $merchant->org->getPrimaryHostName(),
+                    'timestamp'    => Carbon::now(Timezone::IST)->format('d-m-Y H:i:s'),
+                ];
+
+                $this->trace->info(TraceCode::REFUND_CREDITS_THRESHOLD_ALERT, $data);
+
+                $createAlertMail = new RefundCreditsAlert($data);
+
+                Mail::queue($createAlertMail);
+
+                break;
+            }
+        }
     }
 
     public function updateBalances(int $negativeLimit = 0)

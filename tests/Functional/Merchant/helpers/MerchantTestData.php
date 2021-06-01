@@ -576,6 +576,76 @@ return [
         ]
     ],
 
+    'testEditMerchantWithNullAmountCreditsThreshold' => [
+        'request' => [
+            'raw' => json_encode([
+                'linked_account_kyc' => '1',
+                'website' => 'https://www.example.com',
+                'category' => 1111,
+                'transaction_report_email'  => [
+                    'test@razorpay.com'
+                ],
+                'amount_credits_threshold'     => null
+            ]),
+            'url' => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+            'server' => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'CONTENT_TYPE'  => 'application/json',
+                'HTTP_X-Dashboard' => 'true',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'id' => '1X4hRFHFx4UiXt',
+                'entity' => 'merchant',
+                'linked_account_kyc' => true,
+                'category' => '1111',
+                'website' => 'https://www.example.com',
+                'transaction_report_email'  => [
+                    'test@razorpay.com'
+                ],
+                'amount_credits_threshold'    => null
+            ]
+        ]
+    ],
+
+    'testEditMerchantWithNullRefundCreditsThreshold' => [
+        'request' => [
+            'raw' => json_encode([
+                'linked_account_kyc' => '1',
+                'website' => 'https://www.example.com',
+                'category' => 1111,
+                'transaction_report_email'  => [
+                    'test@razorpay.com'
+                ],
+                'refund_credits_threshold'     => null
+            ]),
+            'url' => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+            'server' => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'CONTENT_TYPE'  => 'application/json',
+                'HTTP_X-Dashboard' => 'true',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'id' => '1X4hRFHFx4UiXt',
+                'entity' => 'merchant',
+                'linked_account_kyc' => true,
+                'category' => '1111',
+                'website' => 'https://www.example.com',
+                'transaction_report_email'  => [
+                    'test@razorpay.com'
+                ],
+                'refund_credits_threshold'    => null
+            ]
+        ]
+    ],
+
     'testEditMerchantEnableInternationalFail' => [
         'request' => [
             'content' => [
@@ -1394,6 +1464,44 @@ return [
         'response' => [
             'content' => [
                 'fee_credits_threshold'    => 1000
+            ]
+        ]
+    ],
+
+    'testEditMerchantAmountCreditsThresholdWithProxyAuth' => [
+        'request' => [
+            'raw' => json_encode([
+                'amount_credits_threshold'     => 1000
+            ]),
+            'url' => '/account/config',
+            'method' => 'put',
+            'server' => [
+                'CONTENT_TYPE'  => 'application/json',
+                'HTTP_X-Dashboard' => 'true',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'amount_credits_threshold'    => 1000
+            ]
+        ]
+    ],
+
+    'testEditMerchantRefundCreditsThresholdWithProxyAuth' => [
+        'request' => [
+            'raw' => json_encode([
+                'refund_credits_threshold'     => 1000
+            ]),
+            'url' => '/account/config',
+            'method' => 'put',
+            'server' => [
+                'CONTENT_TYPE'  => 'application/json',
+                'HTTP_X-Dashboard' => 'true',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'refund_credits_threshold'    => 1000
             ]
         ]
     ],
