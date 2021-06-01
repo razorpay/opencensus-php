@@ -146,8 +146,8 @@ class Base extends BaseCore
      */
     protected $mutex;
 
-    const MERCHANT_ID = 'merchant_id';
-    const ERROR_CODE  = 'error_code';
+    const ERROR_CODE = 'error_code';
+
 
     public function __construct()
     {
@@ -1668,7 +1668,7 @@ class Base extends BaseCore
                 $this->trace->error(
                     TraceCode::MERCHANT_BLOCKED_FOR_CARD_MODE,
                     [
-                        self::MERCHANT_ID => $merchantId,
+                        Payout\Entity::MERCHANT_ID => $merchantId,
                         self::ERROR_CODE  => $isMerchantBlacklistedForM2P[FundTransfer\Mode::ERROR_CODE]
                     ]
                 );
@@ -1677,7 +1677,7 @@ class Base extends BaseCore
                     $isMerchantBlacklistedForM2P[FundTransfer\Mode::ERROR_CODE],
                     null,
                     [
-                        self::MERCHANT_ID => $merchantId
+                        Payout\Entity::MERCHANT_ID => $merchantId
                     ]);
             }
 

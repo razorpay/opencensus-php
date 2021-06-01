@@ -674,4 +674,55 @@ class RblPayoutTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testCreatePayoutViaAmazonPayFromDirectAccount()
+    {
+        $contact = $this->getDbLastEntity('contact');
+
+        $balanceAttributes = [
+            'balance' => 10000000,
+            'balanceType' => 'direct',
+            'channel' => 'rbl',
+        ];
+
+        $bankingBalance = $this->fixtures->merchant->createBalanceOfBankingType(
+            $balanceAttributes["balance"],
+            '10000000000000',
+            $balanceAttributes["balanceType"] ,
+            $balanceAttributes["channel"]
+        );
+
+        $virtualAccount = $this->fixtures->create('virtual_account');
+        $secondBankAccount    = $this->fixtures->create(
+            'bank_account',
+            [
+                'type'           => 'virtual_account',
+                'entity_id'      => $virtualAccount->getId(),
+                'account_number' => '2224440041626906',
+                'ifsc_code'      => 'RAZRB000000',
+            ]);
+
+        $virtualAccount->bankAccount()->associate($secondBankAccount);
+        $virtualAccount->balance()->associate($bankingBalance);
+        $virtualAccount->save();
+
+        $bankingBalance->setAccountNumber($virtualAccount->bankAccount->getAccountNumber());
+        $bankingBalance->save();
+
+        $this->fixtures->create('counter', [
+            'account_type'          => 'direct',
+            'balance_id'            => $bankingBalance->getId(),
+            'free_payouts_consumed' => FreePayout::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL,
+        ]);
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->create('fund_account:wallet_account', [
+            'id'            => '100000000003fa',
+            'source_type'   => 'contact',
+            'source_id'     => $contact->getId(),
+        ]);
+
+        $this->startTest();
+    }
 }

@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Models\User;
 use RZP\Models\Card;
 use RZP\Models\Batch;
+use RZP\Models\Payout;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
@@ -16,6 +17,8 @@ use RZP\Models\Settlement;
 use RZP\Models\FundAccount;
 use RZP\Models\Card\Issuer;
 use RZP\Models\Card\Network;
+use RZP\Models\FundTransfer;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Exception\ExtraFieldsException;
@@ -395,6 +398,8 @@ class Validator extends Base\Validator
         Mode::validateModeOfAccountType($mode, $accountType);
 
         $this->validateCardAccountType($payout);
+
+        $this->blockAmazonPayPayoutsFromDirectAccounts($payout);
 
         $this->validateModeAndAmount($input, $payout);
     }
@@ -1011,5 +1016,22 @@ class Validator extends Base\Validator
             $input[Entity::MODE] = PayoutMode::CARD;
         }
 
+    }
+
+    public function blockAmazonPayPayoutsFromDirectAccounts(Payout\Entity $payout)
+    {
+        $balance = $payout->balance;
+
+        if (($balance->getAccountType() === Balance\AccountType::DIRECT) and
+            ($payout->getMode() === FundTransfer\Mode::AMAZONPAY))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_AMAZONPAY_PAYOUT_NOT_ALLOWED_ON_DIRECT_ACCOUNT,
+                null,
+                [
+                    Payout\Entity::MERCHANT_ID     => $payout->getMerchantId(),
+                    Payout\Entity::BALANCE_ID      => $payout->getBalanceId()
+                ]);
+        }
     }
 }
