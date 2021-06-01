@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link as Redirect } from 'react-router-dom';
 import Link from '@commander/shield/src/shared/Link';
 
 export const POI_VERIFICATION_STATUS = {
@@ -210,4 +211,31 @@ export const HARD_LIMIT_REACHED = {
       </Link>
     </>
   ),
+};
+
+export const GENERATE_TNC = {
+  under_review: {
+    title: 'Generate TnC',
+    description: (
+      <>
+        You have submitted all the details. Please generate the terms and conditions at the
+        earliest. Your review might get delayed in case of failure to do so. Review usually take 3-4
+        days. <Redirect to="/onboarding/steps">View submitted details</Redirect>
+      </>
+    ),
+  },
+  mcc_pending_with_live_mode: {
+    description:
+      ' Your account has been activated and you are in live mode now . Your payments will be settled to you according to your settlement schedule. Please generate Tnc at the earliest, failing which your settlements can be suspended.',
+  },
+  mcc_pending_with_test_mode: {
+    description: (
+      <>
+        Your account has been activated. Your payments will be settled to you according to your
+        settlement schedule. You can start accerpting payments by switching to live mode Please
+        generate Tnc at the earliest, failing which your settlements can be suspended.{' '}
+        <Redirect to="/tncform">Generate TnC</Redirect>
+      </>
+    ),
+  },
 };

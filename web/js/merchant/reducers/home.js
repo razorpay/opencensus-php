@@ -28,6 +28,8 @@ const SHOW_KYC_STATUS_MODAL = 'SHOW_KYC_STATUS_MODAL';
 const HIDE_KYC_STATUS_MODAL = 'HIDE_KYC_STATUS_MODAL';
 const SHOW_FRAUD_DETECTION_MODAL = 'SHOW_FRAUD_DETECTION_MODAL';
 const HIDE_FRAUD_DETECTION_MODAL = 'HIDE_FRAUD_DETECTION_MODAL';
+const SHOW_TNC_MODAL = 'SHOW_TNC_MODAL';
+const HIDE_TNC_MODAL = 'HIDE_TNC_MODAL';
 
 let initialState = {
   analytics: {
@@ -77,6 +79,7 @@ let initialState = {
   },
   kycStatusModalType: '',
   kycStatusActivationDuration: '1-2 working days',
+  showTnCModal: false,
 };
 
 const getTransactionCountData = (data, mode) => {
@@ -234,6 +237,14 @@ export const showFraudDetectionModal = () => ({
 
 export const hideFraudDetectionModal = () => ({
   type: HIDE_FRAUD_DETECTION_MODAL,
+});
+
+export const showTnC = () => ({
+  type: SHOW_TNC_MODAL,
+});
+
+export const hideTnC = () => ({
+  type: HIDE_TNC_MODAL,
 });
 
 export default function (state = initialState, action) {
@@ -439,6 +450,14 @@ export default function (state = initialState, action) {
     case HIDE_FRAUD_DETECTION_MODAL:
       return set(state, 'instantActivations', {
         showInstantActivationFraudModal: false,
+      });
+    case SHOW_TNC_MODAL:
+      return merge(state, {
+        showTnCModal: true,
+      });
+    case HIDE_TNC_MODAL:
+      return merge(state, {
+        showTnCModal: false,
       });
 
     default:

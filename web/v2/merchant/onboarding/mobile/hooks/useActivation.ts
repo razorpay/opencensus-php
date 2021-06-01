@@ -11,7 +11,7 @@ import {
 } from '../services/utils';
 
 export const fetchActivationData = async () => {
-  const data = await fetch<any>({ url: 'merchant/activation' });
+  const data = await fetch<any>({ url: 'merchant/activation', mode: 'live' });
   const formattedData = activationFormatter(data);
   return formattedData;
 };

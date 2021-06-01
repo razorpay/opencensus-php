@@ -2115,6 +2115,9 @@ function ActivationField(field) {
       rest.options = field._optionsFn(this);
       rest.defaultValue = this.state.selected_aov;
     }
+    if (field._name === 'has_url') {
+      rest.options = field._optionsFn(this);
+    }
   }
 
   if (typeof rest.customField === 'function') {

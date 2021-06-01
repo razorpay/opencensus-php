@@ -40,6 +40,8 @@ Route::group(['middleware' => ['web']], function () {
     Route::get('/app/{path?}', 'UserController@getIndex')->name('dashboard')
         ->where(['path' => '.*']);
 
+    Route::get('/tnc/{id}', 'UserController@getTnc')->name('tnc');
+
     // User (guest auth route)
     Route::any('/user/api/{mode}/{path?}', 'GenericController@handleAny')
         ->where(['path' => '.*'])

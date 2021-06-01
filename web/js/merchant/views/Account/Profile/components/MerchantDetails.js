@@ -24,6 +24,8 @@ import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import EditWebsiteDetailsModal from './EditWebsiteDetailsModal';
 import UserContactMobile from './UserContactMobile';
 import { analyticsTrack } from 'common/utils/analytics';
+import Button from 'common/new-ui/Button';
+import GenerateTnCPage from 'merchant/components/Home/GenerateTnCPage';
 
 function renderWebsites(user, handleEditWebsite, isWebsiteInWorkflow) {
   let businessWebsite = user.business_website ? (
@@ -96,6 +98,27 @@ const MerchantDetails = ({
     openModal({
       size: 'small',
       component: <EditWebsiteDetailsModal onWebsiteAdd={onWebsiteAdd} onClose={closeModal} />,
+    });
+  };
+
+  const showGenerateTnCModal = (eventName) => {
+    openModal({
+      size: 'small',
+      component: <GenerateTnCPage openModal={openModal} onCloseModal={closeModal} />,
+    });
+    tracking.trackEvent(
+      window.rzpQ.onbr().initiated(`act.${eventName}`, {
+        clickSource: 'My Account',
+      }),
+    );
+    analyticsTrack({
+      objectName: `Act ${eventName.replaceAll('_', ' ')}`,
+      actionName: 'initiated',
+      screen: 'My account screen',
+      properties: {
+        clickSource: 'My Account',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
     });
   };
 
@@ -380,6 +403,41 @@ const MerchantDetails = ({
                   </PopoverBody>
                 </Popover>
               </small>
+            </div>
+          )}
+        />
+      )}
+      {user.canGenerateTnCPage && !user.business_website && !user.isAccepted && (
+        <DetailRow
+          label="Terms and Conditions Page"
+          value={() => (
+            <div style={{ display: 'flex' }}>
+              {!user.merchant_tnc ? (
+                <a
+                  onClick={() => {
+                    const eventName = 'generate_page_now';
+                    showGenerateTnCModal(eventName);
+                  }}
+                >
+                  Generate
+                </a>
+              ) : (
+                <>
+                  <Button.Secondary
+                    onClick={() => {
+                      const eventName = 'edit_tnc_page';
+                      showGenerateTnCModal(eventName);
+                    }}
+                    style={{ padding: '3px 8px', fontSize: '12px' }}
+                    children="EDIT DETAILS"
+                  />
+                  <div>
+                    <a href={user.merchant_tnc.link} target="_blank">
+                      <span>{user.merchant_tnc.link}</span> <i class="i i-external-link"></i>
+                    </a>
+                  </div>
+                </>
+              )}
             </div>
           )}
         />

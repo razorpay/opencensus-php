@@ -13,7 +13,7 @@ import Button from 'common/new-ui/Button';
 
 import { updateSession } from 'merchant/reducers/session';
 import User from 'merchant/models/User';
-import { showKYCStatusModal } from 'merchant/reducers/home';
+import { showKYCStatusModal, showTnC } from 'merchant/reducers/home';
 import {
   rxCaSelectedFlag,
   caReqEventType,
@@ -26,7 +26,7 @@ import { trackLinkClick, trackGoToConfig } from './ga_new';
 
 import { LLPIN_BusinessTypes } from 'merchant/components/Activation/ActivationFormMap';
 
-import { isDedupe } from 'merchant/components/Activation/ActivationUtils';
+import { isDedupe, isSourceRX } from 'merchant/components/Activation/ActivationUtils';
 
 const welcomeImg = '/img/activation/welcome.svg';
 const successImg = '/img/activation/submit-success.svg';
@@ -50,6 +50,7 @@ const successImg = '/img/activation/submit-success.svg';
     showNotification,
     updateSession,
     showKYCStatusModal,
+    showTnC,
   },
 )
 export default class ActivationContainer extends React.Component {
@@ -172,7 +173,14 @@ export default class ActivationContainer extends React.Component {
       this.preloadSuccessAsset();
     }
 
-    const { activation_progress, activated, activation_status, submitted } = data;
+    const {
+      activation_progress,
+      activated,
+      activation_status,
+      submitted,
+      business_website,
+      contact_email,
+    } = data;
 
     // Updating % activation_progress (side bar) and other important activation fields
 
@@ -182,6 +190,8 @@ export default class ActivationContainer extends React.Component {
       activated,
       activation_status,
       submitted: +submitted,
+      business_website,
+      contact_email,
     });
 
     this.props.updateSession({
@@ -217,6 +227,15 @@ export default class ActivationContainer extends React.Component {
 
         if (isDedupe(response.data)) {
           location.href = '/app/dashboard';
+        } else if (
+          response.data &&
+          !response.data.business_website &&
+          !isSourceRX() &&
+          this.props.user.canGenerateTnCPage
+        ) {
+          this.props.showTnC();
+          this.updateSession(response.data);
+          this.goToDashboard();
         } else {
           this.postSubmitStep(response);
         }

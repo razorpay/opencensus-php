@@ -307,24 +307,35 @@ const businessModel = [
       _cmp: Input.Radio,
       _name: 'has_url',
       className: 'Input--vTop Input--Website',
-      options: [
-        {
-          label: 'Without website/app',
-          description: (
-            <ul class="Input-desc-list">
-              <li>
-                Receive payments from your customers in under 5 minutes using Razorpay’s Payment
-                Links & Payment Pages
-              </li>
-              <li>
-                You can submit your website/app URL later via the merchant dashboard, if you wish to
-                generate api keys and integrate our payment gateway.
-              </li>
-            </ul>
-          ),
-        },
-        'On my website/app',
-      ],
+      _optionsFn: (activation) => {
+        return [
+          {
+            label: 'Without website/app',
+            description: (
+              <ul class="Input-desc-list">
+                <li>
+                  Receive payments from your customers in under 5 minutes using Razorpay’s Payment
+                  Links & Payment Pages
+                </li>
+                <li>
+                  You can submit your website/app anytime later if you wish to use it to accept
+                  payments
+                </li>
+                {activation.props.user.canGenerateTnCPage && !isSourceRX() && (
+                  <li className="tnc-guideline">
+                    <i className="i i-info-circle tnc-info" />
+                    <div className="guideline-text">
+                      As per RBI guidelines, you need to have a terms and conditions webpage to
+                      accept online payments . We will help you create one once you submit your KYC
+                    </div>
+                  </li>
+                )}
+              </ul>
+            ),
+          },
+          'On my website/app',
+        ];
+      },
       // _disabledWhen: (activation) =>
       //   isL1Completed(activation) && isPresent(activation.props.data.business_website),
     },

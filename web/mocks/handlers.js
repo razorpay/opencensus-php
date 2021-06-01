@@ -71,7 +71,7 @@ export const handlers = [
     },
   ),
 
-  rest.get('http://localhost:6006/merchant/api/test/merchant/activation', (req, res, ctx) => {
+  rest.get('http://localhost:6006/merchant/api/live/merchant/activation', (req, res, ctx) => {
     return res(
       ctx.status(200),
       ctx.delay(50),

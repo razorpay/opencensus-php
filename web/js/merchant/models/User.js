@@ -999,6 +999,10 @@ export default class User {
   get canSkipPOADocument() {
     return this.getExpStatus('SKIP_POA_DOCUMENT_FUNCTIONALITY');
   }
+
+  get canGenerateTnCPage() {
+    return this.getExpStatus('merchant_tnc');
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

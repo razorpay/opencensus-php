@@ -23,7 +23,7 @@ import rolesList from 'merchant/helpers/permissions/roles-list';
 import * as HomeActions from 'merchant/reducers/home';
 import { fetch } from 'merchant/reducers/pokedex';
 import { fetchPayments } from 'merchant/reducers/collection';
-import { fetchOndemandRestrictions } from 'merchant/reducers/home';
+import { fetchOndemandRestrictions, hideTnC } from 'merchant/reducers/home';
 import { fetchLateAuthConfig } from 'merchant/reducers/config';
 
 import { API_ERROR, API_INVALID_RESP, isMobileDevice } from 'merchant/components/Home/data';
@@ -59,7 +59,7 @@ import { fetchVirtualAccounts } from 'merchant/reducers/virtualaccounts';
 import MerchantDataCollectionModal from 'merchant/views/Settings/SupportDetails/MerchantDataCollectionModal';
 import CardPaymentsBlockedModal from 'merchant/views/Subscriptions/components/CardPaymentsBlocked/Modal';
 import CardPaymentsBlockedBanner from 'merchant/views/Subscriptions/components/CardPaymentsBlocked/Banner';
-
+import TnCModal from 'merchant/components/Home/TnCModal';
 import { fetchSupportDetail } from 'merchant/reducers/support_detail';
 
 const dateRangePresets = [
@@ -107,6 +107,7 @@ const keymetricsSectionTitle = 'Transactions Overview',
       virtualAccounts: state.virtualaccounts,
       lateAuthConfig: state.config.lateAuthConfig,
       support_detail: state.supportdetails.merchantSupportDetail,
+      showTnCModal: state.home.showTnCModal,
     };
   },
   {
@@ -118,6 +119,7 @@ const keymetricsSectionTitle = 'Transactions Overview',
     fetchLateAuthConfig,
     fetchSupportDetail,
     fetchOndemandRestrictions,
+    hideTnC,
   },
 )
 @RTracking(() => window.rzpQ.component('HomeContainer'))
@@ -768,6 +770,7 @@ export default class HomeContainer extends Component {
       support_detail,
       kycStatusActivationDuration,
       ondemand_restrictions,
+      showTnCModal,
     } = this.props;
 
     const { activation_flow } = user;
@@ -1079,6 +1082,15 @@ export default class HomeContainer extends Component {
         {showInstantActivationFraudModal && (
           <FraudDetectionModal onClose={() => this.props.hideFraudDetectionModal()} />
         )}
+        {showTnCModal && (
+          <TnCModal
+            onClose={this.props.hideTnC}
+            tracking={tracking}
+            closeModal={this.props.closeModal}
+            openModal={this.props.openModal}
+          />
+        )}
+
         {isMobile ? <Mobile {...commonProps} /> : <Desktop {...commonProps} />}
 
         {showRBIChangesBanners && <CardPaymentsBlockedModal />}

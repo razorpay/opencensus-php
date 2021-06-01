@@ -53,6 +53,62 @@ const CurrentActivationProgress: React.FC<RouteComponentProps & { data: any; pay
       );
     }
 
+    if (
+      user.canGenerateTnCPage &&
+      !data.business_website &&
+      !data.merchant_tnc &&
+      data.activation_status !== 'activated'
+    ) {
+      let title = '';
+      let titleColor = 'shade.970';
+      let desc: React.ReactNode | string;
+
+      if (data.activation_status === 'under_review') {
+        title = Messages.GENERATE_TNC.under_review.title;
+        titleColor = 'neutral.960';
+        desc = Messages.GENERATE_TNC.under_review.description;
+      } else if (data.activation_status === 'activated_mcc_pending') {
+        title = 'Payments and Settlements have been enabled, Generate TnC';
+        titleColor = 'shade.970';
+        desc = isTestMode
+          ? Messages.GENERATE_TNC.mcc_pending_with_test_mode.description
+          : Messages.GENERATE_TNC.mcc_pending_with_live_mode.description;
+      }
+      return (
+        <>
+          <Info title={title} titleColor={titleColor} description={desc} />
+          {data.activation_status === 'under_review' ||
+          (data.activation_status === 'activated_mcc_pending' && !isTestMode) ? (
+            <Buttons.Primary
+              onClick={() => {
+                history.push('/tncform');
+                analyticsTrack({
+                  objectName: 'Act',
+                  actionName: 'generate page now',
+                  screen: 'home page',
+                  properties: { clickSource: 'onboarding card' },
+                  eventAction: 'initiated',
+                  user,
+                });
+              }}
+              title="Generate terms and conditions"
+            />
+          ) : (
+            data.activation_status === 'activated_mcc_pending' &&
+            isTestMode && (
+              <Buttons.Secondary
+                onClick={() => {
+                  switchMode(user.current, 'live');
+                  window.location.reload();
+                }}
+                title="Switch To Live Mode"
+              />
+            )
+          )}
+        </>
+      );
+    }
+
     if (data.isHardLimitReached) {
       return (
         <Info

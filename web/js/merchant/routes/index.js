@@ -229,6 +229,14 @@ const WhatsNewDetailsPage = lazy(() =>
   import(/* webpackChunkName: "WhatsNewDetailsPage" */ 'merchant/views/WhatsNew/Details'),
 );
 
+const TnCPage = lazy(() =>
+  import(/* webpackChunkName: "TermsAndConditionPage" */ 'v2/merchant/TermsAndCondition/Pages'),
+);
+
+const GenerateTnC = lazy(() =>
+  import(/* webpackChunkName: "TermsAndCondition" */ 'v2/merchant/TermsAndCondition/GenerateTnc'),
+);
+
 /*
  * NOTE: entityDetailsMap and entityModalsMap must be mutually exclusive sets
  * */
@@ -465,6 +473,13 @@ const fullPageViewsMap = {
   },
   '/app-store': {
     component: PartnerAppStore,
+  },
+  '/tnc/:type': {
+    component: TnCPage,
+  },
+  '/tncform': {
+    component: GenerateTnC,
+    additionalCondition: (user) => user.canGenerateTnCPage,
   },
 };
 

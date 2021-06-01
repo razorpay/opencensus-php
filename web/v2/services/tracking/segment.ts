@@ -122,6 +122,16 @@ export const analyticsTrack = ({
             }),
         );
         break;
+      case 'clicked':
+        window.rzpQ.push(
+          window.rzpQ
+            .now()
+            .onbr()
+            .clicked(dataLakeEventName, {
+              ...commonProperties,
+            }),
+        );
+        break;
       default:
         break;
     }

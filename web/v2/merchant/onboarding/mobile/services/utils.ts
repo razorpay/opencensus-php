@@ -371,3 +371,12 @@ export function getDocumentTitle(context) {
 export const checkIfDedupe = (data) => {
   return data && !!data.locked && !data.activated && data.merchant.hold_funds;
 };
+
+export const convertUnixToDate = ({ unixTimeStamp }) => {
+  const date = new Date(unixTimeStamp * 1000).toLocaleString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  });
+  return date;
+};

@@ -2501,6 +2501,10 @@ $stepIndicatorSize = 36px;
     background: #ec3a0f url('assets/instant_activations/suspect_background.svg') top left no-repeat;
   }
 
+  .completed{
+    background: #016F13 url('assets/instant_activations/success_bg.svg') top left no-repeat;
+  }
+
   .modal-body {
     padding: 24px;
 
@@ -2521,9 +2525,47 @@ $stepIndicatorSize = 36px;
       > p {
         margin-bottom: 10px;
       }
+
+      .tnc-success {
+        &___text {
+          color: #162f56bd;
+        }
+
+        &__link {
+          border: 1px solid #162f561a;
+          box-sizing: border-box;
+          box-shadow: 0px 4px 10px #0b70e714;
+          border-radius: 3px;
+          margin: 16px 0;
+          padding: 15px;
+          text-align: center;
+          word-break: break-word;
+          > a {
+            font-weight: 700;
+            color: #2B83EA;
+          }
+        }
+
+        .warning-text {
+          background: #fcf8e5;
+          padding: 8px 12px;
+          font-size: 12px;
+          line-height: 18px;
+          margin: 15px 0 20px;
+        }
+
+         .Button.Button--primary.backto-dashboard {
+          padding: 12px 20px;
+          width: 100%;
+        }
+      }
     }
 
-    .fraud-detection {
+    .tnc-body {
+      margin-bottom: 0px; 
+    }
+
+    .fraud-detection, .tnc-desc {
       text-align: center;
       margin-bottom: 10px;
       > div {
@@ -2531,6 +2573,11 @@ $stepIndicatorSize = 36px;
         > p {
           margin: 8px 0 16px;
         }
+      }
+    }
+    .tnc-desc {
+      > div {
+        padding: 0 18px 10px;
       }
     }
   }

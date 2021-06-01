@@ -7,7 +7,8 @@ import Space from '@razorpay/blade-old/src/atoms/Space';
 import TextInput from '@razorpay/blade-old/src/atoms/TextInput';
 import Text from '@razorpay/blade-old/src/atoms/Text';
 import Radio from '@razorpay/blade-old/src/atoms/Radio';
-import HelpIcon from '@razorpay/blade-old/src/atoms/Icon';
+import Icon from '@razorpay/blade-old/src/atoms/Icon';
+import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import TextArea from '@razorpay/blade-old/src/atoms/TextArea';
 import { FormSection, Field, GetTouchedFields } from '../Form';
 import { useActivationFormState, isTabComplete } from '../context/store';
@@ -52,6 +53,17 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
     position: absolute;
     right: 12px;
     top: 4px;
+  `;
+
+  const WithoutWebsiteListText = styled.ul`
+    padding: 0;
+  `;
+  const List = styled.li`
+    margin-bottom: 12px;
+    padding: ${({ isLast }) => (isLast ? '12px' : 'initial')};
+    list-style: ${({ isLast }) => (isLast ? 'none' : 'initial')};
+    background: ${({ isLast }) => (isLast ? '#edf0f5' : 'initial')};
+    border-radius: ${({ isLast }) => (isLast ? '4px' : 'initial')};
   `;
 
   const handleSubmit = (updatedDetails) => {
@@ -262,7 +274,7 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
                       setIsOpen(true);
                     }}
                   >
-                    <HelpIcon
+                    <Icon
                       name="helpCircle"
                       size="small"
                       fill={isFormLocked ? 'shade.930' : 'primary.800'}
@@ -363,7 +375,7 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
                             setIsOpen(true);
                           }}
                         >
-                          <HelpIcon
+                          <Icon
                             name="helpCircle"
                             size="small"
                             fill={isFormLocked ? 'shade.930' : 'primary.800'}
@@ -378,8 +390,39 @@ const BusinessOverview: React.FC<BusinessOverviewProps> = ({ isFormLocked }) => 
                       {websiteOption === '1' && (
                         <Space margin={[0, 0, 0, 3.5]}>
                           <Text color="shade.950" size="xsmall">
-                            Use payment links, invoices and many otherproducts from our suite to
-                            accept payments
+                            {user.canGenerateTnCPage ? (
+                              <WithoutWebsiteListText>
+                                <List>
+                                  Recieve payments from your customers in under 5 minutes using
+                                  Razorpay’s payment pages and payment links
+                                </List>
+                                <List>
+                                  You can submit your website/app anytime later if you wish to
+                                  accept payments using it
+                                </List>
+                                <List isLast={true}>
+                                  <Flex>
+                                    <View>
+                                      <Space margin={[0, 1, 0, 0]}>
+                                        <View>
+                                          <Icon name="info" fill="shade.800" size="small" />
+                                        </View>
+                                      </Space>
+                                      <Text size="small" color="shade.970">
+                                        As per RBI guidelines, terms and coditions are required to
+                                        accept payments. We will help you generate one after KYC
+                                        submission
+                                      </Text>
+                                    </View>
+                                  </Flex>
+                                </List>
+                              </WithoutWebsiteListText>
+                            ) : (
+                              <>
+                                Use payment links, invoices and many otherproducts from our suite to
+                                accept payments
+                              </>
+                            )}
                           </Text>
                         </Space>
                       )}

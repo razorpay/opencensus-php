@@ -90,6 +90,7 @@ class UserController extends Controller
         $data['rootPath']       = self::ROOT_PATH;
 
         $data['newAuthFlow'] = false;
+
         if (empty($currentRouteName) === false and $currentRouteName === "signup")
         {
             $data['newAuthFlow'] = true; // new pre-signup flow
@@ -127,6 +128,18 @@ class UserController extends Controller
 
             return view('merchant.index', $data);
         }
+    }
+
+    public function getTnc()
+    {
+        $data = [
+            'env'              => \Config::get('app.env'),
+            'cdnBaseUrl'       => \Config::get('app.cdn_base_url'),
+            'cdnDashboardUrl'  => \Config::get('app.cdn_dashboard_url'),
+            'api_host'         => ApiUrl::getCheckoutApi(),
+        ];
+
+        return view('merchant.tnc', $data);
     }
 
     /**

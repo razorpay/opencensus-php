@@ -25,6 +25,7 @@ import {
   EnableSettlements as EnableSettlementModal,
   SubmitForm as SubmitFormModal,
   Dedupe as DedupeModal,
+  TnC as TnCModal,
 } from '../../ActivationModals';
 import SaveAndExitModal from '../../SaveAndExitModal';
 import FAQs from '../../FAQs/FAQs';
@@ -93,6 +94,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
   const [isSubmitFormModalOpen, setIsSubmitFormModalOpen] = useState(false);
   const [isSaveAndExitModalOpen, setIsSaveAndExitModalOpen] = useState(false);
   const [isDedupeModalOpen, setIsDedupeModalOpen] = useState(false);
+  const [isTncModalOpen, setIsTncModalOpen] = useState(false);
 
   // const isUnregPoiStatus = getPoiVerificationStatus(data);
   if (status === 'loading') {
@@ -135,7 +137,11 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
     });
     postData({ submit: 1 }).then((res) => {
       const isDedupeState = checkIfDedupe(res);
-      if (res && res.submitted && !isDedupeState) {
+      if (res && res.submitted && isDedupeState) {
+        setIsDedupeModalOpen(true);
+      } else if (res && !res.business_website && user.canGenerateTnCPage) {
+        setIsTncModalOpen(true);
+      } else {
         analyticsTrack({
           objectName: 'SignUp',
           actionName: 'submit form',
@@ -147,9 +153,6 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
           },
         });
         setIsSubmitFormModalOpen(true);
-      }
-      if (isDedupeState) {
-        setIsDedupeModalOpen(true);
       }
     });
   };
@@ -547,6 +550,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
         hasClarificationReasons={data.kyc_clarification_reasons?.nc_count}
       />
       <DedupeModal isOpen={isDedupeModalOpen} />
+      <TnCModal isOpen={isTncModalOpen} onClose={() => setIsTncModalOpen(false)} />
       <SaveAndExitModal
         isOpen={isSaveAndExitModalOpen}
         onClose={() => setIsSaveAndExitModalOpen(false)}

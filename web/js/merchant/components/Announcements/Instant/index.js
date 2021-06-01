@@ -9,8 +9,13 @@ import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBa
 import SupportButton from 'merchant/components/Home/SupportButton';
 
 import { trackGoToActivationFromError } from '../../../containers/Home/ga';
+import Button from 'common/new-ui/Button';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import GenerateTnCPage from 'merchant/components/Home/GenerateTnCPage';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { analyticsTrack } from 'common/utils/analytics';
 
-@connect(null, { showProductsModal })
+@connect(null, { showProductsModal, openModal, closeModal })
 @RTracking(() => window.rzpQ.component('InstantActivationAnnouncements'))
 export default class InstantActivationAnnouncements extends Component {
   trackEvent = (eventOrigin) => {
@@ -129,6 +134,7 @@ export default class InstantActivationAnnouncements extends Component {
         return null;
       }
     } else {
+      const isActivatedMccPending = user.activation_status === 'activated_mcc_pending';
       if (user.isAccepted) {
         if (!user.isNPSSurveyBannerEnabled && !user.isCovidFeatureEnabled) {
           theme = commonSettlementBanner.theme;
@@ -175,7 +181,10 @@ export default class InstantActivationAnnouncements extends Component {
               </a>
             </>
           ));
-      } else if (user.activation_status === 'activated_mcc_pending') {
+      } else if (
+        isActivatedMccPending &&
+        (user.business_website || user.merchant_tnc || !user.canGenerateTnCPage)
+      ) {
         theme = commonSettlementBanner.theme;
         title = commonSettlementBanner.title;
         content =
@@ -193,6 +202,59 @@ export default class InstantActivationAnnouncements extends Component {
             />{' '}
             to complete your activation.
           </>
+        );
+      } else if (!user.business_website && !user.merchant_tnc && user.canGenerateTnCPage) {
+        title = isActivatedMccPending ? (
+          <span>
+            Account Activated,
+            <br /> Generate TnC Page
+          </span>
+        ) : (
+          'Generate TnC Page'
+        );
+        theme = isActivatedMccPending ? 'success' : 'warning';
+        content = (
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            {isActivatedMccPending ? (
+              <div style={{ maxWidth: '80%' }}>
+                You can start accepting payments now. Payments will be settled to your bank account
+                according to your settlement schedule. Please generate the TnC page at the earliest.
+                Your payments can be put on hold in case of failure to do so
+              </div>
+            ) : (
+              'Generate the terms and conditions page for your business. KYC review might get delayed in case of delays in generating TnC'
+            )}
+            <div className="big-circle-seprator" />
+            <Button.Secondary
+              type="button"
+              children="Generate Page now"
+              onClick={() => {
+                this.props.openModal({
+                  size: 'small',
+                  component: (
+                    <GenerateTnCPage
+                      onCloseModal={this.props.closeModal}
+                      openModal={this.props.openModal}
+                    />
+                  ),
+                });
+                tracking.trackEvent(
+                  window.rzpQ.onbr().initiated('act.generate_page_now', {
+                    clickSource: 'Banner',
+                  }),
+                );
+                analyticsTrack({
+                  objectName: 'Act Generate Page Now',
+                  actionName: 'initiated',
+                  screen: 'home page',
+                  properties: {
+                    clickSource: 'Banner',
+                    ...getCommonAnalyticsProperties(window.rzp_user),
+                  },
+                });
+              }}
+            />
+          </div>
         );
       } else {
         let activation_tat = '1-2 days';
