@@ -1333,6 +1333,36 @@ return [
         ],
     ],
 
+    'assertUpdateBankingAccountStatusFromToForNeostone' => [
+        'request'  => [
+            'url'     => '/banking_account',
+            'method'  => 'PATCH',
+            'content' => [
+                BankingAccount\Entity::STATUS                   => '',
+                BankingAccount\Entity::ACCOUNT_NUMBER           => '12345678910',
+                BankingAccount\Entity::ACCOUNT_IFSC             => 'HDFC0009830',
+                BankingAccount\Entity::BENEFICIARY_NAME         => 'test name',
+                BankingAccount\Entity::BENEFICIARY_MOBILE       => '7899672680',
+                BankingAccount\Entity::BENEFICIARY_EMAIL        => 'test@gmail.com',
+                BankingAccount\Entity::BENEFICIARY_COUNTRY      => 'india',
+                BankingAccount\Entity::BENEFICIARY_PIN          => '560030',
+                BankingAccount\Entity::BENEFICIARY_STATE        => 'karanataka',
+                BankingAccount\Entity::BENEFICIARY_CITY         => 'Bangalore',
+                BankingAccount\Entity::BENEFICIARY_ADDRESS1     => 'add1',
+                BankingAccount\Entity::BENEFICIARY_ADDRESS2     => 'add2',
+                BankingAccount\Entity::BENEFICIARY_ADDRESS3     => 'add3',
+                BankingAccount\Entity::ACCOUNT_ACTIVATION_DATE  => '1562749680'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'channel'     => 'rbl',
+                BankingAccount\Entity::STATUS => '',
+            ],
+        ],
+    ],
+
     'assertUpdateBankingAccountStatusFromTo' => [
         'request'  => [
             'url'     => '/banking_account',

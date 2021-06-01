@@ -10305,4 +10305,11 @@ class MerchantTest extends TestCase
 
         $this->app->instance('merchantRiskClient', $merchantRiskClientMock);
     }
+
+    public function testFireHubspotEventFromDashboard()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
 }

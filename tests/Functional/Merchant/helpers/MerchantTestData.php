@@ -8098,4 +8098,21 @@ return [
             ],
         ],
     ],
+
+    'testFireHubspotEventFromDashboard'  =>  [
+        'request'       => [
+            'url'     => '/merchants/fire_hubspot_event',
+            'method'  => \Requests::POST,
+            'content' => [
+                "merchant_email"        =>  'testing@abc.com',
+                "ca_neostone_eligible"  =>  'TRUE',
+            ],
+        ],
+
+        'response'    => [
+            'content' => [
+                'success' => true
+            ],
+        ],
+    ],
 ];

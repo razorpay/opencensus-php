@@ -48,6 +48,18 @@ class Notifier extends Base\Core
             ],
             Event::ACCOUNT_OPENING_WEBHOOK_DATA_AMBIGUITY => [
                 $opsSubscriber
+            ],
+            Event::APPLICATION_RECEIVED => [
+                $hubspotSubscriber
+            ],
+            Event::PERSONAL_DETAILS_FILLED => [
+                $hubspotSubscriber
+            ],
+            Event::PROCESSING_DISCREPANCY_IN_DOCS => [
+                $hubspotSubscriber
+            ],
+            Event::RM_ASSIGNED => [
+                $hubspotSubscriber
             ]
         ];
     }
@@ -69,6 +81,14 @@ class Notifier extends Base\Core
                     Constants::NEW_ASSIGNEE_TEAM => $bankingAccount->bankingAccountActivationDetails->getAssigneeTeam(),
                     Constants::NEW_ASSIGNEE_NAME => $bankingAccount->bankingAccountActivationDetails->getAssigneeName(),
                 ];
+            case Event::PERSONAL_DETAILS_FILLED:
+                return ['ca_form_submit' => 'TRUE'];
+            case Event::APPLICATION_RECEIVED:
+                return ['ca_application_received' => 'TRUE'];
+            case Event::PROCESSING_DISCREPANCY_IN_DOCS:
+                return ['ca_discrepancy_in_doc' => 'TRUE'];
+            case Event::RM_ASSIGNED:
+                return ['ca_bank_rm_assigned' => 'TRUE'];
         }
 
         return [];

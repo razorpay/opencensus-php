@@ -6093,4 +6093,20 @@ class Service extends Base\Service
     {
         return Constants::TICKET_CREATION_POPUP_DATA_FOR_ACTIVATION_STATUS[MerchantStatus::REJECTED][Constants::DEFAULT];
     }
+
+    public function fireHubspotEventFromDashboard(array $input): array
+    {
+        $merchantEmail = array_pull($input, 'merchant_email');
+
+        $this->app->hubspot->trackHubspotEvent($merchantEmail, $input);
+
+        $this->trace->info(
+            TraceCode::PUSHED_EVENT_TO_HUBSPOT,
+            [
+                'merchant_email' => $merchantEmail,
+                'payload'        => $input
+            ]);
+
+        return ['success' => true];
+    }
 }

@@ -287,6 +287,7 @@ class Route
         'merchant_edit_email_la'                   => ['put',      'la-merchants/email',                             'MerchantController@updateLinkedAccountMerchantEmail'               ],
         'merchant_edit_config_la'                  => ['post',     'la-merchants/config',                            'MerchantController@updateLinkedAccountConfig'                      ],
         'merchant_fetch_multiple'                  => ['get',      'merchants',                                      'MerchantController@getMerchants'                                   ],
+        'merchant_fire_hubspot_event'              => ['post',     'merchants/fire_hubspot_event',                   'MerchantController@fireHubspotEventFromDashboard'                  ],
         'merchant_assign_pricing'                  => ['post',     'merchants/{id}/pricing',                         'MerchantController@postAssignPricingPlan'                          ],
         'merchant_get_pricing'                     => ['get',      'merchants/{id}/pricing',                         'MerchantController@getPricingPlan'                                 ],
         'proxy_merchant_get_pricing'               => ['get',      'proxy/merchants/pricing',                        'MerchantController@proxyGetPricingPlan'                            ],
@@ -3416,6 +3417,7 @@ class Route
     ];
 
     public static $proxy = [
+        'merchant_fire_hubspot_event',
         'freshchat_get_chat_timings_config_proxy',
         'freshchat_get_chat_holidays_config_proxy',
         'rbl_current_account_serviceability_get',
@@ -5656,6 +5658,7 @@ class Route
     ];
 
     public static $bankingRoutePermissions = [
+        'merchant_fire_hubspot_event'                  => '*',
         'accounting_payouts_integration_status'        => Permission::VIEW_ACCOUNTING_INTEGRATION,
         'accounting_payouts_integration_app_get_url'   => Permission::VIEW_ACCOUNTING_INTEGRATION,
         'accounting_payouts_integration_app_initiate'  => Permission::CREATE_ACCOUNTING_INTEGRATION,
@@ -6139,6 +6142,7 @@ class Route
         ],
 
         'merchant_dashboard' => [
+            'merchant_fire_hubspot_event',
             'rbl_current_account_serviceability_get',
             'account',
             'account_action',

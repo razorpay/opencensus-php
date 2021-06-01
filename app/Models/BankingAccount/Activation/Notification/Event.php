@@ -24,6 +24,10 @@ class Event
     const SUBSTATUS_CHANGE = 'substatus_change';
     const ASSIGNEE_CHANGE = 'assignee_change';
     const ACCOUNT_OPENING_WEBHOOK_DATA_AMBIGUITY = 'account_opening_webhook_data_ambiguity';
+    const APPLICATION_RECEIVED = 'application_received';
+    const PERSONAL_DETAILS_FILLED = 'personal_details_filled';
+    const PROCESSING_DISCREPANCY_IN_DOCS = 'processing_discrepancy_in_doc';
+    const RM_ASSIGNED = 'rm_assigned';
 
     public function __construct(string $name, string $type, array $properties)
     {

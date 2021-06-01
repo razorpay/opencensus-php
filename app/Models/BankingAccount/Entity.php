@@ -161,12 +161,17 @@ class Entity extends Base\PublicEntity
     // RM_NAME possible strings
     const RM_NOT_MAP = 'rm not map';
     const RM_NOT_MAP_BY_BM = 'rm not map by bm';
+    const RM_NOT_ASSIGNED = 'rm not assigned';
     const RM_NAME_EMPTY = '';
 
-    protected static $rm_name_missing_possibilities = [
+    // Current Account Channels
+    const Neostone = 'neostone';
+
+    public static $rm_name_missing_possibilities = [
         self::RM_NOT_MAP,
         self::RM_NOT_MAP_BY_BM,
-        self::RM_NAME_EMPTY
+        self::RM_NAME_EMPTY,
+        self::RM_NOT_ASSIGNED
     ];
 
     protected $entity = 'banking_account';

@@ -22,6 +22,7 @@ use RZP\Exception\IntegrationException;
 use RZP\Mail\BankingAccount\UpdatesForAuditor;
 use RZP\Models\BankingAccount\Activation\Comment;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\BankingAccount\Activation\Notification\Event;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
 
 
@@ -33,6 +34,8 @@ class Service extends Base\Service
 
     protected $core;
 
+    protected $notifier;
+
     public function __construct($pincodeSearch = null, $core = null)
     {
         parent::__construct();
@@ -40,6 +43,8 @@ class Service extends Base\Service
         $this->core = $core ?? new Core();
 
         $this->pincodeSearch = $pincodeSearch ?? $this->app['pincodesearch'];
+
+        $this->notifier = new Activation\Notification\Notifier();
     }
 
     public function fetch(string $id): array
@@ -103,7 +108,13 @@ class Service extends Base\Service
                     $input
                 ]);
 
+            $this->fireHubspotEventForUnserviceable($resp);
+
             return $resp;
+        }
+        else
+        {
+            $this->fireHubspotEventForApplicationStarted();
         }
 
         if (is_null($activationDetailInput) === false)
@@ -133,10 +144,13 @@ class Service extends Base\Service
     /**
      * This function to be used only for admin or internal routes since
      * we are not fetching banking_account by merchant_id.
+     *
      * @param string $id
-     * @param array $input
-     * @param Admin\Entity $admin
+     * @param array  $input
+     *
      * @return array
+     * @throws BadRequestException
+     * @throws Exception\LogicException
      */
     public function update(string $id, array $input): array
     {
@@ -163,12 +177,15 @@ class Service extends Base\Service
 
         $currentStatus = $bankingAccount->getStatus();
 
-        if ($previousStatus !== $currentStatus)
+        if ($this->isNeoStoneExperiment($account) === false)
         {
-            $this->core->notifyMerchantAboutUpdatedStatus($bankingAccount);
+            if ($previousStatus !== $currentStatus)
+            {
+                $this->core->notifyMerchantAboutUpdatedStatus($bankingAccount);
+            }
         }
 
-        return array_merge($account->toArrayPublic());
+        return $account->toArrayPublic();
     }
 
     public function updateByMerchant(string $id, array $input): array
@@ -201,9 +218,15 @@ class Service extends Base\Service
 
         $activationDetailInput = $this->core->extractAndValidateActivationDetailInput($input);
 
+        $ca_channel = Entity::Neostone;
+
         if (is_null($activationDetailInput) === false)
         {
             $activationDetailInput = $this->core->autofillStateAndCityFromPincode($activationDetailInput, $input);
+
+            $this->checkIfPersonalDetailFilledAndFireEvent($bankingAccount, $activationDetailInput, $ca_channel);
+
+            $this->checkIfApplicationCompleteAndFireEvent($bankingAccount, $activationDetailInput, $ca_channel);
 
             $activationDetailInput = ['activation_detail' => $activationDetailInput];
 
@@ -254,7 +277,10 @@ class Service extends Base\Service
 
         $bankingAccount = $this->core->activate($bankingAccount, $input, $admin);
 
-        $this->core->notifyMerchantAboutUpdatedStatus($bankingAccount);
+        if ($this->isNeoStoneExperiment($bankingAccount) === false)
+        {
+            $this->core->notifyMerchantAboutUpdatedStatus($bankingAccount);
+        }
 
         return $bankingAccount->toArrayPublic();
     }
@@ -912,5 +938,85 @@ class Service extends Base\Service
         }
 
         return $activation_detail;
+    }
+
+    protected function checkIfApplicationCompleteAndFireEvent(Entity $bankingAccount, array $activation_detail, string $channel)
+    {
+        if (isset($activation_detail[ActivationDetail\Entity::DECLARATION_STEP]) === true)
+        {
+            if ($activation_detail[ActivationDetail\Entity::DECLARATION_STEP] === 1)
+            {
+                $payload = ['ca_channel' => $channel];
+
+                $this->notifier->notify($bankingAccount, Event::APPLICATION_RECEIVED, Event::INFO, $payload);
+            }
+        }
+    }
+
+    private function fireHubspotEventForUnserviceable(array $resp)
+    {
+        $merchantEmail = ($this->merchant)->getEmail();
+
+        if ($resp['serviceability'] === false and $resp['business_type_supported'] === false)
+        {
+            $payload = ['ca_pincode_business_type_not_supported' => 'TRUE'];
+        }
+        else if ($resp['business_type_supported'] === false)
+        {
+            $payload = ['ca_business_type_not_supported' => 'TRUE'];
+        }
+        else
+        {
+            $payload = ['ca_pincode_not_serviceable' => 'TRUE'];
+        }
+
+        $this->app->hubspot->trackHubspotEvent($merchantEmail, $payload);
+    }
+
+    public function isNeoStoneExperiment(Entity $bankingAccount): bool
+    {
+        $bankingAccountActivation = $bankingAccount->bankingAccountActivationDetails;
+
+        $this->trace->info(
+            TraceCode::CHECK_NEOSTONE,
+            [
+                $bankingAccount->merchant->getMerchantId(),
+                'banking_account_activation_detail' => is_null($bankingAccountActivation)
+            ]);
+
+        if (is_null($bankingAccountActivation) === true)
+        {
+            return false;
+        }
+
+        $this->trace->info(
+            TraceCode::NEOSTONE_MERCHANT_TRUE,
+            [
+                $bankingAccount->merchant->getMerchantId(),
+                'contact_verified'  => $bankingAccountActivation->getContactVerified()
+            ]);
+
+        // For neostone we are verifying merchant contact with otp
+        return ($bankingAccountActivation->getContactVerified() === 1);
+    }
+
+
+    private function checkIfPersonalDetailFilledAndFireEvent(Entity $bankingAccount, array $activationDetailInput, string $channel)
+    {
+        if (isset($activationDetailInput[ActivationDetail\Entity::MERCHANT_POC_NAME]) === true)
+        {
+            $payload = ['ca_channel' => $channel];
+
+            $this->notifier->notify($bankingAccount, Event::PERSONAL_DETAILS_FILLED, Event::INFO, $payload);
+        }
+    }
+
+    private function fireHubspotEventForApplicationStarted()
+    {
+        $merchantEmail = ($this->merchant)->getEmail();
+
+        $payload = ['ca_started_application' => 'TRUE'];
+
+        $this->app->hubspot->trackHubspotEvent($merchantEmail, $payload);
     }
 }

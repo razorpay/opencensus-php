@@ -2,7 +2,9 @@
 
 namespace RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 
+use Carbon\Carbon;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
@@ -57,6 +59,8 @@ class BusinessPanForCA extends BaseStatusUpdater
 
                 $this->repo->saveOrFail($this->bankingAccountActivationDetail);
 
+                $this->FireHubspotEvent($documentValidationStatus);
+
                 $verificationMetrics = [
                     Constant::ARTEFACT_TYPE                     => $this->artefactType,
                     Constants::BVS_DOCUMENT_VERIFICATION_STATUS => $documentValidationStatus
@@ -78,5 +82,30 @@ class BusinessPanForCA extends BaseStatusUpdater
         $this->bankingAccountActivationDetail->setPanVerificationStatus(Constants::PENDING);
 
         $this->updateStakeholderStatusIfApplicable(Constants::PENDING);
+    }
+
+    protected function FireHubspotEvent(string $documentValidationStatus)
+    {
+        $this->trace->info(TraceCode::NEOSTONE_HUBSPOT_REQUEST, [
+            'merchant_id'                  => $this->merchantDetails->getId(),
+            'document_verification_status' => $documentValidationStatus
+        ]);
+
+        if ($documentValidationStatus === Constants::VERIFIED)
+        {
+            $merchantEmail = $this->merchant->getEmail();
+
+            $payload = ['ca_pan_validation_failed' => 'FALSE'];
+
+            $this->app->hubspot->trackHubspotEvent($merchantEmail, $payload);
+        }
+        else if ($documentValidationStatus === Constants::INCORRECT_DETAILS or $documentValidationStatus === Constants::NOT_MATCHED)
+        {
+            $merchantEmail = $this->merchant->getEmail();
+
+            $payload = ['ca_pan_validation_failed' => 'TRUE'];
+
+            $this->app->hubspot->trackHubspotEvent($merchantEmail, $payload);
+        }
     }
 }

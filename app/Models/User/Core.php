@@ -56,6 +56,19 @@ class Core extends Base\Core
     {
         $user->edit($input, $operation);
 
+        try
+        {
+            $this->fireHubspotIfUserClickedNotNow($user, $input);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(
+                TraceCode::NEOSTONE_HUBSPOT_REQUEST_FAILED,
+                [
+                    $e->getMessage()
+                ]);
+        }
+
         $this->repo->transactionOnLiveAndTest(function() use ($user, $input)
         {
             $this->upsertSettings($user, $input[Entity::SETTINGS] ?? []);
@@ -2111,6 +2124,40 @@ class Core extends Base\Core
         ];
 
         return [$merchantDetails];
+    }
+
+    /**
+     * To Fire Event if User clicks on not now button for current account
+     * via neoStone flow
+     * @param Entity $user
+     * @param array  $input
+     */
+    private function fireHubspotIfUserClickedNotNow(Entity $user, array $input)
+    {
+        if (isset($input[Entity::SETTINGS]) === true)
+        {
+            $settings = $input[Entity::SETTINGS];
+
+            if (array_key_exists('clicked_rbl_self_serve_not_now', $settings) === true)
+            {
+                if ($settings['clicked_rbl_self_serve_not_now'] === '1')
+                {
+                    $merchant = $user->getMerchantEntity();
+
+                    $merchantEmail = $merchant->getEmail();
+
+                    $payload = ['ca_clicked_not_now_at' => 'TRUE'];
+
+                    $this->trace->info(
+                        TraceCode::NEOSTONE_HUBSPOT_REQUEST,
+                        [
+                            $payload
+                        ]);
+
+                    $this->app->hubspot->trackHubspotEvent($merchantEmail, $payload);
+                }
+            }
+        }
     }
 
     public function removeIncorrectPasswordCount(array $emails)

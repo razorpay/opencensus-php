@@ -645,14 +645,7 @@ class Core extends Base\Core
                 $stateCore->captureNewBankingAccountState($bankingAccount, $entity);
             }
 
-            if ($bankingAccountStatusChanged === true)
-            {
-                $this->notifier->notify($bankingAccount, Event::STATUS_CHANGE);
-            }
-            if ($bankingAccountSubStatusChanged === true)
-            {
-                $this->notifier->notify($bankingAccount, Event::SUBSTATUS_CHANGE);
-            }
+            $this->notifyIfStatusChanged($bankingAccount, $bankingAccountStatusChanged, $bankingAccountSubStatusChanged);
 
             // Updating BankingAccountActivation Details
             if (empty($activationDetailInput) === false)
@@ -846,8 +839,17 @@ class Core extends Base\Core
 
         $this->sendBankingCaActivationSmsIfApplicable($bankingAccount);
 
-        $this->notifier->notify($bankingAccount, Event::STATUS_CHANGE);
-        $this->notifier->notify($bankingAccount, Event::SUBSTATUS_CHANGE);
+        if ((new Service())->isNeoStoneExperiment($bankingAccount) === true)
+        {
+            $payload = ['ca_channel' => Entity::Neostone];
+
+            $this->notifier->notify($bankingAccount, Event::STATUS_CHANGE, Event::INFO, $payload);
+        }
+        else
+        {
+            $this->notifier->notify($bankingAccount, Event::STATUS_CHANGE);
+            $this->notifier->notify($bankingAccount, Event::SUBSTATUS_CHANGE);
+        }
 
         return $bankingAccount;
     }
@@ -1149,6 +1151,32 @@ class Core extends Base\Core
         ];
 
         return $attributes;
+    }
+
+    /**
+     * @param Entity $bankingAccount
+     * @param bool   $bankingAccountStatusChanged
+     * @param bool   $bankingAccountSubStatusChanged
+     */
+    public function notifyIfStatusChanged(Entity $bankingAccount, bool $bankingAccountStatusChanged, bool $bankingAccountSubStatusChanged): void
+    {
+        if ((new Service())->isNeoStoneExperiment($bankingAccount) === true)
+        {
+            $channel = Entity::Neostone;
+
+            $this->fireHubspotEventForStatusChange($bankingAccountStatusChanged, $bankingAccountSubStatusChanged, $bankingAccount, $channel);
+        }
+        else
+        {
+            if ($bankingAccountStatusChanged === true)
+            {
+                $this->notifier->notify($bankingAccount, Event::STATUS_CHANGE);
+            }
+            if ($bankingAccountSubStatusChanged === true)
+            {
+                $this->notifier->notify($bankingAccount, Event::SUBSTATUS_CHANGE);
+            }
+        }
     }
 
     /**
@@ -1626,5 +1654,30 @@ class Core extends Base\Core
         $activation_detail[ActivationDetail\Entity::MERCHANT_REGION] = (new Activation\Detail\Region)->getRegionFromState($resp['state']);
 
         return $activation_detail;
+    }
+
+    private function fireHubspotEventForStatusChange(bool $bankingAccountStatusChanged, bool $bankingAccountSubStatusChanged, Entity $account, string $channel)
+    {
+        if ($bankingAccountStatusChanged or $bankingAccountSubStatusChanged)
+        {
+            $currentStatus = $account->getStatus();
+
+            $currentSubStatus = $account->getSubStatus();
+
+            $payload = ['ca_channel' => $channel];
+
+            if ($bankingAccountStatusChanged)
+            {
+                $this->notifier->notify($account, Event::STATUS_CHANGE, Event::INFO, $payload);
+            }
+            else if ($bankingAccountSubStatusChanged)
+            {
+                if ($currentStatus === Status::PROCESSING and $currentSubStatus === Status::DISCREPANCY_IN_DOCS)
+                {
+                    $this->notifier->notify($account, Event::PROCESSING_DISCREPANCY_IN_DOCS, Event::INFO, $payload);
+                }
+            }
+        }
+
     }
 }

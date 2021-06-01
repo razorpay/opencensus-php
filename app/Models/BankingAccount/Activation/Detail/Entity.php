@@ -250,6 +250,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttributeValue(self::BUSINESS_PAN);
     }
 
+    public function getDeclarationStep()
+    {
+        return $this->getAttributeValue(self::DECLARATION_STEP);
+    }
+
     public function getBusinessName()
     {
         return $this->getAttributeValue(self::BUSINESS_NAME);

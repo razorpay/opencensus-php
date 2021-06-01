@@ -1131,6 +1131,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_PAYMENT_MODE_MISMATCH                         = 'GATEWAY_PAYMENT_MODE_MISMATCH';
     const GET_GATEWAY_DOWNTIME_REQUEST                          = 'GET_GATEWAY_DOWNTIME_REQUEST';
     const FETCH_GATEWAY_DOWNTIME_ERROR                          = 'FETCH_GATEWAY_DOWNTIME_ERROR';
+    const CHECK_NEOSTONE                                        = 'CHECK_NEOSTONE';
+    const NEOSTONE_HUBSPOT_REQUEST                              = 'NEOSTONE_HUBSPOT_REQUEST';
+    const NEOSTONE_HUBSPOT_REQUEST_FAILED                       = 'NEOSTONE_HUBSPOT_REQUEST_FAILED';
+    const NEOSTONE_MERCHANT_TRUE                                = 'NEOSTONE_MERCHANT_TRUE';
 
     const PHONEPE_DOWNTIME_FETCH_ERROR                          = 'PHONEPE_DOWNTIME_FETCH_ERROR';
 
@@ -1441,6 +1445,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ACCOUNT_EDIT_ACTION                                   = 'ACCOUNT_EDIT_ACTION';
     const ACCOUNT_DELETE_ACTION                                 = 'ACCOUNT_DELETE_ACTION';
     const MERCHANT_ORG_NOT_GIVEN                                = 'MERCHANT_ORG_NOT_GIVEN';
+    const PUSHED_EVENT_TO_HUBSPOT                               = 'PUSHED_EVENT_TO_HUBSPOT';
     const MERCHANT_SAVE_ACTIVATION_DETAILS                      = 'MERCHANT_SAVE_ACTIVATION_DETAILS';
     const MERCHANT_VERIFY_ATTRIBUTES                            = 'MERCHANT_VERIFY_ATTRIBUTES';
     const MERCHANT_ACTIVATION_FORM_SUBMISSION_FAILURE           = 'MERCHANT_ACTIVATION_FORM_SUBMISSION_FAILURE';

@@ -1582,6 +1582,125 @@ class BankingAccountTest extends TestCase
         $this->assertEquals(null, $bankingAccountActivationDetail['account_login_date']);
     }
 
+    protected function assertUpdateBankingAccountStatusFromToForNeostone(string $initialStatus,
+                                                              string $finalStatus,
+                                                              string $initialSubStatus = null,
+                                                              string $finalSubStatus = null,
+                                                              string $initialBankStatus = null,
+                                                              string $finalBankStatus = null,
+                                                              array $bankingAccount = null)
+    {
+        Mail::fake();
+
+        if ($bankingAccount === null)
+        {
+            $attribute = ['activation_status' => 'activated'];
+
+            $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+            $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+            $bankingAccount = $this->createBankingAccountFromDashboard();
+
+            $this->fixtures->edit('banking_account_activation_detail',
+                                  $bankingAccount['banking_account_activation_details']['id'],
+                                  [
+                                      ActivationDetail\Entity::CONTACT_VERIFIED => 1,
+                                  ]);
+        }
+        else
+        {
+            $merchantDetail = $this->getDbEntity('merchant_detail', ['merchant_id' => $bankingAccount['merchant_id']]);
+        }
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts/' . $bankingAccount['id'],
+                'method'  => 'PATCH',
+                'content' => [
+                    RZP\Models\BankingAccount\Entity::STATUS     => $finalStatus,
+                ]
+            ],
+            'response' => [
+                'content' => [
+                    'merchant_id'                                => $merchantDetail->merchant['id'],
+                    RZP\Models\BankingAccount\Entity::STATUS     => $finalStatus,
+                ],
+            ],
+        ];
+
+        if (empty($finalSubStatus) === false)
+        {
+            $dataToReplace['request']['content'][RZP\Models\BankingAccount\Entity::SUB_STATUS] = $finalSubStatus;
+            $dataToReplace['response']['content'][RZP\Models\BankingAccount\Entity::SUB_STATUS] = $finalSubStatus;
+        }
+
+        if (empty($finalBankStatus) === false)
+        {
+            $dataToReplace['request']['content'][RZP\Models\BankingAccount\Entity::BANK_INTERNAL_STATUS] = $finalBankStatus;
+            $dataToReplace['response']['content'][RZP\Models\BankingAccount\Entity::BANK_INTERNAL_STATUS] = $finalBankStatus;
+        }
+
+        $this->ba->adminAuth();
+
+        $hubspotClient = $this->mockHubSpotClient('trackHubspotEvent');
+
+        $hubspotClient->expects($this->atLeast(1))
+                      ->method('trackHubspotEvent');
+
+        $this->fixtures->edit('banking_account',
+                              $bankingAccount['id'],
+                              [
+                                  'status'               => $initialStatus,
+                                  'sub_status'           => $initialSubStatus,
+                                  'bank_internal_status' => $initialBankStatus
+                              ]);
+
+        $this->startTest($dataToReplace);
+
+        $bankingAccountStateUpdate = $this->getDbLastEntity('banking_account_state');
+
+        $this->assertEquals($bankingAccount['id'], $bankingAccountStateUpdate->bankingAccount->getPublicId());
+
+        $this->assertEquals($finalStatus, $bankingAccountStateUpdate['status']);
+
+        $this->assertEquals($finalSubStatus, $bankingAccountStateUpdate['sub_status']);
+
+        $this->assertEquals($finalBankStatus, $bankingAccountStateUpdate['bank_status']);
+
+        Mail::assertNothingSent();
+    }
+
+    public function testUpdateBankingAccountStatusProcessingToProcessedForNeostone()
+    {
+        $this->assertUpdateBankingAccountStatusFromToForNeostone(
+            \RZP\Models\BankingAccount\Status::PROCESSING,
+            \RZP\Models\BankingAccount\Status::PROCESSED);
+    }
+
+    public function testUpdateBankingAccountStatusCreatedToPickedForNeostone()
+    {
+        $this->assertUpdateBankingAccountStatusFromToForNeostone(
+            \RZP\Models\BankingAccount\Status::CREATED,
+            \RZP\Models\BankingAccount\Status::PICKED);
+    }
+
+    public function testUpdateBankingAccountStatusPickedToInitiatedForNeostone()
+    {
+        $this->assertUpdateBankingAccountStatusFromToForNeostone(
+            \RZP\Models\BankingAccount\Status::PICKED,
+            \RZP\Models\BankingAccount\Status::INITIATED);
+    }
+
+    public function testUpdateBankingAccountStatusWithSubStatusForNeostone()
+    {
+        $this->assertUpdateBankingAccountStatusFromToForNeostone(
+            \RZP\Models\BankingAccount\Status::INITIATED,
+            \RZP\Models\BankingAccount\Status::PROCESSING,
+            null,
+            \RZP\Models\BankingAccount\Status::DISCREPANCY_IN_DOCS);
+    }
+
     protected function assertUpdateBankingAccountStatusFromTo(string $initialStatus,
                                                               string $finalStatus,
                                                               string $initialSubStatus = null,
@@ -2240,6 +2359,12 @@ class BankingAccountTest extends TestCase
             'url'     => '/banking_accounts_dashboard',
             'content' => $data
         ];
+
+        $hubspotClient = $this->mockHubSpotClient('trackHubspotEvent');
+
+        $hubspotClient->expects($this->atLeast(1))
+                      ->method('trackHubspotEvent');
+
 
         $response = $this->makeRequestAndGetContent($request);
 

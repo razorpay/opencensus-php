@@ -2117,4 +2117,11 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function fireHubspotEventFromDashboard()
+    {
+        $input = Request::all();
+
+        return $this->service()->fireHubspotEventFromDashboard($input);
+    }
 }

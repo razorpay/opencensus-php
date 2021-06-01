@@ -3,9 +3,11 @@
 
 namespace RZP\Models\BankingAccount\Activation\Detail;
 
+use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Models\BankingAccount;
 use RZP\Models\BankingAccount\State;
 use RZP\Exception\BadRequestException;
@@ -138,6 +140,8 @@ class Service extends Base\Service
 
             $this->initiatePanVerification($activationDetail, $input);
 
+            $this->checkAndPushEventForRmAssigned($bankingAccount, $input);
+
             if ($activationDetail->isAssigneeTeamUpdated() === true)
             {
                 // if entity is passed, use that, else use admin.
@@ -208,6 +212,27 @@ class Service extends Base\Service
                 Comment\Entity::TYPE => 'internal', // TODO: check if this needs to be external
                 Comment\Entity::ADDED_AT => time()
             ]);
+        }
+    }
+
+    private function checkAndPushEventForRmAssigned(BankingAccount\Entity $bankingAccount, array $activationDetail)
+    {
+        $bankingAccountService = new BankingAccount\Service();
+
+        if (isset($activationDetail[Entity::RM_NAME]) === true and $bankingAccountService->isNeoStoneExperiment($bankingAccount) === true)
+        {
+            $rmNameInLowerCaseWithTrimApplied = strtolower(trim($activationDetail[Entity::RM_NAME]));
+
+            // If RM Name is not any of the possible missing strings
+            if (in_array($rmNameInLowerCaseWithTrimApplied, BankingAccount\Entity::$rm_name_missing_possibilities) === false)
+            {
+                $payload = [
+                    'ca_rm_name'          => $activationDetail[Entity::RM_NAME],
+                    'ca_rm_number'        => $activationDetail[Entity::RM_PHONE_NUMBER]
+                ];
+
+                $this->notifier->notify($bankingAccount, Event::RM_ASSIGNED, Event::INFO, $payload);
+            }
         }
     }
 
