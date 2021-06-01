@@ -502,6 +502,15 @@ class Authorization
         $this->appAuth('rzp_' . $mode, $pwd);
     }
 
+    public function yellowMessengerAuth($mode = 'test')
+    {
+        $config = \Config::get('applications.yellowmessenger');
+
+        $pwd = $config['secret'];
+
+        $this->appAuth('rzp_' . $mode, $pwd);
+    }
+
     public function expressAuth($mode = 'test', $user = null)
     {
        if (is_null($user) === false)

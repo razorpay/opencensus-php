@@ -3527,6 +3527,20 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function getRejectionReasons($merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $currentActivationState = $merchant->currentActivationState();
+
+        if ($currentActivationState === null)
+        {
+            return (new Base\PublicCollection())->toArrayPublic();
+        }
+
+        return $currentActivationState->rejectionReasons()->get()->toArrayPublic();
+    }
+
     public function sendMerchantEmail($merchantId, $input)
     {
         $this->trace->info(

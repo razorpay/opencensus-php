@@ -28,6 +28,11 @@ class CareProxyController extends Controller
     //admin
     const UPSERT_OPERATOR = 'twirp/rzp.care.callback.v1.CallbackService/UpsertOperator';
 
+    //chat
+    const CHAT_GET_MERCHANT   = 'twirp/rzp.care.chat.v1.ChatService/GetMerchant';
+    const CHAT_FETCH_TICKETS  = 'twirp/rzp.care.chat.v1.ChatService/FetchTickets';
+
+
     const MERCHANT_ROUTES = [
         self::CHECK_ELIGIBILITY,
         self::GET_SLOTS,
@@ -48,6 +53,11 @@ class CareProxyController extends Controller
 
     const ADMIN_ROUTES = [
         self::UPSERT_OPERATOR,
+    ];
+
+    const CHAT_ROUTES = [
+        self::CHAT_GET_MERCHANT,
+        self::CHAT_FETCH_TICKETS,
     ];
 
     public function postDashboardProxyRequest($path)
@@ -92,6 +102,17 @@ class CareProxyController extends Controller
         $response = $this->app['care_service']->adminProxyRequest($path, $input);
 
         return ApiResponse::json($response);
+    }
+
+    public function postChatProxyRequest($path)
+    {
+        $this->validatePathForRequest(self::CHAT_ROUTES, $path);
+
+        $input = Request::all();
+
+        $respponse = $this->app['care_service']->chatProxyRequest($path, $input);
+
+        return ApiResponse::json($respponse);
     }
 
     protected function validatePathForRequest($routes, $path)

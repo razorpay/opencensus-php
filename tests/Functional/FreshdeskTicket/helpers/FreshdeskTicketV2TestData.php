@@ -79,7 +79,7 @@ return [
     ],
 ],
 
-    'testFetchTicketsForMerchantSalesforce' => [
+    'testFetchTicketsForMerchantInternalAuth' => [
         'request' => [
             'url' => '/fd/support_dashboard/ticket',
             'method' => 'GET'

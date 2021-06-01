@@ -342,6 +342,7 @@ class Route
         'internal_merchants_fetch'                 => ['get',      'internal/merchants',                             'MerchantController@getMerchantBulk'                                ],
         'internal_merchant_fetch'                  => ['get',      'internal/merchants/{id}',                        'MerchantController@internalGetMerchant'                            ],
         'internal_send_merchant_email'             => ['post',     'internal/merchants/{id}/send_email',                  'MerchantController@sendMerchantEmail'                            ],
+        'internal_merchant_get_rejection_reasons'  => ['get',      'internal/merchants/{id}/rejection_reasons',      'MerchantController@internalGetMerchantRejectionReasons'          ],
         'merchant_invoice_add_bulk'                => ['post',     'merchants/invoice/bulk',                         'MerchantInvoiceController@postMultipleEntities'                    ],
         'merchant_get_app_access_mapping'          => ['get',      'merchants/{id}/applications',                    'MerchantController@getConnectedApplications'                       ],
         'merchant_create_app_access_mapping'       => ['post',     'merchants/{id}/applications',                    'MerchantController@postMapOAuthApplication'                        ],
@@ -2439,6 +2440,8 @@ class Route
         'care_service_dashboard_proxy'            => ['post',    'care_service/merchant/{path?}',                           'CareProxyController@postDashboardProxyRequest'                ],
         'care_service_cron_proxy'                 => ['post',    'care_service/cron/{path?}',                               'CareProxyController@postCronProxyRequest'                     ],
         'care_service_admin_proxy'                => ['post',    'care_service/admin/{path?}',                              'CareProxyController@postAdminProxyRequest',                   ],
+        'care_service_chat_proxy'                 => ['post',    'care_service/chat/{path?}',                               'CareProxyController@postChatProxyRequest',                   ],
+
         'myoperator_v1_proxy_get'                 => ['get',     'myoperator/{path?}',                                      'MyOperatorController@getProxyCallToMyOperatorV1'              ],
         'myoperator_v2_proxy_post'                => ['post',    'myoperator/campaign/{path?}',                             'MyOperatorController@postProxyCallToMyOperatorV2'              ],
 
@@ -3148,6 +3151,7 @@ class Route
         'payout_reject_internal',
 
         'internal_merchant_fetch',
+        'internal_merchant_get_rejection_reasons',
         'internal_merchants_fetch',
         'internal_fetch_config_by_id',
         'internal_fetch_configs',
@@ -3283,6 +3287,7 @@ class Route
         'myoperator_v1_proxy_get',
         'myoperator_v2_proxy_post',
         'care_service_myoperator_webhook_proxy',
+        'care_service_chat_proxy',
         'segment_create_update',
         // IPL bot
         'throttle_create_config_spinnaker',
@@ -9317,6 +9322,10 @@ class Route
             'fd_consume_webhook',
         ],
 
+        'yellowmessenger' => [
+            'care_service_chat_proxy',
+        ],
+
         'smart_routing' => [
             'gateway_downtime_for_payment',
         ],
@@ -9345,10 +9354,12 @@ class Route
 
         'care' => [
             'internal_merchant_fetch',
+            'internal_merchant_get_rejection_reasons',
             'myoperator_v1_proxy_get',
             'myoperator_v2_proxy_post',
             'freshdesk_update_ticket_internal',
             'fd_fetch_ticket',
+            'fd_fetch_tickets',
             'user_fetch_internal'
         ],
 

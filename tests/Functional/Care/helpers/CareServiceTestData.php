@@ -89,4 +89,24 @@ return [
             'internal_error_code' => ErrorCode::SERVER_ERROR,
         ],
     ],
+
+    'testInternalMerchantGetRejectionReasons' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/internal/merchants/10000000000000/rejection_reasons',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'reason_type'        => 'rejection',
+                        'reason_category'    => 'risky_business',
+                        'reason_description' => 'Merchant into gift cards/gift vouchers',
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];

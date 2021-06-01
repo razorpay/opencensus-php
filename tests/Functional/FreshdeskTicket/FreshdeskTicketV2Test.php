@@ -125,18 +125,26 @@ class FreshdeskTicketV2Test extends TestCase
         $this->startTest();
     }
 
-    public function testFetchTicketsForMerchantSalesforce()
+    public function testFetchTicketsForMerchantInternalAuth()
     {
-        $this->ba->salesForceAuth();
-
-        $expectedRequestResponse    =   $this->getExpectedRequestResponse(self::RZP_FETCH_TICKET);
-
-        $this->expectFreshdeskRequestAndRespondWith('search/tickets?query=%22custom_string%3Amerchant_dashboard_10000000000000%22&page=1', 'get',
-            $expectedRequestResponse['request'], $expectedRequestResponse['response'], 2);
-
         $this->createTicketsToFetch();
 
-        $this->startTest();
+        $auths = [
+            'salesforceAuth',
+            'careAuth',
+        ];
+
+        foreach ($auths as $auth)
+        {
+            $this->ba->$auth();
+
+            $expectedRequestResponse    =   $this->getExpectedRequestResponse(self::RZP_FETCH_TICKET);
+
+            $this->expectFreshdeskRequestAndRespondWith('search/tickets?query=%22custom_string%3Amerchant_dashboard_10000000000000%22&page=1', 'get',
+                $expectedRequestResponse['request'], $expectedRequestResponse['response'], 2);
+
+            $this->startTest();
+        }
     }
 
     public function testFetchTicketsForMerchantSalesforceWrongAuth()

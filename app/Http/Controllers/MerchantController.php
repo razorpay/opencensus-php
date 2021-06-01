@@ -1311,6 +1311,13 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function internalGetMerchantRejectionReasons(string $merchantId)
+    {
+        $response = $this->service()->getRejectionReasons($merchantId);
+
+        return ApiResponse::json($response);
+    }
+
     /**
      * returns merchant name and website only, to be used by internal apps
      */

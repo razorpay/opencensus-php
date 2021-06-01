@@ -100,6 +100,11 @@ class CareServiceClient
         return $this->sendRequestAndProcessResponse($path, Requests::POST, $input);
     }
 
+    public function chatProxyRequest($path, $input)
+    {
+        return $this->sendRequestAndProcessResponse($path, Requests::POST, $input);
+    }
+
     protected function sendRequestAndProcessResponse($path, $method, $content)
     {
         $this->app['trace']->info(TraceCode::CARE_SERVICE_REQUEST, [

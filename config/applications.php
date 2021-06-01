@@ -409,6 +409,10 @@ return [
         'secret'  => env('FRESHDESK_WEBHOOK_SECRET'),
     ],
 
+    'yellowmessenger'   => [
+        'secret'  => env('YELLOWMESSENGER_SECRET'),
+    ],
+
     'zoho' => [
         'header'    => env('ZOHO_HEADER'),
     ],

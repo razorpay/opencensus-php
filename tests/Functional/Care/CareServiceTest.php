@@ -6,6 +6,7 @@ namespace Functional\Care;
 use Mockery;
 use RZP\Trace\TraceCode;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
@@ -85,6 +86,29 @@ class CareServiceTest extends TestCase
     public function testCareProxy()
     {
         $testCases = [
+            [
+
+                self::AUTH                                => 'yellowmessenger',
+                self::API_ROUTE                           => '/care_service/chat/twirp/rzp.care.chat.v1.ChatService/GetMerchant',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.chat.v1.ChatService/GetMerchant',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                ],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
+                self::AUTH                                => 'yellowmessenger',
+                self::API_ROUTE                           => '/care_service/chat/twirp/rzp.care.chat.v1.ChatService/FetchTickets',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'twirp/rzp.care.chat.v1.ChatService/FetchTickets',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                ],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
             [
                 self::AUTH                                => 'proxy',
                 self::API_ROUTE                           => '/care_service/merchant/twirp/rzp.care.chat.v1.ChatService/Init',
@@ -255,6 +279,9 @@ class CareServiceTest extends TestCase
                 case 'myoperator':
                     $this->ba->myOperatorAuth();
                     break;
+                case 'yellowmessenger':
+                    $this->ba->yellowMessengerAuth();
+                    break;
                 case 'admin':
                     $this->ba->adminAuth();
             }
@@ -312,6 +339,33 @@ class CareServiceTest extends TestCase
             ],
             500
         );
+
+        $this->startTest();
+    }
+
+    public function testInternalMerchantGetRejectionReasons()
+    {
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
+
+        $this->makeRequestAndGetContent([
+            'method'  => 'PATCH',
+            'url'     => '/merchant/activation/10000000000000/activation_status',
+            'content' => [
+                'activation_status' => 'rejected',
+                'rejection_reasons' => [
+                    [
+                        'reason_category' => 'risky_business',
+                        'reason_code'     => 'gift_cards',
+                    ]
+                ],
+            ],
+        ]);
+
+        $this->ba->careAppAuth();
 
         $this->startTest();
     }
