@@ -103,9 +103,9 @@ class Service extends Base\Service
 
         $validator->validateBatchId($batchId);
 
-        // if any merchant wants to skip duplicate check
-        // and unique create contact everytime
-        $createDuplicate = $this->shouldCreateDuplicate();
+        // This used to rely on a razorx experiment but we never ended up using this.
+        // As part of code cleanup, we're setting this to default `false`
+        $createDuplicate = false;
 
         foreach ($input as $item)
         {
@@ -268,9 +268,8 @@ class Service extends Base\Service
 
         $createDuplicate = true;
 
-        if (((($this->auth->isPrivateAuth() === true) or
-             ($this->auth->isPublicAuth() === true)) and
-            ($this->shouldCreateDuplicate() === false)) or
+        if ((($this->auth->isPrivateAuth() === true) or
+             ($this->auth->isPublicAuth() === true)) or
             ($this->isAllowedInternalAppForDeDuplicateFA()))
         {
             $createDuplicate = false;
@@ -314,21 +313,6 @@ class Service extends Base\Service
         return [
             Constants\Entity::FUND_ACCOUNT => $entity,
         ];
-    }
-
-    // ToDo https://razorpay.atlassian.net/browse/RX-849
-    protected function shouldCreateDuplicate()
-    {
-        $merchant = $this->merchant;
-
-        $variant  = $this->app['razorx']->getTreatment($merchant->getId(),
-                                                       Merchant\RazorxTreatment::X_CONTACT_AND_FUND_ACCOUNT_CREATION,
-                                                       $this->mode,
-                                                       Entity::FUND_ACCOUNT_RX_RETRY_COUNT);
-
-        $flag = ($variant === 'create_duplicate') ? true : false;
-
-        return $flag;
     }
 
     protected function unsetIfscIfRequired(array & $input)

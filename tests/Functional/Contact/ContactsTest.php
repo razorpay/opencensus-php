@@ -679,44 +679,6 @@ class ContactsTest extends TestCase
         $this->assertEquals($contact1['id'], $contact2['id']);
     }
 
-    public function testDoNotAllowDuplicateChecksInContactCreation()
-    {
-        $this->testCreateContact();
-
-        $contact = $this->getLastEntity('contact', true);
-
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                            ->setConstructorArgs([$this->app])
-                            ->setMethods(['getTreatment'])
-                            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->willReturn('create_duplicate');
-
-        $this->ba->privateAuth();
-
-        $request =  [
-            'content' => [
-                'name'         => 'Test / Contact',
-                'type'         => 'self',
-                'reference_id' => '#123abc',
-                'email'        => 'asd@abc.com',
-                'contact'      => '9123456789',
-                'notes'        => [
-                    'test1' => 'One',
-                ],
-            ],
-            'url'     => '/contacts',
-            'method'  => 'POST'
-        ];
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        $this->assertNotEquals($contact['id'], $response['id']);
-    }
-
     public function testCreateContactWithoutType()
     {
         $this->fixtures->create('contact', ['id' => '1000001contact', 'name' => 'Contact X']);

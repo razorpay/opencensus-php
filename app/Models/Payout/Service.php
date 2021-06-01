@@ -756,9 +756,9 @@ class Service extends Base\Service
 
         $validator->validateBatchId($batchId);
 
-        // if any merchant wants to skip duplicate check
-        // and unique create contact and fund account everytime
-        $createDuplicate = $this->shouldCreateDuplicateForFundAccountAndContact();
+        // This used to rely on a razorx experiment but we never ended up using this.
+        // As part of code cleanup, we're setting this to default `false`
+        $createDuplicate = false;
 
         $this->trace->info(
             TraceCode::BATCH_SERVICE_PAYOUT_BULK_REQUEST_RAW,
@@ -1341,21 +1341,6 @@ class Service extends Base\Service
         $input = PayoutBatchHelper::getPayoutInput($entry, $fundAccount->toArrayPublic(), $this->merchant);
 
         return $this->core->createPayoutToFundAccount($input, $this->merchant, $batchId);
-    }
-
-    // ToDo https://razorpay.atlassian.net/browse/RX-849
-    protected function shouldCreateDuplicateForFundAccountAndContact()
-    {
-        $merchant = $this->merchant;
-
-        $variant  = $this->app['razorx']->getTreatment($merchant->getId(),
-            Merchant\RazorxTreatment::X_CONTACT_AND_FUND_ACCOUNT_CREATION,
-            $this->mode,
-            FundAccount\Entity::FUND_ACCOUNT_BULK_RX_RETRY_COUNT);
-
-        $flag = ($variant === 'create_duplicate') ? true : false;
-
-        return $flag;
     }
 
     /**

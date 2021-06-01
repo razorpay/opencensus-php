@@ -59,9 +59,7 @@ class Service extends Base\Service
      */
     public function create(array $input): array
     {
-        $createDuplicate = ($this->shouldCreateDuplicateContacts() === true);
-
-        $entity = $this->core->create($input, $this->merchant, null, $createDuplicate);
+        $entity = $this->core->create($input, $this->merchant);
 
         $responseCode = ($entity->wasRecentlyCreated === true) ? Response::HTTP_CREATED : Response::HTTP_OK;
 
@@ -108,20 +106,5 @@ class Service extends Base\Service
         $typeObj->addNewCustom($input[Entity::TYPE], $this->merchant);
 
         return $typeObj->getAll($this->merchant);
-    }
-
-    // ToDo https://razorpay.atlassian.net/browse/RX-849
-    protected function shouldCreateDuplicateContacts()
-    {
-        $merchant = $this->merchant;
-
-        $variant  = $this->app['razorx']->getTreatment($merchant->getId(),
-                                                       Merchant\RazorxTreatment::X_CONTACT_AND_FUND_ACCOUNT_CREATION,
-                                                       $this->mode,
-                                                       Entity::CONTACT_RX_RETRY_COUNT);
-
-        $flag = ($variant === 'create_duplicate') ? true : false;
-
-        return $flag;
     }
 }
