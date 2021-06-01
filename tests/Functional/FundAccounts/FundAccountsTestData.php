@@ -3210,4 +3210,29 @@ return [
             ],
         ],
     ],
+
+    'testUpdationOfExistingDuplicateVpaFundAccountWithHashWithDifferentCaseInInputAndDuplicate' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'vpa',
+                'contact_id'   => 'cont_1000000contact',
+                'vpa'      => [
+                    'address' => 'aMitm@upI',
+                ],
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'fund_account',
+                'account_type' => 'vpa',
+                'contact_id'   => 'cont_1000000contact',
+                'vpa'      => [
+                    'address' => 'amitm@upi',
+                ],
+            ],
+            'status_code' => 200
+        ],
+    ],
 ];

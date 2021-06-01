@@ -1607,4 +1607,53 @@ class FundAccountsTest extends TestCase
 
         $this->assertNull($fundAccount->getUniqueHash());
     }
+
+    // We wish to test that a fund account of type vpa with a different case in username and handle is found via
+    // fallback and the hash is updated properly for it.
+    public function testUpdationOfExistingDuplicateVpaFundAccountWithHashWithDifferentCaseInInputAndDuplicate()
+    {
+        $this->mockRazorxTreatment();
+
+        $this->testCreateVpa();
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $this->fixtures->edit(
+            'fund_account',
+            $fundAccount->getId(),
+            [
+                FundAccount\Entity::UNIQUE_HASH => null,
+            ]
+        );
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $fundAccount->reload();
+
+        $this->assertNotNull($fundAccount->getUniqueHash());
+    }
+
+    // We are just checking that if hash creation is on, we should get duplicate fund account via hash even if the
+    // incoming request has a different case in vpa address cas compared to the duplicate in our db.
+     public function testDuplicateVpaFundAccountFoundViaHashWithDifferentCaseInInputAndDuplicate()
+     {
+         $this->mockRazorxTreatment();
+
+         $this->testCreateVpa();
+
+         $fundAccountsBeforeDuplicateCreateRequest = count($this->getDbEntities('fund_account'));
+
+         $this->testData[__FUNCTION__] =
+             $this->testData['testUpdationOfExistingDuplicateVpaFundAccountWithHashWithDifferentCaseInInputAndDuplicate'];
+
+         $this->ba->privateAuth();
+
+         $this->startTest();
+
+         $fundAccountsAfterDuplicateCreateRequest = count($this->getDbEntities('fund_account'));
+
+         $this->assertEquals($fundAccountsBeforeDuplicateCreateRequest, $fundAccountsAfterDuplicateCreateRequest);
+     }
 }

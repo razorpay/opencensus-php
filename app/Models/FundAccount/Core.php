@@ -784,6 +784,12 @@ class Core extends Base\Core
 
         $uniqueHashInput = Type::VPA . '|' . $username . '|' . $handle;
 
+        // This is being done because our username and handle are treated case insensitively in the mysql database on
+        // prod and hence the hash should also be made for a standard case of the string so that it can be matched in
+        // the future to find duplicates for any case combination of the strings of username and handle. Ref:
+        // https://razorpay.slack.com/archives/C01B8T2HUM7/p1621835137092000?thread_ts=1621604710.069500&cid=C01B8T2HUM7
+        $uniqueHashInput = strtolower($uniqueHashInput);
+
         return $uniqueHashInput;
     }
 

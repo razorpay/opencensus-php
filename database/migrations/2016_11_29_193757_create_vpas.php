@@ -9,6 +9,10 @@ use RZP\Models\Merchant\Entity as Merchant;
 
 class CreateVpas extends Migration
 {
+    const UTF8MB4 = 'utf8mb4';
+
+    const UTF8MB4_0900_AI_CI = 'utf8mb4_0900_ai_ci';
+
     /**
      * Run the migrations.
      *
@@ -29,9 +33,14 @@ class CreateVpas extends Migration
             $table->char(Entity::ENTITY_TYPE, 40)
                   ->nullable();
 
-            $table->char(Entity::USERNAME, 50);
+            // Used the charset and collation present currently on production for username and handle
+            $table->char(Entity::USERNAME, 50)
+                  ->charset(self::UTF8MB4)
+                  ->collation(self::UTF8MB4_0900_AI_CI);
 
-            $table->char(Entity::HANDLE, 20);
+            $table->char(Entity::HANDLE, 20)
+                  ->charset(self::UTF8MB4)
+                  ->collation(self::UTF8MB4_0900_AI_CI);
 
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
 
