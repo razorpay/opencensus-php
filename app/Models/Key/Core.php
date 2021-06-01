@@ -65,6 +65,8 @@ class Core extends Base\Core
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_KEY_CREATE_FAILED);
             }
+
+            $this->trace->count(Metric::KEY_GENERATION_BY_CA_ACTIVATED_MERCHANT_COUNT);
         }
 
         $key->merchant()->associate($merchant);

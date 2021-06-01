@@ -13,6 +13,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Key\Metric;
 use RZP\Http\RequestContext;
 use RZP\Base\RepositoryManager;
 use RZP\Error\PublicErrorDescription;
@@ -261,6 +262,8 @@ abstract class AuthCreds
 
             if ($isBankingRouteAndPrivate === true)
             {
+                $this->trace->count(Metric::PRIVATE_X_ROUTE_HITS_BY_CA_ACTIVATED_MERCHANT_COUNT);
+
                 return true;
             }
 

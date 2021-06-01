@@ -57,7 +57,9 @@ class PasswordReset extends Base\Mailable
     {
         $orgName = $this->org['display_name'];
 
-        $subject = sprintf("%s - Password Reset Request", $orgName);
+        $source = ($this->product === Product::BANKING) ? "RazorpayX" : "Razorpay";
+
+        $subject = sprintf("Reset your %s password. ", $source);
 
         $this->subject($subject);
 
