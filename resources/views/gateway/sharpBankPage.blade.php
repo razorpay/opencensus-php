@@ -1,3 +1,6 @@
+<?php
+  $org_logo = $data['org_logo'] ?? 'https://cdn.razorpay.com/logo.svg';
+?>
 <!doctype html>
 <html>
   <head>
@@ -40,7 +43,7 @@
     </style>
   </head>
   <body>
-    <h1><img src="{{ $data['org_logo'] }}" width="316" height="67"></h1>
+    <h1><img src="{{ $org_logo }}" width="316" height="67"></h1>
     <h3>Welcome to {{ $data['org_name'] }} Bank</h3>
     This is just a demo bank page.<br>
     You can choose whether to make this payment successful or not: <br><br>
