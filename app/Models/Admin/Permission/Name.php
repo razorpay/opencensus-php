@@ -283,6 +283,7 @@ class Name
     const RETRY_REFUND                        = 'retry_refund';
     const RETRY_REFUNDS_WITHOUT_VERIFY        = 'retry_refunds_without_verify';
     const DOWNLOAD_NON_MERCHANT_REPORT        = 'download_non_merchant_report';
+    const REPORTING_DEVELOPER                 = 'reporting_developer';
     const CREATE_VIRTUAL_ACCOUNTS             = 'create_virtual_accounts';
     const CREATE_BANKING_VIRTUAL_ACCOUNTS     = 'create_banking_virtual_accounts';
     const BANK_TRANSFER_INSERT                = 'bank_transfer_insert';

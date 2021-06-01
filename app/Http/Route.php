@@ -1713,6 +1713,8 @@ class Route
         'reporting_config_types_fetch'             => ['get',      'admin-reporting/config-type',                    'ReportingController@getTypes'                                      ],
         'reporting_config_components_get_by_type'  => ['get',      'admin-reporting/config-components/{type}',       'ReportingController@getComponentsByType'                           ],
         'reporting_config_options'                 => ['get',      'admin-reporting/config-options',                 'ReportingController@getOptions'                                    ],
+        'reporting_fetch_throttle_settings'        => ['get',      'admin-reporting/throttle/settings',              'ReportingController@listThrottleSetting'                           ],
+        'reporting_edit_throttle_settings'         => ['put',      'admin-reporting/throttle/settings',              'ReportingController@createThrottleSetting'                         ],
 
         // UFH Service
         // TODO: Should change to just /signed_url (No 'get' and underscore)
@@ -4330,6 +4332,9 @@ class Route
         'reporting_config_types_fetch',
         'reporting_config_components_get_by_type',
         'reporting_config_options',
+        'reporting_fetch_throttle_settings',
+        'reporting_edit_throttle_settings',
+
         // UFH
         'ufh_get_file_signed_url_admin',
         'ufh_get_file_signed_url_by_mid',
@@ -5212,6 +5217,8 @@ class Route
         'reporting_config_list_admin'              => Permission::DOWNLOAD_NON_MERCHANT_REPORT,
         'reporting_log_get_admin'                  => Permission::DOWNLOAD_NON_MERCHANT_REPORT,
         'reporting_log_list_admin'                 => Permission::DOWNLOAD_NON_MERCHANT_REPORT,
+        'reporting_fetch_throttle_settings'        => Permission::REPORTING_DEVELOPER,
+        'reporting_edit_throttle_settings'         => Permission::REPORTING_DEVELOPER,
         'batch_service_route'                      => Permission::BATCH_API_CALL,
         'ufh_get_file_signed_url'                  => Permission::DOWNLOAD_UFH_FILE_BY_MID,
         'ufh_get_file_signed_url_admin'            => Permission::DOWNLOAD_UFH_FILE_BY_MID,

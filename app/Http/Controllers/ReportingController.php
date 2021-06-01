@@ -142,6 +142,20 @@ class ReportingController extends Controller
         return $this->proxy($path);
     }
 
+    public function listThrottleSetting()
+    {
+        $path = 'throttle/settings';
+
+        return $this->proxy($path);
+    }
+
+    public function createThrottleSetting()
+    {
+        $path = 'throttle/settings';
+
+        return $this->proxy($path);
+    }
+
     /**
      * Warning: Don't use this function from outside this class
      *

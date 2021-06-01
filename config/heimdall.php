@@ -828,6 +828,10 @@ return [
                 'description' => 'download non-merchant reports',
                 'assignable'  => true,
             ],
+            Permission::REPORTING_DEVELOPER          => [
+                'description' => 'Allow access to admin APIs for reporting On Demand',
+                'assignable'  => true,
+            ],
             Permission::ES_WRITE_OPERATION           => [
                 'description' => 'Perform write operations on Elasticsearch',
             ],
