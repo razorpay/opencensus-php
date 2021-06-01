@@ -76,7 +76,7 @@
 
 
     if (window.razorpayAnalytics) {
-        let trackers = ['perf', 'ga', 'fb', 'twitter', 'linkedin', 'bing', 'lj', 'quora', 'reddit']
+        let trackers = ['perf', 'ga', 'fb', 'twitter', 'linkedin', 'bing', 'lj', 'quora', 'reddit', 'criteo']
          if(window.loadHubspot){
             trackers.push('hubspot');
          }

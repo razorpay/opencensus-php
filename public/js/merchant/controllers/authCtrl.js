@@ -84,6 +84,7 @@ app
       $scope.eventsMode = 'live';
       $scope.showTopbar = false;
       $scope.isSignupDisplayEventFired = false;
+      $scope.isCriteoPixelFired = false;
       $scope.showGAuthPopup = false;
       $scope.showCookieErrorPopup = false;
       $scope.showKnowMore = false;
@@ -932,6 +933,7 @@ app
               .identity(true)
               .then(function (userDetails) {
                 userIdentitySuccess(userDetails);
+                fireCriteoSignupPixel('signup_complete', userDetails.email);
               })
               .catch(function (errors) {
                 $scope.updateOneTap(false);
@@ -1262,6 +1264,7 @@ app
                 setCookie('midExists', !!data.current);
 
                 segmentUserIdentify(data);
+                fireCriteoSignupPixel('signup_complete', data.user.email);
                 fireDLSuccessEvents('signup.create_account', {
                   mode: $scope.eventsMode,
                   version: 1,
@@ -1870,6 +1873,7 @@ app
             },
           });
         }
+        fireCriteoSignupPixel('view');
         displaySignupEvent();
         $scope.goToSignupStep(0); // reset signup step
         $scope.goToLoginStep(1); // reset login step
@@ -2738,8 +2742,30 @@ app
       }
 
       if ($location.path().includes('access/signup')) {
+        fireCriteoSignupPixel('view');
         hotjarSurvey();
         displaySignupEvent();
+      }
+
+      function fireCriteoSignupPixel(eventName, email) {
+        window.criteo_q = window.criteo_q || [];
+        if (eventName === 'view') {
+          if (!$scope.isCriteoPixelFired) {
+            var criteoDeviceType = /iPad/.test(navigator.userAgent)
+              ? 't'
+              : /Mobile|iP(hone|od)| Android|BlackBerry|IEMobile|Silk/.test(navigator.userAgent)
+              ? 'm'
+              : 'd';
+            window.criteo_q.push(
+              { event: 'setAccount', account: 85314 },
+              { event: 'setSiteType', type: criteoDeviceType },
+              { event: 'viewItem', extra_data: 'Signup', item: '3' },
+            );
+            $scope.isCriteoPixelFired = true;
+          }
+        } else if (eventName === 'signup_complete') {
+          window.criteo_q.push({ event: 'trackTransaction' }, { event: 'setEmail', email: email });
+        }
       }
 
       $scope.logoutAndGoToLogin = function () {
