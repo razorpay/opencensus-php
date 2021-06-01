@@ -1952,12 +1952,6 @@ class Base extends BaseCore
 
         if ($this->isPayoutServiceEnabled === true)
         {
-            if ((isset($input[Payout\Entity::QUEUE_IF_LOW_BALANCE]) === true) and
-                (boolval($input[Payout\Entity::QUEUE_IF_LOW_BALANCE]) === true))
-            {
-                return false;
-            }
-
             // workflow payout skip
             if ($this->isWorkflowEnabled === true)
             {
