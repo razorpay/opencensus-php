@@ -163,4 +163,89 @@ return [
             ],
         ],
     ],
+
+    'testValidateBatchPayoutLinkBulkFailForNoNotesTitle' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout_link_bulk'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'processable_count' => 0,
+                'error_count'       => 1,
+                'parsed_entries'    => []
+            ],
+        ],
+    ],
+
+    'testValidateBatchPayoutLinkBulkFailForNoNotesDesc' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout_link_bulk'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'processable_count' => 0,
+                'error_count'       => 1,
+                'parsed_entries'    => []
+            ],
+        ],
+    ],
+
+    'testValidateBatchPayoutLinkBulkFailForMissingContactNumberForSendSMS' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout_link_bulk'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'processable_count' => 0,
+                'error_count'       => 1,
+                'parsed_entries'    => []
+            ],
+        ],
+    ],
+
+    'testValidateBatchPayoutLinkBulkFailForMissingContactMailForSendEmail' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout_link_bulk'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'processable_count' => 0,
+                'error_count'       => 1,
+                'parsed_entries'    => []
+            ],
+        ],
+    ],
+
+    'testValidateBatchPayoutLinkBulkFailForMissingContactNumberAndMail' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout_link_bulk'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'processable_count' => 0,
+                'error_count'       => 1,
+                'parsed_entries'    => []
+            ],
+        ],
+    ]
 ];

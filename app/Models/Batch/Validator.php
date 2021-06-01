@@ -748,8 +748,8 @@ class Validator extends Base\Validator
 
     protected static $payoutLinkBulkTypeRowRules = [
         Header::PAYOUT_LINK_BULK_CONTACT_NAME      => 'required|string',
-        Header::PAYOUT_LINK_BULK_CONTACT_NUMBER    => 'required_without:'.Header::PAYOUT_LINK_BULK_CONTACT_EMAIL.'|string',
-        Header::PAYOUT_LINK_BULK_CONTACT_EMAIL     => 'required_without:'.Header::PAYOUT_LINK_BULK_CONTACT_NUMBER.'|string',
+        Header::PAYOUT_LINK_BULK_CONTACT_NUMBER    => 'required_if:'.Header::PAYOUT_LINK_BULK_SEND_SMS.',Yes|string',
+        Header::PAYOUT_LINK_BULK_CONTACT_EMAIL     => 'required_if:'.Header::PAYOUT_LINK_BULK_SEND_EMAIL.',Yes|string',
         Header::PAYOUT_LINK_BULK_PAYOUT_DESC       => 'required|string',
         Header::CONTACT_TYPE                       => 'required|string',
         Header::PAYOUT_LINK_BULK_AMOUNT            => 'required|regex:/^-?\d+(\.\d{1,2})?$/',
@@ -1354,17 +1354,27 @@ class Validator extends Base\Validator
         {
             $this->validateInput('payoutLinkBulkTypeRow', $entry);
 
-            if(empty($entry[Header::PAYOUT_LINK_BULK_CONTACT_NUMBER]) === true && $entry[Header::PAYOUT_LINK_BULK_SEND_SMS] === "Yes")
+            if(empty($entry[Header::PAYOUT_LINK_BULK_CONTACT_NUMBER]) === true
+                && empty($entry[Header::PAYOUT_LINK_BULK_CONTACT_EMAIL]) === true)
             {
                 throw new BadRequestValidationFailureException(
-                    'No contact number provided, but send-sms is true',
+                    'Both contact number and contact email cannot be empty',
                     Entity::FILE);
             }
 
-            if(empty($entry[Header::PAYOUT_LINK_BULK_CONTACT_EMAIL]) === true && $entry[Header::PAYOUT_LINK_BULK_SEND_EMAIL] === "Yes")
+            if(empty($entry[Header::PAYOUT_LINK_BULK_NOTES_TITLE]) === true
+                && empty($entry[Header::PAYOUT_LINK_BULK_NOTES_DESC]) === false)
             {
                 throw new BadRequestValidationFailureException(
-                    'No contact email provided, but send-email is true',
+                    'Notes title missing',
+                    Entity::FILE);
+            }
+
+            if(empty($entry[Header::PAYOUT_LINK_BULK_NOTES_TITLE]) === false
+                && empty($entry[Header::PAYOUT_LINK_BULK_NOTES_DESC]) === true)
+            {
+                throw new BadRequestValidationFailureException(
+                    'Notes description missing',
                     Entity::FILE);
             }
 

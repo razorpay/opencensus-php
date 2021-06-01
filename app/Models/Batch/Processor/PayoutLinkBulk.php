@@ -3,6 +3,7 @@
 namespace RZP\Models\Batch\Processor;
 
 use RZP\Models\Batch\Header;
+use RZP\Models\User\Entity as UserEntity;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class PayoutLinkBulk extends Base
@@ -16,6 +17,14 @@ class PayoutLinkBulk extends Base
         if (isset($input["config"]) === true)
         {
             $config = $input["config"];
+
+            /** @var UserEntity $user */
+            $user = $this->app['basicauth']->getUser();
+
+            if(empty($user) === false)
+            {
+                $config['user_id'] = $user->getId();
+            }
 
             $input["config"] = $config;
         }
