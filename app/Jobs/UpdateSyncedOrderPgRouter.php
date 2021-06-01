@@ -55,11 +55,13 @@ class UpdateSyncedOrderPgRouter extends Job
 
             App::getFacadeRoot()['pg_router']->updateSyncedOrderToPgRouter($this->data, true);
 
-//            $this->trace->info(TraceCode::ORDER_UPDATE_DATA_SYNC_TO_PG_ROUTER_SUCCESS,
-//                [
-//                    'id' => $this->data['id']
-//                ]
-//            );
+            $this->trace->info(TraceCode::ORDER_UPDATE_DATA_SYNC_TO_PG_ROUTER_SUCCESS,
+                [
+                    'id' => $this->data['id'],
+                    'status' => $this->data['status'],
+                    'updated_at' => $this->data['updated_at']
+                ]
+            );
 
             $this->trace->count(Metric::PG_ROUTER_UPDATE_ORDER_SYNC_QUEUE_CONSUME_COUNT);
 
