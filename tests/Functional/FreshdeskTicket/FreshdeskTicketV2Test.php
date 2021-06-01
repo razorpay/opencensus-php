@@ -11,12 +11,14 @@ use RZP\Tests\Functional\Helpers\Freshdesk\FreshdeskTrait;
 
 class FreshdeskTicketV2Test extends TestCase
 {
-    use RequestResponseFlowTrait;
     use FreshdeskTrait;
+    use RequestResponseFlowTrait;
 
     const DAY = 24 * 60 * 60;
 
     protected $freshdeskClientMock;
+
+    protected $storkMock;
 
     const RZP_CREATE_TICKET = 'rzp_create_ticket';
 
@@ -69,6 +71,57 @@ class FreshdeskTicketV2Test extends TestCase
 
         $this->app->razorx->method('getTreatment')
             ->willReturn($returnValue);
+    }
+
+    protected function mockStork()
+    {
+        $this->storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $this->storkMock);
+    }
+
+    protected function expectStorkWhatsappRequest($template, $text, $destination = '9876543210', $ownerId = '10000000000000'): void
+    {
+        $this->storkMock
+            ->shouldReceive('request')
+            ->times(1)
+            ->with(
+                Mockery::on(function ($actualPath)
+                {
+                    return true;
+                }),
+                Mockery::on(function ($actualContent) use ($template, $text, $destination, $ownerId)
+                {
+                    $message = $actualContent['message'];
+
+                    $whatsappChannel = $message['whatsapp_channels'][0];
+
+                    $actualOwnerId = $message['owner_id'];
+
+                    $actualTemplate = $message['context']->template;
+
+                    $actualText = $whatsappChannel['text'];
+
+                    $actualDestination = $whatsappChannel['destination'];
+
+                    if (($template !== $actualTemplate) or
+                        ($text !== $actualText) or
+                        ($destination !== $actualDestination) or
+                        ($ownerId !== $actualOwnerId))
+                    {
+                        return false;
+                    }
+
+                    return true;
+                }))
+            ->andReturnUsing(function ()
+            {
+                $response = new \Requests_Response;
+
+                $response->body = json_encode(['key' => 'value']);
+
+                return $response;
+            });
     }
 
     protected function shouldNotReceiveFresdeskRequest()
@@ -612,10 +665,93 @@ class FreshdeskTicketV2Test extends TestCase
         $this->startTest();
     }
 
+    public function testCreateTicketWithWhatsappNotification()
+    {
+        $this->mockRazorxTreatment('on');
+
+        $this->mockStork();
+
+        $this->expectStorkWhatsappRequest('support.ticket_created',
+        'Hi, 
+Thank you for reaching out. This is to inform you that your ticket number 99 has been registered. Our team is working on your request and will get back to you within 3 working days. 
+Team Razorpay');
+
+        $this->testData[__FUNCTION__] = $this->testData['testCreateTicketRzp'];
+
+        $expectedRequestResponse = $this->getExpectedRequestResponse(self::RZP_CREATE_TICKET);
+
+        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST', 'rzp',
+            $expectedRequestResponse['request'], $expectedRequestResponse['response']);
+
+        $this->startTest();
+    }
+
     public function testCreateTicketInvalidAttachmentExtension()
     {
 
         $this->addAttachmentToRequest(__FUNCTION__, 'a.exe');
+
+        $this->mockRazorxTreatment('on');
+
+        $this->startTest();
+    }
+
+    public function testReceiveFreshdeskWebhookToNotifyMerchant()
+    {
+        $this->ba->freshdeskWebhookAuth();
+
+        $this->mockRazorxTreatment('on');
+
+        $testcases = [
+            [
+                'event'         => 'TICKET_DELAY_UPDATE_72HRS',
+                'expected_text' => 'Hi, 
+We are sorry about the delay regarding your ticket 12. We will revert back to you with a resolution for the same in the next 72 hrs. Please bear with us.
+Team Razorpay',
+            ],
+            [
+                'event'         => 'TICKET_DELAY_UPDATE_24HRS',
+                'expected_text' => 'Hi, 
+We are sorry about the delay regarding your ticket 12. We will revert back to you with a resolution for the same in the next 24 hrs. Please bear with us. 
+Team Razorpay',
+            ],
+            [
+                'event'         => 'TICKET_DETAILS_PENDING',
+                'expected_text' => 'Hi, 
+We require a few details from your end on the ticket 12. Request you to check your email and respond with the details for us to check and resolve the concern raised.
+Team Razorpay',
+            ],
+            [
+                'event'         => 'TICKET_RESOLVED',
+                'expected_text' => 'Hi, 
+Your issue regarding the ticket 12 has been resolved and a response has been sent over to your email. If you are not satisfied with the resolution provided feel free to reopen the ticket by replying to the same email. 
+Team Razorpay',
+           ],
+           [
+               'event'         => 'TICKET_REOPENED',
+               'expected_text' => 'Hi, 
+We believe that your issue regarding the ticket 12 is still not resolved. Your ticket has been reopened and our team will take it up on priority and get back to you within 24 hrs.
+Team Razorpay',
+           ],
+        ];
+
+        foreach ($testcases as $testcase)
+        {
+            $expectedTemplate = 'support.'. strtolower($testcase['event']);
+
+            $this->mockStork();
+
+            $this->expectStorkWhatsappRequest($expectedTemplate, $testcase['expected_text']);
+
+            $this->testData[__FUNCTION__]['request']['content']['event'] = $testcase['event'];
+
+            $this->startTest();
+        }
+    }
+
+    public function testReceiveFreshdeskWebhookToNotifyMerchantInvalidEvent()
+    {
+        $this->ba->freshdeskWebhookAuth();
 
         $this->mockRazorxTreatment('on');
 

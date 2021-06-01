@@ -261,8 +261,10 @@ final class RazorxTreatment
     // Experiment to check for duplicate fund accounts via unique hash column
     const FUND_ACCOUNT_DUPLICATE_CHECK_VIA_UNIQUE_HASH = 'fund_account_duplicate_check_via_unique_hash';
 
+    // Experiment to decide whether to send support related notifications on whatsapp
+    const WHATSAPP_SUPPORT_NOTIFICATIONS = 'whatsapp_support_notifications';
+
     const SHOW_CREATE_TICKET_POPUP = 'show_create_ticket_popup';
 
     const  PAYMENT_LINK_END_STATE_VIEW_CHANGE = 'payment_link_end_state_view_change';
-
 }

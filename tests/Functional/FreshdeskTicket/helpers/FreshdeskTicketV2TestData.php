@@ -437,6 +437,49 @@ return [
         ],
     ],
 
+    'testReceiveFreshdeskWebhookToNotifyMerchant' => [
+        'request'  => [
+            'url'     => '/fd/webhook/notify_merchant',
+            'method'  => 'POST',
+            'content' => [
+                'ticket_id'     => '12',
+                'event'         => 'TICKET_CLOSED',
+                'fd_instance'   => 'rzp',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ],
+        ],
+    ],
+
+    'testReceiveFreshdeskWebhookToNotifyMerchantInvalidEvent' => [
+        'request'   => [
+            'url'     => '/fd/webhook/notify_merchant',
+            'method'  => 'POST',
+            'content' => [
+                'ticket_id'   => '12',
+                'event'       => 'invalid event',
+                'fd_instance' => 'rzp',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'Something went wrong, please try again after sometime.',
+                    'field'       => 'event',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => 'BAD_REQUEST_ERROR',
+        ],
+    ],
+
     'testReceiveFreshdeskWebhookOnTicketReplyFirstResponseTimeDataDoesntExist' => [
         'request'   => [
             'url'           => '/fd/webhook/support_ticket_first_agent_reply',
@@ -454,6 +497,7 @@ return [
             ],
         ],
     ],
+
     'testReceiveFreshdeskWebhookOnTicketReplyFirstResponseTimeDataExist' => [
         'request'   => [
             'url'           => '/fd/webhook/support_ticket_first_agent_reply',

@@ -10,6 +10,7 @@ use RZP\Models\Payment;
 use RZP\Models\Order;
 use RZP\Models\Payment\Refund;
 use RZP\Exception;
+use RZP\Notifications;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Exception\BadRequestException;
@@ -321,6 +322,16 @@ class Service extends Base\Service
         ], $this->merchant->getId(), true);
 
         $this->trace->info(TraceCode::TICKET_DETAILS, $this->getRedactedTicket($ticketEntity));
+
+        try
+        {
+            $this->notifyMerchantIfApplicable($ticketEntity, Notifications\Support\Events::TICKET_CREATED);
+        }
+        catch (\Throwable $throwable)
+        {
+            $this->trace->traceException($throwable);
+        }
+
 
         return $this->rewriteFreshdeskTicket($ticketCreateResponse, $ticketEntity);
     }
@@ -1196,6 +1207,13 @@ class Service extends Base\Service
         }
 
         return $ticketToLog;
+    }
+
+    protected function notifyMerchantIfApplicable(Entity $ticketEntity, string $event)
+    {
+        (new Notifications\Support\Handler([
+            'ticket'    => $ticketEntity,
+        ]))->sendForEvent($event);
     }
 
 }

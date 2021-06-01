@@ -117,4 +117,5 @@ class Constants
     const MERCHANT_TICKET_QUEUE         = 'Merchant';
     const PAYMENT_GATEWAY_CF_PRODUCT    = 'Payment Gateway';
 
+    const NOTIFICATION_EVENT = 'event';
 }
