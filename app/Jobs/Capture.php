@@ -4,6 +4,7 @@ namespace RZP\Jobs;
 
 use App;
 use RZP\Diag\EventCode;
+use RZP\Gateway\Base\Metric;
 use Slack;
 use RZP\Exception;
 use RZP\Models\Card;
@@ -66,11 +67,15 @@ class Capture extends Job
 
             app('diag')->trackPaymentEventV2(EventCode::PAYMENT_CAPTURE_QUEUE, $payment, null, [], $this->fetchProperties($payment));
 
+            (new Payment\Metric)->pushCaptureQueueMetrics($payment, Metric::SUCCESS, $this->getDimensions());
+
             $this->delete();
         }
         catch (Exception\GatewayTimeoutException $ex)
         {
             app('diag')->trackPaymentEventV2(EventCode::PAYMENT_CAPTURE_QUEUE, $payment, $ex, [], $this->fetchProperties($payment));
+
+            (new Payment\Metric)->pushCaptureQueueMetrics($payment, Metric::FAILED, $this->getDimensions(), $ex);
 
             $traceCode = TraceCode::PAYMENT_QUEUE_CAPTURE_FAILURE;
 
@@ -79,6 +84,8 @@ class Capture extends Job
         catch (\Exception $ex)
         {
             app('diag')->trackPaymentEventV2(EventCode::PAYMENT_CAPTURE_QUEUE, $payment, $ex, [], $this->fetchProperties($payment));
+
+            (new Payment\Metric)->pushCaptureQueueMetrics($payment, Metric::FAILED, $this->getDimensions(), $ex);
 
             $traceCode = TraceCode::PAYMENT_CAPTURE_FAILURE_EXCEPTION;
 
@@ -210,6 +217,13 @@ class Capture extends Job
                 'status'            => $payment->getStatus(),
                 'gateway_captured'  => $payment->getGatewayCaptured(),
             ],
+        ];
+    }
+
+    protected function getDimensions()
+    {
+        return $dimensions = [
+            'attempts'   => $this->attempts()
         ];
     }
 

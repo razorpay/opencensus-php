@@ -27,6 +27,7 @@ class Metric
     const GATEWAY_REQUEST_TIME           = 'gateway_request_total_time_v2_ms';
 
     // class constants for usage in the class
+    const INITIATED                      = 'initiated';
     const SUCCESS                        = 'success';
     const FAILED                         = 'failed';
     const CURL_ERROR                     = 'curl_error';

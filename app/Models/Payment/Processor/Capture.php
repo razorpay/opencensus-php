@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use RZP\Gateway\Base\Metric;
 use RZP\Jobs;
 use RZP\Constants;
 use RZP\Exception;
@@ -684,6 +685,8 @@ trait Capture
         ];
 
         $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CAPTURE_QUEUE, $this->payment, null, [], $customProperties);
+
+        (new Payment\Metric)->pushCaptureQueueMetrics($this->payment,Metric::INITIATED);
 
         $this->trace->info(
             TraceCode::PAYMENT_CAPTURE_ADD_TO_QUEUE,
