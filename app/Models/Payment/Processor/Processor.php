@@ -3036,10 +3036,8 @@ class Processor
         {
             $upitoken = [
                 'max_amount'        => $this->subscription->getCurrentInvoiceAmount(),
-                'frequency'         => UPIMandateFrequency::MONTHLY,
-                'recurring_type'    => UPIMandateRecurringType::BEFORE,
-                'recurring_value'   => $this->subscription->schedule['anchor'],
-                'start_time'        => Carbon::now()->addMinute(1)->getTimestamp(),
+                'frequency'         => UPIMandateFrequency::AS_PRESENTED,
+                'start_at'          => Carbon::now()->addMinute(1)->getTimestamp(),
                 'expire_at'         => $this->subscription->getEndAt(),
             ];
 

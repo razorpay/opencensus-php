@@ -274,7 +274,7 @@ class SubscriptionPaymentTest extends TestCase
 
         $upiMandate = $this->getDbLastEntity(Entity::UPI_MANDATE);
 
-        $this->assertEquals(UPIMandateFrequency::MONTHLY, $upiMandate->getFrequency());
+        $this->assertEquals(UPIMandateFrequency::AS_PRESENTED, $upiMandate->getFrequency());
     }
 
     public function testAutoPaymentUpi()
