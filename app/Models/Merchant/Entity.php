@@ -23,6 +23,7 @@ use RZP\Models\Card;
 use RZP\Models\Card\IIN;
 use RZP\Models\Emi;
 use RZP\Models\Feature;
+use RZP\Models\Admin;
 use RZP\Models\Invitation;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Balance;
@@ -2070,6 +2071,25 @@ class Entity extends Base\PublicEntity
         {
             $array[self::DCC_MARKUP_PERCENTAGE] = $this->getDccMarkupPercentage();
         }
+    }
+
+    /** To compute if dcc markup is to be shown in frontend or not
+     * @param $input
+     * @param $merchant
+     * @return bool
+     */
+    public function isDCCMarkupVisible($input, $merchant): bool
+    {
+        $result = false;
+
+        //Check either of merchant feature or admin config is enabled
+        if (((bool) Admin\ConfigKey::get(Admin\ConfigKey::PAYMENT_SHOW_DCC_MARKUP, false) == true) or
+            ($merchant->isFeatureEnabled(Feature\Constants::PAYMENT_SHOW_DCC_MARKUP) == true))
+        {
+            $result = true;
+        }
+
+        return $result;
     }
 
     public function getDccMarkupPercentage()

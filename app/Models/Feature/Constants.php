@@ -682,6 +682,11 @@ class Constants
      */
     const ALLOW_VA_TO_VA_PAYOUTS        = 'allow_va_to_va_payouts';
 
+    /**
+     *  Merchant feature used to control visibility of dcc markup on frontend
+     */
+    const PAYMENT_SHOW_DCC_MARKUP   =   'payment_show_dcc_markup';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -995,6 +1000,7 @@ class Constants
         self::BENE_NAME_IN_PAYOUT             => true,
         self::PL_BLOCK_CUSTOMER_PREFILL       => true,
         self::ALLOW_VA_TO_VA_PAYOUTS          => true,
+        self::PAYMENT_SHOW_DCC_MARKUP         => true,
     ];
 
     // Entity type constants

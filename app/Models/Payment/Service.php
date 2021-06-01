@@ -1709,6 +1709,8 @@ class Service extends Base\Service
 
                 $dccInfo['card_currency'] = $iinEntity->getIinCurrency() ?? $currency;
 
+                $dccInfo['show_markup'] = $merchant->isDCCMarkupVisible($input, $merchant);
+
                 $data = array_merge($data, $dccInfo);
             }
         }

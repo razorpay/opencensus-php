@@ -232,6 +232,9 @@ class ConfigKey
 
     const REARCH_CARD_PAYMENTS = self::PREFIX.'rearch_card_payments';
 
+    //Admin config used to control visibility of dcc markup on frontend
+    const PAYMENT_SHOW_DCC_MARKUP = self::PREFIX.'payment_show_dcc_markup';
+
     const MIN_HOURS_TO_START_TICKET_CREATION_AFTER_ACTIVATION_FORM_SUBMISSION
         = self::PREFIX . 'min_hours_to_start_ticket_creation_after_activation_form_submission';
 
@@ -339,6 +342,7 @@ class ConfigKey
         self::MIN_HOURS_TO_START_TICKET_CREATION_AFTER_ACTIVATION_FORM_SUBMISSION,
         self::RBL_DIRECT_ACCOUNTS_ON_SINGLE_PAYMENTS_API,
         self::MAX_ACTIVATION_PROGRESS_FOR_POPUP_RANGE1,
+        self::PAYMENT_SHOW_DCC_MARKUP,
     ];
 
     const REDIS_CONFIG_MAP = [

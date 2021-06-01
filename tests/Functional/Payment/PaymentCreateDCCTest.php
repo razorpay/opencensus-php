@@ -38,10 +38,12 @@ class PaymentCreateDCCTest extends TestCase
 
         $cardCurrency = $responseContent['card_currency'];
         $currencyRequestId = $responseContent['currency_request_id'];
+        $showMarkup = $responseContent['show_markup'];
 
         $this->assertEquals("USD", $cardCurrency);
         $this->assertNotNull($responseContent['all_currencies']);
         $this->assertNotNull($currencyRequestId);
+        $this->assertEquals(false, $showMarkup);
 
         $usdAmount = $responseContent['all_currencies'][$cardCurrency]['amount'];
         $payment = $this->payment;

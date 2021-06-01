@@ -162,6 +162,7 @@ class Validator extends Base\Validator
         ConfigKey::RBL_DIRECT_ACCOUNTS_ON_SINGLE_PAYMENTS_API                          => 'filled|array',
         ConfigKey::MAX_ACTIVATION_PROGRESS_FOR_POPUP_RANGE1                            => 'filled|integer',
         ConfigKey::REARCH_CARD_PAYMENTS                                                => 'filled|boolean',
+        ConfigKey::PAYMENT_SHOW_DCC_MARKUP                                             => 'filled|boolean',
     ];
 
     protected static $setRedisKeysRules = [
@@ -197,7 +198,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $deleteConfigKeyRules = [
-        'key'   => 'required|in:merchant_enach_configs',
+        'key'   => 'required|in:merchant_enach_configs,payment_show_dcc_markup',
         'path'  => 'required|string',
     ];
 
