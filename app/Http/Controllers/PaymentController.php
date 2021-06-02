@@ -8,6 +8,7 @@ use View;
 
 use RZP\Constants\Entity as E;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Analytics\Service as PaymentAnalyticsService;
 
 class PaymentController extends Controller
 {
@@ -625,5 +626,12 @@ class PaymentController extends Controller
         $success =  $this->service()->addVerifyDisabledGateway($input);
 
         return ApiResponse::json($success);
+    }
+
+    public function createPaymentAnalyticsPartition()
+    {
+        $response =  (new PaymentAnalyticsService())->createPaymentAnalyticsPartition();
+
+        return ApiResponse::json($response);
     }
 }

@@ -349,6 +349,36 @@ return array(
             'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
         ],
 
+        'payment_analytics_partition_live' => [
+            'host'      => env('DB_LIVE_HOST'),
+            'port'      => env('DB_LIVE_PORT'),
+            'username'  => env('DB_LIVE_PARTITION_MGR_USERNAME'),
+            'password'  => env('DB_LIVE_PARTITION_MGR_PASSWORD'),
+            'database'  => env('DB_LIVE_DATABASE'),
+            'driver'    => env('DB_LIVE_DRIVER'),
+            'charset'   => 'utf8',
+            'collation' => 'utf8_bin',
+            'prefix'    => '',
+            'strict'    => true,
+            'wait_timeout'              => env('DB_WAIT_TIMEOUT'),
+            'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
+        ],
+
+        'payment_analytics_partition_test' => [
+            'host'      => env('DB_TEST_HOST'),
+            'port'      => env('DB_TEST_PORT'),
+            'username'  => env('DB_TEST_PARTITION_MGR_USERNAME'),
+            'password'  => env('DB_TEST_PARTITION_MGR_PASSWORD'),
+            'database'  => env('DB_TEST_DATABASE'),
+            'driver'    => env('DB_TEST_DRIVER'),
+            'charset'   => 'utf8',
+            'collation' => 'utf8_bin',
+            'prefix'    => '',
+            'strict'    => true,
+            'wait_timeout'              => env('DB_WAIT_TIMEOUT'),
+            'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
+        ],
+
         'proxy_sql_unix_socket' => env('PROXY_SQL_UNIX_SOCKET'),
     ],
 

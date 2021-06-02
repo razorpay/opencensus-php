@@ -144,5 +144,19 @@ return [
             ],
         ],
     ],
+
+    'testPaymentAnalyticsPartitionCron'     =>  [
+        'request' => [
+            'url' => '/payment_analytics/partition',
+            'method' => 'post',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ],
+        ],
+    ],
 ];
 // @codingStandardsIgnoreEnd

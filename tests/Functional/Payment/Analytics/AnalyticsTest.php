@@ -605,4 +605,13 @@ class AnalyticsTest extends TestCase
 
         $this->assertEquals(1, $paymentAnalytics['count']);
     }
+
+    public function testPaymentAnalyticsPartitionCron()
+    {
+        $this->ba->cronAuth();
+
+        $this->markTestSkipped(); // marking as skipped, can be used locally to trigger request
+
+        $this->startTest();
+    }
 }

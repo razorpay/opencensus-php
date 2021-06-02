@@ -2,10 +2,14 @@
 
 namespace RZP\Models\Payment\Analytics;
 
+use RZP\Exception;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
+use RZP\Models\Payment\NewAnalytics\Repository as NewAnalyticsRepo;
 
 class Service extends Base\Service
 {
@@ -103,5 +107,38 @@ class Service extends Base\Service
         {
             $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYMENT_REDIRECT_TO_AUTHORIZE_ERROR_SAVE_ANALYTICS_DATA);
         }
+    }
+
+    public function createPaymentAnalyticsPartition()
+    {
+        try
+        {
+            $this->repo->payment_analytics->createPartition();
+
+            // not dropping partitions for now, will be used later
+            // $this->repo->payment_analytics->dropPartition();
+        }
+        catch (\Illuminate\Database\QueryException $e)
+        {
+            // duplicate partition name error
+            if (($e->getCode() === 'HY000') and (in_array(1517, $e->errorInfo) === true))
+            {
+                $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYMENT_ANALYTICS_DUPLICATE_PARTITION_ERROR);
+
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, null, 'Duplicate partition name');
+            }
+
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYMENT_ANALYTICS_PARTITION_ERROR);
+
+            return ['success' => false];
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::PAYMENT_ANALYTICS_PARTITION_ERROR);
+
+            return ['success' => false];
+        }
+
+        return ['success' => true];
     }
 }

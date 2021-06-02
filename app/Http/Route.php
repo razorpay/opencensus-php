@@ -2466,6 +2466,8 @@ class Route
         'create_FTA_payout_service'               => ['post',     'payouts_service/create_fta/{payout_id}',                 'PayoutController@createFTAForPayoutService'                   ],
         'create_ledger_payout_service'            => ['post',     'payouts_service/create_ledger',                          'PayoutController@createPayoutServiceTransaction'              ],
         'create_reversal_entry'                   => ['post',     'payouts_service/reversal/create',                        'ReversalController@createReversalEntryForPayoutService'       ],
+    
+        'payment_analytics_partition_cron'        => ['post',     'payment_analytics/partition',                            'PaymentController@createPaymentAnalyticsPartition'            ],
 
         // Ledger Routes
         'create_ledger_account'                   => ['post',      'ledger_service/create_account',                         'LedgerController@createAccount'],
@@ -3313,6 +3315,9 @@ class Route
         'banking_account_fetch_by_account_number',
         'create_FTA_payout_service',
         'create_ledger_payout_service',
+
+        // payment analytics cron creates a new partition and drops oldest partition, runs daily
+        'payment_analytics_partition_cron',      
         'payout_links_batch_process',
     ];
 
@@ -8947,6 +8952,7 @@ class Route
             'loc_cron',
             'care_service_cron_proxy',
             'p2p_retrieve_banks_cron',
+            'payment_analytics_partition_cron',     
             'banking_account_service_cron_routes',
         ],
 
