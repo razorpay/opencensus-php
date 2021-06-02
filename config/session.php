@@ -30,7 +30,15 @@ return array(
     | Below number is equivalent to 30 days
 	*/
 
-	'lifetime' => 43200,
+
+    // Even though in code its referred to as minutes, this is the value in hours.
+    // Reason: we are multiplying by 60 in 2 places
+    // CacheBasedSessionHandler.php::write()
+    // Base/Cache/Repository.php::getSeconds()
+    // Till this code is fixed, this value will be units: `hours`
+    // https://razorpay.slack.com/archives/C61MK2N56/p1622617558197800?thread_ts=1622452814.450100&cid=C61MK2N56
+	'lifetime' => 720,
+
 
 	'expire_on_close' => false,
 
