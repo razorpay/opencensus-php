@@ -29,7 +29,7 @@ class Core extends Base\Core
     /**
      * Core constructor.
      *
-     * @param $generator
+     * @param null $virtualAccount
      */
     public function __construct($virtualAccount = null)
     {
@@ -78,16 +78,13 @@ class Core extends Base\Core
         $this->edit($qrCode, $editInput);
     }
 
-    public function buildQrCode(array $input): Entity
+    public function buildQrCode(array $input)
     {
         $qrCode = (new Entity)->build($input);
 
         $qrCode->merchant()->associate($this->merchant);
 
-        if ($this->virtualAccount !== null)
-        {
-            $qrCode->source()->associate($this->virtualAccount);
-        }
+        $qrCode->source()->associate($this->virtualAccount);
 
         //
         // The only case when reference will not be equal to ID is

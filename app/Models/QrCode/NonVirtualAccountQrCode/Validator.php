@@ -12,15 +12,15 @@ class Validator extends QrCode\Validator
     const MIN_CLOSE_BY_DIFF = 120;
 
     protected static $createRules = [
-        Entity::PROVIDER     => 'required|in:bharat_qr,upi_qr',
-        Entity::NAME         => 'sometimes|string',
-        Entity::FIXED_AMOUNT => 'required|boolean',
-        Entity::AMOUNT       => 'required_id:fixed_amount,true|integer',
-        Entity::USAGE_TYPE   => 'required|in:single_use,multiple_use',
-        Entity::DESCRIPTION  => 'sometimes|string|nullable',
-        Entity::NOTES        => 'filled|notes',
-        Entity::CUSTOMER_ID  => 'filled|string|nullable',
-        Entity::CLOSE_BY     => 'filled|epoch|custom',
+        Entity::REQ_PROVIDER   => 'required|in:bharat_qr,upi_qr',
+        Entity::NAME           => 'sometimes|string',
+        Entity::FIXED_AMOUNT   => 'required|boolean',
+        Entity::REQ_AMOUNT     => 'required_if:fixed_amount,true|integer',
+        Entity::REQ_USAGE_TYPE => 'required|in:single_use,multiple_use',
+        Entity::DESCRIPTION    => 'sometimes|string|nullable',
+        Entity::NOTES          => 'filled|notes',
+        Entity::CUSTOMER_ID    => 'filled|string|nullable',
+        Entity::CLOSE_BY       => 'filled|epoch|custom',
     ];
 
     public function validateCloseBy(string $attribute, int $closeBy)

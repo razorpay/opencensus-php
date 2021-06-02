@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\QrCode;
+namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 
 use RZP\Exception\BadRequestValidationFailureException;
 

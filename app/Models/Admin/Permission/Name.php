@@ -273,6 +273,7 @@ class Name
     const ADMIN_MANAGE_PARTNERS               = 'admin_manage_partners';
     const EDIT_REFUND                         = 'edit_refund';
     const VIEW_COMMISSIONS                    = 'view_commissions';
+    const CREATE_QR_CODE                      = 'create_qr_code';
     const PARTNER_AND_SUBMERCHANT_ACTIONS     = 'partner_submerchant_actions';
     const UPDATE_REFUND_REFERENCE1            = 'update_refund_reference1';
     const UPDATE_SCROOGE_REFUND_REFERENCE1    = 'update_scrooge_refund_reference1';

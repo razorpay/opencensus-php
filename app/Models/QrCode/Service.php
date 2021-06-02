@@ -82,29 +82,6 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function publishQrCodeEvent($entity, $event)
-    {
-        try
-        {
-            $eventPayload = [
-                ApiEventSubscriber::MAIN => $entity
-            ];
-
-            Event::checkEvent($event);
-
-            $event = 'api.qr_code.' . $event;
-
-            $this->app['events']->dispatch($event, $eventPayload);
-        }
-        catch (\Exception $ex)
-        {
-            $this->trace->traceException($ex, Trace::ERROR, TraceCode::QR_CODE_WEBHOOK_PUBLISH_FAILED, [
-                'entity' => $entity->toArrayPublic(),
-                'event'  => $event
-            ]);
-        }
-    }
-
     public function create($input, $virtualAccount = null)
     {
         $this->trace->info(TraceCode::QR_CODE_CREATE_REQUEST, [

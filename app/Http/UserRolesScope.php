@@ -175,6 +175,10 @@ class UserRolesScope
             'virtual_account_add_receivers'  => Role::WRITER_ROLES,
             'virtual_vpa_prefix_save'        => Role::WRITER_ROLES,
 
+            // qr_codes v2
+            'qr_code_create'                 => Role::WRITER_ROLES,
+            'qr_code_close'                  => Role::WRITER_ROLES,
+
             // subscriptions
             'plan_account_fetch'          => [Role::OWNER, Role::MANAGER, Role::ADMIN],
             'plan_create'                 => [Role::OWNER, Role::MANAGER, Role::ADMIN],

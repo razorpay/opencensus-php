@@ -511,6 +511,9 @@ return [
             Permission::EDIT_MERCHANT_OFFER                 => [
                 'description' => 'Edit offer for a merchant',
             ],
+            Permission::CREATE_QR_CODE => [
+                'description' => 'Create VAs for a merchant',
+            ],
             Permission::ASSIGN_MERCHANT_HANDLE              => 'Assign merchant handle',
             Permission::VIEW_MERCHANT_PRICING               => 'View Mercant Pricing Plan',
             Permission::VIEW_MERCHANT_ANALYTICS             => [

@@ -5,11 +5,9 @@ namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 use RZP\Models\QrCode;
 use RZP\Models\Customer;
 use RZP\Models\Base\Traits\NotesTrait;
-use RZP\Models\P2p\Base\Traits\SoftDeletes;
 
 class Entity extends QrCode\Entity
 {
-    use SoftDeletes;
     use NotesTrait;
 
     const NAME                     = 'name';
@@ -24,6 +22,10 @@ class Entity extends QrCode\Entity
     const CLOSE_BY                 = 'close_by';
     const CLOSED_AT                = 'closed_at';
     const CLOSE_REASON             = 'close_reason';
+    const REQ_PROVIDER             = 'type';
+    const REQ_AMOUNT               = 'payment_amount';
+    const REQ_USAGE_TYPE           = 'usage';
+    const REQ_IMAGE_URL            = 'image_url';
 
     protected $fillable = [
         self::PROVIDER,
@@ -41,7 +43,8 @@ class Entity extends QrCode\Entity
         self::CUSTOMER_ID,
         self::CLOSE_BY,
         self::CLOSED_AT,
-        self::CLOSE_REASON
+        self::CLOSE_REASON,
+        self::MPANS_TOKENIZED
     ];
 
     protected $visible = [
@@ -69,12 +72,12 @@ class Entity extends QrCode\Entity
     protected $public = [
         self::ID,
         self::ENTITY,
-        self::SHORT_URL,
         self::CREATED_AT,
         self::NAME,
-        self::USAGE_TYPE,
-        self::PROVIDER,
-        self::AMOUNT,
+        self::REQ_USAGE_TYPE,
+        self::REQ_PROVIDER,
+        self::REQ_IMAGE_URL,
+        self::REQ_AMOUNT,
         self::STATUS,
         self::DESCRIPTION,
         self::FIXED_AMOUNT,
@@ -92,10 +95,47 @@ class Entity extends QrCode\Entity
         self::FIXED_AMOUNT => 'bool',
     ];
 
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::CUSTOMER_ID,
+        self::REQ_USAGE_TYPE,
+        self::REQ_PROVIDER,
+        self::REQ_IMAGE_URL,
+        self::REQ_AMOUNT,
+    ];
+
     protected $defaults = [
         self::PAYMENTS_AMOUNT_RECEIVED => 0,
         self::PAYMENTS_RECEIVED_COUNT  => 0,
+        self::STATUS                   => Status::ACTIVE,
     ];
+
+    protected static $generators = [
+        self::ID,
+        self::REFERENCE,
+        self::AMOUNT,
+        self::USAGE_TYPE,
+        self::PROVIDER,
+    ];
+
+    public function generateAmount($input)
+    {
+        if (isset($input[self::REQ_AMOUNT]) === true)
+        {
+            $this->setAttribute(self::AMOUNT, $input[self::REQ_AMOUNT]);
+        }
+    }
+
+    public function generateUsageType($input)
+    {
+        $this->setAttribute(self::USAGE_TYPE, $input[self::REQ_USAGE_TYPE]);
+    }
+
+    public function generateProvider($input)
+    {
+        $this->setAttribute(self::PROVIDER, $input[self::REQ_PROVIDER]);
+    }
 
     public function customer()
     {
@@ -128,6 +168,26 @@ class Entity extends QrCode\Entity
         $array[self::CUSTOMER_ID] = Customer\Entity::getSignedIdOrNull($customerId);
     }
 
+    protected function setPublicTypeAttribute(array & $array)
+    {
+        $array[self::REQ_PROVIDER] = $this->getAttribute(self::PROVIDER);
+    }
+
+    protected function setPublicImageUrlAttribute(array & $array)
+    {
+        $array[self::REQ_IMAGE_URL] = $this->getAttribute(self::SHORT_URL);
+    }
+
+    protected function setPublicUsageAttribute(array & $array)
+    {
+        $array[self::REQ_USAGE_TYPE] = $this->getAttribute(self::USAGE_TYPE);
+    }
+
+    protected function setPublicPaymentAmountAttribute(array & $array)
+    {
+        $array[self::REQ_AMOUNT] = $this->getAttribute(self::AMOUNT);
+    }
+
     public function isFixedAmount()
     {
         $this->getAttribute(self::FIXED_AMOUNT);
@@ -136,5 +196,19 @@ class Entity extends QrCode\Entity
     public function getAmount()
     {
         $this->getAttribute(self::AMOUNT);
+    }
+
+    public function generateQrString()
+    {
+        $qrString = (new Generator)->generateQrString($this);
+
+        $this->setQrString($qrString);
+
+        return $this;
+    }
+
+    public function isClosed()
+    {
+        return ($this->getAttribute(self::STATUS) === Status::CLOSED);
     }
 }

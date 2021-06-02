@@ -1188,6 +1188,19 @@ final class FactoryData
             ]
         );
 
+        $factory(\RZP\Models\QrCode\NonVirtualAccountQrCode\Entity::class, [
+            'id'          => $faker->uniqueid,
+            'created_at'  => $faker->timestamp,
+            'updated_at'  => $faker->timestamp,
+            'merchant_id' => '10000000000000',
+            'provider'    => 'bharat_qr',
+            'entity_id'   => $faker->uniqueid,
+            'entity_type' => 'virtual_account',
+            'short_url'   => 'abc.com',
+            'qr_string'   => 'kdsfjsfndsmndjksnfsdnsmdns',
+            ]
+        );
+
         $factory(\RZP\Gateway\Mpi\Base\Entity::class, [
             ]
         );

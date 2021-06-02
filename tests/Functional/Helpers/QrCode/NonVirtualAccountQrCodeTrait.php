@@ -1,0 +1,55 @@
+<?php
+
+namespace RZP\Tests\Functional\Helpers\QrCode;
+
+use RZP\Tests\Functional\Partner\PartnerTrait;
+
+trait NonVirtualAccountQrCodeTrait
+{
+    use PartnerTrait;
+
+    private function createQrCode(array $input = [])
+    {
+        $defaultValues = $this->getDefaultQrCodeRequestArray();
+
+        $attributes = array_merge($defaultValues, $input);
+
+        $this->ba->privateAuth();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/qr_codes',
+            'content' => $attributes,
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    private function closeQrCode(string $id)
+    {
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/qr_codes/'.$id.'/close',
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
+
+    private function getDefaultQrCodeRequestArray()
+    {
+        return [
+            'name'         => 'Test QR Code',
+            'description'  => 'QR code for tests',
+            'usage'        => 'multiple_use',
+            'type'         => 'bharat_qr',
+            'fixed_amount' => '0',
+            'notes'        => [
+                'a' => 'b',
+            ],
+        ];
+    }
+}

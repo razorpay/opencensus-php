@@ -125,6 +125,7 @@
           <directory>./tests/Functional/User/</directory>
           <directory>./tests/Functional/UserRole/</directory>
           <directory>./tests/Functional/VirtualAccount/</directory>
+          <directory>./tests/Functional/QrCode/</directory>
           <directory>./tests/Functional/Workflow/</directory>
           <directory>./tests/Functional/Reminders/</directory>
           <directory>./tests/Functional/Dispute/</directory>
