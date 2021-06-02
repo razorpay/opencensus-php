@@ -5,11 +5,12 @@ namespace RZP\Models\Risk;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Jobs\NotifyRas;
+use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Services\MerchantRiskClient;
 
 class Core extends Base\Core
 {
@@ -93,14 +94,11 @@ class Core extends Base\Core
 
     public function postCustomerFlaggingToRiskService(array $input, array $entityDetails)
     {
-        $merchantRiskService = new MerchantRiskClient();
-
         try
         {
             $customerFlaggingInput = $this->getCustomerFlaggingInput($input, $entityDetails);
 
-            $merchantRiskService->createAlertRequest($customerFlaggingInput);
-
+            NotifyRas::dispatch($this->mode, $customerFlaggingInput);
         }
         catch (\Exception $e)
         {
@@ -112,6 +110,12 @@ class Core extends Base\Core
 
     protected function getCustomerFlaggingInput(array $input, array $entityDetails)
     {
+        $merchantId = $entityDetails['merchant_id'];
+
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $merchantAppsExemptFromRiskCheck = $merchant->isFeatureEnabled(Feature\Constants::APPS_EXTEMPT_RISK_CHECK);
+
         return [
             'merchant_id'     => $entityDetails['merchant_id'],
             'entity_type'     => $entityDetails['entity'],
@@ -119,10 +123,11 @@ class Core extends Base\Core
             'category'        => 'customer_flag',
             'source'          => $input['source'],
             'data'            => [
-                'email_id'   => $input['email_id'],
-                'contact_no' => $input['contact_no'] ?? "",
-                'name'       => $input['name'] ?? "",
-                'comments'   => $input['comments'] ?? "",
+                'email_id'               => $input['email_id'],
+                'contact_no'             => $input['contact_no'] ?? "",
+                'name'                   => $input['name'] ?? "",
+                'comments'               => $input['comments'] ?? "",
+                'apps_exempt_risk_check' => ($merchantAppsExemptFromRiskCheck === true ? '1' : '0'),
             ],
             'event_timestamp' => (string) Carbon::now()->getTimestamp(),
             'event_type'      => 'report_fraud',
