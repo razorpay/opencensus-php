@@ -1584,7 +1584,7 @@ class Processor
             return;
         }
 
-        if ((Payment\Gateway::isNbPlusServiceGateway($payment->getGateway()) === true) and
+        if ((Payment\Gateway::isNbPlusServiceGateway($payment->getGateway(), $payment) === true) and
             ((Service::isNbplusSupportedMethods($method)) === true))
         {
             $this->handleNbPlusServiceGateways($payment, $gatewayInput);
@@ -1661,7 +1661,7 @@ class Processor
 
     protected function handleNbPlusServiceGateways(Payment\Entity $payment, $gatewayInput)
     {
-        if (Payment\Gateway::gatewaysAlwaysRoutedThroughNbplusService($payment->getGateway(), $payment->getBank()))
+        if (Payment\Gateway::gatewaysAlwaysRoutedThroughNbplusService($payment->getGateway(), $payment->getBank(), $payment))
         {
             $this->setPaymentService($payment, 'nbplusps');
 
@@ -2771,7 +2771,7 @@ class Processor
         else if ($this->isRoutedThroughNbPlusService($action, $gatewayData) === true)
         {
             if (($this->isNbPlusServiceConfigEnabled() === true) or
-                (Payment\Gateway::gatewaysAlwaysRoutedThroughNbplusService($this->payment->getGateway(), $this->payment->getBank()) === true))
+                (Payment\Gateway::gatewaysAlwaysRoutedThroughNbplusService($this->payment->getGateway(), $this->payment->getBank(), $this->payment) === true))
             {
                 $gatewayData[Payment\Entity::CPS_ROUTE] = Payment\Entity::NB_PLUS_SERVICE;
             }

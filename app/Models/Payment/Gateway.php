@@ -3216,7 +3216,7 @@ class Gateway
         return (in_array($gateway, $gateways, true));
     }
 
-    public static function gatewaysAlwaysRoutedThroughNbplusService($gateway, $bankCode)
+    public static function gatewaysAlwaysRoutedThroughNbplusService($gateway, $bankCode, $payment = null)
     {
         $gateways = [
             self::NETBANKING_SVC,
@@ -3252,6 +3252,25 @@ class Gateway
 
         $isRouted = ((in_array($gateway, array_keys($gatewayWithBankCodes), true)) and (in_array($bankCode, $gatewayWithBankCodes[$gateway], true)));
 
+        if ($isRouted === true)
+        {
+            return $isRouted;
+        }
+
+        $acquirerGateways = [
+            self::CARDLESS_EMI => [],
+            self::PAYLATER     => [],
+        ];
+
+        if($payment !== null && in_array($gateway, array_keys($acquirerGateways), true))
+        {
+            $gateways = $acquirerGateways[$gateway];
+
+            $gateway = $payment->getWallet();
+
+            $isRouted = (in_array($gateway, $gateways, true));
+        }
+
         return $isRouted;
     }
 
@@ -3273,7 +3292,7 @@ class Gateway
         return (in_array($gateway, $gatewayToNbPlusOnMerchantLevel, true));
     }
 
-    public static function isNbPlusServiceGateway($gateway)
+    public static function isNbPlusServiceGateway($gateway, $payment = null)
     {
         $gateways = [
             self::ATOM,
@@ -3312,6 +3331,18 @@ class Gateway
             self::NETBANKING_DLB,
             self::NETBANKING_SBI,
         ];
+
+        $acquirerGateways = [
+            self::CARDLESS_EMI => [],
+            self::PAYLATER     => [],
+        ];
+
+        if($payment !== null && in_array($gateway, array_keys($acquirerGateways), true))
+        {
+            $gateways = $acquirerGateways[$gateway];
+
+            $gateway = $payment->getWallet();
+        }
 
         return (in_array($gateway, $gateways, true));
     }
