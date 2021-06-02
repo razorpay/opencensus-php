@@ -41,17 +41,9 @@ return [
         ],
         'response'  => [
             'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'IFT is not supported',
-                ],
+                'status'  => 'processing',
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED,
-        ],
+        ]
     ],
 
     'testTransactionCreatedWebhookForSuccessfulMappingToPayout' => [
