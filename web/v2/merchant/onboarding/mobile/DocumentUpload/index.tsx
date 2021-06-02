@@ -5,6 +5,8 @@ import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import Space from '@razorpay/blade-old/src/atoms/Space';
 import Text from '@razorpay/blade-old/src/atoms/Text';
 import Icon from '@razorpay/blade-old/src/atoms/Icon';
+import TextInput from '@razorpay/blade-old/src/atoms/TextInput';
+import * as Yup from 'yup';
 import { Formik } from 'formik';
 import Link from '@commander/shield/src/shared/Link';
 import { getColor } from '@razorpay/blade-old/src/_helpers/theme';
@@ -20,6 +22,7 @@ import {
   ACCEPTED_DOCUMENT,
   BUSINESS_PROOF_TYPE_DOCS,
   ADDITIONAL_DOCS_LABEL_VALUE_MAP,
+  BUSINESS_PROOF_CERTIFICATE_TYPES,
 } from '../Constants/OnboardingConstants';
 import useActivation from '../hooks/useActivation';
 import {
@@ -44,10 +47,12 @@ interface DocumentUploadProps {
 }
 
 const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
-  const { data, documentUpload, documentDelete } = useActivation();
+  const { data, documentUpload, documentDelete, postData } = useActivation();
   const { user } = useApp();
   const documents = data.documents;
+  const bankAndCompanyDetails = data.bank_and_company_details;
 
+  const hasGSTIN = useActivationFormState((state) => state.has_gstin);
   const bizCatSubCatPair = getBizCatSubCatPair(data).join('-');
 
   const defaultAddressDoc = getDefaultSelectedDocs(data, 'address');
@@ -203,6 +208,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
       ) : null}
       <Formik
         initialValues={{
+          gstin: bankAndCompanyDetails.gstin.value,
           aadhar_front: getFormikInitialValues(documents.aadhar_front),
           aadhar_back: getFormikInitialValues(documents.aadhar_back),
           passport_front: getFormikInitialValues(documents.passport_front),
@@ -246,6 +252,19 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
           iata_certificate: getFormikInitialValues(documents.iata_certificate),
           sla_iata_certificate: getFormikInitialValues(documents.sla_iata_certificate),
           affiliation_certificate: getFormikInitialValues(documents.affiliation_certificate),
+        }}
+        validationSchema={() => {
+          return Yup.object().shape({
+            gstin: Yup.string().when('hasGstin', {
+              is: hasGSTIN,
+              then: Yup.string()
+                .trim()
+                .length(15, 'Please provide valid GSTIN')
+                .required('GSTIN is a required field')
+                .nullable(),
+              otherwise: Yup.string().trim().nullable(),
+            }),
+          });
         }}
         enableReinitialize
         onSubmit={() => console.log('onSubmit')}
@@ -358,7 +377,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
                 </Field>
                 {isVisible('shop_establishment_number', data) &&
                   businessDoc === 'shop_establishment_certificate' && <ShopEstablishmentNumber />}
-                <Field last>
+                <Field last={(businessDoc !== BUSINESS_PROOF_CERTIFICATE_TYPES.GST_CERTIFICATE)}>
                   <FileUpload
                     onFileUpload={(e) => onChange(e, businessDoc, formikProps)}
                     onRemove={onDeleteFile}
@@ -370,6 +389,28 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
                     disabled={isFormLocked}
                   />
                 </Field>
+                {(businessDoc === 'gst_certificate') && (
+                  <Field last>
+                    <TextInput
+                      width="auto"
+                      name="gstin"
+                      label="GST Identification Number (GSTIN)"
+                      helpText="Should match either of your registered address or operational address"
+                      value={formikProps.values.gstin}
+                      errorText={formikProps.touched.gstin && formikProps.errors.gstin}
+                      onBlur={(value) => {
+                        postData({ gstin: value });
+                        analyticsTrack({
+                          objectName: 'SignUp',
+                          actionName: 'Gst Identification Number',
+                          screen: 'home page',
+                          eventAction: 'initiated',
+                          user,
+                        });
+                      }}
+                    />
+                  </Field>
+                )}
               </FormSection>
             )}
             {isVisible('business_pan_url', data) && (

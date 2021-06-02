@@ -288,7 +288,7 @@ export const FOOTER_BUTTONS = {
 
 // Business Proof Docs (Only for Proprietorship business)
 export const BUSINESS_PROOF_TYPE_DOCS = {
-  gst_certificate: 'GST Certificate',
   msme_certificate: 'MSME Certificate',
+  gst_certificate: 'GST Certificate',
   shop_establishment_certificate: 'Shop Establishment Act Certificate',
 };

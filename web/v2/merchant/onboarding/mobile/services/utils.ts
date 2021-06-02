@@ -11,6 +11,7 @@ import {
   ADDITIONAL_DOCS_REQUIRED_REG_BIZ,
   ADDRESS_PROOF_TYPES,
   BANK_PROOF_TYPE_DOC,
+  BUSINESS_PROOF_CERTIFICATE_TYPES,
 } from '../Constants/OnboardingConstants';
 
 export const getLabel = (field, data) => {
@@ -212,7 +213,9 @@ export function checkIfEAadharStepCompleted(data) {
 
 export function isDocumentTabComplete(data) {
   const tabData = { ...onScreenDocuments(data) };
-
+  if(tabData[BUSINESS_PROOF_CERTIFICATE_TYPES.GST_CERTIFICATE]) {
+    tabData.gstin = { value: data.gstin };
+  }
   const isDocumentFieldsFilled = Object.keys(tabData).every((key) => {
     return !!tabData[key].value && !tabData[key].error;
   });
@@ -245,7 +248,7 @@ export function getDefaultSelectedDocs(context, type) {
       defaultSelectedDoc = Object.keys(BUSINESS_PROOF_TYPE_DOCS).filter(
         (key) => documents[key].value,
       );
-      defaultSelectedDoc = defaultSelectedDoc.length ? defaultSelectedDoc : ['gst_certificate'];
+      defaultSelectedDoc = defaultSelectedDoc.length ? defaultSelectedDoc : ['msme_certificate'];
       break;
     default:
       defaultSelectedDoc = ADDITIONAL_DOCS_LABEL_VALUE_MAP[bizCatSubCatPair]
