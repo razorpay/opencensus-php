@@ -3314,8 +3314,6 @@ class Route
         'create_FTA_payout_service',
         'create_ledger_payout_service',
         'payout_links_batch_process',
-
-        'merchant_tnc_details'
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -6072,6 +6070,8 @@ class Route
         //website salesforce event generation
         'salesforce_event_website',
         'salesforce_event_website_cors',
+
+        'merchant_tnc_details',
     ];
 
     /**
@@ -6477,6 +6477,7 @@ class Route
             'merchant_activation_needs_clarification',
             'merchant_activation_save',
             'merchant_tnc_save',
+            'merchant_tnc_details',
             'merchant_activation_status_partner',
             'merchant_activation_update_partner',
             'merchant_activation_update_website',
@@ -7697,6 +7698,7 @@ class Route
             'merchant_activation_reviewers',
             'merchant_activation_save',
             'merchant_tnc_save',
+            'merchant_tnc_details',
             'merchant_activation_status',
             'merchant_activation_status_change_log',
             'merchant_activation_status_partner',
@@ -8739,7 +8741,6 @@ class Route
             'admin_forgot_password',
             'admin_reset_password',
             'user_confirm_by_data',
-            'merchant_tnc_details',
         ],
 
         'dashboard_internal' => [

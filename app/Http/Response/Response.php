@@ -453,6 +453,7 @@ class Response
             'virtual_account_order_create',
             'salesforce_event_website',
             'salesforce_event_website_cors',
+            'merchant_tnc_details',
         ];
 
         if (in_array($route, $routes, true) === true)

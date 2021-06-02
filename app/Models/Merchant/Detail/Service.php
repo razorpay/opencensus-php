@@ -1589,6 +1589,10 @@ class Service extends Base\Service
 
     public function getMerchantTncById($id): array
     {
+        $this->trace->info(TraceCode::MERCHANT_TNC_GET_REQUEST, [
+            "tnc_id" => $id
+        ]);
+
         $tnc = $this->repo->merchant_tnc->findOrFailPublic($id);
 
         $merchantDetail = $tnc->merchantDetail;
@@ -1603,7 +1607,7 @@ class Service extends Base\Service
         {
             foreach ($entities as $entity)
             {
-                if (isset(${$var}[$entity]))
+                if (isset(${$var}[$entity]) === true)
                 {
                     $publicTncDetails[$entity] = ${$var}[$entity];
                 }
@@ -1621,6 +1625,10 @@ class Service extends Base\Service
         $publicTncDetails[Entity::BUSINESS_CATEGORY] = BusinessCategory::DESCRIPTIONS[$businessCategory];
 
         $publicTncDetails[Entity::BUSINESS_SUBCATEGORY] = Sub::DESCRIPTIONS[$businessSubcategory];
+
+        $this->trace->info(TraceCode::MERCHANT_TNC_GET_REQUEST_SUCCESS, [
+            "publicTncDetails" => $publicTncDetails
+        ]);
 
         return $publicTncDetails;
     }
