@@ -11,6 +11,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 
 import ModesDropdown from './SwitchMode';
 import SwitchMerchant from './SwitchMerchant';
+import OffersForYou from 'common/ui/OffersForYou';
 
 class NavFragment extends Component {
   constructor(props) {
@@ -49,6 +50,9 @@ class NavFragment extends Component {
 
     return (
       <React.Fragment>
+        <ShowWhen additionalCondition={(user) => user.isProjectNitroEnabled } >
+          <OffersForYou/>
+        </ShowWhen>
         <ShowWhen
           additionalCondition={(user) =>
             !!showGSTModal && user.isAllowedView('profile_gst') && !user.isUnregisteredBusiness

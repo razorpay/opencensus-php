@@ -8,6 +8,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { getCookie } from '../../utils/cookies';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { updateUser } from 'merchant_common/reducers/user';
+import LocalStorageService from 'common/utils/localStorage';
 import { caReqEventType } from 'merchant/containers/Home/OnboardingCard/data';
 import abExperimentsMap from 'merchant/utils/abExperimentsMap';
 import isEmpty from '@universe/utils/isEmpty';
@@ -185,6 +186,8 @@ class DetailView extends React.Component {
     }).then(() => {
       updateUser({ settings: _settings });
     });
+
+    LocalStorageService.setItem('offers_for_you_state', 'hasAppliedCA');
   };
 
   sendDataToHubspot = () => {
