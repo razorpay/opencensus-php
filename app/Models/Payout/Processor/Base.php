@@ -503,9 +503,13 @@ class Base extends BaseCore
 
                     $downstreamProcessor->process();
 
-                    if ($payout->getStatus() === Status::CREATE_REQUEST_SUBMITTED)
+                    if ($payout->getStatus() === Status::CREATE_REQUEST_SUBMITTED or
+                        $payout->getStatus() === Status::QUEUED)
                     {
-                        $payout->setStatus(Status::CREATED);
+                        if ($payout->getTransactionId() !== null)
+                        {
+                            $payout->setStatus(Status::CREATED);
+                        }
                     }
 
                     $this->repo->saveOrFail($payout);
@@ -1880,7 +1884,8 @@ class Base extends BaseCore
 
                     $status = $payout->getStatus();
 
-                    if ($status === Status::CREATE_REQUEST_SUBMITTED)
+                    if ($status === Status::CREATE_REQUEST_SUBMITTED or
+                        $status === Status::QUEUED)
                     {
                         $payout = $this->processPayoutPostCreate($payout, $queueFlag);
 
