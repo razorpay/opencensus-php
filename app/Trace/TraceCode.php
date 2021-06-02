@@ -28,6 +28,7 @@ class TraceCode
     const API_REQUEST_FAILURE                       = 'API_REQUEST_FAILURE';
 
     const API_SLOW_RESPONSE_CALL                    = 'API_SLOW_RESPONSE_CALL';
+    const API_RESPONSE_METRIC                       = 'API_RESPONSE_METRIC';
 
     const USER_LOGIN                                = 'USER_LOGIN';
     const USER_LOGIN_KEYS                           = 'USER_LOGIN_KEYS';
