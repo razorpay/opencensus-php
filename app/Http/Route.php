@@ -850,6 +850,7 @@ class Route
         'los_service'                              => ['any',      'los/service/{path?}',                            'LOSController@handleProxyRequests'                                 ],
         'los_service_admin'                        => ['any',      'los/admin/{path?}',                              'LOSController@handleAdminRequests'                                 ],
         'los_mail'                                 => ['post',     'los/mail',                                       'LOSController@sendMail'                                            ],
+        'los_cron'                                 => ['post',     'los/cron/{path?}',                               'LOSController@handleCronRequests'                                            ],
         'loc_service'                              => ['post',     'loc/service/{path?}',                            'LOCController@handleProxyRequests'                                 ],
         'loc_service_admin'                        => ['post',     'loc/admin/{path?}',                              'LOCController@handleAdminRequests'                                 ],
         'loc_mail'                                 => ['post',     'loc/mail',                                       'LOCController@sendMail'                                            ],
@@ -3285,6 +3286,7 @@ class Route
         'nach_batch_process',
 
         'loc_cron',
+        'los_cron',
         'internal_transactions',
         'internal_payment_authorize_refund',
         'freshdesk_update_ticket_internal',
@@ -8950,6 +8952,7 @@ class Route
             'freshchat_extract_report_cron',
             'freshchat_retrieve_report_cron',
             'loc_cron',
+            'los_cron',
             'care_service_cron_proxy',
             'p2p_retrieve_banks_cron',
             'payment_analytics_partition_cron',     

@@ -62,6 +62,7 @@ class LOSController extends Controller
     const GET_DISBURSAL_REGEX                         = 'GET_DISBURSAL_REGEX';
     const GET_LENDER_REGEX                            = 'GET_LENDER_REGEX';
     const GET_OFFER_VERIFICATION_TASKS_REGEX          = 'GET_OFFER_VERIFICATION_TASKS_REGEX';
+    const ARCHIVE_APPLICATION_REGEX                   = 'ARCHIVE_APPLICATION_REGEX';
 
     const WORKFLOW_REGEX_ROUTES = [
         self::DISBURSE_LOAN_REGEX => '/capital\.los\.admin\.v1\.DisbursalAPI\/CreateDisbursal/',
@@ -108,6 +109,10 @@ class LOSController extends Controller
         self::GET_OFFER_VERIFICATION_TASKS_REGEX          => '/rzp\.capital\.los\.admin\.v1\.OfferVerificationAPI\/GetOfferVerificationTasks/',
         self::GET_DISBURSAL_REGEX                         => '/rzp\.capital\.los\.admin\.v1\.DisbursalAPI\/GetDisbursal/',
         self::GET_LENDER_REGEX                            => '/rzp\.capital\.los\.admin\.v1\.LenderAPI\/GetLender/',
+    ];
+
+    const CRON_ROUTES_REGEX = [
+        self::ARCHIVE_APPLICATION_REGEX  => '/rzp\.capital\.los\.origination\.v1\.ApplicationAPI\/ArchiveApplication/'
     ];
 
     protected function handleProxyRequests($path = null)
@@ -178,6 +183,44 @@ class LOSController extends Controller
         //}
 
         $response = $this->sendRequestAndParseResponse($url, $body, $headers);
+        return $response;
+    }
+
+    protected function handleCronRequests($path = null) {
+        $request = Request::instance();
+        $url     = $path;
+        $body    = $request->all();
+
+        $this->trace->info(TraceCode::LOAN_ORIGINATION_SYSTEM_CRON_REQUEST, [
+            'request' => $url,
+        ]);
+
+        $isLosCronRoute = false;
+        foreach (self::CRON_ROUTES_REGEX as $route => $regex)
+        {
+            if (preg_match($regex, $path, $matches) === 1)
+            {
+                $isLosCronRoute = true;
+            }
+        }
+
+        if ($isLosCronRoute === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
+
+        $headers = [
+            'X-Service-Name' => $this->ba->getInternalApp() ?? '',
+            'X-Auth-Type'   => 'internal'
+        ];
+
+        $response = $this->sendRequestAndParseResponse($url, $body, $headers);
+
+        $this->trace->info(TraceCode::LOAN_ORIGINATION_SYSTEM_CRON_RESPONSE, [
+            'request' => $url,
+            'response' => $response,
+        ]);
+
         return $response;
     }
 
