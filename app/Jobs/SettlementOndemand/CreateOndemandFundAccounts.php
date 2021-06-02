@@ -7,6 +7,7 @@ use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Settlement\OndemandFundAccount;
 
 class CreateOndemandFundAccounts extends Job
 {
@@ -39,30 +40,15 @@ class CreateOndemandFundAccounts extends Job
 
         try
         {
-            $offset = 0;
+            $merchantIds = $this->repoManager
+                                ->feature
+                                ->fetchMerchantIdsWithFeatureAndNoFundAccountInChunks(Feature\Constants::ES_ON_DEMAND);
 
-            $i = 0;
-
-            while (true)
+            foreach ($merchantIds as $merchantId)
             {
-                $merchantIds = $this->repoManager
-                                    ->feature
-                                    ->fetchMerchantIdsWithFeatureInChunks(Feature\Constants::ES_ON_DEMAND, $offset, self::LIMIT);
-
-                $i++;
-
-                $offset = $i  * self::LIMIT;
-
-                if (empty($merchantIds) === true)
-                {
-                    break;
-                }
-
-                foreach ($merchantIds as $merchantId)
-                {
-                    CreateSettlementOndemandFundAccount::dispatch($this->mode, $merchantId);
-                }
+                CreateSettlementOndemandFundAccount::dispatch($this->mode, $merchantId)->delay(random_int(1,900));
             }
+
         }
         catch(\Exception $e)
         {

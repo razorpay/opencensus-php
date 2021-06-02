@@ -4,10 +4,12 @@ namespace RZP\Models\Feature;
 
 use RZP\Models\Base;
 use RZP\Constants\Mode;
+use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Base\EsRepository;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\QueryCache\CacheQueries;
+use RZP\Models\Settlement\OndemandFundAccount;
 
 class Repository extends Base\Repository
 {
@@ -118,6 +120,20 @@ class Repository extends Base\Repository
                     ->where(Entity::ENTITY_TYPE, Constants::MERCHANT)
                     ->skip($skip)
                     ->take($limit)
+                    ->pluck(Entity::ENTITY_ID)
+                    ->toArray();
+    }
+
+    public function fetchMerchantIdsWithFeatureAndNoFundAccountInChunks(string $featureName)
+    {
+        return $this->newQuery()
+                    ->where(Entity::NAME, $featureName)
+                    ->where(Entity::ENTITY_TYPE, Constants::MERCHANT)
+                    ->leftJoin(Table::SETTLEMENT_ONDEMAND_FUND_ACCOUNT, OndemandFundAccount\Entity::MERCHANT_ID, Entity::ENTITY_ID)
+                    ->where(function ($query) {
+                        $query->whereNull(OndemandFundAccount\Entity::FUND_ACCOUNT_ID)
+                              ->orWhere(OndemandFundAccount\Entity::FUND_ACCOUNT_ID, '=', '');
+                    })
                     ->pluck(Entity::ENTITY_ID)
                     ->toArray();
     }
