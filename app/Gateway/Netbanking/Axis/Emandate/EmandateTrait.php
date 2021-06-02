@@ -601,5 +601,6 @@ trait EmandateTrait
     public function setCurlOptions($curl)
     {
         curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+        curl_setopt($curl, CURLOPT_REFERER, null);
     }
 }
