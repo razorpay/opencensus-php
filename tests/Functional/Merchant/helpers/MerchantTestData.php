@@ -1858,7 +1858,7 @@ return [
                 'mcc'                             => '5399',
                 'activated_at'                    => 1614921159,
                 'user_role'                       => 'owner',
-                'first_transaction_timestamp'     => 1614921180,
+                'first_transaction_timestamp'     => null,
                 'user_days_till_last_transaction' => 30,
                 'merchant_lifetime_gmv'           => 100,
                 'average_monthly_gmv'             => 10,

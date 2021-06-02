@@ -1698,10 +1698,16 @@ class Service extends Base\Service
 
         $merchantDetails = $merchant->merchantDetail;
 
+        /*
+         * removing it temporarily
+         *
         $firstTransactionTimeStamp = $this->repo->useSlave(function () use ($merchant)
         {
             return $this->repo->payment->getMerchantFirstAuthorizedPaymentTimeStamp($merchant->getId());
         });
+        */
+
+        $firstTransactionTimeStamp = null;
 
         $data = $this->getDataFromDruid($merchant->getId());
 
