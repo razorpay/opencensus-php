@@ -2,8 +2,9 @@
 
 namespace RZP\Services\Mock;
 
+use RZP\Models\BankingAccount\Entity;
 use RZP\Models\BankingAccount\Gateway\Icici;
-use RZP\Models\BankingAccountService\Constants as Fields;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 
 class BankingAccountService
 {
@@ -112,5 +113,37 @@ class BankingAccountService
         }
 
         return $result;
+    }
+
+    public function fetchIciciActivatedAccountFromBas(MerchantEntity $merchant)
+    {
+        $iciciBalance = $merchant->directBankingBalances()
+                                 ->where('channel', '=', 'icici')
+                                 ->first();
+
+        $ba = null;
+
+        if(empty($iciciBalance) === false)
+        {
+            $ba = new Entity();
+
+            $input = [
+                'channel'        => 'icici',
+                'account_type'   => 'direct',
+                'account_number' => $iciciBalance->getAccountNumber(),
+            ];
+
+            $ba->build($input);
+
+            $ba->setId('30000000000888');
+
+            $ba->setBasCaStatus('activated');
+
+            $ba->merchant()->associate($merchant);
+
+            $ba->balance()->associate($iciciBalance);
+        }
+
+        return $ba;
     }
 }

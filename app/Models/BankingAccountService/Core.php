@@ -13,6 +13,7 @@ use RZP\Models\Merchant\Detail;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankingAccountStatement;
 use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
 use RZP\Constants\Mode;
 
@@ -195,6 +196,36 @@ class Core extends Base\Core
         $ba->balance()->associate($balance);
 
         return $ba;
+    }
+
+    /**
+     * In case of icici ca balance exists but not banking_account entity.
+     * We make a call to banking account service to fetch the banking account id.
+     *
+     * @param string $balanceId
+     *
+     */
+    public function fetchBankingAccountId(string $balanceId)
+    {
+        $bankingAccountId = null;
+
+        /* @var BalanceEntity $balance */
+        $balance = $this->repo->balance->findOrFailById($balanceId);
+
+        //banking account does not exist for icici ca only.
+        if ((empty($balance->bankingAccount) === true) and
+            ($balance->getChannel() === Channel::ICICI) and
+            ($balance->getAccountType() === Merchant\Balance\AccountType::DIRECT))
+        {
+            //call to bas to fetch the banking_account_id.
+            $bankingAccountId = app('banking_account_service')->fetchBankingAccountId($balanceId);
+        }
+        else
+        {
+            $bankingAccountId = optional($balance->bankingAccount)->getPublicId();
+        }
+
+        return $bankingAccountId;
     }
 
     public function removeRequestParamsFromInput($requestParams, $input)

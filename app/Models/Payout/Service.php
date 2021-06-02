@@ -24,6 +24,7 @@ use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\Permission;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\BankingAccountService;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Application\ApplicationMerchantMaps;
 use RZP\Models\Payout\BatchHelper as PayoutBatchHelper;
@@ -1110,7 +1111,7 @@ class Service extends Base\Service
 
             $totalAmount = $totalFees = 0;
 
-            $bankingAccountId = $queuedPayouts->first()->bankingAccount->getPublicId();
+            $bankingAccountId = (new BankingAccountService\Core())->fetchBankingAccountId($balanceId);
 
             foreach ($queuedPayouts as $payout)
             {
@@ -1146,7 +1147,7 @@ class Service extends Base\Service
 
         foreach ($groupedScheduledPayouts as $balanceId => $scheduledPayouts)
         {
-            $bankingAccountId = $scheduledPayouts->first()->bankingAccount->getPublicId();
+            $bankingAccountId = (new BankingAccountService\Core())->fetchBankingAccountId($balanceId);
 
             foreach ($allTimePeriods as $timePeriod)
             {
@@ -1231,7 +1232,7 @@ class Service extends Base\Service
 
         foreach ($groupedPendingPayouts as $balanceId => $payouts)
         {
-            $bankingAccountId = $payouts->first()->bankingAccount->getPublicId();
+            $bankingAccountId = (new BankingAccountService\Core())->fetchBankingAccountId($balanceId);
 
             $amount = 0;
 
@@ -1257,7 +1258,7 @@ class Service extends Base\Service
      */
     protected function getCompleteSummary(array $pending, array $queued, array $scheduled): array
     {
-        $bankingAccountList = $this->merchant->activeBankingAccounts;
+        $bankingAccountList = $this->merchant->activeBankingAccounts();
 
         $completeSummary = [];
 

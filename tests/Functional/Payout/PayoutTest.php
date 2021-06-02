@@ -1536,6 +1536,35 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('MerchantUser01', $cancelledPayout['cancellation_user_id']);
     }
 
+    public function testPayoutSummaryViaIciciCaBalance()
+    {
+        $balance = $this->fixtures->create('balance', [
+            'merchant_id'    => '10000000000000',
+            'account_type'   => 'direct',
+            'type'           => 'banking',
+            'channel'        => 'icici',
+            'balance'        => 10000000,
+            'account_number' => '9177278012',
+        ]);
+
+        $this->fixtures->create('payout', [
+            'id'              => 'DuuYxmO7Yegu3x',
+            'status'          => 'processed',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
+            'balance_id'      => $balance->getId(),
+        ]);
+
+        $summary = $this->makePayoutSummaryRequest();
+
+        $this->assertTrue(in_array('bacc_30000000000888', array_keys($summary)) === true);
+
+        $this->assertTrue(isset($summary['bacc_30000000000888']['queued']) === true);
+
+        $this->assertTrue(isset($summary['bacc_30000000000888']['pending']) === true);
+
+        $this->assertTrue(isset($summary['bacc_30000000000888']['scheduled']) === true);
+    }
+
     public function testCancelQueuedPayoutPrivateAuth()
     {
         $this->testCreateQueuedPayout();

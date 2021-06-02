@@ -14,9 +14,11 @@ use RZP\Http\Request\Requests;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Exception\IntegrationException;
+use RZP\Models\BankingAccountService\Core;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\BankingAccount\Gateway\Icici;
 use RZP\Models\BankingAccountService\Channel;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 use RZP\Models\BankingAccountService\Constants as Fields;
 use RZP\Models\Merchant\Balance\Repository as BalanceRepo;
@@ -372,5 +374,19 @@ class BankingAccountService
     public function isBusinessExists(string $merchantId)
     {
         $this->getBusinessId($merchantId);
+    }
+
+    public function fetchIciciActivatedAccountFromBas(MerchantEntity $merchant)
+    {
+        $merchantId = $merchant->getMerchantId();
+
+        $bankingAccount = $this->fetchAccountDetails($merchantId);
+
+        if(empty($bankingAccount) === false)
+        {
+            $bankingAccount = (new Core())->generateInMemoryBankingAccount($merchantId, $bankingAccount);
+        }
+
+        return $bankingAccount;
     }
 }

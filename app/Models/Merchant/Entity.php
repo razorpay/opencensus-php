@@ -1468,10 +1468,26 @@ class Entity extends Base\PublicEntity
         return ($this->bankingAccounts->count() > 0);
     }
 
+    /**
+     * use activeBankingAccounts() function instead of magic property activeBankingAccounts
+     * Eg: $this->merchant->activeBankingAccounts();
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
     public function activeBankingAccounts()
     {
-        return $this->bankingAccounts()
-                    ->where(BankingAccount\Entity::STATUS, BankingAccount\Status::ACTIVATED);
+        $activeAccounts = $this->bankingAccounts()
+                               ->where(BankingAccount\Entity::STATUS, BankingAccount\Status::ACTIVATED)
+                               ->get();
+
+        //icici ca account exists at banking account service.
+        $basAccount = app('banking_account_service')->fetchIciciActivatedAccountFromBas($this);
+
+        if(empty($basAccount) === false)
+        {
+            $activeAccounts->add($basAccount);
+        }
+
+        return $activeAccounts;
     }
 
     protected function getMaxPaymentAmountAttribute()
