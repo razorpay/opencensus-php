@@ -8,7 +8,7 @@ import Loader from 'common/ui/Loader';
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import ModalDialog from 'common/ui/ModalDialog';
-import { analyticsTrack } from 'common/utils/analytics';
+import { analyticsTrack, initAnalytics } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import Notifications from 'common/ui/Notifications';
 import LocalStorageService from 'common/utils/localStorage';
@@ -46,7 +46,6 @@ import { fetchActiveTickets } from 'merchant/reducers/config.js';
 import LogoutDialog from 'merchant/components/LogoutDialog';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { fetchInstantSettlements } from 'merchant/reducers/collection';
-
 @withRouter
 @connect(
   (state) => ({
@@ -165,35 +164,39 @@ export default class App extends Component {
 
   componentWillMount() {
     const user = window.rzp_user;
-    if (user && window.analytics) {
-      const mode = localStorage.getItem(`rzp_mode--${user.id}`);
-      const kycStatus = user.activated ? 'activated' : 'not activated';
-      const activatedAt = user.activated_at;
+    initAnalytics().then(() => {
+      window.segment_loaded = true;
+      if (user && window.analytics) {
+        const mode = localStorage.getItem(`rzp_mode--${user.id}`);
+        const kycStatus = user.activated ? 'activated' : 'not activated';
+        const activatedAt = user.activated_at;
 
-      const segmentIdentiyCall = (dataFromAPI) =>
-        analytics.identify({
-          id: user.user.id,
-          userId: user.user.id,
-          emailId: user.email,
-          activatedAt,
-          mode,
-          userRole: user.role,
-          kycStatus,
-          merchantId: user.current,
-          businessCategory: user.businessCategory,
-          ...dataFromAPI,
-        });
+        const segmentIdentiyCall = (dataFromAPI) =>
+          analytics.identify(user.user.id,{
+            id: user.user.id,
+            userId: user.user.id,
+            emailId: user.email,
+            activatedAt,
+            mode,
+            userRole: user.role,
+            kycStatus,
+            merchantId: user.current,
+            businessCategory: user.businessCategory,
+            ...dataFromAPI,
+          });
 
-      let dataFromAPI = {};
-      merchantFetch('merchant/data_for_segment')
-        .then((res) => {
-          if (res.data) {
-            dataFromAPI = res.data;
-          }
-          segmentIdentiyCall(dataFromAPI);
-        })
-        .catch(() => segmentIdentiyCall(dataFromAPI));
-    }
+        let dataFromAPI = {};
+        return merchantFetch('merchant/data_for_segment')
+          .then((res) => {
+            if (res.data) {
+              dataFromAPI = res.data;
+            }
+            segmentIdentiyCall(dataFromAPI);
+          })
+          .catch(() => segmentIdentiyCall(dataFromAPI));
+      }
+    });
+
     const self = this;
     window.addEventListener('NOT_AUTHENTICATED', function (e) {
       if (this.logoutPopupShown) {

@@ -13,6 +13,7 @@ const CustomLottie = ({
   trackInitialRenderImpression,
   fromWhere,
   merchantId,
+  eventListeners = [],
 }) => {
   useEffect(() => {
     trackInitialRenderImpression && trackInitialRenderImpression(merchantId, fromWhere);
@@ -37,6 +38,7 @@ const CustomLottie = ({
         width={width ? width : '100%'}
         isStopped={isStopped ? isStopped : false}
         isClickToPauseDisabled={true}
+        eventListeners={eventListeners}
       />
     </div>
   );

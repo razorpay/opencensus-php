@@ -1672,8 +1672,7 @@ class Service extends Base\Service
                 {
                     $flag = 'neostone';
 
-                    //Un-comment this after neostone hubspot testing is done
-                    //$this->fireNeoStoneEventToHubspot($merchant);
+                    $this->fireNeoStoneEventToHubspot($merchant);
                 }
                 else
                 {

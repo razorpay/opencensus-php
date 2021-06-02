@@ -2222,6 +2222,10 @@ app
 
         $scope.login.data.captcha = captchaVal;
 
+        const OffersForYouCookie = window.localStorage.getItem('offers_for_you_state');
+        if (OffersForYouCookie !== 'hasAppliedCA')
+          window.localStorage.removeItem('offers_for_you_state');
+
         var payload = {
           method: 'post',
           url: '/user/signin',

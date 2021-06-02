@@ -431,6 +431,17 @@ class ApiRequestAny
                 ]);
             }
 
+            if ($this->debugLogsEnable() === true)
+            {
+                Trace::info(TraceCode::API_RESPONSE_METRIC, [
+                    'api_response_time' => $time_taken,
+                    'path'              => $path,
+                    '$method'           => $method,
+                    'isBankingRequest'  => ApiUrl::isBankingOriginRequest(),
+                    'isPGRequest'       => ApiUrl::isPrimaryOriginRequest(),
+                ]);
+            }
+
             $response = $client->json();
 
             $httpCode = $client->getStatusCode();
@@ -538,5 +549,29 @@ class ApiRequestAny
 
             $this->options['headers']['Cookie'] = 'razorx=' . $cookie;
         }
+    }
+
+    public function debugLogsEnable()
+    {
+        $baseUrl = ApiUrl::getApiBaseUrl();
+
+        $env = \App::environment();
+
+        $allowedHosts = [
+            'dev'        => '*',
+            'dev_docker' => '*',
+            'beta'       => [
+                'https://beta-api.razorpay.in/v1/',
+                'https://beta-api.stage.razorpay.in/v1/',
+            ],
+            'production' => [
+                'https://api-dark.razorpay.com/v1/',
+            ],
+        ];
+
+        $allowedHostsEnv = $allowedHosts[$env] ?? [];
+
+        return (($allowedHostsEnv === '*') or
+                (in_array($baseUrl, $allowedHostsEnv, true) === true));
     }
 }
