@@ -233,25 +233,25 @@ class Constants
                 'activated' => 1,
             ]
         ],
-        [
-            'id'          => 'SHOW_CREDIT_SCORE',
-            'title'       => 'Free Credit Score!',
-            'description' => 'Click Here to get your credit score along with the credit report for FREE!',
-            'start_ts'    => 1604320769,
-            'end_ts'      => 1617167373,
-            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/badge.svg',
-            'buttons'     => [
-                [
-                    'type'  => 'button',
-                    'label' => 'Get Free Credit Report',
-                    'url'   => '/dashboard#creditscore',
-                ],
-            ],
-            'filters'     => [
-                'features'  => ['show_credit_score'],
-                'role'  => ['owner'],
-            ],
-        ],
+        // [
+        //     'id'          => 'SHOW_CREDIT_SCORE',
+        //     'title'       => 'Free Credit Score!',
+        //     'description' => 'Click Here to get your credit score along with the credit report for FREE!',
+        //     'start_ts'    => 1604320769,
+        //     'end_ts'      => 1617167373,
+        //     'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/badge.svg',
+        //     'buttons'     => [
+        //         [
+        //             'type'  => 'button',
+        //             'label' => 'Get Free Credit Report',
+        //             'url'   => '/dashboard#creditscore',
+        //         ],
+        //     ],
+        //     'filters'     => [
+        //         'features'  => ['show_credit_score'],
+        //         'role'  => ['owner'],
+        //     ],
+        // ],
         [
             'title'       => 'You\'re all set to accept payments',
             'description' => 'You\'ve successfully unlocked free payments for upto ₹2,00,000! To avail this offer, complete your first transaction before 16th of November',
