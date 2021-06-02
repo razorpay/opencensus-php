@@ -377,7 +377,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
                 </Field>
                 {isVisible('shop_establishment_number', data) &&
                   businessDoc === 'shop_establishment_certificate' && <ShopEstablishmentNumber />}
-                <Field last={(businessDoc !== BUSINESS_PROOF_CERTIFICATE_TYPES.GST_CERTIFICATE)}>
+                <Field last={businessDoc !== BUSINESS_PROOF_CERTIFICATE_TYPES.GST_CERTIFICATE}>
                   <FileUpload
                     onFileUpload={(e) => onChange(e, businessDoc, formikProps)}
                     onRemove={onDeleteFile}
@@ -389,7 +389,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
                     disabled={isFormLocked}
                   />
                 </Field>
-                {(businessDoc === 'gst_certificate') && (
+                {businessDoc === 'gst_certificate' && (
                   <Field last>
                     <TextInput
                       width="auto"

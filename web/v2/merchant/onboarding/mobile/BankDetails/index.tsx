@@ -133,7 +133,7 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
           }),
         });
       }}
-      onSubmit={() => { }}
+      onSubmit={() => {}}
     >
       {(formikProps) => (
         <form
@@ -298,7 +298,10 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                             formikProps.setFieldValue('gstin', '');
                             setIsBlurCalled(true);
                           } else {
-                            isTabComplete({ ...data, hasGSTIN: !value }, 'bank_and_company_details');
+                            isTabComplete(
+                              { ...data, hasGSTIN: !value },
+                              'bank_and_company_details',
+                            );
                             setBankAndCompanyDetailsCompleted(value);
                           }
                           analyticsTrack({
@@ -312,9 +315,10 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                       />
                     </View>
                   </Space>
-                  {(hasGSTIN && (data.business_type === PROPRIETORSHIP.toString())) && (
+                  {hasGSTIN && data.business_type === PROPRIETORSHIP.toString() && (
                     <Text size="xsmall" color="negative.900">
-                      Please note that skipping GSTIN might lead to delay in your account review by upto two weeks, usually it takes 3-4 days
+                      Please note that skipping GSTIN might lead to delay in your account review by
+                      upto two weeks, usually it takes 3-4 days
                     </Text>
                   )}
                 </>

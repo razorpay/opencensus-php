@@ -213,7 +213,7 @@ export function checkIfEAadharStepCompleted(data) {
 
 export function isDocumentTabComplete(data) {
   const tabData = { ...onScreenDocuments(data) };
-  if(tabData[BUSINESS_PROOF_CERTIFICATE_TYPES.GST_CERTIFICATE]) {
+  if (tabData[BUSINESS_PROOF_CERTIFICATE_TYPES.GST_CERTIFICATE]) {
     tabData.gstin = { value: data.gstin };
   }
   const isDocumentFieldsFilled = Object.keys(tabData).every((key) => {
