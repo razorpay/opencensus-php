@@ -51,6 +51,10 @@ class Validator extends Base\Validator
         Constants::PER_PAGE     => 'required|integer|max:100',
     ];
 
+    protected static $getFaqsRules = [
+        Constants::TERM         => 'required|string',
+    ];
+
     protected static $getSupportDashboardXConversationsRules = [
         Constants::PAGE         => 'required|integer|min:1',
         Constants::PER_PAGE     => 'required|integer|max:100',

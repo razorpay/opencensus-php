@@ -9,6 +9,7 @@ class Constants
     const QUERY    = 'query';
     const STATUS   = 'status';
     const PER_PAGE = 'per_page';
+    const TERM     = 'term';
 
     const CC_EMAILS                 = 'cc_emails';
 
@@ -116,6 +117,8 @@ class Constants
     const ACTIVATION_CF_SUBCATEGORY     = 'Account Activated and Account Rejected';
     const MERCHANT_TICKET_QUEUE         = 'Merchant';
     const PAYMENT_GATEWAY_CF_PRODUCT    = 'Payment Gateway';
+
+    const ALLOWED_FAQS_KEYS    = ['description_text', 'title', 'path'];
 
     const NOTIFICATION_EVENT = 'event';
 }
