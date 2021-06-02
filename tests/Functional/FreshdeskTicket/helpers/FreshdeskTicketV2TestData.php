@@ -273,6 +273,40 @@ return [
         ],
     ],
 
+    'testCreateTicketRzpWithDCMigrationExperimentOn' => [
+        'request' => [
+            'url'     => '/fd/support_dashboard/ticket/',
+            'method'  => 'POST',
+            'content' => [
+                'description'   => 'ticket description',
+                'subject'       => 'ticket subject',
+                'cc_emails'     => ['a@b.com'],
+                'custom_fields' => [
+                    'cf_requester_category'       => 'Merchant',
+                    'cf_requestor_subcategory'    => 'Activation'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'description'  => 'ticket description',
+            ],
+        ],
+    ],
+
+    'testGetTicketRzpInd' => [
+        'request' => [
+            'url' => '/fd/support_dashboard/ticket/',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content'       => [
+                'id'    => '',
+            ],
+            'status_code'   => 200,
+        ],
+    ],
+
     'testCreateTicketRzpSalesForce' => [
         'request' => [
             'url'     => '/fd/support_dashboard/ticket/',

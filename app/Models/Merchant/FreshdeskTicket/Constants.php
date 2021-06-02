@@ -68,6 +68,8 @@ class Constants
     // Instances & urls
     const URL    = 'url';
     const RZP    = 'rzp';
+    const URLIND = 'urlind';
+    const RZPIND = 'rzpind';
     const URL2   = 'url2';
     const URLCAP = 'urlcap';
     const RZPSOL = 'rzpsol';
@@ -109,6 +111,7 @@ class Constants
 
     // razorx flags
     const RAZORX_FLAG_VALIDATE_FRESHDESK_ATTACHMENT_EXTENSION = 'validate_freshdesk_attachment_extension';
+    const RAZORX_FLAG_SHOULD_MIGRATE_FRESHDESK_IND_MERCHANT   = 'should_migrate_freshdesk_ind_merchant';
 
     // Default values for Activation Workflow Ticket Creation
     const SERVICE_REQUEST_TICKET_TYPE   = 'Service request';

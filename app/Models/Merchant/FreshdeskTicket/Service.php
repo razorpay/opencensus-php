@@ -40,6 +40,7 @@ class Service extends Base\Service
     const FRESHDESK_INSTANCES = [
         Type::SUPPORT_DASHBOARD_X => [Constants::RZPX   => Constants::URLX],
         Type::SUPPORT_DASHBOARD   => [Constants::RZP    => Constants::URL,
+                                      Constants::RZPIND => Constants::URLIND,
                                       Constants::RZPSOL => Constants::URL2,
                                       Constants::RZPCAP => Constants::URLCAP]
     ];
@@ -721,6 +722,8 @@ class Service extends Base\Service
             }
         }
 
+        $fdInstance = $this->getMigratedFdInstanceIfApplicable($fdInstance, $input);
+
         return $fdInstance;
     }
 
@@ -1207,6 +1210,44 @@ class Service extends Base\Service
         }
 
         return $ticketToLog;
+    }
+
+
+
+    /**
+     * @param $fdInstance -> for migrating ticket for razorpay.freshdesk.com to razorpay-ind.freshdesk.com
+     * on subcategory basis, controlled via razorx experiment
+     * @param $input
+     * @return string
+     */
+    protected function getMigratedFdInstanceIfApplicable($fdInstance, $input)
+    {
+        if ($fdInstance !== Constants::RZP)
+        {
+            return $fdInstance;
+        }
+
+        if ((isset($input[Constants::CUSTOM_FIELDS]) === false) or
+            (isset($input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY]) === false))
+        {
+            return $fdInstance;
+        }
+
+        $variant = $this->app['razorx']->getTreatment($input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY],
+            Constants::RAZORX_FLAG_SHOULD_MIGRATE_FRESHDESK_IND_MERCHANT,
+            $app['rzp.mode'] ?? Mode::LIVE);
+
+        $this->trace->info(TraceCode::FRESHDESK_DC_MIGRATION_EXPERIMENT, [
+            'variant'                           => $variant,
+            Constants::CF_REQUESTOR_SUBCATEGORY => $input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY],
+        ]);
+
+        if ($variant !== 'on')
+        {
+            return $fdInstance;
+        }
+
+        return Constants::RZPIND;
     }
 
     public function getFaqs($input)

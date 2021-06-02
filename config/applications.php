@@ -358,12 +358,14 @@ return [
 
     'freshdesk' => [
         'url'           => env('FRESHDESK_URL'),
+        'urlind'        => env('FRESHDESK_URL_IND'),
         'url2'          => env('FRESHDESK_URL2'),
         'urlx'          => env('FRESHDESK_URLX'),
         'urlcap'        => env('FRESHDESK_URL_CAP'),
         'sandbox'       => env('FRESHDESK_SANDBOX', false),
         'sandbox_url'   => env('FRESHDESK_SANDBOX_URL'),
         'token'         => env('FRESHDESK_TOKEN'),
+        'tokenind'      => env('FRESHDESK_TOKEN_IND'),
         'token2'        => env('FRESHDESK_TOKEN2'),
         'tokenx'        => env('FRESHDESK_TOKENX'),
         'tokencap'      => env('FRESHDESK_TOKEN_CAP'),
@@ -379,12 +381,17 @@ return [
 
         'instance_agent_id' => [
             'rzp'       =>  env('FRESHDESK_RZP_AGENT_ID'),
+            'rzpind'    =>  env('FRESHDESK_RZP_IND_AGENT_ID'),
         ],
 
         'activation'  => [
             'rzp'   =>   [
                 'agentId'   =>  env('WORKFLOW_ACTIVATION_RZP_AGENT_ID'),
                 'groupId'   =>  env('WORKFLOW_ACTIVATION_RZP_GROUP_ID'),
+            ],
+            'rzpind' => [
+                'agentId'   =>  env('WORKFLOW_ACTIVATION_RZP_IND_AGENT_ID'),
+                'groupId'   =>  env('WORKFLOW_ACTIVATION_RZP_IND_GROUP_ID'),
             ],
         ],
 

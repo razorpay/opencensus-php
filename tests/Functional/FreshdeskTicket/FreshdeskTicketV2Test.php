@@ -29,6 +29,8 @@ class FreshdeskTicketV2Test extends TestCase
     const RZP_FETCH_TICKET  = 'rzp_fetch_ticket';
     const RZP_FETCH_FAQS    = 'rzp_fetch_faqs';
 
+    const RZP_GET_TICKET_BY_ID = 'rzp_get_ticket_by_id';
+
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/FreshdeskTicketV2TestData.php';
@@ -351,6 +353,44 @@ class FreshdeskTicketV2Test extends TestCase
         $this->assertEquals('rzp', $fdInstance);
     }
 
+    public function testCreateTicketRzpWithDCMigrationExperimentOn()
+    {
+        $this->mockRazorxTreatment('on');
+
+        $expectedRequestResponse = $this->getExpectedRequestResponse(self::RZP_CREATE_TICKET);
+
+        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST', 'rzpind',
+            $expectedRequestResponse['request'], $expectedRequestResponse['response']);
+
+        $this->startTest();
+
+        $ticket = $this->getLastEntity('merchant_freshdesk_tickets', true);
+
+        $fdInstance = $ticket['ticket_details']['fd_instance'];
+
+        $this->assertEquals('rzpind', $fdInstance);
+    }
+
+    public function testGetTicketRzpInd()
+    {
+        $this->testCreateTicketRzpWithDCMigrationExperimentOn();
+
+        $ticket = $this->getLastEntity('merchant_freshdesk_tickets', true);
+
+        $this->testData[__FUNCTION__]['request']['url'] .= $ticket['id'];
+
+        $this->testData[__FUNCTION__]['response']['content']['id'] = $ticket['id'];
+
+        $expectedRequestResponse = $this->getExpectedRequestResponse(self::RZP_GET_TICKET_BY_ID);
+
+        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets/99?include=stats', 'GET', 'rzpind',
+            $expectedRequestResponse['request'], $expectedRequestResponse['response']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testCreateTicketRzpWithoutCcEmails()
     {
         $frDueBy = time() + self::DAY * 2;
@@ -470,7 +510,6 @@ class FreshdeskTicketV2Test extends TestCase
         $this->assertEquals($ticket['id'], $response['id']);
 
         $this->assertEquals('rzpcap', $fdInstance);
-
     }
 
     public function testCreateTicketRzpX()
@@ -691,7 +730,7 @@ Team Razorpay');
 
         $expectedRequestResponse = $this->getExpectedRequestResponse(self::RZP_CREATE_TICKET);
 
-        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST', 'rzp',
+        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST', 'rzpind',
             $expectedRequestResponse['request'], $expectedRequestResponse['response']);
 
         $this->startTest();
@@ -1006,6 +1045,8 @@ Team Razorpay',
     {
         $expectedUrl1 = $this->app['config']->get('applications.freshdesk.url') . '/' . $expectedPath;
 
+        $expectedUrlInd = $this->app['config']->get('applications.freshdesk.urlind') . '/' . $expectedPath;
+
         $expectedUrl2 = $this->app['config']->get('applications.freshdesk.url2') . '/' . $expectedPath;
 
         $expectedUrlx = $this->app['config']->get('applications.freshdesk.urlx') . '/' . $expectedPath;
@@ -1014,6 +1055,7 @@ Team Razorpay',
 
         $expectedUrls = [
             'rzp'       => $expectedUrl1,
+            'rzpind'    => $expectedUrlInd,
             'rzpsol'    => $expectedUrl2,
             'rzpx'      => $expectedUrlx,
             'rzpcap'    => $expectedUrlCap
@@ -1145,7 +1187,25 @@ Team Razorpay',
                     ]
             ];
         }
+        else if ($key === self::RZP_GET_TICKET_BY_ID)
+        {
+            return [
+                'request'  => [],
+                'response' => [
+                    'id'            => '99',
+                    'description'   => 'ticket description',
+                    'fr_due_by'     => $frDueByFreshdeskFormat,
+                    'custom_fields' => [
+                        'cf_requester_category'    => 'Merchant',
+                        'cf_requestor_subcategory' => 'Activation',
+                        'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                        'cf_merchant_id'           => '10000000000000',
+                    ],
+                    'priority'      => 1,
+                ],
 
+            ];
+        }
         else if ($key === self::RZP_FETCH_TICKET)
         {
             return[
