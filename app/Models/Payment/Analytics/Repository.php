@@ -102,39 +102,6 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function saveOrFail($entity, array $options = array())
-    {
-
-        $entity = $this->transaction(function () use (& $entity, $options)
-        {
-            $entityExist = $entity->exists;
-
-            parent::saveOrFail($entity, $options);
-
-            $newEntity = Transformer::getNewAnalyticsEntity($entity);
-
-            if ($entityExist == false)
-            {
-                $this->repo->saveOrFail($newEntity);
-            }
-            else
-            {
-                $fetchedEntity = (new NewAnalytics\Repository())->findByPaymentId($entity->getPaymentId());
-
-                if ($fetchedEntity !== null)
-                {
-                    $newEntity = Transformer::getUpdatedNewAnalyticsEntity($fetchedEntity, $entity);
-
-                    $this->repo->saveOrFail($newEntity);
-                }
-            }
-            return $entity;
-        });
-
-        return $entity;
-    }
-
-
     /*
         There will be a total of 14 partitions for this table always, 6 of which will be for future dates.
         For e.g. if today is 8th May 2021 and the cron is yet to get triggered, 14 partitions will already be there as follows

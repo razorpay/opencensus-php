@@ -3790,3 +3790,10 @@ ALTER TABLE qr_code
 
 ALTER TABLE qr_code MODIFY entity_id varchar(14) DEFAULT NULL;
 ALTER TABLE qr_code MODIFY entity_type varchar(50) DEFAULT NULL;
+
+Rename table
+     payment_analytics to payment_analytics_tmp,
+     new_payment_analytics to payment_analytics,
+     payment_analytics_tmp to new_payment_analytics;
+
+Drop table new_payment_analytics;

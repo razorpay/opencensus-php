@@ -1299,22 +1299,11 @@ final class FactoryData
         );
 
         $factory(\RZP\Models\Payment\Analytics\Entity::class, [
-            'id'                => 12345,
             'payment_id'        => 'factory:RZP\Models\Payment\Entity',
             'merchant_id'       => 'factory:RZP\Models\Merchant\Entity',
             'ip'                => '127.0.0.1',
             'created_at'        => $faker->timestamp,
             'updated_at'        => $faker->timestamp,
-            ]
-        );
-
-        $factory(\RZP\Models\Payment\NewAnalytics\Entity::class, [
-                'id'                => 12345,
-                'payment_id'        => 'factory:RZP\Models\Payment\Entity',
-                'merchant_id'       => 'factory:RZP\Models\Merchant\Entity',
-                'ip'                => '127.0.0.1',
-                'created_at'        => $faker->timestamp,
-                'updated_at'        => $faker->timestamp,
             ]
         );
 
