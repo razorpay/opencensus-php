@@ -124,8 +124,6 @@ abstract class AbstractTransfer
     {
         $this->merchant = $merchant;
 
-        $isTransferProcessed = true;
-
         if (($transfer->isFailed() === true) and
             ($transfer->getAttempts() >= Constant::MAX_ALLOWED_ORDER_TRANSFER_PROCESS_ATTEMPTS))
         {
@@ -143,7 +141,7 @@ abstract class AbstractTransfer
 
         try
         {
-            $transfer = $this->repo->transaction(function () use ($payment, $transfer, $isTransferProcessed)
+            $transfer = $this->repo->transaction(function () use ($payment, $transfer)
             {
                 $oldTransfer = clone $transfer;
 
@@ -163,38 +161,26 @@ abstract class AbstractTransfer
 
                 $transfer->setProcessed();
 
+                $transfer->incrementAttempts();
+
                 $totalTransferAmount = $transfer->getAmount();
 
                 $this->updatePaymentAmountTransferred($payment, $totalTransferAmount);
+
+                $this->repo->saveOrFail($transfer);
 
                 return $transfer;
             });
 
             (new Metric())->pushTransferProcessSuccessMetrics();
+
+            $this->fireTransferProcessedWebhookIfApplicable($transfer);
         }
         catch (\Exception $ex)
         {
-            $isTransferProcessed = false ;
-
             (new Metric())->pushTransferProcessFailedMetrics($ex);
 
             throw  $ex;
-        }
-        finally
-        {
-            if($isTransferProcessed === true)
-            {
-                $transfer->incrementAttempts();
-
-                $this->repo->saveOrFail($transfer);
-
-                if ($transfer->isProcessed())
-                {
-                    $this->repo->reload($transfer);
-
-                    (new Core())->eventTransferProcessed($transfer);
-                }
-            }
         }
     }
 
@@ -256,6 +242,14 @@ abstract class AbstractTransfer
         $payment->transferAmount($amount);
 
         $this->repo->saveOrFail($payment);
+    }
+
+    protected function fireTransferProcessedWebhookIfApplicable(Entity $transfer)
+    {
+        if ($transfer->isProcessed() === true)
+        {
+            (new Core())->eventTransferProcessed($transfer);
+        }
     }
 
     protected function fireTransferFailedWebhookIfApplicable(Entity $transfer)
