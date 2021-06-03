@@ -1881,6 +1881,8 @@ class Service extends Base\Service
 
     public function getAutoDisabledMethods($merchantId)
     {
+        $startTime = millitime();
+
         $data = [];
 
         $merchant = $this->repo->merchant->findOrFail($merchantId);
@@ -1890,6 +1892,8 @@ class Service extends Base\Service
         $category2 = $merchant->getCategory2();
 
         $merchantDetails = (new Detail\Core)->getMerchantDetails($merchant);
+
+        $timeTakenInDB = millitime() - $startTime;
 
         $data['auto_disabled_methods']= DefaultMethodsForCategory::getDefaultDisabledMethodsForInstrumentRequestFromMerchantCategories($category, $category2);
 
@@ -1901,6 +1905,15 @@ class Service extends Base\Service
         {
             $data['kyc_enabled'] = true;
         }
+
+        $timeTakenTotal = millitime() - $startTime;
+
+        $this->trace->info(
+            TraceCode::AUTO_DISABLED_METHODS_RESPONSE_TIME,
+            [
+                'time_taken_db'         => $timeTakenInDB,
+                'time_taken_total'      => $timeTakenTotal,
+            ]);
 
         return $data;
     }

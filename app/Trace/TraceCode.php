@@ -1920,6 +1920,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_TAGS_BULK_REQUEST                            = 'MERCHANT_TAGS_BULK_REQUEST';
     const MERCHANT_TAGS_BULK_EXCEPTION                          = 'MERCHANT_TAGS_BULK_EXCEPTION';
 
+    const AUTO_DISABLED_METHODS_RESPONSE_TIME                   = 'AUTO_DISABLED_METHODS_RESPONSE_TIME';
     const BULK_ACTION_RESPONSE_TIME                             = 'BULK_ACTION_RESPONSE_TIME';
     const MERCHANT_METHODS_BULK_UPDATE                          = 'MERCHANT_METHODS_BULK_UPDATE';
     const MERCHANT_METHODS_BULK_EXCEPTION                       = 'MERCHANT_METHODS_BULK_EXCEPTION';
