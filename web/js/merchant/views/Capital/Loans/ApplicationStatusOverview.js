@@ -1,11 +1,26 @@
 import React, { Component } from 'react';
 import MultiLevelStepper from 'merchant/views/Capital/components/MultiLevelStepper';
 import { connect } from 'react-redux';
-import { fetchLoanApplicationMeta } from 'merchant/reducers/capital';
+import { fetchLoanApplicationMeta, registerNewLoanApplication } from 'merchant/reducers/capital';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import { withRouter } from 'react-router-dom';
 import Button from 'common/new-ui/Button';
-import { ERROR_STATES, PENDING_APPLICATION_STATES, HOTJAR_TRIGGERS } from './constants';
+import {
+  ERROR_STATES,
+  PENDING_APPLICATION_STATES,
+  HOTJAR_TRIGGERS,
+  APPLICATION_STATES,
+  APPLICATION_DISABLED_STATES,
+} from './constants';
+import { isCashAdvanceProduct } from '../utils';
+
+const parseApplicationMetaData = (loanApplicationDetails) => {
+  const {
+    meta: { product, loading, data: { application: { status = '' } = {} } } = {},
+  } = loanApplicationDetails;
+
+  return { loading, product, status };
+};
 
 @withRouter
 @connect(
@@ -14,6 +29,7 @@ import { ERROR_STATES, PENDING_APPLICATION_STATES, HOTJAR_TRIGGERS } from './con
   }),
   {
     fetchLoanApplicationMeta,
+    registerNewLoanApplication,
   },
 )
 class ApplicationStatusOverview extends Component {
@@ -62,9 +78,8 @@ class ApplicationStatusOverview extends Component {
   getStepTobeShown = (classList, step) => {
     const APPLICATION_STATE_GROUPS = this.getUserFlowConfiguration().getApplicationStateGroups();
     const APPLICATION_STATE_DESCRIPTIONS = this.getUserFlowConfiguration().getApplicationStateDescriptions();
-
-    const { meta } = this.props.loanApplicationDetails;
-    const applicationStatus = meta.loading ? 'PROMOTER_INFO_PENDING' : meta.data.application.status;
+    const { loading, status } = parseApplicationMetaData(this.props.loanApplicationDetails);
+    const applicationStatus = loading ? APPLICATION_STATES.PROMOTER_INFO_PENDING : status;
     if (classList.includes('active')) {
       return APPLICATION_STATE_DESCRIPTIONS[applicationStatus];
     } else if (classList.includes('completed')) {
@@ -91,8 +106,8 @@ class ApplicationStatusOverview extends Component {
   };
 
   getStep = (step) => {
-    const { meta } = this.props.loanApplicationDetails;
-    const applicationStatus = meta.loading ? 'PROMOTER_INFO_PENDING' : meta.data.application.status;
+    const { loading, status } = parseApplicationMetaData(this.props.loanApplicationDetails);
+    const applicationStatus = loading ? APPLICATION_STATES.PROMOTER_INFO_PENDING : status;
 
     const APPLICATION_STATE_GROUPS = this.getUserFlowConfiguration().getApplicationStateGroups();
     const isCurrentStateGroup = APPLICATION_STATE_GROUPS[step].includes(applicationStatus);
@@ -199,15 +214,79 @@ class ApplicationStatusOverview extends Component {
     return meta.configuration;
   };
 
+  showDisabledApplication = () => {
+    const { product, loading, status } = parseApplicationMetaData(
+      this.props.loanApplicationDetails,
+    );
+    const applicationStatus = loading ? APPLICATION_STATES.PROMOTER_INFO_PENDING : status;
+
+    const disabledApplicationExists = applicationStatus in APPLICATION_DISABLED_STATES;
+
+    if (!disabledApplicationExists) return;
+
+    if (disabledApplicationExists) {
+      const {
+        title = '',
+        tips = [],
+        subTitle = '',
+        action_point = '',
+        description = '',
+        ctaText = '',
+      } = APPLICATION_DISABLED_STATES[applicationStatus];
+      const titleText =
+        applicationStatus !== APPLICATION_STATES.CLOSED &&
+        (isCashAdvanceProduct(product) ? 'cash advance' : 'a loan');
+      const entity = isCashAdvanceProduct(product) ? 'Cash Advance' : 'a Loan';
+
+      return (
+        <div className="loan-application-disabled-wrapper">
+          <div className="flex title-wrapper">
+            <i className="i i-error" />
+            <p className="title">
+              {title} {titleText}
+            </p>
+          </div>
+          <p className="description">{description}</p>
+          {tips.length > 0 && (
+            <div className="tips-container">
+              {tips.map((item) => (
+                <div className="flex wrapper">
+                  <i class="i i-check text-success" />
+                  <p className="tip description">{item}</p>
+                </div>
+              ))}
+            </div>
+          )}
+          <p className="subtitle">{subTitle}</p>
+          <p className="action-point description">{action_point}</p>
+          <Button.Primary className="cta" onClick={this.props.registerNewLoanApplication}>
+            {ctaText}
+            {'  '}
+            {entity}
+            <i className="i i-chevron-right" />
+          </Button.Primary>
+        </div>
+      );
+    }
+  };
+
   render() {
+    const { loading, status } = parseApplicationMetaData(this.props.loanApplicationDetails);
     const configuration = this.getUserFlowConfiguration();
+    const applicationRejected = status === APPLICATION_STATES.RZP_REJECTED;
+    const applicationClosed = status === APPLICATION_STATES.CLOSED;
+
     if (!configuration) return 'Loading...';
 
     return (
       <div>
-        <MultiLevelStepper loading={this.props.loanApplicationDetails.meta.loading}>
-          {configuration.getConsolidatedStateSequence().map((step, index) => this.getStep(step))}
-        </MultiLevelStepper>
+        {applicationRejected || applicationClosed ? (
+          this.showDisabledApplication()
+        ) : (
+          <MultiLevelStepper loading={loading}>
+            {configuration.getConsolidatedStateSequence().map((step, index) => this.getStep(step))}
+          </MultiLevelStepper>
+        )}
       </div>
     );
   }

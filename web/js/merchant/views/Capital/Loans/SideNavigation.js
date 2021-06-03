@@ -1,12 +1,19 @@
 import React, { Component } from 'react';
-import { ERROR_STATES, PENDING_APPLICATION_STATES, GA_CATEGORY_BY_PRODUCT } from './constants';
+import {
+  ERROR_STATES,
+  PENDING_APPLICATION_STATES,
+  GA_CATEGORY_BY_PRODUCT,
+  APPLICATION_STATES,
+} from './constants';
 import MultiLevelStepper from 'merchant/views/Capital/components/MultiLevelStepper';
 import { connect } from 'react-redux';
 import { changeActiveState } from 'merchant/reducers/capital';
 import getApplicationProgressPercentage from '../utils/ProgressPercentageCalculator';
+import { trackPromoterDetailsAfterOtp, trackPromoterDetailsBeforeOtp } from './Forms/ga';
 
 @connect(
   (state) => ({
+    user: state.session.user,
     loanApplicationDetails: state.loanApplicationDetails,
   }),
   {
@@ -143,6 +150,16 @@ class SideNavigation extends Component {
   handleNavigation = (step, parentStepMeta) => {
     const { context, meta } = this.props.loanApplicationDetails;
     const currentState = meta.data.application.status;
+    const merchantId = this.props.user.current;
+
+    if (
+      currentState === APPLICATION_STATES.PROMOTER_INFO_PENDING ||
+      currentState === APPLICATION_STATES.CREDIT_PULL_PENDING
+    ) {
+      if (step === APPLICATION_STATES.PROMOTER_INFO_PENDING)
+        trackPromoterDetailsBeforeOtp(merchantId);
+    } else if (step === APPLICATION_STATES.PROMOTER_INFO_PENDING)
+      trackPromoterDetailsAfterOtp(merchantId);
 
     this._trackNavigationEvent(step, context.activeState);
 

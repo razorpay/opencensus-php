@@ -491,7 +491,9 @@ class Check extends Field {
 class Radio extends Field {
   className = 'Input--radio';
   state = {
-    value: this.props.defaultValue || 0,
+    value: this.props.noDefaultSelectedValue
+      ? this.props.defaultValue
+      : this.props.defaultValue || 0,
   };
 
   toggle = (e) => {

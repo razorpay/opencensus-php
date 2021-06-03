@@ -1,5 +1,8 @@
 .loan-onboarding-content-body{
-  padding: 16px 20px 0;
+  padding: 16px 32px 0;
+  &.los-content-body{
+    padding: 0px 32px 0;
+  }
   .Form{
     .Input {
       margin: 8px 0 8px;
@@ -14,14 +17,88 @@
       .Input-content {
         margin-right: 16px;
         .Input-elWrapper {
-          width: 240px;
+          width: 230px;
           font-size: inherit;
         }
       }
     }
 
     .Input.Input--large .Input-elWrapper{
-      width: 496px;
+      width: 476px;
     }
   }
+}
+
+.loan-application-disabled-body{
+    padding:12px 32px 0;
+    .loan-application-disabled-wrapper{
+        border: 1px solid rgba(238, 102, 25, 0.16);
+        padding: 24px 20px;
+        border-radius: 6px;
+          .flex{
+            display: flex;
+            flex-direction: row;
+            align-items:center;  
+          }
+          .title-wrapper{ 
+            i { 
+              margin: 4px 6px 0 0;
+              font-size: 18px;
+              color: #EE6619;
+            }
+          }
+          .title{
+            font-weight: bold;
+            font-size: 16px;
+            line-height: 22px; 
+            color: rgba(22, 47, 86, 0.87);
+          }
+          .description{
+            margin-top: 12px;
+            font-weight: normal;
+            font-size: 13px;
+            line-height: 19px;
+            color: rgba(22, 47, 86, 0.87);
+          }
+          .tips-container{
+            margin-top: 12px;
+            .wrapper{
+              margin-top: 6px;
+            }
+            .flex{
+              display: flex;
+              flex-direction: row;
+              align-items:center; 
+            }
+            i{
+              font-size:12px;
+            } 
+            .tip{
+              color: rgba(22, 47, 86, 0.74);
+              margin: 0 0 0 8px
+            }
+          }
+          .subtitle{
+            font-weight: bold;
+            font-size: 12px;
+            line-height: 18px; 
+            text-transform: uppercase;
+            color: rgba(22, 47, 86, 0.87); 
+            margin-top: 20px
+          }
+          .action-point{
+            margin-top: 12px
+          }
+          .cta{
+            margin-top: 24px;
+            font-weight: bold;
+            font-size: 14px;
+            line-height: 20px;
+            padding: 8px 29px 8px 24px;
+
+            i{
+              margin-left: 8px
+            }
+          }
+    }
 }

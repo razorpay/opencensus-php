@@ -95,6 +95,7 @@ class LoanEntity extends Component {
           </div>
           <FormSectionRenderer
             loanApplicationDetails={this.props.loanApplicationDetails}
+            productDetails={this.props.productDetails}
             sendDataToAnalytics={this.sendDataToAnalytics}
             onClose={this.handleClose}
           />

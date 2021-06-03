@@ -134,3 +134,21 @@ export const RZPFeatures = {
 };
 
 export const UPI_AVL_LIMIT = 500000;
+
+/* New Onboarding form which includes intent fields */
+export const INTENT_CREDIT_AMOUNT_OPTIONS = [
+  '₹5000-₹20000',
+  '₹20000-₹50000',
+  '₹50000-₹100000',
+  '₹100000-₹300000',
+  '₹300000-₹500000',
+  '₹500000-₹1000000',
+];
+
+export const INTENT_CREDIT_USE_OPTIONS = [
+  'Marketing & advertising expense',
+  'Purchase office equipment',
+  'Business Expansion',
+  'Purchase inventory/raw material',
+  'Other business expenses',
+];
