@@ -155,6 +155,8 @@ trait Authorize
 
         $this->preProcessDCCInputs($input, $payment);
 
+        $this->preProcessWalletCurrencyWrapper($input, $payment);
+
         $this->storeRewards($payment, $input);
 
         return $this->gatewayRelatedProcessing($payment, $input, $gatewayInput);
@@ -3225,6 +3227,51 @@ trait Authorize
 
             $requestedCurrencyData = (new Currency\DCC\Service)->getRequestedCurrencyDetails($payment->getCurrency(), $payment->getAmount(),
                 $dccCurrency, $dccCurrencyRequestId, $payment->merchant->getDccMarkupPercentage());
+
+            if (empty($requestedCurrencyData) === true)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_DCC_INVALID_REQUEST_ID, 'currency_request_id',
+                    [
+                        'currency_request_id' => $dccCurrencyRequestId,
+                        'dcc_currency'        => $dccCurrency,
+                    ], 'Invalid currency_request_id');
+            }
+
+            $paymentMetaInput = [
+                'gateway_amount'            => $requestedCurrencyData['amount'],
+                'gateway_currency'          => $requestedCurrencyData['currency'],
+                'forex_rate'                => $requestedCurrencyData['forex_rate'],
+                'dcc_offered'               => true,
+                'payment_id'                => $payment->getId(),
+                'dcc_mark_up_percent'       => $requestedCurrencyData['dcc_mark_up_percent']
+            ];
+
+            $paymentMetaEntity = (new Payment\PaymentMeta\Core)->create($paymentMetaInput);
+
+            $paymentMetaEntity->payment()->associate($payment);
+
+            $this->trace->info(TraceCode::PAYMENT_DCC_PROCESSED, $paymentMetaInput);
+        }
+    }
+
+    protected function preProcessWalletCurrencyWrapper(array $input, Payment\Entity $payment)
+    {
+        if (($input['method'] !== Method::WALLET) or ($input['wallet'] !== Wallet::PAYPAL))
+        {
+            return;
+        }
+
+        if ((isset($input['dcc_currency']) === true) and
+            (isset($input['currency_request_id']) === true) and
+            ($input['currency'] !== $input['dcc_currency']))
+        {
+            $dccCurrency = $input['dcc_currency'];
+
+            $dccCurrencyRequestId = $input['currency_request_id'];
+
+            // markup of 3 is hardcoded at org-level
+            $requestedCurrencyData = (new Currency\DCC\Service)->getRequestedCurrencyDetails($payment->getCurrency(), $payment->getAmount(),
+                $dccCurrency, $dccCurrencyRequestId, 3);
 
             if (empty($requestedCurrencyData) === true)
             {

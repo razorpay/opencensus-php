@@ -1660,11 +1660,20 @@ class Service extends Base\Service
 
         (new Payment\Validator)->validateInput('get_flows', $input);
 
-        $iinEntity = $this->repo->iin->find($input['iin']);
+        if (isset($input['iin']) === true)
+        {
+            $iinEntity = $this->repo->iin->find($input['iin']);
+        }
+        else
+        {
+            $iinEntity = null;
+        }
 
         $data = $merchant->getPaymentFlows($iinEntity);
 
         $this->updateDccDataIfApplicable($input, $iinEntity, $merchant,$data);
+
+        $this->updateCurrencyWrapperIfApplicable($input, $merchant, $data);
 
         if (isset($input['order_id']) === true)
         {
@@ -1713,6 +1722,50 @@ class Service extends Base\Service
 
                 $data = array_merge($data, $dccInfo);
             }
+        }
+    }
+
+    public function updateCurrencyWrapperIfApplicable($input, $merchant, & $data)
+    {
+        $methods = $merchant->getMethods();
+
+        if ((isset($input['wallet']) === false) or
+            ($input['wallet'] !== Payment\Processor\Wallet::PAYPAL) or
+            ($methods->isPaypalEnabled() === false))
+        {
+            return;
+        }
+
+        $terminal = $this->repo->terminal->getByMerchantIdAndGateway($merchant->getId(), Gateway::WALLET_PAYPAL);
+
+        if ($terminal === null)
+        {
+            return;
+        }
+
+        $enabledCurrencyList = $terminal->getCurrency();
+
+        if (empty($enabledCurrencyList) === true)
+        {
+            return;
+        }
+
+        if ((isset($input['currency']) === true) and
+            (isset($input['amount']) === true))
+        {
+            $amount   = $input['amount'];
+            $currency = $input['currency'];
+
+                // markup of 3 is hardcoded at org-level
+                $currencyInfo = $this->getDCCInfo($amount, $currency, 3);
+
+                $currencyInfo['wallet_currency'] = Currency\Currency::USD;
+
+                $currencyInfo['all_currencies'] = array_intersect_key(
+                                                              $currencyInfo['all_currencies'],
+                                                              array_flip($enabledCurrencyList));
+
+                $data = array_merge($data, $currencyInfo);
         }
     }
 

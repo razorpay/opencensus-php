@@ -3555,6 +3555,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $data['currency'] = $this->getGatewayCurrency();
         }
 
+        if ($this->getGateway() === Gateway::WALLET_PAYPAL)
+        {
+            $data['amount'] = $this->getGatewayAmount();
+            $data['currency'] = $this->getGatewayCurrency();
+        }
+
         if (($this->isCard() === true) and
             ($this->getConvertCurrency() === true))
         {

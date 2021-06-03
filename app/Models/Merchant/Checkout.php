@@ -1191,6 +1191,11 @@ class Checkout
 
     protected function updateCurrencyMethodsIfApplicable($input, $merchant, array & $data)
     {
+        if ($merchant->isFeatureEnabled(Feature\Constants::PAYPAL_CC) === true)
+        {
+            return;
+        }
+
         if ((isset($data['methods']['wallet']['paypal']) === true) and
             ($data['methods']['wallet']['paypal'] === true))
         {

@@ -235,13 +235,14 @@ class Validator extends Base\Validator
 
     protected static $getFlowsRules = [
         'callback'                  => 'sometimes', // JSONP
-        'iin'                       => 'required|numeric|digits:6',
+        'iin'                       => 'sometimes|nullable|numeric|digits:6',
         '_'                         => 'sometimes|array',
         'order_id'                  => 'sometimes|filled',
         'currency'                  => 'sometimes|string|size:3',
         'amount'                    => 'sometimes|integer',
         'token'                     => 'sometimes|string|max:20',
-        'language_code'             => 'sometimes'
+        'language_code'             => 'sometimes',
+        'wallet'                    => 'sometimes|string'
     ];
 
     protected static $postFlowsRules = [
@@ -249,7 +250,8 @@ class Validator extends Base\Validator
         'iin'                => 'sometimes|numeric|digits:6',
         'currency'           => 'sometimes|string|size:3',
         'amount'             => 'sometimes|integer',
-        'token'              => 'sometimes|string|max:20'
+        'token'              => 'sometimes|string|max:20',
+        'wallet'             => 'sometimes|string'
     ];
 
     protected static $pspAmountLimit = [

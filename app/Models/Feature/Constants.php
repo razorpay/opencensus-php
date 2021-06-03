@@ -147,6 +147,7 @@ class Constants
     const EXPOSE_GATEWAY_PROVIDER         = 'expose_gateway_provider';
     const EXPOSE_FA_VALIDATION_UTR        = 'expose_fa_validation_utr';
     const GOOGLE_PAY_CARDS                = 'google_pay_cards';
+    const PAYPAL_CC                       = 'paypal_cc';
 
     const WALLET                          = 'wallet';
 
@@ -709,6 +710,7 @@ class Constants
         self::UPI_OTM,
         self::CHECKOUT_DISABLE_I18N,
         self::CHECKOUT_DISABLE_CARDSCAN,
+        self::PAYPAL_CC,
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -1001,6 +1003,7 @@ class Constants
         self::PL_BLOCK_CUSTOMER_PREFILL       => true,
         self::ALLOW_VA_TO_VA_PAYOUTS          => true,
         self::PAYMENT_SHOW_DCC_MARKUP         => true,
+        self::PAYPAL_CC                       => true,
     ];
 
     // Entity type constants
