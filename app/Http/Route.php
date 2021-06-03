@@ -1328,6 +1328,16 @@ class Route
         'payout_update_pull_payout_status'         => ['post',      'payout-links/{id}/pullPayoutStatus',             'PayoutLinkController@pullPayoutStatus'                             ],
         'payout_links_bulk_resend_notification_admin' => ['post',   'payout-links/bulk-resend-notification',          'PayoutLinkController@bulkResendNotification'                       ],
         'payout_links_customer_hosted_page'        => ['get',       'payout-links/{x_entity_id}/view',                'PayoutLinkController@viewHostedPage'                               ],
+        'payout_links_shopify_app_install'         => ['get',       'payout-links/shopify/install',                   'PayoutLinkController@installShopifyApp'                            ],
+        'payout_links_shopify_app_uninstall'       => ['post',      'payout-links/shopify/uninstall',                 'PayoutLinkController@uninstallShopifyApp'                          ],
+        'payout_links_shopify_app_customers'
+         . '_redact'                               => ['post',      'payout-links/shopify/customers/redact',          'PayoutLinkController@shopifyCustomerRedact'                        ],
+        'payout_links_shopify_app_shop_redact'     => ['post',      'payout-links/shopify/shop/redact',               'PayoutLinkController@shopifyShopRedact'                            ],
+        'payout_links_shopify_customers_data'
+         . '_request'                              => ['post',      'payout-links/shopify/customers/data_request',    'PayoutLinkController@shopifyCustomerDataRequest'                   ],
+        'payout_links_integrate_app'               => ['post',      'payout-links/integrate-app',                     'PayoutLinkController@integrateApp'                                 ],
+        'payout_links_fetch_shopify_order'         => ['get',       'payout-links/shopify/orders',                    'PayoutLinkController@fetchShopifyOrderDetails'                     ],
+        'payout_links_integration_details'         => ['get',       'payout-links/_meta/integration-details',          'PayoutLinkController@integrationDetails'                      ],
         // Below is a POST request, for reasons listed in the Controller
         'payout_links_added_fund_accounts'         => ['post',      'payout-links/{x_entity_id}/fund-accounts',       'PayoutLinkController@getFundAccountsOfContact'                     ],
         'payout_links_added_fund_accounts_cors'    => ['options',   'payout-links/{x_entity_id}/fund-accounts',       'PayoutLinkController@allowCors'                                    ],
@@ -3781,6 +3791,10 @@ class Route
         'payout_links_resend_notification',
         'payout_links_merchant_summary',
         'payout_links_batch_summary',
+        'payout_links_integration_details',
+        'payout_links_integrate_app',
+        'payout_links_fetch_shopify_order',
+
         'fetch_payment_merchant_actions',
         'virtual_account_banking_fetch_multiple',
         'fetch_payment_config',
@@ -5942,6 +5956,11 @@ class Route
 
         //Banking account service
         'banking_account_service_routes'              => '*',
+
+        // Payout Links - Shopify Integration
+        'payout_links_integrate_app'                   => '*',
+        'payout_links_fetch_shopify_order'             => Permission::CREATE_PAYOUT_LINKS,
+        'payout_links_integration_details'             => '*',
     ];
 
     public static $direct = [
@@ -6084,6 +6103,13 @@ class Route
         'salesforce_event_website_cors',
 
         'merchant_tnc_details',
+
+        // Payout Links Shopify Integration
+        'payout_links_shopify_app_install',
+        'payout_links_shopify_app_uninstall',
+        'payout_links_shopify_app_customers_redact',
+        'payout_links_shopify_app_shop_redact',
+        'payout_links_shopify_customers_data_request',
     ];
 
     /**
@@ -6761,10 +6787,13 @@ class Route
             'payout_links_customer_hosted_page',
             'payout_links_fetch_by_id',
             'payout_links_fetch_multiple',
+            'payout_links_fetch_shopify_order',
             'payout_links_generate_end_user_otp',
             'payout_links_generate_end_user_otp_cors',
             'payout_links_initiate',
             'payout_links_initiate_cors',
+            'payout_links_integrate_app',
+            'payout_links_integration_details',
             'payout_links_merchant_on_boarding_status',
             'payout_links_merchant_settings_get',
             'payout_links_merchant_settings_post',
@@ -9873,6 +9902,11 @@ class Route
         'payout_update_pull_payout_status',
         'payout_links_bulk_resend_notification_admin',
         'payout_links_customer_hosted_page',
+        'payout_links_shopify_app_install',
+        'payout_links_shopify_app_uninstall',
+        'payout_links_integrate_app',
+        'payout_links_fetch_shopify_order',
+        'payout_links_integration_details',
         'payout_links_batch_summary',
         'payout_links_batch_create',
 
@@ -10337,6 +10371,11 @@ class Route
         'get_merchant_data_for_segment'                     => HeartbeatLagChecker::SLAVE,
         'user_access'                                       => HeartbeatLagChecker::MASTER,
         'user_fetch_entity'                                 => HeartbeatLagChecker::SLAVE,
+        'payout_links_shopify_app_install'                  => HeartbeatLagChecker::MASTER,
+        'payout_links_shopify_app_uninstall'                => HeartbeatLagChecker::MASTER,
+        'payout_links_shopify_app_customers_redact'         => HeartbeatLagChecker::SLAVE,
+        'payout_links_shopify_app_shop_redact'              => HeartbeatLagChecker::SLAVE,
+        'payout_links_shopify_customers_data_request'       => HeartbeatLagChecker::SLAVE,
     ];
 
     /*

@@ -118,6 +118,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_LINK_CANCEL_REQUEST                            = 'PAYOUT_LINK_CANCEL_REQUEST';
     const PAYOUT_LINK_INITIATE_FUND_ACCOUNT_ADD                 = 'PAYOUT_LINK_INITIATE_FUND_ACCOUNT_ADD';
     const PAYOUT_LINK_PAYOUT_UPDATE_PUSH                        = 'PAYOUT_LINK_PAYOUT_UPDATE_PUSH';
+    const PAYOUT_LINK_SHOPIFY_CUSTOMER_REDACT                   = 'PAYOUT_LINK_SHOPIFY_CUSTOMER_REDACT';
+    const PAYOUT_LINK_SHOPIFY_SHOP_REDACT                       = 'PAYOUT_LINK_SHOPIFY_SHOP_REDACT';
+    const PAYOUT_LINK_SHOPIFY_CUSTOMER_DATA_REQUEST             = 'PAYOUT_LINK_SHOPIFY_CUSTOMER_DATA_REQUEST';
     const PAYOUT_SOURCE_UPDATER_JOB                             = 'PAYOUT_SOURCE_UPDATER_JOB';
 
     const VALIDATE_BULK_PAYOUT_LINKS_HEADERS                    = 'VALIDATE_BULK_PAYOUT_LINKS_HEADERS';
@@ -2810,6 +2813,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_CREATED                                        = 'PAYOUT_CREATED';
     const PAYOUT_CUSTOMER_OTP_REQUEST                           = 'PAYOUT_CUSTOMER_OTP_REQUEST';
     const PAYOUT_LINKS_REQUEST                                  = 'PAYOUT_LINKS_REQUEST';
+    const PAYOUT_LINKS_INTEGRATION_DETAILS_REQUEST              = 'PAYOUT_LINKS_INTEGRATION_DETAILS_REQUEST';
     const PAYOUT_LINKS_RESPONSE                                 = 'PAYOUT_LINKS_RESPONSE';
     const PAYOUT_LINKS_API_ROUTE                                = 'PAYOUT_LINKS_API_ROUTE';
     const PAYOUT_LINKS_MS_ROUTE                                 = 'PAYOUT_LINKS_MS_ROUTE';

@@ -2,7 +2,9 @@
 
 namespace RZP\Http\Controllers;
 
+use Redirect;
 use ApiResponse;
+use RZP\Trace\TraceCode;
 
 class PayoutLinkController extends Controller
 {
@@ -218,11 +220,74 @@ class PayoutLinkController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function installShopifyApp()
+    {
+        $redirectUrl = $this->app['payout-links']->getShopifyAppInstallRedirectURI($this->input);
+
+        return Redirect::to($redirectUrl);
+    }
+
+    public function uninstallShopifyApp()
+    {
+        $this->app['payout-links']->uninstallShopifyApp($this->input);
+    }
+
+    public function integrateApp()
+    {
+        $response = $this->app['payout-links']->integrateApp($this->input, $this->ba->getMerchant());
+
+        return ApiResponse::json($response);
+    }
+
+    public function fetchShopifyOrderDetails()
+    {
+        $response = $this->app['payout-links']->fetchShopifyOrderDetails($this->input, $this->ba->getMerchant());
+
+        return ApiResponse::json($response);
+    }
+
+    public function integrationDetails()
+    {
+        $response = $this->app['payout-links']->integrationDetails($this->input, $this->ba->getMerchant());
+
+        return ApiResponse::json($response);
+    }
+
     public function bulkResendNotification()
     {
         $response = $this->service()->bulkResendNotification($this->input);
 
         return ApiResponse::json($response);
+    }
+
+    public function shopifyCustomerRedact()
+    {
+        $this->trace->info(TraceCode::PAYOUT_LINK_SHOPIFY_CUSTOMER_REDACT,
+            [
+                'input' => $this->input,
+            ]);
+
+        return;
+    }
+
+    public function shopifyShopRedact()
+    {
+        $this->trace->info(TraceCode::PAYOUT_LINK_SHOPIFY_SHOP_REDACT,
+            [
+                'input' => $this->input,
+            ]);
+
+        return;
+    }
+
+    public function shopifyCustomerDataRequest()
+    {
+        $this->trace->info(TraceCode::PAYOUT_LINK_SHOPIFY_CUSTOMER_DATA_REQUEST,
+            [
+                'input' => $this->input,
+            ]);
+
+        return;
     }
 
     /**

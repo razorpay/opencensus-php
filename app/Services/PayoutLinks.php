@@ -39,9 +39,18 @@ use RZP\Exception\BadRequestValidationFailureException;
 class PayoutLinks
 {
     const KEY                                      = 'api';
+    const SOURCE                                   = 'source';
     const BATCH_ID                                 = 'batch_id';
     const MERCHANT_ID                              = 'merchant_id';
     const PAYOUT_LINK_ID                           = 'payout_link_id';
+    const INTEGRATION_INFO                         = 'integration_info';
+    const SOURCE_IDENTIFIER                        = 'source_identifier';
+    const IS_CORRECT_MERCHANT                      = 'is_correct_merchant';
+    const IS_INTEGRATION_SUCCESS                   = 'is_integration_success';
+    const INTEGRATE_APP_PATH                       = 'twirp/payoutlinks.Payoutlinks/IntegrateApp';
+    const SHOPIFY_INSTALL_PATH                     = 'twirp/payoutlinks.Payoutlinks/GetShopifyAppInstallRedirectURI';
+    const SHOPIFY_UNINSTALL_PATH                   = 'twirp/payoutlinks.Payoutlinks/UninstallShopifyApp';
+    const SHOPIFY_GET_ORDER_DETAILS_PATH           = 'twirp/payoutlinks.Payoutlinks/GetShopifyOrderDetails';
     const CREATE_PAYOUT_LINK_PATH                  = 'twirp/payoutlinks.Payoutlinks/CreatePayoutLink';
     const CANCEL_PAYOUT_LINK_PATH                  = 'twirp/payoutlinks.Payoutlinks/CancelPayoutLink';
     const FETCH_PAYOUT_LINK_PATH                   = 'twirp/payoutlinks.Payoutlinks/FetchPayoutLink';
@@ -50,6 +59,7 @@ class PayoutLinks
     const UPDATE_SETTINGS_PAYOUT_LINK_PATH         = 'twirp/payoutlinks.Payoutlinks/UpdateSettings';
     const PAYOUT_LINK_GENERATE_OTP_PATH            = 'twirp/payoutlinks.Payoutlinks/GenerateOTP';
     const RESEND_BULK_NOTIFICATION_PATH            = 'twirp/payoutlinks.Payoutlinks/ResendBulkNotification';
+    const GET_INTEGRATION_DETAILS_PATH             = 'twirp/payoutlinks.Payoutlinks/GetIntegrationDetails';
     const PAYOUT_LINK_GET_FUND_ACCOUNTS_BY_CONTACT = 'twirp/payoutlinks.Payoutlinks/GetFundAccountsByContact';
     const PAYOUT_LINK_VERIFY_OTP_PATH              = 'twirp/payoutlinks.Payoutlinks/VerifyOTP';
     const PAYOUT_STATUS_UPDATE                     = 'twirp/payoutlinks.Payoutlinks/UpdatePayoutLinkStatus';
@@ -68,6 +78,7 @@ class PayoutLinks
     const FUND_ACCOUNT_ID                          = 'fund_account_id';
     const ACCOUNT_NUMBER                           = 'account_number';
     const CANCELLED_AT                             = 'cancelled_at';
+    const REDIRECT_URI                             = 'redirect_uri';
     const UPDATED_AT                               = 'updated_at';
     const SEND_SMS                                 = 'send_sms';
     const SEND_EMAIL                               = 'send_email';
@@ -86,6 +97,12 @@ class PayoutLinks
     const TEST_MODE_ERROR_MESSAGE                  = 'Test Mode is currently not supported for Payout Links';
 
     const DASHBOARD_INTERNAL                       = 'DASHBOARD_INTERNAL';
+
+    const X_SHOPIFY_TOPIC                          = 'x_shopify_topic';
+    const X_SHOPIFY_HMAC_SHA256                    = 'x_shopify_hmac';
+    const X_SHOPIFY_SHOP_DOMAIN                    = 'x_shopify_shop_domain';
+    const X_SHOPIFY_API_VERSION                    = 'x_shopify_api_version';
+    const X_SHOPIFY_WEBHOOK_ID                     = 'x_shopify_webhook_id';
 
     protected $baseUrl;
 
@@ -597,9 +614,98 @@ class PayoutLinks
         return $response;
     }
 
+    public function getShopifyAppInstallRedirectURI(array $input)
+    {
+        $url = $this->getConstructedUrl(self::SHOPIFY_INSTALL_PATH);
+
+        $response = $this->makeRequest($url, $input);
+
+        return $response[self::REDIRECT_URI];
+    }
+
+    public function uninstallShopifyApp(array $input)
+    {
+        $header[self::X_SHOPIFY_TOPIC] = $this->app['request']->header('X-Shopify-Topic');
+
+        $header[self::X_SHOPIFY_HMAC_SHA256] = $this->app['request']->header('X-Shopify-Hmac-Sha256');
+
+        $header[self::X_SHOPIFY_SHOP_DOMAIN] = $this->app['request']->header('X-Shopify-Shop-Domain');
+
+        $header[self::X_SHOPIFY_API_VERSION] = $this->app['request']->header('X-Shopify-API-Version');
+
+        $header[self::X_SHOPIFY_WEBHOOK_ID] = $this->app['request']->header('X-Shopify-Webhook-Id');
+
+        $data['header'] = $header;
+
+        $data['input'] = json_encode($input, true);
+
+        /*$calculatedHmac = base64_encode(hash_hmac('sha256', json_encode($input, true), 'secret', true));*/
+
+        $url = $this->getConstructedUrl(self::SHOPIFY_UNINSTALL_PATH);
+
+        $this->makeRequest($url, $data);
+    }
+
+    public function integrateApp(array $input, MerchantEntity $merchant)
+    {
+        $merchantId = array_pull($input, self::MERCHANT_ID, $merchant->getId());
+
+        $request[self::MERCHANT_ID] = $merchantId;
+
+        $request[self::SOURCE] = array_pull($input, self::SOURCE, "");
+
+        $request[self::SOURCE_IDENTIFIER] = array_pull($input, self::SOURCE_IDENTIFIER, "");
+
+        $request[self::INTEGRATION_INFO] = array_except(
+            $input,
+            [
+                self::SOURCE,
+                self::MERCHANT_ID,
+                self::SOURCE_IDENTIFIER
+            ]);
+
+        $url = $this->getConstructedUrl(self::INTEGRATE_APP_PATH);
+
+        $response = $this->makeRequest($url, $request);
+
+        $response[self::IS_INTEGRATION_SUCCESS] = array_pull($response, self::IS_INTEGRATION_SUCCESS, false);
+
+        return $response;
+    }
+
+    public function fetchShopifyOrderDetails(array $input, MerchantEntity $merchant)
+    {
+        $input[self::MERCHANT_ID] = $merchant->getId();
+
+        $url = $this->getConstructedUrl(self::SHOPIFY_GET_ORDER_DETAILS_PATH);
+
+        $response = $this->makeRequest($url, $input);
+
+        $response[self::IS_CORRECT_MERCHANT] = array_pull($response, self::IS_CORRECT_MERCHANT, false);
+
+        return $response;
+    }
+
     public function bulkResendNotification(array $input)
     {
         $url = $this->getConstructedUrl(self::RESEND_BULK_NOTIFICATION_PATH);
+
+        $response = $this->makeRequest($url, $input);
+
+        return $response;
+    }
+
+    public function integrationDetails(array $input, MerchantEntity $merchant)
+    {
+        $this->trace->info(TraceCode::PAYOUT_LINKS_INTEGRATION_DETAILS_REQUEST,
+            [
+                'input' => $input,
+                'logged_in_merchant' => $merchant->getId(),
+            ]);
+
+        $input[self::MERCHANT_ID] = array_pull($input, self::MERCHANT_ID, $merchant->getId());
+
+        $url = $this->getConstructedUrl(self::GET_INTEGRATION_DETAILS_PATH);
 
         $response = $this->makeRequest($url, $input);
 

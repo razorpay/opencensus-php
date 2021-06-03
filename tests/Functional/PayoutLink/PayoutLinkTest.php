@@ -2319,4 +2319,128 @@ class PayoutLinkTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testShopifyAppInstallation()
+    {
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $redirectUri = "https://test.myshopify.com/admin/oauth/authorize?client_id=CLIENT_ID&scope=CLIENT_SECRET&redirect_uri=REDIRECT_URI&state=STATE";
+
+        $plMock->shouldReceive('getShopifyAppInstallRedirectURI')->andReturn($redirectUri);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->directAuth();
+
+        $request = [
+            'method' => 'GET',
+            'url'    => '/payout-links/shopify/install',
+            'content' => [
+                'shop' => 'test.myshopify.com',
+                'timestamp' => '1610405523',
+                'hmac' => 'some-hmac',
+            ]
+        ];
+
+        $response = $this->sendRequest($request);
+
+        // redirection request
+        $this->assertEquals(302, $response->getStatusCode());
+
+        $this->assertContentTypeForResponse('text/html; charset=UTF-8', $response);
+    }
+
+    public function testIntegrateApp()
+    {
+        $response = ['is_integration_success' => true];
+
+        $plMock = $this->mockPLServiceMakeRequestMethod($response);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchShopifyOrderDetails()
+    {
+        $response = [
+            'shop' => 'test.myshopify.com',
+            'order_id' => '123456789',
+            'order_amount' => 1234.5,
+        ];
+
+        $plMock = $this->mockPLServiceMakeRequestMethod($response);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchIntegrationDetails()
+    {
+        $response = [
+            'id' => '4ZAH1sxYJ0RGrU',
+            'source' => 'shopify',
+            'source_identifier' => 'test.myshopify.com',
+            'merchant_id' => '10000000000000',
+            'integration_status' => 'success'
+        ];
+
+        $plMock = $this->mockPLServiceMakeRequestMethod($response);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testUninstallShopifyApp()
+    {
+        $response = array();
+
+        $plMock = $this->mockPLServiceMakeRequestMethod($response);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->directAuth();
+
+        $request = [
+            'method' => 'POST',
+            'url'    => '/payout-links/shopify/uninstall',
+            'headers' => [
+                'X-Shopify-Topic' => 'app/uninstalled',
+                'X-Shopify-Hmac-Sha256' => 'some-hmac',
+                'X-Shopify-Shop-Domain' => 'test.myshopify.com',
+                'X-Shopify-API-Version' => '2020-21',
+                'X-Shopify-Webhook-Id' => 'webhook-id-1'
+            ],
+            'content' => [
+                'data-1' => 'value-1',
+                'data-2' => 'value-2',
+            ]
+        ];
+
+        $response = $this->sendRequest($request);
+
+        // redirection request
+        $this->assertResponseOk($response);
+    }
+
+    protected function mockPLServiceMakeRequestMethod($response)
+    {
+        $plMock = $this->getMockBuilder("RZP\Services\PayoutLinks")
+            ->enableOriginalConstructor()
+            ->setConstructorArgs([$this->app])
+            ->setMethods(array("makeRequest"))
+            ->getMock();
+
+        $plMock->method('makeRequest')->willReturn($response);
+
+        return $plMock;
+    }
 }

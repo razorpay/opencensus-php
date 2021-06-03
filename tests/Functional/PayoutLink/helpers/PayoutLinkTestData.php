@@ -2115,4 +2115,53 @@ return [
             ],
         ],
     ],
+
+    'testIntegrateApp' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payout-links/integrate-app',
+            'content' => [
+                'source' => 'shopify',
+                'source_identifier' => 'test.myshopify.com',
+                'code' => 'some-code',
+                'timestamp' => 'some-code',
+                'state' => 'some-state',
+                'host' => 'some-host',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'is_integration_success' => true
+            ],
+        ],
+    ],
+
+    'testFetchShopifyOrderDetails' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/payout-links/shopify/orders',
+            'content' => [
+                'shop' => 'test.myshopify.com',
+                'order_id' => '123456789',
+            ]
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testFetchIntegrationDetails' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/payout-links/_meta/integration-details',
+            'content' => [
+                'source' => 'shopify',
+            ]
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
 ];
