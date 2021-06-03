@@ -389,7 +389,7 @@ const PersonalDetailsForm = ({
             <div>
               <AsyncBtn.Primary
                 type="submit"
-                className="btn btn-primary no-margin"
+                className="btn btn-primary no-margin check-cta"
                 onClick={handleSubmit}
                 isPending={isPending}
               >

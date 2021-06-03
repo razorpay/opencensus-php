@@ -54,7 +54,7 @@ const IntentForm = ({ merchantId, updatedValues, handleIntentSubmit }) => {
         <Input.Group
           required
           className="InputGroup--inline InputGroup--vTop intent-field"
-          label="How much credit do you know?"
+          label="How much credit do you need?"
         >
           <div className="Input-content credit-need">
             <Input.CurrencySelect
@@ -74,13 +74,12 @@ const IntentForm = ({ merchantId, updatedValues, handleIntentSubmit }) => {
             />
           </div>
         </Input.Group>
-        <p className="credit-need-desc">You can get a line of credit from ₹5,000 to ₹10,00,000</p>
       </div>
 
       <Input.Group
         required
         className="InputGroup--inline InputGroup--vTop intent-field"
-        label="How much credit do you know?"
+        label="How do you plan to use this credit?"
       >
         <div className="Input-content credit-use">
           <div>

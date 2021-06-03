@@ -31,7 +31,7 @@ const IntentForm = ({ loanApplicationDetails, handleIntentSubmit }) => {
           <Input.Group
             required
             className="InputGroup--inline InputGroup--vTop"
-            label="How much credit do you know?"
+            label="How much credit do you need?"
           >
             <Input.CurrencySelect
               className="credit-need-currency"
@@ -54,7 +54,7 @@ const IntentForm = ({ loanApplicationDetails, handleIntentSubmit }) => {
           <Input.Group
             required
             className="InputGroup--inline InputGroup--vTop"
-            label="How do you plan to use the line of credit?"
+            label="How do you plan to use this credit?"
           >
             <div className="Input-content credit-use">
               <div>
