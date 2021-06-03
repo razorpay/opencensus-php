@@ -48,32 +48,19 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
 
         $merchant_id = $this->getMerchantId();
 
-        if (key_exists(FDConstants::TICKET_ID, $observerData) === false or
-            key_exists(FDConstants::FD_INSTANCE, $observerData) === false)
-        {
-            $response = $this->fdService->postTicketOnMerchantBehalf($this->buildTicketBodyForActivationStatusChange($merchant_id),
-                $merchant_id);
-
-            $fdInstance = FDConstants::RZP;
-
-            $ticket_id = $response[FDConstants::TICKET_ID];
-
-            $this->app["trace"]->info(TraceCode::PERFORM_ACTION_OBSERVER_DATA, [
-                FDConstants::TICKET_ID    => $ticket_id,
-            ]);
-        }
-        else
+        if (key_exists(FDConstants::TICKET_ID, $observerData) === true or
+            key_exists(FDConstants::FD_INSTANCE, $observerData) === true)
         {
             $fdInstance = $observerData[FDConstants::FD_INSTANCE];
 
             $ticket_id = $observerData[FDConstants::TICKET_ID];
+
+            $this->fdService->postTicketReplyOnAgentBehalf($ticket_id,
+                                                           implode("<br><br>", $this->getTicketReplyContent(Constants::APPROVE, $merchant_id)), $fdInstance,
+                                                           $this->getMerchantId());
+
+            $this->fdService->resolveAndAddAutomatedResolvedTagToTicket($fdInstance, $ticket_id);
         }
-
-        $this->fdService->postTicketReplyOnAgentBehalf($ticket_id,
-            implode("<br><br>",$this->getTicketReplyContent(Constants::APPROVE, $merchant_id)), $fdInstance,
-            $this->getMerchantId());
-
-        $this->fdService->resolveAndAddAutomatedResolvedTagToTicket($fdInstance, $ticket_id);
     }
 
     public function onClose(array $observerData)
@@ -144,30 +131,4 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
 
         return array();
     }
-
-    protected function buildTicketBodyForActivationStatusChange($merchant_id)
-    {
-        $merchant = $this->getMerchant($merchant_id);
-
-        return [
-            'email'                         =>      $merchant->getEmail(),
-            'name'                          =>      $merchant->getName(),
-            'description'                   =>      FDConstants::ACTIVATION_SUBJECT,
-            'subject'                       =>      'Merchant Account Status Change',
-            FDConstants::TYPE               =>      FDConstants::SERVICE_REQUEST_TICKET_TYPE,
-            FDConstants::GROUP_ID           =>      (int)$this->app['config']->get('applications.freshdesk.activation.rzp.groupId'),
-            FDConstants::RESPONDER_ID       =>      (int)$this->app['config']->get('applications.freshdesk.activation.rzp.agentId'),
-            FDConstants::PRIORITY           =>      FDPriority::getValueForPriorityString(FDPriority::LOW),
-            FDConstants::CUSTOM_FIELDS=>
-                [
-                    FDConstants::CF_REQUESTOR_CATEGORY    => 'Dashboard',
-                    FDConstants::CF_REQUESTOR_SUBCATEGORY => 'Activation',
-                    FDConstants::CF_CATEGORY              => FDConstants::ACTIVATION_CF_CATEGORY,
-                    FDConstants::CF_SUBCATEGORY           => FDConstants::ACTIVATION_CF_SUBCATEGORY,
-                    FDConstants::CF_TICKET_QUEUE          => FDConstants::MERCHANT_TICKET_QUEUE,
-                    FDConstants::CF_PRODUCT               => FDConstants::PAYMENT_GATEWAY_CF_PRODUCT,
-                ]
-        ];
-    }
-
 }
