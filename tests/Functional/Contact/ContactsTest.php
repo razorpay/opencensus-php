@@ -240,6 +240,12 @@ class ContactsTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateContactWithApostrophe()
+    {
+        $this->startTest();
+    }
+
+
     public function testCreateContactLiveModeNonKycActivatedNonCaActivated()
     {
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
