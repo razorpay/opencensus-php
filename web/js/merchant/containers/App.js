@@ -232,15 +232,6 @@ export default class App extends Component {
       this.fetchUser().then(({ data }) => {
         const user = data;
         const role = user.userRole;
-        if (user.isFdTicketsEnabled && (role === 'owner' || role === 'admin')) {
-          this.props.fetchActiveTickets().then(() => {
-            window.rzpAnalytics({
-              eventCategory: 'Ticket Dashboard',
-              eventAction: 'support form tickets fetched',
-              eventLabel: `Tickets | Status: Success`,
-            });
-          });
-        }
         if (!currentMode) {
           currentMode = user.isActivated ? 'live' : 'test';
         } else if (!user.isActivated) {
