@@ -199,7 +199,7 @@ return [
                     '1' => [
                         'idempotency_key' => 'myIdempotencyKey',
                         'success'         => false,
-                        'error'           => ['description' => 'The mpan must be 16 digits.', 'code' => null],
+                        'error'           => ['description' => 'The mpan must be 16 digits.', 'code' => 'SERVER_ERROR'],
                         'VPAN'            => '123',
                         'MPAN'            => '512260******8578',
                         'RPAN'            => '610002******8581',

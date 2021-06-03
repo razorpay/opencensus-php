@@ -91,7 +91,7 @@ class Service extends Base\Service
                     {
                         $aesCrypto =  new AESCrypto();
 
-                        $mpan = $aesCrypto->decryptString($result[$batchHeader]);    
+                        $mpan = $aesCrypto->decryptString($result[$batchHeader]);
                     }
                     else
                     {
@@ -110,15 +110,6 @@ class Service extends Base\Service
 
                 $result[Constants::BATCH_HTTP_STATUS_CODE] = 201;
             });
-        }
-        catch (BaseException $exception)
-        {
-            $result[Constants::BATCH_ERROR] = [
-                Constants::BATCH_ERROR_DESCRIPTION => $exception->getMessage(),
-                Constants::BATCH_ERROR_CODE => $exception->getPublicError(),
-            ];
-
-            $result[Constants::BATCH_HTTP_STATUS_CODE] = $exception->getCode();
         }
 
         catch (Throwable $throwable)
@@ -155,17 +146,17 @@ class Service extends Base\Service
         $mpans = $this->repo->mpan->fetchMpansForTokenization($count);
 
         foreach($mpans as $mpan)
-        {    
-            try 
+        {
+            try
             {
                 $tokenizedMpan = $this->app['mpan.cardVault']->tokenize(['secret' => $mpan->getMpan()]);
 
                 $editInput[Entity::MPAN] = $tokenizedMpan;
-    
-                (new Core)->edit($mpan, $editInput);    
+
+                (new Core)->edit($mpan, $editInput);
 
                 $response[Constants::TOKENIZATION_SUCCESS_COUNT]++;
-            } 
+            }
             catch(\Throwable $ex)
             {
                 $this->trace->traceException($ex,
@@ -176,7 +167,7 @@ class Service extends Base\Service
                     ]);
 
                 $response[Constants::TOKENIZATION_FAILED_COUNT]++;
-            }     
+            }
         }
 
         $this->trace->info(
@@ -191,7 +182,7 @@ class Service extends Base\Service
     {
         foreach (Mpan::BATCH_HEADER_NETWORK_CODE_MAP as $batchHeader => $networkCode) {
 
-            if ((isset($row[$batchHeader]) === false) 
+            if ((isset($row[$batchHeader]) === false)
                 or (empty($row[$batchHeader]) === true))
             {
                 continue;
@@ -200,7 +191,7 @@ class Service extends Base\Service
             $aesCrypto =  new AESCrypto();
 
             $decryptedMpan = $aesCrypto->decryptString($row[$batchHeader]);
-            
+
             $row[$batchHeader] = (new Entity)->getMaskedMpan($decryptedMpan);
         }
     }
