@@ -376,12 +376,14 @@ class Processor extends BankingAccount\Gateway\Processor
             }
             catch (GatewayErrorException $ex)
             {
+                $traceRequest = $this->unsetSensitiveDetails($request);
+
                 $this->trace->traceException(
                     $ex,
                     Trace::CRITICAL,
                     TraceCode::MOZART_SERVICE_REQUEST_FAILED,
                     [
-                        'request' => $request,
+                        'request' => $traceRequest,
                         'channel' => BankingAccount\Channel::RBL,
                     ]);
 
@@ -396,12 +398,14 @@ class Processor extends BankingAccount\Gateway\Processor
             }
             catch (\Throwable $exception)
             {
+                $traceRequest = $this->unsetSensitiveDetails($request);
+
                 $this->trace->traceException(
                     $exception,
                     Trace::CRITICAL,
                     TraceCode::MOZART_SERVICE_REQUEST_FAILED,
                     [
-                        'request' => $request,
+                        'request' => $traceRequest,
                         'channel' => BankingAccount\Channel::RBL
                     ]);
 
@@ -618,5 +622,15 @@ class Processor extends BankingAccount\Gateway\Processor
         }
 
         (new Validator)->validateInput(Validator::ACCOUNT_ACTIVATE, $input);
+    }
+
+    protected function unsetSensitiveDetails(array $request)
+    {
+        if (isset($request[Fields::SOURCE_ACCOUNT][Fields::CREDENTIALS]) === true)
+        {
+            unset($request[Fields::SOURCE_ACCOUNT][Fields::CREDENTIALS]);
+        }
+
+        return $request;
     }
 }
