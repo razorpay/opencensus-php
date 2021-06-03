@@ -563,7 +563,9 @@ class Core extends Base\Core
 
     private function resetDefaultMethodsBasedOnMerchantPricingPlan(Merchant\Entity $merchant, $defaultMethods)
     {
-        $plan = $this->repo->pricing->getMerchantPricingPlan($merchant);
+        $pricingPlanId = $merchant->getPricingPlanId();
+
+        $plan = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($pricingPlanId);
 
         $methodsToCheck = Payment\Method::getAllPaymentMethods();
 
