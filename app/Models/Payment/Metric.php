@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Upi\Base\ProviderCode;
 
 class Metric extends Base\Core
 {
@@ -31,6 +32,7 @@ class Metric extends Base\Core
     const LABEL_TRACE_SOURCE                    = 'source';
     const LABEL_TRACE_EXCEPTION_CLASS           = 'exception_class';
     const LABEL_UPI_FLOW                        = 'upi_flow';
+    const LABEL_UPI_PSP                         = 'upi_psp';
     const LABEL_PAYMENT_IS_TPV                  = 'is_tpv';
 
     const LABEL_LIBRARY                         = 'library';
@@ -249,7 +251,8 @@ class Metric extends Base\Core
     protected function getDefaultUpiDimensions(Entity $payment): array
     {
         $upiDimensions = [
-            self::LABEL_UPI_FLOW        => null,
+            self::LABEL_UPI_FLOW    => null,
+            self::LABEL_UPI_PSP     => null,
         ];
 
         if ($payment->isUpi() === false)
@@ -263,7 +266,10 @@ class Metric extends Base\Core
 
             $upiFlow  = $upi->getFlow();
 
+            $psp = $this->getUpiPsp($upi);
+
             $upiDimensions[self::LABEL_UPI_FLOW] = $upiFlow ?? null;
+            $upiDimensions[self::LABEL_UPI_PSP]  = $psp;
         }
         catch (\Error $exception)
         {
@@ -276,6 +282,20 @@ class Metric extends Base\Core
         }
 
         return $upiDimensions;
+    }
+
+    protected function getUpiPsp($upi)
+    {
+        $vpa = $upi->getVpa();
+
+        if (isset($vpa) === false)
+        {
+            return null;
+        }
+
+        $psp = ProviderCode::getPspForVpa($vpa);
+
+        return $psp;
     }
 
     protected function getDefaultExceptionDimensions(\Throwable $e): array
