@@ -933,7 +933,6 @@ app
               .identity(true)
               .then(function (userDetails) {
                 userIdentitySuccess(userDetails);
-                fireCriteoSignupPixel('signup_complete', userDetails.email);
               })
               .catch(function (errors) {
                 $scope.updateOneTap(false);
@@ -1264,7 +1263,6 @@ app
                 setCookie('midExists', !!data.current);
 
                 segmentUserIdentify(data);
-                fireCriteoSignupPixel('signup_complete', data.user.email);
                 fireDLSuccessEvents('signup.create_account', {
                   mode: $scope.eventsMode,
                   version: 1,
@@ -2768,7 +2766,7 @@ app
             $scope.isCriteoPixelFired = true;
           }
         } else if (eventName === 'signup_complete') {
-          window.criteo_q.push({ event: 'trackTransaction' }, { event: 'setEmail', email: email });
+          window.criteo_q.push({ event: 'trackTransaction', id: '' }, { event: 'setEmail', email: email });
         }
       }
 
@@ -3175,6 +3173,8 @@ app
           name: 'reddit',
           event: 'SignUp',
         });
+
+        fireCriteoSignupPixel('signup_complete', $scope.signup.data.email);
       }
 
       // Updating contact properties on hubspot
