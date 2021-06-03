@@ -268,7 +268,7 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                   width="auto"
                   name="gstin"
                   label="GST Identification Number (GSTIN)"
-                  helpText="Should match either of your registered address or operational address"
+                  helpText="Enter GSTIN & get reviewed faster. Should match your business address."
                   value={formikProps.values.gstin}
                   errorText={formikProps.touched.gstin && formikProps.errors.gstin}
                   onBlur={() => {

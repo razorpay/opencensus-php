@@ -603,7 +603,7 @@ const businessDetails = [
       },
       placeholder: 'Enter GSTIN',
       size: 'small',
-      info: 'The entered GST Number should match either of the Address given above.',
+      info: 'Enter GSTIN & get reviewed faster. Should match your business address.',
       validator: (value) => {
         if (!isValidGSTIN(value)) {
           return 'Please provide valid GSTIN';
@@ -908,7 +908,7 @@ const uploadFields = [
     _autoRenderImpure: true, // Re-render to show the error
     placeholder: 'Enter GSTIN',
     size: 'small',
-    info: 'The entered GST Number should match either of the Address given above.',
+    info: 'Enter GSTIN & get reviewed faster. Should match your business address.',
     validator: (value) => {
       if (!isValidGSTIN(value)) {
         return 'Please provide valid GSTIN';
