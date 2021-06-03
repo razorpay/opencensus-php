@@ -6,14 +6,15 @@ namespace Unit\Models\Merchant\Detail;
 use DB;
 use Mockery;
 use RZP\Constants\Mode;
-use RZP\Tests\Functional\TestCase;
+use RZP\Services\RazorXClient;
 use RZP\Services\MerchantRiskClient;
 use RZP\Models\Merchant\Detail\BusinessType;
+use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Models\Merchant\Detail\DeDupe\Constants;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Models\Merchant\Detail\DeDupe\Core as DedupeCore;
 
-class DedupeTest extends TestCase
+class DedupeTest extends OAuthTestCase
 {
     protected function mockMerchantRiskClient(string $merchantId, array $fields = [])
     {
@@ -93,6 +94,39 @@ class DedupeTest extends TestCase
         $merchant = $this->fixtures->create('merchant', ['org_id' => $dummyOrg['id']]);
 
         $this->assertEquals(false, $core->isDedupeRequired($merchant));
+    }
+
+    public function testDedupeBeingSkippedForFullyManagedSubmerchant()
+    {
+        $subMerchant = $this->createSubmerchantAndRelatedEntities('fully_managed');
+
+        $this->mockRazorx();
+
+        $core = new DedupeCore();
+
+        $this->assertFalse($core->isDedupeRequired($subMerchant));
+    }
+
+    public function testDedupeBeingNotSkippedForNonFullyManagedSubmerchant()
+    {
+        $subMerchant = $this->createSubmerchantAndRelatedEntities('aggregator');
+
+        $this->mockRazorx();
+
+        $core = new DedupeCore();
+
+        $this->assertTrue($core->isDedupeRequired($subMerchant));
+    }
+
+    public function testDedupeBeingNotSkippedForNonSubmerchant()
+    {
+        $merchant = $this->fixtures->create('merchant', ['email' => 'submerchant@gmail.com']);
+
+        $this->mockRazorx();
+
+        $core = new DedupeCore();
+
+        $this->assertTrue($core->isDedupeRequired($merchant));
     }
 
     public function testDedupeTrueAndActionOnFields()
@@ -286,4 +320,41 @@ class DedupeTest extends TestCase
         $this->assertFalse($response['merchant']['activated']);
     }
 
+    private function createSubmerchantAndRelatedEntities(string $partnerType)
+    {
+        $partner = $this->fixtures->create('merchant', ['partner_type' => $partnerType]);
+
+        $app = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => $partnerType]);
+
+        $subMerchant = $this->fixtures->create('merchant', ['email' => 'submerchant@gmail.com']);
+
+        $accessMap = [
+            'id'              => 'CMe2wjY0hiWBrL',
+            'entity_type'     => 'application',
+            'entity_id'       => $app->getId(),
+            'merchant_id'     => $subMerchant->getId(),
+            'entity_owner_id' => $partner->getId(),
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMap);
+
+        return $subMerchant;
+    }
+
+
+    private function mockRazorx()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx
+            ->method('getTreatment')
+            ->will($this->returnCallback(function($mid, $feature, $mode) {
+                return 'on';
+            }));
+    }
 }

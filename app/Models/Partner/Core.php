@@ -118,6 +118,20 @@ class Core extends Detail\Core
                 ($partner->isKycHandledByPartner() === true));
     }
 
+    public function isFullyManagedSubMerchant(Merchant\Entity $subMerchant): bool
+    {
+        $fullyManagedSubMerchant = false;
+
+        $partner = $subMerchant->getNonPurePlatformPartner();
+
+        if (empty($partner) === false && $partner->getPartnerType() === Merchant\Constants::FULLY_MANAGED)
+        {
+            $fullyManagedSubMerchant = true;
+        }
+
+        return $fullyManagedSubMerchant;
+    }
+
     public function validateExternalIdForPartnerSubmerchant(Merchant\Entity $partner, string $externalId)
     {
         $merchantCore = new Merchant\Core;

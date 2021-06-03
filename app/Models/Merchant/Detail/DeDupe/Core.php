@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Detail\DeDupe;
 
 use RZP\Constants\Mode;
 use RZP\Models\Base;
+use RZP\Models\Partner;
 use RZP\Models\Admin\Org;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -46,6 +47,13 @@ class Core extends Base\Core
         }
 
         if ($merchant->isLinkedAccount() === true)
+        {
+            return false;
+        }
+
+        $partnerCore = (new Partner\Core);
+
+        if($partnerCore->isFullyManagedSubMerchant($merchant) === true)
         {
             return false;
         }
