@@ -2154,8 +2154,9 @@ class ErrorCode
 
     const SERVER_ERROR_EDGE_PROXY_NO_CONFIG                                         = 'SERVER_ERROR_EDGE_PROXY_NO_CONFIG';
 
-    const BAD_REQUEST_MERCHANT_TNC_NOT_APPLICABLE                                   = 'BAD_REQUEST_MERCHANT_TNC_NOT_APPLICABLE';
+    const BAD_REQUEST_NON_EXISTING_QR_CODE_ID                                       = 'BAD_REQUEST_NON_EXISTING_QR_CODE_ID';
 
+    const BAD_REQUEST_MERCHANT_TNC_NOT_APPLICABLE                                   = 'BAD_REQUEST_MERCHANT_TNC_NOT_APPLICABLE';
 
     // Onboarding APIs
     const BAD_REQUEST_WALLET_INSTRUMENT_INVALID                                     = 'BAD_REQUEST_WALLET_INSTRUMENT_INVALID';

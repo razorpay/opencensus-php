@@ -2,6 +2,9 @@
 
 namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 
+use RZP\Base\ConnectionType;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\QrCode;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
@@ -58,6 +61,27 @@ class Service extends QrCode\Service
 
             throw $ex;
         }
+    }
+
+    public function fetchMultiple($input)
+    {
+        $input[Entity::ENTITY_TYPE] = 'qr_code';
+
+        $qrCodes = (new Repository)->fetch($input, $this->merchant->getId(), ConnectionType::DATA_WAREHOUSE);
+
+        return $qrCodes->toArrayPublic();
+    }
+
+    public function fetch($id)
+    {
+        $qrCode = (new Repository)->findByPublicIdAndMerchant($id, $this->merchant);
+
+        if ($qrCode->source !== null)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_NON_EXISTING_QR_CODE_ID, Entity::ID, [$id]);
+        }
+
+        return $qrCode->toArrayPublic();
     }
 
     public function publishQrCodeEvent($entity, $event)

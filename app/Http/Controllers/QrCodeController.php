@@ -27,6 +27,22 @@ class QrCodeController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function get(string $id)
+    {
+        $entity = (new NonVAQrCodeService)->fetch($id);
+
+        return ApiResponse::json($entity);
+    }
+
+    public function list()
+    {
+        $input = Request::all();
+
+        $entities = (new NonVAQrCodeService)->fetchMultiple($input);
+
+        return ApiResponse::json($entities);
+    }
+
     public function fetchTestQrCode(string $id)
     {
         $this->app['basicauth']->setModeAndDbConnection(Mode::TEST);

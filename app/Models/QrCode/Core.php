@@ -11,7 +11,7 @@ use RZP\Models\FileStore;
 
 class Core extends Base\Core
 {
-    private $virtualAccount;
+    protected $virtualAccount;
 
     /**
      * Base qrcode url from which qr code link is generated.

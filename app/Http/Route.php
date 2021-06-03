@@ -21,6 +21,8 @@ class Route
         // Dev routes
         'inspector_view_get'                      => ['get',      '_inspector',                                      'GenericController@getInspectorIndex'                               ],
 
+        // qr code search
+        'qr_code_fetch_multiple'                   => ['get',      'payments/qr_codes',                              'QrCodeController@list'                                             ],
         // App routes
         'account'                                  => ['get',      'account',                                        'PublicController@getAccount'                                       ],
         'checkout'                                 => ['get',      'checkout',                                       'MerchantController@getCheckout'                                    ],
@@ -486,6 +488,7 @@ class Route
         'gateway_payment_validate_bharatqr'        => ['post',     'payment/validate/bharatqr/{gateway}',            'BharatQrController@processBharatQrValidatePayment'                 ],
         'qr_code_download_live'                    => ['get',      'l/qrcode/{id}',                                  'QrCodeController@fetchLiveQrCode'                                  ],
         'qr_code_download_test'                    => ['get',      't/qrcode/{id}',                                  'QrCodeController@fetchTestQrCode'                                  ],
+        'qr_code_fetch'                            => ['get',      'payments/qr_codes/{id}',                         'QrCodeController@get'                                              ],
         'qr_code_close'                            => ['post',     'payments/qr_codes/{id}/close',                   'QrCodeController@closeQrCode'                                      ],
         'qr_code_create'                           => ['post',     'payments/qr_codes',                              'QrCodeController@create'                                           ],
         'virtual_account_create'                   => ['post',     'virtual_accounts',                               'VirtualAccountController@create'                                   ],
@@ -2624,6 +2627,7 @@ class Route
     ];
 
     public static $private = [
+        'qr_code_fetch_multiple',
         'wallet_service',
         'mir_instruments_get',
         'settlement_ondemand_fees',
@@ -2771,6 +2775,7 @@ class Route
         'transfer_create_reversal',
         'qr_code_create',
         'qr_code_close',
+        'qr_code_fetch',
         'virtual_account_create',
         'virtual_account_create_for_banking',
         'virtual_account_edit',
@@ -7047,6 +7052,8 @@ class Route
             'virtual_account_configs',
             'qr_code_create',
             'qr_code_close',
+            'qr_code_fetch',
+            'qr_code_fetch_multiple',
             'virtual_account_create',
             'virtual_account_create_for_banking',
             'virtual_account_create_for_internal',
@@ -9222,6 +9229,7 @@ class Route
             'loc_bulk_withdrawal_update',
             'subscription_registration_charge_token',
             'subscription_registration_create_links',
+            'qr_code_create',
             'virtual_account_create',
             'oauth_token_create',
             'merchant_inheritance_parent_set_bulk',
@@ -9500,6 +9508,8 @@ class Route
         'payment_create_subscriptions'         => [Feature::SUBSCRIPTIONS],
         'qr_code_create'                       => [Feature::QR_CODES],
         'qr_code_close'                        => [Feature::QR_CODES],
+        'qr_code_fetch'                        => [Feature::QR_CODES],
+        'qr_code_fetch_multiple'               => [Feature::QR_CODES],
         'virtual_account_create'               => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_edit'                 => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_close'                => [Feature::VIRTUAL_ACCOUNTS],
