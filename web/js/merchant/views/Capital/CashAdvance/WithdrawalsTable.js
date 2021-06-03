@@ -1,10 +1,12 @@
 import TableBody from 'common/ui/TableBody';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import Amount from 'common/ui/Amount';
-import { STATUS_LABELS, StatusPillClasses } from './constants';
+import { STATUS_LABELS, StatusPillClasses, STATUSES } from './constants';
 import { Link, withRouter } from 'react-router-dom';
 
 const ListItem = ({ withdrawal, onEdit, history, trackGA }) => {
+  const disbursedAtDate = withdrawal.disbursed_at || withdrawal.processed_at;
+
   return (
     <EntityItemRow id={withdrawal.id} onClick={onEdit}>
       <td>
@@ -22,8 +24,8 @@ const ListItem = ({ withdrawal, onEdit, history, trackGA }) => {
       </td>
       {/*tODO convert from utc*/}
       <td>
-        {withdrawal.processed_at && moment(withdrawal.processed_at).isValid()
-          ? moment(withdrawal.processed_at).format('LLL')
+        {disbursedAtDate && moment(disbursedAtDate).isValid()
+          ? moment(disbursedAtDate).format('LLL')
           : '--'}
       </td>
       <td>{withdrawal.due_date ? moment(withdrawal.due_date).format('LL') : '--'}</td>
