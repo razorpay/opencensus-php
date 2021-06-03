@@ -33,6 +33,7 @@ final class Shield
     const BASE_AMOUNT                  = 'base_amount';
     const CURRENCY                     = 'currency';
     const RECURRING                    = 'recurring';
+    const RECURRING_TYPE               = 'recurring_type';
     const CONTACT                      = 'contact';
     const INTERNATIONAL                = 'international';
     const CALLBACK_URL                 = 'callback_url';
@@ -82,6 +83,8 @@ final class Shield
     const INTEGRATION                  = 'integration';
     const RZP_CHECKOUT_LIBRARY         = 'rzp_checkout_library';
     const PACKAGE_NAME                 = 'package_name';
+    const TOKEN_ID                     = 'token_id';
+    const TOKEN_MAX_AMOUNT             = 'token_max_amount';
 
     const IS_PARTNER_INITIATED_PAYMENT = 'is_partner_initiated_payment';
 

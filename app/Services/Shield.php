@@ -175,6 +175,25 @@ class Shield
         $payloadDetails[ShieldConstants::INTERNATIONAL] = $payment->isInternational();
         $payloadDetails[ShieldConstants::CALLBACK_URL]  = $payment->getCallbackUrl();
 
+        if ($payment->isRecurring() === true)
+        {
+            $payloadDetails[ShieldConstants::RECURRING_TYPE] = $payment->getRecurringType();
+        }
+
+        $paymentToken = $payment->getGlobalOrLocalTokenEntity();
+
+        if (is_null($paymentToken) === false)
+        {
+            $payloadDetails[ShieldConstants::TOKEN_ID] = $paymentToken->getId();
+
+            $tokenMaxAmount = $paymentToken->getMaxAmount();
+
+            if (is_null($tokenMaxAmount) === false)
+            {
+                $payloadDetails[ShieldConstants::TOKEN_MAX_AMOUNT] = $tokenMaxAmount;
+            }
+        }
+
         $payloadDetails[ShieldConstants::EMAIL] =
             (($payment->isCustomerMailAbsent() === false) ? $payment->getEmail() : ShieldConstants::DEFAULT_EMAIL);
 

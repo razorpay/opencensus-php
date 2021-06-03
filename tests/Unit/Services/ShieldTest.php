@@ -2,8 +2,11 @@
 
 namespace RZP\Tests\Unit\Services;
 
-use RZP\Exception;
-use RZP\Tests\TestCase;
+use ReflectionClass;
+use RZP\Services\Shield;
+use RZP\Tests\Functional\TestCase;
+use RZP\Models\Payment\RecurringType;
+use RZP\Constants\Shield as ShieldConstants;
 
 class ShieldTest extends TestCase
 {
@@ -29,5 +32,32 @@ class ShieldTest extends TestCase
             'created_at' => 1518608813,
             'updated_at' => 1518608813
         ], $result);
+    }
+
+    public function testPopulatePaymentDetailsForRecurring()
+    {
+        $class = new ReflectionClass(Shield::class);
+        $populatePaymentDetailsMethod = $class->getMethod('populatePaymentDetails');
+        $populatePaymentDetailsMethod->setAccessible(true);
+
+        $token = $this->fixtures->create('customer:emandate_token', [
+            'max_amount'     => 10000
+        ]);
+
+        $payment = $this->fixtures->create('payment:captured', [
+            'token_id'       => $token->getId(),
+            'recurring'      => true,
+            'recurring_type' => RecurringType::AUTO,
+        ]);
+
+        $input = [];
+
+        $populatePaymentDetailsMethod->invokeArgs(new Shield($this->app), [$payment, &$input]);
+
+        $this->assertEquals(RecurringType::AUTO, $input[ShieldConstants::RECURRING_TYPE]);
+
+        $this->assertEquals($token->getId(), $input[ShieldConstants::TOKEN_ID]);
+
+        $this->assertEquals($token->getMaxAmount(), $input[ShieldConstants::TOKEN_MAX_AMOUNT]);
     }
 }
