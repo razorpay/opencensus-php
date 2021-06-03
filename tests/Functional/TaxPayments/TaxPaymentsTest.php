@@ -352,52 +352,71 @@ class TaxPaymentsTest extends TestCase
 
     public function testEnabledMerchantSettingInternalApiCall()
     {
+        $this->setupEnabledMerchantSettingTests();
+
+        $this->startTest();
+    }
+
+    public function testEnabledMerchantSettingInternalApiCallWithLimit()
+    {
+        $this->setupEnabledMerchantSettingTests();
+
+        $this->startTest();
+    }
+
+    public function testEnabledMerchantSettingInternalApiCallWithOffset()
+    {
+        $this->setupEnabledMerchantSettingTests();
+
+        $this->startTest();
+    }
+
+    public function setupEnabledMerchantSettingTests()
+    {
         $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
 
         $m1 = $this->fixtures->create('merchant', ['id' => '200DemoAccount']);
 
         $xBalance1 = $this->fixtures->create('balance',
-                                             [
-                                                 'merchant_id'       => $m1->getId(),
-                                                 'type'              => 'banking',
-                                                 'account_type'      => 'shared',
-                                                 'account_number'    => '2224440041626905',
-                                                 'balance'           => 200,
-                                             ]);
+            [
+                'merchant_id'       => $m1->getId(),
+                'type'              => 'banking',
+                'account_type'      => 'shared',
+                'account_number'    => '2224440041626905',
+                'balance'           => 200,
+            ]);
 
         $ba1 = $this->fixtures->create('banking_account',
-                                       [
-                                           'account_number'        => '2224440041626905',
-                                           'account_type'          => 'current',
-                                           'merchant_id'           => $m1->getId(),
-                                           'channel'               => 'yesbank',
-                                           'status'                => 'created',
-                                           'balance_id'            => $xBalance1->getId(),
-                                           'pincode'               => '1',
-                                           'bank_reference_number' => '',
-                                           'account_ifsc'          => 'RATN0000156',
-                                       ]);
+            [
+                'account_number'        => '2224440041626905',
+                'account_type'          => 'current',
+                'merchant_id'           => $m1->getId(),
+                'channel'               => 'yesbank',
+                'status'                => 'created',
+                'balance_id'            => $xBalance1->getId(),
+                'pincode'               => '1',
+                'bank_reference_number' => '',
+                'account_ifsc'          => 'RATN0000156',
+            ]);
 
         $m2 = $this->fixtures->create('merchant', ['id' => '201DemoAccount']);
 
         $m3 = $this->fixtures->create('merchant', ['id' => '202DemoAccount']);
 
         $this->createTestSettingsForMerchant($m1->getId(), [
-            'tax_payment_enabled' => true,
+            'tax_payment_enabled' => "true",
             'merchant_auto_debit_account_number' => $ba1->getAccountNumber(),
         ]);
 
         $this->createTestSettingsForMerchant($m2->getId(), [
-            'tax_payment_enabled' => true,
+            'tax_payment_enabled' => "true",
             'merchant_auto_debit_account_number' => 'm2_account',
         ]);
 
         $this->createTestSettingsForMerchant($m3->getId(), [
-            'tax_payment_enabled' => false, // as this is false, the settings for this should not be returned
+            'tax_payment_enabled' => "false", // as this is false, the settings for this should not be returned
             'merchant_auto_debit_account_number' => 'm2_account',
         ]);
-
-        $this->startTest();
     }
 
     public function createTestSettingsForMerchant($merchantId, $settings)

@@ -110,7 +110,7 @@ class TaxPaymentController extends Controller
 
     public function enabledMerchantSettings()
     {
-        return $this->service->settingsOfTaxPaymentEnabledMerchants();
+        return $this->service->settingsOfTaxPaymentEnabledMerchants($this->input);
     }
 
     public function initiateMonthlyPayouts()

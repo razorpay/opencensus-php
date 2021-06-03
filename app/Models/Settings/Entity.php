@@ -26,6 +26,8 @@ class Entity extends Base\PublicEntity
 
     const MODULE = 'module';
 
+    const VALUE = 'value';
+
     public function getValue(string $key)
     {
         $this->getAttribute(self::KEY);

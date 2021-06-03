@@ -66,6 +66,8 @@ class Service
     const X_TASK_ID        = 'X-Task-ID';
     const X_APP_MODE       = 'X-App-Mode';
     const DROPPING_REQUEST = 0;
+    const DEFAULT_OFFSET   = 0;
+    const DEFAULT_LIMIT    = 10;
 
     protected $app;
 
@@ -183,53 +185,58 @@ class Service
 
     /**
      * This will query the settings service and get all the merchants that have the tax-payment settings enabled
+     * @param array $input
+     * @return array
      */
-    public function settingsOfTaxPaymentEnabledMerchants()
+    public function settingsOfTaxPaymentEnabledMerchants(array $input)
     {
+        (new Validator())->validateInput(Validator::TAX_PAYMENT_ENABLED_MERCHANTS, $input);
+
         $settings = (new SettingsService())->getSettingsIfKeyPresent(
             Module::TAX_PAYMENTS,
-            self::TAX_PAYMENT_ENABLED_KEY);
+            self::TAX_PAYMENT_ENABLED_KEY,
+            "true",
+            $input['offset'] ?? self::DEFAULT_OFFSET,
+            $input['limit'] ?? self::DEFAULT_LIMIT
+        );
 
         $settingsOfEnabledMerchants = [];
 
         foreach ($settings as $setting)
         {
-            if ($this->getBooleanValue($setting['value']) === true)
+            $merchant = $this->repo->merchant->find($setting['entity_id']);
+
+            $settingsAccessor = Accessor::for($merchant, Module::TAX_PAYMENTS);
+
+            $settings = $settingsAccessor->all()->toArray();
+
+            $accountNumber = array_get($settings, 'merchant_auto_debit_account_number', null);
+
+            $bankingAccountInfo = null;
+
+            if (empty($accountNumber) === false)
             {
-                $merchant = $this->repo->merchant->find($setting['entity_id']);
-
-                $settingsAccessor = Accessor::for($merchant, Module::TAX_PAYMENTS);
-
-                $settings = $settingsAccessor->all()->toArray();
-
-                $accountNumber = array_get($settings, 'merchant_auto_debit_account_number', null);
-
-                $bankingAccountInfo = null;
-
-                if (empty($accountNumber) === false)
+                $bankingAccount = $this->repo
+                    ->banking_account
+                    ->findByMerchantAndAccountNumberPublic($merchant, $accountNumber);
+                if ($bankingAccount !== null)
                 {
-                    $bankingAccount = $this->repo
-                                            ->banking_account
-                                            ->findByMerchantAndAccountNumberPublic($merchant, $accountNumber);
-                    if ($bankingAccount !== null)
-                    {
-                        $bankingAccountInfo = [
-                            self::NAME           => $bankingAccount->getBankName(),
-                            self::TYPE           => $bankingAccount->getAccountType(),
-                            self::ACCOUNT_NUMBER => $bankingAccount->getAccountNumber(),
-                            self::BALANCE        => $bankingAccount->balance->getBalance()
-                        ];
-                    }
+                    $bankingAccountInfo = [
+                        self::NAME           => $bankingAccount->getBankName(),
+                        self::TYPE           => $bankingAccount->getAccountType(),
+                        self::ACCOUNT_NUMBER => $bankingAccount->getAccountNumber(),
+                        self::BALANCE        => $bankingAccount->balance->getBalance()
+                    ];
                 }
-
-                array_push($settingsOfEnabledMerchants,
-                           [
-                               self::MERCHANT_ID     => $merchant->getId(),
-                               self::SETTINGS        => $settings,
-                               self::BANKING_ACCOUNT => $bankingAccountInfo,
-                               self::MERCHANT_EMAIL  => $merchant->getEmail(),
-                           ]);
             }
+
+            array_push($settingsOfEnabledMerchants,
+                [
+                    self::MERCHANT_ID     => $merchant->getId(),
+                    self::SETTINGS        => $settings,
+                    self::BANKING_ACCOUNT => $bankingAccountInfo,
+                    self::MERCHANT_EMAIL  => $merchant->getEmail(),
+                ]);
         }
         return $settingsOfEnabledMerchants;
     }

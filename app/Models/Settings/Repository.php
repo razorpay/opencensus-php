@@ -8,11 +8,14 @@ class Repository extends Base\Repository
 {
     protected $entity = 'settings';
 
-    public function getSettingsIfKeyPresent(string $module, string $key)
+    public function getSettingsIfKeyPresent(string $module, string $key, $value, $skip, $limit)
     {
         return $this->newQuery()
                     ->where(Entity::MODULE, $module)
                     ->where(Entity::KEY, $key)
+                    ->where(Entity::VALUE, $value)
+                    ->skip($skip)
+                    ->take($limit)
                     ->get();
     }
 }

@@ -411,7 +411,7 @@ return [
                 [
                     'merchant_id'     => '200DemoAccount',
                     'settings'        => [
-                        'tax_payment_enabled'                => '1',
+                        'tax_payment_enabled'                => 'true',
                         'merchant_auto_debit_account_number' => '2224440041626905',
                     ],
                     'banking_account' => [
@@ -424,7 +424,57 @@ return [
                 [
                     'merchant_id' => '201DemoAccount',
                     'settings'    => [
-                        'tax_payment_enabled'                => '1',
+                        'tax_payment_enabled'                => 'true',
+                        'merchant_auto_debit_account_number' => 'm2_account'
+                    ]
+                ]
+            ]
+        ]
+    ],
+    'testEnabledMerchantSettingInternalApiCallWithLimit'                           => [
+        'request'  => [
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '200DemoAccount',
+            ],
+            'url'     => '/tax-payments/enabledMerchantSettings?offset=0&limit=1',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'merchant_id'     => '200DemoAccount',
+                    'settings'        => [
+                        'tax_payment_enabled'                => 'true',
+                        'merchant_auto_debit_account_number' => '2224440041626905',
+                    ],
+                    'banking_account' => [
+                        'name'           => 'yesbank',
+                        'account_number' => '2224440041626905',
+                        'type'           => 'current',
+                        'balance'        => 200
+                    ],
+                ]
+            ]
+        ]
+    ],
+    'testEnabledMerchantSettingInternalApiCallWithOffset'                           => [
+        'request'  => [
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '200DemoAccount',
+            ],
+            'url'     => '/tax-payments/enabledMerchantSettings?offset=1&limit=1',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'merchant_id' => '201DemoAccount',
+                    'settings'    => [
+                        'tax_payment_enabled'                => 'true',
                         'merchant_auto_debit_account_number' => 'm2_account'
                     ]
                 ]
