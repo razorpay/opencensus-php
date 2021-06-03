@@ -52,7 +52,11 @@ class Core extends Base\Core
 
     const ACCOUNT_STATEMENT_RECORDS_TO_SAVE_IN_TOTAL_DEFAULT = 100;
 
-    const FETCH_CONFIG_KEY_RETRY_LIMIT = 3;
+    // In Single payments api we append gateway ref no in description for IFT mode. This regex will be used to fetch
+    // gateway ref no while recon.
+    // ex: SAMPLE NARRATION RZPTESTIFT123
+    const RBL_SINGLE_PAYMENTS_API_IFT_REGEX = "/\sRZP+[0-9A-Z]{10}$/";
+
     /**
      * Temporary hack. Should not set balance at a class level.
      * This restricts us from processing transactions from
@@ -263,11 +267,6 @@ class Core extends Base\Core
         }
 
         $basDetails = (new BASDetails\Repository)->fetchByAccountNumberAndChannel($accountNumber, $channel);
-
-        if ($channel === Channel::RBL)
-        {
-            $this->checkForRblSinglePaymentsApi($accountNumber);
-        }
 
         $merchant = $basDetails->merchant;
 
@@ -682,11 +681,6 @@ class Core extends Base\Core
         // initializing to null so that if $closingBalance is null BAS details table update process will no trigger.
         $closingBalance = null;
 
-        if ($channel === Channel::RBL)
-        {
-            $this->checkForRblSinglePaymentsApi($accountNumber);
-        }
-
         foreach ($bankTransactions as $bankTransaction)
         {
             $bankTxnId      = $bankTransaction[Entity::BANK_TRANSACTION_ID];
@@ -747,51 +741,6 @@ class Core extends Base\Core
                 BASDetails\Entity::STATEMENT_CLOSING_BALANCE => $closingBalance
             ];
             (new BASDetails\Core)->createOrUpdate($basDetailInput);
-        }
-    }
-
-    protected function checkForRblSinglePaymentsApi(string $accountNumber)
-    {
-        $attempts = self::FETCH_CONFIG_KEY_RETRY_LIMIT;
-
-        $v2AccountNumbers = [];
-
-        do
-        {
-            $retry = false;
-
-            try
-            {
-                $v2AccountNumbers = (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_DIRECT_ACCOUNTS_ON_SINGLE_PAYMENTS_API]);
-            }
-            catch (\Throwable $e)
-            {
-                $this->trace->traceException(
-                    $e,
-                    null,
-                    TraceCode::CONFIG_KEY_FETCH_FAILURE,
-                    [
-                        'account_number'    => $accountNumber,
-                        'message'           => $e->getMessage(),
-                    ]);
-
-                $retry = true;
-            }
-
-            $attempts--;
-        }
-        while ($attempts > 0 and $retry === true);
-
-        if (in_array($accountNumber, $v2AccountNumbers) === true)
-        {
-            $this->isRBLSinglePaymentsApiEnabled = true;
-
-            $this->trace->info(
-                TraceCode::RBL_CA_ENABLED_ON_SINGLE_PAYMENTS_API,
-                [
-                    Entity::ACCOUNT_NUMBER => $accountNumber,
-                    'attempt_number'       => self::FETCH_CONFIG_KEY_RETRY_LIMIT - $attempts,
-                ]);
         }
     }
 
@@ -1412,50 +1361,70 @@ class Core extends Base\Core
             $startTime = microtime(true);
 
             /**
-             * Account numbers of merchants onboarded to RBL's single payments api to be added to
-             * RBL_DIRECT_ACCOUNTS_ON_SINGLE_PAYMENTS_API
-             *
              * Bank is not sending cms ref number in the single payments api response for IFT mode. Hence FTS is appending
-             * gateway reference number at the end of description of IFT transactions. Recon needs to happen by picking
-             * the end 10 characters and match with gateway ref no. in fta table.
+             * gateway reference number with 'RZP' as delimiter at the end of description of IFT transactions. Recon
+             * needs to happen by picking the end 10 characters and match with gateway ref no. in fta table.
+             * example description: SAMPLE NARRATION RZPTESTIFT123
+             *
+             * slack link: https://razorpay.slack.com/archives/C019AKLLQAH/p1616757629029200
              *
              * Only for IFT mode.
              */
 
-            if (($this->isRBLSinglePaymentsApiEnabled === true) and
+            $description = $basEntity->getDescription() ?: '';
+
+            $matches = [];
+
+            if (($this->checkForRblSinglePaymentsApi($description, $matches) === true) and
                 ($basEntity->getChannel() === Channel::RBL))
             {
-                $description = $basEntity->getDescription();
+                $gatewayRefNo = substr($matches[0], 4, 10);
 
-                $gatewayRefNo = substr($description, -10, 10);
+                // this will be used to send slack notifications if required.
+                $identifier = 'gateway ref no';
 
-                $identifier = $gatewayRefNo;
+                // we are checking both linked and unlinked payouts because debit row might have already been
+                // processed.
+                $payouts = $this->repo->payout->fetchPayoutsFromGatewayRefNumberWithinTimeRangeForIFT(
+                    $gatewayRefNo,
+                    $basEntity->getPostedDate(),
+                    $bankTimeBeforePostedDate,
+                    $basEntity->getAmount(),
+                    $balance->getId());
+
+                $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_GATEWAY_REF_NO_FOR_IFT_FOR_CREDIT_MAPPING,
+                                   [
+                                       'cms_ref_no'                                              => $bankTxnId,
+                                       'gateway_ref_no'                                          => $gatewayRefNo,
+                                       'payout_ids'                                              => $payouts->getQueueableIds(),
+                                       'bas_id'                                                  => $basEntity->getId(),
+                                       'account_no'                                              => $basEntity->getAccountNumber(),
+                                       'payouts_fetched_via_gateway_ref_no_for_ift_mapping_time' => (microtime(true) - $startTime) * 1000,
+                                   ]);
             }
             else
             {
-                $identifier = $bankTxnId;
+                // this will be used to send slack notifications if required.
+                $identifier = 'cms ref no';
+
+                // we are checking both linked and unlinked payouts because debit row might have already been
+                // processed.
+                $payouts = $this->repo->payout->fetchPayoutsFromCmsRefNumberWithinTimeRangeForIFT(
+                    $bankTxnId,
+                    $basEntity->getPostedDate(),
+                    $bankTimeBeforePostedDate,
+                    $basEntity->getAmount(),
+                    $balance->getId());
+
+                $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_CMS_REF_NO_FOR_IFT_FOR_CREDIT_MAPPING,
+                                   [
+                                       'cms_ref_no'                                          => $bankTxnId,
+                                       'payout_ids'                                          => $payouts->getQueueableIds(),
+                                       'bas_id'                                              => $basEntity->getId(),
+                                       'account_no'                                          => $basEntity->getAccountNumber(),
+                                       'payouts_fetched_via_cms_ref_no_for_ift_mapping_time' => (microtime(true) - $startTime) * 1000,
+                                   ]);
             }
-
-            // we are checking both linked and unlinked payouts because debit row might have already been
-            // processed.
-            $payouts = $this->repo->payout->fetchPayoutsFromCmsRefNumberWithinTimeRangeForIFT(
-                $identifier,
-                $basEntity->getPostedDate(),
-                $bankTimeBeforePostedDate,
-                $basEntity->getAmount(),
-                $balance->getId(),
-                $this->isRBLSinglePaymentsApiEnabled);
-
-            $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_CMS_REF_NO_FOR_IFT_FOR_CREDIT_MAPPING,
-                [
-                    'cms_ref_no'                                          => $bankTxnId,
-                    'payout_ids'                                          => $payouts->getQueueableIds(),
-                    'bas_id'                                              => $basEntity->getId(),
-                    'account_no'                                          => $basEntity->getAccountNumber(),
-                    'identifier'                                          => $identifier,
-                    'is_v2_enabled'                                       => $this->isRBLSinglePaymentsApiEnabled,
-                    'payouts_fetched_via_cms_ref_no_for_ift_mapping_time' => (microtime(true) - $startTime) * 1000,
-                ]);
         }
 
         if ($payouts->count() === 1)
@@ -1466,7 +1435,7 @@ class Core extends Base\Core
         if ($payouts->count() > 1)
         {
             $createExternalSource = true;
-            $remarks                = 'multiple payouts found with same cms ref no for IFT for credit mapping';
+            $remarks                = 'multiple payouts found with same ' . $identifier . ' for IFT for credit mapping';
 
             $data = [
                 'channel'    => $basEntity->getChannel(),
@@ -1479,7 +1448,7 @@ class Core extends Base\Core
                 'data' => $data,
             ]);
 
-            $operation = 'multiple payouts found with same cms ref no for IFT for credit mapping in account statement fetch';
+            $operation = 'multiple payouts found with same ' . $identifier . ' for IFT for credit mapping in account statement fetch';
 
             (new SlackNotification)->send(
                 $operation,
@@ -1675,50 +1644,70 @@ class Core extends Base\Core
             $startTime = microtime(true);
 
             /**
-             * Account numbers of merchants onboarded to RBL's single payments api to be added to
-             * RBL_DIRECT_ACCOUNTS_ON_SINGLE_PAYMENTS_API
-             *
              * Bank is not sending cms ref number in the single payments api response for IFT mode. Hence FTS is appending
-             * gateway reference number at the end of description of IFT transactions. Recon needs to happen by picking
-             * the end 10 characters and match with gateway ref no. in fta table.
+             * gateway reference number with 'RZP' as delimiter at the end of description of IFT transactions. Recon
+             * needs to happen by picking the end 10 characters and match with gateway ref no. in fta table.
+             * example description: SAMPLE NARRATION RZPTESTIFT123
+             *
+             * slack link: https://razorpay.slack.com/archives/C019AKLLQAH/p1616757629029200
              *
              * Only for IFT mode.
              */
 
-            if (($this->isRBLSinglePaymentsApiEnabled) === true and
+            $description = $basEntity->getDescription() ?: '';
+
+            $matches = [];
+
+            if (($this->checkForRblSinglePaymentsApi($description, $matches) === true) and
                 ($basEntity->getChannel() === Channel::RBL))
             {
-                $description = $basEntity->getDescription();
+                $gatewayRefNo = substr($matches[0], 4, 10);
 
-                $gatewayRefNo = substr($description, -10, 10);
+                // this will be used to send slack notifications if required.
+                $identifier = 'gateway ref no';
 
-                $identifier = $gatewayRefNo;
+                // fetch only unlinked payouts i.e which do not have txn_id, since we are trying to map given bas
+                // record with payout.
+                $payouts = $this->repo->payout->fetchUnlinkedPayoutsFromGatewayRefNumberWithinTimeRangeForIFT(
+                    $gatewayRefNo,
+                    $basEntity->getPostedDate(),
+                    $bankTimeBeforePostedDate,
+                    $basEntity->getAmount(),
+                    $balance->getId());
+
+                $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_GATEWAY_REF_NO_FOR_IFT_FOR_DEBIT_MAPPING,
+                                   [
+                                       'cms_ref_no'                                              => $bankTxnId,
+                                       'gateway_ref_no'                                          => $gatewayRefNo,
+                                       'payout_ids'                                              => $payouts->getQueueableIds(),
+                                       'bas_id'                                                  => $basEntity->getId(),
+                                       'account_no'                                              => $basEntity->getAccountNumber(),
+                                       'payouts_fetched_via_gateway_ref_no_for_ift_mapping_time' => (microtime(true) - $startTime) * 1000
+                                   ]);
             }
             else
             {
-                $identifier = $bankTxnId;
+                // this will be used to send slack notifications if required.
+                $identifier = 'cms ref no';
+
+                // fetch only unlinked payouts i.e which do not have txn_id, since we are trying to map given bas
+                // record with payout.
+                $payouts = $this->repo->payout->fetchUnlinkedPayoutsFromCmsRefNumberWithinTimeRangeForIFT(
+                    $bankTxnId,
+                    $basEntity->getPostedDate(),
+                    $bankTimeBeforePostedDate,
+                    $basEntity->getAmount(),
+                    $balance->getId());
+
+                $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_CMS_REF_NO_FOR_IFT_FOR_DEBIT_MAPPING,
+                                   [
+                                       'cms_ref_no'                                          => $bankTxnId,
+                                       'payout_ids'                                          => $payouts->getQueueableIds(),
+                                       'bas_id'                                              => $basEntity->getId(),
+                                       'account_no'                                          => $basEntity->getAccountNumber(),
+                                       'payouts_fetched_via_cms_ref_no_for_ift_mapping_time' => (microtime(true) - $startTime) * 1000
+                                   ]);
             }
-
-            // fetch only unlinked payouts i.e which do not have txn_id, since we are trying to map given bas
-            // record with payout.
-            $payouts = $this->repo->payout->fetchUnlinkedPayoutsFromCmsRefNumberWithinTimeRangeForIFT(
-                                                                                       $identifier,
-                                                                                       $basEntity->getPostedDate(),
-                                                                                       $bankTimeBeforePostedDate,
-                                                                                       $basEntity->getAmount(),
-                                                                                       $balance->getId(),
-                                                                                       $this->isRBLSinglePaymentsApiEnabled);
-
-            $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_CMS_REF_NO_FOR_IFT_FOR_DEBIT_MAPPING,
-                               [
-                                   'cms_ref_no'                                          => $bankTxnId,
-                                   'payout_ids'                                          => $payouts->getQueueableIds(),
-                                   'bas_id'                                              => $basEntity->getId(),
-                                   'account_no'                                          => $basEntity->getAccountNumber(),
-                                   'identifier'                                          => $identifier,
-                                   'is_v2_enabled'                                       => $this->isRBLSinglePaymentsApiEnabled,
-                                   'payouts_fetched_via_cms_ref_no_for_ift_mapping_time' => (microtime(true) - $startTime) * 1000
-                               ]);
         }
 
         if ($payouts->count() === 1)
@@ -1729,7 +1718,7 @@ class Core extends Base\Core
         if ($payouts->count() > 1)
         {
             $createExternalSource = true;
-            $remarks                = 'multiple payouts found with same cms ref no for IFT for debit mapping';
+            $remarks                = 'multiple payouts found with same ' . $identifier . ' for IFT for debit mapping';
 
             $data = [
                 'channel'    => $basEntity->getChannel(),
@@ -1741,7 +1730,7 @@ class Core extends Base\Core
                 'data' => $data,
             ]);
 
-            $operation = 'multiple payouts found with same cms ref no for IFT for debit mapping in account statement fetch';
+            $operation = 'multiple payouts found with same ' . $identifier . ' for IFT for debit mapping in account statement fetch';
 
             (new SlackNotification)->send(
                 $operation,
@@ -1799,6 +1788,20 @@ class Core extends Base\Core
         }
 
         return $payouts->first();
+    }
+
+    protected function checkForRblSinglePaymentsApi(string $statementDescription, array & $matches)
+    {
+        $regex = self::RBL_SINGLE_PAYMENTS_API_IFT_REGEX;
+
+        $match = preg_match($regex, $statementDescription, $matches);
+
+        if ($match === 1)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function validateBalance(Entity $basEntity, Base\PublicEntity $sourceEntity)

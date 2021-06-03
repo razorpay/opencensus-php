@@ -2155,9 +2155,6 @@ class RblBankingAccountStatementTest extends TestCase
      */
     public function testRblAccountStatementTxnMappingForIFTUsingGatewayRefNo()
     {
-        (new Admin\Service)->setConfigKeys([
-            Admin\ConfigKey::RBL_DIRECT_ACCOUNTS_ON_SINGLE_PAYMENTS_API => ['2224440041626905']]);
-
         $channel = Channel::RBL;
 
         $this->setupForRblPayout($channel, 104, FundTransfer\Mode::IFT);
@@ -2181,7 +2178,7 @@ class RblBankingAccountStatementTest extends TestCase
         $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], [
             'cms_ref_no'     => 'S5',
             'utr'            => 'UTIBH20106341692',
-            'gateway_ref_no' => 'jambond007']);
+            'gateway_ref_no' => 'jaMesBond7']);
 
         $this->fixtures->edit('balance', $payout['balance_id'], ['balance' => 30019995]);
 
@@ -2201,7 +2198,7 @@ class RblBankingAccountStatementTest extends TestCase
         // changing utr so it doesn't match regex.
         // Appending gateway ref. no. at the end of description.
         $txn = $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][0];
-        $txn['transactionSummary']['txnDesc'] = 'UTIBH20106341692 Vivek Karna HDFCjambond007';
+        $txn['transactionSummary']['txnDesc'] = 'UTIBH20106341692 Vivek Karna HDFC RZPJAMESBOND7';
         $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][0] = $txn;
 
         $txn['txnBalance']['amountValue'] = '300199.95';
@@ -2228,6 +2225,100 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertEquals(EntityConstants::REVERSAL, $basEntries[1]['entity_type']);
         $this->assertEquals($payout['id'], $reversal['entity_id']);
+    }
+
+    // If more than two fta get matched using gateway ref no then we raise slack alert and link the BAS to external.
+    public function testRblAccountStatementTxnMappingForIFTUsingGatewayRefNoWithMultipleMatches()
+    {
+        $channel = Channel::RBL;
+
+        $this->setupForRblPayout($channel, 104, FundTransfer\Mode::IFT);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(590, $payout['fees']);
+        $this->assertEquals(90, $payout['tax']);
+        $this->assertEquals('Bbg7cl6t6I3XA6', $payout['pricing_rule_id']);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout['id'], [
+            'status'       => 'initiated',
+            'amount'       => '104',
+            'utr'          => 'UTIBH20106341692',
+            'initiated_at' => 1451937960]);
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], [
+            'cms_ref_no'     => 'S5',
+            'utr'            => 'UTIBH20106341692',
+            'gateway_ref_no' => 'jaMesBond7']);
+
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+
+        $this->createRblPayout(104, FundTransfer\Mode::IFT);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout['id'], [
+            'status'       => 'initiated',
+            'amount'       => '104',
+            'utr'          => 'UTIBH20106341692',
+            'initiated_at' => 1451937960]);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], [
+            'cms_ref_no'     => 'S9',
+            'utr'            => 'UTIBH20106444492',
+            'gateway_ref_no' => 'JAMesBond7']);
+
+        $this->fixtures->edit('balance', $payout['balance_id'], ['balance' => 30019995]);
+
+        // Fetch account statement from RBL
+        $mockedResponse = $this->getRblPayoutMappingResponseRTGS();
+
+        // changing utr so it doesn't match regex.
+        // Appending gateway ref. no. at the end of description.
+        $txn = $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][0];
+        $txn['transactionSummary']['txnDesc'] = 'UTIBH20106341692 Vivek Karna HDFC RZPJAMESBOND7';
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][0] = $txn;
+
+        $txn['txnBalance']['amountValue'] = '300199.95';
+        $txn['transactionSummary']['txnType'] = 'C';
+        $txn['txnSrlNo'] = '2';
+        $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][1] = $txn;
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $testData = $this->testData['testRblAccountStatementTxnMappingCase1'];
+
+        $this->testData[__FUNCTION__] = $testData;
+        $this->ba->cronAuth();
+        $this->startTest();
+
+        $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
+
+        $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[0]['entity_type']);
+
+        $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[1]['entity_type']);
     }
 
     public function testRblAccountStatementTxnMappingCase4()
