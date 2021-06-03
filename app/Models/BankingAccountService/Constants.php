@@ -40,4 +40,14 @@ class Constants
     const PERSON_ID                     = 'person_id';
 
     const PERSON                        = 'person';
+
+    const APPLICATION_SPECIFIC_FIELDS   = 'application_specific_fields';
+
+    const DOCUMENT                      = 'document';
+
+    const ID_PROOF                      = 'idProof';
+
+    const ADDRESS_PROOF                 = 'addressProof';
+
+    const PERSONS_DOCUMENT_MAPPING      = 'persons_document_mapping';
 }

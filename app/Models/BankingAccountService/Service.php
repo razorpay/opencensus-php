@@ -94,6 +94,8 @@ class Service extends Base\Service
         {
             $signatories = $this->buildSignatoryPayload($personId, $input);
 
+            $input = $this->getPersonDocumentDetails($input, $personId);
+
             $input[Constants::SIGNATORIES] = $signatories;
         }
 
@@ -286,6 +288,45 @@ class Service extends Base\Service
         }
 
         return $bankingAccounts;
+    }
+
+    /**
+     * @param $input
+     * @param $personId
+     * @return mixed
+     */
+    public function getPersonDocumentDetails($input, $personId)
+    {
+        if (empty($input[Constants::SIGNATORIES][Constants::DOCUMENT]) === false)
+        {
+            $personDocumentMapping = [
+                Constants::PERSONS_DOCUMENT_MAPPING => [
+                    $personId => [
+                        Constants::ID_PROOF => $input[Constants::SIGNATORIES][Constants::DOCUMENT][Constants::ID_PROOF],
+                        Constants::ADDRESS_PROOF => $input[Constants::SIGNATORIES][Constants::DOCUMENT][Constants::ADDRESS_PROOF],
+                    ]
+                ]
+            ];
+
+            if (empty($input[Constants::APPLICATION_SPECIFIC_FIELDS][Constants::PERSONS_DOCUMENT_MAPPING]) == false)
+            {
+                $personsExistingDocumentMapping = $input[Constants::APPLICATION_SPECIFIC_FIELDS][Constants::PERSONS_DOCUMENT_MAPPING];
+
+                $personsUpdatedDocumentMapping = array_replace($personsExistingDocumentMapping, $personDocumentMapping[Constants::PERSONS_DOCUMENT_MAPPING]);
+
+                $personDocumentMapping = [
+                    Constants::PERSONS_DOCUMENT_MAPPING => $personsUpdatedDocumentMapping
+                ];
+            }
+
+            $applicationSpecificFields = $input[Constants::APPLICATION_SPECIFIC_FIELDS];
+
+            $applicationSpecificFields = array_replace($applicationSpecificFields, $personDocumentMapping);
+
+            $input[Constants::APPLICATION_SPECIFIC_FIELDS] = $applicationSpecificFields;
+        }
+
+        return $input;
     }
 
 }

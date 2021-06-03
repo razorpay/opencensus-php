@@ -101,6 +101,16 @@ class BankingAccountService
                         'isOwnerNotIndianCitizen'                                         => 'N',
                         'isTaxResidentOutsideIndia'                                       => 'Y',
                         'role_in_business'                                                => 'ACCOUNTANT',
+                        'business_document_mapping'   => [
+                            'entityProof1' => 'AADHAR',
+                            'entityProof2' => 'PANCARD'
+                        ],
+                        'persons_document_mapping' => [
+                            '20000000000000' => [
+                                'addressProof' => 'AADHAAR',
+                                'idProof' => 'PANCARD'
+                            ]
+                        ]
                     ],
                     'signatories' => [
                         0 => [
