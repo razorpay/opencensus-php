@@ -375,18 +375,6 @@ export default class User {
     );
   }
 
-  get isCheckoutRewardsEnabled() {
-    return getSplitzExperimentVariant('checkout_rewards_enabled')?.variables?.result === 'on';
-  }
-
-  get isCheckoutRewardsInterested() {
-    return getSplitzExperimentVariant('checkout_rewards_interested')?.variables?.result === 'on';
-  }
-
-  get isCheckoutRewardsLive() {
-    return getSplitzExperimentVariant('checkout_rewards_live')?.variables?.result === 'on';
-  }
-
   get isChargeAtWillEnabled() {
     return this.findTag('Charge_at_will');
   }
