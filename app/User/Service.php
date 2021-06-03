@@ -1481,6 +1481,7 @@ class Service extends Base\Service
             'enable_payment_buttons',
             'pause_resume_enabled',
             'batch_scheduling_options',
+            'emandate_subscription',
             'upi_caw',
             'rx_payout_links_inactive',
             'rx_payout_links_ms',

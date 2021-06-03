@@ -2,6 +2,7 @@ import AsyncButton from 'react-async-button';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import Amount from 'common/ui/Amount';
 import Time from 'common/ui/Time';
+import DocsLink from 'merchant/components/DocsLink';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 
 //TODO: Make this component generalized as per requirement later. Currently only used for subscriptions details view(invoice list)
@@ -21,10 +22,14 @@ export default (props) => {
     isUpfront,
     mode,
     subscriptionId,
+    paymentMethod,
   } = props;
 
   let chargeAttemptsFailedText; // Charge attempts failed text
   let retryingInfo; // Whether further retries
+
+  const isEmandatePayment = paymentMethod === 'emandate';
+  const isIssued = item.status === 'issued';
 
   // For invoice in issued state, if it's subscription_status = halted then analyse whether 1st invoice or further invoices
   if (item.status === 'issued') {
@@ -173,6 +178,14 @@ export default (props) => {
             }
           }}
         </div>
+
+        {isEmandatePayment && isIssued && (
+          <div class="details-row eMandate-status">
+            <i class="i i-info-outline m-r" /> eMandate payment status can take 24 - 48 hours to confirm.
+
+            <DocsLink title="Learn more" url="https://razorpay.com/docs/Payment-Subscription-Payment-method-Emandate-new/razorpay/subscriptions/payment-retries/#retry-model-for-emandate" />
+          </div>
+        )}
       </div>
 
       {do {

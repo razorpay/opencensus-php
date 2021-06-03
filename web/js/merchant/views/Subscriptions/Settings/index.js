@@ -17,11 +17,13 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 const PAYMENT_METHODS = {
   UPI: 'upi',
   CARD: 'card',
+  EMANDATE: 'emandate',
 };
 
 @connect(
   (state) => ({
     settings: state.subscriptions.settings,
+    user: state.session.user,
   }),
   { fetchSettings, saveSettings, showNotification },
 )
@@ -67,7 +69,7 @@ export default class SubscriptionsSettings extends React.Component {
   };
 
   render() {
-    const { settings } = this.props;
+    const { settings, user } = this.props;
 
     if (settings.loading) {
       return (
@@ -87,21 +89,25 @@ export default class SubscriptionsSettings extends React.Component {
           </div>
         </HeaderAction>
 
-        <div class="panel panel-default panel-theme">
+        <div
+          class="panel panel-default panel-theme"
+          style={user.isEmandateOnSubscriptionEnabled ? {} : { width: '854px' }}
+        >
           {settings.error ? (
             <Alert type="error" message={settings.errors} showDismiss={false} />
           ) : (
             <>
               <div class="panel-heading">
-                <span class="title">Payment Methods</span>
+                <span class="title">Payment Methods</span>{' '}
+                <DocsLink url="https://www.razorpay.com/docs/Payment-Subscription-Payment-method-Emandate-new/razorpay/subscriptions/dashboard/settings/#steps" />
               </div>
               <div class="panel-body">
-                <Banner>
-                  Cards and UPI currently support recurring payments upto <Amount value={500000} />.
-                  Charges of higher value would automatically fail for domestic cards.
-                </Banner>
                 <div class="row">
-                  <div class="col-md-6">
+                  <div
+                    class={classList(
+                      user.isEmandateOnSubscriptionEnabled ? 'col-md-4' : 'col-md-6',
+                    )}
+                  >
                     <ToggleCard
                       checked
                       title={
@@ -112,17 +118,26 @@ export default class SubscriptionsSettings extends React.Component {
                       onToggleChange={this.onToggleChange(PAYMENT_METHODS.CARD)}
                       checked={isEnabled(PAYMENT_METHODS.CARD)(settings)}
                       description="Accept recurring payments via cards for your subscriptions in any of our supported international currencies."
+                      info={
+                        <>
+                          Cards currently support recurring payments upto <Amount value={500000} />.
+                          Charges of higher value would automatically fail for domestic cards.
+                        </>
+                      }
                     />
                   </div>
 
-                  <div class="col-md-6">
+                  <div
+                    class={classList(
+                      user.isEmandateOnSubscriptionEnabled ? 'col-md-4' : 'col-md-6',
+                    )}
+                  >
                     <ToggleCard
                       title={
                         <>
                           <i class="i i-upi m-r" /> UPI
                         </>
                       }
-                      class="col-md-6"
                       onToggleChange={this.onToggleChange(PAYMENT_METHODS.UPI)}
                       checked={isEnabled(PAYMENT_METHODS.UPI)(settings)}
                       description={
@@ -131,8 +146,37 @@ export default class SubscriptionsSettings extends React.Component {
                           <b>₹ 5000</b>. Only supports Indian currency.
                         </>
                       }
+                      info={
+                        <>
+                          UPI only supports recurring payments upto <Amount value={500000} />.
+                          Subscription of higher values will not have UPI as a payment method during
+                          checkout.
+                        </>
+                      }
                     />
                   </div>
+
+                  {user.isEmandateOnSubscriptionEnabled && (
+                    <div class="col-md-4">
+                      <ToggleCard
+                        isNew
+                        title={
+                          <>
+                            <i class="i i-upi m-r" /> Emandate
+                          </>
+                        }
+                        onToggleChange={this.onToggleChange(PAYMENT_METHODS.EMANDATE)}
+                        checked={isEnabled(PAYMENT_METHODS.EMANDATE)(settings)}
+                        description={
+                          <>
+                            Accept recurring payments via bank accounts (NetBanking) for your
+                            subscriptions. Only supports Indian currency.
+                          </>
+                        }
+                        info="This is the placeholder text for eMandates. Actual message will be added once that is finalised"
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             </>
@@ -143,11 +187,12 @@ export default class SubscriptionsSettings extends React.Component {
   }
 }
 
-const ToggleCard = ({ title, checked, children, description, onToggleChange }) => {
+const ToggleCard = ({ isNew, title, checked, info, description, onToggleChange }) => {
   return (
     <div class="panel panel-default ToggleCard">
       <div class="panel-heading">
         <span class="title">{title}</span>
+        {isNew && <span class="badge bg-success m-l">new</span>}
 
         <span class="pull-right toggler-btn">
           <SwitchField checked={checked} onChange={onToggleChange} type="prime" />
@@ -159,7 +204,11 @@ const ToggleCard = ({ title, checked, children, description, onToggleChange }) =
 
       <div class="panel-body">
         <div class="description">{description}</div>
-        {children}
+        <div class="m-t">
+          <Banner>
+            <i class="i i-info-outline m-r" /> <div>{info}</div>
+          </Banner>
+        </div>
       </div>
     </div>
   );

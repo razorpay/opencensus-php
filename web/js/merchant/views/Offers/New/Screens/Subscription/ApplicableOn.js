@@ -19,6 +19,7 @@ export default class ApplicableOn extends React.Component {
     return {
       isCard: payment_method === SUBSCRIPTION_OFFERS_PAYMENT_METHODS.Card,
       isUPI: payment_method === SUBSCRIPTION_OFFERS_PAYMENT_METHODS.UPI,
+      // isEmandate: payment_method === SUBSCRIPTION_OFFERS_PAYMENT_METHODS.Emandate,
     };
   }
 

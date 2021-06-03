@@ -180,6 +180,15 @@ export default (props) => {
                 </div>
               </EntityDetailRow>
 
+              <EntityDetailRow label="Payment Method">
+                <div class="payment_method">
+                  {subscription.payment_method || '--'}
+                </div>
+                {(subscription.payment_details || []).map((ele) => (
+                  <div>{ele}</div>
+                ))}
+              </EntityDetailRow>
+
               {isSubscriptionOffersEnabled && (
                 <EntityDetailRow label="Offer">
                   {/* TODO: Add offers full details */}
@@ -279,6 +288,7 @@ export default (props) => {
                 moreAfterlimit={3}
                 subTitle={subTitle}
                 error={invoices.error}
+                paymentMethod={subscription.payment_method}
                 items={invoices.items}
                 title="Invoices detail"
                 creditNotes={creditNotes}

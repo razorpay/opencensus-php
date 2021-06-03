@@ -716,6 +716,10 @@ export default class User {
     return this.getExpStatus('batch_scheduling_options');
   }
 
+  get isEmandateOnSubscriptionEnabled() {
+    return this.getExpStatus('emandate_subscription');
+  }
+
   get isDirectTransferEnabled() {
     return this.isFeatureEnabled('direct_transfer');
   }
