@@ -88,6 +88,7 @@ use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Models\Merchant\Detail\Status as MerchantStatus;
 use RZP\Models\Merchant\Detail\Core as MerchantDetailCore;
 use RZP\Models\Merchant\Methods\DefaultMethodsForCategory;
+use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\Gateway\Terminal\Service as TerminalService;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
@@ -1955,6 +1956,11 @@ class Service extends Base\Service
         $merchantMethods = (new Methods\Core)->getPaymentMethods($merchant);
 
         $disabledBanks = $merchantMethods->getDisabledBanks();
+
+        $unsupportedBanks = Netbanking::findUnsupportedBanks($disabledBanks);
+
+        // to remove banks which are now not supported.
+        $disabledBanks = array_diff($disabledBanks, $unsupportedBanks);
 
         if (isset($input[Methods\Entity::DISABLED_BANKS]) === true)
         {
