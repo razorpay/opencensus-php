@@ -64,7 +64,7 @@ export default class PartnerTypeSelector extends React.Component {
             <Popover align="right" theme="dark" class="SelectBox--popover">
               <PopoverTitle>
                 <h4>
-                  <strong>Who uses this ?</strong>
+                  <strong>Select if you are a</strong>
                 </h4>
               </PopoverTitle>
               <PopoverBody>{props.hoverContent}</PopoverBody>
@@ -88,7 +88,7 @@ export default class PartnerTypeSelector extends React.Component {
       {
         props.isMobile && checked ?
         <div className="SelectBox--information">
-          <div className="who-uses">Who uses this?</div>
+          <div className="who-uses">Select if you are a</div>
           <div className="content">{props.hoverContent}</div>
         </div> : ''
       }

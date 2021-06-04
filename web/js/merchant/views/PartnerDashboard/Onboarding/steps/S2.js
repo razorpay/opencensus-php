@@ -106,7 +106,7 @@ const s2 = ({
               icon={'/dist/css/assets/onboarding/aggregator-icon.svg'}
               description={'Manage account and payment cycle of your merchants'}
               hoverContent={
-                'Businesses that manage end-to-end payment collection for their customers. Eg: Restaurants, ERP'
+                'Business that manage end-to-end payment collection for their customers. Eg: Restaurants, ERP'
               }
               isMobile={isMobile}
             >
@@ -127,7 +127,7 @@ const s2 = ({
                   >
                     (Partner Auth)
                   </a>{' '}
-                  integration{' '}
+                  integration to earn&nbsp;commission
                 </li>
               </ul>
             </PartnerSelectBox>
@@ -137,15 +137,14 @@ const s2 = ({
               checked={role === 'pure_platform'}
               icon={'/dist/css/assets/onboarding/pure-platform-icon.svg'}
               description={
-                'Enable your merchants to process payments via Razorpay on your app/website'
+                'Do API integration to enable your merchants to process payments via Razorpay on your platform'
               }
               hoverContent={
-                'Businesses that can benefit from providing a seamless payments experience to their merchants within their website / app. Eg: Zoho, Quickbooks'
+                'Business that can benefit from providing a seamless payments experience to their merchants within their website/app. Eg: Zoho, Quickbooks'
               }
               isMobile={isMobile}
             >
               <ul>
-                <li> Get a customized commission plan </li>
                 <li>
                   {' '}
                   Requires{' '}
@@ -159,8 +158,9 @@ const s2 = ({
                   >
                     (Razorpay OAuth)
                   </a>{' '}
-                  integration{' '}
+                  integration to earn&nbsp;commission
                 </li>
+                <li> Get automated commissions </li>
               </ul>
             </PartnerSelectBox>
           </div>
