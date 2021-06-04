@@ -568,9 +568,7 @@ const businessDetails = [
       description: (activation) => {
         if (activation.state.has_gstin == '1') {
           const currentBusinessType =
-            !!activation.state.dirty.business_type
-              ? activation.state.dirty.business_type
-              : activation.props.data.business_type;
+            this.state.dirty.business_type || this.props.data.business_type;
           if (currentBusinessType == PROPRIETORSHIP) {
             return (
               <span className='text-danger'>
@@ -904,7 +902,7 @@ const uploadFields = [
     name: 'gstin',
     _when: (activation) => (isBusinessProofTypeDocFieldVisible(activation)
       && activation.state.business_proof_type === 'gst_certificate'),
-    getLabel: () => 'GSTIN',
+    label: 'GSTIN',
     _autoRenderImpure: true, // Re-render to show the error
     placeholder: 'Enter GSTIN',
     required: false,

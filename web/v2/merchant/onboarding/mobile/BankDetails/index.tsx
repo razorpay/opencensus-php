@@ -315,7 +315,7 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                       />
                     </View>
                   </Space>
-                  {hasGSTIN && data.business_type === PROPRIETORSHIP.toString() && (
+                  {hasGSTIN && Number(data.business_type) === PROPRIETORSHIP && (
                     <Text size="xsmall" color="negative.900">
                       Please note that skipping GSTIN might lead to delay in your account review by
                       upto two weeks, usually it takes 3-4 days
