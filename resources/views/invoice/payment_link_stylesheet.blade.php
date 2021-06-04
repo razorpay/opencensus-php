@@ -319,6 +319,22 @@
         margin-bottom: 4px;
     }
 
+    #footer .report-cta {
+        margin-top: 15px;
+    }
+
+    #footer .report-cta a {
+        color: #528FF0;
+        text-decoration: none;
+    }
+
+    #footer .report-cta img {
+        vertical-align: middle;
+        height: 13px;
+        margin: 0 3px;
+    }
+
+
     .bg-svg {
         position: absolute;
         z-index: -100;
@@ -464,6 +480,10 @@
         padding: 5px 0;
         margin-top: 10px;
         margin-bottom: 0;
+    }
+
+    #payment-container--mob #footer .report-cta {
+        margin-top: 5px;
     }
 
     #scs-box img {
