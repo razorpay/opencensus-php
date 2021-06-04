@@ -133,7 +133,7 @@ export const getCaState = (caAccountStatus, GoToCaDocs, showNitroRXCAFlow) => {
     content = (
       <>
         Your current account application has been cancelled. You have been reverted back to classic
-        pricing with 2% transaction fees{' '}
+        pricing with 2% platform fee{' '}
       </>
     );
   } else if (caAccountStatus === currentAccountStatuses.unserviceable) {

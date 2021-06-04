@@ -14,7 +14,7 @@ const Secondary = ({ caAccount, pillType, pillText, content, hasAppliedCa, showN
             <div className="highlight-info success">
               <img src="/img/green-tick.svg" className="img-info" alt="info" />
               <div className="info">
-                Congrats! You can keep enjoying Neo pricing with a 1.7% transaction fees and its
+                Congrats! You can keep enjoying Neo pricing with a 1.7% platform fee and its
                 other benefits along with the added advantages of your newly opened current account
               </div>
             </div>
@@ -23,7 +23,7 @@ const Secondary = ({ caAccount, pillType, pillText, content, hasAppliedCa, showN
               <img src="/img/info-circle.svg" className="img-info" alt="info" />
               <div className="info">
                 A RazorpayX current account is required for neo pricing plan. You will be reverted
-                to classic pricing and 2% transaction fee in case you fail to open the account
+                to classic pricing and 2% platform fee in case you fail to open the account
               </div>
             </div>
           )}

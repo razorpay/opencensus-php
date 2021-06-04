@@ -167,9 +167,9 @@ class Constants
         ],
         [
             'title'       => 'Get 1.65% pricing with RazorpayX',
-            'description' => 'Open a current account with RazorpayX & reduce your transaction fee to 1.65%.',
+            'description' => 'Open a current account with RazorpayX & reduce your platform fee to 1.65%.',
             'start_ts'    => 1621987200,
-            'end_ts'      => 1629936000,
+            'end_ts'      => 1629936000, 
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro.svg',
             'id'          => 'projectNitro',
             'campaign'    => 'nitro',
@@ -189,7 +189,7 @@ class Constants
         ],
         [
             'title'       => 'Get 1.65% pricing with RazorpayX',
-            'description' => 'Open a current account with RazorpayX & reduce your transaction fee to 1.65%.',
+            'description' => 'Open a current account with RazorpayX & reduce your platform fee to 1.65%.',
             'start_ts'    => 1621987200,
             'end_ts'      => 1629936000,
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro.svg',
