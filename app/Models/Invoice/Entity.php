@@ -179,14 +179,17 @@ class Entity extends Base\PublicEntity
     // ------------------------ Output Keys End ----------------------
 
 
-    const EMAIL                    = 'email';
-    const SMS                      = 'sms';
-    const ITEMS                    = 'items';
-    const IS_PAID                  = 'is_paid';
-    const SUPPLY_STATE_NAME        = 'supply_state_name';
-    const BILLING_ADDRESS_TEXT     = 'billing_address_text';
-    const SHIPPING_ADDRESS_TEXT    = 'shipping_address_text';
-    const AUTH_LINK_STATUS         = 'auth_link_status';
+    const EMAIL                          = 'email';
+    const NAME                           = 'name';
+    const CONTACT                        = 'contact';
+    const SMS                            = 'sms';
+    const ITEMS                          = 'items';
+    const IS_PAID                        = 'is_paid';
+    const SUPPLY_STATE_NAME              = 'supply_state_name';
+    const BILLING_ADDRESS_TEXT           = 'billing_address_text';
+    const SHIPPING_ADDRESS_TEXT          = 'shipping_address_text';
+    const AUTH_LINK_STATUS               = 'auth_link_status';
+    const IS_CONTACT_OR_EMAIL_PRESENT    = 'is_contact_or_email_present';
 
     const DEFAULT_DUE_DAYS         = 60;
 
@@ -1053,7 +1056,7 @@ class Entity extends Base\PublicEntity
 
             return false;
         }
-        
+
         return ($this->getRelation('entity') instanceof SubscriptionRegistration\Entity);
     }
 

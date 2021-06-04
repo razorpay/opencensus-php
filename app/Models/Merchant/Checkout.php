@@ -410,6 +410,17 @@ class Checkout
             }
         }
 
+        // Unsets Customer email and contact if pl_block_customer_prefill is true
+        $plBlockCustomerPrefill = $merchant->isFeatureEnabled(Feature\Constants::PL_BLOCK_CUSTOMER_PREFILL);
+        if ($plBlockCustomerPrefill === true)
+        {
+            if (isset($data['customer']) === true) {
+                $data['customer']['email'] = '';
+                $data['customer']['contact'] = '';
+                $data['customer']['name'] = '';
+            }
+        }
+
         // Add invoice's order details
 
         $data['order'] = $invoiceData['order'];

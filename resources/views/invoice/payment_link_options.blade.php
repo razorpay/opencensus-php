@@ -946,7 +946,7 @@ if (isset($view_preferences['exempt_customer_flagging']) === true) {
                 options.prefill.email = invoiceObj.customer_details.customer_email;
             }
 
-            if (options.prefill.contact || options.prefill.email) {
+            if (options.prefill.contact || options.prefill.email || invoiceObj.customer_details.is_contact_or_email_present === true) {
                 // options.order_id = invoiceObj.order_id;
                 options.customer_id = invoiceObj.customer_details.id;
             }

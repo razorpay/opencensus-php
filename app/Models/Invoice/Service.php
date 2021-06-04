@@ -508,11 +508,11 @@ class Service extends Base\Service
 
         if (strtolower($variant) === 'on')
         {
-            return (new ViewDataSerializer($invoice))->serializeForHostedV2();
+            return (new ViewDataSerializerHosted($invoice))->serializeForHostedV2();
         }
         else
         {
-            return (new ViewDataSerializer($invoice))->serializeForHosted();
+            return (new ViewDataSerializerHosted($invoice))->serializeForHosted();
         }
     }
 
@@ -543,11 +543,11 @@ class Service extends Base\Service
 
         if (strtolower($variant) === 'on')
         {
-            return (new ViewDataSerializer($invoice))->serializeForHostedV2();
+            return (new ViewDataSerializerHosted($invoice))->serializeForHostedV2();
         }
         else
         {
-            return (new ViewDataSerializer($invoice))->serializeForHostedV2();
+            return (new ViewDataSerializerHosted($invoice))->serializeForHostedV2();
         }
     }
 
