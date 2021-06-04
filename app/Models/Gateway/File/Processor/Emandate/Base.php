@@ -15,6 +15,7 @@ use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Gateway\File\Processor;
 use RZP\Exception\GatewayFileException;
+use RZP\Models\FileStore\Storage\Base\Bucket;
 use RZP\Mail\Gateway\EMandate\Base as EMandateMail;
 
 abstract class Base extends Processor\Base
@@ -138,5 +139,14 @@ abstract class Base extends Processor\Base
     protected function getFormattedAmount($amount)
     {
         return number_format($amount / 100, 2, '.', '');
+    }
+
+    protected function getBucketConfig($fileType)
+    {
+        $config = $this->app['config']->get('filestore.aws');
+
+        $bucketType = Bucket::getBucketConfigName($fileType, $this->env);
+
+        return $config[$bucketType];
     }
 }

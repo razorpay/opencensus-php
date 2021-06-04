@@ -30,12 +30,13 @@ use RZP\Gateway\Enach\Npci\Netbanking\IciciSponsorBank\DebitFileHeadings as Head
 
 class EnachNbIcici extends Debit\Base
 {
-    const EXTENSION         = FileStore\Format::TXT;
-    const FILE_TYPE         = FileStore\Type::ENACH_NPCI_NB_DEBIT_ICICI;
-    const FILE_NAME         = 'icici/nach/debit/ACH-DR-ICIC-ICIC401790-{$date}-{$batchCode}-INP';
-    const STEP              = 'debit';
-    const GATEWAY           = Payment\Gateway::ENACH_NPCI_NETBANKING;
-    const USER_NAME         = 'RZP';
+    const EXTENSION              = FileStore\Format::TXT;
+    const FILE_TYPE              = FileStore\Type::ENACH_NPCI_NB_DEBIT_ICICI;
+    const FILE_NAME              = 'icici/nach/debit/ACH-DR-ICIC-ICIC401790-{$date}-{$batchCode}-INP';
+    const STEP                   = 'debit';
+    const GATEWAY                = Payment\Gateway::ENACH_NPCI_NETBANKING;
+    const USER_NAME              = 'RZP';
+    const BASE_STORAGE_DIRECTORY = 'Icici/Enach/Netbanking/';
 
     // not required anymore. keeping for historical reasons
     const FILE_METADATA = [
@@ -185,9 +186,13 @@ class EnachNbIcici extends Debit\Base
             $fileInfo[] = $fullFileName;
         }
 
+        $bucketConfig = $this->getBucketConfig(FileStore\Type::ENACH_NPCI_NB_DEBIT_ICICI);
+
         $data = [
-            BeamService::BEAM_PUSH_FILES   => $fileInfo,
-            BeamService::BEAM_PUSH_JOBNAME => BeamConstants::ICICI_ENACH_NB_JOB_NAME
+            BeamService::BEAM_PUSH_FILES         => $fileInfo,
+            BeamService::BEAM_PUSH_JOBNAME       => BeamConstants::ICICI_ENACH_NB_JOB_NAME,
+            BeamService::BEAM_PUSH_BUCKET_NAME   => $bucketConfig['name'],
+            BeamService::BEAM_PUSH_BUCKET_REGION => $bucketConfig['region'],
         ];
 
         // In seconds
@@ -236,7 +241,7 @@ class EnachNbIcici extends Debit\Base
 
         $fileName = strtr($data['fileName'], ['{$date}' => $date, '{$batchCode}' => $batchCode]);
 
-        return $fileName;
+        return self::BASE_STORAGE_DIRECTORY . $fileName;
     }
 
     protected function getFileHeader(array $fileData)

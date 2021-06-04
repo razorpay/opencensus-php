@@ -102,7 +102,7 @@ class EnachNetbankingNpciYesbTest extends EnachNetbankingNpciGatewayTest
         $directTerminalFile = $files['items'][0];
         $sharedTerminalFile = $files['items'][1];
 
-        $fileNamingConvention = 'yesbank/nach/input_file/NACH_DR_{$date}_{$utilityCode}_RAZORPAY_001';
+        $fileNamingConvention = 'Npci/Enach/Netbanking/yesbank/nach/input_file/NACH_DR_{$date}_{$utilityCode}_RAZORPAY_001';
         $date = Carbon::now(Timezone::IST)->format('dmY');
 
         $expectedFileContentForDirectTerminal = [

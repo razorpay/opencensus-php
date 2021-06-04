@@ -542,9 +542,7 @@ class Type
             self::FUND_TRANSFER_H2H,
             self::RBL_ENACH_DEBIT,
             self::RBL_ENACH_REGISTER,
-            self::ENACH_NPCI_NB_DEBIT,
             self::ENACH_NPCI_NB_CANCEL,
-            self::ENACH_NPCI_NB_DEBIT_ICICI,
             self::ICICI_NACH_COMBINED_CANCEL,
             self::CITI_NACH_REGISTER,
             self::CITI_NACH_DEBIT,
@@ -650,6 +648,8 @@ class Type
             self::RBL_NETBANKING_CLAIM,
             self::INDUSIND_NETBANKING_CLAIM,
             self::AXIS_EMANDATE_DEBIT,
+            self::ENACH_NPCI_NB_DEBIT_ICICI,
+            self::ENACH_NPCI_NB_DEBIT,
         ],
 
         self::DATA_LAKE_SEGMENTS_BUCKET_CONFIG => [

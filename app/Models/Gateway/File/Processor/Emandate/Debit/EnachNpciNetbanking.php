@@ -32,6 +32,8 @@ class EnachNpciNetbanking extends Base
 
     const FILE_TYPE = FileStore\Type::ENACH_NPCI_NB_DEBIT;
 
+    const BASE_STORAGE_DIRECTORY = 'Npci/Enach/Netbanking/';
+
     const FILE_NAME = 'yesbank/nach/input_file/NACH_DR_{$date}_{$utilityCode}_RAZORPAY_001';
 
     protected $fileStore;
@@ -82,7 +84,7 @@ class EnachNpciNetbanking extends Base
 
         $fileName = strtr(static::FILE_NAME, ['{$date}' => $date, '{$utilityCode}' => $data['utilityCode']]);
 
-        return $fileName;
+        return self::BASE_STORAGE_DIRECTORY . $fileName;
     }
 
     protected function getNewGatewayPaymentEntity()
@@ -114,9 +116,13 @@ class EnachNpciNetbanking extends Base
             $fileInfo[] = $fullFileName;
         }
 
+        $bucketConfig = $this->getBucketConfig(FileStore\Type::ENACH_NPCI_NB_DEBIT);
+
         $data =  [
-            BeamService::BEAM_PUSH_FILES   => $fileInfo,
-            BeamService::BEAM_PUSH_JOBNAME => BeamConstants::YESBANK_ENACH_NB_JOB_NAME
+            BeamService::BEAM_PUSH_FILES         => $fileInfo,
+            BeamService::BEAM_PUSH_JOBNAME       => BeamConstants::YESBANK_ENACH_NB_JOB_NAME,
+            BeamService::BEAM_PUSH_BUCKET_NAME   => $bucketConfig['name'],
+            BeamService::BEAM_PUSH_BUCKET_REGION => $bucketConfig['region'],
         ];
 
         // In seconds
