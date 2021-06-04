@@ -34,6 +34,7 @@ use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
 use RZP\Services\DE\PersonalisationService;
 use RZP\Services\Mock\DE\PersonalisationService as MockPersonalisationService;
+use RZP\Models\SubscriptionRegistration\Validator as SubscriptionRegistrationValidator;
 use RZP\Models\Key;
 
 class Checkout
@@ -270,6 +271,8 @@ class Checkout
 
         $order = $this->setOrGetOrder($orderId, $merchant);
 
+        $this->checkNachStatus($order, $merchant);
+
         $data['order'] = (new Order\Core)->getFormattedDataForCheckout($order, $merchant);
 
         $configId = (isset($order->checkout_config_id) === true) ? Payment\Config\Entity::getSignedId($order->checkout_config_id) : null;
@@ -277,6 +280,25 @@ class Checkout
         (new Config\Core())->getFormattedConfigForCheckout($configId, $merchant->getId(), $data);
 
         $this->resetMethodsIfValidBanksPresent($data, $order, $merchant);
+    }
+
+    protected function checkNachStatus(Order\Entity $order, Merchant\Entity $merchant)
+    {
+        if ( $order->getMethod() === Payment\Method::NACH ) {
+            
+            $invoice = $order->invoice;
+
+            if (empty($invoice) === true) {
+                return;
+            }
+
+            (new SubscriptionRegistrationValidator())->validateInvoiceCreatedForTokenRegistration($invoice);
+
+            $subscriptionRegistration = $invoice->tokenRegistration;
+
+            (new SubscriptionRegistrationValidator())->validateSubscriptionRegistrationForAuthentication($subscriptionRegistration);
+        }
+        return;
     }
 
     protected function filterMethodsBasedOnAmount(array & $data, $input)
