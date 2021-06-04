@@ -19,6 +19,7 @@ use RZP\Constants\Product;
 use RZP\Models\Transaction;
 use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
+use RZP\Models\VirtualAccount;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Feature\Constants;
@@ -88,13 +89,22 @@ class Core extends Base\Core
 
     public function isMerchantWithXSettlementAccount($merchantId) : bool
     {
-        $accountNumber = (new BankAccount\Repository)->getSettlementAccountDetails($merchantId);
+        //1. First the settlement account for this mid is found out
+        //2. Then the existence of a bank account connected to a virtual account with the settlement account details is checked
+        //3. Finally the existence of a virtual account associated with X balance is checked with related bank_account_id
+        $settlementBankAccount = (new BankAccount\Repository)->getSettlementAccountDetails($merchantId);
 
-        if(count($accountNumber) !== 0)
+        if($settlementBankAccount != null)
         {
             try
             {
-                 (new Balance\Repository)->getBankingBalanceWithMerchantAndAccountNumberOrFail($merchantId, $accountNumber[0]);
+                $vaBankAccount = (new BankAccount\Repository)
+                                                        ->getXVirtualAccountOrFail(
+                                                            $merchantId,
+                                                            $settlementBankAccount->getAccountNumber(),
+                                                            $settlementBankAccount->getIfscCode());
+
+                (new VirtualAccount\Repository)->findVirtualAccountWithXBalanceOrFail($vaBankAccount->getId());
             }
             catch (\Throwable $e)
             {

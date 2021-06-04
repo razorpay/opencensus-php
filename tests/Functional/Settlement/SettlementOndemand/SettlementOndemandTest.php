@@ -539,6 +539,19 @@ class SettlementOndemandTest extends TestCase
             'balance' => 10000000000,
         ]);
 
+        $this->fixtures->on(Mode::TEST)->create('bank_account',[
+            'id'                =>'bankaccountid1',
+            'merchant_id'       => $this->merchantDetail['merchant_id'],
+            'type'              => 'virtual_account',
+            'ifsc_code'         => 'ICIC0000104',
+            'account_number'    => '10010101011',
+        ]);
+
+        $this->fixtures->on(Mode::TEST)->create('virtual_account', [
+            'bank_account_id' => 'bankaccountid1',
+            'balance_id'      => '10000000000000',
+        ]);
+
         $this->fixtures->feature->create([
             'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
 
@@ -687,6 +700,19 @@ class SettlementOndemandTest extends TestCase
 
         $this->fixtures->on(Mode::TEST)->create('balance', [
             'balance' => 10000000000,
+        ]);
+
+        $this->fixtures->on(Mode::TEST)->create('bank_account',[
+            'id'                =>'bankaccountid1',
+            'merchant_id'       => $this->merchantDetail['merchant_id'],
+            'type'              => 'virtual_account',
+            'ifsc_code'         => 'ICIC0000104',
+            'account_number'    => '10010101011',
+        ]);
+
+        $this->fixtures->on(Mode::TEST)->create('virtual_account', [
+            'bank_account_id' => 'bankaccountid1',
+            'balance_id'      => '10000000000000',
         ]);
 
         $this->fixtures->feature->create([
@@ -844,6 +870,19 @@ class SettlementOndemandTest extends TestCase
 
         $this->fixtures->on(Mode::TEST)->create('balance', [
             'balance' => 10000000000,
+        ]);
+
+        $this->fixtures->on(Mode::TEST)->create('bank_account',[
+            'id'                =>'bankaccountid1',
+            'merchant_id'       => $this->merchantDetail['merchant_id'],
+            'type'              => 'virtual_account',
+            'ifsc_code'         => 'ICIC0000104',
+            'account_number'    => '10010101011',
+        ]);
+
+        $this->fixtures->on(Mode::TEST)->create('virtual_account', [
+            'bank_account_id' => 'bankaccountid1',
+            'balance_id'      => '10000000000000',
         ]);
 
         $this->fixtures->feature->create([

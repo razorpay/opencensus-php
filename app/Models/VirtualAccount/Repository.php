@@ -12,6 +12,7 @@ use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant\Entity as Merchant;
 
@@ -276,5 +277,15 @@ class Repository extends Base\Repository
                     ->where(Entity::ENTITY_TYPE, '=', 'order')
                     ->whereNotNull(Entity::ENTITY_ID)
                     ->first();
+    }
+
+    public function findVirtualAccountWithXBalanceOrFail(string $bankAccountId)
+    {
+        return $this->newQuery()
+                    ->join(Table::BALANCE, Entity::BALANCE_ID,'=', Table::BALANCE.'.'.Balance\Entity::ID)
+                    ->where(Entity::BANK_ACCOUNT_ID, '=', $bankAccountId)
+                    ->where(Balance\Entity::TYPE, '=', Balance\Type::BANKING)
+                    ->where(Balance\Entity::ACCOUNT_TYPE, '=', Balance\AccountType::SHARED)
+                    ->firstOrFail();
     }
 }

@@ -61,7 +61,17 @@ class Repository extends Base\Repository
                             $query->where(Entity::IFSC_CODE, '=', VirtualAccount\Provider::IFSC[VirtualAccount\Provider::YESBANK])
                                   ->orWhere(Entity::IFSC_CODE, '=', VirtualAccount\Provider::IFSC[VirtualAccount\Provider::ICICI]);
                             })
-                    ->pluck(Entity::ACCOUNT_NUMBER);
+                    ->first();
+    }
+
+    public  function getXVirtualAccountOrFail($merchantId, $accountNumber, $ifscCode)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->where(Entity::TYPE, Type::VIRTUAL_ACCOUNT)
+                    ->where(Entity::ACCOUNT_NUMBER,'=', $accountNumber)
+                    ->where(Entity::IFSC_CODE,'=', $ifscCode)
+                    ->firstOrFail();
     }
 
     /**
