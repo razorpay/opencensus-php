@@ -376,6 +376,17 @@ class BankingAccountService
         $this->getBusinessId($merchantId);
     }
 
+    public function getBusinessDetails(string $merchantId)
+    {
+        $businessId = $this->getBusinessId($merchantId);
+
+        $path = 'business/'. $businessId;
+
+        $response = $this->sendRequestAndProcessResponse($path, 'GET', [], []);
+
+        return $response['data'];
+    }
+  
     public function fetchIciciActivatedAccountFromBas(MerchantEntity $merchant)
     {
         $merchantId = $merchant->getMerchantId();

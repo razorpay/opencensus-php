@@ -5,12 +5,16 @@ namespace RZP\Models\BankingAccountStatement\Generator\Gateway\Icici;
 use Carbon\Carbon;
 
 use RZP\Constants\Timezone;
+use RZP\Models\Currency\Currency;
+use RZP\Services\BankingAccountService;
 use RZP\Models\BankingAccountStatement\Entity as basEntity;
 use RZP\Models\BankingAccountStatement\Generator\Gateway\Base;
 use RZP\Models\Transaction\Statement\Entity as StatementEntity;
 use RZP\Models\BankingAccountStatement\Details\Entity as basDetailsEntity;
 use RZP\Models\BankingAccountStatement\Generator\Gateway\Icici\Constants\StatementSummary;
+use RZP\Models\BankingAccountStatement\Generator\Gateway\Icici\Constants\AccountOwnerInfo;
 use RZP\Models\BankingAccountStatement\Generator\Gateway\Icici\Constants\TransactionLineItem;
+use RZP\Models\BankingAccountStatement\Generator\Gateway\Icici\Constants\BusinessDetailsInfo;
 use RZP\Models\BankingAccountStatement\Generator\Gateway\Icici\Constants\AccountStatementData;
 
 abstract class Generator extends Base
@@ -37,13 +41,10 @@ abstract class Generator extends Base
         $this->data = $this->accountStatementData();
     }
 
-    protected function accountStatementData()
+    protected function getAccountOwnerInfo(basDetailsEntity $basDetails): array
     {
-        $basDetails = $this->repo->banking_account_statement_details->fetchByAccountNumberAndChannel($this->accountNumber, $this->channel);
-
-        // TODO:// add this after banking account service provides with an api with required details.
-        // Currently hardcoding dummy values below
-        //$accountOwnerInfo = $this->getAccountOwnerInfo($basDetails);
+        /** @var BankingAccountService|\RZP\Services\Mock\BankingAccountService $bas */
+        $bas = app('banking_account_service');
 
         $fromDate = Carbon::createFromTimestamp($this->fromDate, Timezone::IST)
                           ->format(self::DATE_FORMAT);
@@ -57,15 +58,36 @@ abstract class Generator extends Base
 
         $statementPeriod = $fromDate . ' to ' . $toDate;
 
+        $businessDetails = $bas->getBusinessDetails($basDetails->getMerchantId());
+
+        $accountOwnerInfo = [
+            AccountOwnerInfo::ACCOUNT_NAME         => $this->getAccountName($businessDetails),
+
+            AccountOwnerInfo::ACCOUNT_NUMBER       => $basDetails->getAccountNumber(),
+
+            AccountOwnerInfo::STATEMENT_PERIOD     => $statementPeriod,
+
+            AccountOwnerInfo::CURRENCY             => Currency::INR,
+        ];
+
+        return $accountOwnerInfo;
+    }
+
+    public function getAccountName($businessDetails)
+    {
+        return $businessDetails[BusinessDetailsInfo::NAME];
+    }
+
+    protected function accountStatementData()
+    {
+        $basDetails = $this->repo->banking_account_statement_details->fetchByAccountNumberAndChannel($this->accountNumber, $this->channel);
+
+        $accountOwnerInfo = $this->getAccountOwnerInfo($basDetails);
+
         list($statementSummary, $transactions) = $this->getAccountSummaryAndTransactions($basDetails);
 
         return [
-            AccountStatementData::ACCOUNT_OWNER_INFO => [
-                'account_number' => '123141413',
-                'currency'       => 'INR',
-                'account_name'   => 'razorpay ICIC',
-                'statement_period' => $statementPeriod
-            ],//$accountOwnerInfo,
+            AccountStatementData::ACCOUNT_OWNER_INFO => $accountOwnerInfo,
 
             AccountStatementData::TRANSACTIONS       => $transactions,
 

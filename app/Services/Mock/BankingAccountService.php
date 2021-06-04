@@ -38,6 +38,13 @@ class BankingAccountService
             ];
     }
 
+    public function getBusinessDetails($merchantId)
+    {
+        return [
+            "name" => "RazorpayX",
+        ];
+    }
+
     public function fetchBankingCredentials($merchantId, string $channel = 'icici', string $accountNumber = '1234566')
     {
         //ICICI test ca credentials required for payouts testing in dark.
