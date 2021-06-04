@@ -250,7 +250,8 @@ class Core extends Base\Core
            }
         }
 
-        if($input['month'] >= 5 and $input['year'] >= 2021)
+        $migrationDone = false;
+        if($migrationDone and ($input['month'] >= 5 and $input['year'] >= 2021))
         {
             foreach($data[BankingInvoiceReport::ROWS] as $type => $lineItem)
             {
