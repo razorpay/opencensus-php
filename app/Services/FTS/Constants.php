@@ -194,6 +194,8 @@ final class Constants
 
     const FTS_AMAZON_PAY_CHANNEL         = 'amazon_pay';
 
+    const BANK_ACCOUNT_TYPE              = 'bank_account_type';
+
     public static function getProducts(): array
     {
         return [

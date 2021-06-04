@@ -284,6 +284,8 @@ class Processor extends BankingAccount\Gateway\Processor
             FTS\Constants::MOZART_IDENTIFIER                => $mozartIdentifier,
             FTS\Constants::CONFIGURATION                    => $config,
             FTS\Constants::SOURCE_ACCOUNT_TYPE_IDENTIFIER   => BankingAccount\AccountType::DIRECT,
+            FTS\Constants::BANK_ACCOUNT_TYPE                => strtoupper(BankingAccount\AccountType::CURRENT),
+
         ];
 
         return $body;

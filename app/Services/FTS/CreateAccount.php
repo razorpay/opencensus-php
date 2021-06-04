@@ -319,6 +319,13 @@ class CreateAccount extends Base
             ];
         }
 
+        if(array_key_exists(Constants::BANK_ACCOUNT_TYPE, $content) === true)
+        {
+            $request += [
+                Constants::BANK_ACCOUNT_TYPE => $content[Constants::BANK_ACCOUNT_TYPE],
+            ];
+        }
+
         return $request;
     }
 
