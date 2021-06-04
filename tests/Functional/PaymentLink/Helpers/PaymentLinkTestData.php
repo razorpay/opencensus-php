@@ -1937,4 +1937,19 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testPaymentPageDetails' => [
+        'request' => [
+            'url'     => '/v1/payment_pages/pl_100000000000pl/details',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'id'                      => 'pl_100000000000pl',
+                'captured_payments_count' => 1,
+                'status'                  => 'active',
+            ]
+        ],
+    ],
 ];

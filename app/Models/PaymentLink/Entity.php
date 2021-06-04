@@ -646,6 +646,13 @@ class Entity extends Base\PublicEntity
         return $item->getAmount();
     }
 
+    public function getMetricDimensions(): array
+    {
+        return [
+            'view_type' => $this->getViewType(),
+        ];
+    }
+
     // -------------------------------------- End Getters -----------------------------
 
     // ----------------------------------------- Setters ------------------------------

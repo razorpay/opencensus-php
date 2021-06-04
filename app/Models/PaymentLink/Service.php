@@ -158,13 +158,18 @@ class Service extends Base\Service
             $this->appendAmountIfPossible($id, $input, $payload);
         }
 
+        $this->trace->count(
+            Metric::PAYMENT_PAGE_VIEW_TOTAL,
+            [
+                'view_type' => $viewType,
+            ]
+        );
+
         return [$view, $payload];
     }
 
     public function getViewNameAndPayload(string $id)
     {
-        $this->trace->count(Metric::PAYMENT_PAGE_VIEW_TOTAL);
-
         /** @var Entity $paymentLink */
         $paymentLink = $this->repo->payment_link->findActiveByPublicId($id);
 
@@ -173,6 +178,8 @@ class Service extends Base\Service
         $viewPayload = $this->core->getHostedViewPayload($paymentLink);
 
         $view = $this->core->getHostedViewTemplate($paymentLink);
+
+        $this->trace->count(Metric::PAYMENT_PAGE_VIEW_TOTAL, $paymentLink->getMetricDimensions());
 
         return [$view, $viewPayload];
     }
@@ -249,6 +256,8 @@ class Service extends Base\Service
         }
 
         $data[Entity::ORDER] = $data[Entity::ORDER]->toArrayPublic();
+
+        $this->trace->count(Metric::PAYMENT_PAGE_CREATE_ORDER, $paymentLink->getMetricDimensions());
 
         return $data;
     }

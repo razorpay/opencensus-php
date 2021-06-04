@@ -2445,8 +2445,7 @@ class Repository extends Base\Repository
 
     public function getCapturedPaymentsForPaymentPage(PaymentLink\Entity $paymentPage)
     {
-        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
-                    ->from(\DB::raw('`payments` FORCE INDEX (payments_payment_link_id_index)'))
+        return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->where(Entity::PAYMENT_LINK_ID, $paymentPage->getId())
                     ->where(Entity::MERCHANT_ID, $paymentPage->getMerchantId())
                     ->whereIn(Entity::STATUS, [Status::CAPTURED, Status::REFUNDED])

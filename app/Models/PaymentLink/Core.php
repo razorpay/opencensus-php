@@ -103,6 +103,8 @@ class Core extends Base\Core
 
         $this->trackPaymentPageCreatedEvent($paymentLink, $input);
 
+        $this->trace->count(Metric::PAYMENT_PAGE_CREATED_TOTAL, $paymentLink->getMetricDimensions());
+
         $this->doDedupeAndRiskActions($paymentLink, $merchant);
 
         return $paymentLink;
@@ -144,6 +146,8 @@ class Core extends Base\Core
             $this->repo->payment_page_item->saveOrFail($ppItem);
 
         });
+
+        $this->trace->count(Metric::PAYMENT_PAGE_SUBSCRIPTION_CREATED, $paymentLink->getMetricDimensions());
 
         return ['subscription_id' => $responseJson['id']];
     }
@@ -381,7 +385,7 @@ class Core extends Base\Core
      */
     public function validateIsPaymentInitiatable(Entity $paymentLink, Payment\Entity $payment)
     {
-        $this->trace->count(Metric::PAYMENT_PAGE_PAYMENT_ATTEMPTS_TOTAL);
+        $this->trace->count(Metric::PAYMENT_PAGE_PAYMENT_ATTEMPTS_TOTAL, $paymentLink->getMetricDimensions());
 
         $paymentLink->getValidator()->validatePaymentCurrency($payment);
 
@@ -914,7 +918,7 @@ class Core extends Base\Core
                 E::PAYMENT_LINK    => $paymentLink->toArrayPublic(),
             ]);
 
-        $this->trace->count(Metric::PAYMENT_PAGE_PAID_TOTAL);
+        $this->trace->count(Metric::PAYMENT_PAGE_PAID_TOTAL, $paymentLink->getMetricDimensions());
     }
 
     protected function createInvoiceIfEnabled(Entity $paymentLink, Payment\Entity $payment)
@@ -953,6 +957,8 @@ class Core extends Base\Core
 
             return $invoiceCore->sendNotification($invoice, Invoice\NotifyMedium::EMAIL, true);
         }
+
+        $this->trace->count(Metric::PAYMENT_PAGE_RECEIPT_GENERATED, $paymentLink->getMetricDimensions());
     }
 
     protected function getInvoiceCreateInput(Entity $paymentLink, Payment\Entity $payment): array
@@ -1476,7 +1482,7 @@ class Core extends Base\Core
                 }
             });
 
-        $this->trace->count(Metric::PAYMENT_PAGE_EXPIRED_TOTAL);
+        $this->trace->count(Metric::PAYMENT_PAGE_EXPIRED_TOTAL, $paymentLink->getMetricDimensions());
     }
 
     /**
@@ -1532,7 +1538,7 @@ class Core extends Base\Core
         // If refund was made, increments counter of at what payment status the refund was made
         if ($refund !== null)
         {
-            $dimensions = ['payment_status' => $payment->getStatus()];
+            $dimensions = ['payment_status' => $payment->getStatus()] + $paymentLink->getMetricDimensions();
 
             $this->trace->count(Metric::PAYMENT_PAGE_PAYMENT_REFUNDS_TOTAL, $dimensions);
         }
@@ -1660,28 +1666,21 @@ class Core extends Base\Core
                 return;
             }
 
-            $variant = $this->app->razorx->getTreatment(
-                $merchant->getId(),
-                Merchant\RazorxTreatment::APPS_RISK_CHECK,
-                $this->mode
-            );
+            $riskCheckInput = $this->getRiskCheckInput($paymentLink);
 
+            $riskCheckOutput = $this->merchantRiskService->validateRiskFactorForMerchantRequest($riskCheckInput);
 
-            if ($variant === 'on')
+            $alertInput = $this->validateRiskFactorResponseAndGetAlertInput($riskCheckOutput, $paymentLink);
+
+            if (empty($alertInput) === true)
             {
-                $riskCheckInput = $this->getRiskCheckInput($paymentLink);
-
-                $riskCheckOutput = $this->merchantRiskService->validateRiskFactorForMerchantRequest($riskCheckInput);
-
-                $alertInput = $this->validateRiskFactorResponseAndGetAlertInput($riskCheckOutput, $paymentLink);
-
-                if (empty($alertInput) === true)
-                {
-                    return;
-                }
-
-                $this->merchantRiskService->createAlertRequest($alertInput);
+                return;
             }
+
+            $this->trace->count(Metric::PAYMENT_PAGE_RISK_ALERT_COUNT, $paymentLink->getMetricDimensions());
+
+            $this->merchantRiskService->createAlertRequest($alertInput);
+
         }
         catch (\Exception $e)
         {

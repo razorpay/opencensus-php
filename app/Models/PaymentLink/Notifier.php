@@ -62,7 +62,7 @@ class Notifier extends Base\Core
                 Entity::EMAIL => $email,
             ]);
 
-        $this->trace->count(Metric::PAYMENT_PAGE_EMAIL_NOTIFY_TOTAL);
+        $this->trace->count(Metric::PAYMENT_PAGE_EMAIL_NOTIFY_TOTAL, $paymentLink->getMetricDimensions());
 
         $mailPayload = (new ViewSerializer($paymentLink))->serializeForInternal();
 
@@ -93,7 +93,7 @@ class Notifier extends Base\Core
      */
     protected function notifyBySms(Entity $paymentLink, string $contact)
     {
-        $this->trace->count(Metric::PAYMENT_PAGE_SMS_NOTIFY_TOTAL);
+        $this->trace->count(Metric::PAYMENT_PAGE_SMS_NOTIFY_TOTAL, $paymentLink->getMetricDimensions());
 
         $request = $this->getRavenSendPaymentLinkRequestInput($paymentLink, $contact);
 

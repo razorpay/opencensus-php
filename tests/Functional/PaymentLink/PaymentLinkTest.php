@@ -1145,6 +1145,15 @@ class PaymentLinkTest extends TestCase
 
     }
 
+    public function testPaymentPageDetails()
+    {
+        $this->testPaymentLinkMakePaymentWithOrder();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     // -------------------- Protected methods --------------------
 
     protected function createPaymentLink(string $id = self::TEST_PL_ID, array $attributes = []): PaymentLinkModel\Entity
