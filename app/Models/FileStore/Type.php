@@ -141,6 +141,10 @@ class Type
 
     const KOTAK_CORP_NETBANKING_REFUND      = 'kotak_corp_netbanking_refund';
 
+    const NSDL_NETBANKING_REFUND            = 'nsdl_netbanking_refund';
+
+    const NSDL_NETBANKING_CLAIM             = 'nsdl_netbanking_claim';
+
     const AIRTELMONEY_WALLET_REFUND         = 'airtelmoney_wallet_refund';
 
     const PAYUMONEY_WALLET_REFUND           = 'payumoney_wallet_refund';
@@ -304,6 +308,8 @@ class Type
             self::IOB_NETBANKING_REFUND,
             self::FSB_NETBANKING_REFUND,
             self::UBI_NETBANKING_REFUND,
+            self::NSDL_NETBANKING_REFUND,
+            self::NSDL_NETBANKING_CLAIM,
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
             self::RBL_NETBANKING_CLAIM,
@@ -479,6 +485,8 @@ class Type
         self::RBL_NETBANKING_CLAIM,
         self::SBI_NETBANKING_CLAIM,
         self::DCB_NETBANKING_REFUND,
+        self::NSDL_NETBANKING_REFUND,
+        self::NSDL_NETBANKING_CLAIM,
         self::AIRTELMONEY_WALLET_REFUND,
         self::PAYUMONEY_WALLET_REFUND,
         self::ICICI_UPI_REFUND,
@@ -624,6 +632,8 @@ class Type
             self::JSB_NETBANKING_REFUND,
             self::MINDGATE_UPI_REFUND,
             self::DLB_NETBAKING_REFUND,
+            self::NSDL_NETBANKING_REFUND,
+            self::NSDL_NETBANKING_CLAIM,
             self::KOTAK_NETBANKING_REFUND,
             self::HDFC_NETBANKING_REFUND,
             self::CORPORATION_NETBANKING_REFUND,

@@ -130,9 +130,10 @@ class Netbanking
         IFSC::DCBL,
         IFSC::ANDB,   // due to bank merger, will be routed through UBIN direct integration
         IFSC::SYNB,   // due to bank merger, will be routed through CNRB direct integration
-        IFSC::CORP,    // due to bank merger, will be routed through UBIN direct integration
+        IFSC::CORP,   // due to bank merger, will be routed through UBIN direct integration
         IFSC::AUBL,
         IFSC::DLXB,
+        IFSC::NSPB,
         IFSC::VIJB,
     ];
 
@@ -921,6 +922,11 @@ class Netbanking
             ],
             'tpv' => [
                 IFSC::DLXB,
+            ]
+        ],
+        Gateway::NETBANKING_NSDL => [
+            'retail' => [
+                IFSC::NSPB,
             ]
         ]
     ];

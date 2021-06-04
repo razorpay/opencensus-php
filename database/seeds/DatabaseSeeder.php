@@ -2869,6 +2869,21 @@ class DatabaseSeeder extends Seeder
         );
     }
 
+    protected function createNetbankingNsdlTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => Terminal\Shared::NETBANKING_NSDL_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_NSDL,
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'netbanking_nsdl_merchant_id',
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            ]
+        );
+    }
 
     protected function createCashfreeTerminal()
     {

@@ -88,6 +88,7 @@ class Gateway
     const NETBANKING_DCB         = 'netbanking_dcb';
     const NETBANKING_AUSF        = 'netbanking_ausf';
     const NETBANKING_DLB         = 'netbanking_dlb';
+    const NETBANKING_NSDL        = 'netbanking_nsdl';
     const NACH_CITI              = 'nach_citi';
     const NACH_ICICI             = 'nach_icici';
     const PAYTM                  = 'paytm';
@@ -405,6 +406,7 @@ class Gateway
         self::NETBANKING_SCB,
         self::NETBANKING_AUSF,
         self::NETBANKING_DLB,
+        self::NETBANKING_NSDL,
     ];
 
     /**
@@ -1062,6 +1064,7 @@ class Gateway
         Payment\Gateway::NETBANKING_AUSF,
         Payment\Gateway::UPI_YESBANK,
         Payment\Gateway::NETBANKING_DLB,
+        Payment\Gateway::NETBANKING_NSDL,
         Payment\Gateway::BAJAJFINSERV,
         Payment\Gateway::FULCRUM,
     ];
@@ -1102,6 +1105,7 @@ class Gateway
         Payment\Gateway::NETBANKING_UBI         => 1607059163,
         Payment\Gateway::NETBANKING_PNB         => 1609936200,
         Payment\Gateway::NETBANKING_DLB         => 1609936200,
+        Payment\Gateway::NETBANKING_NSDL        => 1618511400,
     ];
 
     public static $channels = [
@@ -1214,6 +1218,7 @@ class Gateway
             self::NETBANKING_DCB,
             self::NETBANKING_AUSF,
             self::NETBANKING_DLB,
+            self::NETBANKING_NSDL,
         ],
 
         //
@@ -2209,6 +2214,7 @@ class Gateway
         IFSC::SYNB         => Gateway::NETBANKING_CANARA,
         IFSC::AUBL         => Gateway::NETBANKING_AUSF,
         IFSC::DLXB         => Gateway::NETBANKING_DLB,
+        IFSC::NSPB         => Gateway::NETBANKING_NSDL,
     ];
 
     /**
@@ -2276,6 +2282,7 @@ class Gateway
         IFSC::AUBL => Gateway::NETBANKING_AUSF,
         IFSC::JSFB => Gateway::NETBANKING_JSB,
         IFSC::DLXB => Gateway::NETBANKING_DLB,
+        IFSC::NSPB => Gateway::NETBANKING_NSDL,
     ];
 
     /**
@@ -3264,6 +3271,7 @@ class Gateway
             self::NETBANKING_DLB,
             self::NETBANKING_SCB,
             self::NETBANKING_FEDERAL,
+            self::NETBANKING_NSDL,
             self::NETBANKING_YESB,
             self::NETBANKING_CUB,
             self::NETBANKING_SIB,
@@ -3361,6 +3369,7 @@ class Gateway
             self::NETBANKING_AUSF,
             self::NETBANKING_DLB,
             self::NETBANKING_SBI,
+            self::NETBANKING_NSDL,
         ];
 
         $acquirerGateways = [

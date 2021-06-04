@@ -97,6 +97,7 @@ class Base extends Core
     const NETBANKING_AUSF        = 'NetbankingAusf';
     const NETBANKING_DLB         = 'NetbankingDlb';
     const NETBANKING_KOTAK_V2    = 'NetbankingKotakV2';
+    const NETBANKING_NSDL        = 'NetbankingNsdl';
     const VIRTUAL_ACC_KOTAK      = 'VirtualAccKotak';
     const VIRTUAL_ACC_YESBANK    = 'VirtualAccYesBank';
     const VIRTUAL_ACC_RBL        = 'VirtualAccRbl';
@@ -189,6 +190,7 @@ class Base extends Core
         self::NETBANKING_UBI         => [],
         self::NETBANKING_AUSF        => [],
         self::NETBANKING_KOTAK_V2    => ['bankalerts@kotak.com'],
+        self::NETBANKING_NSDL        => [],
         self::JIOMONEY               => [],
         self::EBS                    => [],
         self::FIRST_DATA             => ['customer.care@icici.mailserv.in'],
@@ -302,6 +304,7 @@ class Base extends Core
         Gateway::BT_YESBANK             => self::VIRTUAL_ACC_YESBANK,
         Gateway::WORLDLINE              => self::VAS_AXIS,
         Gateway::NETBANKING_DLB         => self::NETBANKING_DLB,
+        Gateway::NETBANKING_NSDL        => self::NETBANKING_NSDL,
 
         Gateway::AMEX                   => [
             Gateway::ACQUIRER_AMEX   => self::AMEX,

@@ -58,6 +58,7 @@ class Constants
     const AUBL             = 'aubl';
     const KOTAK_CORP       = 'kotak_corp';
     const DLB              = 'dlb';
+    const NSDL             = 'nsdl';
 
     const ENACH_NPCI_NETBANKING = 'enach_npci_netbanking';
     const ENACH_NB_ICICI        = 'enach_nb_icici';  // deprecated
@@ -138,6 +139,7 @@ class Constants
             self::AUBL,
             self::KOTAK_CORP,
             self::DLB,
+            self::NSDL,
         ],
         Type::EMANDATE_CANCEL => [
             self::ENACH_NPCI_NETBANKING,
@@ -246,7 +248,8 @@ class Constants
             self::IBK         => ['ibk-netbanking-refunds@razorpay.com'],
             self::AUBL        => ['ausf-netbanking-refunds@razorpay.com'],
             self::KOTAK_CORP  => ['kotak-corp-netbanking-refunds@razorpay.com'],
-            self::DLB         => ['dlb-netbanking-refunds@razorpay.com']
+            self::DLB         => ['dlb-netbanking-refunds@razorpay.com'],
+            self::NSDL        => ['nsdl-netbanking-refunds@razorpay.com'],
         ],
 
         Type::EMANDATE_REGISTER => [

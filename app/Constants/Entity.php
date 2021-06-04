@@ -333,6 +333,7 @@ class Entity
     const NETBANKING_CORPORATION = 'netbanking_corporation';
     const UPI_MOZART             = 'upi_mozart';
     const NETBANKING_DCB         = 'netbanking_dcb';
+    const NETBANKING_NSDL        = 'netbanking_nsdl';
 
     // P2P Service Entities
     const P2P_VPA                = 'p2p_vpa';
