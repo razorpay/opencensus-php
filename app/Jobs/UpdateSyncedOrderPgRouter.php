@@ -57,9 +57,7 @@ class UpdateSyncedOrderPgRouter extends Job
 
             $this->trace->info(TraceCode::ORDER_UPDATE_DATA_SYNC_TO_PG_ROUTER_SUCCESS,
                 [
-                    'id' => $this->data['id'],
-                    'status' => $this->data['status'],
-                    'updated_at' => $this->data['updated_at']
+                    'order_update_request' => $this->data['order_update_request'],
                 ]
             );
 
