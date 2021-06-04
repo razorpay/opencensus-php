@@ -248,7 +248,7 @@ const s3 = props => {
                     entitled to refuse Merchant Onboarding on Second Party’s
                     failure to obtain KYC documents. Simultaneous with the
                     Onboarding process, the Partner shall communicate the
-                    Transaction Fees offered to and as agreed between the
+                    Platform Fees offered to and as agreed between the
                     Partner and the Merchant.
                   </p>
                 </li>
@@ -261,7 +261,7 @@ const s3 = props => {
                     Razorpay (“Merchant Agreement”) and such Merchant Agreement
                     would govern the terms and conditions <em>inter se</em> the
                     Merchants and Razorpay in relation to provision and use of
-                    the Razorpay Services as also the Transaction Fees. Razorpay
+                    the Razorpay Services as also the Platform Fees. Razorpay
                     reserves the right to either not activate Razorpay Services
                     or suspend Razorpay Services if a Merchant does not enter
                     into a Merchant Agreement with Razorpay. The Partner shall
@@ -359,7 +359,7 @@ const s3 = props => {
                 <li>
                   <p>
                     In consideration for the Razorpay Services, Razorpay shall
-                    deduct the Transaction Fee from the Customer Payment Amount
+                    deduct the Platform Fee from the Customer Payment Amount
                     in respect of every Transaction.
                   </p>
                 </li>
