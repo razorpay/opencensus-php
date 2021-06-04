@@ -9,8 +9,8 @@ import {
   trackSupportDetailPopupClose,
 } from 'merchant/containers/Home/ga';
 import { merchantFetch } from 'merchant/utils/ajax';
-import AsyncButton from 'react-async-button';
 import OtpInput from 'common/new-ui/Input/OtpInput';
+import { AsyncBtn } from 'common/new-ui/Button';
 
 const VerifyOTP = ({
   email,
@@ -29,6 +29,7 @@ const VerifyOTP = ({
   const [wrongPhoneOtp, setWrongPhoneOtp] = useState(false);
   const [isVerified, setIsVerfied] = useState(false);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [isResent, setIsResent] = useState(false);
 
   const EMAIL = 0,
     PHONE = 1;
@@ -120,7 +121,7 @@ const VerifyOTP = ({
         action: 'verify_support_contact',
         email,
       };
-      merchantFetch({
+      return merchantFetch({
         url,
         method,
         data: body,
@@ -136,7 +137,7 @@ const VerifyOTP = ({
         action: 'verify_support_contact',
         contact_mobile: phone,
       };
-      merchantFetch({
+      return merchantFetch({
         url,
         method,
         data: body,
@@ -157,10 +158,14 @@ const VerifyOTP = ({
 
   const renderOtpSection = (context) => (
     <div className="support-modal-otp-section">
-      <div className="otp-section-message">
+      <div className="otp-section-message m-0">
         An {context === EMAIL ? 'e-mail' : 'SMS'} with 6-digit OTP has been sent to
         <br />
-        <b>{context === EMAIL ? email : phone} </b>[<a onClick={reset}>Change</a>]
+        <b>{context === EMAIL ? email : phone} </b>[
+        <AsyncBtn.Transparent onClick={reset} className="m-l" showLoader={false}>
+          Change
+        </AsyncBtn.Transparent>
+        ]
       </div>
       <OtpInput
         onComplete={(otpInput) => {
@@ -173,7 +178,15 @@ const VerifyOTP = ({
         autoFocus={false}
       />
       <div className="resend-link">
-        Didn't receive the {context === EMAIL ? 'e-mail' : 'SMS'}? <a onClick={sendOtp}>Resend</a>
+        Didn't receive the {context === EMAIL ? 'e-mail' : 'SMS'}?{' '}
+        <AsyncBtn.Transparent
+          pendingState="Sending OTP..."
+          onClick={sendOtp}
+          className="m-l"
+          showLoader={false}
+        >
+          Resend
+        </AsyncBtn.Transparent>
       </div>
     </div>
   );
@@ -181,7 +194,7 @@ const VerifyOTP = ({
   const getHeading = () => {
     if (shouldRenderEmailSection && shouldRenderPhoneSection) return 'Verify your Details';
     if (shouldRenderEmailSection) return 'Verify your E-Mail';
-    if (shouldRenderPhoneSection) return 'Verify your Mobile Number';
+    if (shouldRenderPhoneSection) return 'Verify your Support Number';
   };
 
   useEffect(() => {
@@ -212,13 +225,14 @@ const VerifyOTP = ({
       )}
       {shouldRenderEmailSection && renderOtpSection(EMAIL)}
       {shouldRenderPhoneSection && shouldRenderEmailSection && <hr />}
-      <AsyncButton
+      <AsyncBtn.Primary
         type="submit"
-        className="btn btn-primary btn-block"
+        className="Button--full-width"
         onClick={onSubmit}
-        text={isVerifyingOtp ? 'Verifying...' : 'Submit'}
         disabled={!isVerified}
-      />
+      >
+        {isVerifyingOtp ? 'Verifying...' : 'Submit'}
+        </AsyncBtn.Primary>
     </div>
   );
 };
