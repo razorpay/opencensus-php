@@ -434,6 +434,8 @@ class UserController extends Controller
 
         Session::forget(User\Constants::TWO_FA_VERIFIED);
 
+        $this->app->request->session()->regenerateToken();
+
         return AppResponse::jsonResponse([]);
     }
 
