@@ -32,6 +32,7 @@ class Table
     const QR_CODE                      = 'qr_code';
     const QR_CODE_CONFIG               = 'qr_code_config';
     const QR_PAYMENT_REQUEST           = 'qr_payment_request';
+    const QR_PAYMENT                   = 'qr_payment';
     const BALANCE                      = 'balance';
     const PRICING                      = 'pricing';
     const PRODUCT                      = 'product';
