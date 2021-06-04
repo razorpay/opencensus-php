@@ -31,7 +31,7 @@ export const ACTIVATION_STATUS_UNDER_REVIEW = {
   registered: {
     title: 'Details are under review',
     description:
-      'Your documents are under review. It generally takes around 3 - 5 working days. Our team will reach out to you in case of any clarification',
+      'Your documents are under review. It generally takes around 3 - 4 working days. Our team will reach out to you in case of any clarification',
   },
 };
 

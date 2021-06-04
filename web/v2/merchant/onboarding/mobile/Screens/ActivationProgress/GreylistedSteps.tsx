@@ -56,7 +56,7 @@ const GreylistedSteps: React.FC<RouteComponentProps> = ({ history }) => {
     data.activation_status === 'activated' ||
     data.activation_status === 'activated_mcc_pending';
   const underReviewInfo = isStatusUnderReview
-    ? 'Your details are under review . We will get back to you in 7-8 working days'
+    ? 'Your details are under review . We will get back to you in 3-4 working days'
     : '';
   const hasPoiStatus =
     data.poi_verification_status === 'incorrect_details' ||
