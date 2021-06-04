@@ -12,6 +12,7 @@ const s2 = ({
   tracking,
   merchantId,
   experimentVariant,
+  isMobile
 }) => {
   const shouldShowNewScreen = useMemo(() => experimentVariant === 'exposed', [experimentVariant]);
   const handleNextClick = () => {
@@ -79,7 +80,7 @@ const s2 = ({
       <>
         <div className={'partner-onbr-info step-2'}>
           <div className="partner-illustration"></div>
-          <div className="title">Choose your partnership type</div>
+          <div className="title">Choose your Partnership&nbsp;Type</div>
           <div className="options-group select-partner-type-options">
             <PartnerSelectBox
               label={'Reseller Partner'}
@@ -90,6 +91,7 @@ const s2 = ({
               hoverContent={
                 'Freelancer, Startup Incubator, Entrepreneur, Influencer, Blogger, Web developer, Designer etc'
               }
+              isMobile={isMobile}
             >
               <ul>
                 <li> Earn referral bonus </li>
@@ -106,6 +108,7 @@ const s2 = ({
               hoverContent={
                 'Businesses that manage end-to-end payment collection for their customers. Eg: Restaurants, ERP'
               }
+              isMobile={isMobile}
             >
               <ul>
                 <li> Manage merchant account </li>
@@ -139,6 +142,7 @@ const s2 = ({
               hoverContent={
                 'Businesses that can benefit from providing a seamless payments experience to their merchants within their website / app. Eg: Zoho, Quickbooks'
               }
+              isMobile={isMobile}
             >
               <ul>
                 <li> Get a customized commission plan </li>
@@ -160,7 +164,7 @@ const s2 = ({
               </ul>
             </PartnerSelectBox>
           </div>
-          <div>
+          <div className="bottom-container">
             <p style={{ marginTop: '10px' }}>
               Not able to find partner type?
               <a

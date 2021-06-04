@@ -833,6 +833,7 @@ export default class HomeContainer extends Component {
         size: 'xlarge',
         disableClose: true,
         component: <PartnerOnbr disableClose={true} />,
+        className: this.state.isMobile ? 'partner-onboarding-popup mobile-app-popup': 'partner-onboarding-popup',
       });
     }
 

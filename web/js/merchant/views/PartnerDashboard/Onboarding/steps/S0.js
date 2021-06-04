@@ -41,7 +41,7 @@ const S0 = (props) => {
             advocate online payments.
           </p>
         </div>
-        <div style={{ marginTop: '121px', padding: '2px' }}>
+        <div className='learn-more'>
           <a
             href="https://razorpay.com/partners/"
             target="_blank"

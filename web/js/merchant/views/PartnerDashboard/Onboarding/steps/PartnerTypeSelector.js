@@ -48,6 +48,7 @@ export default class PartnerTypeSelector extends React.Component {
     const checked = this.isControlled ? props.checked : this.state.checked;
 
     return (
+      <>
       <div
         class={classList(
           'SelectBox',
@@ -58,14 +59,18 @@ export default class PartnerTypeSelector extends React.Component {
         {...otherProps}
         onClick={this.onChange}
       >
-        <Popover align="right" theme="dark" class="SelectBox--popover">
-          <PopoverTitle>
-            <h4>
-              <strong>Who uses this ?</strong>
-            </h4>
-          </PopoverTitle>
-          <PopoverBody>{props.hoverContent}</PopoverBody>
-        </Popover>
+        {
+          !props.isMobile ? (
+            <Popover align="right" theme="dark" class="SelectBox--popover">
+              <PopoverTitle>
+                <h4>
+                  <strong>Who uses this ?</strong>
+                </h4>
+              </PopoverTitle>
+              <PopoverBody>{props.hoverContent}</PopoverBody>
+            </Popover>
+          ) : ''
+        }
         <div className="select-box-image-container">
           <img src={props.icon} alt="" />
         </div>
@@ -80,6 +85,14 @@ export default class PartnerTypeSelector extends React.Component {
           </div>
         </div>
       </div>
+      {
+        props.isMobile && checked ?
+        <div className="SelectBox--information">
+          <div className="who-uses">Who uses this?</div>
+          <div className="content">{props.hoverContent}</div>
+        </div> : ''
+      }
+      </>
     );
   }
 }
