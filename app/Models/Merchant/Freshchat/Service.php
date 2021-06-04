@@ -11,13 +11,13 @@ use RZP\Constants\Timezone;
 class Service extends Base\Service
 {
     const DEFAULT_CHAT_TIMINGS_CONFIG = [
-        0 => ['start' => 540, 'end' => 1260],
-        1 => ['start' => 540, 'end' => 1260],
-        2 => ['start' => 540, 'end' => 1260],
-        3 => ['start' => 540, 'end' => 1260],
-        4 => ['start' => 540, 'end' => 1260],
-        5 => ['start' => 0, 'end' => 0],
-        6 => ['start' => 0, 'end' => 0],
+        0 => ['start' => 600, 'end' => 1320],
+        1 => ['start' => 600, 'end' => 1320],
+        2 => ['start' => 600, 'end' => 1320],
+        3 => ['start' => 600, 'end' => 1320],
+        4 => ['start' => 600, 'end' => 1320],
+        5 => ['start' => 600, 'end' => 1320],
+        6 => ['start' => 600, 'end' => 1320],
     ];
 
     const DEFAULT_CHAT_HOLIDAYS_CONFIG = [
