@@ -32,9 +32,9 @@ class Constants
             'description' => 'Settlements on Hold: Your settlements are on hold due to regulatory requirements. Please provide clarification on the email received on your registered email to resolve the issue',
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/rtb_announcement.svg',
             'track_event' => true,
-            'id'          => 'bulk-risk-action-merchant-FOH',
+            'id'          => 'merchant-risk-action-FOH',
             'filters'     => [
-                'tags' => ["bulk_action_merchant_foh"]
+                'tags' => ["merchant_risk_action_foh"]
             ],
             'buttons'     => [
                 [
@@ -49,9 +49,9 @@ class Constants
             'description' => 'Account Disabled: Your account has been disabled as per regulatory requirements. Please find more details on the email received on your registered email',
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/rtb_announcement.svg',
             'track_event' => true,
-            'id'          => 'bulk-risk-action-merchant-disabled',
+            'id'          => 'merchant-risk-action-disabled',
             'filters'     => [
-                'tags' => ["bulk_action_disabled"]
+                'tags' => ["merchant_risk_action_disabled"]
             ],
             'buttons'     => [
                 [
