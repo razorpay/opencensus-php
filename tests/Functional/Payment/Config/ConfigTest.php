@@ -158,6 +158,14 @@ class ConfigTest extends TestCase
         $this->startTest();
    }
 
+    public function testUpdateConfigFieldForMultipleLateAuthConfig()
+    {
+        $config1 = $this->fixtures->create('config', ['type' => 'late_auth', 'is_default' => false]);
+        $config2 = $this->fixtures->create('config', ['type' => 'late_auth', 'is_default' => true]);
+
+        $this->startTest();
+    }
+
     public function testCreateCheckoutConfigFromAdminAuth()
     {
         $this->ba->adminAuth();
@@ -209,7 +217,6 @@ class ConfigTest extends TestCase
         $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
 
         $this->testData[__FUNCTION__]['request']['url'] = '/admin/lateauth/config/bulk';
-
         $this->startTest();
     }
 

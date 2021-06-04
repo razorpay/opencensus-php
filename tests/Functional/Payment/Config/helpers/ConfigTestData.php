@@ -290,6 +290,38 @@ return  [
         ],
     ],
 
+    'testUpdateConfigFieldForMultipleLateAuthConfig' => [
+        'request' => [
+            'content' => [
+                'type'      => 'late_auth',
+                'config'     => [
+                    "capture"=> 'automatic',
+                    "capture_options"=> [
+                        "manual_expiry_period"=> 1600,
+                        "automatic_expiry_period"=> 600,
+                        "refund_speed"=> "normal"
+                    ],
+                ],
+            ],
+            'method'    => 'PATCH',
+            'url'       => '/payment/config',
+        ],
+        'response' => [
+            'content' => [
+                'is_default'       => true,
+                'config'     => [
+                    "capture"=> 'automatic',
+                    "capture_options"=> [
+                        "manual_expiry_period"=> 1600,
+                        "automatic_expiry_period"=> 600,
+                        "refund_speed"=> "normal"
+                    ]
+                ],
+            ]
+        ],
+    ],
+
+
     'testFetchDccConfig' => [
         'request' => [
             'method'    => 'GET',

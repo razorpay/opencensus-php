@@ -308,9 +308,7 @@ class Core extends Base\Core
             {
                 $type = $input['type'];
 
-                $config = $this->repo->config->fetchConfigByMerchantIdAndType($merchant->getId(), $type);
-
-                $configEntity = $config->first();
+                $configEntity = $this->repo->config->fetchDefaultConfigByMerchantIdAndType($merchant->getId(), $type);
 
                 if (isset($configEntity) === true)
                 {
