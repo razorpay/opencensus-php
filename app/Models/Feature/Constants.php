@@ -146,6 +146,7 @@ class Constants
     const USE_MSWIPE_TERMINALS            = 'use_mswipe_terminals';
     const EXPOSE_GATEWAY_PROVIDER         = 'expose_gateway_provider';
     const EXPOSE_FA_VALIDATION_UTR        = 'expose_fa_validation_utr';
+    const EXPOSE_SETTLED_BY               = 'expose_settled_by';
     const GOOGLE_PAY_CARDS                = 'google_pay_cards';
     const PAYPAL_CC                       = 'paypal_cc';
 
@@ -1003,6 +1004,7 @@ class Constants
         self::PL_BLOCK_CUSTOMER_PREFILL       => true,
         self::ALLOW_VA_TO_VA_PAYOUTS          => true,
         self::PAYMENT_SHOW_DCC_MARKUP         => true,
+        self::EXPOSE_SETTLED_BY               => true,
         self::PAYPAL_CC                       => true,
     ];
 

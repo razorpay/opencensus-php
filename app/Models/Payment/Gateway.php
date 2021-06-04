@@ -192,6 +192,13 @@ class Gateway
 
     const MPGS = 'mpgs';
 
+
+    //
+    // Direct Settlement improved org name
+    //
+    const NPCI      = 'NPCI';
+    const PAYPAL    = 'paypal';
+
     const GATEWAY_ACQUIRERS = [
         self::AXIS_MIGS    => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
         self::HDFC         => [self::ACQUIRER_HDFC],
@@ -257,6 +264,7 @@ class Gateway
 
     // TODO: Add gateway and gateway_acquirer map to fix
     // this for other card gateways
+    // If you're adding any new DS Gateway then also add gateway bank/org name in DIRECT_SETTLEMENT_ORG_NAME map
     const DIRECT_SETTLEMENT_GATEWAYS = [
         self::AMEX                  => self::AMEX,
         self::AXIS_MIGS             => [
@@ -299,6 +307,27 @@ class Gateway
         self::CCAVENUE              => self::CCAVENUE,
         self::NETBANKING_IDFC       => self::IDFC,
         self::NETBANKING_SBI        => self::SBIN,
+    ];
+
+    // Map of DS settlement entity with DS Bank/org name
+    const DIRECT_SETTLEMENT_ORG_NAME = [
+        self::AMEX                  => self::AMEX,
+        self::HDFC                  => self::HDFC,
+        self::AXIS                  => self::AXIS,
+        self::BILLDESK              => self::BILLDESK,
+        self::ICICI                 => self::ICICI,
+        self::KOTAK                 => self::KOTAK,
+        self::RBL                   => self::RBL,
+        self::PAYTM                 => self::PAYTM,
+        self::PAYU                  => self::PAYU,
+        self::CASHFREE              => self::CASHFREE,
+        self::YESB                  => self::YESB,
+        self::CCAVENUE              => self::CCAVENUE,
+        self::IDFC                  => self::IDFC,
+        self::SBIN                  => self::SBIN,
+        self::WALLET_PAYPAL         => self::PAYPAL,
+        self::WALLET_PAYZAPP        => self::HDFC,
+        self::ENACH_NPCI_NETBANKING => self::NPCI,
     ];
 
     /**

@@ -1332,6 +1332,53 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals('sharp', $payment['gateway_provider']);
     }
 
+    public function testPaymentWithSettledByNotEnable()
+    {
+        $this->sharedTerminal->forceDelete();
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $paymentData = $this->getDefaultNetbankingPaymentArray();
+        $response = $this->doAuthPayment($paymentData);
+
+        $payment = $this->fetchPayment($response['razorpay_payment_id']);
+
+        $this->assertArrayNotHasKey('settled_by', $payment);
+    }
+
+    public function testPaymentWithSettledByRazorpay()
+    {
+        $this->fixtures->merchant->addFeatures(['expose_settled_by']);
+
+        $this->sharedTerminal->forceDelete();
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $paymentData = $this->getDefaultNetbankingPaymentArray();
+        $response = $this->doAuthPayment($paymentData);
+
+        $payment = $this->fetchPayment($response['razorpay_payment_id']);
+
+        $this->assertArrayHasKey('settled_by', $payment);
+        $this->assertEquals('Razorpay', $payment['settled_by']);
+    }
+
+    public function testPaymentWithSettledByWithDS()
+    {
+        $this->fixtures->merchant->addFeatures(['expose_settled_by']);
+
+        $this->sharedTerminal->forceDelete();
+
+        $this->fixtures->create('terminal:direct_settlement_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
+
+        $payment = $this->getDefaultNetbankingPaymentArray('HDFC');
+        $response = $this->doAuthPayment($payment);
+
+        $payment = $this->fetchPayment($response['razorpay_payment_id']);
+
+        $this->assertArrayHasKey('settled_by', $payment);
+        $this->assertEquals('hdfc', $payment['settled_by']);
+    }
+
     public function testPreferredRecurringPaymentInputValidation()
     {
         $this->fixtures->merchant->enableWallet('10000000000000', 'airtelmoney');
@@ -1440,6 +1487,8 @@ class PaymentCreateTest extends TestCase
 
     public function testDirectSettlementPayment()
     {
+        $this->fixtures->merchant->addFeatures(['expose_settled_by']);
+
         $this->fixtures->create('terminal:direct_settlement_hdfc_terminal');
         $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
 
@@ -1515,6 +1564,8 @@ class PaymentCreateTest extends TestCase
 
     public function testPaymentSettledBy()
     {
+        $this->fixtures->merchant->addFeatures(['expose_settled_by']);
+
         $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
 
         $payment = $this->getDefaultNetbankingPaymentArray('HDFC');

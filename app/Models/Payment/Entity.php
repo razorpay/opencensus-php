@@ -465,6 +465,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::ACCOUNT_ID,
         self::FEE_BEARER,
         self::PROVIDER,
+        self::SETTLED_BY,
     ];
 
     /**
@@ -541,6 +542,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::PROVIDER,
         self::DCC,
         self::MCC,
+        self::SETTLED_BY,
     ];
 
     protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER_DATA, self::GATEWAY_PROVIDER];
@@ -3325,6 +3327,21 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
     }
 
+    public function setPublicSettledByAttribute(array & $array)
+    {
+        if (($this->merchant === null) or
+            ($this->merchant->isFeatureEnabled(Feature\Constants::EXPOSE_SETTLED_BY) === false))
+        {
+            unset($array[self::SETTLED_BY]);
+            return;
+        }
+
+        if (isset(Payment\Gateway::DIRECT_SETTLEMENT_ORG_NAME[$array[self::SETTLED_BY]]) === true)
+        {
+            $array[self::SETTLED_BY] = Payment\Gateway::DIRECT_SETTLEMENT_ORG_NAME[$array[self::SETTLED_BY]];
+        }
+    }
+
     public function setPublicAccountIdAttribute(array & $array)
     {
         $app = \App::getFacadeRoot();
@@ -3465,6 +3482,17 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $data['card'] = $cardData;
 
         return $data;
+    }
+
+    public function toArrayAdmin()
+    {
+        $settledBy = $this->getSettledBy();
+
+        $attributes = parent::toArrayAdmin();
+
+        $attributes[Entity::SETTLED_BY] = $settledBy;
+
+        return $attributes;
     }
 
     public function toArrayAdminRestricted(array $attributes)
