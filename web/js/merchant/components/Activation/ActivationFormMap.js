@@ -907,6 +907,7 @@ const uploadFields = [
     getLabel: () => 'GSTIN',
     _autoRenderImpure: true, // Re-render to show the error
     placeholder: 'Enter GSTIN',
+    required: false,
     size: 'small',
     info: 'Enter GSTIN & get reviewed faster. Should match your business address.',
     validator: (value) => {

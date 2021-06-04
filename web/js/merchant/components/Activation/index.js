@@ -1542,8 +1542,8 @@ export default class ActivationWizard extends React.Component {
 
     // update gstin radio button to show gstin input
     if (
-      stateName === 'business_proof_type' &&
-      fieldValue === 'gst_certificate' &&
+      fieldName === 'gstin' &&
+      fieldValue &&
       has_gstin === '1'
     ) {
       this.setState({ has_gstin: '0' });
