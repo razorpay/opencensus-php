@@ -16,10 +16,9 @@ class Validator extends Base\Validator
         Entity::EMAIL      => 'sometimes|email',
         Entity::NAME       => 'sometimes|string|max:100',
         Entity::PROVIDER   => 'required|string|in:amazonpay',
-    ];    
+    ];
 
     protected static $beforeCreateFundAccountWalletAccountRules = [
-        
         Entity::PROVIDER => 'required|string|in:amazonpay',
         Entity::PHONE    => 'required|filled',
         Entity::EMAIL    => 'sometimes|filled',
@@ -32,7 +31,7 @@ class Validator extends Base\Validator
 
         if ($phonebook->isValidNumber() === false)
         {
-            throw new BadRequestValidationFailureException("Invalid contact number");
+            throw new BadRequestValidationFailureException('Invalid contact number');
         }
     }
 }

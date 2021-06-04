@@ -3351,6 +3351,156 @@ return [
         ],
     ],
 
+    'testBulkPayoutAmazonPay' => [
+        'request'   => [
+            'url'     => '/payouts/bulk',
+            'method'  => 'POST',
+            'content' => [
+                [
+                    'razorpayx_account_number'  => '2224440041626905',
+                    'payout'                    => [
+                        'amount'                => '100',
+                        'currency'              => 'INR',
+                        'mode'                  => 'amazonpay',
+                        'purpose'               => 'refund',
+                        'narration'             => '123',
+                        'reference_id'          => ''
+                    ],
+                    'fund'                      => [
+                        'account_type'          => 'wallet',
+                        'account_name'          => 'Vivek Karna',
+                        'account_phone_number'  => '+919832478134',
+                        'account_email'         => 'sample@example.com'
+                    ],
+                    'contact'                   => [
+                        'type'                  => 'customer',
+                        'name'                  => 'Vivek Karna',
+                        'email'                 => 'sampleone@example.com',
+                        'mobile'                => '9988998899',
+                        'reference_id'          => ''
+                    ],
+                    'idempotency_key'           => 'batch_abc123'
+                ],
+            ],
+        ],
+        'response'                                  => [
+            'content'                               => [
+                'entity'                            => 'collection',
+                'count'                             => 1,
+                'items'                             => [
+                    [
+                        'entity'                    => 'payout',
+                        'fund_account'              => [
+                            'entity'                => 'fund_account',
+                            'account_type'          => 'wallet',
+                            'wallet'                => [
+                                'phone'             => '+919832478134',
+                                'email'             => 'sample@example.com',
+                                'provider'          => 'amazonpay'
+                            ],
+                            'active'                => true,
+                        ],
+                        'amount'                    => 100,
+                        'currency'                  => 'INR',
+                        'transaction'               => [
+                            'entity'                => 'transaction',
+                            'account_number'        => '2224440041626905',
+                            'amount'                => 690,
+                            'currency'              => 'INR',
+                            'credit'                => 0,
+                            'debit'                 => 690,
+                            'balance'               => 9999310
+                        ],
+                        'fees'                      => 590,
+                        'tax'                       => 90,
+                        'status'                    => 'processing',
+                        'purpose'                   => 'refund',
+                        'utr'                       => null,
+                        'user_id'                   => 'MerchantUser01',
+                        'mode'                      => 'amazonpay',
+                        'reference_id'              => null,
+                        'narration'                 => '123',
+                        'idempotency_key'           => 'batch_abc123'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testBulkPayoutAmazonPayWithoutEmail' => [
+        'request'   => [
+            'url'     => '/payouts/bulk',
+            'method'  => 'POST',
+            'content' => [
+                [
+                    'razorpayx_account_number'  => '2224440041626905',
+                    'payout'                    => [
+                        'amount'                => '100',
+                        'currency'              => 'INR',
+                        'mode'                  => 'amazonpay',
+                        'purpose'               => 'refund',
+                        'narration'             => '123',
+                        'reference_id'          => ''
+                    ],
+                    'fund'                      => [
+                        'account_type'          => 'wallet',
+                        'account_name'          => 'Vivek Karna',
+                        'account_phone_number'  => '+919832478134',
+                    ],
+                    'contact'                   => [
+                        'type'                  => 'customer',
+                        'name'                  => 'Vivek Karna',
+                        'email'                 => 'sampleone@example.com',
+                        'mobile'                => '9988998899',
+                        'reference_id'          => ''
+                    ],
+                    'idempotency_key'           => 'batch_abc123'
+                ],
+            ],
+        ],
+        'response'                                  => [
+            'content'                               => [
+                'entity'                            => 'collection',
+                'count'                             => 1,
+                'items'                             => [
+                    [
+                        'entity'                    => 'payout',
+                        'fund_account'              => [
+                            'entity'                => 'fund_account',
+                            'account_type'          => 'wallet',
+                            'wallet'                => [
+                                'phone'             => '+919832478134',
+                                'provider'          => 'amazonpay'
+                            ],
+                            'active'                => true,
+                        ],
+                        'amount'                    => 100,
+                        'currency'                  => 'INR',
+                        'transaction'               => [
+                            'entity'                => 'transaction',
+                            'account_number'        => '2224440041626905',
+                            'amount'                => 690,
+                            'currency'              => 'INR',
+                            'credit'                => 0,
+                            'debit'                 => 690,
+                            'balance'               => 9999310
+                        ],
+                        'fees'                      => 590,
+                        'tax'                       => 90,
+                        'status'                    => 'processing',
+                        'purpose'                   => 'refund',
+                        'utr'                       => null,
+                        'user_id'                   => 'MerchantUser01',
+                        'mode'                      => 'amazonpay',
+                        'reference_id'              => null,
+                        'narration'                 => '123',
+                        'idempotency_key'           => 'batch_abc123'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testBulkPayoutWithSameContact' => [
         'request'   => [
             'url'     => '/payouts/bulk',
@@ -10971,7 +11121,37 @@ return [
         ],
     ],
 
+    'testCsvSampleFileForBulkPayoutsAmazonPayEnabled' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/bulk/sample_file',
+            'content' => [
+                'file_type'         => 'sample_file',
+                'file_extension'    => 'csv'
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testCsvTemplateFileForBulkPayouts' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/bulk/sample_file',
+            'content' => [
+                'file_type'         => 'template_file',
+                'file_extension'    => 'csv'
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testCsvTemplateFileForBulkPayoutsAmazonPayEnabled' => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts/bulk/sample_file',
@@ -11001,7 +11181,37 @@ return [
         ],
     ],
 
+    'testXlsxTemplateFileForBulkPayoutsAmazonPayEnabled' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/bulk/sample_file',
+            'content' => [
+                'file_type'         => 'template_file',
+                'file_extension'    => 'xlsx'
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testXlsxSampleFileForBulkPayouts' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/bulk/sample_file',
+            'content' => [
+                'file_type'         => 'sample_file',
+                'file_extension'    => 'xlsx'
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testXlsxSampleFileForBulkPayoutsAmazonPayEnabled' => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts/bulk/sample_file',

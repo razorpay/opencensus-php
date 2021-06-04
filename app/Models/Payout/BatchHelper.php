@@ -21,6 +21,7 @@ class BatchHelper
     const BALANCE_ID               = 'balance_id';
     const SCHEDULED_AT             = 'scheduled_at';
     const PAYOUT_UPDATE_ACTION     = 'payout_update_action';
+    const PAYOUT_MODE              = 'mode';
 
     // Different types of payout amounts used in bulk payouts
     const PAISE                    = 'paise';

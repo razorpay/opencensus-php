@@ -33,6 +33,48 @@ return [
                         Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
                         Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
                         Batch\Header::FUND_ACCOUNT_VPA          => '',
+                        Batch\Header::FUND_ACCOUNT_PHONE_NUMBER => '',
+                        Batch\Header::CONTACT_TYPE              => 'employee',
+                        Batch\Header::FUND_ACCOUNT_EMAIL        => '',
+                        Batch\Header::CONTACT_NAME_2            => 'Mehul Kaushik',
+                        Batch\Header::CONTACT_EMAIL_2           => 'mehul.kaushik@razorpay.com',
+                        Batch\Header::CONTACT_MOBILE_2          => '',
+                        Batch\Header::CONTACT_REFERENCE_ID      => '',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testValidateBatchPayoutsCSVForAmazonPayPayout' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'processable_count' => 1,
+                'error_count'       => 0,
+                'parsed_entries'    => [
+                    [
+                        Batch\Header::RAZORPAYX_ACCOUNT_NUMBER  => '2323230041626905',
+                        Batch\Header::PAYOUT_AMOUNT_RUPEES      => '10',
+                        Batch\Header::PAYOUT_CURRENCY           => 'INR',
+                        Batch\Header::PAYOUT_MODE               => 'amazonpay',
+                        Batch\Header::PAYOUT_PURPOSE            => 'refund',
+                        Batch\Header::PAYOUT_NARRATION          => 'test123',
+                        Batch\Header::PAYOUT_REFERENCE_ID       => '',
+                        Batch\Header::FUND_ACCOUNT_ID           => '',
+                        Batch\Header::FUND_ACCOUNT_TYPE         => 'wallet',
+                        Batch\Header::FUND_ACCOUNT_NAME         => 'Mehul Kaushik',
+                        Batch\Header::FUND_ACCOUNT_IFSC         => '',
+                        Batch\Header::FUND_ACCOUNT_NUMBER       => '',
+                        Batch\Header::FUND_ACCOUNT_VPA          => '',
+                        Batch\Header::FUND_ACCOUNT_PHONE_NUMBER => '+918124632237',
+                        Batch\Header::FUND_ACCOUNT_EMAIL        => 'sample@example.com',
                         Batch\Header::CONTACT_TYPE              => 'employee',
                         Batch\Header::CONTACT_NAME_2            => 'Mehul Kaushik',
                         Batch\Header::CONTACT_EMAIL_2           => 'mehul.kaushik@razorpay.com',
@@ -71,6 +113,48 @@ return [
                         Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
                         Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
                         Batch\Header::FUND_ACCOUNT_VPA          => null,
+                        Batch\Header::FUND_ACCOUNT_PHONE_NUMBER => null,
+                        Batch\Header::FUND_ACCOUNT_EMAIL        => null,
+                        Batch\Header::CONTACT_TYPE              => 'employee',
+                        Batch\Header::CONTACT_NAME_2            => 'Mehul Kaushik',
+                        Batch\Header::CONTACT_EMAIL_2           => 'mehul.kaushik@razorpay.com',
+                        Batch\Header::CONTACT_MOBILE_2          => null,
+                        Batch\Header::CONTACT_REFERENCE_ID      => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testValidateBatchPayoutsXLSXForAmazonPayPayout' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'processable_count' => 1,
+                'error_count'       => 0,
+                'parsed_entries'    => [
+                    [
+                        Batch\Header::RAZORPAYX_ACCOUNT_NUMBER  => '2323230041626905',
+                        Batch\Header::PAYOUT_AMOUNT_RUPEES      => 10.23,
+                        Batch\Header::PAYOUT_CURRENCY           => 'INR',
+                        Batch\Header::PAYOUT_MODE               => 'amazonpay',
+                        Batch\Header::PAYOUT_PURPOSE            => 'refund',
+                        Batch\Header::PAYOUT_NARRATION          => 'test123',
+                        Batch\Header::PAYOUT_REFERENCE_ID       => null,
+                        Batch\Header::FUND_ACCOUNT_ID           => null,
+                        Batch\Header::FUND_ACCOUNT_TYPE         => 'wallet',
+                        Batch\Header::FUND_ACCOUNT_NAME         => 'Mehul Kaushik',
+                        Batch\Header::FUND_ACCOUNT_IFSC         => null,
+                        Batch\Header::FUND_ACCOUNT_NUMBER       => null,
+                        Batch\Header::FUND_ACCOUNT_VPA          => null,
+                        Batch\Header::FUND_ACCOUNT_PHONE_NUMBER => '+918124632237',
+                        Batch\Header::FUND_ACCOUNT_EMAIL        => null,
                         Batch\Header::CONTACT_TYPE              => 'employee',
                         Batch\Header::CONTACT_NAME_2            => 'Mehul Kaushik',
                         Batch\Header::CONTACT_EMAIL_2           => 'mehul.kaushik@razorpay.com',
@@ -107,7 +191,46 @@ return [
                         Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
                         Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
                         Batch\Header::FUND_ACCOUNT_VPA          => null,
+                        Batch\Header::FUND_ACCOUNT_PHONE_NUMBER => null,
                         Batch\Header::CONTACT_NAME_2            => 'Mehul Kaushik',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testValidateBatchPayoutsXLSXWithoutAmazonPayHeaders' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'processable_count' => 1,
+                'error_count'       => 0,
+                'parsed_entries'    => [
+                    [
+                        Batch\Header::RAZORPAYX_ACCOUNT_NUMBER  => '2323230041626905',
+                        Batch\Header::PAYOUT_AMOUNT_RUPEES      => 10.23,
+                        Batch\Header::PAYOUT_CURRENCY           => 'INR',
+                        Batch\Header::PAYOUT_MODE               => 'NEFT',
+                        Batch\Header::PAYOUT_PURPOSE            => 'refund',
+                        Batch\Header::PAYOUT_NARRATION          => 'test123',
+                        Batch\Header::PAYOUT_REFERENCE_ID       => null,
+                        Batch\Header::FUND_ACCOUNT_ID           => null,
+                        Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
+                        Batch\Header::FUND_ACCOUNT_NAME         => 'Mehul Kaushik',
+                        Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
+                        Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
+                        Batch\Header::FUND_ACCOUNT_VPA          => null,
+                        Batch\Header::CONTACT_TYPE              => 'employee',
+                        Batch\Header::CONTACT_NAME_2            => 'Mehul Kaushik',
+                        Batch\Header::CONTACT_EMAIL_2           => 'mehul.kaushik@razorpay.com',
+                        Batch\Header::CONTACT_MOBILE_2          => null,
+                        Batch\Header::CONTACT_REFERENCE_ID      => null,
                     ],
                 ],
             ],
@@ -139,7 +262,46 @@ return [
                         Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
                         Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
                         Batch\Header::FUND_ACCOUNT_VPA          => '',
+                        Batch\Header::FUND_ACCOUNT_PHONE_NUMBER => '',
                         Batch\Header::CONTACT_NAME_2            => 'Mehul Kaushik',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testValidateBatchPayoutsCSVWithoutAmazonPayHeaders' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'processable_count' => 1,
+                'error_count'       => 0,
+                'parsed_entries'    => [
+                    [
+                        Batch\Header::RAZORPAYX_ACCOUNT_NUMBER  => '2323230041626905',
+                        Batch\Header::PAYOUT_AMOUNT_RUPEES      => '10',
+                        Batch\Header::PAYOUT_CURRENCY           => 'INR',
+                        Batch\Header::PAYOUT_MODE               => 'NEFT',
+                        Batch\Header::PAYOUT_PURPOSE            => 'refund',
+                        Batch\Header::PAYOUT_NARRATION          => 'test123',
+                        Batch\Header::PAYOUT_REFERENCE_ID       => '',
+                        Batch\Header::FUND_ACCOUNT_ID           => '',
+                        Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
+                        Batch\Header::FUND_ACCOUNT_NAME         => 'Mehul Kaushik',
+                        Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
+                        Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
+                        Batch\Header::FUND_ACCOUNT_VPA          => '',
+                        Batch\Header::CONTACT_TYPE              => 'employee',
+                        Batch\Header::CONTACT_NAME_2            => 'Mehul Kaushik',
+                        Batch\Header::CONTACT_EMAIL_2           => 'mehul.kaushik@razorpay.com',
+                        Batch\Header::CONTACT_MOBILE_2          => '',
+                        Batch\Header::CONTACT_REFERENCE_ID      => '',
                     ],
                 ],
             ],
@@ -288,6 +450,8 @@ return [
                         Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
                         Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
                         Batch\Header::FUND_ACCOUNT_VPA          => '',
+                        Batch\Header::FUND_ACCOUNT_PHONE_NUMBER => '',
+                        Batch\Header::FUND_ACCOUNT_EMAIL        => '',
                         Batch\Header::CONTACT_TYPE              => 'employee',
                         Batch\Header::CONTACT_NAME_2            => 'Mehul Kaushik',
                         Batch\Header::CONTACT_EMAIL_2           => 'mehul.kaushik@razorpay.com',
@@ -349,7 +513,9 @@ return [
                         Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
                         Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
                         Batch\Header::FUND_ACCOUNT_VPA          => null,
+                        Batch\Header::FUND_ACCOUNT_PHONE_NUMBER => null,
                         Batch\Header::CONTACT_TYPE              => 'employee',
+                        Batch\Header::FUND_ACCOUNT_EMAIL        => null,
                         Batch\Header::CONTACT_NAME_2            => 'Mehul Kaushik',
                         Batch\Header::CONTACT_EMAIL_2           => 'mehul.kaushik@razorpay.com',
                         Batch\Header::CONTACT_MOBILE_2          => null,
@@ -387,6 +553,8 @@ return [
                         Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
                         Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
                         Batch\Header::FUND_ACCOUNT_VPA          => '',
+                        Batch\Header::FUND_ACCOUNT_PHONE_NUMBER => '',
+                        Batch\Header::FUND_ACCOUNT_EMAIL        => '',
                         Batch\Header::CONTACT_TYPE              => 'employee',
                         Batch\Header::CONTACT_NAME_2            => 'Mehul Kaushik',
                         Batch\Header::CONTACT_EMAIL_2           => 'mehul.kaushik@razorpay.com',
@@ -518,7 +686,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The uploaded file has invalid headers: feature',
+                    'description' => 'The uploaded file has invalid header: feature',
                 ]
             ],
             'status_code' => 400,
@@ -619,6 +787,8 @@ return [
                         Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
                         Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
                         Batch\Header::FUND_ACCOUNT_VPA          => '',
+                        Batch\Header::FUND_ACCOUNT_PHONE_NUMBER => '',
+                        Batch\Header::FUND_ACCOUNT_EMAIL        => '',
                         Batch\Header::CONTACT_TYPE              => 'employee',
                         Batch\Header::CONTACT_NAME_2            => 'Mehul Kaushik',
                         Batch\Header::CONTACT_EMAIL_2           => 'mehul.kaushik@razorpay.com',
@@ -657,6 +827,8 @@ return [
                         Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
                         Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
                         Batch\Header::FUND_ACCOUNT_VPA          => '',
+                        Batch\Header::FUND_ACCOUNT_PHONE_NUMBER => '',
+                        Batch\Header::FUND_ACCOUNT_EMAIL        => '',
                         Batch\Header::CONTACT_TYPE              => 'employee',
                         Batch\Header::CONTACT_NAME_2            => 'Mehul Kaushik',
                         Batch\Header::CONTACT_EMAIL_2           => 'mehul.kaushik@razorpay.com',
@@ -769,12 +941,112 @@ return [
                         Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
                         Batch\Header::FUND_ACCOUNT_NUMBER       => '00100200300400',
                         Batch\Header::FUND_ACCOUNT_VPA          => '',
+                        Batch\Header::FUND_ACCOUNT_PHONE_NUMBER => '',
+                        Batch\Header::FUND_ACCOUNT_EMAIL        => '',
                         Batch\Header::CONTACT_TYPE              => 'employee',
                         Batch\Header::CONTACT_NAME_2            => 'Mehul Kaushik',
                         Batch\Header::CONTACT_EMAIL_2           => 'mehul.kaushik@razorpay.com',
                         Batch\Header::CONTACT_MOBILE_2          => '',
                         Batch\Header::CONTACT_REFERENCE_ID      => '',
                     ],
+                ],
+            ],
+        ],
+    ],
+
+    'testValidateBatchPayoutsCSVForAmazonPayPhoneNumberWithoutExtension' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'processable_count' => 1,
+                'error_count'       => 0,
+                'parsed_entries'    => [
+                    [
+                        Batch\Header::RAZORPAYX_ACCOUNT_NUMBER  => '2323230041626905',
+                        Batch\Header::PAYOUT_AMOUNT_RUPEES      => '10',
+                        Batch\Header::PAYOUT_CURRENCY           => 'INR',
+                        Batch\Header::PAYOUT_MODE               => 'amazonpay',
+                        Batch\Header::PAYOUT_PURPOSE            => 'refund',
+                        Batch\Header::PAYOUT_NARRATION          => 'test123',
+                        Batch\Header::PAYOUT_REFERENCE_ID       => '',
+                        Batch\Header::FUND_ACCOUNT_ID           => '',
+                        Batch\Header::FUND_ACCOUNT_TYPE         => 'wallet',
+                        Batch\Header::FUND_ACCOUNT_NAME         => 'Mehul Kaushik',
+                        Batch\Header::FUND_ACCOUNT_IFSC         => '',
+                        Batch\Header::FUND_ACCOUNT_NUMBER       => '',
+                        Batch\Header::FUND_ACCOUNT_VPA          => '',
+                        Batch\Header::FUND_ACCOUNT_PHONE_NUMBER => '8124632237',
+                        Batch\Header::FUND_ACCOUNT_EMAIL        => 'sample@example.com',
+                        Batch\Header::CONTACT_TYPE              => 'employee',
+                        Batch\Header::CONTACT_NAME_2            => 'Mehul Kaushik',
+                        Batch\Header::CONTACT_EMAIL_2           => 'mehul.kaushik@razorpay.com',
+                        Batch\Header::CONTACT_MOBILE_2          => '',
+                        Batch\Header::CONTACT_REFERENCE_ID      => '',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testValidateBatchPayoutsCSVForAmazonPayPhoneNumberWithExtension' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'processable_count' => 1,
+                'error_count'       => 0,
+                'parsed_entries'    => [
+                    [
+                        Batch\Header::RAZORPAYX_ACCOUNT_NUMBER  => '2323230041626905',
+                        Batch\Header::PAYOUT_AMOUNT_RUPEES      => '10',
+                        Batch\Header::PAYOUT_CURRENCY           => 'INR',
+                        Batch\Header::PAYOUT_MODE               => 'amazonpay',
+                        Batch\Header::PAYOUT_PURPOSE            => 'refund',
+                        Batch\Header::PAYOUT_NARRATION          => 'test123',
+                        Batch\Header::PAYOUT_REFERENCE_ID       => '',
+                        Batch\Header::FUND_ACCOUNT_ID           => '',
+                        Batch\Header::FUND_ACCOUNT_TYPE         => 'wallet',
+                        Batch\Header::FUND_ACCOUNT_NAME         => 'Mehul Kaushik',
+                        Batch\Header::FUND_ACCOUNT_IFSC         => '',
+                        Batch\Header::FUND_ACCOUNT_NUMBER       => '',
+                        Batch\Header::FUND_ACCOUNT_VPA          => '',
+                        Batch\Header::FUND_ACCOUNT_PHONE_NUMBER => '+918124632237',
+                        Batch\Header::FUND_ACCOUNT_EMAIL        => 'sample@example.com',
+                        Batch\Header::CONTACT_TYPE              => 'employee',
+                        Batch\Header::CONTACT_NAME_2            => 'Mehul Kaushik',
+                        Batch\Header::CONTACT_EMAIL_2           => 'mehul.kaushik@razorpay.com',
+                        Batch\Header::CONTACT_MOBILE_2          => '',
+                        Batch\Header::CONTACT_REFERENCE_ID      => '',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testValidateBatchPayoutsCSVForAmazonPayEmptyPhoneNumber' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'  => 'payout'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'processable_count' => 0,
+                'error_count'       => 1,
+                'parsed_entries'    => [
                 ],
             ],
         ],

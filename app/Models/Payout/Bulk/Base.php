@@ -27,9 +27,16 @@ class Base
     const SIGNED_URL    = 'signed_url';
     const FILE_NAME     = 'sample_batch_payouts';
 
+
     // Constants used for styling
     const START_COLUMN = 'A';
-    const END_COLUMN = 'T';
+    const END_COLUMN = 'V';
+
+    // This column number has to be changed if any new columns are added
+    // before FUND_ACCOUNT_PHONE_NUMBER
+    const FUND_ACCOUNT_PHONE_NUMBER_COLUMN = 'L';
+
+    const FORMAT_LEADING_PLUS_SIGN = '+0';
 
     const EXCEL_HEADERS_FOR_PAYOUT_FILE = [
             'Mandatory Fields',
@@ -44,6 +51,8 @@ class Base
             '(Conditionally Mandatory) If you want to make a payout to an existing fund account you can just add their Fund Account Id.',
             '(Conditionally Mandatory) If you want to make a payout to an existing fund account you can just add their Fund Account Id.',
             '(Conditionally Mandatory) If you want to make a payout to an existing fund account you can just add their Fund Account Id.',
+            '(Conditionally Mandatory) If you want to make a payout to an existing fund account you can just add their Fund Account Id.',
+            'Optional Fields',
             'Optional Fields',
             'Optional Fields',
             'Optional Fields',
@@ -140,6 +149,13 @@ class Base
         for ($columnNumber = self::START_COLUMN; $columnNumber <= self::END_COLUMN; $columnNumber++)
         {
             $columnFormat[$columnNumber] = NumberFormat::FORMAT_TEXT;
+
+            if ($columnNumber === self::FUND_ACCOUNT_PHONE_NUMBER_COLUMN)
+            {
+                // This format has been defined in this file because current library doesn't
+                // support leading plus sign for numbers
+                $columnFormat[$columnNumber] = self::FORMAT_LEADING_PLUS_SIGN;
+            }
         }
 
         $sheetNames = (is_array($sheetNames) === false) ? [$sheetNames] : $sheetNames;

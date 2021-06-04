@@ -2303,6 +2303,152 @@ return [
         ],
     ],
 
+    'testBulkFundAccountAmazonPay' => [
+        'request'   => [
+            'url'     => '/contacts/bulk',
+            'method'  => 'POST',
+            'content' => [
+                [
+                    'fund'  => [
+                        'account_type'          => 'wallet',
+                        'account_phone_number'  => '+919988998897',
+                        'account_email'         => 'sample@sample.com',
+                        'account_provider'      => 'amazonpay'
+                    ],
+                    'contact'  => [
+                        'id'                => '',
+                        'type'              => 'customer',
+                        'name'              => 'Test rzp3',
+                        'email'             => 'sample@example.com',
+                        'mobile'            => '9988998897',
+                        'reference_id'      => ''
+                    ],
+                    'notes'  => [
+                        'code'              => 'xyz123',
+                        'place'             => 'Hyderabad',
+                        'state'             => 'Telengana'
+                    ],
+                    'idempotency_key'       => 'batch_abc123'
+                ]
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'entity'                => 'fund_account',
+                        'account_type'          => 'wallet',
+                        'wallet'                   => [
+                            'phone'           => '+919988998897',
+                            'provider'        => 'amazonpay',
+                            'email'           => 'sample@sample.com'
+                        ],
+                        'active'                => true,
+                        'idempotency_key'       => 'batch_abc123'
+                    ],
+                ]
+            ],
+        ],
+    ],
+
+    'testBulkFundAccountAmazonPayWithoutProvider' => [
+        'request'   => [
+            'url'     => '/contacts/bulk',
+            'method'  => 'POST',
+            'content' => [
+                [
+                    'fund'  => [
+                        'account_type'      => 'wallet',
+                        'account_phone_number'     => '+919988998897',
+                        'account_email'     => 'sample@sample.com',
+                        'account_provider'  => ''
+                    ],
+                    'contact'  => [
+                        'id'                => '',
+                        'type'              => 'customer',
+                        'name'              => 'Test rzp3',
+                        'email'             => 'sample@example.com',
+                        'mobile'            => '9988998897',
+                        'reference_id'      => ''
+                    ],
+                    'notes'  => [
+                        'code'              => 'xyz123',
+                        'place'             => 'Hyderabad',
+                        'state'             => 'Telengana'
+                    ],
+                    'idempotency_key'       => 'batch_abc123'
+                ]
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'idempotency_key' =>  'batch_abc123',
+                        'http_status_code' => 400,
+                        'error' => [
+                            'description' => 'Wallet provider is not supported',
+                            'code' => 'BAD_REQUEST_ERROR',
+                        ]
+                    ],
+                ]
+            ],
+        ],
+    ],
+
+    'testBulkFundAccountAmazonPayWithoutEmail' => [
+        'request'   => [
+            'url'     => '/contacts/bulk',
+            'method'  => 'POST',
+            'content' => [
+                [
+                    'fund'  => [
+                        'account_type'             => 'wallet',
+                        'account_phone_number'     => '+919988998897',
+                        'account_email'            => '',
+                        'account_provider'         => 'amazonpay'
+                    ],
+                    'contact'  => [
+                        'id'                => '',
+                        'type'              => 'customer',
+                        'name'              => 'Test rzp3',
+                        'email'             => 'sample@example.com',
+                        'mobile'            => '9988998897',
+                        'reference_id'      => ''
+                    ],
+                    'notes'  => [
+                        'code'              => 'xyz123',
+                        'place'             => 'Hyderabad',
+                        'state'             => 'Telengana'
+                    ],
+                    'idempotency_key'       => 'batch_abc123'
+                ]
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'entity'                => 'fund_account',
+                        'account_type'          => 'wallet',
+                        'wallet'                   => [
+                            'phone'           => '+919988998897',
+                            'provider'        => 'amazonpay'
+                        ],
+                        'active'                => true,
+                        'idempotency_key'       => 'batch_abc123'
+                    ],
+                ]
+            ],
+        ],
+    ],
+
     'testBulkFundAccountWithoutName' => [
         'request'   => [
             'url'     => '/contacts/bulk',

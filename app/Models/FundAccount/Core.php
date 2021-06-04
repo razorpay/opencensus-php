@@ -928,11 +928,9 @@ class Core extends Base\Core
 
     public function constructWalletAccountFundAccountRequest(array $input)
     {
-        $variant = $this->app['razorx']->getTreatment($this->merchant->getId(),
-                                                      RazorxTreatment::ENABLE_WALLET_ACCOUNT_AMAZON_PAYOUT,
-                                                      Mode::LIVE);
+        $isMerchantEnabledForAmazonPay = $this->isMerchantEnabledForAmazonPay($this->merchant);
 
-        if (strtolower($variant) === 'on')
+        if ($isMerchantEnabledForAmazonPay === true)
         {
                 $input[Entity::ACCOUNT_TYPE] = Entity::WALLET_ACCOUNT;
 
@@ -955,6 +953,21 @@ class Core extends Base\Core
                 'input' => $input,
             ]);
         }
+    }
+
+    public function isMerchantEnabledForAmazonPay(Merchant\Entity $merchant)
+    {
+        $variant = $this->app['razorx']->getTreatment($merchant->getId(),
+            Merchant\RazorxTreatment::ENABLE_WALLET_ACCOUNT_AMAZON_PAYOUT,
+            Mode::LIVE
+        );
+
+        if($variant === 'on')
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public function reformatPhoneNo(string $phone)

@@ -31,10 +31,10 @@ class PayoutExportSheet extends ExportSheet
         $sheet->getParent()->getDefaultStyle()->getFont()->setName('Ubuntu Mono')->setSize(11);
 
         $sheet->mergeCells('A1:E1');
-        $sheet->mergeCells('F1:L1');
-        $sheet->mergeCells('M1:T1');
+        $sheet->mergeCells('F1:M1');
+        $sheet->mergeCells('N1:V1');
 
-        $sheet->getStyle('A:T')->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_TEXT);
+        $sheet->getStyle('A:V')->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_TEXT);
 
         $sheet->getStyle('A:V')->getFont()->setName('Ubuntu Mono')->setSize(11);
 
@@ -67,7 +67,7 @@ class PayoutExportSheet extends ExportSheet
             )
         ));
 
-        $sheet->getStyle('F1:L1')->applyFromArray(array(
+        $sheet->getStyle('F1:M1')->applyFromArray(array(
             'borders' => array(
                 'allBorders' => array(
                     'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
@@ -86,7 +86,7 @@ class PayoutExportSheet extends ExportSheet
             ),
         ));
 
-        $sheet->getStyle('F2:L2')->applyFromArray(array(
+        $sheet->getStyle('F2:M2')->applyFromArray(array(
             'borders' => array(
                 'allBorders' => array(
                     'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
@@ -99,7 +99,7 @@ class PayoutExportSheet extends ExportSheet
             )
         ));
 
-        $sheet->getStyle('M1:T1')->applyFromArray(array(
+        $sheet->getStyle('N1:V1')->applyFromArray(array(
             'borders' => array(
                 'allBorders' => array(
                     'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
@@ -115,7 +115,7 @@ class PayoutExportSheet extends ExportSheet
             )
         ));
 
-        $sheet->getStyle('M2:T2')->applyFromArray(array(
+        $sheet->getStyle('N2:V2')->applyFromArray(array(
             'borders' => array(
                 'allBorders' => array(
                     'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,

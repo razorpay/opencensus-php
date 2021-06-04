@@ -12,6 +12,9 @@ class Type
     const CARD           = Entity::CARD;
     const WALLET_ACCOUNT = Entity::WALLET_ACCOUNT;
 
+    // Public facing account type for wallet_accounts
+    const WALLET         = Entity::WALLET;
+
     public static function isValid(string $type): bool
     {
         $key = __CLASS__ . '::' . strtoupper($type);

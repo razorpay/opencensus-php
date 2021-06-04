@@ -9419,6 +9419,20 @@ class PayoutTest extends OAuthTestCase
 
     public function testCsvSampleFileForBulkPayouts()
     {
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+            {
+                if($featureFlag === (RazorxTreatment::ENABLE_WALLET_ACCOUNT_AMAZON_PAYOUT))
+                {
+                    return 'control';
+                }
+                return 'off';
+            });
+
         $this->ba->proxyAuth();
 
         $res = $this->startTest();
@@ -9431,21 +9445,35 @@ class PayoutTest extends OAuthTestCase
 
         $expectedRowOne = "RazorpayX Account Number,Payout Amount (in Rupees),Payout Currency,Payout Mode,Payout Purpose," .
                           "Fund Account Id,Fund Account Type,Fund Account Name,Fund Account Ifsc," .
-                          "Fund Account Number,Fund Account Vpa,Contact Name,Payout Narration,Payout Reference Id," .
+                          "Fund Account Number,Fund Account Vpa,Fund Account Phone Number,Contact Name,Payout Narration,Payout Reference Id,Fund Account Email," .
                           "Contact Type,Contact Email,Contact Mobile,Contact Reference Id,notes[place],notes[code]";
 
         $this->assertEquals($expectedRowOne, trim($fileContent[0]));
 
         // NOTE : Account number is set as a sample : 7878780021057150
         $expectedRowTwo = "7878780021057150,10,INR,NEFT,refund,,bank_account,sample,SBIN0007105," .
-                          "1234567890,,sample,Sample Narration,,vendor,sample@example.com,9988998899,,Bangalore," .
+                          "1234567890,,,sample,Sample Narration,,,vendor,sample@example.com,9988998899,,Bangalore," .
                           "This is a sample note";
 
         $this->assertEquals($expectedRowTwo, trim($fileContent[1]));
     }
 
-    public function testCsvTemplateFileForBulkPayouts()
+    public function testCsvSampleFileForBulkPayoutsAmazonPayEnabled()
     {
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+            {
+                if($featureFlag === (RazorxTreatment::ENABLE_WALLET_ACCOUNT_AMAZON_PAYOUT))
+                {
+                    return 'on';
+                }
+                return 'off';
+            });
+
         $this->ba->proxyAuth();
 
         $res = $this->startTest();
@@ -9454,25 +9482,133 @@ class PayoutTest extends OAuthTestCase
         $fileContent = file($res['signed_url']);
 
         // Assert that there are only two rows. The first being the header and the second being the row with data.
+        $this->assertEquals(3, count($fileContent));
+
+        $expectedRowOne = "RazorpayX Account Number,Payout Amount (in Rupees),Payout Currency,Payout Mode,Payout Purpose," .
+            "Fund Account Id,Fund Account Type,Fund Account Name,Fund Account Ifsc," .
+            "Fund Account Number,Fund Account Vpa,Fund Account Phone Number,Contact Name,Payout Narration,Payout Reference Id,Fund Account Email," .
+            "Contact Type,Contact Email,Contact Mobile,Contact Reference Id,notes[place],notes[code]";
+
+        $this->assertEquals($expectedRowOne, trim($fileContent[0]));
+
+        // NOTE : Account number is set as a sample : 7878780021057150
+        $expectedRowTwo = "7878780021057150,10,INR,NEFT,refund,,bank_account,sample,SBIN0007105," .
+            "1234567890,,,sample,Sample Narration,,,vendor,sample@example.com,9988998899,,Bangalore," .
+            "This is a sample note";
+
+        $this->assertEquals($expectedRowTwo, trim($fileContent[1]));
+
+        $expectedRowThree = "7878780021057150,10,INR,amazonpay,refund,,wallet,sample,," .
+            ",,+918124632237,sample,Sample Narration,,sample@example.com,vendor,sample@example.com,9988998899,,Bangalore," .
+            "This is a sample note";
+
+        $this->assertEquals($expectedRowThree, trim($fileContent[2]));
+    }
+
+    public function testCsvTemplateFileForBulkPayouts()
+    {
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+            {
+                if($featureFlag === (RazorxTreatment::ENABLE_WALLET_ACCOUNT_AMAZON_PAYOUT))
+                {
+                    return 'control';
+                }
+                return 'off';
+            });
+
+        $this->ba->proxyAuth();
+
+        $res = $this->startTest();
+
+        // Below function returns the file contents where every row is a string (all columns are comma separated)
+        $fileContent = file($res['signed_url']);
+
+        // Assert that there are only three rows. The first being the header, the second and third being the rows with data.
         $this->assertEquals(2, count($fileContent));
 
         $expectedRowOne = "RazorpayX Account Number,Payout Amount (in Rupees),Payout Currency,Payout Mode,Payout Purpose," .
             "Fund Account Id,Fund Account Type,Fund Account Name,Fund Account Ifsc," .
-            "Fund Account Number,Fund Account Vpa,Contact Name,Payout Narration,Payout Reference Id," .
+            "Fund Account Number,Fund Account Vpa,Fund Account Phone Number,Contact Name,Payout Narration,Payout Reference Id,Fund Account Email," .
             "Contact Type,Contact Email,Contact Mobile,Contact Reference Id,notes[place],notes[code]";
 
         $this->assertEquals($expectedRowOne, trim($fileContent[0]));
 
         // NOTE : Account number is set as a merchant's banking balance's account number : 2224440041626905
         $expectedRowTwo = "2224440041626905,10,INR,NEFT,refund,,bank_account,sample,SBIN0007105," .
-            "1234567890,,sample,Sample Narration,,vendor,sample@example.com,9988998899,,Bangalore," .
+            "1234567890,,,sample,Sample Narration,,,vendor,sample@example.com,9988998899,,Bangalore," .
             "This is a sample note";
 
         $this->assertEquals($expectedRowTwo, trim($fileContent[1]));
     }
 
+    public function testCsvTemplateFileForBulkPayoutsAmazonPayEnabled()
+    {
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+            {
+                if($featureFlag === (RazorxTreatment::ENABLE_WALLET_ACCOUNT_AMAZON_PAYOUT))
+                {
+                    return 'on';
+                }
+                return 'off';
+            });
+
+        $this->ba->proxyAuth();
+
+        $res = $this->startTest();
+
+        // Below function returns the file contents where every row is a string (all columns are comma separated)
+        $fileContent = file($res['signed_url']);
+
+        // Assert that there are only three rows. The first being the header, the second and third being the rows with data.
+        $this->assertEquals(3, count($fileContent));
+
+        $expectedRowOne = "RazorpayX Account Number,Payout Amount (in Rupees),Payout Currency,Payout Mode,Payout Purpose," .
+            "Fund Account Id,Fund Account Type,Fund Account Name,Fund Account Ifsc," .
+            "Fund Account Number,Fund Account Vpa,Fund Account Phone Number,Contact Name,Payout Narration,Payout Reference Id,Fund Account Email," .
+            "Contact Type,Contact Email,Contact Mobile,Contact Reference Id,notes[place],notes[code]";
+
+        $this->assertEquals($expectedRowOne, trim($fileContent[0]));
+
+        // NOTE : Account number is set as a merchant's banking balance's account number : 2224440041626905
+        $expectedRowTwo = "2224440041626905,10,INR,NEFT,refund,,bank_account,sample,SBIN0007105," .
+            "1234567890,,,sample,Sample Narration,,,vendor,sample@example.com,9988998899,,Bangalore," .
+            "This is a sample note";
+
+        $this->assertEquals($expectedRowTwo, trim($fileContent[1]));
+
+        $expectedRowThree = "2224440041626905,10,INR,amazonpay,refund,,wallet,sample,," .
+            ",,+918124632237,sample,Sample Narration,,sample@example.com,vendor,sample@example.com,9988998899,,Bangalore," .
+            "This is a sample note";
+
+        $this->assertEquals($expectedRowThree, trim($fileContent[2]));
+    }
+
     public function testXlsxTemplateFileForBulkPayouts()
     {
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+            {
+                if($featureFlag === (RazorxTreatment::ENABLE_WALLET_ACCOUNT_AMAZON_PAYOUT))
+                {
+                    return 'control';
+                }
+                return 'off';
+            });
+
         $this->ba->proxyAuth();
 
         $res = $this->startTest();
@@ -9499,7 +9635,9 @@ class PayoutTest extends OAuthTestCase
                 null,
                 null,
                 null,
+                null,
                 'Optional Fields',
+                null,
                 null,
                 null,
                 null,
@@ -9520,9 +9658,11 @@ class PayoutTest extends OAuthTestCase
                 'Fund Account Ifsc',
                 'Fund Account Number',
                 'Fund Account Vpa',
+                'Fund Account Phone Number',
                 'Contact Name',
                 'Payout Narration',
                 'Payout Reference Id',
+                'Fund Account Email',
                 'Contact Type',
                 'Contact Email',
                 'Contact Mobile',
@@ -9543,9 +9683,151 @@ class PayoutTest extends OAuthTestCase
                 'SBIN0007105',
                 '1234567890 ',
                 null,
+                null,
                 'sample',
                 'Sample Narration',
                 null,
+                null,
+                'vendor',
+                'sample@example.com',
+                '9988998899 ',  // Todo: Mehul to validate this change
+                null,
+                'Bangalore',
+                'This is a sample note',
+            ],
+        ];
+
+        for ($row = 1; $row <= 3; $row++)
+        {
+            for ($col = 1; $col <= 22; $col++)
+            {
+                $cellValue = $activeSheet->getCellByColumnAndRow($col, $row, false)->getValue();
+
+                $this->assertEquals($expectedData[$row-1][$col-1], $cellValue);
+            }
+        }
+    }
+
+    public function testXlsxTemplateFileForBulkPayoutsAmazonPayEnabled()
+    {
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+            {
+                if($featureFlag === (RazorxTreatment::ENABLE_WALLET_ACCOUNT_AMAZON_PAYOUT))
+                {
+                    return 'on';
+                }
+                return 'off';
+            });
+
+        $this->ba->proxyAuth();
+
+        $res = $this->startTest();
+
+        $spreadsheet = IOFactory::load($res['signed_url']);
+
+        $activeSheet = $spreadsheet->getActiveSheet();
+
+        $this->assertEquals(4, $activeSheet->getHighestRow());
+
+        $expectedData = [
+            [
+                // Since these are merged columns, the excel readers reads the value in the first column
+                // and reads the others as null
+                'Mandatory Fields',
+                null,
+                null,
+                null,
+                null,
+                '(Conditionally Mandatory) If you want to make a payout to an existing fund account you can just add their Fund Account Id.',
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                'Optional Fields',
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+            ],
+            [
+                'RazorpayX Account Number',
+                'Payout Amount (in Rupees)',
+                'Payout Currency',
+                'Payout Mode',
+                'Payout Purpose',
+                'Fund Account Id',
+                'Fund Account Type',
+                'Fund Account Name',
+                'Fund Account Ifsc',
+                'Fund Account Number',
+                'Fund Account Vpa',
+                'Fund Account Phone Number',
+                'Contact Name',
+                'Payout Narration',
+                'Payout Reference Id',
+                'Fund Account Email',
+                'Contact Type',
+                'Contact Email',
+                'Contact Mobile',
+                'Contact Reference Id',
+                'notes[place]',
+                'notes[code]',
+            ],
+            [
+                // NOTE : Account number is set as a merchant's banking balance's account number : 2224440041626905
+                '2224440041626905 ',
+                10,
+                'INR',
+                'NEFT',
+                'refund',
+                null,
+                'bank_account',
+                'sample',
+                'SBIN0007105',
+                '1234567890 ',
+                null,
+                null,
+                'sample',
+                'Sample Narration',
+                null,
+                null,
+                'vendor',
+                'sample@example.com',
+                '9988998899 ',
+                null,
+                'Bangalore',
+                'This is a sample note',
+            ],
+            [
+                // NOTE : Account number is set as a merchant's banking balance's account number : 2224440041626905
+                '2224440041626905 ',
+                10,
+                'INR',
+                'amazonpay',
+                'refund',
+                null,
+                'wallet',
+                'sample',
+                null,
+                ' ',
+                null,
+                '+918124632237',
+                'sample',
+                'Sample Narration',
+                null,
+                'sample@example.com',
                 'vendor',
                 'sample@example.com',
                 '9988998899 ',
@@ -9555,9 +9837,9 @@ class PayoutTest extends OAuthTestCase
             ]
         ];
 
-        for ($row = 1; $row <= 3; $row++)
+        for ($row = 1; $row <= 4; $row++)
         {
-            for ($col = 1; $col <= 20; $col++)
+            for ($col = 1; $col <= 22; $col++)
             {
                 $cellValue = $activeSheet->getCellByColumnAndRow($col, $row, false)->getValue();
 
@@ -9568,6 +9850,20 @@ class PayoutTest extends OAuthTestCase
 
     public function testXlsxSampleFileForBulkPayouts()
     {
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+            {
+                if($featureFlag === (RazorxTreatment::ENABLE_WALLET_ACCOUNT_AMAZON_PAYOUT))
+                {
+                    return 'control';
+                }
+                return 'off';
+            });
+
         $this->ba->proxyAuth();
 
         $res = $this->startTest();
@@ -9594,7 +9890,9 @@ class PayoutTest extends OAuthTestCase
                 null,
                 null,
                 null,
+                null,
                 'Optional Fields',
+                null,
                 null,
                 null,
                 null,
@@ -9615,9 +9913,11 @@ class PayoutTest extends OAuthTestCase
                 'Fund Account Ifsc',
                 'Fund Account Number',
                 'Fund Account Vpa',
+                'Fund Account Phone Number',
                 'Contact Name',
                 'Payout Narration',
                 'Payout Reference Id',
+                'Fund Account Email',
                 'Contact Type',
                 'Contact Email',
                 'Contact Mobile',
@@ -9638,9 +9938,151 @@ class PayoutTest extends OAuthTestCase
                 'SBIN0007105',
                 '1234567890 ',
                 null,
+                null,
                 'sample',
                 'Sample Narration',
                 null,
+                null,
+                'vendor',
+                'sample@example.com',
+                '9988998899 ',
+                null,
+                'Bangalore',
+                'This is a sample note',
+            ],
+        ];
+
+        for ($row = 1; $row <= 3; $row++)
+        {
+            for ($col = 1; $col <= 22; $col++)
+            {
+                $cellValue = $activeSheet->getCellByColumnAndRow($col, $row, false)->getValue();
+
+                $this->assertEquals($expectedData[$row-1][$col-1], $cellValue);
+            }
+        }
+    }
+
+    public function testXlsxSampleFileForBulkPayoutsAmazonPayEnabled()
+    {
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+            {
+                if($featureFlag === (RazorxTreatment::ENABLE_WALLET_ACCOUNT_AMAZON_PAYOUT))
+                {
+                    return 'on';
+                }
+                return 'off';
+            });
+
+        $this->ba->proxyAuth();
+
+        $res = $this->startTest();
+
+        $spreadsheet = IOFactory::load($res['signed_url']);
+
+        $activeSheet = $spreadsheet->getActiveSheet();
+
+        $this->assertEquals(4, $activeSheet->getHighestRow());
+
+        $expectedData = [
+            [
+                // Since these are merged columns, the excel readers reads the value in the first column
+                // and reads the others as null
+                'Mandatory Fields',
+                null,
+                null,
+                null,
+                null,
+                '(Conditionally Mandatory) If you want to make a payout to an existing fund account you can just add their Fund Account Id.',
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                'Optional Fields',
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+            ],
+            [
+                'RazorpayX Account Number',
+                'Payout Amount (in Rupees)',
+                'Payout Currency',
+                'Payout Mode',
+                'Payout Purpose',
+                'Fund Account Id',
+                'Fund Account Type',
+                'Fund Account Name',
+                'Fund Account Ifsc',
+                'Fund Account Number',
+                'Fund Account Vpa',
+                'Fund Account Phone Number',
+                'Contact Name',
+                'Payout Narration',
+                'Payout Reference Id',
+                'Fund Account Email',
+                'Contact Type',
+                'Contact Email',
+                'Contact Mobile',
+                'Contact Reference Id',
+                'notes[place]',
+                'notes[code]',
+            ],
+            [
+                // NOTE : Account number is set as a sample account number account number : 7878780021057150
+                '7878780021057150 ',
+                10,
+                'INR',
+                'NEFT',
+                'refund',
+                null,
+                'bank_account',
+                'sample',
+                'SBIN0007105',
+                '1234567890 ',
+                null,
+                null,
+                'sample',
+                'Sample Narration',
+                null,
+                null,
+                'vendor',
+                'sample@example.com',
+                '9988998899 ',
+                null,
+                'Bangalore',
+                'This is a sample note',
+            ],
+            [
+                // NOTE : Account number is set as a sample account number account number : 7878780021057150
+                '7878780021057150 ',
+                10,
+                'INR',
+                'amazonpay',
+                'refund',
+                null,
+                'wallet',
+                'sample',
+                null,
+                ' ',
+                null,
+                '+918124632237',
+                'sample',
+                'Sample Narration',
+                null,
+                'sample@example.com',
                 'vendor',
                 'sample@example.com',
                 '9988998899 ',
@@ -9650,9 +10092,9 @@ class PayoutTest extends OAuthTestCase
             ]
         ];
 
-        for ($row = 1; $row <= 3; $row++)
+        for ($row = 1; $row <= 4; $row++)
         {
-            for ($col = 1; $col <= 20; $col++)
+            for ($col = 1; $col <= 22; $col++)
             {
                 $cellValue = $activeSheet->getCellByColumnAndRow($col, $row, false)->getValue();
 

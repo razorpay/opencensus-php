@@ -6,6 +6,9 @@ use RZP\Models\Vpa;
 use RZP\Models\Contact;
 use RZP\Models\BankAccount;
 use RZP\Models\FundAccount;
+use RZP\Models\WalletAccount;
+use RZP\Models\Payout\Mode as PayoutMode;
+use RZP\Models\Payout\BatchHelper as PayoutBatchHelper;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class BatchHelper
@@ -16,7 +19,16 @@ class BatchHelper
     const NUMBER         = 'account_number';
     const NAME           = 'account_name';
     const VPA            = 'account_vpa';
+    const PHONE_NUMBER   = 'account_phone_number';
+    const EMAIL          = 'account_email';
     const FUND_ACCOUNT   = 'fund';
+
+    // Todo: Include this field in the sample bulk contact file
+    const PROVIDER       = 'account_provider';
+
+    // Default Provider to be used if no provider is passed or
+    // provider can't be inferred from the data passed
+    const DEFAULT_PROVIDER = 'default_provider';
 
     public static function getFundAccountInput(array $entry, Contact\Entity $contact): array
     {
@@ -45,6 +57,43 @@ class BatchHelper
                 ];
                 break;
 
+            case Type::WALLET:
+                $walletProvider = self::DEFAULT_PROVIDER;
+
+                // Bulk contacts input contains provider info, but
+                // for bulk payouts provider needs to be inferred from mode
+                if ((isset($entry[self::FUND_ACCOUNT][self::PROVIDER]) === true) and
+                    (empty($entry[self::FUND_ACCOUNT][self::PROVIDER]) === false))
+                {
+                    $walletProvider = $entry[self::FUND_ACCOUNT][self::PROVIDER];
+                }
+                else if (isset($entry[PayoutBatchHelper::PAYOUT][PayoutBatchHelper::PAYOUT_MODE]) === true)
+                {
+                    $walletProvider = self::getWalletProviderFromPayoutMode($entry[PayoutBatchHelper::PAYOUT][PayoutBatchHelper::PAYOUT_MODE]);
+                }
+
+                if($walletProvider === self::DEFAULT_PROVIDER)
+                {
+                    throw new BadRequestValidationFailureException(
+                        "Wallet provider is not supported");
+                }
+
+                $input[Entity::WALLET] = [
+                    WalletAccount\Entity::PHONE        => $entry[self::FUND_ACCOUNT][self::PHONE_NUMBER],
+                    WalletAccount\Entity::PROVIDER     => $walletProvider,
+                ];
+
+                // Fund Account Email is an optional field for amazonpay.
+                // So passing email field only if it is non empty
+                if ((isset($entry[self::FUND_ACCOUNT][self::EMAIL])) and
+                   (empty($entry[self::FUND_ACCOUNT][self::EMAIL]) === false))
+                {
+                    $input[Entity::WALLET] += [
+                        WalletAccount\Entity::EMAIL    => $entry[self::FUND_ACCOUNT][self::EMAIL],
+                    ];
+                }
+                break;
+
             default:
                 throw new BadRequestValidationFailureException(
                     "Invalid value for fund account type - $fundAccountType",
@@ -55,5 +104,17 @@ class BatchHelper
         $input[Entity::IDEMPOTENCY_KEY] = $entry[Entity::IDEMPOTENCY_KEY];
 
         return $input;
+    }
+
+    protected static function getWalletProviderFromPayoutMode(string $payoutMode)
+    {
+        switch ($payoutMode)
+        {
+            case PayoutMode::AMAZONPAY:
+                return PayoutMode::AMAZONPAY;
+
+            default:
+                return self::DEFAULT_PROVIDER;
+        }
     }
 }
