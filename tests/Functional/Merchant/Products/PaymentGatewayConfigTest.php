@@ -519,6 +519,27 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
     }
 
+    public function testDefaultPaymentMethods()
+    {
+        Mail::fake();
+
+        $this->mockTerminalServiceResponse();
+
+        $this->setupPrivateAuthForPartner();
+
+        $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
+
+        $accountResponse = $this->runRequestResponseFlow($testData);
+
+        $accountId = $accountResponse['id'];
+
+        $testData = $this->testData['testDefaultPaymentMethods'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     protected function validateStorkWebhookFireEvent($testData, $storkPayload, $merchantId)
     {
         if ($storkPayload['event']['name'] === 'account.product_status')
@@ -626,8 +647,63 @@ class PaymentGatewayConfigTest extends OAuthTestCase
                 "updated_at": 0,
                 "special_pricing": "",
                 "tags": null
+            },
+            {
+                "merchant_instrument_request_id": "",
+                "merchant_id": "H9sTmdNiFOOFCC",
+                "instrument": "pg.emi.cardless_emi.zestmoney",
+                "status": "activated",
+                "comment": "",
+                "created_at": 0,
+                "updated_at": 0,
+                "special_pricing": "",
+                "tags": null
+            },
+            {
+                "merchant_instrument_request_id": "",
+                "merchant_id": "H9sTmdNiFOOFCC",
+                "instrument": "pg.emi.cardless_emi.instacred",
+                "status": "requestable",
+                "comment": "",
+                "created_at": 0,
+                "updated_at": 0,
+                "special_pricing": "",
+                "tags": null
+            },
+            {
+                "merchant_instrument_request_id": "",
+                "merchant_id": "H9sTmdNiFOOFCC",
+                "instrument": "pg.emi.cardless_emi.earlysalary",
+                "status": "requestable",
+                "comment": "",
+                "created_at": 0,
+                "updated_at": 0,
+                "special_pricing": "",
+                "tags": null
+            },
+            {
+                "merchant_instrument_request_id": "",
+                "merchant_id": "H9sTmdNiFOOFCC",
+                "instrument": "pg.emi.debit",
+                "status": "activated",
+                "comment": "",
+                "created_at": 0,
+                "updated_at": 0,
+                "special_pricing": "",
+                "tags": null
+            },
+            {
+                "merchant_instrument_request_id": "",
+                "merchant_id": "H9sTmdNiFOOFCC",
+                "instrument": "pg.emi.credit",
+                "status": "activated",
+                "comment": "",
+                "created_at": 0,
+                "updated_at": 0,
+                "special_pricing": "",
+                "tags": null
             }
-                ]';
+        ]';
 
         $data = json_decode($data, true);
 

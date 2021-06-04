@@ -1031,4 +1031,59 @@ return [
             ],
         ],
     ],
+
+    'testDefaultPaymentMethods' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}/products',
+            'method'  => 'POST',
+            'content' => [
+                'name' => 'payment_gateway'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'active_configuration' => [
+                    'payment_capture' => [
+                        'mode'                    => 'automatic',
+                        'refund_speed'            => 'normal',
+                        'automatic_expiry_period' => 7200
+                    ],
+                    'notifications'   => [
+                        'sms'      => false,
+                        'whatsapp' => false
+                    ],
+                    'checkout'        => [
+                        'theme_color'    => '#FFFFFF',
+                        'flash_checkout' => true
+                    ],
+                    'refund'          => [
+                        'default_refund_speed' => 'normal'
+                    ],
+                    'payment_methods' => [
+                        'netbanking' => [
+                            'enabled' => true,
+                            'instrument' =>  [
+                                [
+                                    'type' =>  "retail",
+                                    'bank' => ["scbl", "aubl", "airp"]
+                                ]
+                            ]
+                        ],
+                        'emi' =>  [
+                            'enabled' => true,
+                            'instrument' => [
+                                [
+                                    'type' =>  "cardless_emi",
+                                    'partner' => [ "zestmoney" ]
+                                ],
+                                [
+                                    'type' => "card_emi",
+                                    'partner' => [ "debit", "credit"]
+                                ]
+                            ]]
+                    ]
+                ],
+            ]
+        ]
+    ]
 ];

@@ -11,7 +11,7 @@ class PaymentMethodsResponseHandler
         $finalResponse = [];
         foreach (array(Constants::ACTIVATED, Constants::REQUESTED) as $status)
         {
-            $transformedResponse = [Constants::PAYMENT_METHODS => self::extractResponse($response, $status)];
+            $transformedResponse = [Constants::PAYMENT_METHODS => self::buildResponse($response, $status)];
             array_push($finalResponse, $transformedResponse);
         }
 
@@ -20,25 +20,10 @@ class PaymentMethodsResponseHandler
 
     /**
      * @param array $response
-     * @param string $category
-     * @return array
-     */
-    private static function getLeafValuesOfInstrument(array $response, string $category): array
-    {
-        $instruments = [];
-        foreach ($response as $row) {
-            $instrument = explode(".", $row["instrument"]);
-            array_push($instruments, $instrument[count($instrument)-1]);
-        }
-        return $instruments;
-    }
-
-    /**
-     * @param array $response
      * @param string $status
      * @return \array[][]
      */
-    private static function extractResponse(array $response, string $status): array
+    private static function buildResponse(array $response, string $status): array
     {
         $transformedResponse = [];
 
@@ -61,6 +46,12 @@ class PaymentMethodsResponseHandler
             }
         }
 
+        $emiResponse = self::getEmiResponse($response, $status);
+
+        if($emiResponse[Constants::ENABLED] == true)
+        {
+            $transformedResponse[Constants::EMI] = $emiResponse;
+        }
 
         return $transformedResponse;
     }
@@ -112,7 +103,7 @@ class PaymentMethodsResponseHandler
             Constants::TYPE => $category
         ];
 
-        $instruments = self::getLeafValuesOfInstrument($transformedResponse, Constants::NETBANKING);
+        $instruments = self::getLeafValues($transformedResponse);
         $bankCodes = BankCodes::getBankcodesFromInstruments($instruments);
 
         $categoryResponse[Constants::BANK] = $bankCodes;
@@ -134,6 +125,50 @@ class PaymentMethodsResponseHandler
         });
     }
 
+    private static function getEmiResponse($response, $status)
+    {
+        $emiResponse = [
+            Constants::ENABLED => false,
+            Constants::INSTRUMENT => [],
+        ];
+
+        $emiInstruments = array_filter($response, function ($row) use ($status) {
+            $instrument = explode(".", $row["instrument"]);
+            return $instrument[1] == Constants::EMI && $row[Constants::STATUS] == $status;
+        });
+
+        $cardlessInstruments = array_filter($emiInstruments, function ($row) use ($status) {
+            $instrument = explode(".", $row["instrument"]);
+            return $instrument[1] == Constants::EMI && $row[Constants::STATUS] == $status && $instrument[2] == Constants::CARDLESS_EMI;
+        });
+
+        $cardInstruments = array_diff_key($emiInstruments, $cardlessInstruments);
+
+        $emiInstruments = [
+            Constants::CARDLESS_EMI => $cardlessInstruments,
+            Constants::CARD_EMI     => $cardInstruments
+        ];
+
+        foreach ($emiInstruments as $key => $value)
+        {
+            $instruments = self::getLeafValues($value);
+            if(count($instruments) > 0)
+            {
+                $subResponse = [
+                    Constants::TYPE => $key,
+                    Constants::PARTNER => $instruments
+                ];
+
+                array_push($emiResponse[Constants::INSTRUMENT], $subResponse);
+            }
+        }
+
+        $emiResponse[Constants::ENABLED] = count($emiResponse[Constants::INSTRUMENT]) > 0;
+
+        return $emiResponse;
+
+    }
+
     /**
      * @param array $response
      * @param string $status
@@ -147,7 +182,22 @@ class PaymentMethodsResponseHandler
             return $instrument[1] == $type && $row[Constants::STATUS] == $status;
         });
 
-        $instruments = self::getLeafValuesOfInstrument($instruments, $type);
+        $instruments = self::getLeafValues($instruments);
+        return $instruments;
+    }
+
+        /**
+     * @param array $response
+     * @param string $category
+     * @return array
+     */
+    private static function getLeafValues(array $response): array
+    {
+        $instruments = [];
+        foreach ($response as $row) {
+            $instrument = explode(".", $row["instrument"]);
+            array_push($instruments, $instrument[count($instrument)-1]);
+        }
         return $instruments;
     }
 
