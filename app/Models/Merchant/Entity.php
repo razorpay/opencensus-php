@@ -2116,13 +2116,13 @@ class Entity extends Base\PublicEntity
      * @param $merchant
      * @return bool
      */
-    public function isDCCMarkupVisible($input, $merchant): bool
+    public function isDCCMarkupVisible(): bool
     {
         $result = false;
 
         //Check either of merchant feature or admin config is enabled
         if (((bool) Admin\ConfigKey::get(Admin\ConfigKey::PAYMENT_SHOW_DCC_MARKUP, false) == true) or
-            ($merchant->isFeatureEnabled(Feature\Constants::PAYMENT_SHOW_DCC_MARKUP) == true))
+            ($this->isFeatureEnabled(Feature\Constants::PAYMENT_SHOW_DCC_MARKUP) == true))
         {
             $result = true;
         }
