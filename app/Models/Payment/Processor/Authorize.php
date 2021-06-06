@@ -4227,6 +4227,10 @@ trait Authorize
 
                 $payment->setVpa($vpa->getAddress());
             }
+            else if ($payment->isEmandate() === true)
+            {
+                $payment->localToken()->associate($token);
+            }
         }
     }
 
@@ -5299,35 +5303,6 @@ trait Authorize
                 ]);
 
             return;
-        }
-
-        // For Subscription eMandate token, we need to create a local customer and assign
-        if ($payment->customer === null and
-            $payment->isEmandate() === true and
-            $payment->isRecurringTypeInitial() === true and
-            $payment->hasSubscription() === true)
-        {
-            $customerCore = new Customer\Core();
-
-            $customerCreateInput = [
-                'email' => $payment->getEmail(),
-                'contact' => $payment->getContact(),
-            ];
-
-            $customer = $customerCore->createLocalCustomer($customerCreateInput, $payment->merchant, false);
-
-            $payment->customer()->associate($customer);
-
-            $this->repo->payment->saveOrFail($payment);
-
-            $token  = $payment->getGlobalOrLocalTokenEntity();
-
-            if ($token->customer ===null)
-            {
-                $token->customer()->associate($customer);
-
-                $this->repo->token->saveOrFail($token);
-            }
         }
 
         (new Token\Core)->updateTokenFromEmandateGatewayData($token, $gatewayData);
