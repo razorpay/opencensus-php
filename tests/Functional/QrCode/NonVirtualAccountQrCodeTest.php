@@ -25,7 +25,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         parent::setUp();
 
-        $this->fixtures->merchant->addFeatures(['qr_codes']);
+        $this->fixtures->merchant->addFeatures(['qr_codes', 'bharat_qr']);
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
 

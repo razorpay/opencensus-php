@@ -5,14 +5,20 @@ namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 use Carbon\Carbon;
 use RZP\Models\Merchant\Account;
 use RZP\Models\QrCode;
+use RZP\Models\Feature;
+use RZP\Error\ErrorCode;
+use RZP\Models\QrPaymentRequest\Type;
+use RZP\Exception\BadRequestException;
 
 class Core extends QrCode\Core
 {
     public function buildQrCode(array $input)
     {
-        $customer = $this->getCustomerIfGiven($input);
-
         $qrCode = (new Entity())->build($input);
+
+        $this->checkFeatureEnabled($input);
+
+        $customer = $this->getCustomerIfGiven($input);
 
         $qrCode->customer()->associate($customer);
 
@@ -35,6 +41,19 @@ class Core extends QrCode\Core
         });
 
         return $qrCode;
+    }
+    
+    private function checkFeatureEnabled($input)
+    {
+        if ($input[Entity::REQ_PROVIDER] === Type::BHARAT_QR)
+        {
+            $feature = Feature\Constants::BHARAT_QR;
+
+            if ($this->merchant->isFeatureEnabled($feature) === false)
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_BHARAT_QR_NOT_ENABLED_FOR_MERCHANT);
+            }
+        }
     }
 
     public function close($qrCode, $closeReason)
