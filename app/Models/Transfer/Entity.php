@@ -731,4 +731,19 @@ class Entity extends Base\PublicEntity
 
         return $data;
     }
+
+    public function build(array $input = array())
+    {
+        if ((isset($input[self::NOTES]) === true) and
+            (isset($input[self::LINKED_ACCOUNT_NOTES]) === true))
+        {
+            $linkedAccountNotes = $input[self::LINKED_ACCOUNT_NOTES];
+
+            unset($input[self::LINKED_ACCOUNT_NOTES]);
+
+            $input[self::LINKED_ACCOUNT_NOTES] = $linkedAccountNotes;
+        }
+
+        return parent::build($input);
+    }
 }
