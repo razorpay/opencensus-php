@@ -6,6 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Card\Network;
+use RZP\Models\Emi\DebitProvider;
 use RZP\Models\Merchant\Methods\Entity as Methods;
 use RZP\Models\Payment\Processor\App as AppMethod;
 
@@ -127,6 +128,9 @@ class CreateMerchantBanks extends Migration
 
             $table->unsignedSmallInteger(Methods::APPS)
                   ->default(AppMethod::DEFAULT_APPS);
+
+            $table->unsignedSmallInteger(Methods::DEBIT_EMI_PROVIDERS)
+                  ->default(DebitProvider::DEFAULT_DEBIT_EMI_PROVIDERS);
 
             $table->integer(Methods::CREATED_AT);
 

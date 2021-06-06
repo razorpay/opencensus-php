@@ -454,6 +454,36 @@ class MethodsTest extends TestCase
         $this->assertFalse($merchantMethods->isCardNetworkEnabled(Network::DICL));
     }
 
+    public function testEnableHdfcDebitEmiProvider()
+    {
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'content' => [
+                'emi' => ['debit' => '1'],
+                'debit_emi_providers' => [
+                    'hdfc' => '1',
+                ]
+            ],
+        ];
+
+        $this->fixtures->pricing->createEmiPricingPlan();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertEquals(['HDFC' => 1], $merchantMethods->getDebitEmiProviders());
+    }
+
     public function testQueryCacheHitForMethods()
     {
         config(['app.query_cache.mock' => false]);

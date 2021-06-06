@@ -19,12 +19,12 @@ class DefaultMethodsForCategory
             // Financial Services
             '6211'    => [
                 Category::MUTUAL_FUNDS => [
-                    self::BLACKLISTED_METHODS   => [Entity::CREDIT_CARD, Entity::AMEX, Entity::EMI, Entity::PREPAID_CARD, Entity::PAYLATER, Entity::PHONEPE],
+                    self::BLACKLISTED_METHODS   => [Entity::CREDIT_CARD, Entity::AMEX, Entity::EMI, Entity::PREPAID_CARD, Entity::PAYLATER, Entity::PHONEPE, Entity::HDFC_DEBIT_EMI],
                     self::GREYLISTED_METHODS =>[],
                     self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS   =>  [Entity::AMEX],
                 ],
                 Category::SECURITIES => [
-                    self::BLACKLISTED_METHODS   => [Entity::CREDIT_CARD, Entity::AMEX, Entity::EMI, Entity::PREPAID_CARD, Entity::PAYLATER, Entity::PHONEPE],
+                    self::BLACKLISTED_METHODS   => [Entity::CREDIT_CARD, Entity::AMEX, Entity::EMI, Entity::PREPAID_CARD, Entity::PAYLATER, Entity::PHONEPE, Entity::HDFC_DEBIT_EMI],
                     self::GREYLISTED_METHODS =>[],
                     self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS   =>  [Entity::AMEX],
                 ],
@@ -38,16 +38,24 @@ class DefaultMethodsForCategory
             ],
             '6012' => [
                 Category::LENDING => [
-                    self::BLACKLISTED_METHODS => [Entity::CREDIT_CARD, Entity::AMEX, Entity::EMI, Entity::PREPAID_CARD, Entity::PAYLATER, Entity::PHONEPE],
+                    self::BLACKLISTED_METHODS => [Entity::CREDIT_CARD, Entity::AMEX, Entity::EMI, Entity::PREPAID_CARD, Entity::PAYLATER, Entity::PHONEPE, Entity::HDFC_DEBIT_EMI],
                     self::GREYLISTED_METHODS =>[],
                     self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX, Entity::PHONEPE],
                 ],
                 Category::OTHERS => [
-                    self::BLACKLISTED_METHODS => [Entity::CREDIT_CARD, Entity::AMEX, Entity::EMI, Entity::PREPAID_CARD, Entity::PAYLATER, Entity::PHONEPE],
+                    self::BLACKLISTED_METHODS => [Entity::CREDIT_CARD, Entity::AMEX, Entity::EMI, Entity::PREPAID_CARD, Entity::PAYLATER, Entity::PHONEPE, Entity::HDFC_DEBIT_EMI],
                     self::GREYLISTED_METHODS =>[],
                     self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS   =>  [Entity::AMEX, Entity::PHONEPE],
                 ],
             ],
+            '6011' => [
+                Category::OTHERS => [
+                    self::BLACKLISTED_METHODS => [Entity::AMEX, Entity::HDFC_DEBIT_EMI],
+                    self::GREYLISTED_METHODS =>[],
+                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
+                ],
+            ],
+
             '6300' => [
                 Category::INSURANCE => [
                     self::BLACKLISTED_METHODS => [Entity::AMEX, Entity::PHONEPE],
@@ -59,21 +67,21 @@ class DefaultMethodsForCategory
             ],
             '6010'  =>  [
                 Category::FOREX =>  [
-                    self::BLACKLISTED_METHODS => [Entity::CREDIT_CARD, Entity::AMEX, Entity::EMI, Entity::PREPAID_CARD, Entity::PAYLATER, Entity::PHONEPE],
+                    self::BLACKLISTED_METHODS => [Entity::CREDIT_CARD, Entity::AMEX, Entity::EMI, Entity::PREPAID_CARD, Entity::PAYLATER, Entity::PHONEPE, Entity::HDFC_DEBIT_EMI],
                     self::GREYLISTED_METHODS =>[],
                     self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX,Entity::PHONEPE],
                 ],
             ],
             '8931'  =>  [
                 Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [Entity::AMEX, Entity::EMI, Entity::PHONEPE],
+                    self::BLACKLISTED_METHODS => [Entity::AMEX, Entity::EMI, Entity::PHONEPE, Entity::HDFC_DEBIT_EMI],
                     self::GREYLISTED_METHODS =>[],
                     self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
                 ],
             ],
             '6050'  =>  [
                 Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [Entity::AMEX, Entity::EMI, Entity::PHONEPE],
+                    self::BLACKLISTED_METHODS => [Entity::AMEX, Entity::EMI, Entity::PHONEPE, Entity::HDFC_DEBIT_EMI],
                     self::GREYLISTED_METHODS =>[],
                     self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX, Entity::PHONEPE],
                 ]
@@ -120,7 +128,15 @@ class DefaultMethodsForCategory
             '5912'  =>  [
                 Category::PHARMA    =>  [
                     // need to support phonepe.
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX, Entity::EMI],
+                    self::BLACKLISTED_METHODS => [ENTITY::AMEX, Entity::EMI, Entity::HDFC_DEBIT_EMI],
+                    self::GREYLISTED_METHODS =>[],
+                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
+                ]
+            ],
+            '5122'  =>  [
+                Category::PHARMA    =>  [
+                    // need to support phonepe.
+                    self::BLACKLISTED_METHODS => [ENTITY::AMEX, Entity::HDFC_DEBIT_EMI],
                     self::GREYLISTED_METHODS =>[],
                     self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
                 ]
@@ -269,12 +285,12 @@ class DefaultMethodsForCategory
             // 5399, ecommerce is in Healthcare as well, but have same value
             '5399'  =>  [
                 Category::ECOMMERCE => [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
+                    self::BLACKLISTED_METHODS => [ENTITY::AMEX, Entity::HDFC_DEBIT_EMI],
                     self::GREYLISTED_METHODS =>[],
                     self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
                 ],
                 Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX, Entity::EMI],
+                    self::BLACKLISTED_METHODS => [ENTITY::AMEX, Entity::EMI, Entity::HDFC_DEBIT_EMI],
                     self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
                 ]
             ],
@@ -376,7 +392,7 @@ class DefaultMethodsForCategory
             ],
             '5971'  =>  [
                 Category::ECOMMERCE => [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX, Entity::EMI],
+                    self::BLACKLISTED_METHODS => [ENTITY::AMEX, Entity::EMI, Entity::HDFC_DEBIT_EMI],
                     self::GREYLISTED_METHODS =>[],
                     self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
                 ]
@@ -438,7 +454,7 @@ class DefaultMethodsForCategory
             // IT and Software
             '5817'  =>  [
                 Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
+                    self::BLACKLISTED_METHODS => [ENTITY::AMEX, Entity::HDFC_DEBIT_EMI],
                     self::GREYLISTED_METHODS =>[],
                     self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
                 ]
@@ -461,7 +477,7 @@ class DefaultMethodsForCategory
             // Games
             '5816'  =>  [
                 Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX, Entity::EMI, Entity::FREECHARGE],
+                    self::BLACKLISTED_METHODS => [ENTITY::AMEX, Entity::EMI, Entity::FREECHARGE, Entity::HDFC_DEBIT_EMI],
                     self::GREYLISTED_METHODS =>[],
                     self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
                 ]
@@ -485,6 +501,13 @@ class DefaultMethodsForCategory
             '7832'  =>  [
                 Category::OTHERS    =>  [
                     self::BLACKLISTED_METHODS => [ENTITY::AMEX],
+                    self::GREYLISTED_METHODS =>[],
+                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
+                ]
+            ],
+            '7994'  =>  [
+                Category::OTHERS    =>  [
+                    self::BLACKLISTED_METHODS => [ENTITY::AMEX, Entity::HDFC_DEBIT_EMI],
                     self::GREYLISTED_METHODS =>[],
                     self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
                 ]
@@ -543,7 +566,7 @@ class DefaultMethodsForCategory
             // 7392, others is in 'IT and Software' as well, have same value
             '7392'  =>  [
                 Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
+                    self::BLACKLISTED_METHODS => [ENTITY::AMEX, Entity::HDFC_DEBIT_EMI],
                     self::GREYLISTED_METHODS =>[],
                     self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
                 ]
@@ -559,12 +582,12 @@ class DefaultMethodsForCategory
             // Housing and Real Estate
             '6513'  =>  [
                 Category::HOUSING   =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
+                    self::BLACKLISTED_METHODS => [ENTITY::AMEX, Entity::HDFC_DEBIT_EMI],
                     self::GREYLISTED_METHODS =>[],
                     self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
                 ],
                 Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
+                    self::BLACKLISTED_METHODS => [ENTITY::AMEX, Entity::HDFC_DEBIT_EMI],
                     self::GREYLISTED_METHODS =>[],
                     self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
                 ]
@@ -580,7 +603,7 @@ class DefaultMethodsForCategory
             // Not for profit
             '8398'  =>  [
                 Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX, Entity::EMI],
+                    self::BLACKLISTED_METHODS => [ENTITY::AMEX, Entity::EMI, Entity::HDFC_DEBIT_EMI],
                     self::GREYLISTED_METHODS =>[],
                     self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
                 ]
@@ -596,7 +619,7 @@ class DefaultMethodsForCategory
             // Social
             '7273'  =>  [
                 Category::OTHERS    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::AMEX],
+                    self::BLACKLISTED_METHODS => [ENTITY::AMEX, Entity::HDFC_DEBIT_EMI],
                     self::GREYLISTED_METHODS =>[],
                     self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
                 ]
@@ -615,6 +638,13 @@ class DefaultMethodsForCategory
                     self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
                 ]
             ],
+            '4829'  =>  [
+                Category::OTHERS    =>  [
+                    self::BLACKLISTED_METHODS => [ENTITY::AMEX, Entity::HDFC_DEBIT_EMI],
+                    self::GREYLISTED_METHODS =>[],
+                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
+                ]
+            ],
             '8699'  =>  [
                 Category::OTHERS    =>  [
                     self::BLACKLISTED_METHODS => [ENTITY::AMEX],
@@ -624,21 +654,42 @@ class DefaultMethodsForCategory
             ],
             '5094'  =>  [
                 Category::ECOMMERCE    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::EMI],
+                    self::BLACKLISTED_METHODS => [ENTITY::EMI, Entity::HDFC_DEBIT_EMI],
                     self::GREYLISTED_METHODS =>[],
                     self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [],
                 ]
             ],
+            '5172'  =>  [
+                Category::ECOMMERCE    =>  [
+                    self::BLACKLISTED_METHODS => [ENTITY::AMEX, Entity::HDFC_DEBIT_EMI],
+                    self::GREYLISTED_METHODS =>[],
+                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
+                ]
+            ],
+            '5921'  =>  [
+                Category::ECOMMERCE    =>  [
+                    self::BLACKLISTED_METHODS => [ENTITY::AMEX, Entity::HDFC_DEBIT_EMI],
+                    self::GREYLISTED_METHODS =>[],
+                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
+                ]
+            ],
+            '5983'  =>  [
+                Category::ECOMMERCE    =>  [
+                    self::BLACKLISTED_METHODS => [ENTITY::AMEX, Entity::HDFC_DEBIT_EMI],
+                    self::GREYLISTED_METHODS =>[],
+                    self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
+                ]
+            ],
             '5944'  =>  [
                 Category::ECOMMERCE    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::EMI],
+                    self::BLACKLISTED_METHODS => [ENTITY::EMI, Entity::HDFC_DEBIT_EMI],
                     self::GREYLISTED_METHODS =>[],
                     self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [],
                 ]
             ],
             '7631'  =>  [
                 Category::ECOMMERCE    =>  [
-                    self::BLACKLISTED_METHODS => [ENTITY::EMI],
+                    self::BLACKLISTED_METHODS => [ENTITY::EMI, Entity::HDFC_DEBIT_EMI],
                     self::GREYLISTED_METHODS =>[],
                     self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [],
                 ]
@@ -678,6 +729,7 @@ class DefaultMethodsForCategory
         Entity::PHONEPE,
         Entity::PAYTM,
         Entity::PAYPAL,
+        Entity::HDFC_DEBIT_EMI,
     ];
 
     const AUTO_DISABLED_METHODS = [

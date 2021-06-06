@@ -55,6 +55,9 @@ class Validator extends Base\Validator
         Entity::CARD_NETWORKS.'.*' => 'sometimes|boolean',
         Entity::APPS               => 'sometimes|array',
         Entity::APPS.'.*'          => 'sometimes|boolean',
+
+        Entity::DEBIT_EMI_PROVIDERS      => 'sometimes|array',
+        Entity::DEBIT_EMI_PROVIDERS.'.*' => 'sometimes|boolean',
     ];
 
     protected static $setMethodsValidators = [

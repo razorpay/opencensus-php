@@ -674,6 +674,17 @@ class CheckoutPreferencesTest extends TestCase
         $this->assertArrayHasKey('HDFC_DC', $response['methods']['emi_options']);
     }
 
+    public function testGetCheckoutPreferencesForDebitEmiProviders()
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->merchant->enableDebitEmiProviders();
+
+        $response = $this->getPreferences();
+
+        $this->assertArraySelectiveEquals(['HDFC' => 1], $response['methods']['debit_emi_providers']);
+    }
+
     public function testGetCheckoutPreferencesForDebitEmiWithExistingCreditEmi()
     {
         $this->fixtures->merchant->enableEmi();

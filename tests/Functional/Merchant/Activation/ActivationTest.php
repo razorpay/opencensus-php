@@ -80,6 +80,8 @@ class ActivationTest extends OAuthTestCase
 
         $this->fixtures->create('org:hdfc_org');
 
+        $this->fixtures->pricing->createEmiPricingPlan();
+
         $this->enableRazorXTreatmentForActivation();
 
         $this->esDao = new EsDao();
@@ -267,6 +269,8 @@ class ActivationTest extends OAuthTestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedCardNetworks, $cardNetworks);
+
+        $this->assertArraySelectiveEquals(['HDFC' => 0], $methodsArray['debit_emi_providers']);
     }
 
     // Whitelist Activation flow, all methods enabled
@@ -299,7 +303,6 @@ class ActivationTest extends OAuthTestCase
             'amex'          => false,
             'netbanking'    => true,
             'upi'           => true,
-            'emi'           => [], // emi is disabled because pricing rule is not present.
             'prepaid_card'  => true,
             'paylater'      => true,
             'airtelmoney'   => true,
@@ -323,6 +326,10 @@ class ActivationTest extends OAuthTestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedCardNetworks, $cardNetworks);
+
+        $this->assertArraySelectiveEquals(['credit', 'debit'], $methodsArray['emi']);
+
+        $this->assertArraySelectiveEquals(['HDFC' => 1], $methodsArray['debit_emi_providers']);
     }
 
     // GreyList Activation flow
@@ -391,6 +398,8 @@ class ActivationTest extends OAuthTestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedCardNetworks, $cardNetworks);
+
+        $this->assertArraySelectiveEquals(['HDFC' => 0], $methodsArray['debit_emi_providers']);
     }
 
     // Greylisted flow
@@ -435,7 +444,6 @@ class ActivationTest extends OAuthTestCase
             'amex'          => false,
             'netbanking'    => true,
             'upi'           => true,
-            'emi'           => [], // emi is disabled because pricing rule is not present.
             'prepaid_card'  => true,
             'paylater'      => true,
             'airtelmoney'   => true,
@@ -459,6 +467,10 @@ class ActivationTest extends OAuthTestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedCardNetworks, $cardNetworks);
+
+        $this->assertArraySelectiveEquals(['credit', 'debit'], $methodsArray['emi']);
+
+        $this->assertArraySelectiveEquals(['HDFC' => 1], $methodsArray['debit_emi_providers']);
     }
 
     public function testActivationDefaultMethodsBasedOnCategory5094()
@@ -518,6 +530,8 @@ class ActivationTest extends OAuthTestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);
+
+        $this->assertArraySelectiveEquals(['HDFC' => 0], $methodsArray['debit_emi_providers']);
     }
 
     public function testActivationDefaultMethodsBasedOnCategory8661Others()
@@ -577,6 +591,8 @@ class ActivationTest extends OAuthTestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);
+
+        $this->assertArraySelectiveEquals(['HDFC' => 0], $methodsArray['debit_emi_providers']);
     }
 
     public function testActivationDefaultMethodsBasedOnCategory5912pharma()
@@ -594,7 +610,7 @@ class ActivationTest extends OAuthTestCase
 
         $data = $this->getKycSubmittedMerchantData();
         $data['category'] = '5912';
-        $data['category2'] = 'pharmacy';
+        $data['category2'] = 'pharma';
         $data['activated'] = 0;
 
         $this->fixtures->on('test')->edit('merchant', $merchantId, $data);
@@ -636,6 +652,8 @@ class ActivationTest extends OAuthTestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);
+
+        $this->assertArraySelectiveEquals(['HDFC' => 0], $methodsArray['debit_emi_providers']);
     }
 
     public function testActivationDefaultMethodsBasedOnCategoryBlacklisted()
@@ -703,6 +721,8 @@ class ActivationTest extends OAuthTestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedCardNetworks, $cardNetworks);
+
+        $this->assertArraySelectiveEquals(['HDFC' => 0], $methodsArray['debit_emi_providers']);
     }
 
     public function testPostInstantActivationBlockedOrg()

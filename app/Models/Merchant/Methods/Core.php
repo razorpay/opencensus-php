@@ -190,6 +190,7 @@ class Core extends Base\Core
             Payment\Method::PAYLATER     => [],
             Entity::GOOGLE_PAY_CARDS     => false,
             Payment\Method::APP          => [],
+            Entity::DEBIT_EMI_PROVIDERS  => [],
         ];
 
         $methods = $this->getMethods($merchant);
@@ -204,6 +205,7 @@ class Core extends Base\Core
         $data[Payment\Gateway::AMEX] = $methods->isAmexEnabled();
         $netbankingEnabled           = $methods->isNetbankingEnabled();
         $data[Payment\Method::APP]   = $methods->getApps();
+        $data[Entity::DEBIT_EMI_PROVIDERS] = $methods->getDebitEmiProviders();
 
         if ($netbankingEnabled === true)
         {

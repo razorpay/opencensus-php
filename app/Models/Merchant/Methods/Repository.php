@@ -31,6 +31,7 @@ class Repository extends Base\Repository
         Entity::FREECHARGE          => 'sometimes|in:0,1',
         Entity::CARD_NETWORKS       => 'sometimes|numeric',
         Entity::UPI_TYPE            => 'sometimes|numeric',
+        Entity::DEBIT_EMI_PROVIDERS => 'sometimes|numeric',
     );
 
     public function getMethodsForMerchant(Merchant\Entity $merchant)

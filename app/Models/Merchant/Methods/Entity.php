@@ -8,6 +8,7 @@ use RZP\Models\Card\Network;
 use RZP\Models\Base\QueryCache\Cacheable;
 use RZP\Models\Card\SubType;
 use RZP\Models\Card\Type;
+use RZP\Models\Emi\DebitProvider;
 use RZP\Models\Payment\Processor\Netbanking as NetbankingProcessor;
 use RZP\Models\Payment\Processor\App as AppMethod;
 
@@ -53,7 +54,9 @@ class Entity extends Base\PublicEntity
     const PAYPAL            = 'paypal';
     const GOOGLE_PAY_CARDS  = 'google_pay_cards';
     const APPS              = 'apps';
+    const HDFC_DEBIT_EMI    = 'hdfc_debit_emi';
 
+    const DEBIT_EMI_PROVIDERS = 'debit_emi_providers';
 
     const METHODS           = 'methods';
 
@@ -100,6 +103,7 @@ class Entity extends Base\PublicEntity
         self::PHONEPE_SWITCH,
         self::PAYPAL,
         self::APPS,
+        self::DEBIT_EMI_PROVIDERS,
 
     ];
 
@@ -139,6 +143,7 @@ class Entity extends Base\PublicEntity
         self::PHONEPE_SWITCH,
         self::PAYPAL,
         self::APPS,
+        self::DEBIT_EMI_PROVIDERS,
     ];
 
     protected $public = [
@@ -178,6 +183,7 @@ class Entity extends Base\PublicEntity
         self::PAYLATER,
         self::PAYPAL,
         self::APPS,
+        self::DEBIT_EMI_PROVIDERS,
     ];
 
     //
@@ -219,6 +225,8 @@ class Entity extends Base\PublicEntity
         self::PHONEPE_SWITCH => false,
         self::PAYPAL         => false,
         self::APPS           => AppMethod::DEFAULT_APPS,
+
+        self::DEBIT_EMI_PROVIDERS => DebitProvider::DEFAULT_DEBIT_EMI_PROVIDERS
     );
 
     public static $defaultPaymentMethodsForSubmerchantByPartner = array(
@@ -651,6 +659,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CARD_NETWORKS);
     }
 
+    public function getDebitEmiProviders(): array
+    {
+        return $this->getAttribute(self::DEBIT_EMI_PROVIDERS);
+    }
+
     public function getApps(): array
     {
         return $this->getAttribute(self::APPS);
@@ -811,6 +824,17 @@ class Entity extends Base\PublicEntity
         $cardNetworks[$network] = $value;
 
         $this->setAttribute(self::CARD_NETWORKS, $cardNetworks);
+    }
+
+    protected function setDebitEmiProvider(string $provider, int $value)
+    {
+        $providers = $this->getAttribute(self::DEBIT_EMI_PROVIDERS);
+
+        DebitProvider::checkProviderValidity($provider);
+
+        $providers[$provider] = $value;
+
+        $this->setAttribute(self::DEBIT_EMI_PROVIDERS, $providers);
     }
 
     protected function setApps(string $app, int $value)
@@ -982,6 +1006,11 @@ class Entity extends Base\PublicEntity
         return $this->getEnabledCardNetworks();
     }
 
+    protected function getDebitEmiProvidersAttribute()
+    {
+        return $this->getEnabledDebitEmiProviders();
+    }
+
     protected function getAppsAttribute()
     {
         return $this->getEnabledApps();
@@ -1004,6 +1033,15 @@ class Entity extends Base\PublicEntity
         $networks = $this->attributes[self::CARD_NETWORKS];
 
         return Network::getEnabledCardNetworks($networks);
+    }
+
+    protected function getEnabledDebitEmiProviders(): array
+    {
+        $networks = $this->attributes[self::DEBIT_EMI_PROVIDERS];
+
+        $debitEmi = $this->isDebitEmiEnabled();
+
+        return DebitProvider::getEnabledDebitEmiProviders($debitEmi, $networks);
     }
 
     public function getUpiTypes()
@@ -1044,6 +1082,29 @@ class Entity extends Base\PublicEntity
         {
             $this->attributes[self::CARD_NETWORKS] = $networks;
         }
+    }
+
+    protected function setDebitEmiProvidersAttribute($providers)
+    {
+        if (is_array($providers) === true)
+        {
+            $debitEmiProviders = $this->getDebitEmiProviders();
+
+            $providers = array_merge($debitEmiProviders, $providers);
+
+            $value = DebitProvider::getHexValue($providers);
+
+            $this->attributes[self::DEBIT_EMI_PROVIDERS] = $value;
+        }
+        else
+        {
+            $this->attributes[self::DEBIT_EMI_PROVIDERS] = $providers;
+        }
+    }
+
+    protected function setHdfcDebitEmiAttribute($value)
+    {
+        $this->setDebitEmiProvider(DebitProvider::HDFC, $value);
     }
 
     protected function setUpiAttribute($upi)
