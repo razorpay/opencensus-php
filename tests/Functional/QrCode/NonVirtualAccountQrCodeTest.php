@@ -2,19 +2,22 @@
 
 namespace Functional\QrCode;
 
+use RZP\Models\Pricing\Fee;
+use RZP\Models\Payment\Gateway;
+use RZP\Gateway\Upi\Icici\Fields;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Database\Eloquent\Factory;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Status;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\CloseReason;
 use RZP\Tests\Functional\Helpers\QrCode\NonVirtualAccountQrCodeTrait;
 
 class NonVirtualAccountQrCodeTest extends TestCase
 {
+    use PaymentTrait;
     use DbEntityFetchTrait;
     use NonVirtualAccountQrCodeTrait;
-    use RequestResponseFlowTrait;
 
     protected function setUp(): void
     {
@@ -26,7 +29,23 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
 
-        $this->fixtures->create('terminal:bharat_qr_terminal');
+        $this->fixtures->merchant->activate();
+
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['pricing_plan_id' => Fee::DEFAULT_PRICING_PLAN_ID]);
+
+        $this->fixtures->merchant->createAccount('LiveAccountMer');
+        $this->fixtures->on('live')->merchant->edit('LiveAccountMer', ['activated' => true, 'live' => true]);
+        $this->fixtures->on('live')->merchant->addFeatures(['qr_codes', 'bharat_qr'], 'LiveAccountMer');
+        $this->fixtures->on('live')->merchant->enableMethod('LiveAccountMer', 'upi');
+        $this->fixtures->on('live')->merchant->edit('LiveAccountMer', ['pricing_plan_id' => Fee::DEFAULT_PRICING_PLAN_ID]);
+
+        $this->fixtures->on('live')->create('terminal:bharat_qr_terminal');
+
+        $this->fixtures->on('live')->create('terminal:bharat_qr_terminal_upi');
+
+        $this->fixtures->on('test')->create('terminal:bharat_qr_terminal');
+
+        $this->fixtures->on('test')->create('terminal:bharat_qr_terminal_upi');
 
         $this->fixtures->create('terminal:vpa_shared_terminal_icici');
 
@@ -61,7 +80,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $this->runEntityAssertions($response);
     }
-    
+
     public function testCloseQrCode()
     {
         $response = $this->createQrCode();
@@ -83,5 +102,215 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertNotNull($qrCodeEntity['short_url']);
         $tr = 'RZP'.substr($response['id'], 3, 14);
         $this->assertStringContainsString($tr, $qrCodeEntity['qr_string']);
+    }
+
+    public function testProcessIciciQrPayment()
+    {
+        $qrCode = $this->createQrCode();
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->fixtures->stripSign($qrCodeId);
+
+        $this->ba->directAuth();
+
+        $request = $this->testData[__FUNCTION__];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+
+        $content = $this->getMockServer('upi_icici')->getAsyncCallbackContentForBharatQr($request['content']);
+
+        $request['raw'] = $content;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('OK', $response[0]);
+
+        $qrPayment = $this->getDbLastEntity('qr_payment');
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals($qrPayment['expected'], true);
+        $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
+        $this->assertEquals($rrn, $payment['reference16']);
+    }
+
+    public function testProcessIciciQrPaymentForQrNotFound()
+    {
+        $this->ba->directAuth();
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = 'H1234567890abcqrv2';
+
+        $content = $this->getMockServer('upi_icici')->getAsyncCallbackContentForBharatQr($request['content']);
+
+        $request['raw'] = $content;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('OK', $response[0]);
+
+        $qrPayment = $this->getDbLastEntity('qr_payment', 'live');
+        $payment = $this->getLastEntity('payment', true, 'live');
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('refunded', $payment['status']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals('FallbackQrCode', $qrPayment['qr_code_id']);
+        $this->assertEquals($qrPayment['expected'], false);
+        $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
+        $this->assertEquals($rrn, $payment['reference16']);
+    }
+
+    public function testProcessIciciQrPaymentOnClosedQrCode()
+    {
+        $qrCode = $this->createQrCode();
+
+        $qrCodeId = $qrCode['id'];
+
+        $qrCode = $this->closeQrCode($qrCodeId);
+
+        $this->assertEquals('closed', $qrCode['status']);
+
+        $this->fixtures->stripSign($qrCodeId);
+
+        $this->ba->directAuth();
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+
+        $content = $this->getMockServer('upi_icici')->getAsyncCallbackContentForBharatQr($request['content']);
+
+        $request['raw'] = $content;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+        $response = $this->parseResponseXml($xmlResponse);
+        $this->assertEquals('OK', $response[0]);
+
+        $qrPayment = $this->getDbLastEntity('qr_payment');
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('refunded', $payment['status']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals($qrCodeId, $qrPayment['qr_code_id']);
+
+        $this->assertEquals($qrPayment['expected'], false);
+
+        $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
+        $this->assertEquals($rrn, $payment['reference16']);
+    }
+
+    public function testProcessIciciQrPaymentOnSingleUseQrCode()
+    {
+        $qrCode = $this->createQrCode(['usage'=>'single_use', 'type'=>'upi_qr'], 'live', 'LiveAccountMer');
+
+        $qrCodeId = $qrCode['id'];
+        $this->fixtures->stripSign($qrCodeId);
+
+        $this->ba->directAuth();
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+
+        $content = $this->getMockServer('upi_icici')->getAsyncCallbackContentForBharatQr($request['content']);
+
+        $request['raw'] = $content;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+        $response    = $this->parseResponseXml($xmlResponse);
+        $this->assertEquals('OK', $response[0]);
+
+        $qrPayment = $this->getDbLastEntity('qr_payment', 'live');
+        $payment   = $this->getLastEntity('payment', true, 'live');
+        $qrCode = $this->getDbLastEntity('qr_code', 'live');
+        $this->assertEquals('closed', $qrCode['status']);
+        $this->assertEquals('paid', $qrCode['close_reason']);
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals($qrCodeId, $qrPayment['qr_code_id']);
+
+        $this->assertEquals($qrPayment['expected'], true);
+
+        $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
+        $this->assertEquals($rrn, $payment['reference16']);
+    }
+
+    public function testCardQrPaymentProcess()
+    {
+        $qrCode = $this->createQrCode();
+
+        $this->ba->directAuth();
+
+        $qrCodeId = substr($qrCode['id'], 3);
+
+        $this->fixtures->merchant->edit('10000000000000', ['max_payment_amount' => 100]);
+
+        $content = $this->getMockServer('hitachi')->getBharatQrCallback($qrCodeId . 'qrv2', 'random123');
+
+        $request = [
+            'url'       => '/payment/callback/bharatqr/hitachi',
+            'raw'       => http_build_query($content),
+            'method'    => 'post',
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('OK', $response[0]);
+
+        //Created Qr Entity As Expected
+        $qrPayment = $this->getLastEntity('qr_payment', true);
+
+        // Payment is automatically captured
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('card', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(200, $payment['amount']);
+        $this->assertEquals('hitachi', $payment['gateway']);
+        $this->assertEquals('qr_code', $payment['receiver_type']);
+
+        $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals(true, $qrPayment['expected']);
+        $this->assertEquals('random123', $qrPayment['provider_reference_id']);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals('Random Name', $card['name']);
+    }
+
+    protected function parseResponseXml(string $response): array
+    {
+        return (array) simplexml_load_string(trim($response));
     }
 }

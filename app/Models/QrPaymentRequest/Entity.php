@@ -93,7 +93,7 @@ class Entity extends Base\PublicEntity
 
     public function setFailureReason($failureReason)
     {
-        $this->setAttribute(self::FAILURE_REASON, $failureReason);
+        $this->setAttribute(self::FAILURE_REASON, substr($failureReason, 0, 254));
     }
 
     public function setFailureReasonIfNotSet($failureReason)

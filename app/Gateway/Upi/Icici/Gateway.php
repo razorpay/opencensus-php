@@ -1304,7 +1304,7 @@ class Gateway extends Base\Gateway
             BharatQr\GatewayResponseParams::VPA                   => $input[Fields::PAYER_VA],
             BharatQr\GatewayResponseParams::METHOD                => Payment\Method::UPI,
             BharatQr\GatewayResponseParams::GATEWAY_MERCHANT_ID   => $input[Fields::MERCHANT_ID],
-            BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => $input[Fields::MERCHANT_TRAN_ID],
+            BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => substr($input[Fields::MERCHANT_TRAN_ID], 0, Entity::ID_LENGTH),
             BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => (string) $input[Fields::BANK_RRN],
         ];
 

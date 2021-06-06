@@ -27,6 +27,8 @@ class Entity extends QrCode\Entity
     const REQ_USAGE_TYPE           = 'usage';
     const REQ_IMAGE_URL            = 'image_url';
 
+    const SHARED_ID = 'FallbackQrCode';
+
     protected $fillable = [
         self::PROVIDER,
         self::REFERENCE,
@@ -113,11 +115,19 @@ class Entity extends QrCode\Entity
 
     protected static $generators = [
         self::ID,
-        self::REFERENCE,
         self::AMOUNT,
         self::USAGE_TYPE,
         self::PROVIDER,
+        self::REFERENCE,
     ];
+
+    public function generateReference($input)
+    {
+        if (isset($input[self::REFERENCE]) === false)
+        {
+            $this->setReference($this->getId());
+        }
+    }
 
     public function generateAmount($input)
     {
@@ -188,14 +198,24 @@ class Entity extends QrCode\Entity
         $array[self::REQ_AMOUNT] = $this->getAttribute(self::AMOUNT);
     }
 
-    public function isFixedAmount()
+    public function hasFixedAmount()
     {
-        $this->getAttribute(self::FIXED_AMOUNT);
+        return $this->getAttribute(self::FIXED_AMOUNT);
     }
 
     public function getAmount()
     {
-        $this->getAttribute(self::AMOUNT);
+        return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
+    }
+
+    public function getUsageType()
+    {
+        return $this->getAttribute(self::USAGE_TYPE);
     }
 
     public function generateQrString()
@@ -205,6 +225,21 @@ class Entity extends QrCode\Entity
         $this->setQrString($qrString);
 
         return $this;
+    }
+
+    public function hasCustomer()
+    {
+        return ($this->isAttributeNotNull(self::CUSTOMER_ID));
+    }
+
+    public function incrementTotalPaymentCount()
+    {
+        $this->increment(self::PAYMENTS_RECEIVED_COUNT);
+    }
+
+    public function incrementPaymentAmountReceived(int $amount)
+    {
+        $this->increment(self::PAYMENTS_AMOUNT_RECEIVED, $amount);
     }
 
     public function isClosed()

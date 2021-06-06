@@ -2,13 +2,13 @@
 
 namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 
-use RZP\Base\ConnectionType;
-use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestException;
 use RZP\Models\QrCode;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Base\ConnectionType;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Listeners\ApiEventSubscriber;
+use RZP\Exception\BadRequestException;
 
 class Service extends QrCode\Service
 {

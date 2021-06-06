@@ -42,4 +42,8 @@ class Constants
 
     const SHORT_MODE_LIVE = 'l';
     const SHORT_MODE_TEST = 't';
+
+    const QR_CODE_V2_TR_SUFFIX = 'qrv2';
+
+    const DUMMY_QR_CODE_VPA = 'qrrazorpay@dummy';
 }

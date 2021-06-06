@@ -31,6 +31,7 @@ use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Offer;
 use RZP\Base\Database\DetectsLostConnections;
 use RZP\Models\Merchant\Balance\BalanceConfig;
+use RZP\Models\QrCode\NonVirtualAccountQrCode as NonVAQr;
 
 trait Capture
 {
@@ -887,6 +888,8 @@ trait Capture
         $this->eventInvoicePaid();
 
         $this->eventVirtualAccountCredited();
+
+        $this->eventQrCodeCredited();
     }
 
     /**
@@ -968,6 +971,11 @@ trait Capture
     {
         $payment = $this->payment;
 
+        if ($payment->qrPayment !== null)
+        {
+            return;
+        }
+
         if (($payment->isBankTransfer() === false) and
             ($payment->isBharatQr() === false) and
             ($payment->isUpiTransfer() === false))
@@ -976,6 +984,18 @@ trait Capture
         }
 
         (new VirtualAccount\Core)->eventVirtualAccountCredited($payment);
+    }
+
+    protected function eventQrCodeCredited()
+    {
+        $payment = $this->payment;
+
+        if ($payment->qrPayment === null)
+        {
+            return;
+        }
+
+        (new NonVAQr\Service)->publishQrCodeEvent($payment, NonVAQr\Event::CREDITED);
     }
 
     public function eventPaymentCaptured()

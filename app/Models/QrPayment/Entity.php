@@ -76,8 +76,69 @@ class Entity extends Base\PublicEntity
         self::AMOUNT => 'int',
     ];
 
+    protected $pii = [
+        self::PAYER_VPA
+    ];
+
+    public function isExpected()
+    {
+        return $this->getAttribute(self::EXPECTED);
+    }
+
+    public function getMethod()
+    {
+        return $this->getAttribute(self::METHOD);
+    }
+
+    public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getMerchantReference()
+    {
+        return $this->getAttribute(self::MERCHANT_REFERENCE);
+    }
+
+    public function payment()
+    {
+        return $this->belongsTo('RZP\Models\Payment\Entity');
+    }
+
+    public function qrCode()
+    {
+        return $this->belongsTo('RZP\Models\QrCode\NonVirtualAccountQrCode\Entity', self::QR_CODE_ID, self::ID);
+    }
+
+    public function setExpected(bool $paymentExpected)
+    {
+        $this->setAttribute(self::EXPECTED, $paymentExpected);
+    }
+
     public function setUnexpectedReason($unexpectedReason)
     {
         $this->setAttribute(self::UNEXPECTED_REASON, $unexpectedReason);
+    }
+
+    public function getGateway()
+    {
+        return $this->getAttribute(self::GATEWAY);
+    }
+
+    public function getPaymentId()
+    {
+        return $this->getAttribute(self::PAYMENT_ID);
+    }
+
+    public function toArrayTrace(): array
+    {
+        $data = $this->toArray();
+
+        foreach ($this->pii as $piiField)
+        {
+            unset($data[$piiField]);
+        }
+
+        return $data;
     }
 }

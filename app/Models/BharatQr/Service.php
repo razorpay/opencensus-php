@@ -3,12 +3,15 @@
 namespace RZP\Models\BharatQr;
 
 use RZP\Exception;
+use RZP\Gateway\Hitachi\ResponseFields;
+use RZP\Gateway\Upi\Icici\Fields;
 use RZP\Models\Base;
 use RZP\Models\QrCode;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\QrPayment;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\QrPaymentRequest;
 use RZP\Models\Mpan\Entity as MpanEntity;
@@ -110,11 +113,49 @@ class Service extends Base\Service
             return $gatewayClass->getBharatQrResponse(false, $input, $ex);
         }
 
-        $valid = $this->core->processPayment($gatewayResponse, $terminal, $qrPaymentRequest);
+        $isQrCodeV2 = $this->isNonVAQrCodePayment($gatewayResponse);
+
+        if ($isQrCodeV2 === true)
+        {
+            $valid = (new QrPayment\Core())->processPayment($gatewayResponse, $terminal, $qrPaymentRequest);
+        }
+        else
+        {
+            $valid = $this->core->processPayment($gatewayResponse, $terminal, $qrPaymentRequest);
+        }
 
         $response = $gatewayClass->getBharatQrResponse($valid, $input);
 
         return $response;
+    }
+
+    private function isNonVAQrCodePayment($gatewayResponse)
+    {
+        $tr = $this->getTrFieldForGateway($gatewayResponse);
+
+        $suffixLength = strlen(QrCode\Constants::QR_CODE_V2_TR_SUFFIX);
+
+        if ((strlen($tr) >= ($suffixLength + Entity::ID_LENGTH)) and
+            (str_ends_with($tr, QrCode\Constants::QR_CODE_V2_TR_SUFFIX)))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function getTrFieldForGateway($gatewayResponse)
+    {
+        switch ($gatewayResponse['qr_data'][GatewayResponseParams::GATEWAY])
+        {
+            case Gateway::UPI_ICICI:
+                return $gatewayResponse['callback_data'][Fields::MERCHANT_TRAN_ID];
+                break;
+
+            case Gateway::HITACHI:
+                return $gatewayResponse['callback_data'][ResponseFields::PURCHASE_ID];
+                break;
+        }
     }
 
     protected function getTerminal($gatewayResponse)

@@ -2,7 +2,6 @@
 
 namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 
-use RZP\Models\Vpa;
 use RZP\Models\QrCode;
 use RZP\Models\Settings;
 use RZP\Models\Payment;
@@ -10,10 +9,13 @@ use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Gateway\Upi\Base;
+use RZP\Models\BharatQr\Tags;
 use RZP\Models\QrCode\Entity;
 use RZP\Models\Payment\Gateway;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\BharatQr\Constants as BQRConstants;
 use RZP\Models\Payment\Processor\TerminalProcessor;
+use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as NonVAQrEntity;
 
 class Generator extends QrCode\Generator
 {
@@ -64,6 +66,11 @@ class Generator extends QrCode\Generator
             return [];
         }
 
+        if ($qrCode->getId() === NonVAQrEntity::SHARED_ID)
+        {
+            return ['vpa' => QrCode\Constants::DUMMY_QR_CODE_VPA];
+        }
+
         $identifier[self::VPA] = $this->getVpaSetting(self::GATEWAY);
 
         $this->trace->info(TraceCode::BHARAT_QR_UPI_IDENTIFIERS,
@@ -73,6 +80,12 @@ class Generator extends QrCode\Generator
                            ]);
 
         return $identifier;
+    }
+
+    protected function getTransactionReferenceTlv($qrCode)
+    {
+        return Tags::UPI_VPA_REFERENCE_TR . $this->getLengthAndValue(BQRConstants::UPI_PREFIX . $qrCode->getId() .
+                                                                     QrCode\Constants::QR_CODE_V2_TR_SUFFIX);
     }
 
     /**
@@ -99,13 +112,13 @@ class Generator extends QrCode\Generator
         $content = [
             Base\IntentParams::PAYEE_ADDRESS => $vpa,
             Base\IntentParams::PAYEE_NAME    => preg_replace('/\s+/', '', $this->merchant->getFilteredDba()),
-            Base\IntentParams::TXN_REF_ID    => self::TR_PREFIX . $qrCode->getId(),
+            Base\IntentParams::TXN_REF_ID    => self::TR_PREFIX . $qrCode->getId() . QrCode\Constants::QR_CODE_V2_TR_SUFFIX,
             Base\IntentParams::TXN_NOTE      => 'Payment to ' . $this->merchant->getFilteredDba(),
             Base\IntentParams::TXN_CURRENCY  => 'INR',
             Base\IntentParams::MCC           => $this->merchant->getCategory(),
         ];
 
-        if ($qrCode->isFixedAmount())
+        if ($qrCode->hasFixedAmount())
         {
             $content[Base\IntentParams::TXN_AMOUNT] = $qrCode->getAmount() / 100;
         }

@@ -3,6 +3,7 @@
 namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 
 use Carbon\Carbon;
+use RZP\Models\Merchant\Account;
 use RZP\Models\QrCode;
 
 class Core extends QrCode\Core
@@ -13,10 +14,15 @@ class Core extends QrCode\Core
 
         $qrCode = (new Entity())->build($input);
 
-        $qrCode->merchant()->associate($this->merchant);
-
         $qrCode->customer()->associate($customer);
 
+        $qrCode->merchant()->associate($this->merchant);
+
+        return $this->build($qrCode);
+    }
+
+    private function build(Entity $qrCode)
+    {
         $qrCode->generateQrString();
 
         $this->setShortUrl($qrCode);
@@ -44,6 +50,57 @@ class Core extends QrCode\Core
         $this->repo->saveOrFail($qrCode);
 
         return $qrCode;
+    }
+
+    public function createOrFetchSharedQrCode()
+    {
+        $fallbackQrCodeId = Entity::SHARED_ID;
+
+        $fallbackQrCode = $this->repo->qr_code->find($fallbackQrCodeId);
+
+        if ($fallbackQrCode === null)
+        {
+            $fallbackQrCode = $this->createFallbackQrCode();
+        }
+
+        return $fallbackQrCode;
+    }
+
+    private function createFallbackQrCode()
+    {
+        $sharedMerchantId = $this->getDefaultMerchantId();
+
+        $this->merchant = $this->repo->merchant->find($sharedMerchantId);
+
+        $input = [
+            Entity::REQ_USAGE_TYPE => 'multiple_use',
+            Entity::FIXED_AMOUNT   => false,
+            Entity::REQ_PROVIDER   => 'bharat_qr',
+        ];
+
+        $qrCode = (new Entity)->build($input);
+
+        $qrCode->setId(Entity::SHARED_ID);
+
+        $qrCode->merchant()->associate($this->merchant);
+
+        return $this->build($qrCode);
+    }
+
+    /**
+     * For unexpected payments, we use the demo page merchant. This merchant only
+     * exists on prod. For other envs, we use the test merchant, i.e. '10000000000000'.
+     */
+    protected function getDefaultMerchantId()
+    {
+        $defaultMerchantId = Account::DEMO_PAGE_ACCOUNT;
+
+        if ($this->env !== 'production')
+        {
+            $defaultMerchantId = Account::TEST_ACCOUNT;
+        }
+
+        return $defaultMerchantId;
     }
 
     protected function getCustomerIfGiven(array $input)

@@ -8,13 +8,18 @@ trait NonVirtualAccountQrCodeTrait
 {
     use PartnerTrait;
 
-    private function createQrCode(array $input = [])
+    private function createQrCode(array $input = [], $mode = 'test', $merchantId = '10000000000000')
     {
+        $this->ba->privateAuth();
+
+        if ($mode === 'live')
+        {
+            $this->ba->privateAuth('rzp_live_' . $merchantId);
+        }
+
         $defaultValues = $this->getDefaultQrCodeRequestArray();
 
         $attributes = array_merge($defaultValues, $input);
-
-        $this->ba->privateAuth();
 
         $request = [
             'method'  => 'POST',

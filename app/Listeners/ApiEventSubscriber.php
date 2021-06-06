@@ -468,6 +468,13 @@ class ApiEventSubscriber extends Base\Core
         $this->dispatchEventToStork($payload);
     }
 
+    protected function onQrCodeCredited(Payment\Entity $payment)
+    {
+        $payload = $this->getQrCodePaymentPayload($payment);
+
+        $this->dispatchEventToStork($payload);
+    }
+
     protected function onInvoicePartiallyPaid($payment)
     {
         //
@@ -1017,6 +1024,24 @@ class ApiEventSubscriber extends Base\Core
 
         return $partialPayload;
     }
+
+    protected function getQrCodePaymentPayload(Payment\Entity $payment)
+    {
+        $receiver = $payment->receiver;
+
+        $partialPayload[Constants\Entity::PAYMENT] = [
+            'entity' => $payment->toArrayPublic()
+        ];
+
+        $qrCodeArray = $receiver->toArrayPublic();
+
+        $partialPayload[Constants\Entity::QR_CODE] = [
+            'entity' => $qrCodeArray,
+        ];
+
+        return $partialPayload;
+    }
+
     protected function getVirtualAccountPaymentPayload(Payment\Entity $payment)
     {
         $receiver = $payment->receiver;

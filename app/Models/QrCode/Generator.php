@@ -332,12 +332,16 @@ class Generator extends Base\Core
         // In case of upi payments we need to send reference with
         // prefix. This is how they identify our payments
         //
-        $transactionReferenceTlv = Tags::UPI_VPA_REFERENCE_TR .
-                                   $this->getLengthAndValue(BQRConstants::UPI_PREFIX . $qrCode->getId());
+        $transactionReferenceTlv = $this->getTransactionReferenceTlv($qrCode);
 
         $upiString = $rupayRidTlv . $transactionReferenceTlv;
 
         return Tags::UPI_VPA_REFERENCE . strlen($upiString) . $upiString;
+    }
+
+    protected function getTransactionReferenceTlv($qrCode)
+    {
+        return Tags::UPI_VPA_REFERENCE_TR . $this->getLengthAndValue(BQRConstants::UPI_PREFIX . $qrCode->getId());
     }
 
     protected function getBharatQrAdditionalDetailTlv(Entity $qrCode, array $merchantIdentifiers)

@@ -3680,6 +3680,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $this->hasOne('RZP\Models\UpiTransfer\Entity');
     }
 
+    public function qrPayment()
+    {
+        return $this->hasOne('RZP\Models\QrPayment\Entity');
+    }
+
     public function paymentMeta()
     {
         return $this->hasOne('RZP\Models\Payment\PaymentMeta\Entity');

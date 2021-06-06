@@ -1381,6 +1381,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const QR_PAYMENT_UPDATE_REQUEST                             = 'QR_PAYMENT_UPDATE_REQUEST';
     const QR_PAYMENT_UPDATE_REQUEST_FAILED                      = 'QR_PAYMENT_UPDATE_REQUEST_FAILED';
     const QR_PAYMENT_REQUEST_SAVED                              = 'QR_PAYMENT_REQUEST_SAVED';
+    const QR_PAYMENT_DUPLICATE_NOTIFICATION                     = 'QR_PAYMENT_DUPLICATE_NOTIFICATION';
 
     const BHARAT_QR_PAYMENT_PROCESS_REQUEST                     = 'BHARAT_QR_PAYMENT_PROCESS_REQUEST';
     const BHARAT_QR_PAYMENT_PROCESSING_FAILED                   = 'BHARAT_QR_PAYMENT_PROCESSING_FAILED';
@@ -2476,6 +2477,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const QR_CODE_CLOSE_REQUEST                                 = 'QR_CODE_CLOSE_REQUEST';
     const QR_CODE_CREATED                                       = 'QR_CODE_CREATED';
     const QR_CODE_UPI_QR_TERMINAL_NOT_FOUND_FOR_MERCHANT        = 'QR_CODE_UPI_QR_TERMINAL_NOT_FOUND_FOR_MERCHANT';
+    const QR_CODE_V2_PAYMENT_SUCCESSFUL                         = 'QR_CODE_V2_PAYMENT_SUCCESSFUL';
+    const QR_CODE_PAYMENT_FAILED                                = 'QR_CODE_PAYMENT_FAILED';
 
     const GENERATE_BHARAT_QR_CODE                               = 'GENERATE_BHARAT_QR_CODE';
     const GENERATE_UPI_QR_CODE                                  = 'GENERATE_UPI_QR_CODE';
