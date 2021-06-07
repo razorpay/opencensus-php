@@ -568,7 +568,7 @@ const businessDetails = [
       description: (activation) => {
         if (activation.state.has_gstin == '1') {
           const currentBusinessType =
-            this.state.dirty.business_type || this.props.data.business_type;
+            activation.state.dirty.business_type || activation.props.data.business_type;
           if (currentBusinessType == PROPRIETORSHIP) {
             return (
               <span className='text-danger'>
