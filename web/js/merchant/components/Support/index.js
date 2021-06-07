@@ -7,6 +7,8 @@ import { checkCallEligibility } from 'merchant/reducers/config';
 import SupportHeader from 'merchant/components/Support/components/SupportHeader';
 import SupportBody from 'merchant/components/Support/components/SupportBody';
 import { merchantFetch } from 'merchant/utils/ajax';
+import { getOrg } from 'merchant/store';
+import { COMDEL_URL } from './constants';
 
 import { classList } from 'common/utils/rzp-utils';
 
@@ -73,6 +75,10 @@ export default class Support extends Component {
   };
 
   handleToggle = () => {
+    const { user } = this.props;
+
+    if (user.isComdelApiEnabled) return window.open(COMDEL_URL, '_blank');
+    
     const { isOpened } = this.state;
 
     if (!isOpened) {

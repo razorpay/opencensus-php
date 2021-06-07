@@ -1547,6 +1547,7 @@ class Service extends Base\Service
             'pure_platform_signup',
             'merchant_tnc',
             'support_details_2FA',
+            'comdel_hdfc_test',
             'rx_icici_ca_onboarding',
             'show_csat_survey',
             'rx_mobile_app_announcement',

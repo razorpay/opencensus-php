@@ -511,6 +511,10 @@ export default class User {
     return this.getExpStatus('support_details_2FA');
   }
 
+  get isComdelApiEnabled() {
+    return this.getExpStatus('comdel_hdfc_test');
+  }
+
   get isFdTicketsEnabled() {
     return this.getExpStatus('view_fd_tickets');
   }
