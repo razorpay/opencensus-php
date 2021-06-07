@@ -528,6 +528,18 @@ class ViewDataSerializer extends Base\Core
                 }
 
                 break;
+
+            case Preferences::MID_RBL_INTERIM_PROCESS3:
+
+                $serialized['rbl_emandate_interim_process3'] = true;
+
+                break;
+
+            case Preferences::MID_RBL_INTERIM_PROCESS4:
+
+                $serialized['rbl_emandate_interim_process4'] = true;
+
+                break;
         }
     }
 
