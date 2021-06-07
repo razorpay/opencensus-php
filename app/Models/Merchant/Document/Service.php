@@ -152,6 +152,11 @@ class Service extends Base\Service
 
         (new Account\Core)->validatePartnerAccess($this->merchant, $account->getId());
 
+        // Document V2 API is exposed to partner private auth. But we need the submerchant context during document upload
+        // since few of the internal file upload flow uses $this->merchant as merchant. (\RZP\Services\UfhService::createUfhClient)
+        // So setting submerchant context here to avoid this.
+        $this->app['basicauth']->setMerchant($account);
+
         if (E::MERCHANT === $entityType)
         {
             return [$account, $account];
