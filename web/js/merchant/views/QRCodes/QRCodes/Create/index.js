@@ -45,7 +45,7 @@ export default class CreateQRCode extends React.Component {
           message: 'QR code successfully created.',
         });
 
-        track.submitSuccess(payload);
+        track.submitSuccess(reqPayload);
       })
       .catch(({ errors }) => {
         const error = (errors || [])[0];

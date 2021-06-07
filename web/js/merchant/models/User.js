@@ -322,9 +322,7 @@ export default class User {
   }
 
   get isQRCodeProductEnabled() {
-    const { isEnabled } = getOnBoardingDataFromLocalState(RZPFeatures.QR_CODES);
-
-    return isEnabled;
+    return this.isFeatureEnabled('qr_codes');
   }
 
   get isRewardsPageEnabled() {

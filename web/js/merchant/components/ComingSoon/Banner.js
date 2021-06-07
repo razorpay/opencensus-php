@@ -9,7 +9,7 @@ import useLocalStorageCheck from 'merchant/hooks/localStorageCheck';
 
 const Banner = (props) => {
   const [isHidden, toggleIsHidden] = useLocalStorageCheck(
-    `${props.product.replace(' ', '-')}--${props.merchant_id}`,
+    `${props.product.replace(' ', '-')}-${props.mode}-${props.merchant_id}`,
   );
 
   const interestClicked = useCallback(() => {
@@ -65,4 +65,5 @@ Banner.propTypes = {
 
 export default connect((state) => ({
   merchant_id: state.session.user.current,
+  mode: state.session.mode,
 }))(Banner);

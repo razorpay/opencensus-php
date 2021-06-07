@@ -23,8 +23,8 @@ export function trackSegment({
   // });
 
   analyticsTrack({
-    objectName: event,
-    actionName: actionName ? 'clicked' : '',
+    objectName: event.replaceAll('_', '.'),
+    actionName: 'clicked',
     screen: screen,
     properties: {
       ...getCommonAnalyticsProperties(window.rzp_user),

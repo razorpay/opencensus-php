@@ -1,33 +1,65 @@
+import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
+
 import ComingSoon from 'merchant/components/ComingSoon';
-import featuresList from './features.json';
 import { RZPFeatures } from 'merchant/helpers/data';
 import { setOnBoardingDataInLocalState } from 'merchant/components/OnBoarding';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { updateFeatures } from 'merchant/reducers/config';
+import { saveOnboarding, handleProductQuickGuide } from 'merchant/reducers/onboarding';
+import featuresList from './features.json';
 
-const ComingSoonContainer = () => {
-  return (
-    <ComingSoon
-      product="QR codes"
-      title="Razorpay QR Codes"
-      description="Adopt contactless payments through customized UPI & Bharat QR Codes"
-      features={featuresList}
-      previewURL="/dist/css/assets/qr_code/product_preview.gif"
-      interestClicked={() => {
-        window.rzpQ.push(
-          window.rzpQ.now().qrCode().interaction('qr.click.interested')
-        );
-
-        setOnBoardingDataInLocalState({
-          feature: RZPFeatures.QR_CODES,
-          data: {
-            isEnabled: true,
-            lastVisitedTime: Date.now(),
+@connect(
+  (state) => {
+    return {
+      user: state.session.user,
+      isTestMode: state.session.mode === 'test',
+      onboarding: state.onboarding,
+    };
+  },
+  {
+    saveOnboarding,
+    updateFeatures,
+    showNotification,
+    handleProductQuickGuide,
+  },
+)
+export default class ComingSoonContainer extends React.Component {
+  handleEnableFeature = () => {
+    return this.props
+      .updateFeatures(
+        {
+          features: {
+            qr_codes: 1,
           },
-        });
-
+        },
+        this.props.user.current,
+      )
+      .then((res) => {
         window.location.reload();
-      }}
-    />
-  );
-};
+      })
+      .catch((err) => {
+        this.props.showNotification({
+          type: 'error',
+          message: err.errors,
+        });
+      });
+  };
 
-export default ComingSoonContainer;
+  render() {
+    return (
+      <ComingSoon
+        product="QR codes"
+        title="Razorpay QR Codes"
+        description="Adopt contactless payments through customized UPI & Bharat QR Codes"
+        features={featuresList}
+        previewURL="/dist/css/assets/qr_code/product_preview.gif"
+        interestClicked={() => {
+          window.rzpQ.push(window.rzpQ.now().qrCode().interaction('qr.click.interested'));
+
+          this.handleEnableFeature();
+        }}
+      />
+    );
+  }
+}
