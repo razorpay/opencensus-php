@@ -13,6 +13,7 @@ return [
             'content' => [
                 'email'           => 'testcreateaccountaa@razorpay.com',
                 'phone'           => '9999999999',
+                'contact_name'    =>  'contactname',
                 'legal_business_name' => 'Acme Corp Pvt Ltd',
                 'customer_facing_business_name'   => 'Acme',
                 'business_type'       => 'individual',
@@ -99,6 +100,7 @@ return [
                 'status'              => 'created',
                 'email'               => 'testcreateaccountaa@razorpay.com',
                 'phone'               => '9999999999',
+                'contact_name'        => 'contactname',
                 'legal_business_name' => 'Acme Corp Pvt Ltd',
                 'customer_facing_business_name'   => 'Acme',
                 'business_type'       => 'individual',

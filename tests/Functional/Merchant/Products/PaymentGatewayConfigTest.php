@@ -542,7 +542,7 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
     protected function validateStorkWebhookFireEvent($testData, $storkPayload, $merchantId)
     {
-        if ($storkPayload['event']['name'] === 'account.product_status')
+        if ($storkPayload['event']['name'] === 'product.payment_gateway.needs_clarification')
         {
             $this->assertEquals('merchant', $storkPayload['event']['owner_type']);
             $this->assertEquals($merchantId, $storkPayload['event']['owner_id']);

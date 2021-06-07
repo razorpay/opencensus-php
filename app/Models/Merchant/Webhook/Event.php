@@ -111,8 +111,11 @@ class Event
     const PAYOUT_DOWNTIME_STARTED           = 'payout.downtime.started';
     const PAYOUT_DOWNTIME_RESOLVED          = 'payout.downtime.resolved';
 
-    //V2 Onboarding events
-    const ACCOUNT_PRODUCT_STATUS            = 'account.product_status';
+    //V2 partner Onboarding events
+    const PAYMENT_GATEWAY_PRODUCT_UNDER_REVIEW        = 'product.payment_gateway.under_review';
+    const PAYMENT_GATEWAY_PRODUCT_ACTIVATED           = 'product.payment_gateway.activated';
+    const PAYMENT_GATEWAY_PRODUCT_NEEDS_CLARIFICATION = 'product.payment_gateway.needs_clarification';
+    const PAYMENT_GATEWAY_PRODUCT_REJECTED            = 'product.payment_gateway.rejected';
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
@@ -210,7 +213,10 @@ class Event
         self::P2P_DEREGISTRATION_COMPLETED,
         self::PAYOUT_DOWNTIME_STARTED,
         self::PAYOUT_DOWNTIME_RESOLVED,
-        self::ACCOUNT_PRODUCT_STATUS,
+        self::PAYMENT_GATEWAY_PRODUCT_UNDER_REVIEW,
+        self::PAYMENT_GATEWAY_PRODUCT_REJECTED,
+        self::PAYMENT_GATEWAY_PRODUCT_NEEDS_CLARIFICATION,
+        self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED,
     ];
 
     /**
@@ -315,7 +321,10 @@ class Event
         self::P2P_DEREGISTRATION_COMPLETED,
         self::PAYOUT_DOWNTIME_STARTED,
         self::PAYOUT_DOWNTIME_RESOLVED,
-        self::ACCOUNT_PRODUCT_STATUS,
+        self::PAYMENT_GATEWAY_PRODUCT_UNDER_REVIEW,
+        self::PAYMENT_GATEWAY_PRODUCT_REJECTED,
+        self::PAYMENT_GATEWAY_PRODUCT_NEEDS_CLARIFICATION,
+        self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED,
     ];
 
     // We have exhausted all the below bits for webhook events, add in $bitPosition2 for any new events
@@ -413,7 +422,11 @@ class Event
         self::QR_CODE_CLOSED                    => 24,
         self::QR_CODE_CREATED                   => 25,
         self::QR_CODE_CREDITED                  => 26,
-        self::ACCOUNT_PRODUCT_STATUS            => 27,
+
+        self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED           => 27,
+        self::PAYMENT_GATEWAY_PRODUCT_NEEDS_CLARIFICATION => 28,
+        self::PAYMENT_GATEWAY_PRODUCT_REJECTED            => 29,
+        self::PAYMENT_GATEWAY_PRODUCT_UNDER_REVIEW        => 30,
     ];
 
     /**
@@ -513,7 +526,11 @@ class Event
         self::P2P_DEREGISTRATION_COMPLETED      => [Product::PRIMARY],
         self::PAYOUT_DOWNTIME_STARTED           => [Product::BANKING],
         self::PAYOUT_DOWNTIME_RESOLVED          => [Product::BANKING],
-        self::ACCOUNT_PRODUCT_STATUS            => [Product::PRIMARY],
+
+        self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED           => [Product::PRIMARY],
+        self::PAYMENT_GATEWAY_PRODUCT_NEEDS_CLARIFICATION => [Product::PRIMARY],
+        self::PAYMENT_GATEWAY_PRODUCT_REJECTED            => [Product::PRIMARY],
+        self::PAYMENT_GATEWAY_PRODUCT_UNDER_REVIEW        => [Product::PRIMARY],
     ];
 
     /**
@@ -590,7 +607,6 @@ class Event
         self::ACCOUNT_REJECTED                  => Entity::MERCHANT,
         self::ACCOUNT_PAYMENTS_ENABLED          => Entity::MERCHANT,
         self::ACCOUNT_PAYMENTS_DISABLED         => Entity::MERCHANT,
-        self::ACCOUNT_PRODUCT_STATUS            => Entity::MERCHANT_PRODUCT,
         self::PAYOUT_LINK_ISSUED                => Entity::PAYOUT_LINK,
         self::PAYOUT_LINK_PROCESSED             => Entity::PAYOUT_LINK,
         self::PAYOUT_LINK_PROCESSING            => Entity::PAYOUT_LINK,
@@ -609,6 +625,11 @@ class Event
         self::P2P_VPA_DELETED                   => Entity::P2P_VPA,
         self::P2P_VERIFICATION_COMPLETED        => Entity::P2P_DEVICE,
         self::P2P_DEREGISTRATION_COMPLETED      => Entity::P2P_DEVICE,
+
+        self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED           => Entity::MERCHANT_PRODUCT,
+        self::PAYMENT_GATEWAY_PRODUCT_NEEDS_CLARIFICATION => Entity::MERCHANT_PRODUCT,
+        self::PAYMENT_GATEWAY_PRODUCT_REJECTED            => Entity::MERCHANT_PRODUCT,
+        self::PAYMENT_GATEWAY_PRODUCT_UNDER_REVIEW        => Entity::MERCHANT_PRODUCT,
     ];
 
     public static $eventsToFeatureMap = [
@@ -644,7 +665,7 @@ class Event
         self::TERMINAL_FAILED                   => Feature\Constants::TERMINAL_ONBOARDING,
         self::PAYOUT_UPDATED                    => Feature\Constants::PAYOUT,
         self::PAYOUT_REJECTED                   => Feature\Constants::PAYOUT,
-        self::ACCOUNT_SUSPENDED                 => Feature\Constants::SUBMERCHANT_ONBOARDING,
+        self::ACCOUNT_SUSPENDED                 => [Feature\Constants::SUBMERCHANT_ONBOARDING, Feature\Constants::SUBMERCHANT_ONBOARDING_V2],
         self::ACCOUNT_FUNDS_HOLD                => Feature\Constants::SUBMERCHANT_ONBOARDING,
         self::ACCOUNT_FUNDS_UNHOLD              => Feature\Constants::SUBMERCHANT_ONBOARDING,
         self::ACCOUNT_INTERNATIONAL_ENABLED     => Feature\Constants::SUBMERCHANT_ONBOARDING,
@@ -675,6 +696,11 @@ class Event
         self::QR_CODE_CLOSED                    => Feature\Constants::QR_CODES,
         self::QR_CODE_CREATED                   => Feature\Constants::QR_CODES,
         self::QR_CODE_CREDITED                  => Feature\Constants::QR_CODES,
+
+        self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED           => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
+        self::PAYMENT_GATEWAY_PRODUCT_NEEDS_CLARIFICATION => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
+        self::PAYMENT_GATEWAY_PRODUCT_REJECTED            => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
+        self::PAYMENT_GATEWAY_PRODUCT_UNDER_REVIEW        => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
     ];
 
     public static function getLaunchedEventNames()
@@ -727,11 +753,30 @@ class Event
 
         foreach ($eventNames as $eventName => $value)
         {
-            if ((isset($featureMap[$eventName]) === true) and
-                (in_array($featureMap[$eventName], $merchantAssignedFeatures, true) === false))
+            $removeEvent = false;
+
+            if ((isset($featureMap[$eventName]) === true))
             {
-                unset($eventNames[$eventName]);
+                $featureMapValue = $featureMap[$eventName];
+
+                if (is_string($featureMapValue) === true)
+                {
+                    $featureMapValue = [$featureMapValue];
+                }
+
+                $assignedFeatures = array_intersect($featureMapValue, $merchantAssignedFeatures);
+
+                if (count($assignedFeatures) === 0)
+                {
+                    $removeEvent = true;
+                }
+
+                if ($removeEvent === true)
+                {
+                    unset($eventNames[$eventName]);
+                }
             }
+
         }
 
         return $eventNames;

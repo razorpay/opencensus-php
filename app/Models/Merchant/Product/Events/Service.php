@@ -5,7 +5,6 @@ namespace RZP\Models\Merchant\Product\Events;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
-use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Product\Name;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Merchant\Product\Util;
@@ -22,45 +21,55 @@ class Service extends Base\Service
 
     /**
      * This function can be used to notify the respective consumers upon status change for merchant products
-     * @param Detail\Entity $merchantDetails
-     * @param Entity        $merchantProductEntity
+     *
+     * @param Entity $merchantProductEntity
      */
-    public function notifyProductActivationStatus(Detail\Entity $merchantDetails, Entity $merchantProductEntity)
+    public function notifyProductActivationStatus(Entity $merchantProductEntity)
     {
         $productName = $merchantProductEntity->getProduct();
 
         switch ($productName)
         {
             case Name::PAYMENT_GATEWAY:
-                $this->notifyProductActivationStatusChangeToPartner($merchantDetails, $merchantProductEntity);
+                $data = $this->getPaymentGatewayEventData($merchantProductEntity);
+                $this->dispatchProductStatusEvent($merchantProductEntity, $data);
                 break;
 
         }
     }
 
-    private function notifyProductActivationStatusChangeToPartner(Detail\Entity $merchantDetails, Entity $merchantProduct)
+    private function dispatchProductStatusEvent(Entity $merchantProduct, array $data)
     {
-        $merchantProductActivationStatus = $merchantProduct->getStatus();
-
-        $merchant = $merchantDetails->merchant;
-
-        $withPayload = [];
-
-        if ($merchantProductActivationStatus === Status::NEEDS_CLARIFICATION)
-        {
-            $ncRequirements = (new Requirements\BaseProcessor())->fetchRequirements($merchant, $merchantProduct);
-
-            $withPayload[Util\Constants::REQUIREMENTS] = $ncRequirements;
-        }
-
         $eventPayload = [
             ApiEventSubscriber::MAIN        => $merchantProduct,
-            ApiEventSubscriber::WITH        => $withPayload,
-            ApiEventSubscriber::MERCHANT_ID => $merchant->getId()
+            ApiEventSubscriber::WITH        => $data,
+            ApiEventSubscriber::MERCHANT_ID => $merchantProduct->getMerchantId()
         ];
 
         $this->trace->info(TraceCode::MERCHANT_PRODUCT_STATUS_WEBHOOK_EVENT_PAYLOAD, $eventPayload);
 
-        $this->app['events']->dispatch('api.account.product_status', $eventPayload);
+        $event = 'api.product.' . $merchantProduct->getProduct() . $merchantProduct->getStatus();
+
+        $this->app['events']->dispatch($event, $eventPayload);
+    }
+
+    private function getPaymentGatewayEventData(Entity $merchantProduct): array
+    {
+        $data = [];
+
+        $merchantProductActivationStatus = $merchantProduct->getStatus();
+
+        $merchant = $merchantProduct->merchant;
+
+        if ($merchantProductActivationStatus !== Status::NEEDS_CLARIFICATION)
+        {
+            return $data;
+        }
+
+        $ncRequirements = (new Requirements\BaseProcessor())->fetchRequirements($merchant, $merchantProduct);
+
+        $data[Util\Constants::REQUIREMENTS] = $ncRequirements;
+
+        return $data;
     }
 }

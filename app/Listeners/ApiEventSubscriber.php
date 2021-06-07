@@ -200,7 +200,28 @@ class ApiEventSubscriber extends Base\Core
         $this->dispatchEventToPlService($merchant);
     }
 
-    protected function onAccountProductStatus($merchantProduct)
+    protected function onProductPaymentGatewayActivated($merchantProduct)
+    {
+        $payload = $this->getMerchantProductPayload($merchantProduct);
+
+        $this->dispatchEventToStork($payload);
+    }
+
+    protected function onProductPaymentGatewayNeedsClarification($merchantProduct)
+    {
+        $payload = $this->getMerchantProductPayload($merchantProduct);
+
+        $this->dispatchEventToStork($payload);
+    }
+
+    protected function onProductPaymentGatewayUnderReview($merchantProduct)
+    {
+        $payload = $this->getMerchantProductPayload($merchantProduct);
+
+        $this->dispatchEventToStork($payload);
+    }
+
+    protected function onProductPaymentGatewayRejected($merchantProduct)
     {
         $payload = $this->getMerchantProductPayload($merchantProduct);
 
@@ -1181,7 +1202,7 @@ class ApiEventSubscriber extends Base\Core
         $entity[Product\Entity::MERCHANT_ID]       = AccountEntity::getSignedId($merchantProduct->getMerchantId());
         $entity[Product\Entity::ACTIVATION_STATUS] = $merchantProduct->getStatus();
 
-        $payload                                   = [
+        $payload = [
             Constants\Entity::MERCHANT_PRODUCT => [
                 'entity' => $entity,
                 'data'   => $this->withPayload

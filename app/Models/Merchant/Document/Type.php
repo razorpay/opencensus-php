@@ -168,7 +168,7 @@ class Type
         self::BUSINESS_PAN_URL                => self::BUSINESS_PROOF_OF_IDENTIFICATION,
         self::ADDRESS_PROOF_URL               => self::ADDITIONAL_DOCUMENTS,
         self::PROMOTER_PROOF_URL              => self::ADDITIONAL_DOCUMENTS,
-        self::PROMOTER_PAN_URL                => self::ADDITIONAL_DOCUMENTS,
+        self::PROMOTER_PAN_URL                => self::INDIVIDUAL_PROOF_OF_IDENTIFICATION,
         self::PROMOTER_ADDRESS_URL            => self::INDIVIDUAL_PROOF_OF_ADDRESS,
         self::FORM_12A_URL                    => self::ADDITIONAL_DOCUMENTS,
         self::FORM_80G_URL                    => self::ADDITIONAL_DOCUMENTS,

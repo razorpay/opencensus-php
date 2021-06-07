@@ -36,4 +36,10 @@ class Constants
         Entity::NAME                      => Detail\Entity::PROMOTER_PAN_NAME,
         Entity::POI_IDENTIFICATION_NUMBER => Detail\Entity::PROMOTER_PAN,
     ];
+
+    const MERCHANT_DETAILS_STAKEHOLDER_MAPPING = [
+        Detail\Entity::PROMOTER_PAN_NAME => Entity::NAME,
+        Detail\Entity::PROMOTER_PAN      => Entity::POI_IDENTIFICATION_NUMBER
+    ];
+
 }

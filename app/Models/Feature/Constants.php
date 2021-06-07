@@ -246,6 +246,12 @@ class Constants
      */
     const SUBMERCHANT_ONBOARDING          = 'submerchant_onboarding';
 
+
+    /**
+     * This feature is assigned for the partners who are doing submerchant product onboarding via V2 onboarding APIs
+     */
+    const SUBMERCHANT_ONBOARDING_V2 = 'submerchant_onboarding_v2';
+
     /**
      * Flag to decide whether razorpay can send communication mails to partner's submerchants
      */
@@ -884,6 +890,7 @@ class Constants
         self::RETAIN_SUB_MERCHANT_NAME        => true,
         self::NO_COMM_WITH_SUBMERCHANTS       => true,
         self::SUBMERCHANT_ONBOARDING          => true,
+        self::SUBMERCHANT_ONBOARDING_V2       => true,
         self::EXPOSE_FA_VALIDATION_UTR        => true,
         self::PARTNER_ACTIVATE_MERCHANT       => true,
         self::GOOGLE_PAY_CARDS                => true,

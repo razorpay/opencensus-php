@@ -40,6 +40,13 @@ class Response extends Core
             $data[Constants::PHONE] = $contactMobile;
         }
 
+        $contactName = $accountDetails->getContactName();
+
+        if (empty($contactName) === false)
+        {
+            $data[Constants::CONTACT_NAME] = $contactName;
+        }
+
         $accountCode = $account->getAccountCode();
 
         if (empty($accountCode) === false)

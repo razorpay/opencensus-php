@@ -88,8 +88,11 @@ class InputHelper
         if (isset($input[Constants::CUSTOMER_FACING_BUSINESS_NAME]) === true)
         {
             $detailInput[Detail\Entity::BUSINESS_DBA] = $input[Constants::CUSTOMER_FACING_BUSINESS_NAME];
+        }
 
-            $detailInput[Detail\Entity::CONTACT_NAME] = $input[Constants::CUSTOMER_FACING_BUSINESS_NAME];
+        if( isset($input[Constants::CONTACT_NAME]) === true)
+        {
+            $detailInput[Detail\Entity::CONTACT_NAME] = $input[Constants::CONTACT_NAME];
         }
 
         if (isset($input[Constants::LEGAL_BUSINESS_NAME]) === true)

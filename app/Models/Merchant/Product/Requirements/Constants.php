@@ -12,15 +12,6 @@ use RZP\Models\Merchant\Stakeholder\Entity;
 
 class Constants
 {
-    const MERCHANT_DETAILS_STAKEHOLDER_MAPPING = [
-        Detail\Entity::PROMOTER_PAN_NAME => Entity::NAME,
-        Detail\Entity::PROMOTER_PAN      => Entity::POI_IDENTIFICATION_NUMBER
-    ];
-
-    const STAKEHOLDER_MERCHANT_DETAILS_MAPPING = [
-        Entity::NAME                      => Detail\Entity::PROMOTER_PAN_NAME,
-        Entity::POI_IDENTIFICATION_NUMBER => Detail\Entity::PROMOTER_PAN,
-    ];
     const ACCOUNT_DOCUMENTS_RESOLUTION_URL     = '/accounts/{accountId}/documents';
     const STAKEHOLDER_DOCUMENTS_RESOLUTION_URL = '/accounts/{accountId}/stakeholders/{stakeholderId}/documents';
     const ACCOUNTS_RESOLUTION_URL              = '/accounts/{accountId}';

@@ -550,7 +550,7 @@ class BaseProcessor extends Base\Service
             {
                 if($entityStr === Entity::STAKEHOLDER)
                 {
-                    $field = Constants::STAKEHOLDER_MERCHANT_DETAILS_MAPPING[$field];
+                    $field = Stakeholder\Constants::MERCHANT_DETAILS_COMMON_EDITABLE_FIELDS[$field];
                 }
 
                 if (array_key_exists($field, $needsClarificationFields) === true)
@@ -651,11 +651,11 @@ class BaseProcessor extends Base\Service
         }
         else
         {
-            if (array_key_exists($field, Constants::MERCHANT_DETAILS_STAKEHOLDER_MAPPING))
+            if (array_key_exists($field, Stakeholder\Constants::MERCHANT_DETAILS_STAKEHOLDER_MAPPING))
             {
                 $entity = Entity::STAKEHOLDER;
 
-                $field = Constants::MERCHANT_DETAILS_STAKEHOLDER_MAPPING[$field];
+                $field = Stakeholder\Constants::MERCHANT_DETAILS_STAKEHOLDER_MAPPING[$field];
             }
             else
             {

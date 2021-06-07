@@ -35,6 +35,7 @@ class FieldMapping
             Detail\Entity::CONTACT_EMAIL                  => 'email',
             Detail\Entity::CONTACT_MOBILE                 => 'phone',
             Detail\Entity::BUSINESS_NAME                  => 'legal_business_name',
+            Detail\Entity::CONTACT_NAME                   => 'contact_name',
         ],
         Entity::STAKEHOLDER => [
             Stakeholder\Entity::NAME                      => 'name',

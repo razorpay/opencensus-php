@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\Stakeholder;
 use RZP\Models\Merchant\Account\Constants;
 use RZP\Models\Merchant\Detail\NeedsClarification;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -16,6 +17,7 @@ class Validator extends Merchant\Validator
         Constants::REFERENCE_ID                    => 'sometimes',
         Constants::EMAIL                           => 'required|email',
         Constants::PHONE                           => 'required|numeric',
+        Constants::CONTACT_NAME                    => 'sometimes|string',
         Constants::LEGAL_BUSINESS_NAME             => 'required|string',
         Constants::CUSTOMER_FACING_BUSINESS_NAME   => 'sometimes|string',
         Constants::BUSINESS_TYPE                   => 'required|string',
@@ -30,6 +32,7 @@ class Validator extends Merchant\Validator
 
     protected static $editAccountRules = [
         Constants::PHONE                           => 'filled|numeric',
+        Constants::CONTACT_NAME                    => 'sometimes|string',
         Constants::LEGAL_BUSINESS_NAME             => 'sometimes|string',
         Constants::CUSTOMER_FACING_BUSINESS_NAME   => 'sometimes|string',
         Constants::PROFILE                         => 'sometimes|array',
@@ -347,6 +350,14 @@ class Validator extends Merchant\Validator
             ];
 
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ONLY_NEEDS_CLARIFICATION_FIELDS_ARE_ALLOWED, null, $tracePayload);
+        }
+
+        $merchantDetailInput = array_diff_key($input, Stakeholder\Constants::MERCHANT_DETAILS_STAKEHOLDER_MAPPING);
+
+        if (empty($merchantDetailInput) === false)
+        {
+            //reusing create rule so that NC fields need to be validated as per the validation rules
+            $this->validateInput('createAccount', $input);
         }
     }
 }

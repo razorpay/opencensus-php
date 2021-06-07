@@ -14,6 +14,7 @@ return [
                 'legal_business_name'           => 'Acme Corp Pvt Ltd',
                 'customer_facing_business_name' => 'Acme',
                 'business_type'                 => 'individual',
+                'contact_name'                  => 'contactname',
                 'profile'                       => [
                     'category'       => 'healthcare',
                     'subcategory'    => 'clinic',
@@ -79,6 +80,7 @@ return [
                 'legal_business_name'           => 'Acme Corp Pvt Ltd',
                 'customer_facing_business_name' => 'Acme',
                 'business_type'                 => 'individual',
+                'contact_name'                  => 'contactname',
                 'profile'                       => [
                     'description'    => 'Healthcare E-commerce platform',
                     'business_model' => 'b2c',
@@ -554,6 +556,7 @@ return [
                 'legal_business_name'           => 'Acme Corp Pvt Ltd',
                 'customer_facing_business_name' => 'Acme',
                 'business_type'                 => 'public_limited',
+                'contact_name'                  => 'contactname',
                 'profile'                       => [
                     'category'       => 'healthcare',
                     'subcategory'    => 'clinic',
@@ -636,6 +639,7 @@ return [
                 'legal_business_name'           => 'Acme Corp Pvt Ltd',
                 'customer_facing_business_name' => 'Acme',
                 'business_type'                 => 'public_limited',
+                'contact_name'                  => 'contactname',
                 'profile'                       => [
                     'category'       => 'healthcare',
                     'subcategory'    => 'clinic',

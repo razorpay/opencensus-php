@@ -178,15 +178,18 @@ class Core extends Base\Core
 
                 $this->repo->merchant_product->saveOrFail($paymentGatewayMerchantProduct);
 
-                (new Events\Service())->notifyProductActivationStatus($merchantDetails, $paymentGatewayMerchantProduct);
+                (new Events\Service())->notifyProductActivationStatus($paymentGatewayMerchantProduct);
             }
 
         }
         catch (\Exception $e)
         {
-            $this->trace->error(TraceCode::MERCHANT_PRODUCT_STATUS_UPDATE_FAILURE, [
-                'merchant_id' => $merchantDetails->getMerchantId()
-            ]);
+            $this->trace->traceException($e,
+                                         null,
+                                         TraceCode::MERCHANT_PRODUCT_STATUS_UPDATE_FAILURE,
+                                         [
+                                             'merchant_id' => $merchantDetails->getMerchantId()
+                                         ]);
         }
     }
 
