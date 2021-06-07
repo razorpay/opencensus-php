@@ -1362,7 +1362,7 @@ export default class ActivationWizard extends React.Component {
     let fieldValue = target.value;
     const fieldName = target.name;
     const sideEffectFieldsToUpdate = {}; // Some fields might lead to other fields get dirty. So, they also needs to be updated alongside
-    const { dirty } = this.state;
+    const { dirty, has_gstin } = this.state;
     const { data } = this.props;
 
     const currentBusinessType = dirty.business_type || data.business_type;
@@ -1538,6 +1538,15 @@ export default class ActivationWizard extends React.Component {
     ) {
       document.querySelector(`.form-container [name=business_dba]`).value = fieldValue;
       sideEffectFieldsToUpdate.business_dba = fieldValue;
+    }
+
+    // update gstin radio button to show gstin input
+    if (
+      fieldName === 'gstin' &&
+      fieldValue &&
+      has_gstin === '1'
+    ) {
+      this.setState({ has_gstin: '0' });
     }
 
     /* Step Last: */
