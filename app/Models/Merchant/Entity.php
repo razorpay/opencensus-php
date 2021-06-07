@@ -2889,7 +2889,13 @@ class Entity extends Base\PublicEntity
 
     public function shouldShowCustomOrgBranding(): bool
     {
-        return $this->isFeatureEnabled(Feature\Constants::ORG_CUSTOM_BRANDING);
+        if (($this->isFeatureEnabled(Feature\Constants::ORG_CUSTOM_BRANDING) === true) or
+            ($this->org->isFeatureEnabled(Feature\Constants::ORG_CUSTOM_BRANDING) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public function partnerActivation()
