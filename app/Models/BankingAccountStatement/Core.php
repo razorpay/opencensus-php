@@ -1371,7 +1371,7 @@ class Core extends Base\Core
              * Only for IFT mode.
              */
 
-            $description = $basEntity->getDescription() ?: '';
+            $description = $basEntity->getDescription() ? trim($basEntity->getDescription()) : '';
 
             $matches = [];
 
@@ -1654,7 +1654,7 @@ class Core extends Base\Core
              * Only for IFT mode.
              */
 
-            $description = $basEntity->getDescription() ?: '';
+            $description = $basEntity->getDescription() ? trim($basEntity->getDescription()) : '';
 
             $matches = [];
 

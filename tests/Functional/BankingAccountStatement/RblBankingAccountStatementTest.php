@@ -2198,7 +2198,7 @@ class RblBankingAccountStatementTest extends TestCase
         // changing utr so it doesn't match regex.
         // Appending gateway ref. no. at the end of description.
         $txn = $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][0];
-        $txn['transactionSummary']['txnDesc'] = 'UTIBH20106341692 Vivek Karna HDFC RZPJAMESBOND7';
+        $txn['transactionSummary']['txnDesc'] = 'UTIBH20106341692 Vivek Karna HDFC RZPJAMESBOND7    ';
         $mockedResponse['data']['PayGenRes']['Body']['transactionDetails'][0] = $txn;
 
         $txn['txnBalance']['amountValue'] = '300199.95';

@@ -268,7 +268,7 @@ class Repository extends Base\Repository
                     ->select($payoutAttrs)
                     ->join($ftaTable, $payoutsIdColumn, '=', $ftaSourceIdColumn)
                     ->where($payoutsBalanceColumn, $balanceId)
-                    ->whereRaw('UPPER(`fund_transfer_attempts`.`gateway_ref_no`) = ?', $gatewayRefNumber)
+                    ->whereRaw('UPPER(`fund_transfer_attempts`.`gateway_ref_no`) = UPPER(?)', $gatewayRefNumber)
                     ->where($payoutsAmountColumn, $amount)
                     ->where($payoutsMethodColumn, Mode::IFT)
                     ->whereNull($payoutsTransactionIdColumn)
