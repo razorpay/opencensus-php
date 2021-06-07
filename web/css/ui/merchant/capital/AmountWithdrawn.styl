@@ -84,7 +84,7 @@
         .outstanding__wrapper
           flex-direction: row;
           padding-top: 16px;
-          align-items: center;
+          align-items: flex-start;
 
         .outstanding-paybutton
           padding:12px 32px;
@@ -108,6 +108,65 @@
               font-weight: 700;
              }
         }
+
+        .repayment-succesfull-title
+          font-weight: 900;
+          line-height: 24px;
+          margin-left: 9px;
+          color:rgba(22, 47, 86, 0.87);
+
+        .repayment-succesfull-summary
+          color:rgba(22, 47, 86, 0.76);
+          border-bottom: 1px solid rgba(22,47,86,0.08);
+          padding-bottom: 40px;
+          margin-top: 9px;
+
+        .repayment-succesfull-breakdown-wrapper  {
+          flex-direction: row;
+          padding-top: 16px;
+          align-items: flex-start;
+            & > div {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+            }
+            & > div:nth-of-type(1) {
+             margin-right: 24px
+             align-items: baseline;
+            }
+            & > div:nth-of-type(2) {
+             margin-right: 20px
+            }
+            & > div:nth-of-type(3) {
+             margin-right: 40px
+            }
+            & > div:nth-of-type(4) {
+              align-items: baseline;
+            }
+        }
+
+
+        .repayment-succesfull-breakdown-title
+          font-size: 13px;
+          line-height: 20px;
+          font-weight: bold;
+          color:  rgba(22, 47, 86, 0.54);
+
+        .repayment-succesfull-breakdown-amount-wrapper {
+          margin-top: 2px;
+          width: 100%;
+         }
+         
+        .repayment-succesfull-breakdown-amount {
+          font-weight: 700;
+          font-size: 16px;
+          line-height: 30px;
+          color: rgba(22, 47, 86, 0.87);
+            .rzp-amount, .rzp-whole, .rzp-paise{
+              font-weight: 700;
+            }
+         }
+         
 
         .repayable-amount-hint
           position: absolute;
