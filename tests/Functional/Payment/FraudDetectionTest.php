@@ -755,4 +755,105 @@ class FraudDetectionTest extends TestCase
     {
         $this->runFraudDetectionTestWithPackageName('');
     }
+
+    protected function runEarlySettlementFlagPassedToShieldTest($featureEnabled)
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '341111111111111';
+
+        $payment['card']['cvv'] = '1234';
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->mockRazorx();
+
+        $shieldClient = Mockery::mock('RZP\Services\Mock\ShieldClient');
+
+        $shieldClient->shouldReceive('evaluateRules')
+            ->andReturnUsing(function ($payload) use ($featureEnabled) {
+                $action = 'allow';
+
+                if (isset($payload['input']['early_settlement_enabled']) === false)
+                {
+                    $action = 'block';
+                }
+                else if (is_bool($payload['input']['early_settlement_enabled']) === false)
+                {
+                    $action = 'block';
+                }
+                else if ($payload['input']['early_settlement_enabled'] !== $featureEnabled)
+                {
+                    $action = 'block';
+                }
+
+                return [
+                    "action" => $action,
+                    "max_rule_weight" => 0,
+                    "maxmind_score" => null,
+                    "triggered_rule_weight" => 0,
+                ];
+            });
+
+        $this->app->instance('shield', $shieldClient);
+
+        $response = $this->doAuthPayment($payment);
+
+        $paymentId = $response['razorpay_payment_id'];
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertEquals($payment['status'], 'authorized');
+    }
+
+    public function testEarlySettlementFlagPassedToShieldWithEsOnDemand()
+    {
+        // Test: ES flag enabled by enabling feature flag ES_ON_DEMAND
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::ES_ON_DEMAND]);
+
+        $this->runEarlySettlementFlagPassedToShieldTest(true);
+
+        $this->fixtures->merchant->removeFeatures([Feature\Constants::ES_ON_DEMAND]);
+    }
+
+    public function testEarlySettlementFlagPassedToShieldWithEsOnDemandRestricted()
+    {
+        // Test: ES flag enabled by enabling feature flag ES_ON_DEMAND_RESTRICTED
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::ES_ON_DEMAND_RESTRICTED]);
+
+        $this->runEarlySettlementFlagPassedToShieldTest(true);
+
+        $this->fixtures->merchant->removeFeatures([Feature\Constants::ES_ON_DEMAND_RESTRICTED]);
+    }
+
+    public function testEarlySettlementFlagPassedToShieldWithEsAutomatic()
+    {
+        // Test: ES flag enabled by enabling feature flag ES_AUTOMATIC
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::ES_AUTOMATIC]);
+
+        $this->runEarlySettlementFlagPassedToShieldTest(true);
+
+        $this->fixtures->merchant->removeFeatures([Feature\Constants::ES_AUTOMATIC]);
+    }
+
+    public function testEarlySettlementFlagPassedToShieldWithEsAutomaticThreePm()
+    {
+        // Test: ES flag enabled by enabling feature flag ES_AUTOMATIC_THREE_PM
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::ES_AUTOMATIC_THREE_PM]);
+
+        $this->runEarlySettlementFlagPassedToShieldTest(true);
+
+        $this->fixtures->merchant->removeFeatures([Feature\Constants::ES_AUTOMATIC_THREE_PM]);
+    }
+
+    public function testEarlySettlementFlagPassedToShieldWithNoEsFlags()
+    {
+        // Test: ES flag disabled
+
+        $this->runEarlySettlementFlagPassedToShieldTest(false);
+    }
 }

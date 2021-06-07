@@ -159,6 +159,8 @@ class Shield
 
         $payloadDetails[ShieldConstants::ORG_ID] = $merchant->getOrgId();
 
+        $this->populateEarlySettlementDetails($merchant, $payloadDetails);
+
         $this->populateWhiteListedDomains($merchant, $payloadDetails);
 
     }
@@ -386,5 +388,28 @@ class Shield
         }
 
         return $product;
+    }
+
+    protected function populateEarlySettlementDetails(Merchant\Entity $merchant, array & $payloadDetails)
+    {
+        $esFeatureFlags = [
+            Feature::ES_ON_DEMAND,
+            Feature::ES_ON_DEMAND_RESTRICTED,
+            Feature::ES_AUTOMATIC,
+            Feature::ES_AUTOMATIC_THREE_PM];
+
+        $isEsEnabled = false;
+
+        foreach ($esFeatureFlags as $esFeatureFlag)
+        {
+            $isEsEnabled = $merchant->isFeatureEnabled($esFeatureFlag);
+
+            if ($isEsEnabled === true)
+            {
+                break;
+            }
+        }
+
+        $payloadDetails[ShieldConstants::EARLY_SETTLEMENT_ENABLED] = $isEsEnabled;
     }
 }

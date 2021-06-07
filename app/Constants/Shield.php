@@ -87,6 +87,7 @@ final class Shield
     const TOKEN_MAX_AMOUNT             = 'token_max_amount';
 
     const IS_PARTNER_INITIATED_PAYMENT = 'is_partner_initiated_payment';
+    const EARLY_SETTLEMENT_ENABLED     = 'early_settlement_enabled';
 
     const PAYMENT_PRODUCT               = 'payment_product';
     const PRODUCT_PAYMENT_GATEWAY       = 'payment_gateway';
