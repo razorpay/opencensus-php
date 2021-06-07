@@ -120,7 +120,7 @@ return [
         'transfer',
         'commission',
         'virtual_account',
-        'qr_code'
+        'qr_code',
     ],
 
     // Any entity having 'notes' field will have followings common.
@@ -317,6 +317,25 @@ return [
             ],
             'account_number' => [
                 'type'=> 'keyword'
+            ]
+        ],
+    ],
+    'qr_payment_mapping' => [
+        'properties' => [
+            'payment_id' => [
+                'type' => 'keyword',
+            ],
+            'status' => [
+                'type' => 'keyword',
+            ],
+            'qr_code_id' => [
+                'type' => 'keyword',
+            ],
+            'provider_reference_id' => [
+                'type' => 'keyword'
+            ],
+            'cust_email' => [
+                'type' => 'keyword'
             ]
         ],
     ],

@@ -23,6 +23,8 @@ class Route
 
         // qr code search
         'qr_code_fetch_multiple'                   => ['get',      'payments/qr_codes',                              'QrCodeController@list'                                             ],
+        'qr_payments_fetch_multiple'               => ['get',      'payments/qr_payments',                           'QrPaymentController@fetchMultiplePayments'                         ],
+        'qr_payment_fetch_for_qr_code'             => ['get',      'payments/qr_codes/{id}/payments',                'QrPaymentController@fetchQrCodePayments'                           ],
         // App routes
         'account'                                  => ['get',      'account',                                        'PublicController@getAccount'                                       ],
         'checkout'                                 => ['get',      'checkout',                                       'MerchantController@getCheckout'                                    ],
@@ -2480,7 +2482,7 @@ class Route
         'create_FTA_payout_service'               => ['post',     'payouts_service/create_fta/{payout_id}',                 'PayoutController@createFTAForPayoutService'                   ],
         'create_ledger_payout_service'            => ['post',     'payouts_service/create_ledger',                          'PayoutController@createPayoutServiceTransaction'              ],
         'create_reversal_entry'                   => ['post',     'payouts_service/reversal/create',                        'ReversalController@createReversalEntryForPayoutService'       ],
-    
+
         'payment_analytics_partition_cron'        => ['post',     'payment_analytics/partition',                            'PaymentController@createPaymentAnalyticsPartition'            ],
 
         // Ledger Routes
@@ -2638,6 +2640,8 @@ class Route
 
     public static $private = [
         'qr_code_fetch_multiple',
+        'qr_payments_fetch_multiple',
+        'qr_payment_fetch_for_qr_code',
         'wallet_service',
         'mir_instruments_get',
         'settlement_ondemand_fees',
@@ -3334,7 +3338,7 @@ class Route
         'create_ledger_payout_service',
 
         // payment analytics cron creates a new partition and drops oldest partition, runs daily
-        'payment_analytics_partition_cron',      
+        'payment_analytics_partition_cron',
         'payout_links_batch_process',
     ];
 
@@ -7083,6 +7087,8 @@ class Route
             'qr_code_close',
             'qr_code_fetch',
             'qr_code_fetch_multiple',
+            'qr_payments_fetch_multiple',
+            'qr_payment_fetch_for_qr_code',
             'virtual_account_create',
             'virtual_account_create_for_banking',
             'virtual_account_create_for_internal',
@@ -8991,7 +8997,7 @@ class Route
             'los_cron',
             'care_service_cron_proxy',
             'p2p_retrieve_banks_cron',
-            'payment_analytics_partition_cron',     
+            'payment_analytics_partition_cron',
             'banking_account_service_cron_routes',
         ],
 
@@ -9258,7 +9264,6 @@ class Route
             'loc_bulk_withdrawal_update',
             'subscription_registration_charge_token',
             'subscription_registration_create_links',
-            'qr_code_create',
             'virtual_account_create',
             'oauth_token_create',
             'merchant_inheritance_parent_set_bulk',
@@ -9539,6 +9544,8 @@ class Route
         'qr_code_close'                        => [Feature::QR_CODES],
         'qr_code_fetch'                        => [Feature::QR_CODES],
         'qr_code_fetch_multiple'               => [Feature::QR_CODES],
+        'qr_payments_fetch_multiple'           => [Feature::QR_CODES],
+        'qr_payment_fetch_for_qr_code'         => [Feature::QR_CODES],
         'virtual_account_create'               => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_edit'                 => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_close'                => [Feature::VIRTUAL_ACCOUNTS],

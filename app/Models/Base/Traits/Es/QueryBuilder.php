@@ -281,4 +281,11 @@ trait QueryBuilder
 
         $this->addNegativeFilter($query, $filter);
     }
+
+    public function addMatchPhrasePrefix(array & $query, string $field, string $value)
+    {
+        $filter = [Es::MATCH_PHRASE_PREFIX => [$field => $value]];
+
+        $this->addFilter($query, $filter);
+    }
 }

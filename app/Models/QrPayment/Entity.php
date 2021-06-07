@@ -130,6 +130,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PAYMENT_ID);
     }
 
+    public function getProviderReferenceId()
+    {
+        return $this->getAttribute(self::PROVIDER_REFERENCE_ID);
+    }
+
     public function toArrayTrace(): array
     {
         $data = $this->toArray();

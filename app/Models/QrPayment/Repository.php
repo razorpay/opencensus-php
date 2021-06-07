@@ -3,6 +3,8 @@
 namespace RZP\Models\QrPayment;
 
 use RZP\Models\Base;
+use RZP\Models\Base\PublicEntity;
+use RZP\Models\Payment\Entity as PaymentEntity;
 
 class Repository extends Base\Repository
 {
@@ -14,5 +16,38 @@ class Repository extends Base\Repository
                     ->where(Entity::PROVIDER_REFERENCE_ID, '=', $providerReferenceId)
                     ->where(Entity::GATEWAY, '=', $gateway)
                     ->first();
+    }
+
+    protected function serializeForIndexing(PublicEntity $entity): array
+    {
+        $serialized = parent::serializeForIndexing($entity);
+
+        if ($entity->payment !== null)
+        {
+            $serialized[PaymentEntity::STATUS] = $entity->payment->getStatus();
+
+            $serialized[PaymentEntity::NOTES]  = $entity->payment->getNotes();
+        }
+
+        if ($entity->qrCode !== null)
+        {
+            $serialized[Entity::MERCHANT_ID] = $entity->qrCode->getMerchantId();
+
+            if ($entity->qrCode->customer !== null)
+            {
+                $serialized[EsRepository::CUSTOMER_EMAIL] = $entity->qrCode->customer->getEmail();
+            }
+        }
+
+        return $serialized;
+    }
+
+    public function getPaymentIdsForQrPaymentIds(array $qrPaymentIds)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::ID, $qrPaymentIds)
+                    ->get()
+                    ->pluck(Entity::PAYMENT_ID)
+                    ->toArray();
     }
 }

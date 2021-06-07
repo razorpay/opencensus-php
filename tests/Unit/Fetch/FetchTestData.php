@@ -443,6 +443,14 @@ return [
         ],
     ],
 
+    E::QR_PAYMENT => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'merchant_id' => 'merchant123456'
+            ],
+        ],
+    ],
+
     E::FUND_ACCOUNT_VALIDATION => [
         Type::ADMIN_AUTH => [
             [

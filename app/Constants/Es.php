@@ -44,5 +44,6 @@ final class Es
     const _SCROLL_ID           = '_scroll_id';
     const MULTI_MATCH          = 'multi_match';
     const BEST_FIELDS          = 'best_fields';
+    const MATCH_PHRASE_PREFIX  = 'match_phrase_prefix';
     const MINIMUM_SHOULD_MATCH = 'minimum_should_match';
 }

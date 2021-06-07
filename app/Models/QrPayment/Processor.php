@@ -120,6 +120,8 @@ class Processor extends Base\Core
         {
             $paymentProcessor->refundAuthorizedPayment($paymentProcessor->getPayment());
         }
+
+        $this->repo->qr_payment->syncToEs($entity, EsRepository::UPDATE);
     }
 
     protected function createPayment(array $input, array $gatewayData = [])
