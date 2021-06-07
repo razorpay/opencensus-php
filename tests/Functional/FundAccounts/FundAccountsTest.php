@@ -96,6 +96,14 @@ class FundAccountsTest extends TestCase
         Queue::assertPushed(CreateAccount::class);
     }
 
+    public function testCreateFundAccountBankAccountWithApostrophe()
+    {
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $response = $this->startTest();
+
+    }
+
     public function testCreateFundAccountBankAccountWithEmptyArray()
     {
         $this->fixtures->create('contact', ['id' => '1000000contact']);
