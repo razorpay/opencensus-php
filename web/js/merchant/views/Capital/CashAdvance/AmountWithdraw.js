@@ -92,13 +92,15 @@ const parseRepaymentSchedule = (todayTimestamp, array) => {
   return data;
 };
 
-const parseRepaymentBreakup = (breakup) => {
+const parseRepaymentBreakup = (repayments) => {
+  const breakup = repayments.breakups;
   const { principalRepaid, interestRepaid } = getRepaidAmountBreakup(breakup);
+
   return {
     totalRepaid: principalRepaid + interestRepaid || 0,
     principalRepaid,
     interestRepaid,
-    repaymentMethod: breakup.payment_meta ? breakup.payment_meta.method : '',
+    repaymentMethod: repayments.payment_meta ? repayments.payment_meta.method : '',
   };
 };
 
@@ -191,7 +193,7 @@ export default class AmountWithdraw extends React.Component {
             if (!repayments[0].breakups || !repayments[0].breakups.length)
               return Promise.reject('No Repayments');
 
-            return parseRepaymentBreakup(repayments[0].breakups);
+            return parseRepaymentBreakup(repayments[0]);
           })
           .catch(() => {
             return {
