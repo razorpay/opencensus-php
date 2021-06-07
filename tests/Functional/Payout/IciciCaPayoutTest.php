@@ -7,8 +7,12 @@ use Carbon\Carbon;
 
 use RZP\Models\Admin;
 use RZP\Models\Payout;
+use RZP\Models\Feature;
+use RZP\Models\Card\Type;
 use RZP\Constants\Timezone;
 use RZP\Models\Pricing\Fee;
+use RZP\Models\Card\Issuer;
+use RZP\Models\Card\Network;
 use Rzp\Models\FundTransfer;
 use RZP\Services\Mock\Mozart;
 use RZP\Models\Admin\ConfigKey;
@@ -17,6 +21,7 @@ use RZP\Constants\Mode as EnvMode;
 Use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\GatewayErrorException;
 use RZP\Models\BankingAccount\Gateway\Icici;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Models\BankingAccountStatement\Details;
@@ -295,6 +300,89 @@ class IciciCaPayoutTest extends TestCase
         $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
     }
 
+    public function testCreatePayoutImps()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->assertEquals('icici', $payout['channel']);
+        $this->assertEquals('processing', $payout['status']);
+        $this->assertEquals('IMPS', $payout['mode']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+        $this->assertNull($transaction);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::INITIATED);
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+    }
+
+    public function testCreatePayoutRtgs()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->assertEquals('icici', $payout['channel']);
+        $this->assertEquals('processing', $payout['status']);
+        $this->assertEquals('RTGS', $payout['mode']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+        $this->assertNull($transaction);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->updateFta(
+            $attempt['fts_transfer_id'],
+            $attempt['source'],
+            Attempt\Type::PAYOUT,
+            Attempt\Status::INITIATED);
+
+        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
+    }
+
+    public function testCreatePayoutUpi()
+    {
+        $contact = $this->getDbLastEntity('contact');
+
+        $this->fixtures->create('fund_account:vpa', [
+            'id'          => '100000000003fa',
+            'source_type' => 'contact',
+            'source_id'   => $contact->getId(),
+        ]);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function testCreatePayoutProcessed()
     {
         $this->testCreatePayout();
@@ -504,7 +592,6 @@ class IciciCaPayoutTest extends TestCase
         $this->assertEquals('payout', $creditTxnEntities[3]['entity_type']);
         $this->assertEquals($payout['id'],  $creditTxnEntities[3]['entity_id']);
         $this->assertEquals(-400, $creditTxnEntities[3]['credits_used']);
-
     }
 
     public function testIciciPayoutUsingCreditsReversed()
@@ -800,5 +887,278 @@ class IciciCaPayoutTest extends TestCase
         $this->makeRequestAndGetContent($request);
 
         return [$payout1['id'], $payout2['id']];
+    }
+
+    public function testQueuedPayout()
+    {
+        $this->mockMozartResponseForFetchingBalanceFromIciciGateway(500);
+
+        $firstQueuedPayoutAttributes = [
+            'account_number'       => '2224440041626905',
+            'amount'               => 20000099,
+            'queue_if_low_balance' => 1,
+        ];
+
+        $this->createQueuedOrPendingPayout($firstQueuedPayoutAttributes);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('queued', $payout['status']);
+        $this->assertEquals('icici', $payout['channel']);
+
+        $bankingBalance = $this->getDbLastEntity('balance');
+
+        $this->fixtures->balance->edit($bankingBalance['id'], ['balance' => 21000000]);
+
+        $this->dispatchQueuedPayouts();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('created', $payout['status']);
+        $this->assertEquals('icici', $payout['channel']);
+    }
+
+    public function testQueuedPayoutWithFetchAndUpdateBalanceFromGateway()
+    {
+        $oldDateTime = Carbon::create(2020, 01, 21, 12, 23, null, Timezone::IST);
+
+        $this->fixtures->edit('banking_account_statement_details', 'xbas0000000002', [
+            'balance_last_fetched_at' => $oldDateTime->getTimestamp(),
+        ] );
+
+        $this->fixtures->edit('balance', $this->bankingBalance->getId(), [
+            'updated_at' => $oldDateTime->getTimestamp(),
+        ] );
+
+        $this->mockMozartResponseForFetchingBalanceFromIciciGateway(500);
+
+        sleep(1);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'       => '2224440041626905',
+                'amount'               => 2000000,
+                'currency'             => 'INR',
+                'purpose'              => 'refund',
+                'narration'            => 'Batman',
+                'mode'                 => 'IMPS',
+                'fund_account_id'      => 'fa_100000000000fa',
+                'queue_if_low_balance' => true,
+                'notes'                => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ];
+
+        $this->ba->privateAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('queued', $payout['status']);
+
+        $this->fixtures->edit('banking_account_statement_details', 'xbas0000000002', [
+            'balance_last_fetched_at' => $oldDateTime->getTimestamp(),
+        ] );
+
+        $this->fixtures->edit('balance', $this->bankingBalance->getId(), [
+            'updated_at' => $oldDateTime->getTimestamp(),
+        ] );
+
+        // Add enough balance to allow the payout to get processed
+        $this->mockMozartResponseForFetchingBalanceFromIciciGateway(3000000);
+
+        $this->dispatchQueuedPayouts();
+
+        $payout = $this->getDbLastEntity('payout');
+        $this->assertEquals('created', $payout['status']);
+    }
+
+    public function testCreatePayoutWithFetchAndUpdateBalanceFromGatewayAndBalanceLessThanPayoutAmount()
+    {
+        $oldDateTime = Carbon::create(2020, 01, 21, 12, 23, null, Timezone::IST);
+
+        $this->fixtures->edit('balance', $this->bankingBalance->getId(), [
+            'updated_at' => $oldDateTime->getTimestamp(),
+        ] );
+
+        $bankingBalance = $this->getDbLastEntity('balance');
+
+        $this->fixtures->balance->edit($bankingBalance['id'], ['balance' => 100]);
+
+        $this->fixtures->edit('banking_account_statement_details', 'xbas0000000002', [
+            'balance_last_fetched_at' => $oldDateTime->getTimestamp(),
+        ] );
+
+        $this->mockMozartResponseForFetchingBalanceFromIciciGateway(500);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutWithFetchAndUpdateBalanceFromGatewayAndBalanceMoreThanPayoutAmount()
+    {
+        $oldDateTime = Carbon::create(2020, 01, 21, 12, 23, null, Timezone::IST);
+
+        $this->fixtures->edit('banking_account_statement_details', 'xbas0000000002', [
+            'balance_last_fetched_at' => $oldDateTime->getTimestamp(),
+        ] );
+
+        $this->mockMozartResponseForFetchingBalanceFromIciciGateway(50000);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testDashboardSummary()
+    {
+        $this->liveSetUp();
+
+        $this->ownerRoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'owner','live');
+
+        // Create two queued payouts
+
+        $firstQueuedPayoutAttributes = [
+            'account_number'        =>  '2224440041626905',
+            'amount'                =>  20000099,
+            'queue_if_low_balance'  =>  1,
+        ];
+
+        $this->createQueuedOrPendingPayout($firstQueuedPayoutAttributes, 'rzp_live_TheLiveAuthKey');
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $this->assertEquals('queued', $payout['status']);
+        $this->assertEquals('icici', $payout['channel']);
+
+        $merchantUser = $this->getDbEntity('merchant_user',['role' => 'owner','product' => 'banking'],'live')->toArray();
+
+        $userId = $merchantUser['user_id'];
+
+        $this->ba->proxyAuth('rzp_live_10000000000000',$userId);
+
+        $completeSummary = $this->startTest();
+
+        // assertions will break as summary API is not handled for ICICI CA
+        // https://razorpay.slack.com/archives/C01CV2HQMEV/p1621860081056900
+    }
+
+    public function testPayoutToAmexCardWithSupportedIssuerSupportedMode()
+    {
+        $this->fixtures->create('iin', [
+            'iin'     => 340169,
+            'network' => Network::$fullName[Network::AMEX],
+            'type'    => Type::CREDIT,
+            'issuer'  => Issuer::SCBL
+        ]);
+
+        $fundAccountRequest = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts',
+            'content' => [
+                "account_type" => "card",
+                "contact_id"   => "cont_1000001contact",
+                "card"         => [
+                    "name"         => "Prashanth YV",
+                    "number"       => "340169570990137",
+                    "cvv"          => "2126",
+                    "expiry_month" => 10,
+                    "expiry_year"  => 21,
+                ]
+            ]
+        ];
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::S2S,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->ba->privateAuth();
+
+        $fundAccount = $this->makeRequestAndGetContent($fundAccountRequest);
+
+        $this->assertEquals(Issuer::SCBL, $fundAccount['card']['issuer']);
+        $this->assertEquals(Network::$fullName[Network::AMEX], $fundAccount['card']['network']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account_id']  = $fundAccount['id'];
+        $testData['response']['content']['fund_account_id'] = $fundAccount['id'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('icici', $payout['channel']);
+    }
+
+    public function testCreateM2PPayoutForMerchantDirectAccountCardMode()
+    {
+        $contact = $this->getDbLastEntity('contact');
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->create('iin', [
+            'iin'     => 340169,
+            'network' => Network::$fullName[Network::MC],
+            'type'    => Type::DEBIT,
+            'issuer'  => Issuer::YESB
+        ]);
+
+        $fundAccountRequest = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts',
+            'content' => [
+                "account_type" => "card",
+                "contact_id"   => "cont_" . $contact["id"],
+                "card"         => [
+                    "name"         => "Prashanth YV",
+                    "number"       => "340169570990137",
+                    "cvv"          => "212",
+                    "expiry_month" => 10,
+                    "expiry_year"  => 21,
+                ]
+            ]
+        ];
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::S2S,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->ba->privateAuth();
+
+        $fundAccount = $this->makeRequestAndGetContent($fundAccountRequest);
+
+        $this->assertEquals(Issuer::YESB, $fundAccount['card']['issuer']);
+        $this->assertEquals(Network::$fullName[Network::MC], $fundAccount['card']['network']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account_id']  = $fundAccount['id'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
     }
 }
