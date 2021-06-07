@@ -11,7 +11,7 @@ export default (props) => {
 
       <div class="form-group list-filter-item">
         <label>Payment Id</label>
-        <Field name="id" component="input" class="form-control input-sm" />
+        <Field name="payment_id" component="input" class="form-control input-sm" />
       </div>
 
       <div class="form-group list-filter-item">
@@ -32,7 +32,7 @@ export default (props) => {
 
       <div class="form-group list-filter-item">
         <label>Bank Reference Number</label>
-        <Field name="va_transaction_id" component="input" class="form-control input-sm" />
+        <Field name="provider_reference_id" component="input" class="form-control input-sm" />
       </div>
 
       <div class="form-group list-filter-item">

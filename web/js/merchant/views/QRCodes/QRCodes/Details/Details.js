@@ -14,6 +14,7 @@ import { paymentId, amount } from 'common/ui/item/pair';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { QRCodeStatusLabel } from 'merchant/components/StatusLabel';
 import CustomerDetails from 'merchant/components/CustomerDetails';
+import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import { findBy } from 'common/utils/rzp-utils';
 
 export default function Details(props) {
@@ -28,6 +29,8 @@ export default function Details(props) {
     user,
     customers,
     isTestMode,
+    showPreview,
+    downloadQRCode,
   } = props;
 
   const isClosed = qrCode.status === 'closed';
@@ -64,6 +67,15 @@ export default function Details(props) {
               </div>
             </div>
 
+            <div class="actions">
+              <Button.Transparent class="Button--Link" onClick={showPreview}>
+                <i class="i i-eye m-r" /> Preview QR
+              </Button.Transparent>
+              <Button.Transparent class="Button--Link" onClick={downloadQRCode}>
+                <i class="i i-download m-r" /> Download QR
+              </Button.Transparent>
+            </div>
+
             <div class="panel-body">
               <div>
                 <EntityDetailRow label="Created At">
@@ -82,7 +94,11 @@ export default function Details(props) {
                   </div>
                 </EntityDetailRow>
 
-                <EntityDetailRow label="QR Usage" pairClass="qr-usage" value={qrCode.usage} />
+                <EntityDetailRow
+                  label="QR Usage"
+                  pairClass="qr-usage"
+                  value={qrCode.usage.replace('_', ' ')}
+                />
 
                 <EntityDetailRow label="Payment Amount">
                   {qrCode.payment_amount ? (
@@ -109,29 +125,17 @@ export default function Details(props) {
 
                 <EntityDetailRow label="Description" value={qrCode.description} />
 
-                <EntityDetailRow label="Notes">
-                  {qrCode.notes && Object.keys(qrCode.notes).length === 0
-                    ? '--'
-                    : Object.keys(qrCode.notes).map((key, index) => (
-                        <div class="m-b" key={index}>
-                          <Definition>
-                            {key}
-                            {String(qrCode.notes[key])}
-                            <i />
-                          </Definition>
-                        </div>
-                      ))}
-                </EntityDetailRow>
+                <NestedEntityDetailRow label="Notes" value={qrCode.notes} />
               </div>
 
               {showTestPaymentBtn && (
-                <Banner class="QRCode-test-payment">
+                {/* <Banner class="QRCode-test-payment">
                   <Button onClick={onMakeTestPaymentClick}>Make a Test Payment</Button>
 
                   <div>
                     <strong>Test Mode:</strong> Make a test payment using this QR Code
                   </div>
-                </Banner>
+                </Banner> */}
               )}
 
               <hr />

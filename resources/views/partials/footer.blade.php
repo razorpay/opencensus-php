@@ -58,6 +58,9 @@
       },
       subscription: function() {
         return window.rzpQ;
+      },
+      qrCode: function() {
+        return window.rzpQ;
       }
     };
 
@@ -221,6 +224,16 @@
             {
               propertyName: 'event_group',
               value: 'subscription-dashboard'
+            }
+          ],
+          qrCode: [
+            {
+              propertyName: 'event_type',
+              value: 'qrcode'
+            },
+            {
+              propertyName: 'event_group',
+              value: 'qrcode-dashboard'
             }
           ]
         });

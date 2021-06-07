@@ -13,16 +13,23 @@ const Banner = (props) => {
   );
 
   const interestClicked = useCallback(() => {
+    const key = props.product.toLowerCase().split(' ').join('_');
     analyticsTrack({
       objectName: `${props.product} Coming Soon Screen`,
       actionName: 'clicked',
       screen: 'Coming Soon',
       properties: {
         location: props.product,
-        interested_product: props.product.toLowerCase().split(' ').join('_'),
+        interested_product: key,
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
+
+    window.rzpQ.productOnboarding().interaction(`coming_soon`, {
+      product: key
+    })
+
+    props.interestClicked && props.interestClicked();
 
     toggleIsHidden();
   }, [toggleIsHidden]);

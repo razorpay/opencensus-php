@@ -12,7 +12,6 @@ import ListContainer from 'merchant/containers/ListContainer';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import PaymentsTable from 'merchant/views/Transactions/Payments/components/PaymentsTable';
 import PaymentsListFilter from './Filter';
-
 import { fetchQRCodesPayments as fetchAll } from 'merchant/reducers/collection';
 
 @connect((state) => state.qrCodePayments, { fetchAll })
@@ -36,7 +35,7 @@ export default class QRPaymentsListContainer extends ListContainer {
         </HeaderAction>
 
         <PaymentsListFilter
-          form="paymentListFilter"
+          form="qrPaymentListFilter"
           count={this.state.count}
           onSubmit={this.search}
         />

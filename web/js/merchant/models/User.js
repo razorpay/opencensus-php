@@ -741,11 +741,17 @@ export default class User {
   }
 
   get isQRCodesEnabled() {
+    return true;
     if (this.isQRCodeComingSoonEnabled) {
       return true;
     }
+    // Enable qr_codes feature flag
 
-    return this.getExpStatus('qr_code');
+    return this.getExpStatus('qr_codes');
+  }
+
+  get isBharatQREnabled() {
+    return this.isFeatureEnabled('bharat_qr');
   }
 
   get isQRCodeComingSoonEnabled() {

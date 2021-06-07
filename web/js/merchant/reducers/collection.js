@@ -1,6 +1,7 @@
 import { set, merge, unshift, remove } from 'common/utils/immutable';
 import createReducer from 'merchant_common/reducers/createReducer';
 
+import QRPayment from 'merchant/models/QRPayment';
 import Payment from 'merchant/models/Payment';
 import Refund from 'merchant/models/Refund';
 import Order from 'merchant/models/Order';
@@ -193,9 +194,7 @@ export const fetchSmartCollectPayments = (params) => {
 export const smartCollectPaymentsReducer = makeCollectionReducer('SC_PAYMENTS');
 
 // QR codes
-// TODO: Update the paths to QR code
 export const fetchQRCodesPayments = (params) => {
-  params.virtual_account = 1;
-  return fetchAll(params, Payment, 'SC_PAYMENTS');
+  return fetchAll(params,   QRPayment, 'QR_CODE_PAYMENTS');
 };
 export const qrCodePaymentsReducer = makeCollectionReducer('QR_CODE_PAYMENTS');

@@ -5,9 +5,12 @@ import { withRouter } from 'react-router-dom';
 import QRCodeDetails from './Details';
 import * as VirtualAccountActions from 'merchant/reducers/virtualaccounts';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { openModal } from 'merchant_common/reducers/modals';
+import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { fetchPayments, fetchQRCodeDetails } from './model';
 import { fetchCustomersForAutocomplete } from 'merchant/reducers/customers';
+import { closeQR } from 'merchant/reducers/qrCodes/list';
+import CreateTestPayment from './CreateTestPayment';
+import QRCodePreviewModal from '../components/QRPreviewModal';
 
 @withRouter
 @connect(
@@ -19,11 +22,13 @@ import { fetchCustomersForAutocomplete } from 'merchant/reducers/customers';
   },
   {
     openModal,
+    closeModal,
     showNotification,
     fetchCustomersForAutocomplete,
+    closeQR
   },
 )
-export default class VirtualAccountDetailsContainer extends React.Component {
+export default class QRCodeDetailsContainer extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -77,26 +82,31 @@ export default class VirtualAccountDetailsContainer extends React.Component {
     });
   };
 
-  closeAccount = (virtualaccount) => {
+  closeAccount = () => {
     this.context.confirm({
-      header: 'Close account?',
+      header: 'Close QR Code?',
       message:
-        'The account will be closed and your customers will no longer be able to transfer money to this virtual account.',
+        'The account will be closed and your customers will no longer be able to transfer money to this QR code.',
       affirmativeLabel: 'Yes',
       abortLabel: 'No',
       action: () => {
-        this.props
-          .closeVirtualAccount({ ...virtualaccount, status: 'closed' })
+        return this.props
+          .closeQR(this.state.entity.id)
           .then((response) => {
+            this.setState({
+              entity: response.data
+            });
+
             this.props.showNotification({
               type: 'success',
-              message: 'Account closed successfully',
+              message: 'QR code closed successfully',
             });
           })
           .catch(({ errors }) => {
+            const error = (errors || [])[0];
             this.props.showNotification({
               type: 'error',
-              message: errors,
+              message: error,
             });
           });
       },
@@ -109,12 +119,32 @@ export default class VirtualAccountDetailsContainer extends React.Component {
       size: 'small',
       component: (
         <CreateTestPayment
-          virtualAccount={this.props.entity}
+          qrCode={this.props.entity}
           onMount={this.onTestPaymentModalMount}
+          fetchQRCodeDetails={this.fetchQRCodeDetails}
+          fetchQRPayments={() => this.fetchQRPayments(this.state.entity.id)}
         />
       ),
     });
   };
+
+  showPreview = () => {
+    this.props.openModal({
+      size: 'medium',
+      className: 'QRCode--Preview',
+      component: (
+        <QRCodePreviewModal
+          id={this.state.entity}
+          previewImg={this.state.entity.image_url}
+          closeModal={this.props.closeModal}
+        />
+      ),
+    });
+  }
+
+  downloadQRCode = () => {
+    window.open(this.state.entity.image_url);
+  }
 
   render() {
     let { isLoading, error, entity, payments } = this.state;
@@ -137,6 +167,8 @@ export default class VirtualAccountDetailsContainer extends React.Component {
         customers={this.props.customers}
         isTestMode={this.props.isTestMode}
         onMakeTestPaymentClick={this.openTestPaymentModal}
+        showPreview={this.showPreview}
+        downloadQRCode={this.downloadQRCode}
       />
     );
   }

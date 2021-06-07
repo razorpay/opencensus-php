@@ -17,6 +17,7 @@ import OnBoarding, { getIsQRCodesEnabled, getIsAllowedResetQRCodesOnBoarding } f
 
 @connect(
   (state) => ({
+    isTestMode: state.session.mode === 'test',
     user: state.session.user,
     qr_codes: state.qr_codes,
     productOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.QR_CODES),
@@ -72,11 +73,13 @@ export default class QRCodeContainer extends React.Component {
   };
 
   render() {
-    if (this.props.user.isQRCodeComingSoonEnabled) {
+    const { isTestMode, user, productOnBoarding } = this.props;
+
+    if (user.isQRCodeComingSoonEnabled) {
       return <ComingSoon />;
     }
 
-    const { showOnboarding, isQuickGuideOpen } = this.props.productOnBoarding;
+    const { showOnboarding, isQuickGuideOpen } = productOnBoarding;
 
     if (showOnboarding) {
       return <OnBoarding />;
@@ -93,20 +96,19 @@ export default class QRCodeContainer extends React.Component {
           <NavLink to="/qr_codes/payments">Payments</NavLink>
         </header>
 
-        <TestModeBanner />
+        {isTestMode && <TestModeBanner />}
 
         <content>
           <Switch>
             <ShowWhenRoute
-              exact
-              additionalCondition={(user) => user.isAllowedView('qr_codes')}
-              path="/qr_codes"
-              component={QRCodesList}
-            />
-            <ShowWhenRoute
               path="/qr_codes/payments"
               component={PaymentsList}
               additionalCondition={(user) => user.isAllowedView('qr_codes')}
+            />
+            <ShowWhenRoute
+              additionalCondition={(user) => user.isAllowedView('qr_codes')}
+              path="/qr_codes"
+              component={QRCodesList}
             />
           </Switch>
         </content>
