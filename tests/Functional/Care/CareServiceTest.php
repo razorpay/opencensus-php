@@ -358,8 +358,8 @@ class CareServiceTest extends TestCase
                 'activation_status' => 'rejected',
                 'rejection_reasons' => [
                     [
-                        'reason_category' => 'risky_business',
-                        'reason_code'     => 'gift_cards',
+                        'reason_category' => 'risk_related_rejections',
+                        'reason_code'     => 'reject_on_risk_remarks',
                     ]
                 ],
             ],

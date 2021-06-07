@@ -339,12 +339,12 @@ return [
                 "activation_status" => "rejected",
                 "rejection_reasons" => [
                     [
-                        "reason_code"     => "not_registered_in_india",
-                        "reason_category" => "unsupported_business_model"
+                        "reason_code"     => "get_rich_schemes",
+                        "reason_category" => "prohibited_business"
                     ],
                     [
-                        "reason_code"     => "fake_products_or_unlicensed_distribution",
-                        "reason_category" => "risky_business"
+                        "reason_code"     => "multiple_verticals_high_risk",
+                        "reason_category" => "high_risk_business"
                     ]
                 ]
             ]

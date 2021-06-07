@@ -459,12 +459,12 @@ class MerchantDetailTest extends OAuthTestCase
 
         $requestContent['rejection_reasons'] = [
             [
-                'reason_category' => 'risky_business',
-                'reason_code'     => 'refurbished_goods',
+                'reason_category' => 'risk_related_rejections',
+                'reason_code'     => 'dedupe_blocked',
             ],
             [
-                'reason_category' => 'risky_business',
-                'reason_code'     => 'gift_cards',
+                'reason_category' => 'risk_related_rejections',
+                'reason_code'     => 'reject_on_risk_remarks',
             ],
         ];
 

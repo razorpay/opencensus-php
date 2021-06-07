@@ -102,8 +102,8 @@ return [
                 'items'  => [
                     [
                         'reason_type'        => 'rejection',
-                        'reason_category'    => 'risky_business',
-                        'reason_description' => 'Merchant into gift cards/gift vouchers',
+                        'reason_category'    => 'risk_related_rejections',
+                        'reason_description' => 'Merchant rejected based on Risk team\'s remarks',
                     ],
                 ],
             ],

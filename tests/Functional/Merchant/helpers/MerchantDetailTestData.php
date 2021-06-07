@@ -247,22 +247,22 @@ return [
         ],
         'response' => [
             'content' => [
-                RejectionReasons::UNSUPPORTED_BUSINESS_MODEL => [
+                RejectionReasons::RISK_RELATED_REJECTIONS => [
                     [
-                        RejectionReasons::CODE        => RejectionReasons::WEB_DEVELOPMENT_OR_WEB_HOSTING,
-                        RejectionReasons::DESCRIPTION => RejectionReasons::WEB_DEVELOPMENT_OR_WEB_HOSTING_DESCRIPTION,
+                        RejectionReasons::CODE        => RejectionReasons::DEDUPE_BLOCKED,
+                        RejectionReasons::DESCRIPTION => RejectionReasons::DEDUPE_BLOCKED_DESCRIPTION,
                     ],
                 ],
-                RejectionReasons::OTHERS => [
+                RejectionReasons::PROHIBITED_BUSINESS => [
                     [
-                        RejectionReasons::CODE        => RejectionReasons::DUPLICATE_OR_ERRENOUS_CREATION,
-                        RejectionReasons::DESCRIPTION => RejectionReasons::DUPLICATE_OR_ERRENOUS_CREATION_DESCRIPTION,
+                        RejectionReasons::CODE        => RejectionReasons::GET_RICH_SCHEMES,
+                        RejectionReasons::DESCRIPTION => RejectionReasons::GET_RICH_SCHEMES_DESCRIPTION,
                     ],
                 ],
-                RejectionReasons::PROHIBITED_BUSINESSES => [
+                RejectionReasons::UNREG_BLACKLIST => [
                     [
-                        RejectionReasons::CODE        => RejectionReasons::IMPROPER_DOCUMENTATION,
-                        RejectionReasons::DESCRIPTION => RejectionReasons::IMPROPER_DOCUMENTATION_DESCRIPTION,
+                        RejectionReasons::CODE        => RejectionReasons::UNREG_FINANCIAL_SERVICES,
+                        RejectionReasons::DESCRIPTION => RejectionReasons::UNREG_FINANCIAL_SERVICES_DESCRIPTION,
                     ],
                 ],
             ],
