@@ -43,6 +43,12 @@ class Constants
     const SHORT_MODE_LIVE = 'l';
     const SHORT_MODE_TEST = 't';
 
+    const QR_V2_UPI_QR_CODE_WIDTH  = 380;
+    const QR_V2_UPI_QR_CODE_HEIGHT = 380;
+
+    const QR_V2_UPI_QR_DEST_X      = 146;
+    const QR_V2_UPI_QR_DEST_Y      = 658;
+
     const QR_CODE_V2_TR_SUFFIX = 'qrv2';
 
     const DUMMY_QR_CODE_VPA = 'qrrazorpay@dummy';

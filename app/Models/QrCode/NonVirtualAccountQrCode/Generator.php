@@ -5,14 +5,17 @@ namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 use RZP\Models\QrCode;
 use RZP\Models\Settings;
 use RZP\Models\Payment;
+use BaconQrCode\Writer;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use BaconQrCode\Renderer;
 use RZP\Gateway\Upi\Base;
 use RZP\Models\BharatQr\Tags;
 use RZP\Models\QrCode\Entity;
 use RZP\Models\Payment\Gateway;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\QrCode\Constants as Constants;
 use RZP\Models\BharatQr\Constants as BQRConstants;
 use RZP\Models\Payment\Processor\TerminalProcessor;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as NonVAQrEntity;
@@ -219,4 +222,130 @@ class Generator extends QrCode\Generator
     {
         return str_split(self::VPA_NUM_CHAR_SPACE);
     }
+
+    public function generateUpiQrCodeImage($qrCode)
+    {
+        $localFilePath = $this->getLocalSaveDir() . '/' . $qrCode->getId() . '.' . Constants::QR_CODE_EXTENSION;
+
+        $qrCodeImage = $this->getQrCodeStringAndGenerateImage($qrCode);
+
+        $logoImage = imagecreatefrompng(public_path() . '/img/new_upi_qr.png');
+
+        imagecopymerge($logoImage, $qrCodeImage,
+                       Constants::QR_V2_UPI_QR_DEST_X, Constants::QR_V2_UPI_QR_DEST_Y,
+                       Constants::SORCE_X, Constants::SORCE_Y,
+                       Constants::QR_V2_UPI_QR_CODE_WIDTH, Constants::QR_V2_UPI_QR_CODE_HEIGHT,
+                       Constants::OPACITY);
+
+        $color = imagecolorallocate($logoImage, 4, 9, 63);
+
+        $this->alignCentre($logoImage, $this->merchant->getName(), $color, 'Mulish-ExtraBold.ttf', 1350, 40, 20);
+
+        $this->alignCentre($logoImage, $qrCode->getDescription(), $color, 'Mulish-SemiBold.ttf', 1430, 25, 40);
+
+        imagejpeg($logoImage, $localFilePath);
+
+        imagedestroy($logoImage);
+
+        imagedestroy($qrCodeImage);
+
+        return $localFilePath;
+    }
+
+    /**
+     * @param $qrCode
+     *
+     * @return string
+     */
+    protected function getQrCodeStringAndGenerateImage($qrCode)
+    {
+        $renderer = new Renderer\Image\Png;
+
+        $renderer->setMargin(Constants::MARGIN);
+
+        $renderer->setHeight(Constants::QR_V2_UPI_QR_CODE_WIDTH);
+
+        $renderer->setWidth(Constants::QR_V2_UPI_QR_CODE_HEIGHT);
+
+        $renderer->setForegroundColor(new Renderer\Color\Rgb(4, 9, 63));
+
+        $writer = new Writer($renderer);
+
+        $qrCodeString = $writer->writeString($qrCode->getQrString());
+
+        $qrImage   = imagecreatefromstring($qrCodeString);
+        $QR_width  = imagesx($qrImage);
+        $QR_height = imagesy($qrImage);
+
+        $logo = $this->merchant->getLogoUrl();
+
+        if ($logo === null)
+        {
+            return $qrImage;
+        }
+
+        try
+        {
+            $merchantLogo = imagecreatefromstring(file_get_contents($logo));;
+            $logo_width  = imagesx($merchantLogo);
+            $logo_height = imagesy($merchantLogo);
+
+            //create new image
+            $finalImage = imagecreatetruecolor($QR_width, $QR_height);
+            imagealphablending($finalImage, true);
+            $transparent = imagecolorallocatealpha($finalImage, 4, 9, 63, 127);
+            imagefill($finalImage, 0, 0, $transparent);
+
+            imagecopy($finalImage, $qrImage, 0, 0, 0, 0, $QR_width, $QR_height);
+
+            $mergeRatio           = round($logo_width / $logo_height, 2);
+            $postMergeImageWidth  = intval($QR_width * .2);
+            $postMergeImageHeight = intval($postMergeImageWidth / $mergeRatio);
+
+            $centerX = intval(($QR_width / 2) - ($postMergeImageWidth / 2));
+            $centerY = intval(($QR_height / 2) - ($postMergeImageHeight / 2));
+
+            imagecopyresampled($finalImage, $merchantLogo, $centerX, $centerY, 0, 0,
+                               $postMergeImageWidth, $postMergeImageHeight,
+                               $logo_width, $logo_height);
+
+            return $finalImage;
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e);
+
+            return $qrImage;
+        }
+    }
+
+    private function alignCentre($logoImage, $text, $color, $font, $ypos, $size, $width)
+    {
+        if (empty($text) === true)
+        {
+            return;
+        }
+
+        $font_file = public_path() . '/fonts/' . $font;
+
+        $textWrap = wordwrap($text, $width, "\n", false);
+
+        $lines = explode("\n", $textWrap);
+
+        foreach ($lines as $line)
+        {
+            $type_space = imagettfbbox($size, 0, $font_file, $line);
+            $line_width = abs($type_space[4] - $type_space[0]);
+            $line_height = abs($type_space[5] - $type_space[1]) + 10;
+
+            $centre = imagesx($logoImage)/ 2;
+
+            $xpos = $centre - $line_width/2;
+
+            imagettftext($logoImage, $size, 0, $xpos, $ypos, $color, $font_file, $line);
+
+            $ypos += $line_height;
+        }
+    }
+
 }

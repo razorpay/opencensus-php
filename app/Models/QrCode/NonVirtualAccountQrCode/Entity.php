@@ -218,6 +218,11 @@ class Entity extends QrCode\Entity
         return $this->getAttribute(self::USAGE_TYPE);
     }
 
+    public function getDescription()
+    {
+        return $this->getAttribute(self::DESCRIPTION);
+    }
+
     public function generateQrString()
     {
         $qrString = (new Generator)->generateQrString($this);

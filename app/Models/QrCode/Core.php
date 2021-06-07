@@ -26,6 +26,8 @@ class Core extends Base\Core
      */
     protected $elfin;
 
+    protected $generator;
+
     /**
      * Core constructor.
      *
@@ -41,6 +43,8 @@ class Core extends Base\Core
 
             $this->merchant = $virtualAccount->merchant;
         }
+
+        $this->generator = new Generator;
 
         $this->baseQrCodeUrl = $this->app['config']->get('app.url') . '/v1';
 
@@ -137,11 +141,11 @@ class Core extends Base\Core
 
         if ($qrCode->getProvider() === Type::UPI_QR)
         {
-            $localFilePath = (new Generator)->generateUpiQrCodeImage($qrCode);
+            $localFilePath = $this->generator->generateUpiQrCodeImage($qrCode);
         }
         else
         {
-            $localFilePath = (new Generator)->generateQrCodeImage($qrCode);
+            $localFilePath = $this->generator->generateQrCodeImage($qrCode);
         }
 
         $ext = Constants::QR_CODE_EXTENSION;

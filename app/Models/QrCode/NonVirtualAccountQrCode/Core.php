@@ -12,6 +12,13 @@ use RZP\Exception\BadRequestException;
 
 class Core extends QrCode\Core
 {
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->generator = new Generator;
+    }
+
     public function buildQrCode(array $input)
     {
         $qrCode = (new Entity())->build($input);
