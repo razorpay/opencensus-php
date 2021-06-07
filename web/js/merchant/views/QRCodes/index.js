@@ -75,7 +75,7 @@ export default class QRCodeContainer extends React.Component {
   render() {
     const { isTestMode, user, productOnBoarding } = this.props;
 
-    if (user.isQRCodeComingSoonEnabled) {
+    if (user.isQRCodeComingSoonEnabled && !productOnBoarding.isEnabled) {
       return <ComingSoon />;
     }
 

@@ -741,12 +741,11 @@ export default class User {
   }
 
   get isQRCodesEnabled() {
-    return true;
     if (this.isQRCodeComingSoonEnabled) {
       return true;
     }
-    // Enable qr_codes feature flag
 
+    // TODO: remove this
     return this.getExpStatus('qr_codes');
   }
 
@@ -755,6 +754,10 @@ export default class User {
   }
 
   get isQRCodeComingSoonEnabled() {
+    if (this.isQRCodeProductEnabled) {
+      return true;
+    }
+
     return this.getExpStatus('qr_code_coming_soon');
   }
 
