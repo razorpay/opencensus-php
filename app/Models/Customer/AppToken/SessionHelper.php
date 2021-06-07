@@ -15,4 +15,13 @@ class SessionHelper
 
         return $appToken;
     }
+
+    public static function removeAppTokenFromSession($mode)
+    {
+        $key = $mode . '_app_token';
+
+        $appToken = Session::remove($key);
+
+        return;
+    }
 }

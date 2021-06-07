@@ -21,8 +21,11 @@ class Service extends Base\Service
             {
                 $data = $appCore->deleteAppTokens($appToken, $input);
 
+                AppToken\SessionHelper::removeAppTokenFromSession($this->mode);
+
                 return $data;
             }
+            AppToken\SessionHelper::removeAppTokenFromSession($this->mode);
         }
 
         return [];
