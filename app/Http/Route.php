@@ -5413,7 +5413,7 @@ class Route
         'throttle_migrate_redis'                   => Permission::EDIT_THROTTLE_SETTINGS,
         'throttle_create_config'                   => Permission::EDIT_THROTTLE_SETTINGS,
         'throttle_delete_config'                   => Permission::EDIT_THROTTLE_SETTINGS,
-        'throttle_get_config'                      => Permission::EDIT_THROTTLE_SETTINGS,
+        'throttle_get_config'                      => Permission::VIEW_THROTTLE_SETTINGS,
         'edge_list_services'                       => Permission::EDIT_THROTTLE_SETTINGS,
         'edge_list_routes'                         => Permission::EDIT_THROTTLE_SETTINGS,
         'edge_create_rate_limit_rule'              => Permission::EDIT_THROTTLE_SETTINGS,
