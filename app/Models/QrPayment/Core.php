@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\BharatQr;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\QrPaymentRequest;
 
 class Core extends Base\Core
@@ -82,7 +83,7 @@ class Core extends Base\Core
 
     protected function getQrPaymentInputParams(array $gatewayInputQrData)
     {
-        return [
+        $input = [
             Entity::PROVIDER_REFERENCE_ID => $gatewayInputQrData[BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID],
             Entity::MERCHANT_REFERENCE    => $gatewayInputQrData[BharatQr\GatewayResponseParams::MERCHANT_REFERENCE],
             Entity::METHOD                => $gatewayInputQrData[BharatQr\GatewayResponseParams::METHOD],
@@ -90,5 +91,12 @@ class Core extends Base\Core
             Entity::GATEWAY               => $gatewayInputQrData[BharatQr\GatewayResponseParams::GATEWAY],
             Entity::PAYER_VPA             => $gatewayInputQrData[BharatQr\GatewayResponseParams::VPA] ?? null,
         ];
+
+        if ($gatewayInputQrData[BharatQr\GatewayResponseParams::GATEWAY] === Gateway::SHARP)
+        {
+            $input[Entity::MERCHANT_REFERENCE] = substr($input[Entity::MERCHANT_REFERENCE], 0, 14);
+        }
+
+        return $input;
     }
 }

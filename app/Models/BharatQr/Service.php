@@ -3,9 +3,8 @@
 namespace RZP\Models\BharatQr;
 
 use RZP\Exception;
-use RZP\Gateway\Hitachi\ResponseFields;
-use RZP\Gateway\Upi\Icici\Fields;
 use RZP\Models\Base;
+use RZP\Gateway\Sharp;
 use RZP\Models\QrCode;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
@@ -14,6 +13,8 @@ use RZP\Trace\TraceCode;
 use RZP\Models\QrPayment;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\QrPaymentRequest;
+use RZP\Gateway\Upi\Icici\Fields;
+use RZP\Gateway\Hitachi\ResponseFields;
 use RZP\Models\Mpan\Entity as MpanEntity;
 
 class Service extends Base\Service
@@ -154,6 +155,10 @@ class Service extends Base\Service
 
             case Gateway::HITACHI:
                 return $gatewayResponse['callback_data'][ResponseFields::PURCHASE_ID];
+                break;
+
+            case Gateway::SHARP:
+                return $gatewayResponse['callback_data'][Sharp\Fields::REFERENCE];
                 break;
         }
     }

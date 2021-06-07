@@ -88,7 +88,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The reference must be 17 characters.',
+                    'description' => 'The reference may not be greater than 18 characters.',
                 ],
             ],
             'status_code' => 400,
