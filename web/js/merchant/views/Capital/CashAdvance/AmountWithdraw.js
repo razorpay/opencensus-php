@@ -207,11 +207,10 @@ export default class AmountWithdraw extends React.Component {
             latestRepaymentDone = false,
             outstandingRepayment = this.state.outstandingRepayment,
           } = response[0];
-          const { repaymentBreakdown = this.state.repaymentBreakdown } = response[1];
 
           this.setState({
             isRepaymentLoading: false,
-            repaymentBreakdown,
+            repaymentBreakdown: response[1],
             latestRepaymentDone,
             outstandingRepayment,
           });
