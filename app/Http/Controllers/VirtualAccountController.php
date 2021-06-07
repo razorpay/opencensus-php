@@ -143,7 +143,16 @@ class VirtualAccountController extends Controller
                 }
             }
 
-            $data = $this->service()->ecollectValidateVpa($vpa);
+            if (str_starts_with($input['SubscriberId'], 'qr'))
+            {
+                $data['valid'] = true;
+
+                $data['merchantName'] = 'QRv2 Payment';
+            }
+            else
+            {
+                $data = $this->service()->ecollectValidateVpa($vpa);
+            }
         }
         catch (\Exception $e)
         {

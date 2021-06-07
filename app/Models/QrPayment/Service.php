@@ -6,11 +6,14 @@ use RZP\Base\Common;
 use RZP\Constants\Es;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\QrCode\NonVirtualAccountQrCode;
 
 class Service extends Base\Service
 {
     public function fetchPaymentsForQrCode($input, $id)
     {
+        (new NonVirtualAccountQrCode\Entity())::verifyIdAndStripSign($id);
+
         $input[Entity::QR_CODE_ID] = $id;
 
         return $this->fetchMultiplePayments($input);
