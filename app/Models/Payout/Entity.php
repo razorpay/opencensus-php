@@ -178,6 +178,8 @@ class Entity extends Base\PublicEntity
     const PAYOUT_IDS           = 'payout_ids';
     const SKIP_WORKFLOW        = 'skip_workflow';
     const FORCE_REJECT         = 'force_reject';
+    //Input key to support search using reversal_id
+    const REVERSAL_ID                           = 'reversal_id';
 
     // Workflow can be enabled for internal contacts by passing enable_workflow_for_internal_contact field in input.
     const ENABLE_WORKFLOW_FOR_INTERNAL_CONTACT = 'enable_workflow_for_internal_contact';

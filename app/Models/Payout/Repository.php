@@ -16,6 +16,7 @@ use RZP\Models\Contact;
 use RZP\Base\BuilderEx;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
+use RZP\Models\Reversal;
 use RZP\Models\Workflow;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Timezone;
@@ -1264,6 +1265,37 @@ class Repository extends Base\Repository
         $this->joinQueryPayoutSource($query);
 
         $query->where($payoutSourceSourceTypeColumn, $sourceType);
+    }
+
+    protected function joinQueryReversal(BuilderEx $query)
+    {
+        $reversalTable = $this->repo->reversal->getTableName();
+
+        if ($query->hasJoin($reversalTable) === true)
+        {
+            return;
+        }
+
+        $query->join(
+            $reversalTable,
+            function(JoinClause $join)
+            {
+                $reversalEntityIdColumn     = $this->repo->reversal->dbColumn(Reversal\Entity::ENTITY_ID);
+                $payoutIdColumn             = $this->dbColumn(Entity::ID);
+
+                $join->on($reversalEntityIdColumn, $payoutIdColumn);
+            });
+    }
+
+    protected function addQueryParamReversalId($query, $params)
+    {
+        $reversalId = $params[Entity::REVERSAL_ID];
+        $reversalTableIdColumn = $this->repo->reversal->dbColumn(Reversal\Entity::ID);
+
+        $query->select($this->getTableName() . '.*');
+        $this->joinQueryReversal($query);
+
+        $query->where($reversalTableIdColumn, $reversalId);
     }
 
     // fetches when fee recovery was last made for CA

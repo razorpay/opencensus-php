@@ -2925,6 +2925,43 @@ class PayoutTest extends OAuthTestCase
         $this->assertNotEquals($payouts['items'], null);
     }
 
+    public function testGetPayoutsForReversalId()
+    {
+        $this->createEsIndex();
+
+        $payout = $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->reversePayout($payout);
+
+        $reversal = $this->fixtures->reversal->createPayoutReversal([
+            'merchant_id'   => '10000000000000',
+            'entity_id'     => $payout['id'],
+            'entity_type'   => 'payout',
+            'amount'        => $payout['amount'],
+            'fee'           => 0,
+            'tax'           => 0,
+            'channel'       => 'rbl',
+        ]);
+
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'].'rvrsl_'.$reversal['id'];
+
+        $payouts = $this->startTest();
+
+        $this->assertEquals('pout_'.$reversal['entity_id'], $payouts['items'][0]['id']);
+
+        $this->assertEquals('reversed', $payouts['items'][0]['status']);
+
+        $this->assertEquals($payouts['entity'], 'collection');
+
+        $this->assertEquals($payouts['count'], 1);
+
+        $this->assertNotEquals($payouts['items'], null);
+    }
+
     public function testGetPayoutsForPendingOnRoles() {
         //Given
 

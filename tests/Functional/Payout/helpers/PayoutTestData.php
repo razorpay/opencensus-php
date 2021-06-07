@@ -2621,6 +2621,23 @@ return [
         ]
     ],
 
+    'testGetPayoutsForReversalId' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/payouts?account_number=2224440041626905&reversal_id=',
+            'content' => [
+                'expand' => [
+                    'reversal',
+                    'user'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
     'testGetPayoutsWithoutAccountNumber' => [
         'request' => [
             'method'  => 'get',
