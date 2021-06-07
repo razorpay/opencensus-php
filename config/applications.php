@@ -374,8 +374,13 @@ return [
 
         'instance_subcategory_group_ids' => [
             'rzpsol' => [
-                'Technical support' => env('FRESHDESK_RZPSOL_TECHNICAL_SUPPORT_GROUP_ID', ''),
-                'Integrations'      => env('FRESHDESK_RZPSOL_INTEGRATIONS_GROUP_ID', ''),
+                'Technical support'     => env('FRESHDESK_RZPSOL_TECHNICAL_SUPPORT_GROUP_ID', ''),
+                'Integrations'          => env('FRESHDESK_RZPSOL_INTEGRATIONS_GROUP_ID', ''),
+            ],
+            'rzpcap' => [
+                'Instant Settlements'   => env('FRESHDESK_RZPCAP_INSTANT_SETTLEMENTS_GROUP_ID', ''),
+                'Cash Advance'          => env('FRESHDESK_RZPCAP_CASH_ADVANCE_GROUP_ID', ''),
+                'Working Capital Loan'  => env('FRESHDESK_RZPCAP_WORKING_CAPITAL_LOAN_GROUP_ID', ''),
             ],
         ],
 

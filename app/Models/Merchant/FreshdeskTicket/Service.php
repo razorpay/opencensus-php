@@ -972,14 +972,23 @@ class Service extends Base\Service
 
         $input['priority'] = 1;
 
-        if ($this->isRzpSolutionsTicketInput($input) === true)
-        {
-            $input[Constants::GROUP_ID] = $this->getGroupIdFromRzpSolutionsTicketInput($input);
-        }
+        $this->getGroupIdForTicketInput($input);
 
         return $input;
     }
 
+    protected function getGroupIdForTicketInput(&$input)
+    {
+        if ($this->validateFdInstanceFromTicketInput($input, Constants::RZPSOL) === true)
+        {
+            $input[Constants::GROUP_ID] = $this->getGroupIdForFdInstanceAndTicketInput($input, Constants::RZPSOL);
+        }
+        if ($this->validateFdInstanceFromTicketInput($input, Constants::RZPCAP) === true)
+        {
+            $input[Constants::GROUP_ID] = $this->getGroupIdForFdInstanceAndTicketInput($input, Constants::RZPCAP);
+        }
+    }
+    
     protected function makeInputForSupportDashboardXPostTicket($input)
     {
         $input['email'] = $input['email'] ?? $this->merchant->getEmail();
@@ -1036,7 +1045,7 @@ class Service extends Base\Service
         return strftime(Constants::FRESHDESK_TIME_FORMAT, $time);
     }
 
-    protected function isRzpSolutionsTicketInput($input)
+    protected function validateFdInstanceFromTicketInput($input, $fd_instance): bool
     {
         if (isset($input[Constants::CUSTOM_FIELDS]) === false)
         {
@@ -1052,16 +1061,16 @@ class Service extends Base\Service
 
         $category = $customFields[Constants::CF_REQUESTOR_SUBCATEGORY];
 
-        return (in_array($category, self::FD_INSTANCE_VS_SUBCATEGORIES[Constants::RZPSOL], true) === true);
+        return (in_array($category, self::FD_INSTANCE_VS_SUBCATEGORIES[$fd_instance], true) === true);
     }
 
-    protected function getGroupIdFromRzpSolutionsTicketInput($input)
+    protected function getGroupIdForFdInstanceAndTicketInput($input, $fd_instance): int
     {
         $groupIds = $this->app['config']->get('applications.freshdesk.instance_subcategory_group_ids');
 
-        $rzpSolGroupIds = $groupIds[Constants::RZPSOL];
+        $groupIdsForFDInstance = $groupIds[$fd_instance];
 
-        $input['group_id'] = (int)$rzpSolGroupIds[$input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY]];
+        $input['group_id'] = (int)$groupIdsForFDInstance[$input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY]];
 
         return $input['group_id'];
     }

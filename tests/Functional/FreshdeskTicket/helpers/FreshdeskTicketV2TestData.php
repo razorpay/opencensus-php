@@ -358,8 +358,8 @@ return [
                 'subject'       => 'ticket subject',
                 'cc_emails'     => ['a@b.com'],
                 'custom_fields' => [
+                    'cf_requester_category'          => 'Merchant',
                     'cf_requestor_subcategory'       => 'Cash Advance',
-                    'cf_requestor_category'          => 'Merchant',
                 ],
             ],
         ],

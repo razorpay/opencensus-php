@@ -479,11 +479,15 @@ class FreshdeskTicketV2Test extends TestCase
                 'subject' => 'ticket subject',
                 'cc_emails' => ['a@b.com', 'merchantuser01@razorpay.com'],
                 'custom_fields' => [
-                    'cf_requestor_subcategory'    =>  'Cash Advance',
-                    'cf_requestor_category'       =>  'Merchant',
+                    'cf_requester_category'       =>  'Merchant',
+                    'cf_requestor_subcategory'    => 'Cash Advance',
                     'cf_merchant_id_dashboard'    =>  'merchant_dashboard_10000000000000',
                     'cf_merchant_id'              => '10000000000000',
                 ],
+                'email' =>  'test@razorpay.com',
+                'phone' => '9876543210',
+                'priority' =>  1,
+                'group_id' => 42000102216,
             ],
             [
                 'id'            => '99',
@@ -776,13 +780,13 @@ Team Razorpay',
                 'expected_text' => 'Hi, 
 Your issue regarding the ticket 12 has been resolved and a response has been sent over to your email. If you are not satisfied with the resolution provided feel free to reopen the ticket by replying to the same email. 
 Team Razorpay',
-           ],
-           [
-               'event'         => 'TICKET_REOPENED',
-               'expected_text' => 'Hi, 
+            ],
+            [
+                'event'         => 'TICKET_REOPENED',
+                'expected_text' => 'Hi, 
 We believe that your issue regarding the ticket 12 is still not resolved. Your ticket has been reopened and our team will take it up on priority and get back to you within 24 hrs.
 Team Razorpay',
-           ],
+            ],
         ];
 
         foreach ($testcases as $testcase)
