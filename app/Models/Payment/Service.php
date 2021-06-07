@@ -1919,6 +1919,8 @@ class Service extends Base\Service
 
         foreach ($payments as $payment)
         {
+            $this->repo->reload($payment);
+
             $paymentId = $payment->getId();
             $orderId   = $payment->getApiOrderId();
 
@@ -2070,6 +2072,8 @@ class Service extends Base\Service
         {
             try
             {
+                $this->repo->reload($payment);
+
                 assertTrue ($payment->isAuthorized() === true);
 
                 $merchant = $payment->merchant;
