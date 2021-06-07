@@ -2,13 +2,14 @@
 
 namespace RZP\Models\MerchantRiskAlert;
 
-use Mail;
+use View;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Services\Stork;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Permission;
 use RZP\Trace\TraceCode;
+use RZP\lib\TemplateEngine;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\Merchant\Risk as MerchantRiskEmailer;
 use RZP\Models\Workflow\Action\MakerType;
@@ -21,6 +22,15 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Service extends Base\Service
 {
+    private $freshdeskConfig;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->freshdeskConfig = $this->app['config']->get('applications.freshdesk');
+    }
+
     public function createFOHWorkflow(array $input)
     {
         $this->app['trace']->info(
@@ -74,9 +84,9 @@ class Service extends Base\Service
 
                 $this->repo->saveOrFail($merchant);
             });
-        }
 
-        $this->sendNotifications($merchant);
+            $this->sendNotificationsIfApplicable($merchant, $input, Constants::FOH_CONFIRMATION_NOTIFICATION);
+        }
     }
 
     public function getMerchantDetails(string $merchantId)
@@ -129,15 +139,24 @@ class Service extends Base\Service
 
         $workflowTags = $this->getWorkflowTagsFromInput($input);
 
-        $this->app['workflow']
-            ->setPermission(Permission\Name::MERCHANT_RISK_ALERT_FOH)
-            ->setController(Constants::FOH_WORKFLOW_EXECUTE_CONTROLLER)
-            ->setMakerFromAuth(false)
-            ->setWorkflowMaker($this->getMaker())
-            ->setWorkflowMakerType(MakerType::ADMIN)
-            ->setEntityAndId(Constants::MERCHANT_DETAIL_KEY, $merchant->getId())
-            ->setTags($workflowTags)
-            ->handle(["funds_on_hold" => false], ["funds_on_hold" => true]);
+        try
+        {
+            $this->app['workflow']
+                ->setPermission(Permission\Name::MERCHANT_RISK_ALERT_FOH)
+                ->setController(Constants::FOH_WORKFLOW_EXECUTE_CONTROLLER)
+                ->setMakerFromAuth(false)
+                ->setWorkflowMaker($this->getMaker())
+                ->setWorkflowMakerType(MakerType::ADMIN)
+                ->setEntityAndId(Constants::MERCHANT_DETAIL_KEY, $merchant->getId())
+                ->setTags($workflowTags)
+                ->handle(["funds_on_hold" => false], ["funds_on_hold" => true]);
+        }
+        catch (Exception\EarlyWorkflowResponse $ex)
+        {
+            $this->sendNotificationsIfApplicable($merchant, $input, Constants::FOH_NC_NOTIFICATION);
+
+            throw $ex;
+        }
     }
 
     private function handleAutoFOH(Merchant\Entity $merchant, array $input)
@@ -195,13 +214,28 @@ class Service extends Base\Service
         }
     }
 
-    private function sendNotifications(Merchant\Entity $merchant)
+    private function sendNotificationsIfApplicable(Merchant\Entity $merchant, array $input, string $notificationType)
     {
-        $this->sendSms($merchant);
+        $rasTriggerReason = $this->getRasTriggerReasonFromPayload($input);
 
-        $this->sendWhatsappMessage($merchant);
+        $canTriggerNotification = $this->canSendNotification($notificationType, $rasTriggerReason);
 
-        $this->sendEmail($merchant);
+        if ($canTriggerNotification === false)
+        {
+            return;
+        }
+
+        $smsContent = $this->getSmsData($merchant, $notificationType, $rasTriggerReason);
+
+        $this->sendSms($merchant, $smsContent);
+
+        $whatsAppContent = $this->getWhatsAppData($merchant, $notificationType, $rasTriggerReason);
+
+        $this->sendWhatsappMessage($merchant, $whatsAppContent);
+
+        $emailContent = $this->getEmailData($merchant, $notificationType, $rasTriggerReason);
+
+        $this->sendEmail($merchant, $emailContent);
     }
 
     private function getMaker()
@@ -219,7 +253,7 @@ class Service extends Base\Service
         return $maker;
     }
 
-    private function sendSms(Merchant\Entity $merchant)
+    private function sendSms(Merchant\Entity $merchant, array $content)
     {
         $receiver = $merchant->merchantDetail->getContactMobile();
 
@@ -228,14 +262,13 @@ class Service extends Base\Service
             return;
         }
 
+        list($template, $params, $notificationType, $rasTriggerReason) = $content;
+
         $payload = [
             'receiver' => $receiver,
-            'template' => Constants::FOH_SMS_TEMPLATE,
+            'template' => $template,
             'source'   => 'api.merchant.risk.alert',
-            'params'   => [
-                'merchantId'   => $merchant->getId(),
-                'merchantName' => $merchant->getName(),
-            ]
+            'params'   => $params,
         ];
 
         try {
@@ -244,7 +277,9 @@ class Service extends Base\Service
             $this->app['trace']->info(
                 TraceCode::MERCHANT_RISK_ALERT_FOH_SMS_SENT,
                 [
-                    'merchant_id' => $merchant->getId(),
+                    'merchant_id'        => $merchant->getId(),
+                    'notification_type'  => $notificationType,
+                    'ras_trigger_reason' => $rasTriggerReason,
                 ]);
         }
         catch (\Throwable $e)
@@ -253,53 +288,93 @@ class Service extends Base\Service
                 Trace::CRITICAL,
                 TraceCode::MERCHANT_RISK_ALERT_FOH_SMS_FAILED,
                 [
-                    'merchant_id' => $merchant->getId(),
+                    'merchant_id'        => $merchant->getId(),
+                    'notification_type'  => $notificationType,
+                    'ras_trigger_reason' => $rasTriggerReason,
                 ]
             );
         }
     }
 
-    private function sendWhatsappMessage(Merchant\Entity $merchant)
+    private function sendWhatsappMessage(Merchant\Entity $merchant, array $content)
     {
         $mode = $this->app['rzp.mode'];
 
         $receiver = $merchant->merchantDetail->getContactMobile();
 
+        list($templateName, $template, $params, $notificationType, $rasTriggerReason) = $content;
+
         $whatsAppPayload = [
             'ownerId'       => $merchant->getId(),
             'ownerType'     => 'merchant',
-            'template_name' => Constants::FOH_WHATSAPP_TEMPLATE_NAME,
-            'params'        => [
-                'merchantId'   => $merchant->getId(),
-                'merchantName' => $merchant->getName(),
-            ],
+            'template_name' => $templateName,
+            'params'        => $params,
         ];
 
         (new Stork)->sendWhatsappMessage(
             $mode,
-            Constants::FOH_WHATSAPP_TEMPLATE,
+            $template,
             $receiver,
             $whatsAppPayload
         );
     }
 
-    private function sendEmail(Merchant\Entity $merchant)
+    private function sendEmail(Merchant\Entity $merchant, array $content)
     {
-        $data = [
-            'merchant' => [
-                'id'    => $merchant->getId(),
-                'name'  => $merchant->getName(),
-                'email' => $merchant->getEmail(),
-            ],
-        ];
+        list($subject, $viewTemplate, $data, $fdSubcategory, $notificationType, $rasTriggerReason) = $content;
 
-        Mail::queue(new MerchantRiskEmailer\AlertFundsOnHold($data));
+        $merchantEmail = $merchant->merchantDetail->getContactEmail();
 
-        $this->app['trace']->info(
-            TraceCode::MERCHANT_RISK_ALERT_FOH_EMAIL_TRIGGERED,
-            [
-                'merchant_id' => $merchant->getId(),
-            ]);
+        $mailSubject = (new TemplateEngine)->render($subject, $data);
+
+        $mailBody = View::make($viewTemplate, $data)->render();
+
+        $fdRasReasonTag = sprintf(Constants::FD_TAG_RAS_REASON_FOH, strtoupper($rasTriggerReason));
+
+        $fdTags = [Constants::FD_TAG_RAS_FOH, $fdRasReasonTag];
+
+        try
+        {
+            $fdOutboundEmailRequest = [
+                'subject'         => $mailSubject,
+                'description'     => $mailBody,
+                'status'          => 6,
+                'type'            => 'Question',
+                'priority'        => 1,
+                'email'           => $merchantEmail,
+                'tags'            => $fdTags,
+                'group_id'        => (int) $this->freshdeskConfig['group_ids']['merchant_risk'],
+                'email_config_id' => (int) $this->freshdeskConfig['email_config_ids']['risk_notification'],
+                'custom_fields' => [
+                    'cf_ticket_queue' => 'Merchant',
+                    'cf_category'     => 'Risk Report_Merchant',
+                    'cf_subcategory'  => $fdSubcategory,
+                    'cf_product'      => 'Payment Gateway',
+                ],
+            ];
+
+            $this->app['freshdesk_client']->sendOutboundEmail($fdOutboundEmailRequest);
+
+            $this->app['trace']->info(
+                TraceCode::MERCHANT_RISK_ALERT_FOH_EMAIL_SENT,
+                [
+                    'merchant_id'        => $merchant->getId(),
+                    'notification_type'  => $notificationType,
+                    'ras_trigger_reason' => $rasTriggerReason,
+                ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->app['trace']->traceException($e,
+                Trace::CRITICAL,
+                TraceCode::MERCHANT_RISK_ALERT_FOH_EMAIL_FAILED,
+                [
+                    'merchant_id'        => $merchant->getId(),
+                    'notification_type'  => $notificationType,
+                    'ras_trigger_reason' => $rasTriggerReason,
+                ]
+            );
+        }
     }
 
     public function handleOnRejectWorkflowAction(Action\Entity $action)
@@ -385,5 +460,185 @@ class Service extends Base\Service
         ];
 
         return $details;
+    }
+
+    private function getEmailData(Merchant\Entity $merchant, string $notificationType, string $rasTriggerReason)
+    {
+        $subject       = '';
+        $viewTemplate  = '';
+        $data          = '';
+        $fdSubcategory = '';
+
+        if ($notificationType === Constants::FOH_NC_NOTIFICATION)
+        {
+            if ($rasTriggerReason !== Constants::RAS_TRIGGER_REASON_WEBSITE_CHECKER)
+            {
+                throw new Exception\LogicException('Need clarification notification not enabled');
+            }
+
+            $fdSubcategory = Constants::FD_SUB_CATEGORY_NEED_CLARIFICATION;
+
+            $subject = Constants::FOH_WEBSITE_CHECKER_NEEDS_CLARIFICATION_MAIL_SUBJECT;
+
+            $viewTemplate = Constants::FOH_WEBSITE_CHECKER_NEEDS_CLARIFICATION_MAIL_TPL;
+
+            $data = [
+                'merchant_id'   => $merchant->getId(),
+                'merchant_name' => $merchant->getName(),
+                'days_to_foh'   => 7,
+            ];
+        }
+        else
+        {
+            $fdSubcategory = Constants::FD_SUB_CATEGORY_FUNDS_ON_HOLD;
+
+            if ($rasTriggerReason === Constants::RAS_TRIGGER_REASON_WEBSITE_CHECKER)
+            {
+                $subject = Constants::FOH_WEBSITE_CHECKER_CONFIRMATION_MAIL_SUBJECT;
+
+                $viewTemplate = Constants::FOH_WEBSITE_CHECKER_CONFIRMATION_MAIL_TPL;
+
+                $data = [
+                    'merchant_id'   => $merchant->getId(),
+                    'merchant_name' => $merchant->getName(),
+                ];
+            }
+            else
+            {
+                $subject = Constants::FOH_GENERIC_CONFIRMATION_MAIL_SUBJECT;
+
+                $viewTemplate = Constants::FOH_GENERIC_CONFIRMATION_MAIL_TPL;
+
+                $data = [
+                    'merchant_id'   => $merchant->getId(),
+                    'merchant_name' => $merchant->getName(),
+                ];
+            }
+        }
+
+        return [$subject, $viewTemplate, $data, $fdSubcategory, $notificationType, $rasTriggerReason];
+    }
+
+    private function getSmsData(Merchant\Entity $merchant, string $notificationType, string $rasTriggerReason)
+    {
+        $template = '';
+        $data     = '';
+
+        if ($notificationType === Constants::FOH_NC_NOTIFICATION)
+        {
+            if ($rasTriggerReason !== Constants::RAS_TRIGGER_REASON_WEBSITE_CHECKER)
+            {
+                throw new Exception\LogicException('Need clarification notification not enabled');
+            }
+
+            $template = Constants::FOH_SMS_WEBSITE_CHECKER_NEEDS_CLARIFICATION_TEMPLATE;
+            
+            $data = [
+                'merchantId'   => $merchant->getId(),
+                'merchantName' => $merchant->getName(),
+            ];
+        }
+        else
+        {
+            if ($rasTriggerReason === Constants::RAS_TRIGGER_REASON_WEBSITE_CHECKER)
+            {
+                $template = Constants::FOH_SMS_WEBSITE_CHECKER_CONFIRMATION_TEMPLATE;
+            
+                $data = [
+                    'merchantId'   => $merchant->getId(),
+                    'merchantName' => $merchant->getName(),
+                ];
+            }
+            else
+            {
+                $template = Constants::FOH_SMS_GENERIC_CONFIRMATION_TEMPLATE;
+            
+                $data = [
+                    'merchantName' => $merchant->getName(),
+                ];
+            }
+        }
+
+        return [$template, $data, $notificationType, $rasTriggerReason];
+    }
+
+    private function getWhatsAppData(Merchant\Entity $merchant, string $notificationType, string $rasTriggerReason)
+    {
+        $templateName = '';
+        $template     = '';
+        $data         = '';
+
+        if ($notificationType === Constants::FOH_NC_NOTIFICATION)
+        {
+            if ($rasTriggerReason !== Constants::RAS_TRIGGER_REASON_WEBSITE_CHECKER)
+            {
+                throw new Exception\LogicException('Need clarification notification not enabled');
+            }
+
+            $templateName = Constants::FOH_WEBSITE_CHECKER_NEEDS_CLARIFICATION_WHATSAPP_TEMPLATE_NAME;
+
+            $template = Constants::FOH_WEBSITE_CHECKER_NEEDS_CLARIFICATION_WHATSAPP_TEMPLATE;
+            
+            $data = [
+                'merchantId'   => $merchant->getId(),
+                'merchantName' => $merchant->getName(),
+            ];
+        }
+        else
+        {
+            if ($rasTriggerReason === Constants::RAS_TRIGGER_REASON_WEBSITE_CHECKER)
+            {
+                $templateName = Constants::FOH_WEBSITE_CHECKER_CONFIRMATION_WHATSAPP_TEMPLATE_NAME;
+
+                $template = Constants::FOH_WEBSITE_CHECKER_CONFIRMATION_WHATSAPP_TEMPLATE;
+            
+                $data = [
+                    'merchantId'   => $merchant->getId(),
+                    'merchantName' => $merchant->getName(),
+                ];
+            }
+            else
+            {
+                $templateName = Constants::FOH_GENERIC_CONFIRMATION_WHATSAPP_TEMPLATE_NAME;
+
+                $template = Constants::FOH_GENERIC_CONFIRMATION_WHATSAPP_TEMPLATE;
+
+                $data = [
+                    'merchantName' => $merchant->getName(),
+                ];
+            }
+        }
+
+        return [$templateName, $template, $data, $notificationType, $rasTriggerReason];
+    }
+
+    private function getRasTriggerReasonFromPayload(array $input)
+    {
+        $tags = $input['tags'] ?? [];
+
+        $rasTriggerReason = Constants::RAS_TRIGGER_REASON_GENERIC;
+
+        foreach ($tags as $tagName => $tagValue)
+        {
+            if ($tagName === Constants::RAS_TRIGGER_REASON_KEY)
+            {
+                $rasTriggerReason = $tagValue;
+
+                break;
+            }
+        }
+
+        return $rasTriggerReason;
+    }
+
+    private function canSendNotification(string $notificationType, string $rasTriggerReason)
+    {
+        if (($notificationType === Constants::FOH_NC_NOTIFICATION) &&
+            ($rasTriggerReason !== Constants::RAS_TRIGGER_REASON_WEBSITE_CHECKER))
+        {
+            return false;
+        }
+
+        return true;
     }
 }

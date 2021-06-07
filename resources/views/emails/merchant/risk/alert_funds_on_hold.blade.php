@@ -14,21 +14,7 @@
             -webkit-text-size-adjust: 80%; -ms-text-size-adjust: 80%; margin: 0 auto; word-break: break-word;
             hyphens: auto; border-collapse: collapse !important; vertical-align: top; color: #7c839a; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; text-align: left; padding: 20px; font-size: 14px; line-height: 19px; background: #ffffff; background-color: #ffffff; padding: 20px; position: relative; border: 1px solid #e0e0e0; letter-spacing: 0.4px;">
                 <br/>
-                <br/>Hello Team,
-                <br/>
-                <br/>As a part of our financial risk measures, we regularly receive alerts from banks and regulatory authorities on potentially fraudulent transactions. Our systems also screen account activity to flag off similar concerns.
-                <br/>
-                <br/>As a part of this exercise, we have come across a suspicious account activity. As per the regulatory guidelines, we have to put your settlements on hold until the review is complete.  We believe this could be a false alert and want to resolve this issue as soon as possible for you. This check is towards protecting the interests of businesses and customers.
-                <br/>
-                <br/>However, be assured that your money is safe with us.
-                <br/>
-                <br/>Our team will reach out to you shortly to resolve this on priority.
-                <br/>Thank you for your cooperation.
-                <p>
-                   Warm regards,
-                   <br/>
-                   Team Razorpay
-                </p>
+                @yield('content')
             </div>
             <div class="container" style="border-spacing: 0; width: 80% !important; min-width:
             80%; -webkit-text-size-adjust: 80%; -ms-text-size-adjust: 80%; margin: 0 auto; word-break: break-word;
