@@ -2593,7 +2593,7 @@ class ActivationTest extends OAuthTestCase
     {
         $merchantDetailAttribute = [
             'business_type'     => 2,
-            'promoter_pan_name' => 'pankaj kumar',
+            'promoter_pan_name' => 'p kumar',
             'bank_account_name' => 'pankaj k',
             'activation_status' => 'under_review',
         ];
@@ -2609,7 +2609,7 @@ class ActivationTest extends OAuthTestCase
     {
         $merchantDetailAttribute = [
             'business_type'     => 1,
-            'business_name' => 'pankaj kumar',
+            'business_name' => 'p kumar',
             'bank_account_name' => 'pankaj k',
         ];
 
@@ -2624,7 +2624,7 @@ class ActivationTest extends OAuthTestCase
     {
         $merchantDetailAttribute = [
             'business_type'     => 6,
-            'business_name' => 'pankaj kumar',
+            'business_name' => 'p kumar',
             'bank_account_name' => 'pankaj k',
         ];
 
@@ -2640,7 +2640,7 @@ class ActivationTest extends OAuthTestCase
         $merchantDetailAttribute = [
             'business_type'     => 4,
             'bank_account_name' => 'pankaj k',
-            'business_name' => 'pankaj kumar',
+            'business_name' => 'p kumar',
         ];
 
         $favAttribute = [
@@ -2655,7 +2655,7 @@ class ActivationTest extends OAuthTestCase
         $merchantDetailAttribute = [
             'business_type'     => 5,
             'bank_account_name' => 'pankaj k',
-            'business_name' => 'pankaj kumar',
+            'business_name' => 'p kumar',
         ];
 
         $favAttribute = [
