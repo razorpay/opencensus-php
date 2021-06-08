@@ -256,7 +256,9 @@ class Header
     //
     // HDFC Emandate Debit Response File Headers
     //
+    const HDFC_EM_DEBIT_SR                  = HdfcEMDebitHeadings::SR;
     const HDFC_EM_DEBIT_TRANSACTION_REF_NO  = HdfcEMDebitHeadings::TRANSACTION_REF_NO;
+    const HDFC_EM_DEBIT_SUB_MERCHANT_NAME   = HdfcEMDebitHeadings::SUB_MERCHANT_NAME;
     const HDFC_EM_DEBIT_MANDATE_ID          = HdfcEMDebitHeadings::MANDATE_ID;
     const HDFC_EM_DEBIT_ACCOUNT_NO          = HdfcEMDebitHeadings::ACCOUNT_NO;
     const HDFC_EM_DEBIT_AMOUNT              = HdfcEMDebitHeadings::AMOUNT;
@@ -1552,7 +1554,9 @@ class Header
 
         'emandate_debit_hdfc' => [
             self::INPUT => [
+                self::HDFC_EM_DEBIT_SR,
                 self::HDFC_EM_DEBIT_TRANSACTION_REF_NO,
+                self::HDFC_EM_DEBIT_SUB_MERCHANT_NAME,
                 self::HDFC_EM_DEBIT_MANDATE_ID,
                 self::HDFC_EM_DEBIT_ACCOUNT_NO,
                 self::HDFC_EM_DEBIT_AMOUNT,
@@ -1565,7 +1569,9 @@ class Header
                 self::HDFC_EM_DEBIT_NARRATION,
             ],
             self::OUTPUT => [
+                self::HDFC_EM_DEBIT_SR,
                 self::HDFC_EM_DEBIT_TRANSACTION_REF_NO,
+                self::HDFC_EM_DEBIT_SUB_MERCHANT_NAME,
                 self::HDFC_EM_DEBIT_MANDATE_ID,
                 self::HDFC_EM_DEBIT_ACCOUNT_NO,
                 self::HDFC_EM_DEBIT_AMOUNT,

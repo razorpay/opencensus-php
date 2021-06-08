@@ -980,12 +980,15 @@ class NetbankingHdfcEmandateTest extends TestCase
 
     protected function generateEmandateDebitReconFile(array $entities)
     {
-        $items = [];
+        $items    = [];
+        $serialNo = 0;
 
         foreach ($entities as $entityList)
         {
             $items[] = [
+                'Sr'                 => $serialNo++,
                 'Transaction_Ref_No' => $entityList['payment']['id'],
+                'Sub-merchant Name'  => 'ABC',
                 'Mandate ID'         => $entityList['token']['id'],
                 'Account_NO'         => $entityList['token']['account_number'],
                 'Amount'             => ($entityList['payment']['amount'] / 100),
