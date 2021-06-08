@@ -31,6 +31,7 @@ class TraceCode
     const API_RESPONSE_METRIC                       = 'API_RESPONSE_METRIC';
 
     const USER_LOGIN                                = 'USER_LOGIN';
+    const USER_LOGIN_DURATION                       = 'USER_LOGIN_DURATION';
     const USER_LOGIN_KEYS                           = 'USER_LOGIN_KEYS';
     const USER_OAUTH_LOGIN                          = 'USER_OAUTH_LOGIN';
     const USER_LOGIN_FAILURE                        = 'USER_LOGIN_FAILURE';
@@ -71,6 +72,7 @@ class TraceCode
     const BLOCKED_DUE_TO_SBB_622                    = 'BLOCKED_DUE_TO_SBB_622';
 
     const GET_USER_FROM_API                         = 'GET_USER_FROM_API';
+    const GET_USER_DURATION                         = 'GET_USER_DURATION';
 
     const PUSHED_HUBSPOT_EVENT_TO_API               = 'PUSHED_HUBSPOT_EVENT_TO_API';
 

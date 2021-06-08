@@ -271,6 +271,8 @@ class UserController extends Controller
      */
     public function postSignin()
     {
+        $timeStart = microtime(true);
+
         $input = Input::all();
 
         // Lowercasing emails for consistency
@@ -295,7 +297,13 @@ class UserController extends Controller
                 ]);
         }
 
-        return AppResponse::jsonResponse($error, $data);
+        $result = AppResponse::jsonResponse($error, $data);
+
+        $timeEnd = microtime(true);
+        $timeTaken = $timeEnd - $timeStart;
+        $this->traceDuration($timeTaken, TraceCode::USER_LOGIN_DURATION);
+
+        return $result;
     }
 
     public function postOauthSignIn()
@@ -488,9 +496,32 @@ class UserController extends Controller
 
     public function getUserDetailsV2()
     {
+        $timeStart = microtime(true);
+
         list($error, $data) = (new User\Service)->getUserDetails();
 
-        return AppResponse::jsonResponse($error, $data);
+        $result = AppResponse::jsonResponse($error, $data);
+
+        $timeEnd = microtime(true);
+        $timeTaken = $timeEnd - $timeStart;
+        $this->traceDuration($timeTaken, TraceCode::GET_USER_DURATION);
+
+        return $result;
+    }
+
+    public function traceDuration($timeTaken, $traceCode){
+
+        $user = Auth::user();
+
+        if ($user !== null){
+            $currentMerchantId = $user->currentMerchant() ? $user->currentMerchant()->id : null;
+
+            $this->trace->info($traceCode, [
+                "duration"    => $timeTaken, // seconds
+                "user_id"     => $user->id,
+                "merchant_id" => $currentMerchantId,
+            ]);
+        }
     }
 
     public function getUserDetailsForMobile()
