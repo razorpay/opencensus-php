@@ -173,7 +173,6 @@ export default class SubscriptionsSettings extends React.Component {
                             subscriptions. Only supports Indian currency.
                           </>
                         }
-                        info="This is the placeholder text for eMandates. Actual message will be added once that is finalised"
                       />
                     </div>
                   )}
@@ -187,7 +186,7 @@ export default class SubscriptionsSettings extends React.Component {
   }
 }
 
-const ToggleCard = ({ isNew, title, checked, info, description, onToggleChange }) => {
+const ToggleCard = ({ isNew, title, checked, info=null, description, onToggleChange }) => {
   return (
     <div class="panel panel-default ToggleCard">
       <div class="panel-heading">
@@ -204,11 +203,14 @@ const ToggleCard = ({ isNew, title, checked, info, description, onToggleChange }
 
       <div class="panel-body">
         <div class="description">{description}</div>
-        <div class="m-t">
-          <Banner>
-            <i class="i i-info-outline m-r" /> <div>{info}</div>
-          </Banner>
-        </div>
+        { info !== null &&
+          <div class="m-t">
+            <Banner>
+              <i class="i i-info-outline m-r"/>
+              <div>{info}</div>
+            </Banner>
+          </div>
+        }
       </div>
     </div>
   );
