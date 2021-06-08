@@ -30,10 +30,6 @@ class PaymentGatewayResponseHandler
         Util\Constants::FLASH_CHECKOUT        => Util\Constants::FLASH_CHECKOUT
     ];
 
-    const WORKFLOW_NEEDED_CONFIGURATION = [
-        'payment_methods'
-    ];
-
     public static function handleResponse(Product\Entity $merchantProduct, array $response)
     {
         $transformedResponse = [];
@@ -74,13 +70,13 @@ class PaymentGatewayResponseHandler
     {
         $response = [];
 
-        if (isset($configValue['late_auth']))
+        if (isset($configValue[Util\Constants::LATE_AUTH]) === true)
         {
-            $val = $configValue['late_auth'];
+            $val = $configValue[Util\Constants::LATE_AUTH];
 
-            $response['mode'] = $val['capture'];
+            $response[Util\Constants::MODE] = $val[Constants::CAPTURE];
 
-            $options = $val['capture_options'];
+            $options = $val[Util\Constants::CAPTURE_OPTIONS];
 
             $response = array_merge($response, $options);
         }
@@ -101,21 +97,7 @@ class PaymentGatewayResponseHandler
                 continue;
             }
 
-            if ($merchantProduct->getStatus() !== Product\Status::ACTIVATED)
-            {
-                if (in_array($configKey, self::WORKFLOW_NEEDED_CONFIGURATION))
-                {
-                    $requestedConfiguration[$configKey] = $configValue;
-                }
-                else
-                {
-                    $activeConfiguration[$configKey] = $configValue;
-                }
-            }
-            else
-            {
-                $activeConfiguration[$configKey] = $configValue;
-            }
+            $activeConfiguration[$configKey] = $configValue;
         }
 
         $publicResponse = [];
@@ -126,7 +108,7 @@ class PaymentGatewayResponseHandler
 
         $publicResponse[Util\Constants::REQUIREMENTS] = $transformedResponse[Util\Constants::REQUIREMENTS] ?? [];
 
-        $publicResponse = array_merge($publicResponse, ProductResponseHelper::getPublicMerchantProduct($merchantProduct));
+        $publicResponse = array_merge($publicResponse, ProductResponseHandler::getPublicMerchantProduct($merchantProduct));
 
         return $publicResponse;
     }

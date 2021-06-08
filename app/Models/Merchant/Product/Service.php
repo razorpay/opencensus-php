@@ -11,9 +11,8 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Product\Config;
 use RZP\Models\Merchant\Account\Entity as AccountEntity;
-use RZP\Models\Merchant\Product\Util\ProductRequestHelper;
-use RZP\Models\Merchant\Product\Util\ProductResponseHelper;
-use RZP\Models\Merchant\Product\Util\Constants as Constants;
+use RZP\Models\Merchant\Product\Util\ProductRequestHandler;
+use RZP\Models\Merchant\Product\Util\ProductResponseHandler;
 
 class Service extends Base\Service
 {
@@ -28,7 +27,7 @@ class Service extends Base\Service
 
         $response = $this->core()->getConfig($merchant, $merchantProduct);
 
-        return ProductResponseHelper::handleResponse($merchantProduct, $response);
+        return ProductResponseHandler::handleResponse($merchantProduct, $response);
     }
 
     public function updateConfig(string $merchantId, string $merchantProductConfigId, array $request)
@@ -41,11 +40,11 @@ class Service extends Base\Service
 
         $productName = $merchantProduct->getProduct();
 
-        $transformedRequest = ProductRequestHelper::handleRequest($productName, $request);
+        $transformedRequest = ProductRequestHandler::handleRequest($productName, $request);
 
         $response = $this->core()->updateConfig($merchant, $merchantProduct, $transformedRequest);
 
-        return ProductResponseHelper::handleResponse($merchantProduct, $response);
+        return ProductResponseHandler::handleResponse($merchantProduct, $response);
     }
 
     public function createConfig(string $merchantId, array $payload): array
@@ -82,7 +81,7 @@ class Service extends Base\Service
 
                 $response = $this->core()->createConfig($merchant, $merchantProduct, $payload);
 
-                return ProductResponseHelper::handleResponse($merchantProduct, $response);
+                return ProductResponseHandler::handleResponse($merchantProduct, $response);
             });
         }
 

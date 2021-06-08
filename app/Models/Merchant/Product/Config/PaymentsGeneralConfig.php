@@ -15,8 +15,6 @@ use RZP\Models\Merchant\Product\Requirements;
 
 class PaymentsGeneralConfig extends Base\Service
 {
-    const PAYMENT_CAPTURE_CONFIGS = ['late_auth'];
-
     /**
      * @var Config\Service
      */
@@ -112,7 +110,7 @@ class PaymentsGeneralConfig extends Base\Service
     {
         $response = [];
 
-        foreach (self::PAYMENT_CAPTURE_CONFIGS as $configToFetch)
+        foreach (Util\Constants::PAYMENT_CAPTURE_CONFIGS as $configToFetch)
         {
             $config = $this->paymentConfigService->fetch($configToFetch, []);
 

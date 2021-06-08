@@ -2,10 +2,10 @@
 
 namespace RZP\Models\Merchant\Product\Util;
 
-use RZP\Models\Merchant\Account\Entity;
 use RZP\Models\Merchant\Product;
+use RZP\Models\Merchant\Account\Entity;
 
-class ProductResponseHelper
+class ProductResponseHandler
 {
     public static function handleResponse(Product\Entity $merchantProduct, array $response): array
     {
@@ -42,17 +42,24 @@ class ProductResponseHelper
      */
     private static function getPaymentGatewayResponse(Product\Entity $merchantProduct, array $response): array
     {
-        $activeConfig = [];
+        $activeConfig  = [];
         $pendingConfig = [];
-        if(isset($response[Constants::PAYMENT_METHODS]))
+        if (isset($response[Constants::PAYMENT_METHODS]) === true)
         {
             [$activeConfig, $pendingConfig] = PaymentMethodsResponseHandler::handleResponse($response[Constants::PAYMENT_METHODS]);
             unset($response[Constants::PAYMENT_METHODS]);
         }
+
+        if (isset($response[Constants::PAYMENT_METHODS_UPDATE]) === true)
+        {
+            $pendingConfig[Constants::PAYMENT_METHODS] = $response[Constants::PAYMENT_METHODS_UPDATE];
+            unset($response[Constants::PAYMENT_METHODS_UPDATE]);
+        }
+
         $response = PaymentGatewayResponseHandler::handleResponse($merchantProduct, $response);
 
-        $response[Constants::ACTIVE_CONFIGURATION] =  array_merge($response[Constants::ACTIVE_CONFIGURATION], $activeConfig);
-        $response[Constants::REQUESTED_CONFIGURATION] =  array_merge($response[Constants::REQUESTED_CONFIGURATION], $pendingConfig);
+        $response[Constants::ACTIVE_CONFIGURATION]    = array_merge($response[Constants::ACTIVE_CONFIGURATION], $activeConfig);
+        $response[Constants::REQUESTED_CONFIGURATION] = array_merge($response[Constants::REQUESTED_CONFIGURATION], $pendingConfig);
 
         return $response;
     }

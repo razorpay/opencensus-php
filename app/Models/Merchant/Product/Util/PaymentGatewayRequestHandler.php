@@ -5,7 +5,7 @@ namespace RZP\Models\Merchant\Product\Util;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
 
-class PaymentGatewayRequestHelper
+class PaymentGatewayRequestHandler
 {
     const REQUEST_CONFIG_KEYS = [
         Constants::PAYMENT_CAPTURE => Constants::PAYMENT_CONFIG,
@@ -42,9 +42,9 @@ class PaymentGatewayRequestHelper
     {
         $request = [];
 
-        $request['type'] = 'late_auth';
+        $request[Constants::TYPE] = Constants::LATE_AUTH;
 
-        $request['config'] = [];
+        $request[Constants::CONFIG] = [];
 
         $configOptions = [
             Constants::REFUND_SPEED => $configValue[Constants::REFUND_SPEED]
@@ -52,7 +52,7 @@ class PaymentGatewayRequestHelper
 
         if ($configValue[Constants::MODE] === Constants::MANUAL)
         {
-            $request['config']['capture'] = $configValue[Constants::MODE];
+            $request[Constants::CONFIG][Constants::CAPTURE] = $configValue[Constants::MODE];
 
             if (isset($configValue[Constants::MANUAL_EXPIRY_PERIOD]) === true)
             {

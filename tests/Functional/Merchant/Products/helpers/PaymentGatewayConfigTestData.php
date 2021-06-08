@@ -203,21 +203,33 @@ return [
             'url'     => '/v2/accounts/{accountId}/products/{merchantProductId}',
             'method'  => 'PATCH',
             'content' => [
-                'notifications' => [
+                'notifications'   => [
                     'sms' => true
                 ],
-                'settlements'   => [
+                'settlements'     => [
                     'account_number' => '051610100039258',
                     'ifsc_code'      => 'UBIN0805165'
                 ],
-                'checkout'      => [
+                'checkout'        => [
                     'flash_checkout' => false
+                ],
+                'payment_methods' => [
+                    'wallet' => [
+                        'instrument' => ['airtelmoney']
+                    ]
                 ]
             ]
         ],
         'response' => [
             'content' => [
-                'active_configuration' => [
+                'requested_configuration' => [
+                    'payment_methods' => [
+                        'wallet' => [
+                            'instrument' => ['airtelmoney']
+                        ]
+                    ]
+                ],
+                'active_configuration'    => [
                     'payment_capture' => [
                         'mode'                    => 'automatic',
                         'refund_speed'            => 'normal',

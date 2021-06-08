@@ -5,7 +5,7 @@ namespace RZP\Models\Merchant\Product\Util;
 use RZP\Models\Merchant\Product\Name;
 use RZP\Models\Merchant\Product\Config;
 
-class ProductRequestHelper
+class ProductRequestHandler
 {
     public static function handleRequest(string $productName, array $request): array
     {
@@ -13,7 +13,7 @@ class ProductRequestHelper
         {
             case Name::PAYMENT_GATEWAY:
                 (new Config\Validator)->validateInput('pg', $request);
-                $request = PaymentGatewayRequestHelper::handleRequest($request);
+                $request = PaymentGatewayRequestHandler::handleRequest($request);
                 break;
 
         }

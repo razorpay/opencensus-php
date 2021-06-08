@@ -24,6 +24,8 @@ class Constants
     //Feature names
     const NOFLASHCHECKOUT = 'noflashcheckout';
 
+
+
     //Notifications input constants
     const WHATSAPP = 'whatsapp';
     const SMS      = 'sms';
@@ -33,7 +35,7 @@ class Constants
     const THEME_COLOR = 'theme_color';
 
     //Checkout input constants
-    const LOGO               = 'logo';
+    const LOGO = 'logo';
 
 
     //Settlements input constants
@@ -48,46 +50,52 @@ class Constants
     const REFUND_SPEED            = 'refund_speed';
     const AUTOMATIC_EXPIRY_PERIOD = 'automatic_expiry_period';
     const MANUAL_EXPIRY_PERIOD    = 'manual_expiry_period';
+    const CAPTURE                 = 'capture';
+    const CAPTURE_OPTIONS         = 'capture_options';
+    const CONFIG                  = 'config';
+    const LATE_AUTH               = 'late_auth';
+    const PAYMENT_CAPTURE_CONFIGS = [self::LATE_AUTH];
 
     // payment methods constant
     const NETBANKING = 'netbanking';
-    const RETAIL = 'retail';
-    const CORPORATE = 'corporate';
-    const CARDS = 'cards';
-    const UPI = 'upi';
-    const WALLET = 'wallet';
-    const PAYLATER = 'paylater';
+    const RETAIL     = 'retail';
+    const CORPORATE  = 'corporate';
+    const CARDS      = 'cards';
+    const UPI        = 'upi';
+    const WALLET     = 'wallet';
+    const PAYLATER   = 'paylater';
     const INSTRUMENT = 'instrument';
-    const TYPE = 'type';
-    const BANK = 'bank';
-    const EMI = 'emi';
+    const TYPE       = 'type';
+    const BANK       = 'bank';
+    const EMI        = 'emi';
 
     // Product request constants
-    const STATUS = 'status';
-    const ENABLED = 'enabled';
+    const STATUS    = 'status';
+    const ENABLED   = 'enabled';
     const ACTIVATED = 'activated';
     const REQUESTED = 'requested';
     const COMPLETED = 'completed';
     const FAILED    = 'failed';
 
     // Configuration types
-    const GENERAL = 'general';
-    const PAYMENT_METHODS = 'payment_methods';
+    const GENERAL                = 'general';
+    const PAYMENT_METHODS        = 'payment_methods';
+    const PAYMENT_METHODS_UPDATE = 'payment_methods_update';
 
     // Wallets
-    const AIRTELMONEY = "airtelmoney";
-    const AMAZONPAY = "amazonpay";
-    const FREECHARGE = "freecharge";
-    const JIOMONEY = "jiomoney";
-    const SBIBUDDY = "sbibuddy";
-    const MPESA = "mpesa";
-    const OLAMONEY = "olamoney";
-    const PAYZAPP = "payzapp";
-    const PHONEPE = "phonepe";
+    const AIRTELMONEY   = "airtelmoney";
+    const AMAZONPAY     = "amazonpay";
+    const FREECHARGE    = "freecharge";
+    const JIOMONEY      = "jiomoney";
+    const SBIBUDDY      = "sbibuddy";
+    const MPESA         = "mpesa";
+    const OLAMONEY      = "olamoney";
+    const PAYZAPP       = "payzapp";
+    const PHONEPE       = "phonepe";
     const PHONEPESWITCH = "phonepeswitch";
-    const MOBIKWIK = "mobikwik";
-    const PAYTM = "paytm";
-    const PAYUMONEY = "payumoney";
+    const MOBIKWIK      = "mobikwik";
+    const PAYTM         = "paytm";
+    const PAYUMONEY     = "payumoney";
 
     public static $wallets = [
         self::AIRTELMONEY,

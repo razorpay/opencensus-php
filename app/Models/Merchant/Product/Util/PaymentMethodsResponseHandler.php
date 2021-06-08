@@ -121,7 +121,7 @@ class PaymentMethodsResponseHandler
     {
         return array_filter($response, function ($row) use ($category, $status) {
             $instrument = explode(".", $row["instrument"]);
-            return $instrument[1] == Constants::NETBANKING && $instrument[2] == $category && $row[Constants::STATUS] == $status;
+            return $instrument[1] === Constants::NETBANKING && $instrument[2] === $category && $row[Constants::STATUS] === $status;
         });
     }
 
@@ -179,7 +179,7 @@ class PaymentMethodsResponseHandler
     {
         $instruments = array_filter($response, function ($row) use ($type, $status) {
             $instrument = explode(".", $row["instrument"]);
-            return $instrument[1] == $type && $row[Constants::STATUS] == $status;
+            return $instrument[1] === $type && $row[Constants::STATUS] === $status;
         });
 
         $instruments = self::getLeafValues($instruments);
