@@ -78,15 +78,11 @@ class Validator extends Base\Validator
      * RZP\Models\FundAccount\Core::REGEX_FOR_REMOVING_WHITE_SPACES_AND_SPECIAL_CHARACTERS_FROM_BANK_ACCOUNT_NAME
      * needs to be updated accordingly if the validation regex for name field is changed in
      * $addFundAccountBankAccountRules.
-     * $ at the end of regex is added to $addFundAccountBankAccountRules but not added to the end of
-     * REGEX_FOR_REMOVING_WHITE_SPACES_AND_SPECIAL_CHARACTERS_FROM_BANK_ACCOUNT_NAME
-     * as preg_replace is not working with $. Removing white spaces and special characters works even
-     * without $. Tested locally as well.
      */
     protected static $addFundAccountBankAccountRules = [
         Entity::IFSC           => 'required|alpha_num|size:11',
         Entity::ACCOUNT_NUMBER => 'required|regex:/^[a-zA-Z0-9]+$/|between:5,35',
-        Entity::NAME           => 'required|regex:/^[a-zA-Z0-9][\w\-&\'’.:()\s\/]+$/|between:4,120|string',
+        Entity::NAME           => 'required|regex:/^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–\/]+/|between:4,120|string',
     ];
 
     protected static $addTpvBankAccountRules = [

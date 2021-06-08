@@ -43,7 +43,7 @@ class Core extends Base\Core
     const REGEX_FOR_REMOVING_WHITE_SPACES_AND_SPECIAL_CHARACTERS_FROM_VPA_USERNAME = "/[^a-zA-Z0-9.-]+/";
 
     const REGEX_FOR_REMOVING_WHITE_SPACES_AND_SPECIAL_CHARACTERS_FROM_BANK_ACCOUNT_NAME =
-        "/[^\w\-&\'’.:()\/]+/";
+        "/[^a-zA-Z0-9-&\'._()\/]+/";
 
     const DEFAULT_COUNTRY_CODE = '+91';
 
