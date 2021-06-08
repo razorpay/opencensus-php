@@ -3520,46 +3520,49 @@ trait Authorize
 
         if ($payment->isCardlessEmi() === true)
         {
-            $gatewayInput['gateway'] = [
-                'emi_duration' => $input['emi_duration']
-            ];
-
-            $merchantId = $payment->getMerchantId();
-
             $input = Customer\Validator::validateAndParseContactInInput($input);
 
-            $contact = $input['contact'];
-
-            if (isset($input['payment_id']) === true)
+            if(Payment\Gateway::isCardlessEmiSkipCheckAccountProvider($input[Payment\Entity::PROVIDER]) === false)
             {
-                $paymentIdString = '_' . $input['payment_id'];
-            }
-            else
-            {
-                $paymentIdString = '';
-            }
+                $gatewayInput['gateway'] = [
+                    'emi_duration' => $input['emi_duration']
+                ];
 
-            $provider = $input[Payment\Entity::PROVIDER];
+                $merchantId = $payment->getMerchantId();
 
-            if (in_array($provider, CardlessEmi::getCardlessEmiDirectAquirers()) === false)
-            {
-                $provider = CardlessEmi::getProviderForBank($provider);
-            }
+                $contact = $input['contact'];
 
-            $cacheKey = strtoupper($provider) . '_' . $contact . '_' . $merchantId . $paymentIdString;
+                if (isset($input['payment_id']) === true)
+                {
+                    $paymentIdString = '_' . $input['payment_id'];
+                }
+                else
+                {
+                    $paymentIdString = '';
+                }
 
-            $cacheKey = sprintf('gateway:emi_plans_%s', $cacheKey);
+                $provider = $input[Payment\Entity::PROVIDER];
 
-            $emiPlans = (array) $this->app['cache']->get($cacheKey, null);
+                if (in_array($provider, CardlessEmi::getCardlessEmiDirectAquirers()) === false)
+                {
+                    $provider = CardlessEmi::getProviderForBank($provider);
+                }
 
-            $key = array_search($input['emi_duration'], array_column($emiPlans, 'duration'));
+                $cacheKey = strtoupper($provider) . '_' . $contact . '_' . $merchantId . $paymentIdString;
 
-            if ($key === false)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_EMI_DURATION_NOT_VALID,
-                    null,
-                    $input['emi_duration']);
+                $cacheKey = sprintf('gateway:emi_plans_%s', $cacheKey);
+
+                $emiPlans = (array) $this->app['cache']->get($cacheKey, null);
+
+                $key = array_search($input['emi_duration'], array_column($emiPlans, 'duration'));
+
+                if ($key === false)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_EMI_DURATION_NOT_VALID,
+                        null,
+                        $input['emi_duration']);
+                }
             }
         }
 

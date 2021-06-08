@@ -353,6 +353,10 @@ class AdminFetch
                 'payment_id'   => Fetch::FIELD_PAYMENT_ID,
             ],
 
+            Entity::PAYMENTS_NBPLUS_CARDLESS_EMI_GATEWAY => [
+                'payment_id'   => Fetch::FIELD_PAYMENT_ID,
+            ],
+
             Entity::NBPLUS_EMANDATE_REGISTRATION => [],
 
             Entity::NBPLUS_EMANDATE_DEBIT => [],

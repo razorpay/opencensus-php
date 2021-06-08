@@ -133,6 +133,7 @@ class Base extends Core
     const UPI_JUSPAY             = 'UpiJuspay';
     const UPI_AIRTEL             = 'UpiAirtel';
     const CRED                   = 'Cred';
+    const WALNUT369              = 'Walnut369';
 
     const BT_RBL                 = 'BtRbl';
 
@@ -215,6 +216,7 @@ class Base extends Core
         self::PHONEPE_SWITCH         => [],
         self::PAYLATER_ICICI         => [],
         self::CARDLESS_EMI_FLEXMONEY => ['tejal.gangadhar@flexmoney.in', 'prahalad.rao@flexmoney.in'],
+        self::WALNUT369              => [],
         self::PAYPAL                 => [],
         self::VAS_AXIS               => [],
         self::GETSIMPL               => [],
@@ -344,6 +346,7 @@ class Base extends Core
         Gateway::GETSIMPL               => self::GETSIMPL,
         Gateway::CARDLESS_EMI           => [
             CardlessEmi::FLEXMONEY   => self::CARDLESS_EMI_FLEXMONEY,
+            CardlessEmi::WALNUT369   => self::WALNUT369,
         ],
         Gateway::BAJAJFINSERV           => self::BAJAJFINSERV,
         Gateway::HDFC_DEBIT_EMI         => self::HDFC_DEBIT_EMI,

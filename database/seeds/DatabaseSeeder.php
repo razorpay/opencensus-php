@@ -2700,6 +2700,18 @@ class DatabaseSeeder extends Seeder
             'created_at'                 => time(),
             'updated_at'                 => time()
         ]);
+        DB::table(Table::TERMINAL)->insert([
+            'id'                         => Terminal\Shared::CARDLESS_EMI_WALNUT369_TERMINAL,
+            'merchant_id'                => Account::TEST_ACCOUNT,
+            'category'                   => 123,
+            'gateway'                    => Gateway::CARDLESS_EMI,
+            'gateway_merchant_id'        => 'gateway_merchant_id',
+            'gateway_acquirer'           => 'walnut369',
+            'cardless_emi'               => 1,
+            'mode'                       => 3,
+            'created_at'                 => time(),
+            'updated_at'                 => time()
+        ]);
     }
 
     protected function createPayLaterTerminal()

@@ -449,6 +449,8 @@ class Entity
     const NBPLUS_EMANDATE_REGISTRATION = 'payments_nbplus.emandate_registration';
     const NBPLUS_EMANDATE_DEBIT        = 'payments_nbplus.emandate_debit';
 
+    const PAYMENTS_NBPLUS_CARDLESS_EMI_GATEWAY     = 'payments_nbplus.cardless_emi_gateway';
+
     // Service: Payments UPi
     const PAYMENTS_UPI_VPA              = 'payments_upi_vpa';
     const PAYMENTS_UPI_BANK_ACCOUNT     = 'payments_upi_bank_account';
@@ -1041,6 +1043,7 @@ class Entity
         self::PAYMENTS_NBPLUS_NETBANKING    => \RZP\Services\NbPlus\Netbanking::class,
         self::NBPLUS_EMANDATE_REGISTRATION  => \RZP\Services\NbPlus\Emandate::class,
         self::NBPLUS_EMANDATE_DEBIT         => \RZP\Services\NbPlus\Emandate::class,
+        self::PAYMENTS_NBPLUS_CARDLESS_EMI_GATEWAY  => \RZP\Services\NbPlus\CardlessEmi::class,
         self::PAYOUT_LINK                   => \RZP\Models\PayoutLink\Service::class,
         self::SETTINGS                      => \RZP\Models\Settings\Service::class,
 

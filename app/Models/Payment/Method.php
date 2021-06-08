@@ -53,7 +53,8 @@ class Method
         self::NETBANKING,
         self::EMI,
         self::EMANDATE,
-        self::UPI
+        self::UPI,
+        self::CARDLESS_EMI,
     ];
 
     /**

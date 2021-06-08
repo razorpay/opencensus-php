@@ -880,14 +880,18 @@ class Processor
             case CardlessEmi::FLEXMONEY:
                 $input['contact'] = $payment['contact'];
                 break;
+            case CardlessEmi::WALNUT369:
+                $input['contact'] = $payment['contact'];
+                break;
             default;
                 break;
         }
 
         $input['payment_id'] = $payment->getPublicId();
 
-        if ((empty($input['emi_duration']) === false) and
-            (Payment\Gateway::isCardlessEmiProviderAndRedirectFlowProvider($input['provider']) === true))
+        if (((empty($input['emi_duration']) === false) and
+           (Payment\Gateway::isCardlessEmiProviderAndRedirectFlowProvider($input['provider']) === true)) or
+            (Payment\Gateway::isCardlessEmiSkipCheckAccountProvider($input['provider']) === true))
         {
             return;
         }
@@ -1587,12 +1591,12 @@ class Processor
         if (Payment\Gateway::isUpiPaymentServiceGateway($payment->getGateway()) === true)
         {
             // Service does not support Bharat QR and UPI QR.
-            if (($payment->isBharatQr() === true) or 
+            if (($payment->isBharatQr() === true) or
                 ($payment->isUpiQr() === true))
             {
                 return;
             }
-            
+
             $this->handleUpiPaymentServiceGateways($payment);
 
             if ($payment->getCpsRoute() === Payment\Entity::UPI_PAYMENT_SERVICE)
@@ -2978,7 +2982,7 @@ class Processor
     {
         /**
          * We check if the current request is to be routed through UPI payments service,
-         * We set `cps_route` as 4 for gateways to be processed through service. The 
+         * We set `cps_route` as 4 for gateways to be processed through service. The
          * flag is set based on config.
         */
         if ((is_array($input) === true) and
@@ -2988,7 +2992,7 @@ class Processor
         {
             return true;
         }
-        
+
         return false;
     }
 

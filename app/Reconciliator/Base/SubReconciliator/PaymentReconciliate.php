@@ -89,6 +89,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         RequestProcessor\Base::NETBANKING_KOTAK_V2,
         RequestProcessor\Base::NETBANKING_DLB,
         RequestProcessor\Base::NETBANKING_NSDL,
+        RequestProcessor\Base::WALNUT369,
     ];
 
     /**

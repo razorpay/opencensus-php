@@ -34,6 +34,7 @@ class Service
     const NBPLUS_SUPPORTED_PAYMENT_METHODS = [
         Payment\Method::NETBANKING,
         Payment\Method::EMANDATE,
+        Payment\Method::CARDLESS_EMI,
     ];
 
     protected $baseUrl;
@@ -442,6 +443,9 @@ class Service
                 break;
             case Payment\Method::EMANDATE:
                 $class = new Emandate();
+                break;
+            case Payment\Method::CARDLESS_EMI:
+                $class = new CardlessEmi();
                 break;
             default:
                 throw new Exception\LogicException('Should not have reached here');

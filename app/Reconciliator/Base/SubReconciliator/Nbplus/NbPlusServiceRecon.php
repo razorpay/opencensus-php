@@ -14,6 +14,7 @@ use RZP\Services\NbPlus\Netbanking as NetbankingService;
 class NbPlusServiceRecon extends SubReconciliator\PaymentReconciliate
 {
     use NetbankingReconTrait;
+    use CardlessEmiReconTrait;
     //
     // These are the attributes required from the netbanking entity on nbplus service
     //
@@ -57,6 +58,9 @@ class NbPlusServiceRecon extends SubReconciliator\PaymentReconciliate
             {
                 case Payment\Method::NETBANKING;
                     $this->nbPlusPaymentServiceNetbankingDispatch($rowDetails);
+                    break;
+                case Payment\Method::CARDLESS_EMI;
+                    $this->nbPlusPaymentServiceCardlessEmiDispatch($rowDetails);
                     break;
             }
         }

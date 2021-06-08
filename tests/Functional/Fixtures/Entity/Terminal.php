@@ -120,6 +120,7 @@ class Terminal extends Base
         $this->createSharedFssTerminal();
         $this->createSharedEmandateAxisTerminal();
         $this->createSharedCardlessEmiTerminal();
+        $this->createSharedCardlessEmiWalnut369Terminal();
         $this->createSharedNetbankingKvbTerminal();
         $this->createSharedNetbankingKvbTpvTerminal();
         $this->createSharedNetbankingSvcTerminal();
@@ -876,6 +877,25 @@ class Terminal extends Base
             'gateway_merchant_id2' => 'cardless_emi_merchant2',
             'gateway_acquirer'     => 'earlysalary',
             'mode'                 => 1,
+        ];
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedCardlessEmiWalnut369Terminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::CARDLESS_EMI_WALNUT369_TERMINAL;
+
+        $attributes = [
+            'id'                        => $termId,
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'cardless_emi',
+            'card'                      => 0,
+            'netbanking'                => 0,
+            'cardless_emi'              => 1,
+            'gateway_acquirer'          => 'walnut369',
+            'gateway_merchant_id'       => 'cardless_emi_merchant',
+            'mode'                      => 3,
         ];
 
         return $this->createEntityInTestAndLive('terminal', $attributes);

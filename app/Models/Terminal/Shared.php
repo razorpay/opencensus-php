@@ -126,6 +126,7 @@ class Shared
     const CARDLESS_EMI_RAZORPAY_TERMINAL2    = '10CrdlesEmiTml';
     const CARDLESS_EMI_FLEXMONEY_TERMINAL    = '20CrdlesEmiTml';
     const CARDLESS_EMI_ZESTMONEY_TERMINAL    = '30CrdlesEmiTml';
+    const CARDLESS_EMI_WALNUT369_TERMINAL    = '40CrdlesEmiTml';
     const PAYLATER_EPAYLATER_TERMINAL        = '10PayLaterTrml';
     const PAYLATER_ICICI_TERMINAL            = '10PLaterIciTml';
     const PAYLATER_FLEXMONEY_TERMINAL        = '10PLaterFlxTml';

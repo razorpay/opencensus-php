@@ -17,6 +17,8 @@ trait PaymentNbplusTrait
      */
     protected $terminal;
 
+    protected $provider;
+
     protected $bank;
     /**
      * @var Mockery\Mock

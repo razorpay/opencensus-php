@@ -254,6 +254,7 @@ function disableEmptyInputs(form) {
                 <option value="hcin">Home Credit</option>
                 <option value="fdrl">Federal Bank</option>
                 <option value="bajajfinserv">Bajaj Finserv</option>
+                <option value="walnut369">Walnut369</option>
             </select>
         </td>
     </tr>

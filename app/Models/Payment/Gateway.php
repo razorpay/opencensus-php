@@ -211,7 +211,7 @@ class Gateway
         self::HITACHI      => [self::ACQUIRER_RATN],
         self::ENACH_RBL    => [self::ACQUIRER_RATN],
         self::UPI_HULK     => [self::ACQUIRER_HDFC],
-        self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY, CardlessEmi::FLEXMONEY],
+        self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY, CardlessEmi::FLEXMONEY, CardlessEmi::WALNUT369],
         self::PAYLATER     => [PayLater::EPAYLATER, PayLater::GETSIMPL, PayLater::ICICI, PayLater::FLEXMONEY],
         self::WORLDLINE    => [self::ACQUIRER_AXIS],
         self::MPGS         => [self::ACQUIRER_HDFC, self::ACQUIRER_AXIS, self::ACQUIRER_AMEX, self::ACQUIRER_ICIC],
@@ -2474,6 +2474,11 @@ class Gateway
 
     public static $redirectFlowProvider = [
         CardlessEmi::FLEXMONEY,
+        CardlessEmi::WALNUT369,
+    ];
+
+    public static $checkAccountSkipProvider = [
+        CardlessEmi::WALNUT369,
     ];
 
     public static $verifyClientOnS2s = [
@@ -2497,6 +2502,12 @@ class Gateway
     {
         return ((in_array($provider, Payment\Gateway::$redirectFlowProvider, true) === true) or
                 (in_array(CardlessEmi::getProviderForBank($provider), Payment\Gateway::$redirectFlowProvider, true) === true));
+    }
+
+    public static function isCardlessEmiSkipCheckAccountProvider($provider)
+    {
+        return ((in_array($provider, Payment\Gateway::$checkAccountSkipProvider, true) === true) or
+            (in_array(CardlessEmi::getProviderForBank($provider), Payment\Gateway::$checkAccountSkipProvider, true) === true));
     }
 
     public static function getAcquirerName(string $acquirer)
@@ -3297,7 +3308,9 @@ class Gateway
         }
 
         $acquirerGateways = [
-            self::CARDLESS_EMI => [],
+            self::CARDLESS_EMI => [
+                CardlessEmi::WALNUT369,
+            ],
             self::PAYLATER     => [],
         ];
 
@@ -3373,7 +3386,9 @@ class Gateway
         ];
 
         $acquirerGateways = [
-            self::CARDLESS_EMI => [],
+            self::CARDLESS_EMI => [
+                CardlessEmi::WALNUT369,
+            ],
             self::PAYLATER     => [],
         ];
 
