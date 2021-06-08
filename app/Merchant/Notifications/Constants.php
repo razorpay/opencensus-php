@@ -29,7 +29,7 @@ class Constants
         ],
         [
             'title'       => 'Settlements on Hold',
-            'description' => 'Settlements on Hold: Your settlements are on hold due to regulatory requirements. Please provide clarification on the email received on your registered email to resolve the issue',
+            'description' => 'Settlements on Hold: Your settlements are under review due to regulatory requirements. Please provide clarification on the email received on your registered email ID to resolve the issue',
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/rtb_announcement.svg',
             'track_event' => true,
             'id'          => 'merchant-risk-action-FOH',
