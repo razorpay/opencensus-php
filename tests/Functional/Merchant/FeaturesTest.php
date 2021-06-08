@@ -635,9 +635,10 @@ class FeaturesTest extends OAuthTestCase
     {
         Mail::fake();
 
-        $this->addFeatures(Mode::LIVE, true, [Constants::ES_AUTOMATIC]);
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_automatic']);
 
-        $this->addFeatures(Mode::LIVE, true, [Constants::ES_ON_DEMAND]);
+        $this->addFeatures(Mode::LIVE, true, [Constants::ES_ON_DEMAND], 'merchant', '10000000000000');
 
         Mail::assertNotQueued(EsEligibleMail::class);
     }

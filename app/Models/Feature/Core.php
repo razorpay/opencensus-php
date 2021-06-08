@@ -93,6 +93,8 @@ class Core extends Base\Core
                 Entity::SHOULD_SYNC       => $shouldSync
             ]);
 
+        $this->checkAuthTypeIfApplicable($feature);
+
         $this->repo->feature->saveAndSyncIfApplicableOrFail(
             $feature,
             $assignedFeatureNames,
@@ -896,5 +898,25 @@ class Core extends Base\Core
             $featureStatus = Merchant\Detail\Entity::APPROVED;
         }
         return $featureStatus;
+    }
+
+    private function checkAuthTypeIfApplicable($feature)
+    {
+        $restrictedEsInvalidAuth = (($feature->getName() === Feature::ES_ON_DEMAND_RESTRICTED) &&
+                                    ($feature->getEntityType() === Constants::MERCHANT) &&
+                                    ($this->app['basicauth']->isBatchApp() === false));
+
+        $automaticEsInvalidAuth = (($feature->getName() === Feature::ES_AUTOMATIC) &&
+                                   ($feature->getEntityType() === Constants::MERCHANT) &&
+                                   ($this->app['basicauth']->isProxyAuth() === false));
+
+        if ($restrictedEsInvalidAuth or $automaticEsInvalidAuth)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
+                      $feature
+            );
+        }
+
     }
 }
