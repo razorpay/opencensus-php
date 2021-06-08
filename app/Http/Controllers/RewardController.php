@@ -74,6 +74,21 @@ class RewardController extends Controller
 
         return View::make('reward.terms')->with('data', $data);
     }
+
+    // instrument redirection to  redirect link via different events
+    // current event types: coupon / icon
+    public function getRewardMetrics($id, $paymentId, $eventType)
+    {
+        $data = $this->service()->getRewardMetrics($id, $paymentId, $eventType);
+
+        if (isset($data) === false)
+        {
+            return View::make('reward.terms_error');
+        }
+
+        return View::make('reward.redirect')->with('data', $data);
+    }
+
     public function expireRewards()
     {
         $data = $this->service()->expireRewards();

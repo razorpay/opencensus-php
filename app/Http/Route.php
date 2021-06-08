@@ -2417,6 +2417,7 @@ class Route
         'merchant_tag_map_update'                 => ['patch',    'merchant/{id}/tag',                                      'ApplicationFrameworkController@updateMerchantTag'             ],
         'checkout_rewards'                        => ['get',     'checkout/rewards',                                        'MerchantController@getRewardsForCheckout'                     ],
         'reward_terms'                            => ['get',     'reward/{id}/{payment_id}/terms',                          'RewardController@getRewardTerms'                              ],
+        'reward_metrics'                          => ['get',     'reward/{id}/{payment_id}/{event_type}/metrics',           'RewardController@getRewardMetrics'                            ],
         'reward_expire_cron'                      => ['post',    'rewards/expire',                                          'RewardController@expireRewards'                               ],
         'advertiser_logo'                         => ['get',     'advertiser/logo/{id}',                                    'RewardController@getAdvertiserLogo'                           ],
 
@@ -6087,6 +6088,7 @@ class Route
         //Accounting Payouts Callback
         'accounting_payouts_callback',
         'reward_terms',
+        'reward_metrics',
         'reward_redirect_url',
 
         // Mandate HQ Webhook Callback
@@ -6879,6 +6881,7 @@ class Route
             'reward_activate_or_deactivate',
             'reward_fetch',
             'reward_terms',
+            'reward_metrics',
             'salesforce_event',
             'salesforce_opportunity_details',
             'send_email_for_pl_service',
@@ -8308,6 +8311,7 @@ class Route
             'reward_delete',
             'reward_fetch',
             'reward_terms',
+            'reward_metrics',
             'reward_update',
             'role_add_permissions',
             'role_create',

@@ -149,7 +149,7 @@
                 <img src="{{$data['reward']['logo']}}" style="height: 47px;" />
                 <div style="color: #525A76;">
                     @if (isset($data['reward']['merchant_website_redirect_link']) and $data['reward']['merchant_website_redirect_link'] != '' )
-                        <a href="{{$data['reward']['merchant_website_redirect_link']}}" target="_blank" style="color: #2F58E4; text-decoration: none;">
+                        <a onclick="handleOfferNameClick()" href="{{$data['reward']['merchant_website_redirect_link']}}" target="_blank" style="color: #2F58E4; text-decoration: none;">
                             {{$data['reward']['name']}}
                             <img src="https://cdn.razorpay.com/static/assets/email/ic-navigate.png" style="margin-left: 5px; height: 11px;" />
                         </a>
@@ -241,6 +241,24 @@
             var cash_back_amt = "{{$data['reward']['max_cashback']}}" / 100;
             document.getElementById('cashback_amount_span').innerHTML = cash_back_amt+' INR';
         }
+        function handleOfferNameClick(e){
+            triggerAnalytics('offer_name_clicked');
+        }
+        
+        function triggerAnalytics(event) {
+            if(window.rzpQ && window.rzpQ.push){
+            window.rzpQ.push(
+                        window.rzpQ.now().merchantActions().success(
+                            'reward_terms_page.'+ event,
+                            {
+                                payment_id: paymentId,
+                                reward_id: "{{$data['reward']['id']}}",
+                                coupon_code: "{{$data['reward']['coupon_code']}}",
+                                merchant_id: "{{$data['merchant_id']}}",                            }
+                        )
+                    );
+           }
+        }
         function copyDivToClipboard() {
             var range = document.createRange();
             range.selectNode(document.getElementById("coupon-code"));
@@ -248,6 +266,7 @@
             window.getSelection().addRange(range); // to select text
             document.execCommand("copy");
             window.getSelection().removeAllRanges();// to deselect
+            triggerAnalytics("code_copied");
         }
     </script>
 </body>

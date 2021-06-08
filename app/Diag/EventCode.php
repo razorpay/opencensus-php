@@ -747,6 +747,16 @@ class EventCode
         'name'  => 'reward.updated'
     ];
 
+    const REWARD_ICON = [
+        'group' => 'email',
+        'name'  => 'reward.email.click.icon'
+    ];
+
+    const REWARD_COUPON = [
+        'group' => 'email',
+        'name'  => 'reward.email.click.coupon'
+    ];
+
     const REWARD_SMS_SENT = [
         'group' => 'sms',
         'name'  => 'reward.sms.sent'

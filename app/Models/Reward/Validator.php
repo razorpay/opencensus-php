@@ -41,6 +41,11 @@ class Validator extends Base\Validator
         'subject'        => 'required|filled|string'
     ];
 
+    public static $validEventTypes = [
+        'coupon',
+        'icon',
+    ];
+
     public function validateRewardPeriod(array $input)
     {
         $now = Carbon::now()->getTimestamp();
@@ -114,6 +119,14 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_REWARD_DURATION, null, null, "Invalid Reward Duration");
+        }
+    }
+
+    public function validateEventType($eventType)
+    {
+        if ( !in_array($eventType, Validator::$validEventTypes, true )) {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_REWARD_EVENT_TYPE, null, null, "Invalid Reward Event Type");
         }
     }
 }

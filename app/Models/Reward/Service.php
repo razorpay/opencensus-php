@@ -7,6 +7,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Models\Offer\EntityOffer\Repository as EntityOfferRepository;
 use RZP\Models\Reward\MerchantReward\Validator as MerchantRewardValidator;
+use RZP\Models\Reward\Validator as RewardValidator;
 use RZP\Diag\EventCode;
 
 class Service extends Base\Service
@@ -248,6 +249,98 @@ class Service extends Base\Service
                     $merchantId = $payment->merchant_id;
 
                     return ["reward" => $reward, "merchant_id" => $merchantId];
+                }
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException($e);
+            }
+        }
+        return;
+    }
+
+    // generic function to instrument all events by with redirection to merchant redirect url happens.
+    public function getRewardMetrics($id, $paymentId, $eventType)
+    {
+        (new RewardValidator())->validateEventType($eventType);
+
+        $eventTracker = [
+            'coupon' => EventCode::REWARD_COUPON,
+            'icon'   => EventCode::REWARD_ICON,
+        ];
+
+        $entityOffer = (new EntityOfferRepository())->findByEntityIdAndOfferIdAndType($paymentId, $id);
+
+        if (isset($entityOffer) === true)
+        {
+            try
+            {
+                $payment = $this->repo->payment->find($paymentId);
+
+                if ((isset($payment) === true) and
+                    ($payment->isAuthorized() === true) or
+                    ($payment->isCaptured() === true))
+                {
+                    $reward = $this->repo->reward->findOrFailPublic($id);
+
+                    $properties = [];
+
+                    $this->app['rzp.mode'] = 'live';
+
+                    $properties['payment_id'] = $payment->getId();
+
+                    $properties['reward_id'] = $reward->getId();
+
+                    $properties['coupon_code'] = $reward->getCouponCode();
+
+                    $properties['publisher merchant_id'] = $payment->getMerchantId();
+
+                    $properties['contact_number'] =  $payment->getContact();
+
+                    $this->app['diag']->trackRewardEvent($eventTracker[$eventType], null, null, $properties);
+
+                    return ["url" => $reward->getMerchantWebsiteRedirectLink()];
+                }
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException($e);
+            }
+        }
+
+        $this->app['basicauth']->setModeAndDbConnection('test');
+
+        $entityOffer = (new EntityOfferRepository())->findByEntityIdAndOfferIdAndType($paymentId, $id);
+
+        if (isset($entityOffer) === true)
+        {
+            try
+            {
+                $payment = $this->repo->payment->find($paymentId);
+
+                if ((isset($payment) === true) and
+                    ($payment->isAuthorized() === true) or
+                    ($payment->isCaptured() === true))
+                {
+                    $reward = $this->repo->reward->findOrFailPublic($id);
+
+                    $properties = [];
+
+                    $this->app['rzp.mode'] = 'test';
+
+                    $properties['payment_id'] = $payment->getId();
+
+                    $properties['reward_id'] = $reward->getId();
+
+                    $properties['coupon_code'] = $reward->getCouponCode();
+
+                    $properties['publisher merchant_id'] = $payment->getMerchantId();
+
+                    $properties['contact_number'] =  $payment->getContact();
+
+                    $this->app['diag']->trackRewardEvent($eventTracker[$eventType], null, null, $properties);
+
+                    return ["url" => $reward->getMerchantWebsiteRedirectLink()];
                 }
             }
             catch (\Exception $e)
