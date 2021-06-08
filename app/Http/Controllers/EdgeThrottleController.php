@@ -105,6 +105,8 @@ class EdgeThrottleController extends Controller
         unset($input['service_id']);
         unset($input['route_id']);
 
+        $input['enabled'] = (empty($input['enabled']) === true) ? false : true;
+
         $response = $this->request($method, $path, $input);
 
         return $this->finalizeResponse($response, [
@@ -162,11 +164,12 @@ class EdgeThrottleController extends Controller
         $path = $this->rulePathPrefix() . '/rate-limit-rules/' . $id;
 
         $input = Request::all();
-        unset($input['service_id']);
-        unset($input['route_id']);
-        unset($input['rule']);
 
-        $response = $this->request($method, $path, $input);
+        $body = [
+           'enabled' => (empty($input['enabled']) === true) ? false : true,
+        ];
+
+        $response = $this->request($method, $path, $body);
 
         return $this->finalizeResponse($response, [
             'id',
@@ -222,6 +225,8 @@ class EdgeThrottleController extends Controller
             'id' => $ruleId,
         ];
 
+        $input['config']['strictly_consistent'] = (empty($input['config']['strictly_consistent']) === true)? false : true;
+
         $response = $this->request($method, $path, $input);
 
         return $this->finalizeResponse($response, [
@@ -276,6 +281,8 @@ class EdgeThrottleController extends Controller
 
         $input = Request::all();
 
+        $input['config']['strictly_consistent'] = (empty($input['config']['strictly_consistent']) === true)? false : true;
+
         $response = $this->request($method, $path, $input);
 
         return $this->finalizeResponse($response, [
@@ -316,7 +323,7 @@ class EdgeThrottleController extends Controller
     protected function constructQueryParam(): string
     {
         $input = Request::all();
-        return isset($input['offset']) ? '?offset='.$input['offset'] : '';
+        return isset($input['offset']) ? '?offset=' . $input['offset'] : '';
     }
 
     /**
@@ -452,7 +459,7 @@ class EdgeThrottleController extends Controller
 
         if ($body !== null)
         {
-            $bodyStream = $streamFactory->createStream(json_encode($body));
+            $bodyStream = $streamFactory->createStream(json_encode($body, JSON_NUMERIC_CHECK));
             $request = $request->withBody($bodyStream);
         }
 

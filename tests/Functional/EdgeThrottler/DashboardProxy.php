@@ -130,13 +130,13 @@ class DashboardProxy extends TestCase
     {
         $responseArray = [
             'id'         => '9405289d-70a0-4b53-adfb-1429ad432fd5',
-            'route'    => [
+            'route'      => [
                 'id' => '050a23b1-628e-4af8-96ef-80201ddd2a19',
             ],
             'rule'       => 'consumer_username::route_name',
             'created_at' => 1621410238,
             'updated_at' => 1621410238,
-            'enabled'    => true
+            'enabled'    => true,
         ];
 
         $mockResponse = new Response(201, [], json_encode($responseArray));
@@ -146,7 +146,7 @@ class DashboardProxy extends TestCase
 
         $forwardedContent = [
             'rule'    => 'consumer_username::route_name',
-            'enabled' => "1",
+            'enabled' => true,
         ];
 
         $response = $this->sendRequest([
@@ -189,7 +189,7 @@ class DashboardProxy extends TestCase
 
         $forwardedContent = [
             'rule'    => 'consumer_username::route_name',
-            'enabled' => "1",
+            'enabled' => true,
         ];
 
         $response = $this->sendRequest([
