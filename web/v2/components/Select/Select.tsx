@@ -29,6 +29,8 @@ export interface SelectPropsT {
   helpText?: string;
   bottomSheetHeaderText?: string;
   onInputBlur?: (value: string, option?: ReactElement<OptionsPropsT>) => void;
+  showInputValueInSelectedLabel?: boolean;
+  onModalClosed?: () => void;
 }
 
 const Select: React.FC<SelectPropsT> = ({
@@ -47,6 +49,8 @@ const Select: React.FC<SelectPropsT> = ({
   onInputChange,
   bottomSheetHeaderText,
   onInputBlur = () => {},
+  onModalClosed = () => {},
+  showInputValueInSelectedLabel = false,
 }) => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [selectedValue, setSelectedValue] = useState(value);
@@ -70,7 +74,7 @@ const Select: React.FC<SelectPropsT> = ({
     selectedOption = nodes.filter((child) => child.props.value === selectedValue)[0];
   }
 
-  let selctedLabel = selectedOption && selectedOption.props.label;
+  let selctedLabel = selectedOption?.props?.label || (showInputValueInSelectedLabel && value);
   selctedLabel = value === '' ? '' : selctedLabel;
 
   const [inputValue, setInputValue] = useState(selctedLabel);
@@ -85,18 +89,21 @@ const Select: React.FC<SelectPropsT> = ({
   const onModalClose = () => {
     setModalOpen(false);
     setSelectInputDisabled(false);
+    if (onModalClosed) {
+      onModalClosed();
+    }
   };
 
   const onSelect = (child: ReactElement<OptionsPropsT>) => {
     if (child.props.disabled) {
       return;
     }
-    onModalClose();
-    setSelectedValue(child.props.value);
-    setInputValue(child.props.label);
     if (onChange) {
       onChange(child.props.value, child);
     }
+    onModalClose();
+    setSelectedValue(child.props.value);
+    setInputValue(child.props.label);
   };
 
   useEffect(() => {

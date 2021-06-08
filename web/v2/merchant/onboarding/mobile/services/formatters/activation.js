@@ -9,6 +9,7 @@ const businessOverviewFields = [
   'business_model',
 ];
 const businessDetailFields = [
+  'company_cin',
   'company_pan',
   'business_name',
   'promoter_pan',

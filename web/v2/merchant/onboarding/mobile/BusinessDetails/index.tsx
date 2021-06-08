@@ -14,11 +14,12 @@ import { FormSection, Field, GetTouchedFields } from '../Form';
 import { useActivationFormState, isVisible, isTabComplete } from '../context/store';
 import useActivation, { getRequestData } from '../hooks/useActivation';
 import { getLabel, getHelpText } from '../services/utils';
-import { states } from '../Constants/OnboardingConstants';
+import { states, CIN_BusinessTypes, LLPIN_BusinessTypes } from '../Constants/OnboardingConstants';
 import { analyticsTrack } from '../../../../services/tracking/segment';
 import { useApp } from 'v2/context/App';
 import { useSnackbar } from 'v2/components/SnackBar/SnackbarContext';
 import { fetch } from 'v2/services/rest/rest-fetch';
+import BusinessName from '../Fields/BusinessName';
 
 const StyledSeparator = styled(View)`
   height: 1px;
@@ -94,7 +95,9 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
   const [pinCode, setPinCodeValue] = useState('');
   const [isRegisteredPin, setIsRegisteredPin] = useState(true);
 
+  const { business_type: businessType } = data;
   const businessDetails = data.business_details;
+
   const setBusinessDetailsCompleted = useActivationFormState(
     (state) => state.setBusinessDetailsCompleted,
   );
@@ -284,15 +287,45 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
               />
             </Field>
             <Field visible={isVisible('business_name', data)}>
-              <TextInput
-                width="auto"
-                name="business_name"
-                label="Business Name"
-                helpText="As mentioned in the PAN"
-                value={formikProps.values.business_name}
-                errorText={formikProps.touched.business_name && formikProps.errors.business_name}
-                disabled={isFormLocked}
-              />
+              {CIN_BusinessTypes.includes(Number(businessType)) ||
+              LLPIN_BusinessTypes.includes(Number(businessType)) ? (
+                <Space margin={[0, 0, 0, 0]}>
+                  <View>
+                    <BusinessName
+                      value={formikProps.values.business_name}
+                      errorText={
+                        formikProps.touched.business_name && formikProps.errors.business_name
+                      }
+                      onModalClosed={({ company_name = '', identity_number, identity_type }) => {
+                        formikProps.setFieldTouched('business_name');
+                        formikProps.setFieldValue('business_name', company_name);
+                        if (identity_type) {
+                          const isCin = CIN_BusinessTypes.includes(Number(businessType));
+                          const isLlpin = LLPIN_BusinessTypes.includes(Number(businessType));
+                          if (
+                            (isCin && identity_type === 'cin') ||
+                            (isLlpin && identity_type === 'llpin')
+                          ) {
+                            formikProps.setFieldTouched('company_cin');
+                            formikProps.setFieldValue('company_cin', identity_number);
+                          }
+                        }
+                        setIsBlurCalled(true);
+                      }}
+                    />
+                  </View>
+                </Space>
+              ) : (
+                <TextInput
+                  width="auto"
+                  name="business_name"
+                  label="Business Name"
+                  helpText="As mentioned in the PAN"
+                  value={formikProps.values.business_name}
+                  errorText={formikProps.touched.business_name && formikProps.errors.business_name}
+                  disabled={isFormLocked}
+                />
+              )}
             </Field>
             <Field>
               <TextInput
