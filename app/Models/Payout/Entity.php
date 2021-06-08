@@ -205,7 +205,8 @@ class Entity extends Base\PublicEntity
     const REVERSAL        = 'reversal';
     const WORKFLOW_ACTION = 'workflow_action';
 
-    const MAX_PAYOUT_LIMIT = 10000000000;
+    const MAX_PAYOUT_LIMIT            = 10000000000;
+    const MAX_SETTLEMENT_PAYOUT_LIMIT = 300000000000;
 
     // Used for composite API request input
     const CONTACT = 'contact';

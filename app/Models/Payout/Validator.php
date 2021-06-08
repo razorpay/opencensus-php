@@ -107,7 +107,7 @@ class Validator extends Base\Validator
 
     protected static $fundAccountPayoutCompositeRules = [
         Entity::PURPOSE                              => 'required|filled|string|max:30|alpha_dash_space',
-        Entity::AMOUNT                               => 'required|integer|min:100|max:' . Entity::MAX_PAYOUT_LIMIT,
+        Entity::AMOUNT                               => 'required|integer|min:100',
         Entity::CURRENCY                             => 'required|size:3|in:INR',
         Entity::NOTES                                => 'sometimes|notes',
         Entity::BALANCE_ID                           => 'sometimes|filled|size:14',
@@ -132,7 +132,7 @@ class Validator extends Base\Validator
      */
     protected static $fundAccountPayoutRules = [
         Entity::PURPOSE              => 'required|filled|string|max:30|alpha_dash_space',
-        Entity::AMOUNT               => 'required|integer|min:100|max:' . Entity::MAX_PAYOUT_LIMIT,
+        Entity::AMOUNT               => 'required|integer|min:100',
         Entity::CURRENCY             => 'required|size:3|in:INR',
         Entity::NOTES                => 'sometimes|notes',
         Entity::BALANCE_ID           => 'sometimes|filled|size:14',
@@ -186,6 +186,11 @@ class Validator extends Base\Validator
     protected static $fundAccountPayoutCompositeValidators = [
         'origin',
         'source_details',
+        'amount'
+    ];
+
+    protected static $fundAccountPayoutValidators = [
+        'amount'
     ];
 
     protected static $beforeCreateFundAccountPayoutWithOtpValidators = [
@@ -1032,6 +1037,30 @@ class Validator extends Base\Validator
                     Payout\Entity::MERCHANT_ID     => $payout->getMerchantId(),
                     Payout\Entity::BALANCE_ID      => $payout->getBalanceId()
                 ]);
+        }
+    }
+
+    protected function validateAmount($input)
+    {
+        if (isset($input[Entity::AMOUNT]) === true)
+        {
+            $maxPayoutAmountLimit = Entity::MAX_PAYOUT_LIMIT;
+
+            if ((new Service)->isSettlementsApp() === true)
+            {
+                $maxPayoutAmountLimit = Entity::MAX_SETTLEMENT_PAYOUT_LIMIT;
+            }
+
+            if ($input[Entity::AMOUNT] > $maxPayoutAmountLimit)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    "The amount may not be greater than " . $maxPayoutAmountLimit . ".",
+                    Entity::AMOUNT,
+                    [
+                        Entity::AMOUNT => $input[Entity::AMOUNT],
+                    ]
+                );
+            }
         }
     }
 }

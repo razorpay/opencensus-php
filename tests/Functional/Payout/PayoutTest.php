@@ -12181,4 +12181,33 @@ class PayoutTest extends OAuthTestCase
             return true;
         });
     }
+
+    // This test should fail because payout amount can't be greater than MAX_PAYOUT_LIMIT
+    public function testCreatePayoutGreaterThanMaxAmount()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    // This test should fail because payout amount for settlement service can't be greater than
+    // MAX_SETTLEMENT_PAYOUT_LIMIT
+    public function testCreatePayoutGreaterThanMaxAmountForSettlementService()
+    {
+        $this->ba->appAuthTest($this->config['applications.settlements_service.secret']);
+
+        $this->startTest();
+    }
+
+    // This test should pass because payout amount for settlement service can be greater than MAX_PAYOUT_LIMIT
+    public function testCreatePayoutGreaterThanGlobalMaxAmountForSettlementService()
+    {
+        $balance = $this->bankingBalance;
+
+        $this->fixtures->edit('balance', $balance->getId(), ['balance' => '300000000000']);
+
+        $this->ba->appAuthTest($this->config['applications.settlements_service.secret']);
+
+        $this->startTest();
+    }
 }
