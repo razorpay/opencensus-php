@@ -153,6 +153,9 @@ _dcs.account = '9421167';
   @if ($newAuthFlow === true)
     <script src="{{$cdnDashboardUrl}}/dist/newAuth-entry.js"></script>
   @else
+    @if(env('APP_ENV') === 'production')
+      @include('partials/sentry')
+    @endif
     <script src='{{$cdnDashboardUrl}}/js/generated/signup.js'></script>
   @endif
 

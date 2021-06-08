@@ -35,6 +35,7 @@ jobs:
         env:
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+          VERSION: ${{ github.sha }}
 
       - name: Build All
         # Runs in parellel
@@ -42,6 +43,7 @@ jobs:
         env:
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+          VERSION: ${{ github.sha }}
 
       - name: Remove files
         run: rm -rf .git

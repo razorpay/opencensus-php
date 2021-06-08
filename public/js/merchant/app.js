@@ -1,4 +1,12 @@
 'use strict';
+if (typeof Sentry !== 'undefined') {
+  Sentry.onLoad(function () {
+    Sentry.init({
+      environment: 'prod',
+      release: __VERSION__,
+    });
+  });
+}
 // Declare app level module which depends on filters, and services
 var app = angular
   .module('app', [
