@@ -7,6 +7,7 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\BvsValidation;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\BvsValidation\Constants;
@@ -19,11 +20,10 @@ class BusinessPanForCA extends BaseStatusUpdater
 
     public function __construct(MerchantEntity $merchant,
                                 string $documentTypeStatusKey,
-                                string $artefactType,
-                                string $consumedValidationId,
+                                BvsValidation\Entity $validation,
                                 string $entity=E::BANKING_ACCOUNT_ACTIVATION_DETAIL)
     {
-        parent::__construct($merchant, $artefactType, $consumedValidationId);
+        parent::__construct($merchant, $validation);
 
         $this->documentTypeStatusKey = $documentTypeStatusKey;
 

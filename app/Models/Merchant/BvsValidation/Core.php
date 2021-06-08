@@ -169,23 +169,19 @@ class Core extends Base\Core
 
         $artefactType = $validation->getArtefactType();
 
-        $validationId = $validation->getValidationId();
-
         switch ($artefactType)
         {
             case Constant::BUSINESS_PAN:
                 $statusUpdater = new DocumentStatusUpdater\BusinessPanForCA(
                     $merchant,
                     BankingAccountActivationEntity::BUSINESS_PAN_VALIDATION,
-                    $artefactType,
-                    $validationId);
+                    $validation);
                 break;
             case Constant::PERSONAL_PAN:
                 $statusUpdater = new DocumentStatusUpdater\PersonalPanForCA(
                     $merchant,
                     BankingAccountActivationEntity::BUSINESS_PAN_VALIDATION,
-                    $artefactType,
-                    $validationId);
+                    $validation);
                 break;
             default :
                 throw new LogicException(
