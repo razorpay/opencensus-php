@@ -48,6 +48,14 @@ class Method
         self::UPI,
     ];
 
+    public static $cpsEnabledMethods = [
+        self::CARD,
+        self::NETBANKING,
+        self::EMI,
+        self::EMANDATE,
+        self::UPI
+    ];
+
     /**
      * Payment methods where amount validation is skipped
      *
@@ -127,5 +135,10 @@ class Method
     public static function getMethodsNamesMap()
     {
         return self::$methods;
+    }
+
+    public static function getCpsEnabledMethods(): array
+    {
+        return self::$cpsEnabledMethods;
     }
 }

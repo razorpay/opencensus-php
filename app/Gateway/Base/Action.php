@@ -53,4 +53,8 @@ class Action
         self::OTP_RESEND,
         self::AUTHORIZE_FAILED,
     ];
+
+    public static $upiPaymentServiceSupportedActions = [
+        self::AUTHORIZE  
+    ];
 }
