@@ -6,7 +6,7 @@
     </head>
     <body class="body" style="width: 100% !important; min-width: 100%; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; line-height: 19px; background: #EBECEE;">
             <br/>
-            <img src="<?php echo $message->embed(public_path().'/img/logo_black.png'); ?>" height=30 style="display: block; margin: auto;" />
+            <img src="https://cdn.razorpay.com/logo.png" height=30 style="display: block; margin: auto;" />
             <br/>
             <div class="container" style="background-color:#3495ff; height:7px; width: 80% !important; min-width:
             80%; -webkit-text-size-adjust: 80%; -ms-text-size-adjust: 80%; margin: 0 auto;padding: 0px 20px;"></div>
@@ -23,13 +23,13 @@
                 </p>
                 <div>
                     <a href="https://facebook.com/razorpay" style="margin:5px; text-decoration: none;">
-                        <img src="<?php echo $message->embed(public_path().'/img/facebook.png'); ?>" height=20/>
+                        <img src="https://s3.amazonaws.com/checkout-live/facebook.png" height=20/>
                     </a>
                     <a href="https://twitter.com/razorpay"style="margin:5px; text-decoration: none;">
-                        <img src="<?php echo $message->embed(public_path().'/img/twitter.png'); ?>" height=20/>
+                        <img src="https://s3.amazonaws.com/checkout-live/twitter.png" height=20/>
                     </a>
                     <a href="https://github.com/razorpay" style="margin:5px; text-decoration: none;">
-                        <img src="<?php echo $message->embed(public_path().'/img/github.png'); ?>" height=20/>
+                        <img src="https://s3.amazonaws.com/checkout-live/github.png" height=20/>
                     </a>
                 </div>
             </div>

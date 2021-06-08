@@ -12,5 +12,6 @@
 	We assure you of our best service and support. We request your cooperation to resolve this as soon as possible.
 	<br/><br/>
 	Thanks,
+	<br/>
 	Team Razorpay
 @endsection

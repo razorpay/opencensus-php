@@ -14,5 +14,6 @@
 	Thank you for your cooperation.
 	<br/><br/>
 	Warm regards,
+	<br/>
 	Team Razorpay
 @endsection

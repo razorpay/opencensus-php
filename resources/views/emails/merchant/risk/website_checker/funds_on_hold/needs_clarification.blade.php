@@ -12,5 +12,6 @@
 	Look forward to hearing from you. Your response will help us to provide you with a seamless experience. Please stay safe in these challenging times.
 	<br/><br/>
 	Warm regards,
+	<br/>
 	Team Razorpay
 @endsection
