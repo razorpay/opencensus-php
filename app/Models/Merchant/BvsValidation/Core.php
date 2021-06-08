@@ -214,7 +214,20 @@ class Core extends Base\Core
     {
         $validation = $this->repo->bvs_validation->findOrFail($validationId);
 
-        $merchantId = $validation->getOwnerId();
+        $ownerId = $validation->getOwnerId();
+
+        $validationOwnerType = $validation->getOwnerType();
+
+        if ($validationOwnerType === Constant::BANKING_ACCOUNT)
+        {
+            $bankingAccount = $this->repo->banking_account->findOrFail($ownerId);
+
+            $merchantId = $bankingAccount->getMerchantId();
+        }
+        else
+        {
+            $merchantId = $ownerId;
+        }
 
         $validation->edit($validationObj);
 

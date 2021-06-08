@@ -2140,6 +2140,47 @@ class BankingAccountTest extends TestCase
         $this->assertEquals('560031', $bankingAccount->getPincode());
     }
 
+    public function testBusinessPanValidation()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $mid = $merchantDetail->merchant['id'];
+
+        $this->ba->proxyAuth('rzp_test_' . $mid);
+
+        $bankingAccount = $this->createBankingAccountFromDashboard();
+
+        $bankingAccountId = $bankingAccount['id'];
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts_dashboard/' . $bankingAccountId,
+                'method'  => 'PATCH',
+            ],
+        ];
+
+        Config::set('applications.kyc.mock', true);
+        Config::set('services.bvs.mock', true);
+        Config::set('services.bvs.response', 'success');
+
+        $this->startTest($dataToReplace);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $expectedValues = [
+            'artefact_type' => 'business_pan',
+            'owner_id'      => $bankingAccount->getId(),
+        ];
+
+        $bvsValidation = $this->getDbEntity('bvs_validation', ['owner_id' => $bankingAccount->getId(), 'owner_type' => 'banking_account'], 'live');
+
+        $this->validateSuccessBvsValidation($bvsValidation, $expectedValues);
+
+        $this->assertEquals('560030', $bankingAccount->getPincode());
+    }
+
     public function testPanValidation()
     {
         $attribute = ['activation_status' => 'activated'];

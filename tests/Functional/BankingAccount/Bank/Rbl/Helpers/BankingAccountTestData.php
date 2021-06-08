@@ -825,6 +825,28 @@ return [
         ],
     ],
 
+    'testBusinessPanValidation' => [
+        'request'  => [
+            'url'     => '/banking_accounts_dashboard',
+            'method'  => 'PATCH',
+            'content' => [
+                'activation_detail' => [
+                    BankingAccount\Activation\Detail\Entity::BUSINESS_PAN => 'RZP4A2345L',
+                    BankingAccount\Activation\Detail\Entity::BUSINESS_NAME=> 'RZP.Co'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'channel'                      => 'rbl',
+                BankingAccount\Entity::PINCODE => '560030',
+                'banking_account_activation_details' => [
+                    'business_pan_validation' => 'initiated'
+                ]
+            ],
+        ],
+    ],
+
     'testPanValidation' => [
         'request'  => [
             'url'     => '/banking_accounts_dashboard',
