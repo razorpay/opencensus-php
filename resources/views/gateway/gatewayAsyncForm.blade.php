@@ -145,9 +145,11 @@
       </div>
     </div>
 
+    @if (!$data['data']['nobranding'])
     <div class="banner">
       <img src="https://cdn.razorpay.com/logo.png" id="logo" height="28px" style="height: 28px; margin: 20px auto;display: block;">
     </div>
+    @endif
 
     <form id="form" method="post"></form>
     <form id="form2" name="form2">

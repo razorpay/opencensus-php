@@ -175,8 +175,10 @@ class PaymentCreateController extends Controller
     public function getCreatePaymentCheckoutCallback()
     {
         $merchant =  $this->app['basicauth']->getMerchant();
-
+        
         $templateData = (new CheckoutView())->addOrgInformationInResponse($merchant);
+        
+        $templateData['data']['nobranding'] = $merchant->isFeatureEnabled(Feature::PAYMENT_NOBRANDING);
 
         $this->trace->info(TraceCode::CHECKOUT_VIEW_CREATION,
             [
@@ -845,7 +847,9 @@ class PaymentCreateController extends Controller
             else if (($data['type'] === 'async') or
                      ($data['type'] === 'intent'))
             {
-                $merchantLogoUrl = $this->app['basicauth']->getMerchant()->getFullLogoUrlWithSize();
+                $merchant = $this->app['basicauth']->getMerchant();
+                $merchantLogoUrl = $merchant->getFullLogoUrlWithSize();
+                $data['nobranding'] = $merchant->isFeatureEnabled(Feature::PAYMENT_NOBRANDING);
 
                 if (isset($merchantLogoUrl) === true)
                 {
