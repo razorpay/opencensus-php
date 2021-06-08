@@ -6254,6 +6254,9 @@ ALTER TABLE `partner_configs` CHANGE COLUMN `tds_percentage` `tds_percentage` IN
 ALTER TABLE payouts
     ADD COLUMN is_payout_service TINYINT(1) DEFAULT 0;
 
+ALTER TABLE settlement_ondemand_feature_configs
+   ADD COLUMN pricing_percent int unsigned;
+
 ALTER TABLE card_mandates
     ADD COLUMN mandate_hub varchar(30);
 
@@ -6268,3 +6271,4 @@ ALTER TABLE merchants
 
 ALTER TABLE merchants
     ADD COLUMN refund_credits_threshold BIGINT UNSIGNED DEFAULT NULL;
+

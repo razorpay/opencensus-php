@@ -1234,7 +1234,8 @@ class SettlementOndemandTest extends TestCase
             'merchant_id'                 => $this->merchantDetail['merchant_id'],
             'percentage_of_balance_limit' => 50,
             'settlements_count_limit'     => 2,
-            'max_amount_limit'            => 7500
+            'max_amount_limit'            => 7500,
+            'pricing_percent'             => 50,
             ]);
 
         $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 10000]);
@@ -1253,7 +1254,8 @@ class SettlementOndemandTest extends TestCase
             'merchant_id'                 => $this->merchantDetail['merchant_id'],
             'percentage_of_balance_limit' => 50,
             'settlements_count_limit'     => 2,
-            'max_amount_limit'            => 7500
+            'max_amount_limit'            => 7500,
+            'pricing_percent'             => 50,
         ]);
 
         $this->fixtures->on(Mode::TEST)->create('settlement.ondemand',[
@@ -1282,7 +1284,8 @@ class SettlementOndemandTest extends TestCase
             'merchant_id'                 => $this->merchantDetail['merchant_id'],
             'percentage_of_balance_limit' => 50,
             'settlements_count_limit'     => 3,
-            'max_amount_limit'            => 7500
+            'max_amount_limit'            => 7500,
+            'pricing_percent'             => 50,
         ]);
 
         $this->fixtures->on(Mode::TEST)->create('settlement.ondemand',[
@@ -1329,6 +1332,7 @@ class SettlementOndemandTest extends TestCase
             'percentage_of_balance_limit'   => 50,
             'settlements_count_limit'       => 2,
             'max_amount_limit'              => 2000000,
+            'pricing_percent'               => 50,
         ], $featureConfigs['items'][0]);
 
         $this->assertArraySelectiveEquals([
@@ -1336,6 +1340,7 @@ class SettlementOndemandTest extends TestCase
             'percentage_of_balance_limit'   => 50,
             'settlements_count_limit'       => 2,
             'max_amount_limit'              => 2000000,
+            'pricing_percent'               => 50,
         ], $featureConfigs['items'][1]);
 
         $pricingRule = $this->getDbEntity('pricing',
@@ -1396,6 +1401,7 @@ class SettlementOndemandTest extends TestCase
             'percentage_of_balance_limit'   => 50,
             'settlements_count_limit'       => 2,
             'max_amount_limit'              => 2000000,
+            'pricing_percent'               => 50,
         ], $featureConfigs['items'][0]);
 
         $this->assertArraySelectiveEquals([
@@ -1403,6 +1409,7 @@ class SettlementOndemandTest extends TestCase
             'percentage_of_balance_limit'   => 50,
             'settlements_count_limit'       => 2,
             'max_amount_limit'              => 2000000,
+            'pricing_percent'               => 50,
         ], $featureConfigs['items'][1]);
 
         $pricingRule = $this->getDbEntity('pricing',
@@ -1487,6 +1494,7 @@ class SettlementOndemandTest extends TestCase
             'percentage_of_balance_limit'   => 50,
             'settlements_count_limit'       => 2,
             'max_amount_limit'              => 2000000,
+            'pricing_percent'               => 50,
         ], $featureConfigs['items'][0]);
 
         $this->assertArraySelectiveEquals([
@@ -1494,6 +1502,7 @@ class SettlementOndemandTest extends TestCase
             'percentage_of_balance_limit'   => 50,
             'settlements_count_limit'       => 2,
             'max_amount_limit'              => 2000000,
+            'pricing_percent'               => 50,
         ], $featureConfigs['items'][1]);
 
         $pricingRule1 = $this->getDbEntity('pricing',
@@ -1583,14 +1592,16 @@ class SettlementOndemandTest extends TestCase
             'merchant_id'                 => '10000000000000',
             'percentage_of_balance_limit' => 50,
             'settlements_count_limit'     => 2,
-            'max_amount_limit'            => 7500
+            'max_amount_limit'            => 7500,
+            'pricing_percent'             => 50,
         ]);
 
         $this->fixtures->on(Mode::TEST)->create('settlement.ondemand.feature_config',[
             'merchant_id'                 => '100DemoAccount',
             'percentage_of_balance_limit' => 25,
             'settlements_count_limit'     => 1,
-            'max_amount_limit'            => 1000
+            'max_amount_limit'            => 1000,
+            'pricing_percent'             => 50,
         ]);
 
         $this->startTest();
@@ -1606,6 +1617,7 @@ class SettlementOndemandTest extends TestCase
             'percentage_of_balance_limit'   => 50,
             'settlements_count_limit'       => 2,
             'max_amount_limit'              => 2000000,
+            'pricing_percent'               => 50,
         ], $featureConfigs['items'][0]);
 
         $this->assertArraySelectiveEquals([
@@ -1613,6 +1625,7 @@ class SettlementOndemandTest extends TestCase
             'percentage_of_balance_limit'   => 50,
             'settlements_count_limit'       => 2,
             'max_amount_limit'              => 2000000,
+            'pricing_percent'               => 50,
         ], $featureConfigs['items'][1]);
 
         $pricingRule = $this->getDbEntity('pricing',
@@ -1697,14 +1710,16 @@ class SettlementOndemandTest extends TestCase
             'merchant_id'                 => '10000000000000',
             'percentage_of_balance_limit' => 50,
             'settlements_count_limit'     => 2,
-            'max_amount_limit'            => 7500
+            'max_amount_limit'            => 7500,
+            'pricing_percent'             => 18,
         ]);
 
         $this->fixtures->on(Mode::TEST)->create('settlement.ondemand.feature_config',[
             'merchant_id'                 => '100DemoAccount',
             'percentage_of_balance_limit' => 25,
             'settlements_count_limit'     => 1,
-            'max_amount_limit'            => 1000
+            'max_amount_limit'            => 1000,
+            'pricing_percent'             => 25,
         ]);
 
         $this->startTest();
@@ -1720,6 +1735,7 @@ class SettlementOndemandTest extends TestCase
             'percentage_of_balance_limit'   => 50,
             'settlements_count_limit'       => 2,
             'max_amount_limit'              => 2000000,
+            'pricing_percent'               => 50,
         ], $featureConfigs['items'][0]);
 
         $this->assertArraySelectiveEquals([
@@ -1727,6 +1743,7 @@ class SettlementOndemandTest extends TestCase
             'percentage_of_balance_limit'   => 50,
             'settlements_count_limit'       => 2,
             'max_amount_limit'              => 2000000,
+            'pricing_percent'               => 50,
         ], $featureConfigs['items'][1]);
 
         $pricingRule = $this->getDbEntity('pricing',
@@ -1784,6 +1801,7 @@ class SettlementOndemandTest extends TestCase
             'percentage_of_balance_limit'   => 50,
             'settlements_count_limit'       => 2,
             'max_amount_limit'              => 2000000,
+            'pricing_percent'               => 50,
         ], $featureConfigs['items'][0]);
 
         $pricingRule = $this->getDbEntity('pricing',
@@ -1829,7 +1847,8 @@ class SettlementOndemandTest extends TestCase
             'merchant_id'                 => '10000000000000',
             'percentage_of_balance_limit' => 50,
             'settlements_count_limit'     => 2,
-            'max_amount_limit'            => 7500
+            'max_amount_limit'            => 7500,
+            'pricing_percent'             => 50,
         ]);
 
         $this->fixtures->on(Mode::TEST)->create('settlement.ondemand',[
@@ -1861,7 +1880,8 @@ class SettlementOndemandTest extends TestCase
             'merchant_id'                 => '10000000000000',
             'percentage_of_balance_limit' => 50,
             'settlements_count_limit'     => 3,
-            'max_amount_limit'            => 7500
+            'max_amount_limit'            => 7500,
+            'pricing_percent'             => 50,
         ]);
 
         $this->fixtures->on(Mode::TEST)->create('settlement.ondemand',[
@@ -1895,7 +1915,8 @@ class SettlementOndemandTest extends TestCase
             'merchant_id'                 => '10000000000000',
             'percentage_of_balance_limit' => 50,
             'settlements_count_limit'     => 3,
-            'max_amount_limit'            => 75000
+            'max_amount_limit'            => 75000,
+            'pricing_percent'             => 50,
         ]);
 
         $this->fixtures->on(Mode::TEST)->create('settlement.ondemand',[

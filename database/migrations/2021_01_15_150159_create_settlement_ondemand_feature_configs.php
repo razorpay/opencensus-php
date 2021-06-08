@@ -34,6 +34,9 @@ class CreateSettlementOndemandFeatureConfigs extends Migration
             $table->bigInteger(Entity::MAX_AMOUNT_LIMIT)
                   ->unsigned();
 
+            $table->integer(Entity::PRICING_PERCENT)
+                  ->unsigned();
+
             $table->integer(Entity::CREATED_AT);
 
             $table->integer(Entity::UPDATED_AT);

@@ -13,6 +13,7 @@ class Core extends Base\Core
             Entity::MAX_AMOUNT_LIMIT             => $input[Entity::MAX_AMOUNT_LIMIT],
             Entity::SETTLEMENTS_COUNT_LIMIT      => $input[Entity::SETTLEMENTS_COUNT_LIMIT],
             Entity::PERCENTAGE_OF_BALANCE_LIMIT  => $input[Entity::PERCENTAGE_OF_BALANCE_LIMIT],
+            Entity::PRICING_PERCENT              => $input[Entity::PRICING_PERCENT]
         ];
 
         $featureConfig = (new Entity)->build($data);
@@ -31,6 +32,8 @@ class Core extends Base\Core
         $featureConfig->setSettlementsCountLimit($input[Entity::SETTLEMENTS_COUNT_LIMIT]);
 
         $featureConfig->setPercentageOfBalanceLimit($input[Entity::PERCENTAGE_OF_BALANCE_LIMIT]);
+
+        $featureConfig->setPricingPercent($input[Entity::PRICING_PERCENT]);
 
         $this->repo->saveOrFail($featureConfig);
 
