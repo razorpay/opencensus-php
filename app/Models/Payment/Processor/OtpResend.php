@@ -71,8 +71,8 @@ trait OtpResend
         // Checking if the resend is called for headless otp
         if (($payment->isMethodCardOrEmi() === true) and
             (($payment->getAuthType() === Payment\AuthType::HEADLESS_OTP) or
-             ($payment->getAuthType() === Payment\AuthType::IVR) or
-                (($payment->getGateway() === Payment\Gateway::PAYSECURE) and
+             ($payment->getAuthType() === Payment\AuthType::IVR)  or
+                ((($payment->getGateway() === Payment\Gateway::PAYSECURE) or ($payment->getGateway() === Payment\Gateway::AXIS_MIGS) or ($payment->getGateway() === Payment\Gateway::HITACHI))and
                     ($payment->getAuthType() === Payment\AuthType::OTP))))
         {
             if ($payment->getCpsRoute() === Payment\Entity::CARD_PAYMENT_SERVICE)
