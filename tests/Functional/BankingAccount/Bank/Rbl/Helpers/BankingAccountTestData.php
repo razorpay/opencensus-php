@@ -911,6 +911,25 @@ return [
         ],
     ],
 
+    'testGetBankingAccountOfOtherMerchant' => [
+        'request'  => [
+            'url'     => '/banking_accounts',
+            'method'  => 'GET',
+            'server' => [
+                'X-Dashboard-User-Id' => '20000000000000',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The id provided does not exist',
+                ],
+            ],
+            'status_code' => 400,
+        ]
+    ],
+
     'testUpdateBankingAccountToPicked' => [
         'request'  => [
             'url'     => '/banking_account',

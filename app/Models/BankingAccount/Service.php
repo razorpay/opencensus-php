@@ -49,7 +49,7 @@ class Service extends Base\Service
 
     public function fetch(string $id): array
     {
-        $bankingAccount = $this->repo->banking_account->findByPublicId($id);
+        $bankingAccount = $this->repo->banking_account->findByPublicIdAndMerchant($id, $this->merchant);
 
         $bankingAccount->load('bankingAccountActivationDetails');
 

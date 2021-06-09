@@ -2334,6 +2334,49 @@ class BankingAccountTest extends TestCase
         $this->assertEquals('560030', $bankingAccount->getPincode());
     }
 
+    public function testGetBankingAccountOfOtherMerchant()
+    {
+        $activationDetails = [
+            'activation_detail' => [
+                'merchant_poc_name' => 'Sample Name',
+                'merchant_poc_designation' => 'Financial Consultant',
+                'merchant_poc_email' => 'sample@sample.com',
+                'merchant_poc_phone_number' => '9876556789',
+                'merchant_documents_address' => 'x, y, z',
+                'business_type' => 'ecommerce',
+                'account_type' => 'insignia',
+                'merchant_city' => 'Bangalore',
+                'is_documents_walkthrough_complete' => true,
+                'merchant_region' => 'South',
+                'expected_monthly_gmv' => 10000,
+                'average_monthly_balance' => 0,
+                'business_category' => 'partnership',
+                'sales_team' => 'self_serve',
+            ]
+        ];
+
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $bankingAccount = $this->createBankingAccountFromDashboard($activationDetails);
+
+        $this->ba->proxyAuth();
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts/' . $bankingAccount['id'],
+                'method'  => 'GET',
+            ],
+        ];
+
+        $this->expectException(\RZP\Exception\BadRequestException::class);
+
+        $this->startTest($dataToReplace);
+    }
+
     public function testUpdateBankingAccountToInitiatedWithInternalComments()
     {
         $bankingAccount = $this->createBankingAccount();
