@@ -7,6 +7,7 @@ use RZP\Models\P2p\Vpa;
 use RZP\Models\P2p\Base;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
+use RZP\Trace\TraceCode;
 
 /**
  * @property  Repository $repo
@@ -96,6 +97,13 @@ class Core extends Base\Core
 
         $transactionId = $input[UpiTransaction\Entity::TRANSACTION_ID] ?? null;
         $networkTransactionId = $input[UpiTransaction\Entity::NETWORK_TRANSACTION_ID] ?? null;
+
+        $this->trace()->info(TraceCode::P2P_CALLBACK_TRACE,[
+            'action'                    => $defined[UpiTransaction\Entity::ACTION],
+            'rrn'                       => $input[UpiTransaction\Entity::RRN] ?? null,
+            'transaction_id'            => $transactionId,
+            'network_transaction_id'    => $networkTransactionId
+        ]);
 
         if (empty($transactionId) === false)
         {
