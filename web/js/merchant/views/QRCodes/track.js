@@ -13,8 +13,8 @@ export function trackSegment({
   options = {}
 }) {
   // console.log({
-  //   objectName: event,
-  //   actionName: actionName ? 'clicked' : '',
+  //   objectName: event.replaceAll('_', '.'),
+  //   actionName: 'clicked',
   //   screen: screen,
   //   properties: {
   //     ...getCommonAnalyticsProperties(window.rzp_user),

@@ -8,6 +8,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { updateFeatures } from 'merchant/reducers/config';
 import { saveOnboarding, handleProductQuickGuide } from 'merchant/reducers/onboarding';
 import featuresList from './features.json';
+import track from './track';
 
 @connect(
   (state) => {
@@ -24,7 +25,16 @@ import featuresList from './features.json';
     handleProductQuickGuide,
   },
 )
-export default class ComingSoonContainer extends React.Component {
+@RTracking(() => window.rzpQ.component('QRComingSoonContainer'))
+export default class QRComingSoonContainer extends React.Component {
+  componentDidMount() {
+    track.init({
+      track: this.props.tracking.trackEvent,
+    });
+
+    track.open();
+  }
+
   handleEnableFeature = () => {
     return this.props
       .updateFeatures(

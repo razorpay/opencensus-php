@@ -31,6 +31,8 @@ export default class QRCodesListContainer extends ListContainer {
     track.init({
       track: this.props.tracking.trackEvent,
     });
+
+    track.load();
   }
 
   onAlertCloseClick = () => {
@@ -46,12 +48,16 @@ export default class QRCodesListContainer extends ListContainer {
       <div class="QRCode--List content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <TakeATourButton feature={RZPFeatures.QR_CODES} />
+            <TakeATourButton
+              feature={RZPFeatures.QR_CODES}
+              onSuccess={() => track.tourStatus(true)}
+              onAbort={() => track.tourStatus(false)}
+            />
 
-            <DocsLink url="https://razorpay.com/docs/qr-codes/api/new/" />
+            <DocsLink url="https://razorpay.com/docs/qr-codes/api/new/" onClick={track.docs}  />
 
             <ShowWhen additionalCondition={(user) => user.isAllowedEdit('qr_codes')}>
-              <NavLink class="btn btn-primary" to="/qr_codes/new">
+              <NavLink class="btn btn-primary" to="/qr_codes/new" onClick={track.create}>
                 <i class="i i-plus" />
                 Create QR Codes
               </NavLink>
@@ -68,7 +74,7 @@ export default class QRCodesListContainer extends ListContainer {
           onClearAnalytics={this.onClearAnalytics}
         />
 
-        <Alert type={status.type} message={status.message} onCloseClick={this.onAlertCloseClick} />
+        <Alert type={this.state.status.type} message={this.state.status.message} onCloseClick={this.onAlertCloseClick} />
 
         <DataTable
           title="QR Codes"
@@ -84,7 +90,7 @@ export default class QRCodesListContainer extends ListContainer {
           onClick={(params, type) => {
             track.browse(type, {
               page: params.skip % params.count,
-            })
+            });
 
             this.paginate(params);
           }}

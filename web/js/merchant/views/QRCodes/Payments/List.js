@@ -5,7 +5,8 @@ import { RZPFeatures } from 'merchant/helpers/data';
 import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 
 import { paymentId, amount, email, contact, createdAt, status } from 'common/ui/item/pair';
-
+import Pager from 'common/ui/Pager';
+import Alert from 'common/ui/Forms/Alert';
 import HeaderAction from 'common/ui/HeaderAction';
 import DocsLink from 'merchant/components/DocsLink';
 import ListContainer from 'merchant/containers/ListContainer';
@@ -13,8 +14,10 @@ import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import PaymentsTable from 'merchant/views/Transactions/Payments/components/PaymentsTable';
 import PaymentsListFilter from './Filter';
 import { fetchQRCodesPayments as fetchAll } from 'merchant/reducers/collection';
+import track from './track';
 
 @connect((state) => state.qrCodePayments, { fetchAll })
+@RTracking(() => window.rzpQ.component('QRPaymentsListContainer'))
 export default class QRPaymentsListContainer extends ListContainer {
   get paymentIdCol() {
     return {
@@ -23,14 +26,34 @@ export default class QRPaymentsListContainer extends ListContainer {
     };
   }
 
+  componentDidMount() {
+    track.init({
+      track: this.props.tracking.trackEvent,
+    });
+
+    track.load();
+  }
+
+  onAlertCloseClick = () => {
+    track.fail(this.state.status.message[1]);
+  };
+
+  onSearchAnalytics = () => track.submit();
+
+  onClearAnalytics = () => track.clear();
+
   render() {
     return (
       <div class="content-wrapper">
         <HeaderAction>
           <div class="btn-toolbar pull-right">
-            <TakeATourButton feature={RZPFeatures.QR_CODES} />
+            <TakeATourButton
+              feature={RZPFeatures.QR_CODES}
+              onSuccess={() => track.tourStatus(true)}
+              onAbort={() => track.tourStatus(false)}
+            />
 
-            <DocsLink url="https://razorpay.com/docs/qr_codes/" />
+            <DocsLink url="https://razorpay.com/docs/qr_codes/" onClick={track.docs} />
           </div>
         </HeaderAction>
 
@@ -38,6 +61,14 @@ export default class QRPaymentsListContainer extends ListContainer {
           form="qrPaymentListFilter"
           count={this.state.count}
           onSubmit={this.search}
+          onSearchAnalytics={this.onSearchAnalytics}
+          onClearAnalytics={this.onClearAnalytics}
+        />
+
+        <Alert
+          type={this.state.status.type}
+          message={this.state.status.message}
+          onCloseClick={this.onAlertCloseClick}
         />
 
         <PaymentsTable
@@ -46,6 +77,19 @@ export default class QRPaymentsListContainer extends ListContainer {
           paginate={this.paginate}
           {...this.props}
           paymentColumns={[this.paymentIdCol, amount, email, contact, createdAt, status]}
+        />
+
+        <Pager
+          count={this.state.count}
+          skip={this.state.skip}
+          length={this.props.items.length}
+          onClick={(params, type) => {
+            track.browse(type, {
+              page: params.skip % params.count,
+            });
+
+            this.paginate(params);
+          }}
         />
       </div>
     );

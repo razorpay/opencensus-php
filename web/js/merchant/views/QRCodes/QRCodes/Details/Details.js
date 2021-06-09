@@ -97,8 +97,10 @@ export default function Details(props) {
                 <EntityDetailRow
                   label="QR Usage"
                   pairClass="qr-usage"
-                  value={qrCode.usage.replace('_', ' ')}
+                  value={(qrCode.usage || '').replace('_', ' ')}
                 />
+
+                <EntityDetailRow label="QR Name" value={qrCode.name} />
 
                 <EntityDetailRow label="Payment Amount">
                   {qrCode.payment_amount ? (
@@ -128,15 +130,16 @@ export default function Details(props) {
                 <NestedEntityDetailRow label="Notes" value={qrCode.notes} />
               </div>
 
-              {showTestPaymentBtn && (
-                {/* <Banner class="QRCode-test-payment">
+              {showTestPaymentBtn &&
+                {
+                  /* <Banner class="QRCode-test-payment">
                   <Button onClick={onMakeTestPaymentClick}>Make a Test Payment</Button>
 
                   <div>
                     <strong>Test Mode:</strong> Make a test payment using this QR Code
                   </div>
-                </Banner> */}
-              )}
+                </Banner> */
+                }}
 
               <hr />
 

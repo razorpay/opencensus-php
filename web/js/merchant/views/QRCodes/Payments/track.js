@@ -4,7 +4,7 @@ function _track() {
   let track;
 
   function send(event, options) {
-    track(trackLJ(`${event}`, options));
+    track(trackLJ(`payments.${event}`, options));
 
     trackSegment({
       event,
@@ -31,8 +31,6 @@ function _track() {
     browse: (type, options) => send(`list.${type}`, options),
 
     load: () => send('loaded'),
-
-    create: () => send('create'),
 
     tour: () => send('tour'),
 

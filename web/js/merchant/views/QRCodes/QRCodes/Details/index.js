@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
+import RTracking from 'react-tracking';
 
 import QRCodeDetails from './Details';
 import * as VirtualAccountActions from 'merchant/reducers/virtualaccounts';
@@ -11,6 +12,7 @@ import { fetchCustomersForAutocomplete } from 'merchant/reducers/customers';
 import { closeQR } from 'merchant/reducers/qrCodes/list';
 import CreateTestPayment from './CreateTestPayment';
 import QRCodePreviewModal from '../components/QRPreviewModal';
+import track from './track';
 
 @withRouter
 @connect(
@@ -28,6 +30,7 @@ import QRCodePreviewModal from '../components/QRPreviewModal';
     closeQR
   },
 )
+@RTracking(() => window.rzpQ.component('QRCodeDetailsContainer'))
 export default class QRCodeDetailsContainer extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -44,6 +47,14 @@ export default class QRCodeDetailsContainer extends React.Component {
     this.fetchQRCodeDetails(id);
     this.fetchPayments(id);
     this.props.fetchCustomersForAutocomplete();
+  }
+
+  componentWillMount() {
+    track.init({
+      track: this.props.tracking.trackEvent,
+    });
+
+    track.open();
   }
 
   componentWillReceiveProps(nextProps) {

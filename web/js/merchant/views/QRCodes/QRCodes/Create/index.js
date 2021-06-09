@@ -63,6 +63,7 @@ export default class CreateQRCode extends React.Component {
     this.props.openModal({
       size: 'medium',
       className: 'QRCode--Preview',
+      disableClose: true,
       component: (
         <QRCodePreviewModal
           id={id}

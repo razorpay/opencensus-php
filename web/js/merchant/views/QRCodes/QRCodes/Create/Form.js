@@ -196,6 +196,8 @@ export default class CreationForm extends React.Component {
       payload.customer_id = customer.id;
     }
 
+    payload.fixed_amount = parseInt(payload.fixed_amount);
+
     this.setState({
       isSubmitting: true,
     });

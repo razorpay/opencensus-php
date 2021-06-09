@@ -1,17 +1,28 @@
 import ListFilter from 'merchant/components/ListFilter';
 import { Field } from 'redux-form';
+import track from './track';
 
 export default (props) => {
   return (
     <ListFilter {...props}>
       <div class="form-group list-filter-item">
         <label>QR Code Id</label>
-        <Field name="qr_code_id" component="input" class="form-control input-sm" />
+        <Field
+          name="qr_code_id"
+          component="input"
+          class="form-control input-sm"
+          onBlur={track.field}
+        />
       </div>
 
       <div class="form-group list-filter-item">
         <label>Payment Id</label>
-        <Field name="payment_id" component="input" class="form-control input-sm" />
+        <Field
+          name="payment_id"
+          component="input"
+          class="form-control input-sm"
+          onBlur={track.field}
+        />
       </div>
 
       <div class="form-group list-filter-item">
@@ -27,17 +38,28 @@ export default (props) => {
 
       <div class="form-group list-filter-item">
         <label>Email</label>
-        <Field name="email" component="input" type="email" class="form-control input-sm" />
+        <Field
+          name="email"
+          component="input"
+          type="email"
+          class="form-control input-sm"
+          onBlur={track.field}
+        />
       </div>
 
       <div class="form-group list-filter-item">
         <label>Bank Reference Number</label>
-        <Field name="provider_reference_id" component="input" class="form-control input-sm" />
+        <Field
+          name="provider_reference_id"
+          component="input"
+          class="form-control input-sm"
+          onBlur={track.field}
+        />
       </div>
 
       <div class="form-group list-filter-item">
         <label>Notes</label>
-        <Field name="notes" component="input" class="form-control input-sm" />
+        <Field name="notes" component="input" class="form-control input-sm" onBlur={track.field} />
       </div>
 
       <div class="form-group list-filter-item count">
@@ -49,6 +71,7 @@ export default (props) => {
           max={100}
           type="number"
           class="form-control input-sm"
+          onBlur={track.field}
         />
       </div>
     </ListFilter>
