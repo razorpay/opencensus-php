@@ -6,6 +6,7 @@ use Mail;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Partner\Metric;
 use RZP\Models\State;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
@@ -114,6 +115,8 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::PARTNER_ACTIVATION_CREATION_SUCCESS, [
             'merchant_id' => $merchant->getId()
         ]);
+
+        $this->trace->count(Metric::PARTNER_ACTIVATION_CREATE_TOTAL, ['partner_type' => $merchant->getPartnerType()]);
 
         if($partnerActivation->getActivationStatus() === Constants::ACTIVATED)
         {
