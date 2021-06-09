@@ -226,6 +226,11 @@ class MockGatewayController extends Controller
                     'org_logo'           => $data['org_logo'],
                     'org_name'          => $data['org_name'],
                 ]);
+            
+            if (!filter_var($data['org_logo'], FILTER_VALIDATE_URL))
+            {
+                $data['org_logo'] = 'https://cdn.razorpay.com/logo.svg';
+            }
             return View::make('gateway.sharpBankPage')
                        ->with('data', $data);
         }
