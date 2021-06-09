@@ -662,12 +662,12 @@ class Service extends Base\Service
 
         $balanceIds = $this->repo->payout->getBalanceIdsWithAtleastOneQueuedPayout();
 
-        // Filters the balance IDs for balances where balance changed in last 24 hours
+        // Filters the balance IDs for balances where balance changed in last 6 hours
         $balanceIdsFilteredOnBalanceUpdate = $this->repo
                                                   ->balance
                                                   ->getBankingBalanceIdsWhereBalanceUpdatedRecently($balanceIds);
 
-        // Filters the balance IDs for balances where gateway balance changed in last 24 hours
+        // Filters the balance IDs for balances where gateway balance changed in last 6 hours
         $balanceIdsFilteredOnGatewayBalanceUpdate = $this->repo
                                                          ->banking_account_statement_details
                                                          ->getBalanceIdsWhereGatewayBalanceUpdatedRecently($balanceIds);

@@ -89,7 +89,7 @@ class Repository extends Base\Repository
     }
 
     /**
-     * Filter out Balance Id for balances where gateway balance has updated in last 24 hours
+     * Filter out Balance Id for balances where gateway balance has updated in last 6 hours
      *
      * @param array $balanceIdList
      *
@@ -101,12 +101,12 @@ class Repository extends Base\Repository
         $balanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
         $updatedAtColumn = $this->dbColumn(Entity::UPDATED_AT);
 
-        $oneDayEarlierTimeStamp = Carbon::now(Constants\Timezone::IST)->subHours(24)->getTimestamp();
+        $sixHourEarlierTimeStamp = Carbon::now(Constants\Timezone::IST)->subHours(6)->getTimestamp();
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->select($balanceIdColumn)
                     ->whereIn($balanceIdColumn, $balanceIdList)
-                    ->where($updatedAtColumn, '>=', $oneDayEarlierTimeStamp)
+                    ->where($updatedAtColumn, '>=', $sixHourEarlierTimeStamp)
                     ->where($statusColumn, '=', Status::ACTIVE)
                     ->distinct()
                     ->get()

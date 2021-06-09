@@ -332,12 +332,12 @@ class Repository extends Base\Repository
      */
     public function getBalanceIdsWithAtleastOneQueuedPayout()
     {
-        $queuedAtColumn = $this->dbColumn(Entity::QUEUED_AT);
-        $balanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
+        $statusColumn       = $this->dbColumn(Entity::STATUS);
+        $balanceIdColumn    = $this->dbColumn(Entity::BALANCE_ID);
 
         return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->select($balanceIdColumn)
-                    ->whereNotNull($queuedAtColumn)
+                    ->where($statusColumn, '=', Status::QUEUED)
                     ->distinct()
                     ->get()
                     ->pluck(Entity::BALANCE_ID)
