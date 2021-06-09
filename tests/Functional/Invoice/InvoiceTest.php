@@ -2976,6 +2976,21 @@ class InvoiceTest extends TestCase
         $this->assertEquals('paid', $invoice['status']);
     }
 
+    public function testInvoicePdfSignedUrlInHostedPage()
+    {
+        $this->testCreateInvoiceWithNewCustomer();
+
+        $invoice = $this->getDbLastEntity('invoice');
+
+        $this->ba->publicAuth();
+
+        $response = $this->call('GET', '/v1/t/'.$invoice->getPublicId());
+
+        $response->assertStatus(200);
+
+        $this->assertStringContainsString('signed_pdf_url', $response->getContent());
+    }
+
     // -------------------- Protected methods --------------------
 
     protected function doPartialSuccessfulPaymentAndVerify()

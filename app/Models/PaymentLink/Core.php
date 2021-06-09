@@ -17,6 +17,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Settings;
 use RZP\Models\LineItem;
+use RZP\Models\FileStore;
 use Razorpay\Trace\Logger;
 use RZP\Services\UfhService;
 use RZP\Constants\Entity as E;
@@ -762,6 +763,21 @@ class Core extends Base\Core
             'invoice_id' => $invoiceId,
             'receipt'    => $receipt,
         ];
+
+        $invoiceCore = new Invoice\Core();
+
+        $pdf = $invoiceCore->getFreshInvoicePdf($invoice);
+
+        if ($pdf === null)
+        {
+            return $response;
+        }
+
+        $downloadAs = $invoice->getPdfDisplayName();
+
+        $pdfUrl = (new FileStore\Accessor)->getSignedUrlOfFile($pdf, $downloadAs);
+
+        $response['receipt_download_url'] = $pdfUrl;
 
         return $response;
     }

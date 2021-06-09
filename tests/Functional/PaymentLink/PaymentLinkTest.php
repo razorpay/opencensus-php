@@ -1145,6 +1145,75 @@ class PaymentLinkTest extends TestCase
 
     }
 
+    public function testFetchPaymentPageInvoiceReceiptDetails()
+    {
+        $this->testMakePaymentReceiptEnabledCustomSerialNotEnabled();
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $invoice = $this->getDbLastEntity('invoice');
+
+        $this->ba->proxyAuth();
+
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/v1/payment_pages/'.$payment->getPublicId().'/receipt',
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($content['invoice_id'], $invoice->getPublicId());
+
+        $this->assertEquals($content['receipt'], $payment->getPublicId());
+
+        $this->assertArrayHasKey('receipt_download_url', $content);
+    }
+
+    public function testSaveCustomSerialNumberReceiptAndFetch()
+    {
+        $this->testMakePaymentReceiptEnabledCustomSerialEnabled();
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $invoice = $this->getDbLastEntity('invoice');
+
+        $this->assertNull($invoice->getReceipt());
+
+        $this->ba->proxyAuth();
+
+        $request = [
+            'method' => 'GET',
+            'url' => '/v1/payment_pages/' . $payment->getPublicId() . '/receipt',
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertNull($content['receipt']);
+
+        $request = [
+            'method' => 'POST',
+            'url' => '/v1/payment_pages/' . $payment->getPublicId() . '/save_receipt',
+            'content' => [
+                'receipt' => 'thisisatestreceiptvalue'
+            ]
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $request = [
+            'method' => 'GET',
+            'url' => '/v1/payment_pages/' . $payment->getPublicId() . '/receipt',
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($content['invoice_id'], $invoice->getPublicId());
+
+        $this->assertEquals($content['receipt'], 'thisisatestreceiptvalue');
+
+        $this->assertArrayHasKey('receipt_download_url', $content);
+    }
+
     public function testPaymentPageDetails()
     {
         $this->testPaymentLinkMakePaymentWithOrder();

@@ -13,6 +13,7 @@ use RZP\Models\Payment;
 use RZP\Models\Options;
 use RZP\Constants\Mode;
 use RZP\Models\Settings;
+use RZP\Models\FileStore;
 use RZP\Models\PaymentLink;
 use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
@@ -556,6 +557,23 @@ class ViewDataSerializerHosted extends Base\Core
                 }
 
                 break;
+        }
+
+        // adding signed pdf url also here. this can be used on checkout to show download pdf instead of using that id/pdf?download
+        // end point. This serializer is used while generating pdf itself. so at that time pdf entry will be null
+
+        if ($this->invoice->isTypeInvoice() === true)
+        {
+            $pdf = $this->invoice->pdf();
+
+            if ($pdf === null)
+            {
+                return;
+            }
+
+            $signedPdfUrl = (new FileStore\Accessor)->getSignedUrlOfFile($pdf, $this->invoice->getPdfDisplayName());
+
+            $serialized[Entity::SIGNED_PDF_URL] = $signedPdfUrl;
         }
     }
 

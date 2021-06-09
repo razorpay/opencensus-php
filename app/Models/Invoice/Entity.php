@@ -215,7 +215,7 @@ class Entity extends Base\PublicEntity
 
     const SWITCH_TO                = 'switch_to';
 
-
+    const SIGNED_PDF_URL           = 'signed_pdf_url';
     // ------------------------ Other constants ----------------------
 
     const ALLOWED_LINE_ITEM_TYPES_INVOICE = [

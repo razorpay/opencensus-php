@@ -283,10 +283,9 @@ class Service extends Base\Service
 
     public function setReceiptDetails(string $id, array $input)
     {
-        $paymentLink = $this->repo->payment_link->findActiveByPublicId($id);
+        $paymentLink = $this->repo->payment_link->findByPublicIdAndMerchant($id, $this->merchant);
 
         return $this->core->setReceiptDetails($paymentLink, $input);
-
     }
 
     public function getInvoiceDetails(string $paymentId)
