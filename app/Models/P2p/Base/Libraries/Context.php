@@ -40,12 +40,35 @@ class Context extends ArrayObject
 
     const INPUT                     = 'input';
 
+
+    const DEVICE_META               = 'device_meta';
+
+    /**** Device Meta Keys ******/
+    const OS                        = 'os';
+
+    const OS_VERSION                = 'os_version';
+
+    const SDK_SESSION_ID            = 'sdk_session_id';
+
+    const SDK_VERSION               = 'sdk_version';
+
+    const NETWORK_TYPE              = 'network_type';
+
     const OPTIONS_RULES = [
-        self::REQUEST_ID                            => 'nullable|string|max:50',
-        self::HANDLE                                => 'required|string',
-        self::DEVICE                                => 'array',
-        self::DEVICE . '.' . Device\Entity::IP      => 'nullable|ipv4',
-        self::DEVICE . '.' . Device\Entity::GEOCODE => 'nullable|string|max:20',
+        self::REQUEST_ID                                => 'nullable|string|max:50',
+        self::HANDLE                                    => 'required|string',
+        self::OS                                        => 'nullable|string|max:50',
+        self::SDK_VERSION                               => 'nullable|string|max:50',
+        self::NETWORK_TYPE                              => 'nullable|string|max:50',
+        self::DEVICE                                    => 'array',
+        self::DEVICE . '.' . Device\Entity::IP          => 'nullable|ipv4',
+        self::DEVICE . '.' . Device\Entity::GEOCODE     => 'nullable|string|max:20',
+        self::DEVICE_META                               => 'array',
+        self::DEVICE_META . '.' . self::OS              => 'nullable|string|max:50',
+        self::DEVICE_META . '.' . self::OS_VERSION      => 'nullable|string|max:50',
+        self::DEVICE_META . '.' . self::SDK_SESSION_ID  => 'nullable|string|max:50',
+        self::DEVICE_META . '.' . self::SDK_VERSION     => 'nullable|string|max:50',
+        self::DEVICE_META . '.' . self::NETWORK_TYPE    => 'nullable|string|max:50',
     ];
 
     /**
