@@ -392,56 +392,13 @@ class UpiIciciGatewayTest extends TestCase
             ]
         ];
 
-        $cases['spcb_missing_zeroes_hardcoded'] = [
-            [
-                'account_number'    => '135791208642',
-                'ifsc'              => 'SPCB0251001',
-            ],
-            [
-                'payerAccount'      => '00000135791208642', // Leading zeroes padding for 17 chars
-            ],
-            true
-        ];
-
-        $cases['kvgb_missing_zeroes_hardcoded'] = [
-            [
-                'account_number'    => '13579120864',
-                'ifsc'              => 'KVGB0000001',
-            ],
-            [
-                'payerAccount'      => '00000013579120864', // Leading zeroes padding for 17 chars
-            ],
-            true
-        ];
-
-        $cases['mahg_missing_zeroes_hardcoded'] = [
-            [
-                'account_number'    => '13579120864',
-                'ifsc'              => 'MAHG0099922',
-            ],
-            [
-                'payerAccount'      => '00000013579120864', // Leading zeroes padding for 17 chars
-            ],
-            true
-        ];
-
         $cases['spcb_missing_zeroes'] = [
             [
                 'account_number'    => '135791208642',
                 'ifsc'              => 'SPCB0251001',
             ],
             [
-                'payerAccount'      => '135791208642', // Leading zeroes padding for 17 chars
-            ],
-        ];
-
-        $cases['kvgb_missing_zeroes'] = [
-            [
-                'account_number'    => '13579120864',
-                'ifsc'              => 'KVGB0000001',
-            ],
-            [
-                'payerAccount'      => '13579120864',
+                'payerAccount'      => '00000135791208642', // Leading zeroes padding for 17 chars
             ]
         ];
 
@@ -451,7 +408,7 @@ class UpiIciciGatewayTest extends TestCase
                 'ifsc'              => 'MAHG0099922',
             ],
             [
-                'payerAccount'      => '13579120864', // Leading zeroes padding for 17 chars
+                'payerAccount'      => '00000013579120864', // Leading zeroes padding for 17 chars
             ]
         ];
 
@@ -462,15 +419,9 @@ class UpiIciciGatewayTest extends TestCase
      * @dataProvider tpvBankAccountHandling
      * @param array $bankAccount
      * @param array $expected
-     * @param bool $specialMerchantsEnabled
      */
-    public function testTpvBankAccountHandling(array $bankAccount, array $expected, bool $specialMerchantsEnabled = false)
+    public function testTpvBankAccountHandling(array $bankAccount, array $expected)
     {
-        if($specialMerchantsEnabled)
-        {
-            config()->set('app.upi.special_merchant_ids', 'Eh54Q1B6HQKbS3');
-        }
-
         $terminal = $this->fixtures->create('terminal:shared_upi_icici_tpv_terminal');
 
         $this->fixtures->merchant->enableTpv();
