@@ -185,7 +185,7 @@ class Processor extends Base\Processor
 
                 $this->context()->setMerchant($device->merchant);
 
-                $this->context()->setDevice($device);
+                $this->context()->setDevice($device, true);
 
                 break;
         }
