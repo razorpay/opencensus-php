@@ -10,6 +10,7 @@ use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Payout;
 use RZP\Models\Pricing;
+use RZP\Models\Feature;
 use RZP\Models\Reversal;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -26,6 +27,7 @@ use RZP\Models\Feature\Constants;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\Settlement\Ondemand\Bulk;
 use RZP\Models\Settlement\OndemandPayout;
+use RZP\Models\Settlement\Ondemand\FeatureConfig;
 use RZP\Models\Pricing\Feature as PricingFeature;
 
 class Core extends Base\Core
@@ -304,27 +306,33 @@ class Core extends Base\Core
         }
     }
 
-    public function addDefaultOndemandPricingIfNotPresent($merchantId, $percentRate = 25)
+    public function addDefaultOndemandPricingIfNotPresent($merchantId = null, $percentRate = null)
     {
-        $merchant = $this->repo->merchant->findOrFail($merchantId);
-
-        if ($merchant->isPostpaid() === false)
+        if ($merchantId !== null)
         {
-            $pricingPlanId = $merchant->getPricingPlanId();
+            $this->merchant = $this->repo->merchant->findOrFail($merchantId);
+        }
 
-            $settlementOndemandPricing = $this->getOndemandPricingByFeature($merchant,
-                                                               PricingFeature::SETTLEMENT_ONDEMAND);
+        $merchant = $this->merchant;
 
-            $pricingPlan = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($pricingPlanId);
+        $pricingPlanId = $merchant->getPricingPlanId();
 
-            if($settlementOndemandPricing === null)
+        $settlementOndemandPricing = $this->getOndemandPricingByFeature($merchant, PricingFeature::SETTLEMENT_ONDEMAND);
+
+        if ($settlementOndemandPricing === null)
             {
+                if ($percentRate === null)
+                {
+                    $percentRate = $this->findPricing($merchant);
+                }
+
                 $this->repo->transactionOnLiveAndTest(function () use($merchant,
                                                                       $pricingPlanId,
                                                                       $settlementOndemandPricing,
-                                                                      $pricingPlan,
                                                                       $percentRate)
                 {
+                    $pricingPlan = $this->repo->pricing->getPricingPlanByIdWithoutOrgId($pricingPlanId);
+
                     // Replicates plan for this merchant if it was shared
                     if ($this->repo->merchant->fetchMerchantsCountWithPricingPlanId($pricingPlanId) !== 1)
                     {
@@ -334,7 +342,6 @@ class Core extends Base\Core
 
                         $pricingPlanId = $newPlan->getId();
                     }
-
 
                     $settlementOndemandPricingRule = [
                         Pricing\Entity::PRODUCT             => Product::PRIMARY,
@@ -356,6 +363,36 @@ class Core extends Base\Core
 
                 });
             }
-        }
     }
+
+    private function findPricing(Merchant\Entity $merchant): int
+    {
+        try
+        {
+            /** @var FeatureConfig\Entity $featureConfig */
+            $featureConfig = (new FeatureConfig\Repository)->getConfigByMerchantId($merchant->getId());
+
+            if (empty($featureConfig->getPricingPercent()) === false)
+            {
+                return $featureConfig->getPricingPercent();
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->debug(TraceCode::SETTLEMENT_ONDEMAND_FEATURE_CONFIG_MISSING, [
+                'message'    => 'pricing config not found. default pricing set',
+                'error'      => $e->getMessage(),
+            ]);
+        }
+
+        //if es_on_demand_restricted flag is enabled (ondemand day 1 merchant), use pricing from config if present, else use 30bps
+        //if not ondemand day 1 merchant, use 25 bps
+        if ($merchant->isFeatureEnabled(Feature\Constants::ES_ON_DEMAND_RESTRICTED) === true)
+        {
+            return 30;
+        }
+
+        return 25;
+    }
+
 }

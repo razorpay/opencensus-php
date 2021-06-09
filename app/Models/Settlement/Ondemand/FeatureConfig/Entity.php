@@ -59,6 +59,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PERCENTAGE_OF_BALANCE_LIMIT);
     }
 
+    public function getPricingPercent()
+    {
+        return $this->getAttribute(self::PRICING_PERCENT);
+    }
+
     public function setSettlementsCountLimit($settlementsCountLimit)
     {
         $this->setAttribute(Entity::SETTLEMENTS_COUNT_LIMIT, $settlementsCountLimit);
@@ -74,7 +79,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(Entity::PERCENTAGE_OF_BALANCE_LIMIT, $percentageOfBalanceLimit);
     }
 
-    public function  setPricingPercent($pricingPercent)
+    public function setPricingPercent($pricingPercent)
     {
         $this->setAttribute(Entity::PRICING_PERCENT, $pricingPercent);
     }

@@ -39,6 +39,8 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput(Validator::SETTLEMENT_ONDEMAND_FEES_INPUT, $input);
 
+        $this->core()->addDefaultOndemandPricingIfNotPresent();
+
         $amount = $this->core()->getSettlementAmount($input, $this->merchant);
 
         $input[Entity::AMOUNT] = $amount;

@@ -643,6 +643,105 @@ return [
         ]
     ],
 
+    'testOndemandDay1FeesWithPricingInConfig' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/fees',
+            'method'  => 'get',
+            'content' => [
+                'amount' => 20030000
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 2,
+                'items' => [
+                    [
+                        'name'            => 'settlement_ondemand',
+                        'amount'          => 46069,
+                        'percentage'      => null,
+                        'pricing_rule' => [
+                            'percent_rate' => 23,
+                            'fixed_rate'   => 0,
+                        ],
+                    ],
+                    [
+                        'name'            => 'tax',
+                        'amount'          => 8292,
+                        'percentage'      => 1800,
+                        'pricing_rule_id' => null,
+                    ],
+                ],
+            ]
+        ]
+    ],
+
+    'testOndemandDay1FeesWithNoPricingInConfig' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/fees',
+            'method'  => 'get',
+            'content' => [
+                'amount' => 20030000
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 2,
+                'items' => [
+                    [
+                        'name'            => 'settlement_ondemand',
+                        'amount'          => 60090,
+                        'percentage'      => null,
+                        'pricing_rule' => [
+                            'percent_rate' => 30,
+                            'fixed_rate'   => 0,
+                        ],
+                    ],
+                    [
+                        'name'            => 'tax',
+                        'amount'          => 10816,
+                        'percentage'      => 1800,
+                        'pricing_rule_id' => null,
+                    ],
+                ],
+            ]
+        ]
+    ],
+
+    'testOndemandFeesWithNoPricing' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/fees',
+            'method'  => 'get',
+            'content' => [
+                'amount' => 20030000
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 2,
+                'items' => [
+                    [
+                        'name'            => 'settlement_ondemand',
+                        'amount'          => 50075,
+                        'percentage'      => null,
+                        'pricing_rule' => [
+                            'percent_rate' => 25,
+                            'fixed_rate'   => 0,
+                        ],
+                    ],
+                    [
+                        'name'            => 'tax',
+                        'amount'          => 9014,
+                        'percentage'      => 1800,
+                        'pricing_rule_id' => null,
+                    ],
+                ],
+            ]
+        ]
+    ],
+
     'testOndemandFeesForFixedRate' => [
         'request'  => [
             'url'     => '/settlements/ondemand/fees',

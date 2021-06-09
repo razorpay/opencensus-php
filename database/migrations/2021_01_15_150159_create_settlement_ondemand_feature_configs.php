@@ -35,7 +35,8 @@ class CreateSettlementOndemandFeatureConfigs extends Migration
                   ->unsigned();
 
             $table->integer(Entity::PRICING_PERCENT)
-                  ->unsigned();
+                  ->unsigned()
+                  ->nullable();
 
             $table->integer(Entity::CREATED_AT);
 

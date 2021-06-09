@@ -2858,7 +2858,112 @@ class SettlementOndemandTest extends TestCase
 
        $this->fixtures->pricing->createOndemandPercentRatePricingPlan();
 
+        $this->fixtures->merchant->edit('10000000000000',
+            ['pricing_plan_id' => '1hDYlICobzOCYt',  'international' => 0]);
+
         $this->startTest();
+    }
+
+    public function testOndemandDay1FeesWithPricingInConfig()
+    {
+        $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
+
+        $this->fixtures->pricing->createTestPlanForNoOndemandAndEsAutomaticPricing();
+
+        $this->fixtures->merchant->edit('10000000000000',
+            ['pricing_plan_id' => '1BFFkd38fFGbnh',  'international' => 0]);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand_restricted']);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 20030000]);
+
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand.feature_config',[
+            'merchant_id'                 => $this->merchantDetail['merchant_id'],
+            'percentage_of_balance_limit' => 50,
+            'settlements_count_limit'     => 2,
+            'max_amount_limit'            => 7500,
+            'pricing_percent'             => 23,
+        ]);
+
+        $this->startTest();
+
+        $pricingRule = $this->getDbEntity('pricing',
+            [   'product' => 'primary',
+                'feature' => 'settlement_ondemand',
+                'plan_id' => '1BFFkd38fFGbnh'
+            ],
+            'test');
+
+        $this->assertEquals($pricingRule['percent_rate'], 23);
+
+    }
+
+    public function testOndemandDay1FeesWithNoPricingInConfig()
+    {
+        $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
+
+        $this->fixtures->pricing->createTestPlanForNoOndemandAndEsAutomaticPricing();
+
+        $this->fixtures->merchant->edit('10000000000000',
+            ['pricing_plan_id' => '1BFFkd38fFGbnh',  'international' => 0]);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand_restricted']);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 20030000]);
+
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand.feature_config',[
+            'merchant_id'                 => $this->merchantDetail['merchant_id'],
+            'percentage_of_balance_limit' => 50,
+            'settlements_count_limit'     => 2,
+            'max_amount_limit'            => 7500,
+        ]);
+
+        $this->startTest();
+
+        $pricingRule = $this->getDbEntity('pricing',
+            [   'product' => 'primary',
+                'feature' => 'settlement_ondemand',
+                'plan_id' => '1BFFkd38fFGbnh'
+            ],
+            'test');
+
+        $this->assertEquals($pricingRule['percent_rate'], 30);
+
+    }
+
+    public function testOndemandFeesWithNoPricing()
+    {
+        $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
+
+        $this->fixtures->pricing->createTestPlanForNoOndemandAndEsAutomaticPricing();
+
+        $this->fixtures->merchant->edit('10000000000000',
+            ['pricing_plan_id' => '1BFFkd38fFGbnh',  'international' => 0]);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 20030000]);
+
+        $this->startTest();
+
+        $pricingRule = $this->getDbEntity('pricing',
+            [   'product' => 'primary',
+                'feature' => 'settlement_ondemand',
+                'plan_id' => '1BFFkd38fFGbnh'
+            ],
+            'test');
+
+        $this->assertEquals($pricingRule['percent_rate'], 25);
+
     }
 
     public function testOndemandFeesForFixedRate()
@@ -2871,6 +2976,9 @@ class SettlementOndemandTest extends TestCase
         $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 20030000]);
 
         $this->fixtures->pricing->createOndemandFixedRatePricingPlan();
+
+        $this->fixtures->merchant->edit('10000000000000',
+            ['pricing_plan_id' => '1hDYlICobzOCYt',  'international' => 0]);
 
         // Force setting non banking hour for non banking hour test.
         $nonBankingHour = Carbon::create(2020, 2, 18, 20, 0, 0, Timezone::IST);
