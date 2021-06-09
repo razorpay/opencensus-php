@@ -152,6 +152,30 @@ class Service extends Base\Service
     }
 
     /**
+     * Fetch bank details for Subscriptions Emandate
+     * - Used by subscriptions service to populate mail/checkout page data.
+     *
+     * @param  string $id public token id
+     * @return array bank details
+     */
+    public function fetchSubscriptionEmandateDetails($id)
+    {
+        $token = $this->repo->token->getByPublicIdAndMerchant($id, $this->merchant);
+
+        if ($token === null)
+        {
+            $sharedMerchant = $this->repo->merchant->getSharedAccount();
+
+            $token = $this->repo->token->findByPublicIdAndMerchant($id, $sharedMerchant);
+        }
+
+        return [
+          'bank'               => $token->getBank(),
+          'accountNumberLast4' => substr($token->getAccountNumber(), -4)
+        ];
+    }
+
+    /**
      * fetch tokens for local customer
      *
      * @param string $id customer ID
