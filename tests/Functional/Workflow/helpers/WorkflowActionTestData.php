@@ -33,7 +33,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Other actions on the entity are in progress.',
+                    'description' => 'Other actions on the entity are in progress. Id: %s',
                 ],
             ],
             'status_code' => 400,

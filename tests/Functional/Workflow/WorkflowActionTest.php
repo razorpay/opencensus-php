@@ -7,6 +7,7 @@ use Hash;
 use Config;
 
 use RZP\Models\Base\EsDao;
+use RZP\Models\Workflow\Action;
 use RZP\Models\Merchant\Account;
 use Rzp\Models\Admin\Permission;
 use RZP\Tests\Functional\TestCase;
@@ -80,7 +81,13 @@ class WorkflowActionTest extends TestCase
 
     public function testCreateWorkflowActionInprogress()
     {
-        $this->editAdmin(Org::RZP_ORG_SIGNED, Org::CHECKER_ADMIN_SIGNED);
+        $actionId = $this->editAdmin(Org::RZP_ORG_SIGNED, Org::CHECKER_ADMIN_SIGNED)['id'];
+
+        $actionId = Action\Entity::verifyIdAndStripSign($actionId);
+
+        $errorDescription = $this->testData[__FUNCTION__]['response']['content']['error']['description'];
+
+        $errorDescription = sprintf($errorDescription, $actionId);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
@@ -88,6 +95,8 @@ class WorkflowActionTest extends TestCase
 
         // Assign url
         $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->testData[__FUNCTION__]['response']['content']['error']['description'] = $errorDescription;
 
         $this->startTest();
     }

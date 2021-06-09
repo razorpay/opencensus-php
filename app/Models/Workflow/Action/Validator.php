@@ -8,6 +8,7 @@ use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base\PublicEntity;
+use RZP\Error\PublicErrorDescription;
 
 class Validator extends Base\Validator
 {
@@ -51,9 +52,17 @@ class Validator extends Base\Validator
                 $actionIds[] = $action[Entity::ID];
             }
 
+            $description = null;
+
+            if (App::getFacadeRoot()['basicauth']->isAdminAuth() === true)
+            {
+                $description = PublicErrorDescription::BAD_REQUEST_WORKFLOW_ANOTHER_ACTION_IN_PROGRESS .
+                    ' Id: ' . implode(',', $actionIds);
+            }
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_WORKFLOW_ANOTHER_ACTION_IN_PROGRESS,
-                null, $actionIds);
+                null, $actionIds, $description);
         }
     }
 
