@@ -1820,6 +1820,7 @@ class Route
         'feature_bulk_assign'                      => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
         'feature_bulk_remove'                      => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
         'feature_delete_entity'                    => ['delete',   '{entityType}/{entityId}/features/{featureName}', 'FeatureController@deleteEntityFeature'                             ],
+        'feature_delete_entity_internal'           => ['delete',   'internal/{entityType}/{entityId}/features/{featureName}', 'FeatureController@deleteEntityFeature'                    ],
 
         //Recon summary
         'daily_reconciliation_summary_fetch'       => ['get',      'daily_recon_summary',                            'AdminController@getDailyReconciliationStatusSummary'               ],
@@ -3179,6 +3180,9 @@ class Route
         'capital_cards_m2p_webhook',
         'payout_approve_internal',
         'payout_reject_internal',
+
+        // Capital LOC
+        'feature_delete_entity_internal',
 
         'internal_merchant_fetch',
         'internal_merchant_get_rejection_reasons',
@@ -9133,6 +9137,7 @@ class Route
         'loc'  => [
             'loc_mail',
             'user_fetch',
+            'feature_delete_entity_internal'
         ],
 
         'leegality' => [
