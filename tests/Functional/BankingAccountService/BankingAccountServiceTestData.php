@@ -248,4 +248,20 @@ return [
             ],
         ],
     ],
+
+    'testFetchMerchantInfo' => [
+        'request'  => [
+            'url'     => '/merchants_internal/{id}',
+            'method'  => 'GET',
+            'content' => [
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'id'     => '10000000000000',
+                'email'  => 'test@razorpay.com',
+                'org_id' => '100000razorpay',
+            ],
+        ],
+    ],
 ];

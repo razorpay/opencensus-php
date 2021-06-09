@@ -261,4 +261,20 @@ class BankingAccountServiceTest extends TestCase
 
         return $this->fixtures->create('merchant_detail', $attributes);
     }
+
+    public function testFetchMerchantInfo()
+    {
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/merchants_internal/' . '10000000000000';
+
+        $response = $this->startTest();
+
+        $merchant = $this->getDbEntity('merchant',
+                                             [
+                                                 'id'  => '10000000000000',
+                                             ]);
+
+        $this->assertEquals($merchant->getName(), $response['name']);
+    }
 }

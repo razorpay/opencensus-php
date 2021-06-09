@@ -9443,6 +9443,7 @@ class Route
 
         'banking_account_service' => [
             'bas_banking_accounts_create',
+            'merchant_fetch_internal',
         ],
 
         'myoperator' => [
