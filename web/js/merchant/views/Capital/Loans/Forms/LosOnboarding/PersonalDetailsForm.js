@@ -19,6 +19,8 @@ import {
 } from '../Validators';
 import { trackMajorStackholderFill, trackPersonalFormTab, trackTermsOrPolicy } from '../ga';
 import { getPersonalFormError } from '../Helpers/getPersonalFormErrors';
+import { statesOptions } from '../Helpers/getStatesOptions';
+import { isValidPinCode } from 'common/utils/validators';
 
 const personalInfoSelector = (user) => ({
   first_name: user.contact_name,
@@ -150,24 +152,12 @@ const PersonalDetailsForm = ({
       setPincodeError(false);
     } catch (error) {
       setPincodeError(true);
-      setFormData({
-        ...formData,
-        city: '',
-        state: '',
-      });
     }
   };
 
   React.useEffect(() => {
-    const pincodeRegex = new RegExp('[1-9][0-9]{5}');
-    if (pincodeRegex.test(formData.pincode)) {
+    if (isValidPinCode(formData.pincode)) {
       loadCityAndState();
-    } else {
-      setFormData({
-        ...formData,
-        city: '',
-        state: '',
-      });
     }
   }, [formData.pincode]);
 
@@ -356,12 +346,36 @@ const PersonalDetailsForm = ({
                 maxlength="6"
                 validator={fieldsChanged && validatePinCode}
               />
-              <div className={`city-state ${pincodeError ? 'error' : ''}`}>
-                {pincodeError
-                  ? 'No record found! Please check pincode again'
-                  : formData.city && `${formData.city}, ${states[formData.state]}`}
+              <div className="city-state">
+                {!pincodeError && formData.city && `${formData.city}, ${states[formData.state]}`}
               </div>
             </div>
+            {pincodeError && (
+              <div class="flex">
+                <Input
+                  value={formData.city}
+                  onChange={handleChange}
+                  placeholder="city"
+                  name="city"
+                  label="City"
+                  required
+                  class="InputGroup--vTop"
+                  size="small"
+                />
+                <Input.Select
+                  value={formData.state}
+                  onChange={handleChange}
+                  size="small"
+                  placeholder="state"
+                  name="state"
+                  options={statesOptions}
+                  required
+                  label="State"
+                  class="InputGroup--vTop"
+                />
+              </div>
+            )}
+
             <div style={{ margin: '12px 0' }}>
               By submitting this form you agree to our{' '}
               <a

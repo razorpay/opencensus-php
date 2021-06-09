@@ -60,11 +60,10 @@
                 right: 20px
         .pincode
             align-items: center
-            margin-bottom: 0 !important
+            &:not(.error)
+                margin-bottom: 0 !important
             .city-state
                 margin: 0 0 -20px 15px
-                &.error
-                    color: #f05050
     .los-intent-details-form
         .intent-field
             &:first-child .Input-label
@@ -108,8 +107,6 @@
             align-items: flex-end
             .city-state
                 margin: 0 0 10px 15px
-                &.error
-                    color: #f05050
         .check-cta
             margin-bottom: 20px !important
         .info
@@ -274,7 +271,8 @@
             &.error
                 position: relative
                 top: -10px
-                color: #f05050
+        .state-group
+            margin-bottom: 0
         .btn
             margin-left: 200px !important
     .personal-details-form
@@ -288,8 +286,10 @@
             margin-left: 180px !important
         .city-state
             margin: auto 0
-            &.error
-                color: #f05050
+        .city-state-error
+            margin: 0 !important
+            .Input-label
+                top: 15px !important
         .dob 
             .dob-wrapper.error input
                 border-color: #f05050

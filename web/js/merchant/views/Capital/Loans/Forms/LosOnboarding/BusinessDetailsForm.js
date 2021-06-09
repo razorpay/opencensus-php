@@ -6,7 +6,7 @@ import Input from 'common/new-ui/Input';
 import Button from 'common/new-ui/Button';
 import { states } from 'merchant/helpers/data';
 import { trackBusinessFormContinueCta, trackBusinessFormTab } from '../ga';
-import { BUSINESS_TYPES } from '../../constants';
+import { BUSINESS_TYPES, NOOP } from '../../constants';
 import { getCityAndState } from '../LosOnboarding/PersonalDetailsForm';
 import {
   validateBusinessAddress,
@@ -16,6 +16,18 @@ import {
 } from '../Validators';
 import { isValidPinCode, isPanNumber } from 'common/utils/validators';
 import { isValidGSTIN } from 'common/utils/rzp-utils';
+import { statesOptions } from '../Helpers/getStatesOptions';
+
+const INITIAL_VALUES = {
+  legal_name: '',
+  deed_type: '',
+  business_pan: '',
+  gstin: '',
+  address: '',
+  city: '',
+  state: Object.entries(states)[0][0],
+  pincode: '',
+};
 
 const BusinessDetailsForm = ({
   merchantId,
@@ -24,43 +36,50 @@ const BusinessDetailsForm = ({
   loanApplicationDetails,
   handleBusinessDetailsSubmit,
 }) => {
-  let businessDetails = {
-    legal_name: user.business_name,
-    deed_type: BUSINESS_TYPES[parseInt(user.business_type)],
-    business_pan: user.company_pan,
-    addresses: [
-      {
-        address_line1: user.business_registered_address,
-        address_line2: user.business_registered_address_l2,
-        city: user.business_registered_city,
-        state: user.business_registered_state,
-        pincode: user.business_registered_pin,
-      },
-    ],
-  };
-
-  if (loanApplicationDetails.business_details.data.business) {
-    businessDetails = loanApplicationDetails.business_details.data.business;
-  }
-
-  const { legal_name, deed_type, business_pan, gstin } = businessDetails;
-  const { address_line1, city, state, pincode } = businessDetails.addresses[0];
-
-  const [formData, setFormData] = React.useState({
-    legal_name,
-    deed_type,
-    business_pan,
-    gstin,
-    address: address_line1,
-    city,
-    state,
-    pincode,
-  });
+  const [formData, setFormData] = React.useState(INITIAL_VALUES);
   const [pincodeError, setPincodeError] = React.useState(false);
+
+  const loadFormData = () => {
+    let businessDetails = {
+      legal_name: user.business_name,
+      deed_type: BUSINESS_TYPES[parseInt(user.business_type)],
+      business_pan: user.company_pan,
+      addresses: [
+        {
+          address_line1: user.business_registered_address,
+          address_line2: user.business_registered_address_l2,
+          city: user.business_registered_city,
+          state: user.business_registered_state,
+          pincode: user.business_registered_pin,
+        },
+      ],
+    };
+
+    if (loanApplicationDetails.business_details.data.business) {
+      businessDetails = loanApplicationDetails.business_details.data.business;
+    }
+
+    const { legal_name, deed_type, business_pan, gstin } = businessDetails;
+    const { address_line1, city, state, pincode } = businessDetails.addresses[0];
+
+    setFormData({
+      legal_name,
+      deed_type,
+      business_pan,
+      gstin,
+      address: address_line1,
+      city,
+      state: state ? state : Object.entries(states)[0][0],
+      pincode,
+    });
+  };
 
   React.useEffect(() => {
     if (updatedValues) setFormData(updatedValues);
-    else trackBusinessFormTab(merchantId);
+    else {
+      trackBusinessFormTab(merchantId);
+      loadFormData();
+    }
   }, []);
 
   const handleChange = ({ target }) => {
@@ -86,25 +105,13 @@ const BusinessDetailsForm = ({
       });
       setPincodeError(false);
     } catch (error) {
-      setFormData({
-        ...formData,
-        city: '',
-        state: '',
-      });
       setPincodeError(true);
     }
   };
 
   React.useEffect(() => {
-    const pincodeRegex = new RegExp('[1-9][0-9]{5}');
-    if (pincodeRegex.test(formData.pincode)) {
+    if (isValidPinCode(formData.pincode)) {
       loadCityAndState();
-    } else {
-      setFormData({
-        ...formData,
-        city: '',
-        state: '',
-      });
     }
   }, [formData.pincode]);
 
@@ -127,14 +134,16 @@ const BusinessDetailsForm = ({
       <div className="flex los-row" style={{ marginTop: '24px' }}>
         <Input
           label="Business legal name"
-          defaultValue={formData.legal_name}
+          value={formData.legal_name}
+          onChange={NOOP}
           size="small"
           className="InputGroup--vTop Input--required"
           disabled
         />
         <Input
           label="Business type"
-          defaultValue={formData.deed_type}
+          value={formData.deed_type}
+          onChange={NOOP}
           size="small"
           className="InputGroup--vTop Input--required"
           disabled
@@ -147,6 +156,7 @@ const BusinessDetailsForm = ({
           onChange={handleChange}
           name="business_pan"
           size="small"
+          placeholder="Business PAN"
           className="InputGroup--vTop"
           validator={validateCompanyPan}
         />
@@ -155,6 +165,7 @@ const BusinessDetailsForm = ({
             label="GSTIN Number"
             value={formData.gstin}
             onChange={handleChange}
+            placeholder="GSTIN Number"
             name="gstin"
             size="small"
             className="InputGroup--vTop"
@@ -175,23 +186,47 @@ const BusinessDetailsForm = ({
           validator={validateBusinessAddress}
         />
       </div>
-      <div className="flex pincode los-row">
+      <div className={`flex pincode los-row ${pincodeError ? 'error' : ''}`}>
         <Input
           name="pincode"
           label="Pincode"
           value={formData.pincode}
           onChange={handleChange}
+          placeholder="Pincode"
           className="InputGroup--vTop Input--required"
           size="small"
           maxlength="6"
           validator={validatePinCode}
         />
-        <div className={`city-state ${pincodeError ? 'error' : ''}`}>
-          {pincodeError
-            ? 'No record found! Please check pincode again'
-            : formData.city && `${formData.city}, ${states[formData.state]}`}
+        <div className="city-state">
+          {!pincodeError && formData.city && `${formData.city}, ${states[formData.state]}`}
         </div>
       </div>
+      {pincodeError && (
+        <div class="flex">
+          <Input
+            value={formData.city}
+            onChange={handleChange}
+            placeholder="city"
+            name="city"
+            label="City"
+            required
+            class="InputGroup--vTop"
+            size="small"
+          />
+          <Input.Select
+            value={formData.state}
+            onChange={handleChange}
+            size="small"
+            placeholder="state"
+            name="state"
+            options={statesOptions}
+            required
+            label="State"
+            class="InputGroup--vTop"
+          />
+        </div>
+      )}
 
       <Button.Primary
         type="submit"

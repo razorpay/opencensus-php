@@ -22,6 +22,8 @@ import {
 } from '../Validators';
 import { trackCheckEligibilityCta, trackMajorStackholderFill } from '../ga';
 import { getPersonalFormError } from '../Helpers/getPersonalFormErrors';
+import { statesOptions } from '../Helpers/getStatesOptions';
+import { isValidPinCode } from 'common/utils/validators';
 
 const personalInfoSelector = (user) => ({
   first_name: user.contact_name,
@@ -146,15 +148,8 @@ const PersonalDetailsForm = ({
 
   React.useEffect(() => {
     if (canModify) {
-      const pincodeRegex = new RegExp('[1-9][0-9]{5}');
-      if (pincodeRegex.test(formData.pincode)) {
+      if (isValidPinCode(formData.pincode)) {
         loadCityAndState();
-      } else {
-        setFormData({
-          ...formData,
-          city: '',
-          state: '',
-        });
       }
     }
   }, [formData.pincode]);
@@ -381,11 +376,33 @@ const PersonalDetailsForm = ({
             validator={fieldsChanged && validatePinCode}
           />
           <div className={`city-state ${pincodeError ? 'error' : ''}`}>
-            {pincodeError
-              ? 'No record found! Please check pincode again'
-              : formData.city && `${formData.city}, ${states[formData.state]}`}
+            {!pincodeError && formData.city && `${formData.city}, ${states[formData.state]}`}
           </div>
         </div>
+        {pincodeError && (
+          <Input.Group label="City" className="InputGroup--inline city-state-error">
+            <div className="Input-content flex">
+              <Input
+                value={formData.city}
+                onChange={handleChange}
+                size="small"
+                name="city"
+                className="InputGroup--vTop"
+                disabled={!canModify}
+              />
+              <Input.Select
+                value={formData.state}
+                onChange={handleChange}
+                size="small"
+                placeholder="state"
+                name="state"
+                options={statesOptions}
+                class="InputGroup--vTop"
+                disabled={!canModify}
+              />
+            </div>
+          </Input.Group>
+        )}
         <div className="loan-application-form-footer">
           <AsyncBtn.Primary
             type="submit"

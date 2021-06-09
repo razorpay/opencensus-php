@@ -12,6 +12,7 @@ import { states } from 'merchant/helpers/data';
 import { isValidPinCode, isPanNumber } from 'common/utils/validators';
 import { isValidGSTIN } from 'common/utils/rzp-utils';
 import { getCityAndState } from '../LosOnboarding/PersonalDetailsForm';
+import { statesOptions } from '../Helpers/getStatesOptions';
 
 const BusinessDetailsForm = ({
   canModify,
@@ -69,25 +70,13 @@ const BusinessDetailsForm = ({
       });
       setPincodeError(false);
     } catch (error) {
-      setFormData({
-        ...formData,
-        city: '',
-        state: '',
-      });
       setPincodeError(true);
     }
   };
 
   React.useEffect(() => {
-    const pincodeRegex = new RegExp('[1-9][0-9]{5}');
-    if (pincodeRegex.test(formData.pincode)) {
+    if (isValidPinCode(formData.pincode)) {
       loadCityAndState();
-    } else {
-      setFormData({
-        ...formData,
-        city: '',
-        state: '',
-      });
     }
   }, [formData.pincode]);
 
@@ -180,12 +169,41 @@ const BusinessDetailsForm = ({
             disabled={!canModify}
             maxlength="6"
           />
-          <div className={`city-state ${pincodeError ? 'error' : ''}`}>
-            {pincodeError
-              ? 'No record found! Please check pincode again'
-              : formData.city && `${formData.city}, ${states[formData.state]}`}
+          <div className="city-state">
+            {!pincodeError && formData.city && `${formData.city}, ${states[formData.state]}`}
           </div>
         </Input.Group>
+        {pincodeError && (
+          <>
+            <Input.Group className="InputGroup--inline InputGroup--vTop" label="City" required>
+              <Input
+                value={formData.city}
+                onChange={handleChange}
+                size="small"
+                name="city"
+                className="InputGroup--vTop"
+                disabled={!canModify}
+              />
+            </Input.Group>
+            <Input.Group
+              className="InputGroup--inline InputGroup--vTop state-group"
+              label="State"
+              required
+            >
+              <Input.Select
+                value={formData.state}
+                onChange={handleChange}
+                size="small"
+                placeholder="state"
+                name="state"
+                options={statesOptions}
+                required
+                class="InputGroup--vTop"
+                disabled={!canModify}
+              />
+            </Input.Group>
+          </>
+        )}
 
         <Button.Primary
           type="submit"
