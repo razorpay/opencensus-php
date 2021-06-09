@@ -458,6 +458,16 @@ class Repository extends Transaction\Repository
         $query->where($modeColumn, $mode);
     }
 
+    protected function addQueryParamAdjustmentId(BuilderEx $query, array $params)
+    {
+        $adjustmentId                  = $params[Entity::ADJUSTMENT_ID];
+        $transactionTypeColumn     = $this->dbColumn(Entity::TYPE);
+        $transactionEntityIdColumn = $this->dbColumn(Entity::ENTITY_ID);
+
+        $query->where($transactionEntityIdColumn, $adjustmentId);
+        $query->where($transactionTypeColumn, E::ADJUSTMENT);
+    }
+
     /**
      * Join with payouts table, by default on inner join,
      * if the leftJoin param is true join using leftJoin

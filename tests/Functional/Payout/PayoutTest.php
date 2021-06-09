@@ -2925,6 +2925,39 @@ class PayoutTest extends OAuthTestCase
         $this->assertNotEquals($payouts['items'], null);
     }
 
+    public function testGetPayoutsForReferenceId()
+    {
+        $this->createEsIndex();
+
+        $payout1 = $this->testCreatePayout();
+
+        $payout2 = $this->testCreatePayout();
+
+        $this->fixtures->edit('payout', $payout2['id'], ['reference_id' => 'WckD']);
+
+        $payout3 = $this->testCreatePayout();
+
+        $this->fixtures->edit('payout', $payout3['id'], ['reference_id' => 'WckD']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'].'&reference_id=WckD';
+
+        $this->ba->proxyAuth();
+
+        $payouts = $this->startTest();
+
+        $this->assertEquals($payout3['id'], $payouts['items'][0]['id']);
+        $this->assertEquals($payout2['id'], $payouts['items'][1]['id']);
+
+        $this->assertEquals('WckD', $payouts['items'][0]['reference_id']);
+        $this->assertEquals('WckD', $payouts['items'][1]['reference_id']);
+
+        $this->assertEquals($payouts['entity'], 'collection');
+
+        $this->assertEquals($payouts['count'], 2);
+
+        $this->assertNotEquals($payouts['items'], null);
+    }
+
     public function testGetPayoutsForReversalId()
     {
         $this->createEsIndex();

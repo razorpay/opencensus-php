@@ -18,6 +18,8 @@ return [
                 'account_number'  => '2224440041626905',
                 'amount'          => 2000000,
                 'currency'        => 'INR',
+              
+              
                 'purpose'         => 'refund',
                 'narration'       => 'Batman',
                 'mode'            => 'IMPS',
@@ -2611,6 +2613,18 @@ return [
     ],
 
     'testGetPayouts' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/payouts?account_number=2224440041626905',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
+    'testGetPayoutsForReferenceId' => [
         'request' => [
             'method'  => 'get',
             'url'     => '/payouts?account_number=2224440041626905',

@@ -28,6 +28,40 @@ return [
         ],
     ],
 
+    'testGetAdjustmentWithTransaction' => [
+        'request' => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'amount'      => 100,
+                'description' => 'random desc',
+                'currency'    => 'INR',
+                'channel'     => 'axis',
+                'type'        => 'primary',
+            ],
+            'url' => '/adjustments',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'amount'      => 100,
+                'description' => 'random desc',
+                'channel'     => 'axis',
+                'currency'    => 'INR',
+            ],
+        ],
+    ],
+
+    'testFetchTransactionByAdjustmentId' =>  [
+        'request' => [
+            'url'    => '/transactions',
+            'method' => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+            ]
+        ],
+
     'testAddNegativeAdjustment' => [
         'request' => [
             'content' => [

@@ -9,6 +9,7 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Balance\Entity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
@@ -17,6 +18,7 @@ class TransactionTest extends TestCase
     use PaymentTrait;
     use HeimdallTrait;
     use DbEntityFetchTrait;
+    use TestsBusinessBanking;
 
     protected function setUp(): void
     {
@@ -27,6 +29,20 @@ class TransactionTest extends TestCase
         $this->setAdminForInternalAuth();
 
         $this->ba->proxyAuth();
+    }
+
+    public function testGetAdjustmentWithTransaction()
+    {
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $adj = $this->startTest();
+
+        $txn = $this->getLastTransaction(true);
+
+        return [
+                    'adjustment'  => $adj,
+                    'transaction' => $txn
+                ];
     }
 
     public function testAddAdjustment()
@@ -54,6 +70,40 @@ class TransactionTest extends TestCase
         $this->assertEquals($testData['balance_id'], $adjustment->getBalanceId());
 
         return $adj;
+    }
+
+    public function testFetchTransactionByAdjustmentId()
+    {
+        $data = $this->testGetAdjustmentWithTransaction();
+
+        $adjustment = $data['adjustment'];
+        $txn = $data['transaction'];
+
+        $this->setUpMerchantForBusinessBanking(false, 10000000);
+
+        $balanceId = $this->bankingBalance->getId();
+
+        $txn = $this->fixtures->edit('transaction', $adjustment['transaction_id'], ['balance_id' => $balanceId]);
+
+
+        $this->testData['testFetchTransactionByAdjustmentId']['request']['content'] = [
+                                                                                        'account_number' => '2224440041626905',
+                                                                                        'adjustment_id'  => $adjustment['id'],
+                                                                                    ];
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $this->ba->proxyAuth();
+
+        $transactions = $this->startTest();
+
+        $this->assertEquals('txn_'.$txn['id'], $transactions['items'][0]['id']);
+
+        $this->assertEquals($transactions['entity'], 'collection');
+
+        $this->assertEquals(1, $transactions['count']);
+
+        $this->assertNotEquals($transactions['items'], null);
     }
 
     public function testAddNegativeAdjustment()

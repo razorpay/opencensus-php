@@ -34,6 +34,9 @@ class Entity extends Transaction\Entity
     const FUND_ACCOUNT_ID = 'fund_account_id';
     const UTR             = 'utr';
 
+    //Input key to support search using adjustment_id
+    const ADJUSTMENT_ID   = 'adjustment_id';
+
     const ACTION = 'action';
 
     //Used Exclusively for the ES raw searching of Email
@@ -128,6 +131,7 @@ class Entity extends Transaction\Entity
         $array[self::SOURCE] = array_only(
             $array[self::SOURCE],
             [
+                Adjustment\Entity::ID,
                 Adjustment\Entity::ENTITY,
                 Adjustment\Entity::DESCRIPTION,
                 Adjustment\Entity::AMOUNT,
