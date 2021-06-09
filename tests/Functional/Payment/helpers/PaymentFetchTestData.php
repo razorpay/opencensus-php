@@ -674,4 +674,23 @@ return [
             ],
         ],
     ],
+
+    'testFetchPaymentFromPgRouterWithCard' => [
+        'request' => [
+            'method'  => 'get',
+            'content' => [
+                'expand' => [
+                    'card',
+                ],
+             ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'  => 'payment',
+                'card'    => [
+                    'name' => 'test'
+                ],
+            ],
+        ],
+    ],
 ];

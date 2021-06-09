@@ -5,7 +5,9 @@ namespace RZP\Services;
 use Requests;
 use RZP\Error\Error;
 use RZP\Exception;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment;
+use RZP\Models\Card;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Error\ErrorClass;
@@ -210,22 +212,41 @@ class PGRouter
     {
         $endpoint = 'v1/payments/' . $id;
 
-        if (empty($merchantId) === false) {
-            $endpoint .= '?merchant_id=' . $merchantId;
+        $card = null;
+
+        if (empty($merchantId) === false)
+        {
+            $endpoint .= '?merchant_id='.$merchantId;
         }
 
-        $payment = $this->sendRequest($endpoint, Requests::GET, [], false);
+        $response = $this->sendRequest($endpoint, Requests::GET, [], false);
 
-        if (empty($payment) === false and isset($payment['body']['data']['payment']))
+        if (empty($response) === false and isset($response['body']['data']['payment']))
         {
-            if (isset($payment['body']['data']['payment']['acquirer_data']) === true and
+            if (isset($response['body']['data']['payment']['acquirer_data']) === true and
                 isset($payment['body']['data']['payment']['acquirer_data']['auth_code']) === true)
             {
-                $payment['body']['data']['payment']['reference2'] =
-                    $payment['body']['data']['payment']['acquirer_data']['auth_code'];
+                $response['body']['data']['payment']['reference2'] =
+                    $response['body']['data']['payment']['acquirer_data']['auth_code'];
             }
 
-            return (new Payment\Entity)->forceFill($payment['body']['data']['payment']);
+            if (isset($response['body']['data']['payment']['card']))
+            {
+                $response['body']['data']['payment']['card']['id'] = $response['body']['data']['payment']['id'];
+
+                $card = (new Card\Entity)->forceFill($response['body']['data']['payment']['card']);
+
+                unset($response['body']['data']['payment']['card']);
+            }
+
+            $payment = (new Payment\Entity)->forceFill($response['body']['data']['payment']);
+
+            if ($card !== null)
+            {
+                $payment->card()->associate($card);
+            }
+
+            return $payment;
         }
 
         return null;
