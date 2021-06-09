@@ -18,6 +18,7 @@ class Constants
     const CF_REQUESTOR_CATEGORY     = 'cf_requester_category';
     const CF_REQUESTOR_SUBCATEGORY  = 'cf_requestor_subcategory';
     const CF_SUBCATEGORY            = 'cf_subcategory';
+    const CF_REQUESTOR_ITEM         = 'cf_requester_item';
     const CF_CATEGORY               = 'cf_category';
     const TRANSACTION_ID            = 'cf_transaction_id';
     const PAYMENT_ID                = 'cf_razorpay_payment_id';
@@ -92,6 +93,8 @@ class Constants
     const GRIEVANCE_TAGS                    = ['new_grievance_raised'];
     // workflow constant
     const AUTOMATED_WORKFLOW_RESOLVE_TAGS   = ['automated_workflow_response'];
+    // All custom fields allowed to be queried
+    const CUSTOM_FIELDS_LIST_FOR_QUERY = [self::CF_REQUESTOR_CATEGORY, self::CF_REQUESTOR_SUBCATEGORY , self::CF_REQUESTOR_ITEM];
 
     //Freshdesk  Ticket Fields
     const TICKET_PRIORITY   = 'priority';

@@ -368,7 +368,7 @@ class Service extends Base\Service
 
         (new Validator)->validateInput('get_' . studly_case($type) . '_tickets' , $input);
 
-        $queryString = $this->buildQueryStringForGetTickets($input[Constants::STATUS]);
+        $queryString = $this->buildQueryStringForGetTickets($input);
 
         $queryParams = [
             Constants::QUERY => $queryString,
@@ -815,8 +815,14 @@ class Service extends Base\Service
         return $customFields;
     }
 
-    protected function buildQueryStringForGetTickets($status): string
+    protected function buildQueryStringForGetTickets($input): string
     {
+        $status = $input[Constants::STATUS];
+
+        $customStringsListForQuery = Constants::CUSTOM_FIELDS_LIST_FOR_QUERY;
+
+        $customStringsPresent = $this->getCustomFieldsFromInput($customStringsListForQuery, $input);
+
         // Adding Merchant ID in query with required prefix
         $queryString = '"custom_string:' . $this->getQueryParamMerchantIdForSearchAPI();
 
@@ -835,9 +841,37 @@ class Service extends Base\Service
             $queryString .= ')';
         }
 
+        // Adding custom fields in filter
+        foreach ($customStringsPresent as $key => $values)
+        {
+            $queryString .= ' AND custom_string:\'' . $customStringsPresent[$key] . '\'';
+        }
+
         $queryString .= '"';
 
         return $queryString;
+    }
+
+    protected function getCustomFieldsFromInput(array $fields, $input)
+    {
+        //This list will contain custom fields received from input
+        $finalFields = [];
+
+        //Creating list of keys from input values
+        $keys = array_keys($input);
+
+        //Converting values of array to string
+        $stringKeys = array_map('strval', $keys);
+
+        foreach($fields as $key => $value)
+        {
+            if ((in_array($value, $stringKeys) === true) and
+                (strlen($input[$value]) != 0))
+            {
+                array_push($finalFields, $input[$value]);
+            }
+        }
+        return $finalFields;
     }
 
     protected function rewriteFreshdeskTicket(array $response, Entity $ticket)
@@ -988,7 +1022,7 @@ class Service extends Base\Service
             $input[Constants::GROUP_ID] = $this->getGroupIdForFdInstanceAndTicketInput($input, Constants::RZPCAP);
         }
     }
-    
+
     protected function makeInputForSupportDashboardXPostTicket($input)
     {
         $input['email'] = $input['email'] ?? $this->merchant->getEmail();

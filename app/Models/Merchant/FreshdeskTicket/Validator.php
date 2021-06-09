@@ -113,9 +113,12 @@ class Validator extends Base\Validator
     ];
 
     protected static $getSupportDashboardTicketsRules = [
-        Constants::PAGE         => 'required|integer|min:1',
-        'per_page'              => 'sometimes|integer|max:100',
-        'status'                => 'sometimes|integer|min:2|max:5|nullable',
+        Constants::PAGE                     => 'required|integer|min:1',
+        'per_page'                          => 'sometimes|integer|max:100',
+        'status'                            => 'sometimes|integer|min:2|max:5|nullable',
+        Constants::CF_REQUESTOR_CATEGORY    => 'sometimes',
+        Constants::CF_REQUESTOR_SUBCATEGORY => 'sometimes',
+        Constants::CF_REQUESTOR_ITEM        => 'sometimes'
     ];
 
     protected static $getSupportDashboardXTicketsRules = [
