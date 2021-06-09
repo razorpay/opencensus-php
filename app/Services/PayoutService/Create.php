@@ -3,6 +3,7 @@
 namespace RZP\Services\PayoutService;
 
 use Requests;
+use Razorpay\Edge\Passport\Passport;
 
 use RZP\Exception;
 use RZP\Error\Error;
@@ -32,10 +33,14 @@ class Create extends Base
 
         $request = $this->createRequestBody($input, $merchantId);
 
+        $headers = [Passport::PASSPORT_JWT_V1 => $this->app['basicauth']->getPassportJwt($this->baseUrl)];
+
         $response = $this->makeRequestAndGetContent(
             $request,
             self::CREATE_PAYOUT_SERVICE_URI,
-            Requests::POST);
+            Requests::POST,
+            $headers
+        );
 
         return $response;
     }

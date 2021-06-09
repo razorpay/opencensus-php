@@ -55,9 +55,9 @@ class Base
 
     const CONNECT_TIMEOUT = 10;
 
-    public function makeRequestAndGetContent(array $input, string $action, string $method) :array
+    public function makeRequestAndGetContent(array $input, string $action, string $method, array $headers = []) :array
     {
-        $request = $this->getRequest($input, $action, $method);
+        $request = $this->getRequest($input, $action, $method, $headers);
 
         $this->tracePayoutServiceRequest($request);
 
@@ -110,7 +110,7 @@ class Base
         }
     }
 
-    public function getRequest(array $input, string $action, string $method)
+    public function getRequest(array $input, string $action, string $method, array $headers = [])
     {
         $request = [
             'url' => $this->getUrl($action),
@@ -125,6 +125,8 @@ class Base
                 'timeout'         => self::TIMEOUT,
             ]
         ];
+
+        $request['headers'] = array_merge($request['headers'], $headers);
 
         return $request;
     }

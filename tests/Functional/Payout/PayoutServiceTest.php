@@ -2,6 +2,7 @@
 
 namespace Functional\Payout;
 
+use Mockery;
 use Requests_Response;
 
 use RZP\Error\ErrorCode;
@@ -51,17 +52,41 @@ class PayoutServiceTest extends TestCase
         $this->app['config']->set('applications.banking_account_service.mock', true);
     }
 
-    public function mockPayoutServiceCreate($fail = false)
+    public function mockPayoutServiceCreate($fail = false, $request = [])
     {
-        $payoutServiceCreateMock = $this->getMockBuilder(PayoutServiceCreate::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['sendRequest'])
-            ->getMock();
+        // Not mocking this method like mockPayoutServiceStatus because we need to assert for the request headers that
+        // are going to be sent to payout service.
+        $payoutServiceCreateMock = Mockery::mock('RZP\Services\PayoutService\Create', [$this->app])->makePartial();
 
-        $this->app->instance(PayoutServiceCreate::PAYOUT_SERVICE_CREATE, $payoutServiceCreateMock);
+        $defaultRequest['headers']['X-Passport-JWT-V1'] = "";
 
-        $this->app->payout_service_create->method('sendRequest')
-            ->willReturn($this->createResponseForPayoutServiceMock($fail));
+        $request = array_merge($defaultRequest, $request);
+
+        $payoutServiceCreateMock->shouldReceive('sendRequest')
+                                ->withArgs(
+                                    function($arg) use ($request) {
+                                        try
+                                        {
+                                            // Using this method only here as we want to check if the keys in the
+                                            // request are coming properly or not.
+                                            $this->assertArrayKeySelectiveEquals($request, $arg);
+
+                                            return true;
+                                        }
+                                        catch (\Throwable $e)
+                                        {
+                                            return false;
+                                        }
+                                    }
+                                )
+                                ->andReturn(
+                                // We are returning this response only as we don't have a use case of supporting
+                                // response based on $request, if needed, that can also be added here using
+                                // andReturnUsing method instead of andReturn
+                                    $this->createResponseForPayoutServiceMock($fail)
+                                );
+
+        $this->app->instance('payout_service_create', $payoutServiceCreateMock);
     }
 
     public function mockPayoutServiceStatus($status, $fail = false)
@@ -488,4 +513,23 @@ class PayoutServiceTest extends TestCase
 
         return $payout;
     }
+
+    // Assert that the array keys match selectively, we don't compare for values only the keys
+    public function assertArrayKeySelectiveEquals(array $expected, array $actual)
+    {
+        foreach ($expected as $key => $value)
+        {
+            if (is_array($value))
+            {
+                $this->assertArrayHasKey($key, $actual);
+
+                $this->assertArrayKeySelectiveEquals($expected[$key], $actual[$key]);
+            }
+            else
+            {
+                $this->assertArrayHasKey($key, $actual);
+            }
+        }
+    }
+
 }
