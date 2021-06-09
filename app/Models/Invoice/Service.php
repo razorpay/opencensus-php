@@ -498,22 +498,8 @@ class Service extends Base\Service
         $this->trace->count(Metric::INVOICE_VIEW_TOTAL, $invoice->getMetricDimensions());
 
         $invoice->getValidator()->validateInvoiceViewable();
-
-        // Get razorx treatment
-        $variant = $this->app->razorx->getTreatment(
-            $invoice->merchant->getId(),
-            Merchant\RazorxTreatment::RENDERING_PREFERENCES_PAYMENT_LINKS,
-            $mode
-        );
-
-        if (strtolower($variant) === 'on')
-        {
-            return (new ViewDataSerializerHosted($invoice))->serializeForHostedV2();
-        }
-        else
-        {
-            return (new ViewDataSerializerHosted($invoice))->serializeForHosted();
-        }
+    
+        return (new ViewDataSerializerHosted($invoice))->serializeForHostedV2();
     }
 
 	/*

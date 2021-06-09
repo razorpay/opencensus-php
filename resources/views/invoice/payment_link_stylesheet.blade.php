@@ -236,12 +236,26 @@
     }
 
     #inv-info-box .footer {
-        background-color: #fafafa;
         padding: 20px 40px;
         border-bottom-right-radius: 4px;
         border-bottom-left-radius: 4px;
         color: #717171;
         font-size: 12px;
+        line-height: 1.5;
+    }
+
+    #inv-info-box .footer div,
+    #inv-info-box .footer span {
+        display: inline-block;
+    }
+
+    #inv-info-box .footer span {
+        margin-right: 16px;
+    }
+
+    #inv-info-box .footer img {
+        vertical-align: middle;
+        margin-right: 3px;
     }
 
     #cancelled-crack {
@@ -289,11 +303,6 @@
         font-size: 14px;
         color: #777777;
         margin-top: 16px;
-    }
-
-    #inv-info-box .footer img {
-        height: 15px;
-        vertical-align: bottom;
     }
 
     #footer {

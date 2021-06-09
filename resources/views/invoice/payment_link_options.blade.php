@@ -455,8 +455,21 @@ if (isset($view_preferences['exempt_customer_flagging']) === true) {
                         </div>
                         @if($hostedpage_options['footer']['razorpay_branding'])
                             <div class="footer">
-                                Powered by
-                                <img src="https://cdn.razorpay.com/logo.svg" />
+                                @if(empty($data['merchant']['support_email']) === false or empty($data['merchant']['support_mobile']) === false)
+                                    <span>For any queries, please contact <b>{{$invoice_data['merchant_label']}}</b></span>
+                                    <div>
+                                        @if (empty($data['merchant']['support_mobile']) === false)
+                                            <span>
+                                                <img src="https://cdn.razorpay.com/static/assets/hostedpages/merchant_phone.svg" alt="phone">{{$data['merchant']['support_mobile']}}
+                                            </span>
+                                        @endif
+                                        @if (empty($data['merchant']['support_email']) === false)
+                                            <span>
+                                                <img src="https://cdn.razorpay.com/static/assets/hostedpages/merchant_email.svg" alt="email">{{$data['merchant']['support_email']}}
+                                            </span>
+                                        @endif
+                                    </div>
+                                @endif
                             </div>
                         @endif
                     </div>

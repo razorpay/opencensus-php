@@ -403,24 +403,13 @@ class InvoiceController extends Controller
 
         if (isset($data['invoice']) and $data['invoice']['type'] !== 'invoice')
         {
-            $view = 'invoice.payment_link';
+            $view = 'invoice.payment_link_options';
 
             $routeName = $this->app['api.route']->getCurrentRouteName();
 
             // Gets mode per route and sets application & db mode.
             $mode = str_contains($routeName, '_test') ? Mode::TEST : Mode::LIVE;
 
-            // Get razorx treatment
-            $variant = $this->app->razorx->getTreatment(
-                $merchantId,
-                Merchant\RazorxTreatment::RENDERING_PREFERENCES_PAYMENT_LINKS,
-                $mode
-            );
-
-            if (strtolower($variant) === 'on')
-            {
-                $view = 'invoice.payment_link_options';
-            }
         }
 
         if (isset($data['invoice']) and $data['invoice']['entity_type'] === Constants\Entity::SUBSCRIPTION_REGISTRATION)
