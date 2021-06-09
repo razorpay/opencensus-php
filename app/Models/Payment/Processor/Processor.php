@@ -29,6 +29,7 @@ use RZP\Models\Currency;
 use RZP\Models\Terminal;
 use RZP\Services\Doppler;
 use RZP\Services\KafkaProducer;
+use RZP\Tests\Functional\Payment\OtpPaymentTest;
 use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\UpiMandate;
@@ -342,6 +343,12 @@ class Processor
                 return false;
             }
 
+            if (($this->ba->getOAuthClientId() !== null) or
+                ($this->ba->isPartnerAuth() === true))
+            {
+                return false;
+            }
+
             if (($this->route->isRearchRoute($currentRouteName) == false) or
                 (empty($input[Payment\Entity::METHOD]) === true) or
                 ($input[Payment\Entity::METHOD] !== Payment\METHOD::CARD) or
@@ -354,7 +361,9 @@ class Processor
                 (empty($input[Payment\Entity::SAVE]) === false) or
                 (empty($input[Payment\Entity::OFFER_ID]) === false) or
                 (empty($input['reward_ids']) === false) or
-                ($merchant->isFeeBearerPlatform() === false))
+                (empty($input['auth_type']) === false) or
+                ($merchant->isFeeBearerPlatform() === false) or
+                ($merchant->isRazorpayOrgId() === false))
             {
                 return false;
             }
@@ -366,10 +375,18 @@ class Processor
                 // offers are not supported in initial ramp
                 if ((empty($order) !== false) and
                     (($order->hasOffers() === true) or
-                     ($order->isDiscountApplicable() === true)))
+                     ($order->isDiscountApplicable() === true) or
+                     ($order->getProductId() !== null))
+                    )
                 {
                     return false;
                 }
+            }
+
+            if ((empty($input['currency']) === false) and
+                ($input['currency'] !== Currency\Currency::INR))
+            {
+                return false;
             }
 
             $iinId = substr($input[Payment\Entity::CARD][Card\Entity::NUMBER], 0, 6);
@@ -387,7 +404,6 @@ class Processor
                 Card\Network::VISA,
             ];
 
-
             if (($iin->getIssuer() !== Card\Issuer::SBIN) or
                 ($iin->isInternational() === true) or
                 (in_array($iin->getNetworkCode(), $supportedNetworks, true) === false))
@@ -395,6 +411,24 @@ class Processor
                 return false;
             }
 
+            $supportedFlows = [
+                Card\IIN\Flow::_3DS
+            ];
+
+            $enabledFlows = Card\IIN\Flow::getEnabledFlows($iin->getFlows());
+
+            foreach ($enabledFlows as $flow)
+            {
+                if (in_array($flow, $supportedFlows, true) === false)
+                {
+                    return false;
+                }
+            }
+
+            if (app()->isEnvironmentQA() === true)
+            {
+                return true;
+            }
 
             if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::PG_ROUTER_SERVICE_ENABLED, false) === false)
             {
