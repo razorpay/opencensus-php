@@ -269,6 +269,31 @@ return [
         ],
     ],
 
+    'testFetchBureauReportWithLowerCasePanInternalAuth' => [
+        'request' => [
+            'url' => '/los/d2c_bureau_reports',
+            'method'    => 'get',
+            'content'   => [
+                'merchant_id'   => '10000000000000',
+                'user_id'       => 'qjakcliequield',
+                'pan'           => 'ARhPP7770L',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'provider'          => 'EXPERIAN',
+                'score'             => 752,
+                'ntc_score'         => null,
+                'interested'        => null,
+                'request_object'    => [
+                    'first_name'                  => 'srikant',
+                    'last_name'                   => 'tiwari',
+                    'pan'                         => 'Arhpp7770l',
+                ]
+            ],
+        ],
+    ],
+
     'testFetchBureauReportWithInternalAuthNtc' => [
         'request' => [
             'url' => '/los/d2c_bureau_reports',

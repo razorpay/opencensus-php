@@ -6,6 +6,7 @@ use Mail;
 use Queue;
 use Config;
 
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Services\Mozart;
 use RZP\Models\Base\Entity;
@@ -546,6 +547,31 @@ class D2cBureauDetailsTest extends TestCase
         $this->ba->appAuth('rzp_test', Config::get('applications.los')['secret']);
 
         $this->testData[__FUNCTION__]['request']['url'] = strtr($this->testData[__FUNCTION__]['request']['url'], ['{id}' => $response['id'],]);
+
+        $this->startTest();
+    }
+
+    public function testFetchBureauReportWithLowerCasePanInternalAuth()
+    {
+        $this->fixtures->on(Mode::TEST)->create('d2c_bureau_detail',[
+            'id'                          => 'aqyutshquailsq',
+            'merchant_id'                 => '10000000000000',
+            'user_id'                     => 'qjakcliequield',
+            'first_name'                  => 'srikant',
+            'last_name'                   => 'tiwari',
+            'pan'                         => 'Arhpp7770l',
+            'status'                      => 'verified',
+        ]);
+
+        $this->fixtures->on(Mode::TEST)->create('d2c_bureau_report',[
+            'merchant_id'                 => '10000000000000',
+            'user_id'                     => 'qjakcliequield',
+            'd2c_bureau_detail_id'        => 'aqyutshquailsq',
+            'provider'                    => 'EXPERIAN',
+            'score'                       => 752
+        ]);
+
+        $this->ba->appAuth('rzp_test', Config::get('applications.los')['secret']);
 
         $this->startTest();
     }

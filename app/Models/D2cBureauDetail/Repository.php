@@ -27,9 +27,9 @@ class Repository extends Base\Repository
     public function findByIdMerchantIdAndPan($id, $merchantId, $pan)
     {
         return $this->newQuery()
-            ->where(Entity::ID, $id)
-            ->where(Entity::PAN, $pan)
-            ->merchantId($merchantId)
-            ->first();
+                    ->where(Entity::ID, $id)
+                    ->whereRaw("UPPER(".Entity::PAN.")"."="."?",strtoupper($pan))
+                    ->merchantId($merchantId)
+                    ->first();
     }
 }

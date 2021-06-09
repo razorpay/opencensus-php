@@ -1371,6 +1371,13 @@ final class FactoryData
             ]
         );
 
+        $factory(\RZP\Models\D2cBureauReport\Entity::class, [
+                'id'                        => $faker->uniqueid,
+                'merchant_id'               => 'factory:RZP\Models\Merchant\Entity',
+                'user_id'                   => 'factory:RZP\Models\User\Entity',
+            ]
+        );
+
         $factory(\RZP\Models\Settlement\OndemandFundAccount\Entity::class, [
             'id'                        => $faker->uniqueid,
             'merchant_id'               => '10000000000000',
