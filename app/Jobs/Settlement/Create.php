@@ -151,9 +151,26 @@ class Create extends Job
                     ]
                 );
 
-                $input['transaction_ids'] = $setlResponse['la_txn_ids'];
+                $startTime = microtime(true);
 
-                TransferRecon::dispatch($input, $this->mode);
+                $laTxnIds = array_chunk($setlResponse['la_txn_ids'], 1000);
+
+                foreach ($laTxnIds as $laTxnIdsChunk)
+                {
+                    $input['transaction_ids'] = $laTxnIdsChunk;
+
+                    TransferRecon::dispatch($input, $this->mode);
+                }
+
+                $endTime = microtime(true);
+
+                $this->trace->info(
+                    TraceCode::TRANSFER_SETTLEMENT_SQS_PUSH_COMPLETE,
+                    [
+                        'count'         => count($setlResponse['la_txn_ids']),
+                        'time_taken'    => $endTime - $startTime,
+                    ]
+                );
             }
         }
         catch (BadRequestException $e)

@@ -69,9 +69,33 @@ class ProcessSettlementServiceTxns extends Job
 
             if ($settlement->merchant->isLinkedAccount() === true)
             {
-                $input['transaction_ids'] = $this->data[self::TRANSACTION_IDS];
+                $this->trace->info(
+                    TraceCode::TRANSFER_SETTLEMENT_PROCESS_SQS_PUSH_INIT,
+                    [
+                        'txn_ids' => $this->data[self::TRANSACTION_IDS],
+                    ]
+                );
 
-                TransferRecon::dispatch($input, $this->mode);
+                $startTime = microtime(true);
+
+                $txnIds = array_chunk($this->data[self::TRANSACTION_IDS], 1000);
+
+                foreach ($txnIds as $txnIdsChunk)
+                {
+                    $input['transaction_ids'] = $txnIdsChunk;
+
+                    TransferRecon::dispatch($input, $this->mode);
+                }
+
+                $endTime = microtime(true);
+
+                $this->trace->info(
+                    TraceCode::TRANSFER_SETTLEMENT_SQS_PUSH_COMPLETE,
+                    [
+                        'count'         => count($this->data[self::TRANSACTION_IDS]),
+                        'time_taken'    => $endTime - $startTime,
+                    ]
+                );
             }
         }
         catch (\Throwable $e)
