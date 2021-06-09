@@ -104,6 +104,10 @@ const parseRepaymentBreakup = (repayments) => {
   };
 };
 
+const computeMaxDueDate = (limit) => {
+  return moment().add(limit - 1, 'days');
+};
+
 @withRouter
 @connect(
   (state) => ({
@@ -265,13 +269,13 @@ export default class AmountWithdraw extends React.Component {
   prefillData = () => {
     const maxWithdrawableAmount = this.getMaxWithdrawableAmount();
     const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
-    const { start_day_limit } = withdrawalConfigurationDetails.configuration;
-    const startDay = moment().add(start_day_limit, 'days');
+    const { end_day_limit } = withdrawalConfigurationDetails.configuration;
+    const maxDueDate = computeMaxDueDate(end_day_limit);
 
     if (maxWithdrawableAmount > this.getMinWithdrawableAmount()) {
       this.setState({
         withdrawalAmount: maxWithdrawableAmount / 100,
-        selectedDueDate: startDay.endOf('day'),
+        selectedDueDate: maxDueDate.endOf('day'),
       });
     }
   };
@@ -1070,6 +1074,16 @@ export default class AmountWithdraw extends React.Component {
   }
 
   getWithdrawalForm(withdrawalAmount) {
+    const {
+      withdrawalConfigurationDetails: {
+        data: { configuration: { end_day_limit = null } = {} } = {},
+      } = {},
+    } = this.props;
+    const { selectedDueDate } = this.state;
+    const dateToShow = selectedDueDate
+      ? moment(selectedDueDate).format('DD-MM-YYYY')
+      : computeMaxDueDate(end_day_limit);
+
     return (
       <div className="flex withdrawal-form-container">
         <Input.Group
@@ -1120,12 +1134,7 @@ export default class AmountWithdraw extends React.Component {
               </small>
             </div>
           }
-          // defaultValue={this.state.selectedDueDate}
-          value={
-            this.state.selectedDueDate
-              ? moment(this.state.selectedDueDate).format('DD-MM-YYYY')
-              : ''
-          }
+          defaultValue={dateToShow}
           onChange={this.handleDueDateChange}
           addonAfter={<i className="i i-date-range" />}
           placement="topLeft"
