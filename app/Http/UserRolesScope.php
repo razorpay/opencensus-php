@@ -178,6 +178,11 @@ class UserRolesScope
             // qr_codes v2
             'qr_code_create'                 => Role::WRITER_ROLES,
             'qr_code_close'                  => Role::WRITER_ROLES,
+            'qr_code_fetch'                  => array_merge(Role::READER_ROLES, [ROLE::SUPPORT]),
+            'qr_code_fetch_multiple'         => array_merge(Role::READER_ROLES, [ROLE::SUPPORT]),
+            'qr_payments_fetch_multiple'     => array_merge(Role::READER_ROLES, [ROLE::SUPPORT]),
+            'qr_payment_fetch_for_qr_code'   => array_merge(Role::READER_ROLES, [ROLE::SUPPORT]),
+
 
             // subscriptions
             'plan_account_fetch'          => [Role::OWNER, Role::MANAGER, Role::ADMIN],

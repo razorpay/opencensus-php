@@ -34,6 +34,7 @@ class Constants
             Feature\Constants::MARKETPLACE,
             Feature\Constants::VIRTUAL_ACCOUNTS,
             Feature\Constants::SUBSCRIPTIONS,
+            Feature\Constants::QR_CODES
         ],
         Type::PARTNER => [
             self::ACTIVATION,
@@ -45,6 +46,7 @@ class Constants
         Feature\Constants::SUBSCRIPTIONS,
         Feature\Constants::MARKETPLACE,
         Feature\Constants::VIRTUAL_ACCOUNTS,
+        Feature\Constants::QR_CODES
     ];
 
 
