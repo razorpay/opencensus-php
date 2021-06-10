@@ -12,7 +12,9 @@ const s2 = ({
   tracking,
   merchantId,
   experimentVariant,
-  isMobile
+  isMobile,
+  lpVariant,
+  lpFold
 }) => {
   const shouldShowNewScreen = useMemo(() => experimentVariant === 'exposed', [experimentVariant]);
   const handleNextClick = () => {
@@ -21,6 +23,8 @@ const s2 = ({
         merchantId: merchantId,
         partnerType: role,
         variant: experimentVariant,
+        lpVariant: lpVariant,
+        lpFold: lpFold
       }),
     );
   };
@@ -31,6 +35,8 @@ const s2 = ({
         merchantId: merchantId,
         otherCTA: action,
         variant: experimentVariant,
+        lpVariant: lpVariant,
+        lpFold: lpFold
       }),
     );
   };

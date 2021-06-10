@@ -15,6 +15,7 @@ import { fireAnalyticsEvents } from 'common/utils/googleAnalytics';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import { track } from './ga.js';
 import RTracking from 'react-tracking';
+import { getCookie } from 'common/utils/cookies';
 
 @RTracking(() => window.rzpQ.component('partnerOnbr'))
 @withRouter
@@ -37,10 +38,16 @@ export default class BaseScreen extends React.Component {
     super(props);
     const defaultVariant = 'not_in_exp';
     const purePlatformExperimentVariant = this.props.user.getPurePlatformExperimentVariant;
+    let landingPageVariantInfo = getCookie('partner-lp-experiment');
+    if(landingPageVariantInfo) {
+      landingPageVariantInfo = JSON.parse(atob(landingPageVariantInfo));
+    }
     this.state = {
       role: null,
       isPurePlatformSignupEnabled: purePlatformExperimentVariant === 'exposed',
       experimentVariant: purePlatformExperimentVariant || defaultVariant,
+      lpVariant: landingPageVariantInfo ? landingPageVariantInfo.lpVariant : null,
+      lpFold: landingPageVariantInfo ? landingPageVariantInfo.lpFold : null,
     };
   }
 
@@ -49,6 +56,8 @@ export default class BaseScreen extends React.Component {
       window.rzpQ.onbr().interaction('partnerships.pure_platform_signup', {
         merchantId: this.props.user.merchant.id,
         variant: this.state.experimentVariant,
+        lpVariant: this.state.lpVariant,
+        lpFold: this.state.lpFold
       }),
     );
     const hotjarTag = `pure_platform_experiment_${this.state.experimentVariant}`;
@@ -68,6 +77,8 @@ export default class BaseScreen extends React.Component {
         merchantId: this.props.user.merchant.id,
         partnerType: role,
         variant: this.state.experimentVariant,
+        lpVariant: this.state.lpVariant,
+        lpFold: this.state.lpFold
       }),
     );
 
@@ -85,6 +96,8 @@ export default class BaseScreen extends React.Component {
         merchantId: this.props.user.merchant.id,
         variant: this.state.experimentVariant,
         partnerType: this.state.role,
+        lpVariant: this.state.lpVariant,
+        lpFold: this.state.lpFold
       }),
     );
     this.props.tracking.trackEvent(
@@ -183,6 +196,8 @@ export default class BaseScreen extends React.Component {
                   tracking={this.props.tracking}
                   merchantId={this.props.user.merchant.id}
                   experimentVariant={this.state.experimentVariant}
+                  lpVariant={this.state.lpVariant}
+                  lpFold={this.state.lpFold}
                 />
               )
             : null}
@@ -205,6 +220,8 @@ export default class BaseScreen extends React.Component {
               merchantId={this.props.user.merchant.id}
               experimentVariant={this.state.experimentVariant}
               isMobile={this.props.isMobileResolution}
+              lpVariant={this.state.lpVariant}
+              lpFold={this.state.lpFold}
             />
           )}
           {(sliderProps) => (
