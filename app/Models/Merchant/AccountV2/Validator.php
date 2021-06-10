@@ -356,8 +356,10 @@ class Validator extends Merchant\Validator
 
         if (empty($merchantDetailInput) === false)
         {
-            //reusing create rule so that NC fields need to be validated as per the validation rules
-            $this->validateInput('createAccount', $input);
+            //validate the merchant details NC fields as per merchant details edit rules
+            $v1Validator = new Detail\Validator();
+
+            $v1Validator->validateInput('edit', $merchantDetailInput);
         }
     }
 }
