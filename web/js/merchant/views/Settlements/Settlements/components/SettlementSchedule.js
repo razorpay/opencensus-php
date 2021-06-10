@@ -70,12 +70,20 @@ export default class SettlementSchedule extends Component {
       eventLabel: `View settlement Cycle`,
     });
   };
+  analyticsObjectName=()=>{
+    if(this.props.location==="settlements"){
+      return "settlement cycle popup"
+    }
+    else{
+      return "view settlement schedule popup"
+    }
+  }
 
   viewHolidayList = () => {
     analyticsTrack({
-      objectName: 'view settlement schedule popup',
+      objectName: this.analyticsObjectName(),
       actionName: 'clicked',
-      screen: 'my account',
+      screen: `${this.props.location}`,
       properties: {
         action: 'bank holidays',
         ...getCommonAnalyticsProperties(window.rzp_user),
@@ -95,6 +103,8 @@ export default class SettlementSchedule extends Component {
     });
   };
 
+
+  
   render() {
     return (
       <div>
@@ -102,9 +112,9 @@ export default class SettlementSchedule extends Component {
           title={`Settlement Cycle`}
           onCloseClick={() => {
             analyticsTrack({
-              objectName: 'view settlement schedule popup',
+              objectName: this.analyticsObjectName(),
               actionName: 'clicked',
-              screen: 'my account',
+              screen:`${this.props.location}`,
               properties: {
                 action: 'cancel',
                 ...getCommonAnalyticsProperties(window.rzp_user),
@@ -225,9 +235,9 @@ export default class SettlementSchedule extends Component {
                     class="btn btn-primary"
                     onClick={() => {
                       analyticsTrack({
-                        objectName: 'view settlement schedule popup',
+                        objectName: this.analyticsObjectName(),
                         actionName: 'clicked',
-                        screen: 'my account',
+                        screen: `${this.props.location}`,
                         properties: {
                           action: 'settlement guide',
                           ...getCommonAnalyticsProperties(window.rzp_user),

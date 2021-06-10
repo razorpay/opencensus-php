@@ -7,10 +7,12 @@ import Time from 'common/ui/Time';
 import * as SettlementActions from 'merchant/reducers/settlements/details';
 import Spinner from 'common/ui/Spinner';
 import { showNotification } from 'merchant_common/reducers/notifications';
-
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { handleAnalytics, propertiesPayload } from '../../Settlements/analytics';
 const SettlementInfo = (props) => {
   useEffect(() => {
-    props.fetchItem(props.settlementId);
+    settlementInfo();
   }, []);
 
   useEffect(() => {
@@ -20,6 +22,23 @@ const SettlementInfo = (props) => {
         message: props.error,
       });
   }, [props.error]);
+
+  async function settlementInfo() {
+    const data = await props.fetchItem(props.settlementId);
+    const objectName = 'settlement details fetched';
+    const actionName = 'status';
+    const screen = 'settlement details';
+    try {
+      const properties = { ...propertiesPayload('settlement', data), status: 'success' };
+      handleAnalytics(objectName, actionName, properties, screen);
+    } catch (e) {
+      const properties = {
+        status: 'failure',
+        failureReason: e.errors[0],
+      };
+      handleAnalytics(objectName, actionName, properties, screen);
+    }
+  }
 
   // show spinner unless settlements data is available
   if (props.loading) {

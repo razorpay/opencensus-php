@@ -29,12 +29,10 @@ export default class Settlement extends GenericEntity {
     return {
       settlementId: settlement.id,
       settlementStatus: settlement.status,
-      settlementMethod: settlement.method,
-      settlementStatus: settlement.status,
       createdAt: settlement.created_at,
-      description: settlement.description,
-      totalFee: settlement.fee,
-      orderId: settlement.order_id,
+      fee: settlement.fees,
+      tax: settlement.tax,
+      utr: settlement.utr,
       amount: settlement.amount,
     };
   }

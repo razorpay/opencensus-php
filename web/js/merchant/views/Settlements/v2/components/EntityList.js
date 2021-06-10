@@ -17,6 +17,7 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import { titleCase } from 'common/utils/rzp-utils';
 import Spinner from 'common/ui/Spinner';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { handleAnalytics, propertiesPayload } from '../../Settlements/analytics';
 
 const DEFAULT_SKIP = 0;
 const DEFAULT_COUNT = 10;
@@ -55,11 +56,27 @@ const BooleanMap = {
 
 const ListItem = ({ item, source }) => {
   // Render links
+  const analyticsHandler = () => {
+    const objectName = 'settlement details payment id';
+    const actionName = 'clicked';
+    const screen = 'settlement details';
+    const properties = propertiesPayload('payment', item);
+    handleAnalytics(objectName, actionName, properties, screen);
+  };
   const highlightLink = (item, key, idx) => {
     if (source === 'payment' || source === 'refund' || source === 'dispute') {
       return (
         <td key={idx}>
-          <Link to={`/${source}s/${item[key]}`}>{item.id}</Link>
+          <Link
+            onClick={() => {
+              if (source === 'payment') {
+                return analyticsHandler();
+              }
+            }}
+            to={`/${source}s/${item[key]}`}
+          >
+            {item.id}
+          </Link>
         </td>
       );
     } else if (source === 'transfer' || source === 'reversal') {
@@ -261,6 +278,15 @@ const EntityList = (props) => {
             message: errors.join(''),
           });
         });
+      if (searchId.includes('pay_')) {
+        const objectName = 'settlement details search';
+        const actionName = 'clicked';
+        const screen = 'settlement details';
+        const properties = {
+          searchTerm: searchId,
+        };
+        handleAnalytics(objectName, actionName, properties, screen);
+      }
     } else {
       fetchData(DEFAULT_SKIP, countValue, props.activeTab).then(({ data }) => {
         setlistData(data);

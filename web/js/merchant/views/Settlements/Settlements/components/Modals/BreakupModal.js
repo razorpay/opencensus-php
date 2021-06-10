@@ -7,16 +7,29 @@ import Spinner from 'common/ui/Spinner';
 import SettlementBreakupTable from 'merchant/views/Settlements/Settlements/components/BreakupTable';
 import { fetchBreakupDetails } from 'merchant/reducers/settlements/details';
 import * as ModalActions from 'merchant_common/reducers/modals';
-
+import { handleAnalytics } from 'merchant/views/Settlements/Settlements/analytics';
 @connect((state) => state.settlement.breakupDetails, {
   fetchBreakupDetails,
   ...ModalActions,
 })
 export default class BreakdownModal extends Component {
   componentWillMount() {
-    this.props.fetchBreakupDetails({
-      id: this.props.settlementId,
-    });
+    this.props
+      .fetchBreakupDetails({
+        id: this.props.settlementId,
+      })
+      .then(() => {
+        let properties = this.props.settlement
+          ? { ...this.props.settlement.analyticsPayload(), status: 'success' }
+          : {};
+        this.props.settlement && handleAnalytics('break up', 'status', properties);
+      })
+      .catch((e) => {
+        let properties = this.props.settlement
+          ? { status: 'failure', failureReason: e.errors[0] }
+          : {};
+        this.props.settlement && handleAnalytics('break up', 'status', properties);
+      });
   }
 
   componentDidMount() {
