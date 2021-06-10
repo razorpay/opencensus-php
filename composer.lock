@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "32ab36461b7ed70ba611074a486e3993",
+    "content-hash": "ceb8fc6a9de0df9f7ee5dab19632b99d",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -4920,7 +4920,7 @@
             "time": "2020-01-07T07:47:15+00:00"
         },
         {
-            "name": "mikey179/vfsstream",
+            "name": "mikey179/vfsStream",
             "version": "v1.3.0",
             "source": {
                 "type": "git",
@@ -5656,7 +5656,7 @@
                 "source": "https://github.com/razorpay/opencensus-php/tree/v0.7.6.4",
                 "issues": "https://github.com/razorpay/opencensus-php/issues"
             },
-            "time": "2021-05-24T08:42:53+00:00"
+            "time": "2021-05-11T10:49:07+00:00"
         },
         {
             "name": "opencensus/opencensus-exporter-jaeger",
@@ -6766,6 +6766,12 @@
                 "predis",
                 "redis"
             ],
+            "funding": [
+                {
+                    "url": "https://github.com/sponsors/tillkruss",
+                    "type": "github"
+                }
+            ],
             "time": "2020-09-11T19:18:05+00:00"
         },
         {
@@ -7560,16 +7566,16 @@
         },
         {
             "name": "razorpay/edge-passport-php",
-            "version": "v2.0.0",
+            "version": "v1.0.1",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/edge-passport-php.git",
-                "reference": "f1cbe0fc34d076be9cddcd7ec190adfc0749a4a8"
+                "reference": "e2ac29bfb565eaba725ca6bb9c6276253ca0c8ed"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/edge-passport-php/zipball/f1cbe0fc34d076be9cddcd7ec190adfc0749a4a8",
-                "reference": "f1cbe0fc34d076be9cddcd7ec190adfc0749a4a8",
+                "url": "https://api.github.com/repos/razorpay/edge-passport-php/zipball/e2ac29bfb565eaba725ca6bb9c6276253ca0c8ed",
+                "reference": "e2ac29bfb565eaba725ca6bb9c6276253ca0c8ed",
                 "shasum": ""
             },
             "require": {
@@ -7597,10 +7603,10 @@
             ],
             "description": "Passport SDK. To be used by upstream services to consume passport sent by edge service.",
             "support": {
-                "source": "https://github.com/razorpay/edge-passport-php/tree/v2.0.0",
+                "source": "https://github.com/razorpay/edge-passport-php/tree/v1.0.1",
                 "issues": "https://github.com/razorpay/edge-passport-php/issues"
             },
-            "time": "2021-06-07T14:13:49+00:00"
+            "time": "2021-02-23T03:33:57+00:00"
         },
         {
             "name": "razorpay/hodor",

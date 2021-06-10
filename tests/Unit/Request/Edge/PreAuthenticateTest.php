@@ -44,7 +44,6 @@ class PreAuthenticateTest extends TestCase
         $this->assertTrue($passport->identified);
         $this->assertTrue($passport->authenticated);
         $this->assertSame('test', $passport->mode);
-        $this->assertSame('10000000000000', $passport->consumer->id);
-        $this->assertSame('merchant', $passport->consumer->type);
+        $this->assertSame('10000000000000', $passport->merchant->id);
     }
 }
