@@ -953,7 +953,7 @@ return [
         'mock'      => env('UPI_PAYMENT_SERVICE_MOCK', false),
         'username'  => env('UPI_PAYMENT_SERVICE_KEY'),
         'password'  => env('UPI_PAYMENT_SERVICE_SECRET'),
-        'enabled'   => env('UPI_PAYMENT_SERVICE_ENABLED', false),
+        'enabled'   => env('UPI_PAYMENT_SERVICE_ENABLED'),
         'url'       => [
             'live' => env('UPI_PAYMENT_SERVICE_LIVE_URL'),
             'test' => env('UPI_PAYMENT_SERVICE_TEST_URL'),

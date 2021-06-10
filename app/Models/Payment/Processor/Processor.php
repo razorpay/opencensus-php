@@ -1614,29 +1614,12 @@ class Processor
             return;
         }
 
-        if ((in_array($method, Payment\Method::getCpsEnabledMethods(), true) === false) or
+        if ((in_array($method, [Payment\Method::CARD, Payment\Method::NETBANKING, Payment\Method::EMI, Payment\Method::EMANDATE, Payment\Method::CARDLESS_EMI], true) === false) or
             ($payment->isGooglePayCard() === true))
         {
             $payment->disableCpsRoute();
 
             return;
-        }
-
-        if (Payment\Gateway::isUpiPaymentServiceGateway($payment->getGateway()) === true)
-        {
-            // Service does not support Bharat QR and UPI QR.
-            if (($payment->isBharatQr() === true) or
-                ($payment->isUpiQr() === true))
-            {
-                return;
-            }
-
-            $this->handleUpiPaymentServiceGateways($payment);
-
-            if ($payment->getCpsRoute() === Payment\Entity::UPI_PAYMENT_SERVICE)
-            {
-                return;
-            }
         }
 
         if ((Payment\Gateway::isNbPlusServiceGateway($payment->getGateway(), $payment) === true) and
@@ -1714,14 +1697,6 @@ class Processor
         }
     }
 
-    protected function handleUpiPaymentServiceGateways(Payment\Entity $payment)
-    {
-        if ($this->isUpiPaymentServiceEnabled() === true)
-        {
-            $this->setPaymentService($payment, 'upips');
-        }
-    }
-
     protected function handleNbPlusServiceGateways(Payment\Entity $payment, $gatewayInput)
     {
         if (Payment\Gateway::gatewaysAlwaysRoutedThroughNbplusService($payment->getGateway(), $payment->getBank(), $payment))
@@ -1768,11 +1743,6 @@ class Processor
 
             $this->setPaymentService($payment, $variant);
         }
-    }
-
-    protected function isUpiPaymentServiceEnabled(): bool
-    {
-        return $this->app['config']->get('applications.upi_payment_service.enabled');
     }
 
     protected function isCardPaymentServiceConfigEnabled(): bool
@@ -1835,11 +1805,6 @@ class Processor
             case 'nbplusps':
 
                 $payment->enableNbPlusService();
-
-                break;
-            case 'upips':
-
-                $payment->enableUpiPaymentService();
 
                 break;
             default:
@@ -2856,13 +2821,6 @@ class Processor
                 return;
             }
         }
-        else if ($this->isRoutedThroughUpiPaymentService($action, $gatewayData) === true)
-        {
-            if ($this->isUpiPaymentServiceEnabled() === true)
-            {
-                $gatewayData[Payment\Entity::CPS_ROUTE] = Payment\Entity::UPI_PAYMENT_SERVICE;
-            }
-        }
 
         $gatewayData['merchant_detail'] = $this->repo->merchant_detail->fetchForMerchant($this->payment->merchant);
 
@@ -3011,25 +2969,7 @@ class Processor
 
         return false;
     }
-
-    public function isRoutedThroughUpiPaymentService($action, $input): bool
-    {
-        /**
-         * We check if the current request is to be routed through UPI payments service,
-         * We set `cps_route` as 4 for gateways to be processed through service. The
-         * flag is set based on config.
-        */
-        if ((is_array($input) === true) and
-            (isset($input[E::PAYMENT]) === true) and
-            ($input[E::PAYMENT][Payment\Entity::CPS_ROUTE] === Payment\Entity::UPI_PAYMENT_SERVICE) and
-            (in_array($action, Action::$upiPaymentServiceSupportedActions) === true))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
+    
     protected function persistCardDetails($gatewayName, $action, &$input)
     {
         $action = snake_case($action);
