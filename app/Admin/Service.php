@@ -61,6 +61,21 @@ class Service extends Base\Service
         'admin/oauth_login'
     ];
 
+    const PNG           = 'png';
+    const SVG           = 'svg';
+    const PNG_MIME_TYPE = 'image/png';
+    const SVG_MIME_TYPE = 'image/svg+xml';
+
+    const ORG_LOGO_ALLOWED_MIMETYPES = [
+        self::PNG_MIME_TYPE,
+        self::SVG_MIME_TYPE,
+    ];
+
+    const ORG_LOGO_ALLOWED_EXTENSIONS = [
+        self::PNG,
+        self::SVG,
+    ];
+
     public function __construct()
     {
         $app = \App::getFacadeRoot();
@@ -1310,9 +1325,16 @@ class Service extends Base\Service
         $extension = $file->getClientOriginalExtension();
         $mimeType = $file->getClientMimeType();
 
-        if ($extension !== 'png' and $mimeType !== 'image/png')
+        $this->trace->info(TraceCode::ORG_LOGO_UPLOAD,[
+            'extension'  => $extension,
+            'mimetype'   => $mimeType
+        ]);
+
+        // if extension or mimetype both are not in allowed type: do not allow
+        if ((in_array($extension, self::ORG_LOGO_ALLOWED_EXTENSIONS) === false) and
+            (in_array($mimeType, self::ORG_LOGO_ALLOWED_MIMETYPES) === false))
         {
-            return ['Invalid file format. Please upload a file with PNG extension.', $data];
+            return ['Invalid file format. Please upload a file with PNG or SVG extension.', $data];
         }
 
         // org_id/login_logo/file_name
@@ -1322,7 +1344,7 @@ class Service extends Base\Service
             'Bucket'        => config('aws.activation_bucket'),
             'Key'           => $keyName,
             'SourceFile'    => $filePath,
-            'ContentType'   => 'image/png',
+            'ContentType'   => $mimeType,
             'ACL'           => 'public-read',
         ];
 

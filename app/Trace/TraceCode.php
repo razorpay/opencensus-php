@@ -54,6 +54,8 @@ class TraceCode
     const ADMIN_LOGOUT                              = 'ADMIN_LOGOUT';
     const ADMIN_AS_MERCHANT                         = 'ADMIN_AS_MERCHANT';
 
+    const ORG_LOGO_UPLOAD                           = 'ORG_LOGO_UPLOAD';
+
     const MISMATCHED_VERIFY_TOKEN                   = 'MISMATCHED_VERIFY_TOKEN';
 
     const DEBUG_MERCHANT_TRUTHY_VALUE               = 'DEBUG_MERCHANT_TRUTHY_VALUE';
