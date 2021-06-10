@@ -12,8 +12,6 @@ class Service extends Base\Service
 {
     public function fetchPaymentsForQrCode($input, $id)
     {
-        (new NonVirtualAccountQrCode\Entity())::verifyIdAndStripSign($id);
-
         $input[Entity::QR_CODE_ID] = $id;
 
         return $this->fetchMultiplePayments($input);
@@ -21,6 +19,8 @@ class Service extends Base\Service
 
     public function fetchMultiplePayments($input)
     {
+        (new Fetch)->processFetchParams($input);
+
         $qrPaymentIds = (new EsRepository('qr_payment'))->buildQueryAndSearch($input, $this->merchant->getId());
 
         $qrPaymentIds = array_map(

@@ -320,8 +320,22 @@ return [
             ]
         ],
     ],
+
     'qr_payment_mapping' => [
+        '_all' => [
+            'enabled' => false
+        ],
         'properties' => [
+            'id' => [
+                'type' => 'keyword',
+            ],
+            'merchant_id' => [
+                'type' => 'keyword',
+            ],
+            'created_at' => [
+                'type'   => 'date',
+                'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+            ],
             'payment_id' => [
                 'type' => 'keyword',
             ],
