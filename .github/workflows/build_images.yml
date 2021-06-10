@@ -23,7 +23,7 @@ jobs:
     runs-on: [self-hosted]
     needs: [cancel]
     container:
-      image: c.rzp.io/razorpay/onggi:php-7.2-api-web-v2
+      image: c.rzp.io/razorpay/onggi:php-7.2-api-web
       options: "--entrypoint /bin/bash"
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -65,7 +65,7 @@ jobs:
             GIT_COMMIT_HASH=${{ github.sha }}
             GIT_TOKEN=${{ secrets.GIT_TOKEN }}
             GIT_USERNAME=rzp
-            ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.2-api-web-v2
+            ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.2-api-web
             ARMORY_IMAGE=c.rzp.io/razorpay/armory:wkhtmltopdf-v182
             OPENCENSUS_IMAGE=c.rzp.io/razorpay/onggi:opencensus-php-v2020.10.28
 
@@ -94,7 +94,7 @@ jobs:
              GIT_COMMIT_HASH=${{ github.sha }}
              GIT_TOKEN=${{ secrets.GIT_TOKEN }}
              GIT_USERNAME=rzp
-             ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.2-api-web-v2
+             ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.2-api-web
              ARMORY_IMAGE=c.rzp.io/razorpay/armory:wkhtmltopdf-v182
              OPENRESTY_IMAGE=c.rzp.io/razorpay/onggi:openresty-1.17.8.2-0-alpine-fat-nosse42
 
@@ -150,7 +150,7 @@ jobs:
              GIT_COMMIT_HASH=${{ github.sha }}
              GIT_TOKEN=${{ secrets.GIT_TOKEN }}
              GIT_USERNAME=rzp
-             ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.2-api-web-v2
+             ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.2-api-web
              OPENRESTY_IMAGE=c.rzp.io/razorpay/onggi:openresty-1.17.8.2-0-alpine-fat-nosse42
   trigger_regression_suite:
    runs-on: [self-hosted]
