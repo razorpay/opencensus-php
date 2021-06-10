@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Payment;
 
+use RZP\Constants\Environment;
 use RZP\Gateway\Mpi\Blade\Mock\CardNumber;
 use RZP\Models\Card;
 use RZP\Constants\Mode;
@@ -2513,6 +2514,69 @@ class TerminalSelectionTest extends TestCase
         ];
 
         return array_merge($defaults, $attributes);
+    }
+
+    /**
+     *
+     * For card payment if smart router selects no terminal ,
+     * It should not fallback to API filters and sorters
+     *
+     * @throws RuntimeException
+     * @throws \RZP\Exception\BadRequestException
+     */
+    public function testNoTerminalFoundFallbackForCard()
+    {
+        $this->app['rzp.mode'] = Mode::LIVE;
+
+        // Setting env as production to allow hitting smart router
+        $this->app['env'] = Environment::PRODUCTION;
+
+        $cardArray = [
+            'number'        => '4012001036275556',
+            'expiry_month'  => '1',
+            'expiry_year'   => '2035',
+            'cvv'           => '123',
+            'network'       => 'Visa',
+            'issuer'        => 'HDFC',
+            'name'          => 'Test',
+            'international' => false,
+        ];
+
+        $card = (new Card\Entity)->fill($cardArray);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+        $paymentArray['status'] = 'created';
+        $paymentArray['method'] = 'card';
+
+        unset($paymentArray['card']);
+
+
+
+        // Setting random payment ID to allow hitting smart router
+        $paymentArray['id'] = 'randomid';
+
+        $payment = (new Payment\Entity)->fill($paymentArray);
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $payment->merchant()->associate($merchant);
+
+        $payment->card = $card;
+
+        $input = [
+            'payment' => $payment,
+            'merchant' => $payment->merchant
+        ];
+
+        $options = new Options;
+        $selector = new Selector($input, $options);
+
+        $this->makeRequestAndCatchException(
+            function() use ($selector)
+            {
+                $selector->select();
+            },
+            RuntimeException::class, 'No terminal found.');
     }
 
 }
