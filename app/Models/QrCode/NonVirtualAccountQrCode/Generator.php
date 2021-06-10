@@ -231,11 +231,15 @@ class Generator extends QrCode\Generator
 
         $logoImage = imagecreatefrompng(public_path() . '/img/new_upi_qr.png');
 
-        imagecopymerge($logoImage, $qrCodeImage,
-                       Constants::QR_V2_UPI_QR_DEST_X, Constants::QR_V2_UPI_QR_DEST_Y,
-                       Constants::SORCE_X, Constants::SORCE_Y,
-                       Constants::QR_V2_UPI_QR_CODE_WIDTH, Constants::QR_V2_UPI_QR_CODE_HEIGHT,
-                       Constants::OPACITY);
+        imageAlphaBlending($logoImage, true);
+
+        imageSaveAlpha($logoImage, true);
+
+        $this->imagecopymerge_alpha($logoImage, $qrCodeImage,
+                                    Constants::QR_V2_UPI_QR_DEST_X, Constants::QR_V2_UPI_QR_DEST_Y,
+                                    Constants::SORCE_X, Constants::SORCE_Y,
+                                    Constants::QR_V2_UPI_QR_CODE_WIDTH, Constants::QR_V2_UPI_QR_CODE_HEIGHT,
+                                    Constants::OPACITY);
 
         $color = imagecolorallocate($logoImage, 4, 9, 63);
 
@@ -243,13 +247,24 @@ class Generator extends QrCode\Generator
 
         $this->alignCentre($logoImage, $qrCode->getDescription(), $color, 'Mulish-SemiBold.ttf', 1430, 25, 40);
 
-        imagejpeg($logoImage, $localFilePath);
+        imagepng($logoImage, $localFilePath);
 
         imagedestroy($logoImage);
 
         imagedestroy($qrCodeImage);
 
         return $localFilePath;
+    }
+
+    private function imagecopymerge_alpha($dst_im, $src_im, $dst_x, $dst_y, $src_x, $src_y, $src_w, $src_h, $pct)
+    {
+        $cut = imagecreatetruecolor($src_w, $src_h);
+
+        imagecopy($cut, $dst_im, 0, 0, $dst_x, $dst_y, $src_w, $src_h);
+
+        imagecopy($cut, $src_im, 0, 0, $src_x, $src_y, $src_w, $src_h);
+
+        imagecopymerge($dst_im, $cut, $dst_x, $dst_y, 0, 0, $src_w, $src_h, $pct);
     }
 
     /**
@@ -277,7 +292,7 @@ class Generator extends QrCode\Generator
         $QR_width  = imagesx($qrImage);
         $QR_height = imagesy($qrImage);
 
-        $logo = $this->merchant->getLogoUrl();
+        $logo = $this->merchant->getFullLogoUrlWithSize();
 
         if ($logo === null)
         {
