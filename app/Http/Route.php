@@ -599,6 +599,7 @@ class Route
         'setl_fetch_transactions'                  => ['get',      'settlements/{id}/transactions',                  'SettlementController@getSettlementTransactions'                    ],
         'fb_setl_fetch_transactions'               => ['get',      'fb/settlements/{id}/transactions',               'SettlementController@getSettlementTransactionsWithSettlementId'    ],
         'setl_fetch_source_details'                => ['post',     'settlements/{id}/transaction_source_details',    'SettlementController@getSettlementTransactionsSourceDetails'       ],
+        'setl_ledger_inconsistency_debug_admin'    => ['post',     'settlements/ledger_inconsistency/debug',         'SettlementController@settlementsLedgerInconsistencyDebug'          ],
 
         // following routes currently not being used need to deprecate all these routes
 //        'setl_edit'                                => ['put',      'settlements/{id}',                               'SettlementController@putEditSettlement'                            ],
@@ -4291,6 +4292,7 @@ class Route
         'oauth_sync_merchant_map',
         'merchant_user_reset_password',
         'setl_transaction_replay_admin',
+        'setl_ledger_inconsistency_debug_admin',
         'setl_service_migration_admin',
 
         // Shield Routes
@@ -5004,6 +5006,7 @@ class Route
         'setl_initiate_action'                     => Permission::SETTLEMENT_BULK_UPDATE,
         'setl_process_data'                        => Permission::SETTLEMENT_BULK_UPDATE,
         'setl_process_data_reset'                  => Permission::SETTLEMENT_BULK_UPDATE,
+        'setl_ledger_inconsistency_debug_admin'    => Permission::SETTLEMENT_BULK_UPDATE,
         // TODO: get clarity on permissions
         'setl_merchant_config_get'                 => Permission::VIEW_ALL_ENTITY,
         'setl_merchant_config_create'              => Permission::SETTLEMENT_BULK_UPDATE,
@@ -8418,6 +8421,7 @@ class Route
             'setl_update_channel_bulk',
             'setl_service_migration_admin',
             'setl_transaction_replay_admin',
+            'setl_ledger_inconsistency_debug_admin',
             'settings_delete',
             'settings_fetch',
             'settings_fetch_defined',

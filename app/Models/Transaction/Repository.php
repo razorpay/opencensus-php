@@ -2092,6 +2092,57 @@ class Repository extends Base\Repository
         return $result;
     }
 
+    public function getUnsettledTransactionSumAndCount(
+        string $merchantId,
+        Balance\Entity $balance): array {
+
+        $transactionId              = $this->dbColumn(Entity::ID);
+        $transactionCredit          = $this->dbColumn(Entity::CREDIT);
+        $transactionDebit           = $this->dbColumn(Entity::DEBIT);
+        $transactionMerchantId      = $this->dbColumn(Entity::MERCHANT_ID);
+        $transactionType            = $this->dbColumn(Entity::TYPE);
+        $transactionOnHold          = $this->dbColumn(Entity::ON_HOLD);
+        $transactionSettled         = $this->dbColumn(Entity::SETTLED);
+        $transactionBalanceId       = $this->dbColumn(Entity::BALANCE_ID);
+        $transactionCreatedAt       = $this->dbColumn(Entity::CREATED_AT);
+        $transactionSettledAt       = $this->dbColumn(Entity::SETTLED_AT);
+
+        $startTime = microtime(true);
+
+        $query = $this->newQueryWithConnection($this->getReportingReplicaConnection())
+            ->select(DB::raw("(SUM($transactionCredit)-SUM($transactionDebit)) as settlement_amount, COUNT($transactionId) as count"))
+            ->where($transactionMerchantId, $merchantId)
+            ->where($transactionOnHold, 0)
+            ->where($transactionSettled, 0)
+            ->where($transactionType, '!=', Type::SETTLEMENT)
+            ->whereNotNull($transactionSettledAt)
+            ->where($transactionCreatedAt, '<=', $balance->getUpdatedAt());
+
+        $query->where(function ($query) use ($transactionBalanceId, $balance) {
+            $query->where($transactionBalanceId, $balance->getId())
+                ->orWhereNull($transactionBalanceId);
+        });
+
+        $results = $query->first();
+
+        $resultArray = $results->toArray();
+
+        $this->trace->info(
+            TraceCode::LEDGER_RECON_FOR_MERCHANT_QUERY_TIME_TAKEN,
+            [
+                'merchant_id'        => $merchantId,
+                'txn_count'          => $resultArray['count'],
+                'balance_id'         => $balance->getId(),
+                'balance'            => $balance->getBalance(),
+                'unsettled_amount'   => $resultArray['settlement_amount'],
+                'difference'         => $resultArray['settlement_amount'] - $balance->getBalance(),
+                'balance_updated_at' => $balance->getUpdatedAt(),
+                'time_taken'         => microtime(true) - $startTime,
+            ]);
+
+        return $resultArray;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -2252,5 +2303,27 @@ class Repository extends Base\Repository
             ->where($transactionSourceType, '!=', Type::SETTLEMENT)
             ->get()
             ->keyBy(Transaction\Entity::ID);
+    }
+
+    public function fetchTransactingMerchantBetweenTimeStamps($from, $to)
+    {
+        $startTime = microtime(true);
+
+        $result =  $this->newQueryWithConnection($this->getReportingReplicaConnection())
+                        ->select(Entity::MERCHANT_ID)
+                        ->where(Entity::CREATED_AT, '>', $from)
+                        ->where(Entity::CREATED_AT, '<=', $to)
+                        ->distinct()
+                        ->pluck(Entity::MERCHANT_ID)
+                        ->toArray();
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_DEBUGGING_FRAMEWORK_MERCHANT_FETCH_TIME_TAKEN,
+            [
+               'time_taken' => get_diff_in_millisecond($startTime),
+               'count'      => count($result),
+            ]);
+
+        return $result;
     }
 }

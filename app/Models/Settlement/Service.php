@@ -22,6 +22,7 @@ use RZP\Jobs\Settlement\Create;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Feature\Constants;
 use RZP\Models\FundTransfer\Kotak;
+use RZP\Jobs\Settlement\LedgerRecon;
 use RZP\Models\Report\Types\BasicEntityReport;
 use RZP\Models\Report\Types\SettlementReconReport;
 
@@ -1199,5 +1200,57 @@ class Service extends Base\Service
         }
 
         return ['enabled' => false];
+    }
+
+    public function settlementsLedgerInconsistencyDebug($input)
+    {
+        (new Validator)->validateInput('settlement_ledger_inconsistency_debug', $input);
+
+        $from = Carbon::now(Timezone::IST)->subMonth()->getTimestamp();
+
+        $to  = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $startTime = microtime(true);
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_DEBUGGING_FRAMEWORK_REQUEST,
+            [
+                'input' => $input,
+            ]);
+
+        if((isset($input['from']) === true) and (isset($input['to']) ===true ))
+        {
+            $from = $input['from'];
+
+            $to   = $input ['to'];
+        }
+
+        if(empty($input['merchant_ids']) === false)
+        {
+            $merchantIds = $input['merchant_ids'];
+        }
+        else
+        {
+           $merchantIds = $this->repo
+                               ->transaction
+                               ->fetchTransactingMerchantBetweenTimeStamps($from, $to);
+        }
+
+        foreach ($merchantIds as $merchantId)
+        {
+            LedgerRecon::dispatch($this->mode, $merchantId);
+        }
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_DEBUGGING_FRAMEWORK_PUSH_COMPLETE,
+            [
+                'count'      => count($merchantIds),
+                'time_taken' => get_diff_in_millisecond($startTime),
+            ]);
+
+        return [
+            'enqueued_mid_count' => count($merchantIds),
+            'time_taken'         => get_diff_in_millisecond($startTime)
+        ];
     }
 }

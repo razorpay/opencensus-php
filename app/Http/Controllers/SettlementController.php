@@ -660,4 +660,13 @@ class SettlementController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function settlementsLedgerInconsistencyDebug()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->settlementsLedgerInconsistencyDebug($input);
+
+        return ApiResponse::json($data);
+    }
 }

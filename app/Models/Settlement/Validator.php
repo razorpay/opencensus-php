@@ -170,6 +170,13 @@ class Validator extends Base\Validator
         'enable'    => 'required|boolean',
     ];
 
+    protected static $settlementLedgerInconsistencyDebugRules = [
+        'merchant_ids'   => 'sometimes|array',
+        'merchant_ids.*' => 'required|string|size:14',
+        'from'           => 'sometimes|epoch',
+        'to'             => 'required_with:from|epoch',
+    ];
+
     protected function validateBalanceType($attribute, $value)
     {
         Balance\Type::validateSettlementBalanceType($value);
