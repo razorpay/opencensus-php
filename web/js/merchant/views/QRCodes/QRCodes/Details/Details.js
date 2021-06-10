@@ -58,7 +58,7 @@ export default function Details(props) {
               <div>
                 <div class="heading">Amount Received</div>
                 <div class="value">
-                  <Amount value={qrCode.total_amount_received || '000'} />
+                  <Amount value={qrCode.payments_amount_received || '000'} />
                 </div>
               </div>
               <div>
@@ -113,7 +113,9 @@ export default function Details(props) {
                   )}
                 </EntityDetailRow>
 
-                <EntityDetailRow label="Close By" value={qrCode.close_by} />
+                <EntityDetailRow label="Close By">
+                  <Time value={qrCode.close_by} format="DD MMM YYYY, hh:mm:ss a" />
+                </EntityDetailRow>
 
                 <EntityDetailRow label="Customer Details">
                   <CustomerDetails

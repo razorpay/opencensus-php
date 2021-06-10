@@ -75,8 +75,8 @@ export default class QRCodeContainer extends React.Component {
   render() {
     const { isTestMode, user, productOnBoarding } = this.props;
 
-    if (user.isQRCodeComingSoonEnabled && !user.isQRCodeProductEnabled) {
-      return <ComingSoon />;
+    if (user.isQRCodeComingSoonExpEnabled && !user.isQRCodeComingSoonEnabled) {
+      return <ComingSoon onInterestClicked={() => this.forceUpdate()} />;
     }
 
     const { showOnboarding, isQuickGuideOpen } = productOnBoarding;
@@ -91,7 +91,7 @@ export default class QRCodeContainer extends React.Component {
 
         <header id="link-header">
           <NavLink exact to="/qr_codes">
-            QR codes
+            QR Codes
           </NavLink>
           <NavLink to="/qr_codes/payments">Payments</NavLink>
         </header>

@@ -5,7 +5,6 @@ import { RZPFeatures } from 'merchant/helpers/data';
 import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 
 import { paymentId, amount, email, contact, createdAt, status } from 'common/ui/item/pair';
-import Pager from 'common/ui/Pager';
 import Alert from 'common/ui/Forms/Alert';
 import HeaderAction from 'common/ui/HeaderAction';
 import DocsLink from 'merchant/components/DocsLink';
@@ -77,19 +76,6 @@ export default class QRPaymentsListContainer extends ListContainer {
           paginate={this.paginate}
           {...this.props}
           paymentColumns={[this.paymentIdCol, amount, email, contact, createdAt, status]}
-        />
-
-        <Pager
-          count={this.state.count}
-          skip={this.state.skip}
-          length={this.props.items.length}
-          onClick={(params, type) => {
-            track.browse(type, {
-              page: params.skip % params.count,
-            });
-
-            this.paginate(params);
-          }}
         />
       </div>
     );

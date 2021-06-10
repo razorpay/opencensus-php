@@ -18,6 +18,10 @@ function _track() {
   return {
     open: () => send('open'),
 
+    close: () => send('close'),
+
+    closeSuccess: (success, error) => send('close_success', { success, error }),
+
     init: ({ track: _track }) => {
       track = _track;
     },

@@ -37,7 +37,6 @@ export default class QRCodesOnBoarding extends React.Component {
   getNextBtnProp = (sliderProps) => () => {
     return (
       <FeatureEnableSliderButton
-        isLocalEnabler
         feature={RZPFeatures.QR_CODES}
         page={sliderProps.active}
         onClick={this.closeOnboarding}
@@ -91,7 +90,6 @@ function getOnBoardingSliderDots({ closeOnboarding, qrCodeProductOnBoarding }) {
   return (sliderProps) => (
     <SliderDots {...sliderProps}>
       <SkipAndGetStartedButton
-        isLocalEnabler
         isTour={qrCodeProductOnBoarding.isTour}
         feature={RZPFeatures.QR_CODES}
         page={sliderProps.active}

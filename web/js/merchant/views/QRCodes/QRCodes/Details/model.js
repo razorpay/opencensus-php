@@ -1,6 +1,6 @@
 import QRCode from 'merchant/models/QRCode';
 
-export const fetchQRCodeDetails = (id) => {
+export const fetchDetails = (id) => {
   const qrCode = new QRCode();
   return qrCode.fetch(id);
 };

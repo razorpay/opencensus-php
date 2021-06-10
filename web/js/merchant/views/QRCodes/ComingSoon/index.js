@@ -36,24 +36,11 @@ export default class QRComingSoonContainer extends React.Component {
   }
 
   handleEnableFeature = () => {
-    return this.props
-      .updateFeatures(
-        {
-          features: {
-            qr_codes: 1,
-          },
-        },
-        this.props.user.current,
-      )
-      .then((res) => {
-        window.location.reload();
-      })
-      .catch((err) => {
-        this.props.showNotification({
-          type: 'error',
-          message: err.errors,
-        });
-      });
+    if (!this.props.isTestMode) {
+      track.interested();
+    }
+
+    this.props.onInterestClicked();
   };
 
   render() {
@@ -64,11 +51,7 @@ export default class QRComingSoonContainer extends React.Component {
         description="Adopt contactless payments through customized UPI & Bharat QR Codes"
         features={featuresList}
         previewURL="/dist/css/assets/qr_code/product_preview.gif"
-        interestClicked={() => {
-          window.rzpQ.push(window.rzpQ.now().qrCode().interaction('qr.click.interested'));
-
-          this.handleEnableFeature();
-        }}
+        interestClicked={this.handleEnableFeature}
       />
     );
   }

@@ -4,19 +4,22 @@ function _track() {
   let track = () => {};
 
   function send(event, options) {
-    track(
-      trackLJ(`comingsoon.${event}`, options)
-    );
+    track(trackLJ(`comingsoon.${event}`, options));
 
     trackSegment({
       event,
       screen: 'comingsoon',
-      options
-    })
+      options,
+    });
   }
 
   return {
-    open: () => send('open'),
+    open: () =>
+      send('open', {
+        referrer: document.referrer,
+      }),
+
+    interested: () => send('interested'),
 
     init: ({ track: _track }) => {
       track = _track;

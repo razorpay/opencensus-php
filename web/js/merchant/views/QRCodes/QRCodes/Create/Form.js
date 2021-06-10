@@ -82,12 +82,15 @@ export default class CreationForm extends React.Component {
   };
 
   updateDate = (newDate) => {
+    const closeBy = newDate ? newDate.unix() : null;
     this.setState({
-      ...this.state.formData,
-      close_by: newDate,
+      formData:{
+        ...this.state.formData,
+        close_by: closeBy,
+      }
     });
 
-    track.field('close_by', newDate._i);
+    track.field('close_by', closeBy);
   };
 
   handleSelectCustomer = (customer) => {
@@ -179,7 +182,7 @@ export default class CreationForm extends React.Component {
   };
 
   onSubmit = () => {
-    const { formData, customer } = this.state;
+    const { formData, customer, close_by } = this.state;
     const payload = {
       ...formData,
     };
@@ -338,7 +341,7 @@ export default class CreationForm extends React.Component {
                         Close By <small>(Optional)</small>
                       </>
                     }
-                    checkboxFieldLabel="Close this QR code at a specified time"
+                    checkboxFieldLabel="Close this QR code after"
                     onChange={this.updateDate}
                     disabled={isSubmitting}
                   />
@@ -395,7 +398,7 @@ export default class CreationForm extends React.Component {
                 onClick={this.onSubmit}
                 disabled={isSubmitDisabled}
               >
-                Create QRCode
+                Create QR Code
               </AsyncBtn.Primary>
             </footer>
           </Form>

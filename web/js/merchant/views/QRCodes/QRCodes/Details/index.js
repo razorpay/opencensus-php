@@ -7,7 +7,7 @@ import QRCodeDetails from './Details';
 import * as VirtualAccountActions from 'merchant/reducers/virtualaccounts';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
-import { fetchPayments, fetchQRCodeDetails } from './model';
+import { fetchPayments, fetchDetails } from './model';
 import { fetchCustomersForAutocomplete } from 'merchant/reducers/customers';
 import { closeQR } from 'merchant/reducers/qrCodes/list';
 import CreateTestPayment from './CreateTestPayment';
@@ -27,7 +27,7 @@ import track from './track';
     closeModal,
     showNotification,
     fetchCustomersForAutocomplete,
-    closeQR
+    closeQR,
   },
 )
 @RTracking(() => window.rzpQ.component('QRCodeDetailsContainer'))
@@ -42,14 +42,12 @@ export default class QRCodeDetailsContainer extends React.Component {
     payments: [],
   };
 
-  componentWillMount() {
+  componentDidMount() {
     let { id } = this.props;
     this.fetchQRCodeDetails(id);
     this.fetchPayments(id);
     this.props.fetchCustomersForAutocomplete();
-  }
 
-  componentWillMount() {
     track.init({
       track: this.props.tracking.trackEvent,
     });
@@ -64,12 +62,12 @@ export default class QRCodeDetailsContainer extends React.Component {
     }
   }
 
-  fetchQRCodeDetails = (id) => {
+  fetchQRCodeDetails = (id = this.props.id) => {
     this.setState({
       isLoading: true,
     });
 
-    fetchQRCodeDetails(id)
+    return fetchDetails(id)
       .then((resp) => {
         this.setState({
           entity: resp,
@@ -94,6 +92,8 @@ export default class QRCodeDetailsContainer extends React.Component {
   };
 
   closeAccount = () => {
+    track.close();
+
     this.context.confirm({
       header: 'Close QR Code?',
       message:
@@ -105,13 +105,15 @@ export default class QRCodeDetailsContainer extends React.Component {
           .closeQR(this.state.entity.id)
           .then((response) => {
             this.setState({
-              entity: response.data
+              entity: response.data,
             });
 
             this.props.showNotification({
               type: 'success',
               message: 'QR code closed successfully',
             });
+
+            track.closeSuccess(true);
           })
           .catch(({ errors }) => {
             const error = (errors || [])[0];
@@ -119,6 +121,8 @@ export default class QRCodeDetailsContainer extends React.Component {
               type: 'error',
               message: error,
             });
+
+            track.closeSuccess(false, error)
           });
       },
       abort: () => {},
@@ -151,11 +155,11 @@ export default class QRCodeDetailsContainer extends React.Component {
         />
       ),
     });
-  }
+  };
 
   downloadQRCode = () => {
     window.open(this.state.entity.image_url);
-  }
+  };
 
   render() {
     let { isLoading, error, entity, payments } = this.state;
@@ -170,6 +174,7 @@ export default class QRCodeDetailsContainer extends React.Component {
 
     return (
       <QRCodeDetails
+        key={this.props.id}
         qrCode={entity}
         payments={payments}
         isLoading={isLoading}

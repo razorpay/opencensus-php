@@ -7,6 +7,8 @@ import isEmpty from '@universe/utils/isEmpty';
 import { fetchFeaturesAjax } from 'merchant/reducers/config';
 import { getOrg } from 'merchant/store';
 import { getOnBoardingDataFromLocalState } from 'merchant/components/OnBoarding';
+import LocalStorageService from 'common/utils/localStorage';
+import { getMode } from 'merchant/store';
 
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import {
@@ -739,7 +741,7 @@ export default class User {
   }
 
   get isQRCodesEnabled() {
-    if (this.isQRCodeComingSoonEnabled) {
+    if (this.isQRCodeComingSoonExpEnabled) {
       return true;
     }
 
@@ -752,6 +754,16 @@ export default class User {
   }
 
   get isQRCodeComingSoonEnabled() {
+    if (this.isQRCodeProductEnabled) {
+      return true;
+    }
+
+    const status = !!(LocalStorageService.getItem(`QR-codes-${getMode()}-${this.current}`))
+
+    return status;
+  }
+
+  get isQRCodeComingSoonExpEnabled() {
     if (this.isQRCodeProductEnabled) {
       return true;
     }
