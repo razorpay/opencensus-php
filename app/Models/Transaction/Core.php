@@ -1073,6 +1073,13 @@ class Core extends Base\Core
 
         $newBalance = $merchantBalance->getBalance();
 
+        $this->trace->info(TraceCode::MERCHANT_BALANCE_DATA,
+            [
+                'new_balance' => $newBalance,
+                'old_balance' => $oldBalance,
+                'method'      => 'updateMerchantBalance',
+            ]);
+
         $this->repo->balance->updateBalance($merchantBalance);
 
         $checkNegativeLimit = $oldBalance >= $newBalance;

@@ -843,6 +843,15 @@ trait Capture
         // SINCE THIS DOES NOT HAVE BALANCE GOING NEGATIVE CHECK!
         $amountToUpdate = $txn->getNetAmount();
 
+        $this->trace->info(
+            TraceCode::MERCHANT_BALANCE_DATA,
+            [
+                'old_balance' => $merchantBalance->getBalance(),
+                'amount_to_update' => $amountToUpdate,
+                'new_balance' => $merchantBalance->getBalance() + $amountToUpdate,
+                'method_name' => 'handleLateBalanceUpdate',
+            ]);
+
         $this->repo->balance->updateBalanceDirectly($merchantBalance, $amountToUpdate);
 
         // Not updating transaction balance for now and will do it later via offline cron.

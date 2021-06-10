@@ -801,6 +801,13 @@ abstract class Base extends BaseCore
 
         $newBalance = $this->merchantBalance->getBalance();
 
+        $this->trace->info(TraceCode::MERCHANT_BALANCE_DATA,
+            [
+                'new_balance' => $newBalance,
+                'old_balance' => $oldBalance,
+                'method'      => 'updateMerchantBalance',
+            ]);
+
         $this->repo->balance->updateBalance($this->merchantBalance);
 
         $checkNegativeLimit = $oldBalance > $newBalance;

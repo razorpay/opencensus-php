@@ -4607,6 +4607,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
 
     const INVALID_DATE_EXTRACTED_FROM_BANK                      = 'INVALID_DATE_EXTRACTED_FROM_BANK';
+    const MERCHANT_BALANCE_DATA                                 = 'MERCHANT_BALANCE_DATA';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
