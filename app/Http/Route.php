@@ -864,6 +864,7 @@ class Route
         'loc_cron'                                 => ['post',     'loc/cron/{path?}',                               'LOCController@handleCron'                                          ],
         'capital_cards_service'                    => ['any',      'capital_cards/service/{path?}',                  'CapitalCardsController@handleProxyRequests'                        ],
         'capital_cards_m2p_webhook'                => ['any',      'capital_cards/m2p/{path?}',                      'CapitalCardsController@handleWebhook'                              ],
+        'capital_cards_mail'                       => ['post',     'capital_cards/mail',                             'CapitalCardsController@sendMail'                                   ],
         'capital_cards_admin'                      => ['any',      'capital_cards/admin/{path?}',                    'CapitalCardsController@handleAdminRequests'                        ],
         'capital_collections_service'              => ['any',      'capital_collections/service/{path?}',            'CapitalCollectionsController@handleProxyRequests'                  ],
         'capital_collections_admin'                => ['any',      'capital_collections/admin/{path?}',              'CapitalCollectionsController@handleAdminRequests'                  ],
@@ -2949,6 +2950,7 @@ class Route
         'merchant_bulk_onboarding_admin',
         'currency_fetch_rates_internal',
         'loc_mail',
+        'capital_cards_mail',
         'cps_card_entity_create',
         'cps_backfill_entities',
         'vendor_payment_composite_expands_helper',
@@ -3333,7 +3335,6 @@ class Route
         'payment_verify_new',
         'user_fetch_entity',
         'bulk_submerchant_assign',
-
         // Merchant Fraud
         'website_checker',
 
@@ -9124,6 +9125,8 @@ class Route
             'user_fetch',
             'user_fetch_entity',
             'merchant_fetch_internal_users',
+            'internal_merchant_fetch',
+            'capital_cards_mail',
         ],
 
         'capital_collections_client' => [

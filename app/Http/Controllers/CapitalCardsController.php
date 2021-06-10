@@ -16,6 +16,8 @@ use Psr\Http\Message\RequestInterface;
 use Http\Discovery\Psr18ClientDiscovery;
 use Http\Discovery\Psr17FactoryDiscovery;
 use OpenCensus\Trace\Propagator\ArrayHeaders;
+use RZP\Mail\CapitalCards\Base;
+use Illuminate\Support\Facades\Mail;
 
 class CapitalCardsController extends Controller
 {
@@ -26,6 +28,8 @@ class CapitalCardsController extends Controller
     const DELETE   = 'DELETE';
     const MERCHANT = 'MERCHANT';
 
+
+    const MAIL_ERROR_REGEX = '/View \[emails.capital_cards.(?:\w+)?\] not found./';
 
     protected function handleProxyRequests($path = null)
     {
@@ -206,5 +210,36 @@ RequestInterface
         $body = json_decode($body, true);
 
         return ApiResponse::json($body, $code);
+    }
+
+    protected function sendMail()
+    {
+        $request = Request::instance();
+        $data = $request->all();
+        if ((isset($data['to']) === false) or
+            (isset($data['merchant_id']) === false) or
+            (isset($data['template']) === false) or
+            (isset($data['subject']) === false)) {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);
+        }
+        if (isset($data['attachment']) === true )
+        {
+            $ufhService = $this->app['ufh.service'];
+            $signedUrlResponse = $ufhService->getSignedUrl($data['attachment'],[],$data["merchant_id"]);
+            $data['file'] = $signedUrlResponse;
+        }
+        try {
+            $mail = new Base($data);
+            Mail::queue($mail);
+        } catch (\Throwable $e) {
+            if (preg_match(self::MAIL_ERROR_REGEX, $e->getMessage(), $matches) === 1) {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, $data, $e->getMessage());
+            } else {
+                throw $e;
+            }
+        }
+
+        return ApiResponse::json(['success' => true]);
+
     }
 }
