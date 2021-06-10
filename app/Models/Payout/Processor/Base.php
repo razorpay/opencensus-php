@@ -503,10 +503,16 @@ class Base extends BaseCore
 
                     $downstreamProcessor->process();
 
-                    if ($payout->getStatus() === Status::CREATE_REQUEST_SUBMITTED or
+                    if ($payout->getStatus() === Status::CREATE_REQUEST_SUBMITTED)
+                    {
+                        $payout->setStatus(Status::CREATED);
+                    }
+
+                    if ($payout->getStatus() === Status::SCHEDULED or
                         $payout->getStatus() === Status::QUEUED)
                     {
-                        if ($payout->getTransactionId() !== null)
+                        if ($payout->getTransactionId() !== null and
+                            $this->app['basicauth']->isPayoutService())
                         {
                             $payout->setStatus(Status::CREATED);
                         }
@@ -1724,7 +1730,14 @@ class Base extends BaseCore
                     Payout\Entity::NARRATION       => $params[Payout\Entity::NARRATION] ?? null,
                 ];
 
-                $payout = $this->repo->transaction(function () use ($input, $id)
+                if (isset($params[Payout\Entity::SCHEDULED_AT]) === true)
+                {
+                    $input[Payout\Entity::SCHEDULED_AT] = $params[Payout\Entity::SCHEDULED_AT];
+                }
+
+                $status = $params[Payout\Entity::STATUS];
+
+                $payout = $this->repo->transaction(function () use ($input, $id, $status)
                 {
                     $payout = $this->createPayoutEntity($input);
 
@@ -1737,7 +1750,7 @@ class Base extends BaseCore
 
                     if (empty($payout->getStatus()) === true)
                     {
-                        $payout->setStatus(Status::CREATE_REQUEST_SUBMITTED);
+                        $payout->setStatus($status);
                     }
 
                     // Save payout Entity to database
@@ -1885,6 +1898,7 @@ class Base extends BaseCore
                     $status = $payout->getStatus();
 
                     if ($status === Status::CREATE_REQUEST_SUBMITTED or
+                        $status === Status::SCHEDULED or
                         $status === Status::QUEUED)
                     {
                         $payout = $this->processPayoutPostCreate($payout, $queueFlag);
@@ -1959,12 +1973,6 @@ class Base extends BaseCore
         {
             // workflow payout skip
             if ($this->isWorkflowEnabled === true)
-            {
-                return false;
-            }
-
-            // scheduled payout request check
-            if (isset($input[Payout\Entity::SCHEDULED_AT]) === true)
             {
                 return false;
             }

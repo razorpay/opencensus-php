@@ -1563,6 +1563,11 @@ class BasicAuth
         return $this->internalApp === 'payout_links';
     }
 
+    public function isPayoutService()
+    {
+        return $this->internalApp === 'payouts_service';
+    }
+
     public function isCareApp()
     {
         return $this->internalApp === 'care';

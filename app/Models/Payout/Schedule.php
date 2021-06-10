@@ -35,8 +35,10 @@ class Schedule
     {
         $app = App::getFacadeRoot();
 
+
         if (($app['basicauth']->isProxyAuth() === false) and
-            ($app['basicauth']->isVendorPaymentApp() === false))
+            ($app['basicauth']->isVendorPaymentApp() === false) and
+            ($app['basicauth']->isPayoutService() === false))
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_SCHEDULED_PAYOUT_AUTH_NOT_SUPPORTED);
         }
