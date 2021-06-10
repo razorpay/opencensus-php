@@ -6,7 +6,7 @@ export default class DetailsView extends React.PureComponent {
   render() {
     return (
       <Provider store={store}>
-        <View />
+        <View {...this.props} />
       </Provider>
     );
   }

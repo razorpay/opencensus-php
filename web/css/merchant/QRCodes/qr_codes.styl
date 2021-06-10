@@ -146,6 +146,28 @@ $formHeight = 471px
   .qr-usage .pair-value
     text-transform: capitalize
 
+  .actions
+    border: 1px solid #DEE5E7
+    padding: 16px 20px
+    display: flex
+    align-items: center
+
+    button
+      text-align: center
+      width: 50%
+      position relative
+
+      &:first-child:after
+        content: ''
+        display: block
+        content: ''
+        background: #dee5e7
+        width: 1px
+        height: 20px
+        position: absolute
+        right: 0
+        top: 0
+
 .QRCode-test-payment
   margin-top: 24px
   .rzp-banner-text
@@ -155,5 +177,41 @@ $formHeight = 471px
     .Button
       min-width: 175px
 
-.Modal-container--QRCode--Preview
-  width: 400px
+.QRCode--Preview
+  max-width: 400px
+  background: #E0E0E0
+
+  .heading
+    padding: 24px
+    font-size: 18px
+    line-height: 24px
+    color: #58666E
+
+    img
+      height: 16px
+
+  .content
+    display: flex
+    align-items: center
+    justify-content: center
+    height: 487px
+    padding: 24px
+
+    img
+      max-width: 100%
+      max-height: 100%
+
+  .footer
+    background: #F6F6F6
+    padding: 16px 24px
+    display: flex
+    justify-content: space-between
+    align-items: center
+
+    button
+      width: 168px
+      margin-right: 0
+
+.QRCode--List
+  .qr_usage
+    text-transform: capitalize

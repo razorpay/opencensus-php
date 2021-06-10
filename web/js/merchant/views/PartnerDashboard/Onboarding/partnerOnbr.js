@@ -22,6 +22,7 @@ import RTracking from 'react-tracking';
   (state) => ({
     session: state.session,
     user: state.session.user,
+    isMobileResolution: state.app.isMobileResolution
   }),
   {
     updateSession,
@@ -203,6 +204,7 @@ export default class BaseScreen extends React.Component {
               tracking={this.props.tracking}
               merchantId={this.props.user.merchant.id}
               experimentVariant={this.state.experimentVariant}
+              isMobile={this.props.isMobileResolution}
             />
           )}
           {(sliderProps) => (

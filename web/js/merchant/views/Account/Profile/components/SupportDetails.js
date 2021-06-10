@@ -7,7 +7,7 @@ import MerchantDataCollectionModal from 'merchant/views/Settings/SupportDetails/
 import { isMobile } from 'common/utils/validators';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-
+import ShowWhen from 'merchant/components/ShowWhen';
 @connect((state) => ({ support_detail: state.supportdetails.merchantSupportDetail }), {
   fetchSupportDetail,
   openModal,
@@ -51,11 +51,16 @@ export default class SupportDetails extends Component {
       <div className="panel panel-default">
         <div className="panel-heading">
           Support Details
+          <ShowWhen
+          myRole="owner admin manager"
+          >
           <span className="pull-right">
             <a onClick={() => this.openAddSupportDetailModal(support_detail)}>
               {Object.keys(support_detail.data).length ? 'Edit Details' : 'Add Details'}
             </a>
           </span>
+          </ShowWhen>
+          
         </div>
         <div className="list-group details-row-container">
           <div className="list-group-item">

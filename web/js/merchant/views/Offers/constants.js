@@ -99,6 +99,7 @@ export const PAYMENT_METHODS = {
   EMI: 'emi',
   PayLater: 'paylater',
   CardLessEmi: 'cardless_emi',
+  // Emandate: 'emandate'
 };
 
 // TODO: Rename to all caps
@@ -115,12 +116,14 @@ export const PaymentMethodsOptions = [
 export const SUBSCRIPTION_OFFERS_PAYMENT_METHODS = {
   Card: 'card',
   UPI: 'upi',
+  // Emandate: 'emandate'
 };
 
 export const SUBSCRIPTION_OFFERS_PAYMENT_METHODS_OPTIONS = [
   { label: '--Select Payment method--', name: '' },
   { label: 'Card', name: PAYMENT_METHODS.Card },
   { label: 'UPI', name: PAYMENT_METHODS.UPI },
+  // { label: 'eMandates (NetBanking)', name: PAYMENT_METHODS.Emandate }, we need this in future
 ];
 
 export const SUBSCRIPTION_OFFERS_PAYMENT_NETWORKS_OPTIONS = [

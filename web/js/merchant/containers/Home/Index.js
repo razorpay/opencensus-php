@@ -707,43 +707,7 @@ export default class HomeContainer extends Component {
     else return false;
   };
 
-  openSupportDetailModal = (isHomePage) => {
-    const { tracking, user } = this.props;
-    if (isHomePage) {
-      LocalStorageService.setItem(
-        `SUPPORT_DETAIL_LAST_POP_DISPLAY_DATE--${user.current}`,
-        moment().format('DD/MM/YYYY'),
-      );
-      let remainigCount = LocalStorageService.getItem(
-        `SUPPORT_DETAIL_CURRENT_POPUP_COUNT--${user.current}`,
-      );
-      if (remainigCount > 0) {
-        LocalStorageService.setItem(
-          `SUPPORT_DETAIL_CURRENT_POPUP_COUNT--${user.current}`,
-          remainigCount - 1,
-        );
-      }
-    }
-    setTimeout(() => {
-      return this.props.openModal({
-        size: 'small',
-        component: (
-          <MerchantDataCollectionModal closeModal={this.props.closeModal} supportModal={true} />
-        ),
-      });
-    }, 500);
-    trackSupportDetailPopupDisplay();
-    tracking.trackEvent(
-      window.rzpQ.onbr().success('support_details.popup_displayed', {
-        action: 'display_support_detail_popup',
-      }),
-    );
-    tracking.trackEvent(
-      window.rzpQ.onbr().initiated('action_popup', {
-        clickSource: 'Display popup',
-      }),
-    );
-  };
+  
 
   render() {
     let {
@@ -797,7 +761,6 @@ export default class HomeContainer extends Component {
       onFetchPayments,
       onExtraContentMount,
       setScrollAmountToStickHeader,
-      openSupportDetailModal,
       settleNowRestrictionMsg,
     } = this;
 
@@ -809,9 +772,7 @@ export default class HomeContainer extends Component {
         rolesList.SUPPORT,
         rolesList.OWNER,
       ].indexOf(user.role) >= 0;
-    const maxPopupCountOfSupportDetail = LocalStorageService.getItem(
-      `SUPPORT_DETAIL_CURRENT_POPUP_COUNT--${user.current}`,
-    );
+    
     const isValueFilled =
       support_detail.error && support_detail.error[0] === 'Merchant email type does not Exist'
         ? false
@@ -860,7 +821,6 @@ export default class HomeContainer extends Component {
       hasMinTransactionSD,
       isValueFilled,
       roleToShowSupportDetailForm,
-      openSupportDetailModal,
     };
 
     const { dismissDiwaliPromotion, hideDiwaliPromotion } = this.state;
@@ -873,6 +833,7 @@ export default class HomeContainer extends Component {
         size: 'xlarge',
         disableClose: true,
         component: <PartnerOnbr disableClose={true} />,
+        className: this.state.isMobile ? 'partner-onboarding-popup mobile-app-popup': 'partner-onboarding-popup',
       });
     }
 
@@ -973,18 +934,7 @@ export default class HomeContainer extends Component {
             </ModalMask>
           )}
 
-        {/* merchant support details data collection modal */}
-        {this.compareDate(
-          moment().format('DD/MM/YYYY'),
-          LocalStorageService.getItem(`SUPPORT_DETAIL_LAST_POP_DISPLAY_DATE--${user.current}`),
-        ) &&
-        hasMinTransactionSD &&
-        roleToShowSupportDetailForm &&
-        !isValueFilled &&
-        maxPopupCountOfSupportDetail > 0 &&
-        !showOnboardingBannerFirstStep
-          ? openSupportDetailModal(true)
-          : null}
+        
 
         {showInstantActivationSuccess && (
           <InstantActivationSuccess

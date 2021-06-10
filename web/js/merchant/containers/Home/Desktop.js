@@ -257,7 +257,6 @@ class AnalyticsDesktop extends Component {
       hasMinTransactionSD,
       isValueFilled,
       roleToShowSupportDetailForm,
-      openSupportDetailModal,
       ondemand_restrictions,
       settleNowRestrictionMsg,
     } = this.props;

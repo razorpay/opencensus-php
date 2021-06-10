@@ -7,8 +7,7 @@ import InputField from 'common/ui/Forms/InputField';
 import { amount } from 'common/utils/validators';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { closeModal } from 'merchant_common/reducers/modals';
-import { createTestPayment } from 'merchant/reducers/virtualaccounts';
-import { fetchItem, fetchVAPayments } from 'merchant/reducers/virtualaccounts';
+import { createTestPayment } from './model';
 import { validateAmount } from 'common/utils/validators';
 
 @connect(
@@ -20,27 +19,27 @@ import { validateAmount } from 'common/utils/validators';
   {
     closeModal,
     showNotification,
-    fetchItem,
-    fetchVAPayments,
-    createTestPayment,
   },
 )
+@reduxForm({
+  form: 'createQRTestPayment',
+})
 export default class CreateTestPayment extends Component {
   state = {};
 
   componentDidMount() {
     this.props.onMount &&
-      this.props.onMount(this.props.virtualAccount && this.props.virtualAccount.id);
+      this.props.onMount(this.props.qrCode && this.props.qrCode.id);
   }
 
   componentWillUnmount() {
     this.props.onUnmount &&
-      this.props.onUnmount(this.props.virtualAccount && this.props.virtualAccount.id);
+      this.props.onUnmount(this.props.qrCode && this.props.qrCode.id);
   }
 
   createTestPayment = (props) => {
-    let { virtualAccount, mode } = this.props;
-    let bankAccount = virtualAccount.receivers[0];
+    let { qrCode, mode } = this.props;
+    let bankAccount = qrCode.receivers[0];
 
     if (mode === 'test' && props.amount > 1e7) {
       return this.props.showNotification({
@@ -58,22 +57,25 @@ export default class CreateTestPayment extends Component {
       transaction_id: Math.floor((+new Date() + (Math.random() * 90 + 10)) / 10),
       time: +new Date(),
     };
-    return this.props
-      .createTestPayment(fieldProps)
+
+    return createTestPayment(fieldProps)
       .then(() => {
-        this.props.onTestPayment && this.props.onTestPayment(props);
         this.props.closeModal();
+
         this.props.showNotification({
           type: 'success',
           message: 'Test Payment successful',
         });
-        this.props.fetchItem(virtualAccount.id);
-        this.props.fetchVAPayments(virtualAccount.id);
+
+        this.props.fetchQRCodeDetails();
+        this.props.fetchQRPayments();
       })
       .catch(({ errors }) => {
+        const error = (errors || [])[0]
+
         this.props.showNotification({
           type: 'error',
-          message: errors,
+          message: error,
         });
       });
   };

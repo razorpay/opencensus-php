@@ -29,4 +29,5 @@ let content = [].concat
     return content;
   }, '');
 
+content = `var __VERSION__ = "${process.env.VERSION || 'signup'}";${content}`;
 writeFileSync('public/js/generated/signup.js', content);

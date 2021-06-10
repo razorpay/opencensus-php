@@ -59,7 +59,7 @@ const TnCPage: React.FC<TncPagePropsT> = ({ data, unAuthorizePage }) => {
             ? convertUnixToDate({ unixTimeStamp: data?.updated_at })
             : convertUnixToDate({ unixTimeStamp: 1620388270 })}
         </SubText>
-        {productType === 'goods' || data?.deliverable_type === 'goods' ? (
+        {['000000000goods', 'goods'].includes(productType) || data?.deliverable_type === 'goods' ? (
           <GoodsType context={data} />
         ) : (
           <ServicesType context={data} />

@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { withRouter } from 'react-router-dom';
 import BusinessInfoEntity from './Forms/BusinessInfoEntity';
 import Banner from '../components/Banner';
 import { connect } from 'react-redux';
@@ -19,8 +20,9 @@ import {
   getNach,
   getOfferVerificationTasks,
   getScheduleDetails,
+  getApplications,
 } from 'merchant/reducers/capital';
-import PromoterDetailsEntity from './Forms/PromoterDetailsEntity';
+import PromoterDetailsEntity from './Forms/PromoterDetails/PromoterDetailsEntity';
 import MobileVerification from './Forms/MobileVerification';
 import CreditScoreBreakdown from './Forms/CreditScoreBreakdown';
 import LoanStatusBanner from './LoanStatusBanner';
@@ -38,6 +40,7 @@ import {
   APPLICATION_STATE_MESSAGE_MAP,
   APPLICATION_STATE_TITLE_MAP,
   GA_CATEGORY_BY_PRODUCT,
+  CAPITAL_PRODUCT_NAME_CODE_MAP,
 } from './constants';
 import DocumentCollectionInformation from './Forms/DocumentCollectionInformation';
 import DisbursalEntity from './Forms/DisbursalEntity';
@@ -102,6 +105,7 @@ const stateFormMap = {
     fetchLoanApplicationMeta,
     fetchBusinessDetails,
     fetchApplicantDetails,
+    getApplications,
     fetchD2cReport,
     ...NotificationsActions,
     fetchDocumentGroups,
@@ -238,6 +242,11 @@ class FormSectionRenderer extends Component {
           applicant_id: business_details.data.applicant_ids[0],
         });
       }
+      await this.props.getApplications({
+        owner_type: 'MERCHANT',
+        owner_id: this.props.user.current,
+        product_id: this.props.productDetails.id,
+      });
     }
 
     if (state === APPLICATION_STATES.CREDIT_PULL_PENDING) {
@@ -491,11 +500,14 @@ class FormSectionRenderer extends Component {
         }
       case 'PROMOTER_INFO_PENDING':
         if (
-          isPreceedingState(
-            meta.data.application.status,
-            APPLICATION_STATES.PREVERIFICATION_UPLOAD_PENDING,
-          )
+          isPreceedingState(meta.data.application.status, APPLICATION_STATES.CREDIT_PULL_PENDING)
         ) {
+          const { bureau_report_details } = this.props.loanApplicationDetails;
+          if (bureau_report_details.data.bureau_report) {
+            return this.getTitleInformation(
+              APPLICATION_STATE_TITLE_MAP['PROMOTER_INFO_PENDING_LOCKED'],
+            );
+          }
           return this.getTitleInformation(APPLICATION_STATE_TITLE_MAP['PROMOTER_INFO_PENDING']);
         } else {
           return this.getTitleInformation(
@@ -795,7 +807,10 @@ class FormSectionRenderer extends Component {
                   {this.getHeader(tobeRenderedState) ? (
                     <React.Fragment>
                       {this.getHeader(tobeRenderedState)}
-                      <hr />
+                      {this.getToBeRenderedState() === APPLICATION_STATES.PROMOTER_INFO_PENDING ||
+                      this.getToBeRenderedState() === 'PROMOTER_INFO_PENDING_LOCKED' ? null : (
+                        <hr />
+                      )}
                     </React.Fragment>
                   ) : null}
                 </div>
@@ -809,4 +824,4 @@ class FormSectionRenderer extends Component {
   }
 }
 
-export default FormSectionRenderer;
+export default withRouter(FormSectionRenderer);

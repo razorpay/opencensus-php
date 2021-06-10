@@ -567,6 +567,15 @@ const businessDetails = [
       _when: (activation) => excludeFor_Indiv(activation) && isL1Completed(activation),
       description: (activation) => {
         if (activation.state.has_gstin == '1') {
+          const currentBusinessType =
+            activation.state.dirty.business_type || activation.props.data.business_type;
+          if (currentBusinessType == PROPRIETORSHIP) {
+            return (
+              <span className='text-danger'>
+                Please note that skipping GSTIN might lead to delay in your account review by upto two weeks, usually it takes 3-4 days
+              </span>
+            );
+          }
           return 'You can add your GST details later once you are registered';
         }
       },
@@ -592,7 +601,7 @@ const businessDetails = [
       },
       placeholder: 'Enter GSTIN',
       size: 'small',
-      info: 'The entered GST Number should match either of the Address given above.',
+      info: 'Enter GSTIN & get reviewed faster. Should match your business address.',
       validator: (value) => {
         if (!isValidGSTIN(value)) {
           return 'Please provide valid GSTIN';
@@ -888,6 +897,33 @@ const uploadFields = [
     },
     _when: isBusinessProofTypeDocFieldVisible,
     className: 'document-group',
+  },
+  {
+    name: 'gstin',
+    _when: (activation) => (isBusinessProofTypeDocFieldVisible(activation)
+      && activation.state.business_proof_type === 'gst_certificate'),
+    label: 'GSTIN',
+    _autoRenderImpure: true, // Re-render to show the error
+    placeholder: 'Enter GSTIN',
+    required: false,
+    size: 'small',
+    info: 'Enter GSTIN & get reviewed faster. Should match your business address.',
+    validator: (value) => {
+      if (!isValidGSTIN(value)) {
+        return 'Please provide valid GSTIN';
+      }
+    },
+    checkValidityFromAPI: (activation) => {
+      if (activation.state.has_gstin === '1') {
+        return null;
+      }
+      return checkValidityFromAPI(
+        activation.props.data,
+        'gstin_verification_status',
+        'incorrect_details',
+        'Please provide the correct GSTIN details',
+      );
+    },
   },
   {
     name: 'business_pan_url',

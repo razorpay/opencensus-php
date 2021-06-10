@@ -7,6 +7,8 @@ import isEmpty from '@universe/utils/isEmpty';
 import { fetchFeaturesAjax } from 'merchant/reducers/config';
 import { getOrg } from 'merchant/store';
 import { getOnBoardingDataFromLocalState } from 'merchant/components/OnBoarding';
+import LocalStorageService from 'common/utils/localStorage';
+import { getMode } from 'merchant/store';
 
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import {
@@ -322,9 +324,7 @@ export default class User {
   }
 
   get isQRCodeProductEnabled() {
-    const { isEnabled } = getOnBoardingDataFromLocalState(RZPFeatures.QR_CODES);
-
-    return isEnabled;
+    return this.isFeatureEnabled('qr_codes');
   }
 
   get isRewardsPageEnabled() {
@@ -509,6 +509,10 @@ export default class User {
 
   get isSupportDetails2FAEnabled() {
     return this.getExpStatus('support_details_2FA');
+  }
+
+  get isComdelApiEnabled() {
+    return this.getExpStatus('comdel_hdfc_test');
   }
 
   get isFdTicketsEnabled() {
@@ -716,6 +720,10 @@ export default class User {
     return this.getExpStatus('batch_scheduling_options');
   }
 
+  get isEmandateOnSubscriptionEnabled() {
+    return this.getExpStatus('emandate_subscription');
+  }
+
   get isDirectTransferEnabled() {
     return this.isFeatureEnabled('direct_transfer');
   }
@@ -733,14 +741,33 @@ export default class User {
   }
 
   get isQRCodesEnabled() {
-    if (this.isQRCodeComingSoonEnabled) {
+    if (this.isQRCodeComingSoonExpEnabled) {
       return true;
     }
 
-    return this.getExpStatus('qr_code');
+    // TODO: remove this
+    return this.getExpStatus('qr_codes');
+  }
+
+  get isBharatQREnabled() {
+    return this.isFeatureEnabled('bharat_qr');
   }
 
   get isQRCodeComingSoonEnabled() {
+    if (this.isQRCodeProductEnabled) {
+      return true;
+    }
+
+    const status = !!(LocalStorageService.getItem(`QR-codes-${getMode()}-${this.current}`))
+
+    return status;
+  }
+
+  get isQRCodeComingSoonExpEnabled() {
+    if (this.isQRCodeProductEnabled) {
+      return true;
+    }
+
     return this.getExpStatus('qr_code_coming_soon');
   }
 

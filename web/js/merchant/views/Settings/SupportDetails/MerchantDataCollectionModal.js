@@ -88,12 +88,15 @@ export default class MerchantDataCollectionModal extends Component {
     if (
       user.isSupportDetails2FAEnabled &&
       phone &&
-      /[789][0-9]{9}/.test(phone) &&
-      phone !== supportDetail.data.phone /* || email !== supportDetail.data.email */
+      isMobile(phone) &&
+      phone.substr(phone.length - 10) !==
+        supportDetail.data.phone /* || email !== supportDetail.data.email */
     ) {
+      let validNumber = phone.substr(phone.length - 10);
+
       this.setState({
         newEmail: email,
-        newPhone: phone,
+        newPhone: validNumber,
         newUrl: newurl,
         isVerifying: true,
       });

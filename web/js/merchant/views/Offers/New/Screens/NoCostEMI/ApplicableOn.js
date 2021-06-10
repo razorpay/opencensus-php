@@ -1,3 +1,4 @@
+import React from 'react';
 import Input from 'common/new-ui/Input';
 import Amount from 'common/ui/Amount';
 
@@ -55,8 +56,9 @@ export default class ApplicableOn extends React.Component {
 
   render() {
     const { formData, minAmount } = this.props;
-    const SelectedEMIOptions = this.props.emiData.emi_options[formData.issuer];
-
+    const SelectedEMIOptions = this.props.emiData.emi_options[formData.issuer]?.sort(
+      (a, b) => a.duration - b.duration,
+    );
     return (
       <React.Fragment>
         <Input.Select
@@ -77,13 +79,13 @@ export default class ApplicableOn extends React.Component {
                 </div>
                 <p>Discount borne by merchant</p>
               </div>
-              {SelectedEMIOptions.map((plan, idx) => (
-                <div class="emi-option" key={idx}>
+              {SelectedEMIOptions.map((plan) => (
+                <div class="emi-option" key={plan.duration}>
                   <div class="emi-check-field">
                     <Input.Check
                       fieldLabel={`${plan.duration} Months`}
                       onChange={this.handleEmiDuration(plan.duration)}
-                      defaultValue={(formData.emi_durations || []).indexOf(plan.duration) > -1}
+                      defaultValue={formData.emi_durations?.indexOf(plan.duration) > -1}
                     />
                   </div>
 

@@ -105,6 +105,10 @@ export function validatePANCard(value) {
   }
 }
 
+export function isPanNumber(value) {
+  return !!(value && value.length === 10 && /^[a-zA-z]{5}\d{4}[a-zA-Z]{1}$/.test(value));
+}
+
 export function validateCompanyAB(value1 = '', value2 = '', isExpOn = false) {
   if (!isExpOn) return false;
   value1 = value1 === null ? '' : value1;

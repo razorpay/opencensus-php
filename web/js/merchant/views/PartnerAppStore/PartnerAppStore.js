@@ -24,6 +24,7 @@ function showPartnerIntent(props) {
     size: 'xlarge',
     disableClose: false,
     component: <PartnerOnbr closeModal={props.closeModal} disableClose={false} />,
+    className: props.isMobileResolution ? 'partner-onboarding-popup mobile-app-popup': 'partner-onboarding-popup',
   });
 }
 

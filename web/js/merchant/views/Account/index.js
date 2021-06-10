@@ -38,7 +38,10 @@ export default function MyAccount() {
             <NavLink to="/team">Manage Team</NavLink>
           </ShowWhen>
 
-          <ShowWhen myRole="owner admin" additionalCondition={(user) => user.isFdTicketsEnabled}>
+          <ShowWhen
+            myRole="owner admin"
+            additionalCondition={(user) => user.isFdTicketsEnabled && !user.isComdelApiEnabled}
+          >
             <NavLink
               onClick={() => {
                 window.rzpAnalytics({

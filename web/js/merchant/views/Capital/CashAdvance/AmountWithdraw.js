@@ -5,7 +5,7 @@ import { withRouter } from 'react-router-dom';
 import Input from 'common/new-ui/Input';
 import Amount from 'common/ui/Amount';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
-import { getFormattedAmountNew } from 'common/utils/rzp-utils';
+import { getFormattedAmountNew, titleCase } from 'common/utils/rzp-utils';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import {
   createWithdrawal,
@@ -13,8 +13,8 @@ import {
   fetchWithdrawalConfiguration,
   fetchFunctionalWithdrawalConfigByMerchantID,
   fetchWithdrawals,
+  fetchInstallments,
 } from 'merchant/reducers/capital/withdrawals';
-import { fetchBalances } from 'merchant/reducers/capital/repayments';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import {
   CLOSE_OPTIONS,
@@ -22,6 +22,10 @@ import {
   VIEWS,
   WITHDRAW_ERROR_TYPES,
   COLLECTIONS_PRODUCT_TYPES,
+  COLLECTIONS_PAYMENT_REFERENCE_TYPE,
+  COLLECTIONS_BALANCE_TYPE,
+  PAYMENT_MODES,
+  REPAYMENT_STATUES,
 } from './constants';
 import CreditSummary from './CreditSummary';
 import WithdrawnAmountSummary from './WithdrawnAmountSummary';
@@ -32,6 +36,77 @@ import DisableAutomatedWithdrawModal from './DisableAutomatedWithdrawModal';
 import CancelWithdrawalReasons from './CancelWithdrawalReasons';
 import trackAutomatedCA from './ga/automated';
 import MaxWithdrawError from './MaxWithdrawError';
+import Repayments from 'merchant/models/Capital/Repayments';
+import Withdrawal from 'merchant/models/Capital/Withdrawals';
+import { loadCheckoutScript } from '../utils/index';
+import { fetchRepayments } from 'merchant/reducers/capital/repayments';
+import Spinner from 'common/ui/Spinner';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
+
+function updateRepaymentData(data, onResolve, onReject) {
+  const repayment = new Repayments();
+  return repayment.updateRepayment(data).then(onResolve).catch(onReject);
+}
+
+const isBalanceTypePrincipal = ({ balance_type }) =>
+  balance_type === COLLECTIONS_BALANCE_TYPE.BALANCE_TYPE_PRINCIPAL;
+
+const isBalanceTypeInterest = ({ balance_type }) =>
+  balance_type === COLLECTIONS_BALANCE_TYPE.BALANCE_TYPE_INTEREST;
+
+const computeAmount = (balances) => {
+  return balances.reduce(
+    (amountBreakup, { breakup_amount = 0 }) => amountBreakup + +Number(breakup_amount),
+    0,
+  );
+};
+
+const getRepaidAmountBreakup = (balances) => {
+  const principalBalances = balances.filter(isBalanceTypePrincipal);
+  const interestBalances = balances.filter(isBalanceTypeInterest);
+  const principalRepaid = computeAmount(principalBalances);
+  const interestRepaid = computeAmount(interestBalances);
+
+  return {
+    principalRepaid,
+    interestRepaid,
+  };
+};
+
+const parseRepaymentSchedule = (todayTimestamp, array) => {
+  let data = {};
+  array.map((item) => {
+    if (parseInt(item.repayment_date) === todayTimestamp) {
+      const amount =
+        parseInt(item.payment) -
+        (parseInt(item.interest_collected ? item.interest_collected : 0) +
+          parseInt(item.principal_collected ? item.principal_collected : 0));
+
+      data = {
+        amount,
+      };
+    }
+  });
+
+  data = { ...data, latestRepaymentDone: data.amount ? data.amount <= 0 : true };
+  return data;
+};
+
+const parseRepaymentBreakup = (repayments) => {
+  const breakup = repayments.breakups;
+  const { principalRepaid, interestRepaid } = getRepaidAmountBreakup(breakup);
+
+  return {
+    totalRepaid: principalRepaid + interestRepaid || 0,
+    principalRepaid,
+    interestRepaid,
+    repaymentMethod: repayments.payment_meta ? repayments.payment_meta.method : '',
+  };
+};
+
+const computeMaxDueDate = (limit) => {
+  return moment().add(limit - 1, 'days');
+};
 
 @withRouter
 @connect(
@@ -49,7 +124,8 @@ import MaxWithdrawError from './MaxWithdrawError';
     openModal,
     closeModal,
     fetchWithdrawals,
-    fetchBalances,
+    fetchInstallments,
+    fetchRepayments,
   },
 )
 export default class AmountWithdraw extends React.Component {
@@ -65,31 +141,117 @@ export default class AmountWithdraw extends React.Component {
       isTouched: false,
       isAutomatedTagTouched: false,
       isAutomatedTagPulsating: false,
-      outstandingRepaymentAmount: null,
+      latestRepaymentDone: true,
+      isRepaymentLoading: 'LOADING',
+      outstandingRepayment: {
+        amount: null,
+      },
+      repaymentBreakdown: {
+        repaymentMethod: '',
+        principalRepaid: 0,
+        interestRepaid: 0,
+        totalRepaid: 0,
+      },
     };
     this.state = this.initialState;
   }
 
   componentDidMount() {
-    const { fetchSeedData, fetchBalances } = this.props;
+    const { fetchSeedData } = this.props;
+    const withdrawalInstance = new Withdrawal();
+    const repaymentInstance = new Repayments();
 
     // fetchSeedData();
     this.prefillData();
 
-    fetchBalances({
+    if (this.props.withdrawalConfigurationDetails.data.status.toLowerCase() === 'onhold') {
+      const currentDate = new Date();
+      const startOfDay = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        currentDate.getDate(),
+      );
+      const unixTimestamp = startOfDay / 1000;
+
+      Promise.all([
+        this.fetchInstallment(withdrawalInstance)
+          .then(({ data: { repayment_schedule = [] } = {} }) => {
+            const { latestRepaymentDone, amount } = parseRepaymentSchedule(
+              unixTimestamp,
+              repayment_schedule,
+            );
+
+            return {
+              latestRepaymentDone,
+              outstandingRepayment: {
+                ...this.state.outstandingRepayment,
+                amount,
+              },
+            };
+          })
+          .catch(() => {
+            return { latestRepaymentDone: false };
+          }),
+        this.fetchLatestRepaymentBreakdown(repaymentInstance)
+          .then(({ data: { repayments = [] } = {} } = {}) => {
+            if (!repayments[0].breakups || !repayments[0].breakups.length)
+              return Promise.reject('No Repayments');
+
+            return parseRepaymentBreakup(repayments[0]);
+          })
+          .catch(() => {
+            return {
+              repaymentMethod: '',
+              principalRepaid: 0,
+              interestRepaid: 0,
+              totalRepaid: 0,
+            };
+          }),
+      ])
+        .then((response) => {
+          const {
+            latestRepaymentDone = false,
+            outstandingRepayment = this.state.outstandingRepayment,
+          } = response[0];
+
+          this.setState({
+            isRepaymentLoading: false,
+            repaymentBreakdown: response[1],
+            latestRepaymentDone,
+            outstandingRepayment,
+          });
+        })
+        .catch(() => {
+          this.setState({
+            latestRepaymentDone: false,
+            isRepaymentLoading: false,
+          });
+        });
+    } else {
+      this.setState({
+        latestRepaymentDone: false,
+        isRepaymentLoading: false,
+      });
+    }
+  }
+
+  fetchInstallment = (withdrawalInstance) => {
+    return withdrawalInstance.fetchInstallments({
+      owner_id: this.props.user.current,
+      from: moment().startOf('day').unix(),
+      to: moment().add(2, 'days').unix(),
+    });
+  };
+
+  fetchLatestRepaymentBreakdown = (repaymentInstance) => {
+    return repaymentInstance.fetchRepayments({
       product_type: COLLECTIONS_PRODUCT_TYPES.CASH_ADVANCE,
       credit_id: this.props.user.current,
-    }).then((res) => {
-      if (res.data && res.data.balances && res.data.balances.length) {
-        let balances = res.data.balances;
-        let tempOutstandingRepaymentAmount = balances.reduce(
-          (a, b) => parseInt(a) + (parseInt(b['balance_amount']) || 0),
-          0,
-        );
-        this.setState({ outstandingRepaymentAmount: tempOutstandingRepaymentAmount });
-      }
+      order_by_type: 'ORDER_BY_TYPE_DESC',
+      order_by_field: 'ORDER_BY_FIELD_CREATED_AT',
+      count: 1,
     });
-  }
+  };
 
   startAutomatedTagPulsating = () => {
     this.setState({ isAutomatedTagPulsating: true });
@@ -107,13 +269,13 @@ export default class AmountWithdraw extends React.Component {
   prefillData = () => {
     const maxWithdrawableAmount = this.getMaxWithdrawableAmount();
     const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
-    const { start_day_limit } = withdrawalConfigurationDetails.configuration;
-    const startDay = moment().add(start_day_limit, 'days');
+    const { end_day_limit } = withdrawalConfigurationDetails.configuration;
+    const maxDueDate = computeMaxDueDate(end_day_limit);
 
     if (maxWithdrawableAmount > this.getMinWithdrawableAmount()) {
       this.setState({
         withdrawalAmount: maxWithdrawableAmount / 100,
-        selectedDueDate: startDay.endOf('day'),
+        selectedDueDate: maxDueDate.endOf('day'),
       });
     }
   };
@@ -268,6 +430,76 @@ export default class AmountWithdraw extends React.Component {
       ),
       size: 'small',
     });
+  };
+
+  handleRazorpayCheckoutPayment = (RepaymentInstance, paymentParams) => {
+    const requests = [
+      loadCheckoutScript(),
+      RepaymentInstance.createRepayment({
+        ...paymentParams,
+        payment_reference_type: COLLECTIONS_PAYMENT_REFERENCE_TYPE.ORDER,
+        amount: Number(this.state.outstandingRepayment.amount),
+      }),
+    ];
+
+    return Promise.all(requests).then(([_, repaymentDetails]) => {
+      const { data: { payment_reference_id: order_id } = {} } = repaymentDetails;
+      if (!order_id) return Promise.reject(new Error('No Order Id found'));
+
+      return new Promise((resolve, reject) => {
+        const razorpayInstance = new Razorpay({
+          order_id,
+          handler: (response) => updateRepaymentData(response, resolve, reject),
+          modal: {
+            ondismiss: reject,
+          },
+        });
+        razorpayInstance.open();
+      });
+    });
+  };
+
+  handlePayNowClick = () => {
+    const RepaymentInstance = new Repayments();
+    const paymentParams = {
+      credit_id: this.props.user.current,
+      product_type: COLLECTIONS_PRODUCT_TYPES.CASH_ADVANCE,
+      currency: 'INR',
+    };
+
+    return Promise.resolve()
+      .then(() => this.handleRazorpayCheckoutPayment(RepaymentInstance, paymentParams))
+      .then(({ data }) => {
+        if (!data.breakups || !data.breakups.length) return Promise.reject('No Repayment Details');
+        const { principalRepaid, interestRepaid } = getRepaidAmountBreakup(data.breakups);
+
+        const response = {
+          totalRepaid: principalRepaid + interestRepaid || 0,
+          principalRepaid,
+          interestRepaid,
+          repaymentMethod: data.payment_meta ? data.payment_meta.method : '',
+        };
+
+        this.setState({
+          repaymentBreakdown: response,
+          latestRepaymentDone: true,
+        });
+      })
+      .catch(() => {
+        this.props.showNotification({
+          type: 'error',
+          message: 'Oops, Your repayment has been failed due to some internal error.',
+        });
+        this.setState({
+          latestRepaymentDone: false,
+          repaymentBreakdown: {
+            repaymentMethod: '',
+            principalRepaid: 0,
+            interestRepaid: 0,
+            totalRepaid: 0,
+          },
+        });
+      });
   };
 
   withdraw = async () => {
@@ -594,6 +826,8 @@ export default class AmountWithdraw extends React.Component {
       selectedDueDate,
       showRepaymentDetailsBreakup,
       isAutomatedTagPulsating,
+      latestRepaymentDone,
+      isRepaymentLoading,
     } = this.state;
     const {
       user,
@@ -639,18 +873,43 @@ export default class AmountWithdraw extends React.Component {
         ) : null}
         <div class="no-margin full-width" style={{ position: 'relative' }}>
           {withdrawalConfigStatus && withdrawalConfigStatus.toLowerCase() === 'onhold' ? (
-            <div>
-              <div className="flex end-align">
-                <i className="i i-error withdrawals__onhold-icon" />
-                <h3 className="withdrawals__onhold-title text--secondary">
-                  Withdrawals are on hold!
-                </h3>
+            isRepaymentLoading === 'LOADING' ? (
+              <div class="page-spinner-container" style={{ height: '100%' }}>
+                <Spinner />
               </div>
-              <p className="withdrawals__onhold-summary">
-                Sorry, Your withdrawals are temporarily blocked due to missed repayments. Please
-                repay to continue <br /> using your credit line.
-              </p>
-            </div>
+            ) : latestRepaymentDone ? (
+              this.repaymentSuccessfull(isRepaymentLoading)
+            ) : (
+              <div>
+                <div className="flex end-align">
+                  <i className="i i-error withdrawals__onhold-icon" />
+                  <h3 className="withdrawals__onhold-title text--secondary">
+                    Withdrawals are on hold!
+                  </h3>
+                </div>
+                <p className="withdrawals__onhold-summary">
+                  Sorry, Your withdrawals are temporarily blocked due to missed repayments. Please
+                  repay to continue <br /> using your credit line.
+                </p>
+                <div className="flex outstanding__wrapper">
+                  <div>
+                    <div className="outstanding-title">Outstanding Repayment</div>
+                    <strong className="outstanding-amount">
+                      <Amount
+                        value={this.state.outstandingRepayment.amount}
+                        parentQuerySelector=".withdrawals__top-summary"
+                      />
+                    </strong>
+                  </div>
+                  <button
+                    className="btn btn-primary outstanding-paybutton"
+                    onClick={this.handlePayNowClick}
+                  >
+                    Pay Now
+                  </button>
+                </div>
+              </div>
+            )
           ) : (
             <div>
               <div className="flex" style={{ marginBottom: 8, alignItems: 'center' }}>
@@ -725,7 +984,106 @@ export default class AmountWithdraw extends React.Component {
     );
   };
 
+  repaymentSuccessfull(isRepaymentLoading) {
+    return (
+      <div>
+        <div className="flex end-align">
+          <i
+            class="i i-done text-success"
+            style={{
+              fontSize: 20,
+            }}
+          />
+          <h3 className="repayment-succesfull-title text--secondary">Repayment Successful!</h3>
+        </div>
+        <p className="repayment-succesfull-summary">
+          Thanks for your payment. Your cash advance will be activated as soon as the repayment is
+          adjusted on your account.
+        </p>
+        <div className="flex repayment-succesfull-breakdown-wrapper">
+          <div>
+            <p
+              className="repayment-succesfull-breakdown-title"
+              style={{ color: 'rgba(22, 47, 86, 0.62)' }}
+            >
+              Total Repaid
+            </p>
+            <div className="repayment-succesfull-breakdown-amount-wrapper">
+              {isRepaymentLoading ? (
+                <PlaceholderLoader />
+              ) : (
+                <strong
+                  className="repayment-succesfull-breakdown-amount"
+                  style={{ fontSize: '20px' }}
+                >
+                  <Amount
+                    value={this.state.repaymentBreakdown.totalRepaid}
+                    parentQuerySelector=".withdrawals__top-summary"
+                  />
+                </strong>
+              )}
+            </div>
+          </div>
+          <div>
+            <p className="repayment-succesfull-breakdown-title">Principal Repaid</p>
+            <div className="repayment-succesfull-breakdown-amount-wrapper">
+              {isRepaymentLoading ? (
+                <PlaceholderLoader />
+              ) : (
+                <strong className="repayment-succesfull-breakdown-amount">
+                  <Amount
+                    value={this.state.repaymentBreakdown.principalRepaid}
+                    parentQuerySelector=".withdrawals__top-summary"
+                  />
+                </strong>
+              )}
+            </div>
+          </div>
+          <div>
+            <p className="repayment-succesfull-breakdown-title">Interest Repaid </p>
+            <div className="repayment-succesfull-breakdown-amount-wrapper">
+              {isRepaymentLoading ? (
+                <PlaceholderLoader />
+              ) : (
+                <strong className="repayment-succesfull-breakdown-amount">
+                  <Amount
+                    value={this.state.repaymentBreakdown.interestRepaid}
+                    parentQuerySelector=".withdrawals__top-summary"
+                  />
+                </strong>
+              )}
+            </div>
+          </div>
+          <div>
+            <p className="repayment-succesfull-breakdown-title">Repayment Method</p>
+            <div className="repayment-succesfull-breakdown-amount-wrapper">
+              {isRepaymentLoading ? (
+                <PlaceholderLoader />
+              ) : (
+                <strong className="repayment-succesfull-breakdown-amount">
+                  {this.state.repaymentBreakdown.repaymentMethod
+                    ? titleCase(this.state.repaymentBreakdown.repaymentMethod)
+                    : '- -'}
+                </strong>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   getWithdrawalForm(withdrawalAmount) {
+    const {
+      withdrawalConfigurationDetails: {
+        data: { configuration: { end_day_limit = null } = {} } = {},
+      } = {},
+    } = this.props;
+    const { selectedDueDate } = this.state;
+    const dateToShow = selectedDueDate
+      ? moment(selectedDueDate).format('DD-MM-YYYY')
+      : computeMaxDueDate(end_day_limit);
+
     return (
       <div className="flex withdrawal-form-container">
         <Input.Group
@@ -776,12 +1134,7 @@ export default class AmountWithdraw extends React.Component {
               </small>
             </div>
           }
-          // defaultValue={this.state.selectedDueDate}
-          value={
-            this.state.selectedDueDate
-              ? moment(this.state.selectedDueDate).format('DD-MM-YYYY')
-              : ''
-          }
+          defaultValue={dateToShow}
           onChange={this.handleDueDateChange}
           addonAfter={<i className="i i-date-range" />}
           placement="topLeft"

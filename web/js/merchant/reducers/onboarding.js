@@ -1,5 +1,6 @@
 import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import { set } from 'common/utils/immutable';
+import { getOnBoardingDataFromLocalState } from 'merchant/components/OnBoarding';
 
 const FEATURE_ONBOARDING_SAVE = 'FEATURE_ONBOARDING_SAVE';
 const QUICK_GUIDE = 'QUICK_GUIDE';
@@ -9,6 +10,7 @@ export const handleProductQuickGuide = data => {
     type: QUICK_GUIDE,
     payload: {
       feature: data.feature,
+      isEnabled: data.isEnabled,
       showOnboarding: data.showOnboarding,
       isQuickGuideOpen: data.isQuickGuideOpen,
       isTour: data.isTour,
@@ -18,12 +20,16 @@ export const handleProductQuickGuide = data => {
 };
 
 export const getCurrentProductOnBoardingDetails = (state, feature) => {
+  const localState = getOnBoardingDataFromLocalState(feature);
+
   return (
     state.onboarding.products[feature] || {
       feature,
       showOnboarding: false,
       isQuickGuideOpen: false,
       isTour: false,
+      isEnabled: false,
+      ...localState
     }
   );
 };

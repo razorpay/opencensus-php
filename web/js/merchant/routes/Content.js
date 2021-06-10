@@ -480,17 +480,23 @@ export default class Content extends Component {
             component={MyAccount}
             additionalCondition={(user) => user.isAllowedView('credits')}
           />
-          <ShowWhenRoute path="/ticket-support/tickets" component={MyAccount} />
+          <ShowWhenRoute 
+            path="/ticket-support/tickets" 
+            component={MyAccount} 
+            myRole="owner admin" 
+            additionalCondition={(user) => user.isFdTicketsEnabled && !user.isComdelApiEnabled} 
+          />
           <ShowWhenRoute path="/ticket-support/:instance/:id/conversation" component={MyAccount} />
           <ShowWhenRoute
             path="/referrals"
             component={MyAccount}
+            featureEnabled="Referral"
             additionalCondition={(user) => user.isAllowedView('referrals')}
           />
           <ShowWhenRoute
             path="/team"
             component={MyAccount}
-            additionalCondition={(user) => user.isAllowedView('team')}
+            additionalCondition={(user) => user.isAllowedTeamManagement}
           />
           <ShowWhenRoute
             path="/config"

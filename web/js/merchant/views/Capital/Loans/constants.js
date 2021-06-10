@@ -25,6 +25,7 @@ export const CAPITAL_LINKS = {
 
 export const APPLICATION_STATES = {
   CREATED: 'CREATED',
+  PROMOTER_INFO_PENDING: 'PROMOTER_INFO_PENDING',
   CREDIT_PULL_PENDING: 'CREDIT_PULL_PENDING',
   CREDIT_PULL_FAILED: 'CREDIT_PULL_FAILED',
   PREVERIFICATION_UPLOAD_PENDING: 'PREVERIFICATION_UPLOAD_PENDING',
@@ -43,6 +44,8 @@ export const APPLICATION_STATES = {
   DOCUMENTS_UNDER_REVIEW: 'DOCUMENTS_UNDER_REVIEW',
   RZP_APPROVED: 'RZP_APPROVED',
   CREDIT_DISBURSED: 'CREDIT_DISBURSED',
+  RZP_REJECTED: 'RZP_REJECTED',
+  CLOSED: 'CLOSED',
 };
 
 export const APPLICATION_STATE_SEQUENCE = [
@@ -92,6 +95,33 @@ export const ERROR_STATES = [
   APPLICATION_STATES.DOCUMENT_COLLECTION_FAILED,
   APPLICATION_STATES.CREDIT_PULL_FAILED,
 ];
+
+export const APPLICATION_DISABLED_STATES = {
+  [APPLICATION_STATES.RZP_REJECTED]: {
+    title: 'You are not eligible for',
+    description:
+      "Sorry, your application doesn't meet our lending partner's credit requirement at the moment. Suggestions to improve your business eligibility",
+    tips: [
+      'Maintain a good credit history',
+      'Have a regular business cashflow',
+      'Avoid bad debts & make EMI payments on time',
+      'Application must be submited with major stakeholder details',
+    ],
+    subTitle: 'What’s SHOULD YOU DO Next',
+    action_point:
+      "Please submit a fresh application when you are ready. We'll be more than happy to serve you again.",
+    ctaText: 'Apply for',
+  },
+  [APPLICATION_STATES.CLOSED]: {
+    title: 'Your application is closed due to inactivity',
+    description:
+      "We haven't heard back from your since this application was created. Hence we have closed it.",
+    subTitle: 'What’s SHOULD YOU DO Next',
+    action_point:
+      'Please submit a fresh application when you are ready and. We’d be would be happy to serve you again.',
+    ctaText: 'Apply for',
+  },
+};
 
 export const APPLICATION_STATE_DESCRIPTIONS = {
   BUSINESS_INFO_PENDING: {
@@ -275,7 +305,7 @@ export const GENDER_OPTIONS = [
     label: 'Female',
   },
   {
-    name: 'GENDER_TYPE_OTHER',
+    name: 'GENDER_TYPE_OTHERS',
     label: 'Others',
   },
 ];
@@ -283,7 +313,7 @@ export const GENDER_OPTIONS = [
 export const GENDER_MAP = {
   GENDER_TYPE_MALE: 0,
   GENDER_TYPE_FEMALE: 1,
-  GENDER_TYPE_OTHER: 2,
+  GENDER_TYPE_OTHERS: 2,
 };
 
 export const DOCUMENT_GROUP_NAMES_MAP = {
@@ -363,12 +393,11 @@ export const APPLICATION_STATE_TITLE_MAP = {
     lockedNote: true,
   },
   PROMOTER_INFO_PENDING: {
-    title: 'Confirm your Individual info',
-    description:
-      'We verify the details with the central PAN database. Please ensure to enter the correct Authorised Signatory’s details',
+    title: 'Tell us about your business owner',
+    description: 'Help us with your business owner details to provide the best credit offer.',
   },
   PROMOTER_INFO_PENDING_LOCKED: {
-    title: 'Confirm your Individual info',
+    title: 'Tell us about your business owner',
     description: 'Sorry, You cannot edit the below information after Credit Enquiry is done',
     lockedNote: true,
   },

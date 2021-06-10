@@ -1,5 +1,6 @@
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
 
 import { Modal, ModalContent } from 'common/new-ui/Modal';
 import { classList } from 'common/utils/rzp-utils';
@@ -7,7 +8,9 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { saveQRCode } from 'merchant/reducers/qrCodes/list';
 import { luminateRow } from 'merchant/reducers/app';
+import QRCodePreviewModal from '../components/QRPreviewModal';
 import Form from './Form';
+import track from './track';
 
 @withRouter
 @connect(null, {
@@ -16,28 +19,33 @@ import Form from './Form';
   saveQRCode,
   ...ModalActions,
 })
+@RTracking(() => window.rzpQ.component('CreateQRCode'))
 export default class CreateQRCode extends React.Component {
   isModalView = !!this.props.onClose;
 
+  componentWillMount() {
+    track.init({
+      track: this.props.tracking.trackEvent,
+    });
+  }
+
   onSubmit = (reqPayload) => {
+
+    track.submit();
+
     return this.props
       .saveQRCode(reqPayload)
       .then((resp) => {
         const entityId = resp.data.id;
 
-        if (this.isModalView) {
-          this.props.closeModal();
-
-          this.props.luminateRow(entityId);
-        }
-
-        const redirectUrl = '/qr_codes/' + entityId;
-        this.props.history.push(redirectUrl);
+        this.showPreview(resp.data);
 
         this.props.showNotification({
           type: 'success',
-          message: 'QR code successfully created',
+          message: 'QR code successfully created.',
         });
+
+        track.submitSuccess(reqPayload);
       })
       .catch(({ errors }) => {
         const error = (errors || [])[0];
@@ -46,12 +54,41 @@ export default class CreateQRCode extends React.Component {
           type: 'error',
           message: error,
         });
+
+        track.submitFail(error)
       });
   };
 
+  showPreview = ({ id, image_url }) => {
+    this.props.openModal({
+      size: 'medium',
+      className: 'QRCode--Preview',
+      disableClose: true,
+      component: (
+        <QRCodePreviewModal
+          id={id}
+          history={this.props.history}
+          previewImg={image_url}
+          closeModal={() => {
+            this.props.closeModal();
+
+            track.backToDashboard();
+          }}
+          onDownloadQRCode={track.downloadImage}
+        />
+      ),
+    });
+  }
+
+  onClose = () => {
+    this.props.onClose();
+
+    track.cancel();
+  }
+
   render() {
     const content = (
-      <Form isModalView={this.isModalView} onClose={this.props.onClose} onSubmit={this.onSubmit} />
+      <Form isModalView={this.isModalView} onClose={this.onClose} onSubmit={this.onSubmit} />
     );
 
     return this.isModalView ? (

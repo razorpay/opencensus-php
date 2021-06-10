@@ -43,7 +43,7 @@ export default class ScheduledNitroBanner extends Component {
   render() {
     return (
       <div class="schedule-enable-container">
-        Reduce transaction fee to 1.65% with a RazorpayX Current Account
+        Reduce platform fee to 1.65% with a RazorpayX Current Account
         <a
           class="Button--secondary Button scheduled-btn-act btn-border"
           target="_blank"

@@ -14,6 +14,7 @@ import { paymentId, amount } from 'common/ui/item/pair';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { QRCodeStatusLabel } from 'merchant/components/StatusLabel';
 import CustomerDetails from 'merchant/components/CustomerDetails';
+import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import { findBy } from 'common/utils/rzp-utils';
 
 export default function Details(props) {
@@ -28,6 +29,8 @@ export default function Details(props) {
     user,
     customers,
     isTestMode,
+    showPreview,
+    downloadQRCode,
   } = props;
 
   const isClosed = qrCode.status === 'closed';
@@ -55,13 +58,22 @@ export default function Details(props) {
               <div>
                 <div class="heading">Amount Received</div>
                 <div class="value">
-                  <Amount value={qrCode.total_amount_received || '000'} />
+                  <Amount value={qrCode.payments_amount_received || '000'} />
                 </div>
               </div>
               <div>
                 <div class="heading">Number of Payments</div>
                 <div class="value">{qrCode.payments_received_count || 0}</div>
               </div>
+            </div>
+
+            <div class="actions">
+              <Button.Transparent class="Button--Link" onClick={showPreview}>
+                <i class="i i-eye m-r" /> Preview QR
+              </Button.Transparent>
+              <Button.Transparent class="Button--Link" onClick={downloadQRCode}>
+                <i class="i i-download m-r" /> Download QR
+              </Button.Transparent>
             </div>
 
             <div class="panel-body">
@@ -82,7 +94,13 @@ export default function Details(props) {
                   </div>
                 </EntityDetailRow>
 
-                <EntityDetailRow label="QR Usage" pairClass="qr-usage" value={qrCode.usage} />
+                <EntityDetailRow
+                  label="QR Usage"
+                  pairClass="qr-usage"
+                  value={(qrCode.usage || '').replace('_', ' ')}
+                />
+
+                <EntityDetailRow label="QR Name" value={qrCode.name} />
 
                 <EntityDetailRow label="Payment Amount">
                   {qrCode.payment_amount ? (
@@ -95,7 +113,9 @@ export default function Details(props) {
                   )}
                 </EntityDetailRow>
 
-                <EntityDetailRow label="Close By" value={qrCode.close_by} />
+                <EntityDetailRow label="Close By">
+                  <Time value={qrCode.close_by} format="DD MMM YYYY, hh:mm:ss a" />
+                </EntityDetailRow>
 
                 <EntityDetailRow label="Customer Details">
                   <CustomerDetails
@@ -109,30 +129,19 @@ export default function Details(props) {
 
                 <EntityDetailRow label="Description" value={qrCode.description} />
 
-                <EntityDetailRow label="Notes">
-                  {qrCode.notes && Object.keys(qrCode.notes).length === 0
-                    ? '--'
-                    : Object.keys(qrCode.notes).map((key, index) => (
-                        <div class="m-b" key={index}>
-                          <Definition>
-                            {key}
-                            {String(qrCode.notes[key])}
-                            <i />
-                          </Definition>
-                        </div>
-                      ))}
-                </EntityDetailRow>
+                <NestedEntityDetailRow label="Notes" value={qrCode.notes} />
               </div>
 
-              {showTestPaymentBtn && (
-                <Banner class="QRCode-test-payment">
+              {showTestPaymentBtn &&
+                {
+                  /* <Banner class="QRCode-test-payment">
                   <Button onClick={onMakeTestPaymentClick}>Make a Test Payment</Button>
 
                   <div>
                     <strong>Test Mode:</strong> Make a test payment using this QR Code
                   </div>
-                </Banner>
-              )}
+                </Banner> */
+                }}
 
               <hr />
 

@@ -18,7 +18,7 @@ const ProductInfo = (props) => {
         ))}
       </div>
 
-      <Banner product={props.product} />
+      <Banner product={props.product}   interestClicked={props.interestClicked} />
     </div>
   );
 };

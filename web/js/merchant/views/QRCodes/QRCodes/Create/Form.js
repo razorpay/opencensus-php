@@ -1,5 +1,4 @@
-import { validateAmount } from 'common/utils/validators';
-import { classList } from 'common/utils/rzp-utils';
+import { connect } from 'react-redux';
 
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
@@ -7,42 +6,63 @@ import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { onChangeNotes } from 'common/new-ui/Input/PairList';
 import CustomerSelector from 'merchant/components/CustomerSelector';
 
+import { validateAmount } from 'common/utils/validators';
+import { rupeesToPaise, classList } from 'common/utils/rzp-utils';
+import track from './track';
+
 const FORM_CLASS_NAME = 'QRCode--Create-Form';
 
 const FIXED_AMOUNT_OPTIONS = [
   {
-    name: '0',
+    value: '0',
     label: 'No',
   },
   {
-    name: '1',
+    value: '1',
     label: 'Yes',
   },
 ];
 
 const USAGE_OPTIONS = [
   {
-    name: 'multiple',
+    value: 'multiple_use',
     label: 'Multiple Payments',
   },
   {
-    name: 'single',
+    value: 'single_use',
     label: 'Single Payment',
   },
 ];
 
+const QR_TYPES = [
+  {
+    value: 'upi_qr',
+    label: 'UPI QR',
+  },
+  {
+    value: 'bharat_qr',
+    label: 'Bharat QR',
+  },
+];
+
+@connect((state) => ({
+  user: state.session.user,
+}))
 export default class CreationForm extends React.Component {
   state = {
     isSubmitting: false,
     isSubmitDisabled: false,
     formData: {
-      usage: 'multiple',
-      fixed_amount: false,
+      type: QR_TYPES[0].value,
+      usage: USAGE_OPTIONS[0].value,
+      fixed_amount: FIXED_AMOUNT_OPTIONS[0].value,
     },
   };
 
   componentDidMount() {
     this.toggleDisableState();
+
+    track.open();
   }
 
   componentDidUpdate() {
@@ -57,19 +77,28 @@ export default class CreationForm extends React.Component {
         notes,
       },
     });
+
+    track.field('notes', notes);
   };
 
   updateDate = (newDate) => {
+    const closeBy = newDate ? newDate.unix() : null;
     this.setState({
-      ...this.state.formData,
-      close_by: newDate,
+      formData:{
+        ...this.state.formData,
+        close_by: closeBy,
+      }
     });
+
+    track.field('close_by', closeBy);
   };
 
   handleSelectCustomer = (customer) => {
     this.setState({
       customer,
     });
+
+    track.field('customer', customer);
   };
 
   onFieldChange = (event) => {
@@ -89,6 +118,16 @@ export default class CreationForm extends React.Component {
     });
   };
 
+  onFieldBlur = (event) => {
+    const fieldValue = event.target.value;
+    const fieldName = event.target.name;
+
+    const isInvalidField = !fieldName || fieldName.indexOf('notes[') > -1;
+    if (isInvalidField) return true;
+
+    track.field(fieldName, fieldValue);
+  };
+
   toggleDisableState = () => {
     // if value not selected, html marks it as ':invalid' which is tehnically valid in our case. Hence, relying on is-invalid.
     const invalidFields = document.querySelectorAll(`.${FORM_CLASS_NAME} .Input.is-invalid`);
@@ -100,6 +139,8 @@ export default class CreationForm extends React.Component {
   };
 
   handleAdditionalOptions = () => {
+    track.advancedOptions(!this.state.showAdditionalOptions);
+
     if (this.state.showAdditionalOptions) {
       const formTopEle = document.querySelector('.form-container input[name=usage]');
 
@@ -125,12 +166,12 @@ export default class CreationForm extends React.Component {
       },
       () => {
         setTimeout(() => {
-          const scrollEle = document.querySelector('.Input--SelectCustomer');
+          const scrollEle = document.querySelector('.closeBy');
 
           if (scrollEle) {
             scrollEle.scrollIntoView({
               behavior: 'smooth',
-              block: 'start',
+              block: 'center',
             });
           }
 
@@ -141,15 +182,24 @@ export default class CreationForm extends React.Component {
   };
 
   onSubmit = () => {
+    const { formData, customer, close_by } = this.state;
     const payload = {
-      ...this.state.formData,
-      type: 'upi_qr',
-      fixed_amount: this.state.formData.fixed_amount === '1',
+      ...formData,
     };
 
-    if (this.state.customer && this.state.customer.id) {
-      payload.customer_id = this.state.customer.id;
+    if (formData.payment_amount) {
+      payload.payment_amount = rupeesToPaise(formData.fixed_amount);
     }
+
+    if (formData.fixed_amount === '0') {
+      delete payload.payment_amount;
+    }
+
+    if (customer && customer.id) {
+      payload.customer_id = customer.id;
+    }
+
+    payload.fixed_amount = parseInt(payload.fixed_amount);
 
     this.setState({
       isSubmitting: true,
@@ -184,6 +234,19 @@ export default class CreationForm extends React.Component {
         <div class="form-container">
           <Form class={FORM_CLASS_NAME} onChange={this.onFieldChange} onSubmit={this.onSubmit}>
             <main>
+              {props.user.isBharatQREnabled && (
+                <Input.Radio
+                  autoRender
+                  label="QR Type"
+                  name="type"
+                  class="Input--vTop"
+                  options={QR_TYPES}
+                  disabled={isSubmitting}
+                  defaultValue={QR_TYPES[0].value}
+                  onBlur={this.onFieldBlur}
+                />
+              )}
+
               <Input.Radio
                 autoRender
                 label="QR Usage"
@@ -191,6 +254,8 @@ export default class CreationForm extends React.Component {
                 class="Input--vTop"
                 options={USAGE_OPTIONS}
                 disabled={isSubmitting}
+                defaultValue={USAGE_OPTIONS[0].value}
+                onBlur={this.onFieldBlur}
               />
 
               <Input.Radio
@@ -198,8 +263,10 @@ export default class CreationForm extends React.Component {
                 label="Accept only fixed amount on this QR?"
                 name="fixed_amount"
                 class="Input--vTop"
+                defaultValue={FIXED_AMOUNT_OPTIONS[0].value}
                 options={FIXED_AMOUNT_OPTIONS}
                 disabled={isSubmitting}
+                onBlur={this.onFieldBlur}
               />
 
               {formData.fixed_amount === '1' && (
@@ -223,6 +290,7 @@ export default class CreationForm extends React.Component {
                         placeholder="0.00"
                         validator={amountValidator}
                         disabled={isSubmitting}
+                        onBlur={this.onFieldBlur}
                       />
                     </div>
                   </Input.Group>
@@ -244,6 +312,7 @@ export default class CreationForm extends React.Component {
                   <div class="text-right">{(formData.description || '').length} / 120</div>
                 }
                 disabled={isSubmitting}
+                onBlur={this.onFieldBlur}
               />
 
               <div
@@ -266,13 +335,13 @@ export default class CreationForm extends React.Component {
                   <Input.DateTime
                     autoRender
                     isInline
-                    class="Input--vTop"
+                    class="Input--vTop closeBy"
                     label={
                       <>
                         Close By <small>(Optional)</small>
                       </>
                     }
-                    checkboxFieldLabel="Close this QR code at a specified time"
+                    checkboxFieldLabel="Close this QR code after"
                     onChange={this.updateDate}
                     disabled={isSubmitting}
                   />
@@ -301,6 +370,7 @@ export default class CreationForm extends React.Component {
                     }
                     description="This will appear on your dashboard."
                     disabled={isSubmitting}
+                    onBlur={this.onFieldBlur}
                   />
 
                   <Input.PairList
@@ -309,6 +379,7 @@ export default class CreationForm extends React.Component {
                     label="Internal Notes"
                     onChange={this.onChangeNotes}
                     disabled={isSubmitting}
+                    onBlur={this.onFieldBlur}
                   />
                 </div>
               )}
@@ -327,7 +398,7 @@ export default class CreationForm extends React.Component {
                 onClick={this.onSubmit}
                 disabled={isSubmitDisabled}
               >
-                Create QRCode
+                Create QR Code
               </AsyncBtn.Primary>
             </footer>
           </Form>

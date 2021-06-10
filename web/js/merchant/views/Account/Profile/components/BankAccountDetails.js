@@ -29,11 +29,13 @@ const BankAccountDetails = ({
 
   const isSettlementOnHold =
     (settlement_amount.no_settlement && settlement_amount.no_settlement.on_hold) || false;
+
   const showRequestChange =
     !isSettlementOnHold &&
     isBankAccountChangeAllowed !== null &&
     !user.blockBankAccountUpdate() &&
-    user.activation_status === 'activated';
+    user.activation_status === 'activated' &&
+    !user.isOrgAxis;
 
   return (
     <div class="panel panel-default" ref={bankAccountSectionRef}>
@@ -54,11 +56,7 @@ const BankAccountDetails = ({
               </small>
             </span>
           )}
-        {((settlement_amount.no_settlement && !settlement_amount.no_settlement.on_hold) ||
-          !settlement_amount.no_settlement) &&
-          isBankAccountChangeAllowed !== null &&
-          !user.blockBankAccountUpdate() &&
-          !user.isOrgAxis &&
+        {showRequestChange &&
           (isBankAccountChangeAllowed ? (
             <a
               class="pull-right"

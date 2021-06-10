@@ -457,6 +457,7 @@ export default class PaymentSettings extends Component {
   };
 
   changeSettings = () => {
+    triggerHotjarRecording(`Capture_Setting`);
     this.props.openModal({
       size: 'medium',
       component: <CaptureMode />,

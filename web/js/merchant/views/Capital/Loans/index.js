@@ -14,10 +14,10 @@ import {
   HOTJAR_TRIGGERS,
   TOOLTIP_DESCRIPTIONS,
   GA_CATEGORY_BY_PRODUCT,
+  APPLICATION_STATES,
 } from './constants';
 import EditPanModal from './EditPanModal';
 import CircularProgress from 'common/new-ui/CircularProgress';
-import Button from 'common/new-ui/Button';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import {
   changeActiveState,
@@ -33,7 +33,6 @@ import {
 import DataList from 'merchant/components/OnBoarding/Slides/DataList';
 import { OnBoardingWrapper } from 'merchant/components/OnBoarding';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
-import Popover, { PopoverBody } from 'common/ui/Popover';
 
 export const PROS = [
   <React.Fragment key={1}>
@@ -49,6 +48,14 @@ export const PROS = [
     <span>Repay easily from daily settlements with more options</span>
   </React.Fragment>,
 ];
+
+const parseApplicationMetaData = (loanApplicationDetails) => {
+  const {
+    meta: { product, loading, data: { application: { status = '' } = {} } } = {},
+  } = loanApplicationDetails;
+
+  return { loading, product, status };
+};
 
 @withRouter
 @connect(
@@ -91,6 +98,12 @@ class LoanApplicationOverview extends React.Component {
     this.props.closeModal();
     this.initApplication(this.getProductCode());
     triggerHotjarRecording(HOTJAR_TRIGGERS.LOAN_APPLICATION_PAGE_OPEN);
+
+    document.querySelector('.pagefooter').style.display = 'none';
+  }
+
+  componentWillUnmount() {
+    document.querySelector('.pagefooter').style.display = 'block';
   }
 
   initApplication = (product) => {
@@ -185,10 +198,8 @@ class LoanApplicationOverview extends React.Component {
           this.setState({
             applications: res.data.applications,
           });
-          const activeApplications = res.data.applications.filter(
-            (application) =>
-              application.status !== 'RZP_REJECTED' && application.status !== 'CLOSED',
-          );
+
+          const activeApplications = res.data.applications;
           if (activeApplications.length > 0 && activeApplications[0].id) {
             this.fetchApplicationDetails(activeApplications[0].id).then(() => {
               this.onLoadHandlers.forEach((callback) => {
@@ -250,6 +261,7 @@ class LoanApplicationOverview extends React.Component {
 
   openLoanEntity = (applicationId, state, _targetStepTitle, _cta) => {
     const { meta } = this.props.loanApplicationDetails;
+    const productDetails = this.getProductDetails();
     const currentStatus = state ? state : meta.data.application.status;
 
     this.gaEventDispatcher({
@@ -265,7 +277,13 @@ class LoanApplicationOverview extends React.Component {
     this.fetchApplicationDetails(applicationId);
     this.props.openModal({
       size: 'full-screen',
-      component: <LoanEntity onClose={this.handleModalClose} applicationId={applicationId} />,
+      component: (
+        <LoanEntity
+          onClose={this.handleModalClose}
+          productDetails={productDetails}
+          applicationId={applicationId}
+        />
+      ),
       style: {
         content: {
           top: 0,
@@ -319,7 +337,6 @@ class LoanApplicationOverview extends React.Component {
 
   getApplicationOverview = () => {
     const { loanApplicationDetails } = this.props;
-    const { contact_email, promoter_pan } = this.props.user;
 
     const productDetails = this.getProductDetails();
 
@@ -327,55 +344,17 @@ class LoanApplicationOverview extends React.Component {
 
     if (!loanApplicationDetails.meta.data.application) {
       return (
-        <div className="status-overview">
-          <div className="loan-application-overview-header onboarding-header flex">
-            <div className="loan-meta-wrapper">
-              <h4>
-                <strong>Check Eligibility</strong>
-              </h4>
-              <span class="text-strong text-faded">{contact_email}</span>
-            </div>
-            <div className="personal-pan-summary flex">
-              <div className="left-section">
-                <p className="text-strong text-faded">PAN Number</p>
-                <span className="pan-info text-strong">
-                  {this.state.applicantPan}
-                  {!this.isPANLinkedWithPG() && (
-                    <small className="help-content">
-                      &nbsp;
-                      <i className="i i-info-outline" />
-                      <Popover align="top" theme="dark">
-                        <PopoverBody>
-                          <div class="text-left">
-                            This PAN Number is different from the one connected with the Payment
-                            Gateway.
-                          </div>
-                        </PopoverBody>
-                      </Popover>
-                    </small>
-                  )}
-                </span>
-              </div>
-              <div>
-                <span>
-                  We verify the details with your central PAN database, So please ensure to enter
-                  the correct details.&nbsp;
-                  <Button.Transparent onClick={this.handleCoApplicantPan}>
-                    Apply using different PAN
-                  </Button.Transparent>
-                </span>
-              </div>
-            </div>
-          </div>
-          <div class="loan-onboarding-content-body">
-            <ApplicationOnboardingForm
-              productId={productDetails.id}
-              applicantPan={this.state.applicantPan}
-            />
-          </div>
-        </div>
+        <ApplicationOnboardingForm
+          productId={productDetails.id}
+          applicantPan={this.state.applicantPan}
+          isPANLinkedWithPG={this.isPANLinkedWithPG()}
+          handleCoApplicantPan={this.handleCoApplicantPan}
+        />
       );
     }
+    const { status } = parseApplicationMetaData(loanApplicationDetails);
+    const applicationRejected = status === APPLICATION_STATES.RZP_REJECTED;
+    const applicationClosed = status === APPLICATION_STATES.CLOSED;
 
     return (
       <div className="status-overview">
@@ -387,31 +366,41 @@ class LoanApplicationOverview extends React.Component {
                   Your{' '}
                   {isCashAdvanceProduct(loanApplicationDetails.meta.product)
                     ? 'Cash Advance'
-                    : 'Loan'}
+                    : 'Loan'}{' '}
                   Application
                 </strong>
               </h4>
               <p className="text--secondary">
+                <i className="i i-document" />
                 Application ID: {loanApplicationDetails.meta.data.application.id}
               </p>
             </div>
-            <div className="loan-application-progress-wrapper flex">
-              <CircularProgress
-                progress={this.getProgressPercentage()}
-                size={22}
-                showPercentage={false}
-              />
-              <div className="m-l">
-                <h4 className="no-margin">
-                  <strong>{this.getProgressPercentage()}%</strong>
-                  &nbsp;
-                  <span className="text-small">Completed</span>
-                </h4>
+
+            {!(applicationRejected || applicationClosed) && (
+              <div className="loan-application-progress-wrapper flex">
+                <CircularProgress
+                  progress={this.getProgressPercentage()}
+                  size={22}
+                  showPercentage={false}
+                />
+                <div className="m-l">
+                  <h4 className="no-margin">
+                    <strong>{this.getProgressPercentage()}%</strong>
+                    &nbsp;
+                    <span className="text-small">Completed</span>
+                  </h4>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
-        <div class="loan-onboarding-content-body">
+        <div
+          class={
+            applicationRejected || applicationClosed
+              ? 'loan-application-disabled-body'
+              : 'loan-onboarding-content-body'
+          }
+        >
           <ApplicationStatusOverview openLoanEntity={this.openLoanEntity} />
         </div>
       </div>
@@ -431,8 +420,16 @@ class LoanApplicationOverview extends React.Component {
     }
   }
 
+  isLoanApplicationDisabled = (loanApplicationDetails) => {
+    if (!loanApplicationDetails.meta.data.application) return false;
+    const { status } = parseApplicationMetaData(loanApplicationDetails);
+    if (status === APPLICATION_STATES.RZP_REJECTED || status === APPLICATION_STATES.CLOSED)
+      return true;
+  };
+
   render() {
     const { loanApplicationDetails, user } = this.props;
+
     if (loanApplicationDetails.products.loading || loanApplicationDetails.meta.loading)
       return (
         <div class="capital-landing-spinner-container">
@@ -441,6 +438,7 @@ class LoanApplicationOverview extends React.Component {
       );
 
     const UIConfig = this.getUIConfig();
+
     return (
       <OnBoardingWrapper class="Loans">
         <div className="Landing--Image">
@@ -461,7 +459,12 @@ class LoanApplicationOverview extends React.Component {
           <DataList>{UIConfig.product.pros}</DataList>
         </div>
 
-        <div className="loan-application-home">
+        <div
+          className={`loan-application-home ${
+            this.isLoanApplicationDisabled(loanApplicationDetails) &&
+            'loan-application-home-top-border'
+          }`}
+        >
           {loanApplicationDetails.meta.loading || loanApplicationDetails.products.loading ? (
             <ApplicationOverviewLoadingSkeleton />
           ) : (

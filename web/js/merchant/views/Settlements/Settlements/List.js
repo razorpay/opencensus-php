@@ -44,6 +44,7 @@ import SettlementDetail from 'merchant/views/Settlements/Settlements/components/
 import Time from 'common/ui/Time';
 import SettlementGuideText from 'merchant_common/components/SettlementGuideText';
 import SettleNowButton from 'merchant/views/Settlements/Settlements/components/SettleNowButton';
+import { handleAnalytics } from './analytics';
 
 @withRouter
 @connect(
@@ -196,6 +197,8 @@ export default class SettlementsListContainer extends ListContainer {
       eventCategory: EVENT_CATEGORY_DASHBOARD_SETTLEMENTS,
       eventAction: 'Clear Search Params - Settlements',
     });
+
+    handleAnalytics('clear', 'clicked');
   };
 
   settlementBreakupOnMount = (id) => {
@@ -221,10 +224,15 @@ export default class SettlementsListContainer extends ListContainer {
           settlementId={settlement.id}
           onMount={this.settlementBreakupOnMount}
           onUnmount={this.settlementBreakupOnUnmount}
+          settlement={settlement}
         />
       ),
       size: 'large',
     });
+    let properties = {
+      ...settlement.analyticsPayload(),
+    };
+    handleAnalytics('break up', 'clicked', properties);
   };
 
   removeRequestESButton = () => {
@@ -278,7 +286,7 @@ export default class SettlementsListContainer extends ListContainer {
   viewSettlementCycle = () => {
     this.props.openModal({
       size: 'medium',
-      component: <SettlementSchedule holidayList={this.props.holidayList} />,
+      component: <SettlementSchedule holidayList={this.props.holidayList} location="settlements" />,
     });
 
     window.rzpAnalytics({
@@ -286,8 +294,44 @@ export default class SettlementsListContainer extends ListContainer {
       eventAction: 'View Settlement Cycle',
       eventLabel: `Settlements`,
     });
+    handleAnalytics('settlement cycle viewed', 'clicked');
   };
 
+  handleSearch = (args) => {
+    let objectName = 'settlements search';
+    let searchProps = {
+      searchTerm: args.id,
+      count: args.count,
+    };
+    handleAnalytics(objectName, 'clicked', searchProps);
+    this.search(args)
+      .then(({ data }) => {
+        let resultProps = {
+          searchTerm: args.id,
+          resultsReturned: true,
+          numberofResults: data.items.length,
+          status: 'success',
+        };
+        handleAnalytics(objectName, 'result', resultProps);
+      })
+      .catch((e) => {
+        let failureProps = {
+          searchTerm: args.id,
+          resultsReturned: false,
+          status: 'failure',
+          failureReason: e.errors[0],
+        };
+        handleAnalytics(objectName, 'result', failureProps);
+      });
+  };
+
+  handlePagination = (params, type) => {
+    let properties = {
+      paginationType: type === 'prev' ? 'previous' : type,
+    };
+    this.paginate(params, type);
+    handleAnalytics('pagination', 'clicked', properties);
+  };
   render() {
     const {
       loading,
@@ -516,7 +560,7 @@ export default class SettlementsListContainer extends ListContainer {
             <SettlementsListFilter
               form="settlementsListFilter"
               count={this.state.count}
-              onSubmit={this.search}
+              onSubmit={this.handleSearch}
               onSearchAnalytics={this.onSearchAnalytics}
               onClearAnalytics={this.onClearAnalytics}
             />
@@ -535,7 +579,7 @@ export default class SettlementsListContainer extends ListContainer {
               count={this.state.count}
               skip={this.state.skip}
               length={items.length}
-              onClick={this.paginate}
+              onClick={this.handlePagination}
             />
 
             <SettlementGuideText />

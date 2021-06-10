@@ -326,10 +326,8 @@ function getDefaultBusinessProofDoc(activation) {
     documents.shop_establishment_certificate.length
   ) {
     defaultBusinessProofDoc = 'shop_establishment_certificate';
-  } else if (documents.msme_certificate && documents.msme_certificate.length) {
-    defaultBusinessProofDoc = 'msme_certificate';
   } else {
-    defaultBusinessProofDoc = 'gst_certificate';
+    defaultBusinessProofDoc = 'msme_certificate';
   }
   return defaultBusinessProofDoc;
 }

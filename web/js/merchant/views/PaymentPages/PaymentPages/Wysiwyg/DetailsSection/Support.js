@@ -55,7 +55,7 @@ export default class extends React.PureComponent {
   }
 
   render() {
-    let { support_email, support_contact } = this.props;
+    let { support_email, support_contact, supportPhoneRef, supportEmailRef } = this.props;
 
     return (
       <div id="support-details">
@@ -63,6 +63,7 @@ export default class extends React.PureComponent {
           <label>Contact Us:</label>
           <SupportSubField
             name="support_email"
+            ref={supportEmailRef}
             placeholder="Enter support email"
             icon={emailIcon}
             defaultValue={support_email}
@@ -75,16 +76,20 @@ export default class extends React.PureComponent {
                 return 'Invalid Email';
               }
             }}
+            autoRender
+            info="Please add your support email"
           />
 
           <SupportSubField
             name="support_contact"
+            ref={supportPhoneRef}
             placeholder="Enter support phone"
             icon={phoneIcon}
             defaultValue={support_contact}
             onBlur={this.props.updateData}
             addButtonLabel="Add Support Phone"
             autoRender
+            info="Please add your support contact number"
           />
         </React.Fragment>
       </div>
@@ -92,17 +97,19 @@ export default class extends React.PureComponent {
   }
 }
 
-class SupportSubField extends React.PureComponent {
-  render() {
-    const { icon, addButtonLabel, ...rest } = this.props;
 
+const SupportSubFieldForwardRef = React.forwardRef((props, ref) => {
+
+    const { icon, addButtonLabel, reference, ...rest } = props;
+    
     return (
       <div class="sub-detail">
         <React.Fragment>
           {icon}
-          <Input name={name} {...rest} />
+          <Input name={name} ref={ref} {...rest} />
         </React.Fragment>
       </div>
     );
-  }
-}
+});
+const SupportSubField = React.memo(SupportSubFieldForwardRef);
+

@@ -29,12 +29,12 @@ class Constants
         ],
         [
             'title'       => 'Settlements on Hold',
-            'description' => 'Settlements on Hold: Your settlements are on hold due to regulatory requirements. Please provide clarification on the email received on your registered email to resolve the issue',
+            'description' => 'Settlements on Hold: Your settlements are under review due to regulatory requirements. Please provide clarification on the email received on your registered email ID to resolve the issue',
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/rtb_announcement.svg',
             'track_event' => true,
-            'id'          => 'bulk-risk-action-merchant-FOH',
+            'id'          => 'merchant-risk-action-FOH',
             'filters'     => [
-                'tags' => ["bulk_action_merchant_foh"]
+                'tags' => ["merchant_risk_action_foh"]
             ],
             'buttons'     => [
                 [
@@ -49,9 +49,9 @@ class Constants
             'description' => 'Account Disabled: Your account has been disabled as per regulatory requirements. Please find more details on the email received on your registered email',
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/rtb_announcement.svg',
             'track_event' => true,
-            'id'          => 'bulk-risk-action-merchant-disabled',
+            'id'          => 'merchant-risk-action-disabled',
             'filters'     => [
-                'tags' => ["bulk_action_disabled"]
+                'tags' => ["merchant_risk_action_disabled"]
             ],
             'buttons'     => [
                 [
@@ -167,9 +167,9 @@ class Constants
         ],
         [
             'title'       => 'Get 1.65% pricing with RazorpayX',
-            'description' => 'Open a current account with RazorpayX & reduce your transaction fee to 1.65%.',
+            'description' => 'Open a current account with RazorpayX & reduce your platform fee to 1.65%.',
             'start_ts'    => 1621987200,
-            'end_ts'      => 1629936000,
+            'end_ts'      => 1629936000, 
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro.svg',
             'id'          => 'projectNitro',
             'campaign'    => 'nitro',
@@ -189,7 +189,7 @@ class Constants
         ],
         [
             'title'       => 'Get 1.65% pricing with RazorpayX',
-            'description' => 'Open a current account with RazorpayX & reduce your transaction fee to 1.65%.',
+            'description' => 'Open a current account with RazorpayX & reduce your platform fee to 1.65%.',
             'start_ts'    => 1621987200,
             'end_ts'      => 1629936000,
             'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/nitro.svg',

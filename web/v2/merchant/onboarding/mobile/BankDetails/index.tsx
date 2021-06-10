@@ -5,10 +5,11 @@ import View from '@razorpay/blade-old/src/atoms/View';
 import Space from '@razorpay/blade-old/src/atoms/Space';
 import TextInput from '@razorpay/blade-old/src/atoms/TextInput';
 import Checkbox from '@razorpay/blade-old/src/atoms/Checkbox';
+import Text from '@razorpay/blade-old/src/atoms/Text';
 import { FormSection, Field, GetTouchedFields } from '../Form';
 import { useActivationFormState, isVisible, isTabComplete } from '../context/store';
 import useActivation, { getRequestData } from '../hooks/useActivation';
-import { CIN_BusinessTypes } from '../Constants/OnboardingConstants';
+import { CIN_BusinessTypes, PROPRIETORSHIP } from '../Constants/OnboardingConstants';
 import { getLabel, isUnregisteredBusiness, getDetailsForIFSC } from '../services/utils';
 import { analyticsTrack } from '../../../../services/tracking/segment';
 import { useApp } from 'v2/context/App';
@@ -267,7 +268,7 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                   width="auto"
                   name="gstin"
                   label="GST Identification Number (GSTIN)"
-                  helpText="Should match either of your registered address or operational address"
+                  helpText="Enter GSTIN & get reviewed faster. Should match your business address."
                   value={formikProps.values.gstin}
                   errorText={formikProps.touched.gstin && formikProps.errors.gstin}
                   onBlur={() => {
@@ -283,33 +284,44 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isFormLocked }) => {
                 />
               </Field>
               {!isUnregisteredBusiness(businessOverviewDetails.business_type.value) ? (
-                <Space margin={[1.75, 0, 0, 0]}>
-                  <View>
-                    <Checkbox
-                      name="no_gstin"
-                      title="I don't have a GSTIN"
-                      defaultChecked={hasGSTIN}
-                      onChange={(value) => {
-                        setHasGSTIN(value);
-                        if (value) {
-                          formikProps.setFieldTouched('gstin');
-                          formikProps.setFieldValue('gstin', '');
-                          setIsBlurCalled(true);
-                        } else {
-                          isTabComplete({ ...data, hasGSTIN: !value }, 'bank_and_company_details');
-                          setBankAndCompanyDetailsCompleted(value);
-                        }
-                        analyticsTrack({
-                          objectName: 'SignUp',
-                          actionName: "I don't have a GSTIN checkbox",
-                          screen: 'home page',
-                          eventAction: 'initiated',
-                          user,
-                        });
-                      }}
-                    />
-                  </View>
-                </Space>
+                <>
+                  <Space margin={[1.75, 0, 0, 0]}>
+                    <View>
+                      <Checkbox
+                        name="no_gstin"
+                        title="I don't have a GSTIN"
+                        defaultChecked={hasGSTIN}
+                        onChange={(value) => {
+                          setHasGSTIN(value);
+                          if (value) {
+                            formikProps.setFieldTouched('gstin');
+                            formikProps.setFieldValue('gstin', '');
+                            setIsBlurCalled(true);
+                          } else {
+                            isTabComplete(
+                              { ...data, hasGSTIN: !value },
+                              'bank_and_company_details',
+                            );
+                            setBankAndCompanyDetailsCompleted(value);
+                          }
+                          analyticsTrack({
+                            objectName: 'SignUp',
+                            actionName: "I don't have a GSTIN checkbox",
+                            screen: 'home page',
+                            eventAction: 'initiated',
+                            user,
+                          });
+                        }}
+                      />
+                    </View>
+                  </Space>
+                  {hasGSTIN && Number(data.business_type) === PROPRIETORSHIP && (
+                    <Text size="xsmall" color="negative.900">
+                      Please note that skipping GSTIN might lead to delay in your account review by
+                      upto two weeks, usually it takes 3-4 days
+                    </Text>
+                  )}
+                </>
               ) : null}
             </FormSection>
           ) : null}

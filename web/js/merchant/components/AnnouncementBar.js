@@ -44,7 +44,7 @@ export default class AnnouncementBar extends Component {
     return (
       <div class="announcement-sidebar">
         <div class="wrapper">
-          <h2>Reduce Transaction Fees to 1.65% </h2>
+          <h2>Reduce Platform Fee to 1.65% </h2>
           <p>Get a current Account with RazorpayX</p>
         </div>
         <a

@@ -77,6 +77,8 @@ const ERROR = {
 @RTracking(() => window.rzpQ.component('PaymentPagesWysiwyg'))
 export default class PaymentPagesWysiwyg extends React.PureComponent {
   isIntentDuplicate = false;
+  supportPhoneRef = React.createRef();
+  supportEmailRef = React.createRef();
 
   static contextTypes = {
     confirm: PropTypes.func,
@@ -264,7 +266,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   };
 
   initSubApps = () => {
-    ReactDOM.render(<DetailsSection />, document.getElementById('details-section'));
+    ReactDOM.render(<DetailsSection supportEmailRef={this.supportEmailRef} supportPhoneRef={this.supportPhoneRef} />, document.getElementById('details-section'));
     ReactDOM.render(<FormSection />, document.getElementById('form-section'));
 
     this.setState({
@@ -511,8 +513,10 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     if (!support_contact || !support_email) {
       this.props.showNotification({
         type: 'error',
-        message: 'Please fill in the contact details',
+        message: 'Please add your support contact details on this page',
       });
+      !support_email && this.supportEmailRef?.current?.el.focus();
+      support_email && !support_contact && this.supportPhoneRef?.current?.el.focus();
 
       return;
     }

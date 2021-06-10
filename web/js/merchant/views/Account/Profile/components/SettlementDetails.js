@@ -39,7 +39,7 @@ export default class SettlementDetails extends Component {
     });
     this.props.openModal({
       size: 'medium',
-      component: <SettlementSchedule />,
+      component: <SettlementSchedule location="my account" />,
     });
 
     window.rzpAnalytics({

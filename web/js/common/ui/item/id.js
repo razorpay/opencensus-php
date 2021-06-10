@@ -13,7 +13,7 @@ const baseUrl = {
   token: '/tokens/',
   rvrsl: '/route/reversals/',
   offer: '/offers/',
-  qr_codes: '/qr_codes/',
+  qr: '/qr_codes/',
 };
 
 const sources = {
@@ -84,6 +84,7 @@ export const source = (item, custom_base_url) => {
 export const recipient = (item) => idItem(item.recipient);
 export const reversal = makeIdLink('reversal');
 export const credit = makeIdLink('credits');
+export const qrCode = makeIdLink('qr_code');
 
 export const batchLink = (item) => {
   const url = batchBaseUrls[item.type];

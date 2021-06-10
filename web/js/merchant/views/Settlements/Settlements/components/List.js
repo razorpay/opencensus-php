@@ -4,12 +4,25 @@ import Time from 'common/ui/Time';
 import { SettlementStatusLabel } from 'merchant/components/StatusLabel';
 import TableBody from 'common/ui/TableBody';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
-
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 const SettlementsListItem = ({ settlement, handleBreakupClick }) => {
+  const handleTracking = () => {
+    analyticsTrack({
+      objectName: 'settlement id',
+      actionName: 'clicked',
+      screen: 'settlements',
+      properties: {
+        ...settlement.analyticsPayload(),
+        location: 'settlements',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+  };
   return (
     <EntityItemRow id={settlement.id}>
       <td>
-        <Link to={`/settlements/${settlement.id}`}>
+        <Link onClick={handleTracking} to={`/settlements/${settlement.id}`}>
           <code>{settlement.id}</code>
         </Link>
       </td>

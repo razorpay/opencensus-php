@@ -143,6 +143,7 @@ const appId = {
   (state) => ({
     user: state.session.user,
     mode: state.session.mode,
+    isMobileResolution: state.app.isMobileResolution,
     ...state.submerchants,
   }),
   {
@@ -266,6 +267,7 @@ export default class SubMerchantsList extends ListContainer {
         size: 'xlarge',
         disableClose: true,
         component: <PartnerOnbr disableClose={true} />,
+        className: props.isMobileResolution ? 'partner-onboarding-popup mobile-app-popup': 'partner-onboarding-popup',
       });
     }
     return (

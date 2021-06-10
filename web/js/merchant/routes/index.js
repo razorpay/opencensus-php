@@ -296,9 +296,9 @@ const entityDetailsMap = {
   '/smartcollect/virtualaccounts/:id': { component: VirtualAccountDetails },
   '/virtualaccounts/:id': { component: VirtualAccountDetails },
   // QR Code
-  '/qr_codes/:id': {
+  '/qr_codes/:id(qr_.+)': {
     component: QRCodeDetails,
-    additionalCondition: (user) => user.isQRCodeEnabled,
+    additionalCondition: (user) => user.isQRCodesEnabled,
   },
   '/plans/new': { component: PlanNew },
   '/plans/:id': { component: PlanDetails },

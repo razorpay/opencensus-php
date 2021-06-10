@@ -40,6 +40,7 @@ export default class EntityDetailList extends React.Component {
       subscriptionType,
       mode,
       subscriptionId,
+      paymentMethod
     } = this.props;
 
     if (loading) {
@@ -111,6 +112,7 @@ export default class EntityDetailList extends React.Component {
       list.push(
         <EntityRow
           mode={mode}
+          paymentMethod={paymentMethod}
           key={index}
           item={item}
           loading={loading}
