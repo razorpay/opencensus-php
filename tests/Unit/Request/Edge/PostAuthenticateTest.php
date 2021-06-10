@@ -61,10 +61,11 @@ class PostAuthenticateTest extends TestCase
         $this->assertSame($passport->identified, $expectedAuthenticated);
         $this->assertSame($passport->authenticated, $expectedAuthenticated);
         $this->assertSame($passport->mode, $expectedMode);
-        $this->assertSame($passport->merchant !== null, $expectedMerchantId !== null);
+        $this->assertSame($passport->consumer !== null, $expectedMerchantId !== null);
         if ($expectedMerchantId !== null)
         {
-            $this->assertSame($passport->merchant->id, $expectedMerchantId);
+            $this->assertSame($passport->consumer->id, $expectedMerchantId);
+            $this->assertSame($passport->consumer->type, 'merchant');
         }
         // Asserts if mismatch errors were expected and logged.
         $this->assertSame($reqCtx->passportAttrsMismatch, $expectPassportAttrsMismatch);
@@ -77,8 +78,9 @@ class PostAuthenticateTest extends TestCase
         $passport3->identified = true;
         $passport3->authenticated = true;
         $passport3->mode = 'live';
-        $passport3->merchant = new Passport\Merchant;
-        $passport3->merchant->id = '10000000000000';
+        $passport3->consumer = new Passport\ConsumerClaims;
+        $passport3->consumer->id = '10000000000000';
+        $passport3->consumer->type = 'merchant';
 
         $passport4 = clone $passport3;
 
@@ -86,7 +88,7 @@ class PostAuthenticateTest extends TestCase
         $passport5->mode = 'test';
 
         $passport6 = clone $passport3;
-        $passport6->merchant = null;
+        $passport6->consumer = null;
 
         // Returns list of [passport, expectedAuthenticated, expectedMode, expectedMerchant, expectedAuth, expectedProxy, expectPassportAttrsMismatch].
         return [
