@@ -7,12 +7,14 @@ use RZP\Services\RazorXClient;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Freshdesk\FreshdeskTrait;
 
 class FreshdeskTicketV2Test extends TestCase
 {
     use FreshdeskTrait;
     use RequestResponseFlowTrait;
+    use DbEntityFetchTrait;
 
     const DAY = 24 * 60 * 60;
 
@@ -24,10 +26,10 @@ class FreshdeskTicketV2Test extends TestCase
 
     const RZP_CREATE_TICKET_USER_EMAIL_ONLY = 'rzp_create_ticket_user_email_only';
 
-    const RZP_CREATE_TICKET_SALESFORCE = 'rzp_create_ticket_salesforce';
-
-    const RZP_FETCH_TICKET  = 'rzp_fetch_ticket';
-    const RZP_FETCH_FAQS    = 'rzp_fetch_faqs';
+    const RZP_CREATE_TICKET_SALESFORCE    = 'rzp_create_ticket_salesforce';
+    const RZP_CREATE_TICKET_INTERNAL_AUTH = 'rzp_create_ticket_internal_auth';
+    const RZP_FETCH_TICKET                = 'rzp_fetch_ticket';
+    const RZP_FETCH_FAQS                  = 'rzp_fetch_faqs';
 
     const RZP_GET_TICKET_BY_ID = 'rzp_get_ticket_by_id';
 
@@ -429,6 +431,26 @@ class FreshdeskTicketV2Test extends TestCase
         $ticket = $this->getLastEntity('merchant_freshdesk_tickets', true);
 
         $this->assertNotEquals('razorpayid0012', $ticket['id']);
+    }
+
+    public function testCreateTicketForInternalAuth()
+    {
+        $beforeCount = $this->getDbEntities('merchant_freshdesk_tickets');
+
+        $this->ba->careAppAuth();
+
+        $expectedRequestResponse = $this->getExpectedRequestResponse(self::RZP_CREATE_TICKET_INTERNAL_AUTH);
+
+        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST', 'rzp',
+                                                               $expectedRequestResponse['request'], $expectedRequestResponse['response']);
+
+        $this->startTest();
+
+        $ticket = $this->getLastEntity('merchant_freshdesk_tickets', true);
+
+        $afterCount = $this->getDbEntities('merchant_freshdesk_tickets');
+        // makes sure no entry is created in db
+        $this->assertEquals($beforeCount, $afterCount);
     }
 
     public function testCreateTicketRzpSol()
@@ -1203,6 +1225,37 @@ Team Razorpay',
                     ]
             ];
         }
+        if ($key === (self::RZP_CREATE_TICKET_INTERNAL_AUTH))
+        {
+            return [
+                'request'  => [
+                    'description'   => 'ticket description',
+                    'subject'       => 'ticket subject',
+                    'cc_emails'     => ['a@b.com'],
+                    'custom_fields' => [
+                        'cf_requester_category'    => 'Merchant',
+                        'cf_requestor_subcategory' => 'Call Requested',
+                        'cf_merchant_id'           => '10000000000000',
+                    ],
+                    'email'         => 'test@razorpay.com',
+                    'phone'         => '9876543210',
+                    'priority'      => '4',
+                ],
+                'response' =>
+                    [
+                        'id'            => '99',
+                        'description'   => 'ticket description',
+                        'fr_due_by'     => $frDueByFreshdeskFormat,
+                        'custom_fields' => [
+                            'cf_requester_category'    => 'Merchant',
+                            'cf_requestor_subcategory' => 'Activation',
+                            'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                            'cf_merchant_id'           => '10000000000000',
+                        ],
+                        'priority'      => 4,
+                    ]
+            ];
+        }
         else if ($key === self::RZP_GET_TICKET_BY_ID)
         {
             return [
@@ -1224,32 +1277,32 @@ Team Razorpay',
         }
         else if ($key === self::RZP_FETCH_TICKET)
         {
-            return[
-                'request'   =>  [],
-                'response'  =>  [
+            return [
+                'request'  => [],
+                'response' => [
                     'results' => [
                         [
-                            'id'     => 12,
-                            'body'   => 'some random body 12',
+                            'id'        => 12,
+                            'body'      => 'some random body 12',
                             'fr_due_by' => '2020-12-08T16:04:20Z',
 
                         ],
                         [
-                            'id'     => 34,
-                            'body'   => 'some random body 34',
+                            'id'        => 34,
+                            'body'      => 'some random body 34',
                             'fr_due_by' => '2020-12-08T16:04:20Z',
 
                         ],
                         [
                             // 56 is not mapped to this merchant in our db. so we don't show it in the response, even if Freshdesk somehow returned this in the response
-                            'id'     => 56,
-                            'body'   => 'some random body 56',
+                            'id'        => 56,
+                            'body'      => 'some random body 56',
                             'fr_due_by' => '2020-12-08T16:04:20Z',
                         ],
                         [
                             // 78 is not mapped to 'support_dashboard' in our db. so we don't show it in the response
-                            'id'     => 78,
-                            'body'   => 'some random body 78',
+                            'id'        => 78,
+                            'body'      => 'some random body 78',
                             'fr_due_by' => '2020-12-08T16:04:20Z',
                         ],
                     ],
@@ -1258,22 +1311,22 @@ Team Razorpay',
         }
         else if ($key === self::RZP_FETCH_FAQS)
         {
-            return[
-                'request'   =>  [],
-                'response'  =>  [
-                        [
-                            "title" => "I am xyz title1",
-                            "description_text"=> "description text",
-                            "path"  => "42000037481-i-would-like-to-know-more-about-razorpay-",
-                            "id"    => "123",
-                        ],
-                        [
-                            "title" => "I am xyz title1",
-                            "description_text"=> "description text",
-                            "path"  => "42000037481-i-would-like-to-know-more-about-razorpay-",
-                            "id"    => "12356",
-                        ],
-                    ]
+            return [
+                'request'  => [],
+                'response' => [
+                    [
+                        "title"            => "I am xyz title1",
+                        "description_text" => "description text",
+                        "path"             => "42000037481-i-would-like-to-know-more-about-razorpay-",
+                        "id"               => "123",
+                    ],
+                    [
+                        "title"            => "I am xyz title1",
+                        "description_text" => "description text",
+                        "path"             => "42000037481-i-would-like-to-know-more-about-razorpay-",
+                        "id"               => "12356",
+                    ],
+                ]
             ];
         }
     }

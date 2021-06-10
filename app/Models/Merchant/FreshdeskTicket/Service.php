@@ -289,6 +289,25 @@ class Service extends Base\Service
         ];
     }
 
+    public function internalPostTicketV2($input)
+    {
+        $input = $this->makeInputForInternalPostTicket($input);
+
+        $fdInstance = $input[Constants::FD_INSTANCE];
+
+        $url = self::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][$fdInstance];
+
+        unset($input[Constants::FD_INSTANCE]);
+
+        $freshdeskTicketResponse = $this->app[Constants::FRESHDESK_CLIENT]->postTicket($input, $url);
+
+        $this->validateTicketCreateResponse($freshdeskTicketResponse);
+
+        $freshdeskTicketResponse[Entity::ID] = "".$freshdeskTicketResponse[Entity::ID];
+
+        return $freshdeskTicketResponse;
+    }
+
     public function postTicketV2($type, $input)
     {
         $function = 'makeInputFor' . studly_case($type) . 'PostTicket';
@@ -994,11 +1013,7 @@ class Service extends Base\Service
 
     protected function makeInputForSupportDashboardPostTicket($input)
     {
-        $input['email'] = $this->merchant->getEmail();
-
-        $input['name'] = $this->merchant->getName();
-
-        $input['phone'] = $this->merchant->merchantDetail->getContactMobile();
+        $input = $this->addMerchantDetailsToInput($input);
 
         $input['custom_fields'][Constants::CF_MERCHANT_ID_DASHBOARD] = $this->getQueryParamMerchantIdForSearchAPI();
 
@@ -1007,6 +1022,15 @@ class Service extends Base\Service
         $input['priority'] = 1;
 
         $this->getGroupIdForTicketInput($input);
+
+        return $input;
+    }
+
+    protected function makeInputForInternalPostTicket($input)
+    {
+        $input = $this->addMerchantDetailsToInput($input);
+
+        $input['custom_fields'][Constants::CF_MERCHANT_ID] = $this->auth->getMerchantId();
 
         return $input;
     }
@@ -1323,6 +1347,17 @@ class Service extends Base\Service
         (new Notifications\Support\Handler([
             'ticket'    => $ticketEntity,
         ]))->sendForEvent($event);
+    }
+
+    protected function addMerchantDetailsToInput($input) : array
+    {
+        $input['email'] = $this->merchant->getEmail();
+
+        $input['name'] = $this->merchant->getName();
+
+        $input['phone'] = $this->merchant->merchantDetail->getContactMobile();
+
+        return $input;
     }
 
 }

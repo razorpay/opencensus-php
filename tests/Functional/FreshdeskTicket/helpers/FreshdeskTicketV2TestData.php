@@ -694,4 +694,33 @@ return [
         ],
     ],
 
+    'testCreateTicketForInternalAuth' => [
+        'request'  => [
+            'url'     => '/internal/fd/ticket/',
+            'method'  => \Requests::POST,
+            'content' => [
+                'account_id'    => '10000000000000',
+                'description'   => 'ticket description',
+                'subject'       => 'ticket subject',
+                'cc_emails'     => ['a@b.com'],
+                'tags'          => ['callback_requested'],
+                'group_id'      => 123,
+                'priority'      => 4,
+                'due_by'        => '2021-06-04T05:21:22Z',
+                'fr_due_by'     => '2021-06-04T05:21:22Z',
+                'status'        => 2,
+                'fd_instance'   => 'rzp',
+                'custom_fields' => [
+                    'cf_requester_category'    => 'Merchant',
+                    'cf_requestor_subcategory' => 'Call Requested',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'description' => 'ticket description',
+            ],
+        ],
+    ],
+
 ];

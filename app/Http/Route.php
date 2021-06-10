@@ -2278,6 +2278,7 @@ class Route
         'fd_reserve_balance_ticket_status'        => ['get',       'fd/reserve_balance/tickets/status',                          'FreshdeskTicketController@getReserveBalanceTicketStatus'     ],
 
         'fd_create_ticket'                        => ['post',      'fd/{type}/ticket',                                          'FreshdeskTicketController@postTicketV2',                      ],
+        'internal_fd_create_ticket'               => ['post',      'internal/fd/ticket',                                        'FreshdeskTicketController@internalPostTicketV2',              ],
         'fd_fetch_tickets'                        => ['get',       'fd/{type}/ticket',                                          'FreshdeskTicketController@getTickets'                         ],
         'fd_fetch_converations'                   => ['get',       'fd/{type}/ticket/{id}/conversations',                       'FreshdeskTicketController@getConversations'                   ],
         'fd_fetch_ticket'                         => ['get',       'fd/{type}/ticket/{id}',                                     'FreshdeskTicketController@getTicket'                          ],
@@ -3318,6 +3319,7 @@ class Route
         'internal_transactions',
         'internal_payment_authorize_refund',
         'freshdesk_update_ticket_internal',
+        'internal_fd_create_ticket',
         'care_service_cron_proxy',
         'internal_order_update',
 
@@ -9445,7 +9447,8 @@ class Route
             'freshdesk_update_ticket_internal',
             'fd_fetch_ticket',
             'fd_fetch_tickets',
-            'user_fetch_internal'
+            'user_fetch_internal',
+            'internal_fd_create_ticket',
         ],
 
         'banking_account_service' => [
