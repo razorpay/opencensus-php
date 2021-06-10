@@ -22,7 +22,6 @@ export default (props) => {
           <option value="">All</option>
           <option value="active">Active</option>
           <option value="closed">Closed</option>
-          <option value="paid">Paid</option>
         </Field>
       </div>
 

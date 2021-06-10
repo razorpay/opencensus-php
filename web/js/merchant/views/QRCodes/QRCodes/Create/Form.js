@@ -1,10 +1,13 @@
 import { connect } from 'react-redux';
+import moment from 'moment';
 
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { onChangeNotes } from 'common/new-ui/Input/PairList';
 import CustomerSelector from 'merchant/components/CustomerSelector';
+import { dateCalculator } from 'common/new-ui/Input/Calendar';
+import { timeCalculator } from 'common/new-ui/Input/Time';
 
 import { validateAmount } from 'common/utils/validators';
 import { rupeesToPaise, classList } from 'common/utils/rzp-utils';
@@ -59,6 +62,8 @@ export default class CreationForm extends React.Component {
     },
   };
 
+  closeByRef = React.createRef();
+
   componentDidMount() {
     this.toggleDisableState();
 
@@ -81,13 +86,14 @@ export default class CreationForm extends React.Component {
     track.field('notes', notes);
   };
 
-  updateDate = (newDate) => {
-    const closeBy = newDate ? newDate.unix() : null;
+  updateDate = (ts) => {
+    const closeBy = ts ? moment(ts) : null;
+
     this.setState({
-      formData:{
+      formData: {
         ...this.state.formData,
         close_by: closeBy,
-      }
+      },
     });
 
     track.field('close_by', closeBy);
@@ -199,6 +205,14 @@ export default class CreationForm extends React.Component {
       payload.customer_id = customer.id;
     }
 
+    if (formData.close_by) {
+      payload.close_by = payload.close_by.unix();
+    }
+
+    if (!this.state.noCloseBy) {
+      delete payload.close_by;
+    }
+
     payload.fixed_amount = parseInt(payload.fixed_amount);
 
     this.setState({
@@ -221,6 +235,31 @@ export default class CreationForm extends React.Component {
 
         return err;
       });
+  };
+
+  onDateChange = (date) => {
+    const curSelectedDateTime = this.state.formData.close_by;
+
+    dateCalculator(date, curSelectedDateTime, this.updateDate);
+  };
+
+  onTimeChange = (date) => {
+    const curDate = this.state.formData.close_by;
+
+    timeCalculator(date, curDate, this.updateDate);
+  };
+
+  handleHasNoCloseBy = (e) => {
+    if (e.target.checked) {
+      setTimeout(() => {
+        this.closeByRef.current.focus();
+        this.closeByRef.current.click();
+      }, 10);
+    }
+
+    this.setState({
+      noCloseBy: e.target.checked,
+    });
   };
 
   render() {
@@ -332,19 +371,41 @@ export default class CreationForm extends React.Component {
 
               {showAdditionalOptions && (
                 <div class="AdditionalOptions">
-                  <Input.DateTime
+                  <Input.Check
                     autoRender
-                    isInline
-                    class="Input--vTop closeBy"
                     label={
                       <>
                         Close By <small>(Optional)</small>
                       </>
                     }
-                    checkboxFieldLabel="Close this QR code after"
-                    onChange={this.updateDate}
-                    disabled={isSubmitting}
+                    fieldLabel="Close this QR code after"
+                    class="Input--vTop"
+                    onChange={this.handleHasNoCloseBy}
                   />
+
+                  <Input.Group class="InputGroup--near InputGroup--inline closeBy"  disabled={!state.noCloseBy}>
+                    <div class="Input-content">
+                      <Input.ToCalendar
+                        readOnly
+                        allowToday
+                        disablePastDates
+                        placeholder="DD-MM-YYYY"
+                        placement="topLeft"
+                        size="half"
+                        ref={this.closeByRef}
+                        onChange={this.onDateChange}
+                        addonAfter={<i class="i i-date-range" />}
+                      />
+                      {!!formData.close_by && (
+                        <Input.TimePicker
+                          readOnly
+                          placeholder="11:59PM"
+                          onChange={this.onTimeChange}
+                          addonAfter={<i class="i i-time" />}
+                        />
+                      )}
+                    </div>
+                  </Input.Group>
 
                   <div class="Input Input--vTop Input--SelectCustomer">
                     <div class="Input-label">
