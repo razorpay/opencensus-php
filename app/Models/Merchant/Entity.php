@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant;
 
 use App;
 use Config;
+use Carbon\Carbon;
 use Conner\Tagging\Taggable;
 use Razorpay\Trace\Logger;
 use RZP\Constants\Product;
@@ -2901,5 +2902,12 @@ class Entity extends Base\PublicEntity
     public function partnerActivation()
     {
         return $this->hasOne('RZP\Models\Partner\Activation\Entity', self::MERCHANT_ID, self::ID);
+    }
+
+    public function isActivateForFourMonths() : bool
+    {
+        $activatedAt = Carbon::createFromTimestamp($this->getActivatedAt());
+
+        return Carbon::today()->diffInMonths($activatedAt) >= 4;
     }
 }

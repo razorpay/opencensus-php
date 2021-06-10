@@ -4,6 +4,8 @@ namespace RZP\Models\Merchant;
 
 use App;
 use Request;
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Constants\Mode;
 use RZP\Models\Locale\Core as Locale;
 use Session;
@@ -132,9 +134,35 @@ class Checkout
             $this->fillPreferredMethods($merchant, $input, $data);
         }
 
+        $this->fillRTBDetails($merchant, $data);
+
         $this->fillCovidReliefDetails($merchant, $data, $mode);
 
         return $data;
+    }
+
+    protected function fillRTBDetails(Entity $merchant, array & $data)
+    {
+        if ($merchant->isFeatureEnabled(Feature\Constants::RZP_TRUSTED_BADGE) === true) {
+            $rtb = [];
+
+            $latestDispute = $this->repo->dispute->getLatestLostOrClosedDisputeByMerchantId($merchant->getId());
+            $customersCount = (new Merchant\Core())->getMerchantCustomerCount($merchant->getId());
+            $activeSince = $merchant->getActivatedAt();
+
+            $lastDisputeAt = null;
+
+            if ($latestDispute !== null)
+            {
+                $lastDisputeAt = $latestDispute->getUpdatedAt();
+            }
+
+            $rtb['latest_dispute_at'] = $lastDisputeAt;
+            $rtb['customers_served'] = $customersCount;
+            $rtb['active_since'] = $activeSince;
+
+            $data['rtb'] = $rtb;
+        }
     }
 
     protected function fillCovidReliefDetails(Entity $merchant, array & $data, $mode)

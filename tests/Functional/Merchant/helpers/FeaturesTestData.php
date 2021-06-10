@@ -1501,4 +1501,129 @@ return [
             'status_code' => 200,
         ]
     ],
+
+    'testAddRTBFeatureMerchantNotActivatedForFourMonths' => [
+        'request'  => [
+            'url'     => '/features',
+            'method'  => 'post',
+            'content' => [
+                'names'       => ['rzp_trusted_badge'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000'
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNAVAILABLE,
+            'description'         => 'Cannot Enable Trusted Badge feature, since merchant has not been activated for 4 months',
+        ],
+    ],
+
+    'testAddRTBFeatureMerchantWithDisputes' => [
+        'request'  => [
+            'url'     => '/features',
+            'method'  => 'post',
+            'content' => [
+                'names'       => ['rzp_trusted_badge'],
+                'entity_type' => 'merchant',
+                'entity_id'   => 'mer12345678900'
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNAVAILABLE,
+            'description'         => 'Cannot Enable Trusted Badge feature, since open disputes are present',
+        ],
+    ],
+
+    'testAddRTBFeatureMerchantLendingCategory' => [
+        'request'  => [
+            'url'     => '/features',
+            'method'  => 'post',
+            'content' => [
+                'names'       => ['rzp_trusted_badge'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000'
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNAVAILABLE,
+            'description'         => 'Cannot Enable Trusted Badge feature, since merchant category is Lending or DMT',
+        ],
+    ],
+
+    'testAddRTBFeatureMerchantDifferentOrg' => [
+        'request'  => [
+            'url'     => '/features',
+            'method'  => 'post',
+            'content' => [
+                'names'       => ['rzp_trusted_badge'],
+                'entity_type' => 'merchant',
+                'entity_id'   => 'mer12345678900'
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNAVAILABLE,
+            'description'         => 'Cannot Enable Trusted Badge feature, since merchant not part of Razorpay org',
+        ],
+    ],
+
+    'testAddRTBFeature' => [
+        'request'  => [
+            'url'     => '/features',
+            'method'  => 'post',
+            'content' => [
+                'names'       => ['rzp_trusted_badge'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000'
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNAVAILABLE,
+            'description'         => 'Cannot Enable Trusted Badge feature, since merchant has not been activated for 4 months',
+        ],
+    ],
 ];

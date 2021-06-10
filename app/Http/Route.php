@@ -2479,6 +2479,7 @@ class Route
         'templating_get_template_config'          => ['get',     'templating/template_configs/{id}',                        'TemplatingServiceController@getTemplateConfig'                ],
         'templating_list_template_config'         => ['get',     'templating/template_configs',                             'TemplatingServiceController@listTemplateConfig'               ],
         'care_service_myoperator_webhook_proxy'   => ['post',    'care_service/myoperator_webhook/{path?}',                 'CareProxyController@postMyOperatorWebhookProxyRequest'        ],
+        'merchant_rtb_details_fetch'              => ['get',     'badge_details',                                           'MerchantController@getRZPTrustedBadgeDetails'                 ],
         'payment_verify_new'                      => ['post',    'payments/{id}/verify_new',                                'PaymentController@postVerifyNew'                              ],
         // Merchant Fraud
         'website_checker'                         => ['post',    'merchant/website/checker',                                'MerchantController@websiteChecker'                            ],
@@ -3456,6 +3457,7 @@ class Route
     ];
 
     public static $proxy = [
+        'merchant_rtb_details_fetch',
         'merchant_fire_hubspot_event',
         'freshchat_get_chat_timings_config_proxy',
         'freshchat_get_chat_holidays_config_proxy',
@@ -4789,6 +4791,7 @@ class Route
     ];
 
     public static $routePermission = [
+        'merchant_rtb_details_fetch'               => Permission::VIEW_MERCHANT,
         'populate_merchant_trim_data_cron'         => Permission::MANAGE_BULK_FEATURE_MAPPING,
         'bvs_service_dashboard'                    => Permission::EDIT_MERCHANT,
         'bvs_validation_artifact_details'          => Permission::VIEW_MERCHANT,
@@ -6603,6 +6606,7 @@ class Route
             'merchant_replace_key',
             'merchant_requests_create',
             'merchant_requests_get_feature',
+            'merchant_rtb_details_fetch',
             'merchant_sub_create',
             'merchant_sub_send_password_link',
             'merchant_submit_support_call_request',
@@ -9676,9 +9680,9 @@ class Route
      */
     public static $idempotentRoutesConfig = [
         'payout_create' => [
-                IdempotencyKey\Entity::SOURCE_TYPE  => Entity::PAYOUT,
-                IdempotencyKey\Entity::HEADER_KEY   => RequestHeader::X_PAYOUT_IDEMPOTENCY,
-            ],
+            IdempotencyKey\Entity::SOURCE_TYPE  => Entity::PAYOUT,
+            IdempotencyKey\Entity::HEADER_KEY   => RequestHeader::X_PAYOUT_IDEMPOTENCY,
+        ],
         'payout_create_internal' => [
             IdempotencyKey\Entity::SOURCE_TYPE  => Entity::PAYOUT,
             IdempotencyKey\Entity::HEADER_KEY   => RequestHeader::X_PAYOUT_IDEMPOTENCY,
@@ -10671,7 +10675,7 @@ class Route
         // OR case happens for mock gateways in s2s redirect flow, when we receive rediret/authorize.
         // we don't set the partner auth, hence there is a check on account id
         else if ((($key === '') and ($this->ba->isPartnerAuth() === true)) or
-                  (($key === '') and ($this->ba->isDirectAuth() === true) and (empty($this->ba->authCreds->creds['account_id']) === false)))
+            (($key === '') and ($this->ba->isDirectAuth() === true) and (empty($this->ba->authCreds->creds['account_id']) === false)))
         {
             $parts = explode(BasicAuth::PARTNER_CALLBACK_KEY_DELIMITER, $this->ba->getPublicKey());
             // Todo: For bc there is another explode attempt, to be removed soon after this deploy.
@@ -10976,32 +10980,32 @@ class Route
     public function defineAllExtraRoutes()
     {
         $this->router
-             ->any('{all}',
-                  [
-                      'as'   => 'api_catch_all',
-                      'uses' => '\RZP\Http\Controllers\PublicController@getCatchAllRoute'
-                  ])
+            ->any('{all}',
+                [
+                    'as'   => 'api_catch_all',
+                    'uses' => '\RZP\Http\Controllers\PublicController@getCatchAllRoute'
+                ])
             ->where('all', '.*');
     }
 
     public function defineRootApiRoute()
     {
         $this->router
-             ->get('/',
-                 [
-                     'as'   => 'api_root',
-                     'uses' => '\RZP\Http\Controllers\PublicController@getRoot'
-                 ]);
+            ->get('/',
+                [
+                    'as'   => 'api_root',
+                    'uses' => '\RZP\Http\Controllers\PublicController@getRoot'
+                ]);
     }
 
     public function defineStatusApiRoute()
     {
         $this->router
             ->get('/v1/healthcheck',
-                  [
-                      'as'   => 'api_status',
-                      'uses' => '\RZP\Http\Controllers\PublicController@getStatus'
-                  ])->middleware('proxysql');
+                [
+                    'as'   => 'api_status',
+                    'uses' => '\RZP\Http\Controllers\PublicController@getStatus'
+                ])->middleware('proxysql');
     }
 
     public function getApiRouteInCategory($category)

@@ -30,6 +30,29 @@ class Repository extends Base\Repository
         Entity::PAYMENT_ID,
     ];
 
+    public function getLatestLostOrClosedDisputeByMerchantId(string $merchantId)
+    {
+        return $this->newQuery()
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->whereIn(Entity::STATUS, Status::getMerchantAcceptedStatuses())
+            ->orderBy(Entity::CREATED_AT, 'desc')
+            ->limit(1)
+            ->first();
+    }
+
+    public function getLostOrClosedDisputeInLast4MonthsByMerchantId(string $merchantId)
+    {
+        $fourMonthAgo = Carbon::now()->subMonths(4);
+
+        return $this->newQuery()
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->whereIn(Entity::STATUS, Status::getMerchantAcceptedStatuses())
+            ->orderBy(Entity::CREATED_AT, 'desc')
+            ->where(Entity::CREATED_AT, ">=", $fourMonthAgo->getTimestamp())
+            ->limit(1)
+            ->first();
+    }
+
     public function getOpenNonFraudDisputes(Payment $payment)
     {
         return $this->newQuery()

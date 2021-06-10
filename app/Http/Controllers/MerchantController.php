@@ -2109,6 +2109,13 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getRZPTrustedBadgeDetails()
+    {
+        $response = $this->service()->getRZPTrustedBadgeDetails();
+
+        return ApiResponse::json($response);
+    }
+
     public function websiteChecker()
     {
         $input = Request::all();

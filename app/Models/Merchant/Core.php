@@ -83,6 +83,9 @@ class Core extends Base\Core
 {
     use Notify;
 
+    const LAST_MONTH_GMV = 'last_month_gmv';
+    const CUSTOMER_COUNT = 'customer_count';
+
     // This is used in case for
     // IRCTC for sending payout
     // mails
@@ -4775,5 +4778,63 @@ class Core extends Base\Core
 
             return (empty($balance) === false && empty($businessId) === false);
         }
+    }
+
+    public function getLastMonthGMV(string $merchantId): int
+    {
+        $lastMonthGMV = $this->app['cache']->get(self::LAST_MONTH_GMV."_".$merchantId);
+
+        if ($lastMonthGMV !== null)
+        {
+            $this->trace->info(TraceCode::REDIS_KEY_FETCH,
+                ['msg' => 'found last month gmv from cache',]);
+            return $lastMonthGMV/100;
+        }
+
+        $start = new Carbon('first day of last month');
+        $end = new Carbon('last day of last month');
+
+        $sumOfCapturedQuery = $this->repo->payment->fetchTotalOfCapturedBetweenTimestamp($start->startOfMonth()->getTimestamp(), $end->endOfMonth()->getTimestamp(), $merchantId);
+
+        $sumOfCapturedPayments = 0;
+
+        if ($sumOfCapturedQuery !== null)
+        {
+            $sumOfCapturedPayments = $sumOfCapturedQuery->getAttribute('gmv');
+        }
+
+        $today = Carbon::today(Timezone::IST);
+        $monthEnd = Carbon::now()->endOfMonth();
+        $ttl = $monthEnd->diffInHours($today);
+
+        $this->app['cache']->put(self::LAST_MONTH_GMV."_".$merchantId, $sumOfCapturedPayments, $ttl*60);
+
+        return $sumOfCapturedPayments/100;
+    }
+
+    public function getMerchantCustomerCount($merchantId) : int
+    {
+        $customerCount = $this->app['cache']->get(self::CUSTOMER_COUNT."_".$merchantId);
+
+        if ($customerCount !== null)
+        {
+            $this->trace->info(TraceCode::REDIS_KEY_FETCH,
+                ['msg' => 'found customer count from cache',]);
+
+            return $customerCount;
+        }
+
+        $customerCount = $this->repo->payment->getTotalCustomerByMerchantId($merchantId);
+
+        $count = 0;
+
+        if ($customerCount !== null)
+        {
+            $count = $customerCount->getAttribute('count');
+        }
+
+        $this->app['cache']->put(self::CUSTOMER_COUNT."_".$merchantId, $count, 7*24*60);
+
+        return $count;
     }
 }

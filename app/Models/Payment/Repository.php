@@ -261,6 +261,16 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchTotalOfCapturedBetweenTimestamp($from, $to, $merchantId)
+    {
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+                    ->selectRaw('SUM('.Entity::BASE_AMOUNT.') AS gmv')
+                    ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
+                    ->where(Entity::STATUS, '=', Status::CAPTURED)
+                    ->merchantId($merchantId)
+                    ->first();
+    }
+
     public function fetchEmiPaymentsWithCardTerminalsBetween($from, $to, $bank)
     {
         $tRepo = $this->repo->terminal;
@@ -2450,5 +2460,16 @@ class Repository extends Base\Repository
                     ->where(Entity::MERCHANT_ID, $paymentPage->getMerchantId())
                     ->whereIn(Entity::STATUS, [Status::CAPTURED, Status::REFUNDED])
                     ->count();
+    }
+
+    public function getTotalCustomerByMerchantId($merchantId)
+    {
+        $timeStamp = Carbon::today(Timezone::IST)->subMonth(6)->getTimestamp();
+
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+            ->selectRaw("COUNT(DISTINCT contact) AS count")
+            ->merchantId($merchantId)
+            ->where(Entity::CREATED_AT, '>', $timeStamp)
+            ->first();
     }
 }

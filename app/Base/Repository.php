@@ -1051,7 +1051,7 @@ class Repository extends \Razorpay\Spine\Repository
 
     protected function getDataWarehouseConnection()
     {
-        if ($this->app['env'] === Environment::TESTING)
+        if (in_array($this->app['env'], [Environment::TESTING, Environment::TESTING_DOCKER], true) === true)
         {
             return Config::get('database.default');
         }

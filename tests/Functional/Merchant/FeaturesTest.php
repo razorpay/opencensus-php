@@ -788,6 +788,58 @@ class FeaturesTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testAddRTBFeatureMerchantNotActivatedForFourMonths()
+    {
+        $this->startTest();
+    }
+
+    public function testAddRTBFeatureMerchantWithDisputes()
+    {
+        $this->fixtures->create('merchant', [
+            'id' => 'mer12345678900',
+        ]);
+
+        $this->fixtures->create('dispute',
+            [
+                'id' => '1000000dispute',
+                'merchant_id' => 'mer12345678900',
+                'status' => 'lost',
+            ]
+        );
+
+
+        $this->startTest();
+    }
+
+    public function testAddRTBFeatureMerchantLendingCategory()
+    {
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID,
+        [
+            'category2' => 'lending',
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testAddRTBFeatureMerchantDifferentOrg()
+    {
+        $org = $this->fixtures->create('org');
+
+        $this->fixtures->create('merchant', [
+            'id' => 'mer12345678900',
+            'org_id' => $org->getId(),
+        ]);
+
+        $this->ba->adminAuth('test');
+
+        $this->startTest();
+    }
+
+    public function testAddRTBFeature()
+    {
+        $this->startTest();
+    }
+
     /**
      * This function tests updating of merchant feature loc_stage_2.
      * It will fail because loc_stage_1 is not present

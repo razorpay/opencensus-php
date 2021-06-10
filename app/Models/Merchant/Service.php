@@ -26,6 +26,7 @@ use RZP\Diag\EventCode;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
+use RZP\Models\Customer;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use RZP\Models\Schedule;
@@ -5989,6 +5990,31 @@ class Service extends Base\Service
         }
 
         return $referrals;
+    }
+
+    public function getRZPTrustedBadgeDetails()
+    {
+        $rtbDetails = [];
+
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::RZP_TRUSTED_BADGE)) {
+
+            $targetGMV = 1.05 * (new Core())->getLastMonthGMV($this->merchant->getMerchantId());
+
+            $customersCount = (new Core())->getMerchantCustomerCount($this->merchant->getId());
+
+            $rtbDetails['target_gmv'] = $targetGMV;
+            $rtbDetails['#customers_since_activation'] = $customersCount;
+
+            return [
+                'rtb_details' => $rtbDetails,
+            ];
+        }
+        else
+        {
+            return [
+                'rtb_details' => false,
+            ];
+        }
     }
 
     protected function getDataForCreateTicketPopup($activationStatus, $activationProgress, bool $isSubmitted= false): array

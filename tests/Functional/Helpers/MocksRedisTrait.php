@@ -6,7 +6,7 @@ use Redis;
 
 trait MocksRedisTrait
 {
-    protected function setupRedisMockWithOptions(array $override = [])
+    public function setupRedisMockWithOptions(array $override = [])
     {
         // We can override default options with array_merge
         $options = array_merge([

@@ -27,6 +27,7 @@ use Rzp\Credcase\Migrate\V1\RotateApiKeyRequest;
 use Rzp\Credcase\Migrate\V1\MigrateApiKeyRequest;
 use RZP\Models\Admin\Org\Repository as OrgRepository;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
+use RZP\Tests\Functional\Helpers\MocksRedisTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
@@ -88,6 +89,8 @@ class CheckoutPreferencesTest extends TestCase
 {
     use PaymentTrait;
     use CreatesInvoice;
+    use DbEntityFetchTrait;
+    use MocksRedisTrait;
     use MocksRazorx;
 
     protected function setUp(): void
@@ -1532,6 +1535,75 @@ class CheckoutPreferencesTest extends TestCase
         $response = $this->runRequestResponseFlow($testData);
 
         $this->assertArrayNotHasKey('preferred_methods', $response);
+    }
+
+    public function testGetCheckoutPreferencesWithRTB()
+    {
+        $this->setupRedisMockWithOptions();
+
+        $this->ba->publicAuth();
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        $dispute = $this->fixtures->create('dispute',
+            [
+                'id' => '1000000dispute',
+                'merchant_id' => $merchant['id'],
+                'status' => 'lost',
+            ]
+        );
+
+        $this->fixtures->create('payment', [
+            'status'        => 'captured',
+            'contact'       => '+911212121212',
+        ]);
+
+        $this->fixtures->create('payment', [
+            'status'        => 'captured',
+            'contact'       => '+911212121212',
+        ]);
+
+        $this->fixtures->create('payment', [
+            'status'        => 'captured',
+            'contact'       => '+911212121213',
+        ]);
+
+        $this->fixtures->create('payment', [
+            'status'        => 'captured',
+            'contact'       => '+911212121214',
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['rzp_trusted_badge']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertArrayHasKey('rtb', $response);
+        $this->assertArrayHasKey('latest_dispute_at', $response['rtb']);
+        $this->assertArrayHasKey('customers_served', $response['rtb']);
+        $this->assertArrayHasKey('active_since', $response['rtb']);
+
+        $this->assertEquals(4, $response['rtb']['customers_served']);
+
+        $activeSicnce = $merchant['activated_at'];
+
+        $this->assertEquals($activeSicnce, $response['rtb']['active_since']);
+
+        $lastDisputeAt = $dispute['updated_at'];
+
+        $this->assertEquals($lastDisputeAt, $response['rtb']['latest_dispute_at']);
+    }
+
+    public function testGetCheckoutPreferencesWithoutRTB()
+    {
+        $this->ba->publicAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertArrayNotHasKey('rtb', $response);
     }
 
     public function testGetCheckoutPersonalisationWithNullPreferences()

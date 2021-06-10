@@ -8041,6 +8041,64 @@ return [
         ],
     ],
 
+    'testGetBadgeDetailsForRTBNotEnabled' => [
+        'request' => [
+            'url'     => '/badge_details',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'rtb_details' => false,
+            ],
+        ]
+    ],
+
+    'testGetBadgeDetailsForRTBEnabled' => [
+        'request' => [
+            'url'     => '/badge_details',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ]
+    ],
+
+    'testGetBadgeDetailsForRTBEnabledCustomRedis' => [
+        'request' => [
+            'url'     => '/badge_details',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ]
+    ],
+
+    'testGetCheckoutPreferencesWithRTB' => [
+        'request' => [
+            'url'     => '/preferences',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'rtb' => [
+                ]
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithoutRTB' => [
+        'request' => [
+            'url'     => '/preferences',
+            'method'  => 'get',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testGetCheckoutPersonalisationWithNullPreferences' => [
         'request' => [
             'url'     => '/personalisation',

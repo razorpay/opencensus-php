@@ -997,6 +997,7 @@ class Constants
         self::ALTERNATE_PAYOUT_FR             => true,
         self::DISABLE_X_AMAZONPAY             => true,
         self::CAW_RECURRING_CHARGE_AXIS       => true,
+        self::RZP_TRUSTED_BADGE               => true,
         self::CAPITAL_CARDS_COLLECTIONS       => true,
         self::ORG_BANK_ACCOUNT_UPDATE_SS      => true,
         self::ORG_FRESHDESK_CREATE_TICKET     => true,
@@ -1045,6 +1046,7 @@ class Constants
     const RESPONSE_TYPE       = 'response_type';
     const AVAILABLE_RESPONSES = 'available_responses';
     const MANDATORY           = 'mandatory';
+    const RZP_TRUSTED_BADGE   = 'rzp_trusted_badge';
 
     const ONBOARDING_STATUSES = [
         MerchantDetail\Entity::PENDING,
@@ -1453,6 +1455,11 @@ class Constants
         self::CAW_RECURRING_CHARGE_AXIS => [
             'feature'       => self::CAW_RECURRING_CHARGE_AXIS,
             'display_name'  => 'Custom Recurring Charge Batch for Axis',
+            'documentation' => '',
+        ],
+        self::RZP_TRUSTED_BADGE => [
+            'feature'       => self::RZP_TRUSTED_BADGE,
+            'display_name'  => 'Razorpay Trusted Badge',
             'documentation' => '',
         ],
         self::CAPITAL_CARDS_COLLECTIONS => [

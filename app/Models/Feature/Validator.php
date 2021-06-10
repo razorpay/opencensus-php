@@ -3,6 +3,7 @@
 namespace RZP\Models\Feature;
 
 use App;
+use Carbon\Carbon;
 
 use RZP\Base;
 use RZP\Exception;
@@ -10,6 +11,7 @@ use RZP\Base\Fetch;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use Illuminate\Http\Request;
+use RZP\Models\Terminal\Category;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant\Detail\BusinessType;
 
@@ -23,7 +25,8 @@ class Validator extends Base\Validator
 
     protected static $createValidators = [
         'skipWorkflowPayoutSpecific',
-        'covid19Relief'
+        'covid19Relief',
+        'rzpTrustedBadge',
     ];
 
     protected static $onboardingSubmissionsUpsertRules = [
@@ -159,6 +162,71 @@ class Validator extends Base\Validator
            }
        }
    }
+
+    public function validateRzpTrustedBadge($input)
+    {
+        if ($input[Entity::NAME] === Constants::RZP_TRUSTED_BADGE && $input[Entity::ENTITY_TYPE] === Constants::MERCHANT)
+        {
+            $app = App::getFacadeRoot();
+
+            $merchantId = $input[Entity::ENTITY_ID];
+
+            $merchant = $app['repo']->merchant->find($merchantId);
+
+            if ($merchant->isRazorpayOrgId() === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNAVAILABLE,
+                    Entity::NAME,
+                    Constants::RZP_TRUSTED_BADGE,
+                    'Cannot Enable Trusted Badge feature, since merchant not part of Razorpay org'
+                );
+            }
+
+            $disputes = $app['repo']->dispute->getLostOrClosedDisputeInLast4MonthsByMerchantId($merchantId);
+
+            if ($disputes !== null)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNAVAILABLE,
+                    Entity::NAME,
+                    [
+                        'feature' => Constants::RZP_TRUSTED_BADGE,
+                    ],
+                    'Cannot Enable Trusted Badge feature, since merchant lost disputes in last 4 months'
+                );
+            }
+
+            if (in_array($merchant->getCategory2(), [Category::LENDING], true) === true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNAVAILABLE,
+                    Entity::NAME,
+                    [
+                        'feature' => Constants::RZP_TRUSTED_BADGE,
+                        'category' => $merchant->getCategory2(),
+                    ],
+                    'Cannot Enable Trusted Badge feature, since merchant category is Lending or DMT'
+                );
+            }
+
+            if ($merchant->getActivatedAt() === null || $merchant->isActivateForFourMonths() === false)
+            {
+                $activationDate = Carbon::createFromTimestamp($merchant->getActivatedAt())
+                    ->timezone(\RZP\Constants\Timezone::IST)
+                    ->toDateString();
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNAVAILABLE,
+                    Entity::NAME,
+                    [
+                        'feature' => Constants::RZP_TRUSTED_BADGE,
+                        'activation_date' => $activationDate,
+                    ],
+                    'Cannot Enable Trusted Badge feature, since merchant has not been activated for 4 months'
+                );
+            }
+        }
+    }
 
    public function validateCovid19Relief($input)
    {
