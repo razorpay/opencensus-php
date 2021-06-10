@@ -31,6 +31,18 @@ trait Initiate
 
     protected function createFTA(): Client
     {
+        $transfer = $this->request[RequestFields::TRANSFER];
+
+        $sourceType = $transfer[RequestFields::SOURCE_TYPE];
+
+        $sourceId = $transfer[RequestFields::SOURCE_ID];
+
+        // This checks if an FTA with the same source already exists, and returns if true, to avoid duplication
+        if ($this->isDuplicateSource($sourceType, $sourceId))
+        {
+            return $this;
+        }
+
         $this->setFTAValues();
 
         $default = $this->getFTADefaults();
@@ -63,11 +75,6 @@ trait Initiate
         $sourceType = $transfer[RequestFields::SOURCE_TYPE];
 
         $sourceId = $transfer[RequestFields::SOURCE_ID];
-
-        if ($this->isDuplicateSource($sourceType, $sourceId))
-        {
-            return;
-        }
 
         $this->fta = new TransferAttempt;
 

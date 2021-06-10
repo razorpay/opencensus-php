@@ -36,6 +36,8 @@ class Core extends Base\Core
 
     const VALIDATION_UPDATE_MUTEX_RETRY_COUNT = 1;
 
+    const FAV_QUEUE_FOR_FTS_MUTEX_LOCK_TIMEOUT = 180;
+
     public function __construct()
     {
         parent::__construct();
@@ -563,25 +565,28 @@ class Core extends Base\Core
      */
     public function sendFAVRequestToFTS(string $favId)
     {
-        /**
-         * @var Entity
-         */
-        $this->trace->info(
-            TraceCode::FAV_QUEUE_FOR_FTS_JOB_HANDLER_INIT,
-            [
-                'fav_id'   => $favId,
-            ]
+        return $this->mutex->acquireAndRelease(
+            'fav_queue_for_fts_mutex_' . $favId,
+            function() use ($favId) {
+                $this->trace->info(
+                    TraceCode::FAV_QUEUE_FOR_FTS_JOB_HANDLER_INIT,
+                    [
+                        'fav_id' => $favId,
+                    ]
+                );
+
+                $fav = $this->repo->fund_account_validation->findOrFail($favId);
+
+                $request = $this->createRequestBodyFromFavForFTS($fav);
+
+                $ftsClient = new FTS\Transfer\Client($this->app);
+
+                $ftsClient->setRequest($request);
+
+                return $ftsClient->doTransfer();
+            },
+            self::FAV_QUEUE_FOR_FTS_MUTEX_LOCK_TIMEOUT
         );
-
-        $fav = $this->repo->fund_account_validation->findOrFail($favId);
-
-        $request = $this->createRequestBodyFromFavForFTS($fav);
-
-        $ftsClient = new FTS\Transfer\Client($this->app);
-
-        $ftsClient->setRequest($request);
-
-        return $ftsClient->doTransfer();
     }
 
     /**
@@ -688,7 +693,10 @@ class Core extends Base\Core
             TraceCode::FAV_QUEUE_FOR_FTS_REQUEST_CREATED,
             [
                 'fav_id'       => $fav->getPublicId(),
-                'request_body' => $request,
+                'request_body' => [
+                    FtsRequestFields::TRANSFER     => $request[FtsRequestFields::TRANSFER],
+                    FtsRequestFields::BANK_ACCOUNT => ['id' => $request[FtsRequestFields::BANK_ACCOUNT]['id']],
+                ],
             ]
         );
 
