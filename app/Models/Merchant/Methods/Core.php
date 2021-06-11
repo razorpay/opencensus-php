@@ -21,10 +21,10 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Feature\Constants;
-use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Partner\Config as PartnerConfig;
+use RZP\Models\Pricing\Feature as Feature;
 
 class Core extends Base\Core
 {
@@ -72,7 +72,7 @@ class Core extends Base\Core
 
         $methods->setMethods($input);
 
-        $this->checkPricing($merchant, $methods);
+        $this->checkPricing($merchant, $methods, false);
 
         // Trigger workflow
         $workflow->setDirty($methods)->handle();
@@ -108,14 +108,14 @@ class Core extends Base\Core
         return array_intersect_key($methodsArray, $input);
     }
 
-    public function validatePricingPlanForMethods(Merchant\Entity $merchant, Plan $plan, Entity $methods)
+    public function validatePricingPlanForMethods(Merchant\Entity $merchant, Plan $plan, Entity $methods, bool $skipFeatureCheck = true)
     {
         $methodsToCheck = Payment\Method::getAllPaymentMethods();
 
         foreach ($methodsToCheck as $method)
         {
             if (($methods->isMethodEnabled($method)) and
-                ($plan->hasMethod($method) === false))
+                ($plan->hasMethodForFeature($method,Feature::PAYMENT, $skipFeatureCheck) === false))
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Pricing not present for method: ' . $method);
@@ -149,19 +149,19 @@ class Core extends Base\Core
         }
     }
 
-    public function checkPricing(Merchant\Entity $merchant, Entity $methods, bool $defaultEmi = false)
+    public function checkPricing(Merchant\Entity $merchant, Entity $methods, bool $defaultEmi = false, bool $skipfeatureCheck = true)
     {
         $plan = $this->repo->pricing->getMerchantPricingPlan($merchant);
 
         if (($defaultEmi === true) and
-            ($plan->hasMethod(Payment\Method::EMI) === false))
+            ($plan->hasMethodForFeature(Payment\Method::EMI,Feature::PAYMENT, $skipfeatureCheck) === false))
         {
             $emiPricing = $this->repo->pricing->getPricingPlanById(Fee::DEFAULT_EMI_PLAN_ID);
 
             $plan = $plan->merge($emiPricing);
         }
 
-        $this->validatePricingPlanForMethods($merchant, $plan, $methods);
+        $this->validatePricingPlanForMethods($merchant, $plan, $methods, $skipfeatureCheck);
     }
 
     public function getMethods(Merchant\Entity $merchant)

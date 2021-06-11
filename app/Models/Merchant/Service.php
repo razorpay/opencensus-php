@@ -980,7 +980,7 @@ class Service extends Base\Service
 
         $methods = $this->repo->methods->getMethodsForMerchant($merchant);
 
-        (new Methods\Core)->validatePricingPlanForMethods($merchant, $plan, $methods);
+        (new Methods\Core)->validatePricingPlanForMethods($merchant, $plan, $methods, false);
 
         $this->validatePricingPlanForFeeBearer($merchant, $plan);
 

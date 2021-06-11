@@ -283,6 +283,20 @@ class Plan extends PublicCollection
         return false;
     }
 
+    public function hasMethodForFeature($method, $feature, bool $skipFeatureCheck = true)
+    {
+        /** @var Entity $rule */
+        foreach ($this->items as $rule)
+        {
+            if ($rule->getPaymentMethod() === $method && ($skipFeatureCheck || $rule->getFeature() === $feature))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function hasNetworkAmex()
     {
         /** @var Entity $rule */
