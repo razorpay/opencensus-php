@@ -13,8 +13,11 @@ trait FreshdeskTrait
     {
         $expectedUrl1 = $this->app['config']->get('applications.freshdesk.url') . '/' . $expectedPath;
         $expectedUrl2 = $this->app['config']->get('applications.freshdesk.url2') . '/' . $expectedPath;
+        $expectedUrlInd = $this->app['config']->get('applications.freshdesk.urlind') . '/' . $expectedPath;
+        $expectedUrlCap = $this->app['config']->get('applications.freshdesk.urlcap') . '/' . $expectedPath;
 
-        $expectedUrls = [$expectedUrl1, $expectedUrl2];
+
+        $expectedUrls = [$expectedUrl1, $expectedUrl2, $expectedUrlInd, $expectedUrlCap];
 
         $this->freshdeskClientMock
             ->shouldReceive('getResponse')
@@ -46,6 +49,10 @@ trait FreshdeskTrait
         $this->app['config']->set('applications.freshdesk.token2', 'random token 2');
 
         $this->app['config']->set('applications.freshdesk.tokenx', 'random token x');
+
+        $this->app['config']->set('applications.freshdesk.tokenind', 'random token ind');
+
+        $this->app['config']->set('applications.freshdesk.tokencap', 'random token capital');
 
         $this->freshdeskClientMock = Mockery::mock('RZP\Services\FreshdeskTicketClient', [$this->app])->makePartial();
 
