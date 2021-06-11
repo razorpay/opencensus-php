@@ -367,6 +367,10 @@ class MerchantNotificationConfigTest extends TestCase
 
     public function testFetchMultipleMerchantNotificationConfigs()
     {
+        $time = Carbon::now();
+
+        Carbon::setTestNow($time);
+
         $this->testCreateMerchantNotificationConfig();
 
         $this->fixtures->on('live')->create('merchant_notification_config', [
@@ -377,6 +381,7 @@ class MerchantNotificationConfigTest extends TestCase
             'notify_after'                => '1000',
             'notification_emails'         => 'test@razorpay.com,test@gmail.com',
             'notification_mobile_numbers' => '9587612341',
+            'created_at'                  => $time->subHour()->timestamp,
         ]);
 
         $this->startTest();
@@ -384,6 +389,10 @@ class MerchantNotificationConfigTest extends TestCase
 
     public function testFetchMultipleMerchantNotificationConfigsAsAdmin()
     {
+        $time = Carbon::now();
+
+        Carbon::setTestNow($time);
+
         $this->testCreateMerchantNotificationConfigAsAdmin();
 
         $this->fixtures->on('test')->create('merchant_notification_config', [
@@ -394,6 +403,7 @@ class MerchantNotificationConfigTest extends TestCase
             'notify_after'                => '1000',
             'notification_emails'         => 'test@razorpay.com,test@gmail.com',
             'notification_mobile_numbers' => '9587612341',
+            'created_at'                  => $time->subHour()->timestamp,
         ]);
 
         $this->startTest();
