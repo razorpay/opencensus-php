@@ -5763,28 +5763,9 @@ class RblBankingAccountStatementTest extends TestCase
                                                         'mode' => FundTransfer\Mode::IFT,
                                                         'initiated_at' => 1451937900]);
 
-        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['cms_ref_no' => 'S807068', 'mode' => FundTransfer\Mode::IFT]);
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['cms_ref_no' => 'S807068', 'mode' => FundTransfer\Mode::IFT, 'status' => 'initiated']);
 
-        // Update status
-        $ftsCreateTransfer = new FtsFundTransfer(
-            EnvMode::TEST,
-            $attempt['id']);
-
-        $ftsCreateTransfer->handle();
-
-        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
-
-        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
-
-        $this->updateFta(
-            $attempt['fts_transfer_id'],
-            $attempt['source'],
-            Attempt\Type::PAYOUT,
-            Attempt\Status::PROCESSED);
-
-        $payout = $this->getDbLastEntity('payout');
-        $this->assertEquals('processed', $payout['status']);
-
+        $this->fixtures->edit('payout', $payout1['id'],['status'=> 'processed']);
         // create second payout with same cms ref no
         $this->createRblPayout();
 
@@ -5800,27 +5781,9 @@ class RblBankingAccountStatementTest extends TestCase
                                                         'mode' => FundTransfer\Mode::IFT,
                                                         'initiated_at' => 1451937900]);
 
-        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['cms_ref_no' => 'S807068', 'mode' => FundTransfer\Mode::IFT]);
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['cms_ref_no' => 'S807068', 'mode' => FundTransfer\Mode::IFT, 'status' => 'initiated']);
 
-        // Update status
-        $ftsCreateTransfer = new FtsFundTransfer(
-            EnvMode::TEST,
-            $attempt['id']);
-
-        $ftsCreateTransfer->handle();
-
-        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
-
-        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
-
-        $this->updateFta(
-            $attempt['fts_transfer_id'],
-            $attempt['source'],
-            Attempt\Type::PAYOUT,
-            Attempt\Status::PROCESSED);
-
-        $payout = $this->getDbLastEntity('payout');
-        $this->assertEquals('processed', $payout['status']);
+        $this->fixtures->edit('payout', $payout1['id'],['status'=> 'processed']);
 
         // Fetch account statement from RBL
         $mockedResponse = $this->getRblTxnCreation();
@@ -6260,29 +6223,9 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->fixtures->edit('payout', $payout1['id'], ['status' => 'initiated']);
 
-        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123456']);
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123456', 'status' => 'initiated']);
 
-        // Update status
-        $ftsCreateTransfer = new FtsFundTransfer(
-            EnvMode::TEST,
-            $attempt['id']);
-
-        $ftsCreateTransfer->handle();
-
-        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
-
-        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
-
-        $this->updateFta(
-            $attempt['fts_transfer_id'],
-            $attempt['source'],
-            Attempt\Type::PAYOUT,
-            Attempt\Status::PROCESSED);
-
-        $payout = $this->getDbLastEntity('payout');
-        $this->assertEquals('processed', $payout['status']);
-
-        $this->fixtures->edit('payout', $payout['id'], ['utr' => '123456']);
+        $this->fixtures->edit('payout', $payout1['id'], ['utr' => '123456', 'status'=> 'processed']);
 
         // create second payout and reverse it with same utr
         $this->createRblPayout();
@@ -6297,35 +6240,9 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
 
-        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123457']);
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123457', 'status' => 'initiated']);
 
-        // Update status
-        $ftsCreateTransfer = new FtsFundTransfer(
-            EnvMode::TEST,
-            $attempt['id']);
-
-        $ftsCreateTransfer->handle();
-
-        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
-
-        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
-
-        $this->updateFta(
-            $attempt['fts_transfer_id'],
-            $attempt['source'],
-            Attempt\Type::PAYOUT,
-            Attempt\Status::PROCESSED);
-
-        $payout = $this->getDbLastEntity('payout');
-        $this->assertEquals('processed', $payout['status']);
-
-        $this->updateFta(
-            $attempt['fts_transfer_id'],
-            $attempt['source'],
-            Attempt\Type::PAYOUT,
-            Attempt\Status::REVERSED);
-
-        $this->fixtures->edit('payout', $payout['id'], ['utr' => '143535']);
+        $this->fixtures->edit('payout', $payout['id'], ['utr' => '143535', 'status'=> 'reversed']);
 
         // create third payout and reverse it with same return utr
         $this->createRblPayout();
@@ -6340,35 +6257,9 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
 
-        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123457']);
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123457', 'status'=>'initiated']);
 
-        // Update status
-        $ftsCreateTransfer = new FtsFundTransfer(
-            EnvMode::TEST,
-            $attempt['id']);
-
-        $ftsCreateTransfer->handle();
-
-        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
-
-        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
-
-        $this->updateFta(
-            $attempt['fts_transfer_id'],
-            $attempt['source'],
-            Attempt\Type::PAYOUT,
-            Attempt\Status::PROCESSED);
-
-        $payout = $this->getDbLastEntity('payout');
-        $this->assertEquals('processed', $payout['status']);
-
-        $this->updateFta(
-            $attempt['fts_transfer_id'],
-            $attempt['source'],
-            Attempt\Type::PAYOUT,
-            Attempt\Status::REVERSED);
-
-        $this->fixtures->edit('payout', $payout['id'], ['utr' => '143535']);
+        $this->fixtures->edit('payout', $payout['id'], ['utr' => '143535', 'status' => 'reversed']);
 
         // Fetch account statement from RBL
 
@@ -6588,29 +6479,9 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->fixtures->edit('payout', $payout1['id'], ['status' => 'initiated']);
 
-        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123456']);
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123456', 'status' => 'initiated']);
 
-        // Update status
-        $ftsCreateTransfer = new FtsFundTransfer(
-            EnvMode::TEST,
-            $attempt['id']);
-
-        $ftsCreateTransfer->handle();
-
-        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
-
-        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
-
-        $this->updateFta(
-            $attempt['fts_transfer_id'],
-            $attempt['source'],
-            Attempt\Type::PAYOUT,
-            Attempt\Status::PROCESSED);
-
-        $payout = $this->getDbLastEntity('payout');
-        $this->assertEquals('processed', $payout['status']);
-
-        $this->fixtures->edit('payout', $payout['id'], ['utr' => '123456']);
+        $this->fixtures->edit('payout', $payout1['id'], ['utr' => '123456', 'status' => 'processed']);
 
         // create second payout and reverse it
         $this->createRblPayout();
@@ -6627,33 +6498,9 @@ class RblBankingAccountStatementTest extends TestCase
                                                         'mode' => FundTransfer\Mode::IFT,
                                                         'initiated_at' => 1451937900]);
 
-        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['cms_ref_no' => 'S807069', 'mode' => FundTransfer\Mode::IFT]);
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['cms_ref_no' => 'S807069', 'mode' => FundTransfer\Mode::IFT, 'status' => 'initiated']);
 
-        // Update status
-        $ftsCreateTransfer = new FtsFundTransfer(
-            EnvMode::TEST,
-            $attempt['id']);
-
-        $ftsCreateTransfer->handle();
-
-        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
-
-        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
-
-        $this->updateFta(
-            $attempt['fts_transfer_id'],
-            $attempt['source'],
-            Attempt\Type::PAYOUT,
-            Attempt\Status::PROCESSED);
-
-        $payout = $this->getDbLastEntity('payout');
-        $this->assertEquals('processed', $payout['status']);
-
-        $this->updateFta(
-            $attempt['fts_transfer_id'],
-            $attempt['source'],
-            Attempt\Type::PAYOUT,
-            Attempt\Status::REVERSED);
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'reversed']);
 
         // create third payout and reverse it with same cms ref no
         $this->createRblPayout();
@@ -6670,32 +6517,9 @@ class RblBankingAccountStatementTest extends TestCase
                                                         'mode' => FundTransfer\Mode::IFT,
                                                         'initiated_at' => 1451937900]);
 
-        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['cms_ref_no' => 'S807069', 'mode' => FundTransfer\Mode::IFT]);
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['cms_ref_no' => 'S807069', 'mode' => FundTransfer\Mode::IFT, 'status' => 'initiated']);
 
-        // Update status
-        $ftsCreateTransfer = new FtsFundTransfer(
-            EnvMode::TEST,
-            $attempt['id']);
-
-        $ftsCreateTransfer->handle();
-
-        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
-
-        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
-
-        $this->updateFta(
-            $attempt['fts_transfer_id'],
-            $attempt['source'],
-            Attempt\Type::PAYOUT,
-            Attempt\Status::PROCESSED);
-
-        $payout = $this->getDbLastEntity('payout');
-
-        $this->updateFta(
-            $attempt['fts_transfer_id'],
-            $attempt['source'],
-            Attempt\Type::PAYOUT,
-            Attempt\Status::REVERSED);
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'reversed']);
 
         // Fetch account statement from RBL
 
@@ -7135,27 +6959,9 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated','utr' => '123456']);
 
-        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123456']);
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123456', 'status' => 'initiated']);
 
-        // Update status
-        $ftsCreateTransfer = new FtsFundTransfer(
-            EnvMode::TEST,
-            $attempt['id']);
-
-        $ftsCreateTransfer->handle();
-
-        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
-
-        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
-
-        $this->updateFta(
-            $attempt['fts_transfer_id'],
-            $attempt['source'],
-            Attempt\Type::PAYOUT,
-            Attempt\Status::PROCESSED);
-
-        $payout = $this->getDbLastEntity('payout');
-        $this->assertEquals('processed', $payout['status']);
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'processed','utr' => '123456']);
 
         // create second payout with same utr
         $this->createRblPayout();
@@ -7170,27 +6976,8 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated', 'utr' => '123456']);
 
-        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123456']);
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123456', 'status' => 'initiated']);
 
-        // Update status
-        $ftsCreateTransfer = new FtsFundTransfer(
-            EnvMode::TEST,
-            $attempt['id']);
-
-        $ftsCreateTransfer->handle();
-
-        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
-
-        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
-
-        $this->updateFta(
-            $attempt['fts_transfer_id'],
-            $attempt['source'],
-            Attempt\Type::PAYOUT,
-            Attempt\Status::PROCESSED);
-
-        $payout = $this->getDbLastEntity('payout');
-        $this->assertEquals('processed', $payout['status']);
         // Fetch account statement from RBL
 
         $mockedResponse = $this->getRblTxnCreation();
@@ -7689,27 +7476,9 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated','utr' => '123456']);
 
-        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123456']);
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123456', 'status'=> 'initiated']);
 
-        // Update status
-        $ftsCreateTransfer = new FtsFundTransfer(
-            EnvMode::TEST,
-            $attempt['id']);
-
-        $ftsCreateTransfer->handle();
-
-        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
-
-        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
-
-        $this->updateFta(
-            $attempt['fts_transfer_id'],
-            $attempt['source'],
-            Attempt\Type::PAYOUT,
-            Attempt\Status::PROCESSED);
-
-        $payout = $this->getDbLastEntity('payout');
-        $this->assertEquals('processed', $payout['status']);
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'processed']);
 
         // create second payout with same utr
         $this->createRblPayout();
@@ -7724,29 +7493,11 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated', 'utr' => '123456']);
 
-        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123456']);
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123456', 'status'=> 'initiated']);
 
-        // Update status
-        $ftsCreateTransfer = new FtsFundTransfer(
-            EnvMode::TEST,
-            $attempt['id']);
 
-        $ftsCreateTransfer->handle();
-
-        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
-
-        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
-
-        $this->updateFta(
-            $attempt['fts_transfer_id'],
-            $attempt['source'],
-            Attempt\Type::PAYOUT,
-            Attempt\Status::PROCESSED);
-
-        $payout = $this->getDbLastEntity('payout');
-        $this->assertEquals('processed', $payout['status']);
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'processed']);
         // Fetch account statement from RBL
-
         $mockedResponse = $this->getRblTxnCreation();
 
         $this->setMozartMockResponse($mockedResponse);
@@ -8128,35 +7879,9 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->fixtures->edit('payout', $payout1['id'], ['status' => 'initiated']);
 
-        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123456']);
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123456', 'status' => 'initiated']);
 
-        // Update status
-        $ftsCreateTransfer = new FtsFundTransfer(
-            EnvMode::TEST,
-            $attempt['id']);
-
-        $ftsCreateTransfer->handle();
-
-        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
-
-        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
-
-        $this->updateFta(
-            $attempt['fts_transfer_id'],
-            $attempt['source'],
-            Attempt\Type::PAYOUT,
-            Attempt\Status::PROCESSED);
-
-        $payout = $this->getDbLastEntity('payout');
-        $this->assertEquals('processed', $payout['status']);
-
-        $this->updateFta(
-            $attempt['fts_transfer_id'],
-            $attempt['source'],
-            Attempt\Type::PAYOUT,
-            Attempt\Status::REVERSED);
-
-        $this->fixtures->edit('payout', $payout['id'], ['return_utr' => '143535']);
+        $this->fixtures->edit('payout', $payout1['id'], ['utr' => '123456', 'return_utr' => '143535', 'status' => 'reversed']);
 
         // create another payout and reverse it with same return utr
         $this->createRblPayout();
@@ -8171,33 +7896,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
 
-        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123457']);
-
-        // Update status
-        $ftsCreateTransfer = new FtsFundTransfer(
-            EnvMode::TEST,
-            $attempt['id']);
-
-        $ftsCreateTransfer->handle();
-
-        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
-
-        $this->assertEquals(Attempt\Status::INITIATED, $attempt['status']);
-
-        $this->updateFta(
-            $attempt['fts_transfer_id'],
-            $attempt['source'],
-            Attempt\Type::PAYOUT,
-            Attempt\Status::PROCESSED);
-
-        $payout = $this->getDbLastEntity('payout');
-        $this->assertEquals('processed', $payout['status']);
-
-        $this->updateFta(
-            $attempt['fts_transfer_id'],
-            $attempt['source'],
-            Attempt\Type::PAYOUT,
-            Attempt\Status::REVERSED);
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], ['utr' => '123457', 'status' => 'initiated']);
 
         $this->fixtures->edit('payout', $payout['id'], ['return_utr' => '143535']);
 
