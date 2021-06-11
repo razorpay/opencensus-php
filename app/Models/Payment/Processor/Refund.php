@@ -2141,7 +2141,7 @@ trait Refund
 
                 if ($skipVerify === false)
                 {
-                    $verifyResponse = $this->verifyRefund($refund);
+                    $verifyResponse = $this->verifyRefund($refund, $data);
 
                     // true  if refunded
                     // false if not refunded
