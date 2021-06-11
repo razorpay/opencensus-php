@@ -12,6 +12,7 @@ export function trackSegment({
   actionName,
   options = {}
 }) {
+  if (!event) return;
   // console.log({
   //   objectName: event.replaceAll('_', '.'),
   //   actionName: 'clicked',

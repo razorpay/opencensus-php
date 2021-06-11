@@ -25,7 +25,7 @@ export default class QRCode extends GenericEntity {
   }
 
   fetchPayments() {
-    const url = `${this.resourceUrl}/${this.id}/payments`;
+    const url = `${this.resourceUrl}/${this.id}/payments?skip=0&count=10`;
     return this.makeGenericAjaxCall({ url }).then((response) => {
       response.data.items = response.data.items.map((item) => new Payment(item).deserialize());
       return response;

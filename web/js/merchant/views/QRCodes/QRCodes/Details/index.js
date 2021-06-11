@@ -40,6 +40,7 @@ export default class QRCodeDetailsContainer extends React.Component {
     isLoading: false,
     entity: {},
     payments: [],
+    isPaymentsLoading: false,
   };
 
   componentDidMount() {
@@ -84,11 +85,22 @@ export default class QRCodeDetailsContainer extends React.Component {
   };
 
   fetchPayments = (id) => {
-    fetchPayments(id).then((resp) => {
-      this.setState({
-        payments: resp.data,
-      });
+    this.setState({
+      isPaymentsLoading: true,
     });
+
+    fetchPayments(id)
+      .then((resp) => {
+        this.setState({
+          payments: resp.data.items,
+          isPaymentsLoading: false,
+        });
+      })
+      .catch(() => {
+        this.setState({
+          isPaymentsLoading: false,
+        });
+      });
   };
 
   closeAccount = () => {
@@ -122,7 +134,7 @@ export default class QRCodeDetailsContainer extends React.Component {
               message: error,
             });
 
-            track.closeSuccess(false, error)
+            track.closeSuccess(false, error);
           });
       },
       abort: () => {},
@@ -162,7 +174,7 @@ export default class QRCodeDetailsContainer extends React.Component {
   };
 
   render() {
-    let { isLoading, error, entity, payments } = this.state;
+    let { isLoading, error, entity, payments, isPaymentsLoading } = this.state;
     let statusMsg = {};
 
     if (error) {
@@ -174,6 +186,7 @@ export default class QRCodeDetailsContainer extends React.Component {
 
     return (
       <QRCodeDetails
+        isPaymentsLoading={isPaymentsLoading}
         key={this.props.id}
         qrCode={entity}
         payments={payments}

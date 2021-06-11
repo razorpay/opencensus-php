@@ -194,7 +194,7 @@ export default class CreationForm extends React.Component {
     };
 
     if (formData.payment_amount) {
-      payload.payment_amount = rupeesToPaise(formData.fixed_amount);
+      payload.payment_amount = rupeesToPaise(formData.payment_amount);
     }
 
     if (formData.fixed_amount === '0') {

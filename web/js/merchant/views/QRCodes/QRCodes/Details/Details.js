@@ -7,6 +7,7 @@ import Button from 'common/new-ui/Button';
 import Time from 'common/ui/Time';
 import Spinner from 'common/ui/Spinner';
 import Alert from 'common/ui/Forms/Alert';
+import PlaceHolderLoader from 'common/ui/PlaceholderLoader';
 import Definition from 'common/ui/Definition';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import Table from 'common/ui/Table/Index';
@@ -31,6 +32,7 @@ export default function Details(props) {
     isTestMode,
     showPreview,
     downloadQRCode,
+    isPaymentsLoading,
   } = props;
 
   const isClosed = qrCode.status === 'closed';
@@ -52,7 +54,7 @@ export default function Details(props) {
           </div>
 
           <div class="SliderPanel__Body">
-            <Alert type={statusMsg.type} message={statusMsg.message} />
+            {/* <Alert type={statusMsg.type} message={statusMsg.message} /> */}
 
             <div class="info">
               <div>
@@ -132,16 +134,15 @@ export default function Details(props) {
                 <NestedEntityDetailRow label="Notes" value={qrCode.notes} />
               </div>
 
-              {showTestPaymentBtn &&
-                {
-                  /* <Banner class="QRCode-test-payment">
+              {/* showTestPaymentBtn &&
+                <Banner class="QRCode-test-payment">
                   <Button onClick={onMakeTestPaymentClick}>Make a Test Payment</Button>
 
                   <div>
                     <strong>Test Mode:</strong> Make a test payment using this QR Code
                   </div>
-                </Banner> */
-                }}
+                </Banner>
+                }*/}
 
               <hr />
 
@@ -153,7 +154,14 @@ export default function Details(props) {
                   </Link>
                 </p>
 
-                <Table rows={payments} columns={[paymentId, amount]} showHeaders={false} />
+                {isPaymentsLoading ? (
+                  <>
+                    <PlaceHolderLoader />
+                    <PlaceHolderLoader />
+                  </>
+                ) : (
+                  <Table rows={payments} columns={[paymentId, amount]} showHeaders={false} />
+                )}
               </div>
             </div>
           </div>
