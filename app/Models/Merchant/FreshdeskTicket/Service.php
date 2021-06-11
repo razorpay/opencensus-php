@@ -116,7 +116,7 @@ class Service extends Base\Service
 
         $this->populateCustomFields($input);
 
-        $fdInstance = $this->getFdInstance($input);
+        $fdInstance = $this->getFdInstanceWhileCreatingTickets($input);
 
         $url = self::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][$fdInstance];
 
@@ -129,6 +129,24 @@ class Service extends Base\Service
         $ticketCreateResponse[Constants::FD_INSTANCE] = $fdInstance;
 
         return $ticketCreateResponse;
+    }
+
+    protected function getFdInstanceWhileCreatingTickets($input)
+    {
+        $result = $this->app->razorx->getTreatment($input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY]
+            , Constants::RAZORX_FLAG_FRESHDESK_CUSTOMER_TICKET_CREATION_SERVER_PICK, Mode::LIVE);
+
+        if ($result === "on")
+        {
+            $fdInstance = Constants::RZPIND;
+        }
+
+        else
+        {
+            $fdInstance = Constants::RZP;
+        }
+
+        return $fdInstance;
     }
 
     /**
@@ -161,16 +179,32 @@ class Service extends Base\Service
 
         $queryParams = 'email=' . urlencode($email);
 
-        $fdInstance = $input[Constants::FD_INSTANCE] ?? Constants::RZP;
+        $fdInstance = Constants::FD_INSTANCES_LIST_FOR_FETCHING_CUSTOMER_TICKETS;
 
-        $url = self::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][$fdInstance];
+        $mergedResponse = [];
 
-        $tickets = $this->app[Constants::FRESHDESK_CLIENT]->getCustomerTickets($queryParams, $url);
-
-        if (is_array($tickets) === false)
+        foreach ($fdInstance as $key => $value)
         {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_CUSTOMER_TICKET_FETCH_FAILED);
+            $url = self::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][$fdInstance[$key]];
+
+            $tickets = $this->app[Constants::FRESHDESK_CLIENT]->getCustomerTickets($queryParams, $url);
+
+            if (is_array($tickets) === false)
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_CUSTOMER_TICKET_FETCH_FAILED);
+            }
+
+            $response = $this->createTicketResponseFromReceivedArrays($tickets, $count);
+
+            $mergedResponse = array_merge($mergedResponse, $response);
         }
+
+        return $mergedResponse;
+    }
+
+
+    protected function createTicketResponseFromReceivedArrays(array $tickets, $count)
+    {
 
         $response = [];
 

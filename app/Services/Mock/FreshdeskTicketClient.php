@@ -442,6 +442,70 @@ class FreshdeskTicketClient extends BaseFreshdeskTicketClient
             ]
         ];
 
+        $successResponseSecond = [
+            [
+                'priority' => 1,
+                'requester_id' => 42020620300,
+                'source' => 2,
+                'company_id' => null,
+                'status' => 5,
+                'subject' => '',
+                'id' => 3368,
+                'type' => 'Other',
+                'due_by' => '2020-11-02T11:02:50Z',
+                'fr_due_by' => '2020-10-29T11:02:50Z',
+                'is_escalated' => false,
+                'custom_fields' => [
+                    'cf_category' => null,
+                    'cf_merchant_id' => 'CCOhinUeUsT8HN',
+                    'cf_source' => null,
+                    'cf_transaction_id' => 'pay_FrTYsVAuCrW8Fm',
+                    'cf_payment_method' => null,
+                    'cf_product' => null,
+                    'cf_escalation_reason' => null,
+                    'cf_platform' => null,
+                    'cf_razorpay_payment_id' => 'FrTYsVAuCrW8Fm',
+                    'cf_refund_id' => null,
+                    'cf_order_id' => null,
+                    'cf_payment_email' => 'moulikak@razorpay.com',
+                    'cf_payment_phone' => ''
+                ],
+                'created_at' => '2020-10-28T11:02:50Z',
+                'updated_at' => '2020-10-28T11:02:51Z'
+            ],
+            [
+                'priority' => 1,
+                'requester_id' => 42020620300,
+                'source' => 2,
+                'company_id' => null,
+                'status' => 5,
+                'subject' => '',
+                'id' => 3338,
+                'type' => null,
+                'due_by' => '2020-11-02T11 =>02 =>50Z',
+                'fr_due_by' => '2020-10-29T11 =>02 =>50Z',
+                'is_escalated' => false,
+                'custom_fields' => [
+                    'cf_category' => null,
+                    'cf_merchant_id' => 'CCOhinUeUsT8HN',
+                    'cf_source' => null,
+                    'cf_transaction_id' => 'pay_FrTYsVAuCrW8Fm',
+                    'cf_payment_method' => null,
+                    'cf_product' => null,
+                    'cf_escalation_reason' => null,
+                    'cf_platform' => null,
+                    'cf_razorpay_payment_id' => 'FrTYsVAuCrW8Fm',
+                    'cf_refund_id' => null,
+                    'cf_order_id' => null,
+                    'cf_payment_email' => 'moulikak@razorpay.com',
+                    'cf_payment_phone' => ''
+                ],
+                'created_at' => '2020-10-28T11:02:50Z',
+                'updated_at' => '2020-10-28T11:02:51Z'
+            ]
+        ];
+
+
         $failureResponse = [
             'description' => "Validation failed",
             'errors'      => [
@@ -453,6 +517,10 @@ class FreshdeskTicketClient extends BaseFreshdeskTicketClient
 
         switch ($queryString) {
             case 'email=success%40gmail.com':
+                if ($urlKey === 'urlind')
+                {
+                    return $successResponseSecond;
+                }
                 return $successResponse;
             case 'email=failure%40gmail.com':
                 return $failureResponse;

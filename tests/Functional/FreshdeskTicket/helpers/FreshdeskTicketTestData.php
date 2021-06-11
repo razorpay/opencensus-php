@@ -240,6 +240,36 @@ return [
         ],
     ],
 
+    'testPostTicketWithExperimentFreshdeskCustomerTicketCreationServerPickOn' => [
+        'request' => [
+            'url' => '/freshdesk/tickets',
+            'method' => 'POST',
+            'content' => [
+                'name' => 'Test',
+                'subject' => 'Subject',
+                'description' => 'Description',
+                'email' => 'test@gmail.com',
+                'abc' => 'strct',
+                'mode' => 'test',
+                'otp'  => '0007',
+                'custom_fields' => [
+                    'cf_transaction_id' => '',
+                    'cf_requester_category' => 'Customer',
+                    'cf_requestor_subcategory' => 'Sub category',
+                ]
+            ]
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'fd_instance'      => 'rzpind',
+                'subject'          => 'Support needed..',
+                'id'               =>  1,
+                'description_text' => "Some details on the issue ..."
+            ]
+        ]
+    ],
+
     'testGetFreshdeskTicketsForCustomer' => [
         'request' => [
             'url'     => '/freshdesk/tickets/customer',
@@ -277,6 +307,32 @@ return [
                     'created_at'        => '2020-10-28T11:02:50Z',
                     'updated_at'        => '2020-10-28T11:02:51Z',
                 ],
+                [
+                    'number'            => 3368,
+                    'status'            => 'Closed',
+                    'subject'           => '',
+                    'source'            => 2,
+                    'type'              => 'Other',
+                    'payment_id'        => 'FrTYsVAuCrW8Fm',
+                    'refund_id'         => null,
+                    'order_id'          => null,
+                    'transaction_id'    => 'pay_FrTYsVAuCrW8Fm',
+                    'created_at'        => '2020-10-28T11:02:50Z',
+                    'updated_at'        => '2020-10-28T11:02:51Z',
+                ],
+                [
+                    'number'            => 3338,
+                    'status'            => 'Closed',
+                    'subject'           => '',
+                    'source'            => 2,
+                    'type'              => null,
+                    'payment_id'        => 'FrTYsVAuCrW8Fm',
+                    'refund_id'         => null,
+                    'order_id'          => null,
+                    'transaction_id'    => 'pay_FrTYsVAuCrW8Fm',
+                    'created_at'        => '2020-10-28T11:02:50Z',
+                    'updated_at'        => '2020-10-28T11:02:51Z',
+                ]
             ],
             'status_code' => 200,
         ]

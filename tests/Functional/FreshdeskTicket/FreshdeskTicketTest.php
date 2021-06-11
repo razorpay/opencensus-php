@@ -333,4 +333,35 @@ class FreshdeskTicketTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testPostTicketWithExperimentFreshdeskCustomerTicketCreationServerPickOn()
+    {
+        $this->app['config']->set('applications.freshdesk.mock', true);
+
+        $payment = $this->fixtures->create('payment:captured');
+
+        $this->ba->directAuth();
+
+        $testData = &$this->testData['testPostTicketWithExperimentFreshdeskCustomerTicketCreationServerPickOn'];
+
+        $this->generateOtp($testData['request']['content']['email']);
+
+        $this->mockRazorxTreatment('on');
+
+        $id = 'pay_' . $payment->toArray()['id'];
+
+        $testData['request']['content']['custom_fields']['cf_transaction_id'] = $id;
+
+        $testData['request']['content']['custom_fields']['cf_razorpay_payment_id'] = $id;
+
+        $response = $this->startTest();
+
+        $this->assertEquals($testData['response']['content']['fd_instance'], $response['fd_instance']);
+
+        $this->assertEquals($testData['response']['content']['subject'], $response['subject']);
+
+        $this->assertEquals($testData['response']['content']['id'], $response['id']);
+
+        $this->assertEquals($testData['response']['content']['description_text'], $response['description_text']);
+    }
 }

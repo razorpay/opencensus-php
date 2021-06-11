@@ -95,6 +95,8 @@ class Constants
     const AUTOMATED_WORKFLOW_RESOLVE_TAGS   = ['automated_workflow_response'];
     // All custom fields allowed to be queried
     const CUSTOM_FIELDS_LIST_FOR_QUERY = [self::CF_REQUESTOR_CATEGORY, self::CF_REQUESTOR_SUBCATEGORY , self::CF_REQUESTOR_ITEM];
+    // Fd instances to find ticket details
+    const FD_INSTANCES_LIST_FOR_FETCHING_CUSTOMER_TICKETS = [self::RZP, self::RZPIND];
 
     //Freshdesk  Ticket Fields
     const TICKET_PRIORITY   = 'priority';
@@ -113,8 +115,10 @@ class Constants
     const SUCCESS    = 'success';
 
     // razorx flags
-    const RAZORX_FLAG_VALIDATE_FRESHDESK_ATTACHMENT_EXTENSION = 'validate_freshdesk_attachment_extension';
-    const RAZORX_FLAG_SHOULD_MIGRATE_FRESHDESK_IND_MERCHANT   = 'should_migrate_freshdesk_ind_merchant';
+    const RAZORX_FLAG_VALIDATE_FRESHDESK_ATTACHMENT_EXTENSION         = 'validate_freshdesk_attachment_extension';
+    const RAZORX_FLAG_SHOULD_MIGRATE_FRESHDESK_IND_MERCHANT           = 'should_migrate_freshdesk_ind_merchant';
+    const RAZORX_FLAG_FRESHDESK_CUSTOMER_TICKET_CREATION_SERVER_PICK  = 'Freshdesk_Customer_Ticket_Creation_Server_Pick';
+
 
     // Default values for Activation Workflow Ticket Creation
     const SERVICE_REQUEST_TICKET_TYPE   = 'Service request';
