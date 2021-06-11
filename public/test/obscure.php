@@ -263,7 +263,7 @@ function disableEmptyInputs(form) {
         <td>
             <select name="emi_duration">
                 <option value="">Select EMI duration</option>
-                <option value="3">3 Months @12%</option>
+                <option value="3" selected>3 Months @12%</option>
                 <option value="6">6 Months @12%</option>
                 <option value="9">9 Months @14%</option>
                 <option value="12">12 Months @14%</option>
@@ -290,19 +290,19 @@ function disableEmptyInputs(form) {
     </tr>
     <tr>
         <td colspan="40"><b>Card No: </b> </td>
-        <td><input type="text" name="card[number]" value="4012001038443335" size="25" autocomplete="cc-number"></td>
+        <td><input type="text" name="card[number]" value="5577810000000004" size="25" autocomplete="cc-number"></td>
     </tr>
     <tr>
         <td colspan="40">CVV:</td>
-        <td><input size="3" type="text" name="card[cvv]" value="880" maxlength=4 autocomplete="cc-csc"></td>
+        <td><input size="3" type="text" name="card[cvv]" value="123" maxlength=4 autocomplete="cc-csc"></td>
     </tr>
     <tr>
         <td colspan ='40'>Exp Date:</td>
-        <td><input type="text" name="card[expiry_month]" value="11" autocomplete="cc-exp-month"></td>
-        <td><input type="text" name="card[expiry_year]" value="2030" autocomplete="cc-exp-year"></td>
+        <td><input type="text" name="card[expiry_month]" value="05" autocomplete="cc-exp-month"></td>
+        <td><input type="text" name="card[expiry_year]" value="2021" autocomplete="cc-exp-year"></td>
         <tr>
             <td colspan='40'>Amount:</td>
-            <td><input type="text" name="amount" size="25" value="100"></td>
+            <td><input type="text" name="amount" size="25" value="350000"></td>
             <td>
             <select name="currency">
                 <option value="INR">Indian Rupee</option>
@@ -356,7 +356,7 @@ function disableEmptyInputs(form) {
     </tr>
     <tr>
         <td colspan='40'>Token recurring:</td>
-        <td><input type="text" name="recurring_token[max_amount]" size="25" value="20000"></td>
+        <td><input type="text" name="recurring_token[max_amount]" size="25" value=""></td>
         <td><input type="text" name="recurring_token[expire_by]" size="25" value=""></td>
     </tr>
     <tr>

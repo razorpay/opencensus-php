@@ -539,13 +539,20 @@ class TransactionFilter extends Terminal\Filter
 
         $bank = $payment->getBank();
 
+        if ($this->isMerchantEmiTypeEnabled() === false || $terminal->supportsCurrency(Currency::INR) === false) {
+            return false;
+        }
+
+        if ((empty($bank) === false) and
+            (in_array($bank, Gateway::$emiBanksUsingCardAndEmiTerminals) === true)) {
+            return ($terminal->isEmiEnabled() || $terminal->isCardEnabled());
+        }
+
         // check if banks emi transactions can be processed from any card terminal
         if ((empty($bank) === false) and
             (in_array($bank, Gateway::$emiBanksUsingCardTerminals)))
         {
-            return (($this->isMerchantEmiTypeEnabled() and $terminal->isCardEnabled()) and
-                    ($terminal->isEmiEnabled() === false) and
-                    ($terminal->supportsCurrency(Currency::INR) === true));
+            return $terminal->isCardEnabled();
         }
 
         // validate terminal using the gateway and emi duration

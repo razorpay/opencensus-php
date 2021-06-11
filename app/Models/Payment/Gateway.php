@@ -2353,6 +2353,10 @@ class Gateway
         IFSC::BARB,
     ];
 
+    public static $emiBanksUsingCardAndEmiTerminals = [
+        IFSC::UTIB,
+    ];
+
     // in case of any changes in gateway config, please contact smart routing team
     // changes done here won't be reflected in routing
     public static $emiBankToGatewayMapForRouteService = [

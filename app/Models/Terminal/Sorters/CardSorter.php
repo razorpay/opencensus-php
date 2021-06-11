@@ -2,15 +2,19 @@
 
 namespace RZP\Models\Terminal\Sorters;
 
+use RZP\Models\Card;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Gateway\Priority as GatewayPriority;
 
 class CardSorter extends Terminal\Sorter
 {
     protected $properties = [
         'gateway',
+        'emi',
     ];
 
     // Arrange card terminals in order of gateway
@@ -49,5 +53,33 @@ class CardSorter extends Terminal\Sorter
         }
 
         return $sortedTerminals;
+    }
+
+    public function emiSorter($terminals)
+    {
+        $bank = $this->input['payment']->getBank();
+
+        // We need to sort only for Axis, since only for Axis do we need to
+        // prioritize emi enabled terminal over card terminal
+        if (($this->input['payment']->isMethod(Method::EMI) === false) || ($bank !== IFSC::UTIB))
+        {
+            return $terminals;
+        }
+
+        $orderedTerminals = $unorderedTerminals = [];
+
+        foreach ($terminals as $terminal)
+        {
+            if (($terminal->isEmiEnabled() === true))
+            {
+                $orderedTerminals[] = $terminal;
+            }
+            else
+            {
+                $unorderedTerminals[] = $terminal;
+            }
+        }
+
+        return array_merge($orderedTerminals, $unorderedTerminals);
     }
 }

@@ -432,6 +432,8 @@ class Validator extends Base\Validator
         Entity::CAPABILITY                 => 'sometimes|in:0,2',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::CURRENCY                   => 'sometimes|array',
+        Entity::EMI                        => 'sometimes|boolean',
+        Entity::EMI_SUBVENTION             => 'sometimes|in:customer,merchant',
     ];
 
     protected static $cybersourceTerminalRules = [
@@ -2092,7 +2094,8 @@ class Validator extends Base\Validator
         }
 
         if (($input[Entity::GATEWAY] === Gateway::BAJAJ) or
-            ($input[Entity::GATEWAY] === Gateway::HDFC_DEBIT_EMI))
+            ($input[Entity::GATEWAY] === Gateway::HDFC_DEBIT_EMI) or
+            ($input[Entity::GATEWAY] === Gateway::AXIS_MIGS))
         {
             return;
         }
