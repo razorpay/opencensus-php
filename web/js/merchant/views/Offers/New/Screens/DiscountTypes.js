@@ -5,6 +5,7 @@ import {
   MAX_DISCOUNT,
   REDEMPTION_TYPE_OPTIONS,
 } from 'merchant/views/Offers/constants';
+import { rupeesToPaise } from 'common/utils/rzp-utils';
 
 const DISCOUNT_TYPES_OPTIONS = [
   { label: '--Select Type--', name: '' },
@@ -182,11 +183,14 @@ function validateFlatCashback(min_amount) {
     if (decimalPointError) return decimalPointError;
 
     val = parseFloat(val);
+    // Converting to value entered in RS to Paise for proper validation
+    val = rupeesToPaise(val);
     if (val > MAX_DISCOUNT) {
       return `Maximum value allowed is ${MAX_DISCOUNT}`;
     }
+    const minAmount = rupeesToPaise(min_amount);
 
-    if (val > min_amount) {
+    if (val > minAmount) {
       return 'Discount value cannot be greater than minimum amount';
     }
   };
@@ -202,15 +206,17 @@ function validateMinAmount({ flat_cashback, isPERCENTDiscount, max_order_amount 
     if (decimalPointError) return decimalPointError;
 
     val = parseFloat(val);
+    // Converting to value entered in RS to Paise for proper validation
+    val = rupeesToPaise(val);
     if (val > MAX_DISCOUNT) {
       return `Maximum value allowed is ${MAX_DISCOUNT}`;
     }
-
-    if (val < flat_cashback) {
+    const flatCashback = rupeesToPaise(flat_cashback);
+    if (val < flatCashback) {
       return 'Minimum payment is less than discount value';
     }
-
-    if (max_order_amount && max_order_amount < val) {
+    const maxOrderAmount = rupeesToPaise(max_order_amount);
+    if (maxOrderAmount && maxOrderAmount < val) {
       return 'Minimum order amount should be less than max order amount';
     }
   };
@@ -221,6 +227,8 @@ function validateMaxCashback(val) {
   if (decimalPointError) return decimalPointError;
 
   val = parseFloat(val);
+  // Converting to value entered in RS to Paise for proper validation
+  val = rupeesToPaise(val);
   if (val > MAX_DISCOUNT) {
     return `Maximum value allowed is ${MAX_DISCOUNT}`;
   }
@@ -234,11 +242,13 @@ function validateMaxOrderAmount(min_amount) {
     if (decimalPointError) return decimalPointError;
 
     val = parseFloat(val);
+    // Converting to value entered in RS to Paise for proper validation
+    val = rupeesToPaise(val);
     if (val > MAX_DISCOUNT) {
       return `Maximum value allowed is ${MAX_DISCOUNT}`;
     }
-
-    if (!min_amount || val < min_amount) {
+    const minAmount = rupeesToPaise(min_amount);
+    if (!minAmount || val < minAmount) {
       return `Maximum order amount should be more than minimum order amount`;
     }
   };

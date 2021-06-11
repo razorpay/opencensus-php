@@ -9,6 +9,7 @@ import {
   CREDIT_DEBIT_CARDS_OPTIONS,
   CREDIT_CARDS_OPTIONS,
 } from 'merchant/views/Offers/constants';
+import { rupeesToPaise } from 'common/utils/rzp-utils';
 
 export default class ApplicableOn extends React.Component {
   get currentSelectedPaymentMethod() {
@@ -134,6 +135,8 @@ function validateMaxPaymentCount(val) {
   }
 
   val = parseFloat(val);
+  // Converting to value entered in RS to Paise for proper validation
+  val = rupeesToPaise(val);
   if (val > MAX_DISCOUNT) {
     return `Maximum value allowed is ${MAX_DISCOUNT}`;
   }

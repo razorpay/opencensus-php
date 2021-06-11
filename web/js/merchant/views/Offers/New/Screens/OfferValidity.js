@@ -1,6 +1,7 @@
 import Input from 'common/new-ui/Input';
 import { MAX_DISCOUNT } from 'merchant/views/Offers/constants';
 import DocsLink from 'merchant/components/DocsLink';
+import { rupeesToPaise } from 'common/utils/rzp-utils';
 
 const LINK_TO_DOCS = 'https://razorpay.com/docs/payment-gateway/orders/';
 const PAYMENT_FAILURE_OPTIONS = [
@@ -118,6 +119,8 @@ function validateMaxOfferUsage(val) {
   }
 
   val = parseFloat(val);
+  // Converting to value entered in RS to Paise for proper validation
+  val = rupeesToPaise(val);
   if (val > MAX_DISCOUNT) {
     return `Maximum value allowed is ${MAX_DISCOUNT}`;
   }
