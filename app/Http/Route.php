@@ -378,6 +378,7 @@ class Route
         'merchant_features_update'                 => ['post',     'merchants/me/features',                          'MerchantController@updateMerchantFeatures'                         ],
         'merchant_partner_configs_fetch'           => ['get',      'merchants/me/partner/configs',                   'PartnerConfigController@fetchConfigByPartner'                      ],
         'merchants_update_bulk'                    => ['put',      'merchants/bulk',                                 'MerchantController@updateMerchantsBulk'                            ],
+        'merchant_action_notification_cron'        => ['post',     'merchants/action/notification',                  'MerchantController@handleMerchantActionNotificationCron'           ],
         'merchants_update_channel'                 => ['put',      'merchants/channel/bulk',                         'MerchantController@updateChannelForMultipleMerchants'              ],
         'merchants_update_bank_account'            => ['put',      'merchants/bank_account/bulk',                    'MerchantController@updateBankAccountForMultipleMerchants'          ],
         'merchant_update_fraud_type'               => ['post',     'merchant/update_fraud_type',                     'MerchantController@updateMerchantFraudType'                        ],
@@ -3351,6 +3352,9 @@ class Route
         // payment analytics cron creates a new partition and drops oldest partition, runs daily
         'payment_analytics_partition_cron',
         'payout_links_batch_process',
+
+        //merchant action cron sends the notifications to the merchants which are suspended and tagged
+        'merchant_action_notification_cron'
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -9020,6 +9024,7 @@ class Route
             'p2p_retrieve_banks_cron',
             'payment_analytics_partition_cron',
             'banking_account_service_cron_routes',
+            'merchant_action_notification_cron',
         ],
 
         'subscriptions' => [

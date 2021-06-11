@@ -2131,4 +2131,11 @@ class MerchantController extends Controller
 
         return $this->service()->fireHubspotEventFromDashboard($input);
     }
+
+    public function handleMerchantActionNotificationCron()
+    {
+        $response = $this->service()->handleMerchantActionNotificationCron();
+
+        return ApiResponse::json($response);
+    }
 }

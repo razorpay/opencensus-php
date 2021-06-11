@@ -8281,4 +8281,87 @@ return [
             ],
         ],
     ],
+
+    'testMerchantActionNotificationCronFOH'  =>  [
+        'request'       => [
+            'url'     => '/merchants/action/notification',
+            'method'  => 'POST',
+            'content' => [],
+            'server'  => [
+                'Content-Type'=>' application/json'
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'success' => true
+            ],
+        ],
+    ],
+
+    'testMerchantActionNotificationCronSuspend'  =>  [
+        'request'       => [
+            'url'     => '/merchants/action/notification',
+            'method'  => 'POST',
+            'content' => [],
+            'server'  => [
+                'Content-Type'=>' application/json'
+            ],
+        ],
+        'response'    => [
+            'content' => [
+                'success' => true
+            ],
+        ],
+    ],
+
+    'testEditBulkMerchantActionCronFOH' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'url'     => '/merchants/bulk',
+            'content' => [
+                'merchant_ids' => ['10000000000044'],
+                'action'       => 'hold_funds',
+            ],
+            'server'  => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'total'     => 1,
+                'success'   => 1,
+                'failed'    => 0,
+                'failedIds' => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testEditBulkMerchantActionCronSuspend' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'url'     => '/merchants/bulk',
+            'content' => [
+                'merchant_ids' => ['10000000000044'],
+                'action'       => 'suspend',
+            ],
+            'server'  => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'HTTP_X-Dashboard' => 'true',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'total'     => 1,
+                'success'   => 1,
+                'failed'    => 0,
+                'failedIds' => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
 ];

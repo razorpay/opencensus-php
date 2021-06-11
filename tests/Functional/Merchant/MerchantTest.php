@@ -92,6 +92,7 @@ use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
 use RZP\Mail\InstrumentRequest\StatusNotify as StatusNotifyMail;
 use RZP\Exception\GatewayErrorException;
 use RZP\Exception\GatewayTimeoutException;
+use RZP\Models\Merchant\Core as MerchantCore;
 
 use function Clue\StreamFilter\fun;
 use function foo\func;
@@ -10431,5 +10432,92 @@ class MerchantTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->startTest();
+    }
+
+    public function testEditBulkMerchantActionCronFOH()
+    {
+        $this->createMerchant([
+            'id'    => '10000000000044',
+            'email' => 'test1@razorpay.com',
+        ]);
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('live');
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000044');
+
+        $this->assertEquals(1, $merchant['hold_funds']);
+        $merchants = (new Merchant\Repository)->fetchMerchantsWithTag(Merchant\Constants::MERCHANT_RISK_FOH_CRON_TAG);
+        $this->assertCount(1, $merchants, 'array empty'.$merchants);
+        $this->assertEquals($merchant->getId(), $merchants[0]->getId(), 'id not matching'.$merchants[0]);
+    }
+
+    public function testEditBulkMerchantActionCronSuspend()
+    {
+        $this->createMerchant([
+            'id'    => '10000000000044',
+            'email' => 'test1@razorpay.com',
+        ]);
+
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => 'edit_merchant_suspend_bulk']);
+
+        $role->permissions()->attach($perm->getId());
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000044');
+
+        $this->assertNotNull($merchant['suspended_at']);
+
+        $merchants = (new Merchant\Repository)->fetchMerchantsWithTag(Merchant\Constants::MERCHANT_RISK_SUSPEND_CRON_TAG);
+        $this->assertCount(1, $merchants, 'array empty'.$merchants);
+        $this->assertEquals($merchant->getId(), $merchants[0]->getId(), 'id not matching'.$merchants[0]);
+    }
+
+    public function testMerchantActionNotificationCronFOH()
+    {
+        $this->createMerchant([
+            'id'    => '10000000000044',
+            'email' => 'test1@razorpay.com',
+        ]);
+        $merchant = $this->getDbEntityById('merchant', '10000000000044');
+        (new MerchantCore())->appendTag($merchant, Merchant\Constants::MERCHANT_RISK_FOH_CRON_TAG);
+
+        $merchants = (new Merchant\Repository)->fetchMerchantsWithTag(Merchant\Constants::MERCHANT_RISK_FOH_CRON_TAG);
+        $this->assertCount(1, $merchants);
+
+        $this->ba->cronAuth();
+        $this->startTest();
+
+        $merchants = (new Merchant\Repository)->fetchMerchantsWithTag(Merchant\Constants::MERCHANT_RISK_FOH_CRON_TAG);
+        $this->assertCount(0, $merchants);
+    }
+
+    public function testMerchantActionNotificationCronSuspend()
+    {
+        $this->createMerchant([
+            'id'    => '10000000000044',
+            'email' => 'test1@razorpay.com',
+        ]);
+        $merchant = $this->getDbEntityById('merchant', '10000000000044');
+        (new MerchantCore())->appendTag($merchant, Merchant\Constants::MERCHANT_RISK_SUSPEND_CRON_TAG);
+
+        $merchants = (new Merchant\Repository)->fetchMerchantsWithTag(Merchant\Constants::MERCHANT_RISK_SUSPEND_CRON_TAG);
+        $this->assertCount(1, $merchants);
+
+        $this->ba->cronAuth();
+        $this->startTest();
+
+        $merchants = (new Merchant\Repository)->fetchMerchantsWithTag(Merchant\Constants::MERCHANT_RISK_SUSPEND_CRON_TAG);
+        $this->assertCount(0, $merchants);
     }
 }

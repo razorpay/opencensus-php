@@ -22,6 +22,7 @@ use RZP\Models\Partner\Activation;
 use RZP\Models\Base\QueryCache\CacheQueries;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Constants\Entity as E;
 
 class Repository extends Base\Repository
 {
@@ -434,6 +435,17 @@ class Repository extends Base\Repository
                     ->withAnyTag($tag)
                     ->whereNull(Entity::SUSPENDED_AT)
                     ->get();
+    }
+
+    public function fetchMerchantsWithTag($tagName)
+    {
+        $tagsTable = 'tagging_tagged';
+        return $this->newQuery()
+            ->select(Table::MERCHANT.'.*')
+            ->join($tagsTable, $tagsTable . '.taggable_id', Table::MERCHANT.'.id')
+            ->where($tagsTable . '.taggable_type', '=', E::MERCHANT)
+            ->where($tagsTable . '.tag_name', '=', $tagName)
+            ->get();
     }
 
     public function findByAccountIdAndParent(

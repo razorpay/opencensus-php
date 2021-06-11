@@ -517,6 +517,11 @@ class Service extends Base\Service
             $this->core()->toggleMerchantHoldInNewSettlementService($merchant, $action, Mode::LIVE);
 
             $this->core()->toggleMerchantHoldInNewSettlementService($merchant, $action, Mode::TEST);
+
+            if($action === Merchant\Action::RELEASE_FUNDS)
+            {
+                (new MerchantActionNotification())->removeNotificationTag($merchant, $action);
+            }
         }
 
         if (empty($input[Entity::GROUPS]) === false)
@@ -2100,6 +2105,8 @@ class Service extends Base\Service
                 {
                     $this->action($merchantId, $input,false);
                 }
+
+                (new MerchantActionNotification())->updateNotificationTag($merchantId,$input);
 
                 $successCount++;
             }
@@ -6157,6 +6164,13 @@ class Service extends Base\Service
                 'merchant_email' => $merchantEmail,
                 'payload'        => $input
             ]);
+
+        return ['success' => true];
+    }
+
+    public function handleMerchantActionNotificationCron(): array
+    {
+        (new MerchantActionNotification())->handleMerchantActionNotificationCron();
 
         return ['success' => true];
     }

@@ -1069,17 +1069,13 @@ class Core extends Base\Core
         {
             $this->addMerchantToSettlementBucketOnFundsRelease($merchant);
         }
-
-        if ($action === Constants::SUSPEND)
+        else if ($action === Constants::SUSPEND)
         {
             $this->removeMerchantEmailToMailingList($merchant);
         }
-        else
+        else if ($action === Constants::UNSUSPEND)
         {
-            if ($action === Constants::UNSUSPEND)
-            {
-                $this->addMerchantEmailToMailingList($merchant);
-            }
+            $this->addMerchantEmailToMailingList($merchant);
         }
 
         // pipe to slack if the action is defined
@@ -1087,6 +1083,9 @@ class Core extends Base\Core
         {
             $this->logActionToSlack($merchant, $action);
         }
+
+        //need to remove notification if added through bulk update
+        (new MerchantActionNotification())->removeNotificationTag($merchant, $action);
 
         return $merchant;
     }
