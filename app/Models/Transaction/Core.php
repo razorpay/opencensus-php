@@ -1063,7 +1063,27 @@ class Core extends Base\Core
 
     public function updateMerchantBalance(Transaction\Entity $txn, int $negativeLimit = 0)
     {
+        $this->trace->info(
+            TraceCode::PAYMENT_TRANSFER_BEFORE_MERCHANT_BALANCE,
+            [
+                'merchant_id'       => $txn->getMerchantId(),
+                'transaction_id'    => $txn->getId(),
+                'payment_id'        => $txn->getEntityId(),
+                'method_name'       => 'updateMerchantBalance',
+            ]);
+
+        $startTime = microtime(true);
+
         $merchantBalance = $this->getBalanceLockForUpdate($txn->getMerchantId());
+
+        $this->trace->info(
+            TraceCode::PAYMENT_TRANSFER_AFTER_MERCHANT_BALANCE,
+            [   'merchant_id'   => $txn->getMerchantId(),
+                'transaction_id'=> $txn->getId(),
+                'payment_id'    => $txn->getEntityId(),
+                'method_name'   => 'updateMerchantBalance',
+                'time_taken'    => (microtime(true) - $startTime) * 1000
+            ]);
 
         $txn->accountBalance()->associate($merchantBalance);
 
@@ -1075,9 +1095,11 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::MERCHANT_BALANCE_DATA,
             [
-                'new_balance' => $newBalance,
-                'old_balance' => $oldBalance,
-                'method'      => 'updateMerchantBalance',
+                'transaction_id'    => $txn->getId(),
+                'payment_id'        =>$txn->getEntityId(),
+                'new_balance'       => $newBalance,
+                'old_balance'       => $oldBalance,
+                'method'            => 'updateMerchantBalance',
             ]);
 
         $this->repo->balance->updateBalance($merchantBalance);
@@ -1321,9 +1343,15 @@ class Core extends Base\Core
     {
         if ($this->merchantBalance !== null)
         {
+            $this->trace->info(
+                TraceCode::PAYMENT_TRANSFER_RETURNING_MERCHANT_BALANCE_ATTRIBUTE,
+                [
+                    'merchant_id' => $merchantId,
+                    'balance'     => $this->merchantBalance->getBalance(),
+                ]);
+
             return $this->merchantBalance;
         }
-
         $merchantBalance = $this->repo->balance->getBalanceLockForUpdate($merchantId);
 
         $this->merchantBalance = $merchantBalance;
@@ -1502,7 +1530,27 @@ class Core extends Base\Core
     {
         $merchant = $transaction->merchant;
 
+        $this->trace->info(
+            TraceCode::PAYMENT_TRANSFER_BEFORE_MERCHANT_BALANCE,
+            [
+                'merchant_id'       => $transaction->getMerchantId(),
+                'transaction_id'    => $transaction->getId(),
+                'payment_id'        => $transaction->getEntityId(),
+                'method_name'       => "calculateTransferFees"
+            ]);
+
+        $startTime = microtime(true);
+
         $merchantBalance = $this->getBalanceLockForUpdate($merchant->getId());
+
+        $this->trace->info(
+            TraceCode::PAYMENT_TRANSFER_AFTER_MERCHANT_BALANCE,
+            [   'merchant_id'   => $transaction->getMerchantId(),
+                'transaction_id'=> $transaction->getId(),
+                'payment_id'    => $transaction->getEntityId(),
+                'method_name'       => "calculateTransferFees",
+                'time_taken'    => (microtime(true) - $startTime) * 1000
+            ]);
 
         list($amountCredits, $feeCredits) = $this->getMerchantCredits($merchantBalance);
 

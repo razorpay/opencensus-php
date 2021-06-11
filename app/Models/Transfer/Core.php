@@ -618,6 +618,12 @@ class Core extends Base\Core
      */
     protected function PaymentTransferSync(Base\Entity $source, array $input, Merchant\Entity $merchant, Base\PublicEntity $to, ?Base\Entity $originPayment): Entity
     {
+        $this->trace->info(
+            TraceCode::PAYMENT_TRANSFER_SYNC_START,
+            [
+                'merchant_id' => $merchant->getId()
+            ]);
+
         $transfer = $this->createTransfer($source, $to, $input, $merchant);
 
         // Extract Notes from the input and sync it to payment entity.
