@@ -17,6 +17,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
 use RZP\Models\Adjustment;
 use RZP\Constants\Timezone;
+use RZP\Base\RuntimeManager;
 use RZP\Constants\Entity as E;
 use RZP\Jobs\Settlement\Create;
 use RZP\Models\Merchant\Balance;
@@ -1209,6 +1210,11 @@ class Service extends Base\Service
         $from = Carbon::now(Timezone::IST)->subMonth()->getTimestamp();
 
         $to  = Carbon::now(Timezone::IST)->getTimestamp();
+
+        // increasing allowed system limit
+        RuntimeManager::setMemoryLimit('1024M');
+
+        RuntimeManager::setTimeLimit(3600);
 
         $startTime = microtime(true);
 
