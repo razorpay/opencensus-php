@@ -4812,6 +4812,32 @@ trait Authorize
             $saveMethodInput[Token\Entity::METHOD] = Payment\Method::EMANDATE;
 
             $saveMethodInput[Token\Entity::BANK] = $payment->getBank();
+
+            $saveMethodInput[Token\Entity::AUTH_TYPE] = $payment->getAuthType();
+
+            $saveMethodInput[Token\Entity::MAX_AMOUNT] =
+                $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::MAX_AMOUNT];
+
+            $saveMethodInput[Token\Entity::ACCOUNT_NUMBER] =
+                $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::ACCOUNT_NUMBER] ?? null;
+
+            $saveMethodInput[Token\Entity::ACCOUNT_TYPE] =
+                $input[Payment\Entity::BANK_ACCOUNT][Token\Entity::ACCOUNT_TYPE] ?? null;
+
+            $saveMethodInput[Token\Entity::BENEFICIARY_NAME] =
+                $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::NAME] ?? null;
+
+            $saveMethodInput[Token\Entity::IFSC] =
+                $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::IFSC] ?? null;
+
+            $saveMethodInput[Token\Entity::AADHAAR_NUMBER] =
+                $input[Payment\Entity::AADHAAR]['number'] ?? null;
+
+            $saveMethodInput[Token\Entity::AADHAAR_VID] =
+                $input[Payment\Entity::AADHAAR]['vid'] ?? null;
+
+            $saveMethodInput[Token\Entity::EXPIRED_AT] =
+                $input[Payment\Entity::RECURRING_TOKEN][Payment\Entity::EXPIRE_BY];
         }
 
         $token = (new Token\Core)->createForSubscription(
