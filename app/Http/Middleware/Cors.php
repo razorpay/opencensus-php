@@ -50,6 +50,7 @@ class Cors
                 Headers::CSRF_TOKEN,
                 'Content-Type',
                 'X-Report-Type',
+                'x-recaptcha-mode',
             ];
 
             $headers = [
