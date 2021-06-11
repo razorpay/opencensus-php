@@ -50,7 +50,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
   const { data, documentUpload, documentDelete, postData } = useActivation();
   const { user } = useApp();
   const documents = data.documents;
-  const bankAndCompanyDetails = data.bank_and_company_details;
+  const businessDetails = data.business_details;
 
   const hasGSTIN = useActivationFormState((state) => state.has_gstin);
   const bizCatSubCatPair = getBizCatSubCatPair(data).join('-');
@@ -208,7 +208,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
       ) : null}
       <Formik
         initialValues={{
-          gstin: bankAndCompanyDetails.gstin.value,
+          gstin: businessDetails.gstin.value,
           aadhar_front: getFormikInitialValues(documents.aadhar_front),
           aadhar_back: getFormikInitialValues(documents.aadhar_back),
           passport_front: getFormikInitialValues(documents.passport_front),
