@@ -229,6 +229,13 @@ export default class InvoicesNewContainer extends Component {
         data.comment = data.comment || '';
         data.terms = data.terms || '';
 
+        //removing ids from line_items
+        (data.line_items || []).map(line_item => {
+          if(line_item.id) {
+            delete line_item.id;
+          }
+        });
+
         return data;
       })
       .catch((err) => {
