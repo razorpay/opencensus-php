@@ -2170,6 +2170,8 @@ class ErrorCode
     // XPayroll
     const BAD_REQUEST_TO_XPAYROLL_SERVICE                                           = 'BAD_REQUEST_TO_XPAYROLL_SERVICE';
 
+    const BAD_REQUEST_PAYMENT_CUSTOMER_DROPPED_OFF                                  = 'BAD_REQUEST_PAYMENT_CUSTOMER_DROPPED_OFF';
+
     static function getConstants()
     {
         $oClass = new \ReflectionClass(__CLASS__);
