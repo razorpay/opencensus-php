@@ -828,6 +828,7 @@ export default class AmountWithdraw extends React.Component {
       isAutomatedTagPulsating,
       latestRepaymentDone,
       isRepaymentLoading,
+      withdraw_errors,
     } = this.state;
     const {
       user,
@@ -842,6 +843,7 @@ export default class AmountWithdraw extends React.Component {
     const repayableAmount = getFormattedAmountNew((principle + interest) * 100, true);
     const showFirstWithdrawalOffer = this.getFirstWithdrawalOffer();
     const withdrawalConfigStatus = this.props.withdrawalConfigurationDetails.data.status;
+    const withdrawalInputHasError = withdraw_errors.length > 0;
 
     return (
       <div className="withdrawals__action-container card flex">
@@ -933,7 +935,7 @@ export default class AmountWithdraw extends React.Component {
               <div class="full-width no-margin" style={{ position: 'absolute' }}>
                 {this.getWithdrawalForm(withdrawalAmount)}
               </div>
-              {hasDueDateAndWithdrawnAmount && (
+              {hasDueDateAndWithdrawnAmount && !withdrawalInputHasError && (
                 <div class="repayable-amount-hint">
                   <strong>{repayableAmount}</strong>
                   <span class="repayable-helper-text">&nbsp; will be the repayable amount</span>
