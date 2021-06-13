@@ -1,7 +1,13 @@
 import React, { useState, useRef } from 'react';
+import styled from 'styled-components';
+import { getColor } from '@razorpay/blade-old/src/_helpers/theme';
 import Text from '@razorpay/blade-old/src/atoms/Text';
+import View from '@razorpay/blade-old/src/atoms/View';
+import Space from '@razorpay/blade-old/src/atoms/Space';
+import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import { Select, Option } from 'v2/components/Select';
 import { FormikErrors } from 'formik';
+import Icon from '@razorpay/blade-old/src/atoms/Icon';
 import { debounce } from '../../services/utils';
 import useBusinessName from '../../hooks/useBusinessName';
 
@@ -13,12 +19,22 @@ interface NameData {
 
 interface BusinessNamePropsT {
   errorText?: string | false | string[] | FormikErrors<any> | FormikErrors<any>[] | undefined;
-  value: string;
+  businessNameValue: string;
   onModalClosed: (value: NameData) => void;
 }
 
-const BusinessName: React.FC<BusinessNamePropsT> = ({ value = '', onModalClosed, errorText }) => {
-  const [inputValue, setInputValue] = useState('');
+const StyledSeparator = styled(View)`
+  height: 1px;
+  width: 100%;
+  background-color: ${({ theme }) => getColor(theme, 'shade.920')};
+`;
+
+const BusinessName: React.FC<BusinessNamePropsT> = ({
+  businessNameValue = '',
+  onModalClosed,
+  errorText,
+}) => {
+  const [inputValue, setInputValue] = useState(businessNameValue);
   const businessNameData = useRef({});
 
   const onInputChange = debounce((val) => {
@@ -30,9 +46,90 @@ const BusinessName: React.FC<BusinessNamePropsT> = ({ value = '', onModalClosed,
 
   const onChange = (val) => {
     const selectedBusinessNameData = businessNamesData?.results.find(
-      (_) => _.identity_number === val,
+      ({ company_name }) => company_name === val,
     );
-    businessNameData.current = selectedBusinessNameData;
+    if (selectedBusinessNameData) {
+      businessNameData.current = selectedBusinessNameData;
+    }
+    onModalClosed(businessNameData.current);
+  };
+
+  const getOptions = () => {
+    console.log(businessNamesData);
+    if (businessNamesData?.results?.length) {
+      return businessNamesData.results.map(({ identity_number, company_name }) => (
+        <Option key={identity_number} label={company_name} value={company_name}>
+          <Text size="medium" color="shade.970">
+            {company_name}
+          </Text>
+        </Option>
+      ));
+    }
+
+    if (inputValue.length >= 3) {
+      if (businessNameValue === inputValue) {
+        return (
+          <Option key={0} label={businessNameValue} value={businessNameValue}>
+            <Text size="medium" color="shade.970">
+              {businessNameValue}
+            </Text>
+          </Option>
+        );
+      } else {
+        return (
+          <>
+            <Option key="1" value={inputValue} label={inputValue}>
+              <Flex justifyContent="space-between">
+                <View>
+                  <Text size="medium" color="shade.970">
+                    {`Add '${inputValue}'`}
+                  </Text>
+                  <Text align="center">
+                    <Icon name="chevronRight" />
+                  </Text>
+                </View>
+              </Flex>
+              <Space margin={[1, 0, 1, 0]}>
+                <StyledSeparator />
+              </Space>
+            </Option>
+            <Option key="0" value="none" label="none" disabled={true}>
+              <Space margin={[6, 0, 2, 0]}>
+                <View>
+                  <Text align="center">
+                    <Icon name="search" />
+                  </Text>
+                  <Space margin={[1, 0, 0, 0]}>
+                    <Text align="center" size="small">
+                      <View>No match found. Don’t worry you can</View>
+                      <View>add it manually</View>
+                    </Text>
+                  </Space>
+                </View>
+              </Space>
+            </Option>
+          </>
+        );
+      }
+    }
+
+    return (
+      <Option key="0" value="none" label="none" disabled={true}>
+        <Space margin={[6, 0, 2, 0]}>
+          <View>
+            <Text align="center">
+              <Icon name="search" />
+            </Text>
+            <Space margin={[1, 0, 0, 0]}>
+              <Text align="center" size="small">
+                <View>Start typing your business name and we’ll</View>
+                <View>search it in the government database</View>
+              </Text>
+            </Space>
+          </View>
+        </Space>
+      </Option>
+    );
   };
 
   return (
@@ -43,27 +140,15 @@ const BusinessName: React.FC<BusinessNamePropsT> = ({ value = '', onModalClosed,
       inputPlaceholder="Search Business Name"
       errorText={errorText}
       loading={businessNamesStatus === 'loading'}
-      value={value}
+      value={businessNameValue}
       helpText="As mentioned in the PAN"
       onChange={onChange}
       onInputChange={onInputChange}
       disabled={false}
       filterOptions={false}
       bottomSheetHeaderText="SELECT BUSINESS NAME"
-      showInputValueInSelectedLabel
-      onModalClosed={() => {
-        onModalClosed(businessNameData.current);
-      }}
     >
-      {businessNamesData?.results?.length
-        ? businessNamesData.results.map(({ identity_number, company_name }) => (
-            <Option key={identity_number} label={company_name} value={identity_number}>
-              <Text size="medium" color="shade.970">
-                {company_name}
-              </Text>
-            </Option>
-          ))
-        : null}
+      {getOptions()}
     </Select>
   );
 };

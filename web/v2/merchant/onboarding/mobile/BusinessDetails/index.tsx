@@ -339,7 +339,7 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                 <Space margin={[0, 0, 0, 0]}>
                   <View>
                     <BusinessName
-                      value={formikProps.values.business_name}
+                      businessNameValue={formikProps.values.business_name}
                       errorText={
                         formikProps.touched.business_name && formikProps.errors.business_name
                       }
