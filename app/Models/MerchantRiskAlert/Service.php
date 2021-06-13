@@ -85,7 +85,29 @@ class Service extends Base\Service
                 $this->repo->saveOrFail($merchant);
             });
 
+            // get current opened workflow
+            $workflowActions = (new Action\Core)->fetchOpenActionOnEntityOperation(
+                $merchant->getId(), Constants::MERCHANT_DETAIL_KEY, Permission\Name::MERCHANT_RISK_ALERT_FOH);
+
+            if ($workflowActions->isNotEmpty() === false)
+            {
+                return;
+            }
+
+            $workflowAction = $workflowActions->first();
+
+            $fdTicketId = $this->getFdTicketIfApplicable($workflowAction, $input);
+
+            if (is_null($fdTicketId) === false)
+            {
+                $input[Constants::FD_TICKET_ID_KEY] = $fdTicketId;
+            }
+
             $this->sendNotificationsIfApplicable($merchant, $input, Constants::FOH_CONFIRMATION_NOTIFICATION);
+
+            // remove website checker scheduled reminder
+            // firing this action irrespective of the trigger category
+            $this->app['cache']->connection()->hdel(Constants::REDIS_WESBITE_CHECKER_REMINDER_MAP_NAME, $merchantId);
         }
     }
 
@@ -153,7 +175,18 @@ class Service extends Base\Service
         }
         catch (Exception\EarlyWorkflowResponse $ex)
         {
-            $this->sendNotificationsIfApplicable($merchant, $input, Constants::FOH_NC_NOTIFICATION);
+            $workflowActionData = json_decode($ex->getMessage(), true);
+
+            $workflowActionId = $workflowActionData['id'];
+
+            $fdTicketId = $this->sendNotificationsIfApplicable($merchant, $input, Constants::FOH_NC_NOTIFICATION);
+
+            $additionalData = [
+                Constants::FD_TICKET_ID_KEY          => $fdTicketId,
+                Constants::WORKFLOW_ACTION_INPUT_KEY => $input,
+            ];
+
+            $this->postProcessOnSuccessfulWfActionCreation($workflowActionId, $additionalData);
 
             throw $ex;
         }
@@ -214,7 +247,7 @@ class Service extends Base\Service
         }
     }
 
-    private function sendNotificationsIfApplicable(Merchant\Entity $merchant, array $input, string $notificationType)
+    public function sendNotificationsIfApplicable(Merchant\Entity $merchant, array $input, string $notificationType)
     {
         $rasTriggerReason = $this->getRasTriggerReasonFromPayload($input);
 
@@ -233,9 +266,9 @@ class Service extends Base\Service
 
         $this->sendWhatsappMessage($merchant, $whatsAppContent);
 
-        $emailContent = $this->getEmailData($merchant, $notificationType, $rasTriggerReason);
+        $emailContent = $this->getEmailData($merchant, $notificationType, $rasTriggerReason, $input);
 
-        $this->sendEmail($merchant, $emailContent);
+        return $this->sendEmail($merchant, $emailContent, $input);
     }
 
     private function getMaker()
@@ -319,41 +352,52 @@ class Service extends Base\Service
         );
     }
 
-    private function sendEmail(Merchant\Entity $merchant, array $content)
+    private function sendEmail(Merchant\Entity $merchant, array $content, array $input)
     {
-        list($subject, $viewTemplate, $data, $fdSubcategory, $notificationType, $rasTriggerReason) = $content;
-
-        $merchantEmail = $merchant->merchantDetail->getContactEmail();
-
-        $mailSubject = (new TemplateEngine)->render($subject, $data);
-
-        $mailBody = View::make($viewTemplate, $data)->render();
-
-        $fdRasReasonTag = sprintf(Constants::FD_TAG_RAS_REASON_FOH, strtoupper($rasTriggerReason));
-
-        $fdTags = [Constants::FD_TAG_RAS_FOH, $fdRasReasonTag];
-
         try
         {
-            $fdOutboundEmailRequest = [
-                'subject'         => $mailSubject,
-                'description'     => $mailBody,
-                'status'          => 6,
-                'type'            => 'Question',
-                'priority'        => 1,
-                'email'           => $merchantEmail,
-                'tags'            => $fdTags,
-                'group_id'        => (int) $this->freshdeskConfig['group_ids']['merchant_risk'],
-                'email_config_id' => (int) $this->freshdeskConfig['email_config_ids']['risk_notification'],
-                'custom_fields' => [
-                    'cf_ticket_queue' => 'Merchant',
-                    'cf_category'     => 'Risk Report_Merchant',
-                    'cf_subcategory'  => $fdSubcategory,
-                    'cf_product'      => 'Payment Gateway',
-                ],
-            ];
+            list($subject, $viewTemplate, $data, $fdSubcategory, $notificationType, $rasTriggerReason) = $content;
 
-            $this->app['freshdesk_client']->sendOutboundEmail($fdOutboundEmailRequest);
+            $merchantEmail = $merchant->merchantDetail->getContactEmail();
+
+            $mailSubject = (new TemplateEngine)->render($subject, $data);
+
+            $mailBody = View::make($viewTemplate, $data)->render();
+
+            $fdRasReasonTag = sprintf(Constants::FD_TAG_RAS_REASON_FOH, strtoupper($rasTriggerReason));
+
+            $fdTags = [Constants::FD_TAG_RAS_FOH, $fdRasReasonTag];
+
+            $fdTicketId = $input[Constants::FD_TICKET_ID_KEY] ?? null;
+
+            if (is_null($fdTicketId) === true)
+            {
+                $fdOutboundEmailRequest = [
+                    'subject'         => $mailSubject,
+                    'description'     => $mailBody,
+                    'status'          => 6,
+                    'type'            => 'Question',
+                    'priority'        => 1,
+                    'email'           => $merchantEmail,
+                    'tags'            => $fdTags,
+                    'group_id'        => (int) $this->freshdeskConfig['group_ids']['merchant_risk'],
+                    'email_config_id' => (int) $this->freshdeskConfig['email_config_ids']['risk_notification'],
+                    'custom_fields' => [
+                        'cf_ticket_queue' => 'Merchant',
+                        'cf_category'     => 'Risk Report_Merchant',
+                        'cf_subcategory'  => $fdSubcategory,
+                        'cf_product'      => 'Payment Gateway',
+                    ],
+                ];
+
+                $response = $this->app['freshdesk_client']->sendOutboundEmail($fdOutboundEmailRequest);
+
+                $fdTicketId = $response['id'] ?? null;
+            }
+            else
+            {
+                $this->app['freshdesk_client']->postTicketReply($fdTicketId, ['body' => $mailBody]);
+            }
 
             $this->app['trace']->info(
                 TraceCode::MERCHANT_RISK_ALERT_FOH_EMAIL_SENT,
@@ -362,6 +406,8 @@ class Service extends Base\Service
                     'notification_type'  => $notificationType,
                     'ras_trigger_reason' => $rasTriggerReason,
                 ]);
+
+            return $fdTicketId;
         }
         catch (\Throwable $e)
         {
@@ -382,6 +428,9 @@ class Service extends Base\Service
         $merchantId = $action->getEntityId();
 
         $this->app['merchant_risk_alerts']->notifyNonRiskyMerchant($merchantId);
+
+        // remove website checker scheduled reminder
+        $this->app['cache']->connection()->hdel(Constants::REDIS_WESBITE_CHECKER_REMINDER_MAP_NAME, $merchantId);
     }
 
     private function getWorkflowTagsFromInput(array $input)
@@ -462,7 +511,8 @@ class Service extends Base\Service
         return $details;
     }
 
-    private function getEmailData(Merchant\Entity $merchant, string $notificationType, string $rasTriggerReason)
+    private function getEmailData(
+        Merchant\Entity $merchant, string $notificationType, string $rasTriggerReason, array $input)
     {
         $subject       = '';
         $viewTemplate  = '';
@@ -485,7 +535,7 @@ class Service extends Base\Service
             $data = [
                 'merchant_id'   => $merchant->getId(),
                 'merchant_name' => $merchant->getName(),
-                'days_to_foh'   => 7,
+                'days_to_foh'   => $input['days_to_foh'] ?? Constants::WEBSITE_CHECKER_NC_DAYS_TO_FOH,
             ];
         }
         else
@@ -640,5 +690,72 @@ class Service extends Base\Service
         }
 
         return true;
+    }
+
+    private function postProcessOnSuccessfulWfActionCreation(string $workflowActionId, array $additionalData)
+    {
+        try
+        {
+            $workflowActionInput = $additionalData[Constants::WORKFLOW_ACTION_INPUT_KEY];
+
+            $rasTriggerReason = $this->getRasTriggerReasonFromPayload($workflowActionInput);
+
+            if ($rasTriggerReason === Constants::RAS_TRIGGER_REASON_WEBSITE_CHECKER)
+            {
+                $fdTicketId = $additionalData[Constants::FD_TICKET_ID_KEY] ?? null;
+
+                $workflowActionId = Action\Entity::verifyIdAndStripSign($workflowActionId);
+
+                $workflowAction = $this->repo->workflow_action->findOrFailPublic($workflowActionId);
+                
+                if (is_null($fdTicketId) === false)
+                {
+                    $fdTag = sprintf(Constants::RAS_FD_TICKET_ID_TAG_FMT, $rasTriggerReason, $fdTicketId);
+
+                    $workflowAction->tag($fdTag);
+                }
+
+                $this->app['cache']->connection()->hset(
+                    Constants::REDIS_WESBITE_CHECKER_REMINDER_MAP_NAME, $workflowAction->getEntityId(), now()->timestamp);
+            }
+        }
+        catch(\Throwable $ex)
+        {
+            $this->app['trace']->traceException($e,
+                Trace::CRITICAL,
+                TraceCode::MERCHANT_RISK_ALERT_FOH_REMINDER_ENQUEUE_FAILED,
+                [
+                    'workflow_action_id' => $workflowActionId,
+                ]
+            );
+        }
+    }
+
+    private function getFdTicketIfApplicable(Action\Entity $workflowAction, array $input)
+    {
+        $fdTicketId = null;
+
+        $rasTriggerReason = $this->getRasTriggerReasonFromPayload($input);
+
+        $fdTicketTagPrefix = sprintf(Constants::RAS_FD_TICKET_TAG_PREFIX, $rasTriggerReason);
+
+        foreach ($workflowAction->tagNames() as $tagName)
+        {
+            $tagName = strtolower($tagName);
+
+            if (starts_with($tagName, $fdTicketTagPrefix) === true)
+            {
+                $fdTicketId = substr($tagName, strlen($fdTicketTagPrefix));
+
+                break;
+            }
+        }
+
+        if (empty($fdTicketId) === true)
+        {
+            $fdTicketId = $input[Constants::FD_TICKET_ID_KEY] ?? null;
+        }
+
+        return $fdTicketId;
     }
 }

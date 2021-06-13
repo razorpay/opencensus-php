@@ -1,0 +1,160 @@
+<?php
+
+
+namespace Functional\Merchant;
+
+
+use Queue;
+use RZP\Jobs\RiskWebsiteChecker;
+use RZP\Models\Workflow\Action\Repository as WorkflowActionRepository;
+use RZP\Models\Workflow\Action\Entity as WorkflowActionEntity;
+use RZP\Models\Merchant\Fraud\WebsiteChecker\Constants;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Services\FreshdeskTicketClient;
+use RZP\Tests\Functional\TestCase;
+
+class WebsiteCheckerTest extends TestCase
+{
+    use RequestResponseFlowTrait;
+
+    public function setUp(): void
+    {
+        $this->testDataFilePath = __DIR__ . '/helpers/WebsiteCheckerTestData.php';
+
+        parent::setUp();
+
+        $this->fixtures->on('live')->create('org_hostname', [
+            'org_id' => '100000razorpay',
+            'hostname' => 'dashboard.razorpay.in'
+        ]);
+
+        $this->ba->appAuth();
+    }
+
+    public function testLive()
+    {
+        $this->ba->batchAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testNotLive()
+    {
+        $this->ba->batchAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testManualReview()
+    {
+        $this->ba->batchAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testPeriodicCron()
+    {
+        $this->ba->cronAuth();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'hold_funds' => false,
+            'activated'  => true,
+            'activated_at' => now()->timestamp - 24*60*60,
+        ]);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchant->getId(),
+            'business_website' => 'https://razorpay.com'
+        ]);
+
+        $this->startTest();
+
+        $redisKey = $this->app['cache']->connection()->hget(Constants::REDIS_RETRY_MAP_NAME, $merchant->getId());
+
+        $this->assertNull($redisKey);
+    }
+
+    public function testPeriodicCronNotLive()
+    {
+        $this->ba->cronAuth();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'hold_funds' => false,
+            'activated'  => true,
+            'activated_at' => now()->timestamp - 24*60*60,
+        ]);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchant->getId(),
+            'business_website' => 'https://razorpay2.com'
+        ]);
+
+        $this->startTest();
+
+        $redisKey = $this->app['cache']->connection()->hget(Constants::REDIS_RETRY_MAP_NAME, $merchant->getId());
+
+        $this->assertNotNull($redisKey);
+    }
+
+    public function testRetryCron()
+    {
+        $this->ba->cronAuth();
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->app['cache']->connection()->hset(Constants::REDIS_RETRY_MAP_NAME, $merchant->getId(), now()->timestamp - Constants::RETRY_WAIT_SECONDS);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchant->getId(),
+            'business_website' => 'https://razorpay.com'
+        ]);
+
+        Queue::fake();
+
+        $this->startTest();
+
+        Queue::assertPushed(RiskWebsiteChecker::class);
+    }
+
+    public function testRetryCronNotLive()
+    {
+        $this->ba->cronAuth();
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->app['cache']->connection()->hset(Constants::REDIS_RETRY_MAP_NAME, $merchant->getId(), now()->timestamp - Constants::RETRY_WAIT_SECONDS);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchant->getId(),
+            'business_website' => 'https://razorpay2.com'
+        ]);
+
+        // todo: mock ras call
+
+        Queue::fake();
+
+        $this->startTest();
+
+        Queue::assertPushed(RiskWebsiteChecker::class);
+    }
+
+    public function testFreshdeskWebhook()
+    {
+        $this->ba->freshdeskWebhookAuth();
+
+        $merchant = $this->fixtures->create('merchant');
+
+        /** @var WorkflowActionEntity $workflowAction */
+        $workflowAction = $this->fixtures->create('workflow_action');
+        $workflowAction->tag(sprintf(Constants::FD_TICKET_ID_TAG_FMT, "test_fd_123"));
+
+        $this->app['cache']->connection()->hset(Constants::REDIS_REMINDER_MAP_NAME, $merchant->getId(), now()->timestamp - Constants::REMINDER_WAIT_SECONDS);
+
+        $this->startTest();
+
+        /** @var WorkflowActionEntity $workflowActionAfterRequest */
+        $workflowActionAfterRequest = (new WorkflowActionRepository())->find($workflowAction->getId());
+
+        $this->assertContains(ucfirst(Constants::MERCHANT_REPLIED_TAG), $workflowActionAfterRequest->tagNames());
+    }
+}

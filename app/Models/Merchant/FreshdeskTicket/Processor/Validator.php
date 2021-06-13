@@ -25,6 +25,10 @@ class Validator extends BaseValidator
         Entity::TICKET_DETAILS . '.' . Constants::FD_INSTANCE     => 'required|custom:fd_instance',
     ];
 
+    protected static $websiteCheckerReplyRules = [
+        Entity::TICKET_ID   => 'required',
+    ];
+
     protected static $notifyMerchantRules = [
         Entity::TICKET_ID             => 'required',
         Constants::NOTIFICATION_EVENT => 'required|custom:NotificationEvent',

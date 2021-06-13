@@ -49,4 +49,84 @@ return [
             ],
         ],
     ],
+    'testPeriodicCron' => [
+        'request'  => [
+            'url'     => '/merchant/website/checker/cron',
+            'method'  => 'post',
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ]
+        ],
+    ],
+    'testPeriodicCronNotLive' => [
+        'request'  => [
+            'url'     => '/merchant/website/checker/cron',
+            'method'  => 'post',
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ]
+        ],
+    ],
+    'testRetryCron' => [
+        'request'  => [
+            'url'     => '/merchant/website/checker/retry/cron',
+            'method'  => 'post',
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ]
+        ],
+    ],
+    'testRetryCronNotLive' => [
+        'request'  => [
+            'url'     => '/merchant/website/checker/retry/cron',
+            'method'  => 'post',
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ]
+        ],
+    ],
+    'testReminderCron' => [
+        'request'  => [
+            'url'     => '/merchant/website/checker/reminder/cron',
+            'method'  => 'post',
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ]
+        ],
+    ],
+    'testIgnoreReminderCron' => [
+        'request'  => [
+            'url'     => '/merchant/website/checker/reminder/cron',
+            'method'  => 'post',
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ]
+        ],
+    ],
+    'testFreshdeskWebhook' => [
+        'request'  => [
+            'url'     => '/fd/webhook/website_checker_reply',
+            'method'  => 'post',
+            'content' => [
+                'ticket_id' => 'test_fd_123',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ]
+        ],
+    ],
 ];

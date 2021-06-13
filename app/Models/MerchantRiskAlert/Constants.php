@@ -71,4 +71,16 @@ class Constants
     // FD RAS Tags
     const FD_TAG_RAS_FOH        = 'RAS_FOH';
     const FD_TAG_RAS_REASON_FOH = 'RAS_%s_FOH';
+
+    // Workflow fd tags
+    const RAS_FD_TICKET_TAG_PREFIX = '%s_fd_ticket_id_';
+    const RAS_FD_TICKET_ID_TAG_FMT = self::RAS_FD_TICKET_TAG_PREFIX . '%s';
+
+    const REDIS_WESBITE_CHECKER_REMINDER_MAP_NAME = 'risk:web_checker:reminder_map';
+
+    const WEBSITE_CHECKER_NC_DAYS_TO_FOH          = 7;
+    const WEBSITE_CHECKER_NC_REMINDER_DAYS_TO_FOH = 5;
+
+    const FD_TICKET_ID_KEY          = 'fd_ticket_id';
+    const WORKFLOW_ACTION_INPUT_KEY = 'workflow_action_input';
 }

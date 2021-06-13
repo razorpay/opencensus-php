@@ -1210,4 +1210,17 @@ class Repository extends Base\Repository
 
         return $query->orderBy($merchantIdColumn, 'asc')->get()->pluck(Entity::ID)->toArray();
     }
+
+    public function getMerchantListForWebsiteCheckerPeriodic()
+    {
+        $query = $this->newQuery()
+            ->leftJoin(Table::MERCHANT_DETAIL, Entity::ID, Detail\Entity::MERCHANT_ID)
+            ->select(Entity::ID)
+            ->where(Entity::HOLD_FUNDS, '=', 0)
+            ->where(Entity::ACTIVATED, '=', 1)
+            ->whereNotNull(Detail\Entity::BUSINESS_WEBSITE)
+            ->whereRaw('DATEDIFF(current_date(), from_unixtime(activated_at)) % 30 = 1');
+
+        return $query->get();
+    }
 }

@@ -33,4 +33,19 @@ class Service extends Base\Service
             'comment' => $comment,
         ];
     }
+
+    public function periodicCron(): array
+    {
+        return $this->core()->periodicCron();
+    }
+
+    public function retryCron(): array
+    {
+        return $this->core()->retryCron();
+    }
+
+    public function reminderCron(): array
+    {
+        return $this->core()->reminderCron();
+    }
 }

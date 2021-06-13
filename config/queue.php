@@ -368,6 +368,11 @@ return [
         'test'       => env('AWS_NOTIFY_RAS_TEST_QUEUE'),
         'live'       => env('AWS_NOTIFY_RAS_LIVE_QUEUE'),
     ],
+
+    'risk_website_checker' => [
+        'test'       => env('AWS_RISK_WEBSITE_CHECKER_TEST_QUEUE'),
+        'live'       => env('AWS_RISK_WEBSITE_CHECKER_LIVE_QUEUE'),
+    ],
     /*
     |--------------------------------------------------------------------------
     | Raw SQS Mappings

@@ -2125,6 +2125,33 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function websiteCheckerPeriodicCron()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_WEBSITE_CHECKER)->periodicCron($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function websiteCheckerRetryCron()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_WEBSITE_CHECKER)->retryCron($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function websiteCheckerReminderCron()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_WEBSITE_CHECKER)->reminderCron($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function fireHubspotEventFromDashboard()
     {
         $input = Request::all();
