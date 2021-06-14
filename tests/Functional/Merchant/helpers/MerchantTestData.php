@@ -8323,8 +8323,6 @@ return [
                 'action'       => 'hold_funds',
             ],
             'server'  => [
-                // Case: In sign-up case we will not have any other headers
-                // (eg. X-Dashboard-User-Email etc) from dashboard.
                 'HTTP_X-Dashboard' => 'true',
             ],
         ],
@@ -8348,8 +8346,6 @@ return [
                 'action'       => 'suspend',
             ],
             'server'  => [
-                // Case: In sign-up case we will not have any other headers
-                // (eg. X-Dashboard-User-Email etc) from dashboard.
                 'HTTP_X-Dashboard' => 'true',
             ],
         ],

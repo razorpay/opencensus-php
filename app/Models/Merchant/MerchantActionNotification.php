@@ -94,14 +94,13 @@ class MerchantActionNotification
         if(isset($input['attributes']))
         {
             $attributes = $input['attributes'];
-
-            if($attributes['hold_funds'] == 1 )
+            if(isset($attributes['hold_funds']))
             {
-                return Merchant\Action::HOLD_FUNDS;
-            }
-            else if($attributes['hold_funds'] == 0 )
-            {
-                return Merchant\Action::RELEASE_FUNDS;
+                if ($attributes['hold_funds'] == 1) {
+                    return Merchant\Action::HOLD_FUNDS;
+                } else if ($attributes['hold_funds'] == 0) {
+                    return Merchant\Action::RELEASE_FUNDS;
+                }
             }
             return null;
         }
