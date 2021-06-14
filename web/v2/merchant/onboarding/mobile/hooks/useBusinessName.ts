@@ -14,7 +14,6 @@ export default function useBusinessName(query: string): any {
       } else {
         const businessNames = await fetch({
           url: `merchant/activation/company_search?search_string=${query}`,
-          mode: 'test',
         });
         return businessNames;
       }

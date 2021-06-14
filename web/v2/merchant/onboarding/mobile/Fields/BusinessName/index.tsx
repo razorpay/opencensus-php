@@ -20,7 +20,7 @@ interface NameData {
 interface BusinessNamePropsT {
   errorText?: string | false | string[] | FormikErrors<any> | FormikErrors<any>[] | undefined;
   businessNameValue: string;
-  onModalClosed: (value: NameData) => void;
+  updateBusinessName: (value: NameData) => void;
 }
 
 const StyledSeparator = styled(View)`
@@ -31,7 +31,7 @@ const StyledSeparator = styled(View)`
 
 const BusinessName: React.FC<BusinessNamePropsT> = ({
   businessNameValue = '',
-  onModalClosed,
+  updateBusinessName,
   errorText,
 }) => {
   const [inputValue, setInputValue] = useState(businessNameValue);
@@ -51,11 +51,10 @@ const BusinessName: React.FC<BusinessNamePropsT> = ({
     if (selectedBusinessNameData) {
       businessNameData.current = selectedBusinessNameData;
     }
-    onModalClosed(businessNameData.current);
+    updateBusinessName(businessNameData.current);
   };
 
   const getOptions = () => {
-    console.log(businessNamesData);
     if (businessNamesData?.results?.length) {
       return businessNamesData.results.map(({ identity_number, company_name }) => (
         <Option key={identity_number} label={company_name} value={company_name}>
