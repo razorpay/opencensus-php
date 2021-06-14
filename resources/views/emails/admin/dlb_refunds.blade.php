@@ -62,12 +62,12 @@
                     </tr></table>
                 <p>Note: - As per RBI norm, All refund has been processed within TAT</p>
 
-                <p>For any transaction related issue, please write to finances@razorpay.com </p><br>
+                <p>For any transaction related issue, please write to finops@razorpay.com </p><br>
 
                 <p>For any escalation, please write to</p><br>
-                <p>1st Level:- settlements@razorpay.com</p><br>
-                <p>2nd Level:- chandrababu.g@razorpay.com</p><br>
-                <p>In case of any Reconciliation file & fund related issue, please write refunds@razorpay.com</p> <br>
+                <p>1st Level:- finances.recon@razorpay.com</p><br>
+                <p>2nd Level:- amit.mohanty@razorpay.com</p><br>
+                <p>In case of any Reconciliation file & fund related issue, please write finances.recon@razorpay.com</p> <br>
 
                 <p>Thanks & Regards</p>
                 <p>Financial Operations</p>
