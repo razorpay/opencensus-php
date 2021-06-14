@@ -406,7 +406,7 @@ class PayoutTest extends OAuthTestCase
     {
         // During payout creation, there has been push to SNS topic for creating this transaction in Ledger service.
         // Mocking ledger sns because call to ledger is currently async via SNS. Once it is in sync, this will be removed.
-        $this->mockLedgerSns(1);
+        $this->mockLedgerSns(1, 'payout_initiated');
 
         $this->testCreatePayout();
 
@@ -1039,7 +1039,7 @@ class PayoutTest extends OAuthTestCase
     public function testCreateAndProcessQueuedPayout()
     {
         // since 2 queued payouts are created here
-        $this->mockLedgerSns(2);
+        $this->mockLedgerSns(2, 'payout_initiated');
 
         // Setting the redis config as empty initially
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_QUEUED_PAYOUTS_PAGINATION => []]);
@@ -1132,7 +1132,7 @@ class PayoutTest extends OAuthTestCase
      */
     public function testCreateAndProcessQueuedPayoutWithNewCreditsFlow()
     {
-        $this->mockLedgerSns(2);
+        $this->mockLedgerSns(2, 'payout_initiated');
 
         $this->fixtures->create('credits', ['merchant_id' => '10000000000000', 'value' => 100 , 'campaign' => 'test rewards', 'type' => 'reward_fee', 'product' => 'banking']);
 
@@ -1422,7 +1422,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testProcessQueuedPayoutWhereMerchantWhitelisted()
     {
-        $this->mockLedgerSns(1);
+        $this->mockLedgerSns(1, 'payout_initiated');
 
         $secondBankingBalance = $this->createDirectBankingBalance();
 
@@ -3877,6 +3877,8 @@ class PayoutTest extends OAuthTestCase
 
     public function testPayoutStatusUpdate()
     {
+        $this->mockLedgerSns(1, 'payout_processed');
+
         $this->createPayout();
 
         $payout = $this->getDbLastEntity('payout');
@@ -6518,6 +6520,8 @@ class PayoutTest extends OAuthTestCase
 
     public function testUpdatePayoutStatusManuallyToReversed()
     {
+        $this->mockLedgerSns(1, 'payout_initiated');
+
         $this->testCreatePayout();
 
         $payout = $this->getDbLastEntity('payout');
@@ -6536,6 +6540,8 @@ class PayoutTest extends OAuthTestCase
                 'status' => 'processed',
             ]
         ];
+
+        $this->mockLedgerSns(1, 'payout_processed');
 
         $this->ba->adminAuth();
 
@@ -6559,6 +6565,8 @@ class PayoutTest extends OAuthTestCase
                 'failure_reason' => 'payout reversed at bank'
             ]
         ];
+
+        $this->mockLedgerSns(1, 'payout_reversed');
 
         $this->ba->adminAuth();
 

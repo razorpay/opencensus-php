@@ -5,6 +5,7 @@ namespace RZP\Models\Transaction\Processor\Ledger;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Trace\TraceCode;
+use RZP\Models\Reversal;
 use RZP\Models\Payout\Entity;
 use RZP\Exception\LogicException;
 use RZP\Models\Transaction\Entity as TransactionEntity;
@@ -17,7 +18,10 @@ class Payout extends Base
     const PAYOUT_PROCESSED = "payout_processed";
     const PAYOUT_REVERSED  = "payout_reversed";
 
-    public function pushTransactionToLedger(Entity $entity, string $mode, string $transactorType)
+    public function pushTransactionToLedger(Entity $entity,
+                                            string $mode,
+                                            string $transactorType,
+                                            Reversal\Entity $reversal = null)
     {
 
         $startTime = millitime();
@@ -42,11 +46,9 @@ class Payout extends Base
                 return;
             }
 
+            $transactorId = $entity->getPublicId();
+            $transactionId = $entity->getTransactionId();
             $transactorDate = null;
-            $notes = [
-                self::BALANCE_ID     => BalanceEntity::getSignedIdOrNull($entity->getBalanceId()),
-                self::TRANSACTION_ID => TransactionEntity::getSignedIdOrNull($entity->getTransactionId())
-            ];
 
             switch ($transactorType)
             {
@@ -59,12 +61,21 @@ class Payout extends Base
                     break;
 
                 case self::PAYOUT_REVERSED:
-                    $transactorDate = $entity->getReversedAt();
+                    if ($reversal !== null) {
+                        $transactorDate = $reversal->getCreatedAt();
+                        $transactorId = $reversal->getPublicId();
+                        $transactionId = $reversal->getTransactionId();
+                    }
                     break;
 
                 default:
                     throw new LogicException(self::TRANSACTOR_TYPE . ' not implemented at ledger : ' . $transactorType);
             }
+
+            $notes = [
+                self::BALANCE_ID     => BalanceEntity::getSignedIdOrNull($entity->getBalanceId()),
+                self::TRANSACTION_ID => TransactionEntity::getSignedIdOrNull($transactionId),
+            ];
 
             $payload = [
                 self::TRANSACTOR          => self::X,
@@ -78,7 +89,7 @@ class Payout extends Base
                 self::NOTES               => json_encode($notes),
                 self::FTS_FUND_ACCOUNT_ID => self::DEFAULT_FTS_FUND_ACCOUNT_ID,
                 self::FTS_ACCOUNT_TYPE    => self::DEFAULT_FTS_FUND_ACCOUNT_TYPE,
-                self::TRANSACTOR_ID       => $entity->getPublicId(),
+                self::TRANSACTOR_ID       => $transactorId,
                 self::TRANSACTOR_TYPE     => $transactorType,
                 self::TRANSACTION_DATE    => $transactorDate,
             ];

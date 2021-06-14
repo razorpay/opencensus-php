@@ -423,7 +423,7 @@ class FundAccountValidationTest extends TestCase
 
         // During FAV creation, there has been push to SNS topic for creating this transaction in Ledger service.
         // Mocking ledger sns because call to ledger is currently async via SNS. Once it is in sync, this will be removed.
-        $this->mockLedgerSns(1);
+        $this->mockLedgerSns(1, 'fav_initiated');
 
         $this->testFundAccValidationWithAccountNumberAndBankAccount();
 
@@ -461,7 +461,7 @@ class FundAccountValidationTest extends TestCase
 
         // During FAV creation, there has been push to SNS topic for creating this transaction in Ledger service.
         // Mocking ledger sns because call to ledger is currently async via SNS. Once it is in sync, this will be removed.
-        $this->mockLedgerSns(1);
+        $this->mockLedgerSns(1, 'fav_initiated');
 
         $this->testFundAccValidationWithAccountNumberAndBankAccount();
 

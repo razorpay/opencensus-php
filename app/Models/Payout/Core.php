@@ -1532,10 +1532,11 @@ class Core extends Base\Core
 
     /**
      * @param Entity $payout
+     * @param Reversal\Entity|null $reversal
      * Push to ledger sns when a payout status is changed. This will create this payout in ledger DB.
      * Since ledger keeps different records for all payout states, these events are triggered.
      */
-    protected function processLedgerPayout(Entity $payout)
+    protected function processLedgerPayout(Entity $payout, Reversal\Entity $reversal = null)
     {
         // Currently only shared fundAccount payout is pushed to ledger. So in case of direct, return.
         // In case env variable ledger.enabled is false or it's live mode, return.
@@ -1549,7 +1550,7 @@ class Core extends Base\Core
 
         $event = Status::getLedgerEventFromPayoutStatus($payout->getStatus());
 
-        (new Transaction\Processor\Ledger\Payout)->pushTransactionToLedger($payout, $this->mode, $event);
+        (new Transaction\Processor\Ledger\Payout)->pushTransactionToLedger($payout, $this->mode, $event, $reversal);
     }
 
     /**
@@ -1970,22 +1971,24 @@ class Core extends Base\Core
                                             string $ftaBankStatusCode = null,
                                             $credit_bas = null)
     {
+        $reversal = null;
+
         // check using service
         if ($payout->getIsPayoutService() === true)
         {
-            $this->handlePayoutReversedForPayoutService($payout, $ftaFailureReason, $ftaBankStatusCode);
+            $this->handlePayoutReversedForPayoutService($payout, $ftaFailureReason, $ftaBankStatusCode, $reversal);
         }
         else
         {
             // will be removed after new error object is released.
             $ftaFailureReason = $this->getPublicErrorMessage($payout, $ftaFailureReason, $ftaBankStatusCode);
 
-            $this->reversePayout($payout, $ftaFailureReason, $ftaBankStatusCode, $credit_bas);
+            $this->reversePayout($payout, $ftaFailureReason, $ftaBankStatusCode, $credit_bas, $reversal);
 
             $this->app->events->dispatch('api.payout.reversed', [$payout]);
         }
 
-        $this->processLedgerPayout($payout);
+        $this->processLedgerPayout($payout, $reversal);
     }
 
     protected function handlePayoutFailed(Entity $payout,
@@ -2122,7 +2125,8 @@ class Core extends Base\Core
     public function reversePayout(Entity $payout,
                                   string $reverseReason = null,
                                   $ftaBankStatusCode = null,
-                                  $credit_bas = null)
+                                  $credit_bas = null,
+                                  Reversal\Entity &$reversal = null)
     {
         $this->trace->info(
             TraceCode::PAYOUT_REVERSAL_INITIATED,
@@ -2140,7 +2144,7 @@ class Core extends Base\Core
         // saved in the database.
         $this->mutex->acquireAndRelease(
             'reversal_payout_id_' . $payout->getId(),
-            function () use ($payout, $reverseReason, $ftaBankStatusCode, $credit_bas)
+            function () use ($payout, $reverseReason, $ftaBankStatusCode, $credit_bas, &$reversal)
             {
                 // reloading the payout here to ensure if any other process
                 // gets a mutex on payout resource, it gets a fresh copy
@@ -3019,7 +3023,8 @@ class Core extends Base\Core
 
     public function reversePayoutService(Entity $payout,
                                          string $reverseReason = null,
-                                         $ftaBankStatusCode = null)
+                                         $ftaBankStatusCode = null,
+                                         Reversal\Entity &$reversal = null)
     {
         $this->trace->info(
             TraceCode::PAYOUT_REVERSAL_INITIATED,
@@ -3037,7 +3042,7 @@ class Core extends Base\Core
         // saved in the database.
         $this->mutex->acquireAndRelease(
             'reversal_payout_id_' . $payout->getId(),
-            function () use ($payout, $reverseReason, $ftaBankStatusCode) {
+            function () use ($payout, $reverseReason, $ftaBankStatusCode, &$reversal) {
 
                 $payout->reload();
 
@@ -3258,7 +3263,8 @@ class Core extends Base\Core
 
     public function handlePayoutReversedForPayoutService(Entity $payout,
                                                          string $ftaFailureReason = null,
-                                                         string $ftaBankStatusCode = null)
+                                                         string $ftaBankStatusCode = null,
+                                                         Reversal\Entity &$reversal = null)
     {
         $ftaFailureReason = $this->getPublicErrorMessage($payout, $ftaFailureReason, $ftaBankStatusCode);
 
@@ -3270,6 +3276,6 @@ class Core extends Base\Core
             ]);
 
         // webhook fired via payout service
-        $this->reversePayoutService($payout, $ftaFailureReason, $ftaBankStatusCode);
+        $this->reversePayoutService($payout, $ftaFailureReason, $ftaBankStatusCode, $reversal);
     }
 }
