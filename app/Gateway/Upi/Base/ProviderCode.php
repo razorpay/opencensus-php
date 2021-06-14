@@ -92,6 +92,7 @@ class ProviderCode
     const JKB                = 'jkb';
     const JSB                = 'jsb';
     const JSBP               = 'jsbp';
+    const JUPITERAXIS        = 'jupiteraxis';
     const KARB               = 'karb';
     const KARURVYSYABANK     = 'karurvysyabank';
     const KAYPAY             = 'kaypay';
@@ -239,6 +240,7 @@ class ProviderCode
         self::JSB                => IFSC::JSBP,
         self::JSBP               => IFSC::JSBP,
         self::JKB                => IFSC::JAKA,
+        self::JUPITERAXIS        => IFSC::UTBI,
         self::KARB               => IFSC::KARB,
         self::KARURVYSYABANK     => IFSC::KVBL,
         self::KAYPAY             => IFSC::KKBK,
