@@ -54,7 +54,7 @@ export default function Details(props) {
           </div>
 
           <div class="SliderPanel__Body">
-            {/* <Alert type={statusMsg.type} message={statusMsg.message} /> */}
+            <Alert type={statusMsg.type} message={statusMsg.message} />
 
             <div class="info">
               <div>
@@ -108,7 +108,7 @@ export default function Details(props) {
                   {qrCode.payment_amount ? (
                     <>
                       <Amount value={qrCode.payment_amount} />
-                      <div>QR code only accepts payments of this amount.</div>
+                      <div>Only accepts payments of this amount.</div>
                     </>
                   ) : (
                     <>Accepts payments of any amount.</>

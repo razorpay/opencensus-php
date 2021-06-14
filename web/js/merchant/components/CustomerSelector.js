@@ -31,7 +31,7 @@ export default class CustomerSelector extends Component {
       component: (
         <CustomerCreation
           saveLabel="Create and add this customer"
-          onSave={this.props.selectCustomerAndCloseModal}
+          onSave={this.selectCustomerAndCloseModal}
           customer={{
             name: searchTerm,
           }}

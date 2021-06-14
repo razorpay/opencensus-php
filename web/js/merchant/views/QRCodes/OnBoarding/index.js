@@ -34,17 +34,44 @@ import { FEATURES_DATA, FEATURES_LINKS } from './data';
   feature: RZPFeatures.QR_CODES,
 })
 export default class QRCodesOnBoarding extends React.Component {
-  getNextBtnProp = (sliderProps) => () => {
-    return (
-      <FeatureEnableSliderButton
-        feature={RZPFeatures.QR_CODES}
-        page={sliderProps.active}
-        onClick={this.closeOnboarding}
-      />
-    );
+  getNextButton = (sliderProps) => () => {
+    const props = {
+      feature: RZPFeatures.QR_CODES,
+      onClick: (...args) => {
+        return this.props.closeOnboarding(...args);
+      },
+      page: sliderProps.active,
+    };
+
+    if (this.props.user.isQRCodeProductEnabled) {
+      props.isLocalEnabler = true;
+      props.onClick = this.closeOnboarding;
+    }
+
+    return <FeatureEnableSliderButton {...props} />;
+  };
+
+  renderSkipButton = (sliderProps) => {
+    const props = {
+      feature: RZPFeatures.QR_CODES,
+      onClick: this.props.closeOnboarding,
+      page: sliderProps.active,
+      isTour: this.props.qrCodeProductOnBoarding.isTour,
+    };
+
+    if (this.props.user.isQRCodeProductEnabled) {
+      props.isLocalEnabler = true;
+      props.onClick = this.closeOnboarding;
+    }
+
+    return <SkipAndGetStartedButton {...props} />;
   };
 
   closeOnboarding = () => {
+    if (!this.props.qrCodeProductOnBoarding.isTour) {
+      setQuickGuideIsClosedInLocalStorage(RZPFeatures.QR_CODES, false);
+    }
+
     this.props.closeOnboarding();
   };
 
@@ -55,10 +82,7 @@ export default class QRCodesOnBoarding extends React.Component {
       <OnBoardingWrapper class="QRCodes">
         <Slider
           active={active}
-          afterSlide={getOnBoardingSliderDots({
-            qrCodeProductOnBoarding,
-            closeOnboarding: this.closeOnboarding,
-          })}
+          afterSlide={getOnBoardingSliderDots(this.renderSkipButton)}
         >
           {(sliderProps) => (
             <Landing
@@ -75,7 +99,7 @@ export default class QRCodesOnBoarding extends React.Component {
               {...sliderProps}
               title="Whats unique about QR Codes?"
               feature={RZPFeatures.QR_CODES}
-              nextBtn={this.getNextBtnProp(sliderProps)}
+              nextBtn={this.getNextButton(sliderProps)}
               featureLinks={FEATURES_LINKS}
               features={FEATURES_DATA}
             />
@@ -86,15 +110,10 @@ export default class QRCodesOnBoarding extends React.Component {
   }
 }
 
-function getOnBoardingSliderDots({ closeOnboarding, qrCodeProductOnBoarding }) {
+function getOnBoardingSliderDots(renderSkipButton) {
   return (sliderProps) => (
     <SliderDots {...sliderProps}>
-      <SkipAndGetStartedButton
-        isTour={qrCodeProductOnBoarding.isTour}
-        feature={RZPFeatures.QR_CODES}
-        page={sliderProps.active}
-        onClick={closeOnboarding}
-      />
+      {renderSkipButton(sliderProps)}
     </SliderDots>
   );
 }

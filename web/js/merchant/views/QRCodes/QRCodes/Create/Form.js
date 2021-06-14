@@ -135,13 +135,15 @@ export default class CreationForm extends React.Component {
   };
 
   toggleDisableState = () => {
-    // if value not selected, html marks it as ':invalid' which is tehnically valid in our case. Hence, relying on is-invalid.
-    const invalidFields = document.querySelectorAll(`.${FORM_CLASS_NAME} .Input.is-invalid`);
-    const isSubmitDisabled = invalidFields.length;
+    setTimeout(() => {
+      // if value not selected, html marks it as ':invalid' which is tehnically valid in our case. Hence, relying on is-invalid.
+      const invalidFields = document.querySelectorAll(`.${FORM_CLASS_NAME} .Input.is-invalid`);
+      const isSubmitDisabled = invalidFields.length;
 
-    if (this.state.isSubmitDisabled !== isSubmitDisabled) {
-      this.setState({ isSubmitDisabled: isSubmitDisabled });
-    }
+      if (this.state.isSubmitDisabled !== isSubmitDisabled) {
+        this.setState({ isSubmitDisabled });
+      }
+    });
   };
 
   handleAdditionalOptions = () => {
@@ -383,7 +385,10 @@ export default class CreationForm extends React.Component {
                     onChange={this.handleHasNoCloseBy}
                   />
 
-                  <Input.Group class="InputGroup--near InputGroup--inline closeBy"  disabled={!state.noCloseBy}>
+                  <Input.Group
+                    class="InputGroup--near InputGroup--inline closeBy"
+                    disabled={!state.noCloseBy}
+                  >
                     <div class="Input-content">
                       <Input.ToCalendar
                         readOnly
