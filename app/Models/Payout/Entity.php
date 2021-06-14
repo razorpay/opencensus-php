@@ -2149,10 +2149,8 @@ class Entity extends Base\PublicEntity
      */
     public function getErrorDetails()
     {
-        $mode = app('rzp.mode') ?? Mode::LIVE;
-
         if (($this->merchant === null) or
-            ($this->merchant->isFeatureEnabled(Error::$newBankingErrorFeatureMapWithMode[$mode]) === false))
+            ($this->merchant->isFeatureEnabled(Features::NEW_BANKING_ERROR) === false))
         {
             return null;
         }

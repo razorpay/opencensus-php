@@ -1339,9 +1339,9 @@ class FundAccountsTest extends TestCase
 
     public function testCreateFundAccountBankAccountWithEmptyArrayNewApiError()
     {
-        $this->fixtures->merchant->addFeatures([Feature\Constants::TEST_NEW_BANKING_ERROR]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
 
-        $this->fixtures->create('contact', ['id' => '1000000contact']);
+        $this->fixtures->on('test')->create('contact', ['id' => '1000000contact']);
 
         $this->startTest();
     }
@@ -1361,9 +1361,9 @@ class FundAccountsTest extends TestCase
 
     public function testCreateFundAccountBankAccountWithInvalidNameNewApiError()
     {
-        $this->fixtures->merchant->addFeatures([Feature\Constants::TEST_NEW_BANKING_ERROR]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
 
-        $this->fixtures->create('contact', ['id' => '1000000contact']);
+        $this->fixtures->on('test')->create('contact', ['id' => '1000000contact']);
 
         $this->startTest();
     }

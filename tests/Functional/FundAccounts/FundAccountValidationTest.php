@@ -1291,11 +1291,11 @@ class FundAccountValidationTest extends TestCase
 
     public function testFundAccValidationOnPrepaidModelWithNoFeeCreditsAndNoBalanceNewApiError()
     {
-        $this->fixtures->merchant->addFeatures([Feature\Constants::TEST_NEW_BANKING_ERROR]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
 
-        $this->fixtures->merchant->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
+        $this->fixtures->merchant->on('test')->editEntity('merchant', '10000000000000', ['fee_model' => 'prepaid']);
 
-        $this->fixtures->merchant->editBalance('0');
+        $this->fixtures->merchant->on('test')->editBalance('0');
 
         $this->startTest();
     }

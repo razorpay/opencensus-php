@@ -1094,7 +1094,7 @@ class ContactsTest extends TestCase
 
     public function testCreateContactWithoutNameNewApiError()
     {
-        $this->fixtures->merchant->addFeatures([Feature\Constants::TEST_NEW_BANKING_ERROR]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
 
         $this->startTest();
     }
@@ -1112,7 +1112,7 @@ class ContactsTest extends TestCase
 
     public function testCreateRZPFeesTypeContactNewApiError()
     {
-        $this->fixtures->merchant->addFeatures([Feature\Constants::TEST_NEW_BANKING_ERROR]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
 
         $this->startTest();
     }

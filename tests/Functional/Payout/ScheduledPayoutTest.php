@@ -1269,7 +1269,7 @@ class ScheduledPayoutTest extends TestCase
      */
     public function testFailedWebhookPayoutResponseForNewBankingError()
     {
-        $this->fixtures->merchant->addFeatures([Feature\Constants::TEST_NEW_BANKING_ERROR]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
 
         // When WebhookViaStork experiment is turned on, webhook setting is skipped and
         // stork is called regardless event setting is enabled or not

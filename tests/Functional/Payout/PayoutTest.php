@@ -10306,7 +10306,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testNewErrorObjectInPayoutResponse()
     {
-        $this->fixtures->merchant->addFeatures([Feature\Constants::TEST_NEW_BANKING_ERROR]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
 
         $this->ba->privateAuth();
 
@@ -10326,7 +10326,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testFiringOfWebhookPayoutResponseForReversedPayout()
     {
-        $this->fixtures->merchant->addFeatures([Feature\Constants::TEST_NEW_BANKING_ERROR]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
 
         // When WebhookViaStork experiment is turned on, webhook setting is skipped and
         // stork is called regardless event setting is enabled or not
@@ -10400,7 +10400,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithWrongFundAccountIdNewApiError()
     {
-        $this->fixtures->merchant->addFeatures([Feature\Constants::TEST_NEW_BANKING_ERROR]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
 
         $this->ba->privateAuth();
 
@@ -10420,7 +10420,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithIfQueueLowBalanceFalseNewApiError()
     {
-        $this->fixtures->merchant->addFeatures([Feature\Constants::TEST_NEW_BANKING_ERROR]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
 
         $this->ba->privateAuth();
 
@@ -10457,7 +10457,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testFiringOfWebhookPayoutResponseForReversedPayoutDefaultErrorObject()
     {
-        $this->fixtures->merchant->addFeatures([Feature\Constants::TEST_NEW_BANKING_ERROR]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
 
         // When WebhookViaStork experiment is turned on, webhook setting is skipped and
         // stork is called regardless event setting is enabled or not
@@ -10531,7 +10531,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testFiringOfWebhookPayoutResponseForProcessedPayout()
     {
-        $this->fixtures->merchant->addFeatures([Feature\Constants::TEST_NEW_BANKING_ERROR]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
 
         // When WebhookViaStork experiment is turned on, webhook setting is skipped and
         // stork is called regardless event setting is enabled or not
@@ -10605,7 +10605,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testFiringOfWebhookPayoutResponseForUpdatedPayout()
     {
-        $this->fixtures->merchant->addFeatures([Feature\Constants::TEST_NEW_BANKING_ERROR]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);
 
         // When WebhookViaStork experiment is turned on, webhook setting is skipped and
         // stork is called regardless event setting is enabled or not

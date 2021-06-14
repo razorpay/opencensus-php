@@ -370,11 +370,6 @@ class Constants
     const NEW_BANKING_ERROR             = 'new_banking_error';
 
     /**
-     * new banking error response is enabled by the merchant.
-     */
-    const TEST_NEW_BANKING_ERROR        = 'test_new_banking_error';
-
-    /**
      * Aggregator Partner + OAuth Client access
      */
     const AGGREGATOR_OAUTH_CLIENT       = 'aggregator_oauth_client';
@@ -909,7 +904,6 @@ class Constants
         self::SKIP_WORKFLOWS_FOR_API          => true,
         self::SKIP_WF_AT_PAYOUTS              => true,
         self::NEW_BANKING_ERROR               => true,
-        self::TEST_NEW_BANKING_ERROR          => true,
         self::DISPLAY_LA_PARENT_PAYMENT_ID    => true,
         self::REDIRECTION_ONHOLD              => true,
         self::DISABLE_NATIVE_CURRENCY         => true,
@@ -1240,11 +1234,6 @@ class Constants
             'display_name'  => 'New banking error response is enabled by the merchant.',
             'documentation' => '',
         ],
-        self::TEST_NEW_BANKING_ERROR         => [
-            'feature'       => self::TEST_NEW_BANKING_ERROR,
-            'display_name'  => 'New banking error response is enabled by the merchant on test mode.',
-            'documentation' => '',
-        ],
         self::DISABLE_INSTANT_REFUNDS     => [
             'feature'       => self::DISABLE_INSTANT_REFUNDS,
             'display_name'  => 'Disable Instant Refunds',
@@ -1515,7 +1504,6 @@ class Constants
         self::SKIP_WORKFLOWS_FOR_API,
         self::SKIP_WF_AT_PAYOUTS,
         self::NEW_BANKING_ERROR,
-        self::TEST_NEW_BANKING_ERROR,
         self::LOC_STAGE_2,
         self::SETTLEMENTS_SMS_STOP,
         self::SUGGESTED_ADDRESS_OPT_IN,

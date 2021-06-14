@@ -84,11 +84,6 @@ class Error extends Support\Fluent
 
     protected $merchant;
 
-    public static $newBankingErrorFeatureMapWithMode = [
-        MODE::TEST => Features::TEST_NEW_BANKING_ERROR,
-        MODE::LIVE => Features::NEW_BANKING_ERROR,
-    ];
-
     public function __construct(
         $code,
         $desc = null,
@@ -104,8 +99,6 @@ class Error extends Support\Fluent
         $this->product = $this->app['basicauth']->getProduct();
 
         $this->merchant = $this->app['basicauth']->getMerchant();
-
-        $this->mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
         $this->fill($code, $desc, $field, $data);
     }
@@ -1042,7 +1035,7 @@ class Error extends Support\Fluent
     {
         if (($this->product === Product::BANKING) and
             (is_null($this->merchant) === false) and
-            ($this->merchant->isFeatureEnabled(self::$newBankingErrorFeatureMapWithMode[$this->mode]) === true))
+            ($this->merchant->isFeatureEnabled(Features::NEW_BANKING_ERROR) === true))
         {
             return true;
         }
