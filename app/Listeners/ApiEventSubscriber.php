@@ -698,6 +698,8 @@ class ApiEventSubscriber extends Base\Core
         $payload = $this->getRefundPayload($refund);
 
         $this->dispatchEventToStork($payload);
+
+        $this->handleQrPaymentUpdate($refund);
     }
 
     protected function onRefundCreated(RefundEntity $refund)
@@ -1659,5 +1661,17 @@ class ApiEventSubscriber extends Base\Core
                     'payment_id' => $payment->getId(),
                 ]);
         }
+    }
+
+    private function handleQrPaymentUpdate(RefundEntity $refund)
+    {
+        $payment = $refund->payment;
+
+        if ($payment->qrPayment === null)
+        {
+            return;
+        }
+
+        $this->repo->qr_payment->syncToEs($payment->qrPayment, Base\EsRepository::UPDATE);
     }
 }

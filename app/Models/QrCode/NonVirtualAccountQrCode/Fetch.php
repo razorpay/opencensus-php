@@ -17,7 +17,6 @@ class Fetch extends BaseFetch
             EsRepository::CUSTOMER_EMAIL   => 'sometimes|string',
             EsRepository::CUSTOMER_NAME    => 'sometimes|string',
             EsRepository::CUSTOMER_CONTACT => 'sometimes|string',
-        ],AuthType::PROXY_AUTH => [
             Entity::ENTITY_TYPE            => 'sometimes|string'
         ],
     ];
@@ -35,7 +34,6 @@ class Fetch extends BaseFetch
             EsRepository::CUSTOMER_EMAIL,
             EsRepository::CUSTOMER_NAME,
             EsRepository::CUSTOMER_CONTACT,
-        ],AuthType::PROXY_AUTH => [
             Entity::ENTITY_TYPE,
         ],
     ];

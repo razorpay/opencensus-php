@@ -36,6 +36,6 @@ class Service extends Base\Service
     {
         $paymentIds = $this->repo->qr_payment->getPaymentIdsForQrPaymentIds($qrPaymentIds);
 
-        return $this->repo->payment->findMany($paymentIds)->toArrayPublic();
+        return $this->repo->payment->getPaymentsSortedByCreatedAt($paymentIds)->toArrayPublic();
     }
 }

@@ -147,7 +147,7 @@ class VirtualAccountController extends Controller
             {
                 $data['valid'] = true;
 
-                $data['merchantName'] = 'QRv2 Payment';
+                $data['merchantName'] = 'Razorpay QR Payment';
             }
             else
             {

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 
+use Carbon\Carbon;
 use RZP\Models\QrCode;
 use RZP\Models\Customer;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -249,6 +250,9 @@ class Entity extends QrCode\Entity
 
     public function isClosed()
     {
-        return ($this->getAttribute(self::STATUS) === Status::CLOSED);
+        // TODO: remove check on close by once QR expiry goes live
+        return ($this->getAttribute(self::STATUS) === Status::CLOSED) or
+               (($this->getAttribute(self::CLOSE_BY) !== null) and
+                (Carbon::now()->getTimestamp() >= $this->getAttribute(self::CLOSE_BY)));
     }
 }

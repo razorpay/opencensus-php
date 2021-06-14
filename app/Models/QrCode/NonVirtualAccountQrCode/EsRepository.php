@@ -30,4 +30,8 @@ class EsRepository extends Base\EsRepository
         return $query;
     }
 
+    public function buildQueryForCustEmail(array &$query, $value)
+    {
+        $this->addMatchPhrasePrefix($query, self::CUSTOMER_EMAIL, $value);
+    }
 }

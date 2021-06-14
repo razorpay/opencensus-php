@@ -270,7 +270,7 @@ class Processor extends Base\Core
             return false;
         }
 
-        if ($this->qrCode->getStatus() === NonVirtualAccountQrCode\Status::CLOSED)
+        if ($this->qrCode->isClosed())
         {
             $qrPayment->setUnexpectedReason(UnexpectedPaymentReason::QR_PAYMENT_ON_CLOSED_QR_CODE);
 

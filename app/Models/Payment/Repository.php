@@ -2472,4 +2472,12 @@ class Repository extends Base\Repository
             ->where(Entity::CREATED_AT, '>', $timeStamp)
             ->first();
     }
+
+    public function getPaymentsSortedByCreatedAt(array $ids)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::ID, $ids)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->get();
+    }
 }
