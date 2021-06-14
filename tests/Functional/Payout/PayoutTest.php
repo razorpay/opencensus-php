@@ -1510,6 +1510,130 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(30000099, $summary2[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
     }
 
+    /**
+     * Assert that queued payouts get processed even when `balance = payout amount` if the merchant
+     * has enough free payouts
+     */
+    public function testProcessQueuedPayoutWithFreePayouts()
+    {
+        $this->mockLedgerSns(1);
+
+        $secondBankingBalance = $this->createDirectBankingBalance();
+
+        $balanceId1 = $this->bankingBalance->getId();
+        $balanceId2 = $secondBankingBalance['id'];
+
+        // Creating 2 banking accounts. First for the existing bankingBalance and second for the secondBankingBalance
+
+        $bankingAccountAttributes = [
+            'id'                    =>  'ABCde1234ABCde',
+            'account_number'        =>  '2224440041626905',
+            'balance_id'            =>  $balanceId1,
+            'account_type'          =>  'nodal',
+        ];
+
+        $bankingAccount = $this->createBankingAccount($bankingAccountAttributes);
+
+        $secondBankingAccountAttributes = [
+            'id'                    =>  'DEcba4321DEcba',
+            'account_number'        =>  '2224440041626906',
+            'balance_id'            =>  $balanceId2,
+            'account_type'          =>  'current',
+        ];
+
+        $secondBankingAccount = $this->createBankingAccount($secondBankingAccountAttributes);
+
+        $this->fixtures->create('banking_account_statement_details',[
+            Details\Entity::ID             => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $secondBankingBalance->getId(),
+            Details\Entity::ACCOUNT_NUMBER => '2224440041626906',
+            Details\Entity::CHANNEL        => Details\Channel::RBL,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
+
+        // Create two queued payouts
+
+        $firstQueuedPayoutAttributes = [
+            'account_number'        =>  '2224440041626905',
+            'amount'                =>  20000099,
+            'queue_if_low_balance'  =>  1,
+        ];
+
+        $this->createQueuedOrPendingPayout($firstQueuedPayoutAttributes);
+
+        $secondQueuedPayoutAttributes = [
+            'account_number'        =>  '2224440041626906',
+            'amount'                =>  30000099,
+            'queue_if_low_balance'  =>  1,
+        ];
+
+        $this->createQueuedOrPendingPayout($secondQueuedPayoutAttributes);
+
+        $summary1 = $this->makePayoutSummaryRequest();
+
+        // Assert that there are 1 payout each in queued state for both balances.
+        $this->assertEquals(1, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
+        $this->assertEquals(20000099, $summary1[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+        $this->assertEquals(1, $summary1[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
+        $this->assertEquals(30000099, $summary1[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+
+        // Add enough balance for both balanceIds so that the payout amounts = balance for both balances.
+        $this->fixtures->edit('balance', $balanceId1,[
+            'balance'       => 20000099,
+            'updated_at'    => Carbon::now()->getTimestamp()
+        ]);
+
+        $this->fixtures->edit('balance', $balanceId2,[
+            'balance'       => 30000099,
+            'updated_at'    => Carbon::now()->getTimestamp()
+        ]);
+
+        // Update both counters to 300
+        $counter1 = $this->getDbEntity('counter', ['balance_id' => $balanceId1]);
+        $counter2 =  $this->getDbEntity('counter', ['balance_id' => $balanceId2]);
+        $this->fixtures->edit('counter', $counter1->getId(), ['free_payouts_consumed' => 300]);
+        $this->fixtures->edit('counter', $counter2->getId(), ['free_payouts_consumed' => 300]);
+
+        $dispatchResponse = $this->dispatchQueuedPayouts();
+
+        // Assert that we attempted processing the queued payout both balances.
+        $this->assertEquals(2, count($dispatchResponse['balance_id_list']));
+        $this->assertEquals($balanceId1, $dispatchResponse['balance_id_list'][0]);
+        $this->assertEquals($balanceId2, $dispatchResponse['balance_id_list'][1]);
+
+        $summary2 = $this->makePayoutSummaryRequest();
+
+        // Assert that the current account payout went through, because we do not calculate or deduct fees
+        // at time of processing. Also assert that the shared account payout is still queued since
+        // `balance = payout amount` but there are no free payouts available.
+        $this->assertEquals(1, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
+        $this->assertEquals(20000099, $summary2[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+        $this->assertEquals(0, $summary2[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
+        $this->assertEquals(0, $summary2[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+
+        // Update the counter to 299, so that the queued payout is considered as free payout during processing.
+        $this->fixtures->edit('counter', $counter1->getId(), ['free_payouts_consumed' => 299]);
+
+        $dispatchResponse = $this->dispatchQueuedPayouts();
+
+        // Assert that we attempted processing the queued payout for only first balance.
+        $this->assertEquals(1, count($dispatchResponse['balance_id_list']));
+        $this->assertEquals($balanceId1, $dispatchResponse['balance_id_list'][0]);
+
+        $summary3 = $this->makePayoutSummaryRequest();
+
+        // Assert that the payout which wasn't getting processed in the previous run gets processed now.
+        $this->assertEquals(0, $summary3[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
+        $this->assertEquals(0, $summary3[$bankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+        $this->assertEquals(0, $summary3[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['count']);
+        $this->assertEquals(0, $summary3[$secondBankingAccount->getPublicId()][Payout\Status::QUEUED]['total_amount']);
+
+        // Assert that we have now consumed another free payout and counter has incremented to 300.
+        $updatedCounter1 = $this->getDbEntity('counter', ['balance_id' => $balanceId1]);
+        $this->assertEquals(300, $updatedCounter1['free_payouts_consumed']);
+    }
+
     public function testCancelQueuedPayoutProxyAuth()
     {
         $this->testCreateQueuedPayout();

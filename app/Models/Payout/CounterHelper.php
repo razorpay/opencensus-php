@@ -304,7 +304,7 @@ class CounterHelper extends Base\Core
         return false;
     }
 
-    protected function getCounterForBalance(Balance\Entity $balance, Entity $payout)
+    public function getCounterForBalance(Balance\Entity $balance, Entity $payout = null)
     {
         $accountType = $balance->getAccountType();
 
@@ -318,10 +318,10 @@ class CounterHelper extends Base\Core
                 'No counter found.',
                 ErrorCode::SERVER_ERROR_COUNTER_ABSENT,
                 [
-                    'payout_id'    => $payout->getId(),
-                    'merchant_id'  => $payout->getMerchantId(),
-                    'balance_id'   => $payout->getBalanceId(),
-                    'account_type' => $payout->getBalanceAccountType(),
+                    'payout_id'    => $payout->getId() ?? '',
+                    'merchant_id'  => $balance->getMerchantId(),
+                    'balance_id'   => $balance->getId(),
+                    'account_type' => $balance->getAccountType(),
                 ]);
         }
 

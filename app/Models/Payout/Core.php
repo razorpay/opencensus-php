@@ -36,6 +36,7 @@ use RZP\Models\BankingAccount;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Services\PayoutService;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Admin\Permission;
 use RZP\Http\BasicAuth\BasicAuth;
@@ -631,7 +632,7 @@ class Core extends Base\Core
                 $balanceAmount = $this->getLatestBalanceForDirectAccount($balanceEntity);
             }
 
-            $dispatchedData = $this->dispatchApplicablePayouts($balanceAmount, $payouts);
+            $dispatchedData = $this->dispatchApplicablePayouts($balanceAmount, $payouts, $balanceEntity);
 
             $traceData[$balanceId] = [
                 'original_balance'          => $balanceAmount,
@@ -707,7 +708,7 @@ class Core extends Base\Core
 
                 $totalQueuedPayouts = $this->repo->payout->fetchCountOfQueuedPayoutsForBalance($balanceId);
 
-                $dispatchedData = $this->dispatchApplicablePayouts($balanceAmount, $queuedPayouts);
+                $dispatchedData = $this->dispatchApplicablePayouts($balanceAmount, $queuedPayouts , $balanceEntity);
 
                 $dispatchedPayoutCount = $dispatchedData['dispatched_payout_count'];
 
@@ -1238,7 +1239,9 @@ class Core extends Base\Core
         return $workflowActions->first();
     }
 
-    protected function dispatchApplicablePayouts(int $totalBalance, Base\PublicCollection $payouts)
+    protected function dispatchApplicablePayouts(int $totalBalance,
+                                                 Base\PublicCollection $payouts,
+                                                 Balance\Entity $balance)
     {
         $dispatchedCount = 0;
 
@@ -1280,6 +1283,11 @@ class Core extends Base\Core
             ];
         }
 
+        // We are going to get the count of Free Payouts here but we shall not be incrementing or decrementing the
+        // count at this point. Increments/Decrements should ideally reside in the same flow.
+        // This will also help avoid issues with counter getting stuck or any other race conditions.
+        $freePayoutsConsumed = (new CounterHelper)->getCounterForBalance($balance)->getFreePayoutsConsumed();
+
         foreach ($payouts as $payout)
         {
             $payoutAmount = $payout->getAmount();
@@ -1294,7 +1302,22 @@ class Core extends Base\Core
             }
             else
             {
-                $totalPayoutAmount = $payoutAmount + $payoutFees;
+                $freePayoutsAllowed = (new Balance\FreePayout)->getFreePayoutsCount($balance);
+
+                if ($freePayoutsConsumed < $freePayoutsAllowed)
+                {
+                    // If we have enough free payouts, we don't consider the fees while dispatching.
+                    $totalPayoutAmount = $payoutAmount;
+
+                    // We are not updating the counter in the database because, at this point, we are only dispatching
+                    // the payout. Dispatch does not guarantee processing and if we increment the counter, we would
+                    // be blocking the free payout to be used by other flows such as normal payouts or scheduled payouts
+                    $freePayoutsConsumed++;
+                }
+                else
+                {
+                    $totalPayoutAmount = $payoutAmount + $payoutFees;
+                }
             }
 
             if ($totalBalance < $totalPayoutAmount)
