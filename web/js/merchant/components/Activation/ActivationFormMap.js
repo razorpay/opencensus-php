@@ -46,7 +46,7 @@ import {
   showAadharDoc,
 } from './ActivationUtils';
 
-import { ADDITIONAL_DOCS_LABEL_VALUE_MAP, BUSINESS_PROOF_TYPE_DOCS } from './Constants';
+import { ADDITIONAL_DOCS_LABEL_VALUE_MAP, BUSINESS_PROOF_TYPE_DOCS, BUSINESS_PROOF_CERTIFICATE_TYPES } from './Constants';
 
 const PROPRIETORSHIP = 1;
 const PARTNERSHIP = 3;
@@ -893,6 +893,17 @@ const uploadFields = [
     _cmp: Input.File,
     description: (activation) => {
       const businessProofType = activation.state.business_proof_type;
+      if (businessProofType === BUSINESS_PROOF_CERTIFICATE_TYPES.MSME_CERTIFICATE) {
+        return (
+          <div>
+            <div><a href="https://www.udyogaadhar.co.in/sample-certificate" target="_blank">Sample Udyam Aadhar Registration Certificate</a></div>
+            <div><a href="http://www.msmeudyogaadhaar.org/msme-ssi-udyog-certificate-sample/" target="_blank">Sample Udyog Certificate</a></div>
+            <div>Don't have it on hand?</div>
+            <div><a href="https://udyamregistration.gov.in/PrintUdyamCertificate.aspx" target="_blank">Download Udyam Aadhar Certificate</a></div>
+            <div><a href="https://udyamregistration.gov.in/UA/PrintAcknowledgement_Pub.aspx" target="_blank">Download Udyog Certificate</a></div>
+          </div>
+        )
+      }
       return `Upload the scan of ${BUSINESS_PROOF_TYPE_DOCS[businessProofType]}`;
     },
     _when: isBusinessProofTypeDocFieldVisible,

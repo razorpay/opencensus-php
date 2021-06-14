@@ -374,6 +374,55 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
                       </Option>
                     ))}
                   </Select>
+                  {businessDoc === 'msme_certificate' && (
+                    <Field>
+                      <Space margin={[0, 0, 0, 0]}>
+                        <View>
+                          <Link
+                            size="small"
+                            href="https://www.udyogaadhar.co.in/sample-certificate"
+                            target="_blank"
+                          >
+                            Sample Udyam Aadhar Registration Certificate
+                          </Link>
+                        </View>
+                      </Space>
+                      <Space margin={[0, 0, 0, 0]}>
+                        <View>
+                          <Link
+                            size="small"
+                            href="http://www.msmeudyogaadhaar.org/msme-ssi-udyog-certificate-sample/"
+                            target="_blank"
+                          >
+                            Sample Udyog Certificate
+                          </Link>
+                        </View>
+                      </Space>
+                      <Text size="small">Don't have it on hand?</Text>
+                      <Space margin={[0, 0, 0, 0]}>
+                        <View>
+                          <Link
+                            size="small"
+                            href="https://udyamregistration.gov.in/PrintUdyamCertificate.aspx"
+                            target="_blank"
+                          >
+                            Download Udyam Aadhar Certificate
+                          </Link>
+                        </View>
+                      </Space>
+                      <Space margin={[0, 0, 0, 0]}>
+                        <View>
+                          <Link
+                            size="small"
+                            href="https://udyamregistration.gov.in/UA/PrintAcknowledgement_Pub.aspx"
+                            target="_blank"
+                          >
+                            Download Udyog Certificate
+                          </Link>
+                        </View>
+                      </Space>
+                    </Field>
+                  )}
                 </Field>
                 {isVisible('shop_establishment_number', data) &&
                   businessDoc === 'shop_establishment_certificate' && <ShopEstablishmentNumber />}
