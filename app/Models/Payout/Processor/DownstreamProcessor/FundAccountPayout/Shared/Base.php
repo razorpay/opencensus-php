@@ -21,6 +21,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Payout\CounterHelper;
+use RZP\Models\Payout\QueuedReasons;
 use RZP\Models\Transaction\CreditType;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
@@ -124,6 +125,8 @@ class Base extends FundAccountPayout\Base
                 }
 
                 $payout->setStatus(Status::QUEUED);
+
+                $payout->setQueuedReason(QueuedReasons::LOW_BALANCE);
             }
             else
             {

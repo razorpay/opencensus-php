@@ -59,7 +59,7 @@ class Status
         self::CANCELLED                    => self::CANCELLED,
         self::FAILED                       => self::FAILED,
         self::BATCH_SUBMITTED              => self::PROCESSING,
-        self::CREATE_REQUEST_SUBMITTED     => self::PROCESSING
+        self::CREATE_REQUEST_SUBMITTED     => self::PROCESSING,
     ];
 
     /**

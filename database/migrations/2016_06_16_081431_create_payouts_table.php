@@ -199,6 +199,9 @@ class CreatePayoutsTable extends Migration
             $table->string(Payout::REGISTERED_NAME, 255)
                   ->nullable();
 
+            $table->string(Payout::QUEUED_REASON, 255)
+                  ->nullable();
+
             $table->integer(Payout::CREATED_AT);
 
             $table->integer(Payout::UPDATED_AT);

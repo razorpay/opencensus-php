@@ -1201,11 +1201,13 @@ class PayoutTest extends OAuthTestCase
         // Create 2 more queued payouts
         $this->startTest();
         $payout = $this->getDbLastEntity('payout');
+        $this->assertEquals('low_balance', $payout->getQueuedReason());
         $this->assertEquals(0, $payout['fees']);
         $this->assertEquals(0, $payout['tax']);
 
         $this->startTest();
         $payout = $this->getDbLastEntity('payout');
+        $this->assertEquals('low_balance', $payout->getQueuedReason());
         $this->assertEquals(0, $payout['fees']);
         $this->assertEquals(0, $payout['tax']);
 
@@ -1595,6 +1597,8 @@ class PayoutTest extends OAuthTestCase
         $this->testCreateQueuedPayout();
 
         $queuedPayout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('low_balance', $queuedPayout->getQueuedReason());
 
         $cancellationUser = $this->getDbEntityById('user', 'MerchantUser01')->toArrayPublic();
 
@@ -8679,6 +8683,7 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('queued', $payout['internal_status']);
         $this->assertEquals('queued', $publicResponse['status']);
         $this->assertNotNull($payout['queued_at']);
+        $this->assertEquals('low_balance', $payout['queued_reason']);
     }
 
     public function testCreatePayoutLinkPayoutWithoutSourceDetails()
@@ -10221,6 +10226,8 @@ class PayoutTest extends OAuthTestCase
 
         $queuedPayout = $this->getDbLastEntity('payout');
 
+        $this->assertEquals('low_balance', $queuedPayout->getQueuedReason());
+
         $userComment = "Payout cancelled";
 
         for ($i = 0; $i < 5; $i++)
@@ -10245,6 +10252,8 @@ class PayoutTest extends OAuthTestCase
         $this->testCancelQueuedPayoutPrivateAuth();
 
         $queuedPayout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('low_balance', $queuedPayout->getQueuedReason());
 
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/payouts/' . $queuedPayout->getPublicId();

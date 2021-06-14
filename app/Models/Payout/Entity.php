@@ -113,6 +113,7 @@ class Entity extends Base\PublicEntity
     const REGISTERED_NAME                       = 'registered_name';
     const CANCELLATION_USER_ID                  = 'cancellation_user_id';
     const CANCELLATION_USER                     = 'cancellation_user';
+    const QUEUED_REASON                         = 'queued_reason';
 
     // status code send from bank side
     const STATUS_CODE            = 'status_code';
@@ -1078,6 +1079,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PAYMENT_ID);
     }
 
+    public function getQueuedReason()
+    {
+        return $this->getAttribute(self::QUEUED_REASON);
+    }
+
     public function hasPayment()
     {
         return ($this->isAttributeNotNull(self::PAYMENT_ID) === true);
@@ -1308,6 +1314,11 @@ class Entity extends Base\PublicEntity
     public function setUtr(string $utr = null)
     {
         $this->setAttribute(self::UTR, $utr);
+    }
+
+    public function setQueuedReason($queuedReason)
+    {
+        $this->setAttribute(self::QUEUED_REASON, $queuedReason);
     }
 
     // TODO: check how to handle this

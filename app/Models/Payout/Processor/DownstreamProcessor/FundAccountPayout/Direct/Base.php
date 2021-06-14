@@ -60,6 +60,8 @@ class Base extends FundAccountPayout\Base
         {
             $payout->setStatus(Status::QUEUED);
 
+            $payout->setQueuedReason(Payout\QueuedReasons::LOW_BALANCE);
+
             $this->trace->info(
                 TraceCode::PAYOUT_QUEUED,
                 [

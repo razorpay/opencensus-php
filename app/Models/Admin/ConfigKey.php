@@ -168,6 +168,11 @@ class ConfigKey
     const RX_QUEUED_PAYOUTS_PAGINATION          = self::PREFIX . 'rx_queued_payouts_pagination';
     const RX_QUEUED_PAYOUTS_CRON_LAST_RUN_AT    = self::PREFIX . 'rx_queued_payouts_cron_last_run_at';
 
+    const RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT  = self::PREFIX . 'event_notification_config_fts_to_payout';
+
+    const RX_ON_HOLD_PAYOUTS_MERCHANT_SLA       = self::PREFIX . 'rx_on_hold_payouts_merchant_sla';
+    const RX_ON_HOLD_PAYOUTS_DEFAULT_SLA        = self::PREFIX . 'rx_on_hold_payouts_default_sla';
+
     // this is used to limit the number of records fetched while querying db to get low balance configs in order
     // to reduce the load
     const LOW_BALANCE_CONFIGS_FETCH_LIMIT_IN_ONE_BATCH = self::PREFIX . 'low_balance_configs_fetch_limit_in_one_batch';
@@ -292,6 +297,9 @@ class ConfigKey
         self::CVV_REGEX_FOR_REDACTING,
         self::RX_QUEUED_PAYOUTS_PAGINATION,
         self::RX_QUEUED_PAYOUTS_CRON_LAST_RUN_AT,
+        self::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT,
+        self::RX_ON_HOLD_PAYOUTS_MERCHANT_SLA,
+        self::RX_ON_HOLD_PAYOUTS_DEFAULT_SLA,
         self::RX_PAYOUTS_CUSTOM_BATCH_FILE_LIMIT_MERCHANTS,
         self::RX_PAYOUTS_DEFAULT_MAX_BATCH_FILE_COUNT,
         self::CARD_PAYMENT_SERVICE_EMI_FETCH,
