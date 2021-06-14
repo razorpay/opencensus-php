@@ -343,7 +343,11 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                       errorText={
                         formikProps.touched.business_name && formikProps.errors.business_name
                       }
-                      updateBusinessName={({ company_name = '', identity_number, identity_type }) => {
+                      updateBusinessName={({
+                        company_name = '',
+                        identity_number,
+                        identity_type,
+                      }) => {
                         formikProps.setFieldTouched('business_name');
                         formikProps.setFieldValue('business_name', company_name);
                         if (identity_type) {
