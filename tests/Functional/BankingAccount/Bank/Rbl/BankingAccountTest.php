@@ -2377,6 +2377,53 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
     }
 
+    public function testGetBankingAccountForRmNotAssigned()
+    {
+        $activationDetails = [
+            'activation_detail' => [
+                'merchant_poc_name' => 'Sample Name',
+                'merchant_poc_designation' => 'Financial Consultant',
+                'merchant_poc_email' => 'sample@sample.com',
+                'merchant_poc_phone_number' => '9876556789',
+                'merchant_documents_address' => 'x, y, z',
+                'business_type' => 'ecommerce',
+                'account_type' => 'insignia',
+                'merchant_city' => 'Bangalore',
+                'is_documents_walkthrough_complete' => true,
+                'merchant_region' => 'South',
+                'expected_monthly_gmv' => 10000,
+                'average_monthly_balance' => 0,
+                'business_category' => 'partnership',
+                'sales_team' => 'self_serve',
+            ]
+        ];
+
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $bankingAccount = $this->createBankingAccountFromDashboard($activationDetails);
+
+        $this->fixtures->edit('banking_account_activation_detail',
+                              $bankingAccount['banking_account_activation_details']['id'], ['rm_name' => 'rm not assigned']);
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts/' . $bankingAccount['id'],
+                'method'  => 'GET',
+
+            ],
+        ];
+
+        $this->startTest($dataToReplace);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals('560030', $bankingAccount->getPincode());
+    }
+  
     public function testUpdateBankingAccountToInitiatedWithInternalComments()
     {
         $bankingAccount = $this->createBankingAccount();

@@ -702,11 +702,11 @@ class Entity extends Base\PublicEntity
     {
         if(app('basicauth')->isProxyAuth() === true && $array[self::ACCOUNT_TYPE] === AccountType::CURRENT)
         {
-            if($this->bankingAccountActivationDetails !== null && $this->spocs()->first() !== null)
+            if($this->bankingAccountActivationDetails !== null)
             {
-                $bankingAccountActivationDetails = $this->bankingAccountActivationDetails;
-
                 $rmName = null;
+
+                $bankingAccountActivationDetails = $this->bankingAccountActivationDetails;
 
                 $rmNameInLowerCaseWithTrimApplied = strtolower(trim($bankingAccountActivationDetails[Activation\Detail\Entity::RM_NAME]));
 
@@ -715,16 +715,26 @@ class Entity extends Base\PublicEntity
                     $rmName = $bankingAccountActivationDetails[Activation\Detail\Entity::RM_NAME];
                 }
 
-                $salesSpoc = $this->spocs()->first()->toArrayPublic();
+                if (array_key_exists('banking_account_activation_details', $array) === true)
+                {
+                    $array['banking_account_activation_details'][Activation\Detail\Entity::RM_NAME] = $rmName;
+                }
 
-                $array[self::BANKING_ACCOUNT_CA_SPOC_DETAILS] =
-                    [
-                        Activation\Detail\Entity::RM_NAME                  => $rmName,
-                        Activation\Detail\Entity::RM_PHONE_NUMBER          => $bankingAccountActivationDetails[Activation\Detail\Entity::RM_PHONE_NUMBER],
-                        Activation\Detail\Entity::SALES_POC_PHONE_NUMBER   => $bankingAccountActivationDetails[Activation\Detail\Entity::SALES_POC_PHONE_NUMBER],
-                        Activation\Detail\Entity::SALES_POC_NAME           => $salesSpoc['name'],
-                        Activation\Detail\Entity::SALES_POC_EMAIL          => $salesSpoc['email']
-                    ];
+                if($this->spocs()->first() !== null)
+                {
+                    $bankingAccountActivationDetails = $this->bankingAccountActivationDetails;
+
+                    $salesSpoc = $this->spocs()->first()->toArrayPublic();
+
+                    $array[self::BANKING_ACCOUNT_CA_SPOC_DETAILS] =
+                        [
+                            Activation\Detail\Entity::RM_NAME                  => $rmName,
+                            Activation\Detail\Entity::RM_PHONE_NUMBER          => $bankingAccountActivationDetails[Activation\Detail\Entity::RM_PHONE_NUMBER],
+                            Activation\Detail\Entity::SALES_POC_PHONE_NUMBER   => $bankingAccountActivationDetails[Activation\Detail\Entity::SALES_POC_PHONE_NUMBER],
+                            Activation\Detail\Entity::SALES_POC_NAME           => $salesSpoc['name'],
+                            Activation\Detail\Entity::SALES_POC_EMAIL          => $salesSpoc['email']
+                        ];
+                }
             }
         }
     }

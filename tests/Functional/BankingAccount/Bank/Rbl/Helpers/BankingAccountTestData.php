@@ -929,6 +929,27 @@ return [
             'status_code' => 400,
         ]
     ],
+  
+    'testGetBankingAccountForRmNotAssigned' => [
+        'request'  => [
+            'url'     => '/banking_accounts',
+            'method'  => 'GET',
+            'server' => [
+                'X-Dashboard-User-Id' => '20000000000000',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'channel'                      => 'rbl',
+                BankingAccount\Entity::PINCODE => '560030',
+                'banking_account_activation_details' => [
+                    'merchant_poc_name' => 'Sample Name',
+                    'merchant_poc_designation' => 'Financial Consultant',
+                    'rm_name' => null
+                ],
+            ],
+        ],
+    ],
 
     'testUpdateBankingAccountToPicked' => [
         'request'  => [
