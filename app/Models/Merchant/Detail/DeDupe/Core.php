@@ -143,6 +143,45 @@ class Core extends Base\Core
         return $this->checkImpersonationFromRiskScore($riskScores);
     }
 
+    public function matchAndGetMatchedMIDs(Merchant\Entity $merchant) : array
+    {
+        $isMatch = $this->match($merchant);
+
+        if ($isMatch === false)
+        {
+            return [false, null];
+        }
+
+        $riskScores = $this->merchantRiskClient->getMerchantImpersonatedDetails(
+            Constants::MERCHANT_RISK_CLIENT_TYPE_ONBOARDING, $merchant->getId());
+
+        return [true, $this->getMatchedMIDsFromRiskScores($riskScores)];
+    }
+
+    protected function getMatchedMIDsFromRiskScores($riskScores)
+    {
+        $matchedMerchantIds = [];
+
+        if (isset($riskScores['fields']) === false)
+        {
+            return $matchedMerchantIds;
+        }
+
+        foreach ($riskScores['fields'] as $riskScore)
+        {
+            foreach ($riskScore['matched_entity'] as $matchedEntity)
+            {
+                if ($matchedEntity['key'] === 'id')
+                {
+                    array_push($matchedMerchantIds, $matchedEntity['value']);
+                    break;
+                }
+            }
+        }
+
+        return $matchedMerchantIds;
+    }
+
     private function checkImpersonationFromRiskScore($riskScores, bool $action = true): array
     {
         if (isset($riskScores['fields']) === false)

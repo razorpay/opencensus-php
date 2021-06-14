@@ -3309,6 +3309,10 @@ class MerchantTest extends TestCase
 
         $this->setupWorkflowForBankAccountUpdate();
 
+        $this->enableRazorXTreatmentForFeature(RazorxTreatment::DEDUPE_FUNCTIONALITY, 'on');
+
+        $this->mockMerchantImpersonated();
+
         $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true, [
             'promoter_pan_name' => 'pan_name'
         ]);
@@ -3334,7 +3338,6 @@ class MerchantTest extends TestCase
         ]);
 
         $workflowAction = $this->getLastEntity('workflow_action', true);
-
         // get workflow action details in Admin Auth
         $this->ba->adminAuth('test');
 
@@ -3350,9 +3353,13 @@ class MerchantTest extends TestCase
 
         $this->assertEquals($res['id'], $workflowAction['id']);
 
-        $expectedComment = 'penny_test_result : passed, registered_name : invalid name, is_name_matched : false, dedupe_status : false';
+        $expectedComment1 = 'penny_test_result : passed, registered_name : invalid name, is_name_matched : false';
 
-        $this->assertEquals($res['comments'][0]['comment'], $expectedComment);
+        $expectedComment2 = 'dedupe_status: true, matchedMIDs = {10000000000}';
+
+        $this->assertEquals($res['comments'][0]['comment'], $expectedComment1);
+
+        $this->assertEquals($res['comments'][1]['comment'], $expectedComment2);
     }
 
 
@@ -10405,14 +10412,28 @@ class MerchantTest extends TestCase
             'action' => 'deactivate'
         ];
 
-        $mockedResponse = [];
+        $mockedResponseForDetails = [];
+
+        $mockedResponseForMatch = [];
 
         foreach ($action['keysToCheck'] as $fieldName => $data)
         {
-            $mockedResponse[] = [
+            $mockedResponseForMatch[]   = [
                 'field'     => $fieldName,
                 'list'      => $data['list'],
-                'score'     => 900  // some random score
+                'score'     => 900,  // some random score
+            ];
+
+            $mockedResponseForDetails[] = [
+                'field'     => $fieldName,
+                'list'      => $data['list'],
+                'score'     => 900,  // some random score
+                'matched_entity' => [
+                    [
+                        'key' => 'id',
+                        'value' => '10000000000'
+                    ]
+                ],
             ];
         }
 
@@ -10421,8 +10442,14 @@ class MerchantTest extends TestCase
         $merchantRiskClientMock->shouldReceive('getMerchantImpersonatedDetails')->andReturn([
                                                                                                 "client_type" => "onboarding",
                                                                                                 "entity_id" => '10000000000000',
-                                                                                                "fields" => $mockedResponse
+                                                                                                "fields" => $mockedResponseForDetails
                                                                                             ]);
+
+        $merchantRiskClientMock->shouldReceive('getMerchantRiskScores')->andReturn([
+            "client_type" => "onboarding",
+            "entity_id" => '10000000000000',
+            "fields" => $mockedResponseForMatch
+        ]);
 
         $this->app->instance('merchantRiskClient', $merchantRiskClientMock);
     }

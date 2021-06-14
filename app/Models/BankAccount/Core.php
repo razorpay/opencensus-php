@@ -34,7 +34,9 @@ class Core extends Base\Core
 {
     use TrimSpace;
 
-    const BANK_ACCOUNT_UPDATE_WORKFLOW_COMMENT = 'penny_test_result : %s, registered_name : %s, is_name_matched : %s, dedupe_status : %s';
+    const BANK_ACCOUNT_UPDATE_WORKFLOW_COMMENT = 'penny_test_result : %s, registered_name : %s, is_name_matched : %s';
+
+    const BANK_ACCOUNT_UPDATE_WORKFLOW_COMMENT_FOR_DEDUPE = 'dedupe_status: true, matchedMIDs = {%s}';
 
     public function createOrChangeBankAccount($input,
                                               $merchant,
@@ -698,13 +700,21 @@ class Core extends Base\Core
         }
         else
         {
-            $commentEntity = (new CommentCore())->create([
-                'comment' => $this->getCommentForBankAccountUpdateWorkFlow($pennyTestAndFuzzyMatchResult, $newBankAccountArray, $merchant),
+            $commentEntity1 = (new CommentCore())->create([
+                'comment' => $this->getCommentForBankAccountUpdateWorkFlow($pennyTestAndFuzzyMatchResult),
             ]);
 
-            $commentEntity->entity()->associate($workFlowAction);
+            $commentEntity2 = (new CommentCore())->create([
+                'comment' => $this->getDedupeStatusCommentForBankAccountUpdateWorkflow($newBankAccountArray, $merchant),
+            ]);
 
-            $this->repo->saveOrFail($commentEntity);
+            $commentEntity1->entity()->associate($workFlowAction);
+
+            $commentEntity2->entity()->associate($workFlowAction);
+
+            $this->repo->saveOrFail($commentEntity1);
+
+            $this->repo->saveOrFail($commentEntity2);
         }
     }
 
@@ -715,7 +725,7 @@ class Core extends Base\Core
      * @param $merchant
      * @return string
      */
-    protected function getCommentForBankAccountUpdateWorkFlow($pennyTestAndFuzzyMatchResult, $newBankAccountArray, $merchant)
+    protected function getCommentForBankAccountUpdateWorkFlow($pennyTestAndFuzzyMatchResult)
     {
         $pennyTestResult = 'failed';
 
@@ -729,15 +739,26 @@ class Core extends Base\Core
 
         $registeredName  = $pennyTestAndFuzzyMatchResult[Constants::REGISTERED_NAME];
 
-        $dedupeStatus = $this->getDedupeStatusForBankAccountUpdate($newBankAccountArray, $merchant) ? 'true' : 'false';
-
-        $comment = sprintf(self::BANK_ACCOUNT_UPDATE_WORKFLOW_COMMENT, $pennyTestResult, $registeredName, $isNameMatched, $dedupeStatus);
+        $comment = sprintf(self::BANK_ACCOUNT_UPDATE_WORKFLOW_COMMENT, $pennyTestResult, $registeredName, $isNameMatched);
 
         $this->app['trace']->info(TraceCode::BANK_ACCOUNT_UPDATE_WORKFLOW_COMMENT, [
             'comment' => $comment,
         ]);
 
         return $comment;
+    }
+
+    protected function getDedupeStatusCommentForBankAccountUpdateWorkflow($newBankAccountArray, $merchant)
+    {
+        [$status, $matchedMIDs] = $this->getDedupeStatusForBankAccountUpdate($newBankAccountArray, $merchant);
+
+        if ($status === false)
+        {
+            return "dedupe_status: false";
+        }
+
+        return sprintf(self::BANK_ACCOUNT_UPDATE_WORKFLOW_COMMENT_FOR_DEDUPE, implode(', ', $matchedMIDs));
+
     }
 
     protected function getDedupeStatusForBankAccountUpdate($newBankAccountArray, $merchant)
@@ -758,12 +779,12 @@ class Core extends Base\Core
         // dedupe status should be given for new bank account
         $this->merchant->merchantDetail->edit($newDetail);
 
-        $status = (new DedupeCore())->match($merchant)[0];
+        [$status, $matchedMIDs] = (new DedupeCore())->matchAndGetMatchedMIDs($merchant);
 
         // restore old detail in merchantDetail Entity
         $this->merchant->merchantDetail->edit($oldDetail);
 
-        return $status;
+        return [$status, $matchedMIDs];
     }
 
     public function bankAccountUpdatePostPennyTestingWorkflow(MerchantEntity $merchant, array $input)
