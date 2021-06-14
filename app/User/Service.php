@@ -1546,7 +1546,6 @@ class Service extends Base\Service
             'optimizer_custom_identifier',
             'show_csat_survey',
             'rx_mobile_app_announcement',
-            'rx_tally_payouts_enabled',
             'rx_shopify_pl',
             'enable_may_dashboard_notification_retention_1',
             'enable_may_dashboard_notification_retention_2',
