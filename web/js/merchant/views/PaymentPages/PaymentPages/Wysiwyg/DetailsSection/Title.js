@@ -60,8 +60,8 @@ export default class extends React.Component {
           onInput={this.handleOnInput}
           required
           validator={val => {
-            if (!val) {
-              return 'Page title cannot be empty. ';
+            if (!val.trim()) {
+              return 'Page title cannot be empty';
             }
             if (val && val.length > 40) {
               return 'Title cannot be more than 40 characters';
