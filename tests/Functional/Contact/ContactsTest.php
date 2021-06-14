@@ -245,6 +245,11 @@ class ContactsTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateContactWithComma()
+    {
+        $this->startTest();
+    }
+
 
     public function testCreateContactLiveModeNonKycActivatedNonCaActivated()
     {
