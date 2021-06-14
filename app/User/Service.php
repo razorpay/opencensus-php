@@ -1543,6 +1543,7 @@ class Service extends Base\Service
             'support_details_2FA',
             'comdel_hdfc_test',
             'rx_icici_ca_onboarding',
+            'optimizer_custom_identifier',
             'show_csat_survey',
             'rx_mobile_app_announcement',
             'rx_tally_payouts_enabled',

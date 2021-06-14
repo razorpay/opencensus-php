@@ -82,7 +82,7 @@ export const operators = [
   },
   {
     name: 'Contains',
-    description: 'You can select only one comparing value',
+    description: 'You can give only one comparing value',
     id: 9,
     input_type: 'input',
     value: 'contains',
@@ -105,6 +105,81 @@ export const operators = [
     type: 'comparator',
   },
 ];
+
+const customIdentifierParameter = getExpStatus('optimizer_custom_identifier')
+  ? [
+      {
+        name: 'Custom Identifier 1',
+        value: '$payment.optimizer_identifier_1',
+        description: 'Custom Identifier',
+        id: 10,
+        values: [],
+        operators: {
+          '==': {
+            number: false,
+            type: 'input',
+          },
+          '!=': {
+            number: false,
+            type: 'input',
+          },
+          in: {
+            number: false,
+            type: 'input',
+            multiple: true,
+          }
+        },
+        type: 'string',
+      },
+      {
+        name: 'Custom Identifier 2',
+        value: '$payment.optimizer_identifier_2',
+        description: 'Custom Identifier',
+        id: 11,
+        values: [],
+        operators: {
+          '==': {
+            number: false,
+            type: 'input',
+          },
+          '!=': {
+            number: false,
+            type: 'input',
+          },
+          in: {
+            number: false,
+            type: 'input',
+            multiple: true,
+          }
+        },
+        type: 'string',
+      },
+      {
+        name: 'Custom Identifier 3',
+        value: '$payment.optimizer_identifier_3',
+        description: 'Custom Identifier',
+        id: 12,
+        values: [],
+        operators: {
+          '==': {
+            number: false,
+            type: 'input',
+          },
+          '!=': {
+            number: false,
+            type: 'input',
+          },
+          in: {
+            number: false,
+            type: 'input',
+            multiple: true,
+          }
+        },
+        type: 'string',
+      },
+    ]
+  : [];
+
 export const parameters = [
   {
     name: 'Channels',
@@ -502,6 +577,7 @@ export const parameters = [
     },
     type: 'numeric',
   },
+  ...customIdentifierParameter,
 ];
 export const PROVIDERS = [
   { name: 'Smart Router1', id: 1, value: 'smartrouter' },

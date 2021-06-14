@@ -193,6 +193,39 @@ export default class Expression extends React.Component {
                 }
                 if (
                   RHS_TYPE.type == 'input' &&
+                  RHS_TYPE.number === false &&
+                  RHS_TYPE.multiple === true
+                ) {
+                  jsx = (
+                    <div className="row">
+                      <div className="col-xs-12">
+                        <input
+                          value={this.props.expression.operands[1].value}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            this.props.update({
+                              ...this.props.expression,
+                              operands: [
+                                this.props.expression.operands[0],
+                                {
+                                  ...this.props.expression.operands[1],
+                                  value: value,
+                                  type: VALUE_TYPE,
+                                },
+                              ],
+                            });
+                          }}
+                          type='text'
+                          placeholder="Enter comma separated text"
+                          name="enter_text"
+                          class="form-control"
+                        />
+                      </div>
+                    </div>
+                  );
+                }
+                if (
+                  RHS_TYPE.type == 'input' &&
                   RHS_TYPE.number === true &&
                   RHS_TYPE.multiple === true
                 ) {
