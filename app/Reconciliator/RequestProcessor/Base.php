@@ -228,7 +228,7 @@ class Base extends Core
         self::UPI_YESBANK            => [],
         self::CRED                   => [],
         self::VIRTUAL_ACC_ICICI      => [],
-        self::NETBANKING_DLB         => ['Alerts@dhanbank.co.in'],
+        self::NETBANKING_DLB         => ['alerts@dhanbank.co.in'],
 
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.

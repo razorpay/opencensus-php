@@ -766,11 +766,11 @@ class Validator extends Base\Core
     {
         $validSubject = $this->validateEmailSubject(
             $emailDetails[RequestProcessor\Mailgun::SUBJECT],
-            RequestProcessor\Base::NETBANKING_IOB);
+            RequestProcessor\Base::NETBANKING_DLB);
 
         $validAttachmentCount = $this->validateAttachmentCount(
             $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
-            RequestProcessor\Base::NETBANKING_IOB);
+            RequestProcessor\Base::NETBANKING_DLB);
 
         return ($validSubject and $validAttachmentCount);
     }
