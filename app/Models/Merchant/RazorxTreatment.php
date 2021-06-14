@@ -270,4 +270,10 @@ final class RazorxTreatment
      * Experiment to indicate if a payment should go via capture queue for Master Card Network
      */
     const PAYMENT_GATEWAY_CAPTURE_ASYNC_MC = 'payment_gateway_capture_asyc_mc';
+
+
+    /**
+     * Experiment to indicate if a payment should go via capture queue for Visa and other n/ws like Amex,Diner etc.
+     */
+    const PAYMENT_GATEWAY_CAPTURE_ASYNC_OTHER_NETWORKS = 'payment_gateway_capture_async_other_networks';
 }

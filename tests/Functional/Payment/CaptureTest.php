@@ -290,8 +290,6 @@ class CaptureTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '5567630000002004';
 
-        $this->mockRazorxTreatmentV2(Merchant\RazorxTreatment::PAYMENT_GATEWAY_CAPTURE_ASYNC_MC, 'on');
-
         $response = $this->doAuthPayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
@@ -307,18 +305,17 @@ class CaptureTest extends TestCase
         $this->assertEquals('hdfc', $payment['gateway']);
     }
 
-    public function testGatewayCaptureRazorpayOrgMastercardRazorxOff()
+    public function testGatewayCaptureForAllPaymentsRazorpayOrg()
     {
         $payment = $this->getDefaultPaymentArray();
-        $payment['card']['number'] = '5567630000002004';
 
-        $this->mockRazorxTreatmentV2(Merchant\RazorxTreatment::PAYMENT_GATEWAY_CAPTURE_ASYNC_MC, 'off');
+        $this->mockRazorxTreatmentV2(Merchant\RazorxTreatment::PAYMENT_GATEWAY_CAPTURE_ASYNC_OTHER_NETWORKS, 'on');
 
         $response = $this->doAuthPayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertNull($payment['gateway_captured']);
+        $this->assertTrue($payment['gateway_captured']);
 
         $this->assertEquals('authorized', $payment['status']);
 
