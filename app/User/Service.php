@@ -406,12 +406,6 @@ class Service extends Base\Service
                 return [['Incorrect Password login attempt exhausted. Please contact support or login via dashboard', self::LOGIN_UNAUTHENTICATED], null];
             }
 
-            //temporarily added and will be removed after the root cause is fixed.
-            if (in_array('No db records found.', $error) === true)
-            {
-                return [['The email or password combination you entered doesn\'t exist', self::LOGIN_UNREGISTERED], null];
-            }
-
             return [['Incorrect email or password. To reset, click on "Forgot?" link.', self::LOGIN_UNAUTHENTICATED], null];
         }
 
