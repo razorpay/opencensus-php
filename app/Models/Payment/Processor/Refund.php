@@ -1860,7 +1860,9 @@ trait Refund
         {
             if ($payment->isExternal() == false)
             {
-                $payment->reload();
+                $this->payment->reload();
+
+                $payment = $this->payment;
             }
 
             if ($payment->isFullyRefunded() === true)
