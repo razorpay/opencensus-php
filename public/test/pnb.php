@@ -85,7 +85,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
     </tr>
 
         <input type="hidden" value="INR" name="currency">
-        <input type="hidden" value="rzp_test_ZAxCg9TB9J6ifu" name="key_id">
+        <input type="hidden" value="rzp_test_vmJxc1uOeDFQUL" name="key_id">
 
 
         <tr>
@@ -96,6 +96,12 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
                 <option value="INR">Indian Rupee</option>
             </select>
         </td>
+        </tr>
+
+    <tr>
+        <td colspan='40'>Razorpay Order Id:</td>
+        <td><input type="text" name="order_id" size="25" value=""></td>
+    </tr>
 
     <tr>
         <td colspan='40'>Email:</td>

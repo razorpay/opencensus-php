@@ -143,6 +143,7 @@ class Validator extends Base\Validator
         Payment\Gateway::CCAVENUE,
         Payment\Gateway::FULCRUM,
         Payment\Gateway::NETBANKING_UBI,
+        Payment\Gateway::NETBANKING_PNB,
     ];
 
     protected static $createValidators = [
@@ -1342,7 +1343,16 @@ class Validator extends Base\Validator
     protected static $netbankingPnbTerminalRules = [
         Entity::GATEWAY                    => 'required|in:netbanking_pnb',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::TPV                        => 'sometimes|in:0,1,2',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+    ];
+
+    protected static $netbankingPnbEditTerminalRules = [
+        Entity::TPV                         => 'sometimes|in:0,1,2',
+        Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::TYPE                        => 'sometimes|array',
+        Entity::CORPORATE                   => 'sometimes|int|in:0,1,2',
+        Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
     ];
 
     protected static $netbankingCorporationTerminalRules = [

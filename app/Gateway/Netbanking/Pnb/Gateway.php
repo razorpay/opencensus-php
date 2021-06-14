@@ -227,7 +227,17 @@ class Gateway extends Base\Gateway
         $content[RequestFields::PHONE_NUMBER] = Constants::RZP_PHONE;
         $content[RequestFields::REMARK]       = Constants::RZP_REMARK;
         $content[RequestFields::RETURN_URL]   = $input['callbackUrl'];
-        $content[RequestFields::CHECKSUM]     = $this->getHashOfArray($content);
+
+        if ($input['merchant']->isTPVRequired() === true)
+        {
+            $content[RequestFields::ACCOUNT_NUMBER] = $input['order']['account_number'];
+        }
+
+        $content[RequestFields::CHECKSUM] = $this->getHashOfArray($content);
+
+        $encrypted = $this->getEncryptedString($content);
+
+        unset($content[RequestFields::ACCOUNT_NUMBER]);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,
@@ -236,8 +246,6 @@ class Gateway extends Base\Gateway
                 'payment_id'     => $input['payment']['id'],
                 'decrypted_data' => $content,
             ]);
-
-        $encrypted = $this->getEncryptedString($content);
 
         return [RequestFields::ENCDATA => $encrypted];
     }

@@ -2515,6 +2515,19 @@ class Terminal extends Base
         return $this->createSharedNetbankingPnbTerminal($attributes);
     }
 
+    public function createSharedNetbankingPnbTpvTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'               => Shared::NETBANKING_PNB_TPV_TERMINAL,
+            'network_category' => 'securities',
+            'tpv'              => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createSharedNetbankingPnbTerminal($attributes);
+    }
+
     public function createSharedNetbankingFederalTerminal(array $attributes = [])
     {
         $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;

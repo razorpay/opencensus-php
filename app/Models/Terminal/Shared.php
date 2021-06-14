@@ -57,6 +57,7 @@ class Shared
     const NETBANKING_INDUSIND_TERMINAL       = '100NbIndnTrmnl';
     const NETBANKING_INDUSIND_TPV_TERMINAL   = '100NbIndnTpvTl';
     const NETBANKING_PNB_TERMINAL            = '100NbPunbTrmnl';
+    const NETBANKING_PNB_TPV_TERMINAL        = '100NbPunbTpvTl';
     const NETBANKING_SIB_TERMINAL            = '1000NbSibTrmnl';
     const NETBANKING_CBI_TERMINAL            = '1000NbCbiTrmnl';
     const NETBANKING_SIB_TPV_TERMINAL        = '1000NbSibTpvTl';

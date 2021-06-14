@@ -23,6 +23,7 @@ class Validator extends Base\Validator
         RequestFields::REMARK          => 'required|string',
         RequestFields::PHONE_NUMBER    => 'required|string',
         RequestFields::ADDRESS         => 'required|string',
+        RequestFields::ACCOUNT_NUMBER  => 'sometimes|string',
     ];
 
     protected static $verifyRules = [

@@ -175,6 +175,7 @@ class Netbanking
         IFSC::CORP,     // due to bank merger, will be routed through UBIN direct integration
         IFSC::AUBL,
         IFSC::DLXB,
+        self::PUNB_R,
     ];
 
     protected static $defaultGatewayDisabledBanks = [
@@ -843,6 +844,9 @@ class Netbanking
                 self::PUNB_R,
                 IFSC::ORBC,
                 IFSC::UTBI,
+            ],
+            'tpv' => [
+                self::PUNB_R,
             ],
             'corp' => [
                 self::PUNB_C
