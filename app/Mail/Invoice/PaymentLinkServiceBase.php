@@ -71,4 +71,9 @@ class PaymentLinkServiceBase extends Mailable
 
         return $this;
     }
+
+    protected function shouldSendEmailViaStork(): bool
+    {
+        return false;
+    }
 }

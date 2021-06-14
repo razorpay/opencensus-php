@@ -8,6 +8,7 @@ use RZP\Models\Invoice\Type;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\Invoice\Entity as InvoiceEntity;
 use RZP\Models\SubscriptionRegistration\Entity as SubRegEntity;
+use RZP\Models\SubscriptionRegistration\Method as SubRegMethod;
 
 class Issued extends Base
 {
@@ -140,5 +141,96 @@ class Issued extends Base
         $this->replyTo($replyTo);
 
         return $this;
+    }
+
+    protected function shouldSendEmailViaStork(): bool
+    {
+        $data = $this->data;
+
+        if ($data['invoice']['type'] === 'link')
+        {
+            return parent::shouldSendEmailViaStork();
+        }
+
+        return false;
+    }
+
+    protected function getParamsForStork(): array
+    {
+        $data = $this->data;
+
+        $invoiceData = $data['invoice'];
+        $invoiceEntityType = $data['invoice']['entity_type'];
+
+        $storkParams = [
+            'template_namespace'            => 'payments_payment_links',
+            'org_id'                        => $data['org']['id'],
+            'template_name'                 => 'customer.payment_link.issued_full_payment',
+            'params'                        => [
+                'merchant'          => [
+                    'billing_label'         => $data['merchant']['billing_label'],
+                    'brand_color'           => $data['merchant']['brand_color'],
+                    'brand_logo'            => $data['merchant']['brand_logo'],
+                    'brand_contrast_color'  => $data['merchant']['contrast_color'],
+                ],
+                'invoice'           => [
+                    'public_id'             => $invoiceData['id'],
+                    'description'           => $invoiceData['description'],
+                    'receipt'               => $invoiceData['receipt'],
+                    'short_url'             => $invoiceData['short_url'],
+                    'expire_by_formatted'   => $invoiceData['expire_by_formatted'],
+                    'amount'                => [
+                        'symbol'                => $invoiceData['amount_spread'][0],
+                        'units'                 => $invoiceData['amount_spread'][1],
+                        'subunits'              => $invoiceData['amount_spread'][2],
+                    ],
+                ],
+
+                'customer'          => [
+                    'email'                 => $data['invoice']['customer_details']['email'],
+                    'phone'                 => $data['invoice']['customer_details']['contact'],
+                ],
+
+                'org'               => [
+                    'name'                  => $data['org']['display_name'],
+                    'logo_url'              => $data['org']['checkout_logo_url'] ?? $data['org']['main_logo_url'],
+                ],
+            ],
+        ];
+
+        if ($invoiceData['partial_payment'] === true)
+        {
+            $storkParams['template_name'] = 'customer.payment_link.issued_partial_payment';
+
+            $storkParams['params']['invoice']['amount_due'] = [
+                'symbol'    => $invoiceData['amount_due_spread'][0],
+                'units'     => $invoiceData['amount_due_spread'][1],
+                'subunits'  => $invoiceData['amount_due_spread'][2],
+            ];
+
+            $storkParams['params']['invoice']['amount_paid'] = [
+                'symbol'    => $invoiceData['amount_paid_spread'][0],
+                'units'     => $invoiceData['amount_paid_spread'][1],
+                'subunits'  => $invoiceData['amount_paid_spread'][2],
+            ];
+        }
+        else if (
+            $invoiceEntityType === Entity::SUBSCRIPTION_REGISTRATION and
+            isset($invoiceData[Entity::SUBSCRIPTION_REGISTRATION]) === true)
+        {
+            $subRegData = $invoiceData[Entity::SUBSCRIPTION_REGISTRATION];
+
+            if ($subRegData['method'] === SubRegMethod::CARD)
+            {
+                $storkParams['template_name'] = 'customer.authorization_links.issued_with_card';
+            }
+            else if ($subRegData['method'] === SubRegMethod::UPI)
+            {
+                $storkParams['template_name'] = 'customer.authorization_links.issued_with_upi';
+            }
+
+        }
+
+        return $storkParams;
     }
 }

@@ -5,6 +5,7 @@ namespace RZP\Models\Base;
 use Carbon\Carbon;
 use InvalidArgumentException;
 
+use RZP\Models\Currency;
 use RZP\Constants\Timezone;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -91,5 +92,18 @@ class Utility
     public static function getTimestampFormatted($epoch, $format)
     {
         return date($format, $epoch);
+    }
+
+    public static function getAmountComponents($amount, $currency)
+    {
+        $currencySymbol = Currency\Currency::SYMBOL[$currency] ?: 'INR';
+
+        $denominationFactor = Currency\Currency::DENOMINATION_FACTOR[$currency] ?: 100;
+
+        $superUnitInAmount = money_format_IN((integer)($amount / $denominationFactor));
+
+        $subUnitInAmount = str_pad($amount % $denominationFactor, 2, 0, STR_PAD_LEFT);
+
+        return [$currencySymbol, $superUnitInAmount, $subUnitInAmount];
     }
 }

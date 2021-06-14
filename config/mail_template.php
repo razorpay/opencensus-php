@@ -24,5 +24,6 @@ return [
         'emails.payment.merchant'                          => RazorxTreatment::API_STORK_MAIL_PAYMENT_CAPTURE,
         'emails.mjml.merchant.user.contact_mobile_updated' => RazorxTreatment::API_STORK_MAIL_CONTACT_MOBILE_UPDATED,
         'emails.mjml.customer.payment'                     => RazorxTreatment::API_STORK_MAIL_CUSTOMER_PAYMENT,
+        'emails.invoice.customer.notification'             => RazorxTreatment::API_STORK_MAIL_CUSTOMER_INVOICE,
     ],
 ];

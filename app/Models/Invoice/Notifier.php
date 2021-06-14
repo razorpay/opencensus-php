@@ -12,6 +12,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Services\Reminders;
+use RZP\Models\Base\Utility;
 use RZP\Models\Invoice\Reminder;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\Invoice as InvoiceMail;
@@ -47,6 +48,8 @@ class Notifier extends Base\Core
         $this->raven = $this->app['raven'];
 
         $this->reminders = $this->app['reminders'];
+
+        $this->ba = $this->app['basicauth'];
     }
 
     public function setInvoice($invoice)
@@ -238,6 +241,8 @@ class Notifier extends Base\Core
             'name' => $this->invoice->getPdfDisplayName(),
             'path' => $this->issuedPdfPath,
         ];
+
+        $viewPayload = $this->addEmailSpecificParams($viewPayload);
 
         $invoiceIssuedMail = new InvoiceMail\Issued($viewPayload, $fileData);
 
@@ -1181,5 +1186,40 @@ class Notifier extends Base\Core
         Mail::send($invoiceIssuedMail);
 
         return true;
+    }
+
+    private function addEmailSpecificParams($viewPayload): array
+    {
+        if (isset($viewPayload['invoice']['expire_by']) === true)
+        {
+            $viewPayload['invoice']['expire_by_formatted'] = Utility::getTimestampFormatted(
+                $viewPayload['invoice']['expire_by'],
+                'jS M, Y');
+        }
+
+        $viewPayload['org'] = $this->invoice->merchant->org->toArrayPublic();
+
+        $viewPayload['invoice']['amount_spread'] = $this->invoice->getAmountComponents();
+
+        if ($viewPayload['invoice']['partial_payment'] === true)
+        {
+            $invoice = $viewPayload['invoice'];
+
+            $currency = $invoice['currency'];
+
+            $amountDue = $invoice['amount_due'];
+
+            $amountPaid = $invoice['amount_paid'];
+
+            $amountPaidComponents = Utility::getAmountComponents($amountPaid, $currency);
+
+            $amountDueComponents = Utility::getAmountComponents($amountDue, $currency);
+
+            $viewPayload['invoice']['amount_due_spread'] = $amountDueComponents;
+
+            $viewPayload['invoice']['amount_paid_spread'] = $amountPaidComponents;
+        }
+
+        return $viewPayload;
     }
 }
