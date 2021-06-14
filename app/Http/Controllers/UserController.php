@@ -281,7 +281,10 @@ class UserController extends Controller
             $input['email'] = mb_strtolower($input['email']);
         }
 
-        $this->trace->info(TraceCode::USER_LOGIN_KEYS, ['captcha' => $input['captcha'] ?? null]);
+        $this->trace->info(TraceCode::USER_LOGIN_KEYS, [
+            'captcha' => $input['captcha'] ?? null,
+            'email'   => $input['email'] ?? null,
+        ]);
 
         $this->checkCaptchaDisableInPayloadForLogin($input);
 
