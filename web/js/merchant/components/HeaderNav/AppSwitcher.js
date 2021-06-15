@@ -6,36 +6,36 @@ const closeButtonClass = 'close';
 
 const appListBusinessBanking = [
   {
-    icon: '/dist/css/assets/products/current-account.svg',
+    icon: '/dist/css/assets/products/blue-theme/current-account.svg',
     name: 'Current Accounts',
     link: 'https://razorpay.com/x/current-accounts/?ref=app-switcher',
     desc: 'Business Banking built for disruptors.',
     showForUnregisteredBusiness: false,
   },
   {
-    icon: '/dist/css/assets/products/payout-link.svg',
+    icon: '/dist/css/assets/products/blue-theme/payout-link.svg',
     name: 'Payout Links',
     link: 'https://razorpay.com/x/payout-links/?ref=app-switcher',
     desc: 'Easy and instant payouts',
     showForUnregisteredBusiness: false,
   },
   {
-    icon: '/dist/css/assets/products/vendor-payments.svg',
+    icon: '/dist/css/assets/products/blue-theme/vendor-payments.svg',
     name: 'Vendor Payments',
     link: 'https://www.razorpay.com/x/vendor-payments/?ref=app-switcher',
     desc: 'Automated Tax payments.',
     showForUnregisteredBusiness: false,
   },
   {
-    icon: '/dist/css/assets/products/payouts.svg',
+    icon: '/dist/css/assets/products/blue-theme/payouts.svg',
     name: 'Payouts',
     link: 'https://razorpay.com/x/payouts/?ref=app-switcher',
     desc: '24x7, Instant & Automated Payouts',
     showForUnregisteredBusiness: false,
   },
   {
-    icon: '/dist/css/assets/products/opfin.svg',
-    name: 'Opfin - Payroll',
+    icon: '/dist/css/assets/products/blue-theme/payroll.svg',
+    name: 'Payroll',
     link: 'https://razorpay.com/payroll/?ref=app-switcher',
     desc: 'Automate and execute payroll',
     showForUnregisteredBusiness: true,
@@ -57,6 +57,23 @@ const appListRiskAndFraud = [
     desc: 'Convert risky CoD orders to prepaid.',
     showForUnregisteredBusiness: true,
     new: true,
+  },
+];
+
+const appListLending = [
+  {
+    icon: '/dist/css/assets/products/blue-theme/working-capital-loans.svg',
+    name: 'Working Capital Loans',
+    link: 'https://razorpay.com/capital/working-capital-loans/?ref=app-switcher',
+    desc: 'Avail collateral-free business loans',
+    showForUnregisteredBusiness: false,
+  },
+  {
+    icon: '/dist/css/assets/products/blue-theme/corporate-credit-cards.svg',
+    name: 'Corporate Credit Cards',
+    link: 'https://razorpay.com/x/corporate-cards/?ref=app-switcher',
+    desc: 'Instantly approved corporate credit card',
+    showForUnregisteredBusiness: false,
   },
 ];
 
@@ -118,7 +135,7 @@ class AppSwitcher extends Component {
               : ''
           }`}
         >
-          <i className="i i-widget" />
+          <i className="i i-app-switcher" />
         </DropdownTrigger>
         <DropdownContent>
           <div className="dropdown-menu app-switcher-dropdown">
@@ -134,8 +151,8 @@ class AppSwitcher extends Component {
             </div>
             <div className="column">
               <div className="block">
-                <div className="heading">Risk & Fraud</div>
-                {appListRiskAndFraud.map((app) => this.getItem(app))}
+                <div className="heading">Lending</div>
+                {appListLending.map((app) => this.getItem(app))}
               </div>
             </div>
           </div>
