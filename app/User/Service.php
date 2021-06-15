@@ -1538,7 +1538,6 @@ class Service extends Base\Service
             'capture_settings_revamp',
             'pl_description_required',
             'pp_description_required',
-            'pure_platform_signup',
             'merchant_tnc',
             'support_details_2FA',
             'comdel_hdfc_test',

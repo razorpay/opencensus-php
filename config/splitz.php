@@ -4,7 +4,6 @@ return [
     'experiments' => [
 
         // Add splitz experiment ids here.
-        'PURE_PLATFORM_SIGNUP' => env('PURE_PLATFORM_SIGNUP_SPLITZ',''),
 
         //project nitro campaign experiments
         'ANNOUNCEMENT_NITRO_HYDERABAD_SPLITZ' => env('ANNOUNCEMENT_NITRO_HYDERABAD_SPLITZ',''),

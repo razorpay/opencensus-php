@@ -6,7 +6,6 @@ const S0 = (props) => {
     props.tracking.trackEvent(
       window.rzpQ.onbr().interaction('partnerships.partner.welcome', {
         merchantId: props.merchantId,
-        variant: props.experimentVariant,
         lpVariant: props.lpVariant,
         lpFold: props.lpFold
       }),
@@ -24,7 +23,6 @@ const S0 = (props) => {
     props.tracking.trackEvent(
       window.rzpQ.onbr().interaction('partnerships.partner.welcome.learn_about_program', {
         merchantId: props.merchantId,
-        variant: props.experimentVariant,
         lpVariant: props.lpVariant,
         lpFold: props.lpFold
       }),

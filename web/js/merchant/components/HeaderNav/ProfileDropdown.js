@@ -116,7 +116,6 @@ export default class ProfileDropdown extends Component {
       window.rzpQ.onbr().clicked('partnerships.partner_signup.start', {
         merchantId: this.props.user.merchant.id,
         clickSource: 'merchant_dashboard',
-        variant: this.props.user.getPurePlatformExperimentVariant || 'not_in_exp',
       }),
     );
   };

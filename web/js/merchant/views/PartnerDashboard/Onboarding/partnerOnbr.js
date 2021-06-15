@@ -37,15 +37,12 @@ export default class BaseScreen extends React.Component {
   constructor(props) {
     super(props);
     const defaultVariant = 'not_in_exp';
-    const purePlatformExperimentVariant = this.props.user.getPurePlatformExperimentVariant;
     let landingPageVariantInfo = getCookie('partner-lp-experiment');
     if(landingPageVariantInfo) {
       landingPageVariantInfo = JSON.parse(atob(landingPageVariantInfo));
     }
     this.state = {
       role: null,
-      isPurePlatformSignupEnabled: purePlatformExperimentVariant === 'exposed',
-      experimentVariant: purePlatformExperimentVariant || defaultVariant,
       lpVariant: landingPageVariantInfo ? landingPageVariantInfo.lpVariant : null,
       lpFold: landingPageVariantInfo ? landingPageVariantInfo.lpFold : null,
     };
@@ -55,13 +52,11 @@ export default class BaseScreen extends React.Component {
     this.props.tracking.trackEvent(
       window.rzpQ.onbr().interaction('partnerships.pure_platform_signup', {
         merchantId: this.props.user.merchant.id,
-        variant: this.state.experimentVariant,
         lpVariant: this.state.lpVariant,
         lpFold: this.state.lpFold
       }),
     );
-    const hotjarTag = `pure_platform_experiment_${this.state.experimentVariant}`;
-    triggerHotjarRecording('pure_platform_experiment', ['pure_platform_experiment', hotjarTag]);
+    triggerHotjarRecording('pure_platform_experiment', ['pure_platform_experiment']);
     window.trackHubs({
       name: 'update_property',
       data: {
@@ -76,7 +71,6 @@ export default class BaseScreen extends React.Component {
       window.rzpQ.onbr().interaction('partnerships.partner_type.selected', {
         merchantId: this.props.user.merchant.id,
         partnerType: role,
-        variant: this.state.experimentVariant,
         lpVariant: this.state.lpVariant,
         lpFold: this.state.lpFold
       }),
@@ -94,7 +88,6 @@ export default class BaseScreen extends React.Component {
     this.props.tracking.trackEvent(
       window.rzpQ.onbr().clicked('partnerships.partner_signup.completed', {
         merchantId: this.props.user.merchant.id,
-        variant: this.state.experimentVariant,
         partnerType: this.state.role,
         lpVariant: this.state.lpVariant,
         lpFold: this.state.lpFold
@@ -183,9 +176,7 @@ export default class BaseScreen extends React.Component {
   render() {
     return (
       <div
-        className={`partner-onboarding-base-screen ${
-          this.state.isPurePlatformSignupEnabled ? 'new-screen' : ''
-        }`}
+        className={`partner-onboarding-base-screen new-screen`}
       >
         <Slider>
           {!this.props.disableClose
@@ -195,7 +186,6 @@ export default class BaseScreen extends React.Component {
                   sliderProps={sliderProps}
                   tracking={this.props.tracking}
                   merchantId={this.props.user.merchant.id}
-                  experimentVariant={this.state.experimentVariant}
                   lpVariant={this.state.lpVariant}
                   lpFold={this.state.lpFold}
                 />
@@ -206,7 +196,6 @@ export default class BaseScreen extends React.Component {
               key={1}
               sliderProps={sliderProps}
               onNext={this.handleNewUserGetStarted}
-              experimentVariant={this.state.experimentVariant}
             />
           )}
           {(sliderProps) => (
@@ -218,7 +207,6 @@ export default class BaseScreen extends React.Component {
               abort={this.handleCloseClick}
               tracking={this.props.tracking}
               merchantId={this.props.user.merchant.id}
-              experimentVariant={this.state.experimentVariant}
               isMobile={this.props.isMobileResolution}
               lpVariant={this.state.lpVariant}
               lpFold={this.state.lpFold}
@@ -229,7 +217,6 @@ export default class BaseScreen extends React.Component {
               key={3}
               sliderProps={sliderProps}
               onNext={this.onCompleteClick}
-              experimentVariant={this.state.experimentVariant}
             />
           )}
         </Slider>

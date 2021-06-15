@@ -32,13 +32,6 @@ export default {
     'HExiHP6GBUEVcu', // Ahmedabad Nitro
     'HExnzHcFfimA6u', // Bangalore Nitro
   ],
-  pure_platform_signup: [
-    // beta experiment ids
-    'H70qyLStkzoFeS',
-
-    // prod experiment ids
-    'H725exSfQ8ZAPz',
-  ],
   announcement_text_experiment: [
     // beta experiment ids
     'H7S9OMKVGV53ZZ',

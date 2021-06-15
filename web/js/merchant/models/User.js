@@ -1007,10 +1007,6 @@ export default class User {
     return this.getExpStatus('partner_app_store');
   }
 
-  get getPurePlatformExperimentVariant() {
-    return getSplitzExperimentVariant('pure_platform_signup')?.name;
-  }
-
   get canSkipPoiValidation() {
     return this.getExpStatus('bvs_personal_pan_validation');
   }
