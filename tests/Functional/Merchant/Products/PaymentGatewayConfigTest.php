@@ -471,11 +471,19 @@ class PaymentGatewayConfigTest extends OAuthTestCase
                                                 'from'        => 'admin'
                                             ],
                     ],
+                    'bank_account_number' => [[
+                                                  'reason_type' => 'predefined',
+                                                  'field_value' => '1234567890',
+                                                  'reason_code' => 'unable_to_validate_acc_number',
+                                                  'is_current'  => true,
+                                                  'from'        => 'admin'
+                                              ]]
                 ],
             ],
             'activation_status'         => 'needs_clarification',
             'submitted'                 => 1,
-            'locked'                    => 0
+            'locked'                    => 0,
+            'bank_account_number'       => '1234567890'
         ]);
     }
 

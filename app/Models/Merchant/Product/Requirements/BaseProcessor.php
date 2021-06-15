@@ -243,7 +243,7 @@ class BaseProcessor extends Base\Service
 
         $ncDocuments = array_intersect_key($ncDocuments, $nonRespondedFields[NeedsClarification\Constants::DOCUMENTS]);
 
-        $bankProofFormattedReasons = $this->getFormattedBankProofNCFields($nonRespondedFields, $ncFields);
+        $bankProofFormattedReasons = $this->getFormattedBankProofNCFields($nonRespondedFields, $ncFields, $clarificationReasons);
 
         if( empty($bankProofFormattedReasons) === false)
         {
@@ -261,26 +261,41 @@ class BaseProcessor extends Base\Service
         return $pendingNCFields;
     }
 
-    private function getFormattedBankProofNCFields(array $nonRespondedFields, array $ncFormattedFieldRequirements)
+    /**
+     * @param array $nonAcknowledgedNCFields      -- non acknowledged NC fields
+     * @param array $ncFormattedFieldRequirements -- Formatted reasons for $nonAcknowledgedNCFields
+     * @param array $allLatestNCFormattedReasons  -- Formatted reasons for all the latest NC marked fields
+     *
+     * Case 1: Latest Bank NC fields are acknowledged but bank proof is not submitted
+     *         $ncFormattedFieldRequirements will not contain any formatted reasons related to Bank NC fields
+     * Case 2: Latest Bank NC fields are not acknowledged and bank proof is not submitted
+     * @return array
+     */
+    private function getFormattedBankProofNCFields(array $nonAcknowledgedNCFields, array $ncFormattedFieldRequirements, array $allLatestNCFormattedReasons): array
     {
-        if (count($nonRespondedFields[Constants::DOCUMENTS]) === 0)
+        if (count($nonAcknowledgedNCFields[Constants::DOCUMENTS]) === 0)
         {
             return [];
         }
 
-        $bankNCFields = array_intersect(array_keys($ncFormattedFieldRequirements), Detail\Constants::BANK_DETAIL_FIELDS);
-
-        if (empty($bankNCFields) === true)
+        if (array_key_exists(Document\Type::CANCELLED_CHEQUE, $nonAcknowledgedNCFields[Constants::DOCUMENTS]) === true)
         {
-            return [];
-        }
+            $bankNCFields = array_intersect(array_keys($ncFormattedFieldRequirements), Detail\Constants::BANK_DETAIL_FIELDS);
 
-        $bankNCField = $bankNCFields[0];
+            if (empty($bankNCFields) === true)
+            {
+                //Pick the formatted reason from any of the latest acknowledged bank NC field
+                $acknowledgedLatestBankNCFields = array_intersect(array_keys($allLatestNCFormattedReasons[Constants::FIELDS]), Detail\Constants::BANK_DETAIL_FIELDS);
+                $bankNCField                    = array_values($acknowledgedLatestBankNCFields)[0];
+                $formattedRequirement           = $allLatestNCFormattedReasons[Constants::FIELDS][$bankNCField];
+            }
+            else
+            {
+                // Pick the formatted reason from any of the nonAcknowledged bank nc field
+                $bankNCField          = array_values($bankNCFields)[0];
+                $formattedRequirement = $ncFormattedFieldRequirements[$bankNCField];
+            }
 
-        $formattedRequirement = $ncFormattedFieldRequirements[$bankNCField];
-
-        if (array_key_exists(Document\Type::CANCELLED_CHEQUE, $nonRespondedFields[Constants::DOCUMENTS]) === true)
-        {
             return [
                 Document\Type::CANCELLED_CHEQUE => $formattedRequirement
             ];

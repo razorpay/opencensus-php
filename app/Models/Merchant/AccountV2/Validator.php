@@ -357,9 +357,7 @@ class Validator extends Merchant\Validator
         if (empty($merchantDetailInput) === false)
         {
             //validate the merchant details NC fields as per merchant details edit rules
-            $v1Validator = new Detail\Validator();
-
-            $v1Validator->validateInput('edit', $merchantDetailInput);
+            $merchantDetails->getValidator()->validateInput('edit', $merchantDetailInput);
         }
     }
 }

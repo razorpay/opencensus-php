@@ -268,7 +268,7 @@ class Core extends Base\Core
 
         $nonAcknowledgedNCFields[Constants::FIELDS] = [];
 
-        $count = 0;
+        $totalNonAcknowledgedFieldCount = 0;
 
         foreach ($latestClarificationFields as $field => $clarificationDetails)
         {
@@ -276,27 +276,40 @@ class Core extends Base\Core
 
             if ($this->isNCFieldAcknowledged($clarificationDetails) === false)
             {
-                $count = $count + 1;
-
                 $nonAcknowledgedNCFields[$group][$field] = $clarificationDetails;
 
-                //special case, in case of bank account number NC, UI prompts for cancelled cheque also. so adding it here
-                if (($this->isBankDetailsNCField($field) === true) && ($this->isNCAcknowledgedForBankDocumentProofs($documentResponse, $clarificationDetails) === false))
-                {
-                    $nonAcknowledgedNCFields[Constants::DOCUMENTS][DocumentType::CANCELLED_CHEQUE] = $clarificationDetails;
+                $totalNonAcknowledgedFieldCount = $totalNonAcknowledgedFieldCount + 1;
+            }
+            /***
+             * Validate bank proof is submitted for a latest bank details NC field even it is acknowledged or not acknowledged
+             *   Case 1: bank_account_number is not acknowledged and bank proof is not submitted
+             *   Case 2: bank_account_number is acknowledged and bank proof is not submitted
+             *   In both the above cases check for bank proof submission
+             ***/
+            if (($this->isBankDetailsNCField($field) === true) && ($this->isNCAcknowledgedForBankDocumentProofs($documentResponse, $clarificationDetails) === false))
+            {
+                $nonAcknowledgedNCFields[Constants::DOCUMENTS][DocumentType::CANCELLED_CHEQUE] = $clarificationDetails;
 
-                    $count = $count + 1;
-                }
+                $totalNonAcknowledgedFieldCount = $totalNonAcknowledgedFieldCount + 1;
             }
         }
 
-        $nonAcknowledgedNCFields[Merchant\Constants::COUNT] = $count;
+        $nonAcknowledgedNCFields[Merchant\Constants::COUNT] = $totalNonAcknowledgedFieldCount;
 
         $this->trace->info(TraceCode::MERCHANT_NON_ACKNOWLEDGED_NC_FIELDS, $nonAcknowledgedNCFields);
 
         return $nonAcknowledgedNCFields;
     }
 
+    /**
+     * This function returns whether a bank proof is submitted or not for a latest bank details NC field
+     * Pick the latest bank details NC field clarification reason and check over bank proofs
+     * Condition : (bank proof doc upload time > latest clarification creation time)
+     * @param array $documentResponse
+     * @param array $clarificationDetails
+     *
+     * @return bool
+     */
     private function isNCAcknowledgedForBankDocumentProofs(array $documentResponse, array $clarificationDetails)
     {
         $bankDocumentProofAcknowledged = false;

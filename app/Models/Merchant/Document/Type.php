@@ -84,6 +84,11 @@ class Type
         self::ADDITIONAL_DOCUMENTS                 => E::MERCHANT,
     ];
 
+    const BANK_PROOF_DOCUMENTS = [
+        self::CANCELLED_CHEQUE,
+        self::BANK_STATEMENT,
+    ];
+
     const VALID_DOCUMENTS = [
         self::SEBI_REGISTRATION_CERTIFICATE,
         self::IRDAI_REGISTRATION_CERTIFICATE,

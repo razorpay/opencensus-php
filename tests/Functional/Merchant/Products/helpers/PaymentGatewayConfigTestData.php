@@ -967,9 +967,23 @@ return [
                         'description'     => 'The document attached is not legible. Please resubmit a clearer copy'
                     ],
                     [
+                        'field_reference' => 'additional_documents',
+                        'resolution_url'  => '/accounts/{accountId}/documents',
+                        'status'          => 'required',
+                        'description'     => "We're unable to validate the account number from the document attached. Kindly submit a cancelled cheque/welcome letter merged along with the document.",
+                        'reason_code'     => 'needs_clarification'
+                    ],
+                    [
                         'field_reference' => 'name',
                         'resolution_url'  => '/accounts/{accountId}/stakeholders/{stakeholderId}',
                         'status'          => 'required',
+                        'reason_code'     => 'needs_clarification'
+                    ],
+                    [
+                        'field_reference' => 'settlements.account_number',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'description'     => "We're unable to validate the account number from the document attached. Kindly submit a cancelled cheque/welcome letter merged along with the document.",
                         'reason_code'     => 'needs_clarification'
                     ],
                 ]

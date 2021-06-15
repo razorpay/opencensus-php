@@ -3,10 +3,10 @@
 namespace RZP\Models\Merchant\Document;
 
 use RZP\Models\Merchant;
+use RZP\Constants\Entity;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\GenericDocument;
 use RZP\Models\Merchant\Document;
-use RZP\Models\GenericDocument\ResponseHelper;
 
 
 class DocumentResponse extends Detail\Core
@@ -92,6 +92,10 @@ class DocumentResponse extends Detail\Core
 
                 $returnData[$proofType][] = $field;
             }
+        }
+        if ($entityType === Entity::MERCHANT)
+        {
+            $returnData[Document\Type::ADDITIONAL_DOCUMENTS] = Document\Type::BANK_PROOF_DOCUMENTS;
         }
 
         return $returnData;
