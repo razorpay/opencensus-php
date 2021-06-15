@@ -232,6 +232,8 @@ class Type
 
     const PAYOUT_SAMPLE                         = 'payout_sample';
 
+    const RECON_INPUT                           = 'recon_input';
+
     const ICICI_NETBANKING_REFUND_DIRECT_SETTLEMENT = 'icici_netbanking_refund_direct_settlement';
 
     // File contants required for merchant feature onboarding
@@ -356,6 +358,7 @@ class Type
             self::AUBL_NETBANKING_COMBINED,
             self::DLB_NETBAKING_REFUND,
             self::KOTAK_CORP_NETBANKING_REFUND,
+            self::RECON_INPUT,
         ],
 
         Constants\Entity::BATCH => [
@@ -515,7 +518,8 @@ class Type
         self::AUBL_NETBANKING_COMBINED,
         self::DLB_NETBAKING_REFUND,
         self::KOTAK_CORP_NETBANKING_REFUND,
-        self::DATA_LAKE_SEGMENT_FILE
+        self::DATA_LAKE_SEGMENT_FILE,
+        self::RECON_INPUT,
     ];
 
     /**

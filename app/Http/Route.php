@@ -2502,6 +2502,10 @@ class Route
         'activate_ledger_account'                 => ['post',      'ledger_service/activate_account',                       'LedgerController@activateAccount'],
         'update_ledger_account_detail'            => ['post',      'ledger_service/update_account_detail',                  'LedgerController@updateAccountDetail'],
         'request_governor'                        => ['post',      'ledger_service/request_governor',                       'LedgerController@requestGovernor'],
+
+        // Recon service proxy route
+        'recon_service_request_proxy'             => ['any',        'recon/service/common/{path?}',                         'ReconServiceController@handleAny'                             ],
+        'recon_service_file_upload_proxy'          => ['post',       'recon/service/upload_file',                             'ReconServiceController@uploadFile'                            ],
     ];
 
     public static $public = [
@@ -3471,6 +3475,8 @@ class Route
         'merchant_fire_hubspot_event',
         'freshchat_get_chat_timings_config_proxy',
         'freshchat_get_chat_holidays_config_proxy',
+        'recon_service_request_proxy',
+        'recon_service_file_upload_proxy',
         'rbl_current_account_serviceability_get',
         'merchant_primary_balance_fetch',
         'virtual_account_expiry_setting_upsert',
@@ -3979,6 +3985,8 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'recon_service_request_proxy',
+        'recon_service_file_upload_proxy',
         'populate_merchant_trim_data_cron',
         'advertiser_logo',
         'partner_activation_migrate',
@@ -4801,6 +4809,8 @@ class Route
     ];
 
     public static $routePermission = [
+        'recon_service_request_proxy'              => Permission::RECON_OPERATION,
+        'recon_service_file_upload_proxy'           => Permission::RECON_OPERATION,
         'merchant_rtb_details_fetch'               => Permission::VIEW_MERCHANT,
         'populate_merchant_trim_data_cron'         => Permission::MANAGE_BULK_FEATURE_MAPPING,
         'bvs_service_dashboard'                    => Permission::EDIT_MERCHANT,
@@ -8275,6 +8285,8 @@ class Route
             'refund_verify_multiple',
             'refund_without_verify_bulk',
             'refunds_fetch_for_customer',
+            'recon_service_request_proxy',
+            'recon_service_file_upload_proxy',
             'reminder_admin',
             'reminder_next_run',
             'reminder_service',

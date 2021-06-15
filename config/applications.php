@@ -1007,4 +1007,11 @@ return [
         'timeout'       => env('APP_BANKING_ACCOUNT_SERVICE_TIMEOUT_SECS', 15),
         'mock'          => env('MOCK_BANKING_ACCOUNT_SERVICE', false),
     ],
+
+    'recon'         => [
+        'key'           => env('RECON_SERVICE_AUTH_KEY'),
+        'secret'        => env('RECON_SERVICE_AUTH_SECRET'),
+        'url'           => env('RECON_SERVICE_URL'),
+    ],
+
 ];

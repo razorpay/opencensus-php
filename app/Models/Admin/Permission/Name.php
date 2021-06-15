@@ -659,6 +659,9 @@ class Name
     // Settlement Service permissions
     const SETTLEMENT_SERVICE_MERCHANT_CONFIG_EDIT = 'settlement_service_merchant_config_edit';
 
+    // Recon service permission
+    const RECON_OPERATION                              = 'recon_operation';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,

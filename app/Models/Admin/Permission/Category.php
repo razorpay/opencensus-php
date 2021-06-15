@@ -58,4 +58,5 @@ class Category
     const FILE_STORE                   = 'file_store';
     const CONFIG_KEY                   = 'config_key';
     const FRESHCHAT                    = 'freshchat';
+    const RECON                        = 'recon';
 }

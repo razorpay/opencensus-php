@@ -1408,6 +1408,13 @@ return [
                 'assignable'    => true,
             ],
         ],
+
+        PermissionCategory::RECON => [
+            Permission::RECON_OPERATION => [
+                'description'   => 'Manage access to recon dashboard on admin dashboard',
+                'assignable'    => true,
+            ],
+        ],
     ],
 
     'workflows' => [

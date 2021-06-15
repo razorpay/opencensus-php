@@ -2156,6 +2156,11 @@ class ErrorCode
 
     const SERVER_ERROR_EDGE_PROXY_NO_CONFIG                                         = 'SERVER_ERROR_EDGE_PROXY_NO_CONFIG';
 
+    // Recon service error codes
+    const SERVER_ERROR_IN_RECON_RESPONSE                                            = 'SERVER_ERROR_IN_RECON_RESPONSE';
+    const BAD_REQUEST_ERROR_IN_RECON_RESPONSE                                       = 'BAD_REQUEST_ERROR_IN_RECON_RESPONSE';
+    const SERVER_ERROR_RECON_REQUEST_FAILURE                                        = 'SERVER_ERROR_RECON_REQUEST_FAILURE';
+
     const BAD_REQUEST_NON_EXISTING_QR_CODE_ID                                       = 'BAD_REQUEST_NON_EXISTING_QR_CODE_ID';
 
     const BAD_REQUEST_MERCHANT_TNC_NOT_APPLICABLE                                   = 'BAD_REQUEST_MERCHANT_TNC_NOT_APPLICABLE';
