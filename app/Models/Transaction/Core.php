@@ -1352,7 +1352,20 @@ class Core extends Base\Core
 
             return $this->merchantBalance;
         }
+
+        $startTime = microtime(true);
+
         $merchantBalance = $this->repo->balance->getBalanceLockForUpdate($merchantId);
+
+        $endTime = microtime(true);
+
+        $this->trace->info(
+            TraceCode::BALANCE_LOCK_BY_MID_TIME_TAKEN,
+            [
+                'merchant_id'   => $merchantId,
+                'time_taken'    => $endTime - $startTime,
+            ]
+        );
 
         $this->merchantBalance = $merchantBalance;
 

@@ -20,6 +20,8 @@ class Metric extends Base\Core
     const TRANSFER_TO_TYPE                         = 'transfer_to_type';
     const TRANSFER_SOURCE                          = 'transfer_source';
     const TRANSFER_PROCESSING_TIME                 = 'transfer_processing_time';
+    const TRANSFER_PROCESSING_TIME_IN_WORKER       = 'transfer_processing_time_in_worker';
+    const SOURCE_ID_PROCESSING_TIME_IN_WORKER      = 'source_id_processing_time_in_worker';
 
     public function pushCreateSuccessMetrics(array $input = [])
     {
@@ -66,6 +68,24 @@ class Metric extends Base\Core
         ];
 
         $this->trace->histogram(self::TRANSFER_PROCESSING_TIME, $processingTime, $dimensions);
+    }
+
+    public function pushTransferProcessingTimeInWorkerMetrics($sourceType, $processingTime)
+    {
+        $dimensions = [
+            self::TRANSFER_SOURCE => $sourceType,
+        ];
+
+        $this->trace->histogram(self::TRANSFER_PROCESSING_TIME_IN_WORKER, $processingTime, $dimensions);
+    }
+
+    public function pushSourceIdProcessingTimeInWorkerMetrics($sourceType, $processingTime)
+    {
+        $dimensions = [
+            self::TRANSFER_SOURCE => $sourceType,
+        ];
+
+        $this->trace->histogram(self::SOURCE_ID_PROCESSING_TIME_IN_WORKER, $processingTime, $dimensions);
     }
 
     private function getCreateDefaultDimensions(array $input = [])

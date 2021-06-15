@@ -65,6 +65,7 @@ abstract class AbstractTransfer
 
     public function processOrderTransfers(Payment\Entity $payment)
     {
+        $startTime = microtime(true);
 
         $this->merchant = $this->repo->merchant->findOrFail($payment->getMerchantId());
 
@@ -86,8 +87,9 @@ abstract class AbstractTransfer
             {
                 try
                 {
-                  $this->processTransfers($payment, $transfer, $this->merchant);
+                    $transferProcessStartTime = microtime(true);
 
+                    $this->processTransfers($payment, $transfer, $this->merchant);
                 }
                 catch (\Exception $e)
                 {
@@ -113,9 +115,20 @@ abstract class AbstractTransfer
                 }
                 finally
                 {
+                    $transferProcessEndTime = microtime(true);
+
+                    (new Metric())->pushTransferProcessingTimeInWorkerMetrics(
+                        $transfer->getSourceType(),
+                        ($transferProcessEndTime - $transferProcessStartTime)
+                    );
+
                     (new Core())->trackTransferProcessingTime($transfer, $payment);
                 }
             }
+
+        $endTime = microtime(true);
+
+        (new Metric())->pushSourceIdProcessingTimeInWorkerMetrics($this->transfermode, ($endTime - $startTime));
 
         return $transfers;
     }
