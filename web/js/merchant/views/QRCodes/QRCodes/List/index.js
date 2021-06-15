@@ -54,7 +54,7 @@ export default class QRCodesListContainer extends ListContainer {
               onAbort={() => track.tourStatus(false)}
             />
 
-            <DocsLink url="https://razorpay.com/docs/qr-codes/api/new/" onClick={track.docs}  />
+            <DocsLink url="https://razorpay.com/docs/qr-codes/" onClick={track.docs}  />
 
             <ShowWhen additionalCondition={(user) => user.isAllowedEdit('qr_codes')}>
               <NavLink class="btn btn-primary" to="/qr_codes/new" onClick={track.create}>
