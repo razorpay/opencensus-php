@@ -18,13 +18,13 @@ class CoreTest extends TestCase
     use DbEntityFetchTrait;
 
     /**
-     * Scenario: T+2 days after hard limit breach
-     * Expectation: 3rd Escalation should be raised and merchant should put in FOH. Live should be enabled.
+     * Scenario: T+5 days after hard limit breach
+     * Expectation: 4th Escalation should be raised and merchant should put in FOH. Live should be enabled.
      */
-    public function testHardLimitEscalation2()
+    public function testHardLimitEscalation4()
     {
         $this->app->instance("rzp.mode", Mode::LIVE);
-        
+
         $merchant = $this->fixtures->create('merchant', [
             'live'          => true,
             'activated'     => 1,
@@ -38,10 +38,10 @@ class CoreTest extends TestCase
 
         $this->fixtures->create('merchant_auto_kyc_escalations', [
             'merchant_id'       => $merchant['id'],
-            'escalation_level'  => 2,
+            'escalation_level'  => 3,
             'escalation_method' => 'email',
             'escalation_type'   => 'hard_limit',
-            'created_at'        => Carbon::now(Timezone::IST)->subDays(2)->getTimestamp()
+            'created_at'        => Carbon::now(Timezone::IST)->subDays(5)->getTimestamp()
         ]);
 
         (new EscalationCore)->handleEscalationsCron();

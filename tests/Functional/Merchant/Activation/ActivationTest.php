@@ -3367,7 +3367,7 @@ class ActivationTest extends OAuthTestCase
 
         $this->fixtures->create('merchant_auto_kyc_escalations', [
             'merchant_id'       =>  $merchantId,
-            'escalation_level'  =>  3,
+            'escalation_level'  =>  4,
             'escalation_type'   =>  'hard_limit'
         ]);
 
@@ -3417,11 +3417,13 @@ class ActivationTest extends OAuthTestCase
         $this->fixtures->on('live')->edit('merchant_detail', $merchantId, $data);
         $this->fixtures->on('test')->edit('merchant_detail', $merchantId, $data);
 
-       $this->fixtures->on('live')->create('merchant_auto_kyc_escalations', [
+        $createdAt = Carbon::now()->subDays(5)->getTimestamp();
+
+        $this->fixtures->on('live')->create('merchant_auto_kyc_escalations', [
             'merchant_id'       =>  $merchantId,
-            'escalation_level'  =>  2,
+            'escalation_level'  =>  3,
             'escalation_type'   =>  'hard_limit',
-           'created_at'     => '1600000000',
+           'created_at'     => $createdAt,
         ]);
 
         $this->ba->cronAuth('live');

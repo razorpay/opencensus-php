@@ -197,7 +197,7 @@ class Core extends Base\Core
         {
             (new Handler)->handleEscalations($merchants, $type, $level);
 
-            if ($type === Constants::HARD_LIMIT and $level === 3)
+            if ($type === Constants::HARD_LIMIT and $level === 4)
             {
                 // disable settlements for merchants
                 foreach ($merchants as $merchant)

@@ -12,7 +12,7 @@
     <br />
 
     <div>
-        Your account is now under review, and our compliance team is reviewing your submitted KYC documents again.
+        Your account is now under review, and our compliance team is reviewing your submitted KYC documents.
     </div>
 
     <div>
@@ -20,7 +20,7 @@
         <br/>
         1. You can continue accepting payments while the review is in progress.
         <br/>
-        2. Your past payments from customers are safely kept on hold and will be settled immediately once the review is done successfully.
+        2. Please be rest assured that your funds are safe and we would settle them to your account once the review process is complete.
     </div>
 
     <div>

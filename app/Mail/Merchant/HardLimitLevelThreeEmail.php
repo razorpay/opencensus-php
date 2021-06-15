@@ -60,7 +60,7 @@ class HardLimitLevelThreeEmail extends Mailable
 
     protected function addSubject()
     {
-        $subject = 'Your KYC documents are being reviewed again';
+        $subject = 'Your KYC documents are being reviewed';
 
         $this->subject($subject);
 

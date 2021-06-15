@@ -2206,8 +2206,8 @@ class Core extends Base\Core
 
         $response = $this->setVerificationDetails($merchantDetails, $merchant, $response);
 
-        $hardEscalationLevel3 = $this->repo->merchant_auto_kyc_escalations->fetchEscalationsForMerchantAndTypeAndLevel
-        ($merchant->getMerchantId(), Merchant\AutoKyc\Escalations\Constants::HARD_LIMIT, 3);
+        $hardEscalationLevel4 = $this->repo->merchant_auto_kyc_escalations->fetchEscalationsForMerchantAndTypeAndLevel
+        ($merchant->getMerchantId(), Merchant\AutoKyc\Escalations\Constants::HARD_LIMIT, 4);
 
         $response[Merchant\Entity::ACTIVATED]                   = (int) $merchant->isActivated();
         $response[Merchant\Entity::LIVE]                        = $merchant->isLive();
@@ -2216,7 +2216,7 @@ class Core extends Base\Core
         $response[Entity::STAKEHOLDER]                          = $merchantDetails->stakeholder;
         $response[Entity::MERCHANT_AVG_ORDER_VALUE]             = $merchantDetails->avgOrderValue;
         $response['isAutoKycDone']                              = $this->isAutoKycDone($merchantDetails);
-        $response['isHardLimitReached']                         = empty($hardEscalationLevel3) ? false : true;
+        $response['isHardLimitReached']                         = empty($hardEscalationLevel4) ? false : true;
         $response['isDedupe']                                   = $this->dedupeCore->isDedupeBlocked($merchant);
 
         if ($this->isMerchantTncApplicable($merchant) === true)
