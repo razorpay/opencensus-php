@@ -451,6 +451,43 @@ class MerchantNotificationConfigTest extends TestCase
         $this->makeRequestAndGetContent($request);
     }
 
+
+    public function testProcessDowntimeEventForWebhookWithNewPayload()
+    {
+        Mail::fake();
+
+        $this->testCreateMerchantNotificationConfig();
+
+        $this->expectWebhookEvent('payout.downtime.started');
+
+        $this->ba->ftsAuth(Mode::LIVE);
+
+        $request = [
+            'url' => '/fts/channel/notify',
+            'method' => 'post',
+            'content' => [
+                'type' => 'bene_health',
+                'payload' => [
+                    'begin' => 1610430729,
+                    'created_at' => 1610430729,
+                    'end' => 0,
+                    'entity' => 'bene_health',
+                    'id' => 'GOHp6DSA5odXTu',
+                    'instrument' => [
+                        'bank' => 'UTIB'
+                    ],
+                    'method' => ['IMPS'],
+                    'scheduled' => false,
+                    'source' => 'BENEFICIARY',
+                    'status' => 'started',
+                    'updated_at' => 1610430729
+                ]
+            ],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+    }
+
     // This test is used to check the stuck payouts alert functionality
     public function testStuckPayoutsAlert()
     {

@@ -282,13 +282,48 @@ class ChannelNotification
 
     protected function preProcessNotification($input): array
     {
-        $entity = $input['contains'][0];
+        // since payload has changed we are adding the check for backward compatibility.
+        //todo: need to remove if clause once new payload is live
+        if (in_array('contains', array_keys($input), true) === true)
+        {
+            $entity = $input['contains'][0];
 
-        return $input['payload'][$entity]['entity'];
+            return $input['payload'][$entity]['entity'];
+        }
+        return $input['payload'];
     }
 
     // TODO: Needs to be changed entirely with API
     protected function getWebhookRequest($input)
+    {
+        if (in_array('contains', array_keys($input), true) === true)
+        {
+            return $this->getWebhookRequestForBackwardCompatibilty($input);
+        }
+
+        $webhookPayload = [];
+
+        $webhookPayload['contains'] = [Constants::PAYOUT_DOWNTIME];
+
+        $webhookPayload['entity'] = 'event';
+
+        $webhookPayload['event'] = Constants::PAYOUT_DOWNTIME . '.' . $input['payload']['status'];
+
+        $payload = $input['payload'];
+
+        $webhookPayload['payload'][Constants::PAYOUT_DOWNTIME]['entity'] = $payload;
+
+        $webhookPayload['payload'][Constants::PAYOUT_DOWNTIME]['entity']['entity'] =
+            str_replace('bene_health', Constants::PAYOUT_DOWNTIME,
+                $webhookPayload['payload'][Constants::PAYOUT_DOWNTIME]['entity']['entity']);
+
+        $webhookPayload['payload'][Constants::PAYOUT_DOWNTIME]['entity']['id'] =
+            Constants::PAYOUT_DOWNTIME_PREFIX . $webhookPayload['payload'][Constants::PAYOUT_DOWNTIME]['entity']['id'];
+
+        return $webhookPayload;
+    }
+
+    protected function getWebhookRequestForBackwardCompatibilty($input)
     {
         $entity = $input['contains'][0];
 
