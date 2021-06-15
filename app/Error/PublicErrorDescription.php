@@ -1414,4 +1414,5 @@ class PublicErrorDescription
     const BAD_REQUEST_BANK_INSTRUMENT_INVALID                                       = 'Invalid bank instrument code';
     const BAD_REQUEST_PAYLATER_INSTRUMENT_INVALID                                   = 'Invalid paylater instrument code';
     const BAD_REQUEST_EMI_INSTRUMENT_INVALID                                        = 'Invalid emi instrument code';
+    const BAD_REQUEST_PAYMENT_CUSTOMER_DROPPED_OFF                                  = 'Customer dropped off without completing the payment';
 }
