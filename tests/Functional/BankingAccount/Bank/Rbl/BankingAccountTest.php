@@ -206,6 +206,31 @@ class BankingAccountTest extends TestCase
         return $bankingAccount;
     }
 
+    public function testCreateBankingAccountFormMerchantDashboard()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $this->createBankingAccountFromDashboard();
+
+        Mail::fake();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals(AccountType::CURRENT, $bankingAccount->getAccountType());
+
+        $this->assertEquals(null, $bankingAccount['last_statement_attempt_at']);
+
+        $activationDetailEntity = $this->getDbEntity('banking_account_activation_detail', [
+            'banking_account_id' => $bankingAccount->getId()
+        ]);
+
+        $this->assertNotNull($activationDetailEntity);
+    }
+
     public function testCreateBankingAccountWithUnserviceableBusinessCategoryFormDashboard()
     {
         $attribute = ['activation_status' => 'activated'];
@@ -2423,7 +2448,7 @@ class BankingAccountTest extends TestCase
 
         $this->assertEquals('560030', $bankingAccount->getPincode());
     }
-  
+
     public function testUpdateBankingAccountToInitiatedWithInternalComments()
     {
         $bankingAccount = $this->createBankingAccount();

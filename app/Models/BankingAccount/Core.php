@@ -1651,7 +1651,16 @@ class Core extends Base\Core
 
         $activation_detail[Activation\Detail\Entity::MERCHANT_STATE] = $resp['state'];
 
-        $activation_detail[ActivationDetail\Entity::MERCHANT_REGION] = (new Activation\Detail\Region)->getRegionFromState($resp['state']);
+        try
+        {
+            $activation_detail[ActivationDetail\Entity::MERCHANT_REGION] = (new Activation\Detail\Region)->getRegionFromState($resp['state']);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::STATE_TO_REGION_MAP_FAILED, [$resp['state'], $e->getMessage()]);
+
+            $activation_detail[ActivationDetail\Entity::MERCHANT_REGION] = null;
+        }
 
         return $activation_detail;
     }

@@ -1718,6 +1718,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const GOOGLE_MAP_REQUEST_FAILED                             = 'GOOGLE_MAP_REQUEST_FAILED';
     const PINCODE_SEARCH_ERROR                                  = 'PINCODE_SEARCH_ERROR';
+    const STATE_TO_REGION_MAP_FAILED                            = 'STATE_TO_REGION_MAP_FAILED';
 
     const HARVESTER_REQUEST                                     = 'HARVESTER_REQUEST';
     const HARVESTER_RETRY                                       = 'HARVESTER_RETRY';

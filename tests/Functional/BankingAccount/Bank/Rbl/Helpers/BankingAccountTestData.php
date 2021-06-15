@@ -929,7 +929,7 @@ return [
             'status_code' => 400,
         ]
     ],
-  
+
     'testGetBankingAccountForRmNotAssigned' => [
         'request'  => [
             'url'     => '/banking_accounts',

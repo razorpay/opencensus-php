@@ -29,7 +29,7 @@ class Region
     const Punjab             = 'Punjab';
     const Rajasthan          = 'Rajasthan';
     const Sikkim             = 'Sikkim';
-    const Tamil_Nadu         = 'Tamil Nadu';
+    const Tamil_Nadu         = 'Tamilnadu';
     const Telangana          = 'Telangana';
     const Tripura            = 'Tripura';
     const Uttar_Pradesh      = 'Uttar Pradesh';
@@ -39,7 +39,7 @@ class Region
     const Chandigarh         = 'Chandigarh';
     const Dadra_And_Nagar_Haveli_And_Daman_and_Diu = 'Dadra & Nagar Haveli and Daman & Diu';
     const Delhi              = 'Delhi';
-    const Jammu_And_Kashmir  = 'Jammu and Kashmir';
+    const Jammu_And_Kashmir  = 'Jammukashmir';
     const Lakshadweep        = 'Lakshadweep';
     const Puducherry         = 'Puducherry';
     const Ladakh             = 'Ladakh';
