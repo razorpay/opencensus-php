@@ -169,7 +169,7 @@ export default class Invoice extends GenericEntity {
               lineItem.currency = item.currency;
             }
 
-            if (item.addName) {
+            if (item.addName || !item.item_id) {
               lineItem.name = item.name;
             }
 
