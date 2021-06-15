@@ -1516,7 +1516,7 @@ class PayoutTest extends OAuthTestCase
      */
     public function testProcessQueuedPayoutWithFreePayouts()
     {
-        $this->mockLedgerSns(1);
+        $this->mockLedgerSns(1, 'payout_initiated');
 
         $secondBankingBalance = $this->createDirectBankingBalance();
 
