@@ -5,7 +5,6 @@ namespace RZP\Services;
 use Requests;
 use RZP\Error\Error;
 use RZP\Exception;
-use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Trace\TraceCode;
@@ -230,7 +229,7 @@ class PGRouter
                     $response['body']['data']['payment']['acquirer_data']['auth_code'];
             }
 
-            if (isset($response['body']['data']['payment']['card']))
+            if (isset($response['body']['data']['payment']['card']) === true)
             {
                 $response['body']['data']['payment']['card']['id'] = $response['body']['data']['payment']['id'];
 

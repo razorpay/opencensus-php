@@ -675,6 +675,25 @@ return [
         ],
     ],
 
+    'testFetchPaymentFromPgRouterWithExpandsCard' => [
+        'request' => [
+                'method'  => 'get',
+                'content' => [
+                    'expand' => [
+                        'card',
+                    ],
+                 ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'  => 'payment',
+                'card' => [
+                    'name' => 'Test Name'
+                ],
+            ],
+        ],
+    ],
+
     'testFetchPaymentFromPgRouterWithCard' => [
         'request' => [
             'method'  => 'get',

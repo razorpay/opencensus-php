@@ -27,6 +27,10 @@ trait ExternalRepo
 
             return $entity;
         }
+        catch (Exception\BadRequestValidationFailureException $e)
+        {
+            throw $e;
+        }
         catch (\Throwable $e)
         {
             if (Entity::validateExternalRepoEntity($this->entityName) === false || $this->validateExternalFetchEnabled() == false)
@@ -47,6 +51,10 @@ trait ExternalRepo
             $entity = parent::findByIdAndMerchant($id, $merchant, $params);
 
             return $entity;
+        }
+        catch (Exception\BadRequestValidationFailureException $e)
+        {
+            throw $e;
         }
         catch (\Throwable $e)
         {
@@ -69,6 +77,10 @@ trait ExternalRepo
 
             return $entity;
         }
+        catch (Exception\BadRequestValidationFailureException $e)
+        {
+            throw $e;
+        }
         catch (\Throwable $e)
         {
             if (Entity::validateExternalRepoEntity($this->entityName) === false || $this->validateExternalFetchEnabled() == false)
@@ -89,6 +101,10 @@ trait ExternalRepo
             $entity = parent::findOrFailByPublicIdWithParams($id, $params, $connectionType);
 
             return $entity;
+        }
+        catch (Exception\BadRequestValidationFailureException $e)
+        {
+            throw $e;
         }
         catch (\Throwable $e)
         {
@@ -140,6 +156,10 @@ trait ExternalRepo
             if (empty($entity) === false)
             {
                 $entity->setExternal(true);
+
+                $relations = $this->getExpandsForQueryFromInput($input);
+
+                $entity->loadMissing($relations);
 
                 return $entity;
             }
