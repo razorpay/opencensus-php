@@ -139,6 +139,8 @@ class Service extends Base\Service
             return ['success' => false];
         }
 
+        $this->trace->info(TraceCode::PAYMENT_ANALYTICS_PARTITION_SUCCESS, []);
+
         return ['success' => true];
     }
 }
