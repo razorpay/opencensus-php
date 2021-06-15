@@ -452,7 +452,7 @@ return [
                     'notes'        => [],
                     'results'      => [
                         'account_status'  => 'active',
-                        'registered_name' => null,
+                        'registered_name' => 'Razorpay Test',
                     ],
                 ],
             ],

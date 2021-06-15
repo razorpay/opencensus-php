@@ -65,7 +65,7 @@ class FundAccountValidationTest extends TestCase
 
         $response = $this->startTest();
 
-        $this->processFavToTerminalState(substr($response['id'], 4), 'COMPLETED');
+        $this->triggerFlowToUpdateFavWithNewState($response['id'], 'COMPLETED');
 
         $bankAccount = $this->getLastEntity('bank_account', true);
         $fundAccount = $this->getLastEntity('fund_account', true);
@@ -126,7 +126,7 @@ class FundAccountValidationTest extends TestCase
 
         $response = $this->startTest();
 
-        $this->processFavToTerminalState(substr($response['id'], 4), 'COMPLETED');
+        $this->triggerFlowToUpdateFavWithNewState($response['id'], 'COMPLETED');
 
         // Queue will be processed by now.
         $fav      = $this->getLastEntity('fund_account_validation', true);
@@ -251,7 +251,7 @@ class FundAccountValidationTest extends TestCase
 
         $fav = $this->getLastEntity('fund_account_validation', true);
 
-        $this->processFavToTerminalState(substr($fav['id'],4), 'FAILED', ['receipt' => $receipt]);
+        $this->triggerFlowToUpdateFavWithNewState($fav['id'], 'FAILED', ['receipt' => $receipt]);
 
         $bankAccount = $this->getLastEntity('bank_account', true);
         $fundAccount = $this->getLastEntity('fund_account', true);
@@ -356,7 +356,7 @@ class FundAccountValidationTest extends TestCase
 
         $fta = $this->getDbLastEntity('fund_transfer_attempt');
 
-        $payoutId = $fav->getId();
+        $favId = $fav->getId();
 
         $eventTestDataKey = 'testFiringOfWebhookOnFAVCompletionWithStork';
 
@@ -370,16 +370,17 @@ class FundAccountValidationTest extends TestCase
 
         $this->expectWebhookEventWithContents('fund_account.validation.completed', $eventTestDataKey);
 
-        $this->updateFtaAndSource($payoutId, 'PROCESSED','933815233814','SUCCESS',false);
+        $this->triggerFlowToUpdateFavWithNewState($favId, 'COMPLETED');
 
-        $payout = $this->getDbEntityById('fund_account_validation', $payoutId);
+        $fav = $this->getDbEntityById('fund_account_validation', $favId);
 
         $fta = $this->getDbEntityById('fund_transfer_attempt', $fta->getId());
 
         $this->assertEquals('processed', $fta->getStatus());
 
-        $this->assertEquals('completed', $payout->getStatus());
+        $this->assertEquals('completed', $fav->getStatus());
 
+        return $favId;
     }
 
     public function testWebhookFiringFundAccountValidationFailed()
@@ -405,7 +406,10 @@ class FundAccountValidationTest extends TestCase
 
         $this->expectWebhookEventWithContents('fund_account.validation.failed', $eventTestDataKey);
 
-        $this->updateFtaAndSource($payoutId, 'FAILED','944926344925','ACCOUNT_INVALID',true);
+        $this->triggerFlowToUpdateFavWithNewState($payoutId, 'FAILED', [
+            'bank_status_code' => 'ACCOUNT_INVALID',
+            'extra_info'       => ['internal_error' => true],
+        ]);
 
         $payout = $this->getDbEntityById('fund_account_validation', $payoutId);
 
@@ -442,7 +446,7 @@ class FundAccountValidationTest extends TestCase
                 'is_fts' => 1,
             ]);
 
-        $this->updateFtaAndSource($favId, 'INITIATED','944926344925','IN_PROGRESS',false);
+        $this->triggerFlowToUpdateFavWithNewState($favId, 'INITIATED');
 
         $fav = $this->getDbEntityById('fund_account_validation', $favId);
 
@@ -478,7 +482,7 @@ class FundAccountValidationTest extends TestCase
                 'is_fts' => 1,
             ]);
 
-        $this->updateFtaAndSource($favId, 'INITIATED','944926344925','IN_PROGRESS',false);
+        $this->triggerFlowToUpdateFavWithNewState($favId, 'INITIATED');
 
         $fav = $this->getDbEntityById('fund_account_validation', $favId);
 
@@ -505,7 +509,7 @@ class FundAccountValidationTest extends TestCase
 
         $fav = $this->getLastEntity('fund_account_validation', true);
 
-        $this->processFavToTerminalState(substr($fav['id'],4), 'FAILED', ['receipt' => $receipt]);
+        $this->triggerFlowToUpdateFavWithNewState($fav['id'], 'FAILED', ['receipt' => $receipt]);
 
         // Reloading FAV to account for changes after call to processFavToTerminalState()
         $fav = $this->getLastEntity('fund_account_validation', true);
@@ -535,7 +539,7 @@ class FundAccountValidationTest extends TestCase
 
         $fav = $this->getLastEntity('fund_account_validation', true);
 
-        $this->processFavToTerminalState(substr($fav['id'],4), 'FAILED', ['receipt' => $receipt]);
+        $this->triggerFlowToUpdateFavWithNewState($fav['id'], 'FAILED', ['receipt' => $receipt]);
 
         // Reloading FAV to account for changes after call to processFavToTerminalState()
         $fav = $this->getLastEntity('fund_account_validation', true);
@@ -662,7 +666,7 @@ class FundAccountValidationTest extends TestCase
 
         $fav = $this->getLastEntity('fund_account_validation', true);
 
-        $this->processFavToTerminalState(substr($fav['id'],4), 'COMPLETED');
+        $this->triggerFlowToUpdateFavWithNewState($fav['id'], 'COMPLETED');
         // Reloading FAV to account for changes after call to processFavToTerminalState()
         $fav = $this->getLastEntity('fund_account_validation', true);
 
@@ -1063,7 +1067,7 @@ class FundAccountValidationTest extends TestCase
 
         $fav = $this->getLastEntity('fund_account_validation', true);
 
-        $this->processFavToTerminalState(substr($fav['id'],4));
+        $this->triggerFlowToUpdateFavWithNewState($fav['id']);
 
         $bankAccount = $this->getLastEntity('bank_account', true);
         $fundAccount = $this->getLastEntity('fund_account', true);
@@ -1125,7 +1129,7 @@ class FundAccountValidationTest extends TestCase
 
         $fav = $this->getLastEntity('fund_account_validation', true);
 
-        $this->processFavToTerminalState(substr($fav['id'],4));
+        $this->triggerFlowToUpdateFavWithNewState($fav['id']);
 
         $balance     = $this->getLastEntity('balance', true);
         $bankAccount = $this->getLastEntity('bank_account', true);
@@ -1183,7 +1187,7 @@ class FundAccountValidationTest extends TestCase
 
         $response = $this->startTest();
 
-        $this->processFavToTerminalState(substr($response['id'], 4));
+        $this->triggerFlowToUpdateFavWithNewState($response['id']);
 
         $bankAccount = $this->getLastEntity('bank_account', true);
         $fundAccount = $this->getLastEntity('fund_account', true);
@@ -1336,7 +1340,7 @@ class FundAccountValidationTest extends TestCase
             self::VALIDATION_UPDATE_MUTEX . $favId,
             function () use ($favId)
             {
-                $this->updateFtaAndSource($favId, 'PROCESSED', '933815233814', 'SUCCESS', false);
+                $this->triggerFlowToUpdateFavWithNewState($favId, 'COMPLETED');
             },
             0.02);
     }
@@ -1380,6 +1384,44 @@ class FundAccountValidationTest extends TestCase
         $fta = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertEquals($fta['narration'],'LT L and T Acc Validation');
         $this->assertEquals($fav['id'], $fta['source']);
+    }
+
+    public function testExtraFieldsInWebhookShouldNotDisruptFavBackwardFlow()
+    {
+        $this->mockRazorxTreatment();
+
+        $this->testFundAccValidationWithAccountNumberAndBankAccount();
+
+        $fav = $this->getDbLastEntity('fund_account_validation');
+
+        $fta = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $favId = $fav->getId();
+
+        $eventTestDataKey = 'testFiringOfWebhookOnFAVCompletionWithStork';
+
+        $this->fixtures->edit(
+            'fund_transfer_attempt',
+            $fta->getId(),
+            [
+                'is_fts' => 1,
+            ]);
+
+        $this->expectWebhookEventWithContents('fund_account.validation.completed', $eventTestDataKey);
+
+        // Add random key value pair to FTS webhook body and trigger webhook callback here
+        $this->triggerFlowToUpdateFavWithNewState($favId, 'COMPLETED', ['RandomKey' => 'RandomValue']);
+
+        $fav = $this->getDbEntityById('fund_account_validation', $favId);
+
+        $fta = $this->getDbEntityById('fund_transfer_attempt', $fta->getId());
+
+        $this->assertEquals('processed', $fta->getStatus());
+
+        $this->assertEquals('completed', $fav->getStatus());
+        $this->assertEquals('Razorpay Test', $fav->getRegisteredName());
+
+        return $favId;
     }
 
 }

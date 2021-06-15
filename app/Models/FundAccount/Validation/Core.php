@@ -780,7 +780,7 @@ class Core extends Base\Core
                 $input[Entity::STATUS] = strtolower($input[Entity::STATUS]);
             }
 
-            (new Validator)->validateInput('fts_status_update', $input);
+            (new Validator)->setStrictFalse()->validateInput('fts_status_update', $input);
 
             $extraInfo = $input['extra_info'] ?? [];
 
@@ -823,7 +823,7 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::FAV_UPDATE_FROM_FTS_WEBHOOK_UPDATE_FAV,
             [
-                'input'     => $mapping,
+                'input'     => (new Redaction())->redactData($mapping),
             ]);
 
         $fav = $this->repo->fund_account_validation->findOrFail($mapping[Entity::ID]);

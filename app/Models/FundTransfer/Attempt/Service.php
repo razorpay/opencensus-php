@@ -307,19 +307,6 @@ class Service extends Base\Service
                 'input'     => (new Redaction())->redactData($input)
             ]);
 
-        $srcId   = $input[FTSConstants::SOURCE_ID];
-        $srcType = $input[FTSConstants::SOURCE_TYPE];
-
-        if ($srcType === FTSConstants::FUND_ACCOUNT_VALIDATION)
-        {
-            $fav = $this->repo->fund_account_validation->findOrFail($srcId);
-
-            if($fav->merchant->isFeatureEnabled(Features::FAV_FTA_DPRCN_BCK))
-            {
-                return (new FavService())->updateFavWithFtsWebhook($input);
-            }
-        }
-
         return $this->core()->updateFundTransfer($input);
     }
 

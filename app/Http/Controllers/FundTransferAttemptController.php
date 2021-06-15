@@ -8,7 +8,7 @@ use ApiResponse;
 use RZP\Constants\Entity;
 use RZP\Models\FundTransfer\Attempt\Constants;
 use RZP\Services\FTS\Constants as FTSConstants;
-use RZP\Models\FundAccount\Validation as FundAccountValidation;
+use RZP\Models\FundAccount\Validation\Service as FavService;
 
 class FundTransferAttemptController extends Controller
 {
@@ -62,6 +62,14 @@ class FundTransferAttemptController extends Controller
     public function updateSource()
     {
         $input = Request::all();
+
+        // If the source type is FAV, then call the FAV service
+        if ($input[FTSConstants::SOURCE_TYPE] === FTSConstants::FUND_ACCOUNT_VALIDATION)
+        {
+            $response = (new FavService())->updateFavWithFtsWebhook($input);
+
+            return ApiResponse::json($response);
+        }
 
         $response = $this->service()->updateFundTransferAttempt($input);
 

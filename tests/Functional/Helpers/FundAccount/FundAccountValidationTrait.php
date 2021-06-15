@@ -5,8 +5,8 @@ namespace RZP\Tests\Functional\Helpers\FundAccount;
 use RZP\Jobs\FavQueueForFTS;
 use RZP\Services\RazorXClient;
 use RZP\Models\FundAccount\Entity as FundAccount;
-use RZP\Models\FundTransfer\Attempt\Service as FtaService;
 use RZP\Models\FundAccount\Validation\Entity as Validation;
+use RZP\Models\FundAccount\Validation\Service as FavService;
 
 trait FundAccountValidationTrait
 {
@@ -19,7 +19,7 @@ trait FundAccountValidationTrait
         $bankAccount = $this->getLastEntity('bank_account', true);
         $fundAccount = $this->getLastEntity('fund_account', true);
 
-        $this->processFavToTerminalState(substr($response['id'], 4), 'COMPLETED');
+        $this->triggerFlowToUpdateFavWithNewState($response['id'], 'COMPLETED');
 
         // Queue will be processed by now.
         $fav = $this->getLastEntity('fund_account_validation', true);
@@ -38,7 +38,7 @@ trait FundAccountValidationTrait
         $this->assertEquals('penny_testing', $fta['purpose']);
         $this->assertEquals($fav['id'], $fta['source']);
         $this->assertEquals($bankAccount['id'], 'ba_'.$fta['bank_account_id']);
-        //$this->assertNotNull($fta['narration']);
+        $this->assertNotNull($fta['narration']);
 
         $txn = $this->getLastEntity('transaction', true);
         $this->assertEquals($fav['id'], $txn['entity_id']);
@@ -55,28 +55,37 @@ trait FundAccountValidationTrait
     }
 
     /**
-     * It simulates the webhook that updates the FAV to completion.
+     * It simulates the webhook that updates the FAV to a new state, and triggers the relevant flow.
      *
-     * Pass $status as 'COMPLETED' if you want the fav status to not be 'FAILED' by default.
+     * Pass $status as 'COMPLETED'/'INITIATED' as required, if you want the fav status to not be 'FAILED' by default.
      *
-     * NOTE- Please pass fav ID as a string of 14 chars, that is, WITHOUT the fav_ prefix
+     * Any key-values of the webhook body that you want to be customised are to be passed in the $attributes array.
+     * Receipts are passed in $attributes array as well. E.g. ['receipt' => 'SAMPLE_RECEIPT']. Note that receipts will NOT
+     * be handled if bank_status_code is passed in $attributes array.
      *
      * @param string $favId
      * @param string $status
      * @param array  $attributes
      */
-    protected function processFavToTerminalState(string $favId, $status = 'FAILED', $attributes = [])
+    protected function triggerFlowToUpdateFavWithNewState(string $favId, $status = 'FAILED', $attributes = [])
     {
-        if  ((array_key_exists('receipt', $attributes) === true) and
-             (array_key_exists('bank_status_code', $attributes) === false))
+        // Remove sign from the entity ID
+        if (strpos($favId, 'fav_') !== false)
+        {
+            $favId = substr($favId, 4);
+        }
+
+        // Handle Receipts.
+        if ((array_key_exists('receipt', $attributes) === true) and
+            (array_key_exists('bank_status_code', $attributes) === false))
         {
             $this->processReceipt($attributes);
         }
 
-        // Test input for webhook based update of FAV, simulates FTS webhook
+        // Create test input for webhook based update of FAV, simulates FTS webhook
         $input = [
             'bank_processed_time' => '',
-            'bank_status_code'    => ($status === 'COMPLETED') ? 'COMPLETED' : 'FAILED',
+            'bank_status_code'    => ($status === 'COMPLETED') ? 'SUCCESS' : 'FAILED',
             'channel'             => 'ICICI',
             'extra_info'          => [
                 'beneficiary_name' => ($status === 'COMPLETED') ? 'Razorpay Test' : '',
@@ -96,10 +105,38 @@ trait FundAccountValidationTrait
             'utr'                 => str_shuffle('111917301337'),
         ];
 
+        // Merge extra_info from attributes to input first
+        if (array_key_exists('extra_info', $attributes))
+        {
+            $input['extra_info'] = array_merge($input['extra_info'], $attributes['extra_info']);
+            unset($attributes['extra_info']);
+        }
+
+        // Handle INITIATED status separately
+        if ($status === 'INITIATED')
+        {
+            $attributes = [
+                'bank_status_code'   => '',
+                'gateway_error_code' => '',
+                'status'             => 'INITIATED',
+                'remarks'            => '',
+                'utr'                => '',
+            ];
+        }
+
+        // Create the webhook payload as per defauts and the custom attributes array passed to the function
         $input = array_merge($input, $attributes);
 
-        // Update the FAV in the backward flow, simulating FTS webhook.
-        (new FtaService())->updateFundTransferAttempt($input);
+        // Make the webhook calls
+        $this->ba->ftsAuth();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     =>  '/update_fts_fund_transfer',
+            'content' => $input,
+        ];
+
+        $this->makeRequestAndGetContent($request);
     }
 
     /**
@@ -140,7 +177,7 @@ trait FundAccountValidationTrait
         $fundAccount = $this->getLastEntity('fund_account', true);
         $balanceEntity = $this->getLastEntity('balance', true);
 
-        $this->processFavToTerminalState(substr($response['id'], 4), 'COMPLETED');
+        $this->triggerFlowToUpdateFavWithNewState($response['id'], 'COMPLETED');
 
         // Queue will be processed by now.
         $fav = $this->getLastEntity('fund_account_validation', true);
@@ -245,6 +282,17 @@ trait FundAccountValidationTrait
                           ->willReturn('on');
     }
 
+    /**
+     * @deprecated Deprecated since FTA was deprecated from FAV flow.
+     *
+     * @see triggerFlowToUpdateFavWithNewState() instead.
+     *
+     * @param        $payoutId
+     * @param        $status
+     * @param string $utr
+     * @param        $bankStatusCode
+     * @param        $internalError
+     */
     protected function updateFtaAndSource($payoutId, $status, $utr = '928337183',$bankStatusCode,$internalError)
     {
         $this->ba->ftsAuth();
