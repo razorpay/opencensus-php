@@ -3,9 +3,10 @@
 namespace RZP\Models\Pricing;
 
 use RZP\Base;
+use RZP\Exception;
 use RZP\Constants\Procurer;
 use RZP\Constants\Product;
-use RZP\Exception;
+use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Http\BasicAuth;
 use RZP\Error\PublicErrorDescription;
@@ -285,8 +286,20 @@ class Validator extends Base\Validator
         {
             if (empty($input[Entity::PERCENT_RATE]) === false)
             {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Percentage rate pricing is not allowed for ' . $input[Entity::PAYMENT_METHOD]);
+                if ($this->isPercentagePricingAllowedForEmandateOrNach($input))
+                {
+                    // for recurring feature of type auto, eMandate with pricing plan should be allowed
+                    app('trace')->info(
+                        TraceCode::EMANDATE_PERCENTAGE_PRICING_PLAN,
+                        [
+                            'input'         => $input,
+                        ]);
+                }
+                else
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Percentage rate pricing is not allowed for ' . $input[Entity::PAYMENT_METHOD]);
+                }
             }
 
             if (isset($input[Entity::PAYMENT_METHOD_TYPE]) === true)
@@ -299,6 +312,16 @@ class Validator extends Base\Validator
                 Payment\RecurringType::validateRecurringType($input[Entity::PAYMENT_ISSUER]);
             }
         }
+    }
+
+    protected function isPercentagePricingAllowedForEmandateOrNach($input): bool
+    {
+        return ((empty($input[Entity::PAYMENT_ISSUER]) === false) and
+                ($input[Entity::PAYMENT_ISSUER] === Payment\RecurringType::AUTO) and
+                (empty($input[Entity::PAYMENT_METHOD]) === false) and
+                ($input[Entity::PAYMENT_METHOD] === Payment\Method::EMANDATE) and
+                (empty($input[Entity::PAYMENT_METHOD_TYPE]) === false) and
+                ($input[Entity::PAYMENT_METHOD_TYPE] !== Payment\AuthType::AADHAAR));
     }
 
     protected function validateAddPlanRuleNB($input)
@@ -712,14 +735,14 @@ class Validator extends Base\Validator
                     'pricing_plan_name'     => $rule->getPlanName(),
                     'rule_fee_bearer'       => $rule->getFeeBearer(),
                 ];
-    
+
                 $message = 'Unable to add rule to plan ' . $rule->getPlanName() . '. Rule has fee_bearer ' . $rule->getFeeBearer() .
                     '. A merchant on this plan has fee_bearer ' . $feeBearer;
-    
+
                 throw new Exception\BadRequestValidationFailureException(
                     $message,
                     'fee_bearer',
-                    $data);    
+                    $data);
             }
 
         }

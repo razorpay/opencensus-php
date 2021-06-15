@@ -1789,6 +1789,31 @@ return [
         ],
     ],
 
+    'testAddPricingPlanEmandatePercentageRateRuleForSubscription' => [
+        'request' => [
+            'content' => [
+                'payment_method'      => 'emandate',
+                'product'             => 'primary',
+                'feature'             => 'payment',
+                'payment_method_type' => 'netbanking',
+                'payment_issuer'      => 'auto',
+                'percent_rate'        => 250,
+                'fixed_rate'          => 0
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'           => 'TestPlan1',
+                'payment_method'      => 'emandate',
+                'payment_issuer'      => 'auto',
+                'percent_rate'        => 250,
+                'fixed_rate'          => 0
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testAddDuplicatePricingPlanRule' => [
         'request' => [
             'method' => 'POST',
