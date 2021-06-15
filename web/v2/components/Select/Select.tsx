@@ -116,7 +116,7 @@ const Select: React.FC<SelectPropsT> = ({
           <Flex key={index} flexDirection="row">
             <Space margin={[0, 0, 2, 0]}>
               <OptionContainer $disabled={child.props.disabled} onClick={() => onSelect(child)}>
-                <Text css={{ cursor: 'pointer' }} size="medium" color="shade.980">
+                <Text css={{ cursor: 'pointer', width: '100%' }} size="medium" color="shade.980">
                   {child}
                 </Text>
                 {child.props.value === selectedValue ? (

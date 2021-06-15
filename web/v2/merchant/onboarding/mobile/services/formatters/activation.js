@@ -9,6 +9,8 @@ const businessOverviewFields = [
   'business_model',
 ];
 const businessDetailFields = [
+  'gstin',
+  'company_cin',
   'company_pan',
   'business_name',
   'promoter_pan',
@@ -22,13 +24,7 @@ const businessDetailFields = [
   'business_operation_pin',
   'business_operation_address',
 ];
-const bankAndCompanyDetailFields = [
-  'company_cin',
-  'gstin',
-  'bank_account_number',
-  'bank_account_name',
-  'bank_branch_ifsc',
-];
+const bankAndCompanyDetailFields = ['bank_account_number', 'bank_account_name', 'bank_branch_ifsc'];
 const onboardingCardFields = ['business_type', 'business_subcategory', 'business_model'];
 const documentsUploadFields = [
   'aadhar_front',

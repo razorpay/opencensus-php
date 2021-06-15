@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
 import * as Yup from 'yup';
 import { Formik } from 'formik';
 import { useQuery } from 'react-query';
@@ -7,81 +6,116 @@ import View from '@razorpay/blade-old/src/atoms/View';
 import Space from '@razorpay/blade-old/src/atoms/Space';
 import TextInput from '@razorpay/blade-old/src/atoms/TextInput';
 import TextArea from '@razorpay/blade-old/src/atoms/TextArea';
+import Text from '@razorpay/blade-old/src/atoms/Text';
 import Checkbox from '@razorpay/blade-old/src/atoms/Checkbox';
-import { getColor } from '@razorpay/blade-old/src/_helpers/theme';
 import { Select, Option } from 'v2/components/Select';
 import { FormSection, Field, GetTouchedFields } from '../Form';
 import { useActivationFormState, isVisible, isTabComplete } from '../context/store';
 import useActivation, { getRequestData } from '../hooks/useActivation';
-import { getLabel, getHelpText } from '../services/utils';
-import { states } from '../Constants/OnboardingConstants';
+import { getLabel, isUnregisteredBusiness, getHelpText } from '../services/utils';
+import {
+  states,
+  CIN_BusinessTypes,
+  LLPIN_BusinessTypes,
+  PROPRIETORSHIP,
+} from '../Constants/OnboardingConstants';
 import { analyticsTrack } from '../../../../services/tracking/segment';
 import { useApp } from 'v2/context/App';
 import { useSnackbar } from 'v2/components/SnackBar/SnackbarContext';
 import { fetch } from 'v2/services/rest/rest-fetch';
+import BusinessName from '../Fields/BusinessName';
 
-const StyledSeparator = styled(View)`
-  height: 1px;
-  width: 100%;
-  background-color: ${({ theme }) => getColor(theme, 'shade.920')};
-`;
-
-const businessDetailsSchema = Yup.object().shape({
-  company_pan: Yup.string()
-    .trim()
-    .length(10, 'PAN card must be 10 characters')
-    .matches(/^[a-zA-z]{5}\d{4}[a-zA-Z]{1}$/, {
-      message: 'Invalid PAN Card',
-      excludeEmptyString: true,
-    })
-    .test('companypan', 'Invalid PAN format.', (value) => {
-      if (!value || value.length <= 3) {
-        return true;
+const businessDetailsSchema = ({ hasGSTIN, businessOverviewDetails }) =>
+  Yup.object().shape({
+    company_pan: Yup.string()
+      .trim()
+      .length(10, 'PAN card must be 10 characters')
+      .matches(/^[a-zA-z]{5}\d{4}[a-zA-Z]{1}$/, {
+        message: 'Invalid PAN Card',
+        excludeEmptyString: true,
+      })
+      .test('companypan', 'Invalid PAN format.', (value) => {
+        if (!value || value.length <= 3) {
+          return true;
+        }
+        return ['C', 'H', 'F', 'A', 'T', 'B', 'J', 'G', 'L'].indexOf(value[3].toUpperCase()) !== -1;
+      })
+      .required('Company PAN is a required field')
+      .nullable(),
+    business_name: Yup.string().required('Business Name is a required field').nullable(),
+    promoter_pan: Yup.string()
+      .trim()
+      .length(10, 'PAN must be 10 characters')
+      .matches(/^[a-zA-z]{5}\d{4}[a-zA-Z]{1}$/, {
+        message: 'Invalid PAN Card.',
+        excludeEmptyString: true,
+      })
+      .test('promoter_pan', 'Invalid PAN Card', (value) => {
+        if (!value || value.length <= 3) {
+          return true;
+        }
+        return value[3].toLowerCase() === 'p';
+      })
+      .required('Promoter PAN is a required field')
+      .nullable(),
+    promoter_pan_name: Yup.string().required('Promoter PAN Name is a required field').nullable(),
+    business_registered_address: Yup.string()
+      .required('Registered address is a required field')
+      .nullable(),
+    business_registered_state: Yup.string()
+      .required('Registered state is a required field')
+      .nullable(),
+    business_registered_city: Yup.string()
+      .required('Registered city is a required field')
+      .nullable(),
+    business_registered_pin: Yup.string()
+      .trim()
+      .length(6, 'Please enter a 6 digit pincode')
+      .required('Registered PIN is a required field')
+      .nullable(),
+    business_operation_address: Yup.string()
+      .required('Operation Address is a required field')
+      .nullable(),
+    business_operation_state: Yup.string()
+      .required('Operation State is a required field')
+      .nullable(),
+    business_operation_city: Yup.string().required('Operation City is a required field').nullable(),
+    business_operation_pin: Yup.string()
+      .trim()
+      .length(6, 'Please enter a 6 digit pincode')
+      .required('Operation PIN is a required field')
+      .nullable(),
+    gstin: Yup.string().when('hasGstin', {
+      is: hasGSTIN,
+      then: Yup.string()
+        .trim()
+        .length(15, 'Please provide valid GSTIN')
+        .required('GSTIN is a required field')
+        .nullable(),
+      otherwise: Yup.string().trim().nullable(),
+    }),
+    company_cin: Yup.lazy(() => {
+      if (CIN_BusinessTypes.includes(Number(businessOverviewDetails.business_type.value))) {
+        return Yup.string()
+          .trim()
+          .length(21, 'CIN must be 21 characters')
+          .matches(/^([a-z]{3}-\d{4}|[ul]\d{5}[a-z]{2}\d{4}[a-z]{3}\d{6})$/i, {
+            message: 'Invalid Format',
+            excludeEmptyString: true,
+          })
+          .required('Company CIN is a required field')
+          .nullable();
       }
-      return ['C', 'H', 'F', 'A', 'T', 'B', 'J', 'G', 'L'].indexOf(value[3].toUpperCase()) !== -1;
-    })
-    .required('Company PAN is a required field')
-    .nullable(),
-  business_name: Yup.string().required('Business Name is a required field').nullable(),
-  promoter_pan: Yup.string()
-    .trim()
-    .length(10, 'PAN must be 10 characters')
-    .matches(/^[a-zA-z]{5}\d{4}[a-zA-Z]{1}$/, {
-      message: 'Invalid PAN Card.',
-      excludeEmptyString: true,
-    })
-    .test('promoter_pan', 'Invalid PAN Card', (value) => {
-      if (!value || value.length <= 3) {
-        return true;
-      }
-      return value[3].toLowerCase() === 'p';
-    })
-    .required('Promoter PAN is a required field')
-    .nullable(),
-  promoter_pan_name: Yup.string().required('Promoter PAN Name is a required field').nullable(),
-  business_registered_address: Yup.string()
-    .required('Registered address is a required field')
-    .nullable(),
-  business_registered_state: Yup.string()
-    .required('Registered state is a required field')
-    .nullable(),
-  business_registered_city: Yup.string().required('Registered city is a required field').nullable(),
-  business_registered_pin: Yup.string()
-    .trim()
-    .length(6, 'Please enter a 6 digit pincode')
-    .required('Registered PIN is a required field')
-    .nullable(),
-  business_operation_address: Yup.string()
-    .required('Operation Address is a required field')
-    .nullable(),
-  business_operation_state: Yup.string().required('Operation State is a required field').nullable(),
-  business_operation_city: Yup.string().required('Operation City is a required field').nullable(),
-  business_operation_pin: Yup.string()
-    .trim()
-    .length(6, 'Please enter a 6 digit pincode')
-    .required('Operation PIN is a required field')
-    .nullable(),
-});
+      return Yup.string()
+        .trim()
+        .matches(/^([a-z]{3}-\d{4}|[ul]\d{5}[a-z]{2}\d{4}[a-z]{3}\d{6})$/i, {
+          message: 'Invalid Format',
+          excludeEmptyString: true,
+        })
+        .required('LLPIN is a required field')
+        .nullable();
+    }),
+  });
 
 interface BusinessDetailsProps {
   isFormLocked?: boolean;
@@ -94,7 +128,16 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
   const [pinCode, setPinCodeValue] = useState('');
   const [isRegisteredPin, setIsRegisteredPin] = useState(true);
 
+  const { business_type: businessType } = data;
   const businessDetails = data.business_details;
+  const businessOverviewDetails = data.business_overview;
+
+  const hasGSTIN = useActivationFormState((state) => state.has_gstin);
+  const setHasGSTIN = useActivationFormState((state) => state.setHasGSTIN);
+  const setBankAndCompanyDetailsCompleted = useActivationFormState(
+    (state) => state.setBankAndCompanyDetailsCompleted,
+  );
+
   const setBusinessDetailsCompleted = useActivationFormState(
     (state) => state.setBusinessDetailsCompleted,
   );
@@ -208,7 +251,12 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
   const handleSubmit = (updatedDetails) => {
     let reqData;
     const isComplete = isTabComplete(
-      { ...data, business_details: { ...businessDetails, ...updatedDetails }, hasSameAdress },
+      {
+        ...data,
+        business_details: { ...businessDetails, ...updatedDetails },
+        hasSameAdress,
+        hasGSTIN,
+      },
       'business_details',
     );
     setBusinessDetailsCompleted(isComplete);
@@ -236,6 +284,8 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
   return (
     <Formik
       initialValues={{
+        gstin: businessDetails.gstin.value,
+        company_cin: businessDetails.company_cin.value,
         company_pan: businessDetails.company_pan.value,
         business_name: businessDetails.business_name.value,
         promoter_pan: businessDetails.promoter_pan.value,
@@ -249,7 +299,7 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
         business_operation_city: businessDetails.business_operation_city.value || '',
         business_operation_pin: businessDetails.business_operation_pin.value,
       }}
-      validationSchema={businessDetailsSchema}
+      validationSchema={businessDetailsSchema({ hasGSTIN, businessOverviewDetails })}
       enableReinitialize
       onSubmit={() => console.log('onSubmit')}
     >
@@ -284,13 +334,66 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
               />
             </Field>
             <Field visible={isVisible('business_name', data)}>
+              {CIN_BusinessTypes.includes(Number(businessType)) ||
+              LLPIN_BusinessTypes.includes(Number(businessType)) ? (
+                <Space margin={[0, 0, 0, 0]}>
+                  <View>
+                    <BusinessName
+                      businessNameValue={formikProps.values.business_name}
+                      errorText={
+                        formikProps.touched.business_name && formikProps.errors.business_name
+                      }
+                      updateBusinessName={({
+                        company_name = '',
+                        identity_number,
+                        identity_type,
+                      }) => {
+                        formikProps.setFieldTouched('business_name');
+                        formikProps.setFieldValue('business_name', company_name);
+                        if (identity_type) {
+                          const isCin = CIN_BusinessTypes.includes(Number(businessType));
+                          const isLlpin = LLPIN_BusinessTypes.includes(Number(businessType));
+                          if (
+                            (isCin && identity_type === 'cin') ||
+                            (isLlpin && identity_type === 'llpin')
+                          ) {
+                            formikProps.setFieldTouched('company_cin');
+                            formikProps.setFieldValue('company_cin', identity_number);
+                          }
+                        }
+                        setIsBlurCalled(true);
+                      }}
+                    />
+                  </View>
+                </Space>
+              ) : (
+                <TextInput
+                  width="auto"
+                  name="business_name"
+                  label="Business Name"
+                  helpText="As mentioned in the PAN"
+                  value={formikProps.values.business_name}
+                  errorText={formikProps.touched.business_name && formikProps.errors.business_name}
+                  disabled={isFormLocked}
+                />
+              )}
+            </Field>
+            <Field visible={isVisible('company_cin', data)}>
               <TextInput
                 width="auto"
-                name="business_name"
-                label="Business Name"
-                helpText="As mentioned in the PAN"
-                value={formikProps.values.business_name}
-                errorText={formikProps.touched.business_name && formikProps.errors.business_name}
+                name="company_cin"
+                label={getLabel('company_cin', data)}
+                value={formikProps.values.company_cin}
+                errorText={formikProps.touched.company_cin && formikProps.errors.company_cin}
+                onBlur={() => {
+                  analyticsTrack({
+                    objectName: 'SignUp',
+                    actionName: 'Company Cin',
+                    screen: 'home page',
+                    eventAction: 'initiated',
+                    user,
+                  });
+                }}
                 disabled={isFormLocked}
               />
             </Field>
@@ -506,9 +609,71 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
             </FormSection>
           ) : null}
 
-          <Space margin={[2, 0, 1.5, 0]}>
-            <StyledSeparator />
-          </Space>
+          {!isUnregisteredBusiness(businessOverviewDetails.business_type.value) ? (
+            <FormSection title="Company Details" last disabled={isFormLocked}>
+              <Field last>
+                <TextInput
+                  width="auto"
+                  name="gstin"
+                  label="GST Identification Number (GSTIN)"
+                  helpText="Enter GSTIN & get reviewed faster. Should match your business address."
+                  value={formikProps.values.gstin}
+                  errorText={formikProps.touched.gstin && formikProps.errors.gstin}
+                  onBlur={() => {
+                    analyticsTrack({
+                      objectName: 'SignUp',
+                      actionName: 'Gst Identification Number',
+                      screen: 'home page',
+                      eventAction: 'initiated',
+                      user,
+                    });
+                  }}
+                  disabled={isFormLocked || hasGSTIN}
+                />
+              </Field>
+              {!isUnregisteredBusiness(businessOverviewDetails.business_type.value) ? (
+                <>
+                  <Space margin={[1.75, 0, 0, 0]}>
+                    <View>
+                      <Checkbox
+                        name="no_gstin"
+                        title="I don't have a GSTIN"
+                        defaultChecked={hasGSTIN}
+                        onChange={(value) => {
+                          setHasGSTIN(value);
+                          if (value) {
+                            formikProps.setFieldTouched('gstin');
+                            formikProps.setFieldValue('gstin', '');
+                            setIsBlurCalled(true);
+                          } else {
+                            isTabComplete(
+                              { ...data, hasGSTIN: !value },
+                              'bank_and_company_details',
+                            );
+                            setBankAndCompanyDetailsCompleted(value);
+                          }
+                          analyticsTrack({
+                            objectName: 'SignUp',
+                            actionName: "I don't have a GSTIN checkbox",
+                            screen: 'home page',
+                            eventAction: 'initiated',
+                            user,
+                          });
+                        }}
+                      />
+                    </View>
+                  </Space>
+                  {hasGSTIN && Number(data.business_type) === PROPRIETORSHIP && (
+                    <Text size="xsmall" color="negative.900">
+                      Please note that skipping GSTIN might lead to delay in your account review by
+                      upto two weeks, usually it takes 3-4 days
+                    </Text>
+                  )}
+                </>
+              ) : null}
+            </FormSection>
+          ) : null}
+
           {/* {data.activation_flow !== 'greylist' ? (
             <Text size="xsmall" align="center">
               By submitting these details you agree to our{' '}

@@ -47,6 +47,7 @@ test('ActivationForm Flow', async () => {
   const [
       businessPanInput,
       buseinessNameInput,
+      cinInput,
       authSignatoryProofInput,
       authSignatoryNameInput,
       pincodeInput,
@@ -59,10 +60,12 @@ test('ActivationForm Flow', async () => {
   fireEvent.change(buseinessNameInput, { target: { value: 'Neeraj' } });
   fireEvent.change(authSignatoryProofInput, { target: { value: 'AAPFA3421J' } });
   fireEvent.change(authSignatoryNameInput, { target: { value: 'testName' } });
+  fireEvent.change(cinInput, { target: { value: 'U74899DL2000PLC105530' } });
   expect(businessPanInput.value).toBe('ABCDE1234F');
   expect(buseinessNameInput.value).toBe('Neeraj');
   expect(authSignatoryProofInput.value).toBe('AAPFA3421J');
   expect(authSignatoryNameInput.value).toBe('testName');
+  expect(cinInput.value).toBe('U74899DL2000PLC105530');
   fireEvent.change(addressInput, { target: { value: 'Flat no 12, opp Adugodi Police Station' } });
   fireEvent.change(pincodeInput, { target: { value: '530068' } });
   fireEvent.change(cityInput, { target: { value: 'Bangalore' } });

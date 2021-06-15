@@ -53,3 +53,37 @@ test('shoud render POI failed message when PAN verfication failed', async () => 
     screen.getByText('PAN Verification failed. Please review your details and submit again'),
   ).toBeInTheDocument();
 });
+test('should not render Company Details fields for unregistered business', async () => {
+  ActivationDB.update({
+    business_type: '11',
+  });
+  render(<App />, {});
+  await waitForLoadingToFinish();
+  expect(screen.queryByText('Company Details')).not.toBeInTheDocument();
+});
+test('should render Company Details section for registered business', async () => {
+  ActivationDB.update({
+    business_type: '4',
+  });
+  render(<App />, {});
+  await waitForLoadingToFinish();
+  expect(screen.queryByText('Company Details')).toBeInTheDocument();
+});
+test('should render CIN field for Private or Public merchants', async () => {
+  ActivationDB.update({
+    business_type: '4',
+  });
+  render(<App />, {});
+  await waitForLoadingToFinish();
+  expect(screen.getByText('Company Identification Number (CIN)')).toBeInTheDocument();
+  expect(screen.queryByText('LLP Identification Number (LLPIN)')).not.toBeInTheDocument();
+});
+test('should render LLPIN field for LLP merchants', async () => {
+  ActivationDB.update({
+    business_type: '6',
+  });
+  render(<App />, {});
+  await waitForLoadingToFinish();
+  expect(screen.getByText('LLP Identification Number (LLPIN)')).toBeInTheDocument();
+  expect(screen.queryByText('Company Identification Number (CIN)')).not.toBeInTheDocument();
+});
