@@ -123,6 +123,7 @@ app
         $scope.isOrgRZP = $scope.organization.custom_code === 'rzp';
         $scope.isOrgHDFC = $scope.organization.custom_code === 'hdfc';
         $scope.isOrgAXIS = $scope.organization.custom_code === 'axis';
+        $scope.isOrgICICI = $scope.organization.custom_code === 'icici';
         $scope.second_factor_auth_mode =
           OTP_AUTH_MODE[$scope.organization.second_factor_auth_mode] || 'phone number/email';
       });
