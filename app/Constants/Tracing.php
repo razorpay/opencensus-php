@@ -22,7 +22,15 @@ class Tracing
     // all routes which are to be included from distributed tracing
     public static function getRoutesToInclude(): array
     {
-        $routesToInclude = array_merge(Route::$public, Route::$direct);
+        $routesToInclude = array_merge(Route::$public,
+            Route::$direct,
+            Route::$internalApps['settlements_service'],
+            Route::$internalApps['fts'],
+            Route::$internalApps['ledger'],
+            Route::$internalApps['payouts_service'],
+            Route::$internalApps['capital_collections_client'],
+            Route::$internalApps['pg_router']
+        );
 
         return array_merge($routesToInclude, [
             // used by capital-cards service
