@@ -400,6 +400,11 @@ class Constants
     const WITHDRAW_LOC = 'withdraw_loc';
 
     /**
+     * Enables Cash Advance merchants to see lender migration specific details
+     */
+    const LOC_ESIGN = 'loc_esign';
+
+    /**
      * Dashboard shows cashback offer provided with LOC
      */
     const LOC_FIRST_WITHDRAWAL = 'loc_first_withdrawal';
@@ -937,6 +942,7 @@ class Constants
         self::ALLOW_NETBANKING_FETCH          => true,
         self::IVR_DISABLE                     => true,
         self::WITHDRAW_LOC                    => true,
+        self::LOC_ESIGN                       => true,
         self::LOC_FIRST_WITHDRAWAL            => true,
         self::CAPITAL_CARDS                   => true,
         self::LOC_STAGE_1                     => true,
@@ -1137,6 +1143,11 @@ class Constants
         self::WITHDRAW_LOC              => [
             'feature'       => self::WITHDRAW_LOC,
             'display_name'  => 'Withdraw Loc',
+            'documentation' => '',
+        ],
+        self::LOC_ESIGN              => [
+            'feature'       => self::LOC_ESIGN,
+            'display_name'  => 'LOC lender migration e-sign',
             'documentation' => '',
         ],
         self::LOC_FIRST_WITHDRAWAL              => [
