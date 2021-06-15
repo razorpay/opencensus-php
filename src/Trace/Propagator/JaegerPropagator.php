@@ -125,7 +125,11 @@ class JaegerPropagator implements PropagatorInterface
         foreach ($headers as $k => $v) {
             $baggageHeader = 'HTTP_' .  strtoupper(str_replace('-', '_', self::BAGGAGE_HEADER_PREFIX));
             if (stripos($k, $baggageHeader) !== false) {
+                // remove the baggage header prefix
                 $itemKey = str_replace($baggageHeader, "", $k);
+
+                // change the `_` back to `-`
+                $itemKey = str_replace('_', '-', $itemKey);
                 if ($itemKey != "") {
                     $baggageItems[strtolower($itemKey)] = $v;
                 }
