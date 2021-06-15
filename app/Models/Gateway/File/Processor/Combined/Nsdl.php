@@ -88,4 +88,16 @@ class Nsdl extends Base
     {
         return number_format($amount / 100, 2, '.', '');
     }
+
+    protected function getFileData(string $type)
+    {
+        $file = $this->gatewayFile
+                     ->files()
+                     ->where(FileStore\Entity::TYPE, $type)
+                     ->first();
+
+        $fileLocation = $file->getLocation();
+
+        return $fileLocation;
+    }
 }
