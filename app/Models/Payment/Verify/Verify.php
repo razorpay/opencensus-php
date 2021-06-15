@@ -566,6 +566,18 @@ class Verify extends Base\Core
 
             if ($this->isGatewayBlocked($gateway) === true)
             {
+                $this->trace->info(TraceCode::PAYMENT_VERIFICATION_GATEWAY_BLOCKED, [
+                    'payment_id' => $payment->getId(),
+                    'gateway'    => $payment->getGateway(),
+                ]);
+
+                $customProperties = [
+                    'is_pushed_to_kafka'  => $payment->getIsPushedToKafka(),
+                    'gateway'             => $payment->getGateway(),
+                ];
+
+                $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_PAYMENT_BLOCKED, $payment, null, $customProperties);
+
                 $notApplicable++;
 
                 continue;
@@ -575,6 +587,11 @@ class Verify extends Base\Core
 
             if ($lock === false)
             {
+                $this->trace->info(TraceCode::PAYMENT_VERIFICATION_PAYMENT_LOCKED, [
+                    'payment_id' => $payment->getId(),
+                    'gateway'    => $payment->getGateway(),
+                ]);
+
                 $locked++;
 
                 continue;
@@ -587,6 +604,13 @@ class Verify extends Base\Core
             if (($payment->hasBeenAuthorized() === true) and
                 ($payment->hasBeenCaptured() === false))
             {
+                $this->trace->info(TraceCode::PAYMENT_VERIFICATION_PAYMENT_AUTHORIZED, [
+                    'payment_id' => $payment->getId(),
+                    'gateway'    => $payment->getGateway(),
+                    'authorized' => $payment->hasBeenAuthorized(),
+                    'captured'   => $payment->hasBeenCaptured(),
+                ]);
+
                 $payment->setNonVerifiable();
 
                 $this->repo->saveOrFail($payment);
@@ -602,6 +626,13 @@ class Verify extends Base\Core
             // hence check the verify_at after reload
             if ($verifyStart < $payment->getVerifyAt())
             {
+                $this->trace->info(TraceCode::PAYMENT_VERIFICATION_VERIFY_AT_GREATER_THAN_VERIFY_START, [
+                    'payment_id'    => $payment->getId(),
+                    'gateway'       => $payment->getGateway(),
+                    'verify_start'  => $verifyStart,
+                    'verify_at'     => $payment->getVerifyAt(),
+                ]);
+
                 $notApplicable++;
 
                 $this->releasePaymentAfterVerify($payment);
@@ -612,6 +643,12 @@ class Verify extends Base\Core
             //Payment has already been capture, will be verified by VerifyCapturePayments cron.
             if($payment->hasBeenCaptured() === true)
             {
+                $this->trace->info(TraceCode::PAYMENT_VERIFICATION_PAYMENT_CAPTURED, [
+                    'payment_id'    => $payment->getId(),
+                    'gateway'       => $payment->getGateway(),
+                    'captured'      => $payment->hasBeenCaptured(),
+                ]);
+
                 $notApplicable++;
 
                 $this->releasePaymentAfterVerify($payment);

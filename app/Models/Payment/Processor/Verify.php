@@ -195,6 +195,13 @@ trait Verify
             'is_pushed_to_kafka'  => $payment->getIsPushedToKafka(),
         ];
 
+        $this->trace->info(
+            TraceCode::PAYMENT_VERIFICATION_INITIATED,
+            [
+                'payment_id' => $payment->getId(),
+                'gateway'    => $payment->getGateway(),
+            ]);
+
         $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_INITIATED, $payment, null, $extraProperties);
 
         $this->setPayment($payment);

@@ -252,6 +252,11 @@ class EventCode
     ];
 
     // payment verification
+    const PAYMENT_VERIFICATION_PAYMENT_BLOCKED          = [
+        'group' => 'verification',
+        'name'  => 'payment.verification.payment.blocked'
+    ];
+
     const PAYMENT_VERIFICATION_INITIATED                = [
         'group' => 'verification',
         'name'  => 'payment.verification.initiated'

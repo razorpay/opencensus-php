@@ -4653,6 +4653,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RECON_SERVICE_RESPONSE                                = 'RECON_SERVICE_RESPONSE';
     const RECON_SERVICE_REQUEST                                 = 'RECON_SERVICE_REQUEST';
 
+    //verify traces
+    const PAYMENT_VERIFICATION_GATEWAY_BLOCKED                          = 'PAYMENT_VERIFICATION_GATEWAY_BLOCKED';
+    const PAYMENT_VERIFICATION_PAYMENT_LOCKED                           = 'PAYMENT_VERIFICATION_PAYMENT_LOCKED';
+    const PAYMENT_VERIFICATION_PAYMENT_AUTHORIZED                       = 'PAYMENT_VERIFICATION_PAYMENT_AUTHORIZED';
+    const PAYMENT_VERIFICATION_VERIFY_AT_GREATER_THAN_VERIFY_START      = 'PAYMENT_VERIFICATION_VERIFY_AT_GREATER_THAN_VERIFY_START';
+    const PAYMENT_VERIFICATION_PAYMENT_CAPTURED                         = 'PAYMENT_VERIFICATION_PAYMENT_CAPTURED';
+    const PAYMENT_VERIFICATION_INITIATED                                = 'PAYMENT_VERIFY_EVENT_DATA';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
