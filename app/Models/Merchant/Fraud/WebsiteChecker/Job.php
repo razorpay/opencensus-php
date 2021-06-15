@@ -191,17 +191,17 @@ class Job extends Base\Core
 
     private function noWebsiteLive(Merchant\Entity $merchant): bool
     {
-        $businessWebsite = $merchant->merchantDetail->getAttribute(MerchantDetail\Entity::BUSINESS_WEBSITE);
+        $businessWebsite = $merchant->merchantDetail->getWebsite();
 
-        $additionalWebsites = $merchant->merchantDetail->getAttribute(MerchantDetail\Entity::ADDITIONAL_WEBSITES);
+        $additionalWebsites = $merchant->merchantDetail->getAdditionalWebsites();
 
-        $urls = json_decode($additionalWebsites);
+        $additionalWebsites[] = $businessWebsite;
 
-        $urls []= $businessWebsite;
+        $websites = array_filter(array_unique($additionalWebsites));
 
-        foreach ($urls as $url)
+        foreach ($websites as $website)
         {
-            if ($this->isLive($url) === true)
+            if ($this->isLive($website) === true)
             {
                 return false;
             }

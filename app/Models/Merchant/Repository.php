@@ -1218,6 +1218,7 @@ class Repository extends Base\Repository
             ->select(Entity::ID)
             ->where(Entity::HOLD_FUNDS, '=', 0)
             ->where(Entity::ACTIVATED, '=', 1)
+            ->where(Detail\Entity::BUSINESS_WEBSITE, '!=', '')
             ->whereNotNull(Detail\Entity::BUSINESS_WEBSITE)
             ->whereRaw('DATEDIFF(current_date(), from_unixtime(activated_at)) % 30 = 1');
 
