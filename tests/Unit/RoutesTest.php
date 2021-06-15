@@ -99,4 +99,16 @@ class RoutesTest extends TestCase
 
         $routeMock->addV2RouteGroups(['public']);
     }
+
+    public function testBankingRoutesAreAccessibleViaMerchantDashboard()
+    {
+        $bankingRoutes = array_keys(Route::$bankingRoutePermissions);
+
+        $merchantDashboardRoutes = array_merge(array_values(Route::$internalApps['merchant_dashboard']),
+                                               array_values(Route::$internalApps['dashboard_guest']));
+
+        $diff = array_diff($bankingRoutes, $merchantDashboardRoutes);
+
+        $this->assertEquals([], $diff);
+    }
 }
