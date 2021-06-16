@@ -7707,14 +7707,14 @@ return [
                 'preferred_methods' => [
                     '+919955555555' => [
                         'instruments' => [
+                            [],
+                            [],
                             [
                                 'method'   => 'card',
                                 'issuer'   => null,
                                 'type'     => 'credit',
                                 'network'  => 'Mastercard',
                             ],
-                            [],
-                            [],
                         ],
                     ],
                 ],
@@ -7738,19 +7738,19 @@ return [
                     '1234567890' => [
                         'instruments' =>[
                             [
-                                'instrument' => null,
-                                'method'     => 'card',
-                                'issuer'     => null,
-                                'type'       => 'debit',
-                                'network'    => 'Visa',
+                                'instrument' => 'phonepay',
+                                'method'     => 'wallet',
                             ],
                             [
                                 'instrument' => 'icici_bank',
                                 'method'     => 'netbanking',
                             ],
                             [
-                                'instrument' => 'phonepay',
-                                'method'     => 'wallet',
+                                'instrument' => null,
+                                'method'     => 'card',
+                                'issuer'     => null,
+                                'type'       => 'debit',
+                                'network'    => 'Visa',
                             ],
                         ],
                         "is_customer_identified"    => true,
@@ -7775,19 +7775,19 @@ return [
                     '1234567890' => [
                         'instruments' => [
                             [
-                                'instrument' => null,
-                                'method'     => 'card',
-                                'issuer'     => null,
-                                'type'       => 'debit',
-                                'network'    => 'Visa',
+                                'instrument' => 'phonepay',
+                                'method'     => 'wallet',
                             ],
                             [
                                 'instrument' => 'icici_bank',
                                 'method'     => 'netbanking',
                             ],
                             [
-                                'instrument' => 'phonepay',
-                                'method'     => 'wallet',
+                                'instrument' => null,
+                                'method'     => 'card',
+                                'issuer'     => null,
+                                'type'       => 'debit',
+                                'network'    => 'Visa',
                             ],
                         ],
                         'is_customer_identified'   => true,
@@ -7812,19 +7812,19 @@ return [
                     'default' => [
                         'instruments' => [
                             [
-                                'instrument' => null,
-                                'method'     => 'card',
-                                'issuer'     => null,
-                                'type'       => 'debit',
-                                'network'    => 'Visa',
+                                'instrument' => 'phonepay',
+                                'method'    => 'wallet',
                             ],
                             [
                                 'instrument' => null,
                                 'method'     => 'netbanking',
                             ],
                             [
-                                'instrument' => 'phonepay',
-                                'method'    => 'wallet',
+                                'instrument' => null,
+                                'method'     => 'card',
+                                'issuer'     => null,
+                                'type'       => 'debit',
+                                'network'    => 'Visa',
                             ],
                         ],
                     ],
@@ -7849,23 +7849,23 @@ return [
                     'default' => [
                         'instruments' => [
                             [
-                                'instrument' => null,
-                                'method'     => 'card',
-                                'issuer'     => null,
-                                'type'       => 'debit',
-                                'network'    => 'Visa',
-                            ],
-                            [
-                                'instrument' => null,
-                                'method'     => 'netbanking',
+                                'instrument' => 'phonepay',
+                                'method'    => 'wallet',
                             ],
                             [
                                 'instrument' => '@ybl',
                                 'method'     => 'upi',
                             ],
                             [
-                                'instrument' => 'phonepay',
-                                'method'    => 'wallet',
+                                'instrument' => null,
+                                'method'     => 'netbanking',
+                            ],
+                            [
+                                'instrument' => null,
+                                'method'     => 'card',
+                                'issuer'     => null,
+                                'type'       => 'debit',
+                                'network'    => 'Visa',
                             ],
                         ],
                     ],
@@ -7890,19 +7890,19 @@ return [
                     '+918888888888' => [
                         'instruments' => [
                             [
-                                'instrument' => null,
-                                'method'     => 'card',
-                                'issuer'     => null,
-                                'type'       => 'debit',
-                                'network'    => 'Visa',
+                                'instrument' => 'phonepay',
+                                'method'     => 'wallet',
                             ],
                             [
                                 'instrument' => null,
                                 'method'     => 'netbanking',
                             ],
                             [
-                                'instrument' => 'phonepay',
-                                'method'     => 'wallet',
+                                'instrument' => null,
+                                'method'     => 'card',
+                                'issuer'     => null,
+                                'type'       => 'debit',
+                                'network'    => 'Visa',
                             ],
                         ],
                     ],
@@ -7961,20 +7961,21 @@ return [
                     '1234567890' => [
                         'instruments' => [
                             [
-                                'instrument' => null,
-                                'method'     => 'card',
-                                'issuer'     => null,
-                                'type'       => 'debit',
-                                'network'    => 'Visa',
+                                'instrument' => 'phonepay',
+                                'method'     => 'wallet',
                             ],
                             [
                                 'instrument' => 'icici_bank',
                                 'method'     => 'netbanking',
                             ],
                             [
-                                'instrument' => 'phonepay',
-                                'method'     => 'wallet',
+                                'instrument' => null,
+                                'method'     => 'card',
+                                'issuer'     => null,
+                                'type'       => 'debit',
+                                'network'    => 'Visa',
                             ],
+
                         ],
                         "is_customer_identified"    => true,
                         "user_aggregates_available" => false
@@ -8089,19 +8090,19 @@ return [
                     '1234123412' => [
                         'instruments' => [
                             [
-                                'instrument' => null,
-                                'method'     => 'card',
-                                'issuer'     => null,
-                                'type'       => 'debit',
-                                'network'    => 'Visa',
+                                'instrument' => 'phonepay',
+                                'method'     => 'wallet',
                             ],
                             [
                                 'instrument' => null,
                                 'method'     => 'netbanking',
                             ],
                             [
-                                'instrument' => 'phonepay',
-                                'method'     => 'wallet',
+                                'instrument' => null,
+                                'method'     => 'card',
+                                'issuer'     => null,
+                                'type'       => 'debit',
+                                'network'    => 'Visa',
                             ],
                         ],
                         "is_customer_identified"    => false,

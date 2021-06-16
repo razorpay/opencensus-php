@@ -33,14 +33,14 @@ class PersonalisationService
                         'score'      =>  0.54
                     ],
                     [
-                        'instrument' => '100000002lcard',
-                        'method'     => 'card',
-                        'score'      => 0.20
-                    ],
-                    [
                         'instrument' => 'icici_bank',
                         'method'     => 'netbanking',
                         'score'      => 0.21,
+                    ],
+                    [
+                        'instrument' => '100000002lcard',
+                        'method'     => 'card',
+                        'score'      => 0.20
                     ]
         ];
 

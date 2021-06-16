@@ -313,7 +313,7 @@ class Checkout
     protected function checkNachStatus(Order\Entity $order, Merchant\Entity $merchant)
     {
         if ( $order->getMethod() === Payment\Method::NACH ) {
-            
+
             $invoice = $order->invoice;
 
             if (empty($invoice) === true) {
@@ -1499,7 +1499,7 @@ class Checkout
     {
         $score = array_column($preferences, 'score');
 
-        array_multisort($score, SORT_ASC, $preferences);
+        array_multisort($score, SORT_DESC, $preferences);
 
         return $preferences;
     }
