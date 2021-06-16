@@ -951,7 +951,30 @@ class Constants
             'filters'     => [
                 'experiments'   => ['enable_my_dashboard_notification_remarketing'],
             ]
-        ]
+        ],
+        [
+            'id'          => 'June21-QR-GTM',
+            'title'       => 'Collect payments using QR Codes!',
+            'description' => 'Create your own QR code in a min - Download and Collect payments easily. Choose from 7+ features-Get unlimited QR codes for free.',
+            'start_ts'    => 1623824237,
+            'end_ts'      => 1633112999,
+            'icon'        => 'https://cdn.razorpay.com/static/assets/notifs/qr-code.svg',
+            'buttons'     => [
+                [
+                    'type'  => 'button',
+                    'label' => 'Create QR code now',
+                    'url'   => '/qr_codes/new',
+                ],
+                [
+                    'type'  => 'primary-inverted',
+                    'label' => 'Know more',
+                    'url'   => 'https://razorpay.com/docs/qr-codes-beta/',
+                ]
+            ],
+            'filters'     => [
+                'splitz_experiments' => ['ANNOUNCEMENT_QR_CODE_V1_SPLITZ'],
+            ]
+        ],
     ];
 
     //insert data in data field, that is dynamically loaded based on the sub-campaign

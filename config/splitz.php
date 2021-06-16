@@ -30,5 +30,8 @@ return [
         // Announcement Text vs Icon vs What's New text experiment
         'ANNOUNCEMENT_TEXT_EXPERIMENT_SPLITZ' => env('ANNOUNCEMENT_TEXT_EXPERIMENT_SPLITZ', ''),
         'WHATSNEW_TEXT_EXPERIMENT_SPLITZ' => env('WHATSNEW_TEXT_EXPERIMENT_SPLITZ', ''),
+
+        //QR Code campaign
+        'ANNOUNCEMENT_QR_CODE_V1_SPLITZ' => env('ANNOUNCEMENT_QR_CODE_V1_SPLITZ', ''),
     ]
 ];
