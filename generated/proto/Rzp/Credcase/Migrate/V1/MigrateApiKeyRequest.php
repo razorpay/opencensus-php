@@ -11,7 +11,7 @@ use Google\Protobuf\Internal\GPBUtil;
 /**
  * Generated from protobuf message <code>rzp.credcase.migrate.v1.MigrateApiKeyRequest</code>
  */
-class MigrateApiKeyRequest extends \Google\Protobuf\Internal\Message
+class MigrateApiKeyRequest extends \Google\Protobuf\Internal\Message implements \JsonSerializable
 {
     /**
      * Generated from protobuf field <code>string id = 1;</code>
@@ -189,5 +189,9 @@ class MigrateApiKeyRequest extends \Google\Protobuf\Internal\Message
         return $this;
     }
 
+    public function jsonSerialize()
+    {
+        return get_object_vars($this);
+    }
 }
 

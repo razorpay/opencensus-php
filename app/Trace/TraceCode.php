@@ -3575,8 +3575,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Api<>credcase integration.
     const CREDCASE_REQUEST_FAILED                               = 'CREDCASE_REQUEST_FAILED';
-    const CREDCASE_REQUEST_MIGRATE                              = 'CREDCASE_REQUEST_MIGRATE';
-    const CREDCASE_REQUEST_ROTATE                               = 'CREDCASE_REQUEST_ROTATE';
+    const CREDCASE_OUTBOX_REQUEST_MIGRATE                       = 'CREDCASE_OUTBOX_REQUEST_MIGRATE';
+    const CREDCASE_OUTBOX_REQUEST_ROTATE                        = 'CREDCASE_OUTBOX_REQUEST_ROTATE';
     const MIGRATE_TO_CREDCASE_REQUEST                           = 'MIGRATE_TO_CREDCASE_REQUEST';
 
     const CREDCASE_SIGNER_ERROR                                 = 'CREDCASE_SIGNER_ERROR';

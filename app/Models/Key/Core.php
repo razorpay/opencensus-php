@@ -10,7 +10,6 @@ use RZP\Models\Key;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
-use RZP\Models\Merchant;
 use RZP\Constants\Product;
 use RZP\Http\Throttle\Constant as Throttle;
 

@@ -7,7 +7,6 @@ use Cache;
 use Swift_Mailer;
 use Buzz\Client\MultiCurl;
 use Razorpay\Outbox\Job\Core;
-use RZP\Services\DruidService;
 use Razorpay\OAuth\Application;
 use Illuminate\Database\Connection;
 use Razorpay\Outbox\Job\Repository;
@@ -363,10 +362,10 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             return new PaymentLinkService($app);
         });
 
-        $this->app->singleton('outbox', function () {
+        $this->app->singleton('outbox', function ($app) {
             $encrypter = new AES256GCMEncrypt(env("OUTBOX_ENCRYPTION_KEY"));
             $encoder   = new JsonEncoder();
-            $repo      = new Repository(\Database\Connection::LIVE);
+            $repo      = new Repository($app['config']->get('database.default'));
             return new Core($encrypter, $encoder, $repo);
         });
 
