@@ -1190,13 +1190,9 @@ class TransactionTest extends TestCase
     {
         $this->ba->appAuth();
 
-        $cardId = $this->fixtures->create('card')['id'];
-
         $terminal = $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
         $testData = &$this->testData[__FUNCTION__];
-
-        $testData['request']['content']['payment']['card_id'] = $cardId;
 
         $testData['request']['content']['payment']['terminal_id'] = $terminal['id'];
 

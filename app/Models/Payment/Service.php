@@ -3578,6 +3578,13 @@ class Service extends Base\Service
 
         $payment = new Payment\Entity();
 
+        if (isset($input['payment']['card']) === true)
+        {
+            $card = (new Card\Entity)->forceFill($input['payment']['card']);
+
+            unset($input['payment']['card']);
+        }
+
         unset($input['payment']['public_id']);
 
         $payment->forceFill($input['payment']);
@@ -3586,12 +3593,9 @@ class Service extends Base\Service
 
         $payment->merchant()->associate($merchant);
 
-        if ((isset($input['payment']['card_id']) === true) and
-            (isset($input['payment']['merchant_id']) === true))
+        if (($payment->isCard() === true) &&
+            (isset($card) === true))
         {
-            $card = $this->repo->card->findByIdAndMerchantId($input['payment']['card_id'],
-                $input['payment']['merchant_id']);
-
             $payment->card()->associate($card);
         }
 

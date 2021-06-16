@@ -12,6 +12,7 @@ use RZP\Models\FundAccount\Validation\Core;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Card;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Transaction;
@@ -406,7 +407,19 @@ class Service extends Base\Service
     {
         $payment = new Payment\Entity();
 
+        if (isset($input['payment']['card']) === true)
+        {
+            $card = (new Card\Entity)->forceFill($input['payment']['card']);
+
+            unset($input['payment']['card']);
+        }
+
         $payment->forceFill($input['payment']);
+
+        if ($payment->isCard() === true)
+        {
+            $payment->card()->associate($card);
+        }
 
         $txn = (new Transaction\Core)->createUpdateLedgerTransaction($payment);
 

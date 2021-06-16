@@ -155,13 +155,6 @@ class Core extends Base\Core
 
         $payment->merchant()->associate($merchant);
 
-        if ($payment->isCard() === true)
-        {
-            $card = $this->repo->card->findOrFail($payment->getCardId());
-
-            $payment->card()->associate($card);
-        }
-
         $terminal = $this->repo->terminal->findOrFail($payment->getTerminalId());
 
         $payment->terminal()->associate($terminal);
