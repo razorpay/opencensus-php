@@ -52,24 +52,26 @@
                 <table class="ten columns" style="border-spacing: 0; border-collapse: collapse; padding: 0; vertical-align: top; text-align: left; margin: 0 auto; width: 480px;">
                   <tr style="padding: 0; vertical-align: top; text-align: left;">
                     <td class="center welcome" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; font-size: 16px; color: #2d2d2d; line-height: 24px; background: white; margin: 10px 0px 10px 0px; text-align: center; padding: 0px 0px 10px;">
-                      <p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 10px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">
-                        This is a gentle reminder to recharge your Razorpay Refund Credit balance. Your Refund Credit balance at {{ $timestamp }} stands at {{ $refund_credits }}.
-                      </p>
+                        <p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 10px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">
+                            Dear Customer,
+                        </p>
+                        <p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 10px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">
+                            This is a gentle reminder to recharge your Razorpay Refund Credit balance. Your Refund Credit balance at {{ $timestamp }} stands at {{ $refund_credits }}.
+                        </p>
 
-                      <p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 10px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">
-                        Don't find this reminder useful?
-                      </p>
+                        <p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 10px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">
+                            Don't find this reminder useful? Click <a href="https://razorpay.com/docs/payment-gateway/dashboard-guide/credits/" style="color: #24bbea; text-decoration: none !important;">here</a> to know more
+                        </p>
 
-<p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 10px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">
-  Update your Refund Credits Alerts limit <a href="https://{{ $org_hostname . '/#/app/credits' }}" target="_blank" style="color: #24bbea; text-decoration: none !important;">here</a> or reach out to us <a href="https://dashboard.razorpay.com/#/app/dashboard#request" style="color: #24bbea; text-decoration: none !important;">here</a> for further information on setting up alert limit for Refund Credits.
-</p>
+                        <p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 10px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">
+                            Or Update your Refund Credits Alert limit <a href="https://{{ $org_hostname . '/#/app/credits' }}" target="_blank" style="color: #24bbea; text-decoration: none !important;">here</a>
+                        </p>
 
-
-<p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 10px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">
-  Regards,
-  <br>
-  Team Razorpay
-</p>
+                        <p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 10px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">
+                            Regards,
+                            <br>
+                            Team Razorpay
+                        </p>
                     </td>
                     <td class="expander" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; margin: 0; text-align: left; font-size: 14px; line-height: 19px; visibility: hidden; width: 0px; padding: 0 !important;"></td>
                   </tr>

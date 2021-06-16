@@ -53,23 +53,24 @@
                   <tr>
                     <td class="center welcome">
                       <p>
-                        This is a gentle reminder to recharge your Razorpay Amount Credit balance. Your Amount Credit balance at {{ $timestamp }} stands at {{ $amount_credits }}.
+                        Dear Customer,
+                      </p>
+                      <p>
+                        This is a gentle reminder for your Razorpay Amount Credit balance. Your Amount Credit balance at {{ $timestamp }} stands at {{ $amount_credits }}.
+                      </p>
+                      <p>
+                        Don't find this reminder useful? Click <a href="https://razorpay.com/docs/payment-gateway/dashboard-guide/credits/" >here</a> to know more
                       </p>
 
                       <p>
-                        Don't find this reminder useful?
+                        Or Update your Amount Credits Alert limit <a href="https://{{ $org_hostname . '/#/app/credits' }}" target="_blank">here</a>
                       </p>
 
-<p>
-  Update your Amount Credits Alerts limit <a href="https://{{ $org_hostname . '/#/app/credits' }}" target="_blank">here</a> or reach out to us <a href="https://dashboard.razorpay.com/#/app/dashboard#request">here</a> for further information on setting up alert limit for Amount Credits.
-</p>
-
-
-<p>
-  Regards,
-  <br>
-  Team Razorpay
-</p>
+                      <p>
+                        Regards,
+                        <br>
+                        Team Razorpay
+                      </p>
                     </td>
                     <td class="expander"></td>
                   </tr>
