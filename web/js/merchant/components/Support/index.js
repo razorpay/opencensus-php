@@ -113,7 +113,7 @@ export default class Support extends Component {
     const DASHBOARD_HOST_REGEX = /(dashboard.*\.razorpay\.(com|in)|localhost)$/;
 
     // Don't show support for Axis org
-    if (!DASHBOARD_HOST_REGEX.test(location.hostname) || org.custom_code === 'axis') {
+    if (!user.isComdelApiEnabled && (!DASHBOARD_HOST_REGEX.test(location.hostname) || org.custom_code === 'axis')) {
       return null;
     }
 
