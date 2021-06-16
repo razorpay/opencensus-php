@@ -1898,6 +1898,7 @@ app
       const getCaptchaVariant = () => (isCaptchaV3Enabled() ? 2 : 1);
       $scope.renderRecaptchaScriptExecuted = false; // if renderRecaptchaScript() function is executed
       $scope.loginFakedCalledOnce = false; // if a captcha fallback was called with `Faked` token
+      $scope.isV3ValidationFailedTriggered = false; // if ReCaptcha v3 returned 'Captcha Validation Failed' error
 
       if (
         ['access.signin', 'access.forgotpwd', 'access.pre_signup', 'access.lockme'].indexOf(
@@ -2279,6 +2280,11 @@ app
                   error: data.errors[0],
                   captcha_variant: getCaptchaVariant(),
                 });
+                $scope.isV3ValidationFailedTriggered = true;
+                // trigger recaptcha v2
+                grecaptcha.reset();
+                grecaptcha.execute();
+                return;
               } else {
                 tracking.pushEvents({
                   event_name: 'recaptcha',
@@ -2337,6 +2343,7 @@ app
           properties: {
             captcha_verified_by: 'v2',
             captcha_variant: getCaptchaVariant(),
+            called_on_v3_failure: $scope.isV3ValidationFailedTriggered
           },
         });
         login(val);
