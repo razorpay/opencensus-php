@@ -810,6 +810,11 @@ class Service extends Base\Service
         return $disputeReason->toArrayAdmin();
     }
 
+    public function processDisputeRefunds(array $input)
+    {
+        return $this->core()->processDisputeRefunds($input);
+    }
+
     public function initiateRiskAssessment()
     {
         return $this->core()->initiateRiskAssessment();

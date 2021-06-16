@@ -90,6 +90,25 @@ class Repository extends Base\Repository
             ->update([Entity::EMAIL_NOTIFICATION_STATUS => EmailNotificationStatus::NOTIFIED]);
     }
 
+    public function getDisputesByPaymentId(string $paymentId)
+    {
+        return $this->newQuery()
+            ->where(Entity::PAYMENT_ID, $paymentId)
+            ->where(Entity::STATUS, Status::LOST)
+            ->get();
+    }
+
+    public function getPaymentIdsForLostDispute(int $from, int $to)
+    {
+        return $this->newQuery()
+            ->where(Entity::STATUS, Status::LOST)
+            ->where(Entity::CREATED_AT, '>=', $from)
+            ->where(Entity::CREATED_AT, '<=', $to)
+            ->distinct()
+            ->pluck(Entity::PAYMENT_ID)
+            ->toArray();
+    }
+
     public function getMerchantIdsForRiskAnalysis(int $fromTimestamp, int $toTimestamp)
     {
         $disputeMerchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);

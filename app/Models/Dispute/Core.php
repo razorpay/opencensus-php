@@ -22,7 +22,7 @@ use RZP\Constants\Entity as EntityConstants;
 use RZP\Constants\{Entity as E, Timezone, Table};
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Models\Dispute\File\Core as DisputeFileCore;
-use RZP\Models\{Base, Payment, Merchant, Adjustment};
+use RZP\Models\{Base, Payment, Merchant, Adjustment, Currency};
 use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
 use RZP\Models\Merchant\{Email as MerchantEmail, Entity as MerchantEntity};
 
@@ -30,7 +30,12 @@ class Core extends Base\Core
 {
     use FileHandlerTrait;
 
+    // 24 hours = 24*60*60
+    const REFUND_PROCESS_REDIS_TTL         = 86400;
+    const REFUND_PROCESS_REDIS_KEY         = 'dispute_refund_process_%s';
+
     const DEBIT_ADJUSTMENT_DESCRIPTION  = 'Debit disputed amount V2';
+
     const CREDIT_ADJUSTMENT_DESCRIPTION = 'Credit to reverse a previous dispute debit';
 
     const DISPUTE_BULK_EMAIL_MUTEX     = 'DISPUTE_BULK_EMAIL_MUTEX';
@@ -902,6 +907,237 @@ class Core extends Base\Core
         ];
 
         $this->app['freshdesk_client']->updateTicketV2($customerSupportTicketID, $updateTicketContent);
+    }
+
+    // https://razorpay.slack.com/archives/C9AKQB8BH/p1609309054496000
+    public function processDisputeRefunds(array $input)
+    {
+        (new Validator)->validateInput('processDisputeRefund', $input);
+
+        $paymentIdList = $this->repo->dispute->getPaymentIdsForLostDispute($input['from'], $input['to']);
+
+        $this->trace->info(TraceCode::DISPUTE_REFUND_JOB_START, [
+            'payment_id_count' => count($paymentIdList),
+        ]);
+
+        foreach ($paymentIdList as $paymentId)
+        {
+            $this->mutex->acquireAndRelease(
+                $paymentId,
+                function () use ($paymentId) {
+                    $redis = $this->app['redis']->connection();
+
+                    $key = sprintf(self::REFUND_PROCESS_REDIS_KEY, $paymentId);
+
+                    try
+                    {
+                        $redisRes = $redis->set($key, 1, 'nx', 'ex', self::REFUND_PROCESS_REDIS_TTL);
+
+                        if ($redisRes === null)
+                        {
+                            $this->trace->info(TraceCode::DISPUTE_REFUND_PAYMENT_PROCESS_SKIP, [
+                                'payment_id' => $paymentId,
+                                'reason'     => 'redis',
+                            ]);
+                            return;
+                        }
+
+                        $this->processDisputeRefundPayment($paymentId);
+                    }
+                    catch (\Throwable $e)
+                    {
+                        $redis->delete($key);
+
+                        $this->trace->traceException($e, Trace::ERROR, TraceCode::DISPUTE_REFUND_PAYMENT_PROCESS_REFUND_AMOUNTS, [
+                            'payment_id' => $paymentId,
+                        ]);
+                    }
+                }
+            );
+        }
+
+        $this->trace->info(TraceCode::DISPUTE_REFUND_JOB_END);
+    }
+
+    public function processDisputeRefundPayment(string $paymentId)
+    {
+        $this->trace->info(TraceCode::DISPUTE_REFUND_PAYMENT_PROCESS_START, [
+            'payment_id' => $paymentId,
+        ]);
+
+        $disputes = $this->repo->dispute->getDisputesByPaymentId($paymentId);
+
+        $this->trace->info(TraceCode::DISPUTE_REFUND_PAYMENT_PROCESS_DISPUTE_INFO, [
+            'payment_id' => $paymentId,
+            'disputes'   => $disputes,
+        ]);
+
+        /** @var Payment\Entity $payment */
+        $payment = $this->repo->payment->findOrFail($paymentId);
+
+        [$totalRefundAmount, $totalRefundBaseAmount] = $this->getTotalRefundAmount($disputes, $payment);
+
+        $this->trace->info(TraceCode::DISPUTE_REFUND_PAYMENT_PROCESS_REFUND_AMOUNTS, [
+            'payment_id'  => $paymentId,
+            'amount'      => $totalRefundAmount,
+            'base_amount' => $totalRefundBaseAmount,
+        ]);
+
+        // process only if nothing refunded yet.
+        if ($payment->getAmountRefunded() === 0)
+        {
+            $this->trace->info(TraceCode::DISPUTE_REFUND_PAYMENT_PROCESS_NO_PREVIOUS_REFUND, [
+                'payment_id' => $paymentId,
+            ]);
+
+            $this->refundPayment($payment, $totalRefundAmount, $totalRefundBaseAmount);
+        }
+        else
+        {
+            $previousAmountRefunded = $payment->getAmountRefunded();
+            $previousBaseAmountRefunded = $payment->getBaseAmountRefunded();
+
+            $amountUnrefunded = $payment->getAmountUnrefunded();
+
+            if ($totalRefundAmount > $amountUnrefunded)
+            {
+                $this->trace->info(TraceCode::DISPUTE_REFUND_PAYMENT_PROCESS_REFUND_AMOUNT_EXCEED, [
+                    'payment_id'          => $paymentId,
+                    'total_refund_amount' => $totalRefundAmount,
+                    'amount_unrefunded'   => $amountUnrefunded,
+                ]);
+
+                $totalRefundAmount = $amountUnrefunded;
+
+                $totalRefundBaseAmount = $payment->getBaseAmountUnrefunded();
+            }
+
+            $this->refundPayment($payment, $totalRefundAmount, $totalRefundBaseAmount);
+
+            $this->trace->info(TraceCode::DISPUTE_REFUND_PAYMENT_PROCESS_WITH_PREVIOUS_REFUND, [
+                'payment_id'                     => $paymentId,
+                'after_job_amount_refunded'      => $payment->getAmountRefunded(),
+                'after_job_base_amount_refunded' => $payment->getBaseAmountRefunded(),
+                'previous_amount_refunded'       => $previousAmountRefunded,
+                'previous_base_amount_refunded'  => $previousBaseAmountRefunded,
+            ]);
+        }
+
+        $this->trace->info(TraceCode::DISPUTE_REFUND_PAYMENT_PROCESS_END, [
+            'payment_id' => $paymentId,
+        ]);
+    }
+
+    private function refundPayment(Payment\Entity $payment, int $totalRefundAmount, int $totalRefundBaseAmount)
+    {
+        if ($totalRefundAmount <= 0)
+        {
+            $this->trace->info(TraceCode::DISPUTE_REFUND_ZERO_REFUND_AMOUNT_SKIPPED, [
+                'payment_id'               => $payment->getId(),
+                'total_refund_amount'      => $totalRefundAmount,
+                'total_refund_base_amount' => $totalRefundBaseAmount,
+            ]);
+
+            return;
+        }
+
+        $payment->refundAmount($totalRefundAmount, $totalRefundBaseAmount);
+
+        $this->repo->saveOrFail($payment);
+    }
+
+    private function getTotalRefundAmount($disputes, Payment\Entity $payment): array
+    {
+        $totalRefundAmount = 0;
+        $totalRefundBaseAmount = 0;
+
+        foreach ($disputes as $dispute)
+        {
+            [$refundAmount, $refundBaseAmount] = $this->getAmountForRefund($dispute);
+
+            $disputeAmountDeducted = $dispute->getAmountDeducted();
+            $disputeAmountReversed = $dispute->getAmountReversed();
+
+            $this->trace->info(TraceCode::DISPUTE_REFUND_DISPUTE_ADJUSTMENT_INFO, [
+                'payment_id'                           => $payment->getId(),
+                'dispute_id'                           => $dispute->getId(),
+                'refund_amount_from_adjustments'       => $refundAmount,
+                'refund_base_amount_from_adjustments'  => $refundBaseAmount,
+                'dispute_amount_deducted'              => $disputeAmountDeducted,
+                'dispute_amount_reversed'              => $disputeAmountReversed,
+                'dispute_amount_reversed_deduced_diff' => $disputeAmountDeducted - $disputeAmountReversed,
+            ]);
+
+            $totalRefundAmount += $refundAmount;
+            $totalRefundBaseAmount += $refundBaseAmount;
+        }
+
+        return [$totalRefundAmount, $totalRefundBaseAmount];
+    }
+
+    private function getAmountForRefund(Entity $dispute): array
+    {
+        // There are 2 ways to pass amount for creating new disputes
+        // 1. pass `amount`
+        // 2. pass `gateway_amount` & `gateway_currency`
+
+        // For case 1,
+        // Adjustment is done with dispute->amount
+        // As per current data, all the disputes raised with `amount` (case 1) have currency = INR.
+        // For this case, we can do:
+        // payment->refundAmount(adjustment->amount, adjustment->amount)
+
+        // For case 2,
+        // Adjustments are done with dispute->baseAmount. Meaning: adjustment->amount = dispute->baseAmount
+        // Where baseAmount = INR Amount of gateway_amount. if gateway_currency != INR, we charge 1% conversion fee.
+        // For this case, we can do:
+        // $conversionRate = $disputeAmount / $disputeBaseAmount
+        // payment->refundAmount(adjustment->amount * $conversionRate, adjustment->amount)
+
+        $adjustmentBaseAmount = 0;
+        $adjustmentAmount = 0;
+
+        $adjustments =  $dispute->adjustments;
+
+        foreach ($adjustments as $adjustment)
+        {
+            if ($adjustment->getDescription() === self::DEBIT_ADJUSTMENT_DESCRIPTION)
+            {
+                $this->trace->info(TraceCode::DISPUTE_REFUND_DISPUTE_ADJUSTMENT_SKIPPED, [
+                    'payment_id'    => $dispute->payment->getId(),
+                    'dispute_id'    => $dispute->getId(),
+                    'adjustment_id' => $adjustment->getId(),
+                ]);
+
+                continue;
+            }
+
+            if (is_null($dispute->getGatewayAmount()) === true)
+            {
+                // Case 1
+                $singleAdjustmentAmount = $adjustment->getAmount();
+                $singleAdjustmentBaseAmount = $singleAdjustmentAmount;
+            }
+            else
+            {
+                // Case 2
+                $singleAdjustmentBaseAmount = $adjustment->getAmount();
+
+                // convert baseAmount(Always INR) to amount(payment Currency)
+                $disputeAmount = $dispute->getAmount();
+                $disputeBaseAmount = $dispute->getBaseAmount();
+                $conversionRate = $disputeAmount / $disputeBaseAmount;
+
+                $singleAdjustmentAmount = $singleAdjustmentBaseAmount * $conversionRate;
+
+                $singleAdjustmentAmount = (int) ceil($singleAdjustmentAmount);
+            }
+
+            $adjustmentAmount += $singleAdjustmentAmount;
+            $adjustmentBaseAmount += $singleAdjustmentBaseAmount;
+        }
+
+        return [-$adjustmentAmount, -$adjustmentBaseAmount];
     }
 
     private function updatePaymentRefundedAmount(Entity $dispute)

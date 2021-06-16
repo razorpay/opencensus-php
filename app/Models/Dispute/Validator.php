@@ -52,6 +52,11 @@ class Validator extends Base\Validator
         Entity::BACKFILL               => 'sometimes|boolean',
     ];
 
+    protected static $processDisputeRefundRules = [
+        'to'   => 'required|int',
+        'from' => 'required|int'
+    ];
+
     protected static $createValidators = [
         'deduct_onset_for_non_transactional_phases',
         'amount'

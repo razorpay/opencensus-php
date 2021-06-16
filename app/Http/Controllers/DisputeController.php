@@ -116,6 +116,13 @@ class DisputeController extends Controller
         return $this->service()->initiateMerchantEmails();
     }
 
+    public function processDisputeRefunds()
+    {
+        $input = Request::all();
+
+        return $this->service()->processDisputeRefunds($input);
+    }
+
     public function initiateRiskAssessment()
     {
         return $this->service()->initiateRiskAssessment();
