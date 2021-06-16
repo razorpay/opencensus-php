@@ -30,7 +30,7 @@ class Limit
         'emandate_register_enach_npci_netbanking'   => 10000,
         'emandate_register_sbi'                     => 10000,
         'nach_register_nach_citi'                   => 25000,
-        'emandate_debit_hdfc'                       => 10000,
+        'emandate_debit_hdfc'                       => 50000,
         'emandate_debit_axis'                       => 20000,
         'emandate_debit_enach_rbl'                  => 10000,
         'emandate_debit_enach_npci_netbanking'      => 100000,
