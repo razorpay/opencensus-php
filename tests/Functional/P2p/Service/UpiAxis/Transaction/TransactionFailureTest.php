@@ -101,6 +101,7 @@ class TransactionFailureTest extends TestCase
             Fields::MERCHANT_CUSTOMER_ID        => $transaction->getCustomerId(),
             Fields::GATEWAY_RESPONSE_CODE       => 'U69',
             Fields::GATEWAY_RESPONSE_MESSAGE    => 'Collect expired',
+            Fields::GATEWAY_TRANSACTION_ID      => $transaction->upi->getNetworkTransactionId(),
         ]);
 
         $request = $this->mockSdk()->callback();
@@ -137,6 +138,7 @@ class TransactionFailureTest extends TestCase
             Fields::MERCHANT_CUSTOMER_ID        => $transaction->getCustomerId(),
             Fields::GATEWAY_RESPONSE_CODE       => 'ZA',
             Fields::GATEWAY_RESPONSE_MESSAGE    => 'Collect rejected',
+            Fields::GATEWAY_TRANSACTION_ID      => $transaction->upi->getNetworkTransactionId(),
         ]);
 
         $request = $this->mockSdk()->callback();
@@ -172,6 +174,7 @@ class TransactionFailureTest extends TestCase
             Fields::MERCHANT_CUSTOMER_ID        => $transaction->getCustomerId(),
             Fields::GATEWAY_RESPONSE_CODE       => 'BT',
             Fields::GATEWAY_RESPONSE_MESSAGE    => 'Transaction pending',
+            Fields::GATEWAY_TRANSACTION_ID      => $transaction->upi->getNetworkTransactionId(),
         ]);
 
         $request = $this->mockSdk()->callback();
@@ -271,6 +274,7 @@ class TransactionFailureTest extends TestCase
             Fields::REMARKS                     => $transaction->getDescription(),
             Fields::MERCHANT_REQUEST_ID         => $transaction->getId(),
             Fields::MERCHANT_CUSTOMER_ID        => $transaction->getCustomerId(),
+            Fields::GATEWAY_TRANSACTION_ID      => $transaction->upi->getNetworkTransactionId(),
         ]);
 
         $request = $this->mockSdk()->callback();
@@ -341,6 +345,7 @@ class TransactionFailureTest extends TestCase
             Fields::MERCHANT_CUSTOMER_ID        => $transaction->getCustomerId(),
             Fields::GATEWAY_RESPONSE_CODE       => 'ZA',
             Fields::GATEWAY_RESPONSE_MESSAGE    => 'Collect rejected',
+            Fields::GATEWAY_TRANSACTION_ID      => $transaction->upi->getNetworkTransactionId(),
         ]);
 
         $request = $this->mockSdk()->callback();

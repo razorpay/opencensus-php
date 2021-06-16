@@ -105,13 +105,13 @@ class Core extends Base\Core
             'network_transaction_id'    => $networkTransactionId
         ]);
 
-        if (empty($transactionId) === false)
-        {
-            $defined[UpiTransaction\Entity::TRANSACTION_ID] = $transactionId;
-        }
-        else if (empty($networkTransactionId) === false)
+        if (empty($networkTransactionId) === false)
         {
             $defined[UpiTransaction\Entity::NETWORK_TRANSACTION_ID] = $networkTransactionId;
+        }
+        else if (empty($transactionId) === false)
+        {
+            $defined[UpiTransaction\Entity::TRANSACTION_ID] = $transactionId;
         }
         else
         {

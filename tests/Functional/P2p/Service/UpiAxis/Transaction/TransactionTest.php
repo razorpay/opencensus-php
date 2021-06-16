@@ -301,6 +301,7 @@ class TransactionTest extends TestCase
             Fields::REMARKS                 => $transaction->getDescription(),
             Fields::MERCHANT_REQUEST_ID     => $transaction->getId(),
             Fields::MERCHANT_CUSTOMER_ID    => $transaction->getCustomerId(),
+            Fields::GATEWAY_TRANSACTION_ID  => $transaction->upi->getNetworkTransactionId(),
         ]);
 
         $request = $this->mockSdk()->callback();
@@ -334,6 +335,7 @@ class TransactionTest extends TestCase
             Fields::REMARKS                     => $transaction->getDescription(),
             Fields::MERCHANT_REQUEST_ID         => $transaction->getId(),
             Fields::MERCHANT_CUSTOMER_ID        => $transaction->getCustomerId(),
+            Fields::GATEWAY_TRANSACTION_ID      => $transaction->upi->getNetworkTransactionId(),
         ]);
 
         $request = $this->mockSdk()->callback();
@@ -606,6 +608,7 @@ class TransactionTest extends TestCase
             Fields::REMARKS                     => $transaction->getDescription(),
             Fields::MERCHANT_REQUEST_ID         => $transaction->getId(),
             Fields::MERCHANT_CUSTOMER_ID        => $transaction->getCustomerId(),
+            Fields::GATEWAY_TRANSACTION_ID      => $transaction->upi->getNetworkTransactionId(),
         ]);
 
         $request = $this->mockSdk()->callback();
@@ -642,6 +645,7 @@ class TransactionTest extends TestCase
             Fields::REMARKS                     => $transaction->getDescription(),
             Fields::MERCHANT_REQUEST_ID         => $transaction->getId(),
             Fields::MERCHANT_CUSTOMER_ID        => $transaction->getCustomerId(),
+            Fields::GATEWAY_TRANSACTION_ID      => $transaction->upi->getNetworkTransactionId(),
         ]);
 
         $request = $this->mockSdk()->callback();
@@ -681,6 +685,7 @@ class TransactionTest extends TestCase
             Fields::REMARKS                     => $transaction->getDescription(),
             Fields::MERCHANT_REQUEST_ID         => $transaction->getId(),
             Fields::MERCHANT_CUSTOMER_ID        => $transaction->getCustomerId(),
+            Fields::GATEWAY_TRANSACTION_ID      => $transaction->upi->getNetworkTransactionId(),
         ]);
 
         $request = $this->mockSdk()->callback();
@@ -1068,13 +1073,14 @@ class TransactionTest extends TestCase
         $transaction = $this->createCollectIncomingTransaction();
 
         $this->mockSdk()->setCallback('CUSTOMER_DEBITED_FOR_MERCHANT_VIA_COLLECT', [
-            Fields::AMOUNT               => $transaction->getRupeesAmount(),
-            Fields::PAYER_VPA            => $transaction->payer->getAddress(),
-            Fields::PAYEE_VPA            => $transaction->payee->getAddress(),
-            Fields::UPI_REQUEST_ID       => $transaction->upi->getNetworkTransactionId(),
-            Fields::REMARKS              => $transaction->getDescription(),
-            Fields::MERCHANT_REQUEST_ID  => $transaction->getId(),
-            Fields::MERCHANT_CUSTOMER_ID => $transaction->getCustomerId(),
+            Fields::AMOUNT                  => $transaction->getRupeesAmount(),
+            Fields::PAYER_VPA               => $transaction->payer->getAddress(),
+            Fields::PAYEE_VPA               => $transaction->payee->getAddress(),
+            Fields::UPI_REQUEST_ID          => $transaction->upi->getNetworkTransactionId(),
+            Fields::REMARKS                 => $transaction->getDescription(),
+            Fields::MERCHANT_REQUEST_ID     => $transaction->getId(),
+            Fields::MERCHANT_CUSTOMER_ID    => $transaction->getCustomerId(),
+            Fields::GATEWAY_TRANSACTION_ID  => $transaction->upi->getNetworkTransactionId(),
         ]);
 
         $request = $this->mockSdk()->callback();

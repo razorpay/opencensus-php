@@ -207,10 +207,14 @@ class Processor extends Base\Processor
             $transaction = $this->input->get(Transaction\Entity::TRANSACTION);
             $upi         = $this->input->get(Transaction\Entity::UPI);
 
-            if (isset($transaction[Transaction\Entity::ID]) === false)
+            // Transaction ID will not be same as UPI transaction ID
+            // in case of incoming collect expire callback.
+            if ((isset($transaction[Transaction\Entity::ID]) === false)
+                or ($transaction[Transaction\Entity::ID] !== $upis->first()->getTransactionId()))
             {
                 $transaction[Transaction\Entity::ID]        = $upis->first()->getTransactionId();
                 $upi[UpiTransaction\Entity::TRANSACTION_ID] = $upis->first()->getTransactionId();
+                $upi[Transaction\Entity::TRANSACTION][UpiTransaction\Entity::ID] = $upis->first()->getTransactionId();
 
                 $this->input->put(Transaction\Entity::TRANSACTION, $transaction);
                 $this->input->put(Transaction\Entity::UPI, $upi);
