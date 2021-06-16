@@ -65,7 +65,7 @@ export default function Details(props) {
               </div>
               <div>
                 <div class="heading">Number of Payments</div>
-                <div class="value">{qrCode.payments_received_count || 0}</div>
+                <div class="value">{qrCode.payments_count_received || 0}</div>
               </div>
             </div>
 
