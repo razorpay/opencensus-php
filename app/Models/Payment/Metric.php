@@ -90,9 +90,17 @@ class Metric extends Base\Core
         $this->trace->count(self::PAYMENT_FAILED, $dimensions);
     }
 
-    public function pushExceptionMetrics(\Throwable $e, string $metricName, array $extraDimensions = [])
+    public function pushExceptionMetrics(\Throwable $e, string $metricName, array $extraDimensions = [], Entity $payment = null)
     {
         $dimensions = $this->getDefaultExceptionDimensions($e);
+
+        //Adding default dimensions in case payment entity is passed as an argument
+        if($payment !== null)
+        {
+            $defaultDimensions = $this->getDefaultDimentions($payment);
+
+            $dimensions = array_merge($dimensions, $defaultDimensions);
+        }
 
         $dimensions = array_merge($dimensions, $extraDimensions);
 

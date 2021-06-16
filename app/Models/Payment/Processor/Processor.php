@@ -582,7 +582,7 @@ class Processor
                 $dimensions[Metric::LABEL_PAYMENT_IS_CREATED] = $payment->wasRecentlyCreated;
             }
 
-            (new Payment\Metric)->pushExceptionMetrics($e, Metric::PAYMENT_PROCESS_FAILED, $dimensions);
+            (new Payment\Metric)->pushExceptionMetrics($e, Metric::PAYMENT_PROCESS_FAILED, $dimensions, $payment);
 
             $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment, $e);
 
@@ -2969,7 +2969,7 @@ class Processor
 
         return false;
     }
-    
+
     protected function persistCardDetails($gatewayName, $action, &$input)
     {
         $action = snake_case($action);
