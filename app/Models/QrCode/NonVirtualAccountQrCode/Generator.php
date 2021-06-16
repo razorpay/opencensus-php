@@ -243,9 +243,11 @@ class Generator extends QrCode\Generator
 
         $color = imagecolorallocate($logoImage, 4, 9, 63);
 
-        $this->alignCentre($logoImage, $this->merchant->getName(), $color, 'Mulish-ExtraBold.ttf', 1350, 40, 20);
+        $ypos = QrCode\Constants::QR_V2_UPI_QR_NAME_YPOS;
 
-        $this->alignCentre($logoImage, $qrCode->getDescription(), $color, 'Mulish-SemiBold.ttf', 1430, 25, 40);
+        $this->alignCentre($logoImage, $this->merchant->getName(), $color, 'Mulish-ExtraBold.ttf', $ypos, 40, 20);
+
+        $this->alignCentre($logoImage, $qrCode->getDescription(), $color, 'Mulish-SemiBold.ttf', $ypos, 25, 40);
 
         imagepng($logoImage, $localFilePath);
 
@@ -334,7 +336,7 @@ class Generator extends QrCode\Generator
         }
     }
 
-    private function alignCentre($logoImage, $text, $color, $font, $ypos, $size, $width)
+    private function alignCentre($logoImage, $text, $color, $font, & $ypos, $size, $width)
     {
         if (empty($text) === true)
         {
