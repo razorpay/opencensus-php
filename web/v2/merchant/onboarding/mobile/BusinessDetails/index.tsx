@@ -134,9 +134,6 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
 
   const hasGSTIN = useActivationFormState((state) => state.has_gstin);
   const setHasGSTIN = useActivationFormState((state) => state.setHasGSTIN);
-  const setBankAndCompanyDetailsCompleted = useActivationFormState(
-    (state) => state.setBankAndCompanyDetailsCompleted,
-  );
 
   const setBusinessDetailsCompleted = useActivationFormState(
     (state) => state.setBusinessDetailsCompleted,
@@ -650,7 +647,7 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                               { ...data, hasGSTIN: !value },
                               'bank_and_company_details',
                             );
-                            setBankAndCompanyDetailsCompleted(value);
+                            setBusinessDetailsCompleted(value);
                           }
                           analyticsTrack({
                             objectName: 'SignUp',
