@@ -20,7 +20,8 @@ import {
   validatePinCode,
   validateLastName,
 } from '../Validators';
-import { trackCheckEligibilityCta, trackMajorStackholderFill } from '../ga';
+
+import { trackCheckEligibilityCta, trackMajorStackholderFill, trackTermsOrPolicy } from '../ga';
 import { getPersonalFormError } from '../Helpers/getPersonalFormErrors';
 import { statesOptions } from '../Helpers/getStatesOptions';
 import { isValidPinCode } from 'common/utils/validators';
@@ -192,7 +193,7 @@ const PersonalDetailsForm = ({
 
   const isValidDate = (current) => {
     const age = moment().diff(current, 'years');
-    return age <= 65 && age >= 23;
+    return age <= 65 && age >= 18;
   };
 
   return (
@@ -300,7 +301,7 @@ const PersonalDetailsForm = ({
               isInline
             />
             {canModify && formData.date_of_birth && !isValidDate(formData.date_of_birth) && (
-              <div class="Input-error d-block">To apply, you must be between 23 to 65 years</div>
+              <div class="Input-error d-block">To apply, you must be between 18 to 65 years</div>
             )}
           </div>
           <Input.Select
@@ -403,10 +404,34 @@ const PersonalDetailsForm = ({
             </div>
           </Input.Group>
         )}
+        <div className="terms">
+          By submitting this form you agree to our{' '}
+          <a
+            className="text-primary"
+            target="_blank"
+            href="https://razorpay.com/terms/"
+            onClick={() => {
+              trackTermsOrPolicy(merchantId, 'T&C');
+            }}
+          >
+            T&C&nbsp;
+          </a>
+          and our&nbsp;
+          <a
+            className="text-primary"
+            target="_blank"
+            href="https://razorpay.com/privacy/"
+            onClick={() => {
+              trackTermsOrPolicy(merchantId, 'Privacy Policy');
+            }}
+          >
+            Privacy Policy
+          </a>
+        </div>
         <div className="loan-application-form-footer">
           <AsyncBtn.Primary
             type="submit"
-            className="btn btn-primary no-margin new-onboarding-button"
+            className="btn btn-primary no-margin"
             onClick={handleSubmit}
             isPending={isPending}
           >

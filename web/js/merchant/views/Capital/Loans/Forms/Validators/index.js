@@ -78,7 +78,7 @@ export function validateCompanyPan(pan_number) {
 export function validateDob(dob) {
   if (!dob) return 'Date of Birth is required';
   const age = moment().diff(dob, 'years');
-  const valid = age <= 65 && age >= 23;
+  const valid = age <= 65 && age >= 18;
   if (!valid) return 'Please enter a valid Date of Birth';
   return '';
 }

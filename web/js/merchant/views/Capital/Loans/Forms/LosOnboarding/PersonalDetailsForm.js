@@ -138,7 +138,7 @@ const PersonalDetailsForm = ({
 
   function isValidDate(current) {
     const age = moment().diff(current, 'years');
-    return age <= 65 && age >= 23;
+    return age <= 65 && age >= 18;
   }
 
   const loadCityAndState = async () => {
@@ -265,7 +265,7 @@ const PersonalDetailsForm = ({
                     />
                     {formData.date_of_birth && !isValidDate(formData.date_of_birth) && (
                       <div class="Input-error d-block">
-                        To apply, you must be between 23 to 65 years
+                        To apply, you must be between 18 to 65 years
                       </div>
                     )}
                   </div>
@@ -392,7 +392,7 @@ const PersonalDetailsForm = ({
               <a
                 className="text-primary"
                 target="_blank"
-                href="https://razorpay.com/terms/"
+                href="https://razorpay.com/privacy/"
                 onClick={() => {
                   trackTermsOrPolicy(merchantId, 'Privacy Policy');
                 }}
