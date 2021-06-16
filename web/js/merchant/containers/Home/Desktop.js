@@ -47,6 +47,8 @@ import { fetchUser } from 'merchant/reducers/session';
 import AsyncButton from 'react-async-button';
 import { getSettlementStatus } from 'merchant/views/Capital/utils';
 import SettleNowButton from 'merchant/views/Settlements/Settlements/components/SettleNowButton';
+import FamPay from 'merchant/components/Announcements/FamPay';
+
 @withRouter
 @connect(
   (state) => ({
@@ -295,6 +297,8 @@ class AnalyticsDesktop extends Component {
             !showOnboardingBanner && hasSecondaryBanner ? ' has-secondary-banner' : ''
           }`}
         >
+          <FamPay user={user} />
+
           {/* nps banner */}
           {user.isAccepted && <NPSAnnouncement user={user} />}
 
