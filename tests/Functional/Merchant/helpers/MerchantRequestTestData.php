@@ -149,6 +149,40 @@ return [
         ],
     ],
 
+    'testCreateMerchantRequestForQrCodeActivation' => [
+        'request'  => [
+            'url'     => '/merchant/requests',
+            'method'  => 'POST',
+            'content' => [
+                'name'        => 'qr_codes',
+                'type'        => 'product',
+                'submissions' => [
+                    'business_model' => 'null-value',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status'      => 'activated',
+                'name'        => 'qr_codes',
+                'submissions' => [
+                    'business_model' => 'null-value',
+                ],
+                'merchant'    => [
+                    'id' => '10000000000000',
+                ],
+                'states'      => [
+                    'entity' => 'collection',
+                    'items'  => [
+                        [
+                            'name' => 'under_review',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testBulkUpdateMerchantRequests' => [
         'request'  => [
             'url'     => '/merchant/requests/bulk',

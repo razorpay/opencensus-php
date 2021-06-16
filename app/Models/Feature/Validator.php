@@ -40,6 +40,8 @@ class Validator extends Base\Validator
         Constants::VIRTUAL_ACCOUNTS                                             => 'filled|array|max:2',
         Constants::VIRTUAL_ACCOUNTS . "." . Constants::USE_CASE                 => 'filled|string',
         Constants::VIRTUAL_ACCOUNTS . "." . Constants::EXPECTED_MONTHLY_REVENUE => 'filled|string',
+
+        Constants::QR_CODES                                        => 'filled|array'
     ];
 
     protected static $onboardingQuestionsRules = [

@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Detail;
 
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Models\Address;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Admin;
@@ -117,6 +118,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     const MARKETPLACE_ACTIVATION_STATUS      = 'marketplace_activation_status';
     const VIRTUAL_ACCOUNTS_ACTIVATION_STATUS = 'virtual_accounts_activation_status';
     const SUBSCRIPTIONS_ACTIVATION_STATUS    = 'subscriptions_activation_status';
+    const QR_CODES_ACTIVATION_STATUS         = 'qr_codes_activation_status';
     const SUBMITTED                          = 'submitted';
     const SUBMITTED_AT                       = 'submitted_at';
     const CREATED_AT                         = 'created_at';
@@ -972,6 +974,12 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         $this->setAttribute(self::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS, $status);
     }
 
+    public function setQrCodesActivationStatus(string $status)
+    {
+        // There's no column "qr_codes_activation_status" for now. So no action here.
+        // Directly checking if Feature is enabled in getQrCodesActivationStatus
+    }
+
     public function setSubscriptionsActivationStatus(string $status)
     {
         $this->setAttribute(self::SUBSCRIPTIONS_ACTIVATION_STATUS, $status);
@@ -1192,6 +1200,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
             self::MARKETPLACE_ACTIVATION_STATUS       => $this->getMarketplaceActivationStatus(),
             self::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS  => $this->getVirtualAccountsActivationStatus(),
             self::SUBSCRIPTIONS_ACTIVATION_STATUS     => $this->getSubscriptionsActivationStatus(),
+            self::QR_CODES_ACTIVATION_STATUS          => $this->getQrCodesActivationStatus(),
         ];
 
         // Filter out the null values
@@ -1380,5 +1389,10 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     public function getBasBusinessId()
     {
         return $this->getAttribute(self::BAS_BUSINESS_ID);
+    }
+
+    public function getQrCodesActivationStatus()
+    {
+        return $this->merchant->isFeatureEnabled(Feature\Constants::QR_CODES) === true ? self::APPROVED : null;
     }
 }

@@ -104,6 +104,21 @@ class MerchantRequestTest extends TestCase
                             $response[Request\Constants::SUBMISSIONS][Feature\Constants::VENDOR_AGREEMENT]);
     }
 
+    public function testCreateMerchantRequestForQrCodeActivation()
+    {
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $request = $testData['request'];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertArraySelectiveEquals($this->testData[__FUNCTION__]['response']['content'], $response);
+    }
+
     public function testCreateMerchantRequestWithErrors()
     {
         $this->ba->proxyAuth();

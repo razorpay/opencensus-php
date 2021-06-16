@@ -11,22 +11,23 @@ class Entity extends QrCode\Entity
 {
     use NotesTrait;
 
-    const NAME                     = 'name';
-    const USAGE_TYPE               = 'usage_type';
-    const STATUS                   = 'status';
-    const DESCRIPTION              = 'description';
-    const FIXED_AMOUNT             = 'fixed_amount';
-    const PAYMENTS_AMOUNT_RECEIVED = 'payments_amount_received';
-    const PAYMENTS_RECEIVED_COUNT  = 'payments_received_count';
-    const NOTES                    = 'notes';
-    const CUSTOMER_ID              = 'customer_id';
-    const CLOSE_BY                 = 'close_by';
-    const CLOSED_AT                = 'closed_at';
-    const CLOSE_REASON             = 'close_reason';
-    const REQ_PROVIDER             = 'type';
-    const REQ_AMOUNT               = 'payment_amount';
-    const REQ_USAGE_TYPE           = 'usage';
-    const REQ_IMAGE_URL            = 'image_url';
+    const NAME                         = 'name';
+    const USAGE_TYPE                   = 'usage_type';
+    const STATUS                       = 'status';
+    const DESCRIPTION                  = 'description';
+    const FIXED_AMOUNT                 = 'fixed_amount';
+    const PAYMENTS_AMOUNT_RECEIVED     = 'payments_amount_received';
+    const PAYMENTS_RECEIVED_COUNT      = 'payments_received_count';
+    const NOTES                        = 'notes';
+    const CUSTOMER_ID                  = 'customer_id';
+    const CLOSE_BY                     = 'close_by';
+    const CLOSED_AT                    = 'closed_at';
+    const CLOSE_REASON                 = 'close_reason';
+    const REQ_PROVIDER                 = 'type';
+    const REQ_AMOUNT                   = 'payment_amount';
+    const REQ_USAGE_TYPE               = 'usage';
+    const REQ_IMAGE_URL                = 'image_url';
+    const RESP_PAYMENTS_COUNT_RECEIVED = 'payments_count_received';
 
     const SHARED_ID = 'FallbackQrCode';
 
@@ -85,7 +86,7 @@ class Entity extends QrCode\Entity
         self::DESCRIPTION,
         self::FIXED_AMOUNT,
         self::PAYMENTS_AMOUNT_RECEIVED,
-        self::PAYMENTS_RECEIVED_COUNT,
+        self::RESP_PAYMENTS_COUNT_RECEIVED,
         self::NOTES,
         self::CUSTOMER_ID,
         self::CLOSE_BY,
@@ -106,12 +107,17 @@ class Entity extends QrCode\Entity
         self::REQ_PROVIDER,
         self::REQ_IMAGE_URL,
         self::REQ_AMOUNT,
+        self::RESP_PAYMENTS_COUNT_RECEIVED,
     ];
 
     protected $defaults = [
         self::PAYMENTS_AMOUNT_RECEIVED => 0,
         self::PAYMENTS_RECEIVED_COUNT  => 0,
         self::STATUS                   => Status::ACTIVE,
+        self::NOTES                    => [],
+        self::NAME                     => null,
+        self::DESCRIPTION              => null,
+        self::CLOSE_BY                 => null,
     ];
 
     protected static $generators = [
@@ -197,6 +203,11 @@ class Entity extends QrCode\Entity
     protected function setPublicPaymentAmountAttribute(array & $array)
     {
         $array[self::REQ_AMOUNT] = $this->getAttribute(self::AMOUNT);
+    }
+
+    protected function setPublicPaymentsCountReceivedAttribute(array & $array)
+    {
+        $array[self::RESP_PAYMENTS_COUNT_RECEIVED] = $this->getAttribute(self::PAYMENTS_RECEIVED_COUNT);
     }
 
     public function hasFixedAmount()
