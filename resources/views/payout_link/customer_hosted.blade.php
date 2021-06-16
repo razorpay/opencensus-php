@@ -176,8 +176,8 @@
             supportPhone: '{{$support_contact}}',
             supportWebsite: '{{$support_url}}',
         },
-        description: '{{ $description }}',
-        receipt: '{{ $receipt }}',
+        description: `{{ $description }}`,
+        receipt: `{{ $receipt }}`,
         apiHost: '{{ $api_host }}' + '/v1/',
         payoutLinkId: '{{ $payout_link_id }}',
         status: '{{ $payout_link_status }}',
@@ -187,7 +187,7 @@
         purpose  : '{{ $purpose }}',
         payoutUtr : '{{ $payout_utr }}',
         payoutMode : '{{ $payout_mode }}',
-        payoutLinksCustomMessage : '{{ $payout_links_custom_message }}'
+        payoutLinksCustomMessage : `{{ $payout_links_custom_message }}`
     };
 </script>
 <script src="{{ $banking_url }}/dist/payoutlinks.js"></script>
