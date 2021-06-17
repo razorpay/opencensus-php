@@ -5,7 +5,7 @@ jobs:
     runs-on: [self-hosted]
     if: github.event.deployment.environment == 'smartcollectUT'
     container:
-      image: c.rzp.io/razorpay/onggi:php-7.2-api-web
+      image: c.rzp.io/razorpay/onggi:php-7.2-api-web-v3
       options: "--entrypoint /bin/bash"
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
@@ -82,7 +82,7 @@ jobs:
     runs-on: [self-hosted]
     if: github.event.deployment.environment == 'routeUT'
     container:
-      image: c.rzp.io/razorpay/onggi:php-7.2-api-web
+      image: c.rzp.io/razorpay/onggi:php-7.2-api-web-v3
       options: "--entrypoint /bin/bash"
       credentials:
         username: ${{ secrets.HARBOR_DOCKER_USERNAME }}

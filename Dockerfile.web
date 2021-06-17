@@ -1,4 +1,4 @@
-ARG ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.2-api-web
+ARG ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.2-api-web-v3
 ARG ARMORY_IMAGE=c.rzp.io/razorpay/armory:wkhtmltopdf-v182
 
 FROM $ARMORY_IMAGE as wkhtmltopdf
