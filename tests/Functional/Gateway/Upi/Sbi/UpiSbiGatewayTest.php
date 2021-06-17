@@ -11,8 +11,10 @@ use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Entity;
+use RZP\Gateway\Upi\Mozart;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
+use RZP\Services\RazorXClient;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Refund;
 use RZP\Gateway\Upi\Base\Type;
@@ -114,6 +116,16 @@ class UpiSbiGatewayTest extends TestCase
         $this->assertNotNull($upiEntity[Upi::GATEWAY_DATA]);
         $this->assertEquals('123456789012',$upiEntity[Upi::NPCI_REFERENCE_ID]);
         $this->assertEquals('7971807546', $upiEntity[Upi::GATEWAY_DATA]['addInfo2']);
+    }
+
+    public function testPaymentWithRazorxValueV2()
+    {
+        $this->mockRazorx(Mozart\Gateway::GATEWAY_SBI_PUBLIC_KEY_RAZORX_PREFIX, 'v2', $called);
+
+        $this->testPayment();
+
+        // Make sure a call was made to RazorX
+        $this->assertTrue($called);
     }
 
     public function testIntentPayment()
@@ -1338,5 +1350,28 @@ class UpiSbiGatewayTest extends TestCase
     protected function getDecryptedContent(string $json)
     {
         return $this->mockServer()->decrypt(json_decode($json, true)['resp']);
+    }
+
+    protected function mockRazorx($param, $value, &$called)
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode) use($param, $value, &$called)
+                {
+                    if ($feature === $param)
+                    {
+                        $called = true;
+                        return $value;
+                    }
+
+                    return 'control';
+                }));
     }
 }
