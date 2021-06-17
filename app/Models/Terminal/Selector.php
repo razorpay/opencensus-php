@@ -152,6 +152,13 @@ class Selector extends Base\Core
         {
             $allTerminals = [];
 
+            $this->trace->info(
+                TraceCode::SELECTING_FORCED_TERMINAL_FOR_PAYMENT,
+                [
+                    'payment'           => $payment->toArray(),
+                    'force_terminal_id' => $forceTerminalId,
+                ]);
+
             array_push($allTerminals, $this->repo->terminal->getById($forceTerminalId));
         }
         else

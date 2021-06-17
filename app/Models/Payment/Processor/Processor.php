@@ -4915,6 +4915,14 @@ class Processor
 
             Terminal\Entity::verifyIdAndSilentlyStripSign($forceTerminalId);
 
+            $this->trace->info(
+                TraceCode::SETTING_FORCE_TERMINAL_ID_TO_PAYMENT,
+                [
+                    'payment'           => $payment->toArray(),
+                    'force_terminal_id' => $forceTerminalId,
+                ]
+            );
+
             $payment->setForceTerminalId($forceTerminalId);
         }
     }
