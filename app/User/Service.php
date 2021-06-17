@@ -1655,6 +1655,8 @@ class Service extends Base\Service
             {
                 $data['experiments']['rx_ca_self_serve_flow_neo'] = ['result' => 'off'];
 
+                $data['experiments']['rx_ca_self_serve_flow'] = ['result' => 'on'];
+
                 $flag = 'ca_self_serve';
             }
             else
@@ -1668,10 +1670,14 @@ class Service extends Base\Service
                 {
                     $flag = 'neostone';
 
+                    $data['experiments']['rx_ca_self_serve_flow'] = ['result' => 'off'];
+
                     $this->fireNeoStoneEventToHubspot($merchant);
                 }
                 else
                 {
+                    $data['experiments']['rx_ca_self_serve_flow'] = ['result' => 'on'];
+
                     $flag = 'ca_self_serve';
                 }
             }
