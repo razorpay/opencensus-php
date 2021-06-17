@@ -11,8 +11,14 @@ return [
 
     'razorpayx_fee_details' => [
         'name'              => env('RZP_FEES_DETAILS_NAME'),
-        'account_number'    => env('RZP_FEES_DETAILS_ACCOUNT_NUMBER'),
-        'ifsc'              => env('RZP_FEES_DETAILS_IFSC'),
+        'rbl'               => [
+            'account_number'    => env('RZP_FEES_DETAILS_ACCOUNT_NUMBER'),
+            'ifsc'              => env('RZP_FEES_DETAILS_IFSC'),
+        ],
+        'icici'             => [
+            'account_number'    => env('RZP_FEES_DETAILS_ICICI_ACCOUNT_NUMBER'),
+            'ifsc'              => env('RZP_FEES_DETAILS_ICICI_IFSC'),
+        ],
     ],
 
     'icici' => [

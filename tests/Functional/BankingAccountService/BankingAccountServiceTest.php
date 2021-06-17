@@ -3,7 +3,10 @@
 namespace RZP\Tests\Functional\BankingAccountService;
 
 use App;
+use Carbon\Carbon;
 
+use RZP\Models\Schedule;
+use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\BankingAccountService\Constants;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -32,8 +35,33 @@ class BankingAccountServiceTest extends TestCase
         $this->config = App::getFacadeRoot()['config'];
     }
 
+    protected function setupDefaultScheduleForFeeRecovery()
+    {
+        $createScheduleRequest = [
+            'method'  => 'POST',
+            'url'     => '/schedules',
+            'content' => [
+                'type'      => 'fee_recovery',
+                'name'      => 'Basic T+7',
+                'period'    => 'daily',
+                'interval'  => 7,
+                'hour'      => 8,
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $schedule = $this->makeRequestAndGetContent($createScheduleRequest);
+
+        return $schedule;
+    }
+
     public function testCreateBankingEntities()
     {
+        $schedule = $this->setupDefaultScheduleForFeeRecovery();
+
+        $this->ba->bankingAccountServiceAppAuth();
+
         $response = $this->startTest();
 
         $balance = $this->getDbEntity('balance',
@@ -57,10 +85,20 @@ class BankingAccountServiceTest extends TestCase
                                        ]);
 
         $this->assertNotNull($basd);
+
+        $scheduleTask = $this->getDbLastEntity('schedule_task')->toArray();
+
+        // Every activated merchant should have a default schedule task for fee recovery purposes.
+        $this->assertEquals(10000000000000, $scheduleTask['merchant_id']);
+        $this->assertEquals($balance->getId(), $scheduleTask['entity_id']);
+        $this->assertEquals('balance', $scheduleTask['entity_type']);
+        $this->assertEquals($schedule['id'], $scheduleTask['schedule_id']);
     }
 
     public function testCreateBankingEntitiesAndAddPayoutFeature()
     {
+        $schedule = $this->setupDefaultScheduleForFeeRecovery();
+
         $attributes = [
             'bas_business_id'   => '10000000000000',
             'activation_status' => 'deactivated',
@@ -76,6 +114,8 @@ class BankingAccountServiceTest extends TestCase
             ]);
 
         $this->assertNull($feature);
+
+        $this->ba->bankingAccountServiceAppAuth();
 
         $response = $this->startTest();
 
@@ -109,6 +149,14 @@ class BankingAccountServiceTest extends TestCase
             ]);
 
         $this->assertEquals('payout', $feature['name']);
+
+        $scheduleTask = $this->getDbLastEntity('schedule_task')->toArray();
+
+        // Every activated merchant should have a default schedule task for fee recovery purposes.
+        $this->assertEquals(10000000000000, $scheduleTask['merchant_id']);
+        $this->assertEquals($balance->getId(), $scheduleTask['entity_id']);
+        $this->assertEquals('balance', $scheduleTask['entity_type']);
+        $this->assertEquals($schedule['id'], $scheduleTask['schedule_id']);
     }
 
     public function testCreateBusinessId()

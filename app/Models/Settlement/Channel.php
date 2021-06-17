@@ -336,7 +336,7 @@ class Channel
                     Mode::IMPS,
                     Mode::NEFT,
                     Mode::RTGS,
-                    Mode::IFT
+                    Mode::IFT,
                 ],
                 Constants\Entity::CARD          =>  [
                     Mode::IMPS,

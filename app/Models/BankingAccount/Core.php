@@ -782,7 +782,7 @@ class Core extends Base\Core
             $balance = (new Merchant\Balance\Core)->createBalanceForCurrentAccount($merchant, $balanceInfo, $mode);
 
             // Creating a contact of type 'rzp_fees' and a fund account related to it. To be used for fees recovery.
-            $this->createRZPFeesContactAndFundAccount($merchant);
+            $this->createRZPFeesContactAndFundAccount($merchant, $balance->getChannel());
 
             $bankingAccount->balance()->associate($balance);
 
@@ -909,34 +909,26 @@ class Core extends Base\Core
         }
     }
 
-    public function createRZPFeesContactAndFundAccount(Merchant\Entity $merchant)
+    public function createRZPFeesContactAndFundAccount(Merchant\Entity $merchant, string $channel)
     {
         $rzpFeesContacts = $this->repo->contact->fetch([
                                                            Contact\Entity::TYPE => Contact\Type::RZP_FEES
                                                        ],
                                                        $merchant->getId());
 
-        if ($rzpFeesContacts->count() > 0)
+        if ($rzpFeesContacts->count() === 0)
         {
-            $errorMessage = 'Merchant has an existing rzp_fees type contact';
-
-            $errorData = [
-                'merchant_id' => $merchant->getId()
-            ];
-
-            $this->sendSlackAlert($errorMessage, $errorData);
-
-            throw new LogicException('Merchant has an existing rzp_fees type contact',
-                                     ErrorCode::BAD_REQUEST_LOGIC_ERROR_MULTIPLE_RZP_FEES_CONTACT,
-                                     $errorData);
+            $rzpFeesContact = (new Contact\Core)->createRZPFeesContact($merchant);
+        }
+        else
+        {
+            $rzpFeesContact = $rzpFeesContacts->first();
         }
 
-        $contact = (new Contact\Core)->createRZPFeesContact($merchant);
-
-        (new FundAccount\Core)->createRZPFeesFundAccount($merchant, $contact);
+        (new FundAccount\Core)->createRZPFeesFundAccount($merchant, $rzpFeesContact, $channel);
     }
 
-    protected function createScheduleTaskForFeeRecovery(Merchant\Balance\Entity $balance,
+    public function createScheduleTaskForFeeRecovery(Merchant\Balance\Entity $balance,
                                                         Merchant\Entity $merchant)
     {
         $defaultFeeRecoverySchedule = $this->repo->schedule->getScheduleByPeriodIntervalAnchorDelayAndType(
@@ -950,7 +942,7 @@ class Core extends Base\Core
         {
             $errorMessage = 'Default Fee Recovery schedule does not exist';
 
-            $this->sendSlackAlert($errorMessage, null);
+            $this->sendSlackAlert($errorMessage, []);
 
             throw new LogicException($errorMessage,
                                      ErrorCode::BAD_REQUEST_LOGIC_ERROR_FEE_RECOVERY_DEFAULT_SCHEDULE_DOES_NOT_EXIST,

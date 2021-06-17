@@ -8,6 +8,7 @@ use Mockery;
 use Carbon\Carbon;
 use RZP\Models\Payout;
 use RZP\Services\Mozart;
+use RZP\Constants\Table;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer;
 use RZP\Models\Admin\ConfigKey;

@@ -1565,7 +1565,7 @@ class FeeRecoveryTest extends TestCase
             ],
             [
                 'name'           => "test",
-                'ifsc'           => 'SBIN0007105',
+                'ifsc'           => 'RATN0000011',
                 'account_number' => '111000111000',
             ]);
 

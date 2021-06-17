@@ -445,22 +445,30 @@ class Core extends Base\Core
         }
     }
 
-    public function createRZPFeesFundAccount(Merchant\Entity $merchant, $contact)
+    public function getRZPFeesFundAccountDataForChannel($contact, string $channel)
     {
-        $this->trace->info(TraceCode::RZP_FEES_FUND_ACCOUNT_CREATE_REQUEST,
-                           [
-                               'contact_id' => $contact->getId()
-                           ]);
-
         $fundAccountData = [
             'account_type'  => 'bank_account',
             'contact_id'    => $contact->getPublicId(),
             'bank_account'  => [
                 'name'              => $this->config['banking_account.razorpayx_fee_details.name'],
-                'ifsc'              => $this->config['banking_account.razorpayx_fee_details.ifsc'],
-                'account_number'    => $this->config['banking_account.razorpayx_fee_details.account_number'],
+                'ifsc'              => $this->config['banking_account']['razorpayx_fee_details'][$channel]['ifsc'],
+                'account_number'    => $this->config['banking_account']['razorpayx_fee_details'][$channel]['account_number'],
             ]
         ];
+
+        return $fundAccountData;
+    }
+
+    public function createRZPFeesFundAccount(Merchant\Entity $merchant, $contact, string $channel)
+    {
+        $this->trace->info(TraceCode::RZP_FEES_FUND_ACCOUNT_CREATE_REQUEST,
+                           [
+                               'contact_id' => $contact->getId(),
+                               'channel'    => $channel
+                           ]);
+
+       $fundAccountData = $this->getRZPFeesFundAccountDataForChannel($contact, $channel);
 
         $this->create($fundAccountData, $merchant, $contact, false, null, true);
     }

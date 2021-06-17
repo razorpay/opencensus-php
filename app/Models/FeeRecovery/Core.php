@@ -627,6 +627,11 @@ class Core extends Base\Core
         }
     }
 
+    protected function fetchIfscForFeeRecoveryForChannel(string $channel)
+    {
+        return $this->config['banking_account']['razorpayx_fee_details'][$channel]['ifsc'];
+    }
+
     /**
      * This function also ends up creating a new rzp_fees type contact and fund account if none currently exist
      * Ideally, this should never occur but may occur if someone manually activates a merchant for business banking.
@@ -645,8 +650,11 @@ class Core extends Base\Core
 
         $feeRecoveryContact = $this->fetchOrCreateRzpFeesTypeContact($merchant, $balance);
 
+        $ifscForFeeRecovery = $this->fetchIfscForFeeRecoveryForChannel($balance->getChannel());
+
         $feeRecoveryFundAccount = $this->repo->fund_account->fetchRzpFeesFundAccount($merchant->getId(),
-                                                                                     $feeRecoveryContact->getId());
+                                                                                     $feeRecoveryContact->getId(),
+                                                                                     $ifscForFeeRecovery);
 
         $fundAccountId = $feeRecoveryFundAccount->getPublicId();
 
@@ -747,7 +755,7 @@ class Core extends Base\Core
 
         if (empty($rzpFeesContacts) === true)
         {
-            (new BankingAccount\Core)->createRZPFeesContactAndFundAccount($merchant);
+            (new BankingAccount\Core)->createRZPFeesContactAndFundAccount($merchant, $balance->getChannel());
 
             $this->trace->error(TraceCode::RZP_FEES_CONTACT_FUND_ACCOUNT_DOES_NOT_EXIST,
                                 [

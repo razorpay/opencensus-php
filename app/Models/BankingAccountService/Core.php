@@ -2,20 +2,22 @@
 
 namespace RZP\Models\BankingAccountService;
 
+use Illuminate\Http\Request;
+
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Merchant\Balance\Repository as BalanceRepo;
+use RZP\Constants\Mode;
+use RZP\Models\Counter;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
-use Illuminate\Http\Request;
+use RZP\Models\BankingAccount;
 use RZP\Models\Merchant\Detail;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankingAccountStatement;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
-use RZP\Constants\Mode;
 
 class Core extends Base\Core
 {
@@ -26,6 +28,14 @@ class Core extends Base\Core
         $balance = $this->repo->transaction(function () use ($merchantId, $input)
         {
             $balance = $this->createBalanceAndBankingAccountStatementDetails($merchantId, $input);
+
+            $merchant = $balance->merchant;
+
+            (new BankingAccount\Core)->createScheduleTaskForFeeRecovery($balance, $merchant);
+
+            (new Counter\Core)->fetchOrCreate($balance);
+
+            (new BankingAccount\Core)->createRZPFeesContactAndFundAccount($merchant, $balance->getChannel());
 
             return $balance;
         });

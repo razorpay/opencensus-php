@@ -37,6 +37,21 @@ trait PayoutTrait
         return json_decode($response->getContent(), true);
     }
 
+    protected function processFeeRecoveryCron()
+    {
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payouts/fee_recovery/process',
+            'content' => []
+        ];
+
+        $this->ba->cronAuth();
+
+        $response = $this->sendRequest($request);
+
+        return json_decode($response->getContent(), true);
+    }
+
     protected function dispatchQueuedPayouts()
     {
         $request = [

@@ -1026,9 +1026,9 @@ class BankingAccountTest extends TestCase
 
         $account = $this->getDbLastEntity('bank_account')->toArray();
 
-        $this->assertEquals($account['account_number'], config('banking_account.razorpayx_fee_details.account_number'));
+        $this->assertEquals($account['account_number'], config('banking_account.razorpayx_fee_details.rbl.account_number'));
         $this->assertEquals($account['name'], config('banking_account.razorpayx_fee_details.name'));
-        $this->assertEquals($account['ifsc'], config('banking_account.razorpayx_fee_details.ifsc'));
+        $this->assertEquals($account['ifsc'], config('banking_account.razorpayx_fee_details.rbl.ifsc'));
         $this->assertEquals($account['merchant_id'], $merchantDetail->merchant['id']);
         $this->assertEquals($account['entity_id'], $contact['id']);
 
@@ -1237,9 +1237,9 @@ class BankingAccountTest extends TestCase
 
         $account = $this->getDbLastEntity('bank_account')->toArray();
 
-        $this->assertEquals($account['account_number'], config('banking_account.razorpayx_fee_details.account_number'));
+        $this->assertEquals($account['account_number'], config('banking_account.razorpayx_fee_details.rbl.account_number'));
         $this->assertEquals($account['name'], config('banking_account.razorpayx_fee_details.name'));
-        $this->assertEquals($account['ifsc'], config('banking_account.razorpayx_fee_details.ifsc'));
+        $this->assertEquals($account['ifsc'], config('banking_account.razorpayx_fee_details.rbl.ifsc'));
         $this->assertEquals($account['merchant_id'], $merchantDetail->merchant['id']);
         $this->assertEquals($account['entity_id'], $contact['id']);
 

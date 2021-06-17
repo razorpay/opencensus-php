@@ -9,6 +9,7 @@ use RZP\Models\Base;
 use RZP\Models\Contact;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Table;
 use RZP\Models\BankAccount;
 use RZP\Models\WalletAccount;
 use RZP\Constants\Entity as E;
@@ -195,13 +196,40 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function fetchRzpFeesFundAccount($merchantId, $contactId)
+    /**
+     * @param $merchantId
+     * @param $contactId
+     * @param $ifsc
+     *  We have one internal rzp contact with multiple fund accounts with different ifsc/banks
+     *  for fee recovery.
+     *  This function returns appropriate fund account where fee recovery is to be made
+     *
+     * @return mixed
+     */
+    public function fetchRzpFeesFundAccount($merchantId, $contactId, $ifsc)
     {
+        $faAccountIdColumn = $this->dbColumn(Entity::ACCOUNT_ID);
+
+        $faColumns = $this->dbColumn('*');
+
+        $faSourceTypeColumn = $this->dbColumn(Entity::SOURCE_TYPE);
+
+        $faSourceIdColumn = $this->dbColumn(Entity::SOURCE_ID);
+
+        $faCreatedAtColumn = $this->dbColumn(Entity::CREATED_AT);
+
+        $bankAccountIdColumn = $this->repo->bank_account->dbColumn(BankAccount\Entity::ID);
+
+        $bankAccountIFSCColumn = $this->repo->bank_account->dbColumn(BankAccount\Entity::IFSC_CODE);
+
         return $this->newQuery()
-                    ->where(Entity::SOURCE_TYPE, Entity::CONTACT)
-                    ->where(Entity::SOURCE_ID, $contactId)
+                    ->select($faColumns)
+                    ->join(Table::BANK_ACCOUNT, $bankAccountIdColumn, '=', $faAccountIdColumn)
+                    ->where($faSourceTypeColumn, Entity::CONTACT)
+                    ->where($faSourceIdColumn, $contactId)
                     ->merchantId($merchantId)
-                    ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->where($bankAccountIFSCColumn, '=', $ifsc)
+                    ->orderBy($faCreatedAtColumn, 'desc')
                     ->first();
     }
 

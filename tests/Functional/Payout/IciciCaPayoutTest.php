@@ -8,11 +8,13 @@ use Carbon\Carbon;
 use RZP\Models\Admin;
 use RZP\Models\Payout;
 use RZP\Models\Feature;
+use RZP\Models\Schedule;
 use RZP\Models\Card\Type;
 use RZP\Constants\Timezone;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Card\Issuer;
 use RZP\Models\Card\Network;
+use RZP\Models\FeeRecovery;
 use Rzp\Models\FundTransfer;
 use RZP\Services\Mock\Mozart;
 use RZP\Models\Admin\ConfigKey;
@@ -45,6 +47,8 @@ class IciciCaPayoutTest extends TestCase
 
     private $ownerRoleUser;
 
+    protected $merchant;
+
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/IciciCaPayoutTestData.php';
@@ -74,7 +78,48 @@ class IciciCaPayoutTest extends TestCase
             Details\Entity::STATUS         => Details\Status::ACTIVE,
         ]);
 
+        $this->merchant = $this->getDbEntityById('merchant', '10000000000000');
+
         $this->app['config']->set('applications.banking_account_service.mock', true);
+    }
+
+    protected function setupScheduleAndScheduleTaskForMerchant()
+    {
+        $createScheduleRequest = [
+            'method'  => 'POST',
+            'url'     => '/schedules',
+            'content'   => [
+                'type'      => 'fee_recovery',
+                'name'      => 'Basic T+7',
+                'period'    => 'daily',
+                'interval'  => 7,
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $schedule = $this->makeRequestAndGetContent($createScheduleRequest);
+
+        $scheduleTaskInput = [
+            'type'          => 'fee_recovery',
+            'schedule_id'   => $schedule['id'],
+        ];
+
+        $scheduleTask = (new Schedule\Task\Core)->create($this->merchant, $this->bankingBalance , $scheduleTaskInput);
+
+        $scheduleTask->saveOrFail();
+
+        $scheduleTask = $this->getDbLastEntity('schedule_task')->toArray();
+
+        $pastTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $this->fixtures->edit('schedule_task', $scheduleTask['id'], [
+            'next_run_at'  => $pastTimeStamp
+        ]);
+
+        $this->fixtures->edit('balance', $this->bankingBalance->getId(), [
+            'created_at'   => $pastTimeStamp
+        ]);
     }
 
     public function testCreatingPendingPayoutsForIciciWithSupportedModeChannelDestinationTypeCombo()
@@ -889,6 +934,96 @@ class IciciCaPayoutTest extends TestCase
         return [$payout1['id'], $payout2['id']];
     }
 
+    protected function createContact()
+    {
+        $contact = $this->fixtures->create(
+            'contact',
+            [
+                'id'        => '1010101contact',
+                'email'     => 'rzp@rzp.com',
+                'contact'   => '8989898989',
+                'name'      => 'desiboi',
+            ]
+        );
+
+        return $contact;
+    }
+
+    protected function createRzpFeesContactAndFundAccountForIcici()
+    {
+        $this->rzpFeesContact = $this->fixtures->create(
+            'contact',
+            [
+                'id'      => '1010101hokage2',
+                'email'   => 'rzp@rzp.com',
+                'contact' => '9989898989',
+                'name'    => 'naruto',
+                'type'    => 'rzp_fees'
+            ]
+        );
+
+        $this->rzpFeesFundAccount = $this->createFundAccountForContact($this->rzpFeesContact,
+                                                                       'ICIC0000047',
+                                                                       '12345678903833');
+    }
+
+    protected function createFundAccountForContact($contact, $ifsc = 'ICIC0000047', $accountNumber = '111000111000')
+    {
+        $fundAccount = $this->fixtures->fund_account->createBankAccount(
+            [
+                'source_type' => 'contact',
+                'source_id'   => $contact->getId(),
+            ],
+            [
+                'name'           => "test",
+                'ifsc'           => $ifsc,
+                'account_number' => $accountNumber,
+            ]);
+
+        return $fundAccount;
+    }
+
+    protected function createPayout($balance)
+    {
+        $this->ba->privateAuth();
+
+        $contact = $this->createContact();
+
+        $fundAccount = $this->createFundAccountForContact($contact);
+
+        $this->createPayoutForFundAccount($fundAccount, $balance);
+    }
+
+    public function createPayoutForFundAccount($fundAccount, $balance)
+    {
+        $content = [
+            'account_number'        => $balance->getAccountNumber(),
+            'amount'                => 10000,
+            'currency'              => 'INR',
+            'purpose'               => 'payout',
+            'narration'             => 'Payout',
+            'fund_account_id'       => 'fa_' . $fundAccount->getId(),
+            'mode'                  => 'IMPS',
+            'queue_if_low_balance'  => true,
+            'notes'                 => [
+                'abc' => 'xyz',
+            ],
+        ];
+
+        $request = [
+            'url'       => '/payouts',
+            'method'    => 'POST',
+            'content'   => $content
+        ];
+
+        $this->ba->privateAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        // Adding this here so that all payouts that get created go to initiated state automatically
+        $this->initiatePayoutFromCreated();
+    }
+
     public function testQueuedPayout()
     {
         $this->mockMozartResponseForFetchingBalanceFromIciciGateway(500);
@@ -975,6 +1110,172 @@ class IciciCaPayoutTest extends TestCase
 
         $payout = $this->getDbLastEntity('payout');
         $this->assertEquals('created', $payout['status']);
+    }
+
+    protected function initiatePayoutFromCreated()
+    {
+        $payout = $this->getDbLastEntity('payout');
+
+        if ($payout->getStatus() === Payout\Status::CREATED)
+        {
+            $payout->setStatus(Payout\Status::INITIATED);
+
+            $payout->saveOrFail();
+        }
+    }
+
+    public function testCreateFeeRecoveryAtPayoutCreationForICICIPayouts()
+    {
+        $this->mockMozartResponseForFetchingBalanceFromIciciGateway(500);
+
+        $this->ba->privateAuth();
+
+        $this->createPayout($this->bankingBalance);
+
+        $payout = $this->getDbLastEntity('payout')->toArray();
+
+        $feeRecovery = $this->getDbLastEntity('fee_recovery')->toArray();
+
+        $this->assertEquals($payout['id'], $feeRecovery['entity_id']);
+        $this->assertEquals(FeeRecovery\Status::UNRECOVERED, $feeRecovery['status']);
+        $this->assertEquals(0, $feeRecovery['attempt_number']);
+        $this->assertNull($feeRecovery['recovery_payout_id']);
+    }
+
+    public function testFeeRecoveryPayoutCronForICICI()
+    {
+        $oldTime = Carbon::create(2020, 1, 3, null, null, null);
+
+        Carbon::setTestNow($oldTime);
+
+        $this->setUpCounterToNotAffectPayoutFeesAndTaxInManualTimeChangeTests($this->bankingBalance);
+
+        $this->setupScheduleAndScheduleTaskForMerchant();
+
+        $oldTimeStamp = $oldTime->getTimestamp();
+
+        // Create first payout
+        $this->testCreateFeeRecoveryAtPayoutCreationForICICIPayouts();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $this->fixtures->edit('payout', $payout['id'], ['initiated_at' => $oldTimeStamp]);
+
+        // Create second payout
+        $this->createPayoutForFundAccount($fundAccount, $this->bankingBalance);
+
+        $payout2 = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout2['id'], ['initiated_at' => $oldTimeStamp]);
+
+        // Fail the second payout
+        $this->updateFtaAndSource($payout2['id'], Payout\Status::FAILED);
+
+        // Create a third payout
+        $this->createPayoutForFundAccount($fundAccount, $this->bankingBalance);
+
+        $payout3 = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout3['id'], ['initiated_at' => $oldTimeStamp]);
+
+        // Updating FTA and Payout status to initiated to allow transition to reversed
+        $fta = $this->getDbEntity('fund_transfer_attempt', ['source_id' => $payout3->getId()]);
+
+        $this->fixtures->edit('fund_transfer_attempt', $fta->getId(), ['status' => Attempt\Status::INITIATED]);
+
+        $this->fixtures->edit('payout', $payout3->getId(), ['status' => Payout\Status::INITIATED]);
+
+        // Reverse the third payout
+        $this->updateFtaAndSource($payout3->getId(), Payout\Status::REVERSED,'944926344925');
+
+        $this->createRzpFeesContactAndFundAccountForIcici();
+
+        $newTime = Carbon::create(2020, 1, 10, null, null, null);
+
+        Carbon::setTestNow($newTime);
+
+        $this->ba->cronAuth();
+
+        $this->processFeeRecoveryCron();
+
+        $feeRecoveryPayout = $this->getDbLastEntity('payout');
+
+        // Moving this payout to initiated
+        $feeRecoveryPayout->setStatus(Payout\Status::INITIATED);
+        $feeRecoveryPayout->saveOrFail();
+
+        // Fee Recovery entity for initial payout
+        $feeRecovery1 = $this->getDbEntity('fee_recovery', ['entity_id' => $payout['id']])->toArray();
+
+        $this->assertEquals($payout['id'], $feeRecovery1['entity_id']);
+        $this->assertEquals(FeeRecovery\Status::PROCESSING, $feeRecovery1['status']);
+        $this->assertEquals($feeRecovery1['type'], FeeRecovery\Type::DEBIT);
+        $this->assertEquals(1, $feeRecovery1['attempt_number']);
+        $this->assertEquals($feeRecovery1['recovery_payout_id'], $feeRecoveryPayout['id']);
+
+        // Fee Recovery entity for second payout
+
+        $feeRecovery2 = $this->getDbEntity('fee_recovery', [
+            'entity_id' => $payout2['id'],
+            'type'      => FeeRecovery\Type::DEBIT
+        ])->toArray();
+
+        $this->assertEquals($payout2['id'], $feeRecovery2['entity_id']);
+        $this->assertEquals(FeeRecovery\Status::PROCESSING, $feeRecovery2['status']);
+        $this->assertEquals(1, $feeRecovery2['attempt_number']);
+        $this->assertEquals($feeRecovery2['recovery_payout_id'], $feeRecoveryPayout['id']);
+
+        // Fee Recovery entity for second payout (Failed)
+
+        $feeRecovery3 = $this->getDbEntity('fee_recovery', [
+            'entity_id' => $payout2['id'],
+            'type'      => FeeRecovery\Type::CREDIT
+        ])->toArray();
+
+        $this->assertEquals($payout2['id'], $feeRecovery3['entity_id']);
+        $this->assertEquals(FeeRecovery\Status::PROCESSING, $feeRecovery3['status']);
+        $this->assertEquals(1, $feeRecovery3['attempt_number']);
+        $this->assertEquals($feeRecovery3['recovery_payout_id'], $feeRecoveryPayout['id']);
+
+        // Fee Recovery entity for third payout
+
+        $feeRecovery4 = $this->getDbEntity('fee_recovery', [
+            'entity_id' => $payout3['id'],
+            'type'      => FeeRecovery\Type::DEBIT
+        ])->toArray();
+
+        $this->assertEquals($payout3['id'], $feeRecovery4['entity_id']);
+        $this->assertEquals(FeeRecovery\Status::PROCESSING, $feeRecovery4['status']);
+        $this->assertEquals(1, $feeRecovery4['attempt_number']);
+        $this->assertEquals($feeRecovery4['recovery_payout_id'], $feeRecoveryPayout['id']);
+
+        // Fee Recovery entity for reversal (Reversal of the third payout)
+
+        $reversal = $this->getDbLastEntity('reversal');
+
+        $this->assertEquals($reversal['entity_id'], $payout3['id']);
+
+        $feeRecovery5 = $this->getDbEntity('fee_recovery', [
+            'entity_id' => $reversal['id'],
+            'type'      => FeeRecovery\Type::CREDIT
+        ])->toArray();
+
+        $this->assertEquals($reversal['id'], $feeRecovery5['entity_id']);
+        $this->assertEquals(FeeRecovery\Status::PROCESSING, $feeRecovery5['status']);
+        $this->assertEquals(FeeRecovery\Entity::REVERSAL, $feeRecovery5['entity_type']);
+        $this->assertEquals(1, $feeRecovery5['attempt_number']);
+        $this->assertEquals($feeRecovery5['recovery_payout_id'], $feeRecoveryPayout['id']);
+
+        // Fee Recovery entity for recovery payout
+        $feeRecovery = $this->getDbLastEntity('fee_recovery')->toArray();
+
+        $this->assertEquals($feeRecoveryPayout['id'], $feeRecovery['entity_id']);
+        $this->assertEquals(FeeRecovery\Status::UNRECOVERED, $feeRecovery['status']);
+        $this->assertEquals(0, $feeRecovery['attempt_number']);
+        $this->assertNull($feeRecovery['recovery_payout_id']);
+        $this->assertEquals($feeRecovery['type'], FeeRecovery\Type::DEBIT);
     }
 
     public function testCreatePayoutWithFetchAndUpdateBalanceFromGatewayAndBalanceLessThanPayoutAmount()
