@@ -90,6 +90,51 @@ class Repository extends Base\Repository
             ->update([Entity::EMAIL_NOTIFICATION_STATUS => EmailNotificationStatus::NOTIFIED]);
     }
 
+    public function saveOrFail($dispute, array $options = array())
+    {
+       $payment = $this->stripPaymentRelationIfApplicable($dispute);
+
+       parent::saveOrFail($dispute, $options);
+
+       $this->associatePaymentIfApplicable($dispute, $payment);
+    }
+
+    public function save($dispute, array $options = array())
+    {
+       $payment = $this->stripPaymentRelationIfApplicable($dispute);
+
+       parent::save($dispute, $options);
+
+       $this->associatePaymentIfApplicable($dispute, $payment);
+    }
+
+    public function associatePaymentIfApplicable($dispute, $payment)
+    {
+        if ($payment === null)
+        {
+            return;
+        }
+
+        $dispute->payment()->associate($payment);
+    }
+
+    protected function stripPaymentRelationIfApplicable($dispute)
+    {
+        $payment = $dispute->payment;
+
+        if (($payment == null) ||
+            ($payment->isExternal() === false))
+        {
+            return;
+        }
+
+        $dispute->payment()->dissociate();
+
+        $dispute->setPaymentId($payment->getId());
+
+        return $payment;
+    }
+
     public function getDisputesByPaymentId(string $paymentId)
     {
         return $this->newQuery()

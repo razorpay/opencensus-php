@@ -306,6 +306,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT_DEDUCTED, $amount);
     }
 
+    public function setPaymentId($paymentId)
+    {
+        $this->setAttribute(self::PAYMENT_ID, $paymentId);
+    }
+
     public function setAmountReversed(int $amount)
     {
         $this->setAttribute(self::AMOUNT_REVERSED, $amount);
@@ -613,5 +618,19 @@ class Entity extends Base\PublicEntity
     public function isBackfill(): bool
     {
         return $this->backfill;
+    }
+
+    public function getPaymentAttribute()
+    {
+        if (empty($this->payment()->first()) === false)
+        {
+            return $this->payment()->first();
+        }
+
+        $payment = (new Payment\Repository)->findOrFailPublic($this->getPaymentId());
+
+        $this->payment()->associate($payment);
+
+        return $payment;
     }
 }

@@ -191,6 +191,23 @@ class Payment extends Base
 
     }
 
+    protected function setTransactionForSource()
+    {
+        if ($this->source->isExternal() === true)
+        {
+            $txn = $this->repo->transaction->fetchBySourceAndAssociateMerchant($this->source);
+
+            if ($txn !== null)
+            {
+                $this->setTransaction($txn);
+
+                return;
+            }
+        }
+
+        parent::setTransactionForSource();
+    }
+
     public function fillDetails()
     {
         parent::fillDetails();

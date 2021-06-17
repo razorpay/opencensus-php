@@ -315,7 +315,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         if ($this->reconciled === true)
         {
-            $this->handleAlreadyReconciled($paymentId, $this->payment->transaction->getReconciledAt());
+            $this->handleAlreadyReconciled($paymentId, $this->getPaymentTransaction()->getReconciledAt());
 
             //
             // Record gateway fee and service tax for reconciled payments
@@ -343,7 +343,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             }
         }
 
-        $this->setTransactionDetailsInOutput($this->payment->transaction);
+        $this->setTransactionDetailsInOutput($this->getPaymentTransaction());
 
         //
         // Payment can be updated from setPaymentAcquirerData before validation or
@@ -639,8 +639,16 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         try
         {
-            // Try to make it authorized
-            $verifyResponse = $paymentService->verifyPayment($this->payment);
+            if ($this->payment->isExternal() === true)
+            {
+                $verifyResponse = $this->handleRearchPaymentVerification();
+            }
+            else
+            {
+                // Try to make it authorized
+                $verifyResponse = $paymentService->verifyPayment($this->payment);
+            }
+
         }
         catch(\Exception $ex)
         {
@@ -729,6 +737,28 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         }
 
         return $authorizeSuccess;
+    }
+
+    protected function handleRearchPaymentVerification()
+    {
+        $status = $this->payment->getStatus();
+
+        $response = $this->app['pg_router']->paymentVerify($this->payment->getId());
+
+        $this->payment = $this->paymentRepo->findOrFail($this->payment->getId());
+
+        if (($status === Payment\Status::FAILED) and
+            ($this->payment->hasBeenAuthorized() === true))
+        {
+            return VerifyResult::AUTHORIZED;
+        }
+
+        if ($status !== $this->payment->getStatus())
+        {
+            return VerifyResult::UNKNOWN;
+        }
+
+        return VerifyResult::SUCCESS;
     }
 
     protected function handleForceAuthorization(array $row)
@@ -834,12 +864,25 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         return false;
     }
 
+    protected function getPaymentTransaction()
+    {
+        if (($this->payment->isExternal() === false) or
+            ($this->payment->hasTransaction() === true))
+        {
+            return $this->payment->transaction;
+        }
+
+        $txn = $this->repo->transaction->fetchBySourceAndAssociateMerchant($this->payment);
+
+        return $txn;
+    }
+
     protected function handleVerifyAuthorized()
     {
         $this->payment = $this->paymentRepo->findOrFail($this->payment->getId());
 
         // Set the payment transaction for the row.
-        $this->paymentTransaction = $this->payment->transaction;
+        $this->paymentTransaction = $this->getPaymentTransaction();
 
         if ($this->paymentTransaction !== null)
         {
@@ -851,7 +894,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
             if ($createTransactionSuccess === true)
             {
-                $this->paymentTransaction = $this->payment->reload()->transaction;
+                $this->paymentTransaction = $this->getPaymentTransaction();
 
                 $success = true;
             }
@@ -1050,7 +1093,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         {
             $this->payment = null; //For every row $this->payment should be initialized to null.
             $this->payment = $this->paymentRepo->findOrFail($paymentId);
-            $this->paymentTransaction = $this->payment->transaction;
+            $this->paymentTransaction = $this->getPaymentTransaction();
 
             //
             // It's possible that the payment is in failed state and hence the transaction
@@ -1942,7 +1985,16 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
             // Refresh both payment and transaction to get latest changes.
             // Reload txn because relation are cached.
-            $this->paymentTransaction = $this->payment->reload()->transaction->reload();
+            if ($this->payment->isExternal() === true)
+            {
+                $this->payment = $this->payment->reload();
+                $this->paymentTransaction = $this->getPaymentTransaction();
+            }
+            else
+            {
+                $this->paymentTransaction = $this->payment->reload()->transaction->reload();
+            }
+
         }
 
         $currentGatewayFee = $this->paymentTransaction->getGatewayFee();
@@ -2059,7 +2111,9 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $isNotCapturedButAuthorized = ($this->payment->isCaptured() === false) and
                                       ($this->payment->hasBeenAuthorized() === true);
 
-        if (($isHDFCDICL === true) or ($isNotCapturedButAuthorized === true))
+        if (($isHDFCDICL === true) or
+            ($isNotCapturedButAuthorized === true) or
+            ($this->payment->isExternal() === true))
         {
             try
             {
@@ -2094,7 +2148,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
     protected function createMissingPaymentTransaction()
     {
-        assertTrue($this->payment->transaction === null);
+        assertTrue($this->getPaymentTransaction() === null);
 
         $this->trace->info(
             TraceCode::RECON_INFO_ALERT,
@@ -2128,6 +2182,11 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $this->repo->saveOrFail($this->payment);
 
         $this->saveFeeDetails($txn, $feesSplit);
+
+        if ($this->payment->isExternal() === true)
+        {
+           (new Transaction\Core)->dispatchUpdatedTransactionToCPS($txn, $this->payment);
+        }
     }
 
     protected function saveFeeDetails(Transaction\Entity $txn, PublicCollection $feesSplit)

@@ -135,14 +135,14 @@ class Core extends Base\Core
 
                 $payment->setDisputed(true);
 
-                $dispute = $this->repo->transaction(function() use ($dispute)
+                $dispute = $this->repo->transaction(function() use ($dispute, $payment)
                 {
                     if ($dispute->getDeductAtOnset() === true)
                     {
                         $this->createNegativeAdjustmentAndUpdateDispute($dispute);
                     }
 
-                    $this->repo->saveOrFail($dispute->payment);
+                    $this->repo->saveOrFail($payment);
 
                     $this->repo->saveOrFail($dispute);
 
@@ -195,8 +195,6 @@ class Core extends Base\Core
                     $this->handleDisputeClosure($dispute, $input);
 
                     $this->fireDisputeStatusChangeWebhookEvent($dispute);
-
-                    $this->repo->saveOrFail($dispute->payment);
 
                     $this->repo->saveOrFail($dispute);
 
@@ -1159,7 +1157,13 @@ class Core extends Base\Core
             $refundBaseAmount = $dispute->getBaseAmount();
         }
 
-        $dispute->payment->refundAmount($refundAmount, $refundBaseAmount);
+        $payment = $dispute->payment;
+
+        $payment->refundAmount($refundAmount, $refundBaseAmount);
+
+        $this->repo->saveOrFail($payment);
+
+        $dispute->payment->reload();
     }
 
     public function initiateRiskAssessment()

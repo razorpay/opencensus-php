@@ -121,11 +121,6 @@ class CreateDisputesTable extends Migration
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
 
-            $table->foreign(Dispute::PAYMENT_ID)
-                  ->references(Payment::ID)
-                  ->on(Table::PAYMENT)
-                  ->on_delete('restrict');
-
             $table->foreign(Dispute::TRANSACTION_ID)
                   ->references(Transaction::ID)
                   ->on(Table::TRANSACTION)

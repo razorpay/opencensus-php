@@ -17,6 +17,27 @@ trait ExternalRepo
 {
     protected $entityName;
 
+    public function findByPublicId($id)
+    {
+        $this->entityName = $this->entity;
+
+        try
+        {
+            $entity = parent::findByPublicId($id);
+
+            return $entity;
+        }
+        catch (\Throwable $e)
+        {
+            if (Entity::validateExternalRepoEntity($this->entityName) === false || $this->validateExternalFetchEnabled() == false)
+            {
+                throw $e;
+            }
+        }
+
+        return $this->fetchExternalEntity($id);
+    }
+
     public function findByPublicIdAndMerchant(string $id, Merchant\Entity $merchant,array $params = []): PublicEntity
     {
         $this->entityName = $this->entity;
@@ -138,6 +159,27 @@ trait ExternalRepo
         return $this->fetchExternalEntity($id, "");
     }
 
+    public function findOrFail($id, $columns = array('*'))
+    {
+        $this->entityName = $this->entity;
+
+        try
+        {
+            $entity = parent::findOrFail($id, $columns);
+
+            return $entity;
+        }
+        catch (\Throwable $e)
+        {
+            if (Entity::validateExternalRepoEntity($this->entityName) === false || $this->validateExternalFetchEnabled() == false)
+            {
+                throw $e;
+            }
+        }
+
+        return $this->fetchExternalEntity($id, "");
+    }
+
     private function validateExternalFetchEnabled()
     {
         $keyName = Entity::getExternalConfigKeyName($this->entityName);
@@ -145,7 +187,7 @@ trait ExternalRepo
         return (bool) ConfigKey::get($keyName, false);
     }
 
-    private function fetchExternalEntity($id, $merchantId, $input = [])
+    private function fetchExternalEntity($id, $merchantId = '', $input = [])
     {
         $class = Entity::getExternalRepoSingleton($this->entity);
 

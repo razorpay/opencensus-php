@@ -58,6 +58,25 @@ class Repository extends Base\Repository
         return $txn;
     }
 
+    public function fetchBySourceAndAssociateMerchant($entity)
+    {
+        $txn = $this->newQuery()
+                    ->where(Transaction\Entity::ENTITY_ID, '=', $entity->getId())
+                    ->first();
+
+        if ($txn === null)
+        {
+          return null;
+        }
+
+        $entity->transaction()->associate($txn);
+        $txn->source()->associate($entity);
+
+        $txn->merchant()->associate($entity->merchant);
+
+        return $txn;
+    }
+
     public function fetchTxnsExpectedToSettle($timestamp)
     {
         return $this->newQuery()

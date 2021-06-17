@@ -2,6 +2,7 @@
 
 namespace RZP\Services;
 
+use App;
 use Requests;
 use RZP\Error\Error;
 use RZP\Exception;
@@ -77,8 +78,10 @@ class PGRouter
      *
      * @param $app
      */
-    public function __construct($app)
+    public function __construct()
     {
+        $app = App::getFacadeRoot();
+
         $this->app = $app;
 
         $this->trace = $app['trace'];

@@ -15,7 +15,7 @@ trait ExternalCore
 {
     private function saveExternalEntity($entity)
     {
-        $class = Entity::getexternalRepoSingleton($this->entityName);
+        $class = Entity::getexternalRepoSingleton($entity->getEntity());
 
         try
         {

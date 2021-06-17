@@ -14,7 +14,12 @@ class Refund extends Base
 {
     protected function setTransactionForSource()
     {
-        $txn = $this->createNewTransaction();
+        $txn = $this->repo->transaction->fetchBySourceAndAssociateMerchant($this->source);
+
+        if ($txn === null)
+        {
+            $txn = $this->createNewTransaction();
+        }
 
         $this->setTransaction($txn);
     }

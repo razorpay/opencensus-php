@@ -1497,6 +1497,30 @@ return [
         ],
     ],
 
+    'testRearchDisputeCreate' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'gateway_dispute_id'   => '4342frf34r',
+                'raised_on'            => '946684800',
+                'expires_on'           => '1912162918',
+                'amount'               => 100,
+                'deduct_at_onset'      => 0,
+                'phase'                => 'chargeback',
+                 ],
+        ],
+        'response' => [
+            'content' => [
+                'amount'             => 100,
+                'amount_deducted'    => 0,
+                'currency'           => 'INR',
+                'phase'              => 'chargeback',
+                'status'             => 'open',
+                'reason_code'        => 'KFRER_R',
+            ],
+        ],
+    ],
+
     'testFreshdeskWebhookPaymentFailedCase' => [
         'request' => [
             'url'       => '/fd/disputes',
@@ -1720,3 +1744,4 @@ return [
         ],
     ],
 ];
+

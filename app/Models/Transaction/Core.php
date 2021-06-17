@@ -177,7 +177,7 @@ class Core extends Base\Core
         return $txn;
     }
 
-    private function dispatchUpdatedTransactionToCPS($txn, $payment)
+    public function dispatchUpdatedTransactionToCPS($txn, $payment)
     {
         $transactionData = [
             "fee" => $txn->getFee(),
