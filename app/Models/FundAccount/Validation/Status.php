@@ -11,11 +11,27 @@ class Status
 
     const FAILED    = 'failed';
 
-    // This is here because FTA recon expects all source entities to have
+    // The following 3 constants are here because FTA recon expects all source entities to have
     // the same status, and attempts to resolve the constant. TODO: Fix.
     const PROCESSED = 'processed';
 
     const REVERSED  = 'reversed';
+
+    const INITIATED = 'initiated';
+
+    public static $favPossibleStatuses = [
+        self::CREATED,
+        self::COMPLETED,
+        self::FAILED,
+    ];
+
+    public static $ftaPossibleStatuses = [
+        self::CREATED,
+        self::INITIATED,
+        self::FAILED,
+        self::PROCESSED,
+        self::REVERSED,
+    ];
 
     public static $favToLedgerStatusEventMap = [
         self::CREATED   => Ledger\FundAccountValidation::FAV_INITIATED,

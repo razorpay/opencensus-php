@@ -1424,4 +1424,36 @@ class FundAccountValidationTest extends TestCase
         return $favId;
     }
 
+    public function testFundAccountValidationReversed()
+    {
+        $this->mockRazorxTreatment();
+
+        $this->testFundAccValidationWithAccountNumberAndBankAccount();
+
+        $fav = $this->getDbLastEntity('fund_account_validation');
+
+        $fta = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $payoutId = $fav->getId();
+
+        $this->fixtures->edit(
+            'fund_transfer_attempt',
+            $fta->getId(),
+            [
+                'is_fts' => 1,
+            ]);
+
+        $this->triggerFlowToUpdateFavWithNewState($payoutId, 'COMPLETED');
+
+        $this->triggerFlowToUpdateFavWithNewState($payoutId, 'REVERSED');
+
+        $payout = $this->getDbEntityById('fund_account_validation', $payoutId);
+
+        $fta = $this->getDbEntityById('fund_transfer_attempt', $fta->getId());
+
+        $this->assertEquals('reversed', $fta->getStatus());
+
+        $this->assertEquals('completed', $payout->getStatus());
+
+    }
 }

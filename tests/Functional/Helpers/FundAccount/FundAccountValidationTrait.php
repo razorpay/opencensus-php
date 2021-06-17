@@ -100,7 +100,7 @@ trait FundAccountValidationTrait
             'mode'                => 'IMPS',
             'source_type'         => 'fund_account_validation',
             'source_id'           => $favId,
-            'status'              => ($status === 'COMPLETED') ? 'PROCESSED' : 'FAILED',
+            'status'              => ($status === 'COMPLETED') ? 'PROCESSED' : $status,
             'remarks'             => ($status === 'COMPLETED') ? 'Transaction Successful' : 'Invalid Bene/Mobile number',
             'utr'                 => str_shuffle('111917301337'),
         ];

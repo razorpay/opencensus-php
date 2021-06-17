@@ -47,7 +47,7 @@ class Validator extends Base\Validator
 
     protected static $ftsStatusUpdateRules = [
         FtaEntity::UTR                => 'sometimes|string',
-        FtaEntity::STATUS             => 'required|string|custom',
+        FtaEntity::STATUS             => 'required|string',
         FtaEntity::REMARKS            => 'sometimes|string',
         FtaEntity::NARRATION          => 'sometimes|string',
         FtaEntity::DATE_TIME          => 'sometimes|string',
@@ -95,11 +95,22 @@ class Validator extends Base\Validator
 
     protected function validateStatus($attribute, $value)
     {
-        if (in_array($value, [Status::COMPLETED, Status::CREATED, Status::FAILED, Status::PROCESSED, 'initiated']) === false)
+        if (in_array($value, Status::$favPossibleStatuses) === false)
         {
             throw new BadRequestValidationFailureException(
                 'Invalid status',
                 $attribute,
+                $value);
+        }
+    }
+
+    public function validateStatusInFtsWebhook($value)
+    {
+        if (in_array($value, Status::$ftaPossibleStatuses) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Invalid status',
+                Entity::STATUS,
                 $value);
         }
     }

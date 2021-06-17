@@ -780,7 +780,11 @@ class Core extends Base\Core
                 $input[Entity::STATUS] = strtolower($input[Entity::STATUS]);
             }
 
-            (new Validator)->setStrictFalse()->validateInput('fts_status_update', $input);
+            $validator = new Validator;
+
+            $validator->setStrictFalse()->validateInput('fts_status_update', $input);
+
+            $validator->validateStatusInFtsWebhook($input[FtsConstants::STATUS]);
 
             $extraInfo = $input['extra_info'] ?? [];
 
