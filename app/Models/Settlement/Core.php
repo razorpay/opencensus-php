@@ -803,6 +803,11 @@ class Core extends Base\Core
             $response['config']['preferences']['mode'] = 'NEFT';
         }
 
+        if (in_array($merchant->getParentId(), Preferences::ONLY_NEFT_SETTLEMENT_MIDS, true) === true)
+        {
+            $response['config']['preferences']['mode'] = 'NEFT';
+        }
+
         $destinationMerchantId = (new Processor)->settlementToPartner($merchant->getId());
 
         $isAggregateSettlement = (bool) $destinationMerchantId;

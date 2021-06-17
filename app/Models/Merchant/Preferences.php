@@ -188,6 +188,8 @@ class Preferences
 
     const MID_ADITYA_BIRLA_HEALTH   = 'F0sFCmi0LOeeGc';
 
+    const MID_KARNATAKA_UDYOG_MITRA = 'El3yN2k0PWFCWs';
+
     const DEMO_ACCOUNT         = '100DemoAccount';
     const MID_ENDURANCE        = [
         '9YAQd3b47mdIQY', '9ZO8jNaR0OORNH', '9Y9m9XscC6Kh4W',
@@ -357,6 +359,8 @@ class Preferences
         self::MID_VOCATIONAL_EDU,
         // slack thread for ref: https://razorpay.slack.com/archives/C15277TQB/p1614088830075000?thread_ts=1612939005.084100&cid=C15277TQB
         self::MID_BHARTI_AIRTEL,
+        //slack thread for ref: https://razorpay.slack.com/archives/CC4EUSBNG/p1623743273021800
+        self::MID_KARNATAKA_UDYOG_MITRA,
     ];
 
     const TRANSFER_SETTLED_WEBHOOK_MIDS = [
