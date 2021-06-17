@@ -3426,4 +3426,13 @@ class Gateway
         return ((in_array($gateway, self::$sequenceNoBasedRefundGateways, true) === true) and
                 ($method === Method::NETBANKING));
     }
+
+    public static function isUpiPaymentServiceGateway($gateway): bool
+    {
+        $gateways = [
+            self::UPI_AIRTEL,
+        ];
+
+        return (in_array($gateway, $gateways, true));
+    }
 }

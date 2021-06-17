@@ -249,6 +249,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const CORE_PAYMENT_SERVICE              = 1;
     const CARD_PAYMENT_SERVICE              = 2;
     const NB_PLUS_SERVICE                   = 3;
+    const UPI_PAYMENT_SERVICE               = 4;
 
     const FORMATTED_AMOUNT                  = 'formatted_amount';
     const FORMATTED_CREATED_AT              = 'formatted_created_at';
@@ -1473,6 +1474,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function enableNbPlusService()
     {
         $this->setAttribute(self::CPS_ROUTE, 3);
+    }
+
+    public function enableUpiPaymentService()
+    {
+        $this->setAttribute(self::CPS_ROUTE, 4);
     }
 
     public function setMethod(string $method)

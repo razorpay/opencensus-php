@@ -46,6 +46,7 @@ use RZP\Models\PaymentLink;
 use RZP\Models\BankAccount;
 use RZP\Models\FundAccount;
 use RZP\Models\Transaction;
+use RZP\Services\UpiPayment;
 use RZP\Models\FundTransfer;
 use RZP\Models\BankTransfer;
 use RZP\Models\PaperMandate;
@@ -233,6 +234,18 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             }
 
             return new CardPaymentService();
+        });
+
+        $this->app->singleton('upi.payments', function($app)
+        {
+            $upsMock = $app['config']->get('applications.upi_payment_service.mock');
+
+            if ($upsMock === true)
+            {
+                return new UpiPayment\Mock\Service();
+            }
+
+            return new UpiPayment\Service();
         });
 
         $this->app->singleton('nbplus.payments', function($app)

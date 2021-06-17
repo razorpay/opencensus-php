@@ -275,4 +275,11 @@ trait UpiTrait
 
         return $tracable;
     }
+
+        /******************************** Upi Payment Service ******************************************/
+
+        public function callUpiPaymentServiceAction(string $gateway,string $action,array $gatewayData)
+        {
+            return $this->app['upi.payments']->action($gateway, $action, $gatewayData);
+        }
 }

@@ -50,4 +50,20 @@ class UpiPaytmGatewayTest extends TestCase
 
         $this->fixtures->merchant->activate();
     }
+
+    /**
+     * This test case verifies that correct cps route is getting picked for aggregator gateway.
+     *
+     * @return void
+     */
+    public function testCpsRouteForPayment()
+    {
+        $this->testUpiCollectPaymentCreateSuccess();
+
+        $payment = $this->getDbLastPayment();
+
+        // Assert the cps_route set is 0 for aggregator gateways which are not live on 
+        // UPI payment service 
+        $this->assertEquals(0, $payment->getCpsRoute());
+    }
 }
