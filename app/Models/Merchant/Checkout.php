@@ -206,7 +206,7 @@ class Checkout
                     else
                     {
                         $experimentResult = $this->app->razorx->getTreatment(
-                            $merchant->getId(),
+                            $this->app['request']->getTaskId(),
                             Merchant\RazorxTreatment::CRED_OFFER_SUBTEXT,
                             $mode
                         );
@@ -214,16 +214,11 @@ class Checkout
 
                     if ($experimentResult === 'offer_tile')
                     {
-                        // need to unset the previously set custom_text for cred
-                        unset($data['methods']['custom_text']['cred']);
-
                         $cred_meta['offer'] = $response['data']['offer'];
                     }
-                    else
-                    {
-                        $data['methods']['custom_text']['cred'] = $response['data']['offer']['description'];
-                    }
 
+                    // setting custom text in all cases
+                    $data['methods']['custom_text']['cred'] = $response['data']['offer']['description'];
                 }
 
                 $hit_eligibility = false;
