@@ -547,13 +547,26 @@ class Entity
     ];
 
     /**
-     * Defined entities for which database access(retrieved, created, updated, deleted)
+     * Entities for which database access(retrieved, created, updated, deleted)
      * are instrumented
      */
     const INSTRUMENTED_ENTITIES = [
         self::MERCHANT,
         self::MERCHANT_DETAIL,
         self::STAKEHOLDER
+    ];
+
+    /**
+     * Entities for which sync events are triggered to account service.
+     * Should be in sync with entities queried in
+     * \RZP\Models\Merchant\Service::getMerchantDetailsForAccountService
+     */
+    const ACS_SYNCED_ENTITIES = [
+        self::MERCHANT,
+        self::MERCHANT_DETAIL,
+        self::STAKEHOLDER,
+        self::MERCHANT_DOCUMENT,
+        self::MERCHANT_EMAIL,
     ];
 
     /**

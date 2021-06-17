@@ -1,0 +1,27 @@
+<?php
+
+namespace RZP\Jobs\Kafka;
+
+use RZP\Models\Merchant\BvsValidation\Core as BvsCore;
+use RZP\Trace\TraceCode;
+
+class BvsValidationJob extends Job
+{
+    /**
+     * @throws \Throwable
+     */
+    public function handle()
+    {
+        parent::handle();
+
+        $tracePayload = [
+            'job_attempts' => $this->attempts(),
+            'mode' => $this->mode,
+            'payload' => $this->getPayload(),
+        ];
+        $this->trace->info(TraceCode::ONBOARDING_BVS_VERIFICATION_JOB_REQUEST, $tracePayload);
+
+        $bvsCore = new BvsCore();
+        $bvsCore->process($this->payload);
+    }
+}

@@ -24,6 +24,11 @@ class Metric
     const ENTITY_CREATED                        = 'entity_created';
     const ENTITY_UPDATED                        = 'entity_updated';
     const ENTITY_DELETED                        = 'entity_deleted';
+    const ACS_SYNC_ALERT_UNREPORTED_ACCOUNTS    = 'acs_sync_alert_unreported_accounts';
+    const ACS_SYNC_ALERT_UNKNOWN_MODE           = 'acs_sync_alert_unknown_mode';
+    const ACS_SYNC_EVENT_PUBLISHED              = 'acs_sync_event_published';
+    const ACS_SYNC_ALERT_EVENT_PUBLISH_FAILED   = 'acs_sync_alert_event_publish_failed';
+    const ACS_SYNC_ALERT_UNKNOWN_TRIGGER        = 'acs_sync_alert_unknown_trigger';
 
     // Summary type metric names
     // Using '.histogram' as suffix for pattern match to work(refer statsd_mapping.yml) for statsd_exporter
@@ -58,6 +63,7 @@ class Metric
     const LABEL_TYPE                            = 'type';
     const LABEL_HAS_PASSPORT                    = 'has_passport';
     const LABEL_ENTITY_NAME                     = 'entity';
+    const LABEL_EVENT_NAME                      = 'event_name';
 
     // Default label values
     const LABEL_DEFAULT_VALUE                   = 'other';

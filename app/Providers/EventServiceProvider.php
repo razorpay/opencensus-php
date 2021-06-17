@@ -10,10 +10,12 @@ use Illuminate\Database\Events as DatabaseEvents;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 use RZP\Events;
+use RZP\Events\Kafka as KafkaEvents;
 use RZP\Jobs\Job;
 use RZP\Listeners;
 use RZP\Events\P2p;
 use RZP\Models\Merchant\AccessMap;
+use RZP\Modules\Acs;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -54,6 +56,7 @@ class EventServiceProvider extends ServiceProvider
 
         QueueEvents\JobProcessed::class => [
             Listeners\QueueEventListener::class,
+            Acs\TriggerSyncListener::class,
         ],
 
         QueueEvents\JobProcessing::class => [
@@ -110,6 +113,15 @@ class EventServiceProvider extends ServiceProvider
         ],
         DatabaseEvents\QueryExecuted::class => [
             Listeners\DatabaseEventListener::class,
+        ],
+        Acs\RecordSyncEvent::class => [
+            Acs\RecordSyncListener::class,
+        ],
+        KafkaEvents\JobProcessed::class => [
+            Acs\TriggerSyncListener::class,
+        ],
+        Acs\TriggerSyncEvent::class => [
+            Acs\TriggerSyncListener::class,
         ]
     ];
 

@@ -48,10 +48,9 @@ class Core extends Base\Core
      *
      * @param array $payload
      *
-     * @return bool
      * @throws \Throwable
      */
-    public function Process(array $payload) : bool
+    public function process(array $payload)
     {
         (new Validator())->validateInput('process_kafka_message', $payload);
 
@@ -63,7 +62,7 @@ class Core extends Base\Core
         {
             if ($this->isValidationProcessingAttemptExceeded($validationId, $payload) === true)
             {
-                return true;
+                return;
             }
 
             $this->incrementValidationProcessingAttempt($validationId);
@@ -78,10 +77,8 @@ class Core extends Base\Core
                 TraceCode::ONBOARDING_BVS_VERIFICATION_JOB_ERROR,
                 $payload);
 
-            return false;
+            throw $e;
         }
-
-        return true;
     }
 
     public function getValidation(string $validationId)

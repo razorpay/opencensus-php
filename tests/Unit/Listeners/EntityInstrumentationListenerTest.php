@@ -2,8 +2,10 @@
 
 namespace Unit\Listeners;
 
+use Illuminate\Foundation\Testing\Constraints\ArraySubset;
 use RZP\Events\EntityInstrumentationEvent;
 use RZP\Constants\Metric;
+use RZP\Tests\Functional\CustomAssertions;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Tests\Unit\Request\Traits\HasRequestCases;
 use Tests\Unit\TestCase;
@@ -12,6 +14,7 @@ class EntityInstrumentationListenerTest extends TestCase
 {
     use TestsMetrics;
     use HasRequestCases;
+    use CustomAssertions;
 
     public function testTriggersTraceCountWithoutRequestContext()
     {
@@ -26,7 +29,7 @@ class EntityInstrumentationListenerTest extends TestCase
         $metricsMock = $this->createMetricsMock();
         $metricsMock->expects($this->once())
             ->method('count')
-            ->with($eventName, 1, $dimensions);
+            ->with($eventName, 1, new ArraySubset($dimensions));
 
         event(new EntityInstrumentationEvent($eventName, $entityName));
     }
@@ -47,7 +50,7 @@ class EntityInstrumentationListenerTest extends TestCase
         $metricsMock = $this->createMetricsMock();
         $metricsMock->expects($this->once())
             ->method('count')
-            ->with($eventName, 1, $dimensions);
+            ->with($eventName, 1, new ArraySubset($dimensions));
 
         event(new EntityInstrumentationEvent($eventName, $entityName));
     }
@@ -71,7 +74,7 @@ class EntityInstrumentationListenerTest extends TestCase
         $metricsMock = $this->createMetricsMock();
         $metricsMock->expects($this->once())
             ->method('count')
-            ->with($eventName, 1, $dimensions);
+            ->with($eventName, 1, new ArraySubset($dimensions));
 
         event(new EntityInstrumentationEvent($eventName, $entityName));
     }

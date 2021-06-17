@@ -4,6 +4,8 @@ namespace RZP\Http;
 
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
+use RZP\Modules\Acs;
+
 class Kernel extends HttpKernel
 {
     /**
@@ -16,6 +18,7 @@ class Kernel extends HttpKernel
         Middleware\InspectorAccess::class,
         Middleware\TrustedProxy::class,
         Middleware\VerifyHttps::class,
+        Acs\SyncEventTriggerMiddleware::class,
     ];
 
     /**
@@ -59,6 +62,7 @@ class Kernel extends HttpKernel
         Middleware\P2p::class,
         Middleware\MerchantIdempotencyHandler::class,
         Middleware\RequestContextHandler::class,
+        Acs\SyncEventTriggerMiddleware::class,
 
         // Route group middleware
         Middleware\EncryptCookies::class,

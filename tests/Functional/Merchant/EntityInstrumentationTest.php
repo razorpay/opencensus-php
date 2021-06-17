@@ -84,7 +84,7 @@ class EntityInstrumentationTest extends TestCase
         );
     }
 
-    public function testInstrumentation()
+    public function testInstrumentationWithQueryBuilder()
     {
         $merchant = $this->fixtures->merchant->create();
 

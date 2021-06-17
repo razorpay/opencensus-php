@@ -1008,6 +1008,10 @@ return [
         'mock'          => env('MOCK_BANKING_ACCOUNT_SERVICE', false),
     ],
 
+    'acs' => [
+        'sync_enabled' => env('ACS_SYNC_ENABLED', false),
+    ],
+
     'recon'         => [
         'key'           => env('RECON_SERVICE_AUTH_KEY'),
         'secret'        => env('RECON_SERVICE_AUTH_SECRET'),

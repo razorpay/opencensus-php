@@ -73,11 +73,11 @@ use RZP\Models\Gateway\File as GatewayFile;
 use RZP\Models\PaymentLink\PaymentPageItem;
 use RZP\Services\Beam\Service as BeamService;
 use RZP\Base\Database\Connectors\MySqlConnector;
-use RZP\Models\Base\EntityInstrumentationObserver;
 use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Services\XPayroll\Service as XPayrollService;
 use RZP\Services\VendorPayments\Service as VendorPaymentService;
-
+use RZP\Models\Base\EntityInstrumentationObserver;
+use RZP\Modules\Acs;
 
 class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvider
 {
@@ -111,6 +111,17 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         {
             $entityClass = E::getEntityClass($entity);
             $entityClass::observe(EntityInstrumentationObserver::class);
+        }
+
+        // attach account service sync event observer to entities synced between API and account service
+        foreach (E::ACS_SYNCED_ENTITIES as $entity) {
+            $entityClass = E::getEntityClass($entity);
+            if (is_subclass_of($entityClass, RZP\Models\Base\PublicEntity::class) === false)
+            {
+                throw new RZP\Exception\LogicException('only sub classes of PublicEntity can be synced, ' .
+                    'because they provide getMerchantId()');
+            }
+            $entityClass::observe(Acs\SyncEventObserver::class);
         }
     }
 
@@ -367,6 +378,11 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             $encoder   = new JsonEncoder();
             $repo      = new Repository($app['config']->get('database.default'));
             return new Core($encrypter, $encoder, $repo);
+        });
+
+        $this->app->singleton(Acs\SyncEventManager::SINGLETON_NAME, function($app)
+        {
+            return new Acs\SyncEventManager($app);
         });
 
         $this->registerShield();
