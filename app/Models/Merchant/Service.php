@@ -4993,7 +4993,8 @@ class Service extends Base\Service
         if ($caPageVisitedAttr === null)
         {
             $caPageVisited = ((isset($utmParams['first_page']) and ($utmParams['first_page'] === User\Constants::CA_STATIC_PAGE))
-                                or (isset($utmParams['final_page']) and ($utmParams['final_page'] === User\Constants::CA_STATIC_PAGE)));
+                                or (isset($utmParams['final_page']) and ($utmParams['final_page'] === User\Constants::CA_STATIC_PAGE))
+                              or (isset($utmParams['website']) and ($utmParams['website'] === User\Constants::CA_STATIC_PAGE)));
             $attributeCore->create(
                 [
                     Attribute\Entity::PRODUCT   => $product,
