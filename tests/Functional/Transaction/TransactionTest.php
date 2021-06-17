@@ -1032,6 +1032,16 @@ class TransactionTest extends TestCase
         ], $txn);
     }
 
+    public function testCreateMultipleCapitalBalanceTransactionPositiveAmountWithoutPrimaryBalance()
+    {
+        $this->getEntityObjectForMode('balance')->where([
+                Entity::MERCHANT_ID => '10000000000000',
+                Entity::TYPE        => Type::PRIMARY,
+            ])->delete();
+
+        $this->testCreateMultipleCapitalBalanceTransactionPositiveAmount();
+    }
+
     public function testCreateMultipleCapitalBalanceTransactionPositiveAmount()
     {
         $principalBal = $this->fixtures->create('balance', [

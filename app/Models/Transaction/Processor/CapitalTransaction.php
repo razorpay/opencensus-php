@@ -10,6 +10,13 @@ use RZP\Exception\BadRequestException;
 
 class CapitalTransaction extends Base
 {
+    public function setSourceDefaults()
+    {
+        parent::setSourceDefaults();
+
+        $this->merchantBalance = $this->txn->source->balance;
+    }
+
     public function fillDetails()
     {
         $this->txn->setAmount(abs($this->source->getAmount()));
