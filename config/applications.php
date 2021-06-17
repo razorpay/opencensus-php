@@ -91,6 +91,11 @@ return [
         'yesb_encryption_key' => env('YESB_ENCRYPTION_KEY'),
     ],
 
+    'downtime_service_slack' => [
+        'token' => env('DOWNTIME_SERVICE_SLACK_TOKEN'),
+        'mock'  => env('DOWNTIME_SERVICE_SLACK_MOCK'),
+    ],
+
     'slack' => [
         'team'      => 'razorpay',
         'token'     => env('SLACK_TOKEN'),
@@ -448,6 +453,11 @@ return [
             'secret'    => env('PHONEPE_API_SECRET'),
             'mock'      => env('PHONEPE_DOWNTIME_MOCK', false)
         ],
+        'slack' => [
+            'url'           => env('SLACK_POSTMESSAGE_URL'),
+            'bearer_token'  => env('SLACK_BEARER_TOKEN'),
+            'mock'          => env('DOWNTIME_SLACK_MOCK', true)
+        ]
     ],
 
     'settlements_service' => [

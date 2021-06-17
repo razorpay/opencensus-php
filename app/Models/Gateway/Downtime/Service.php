@@ -5,6 +5,7 @@ namespace RZP\Models\Gateway\Downtime;
 use RZP\Models\Admin\Query\Validator;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Services\DowntimeSlackNotification;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
 use RZP\Models\Gateway\Downtime\Webhook;
@@ -12,6 +13,7 @@ use RZP\Jobs\DynamicNetBankingUrlUpdater;
 
 class Service extends Base\Service
 {
+    const RAZORX_DOWNTIME_SLACK_NOTIFICATIONS = "RAZORX_DOWNTIME_SLACK_NOTIFICATIONS";
     protected $processor;
 
     public function create(array $input)
@@ -90,8 +92,7 @@ class Service extends Base\Service
     {
         $this->setMode();
 
-        if (strtoupper($source) === Source::VAJRA)
-        {
+        if (strtoupper($source) === Source::VAJRA) {
             throw new Exception\BadRequestValidationFailureException(
                 $source . ' downtime is not created through this webhook.');
         }
@@ -132,6 +133,8 @@ class Service extends Base\Service
 
         $processor->validate($input);
 
+        $this->notifyOnSlack($input);
+
         $data = $processor->process($input);
 
         return $data;
@@ -168,5 +171,25 @@ class Service extends Base\Service
         $data = $processor->process($input);
 
         return $data;
+    }
+
+    private function notifyOnSlack(array $input): void
+    {
+        $slackNotification = $this->app->razorx->getTreatment("slack", self::RAZORX_DOWNTIME_SLACK_NOTIFICATIONS, $this->core()::getMode());
+        if ($slackNotification === "enable")
+        {
+            try
+            {
+                $this->app['downtimeSlackNotification']->notifyPaymentDowntime($input);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException($e, null, TraceCode::FAILED_DOWNTIME_SLACK_NOTIFICATION, ["downtime" => $input]);
+            }
+        }
+        else
+        {
+            $this->trace->info(TraceCode::DOWNTIME_SLACK_NOTIFICATION_EXP_OFF, ["downtime" => $input, "expVal" => $slackNotification]);
+        }
     }
 }

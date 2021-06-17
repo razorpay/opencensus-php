@@ -499,6 +499,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerPhonepeDowntimeService();
 
+        $this->registerDowntimeSlackNotificationService();
+
         $this->registerBankingAccountService();
 
         $this->registerCacheManager();
@@ -1436,10 +1438,24 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         });
     }
 
+    protected function registerDowntimeSlackNotificationService()
+    {
+        $this->app->singleton("downtimeSlackNotification", function ($app)
+        {
+            $mock = $app['config']->get('applications.gateway_downtime.slack.mock');
+
+            if ($mock === true)
+            {
+                return new Mock\DowntimeSlackNotification($app);
+            }
+
+            return new DowntimeSlackNotification($app);
+        });
+    }
+
     protected function registerBankingAccountService()
     {
-        $this->app->singleton('banking_account_service', function($app)
-        {
+        $this->app->singleton('banking_account_service', function ($app) {
             $mock = $app['config']->get('applications.banking_account_service.mock');
 
             $implementation = $mock ? Mock\BankingAccountService::class : BankingAccountService::class;

@@ -55,6 +55,7 @@ class ConfigKey
     const RX_SLA_FOR_IMPS_PAYOUT                = self::PREFIX . 'rx_sla_for_imps_payout';
     const DOWNTIME_DETECTION_CONFIGURATION      = self::PREFIX . 'downtime:detection:configuration';
     const DOWNTIME_DETECTION_CONFIGURATION_V2   = self::PREFIX . '{downtime}:detection:configuration_v2';
+    const DOWNTIME_SLACK_NOTIFICATION_CHANNELS  = self::PREFIX . '{downtime}.slack.notification.channels';
     const BENEFICIARY_REGISTRATION              = self::PREFIX . 'beneficiary_registration:';
     const BENEFICIARY_VERIFICATION              = self::PREFIX . 'beneficiary_verification:';
     const FTS_BENEFICIARY                       = self::PREFIX . 'fts_beneficiary';
@@ -311,6 +312,7 @@ class ConfigKey
         self::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL,
         self::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_ICICI,
         self::FREE_PAYOUTS_SUPPORTED_MODES,
+        self::DOWNTIME_SLACK_NOTIFICATION_CHANNELS,
         self::ENABLE_PAYMENT_DOWNTIME_CARD,
         self::ENABLE_PAYMENT_DOWNTIME_CARD_ISSUER,
         self::ENABLE_PAYMENT_DOWNTIME_CARD_NETWORK,
@@ -355,6 +357,7 @@ class ConfigKey
     const REDIS_CONFIG_MAP = [
         self::RX_ACCOUNT_NUMBER_SERIES_PREFIX => [Name::SET_RX_ACCOUNT_PREFIX],
         self::RX_SHARED_ACCOUNT_ALLOWED_CHANNELS => [Name::SET_SHARED_ACCOUNT_ALLOWED_CHANNELS],
+        self::DOWNTIME_SLACK_NOTIFICATION_CHANNELS => [Name::CREATE_GATEWAY_DOWNTIME],
         self::ENABLE_DOWNTIME_SERVICE => [Name::CREATE_GATEWAY_DOWNTIME],
         self::ENABLE_DOWNTIME_SERVICE_NETBANKING => [Name::CREATE_GATEWAY_DOWNTIME],
         self::ENABLE_DOWNTIME_SERVICE_UPI => [Name::CREATE_GATEWAY_DOWNTIME],
