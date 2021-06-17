@@ -49,6 +49,9 @@ class LOCController extends Controller
     const WITHDRAWAL_ENGAGEMENT_MAILER_CRON      = 'WITHDRAWAL_ENGAGEMENT_MAILER_CRON';
     const GET_AUTOMATED_LOC                      = 'GET_AUTOMATED_LOC';
     const SET_AUTOMATED_LOC                      = 'SET_AUTOMATED_LOC';
+    const CREATE_MERCHANT_DETAILS                = 'CREATE_MERCHANT_DETAILS';
+    const GET_MERCHANT_DETAILS                   = 'GET_MERCHANT_DETAILS';
+    const UPDATE_MERCHANT_DETAILS                = 'UPDATE_MERCHANT_DETAILS';
 
     const ROUTES_URL_MAP = [
         self::SEED_DATA_REGEX                        => 'twirp/rzp.capital.loc.withdrawal.v1.WithdrawalAPI/SeedData',
@@ -74,6 +77,9 @@ class LOCController extends Controller
         self::POSIDEX_ACCESS_TOKEN                   => 'twirp/rzp.capital.loc.onboarding.v1.OnboardingAPI/GenerateIDFCAccessToken',
         self::POSIDEX_CRN                            => 'twirp/rzp.capital.loc.onboarding.v1.OnboardingAPI/CreateIDFCCRN',
         self::REPAYMENTS_SCHEDULE                    => 'twirp/rzp.capital.loc.withdrawal.v1.RepaymentAPI/GetRepaymentsSchedule',
+        self::CREATE_MERCHANT_DETAILS                => 'twirp/rzp.capital.loc.migration.v1.MerchantDetailsAPI/CreateMerchantDetails',
+        self::GET_MERCHANT_DETAILS                   => 'twirp/rzp.capital.loc.migration.v1.MerchantDetailsAPI/GetMerchantDetails',
+        self::UPDATE_MERCHANT_DETAILS                => 'twirp/rzp.capital.loc.migration.v1.MerchantDetailsAPI/UpdateMerchantDetails',
     ];
 
     const CRON_URL_MAP = [
@@ -92,10 +98,14 @@ class LOCController extends Controller
         self::REPAYMENTS_SCHEDULE,
         self::GET_AUTOMATED_LOC,
         self::SET_AUTOMATED_LOC,
+        self::GET_MERCHANT_DETAILS,
     ];
 
     const ROUTE_PERMISSION_MAP = [
         self::SEED_DATA_REGEX                        => Name::LOC,
+        self::CREATE_MERCHANT_DETAILS                => Name::LOC_CONFIG_EDIT,
+        self::GET_MERCHANT_DETAILS                   => Name::LOC_CONFIG_EDIT,
+        self::UPDATE_MERCHANT_DETAILS                => Name::LOC_CONFIG_EDIT,
         self::CREATE_WITHDRAWAL_CONFIG_REGEX         => Name::LOC_CONFIG_EDIT,
         self::UPDATE_WITHDRAWAL_CONFIG_REGEX         => Name::LOC_CONFIG_EDIT,
         self::CREATE_SOURCE_ACCOUNT_REGEX            => Name::LOC_CONFIG_EDIT,
@@ -208,6 +218,31 @@ class LOCController extends Controller
         ];
 
         $response = $this->sendRequestAndParseResponse($url, $body, $headers);
+
+        return $response;
+    }
+
+    protected function handleLeegalityWebhook($path = null)
+    {
+        $request = Request::instance();
+        $url     = 'leegality/webhook/loc';
+        $body    = $request->all();
+
+        $headers = [
+            'X-Service-Name' => 'leegality',
+            'X-Auth-Type' => 'internal',
+        ];
+
+        $this->trace->info(TraceCode::LINE_OF_CREDIT_LEEGALITY_WEBHOOK_REQUEST, [
+            'request' => $url,
+        ]);
+
+        $response = $this->sendRequestAndParseResponse($url, $body, $headers);
+
+        $this->trace->info(TraceCode::LINE_OF_CREDIT_LEEGALITY_WEBHOOK_RESPONSE, [
+            'request' => $url,
+            'response' => $response,
+        ]);
 
         return $response;
     }
