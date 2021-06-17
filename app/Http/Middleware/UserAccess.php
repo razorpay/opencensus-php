@@ -104,17 +104,6 @@ class UserAccess
      */
     public function handle(Request $request, Closure $next)
     {
-        // Only if request is from internal application dashboard then we understand/process origin header.
-        if ($this->ba->isDashboardApp() === true)
-        {
-            $this->setRequestOriginProduct($request);
-        }
-
-        // Set product for the request, this is used to tag
-        // logs and exceptions with product info
-        // Refer ApiTraceProcessor::addProduct()
-        $this->setProduct($request);
-
         if (($this->ba->isAdminAuth() === false) and
             ($this->ba->isStrictPrivateAuth() === false) and
             ($this->ba->isInternalApp() === true))
@@ -177,78 +166,6 @@ class UserAccess
             return ApiResponse::unauthorized(
                 ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED);
         }
-    }
-
-    /**
-     * Check if the request origin is banking and set the banking product as banking in BA.
-     * Don't need to add any other stricter checks because we have CORS enabled for only BB
-     * domain and one request uri on oauth app.
-     *
-     * @param $request
-     */
-    private function setRequestOriginProduct(Request $request)
-    {
-        $product = $this->getRequestOriginProductFromRequest($request);
-
-        $this->ba->setRequestOriginProduct($product);
-    }
-
-    private function getRequestOriginProductFromRequest(Request $request)
-    {
-        $originDomain = $request->headers->get(RequestHeader::X_REQUEST_ORIGIN);
-
-        $bankingOriginHost = parse_url(config('applications.banking_service_url'), PHP_URL_HOST);
-
-        $requestOriginHost = parse_url($originDomain, PHP_URL_HOST);
-
-        $product = ProductType::PRIMARY;
-
-        if ($bankingOriginHost === $requestOriginHost)
-        {
-            $product = ProductType::BANKING;
-        }
-
-        return $product;
-    }
-
-    /**
-     * Product gives the Product information (payment gateway or business banking).
-     * This is derived using $requestOriginProduct and some other parameters
-     * like route_name and internal app
-     * This is useful for tagging logs with respective product info
-     * Refer ApiTraceProcessor::addProduct()
-     *
-     * @var string
-     */
-    private function setProduct(Request $request)
-    {
-        $product = $this->getRequestOriginProductFromRequest($request);
-
-        $isDashboardRoute = $this->ba->isDashboardApp();
-
-        $routeName = $this->router->currentRouteName();
-
-        $bankingRoutes1 = array_keys(Route::$bankingRoutePermissions);
-        $bankingRoutes2 = array_values(Route::BANKING_SPECIFIC_ROUTES);
-
-        $bankingRoutes = array_flip(array_merge($bankingRoutes1, $bankingRoutes2));
-
-        // If route is a banking_route, tag it as banking
-        // Excluding dashboard routes as in that case, the requestOriginProduct is the source of truth
-        if (($isDashboardRoute === false) and
-            (array_key_exists($routeName, $bankingRoutes) === true))
-        {
-            $product = ProductType::BANKING;
-        }
-
-        $bankingApps = ['vendor_payments', 'payout_links', 'fts', 'workflows','xpayroll'];
-
-        if (in_array($this->ba->getInternalApp(), $bankingApps, true) === true)
-        {
-            $product = ProductType::BANKING;
-        }
-
-        $this->ba->setProduct($product);
     }
 
     private function validateUserAccess(string $route)

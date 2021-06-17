@@ -294,6 +294,32 @@ return [
         ],
     ],
 
+    'testAppAuthForCronWithXHeader' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/payments/timeout',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+        'expected_passport' => [
+            'mode'          => 'test',
+            'identified'    => true,
+            'authenticated' => true,
+            'consumer'      => [
+                'type' => 'application',
+                'id'   => 'cron',
+                'meta' => [
+                    'name' => 'cron',
+                ],
+            ],
+            'credential' => [],
+        ],
+    ],
+
     'testPrivateAuthWithWrongKeyId' => [
         'request' => [
             'method' => 'GET',
@@ -310,7 +336,7 @@ return [
         ],
     ],
 
-    'testPrivateAuthWithWrongSecret' => [
+    'testPrimaryPrivateAuthWithoutXHeaderWithWrongSecret' => [
         'request' => [
             'method' => 'GET',
             'url' => '/payments/1kKG3wHhnPdcg8',
@@ -321,6 +347,96 @@ return [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET
                 ],
+            ],
+            'status_code' => 401,
+        ],
+    ],
+
+    'testPrimaryPrivateAuthWithXHeaderWithWrongSecret' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/payments/1kKG3wHhnPdcg8',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET
+                ],
+            ],
+            'status_code' => 401,
+        ],
+    ],
+
+    'testBankingPrivateAuthWithoutXHeaderWithWrongSecret' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test / Contact',
+                'type'         => 'self',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET
+                ],
+            ],
+            'status_code' => 401,
+        ],
+    ],
+
+    'testBankingPrivateAuthWithXHeaderWithWrongSecret' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test / Contact',
+                'type'         => 'self',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET
+                ],
+            ],
+            'status_code' => 401,
+        ],
+    ],
+
+    'testBankingProxyAuthWithWrongUser' => [
+        'request'  => [
+            'url'    => '/contacts/cont_1000000contact',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY,
+                ]
             ],
             'status_code' => 401,
         ],
@@ -617,6 +733,25 @@ return [
         ],
     ],
 
+    'testAccountAuthInvalidIdViaMerchantDashboardWithXHeader' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/orgs/{id}/self',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT_ID,
+                ],
+            ],
+            'status_code' => 401,
+        ],
+    ],
+
     'testAccountAuthInvalidIdViaAdminDashboard' => [
         'request' => [
             'method' => 'GET',
@@ -637,6 +772,25 @@ return [
         'request' => [
             'method' => 'POST',
             'url'    => '/users/resend-verification',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_NOT_AUTHENTICATED,
+                ]
+            ],
+            'status_code' => 401,
+        ],
+    ],
+
+    'testUserWhiteListAuthenticateWithXHeader' => [
+        'request' => [
+            'method' => 'POST',
+            'url'    => '/users/resend-verification',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
         ],
         'response' => [
             'content' => [

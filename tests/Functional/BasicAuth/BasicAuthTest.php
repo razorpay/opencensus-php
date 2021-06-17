@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factory;
 use RZP\Http\Route;
 use RZP\Models\Key;
 use RZP\Models\Merchant;
+use RZP\Constants\Product;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -139,11 +140,55 @@ class BasicAuthTest extends TestCase
         $this->startTest();
     }
 
-    public function testPrivateAuthWithWrongSecret()
+    public function testPrimaryPrivateAuthWithoutXHeaderWithWrongSecret()
     {
         $this->ba->privateAuth(null, 'somerandomsecre');
 
         $this->startTest();
+
+        $this->assertEquals(Product::PRIMARY, $this->app['basicauth']->getProduct());
+    }
+
+    public function testPrimaryPrivateAuthWithXHeaderWithWrongSecret()
+    {
+        $this->ba->privateAuth(null, 'somerandomsecre');
+
+        $this->startTest();
+
+        //This ensures that passing the X-Request-Origin header doesn't result in banking as product in case of private primary routes.
+        $this->assertEquals(Product::PRIMARY, $this->app['basicauth']->getProduct());
+    }
+
+    public function testBankingPrivateAuthWithXHeaderWithWrongSecret()
+    {
+        $this->ba->privateAuth(null, 'somerandomsecre');
+
+        $this->startTest();
+
+        $this->assertEquals(Product::BANKING, $this->app['basicauth']->getProduct());
+    }
+
+    public function testBankingPrivateAuthWithoutXHeaderWithWrongSecret()
+    {
+        $this->ba->privateAuth(null, 'somerandomsecre');
+
+        $this->startTest();
+
+        $this->assertEquals(Product::BANKING, $this->app['basicauth']->getProduct());
+    }
+
+    public function testBankingProxyAuthWithWrongUser()
+    {
+        $this->fixtures->create('merchant_detail', ['merchant_id' => '10000000000000']);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact']);
+
+        $this->ba->proxyAuth('randomuser1234');
+
+        $this->startTest();
+
+        //This ensures that in case of proxy auth, the X-Request-Origin header is the source of truth. Hence primary even though route belongs to banking.
+        $this->assertEquals(Product::PRIMARY, $this->app['basicauth']->getProduct());
     }
 
     public function testAppAuthWithNoSecret()
@@ -305,6 +350,20 @@ class BasicAuthTest extends TestCase
         $this->startTest();
 
         $this->assertPassport();
+
+        $this->assertEquals(Product::PRIMARY, $this->app['basicauth']->getProduct());
+    }
+
+    public function testAppAuthForCronWithXHeader()
+    {
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $this->assertPassport();
+
+        //This ensures that just passing the X-Request-Origin header doesn't result in banking as product in case request isn't made from dashboard
+        $this->assertEquals(Product::PRIMARY, $this->app['basicauth']->getProduct());
     }
 
     public function testAppAuthWithAccount()
@@ -383,6 +442,18 @@ class BasicAuthTest extends TestCase
         $this->startTest();
     }
 
+    public function testAccountAuthInvalidIdViaMerchantDashboardWithXHeader()
+    {
+        $this->ba->proxyAuth();
+
+        $this->ba->addAccountAuth('12345');
+
+        $this->startTest();
+
+        // In case of proxyAuth, X-Request-Origin header is the source of truth to set the product. Hence banking even though route belongs to primary.
+        $this->assertEquals(Product::BANKING, $this->app['basicauth']->getProduct());
+    }
+
     public function testAccountAuthInvalidIdViaAdminDashboard()
     {
         $this->ba->adminAuth();
@@ -400,6 +471,19 @@ class BasicAuthTest extends TestCase
         $this->ba->dashboardGuestAppAuth();
 
         $this->startTest();
+
+        //In case of internal auth from an internalApp, source of truth is X-Request-Origin header. Hence primary.
+        $this->assertEquals(Product::PRIMARY, $this->app['basicauth']->getProduct());
+    }
+
+    public function testUserWhiteListAuthenticateWithXHeader()
+    {
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+        //In case of internal auth from an internalApp, source of truth is X-Request-Origin header. Hence banking.
+        $this->assertEquals(Product::BANKING, $this->app['basicauth']->getProduct());
     }
 
     public function testFailedMerchantUserRouteValidation()

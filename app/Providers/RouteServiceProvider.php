@@ -100,6 +100,7 @@ class RouteServiceProvider extends ServiceProvider
             'prefix'        => 'v1',
             'namespace'     => $this->namespace,
             'middleware'    => [
+                'product_identifier',
                 'proxysql',
                 'auth',
                 'admin_access',
@@ -130,6 +131,7 @@ class RouteServiceProvider extends ServiceProvider
             'prefix'        => 'v1/upi',
             'namespace'     => $this->namespace . '\\P2p',
             'middleware'    => [
+                'product_identifier',
                 'throttle',
                 'auth',
                 'p2p',

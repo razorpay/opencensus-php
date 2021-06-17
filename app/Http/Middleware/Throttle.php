@@ -28,20 +28,11 @@ final class Throttle
      */
     public function handle($request, \Closure $next)
     {
-        $start = millitime();
-
-        app('request.ctx')->init();
         app('request.ctx')->resolveKeyIdIfApplicable();
 
         (new Throttler)->throttle();
 
-        $response = $next($request);
-
-        $duration = millitime() - $start; // For metric http_request_duration_milliseconds, in milliseconds
-
-        $this->pushHttpMetrics($request, $response, $duration);
-
-        return $response;
+        return $next($request);
     }
 
     /**
@@ -50,7 +41,7 @@ final class Throttle
      * @param  Response $response
      * @param  int      $duration
      */
-    protected function pushHttpMetrics(Request $request, Response $response, int $duration)
+    public function pushHttpMetrics(Request $request, Response $response, int $duration)
     {
         $dimensions = $this->getMetricDimensions($request, $response);
 

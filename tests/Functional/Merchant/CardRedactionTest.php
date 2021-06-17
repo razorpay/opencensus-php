@@ -1234,11 +1234,11 @@ class CardRedactionTest extends TestCase
             ['HTTP_X-Request-Origin' => config('applications.dashboard.url')]
         );
 
-        $userAccess = new UserAccess($this->app);
-        $userAccessReflectionObj = new \ReflectionObject($userAccess);
-        $method = $userAccessReflectionObj->getMethod('setProduct');
+        $productIdentifier = new \RZP\Http\Middleware\ProductIdentifier($this->app);
+        $productIdentifierReflectionObj = new \ReflectionObject($productIdentifier);
+        $method = $productIdentifierReflectionObj->getMethod('deriveAndSetProductFromRequest');
         $method->setAccessible(true);
-        $method->invoke($userAccess, $requestMock);
+        $method->invoke($productIdentifier, $requestMock);
     }
 
     protected function getUpdatedTrace(string $routeName,

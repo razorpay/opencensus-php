@@ -106,6 +106,9 @@ class BasicAuth
     const PASSPORT_CONSUMER_TYPE_ADMIN               = 'admin';
     const PASSPORT_CONSUMER_TYPE_USER                = 'user';
 
+    // All dashboard applications
+    const DASHBOARD_APPS                             = ['admin_dashboard', 'merchant_dashboard', 'dashboard', 'dashboard_guest', 'frontend_graphql',];
+
     /**
      * The application instance.
      *
@@ -1579,7 +1582,7 @@ class BasicAuth
          * frontend_graphql is added here because it's a client facing proxy layer similar to dashboard doing today.
          * It's required to set requestOriginProduct.
         */
-        return (in_array($this->getInternalApp(), ['admin_dashboard', 'merchant_dashboard', 'dashboard', 'dashboard_guest', 'frontend_graphql',], true) === true);
+        return (in_array($this->getInternalApp(), self::DASHBOARD_APPS, true) === true);
     }
 
     public function isInternalApp(): bool

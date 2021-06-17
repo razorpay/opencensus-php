@@ -48,6 +48,14 @@ class Kernel extends HttpKernel
      */
     protected $middlewarePriority = [
         // Route middleware
+
+        /*
+         * The ProductIdentifier middleware
+         * 1) Identifies product, 2) Initializes request context, and 3) Pushes HTTP metrics.
+         * Earlier product was getting set in UserAccess middleware which led to setting of incorrect product in logs
+         * */
+
+        Middleware\ProductIdentifier::class,
         Middleware\ProxySQL::class,
         Middleware\Throttle::class,
         Middleware\Authenticate::class,
@@ -79,6 +87,7 @@ class Kernel extends HttpKernel
      * @var array
      */
     protected $routeMiddleware = [
+        'product_identifier'            => Middleware\ProductIdentifier::class,
         'proxysql'                      => Middleware\ProxySQL::class,
         'throttle'                      => Middleware\Throttle::class,
         'auth'                          => Middleware\Authenticate::class,
