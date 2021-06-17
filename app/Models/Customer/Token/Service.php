@@ -170,8 +170,9 @@ class Service extends Base\Service
         }
 
         return [
-          'bank'               => $token->getBank(),
-          'accountNumberLast4' => substr($token->getAccountNumber(), -4)
+            'bank'               => $token->getBank(),
+            'auth_type'          => $token->getAuthType(),
+            'accountNumberLast4' => substr($token->getAccountNumber(), -4)
         ];
     }
 

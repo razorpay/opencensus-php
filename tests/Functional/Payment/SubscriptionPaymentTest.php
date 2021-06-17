@@ -622,17 +622,7 @@ class SubscriptionPaymentTest extends TestCase
 
     public function testCreateInitialPaymentEMandate()
     {
-        $this->addPricingPlanRule('10000000000000');
-
-        $request = [
-            'method'  => 'POST',
-            'url'     => '/payments/create/ajax',
-            'content' => $this->eMandatePayment,
-        ];
-
-        $this->ba->publicAuth();
-
-        $this->makeRequestAndGetContent($request);
+        $this->createInitialPaymentEMandate();
 
         $payment = $this->getDbLastEntity(Entity::PAYMENT);
 
@@ -702,6 +692,42 @@ class SubscriptionPaymentTest extends TestCase
 
         //$this->assertEquals('750', $payment['fee']);
         // remove comment after debugging payment issue
+    }
+
+    public function testSubscriptionEmandateToken()
+    {
+        $this->createInitialPaymentEMandate();
+
+        $token = $this->getDbLastEntity(Entity::TOKEN);
+
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/tokens/' . $token->getPublicId() . '/emandate_detail',
+            'content' => []
+        ];
+
+        $this->ba->subscriptionsAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('netbanking', $response['auth_type']);
+
+        $this->assertEquals('HDFC', $response['bank']);
+    }
+
+    protected function createInitialPaymentEMandate()
+    {
+        $this->addPricingPlanRule('10000000000000');
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/ajax',
+            'content' => $this->eMandatePayment,
+        ];
+
+        $this->ba->publicAuth();
+
+        $this->makeRequestAndGetContent($request);
     }
 
     protected function mockSubscription()
