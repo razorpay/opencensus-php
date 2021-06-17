@@ -38,6 +38,10 @@ class GenericController extends Controller
         'users/oauth-register',
     ];
 
+    const PATH_VS_COOKIE = [
+        'merchant/activation' => ['client_id']
+    ];
+
     const USERS_RESET_PASSWORD_PATH  = 'users/reset-password-token';
 
     const MERCHANT_BULK_ACTION_ROUTE = 'merchants/bulk';
@@ -98,6 +102,11 @@ class GenericController extends Controller
 
                 return AppResponse::jsonResponse($error, null, 403);
             }
+        }
+
+        if(array_key_exists($path,self::PATH_VS_COOKIE) === true)
+        {
+            $request->addCookiesForPath(self::PATH_VS_COOKIE[$path]);
         }
 
         list($error, $data, $httpCode) = $request->send($path, $method);

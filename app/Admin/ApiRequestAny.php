@@ -539,7 +539,10 @@ class ApiRequestAny
 
             $cookie = str_replace('+', '%2B', $cookie);
 
-            $this->options['headers']['Cookie'] = 'rzp_utm=' . $cookie;
+            if(isset($this->options['cookies']['rzp_utm']) === false)
+            {
+                $this->options['cookies']['rzp_utm'] = $cookie;
+            }
         }
 
         // Forward razorx cookies cause this will be available only in testing mode.
@@ -547,7 +550,10 @@ class ApiRequestAny
         {
             $cookie = $_COOKIE['razorx'];
 
-            $this->options['headers']['Cookie'] = 'razorx=' . $cookie;
+            if(isset($this->options['cookies']['razorx']) === false)
+            {
+                $this->options['cookies']['razorx'] = $cookie;
+            }
         }
     }
 
@@ -573,5 +579,25 @@ class ApiRequestAny
 
         return (($allowedHostsEnv === '*') or
                 (in_array($baseUrl, $allowedHostsEnv, true) === true));
+    }
+
+    public function addCookiesForPath(array $cookiesToAdd)
+    {
+        foreach ($cookiesToAdd as $cookieName)
+        {
+            if ($cookieName === 'client_id' and
+                empty($_COOKIE['client_id']) === false) {
+
+                $cookie = $_COOKIE['client_id'];
+
+                $cookie = str_replace('+', '%2B', $cookie);
+
+                if(isset($this->options['cookies']['clientId']) === false)
+                {
+                    // name is changed here because API accepts client Id like this
+                    $this->options['cookies']['clientId'] = $cookie;
+                }
+            }
+        }
     }
 }
