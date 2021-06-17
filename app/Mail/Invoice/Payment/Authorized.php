@@ -84,4 +84,9 @@ class Authorized extends Base
     {
         return true;
     }
+
+    protected function shouldSendEmailViaStork(): bool
+    {
+        return false;
+    }
 }
