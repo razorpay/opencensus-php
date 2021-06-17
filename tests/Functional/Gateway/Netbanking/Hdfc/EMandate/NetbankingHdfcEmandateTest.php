@@ -945,6 +945,7 @@ class NetbankingHdfcEmandateTest extends TestCase
 
             $items[] = [
                 'Client Name'                  => 'RAZORPAY',
+                'Sub-merchant Name'            => 'ABC',
                 'Customer Name'                => 'User Name',
                 'Customer Account Number'      => '50100100708641',
                 'Amount'                       => $amount,
@@ -956,8 +957,8 @@ class NetbankingHdfcEmandateTest extends TestCase
                 'Merchant Unique Reference No' => $entityList['payment']['id'],
                 'Mandate Serial Number'        => $entityList['token']['id'],
                 'Merchant Request No'          => $entityList['payment']['id'],
-                'Status'                       => $entityList['status_in_file'],
-                'Remark'                       => '',
+                'STATUS'                       => $entityList['status_in_file'],
+                'REMARK'                       => '',
             ];
         }
 

@@ -239,6 +239,7 @@ class Header
     // HDFC Emandate Register Response File Headers
     //
     const HDFC_EM_REGISTER_CLIENT_NAME                      = HdfcEMRegisterHeadings::CLIENT_NAME;
+    const HDFC_EM_REGISTER_SUB_MERCHANT_NAME                = HdfcEMRegisterHeadings::SUB_MERCHANT_NAME;
     const HDFC_EM_REGISTER_CUSTOMER_NAME                    = HdfcEMRegisterHeadings::CUSTOMER_NAME;
     const HDFC_EM_REGISTER_ACCOUNT_NUMBER                   = HdfcEMRegisterHeadings::CUSTOMER_ACCOUNT_NUMBER;
     const HDFC_EM_REGISTER_AMOUNT                           = HdfcEMRegisterHeadings::AMOUNT;
@@ -2040,6 +2041,7 @@ class Header
         'emandate_register_hdfc' => [
             self::INPUT => [
                 self::HDFC_EM_REGISTER_CLIENT_NAME,
+                self::HDFC_EM_REGISTER_SUB_MERCHANT_NAME,
                 self::HDFC_EM_REGISTER_CUSTOMER_NAME,
                 self::HDFC_EM_REGISTER_ACCOUNT_NUMBER,
                 self::HDFC_EM_REGISTER_AMOUNT,
@@ -2056,6 +2058,7 @@ class Header
             ],
             self::OUTPUT => [
                 self::HDFC_EM_REGISTER_CLIENT_NAME,
+                self::HDFC_EM_REGISTER_SUB_MERCHANT_NAME,
                 self::HDFC_EM_REGISTER_CUSTOMER_NAME,
                 self::HDFC_EM_REGISTER_ACCOUNT_NUMBER,
                 self::HDFC_EM_REGISTER_AMOUNT,
