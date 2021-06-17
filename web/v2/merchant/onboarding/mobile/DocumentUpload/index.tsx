@@ -42,6 +42,13 @@ const StyledSeparator = styled(View)`
   background-color: ${({ theme }) => getColor(theme, 'shade.920')};
 `;
 
+const Dot = styled(View)`
+  height: 4px;
+  width: 4px;
+  background-color: ${({ theme }) => getColor(theme, 'shade.960')};
+  border-radius: 50%;
+`;
+
 interface DocumentUploadProps {
   isFormLocked?: boolean;
 }
@@ -178,6 +185,43 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
     });
     setDocumentUploadCompleted(isComplete);
   }, [addressDoc, businessDoc, bankDoc, additionalDoc]);
+
+  const getMsmeDownloadLinksView = (header, cerificates) => {
+    return (
+      <View>
+        <Text size="xsmall" color="shade.960">
+          {header}
+        </Text>
+        <Flex flexDirection="row" alignItems="center">
+          <View>
+            {cerificates.map(({ url, label, analyticsActionName }) => (
+              <>
+                <Dot />
+                <Space margin={[0, 0.75, 0, 0.5]}>
+                  <Link
+                    size="xsmall"
+                    href={url}
+                    target="_blank"
+                    onClick={() => {
+                      analyticsTrack({
+                        objectName: 'SignUp',
+                        actionName: analyticsActionName,
+                        screen: 'home page',
+                        eventAction: 'clicked',
+                        user,
+                      });
+                    }}
+                  >
+                    {label}
+                  </Link>
+                </Space>
+              </>
+            ))}
+          </View>
+        </Flex>
+      </View>
+    );
+  };
 
   const shouldShowEsignFlow =
     data.business_type === '11' || data.business_type === '1' || data.business_type === '3';
@@ -374,55 +418,6 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
                       </Option>
                     ))}
                   </Select>
-                  {businessDoc === 'msme_certificate' && (
-                    <Field>
-                      <Space margin={[0, 0, 0, 0]}>
-                        <View>
-                          <Link
-                            size="small"
-                            href="https://www.udyogaadhar.co.in/sample-certificate"
-                            target="_blank"
-                          >
-                            Sample Udyam Aadhar Registration Certificate
-                          </Link>
-                        </View>
-                      </Space>
-                      <Space margin={[0, 0, 0, 0]}>
-                        <View>
-                          <Link
-                            size="small"
-                            href="http://www.msmeudyogaadhaar.org/msme-ssi-udyog-certificate-sample/"
-                            target="_blank"
-                          >
-                            Sample Udyog Certificate
-                          </Link>
-                        </View>
-                      </Space>
-                      <Text size="small">Don't have it on hand?</Text>
-                      <Space margin={[0, 0, 0, 0]}>
-                        <View>
-                          <Link
-                            size="small"
-                            href="https://udyamregistration.gov.in/PrintUdyamCertificate.aspx"
-                            target="_blank"
-                          >
-                            Download Udyam Aadhar Certificate
-                          </Link>
-                        </View>
-                      </Space>
-                      <Space margin={[0, 0, 0, 0]}>
-                        <View>
-                          <Link
-                            size="small"
-                            href="https://udyamregistration.gov.in/UA/PrintAcknowledgement_Pub.aspx"
-                            target="_blank"
-                          >
-                            Download Udyog Certificate
-                          </Link>
-                        </View>
-                      </Space>
-                    </Field>
-                  )}
                 </Field>
                 {isVisible('shop_establishment_number', data) &&
                   businessDoc === 'shop_establishment_certificate' && <ShopEstablishmentNumber />}
@@ -459,6 +454,40 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
                       }}
                     />
                   </Field>
+                )}
+                {businessDoc === 'msme_certificate' && (
+                  <View>
+                    <Space margin={[1.5, 0, 1.5, 0]}>
+                      {getMsmeDownloadLinksView(
+                        'What is Udyog Aadhar/Udyam Cerificate? View Sample :',
+                        [
+                          {
+                            url:
+                              'http://www.msmeudyogaadhaar.org/msme-ssi-udyog-certificate-sample/',
+                            label: 'Udyog Aadhar Certificate',
+                            analyticsActionName: 'Udyog Aadhar Certificate',
+                          },
+                          {
+                            url: 'https://www.udyogaadhar.co.in/sample-certificate',
+                            label: 'Udyam Certificate',
+                            analyticsActionName: 'Udyam Certificate',
+                          },
+                        ],
+                      )}
+                    </Space>
+                    {getMsmeDownloadLinksView('Don’t have it right now? Download here :', [
+                      {
+                        url: 'https://udyamregistration.gov.in/UA/PrintAcknowledgement_Pub.aspx',
+                        label: 'Udyog Aadhar Certificate',
+                        analyticsActionName: 'Download Udyog Aadhar Certificate',
+                      },
+                      {
+                        url: 'https://udyamregistration.gov.in/PrintUdyamCertificate.aspx',
+                        label: 'Udyam Certificate',
+                        analyticsActionName: 'Download Udyam Certificate',
+                      },
+                    ])}
+                  </View>
                 )}
               </FormSection>
             )}

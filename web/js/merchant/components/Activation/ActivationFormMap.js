@@ -13,7 +13,7 @@ import {
   isValidName,
 } from 'common/utils/validators';
 import { trackLinkClick } from 'merchant/containers/Activation/ga_new';
-
+import { analyticsTrack } from 'common/utils/analytics';
 import AddressFields from 'merchant/containers/Activation/AddressFieldsMap';
 
 import {
@@ -894,20 +894,73 @@ const uploadFields = [
     description: (activation) => {
       const businessProofType = activation.state.business_proof_type;
       if (businessProofType === BUSINESS_PROOF_CERTIFICATE_TYPES.MSME_CERTIFICATE) {
+        const getMsmeDownloadLinksView = (header, cerificates) => {
+          return (
+            <div>
+              <div className='links-header'>{header}</div>
+              <div className='links-container'>
+                {cerificates.map(({ url, label, analyticsActionName }) => (
+                  <>
+                    <div className="dot" />
+                    <a
+                      href={url}
+                      target='_blank'
+                      className='link'
+                      onClick={() => {
+                        analyticsTrack({
+                          objectName: 'SignUp',
+                          actionName: analyticsActionName,
+                          screen: 'home page',
+                          eventAction: 'clicked',
+                          user,
+                        });
+                      }}
+                    >
+                      {label}
+                    </a>
+                  </>
+                ))}
+              </div>
+            </div>
+          );
+        };
         return (
-          <div>
-            <div><a href="https://www.udyogaadhar.co.in/sample-certificate" target="_blank">Sample Udyam Aadhar Registration Certificate</a></div>
-            <div><a href="http://www.msmeudyogaadhaar.org/msme-ssi-udyog-certificate-sample/" target="_blank">Sample Udyog Certificate</a></div>
-            <div>Don't have it on hand?</div>
-            <div><a href="https://udyamregistration.gov.in/PrintUdyamCertificate.aspx" target="_blank">Download Udyam Aadhar Certificate</a></div>
-            <div><a href="https://udyamregistration.gov.in/UA/PrintAcknowledgement_Pub.aspx" target="_blank">Download Udyog Certificate</a></div>
+          <div className='msme-links'>
+            {getMsmeDownloadLinksView(
+              'What is Udyog Aadhar/Udyam Cerificate? View Sample :',
+              [
+                {
+                  url:
+                    'http://www.msmeudyogaadhaar.org/msme-ssi-udyog-certificate-sample/',
+                  label: 'Udyog Aadhar Certificate',
+                  analyticsActionName: 'Udyog Aadhar Certificate',
+                },
+                {
+                  url: 'https://www.udyogaadhar.co.in/sample-certificate',
+                  label: 'Udyam Certificate',
+                  analyticsActionName: 'Udyam Certificate',
+                },
+              ],
+            )}
+            {getMsmeDownloadLinksView('Don’t have it right now? Download here :', [
+              {
+                url: 'https://udyamregistration.gov.in/UA/PrintAcknowledgement_Pub.aspx',
+                label: 'Udyog Aadhar Certificate',
+                analyticsActionName: 'Download Udyog Aadhar Certificate',
+              },
+              {
+                url: 'https://udyamregistration.gov.in/PrintUdyamCertificate.aspx',
+                label: 'Udyam Certificate',
+                analyticsActionName: 'Download Udyam Certificate',
+              },
+            ])}
           </div>
-        )
+        );
       }
       return `Upload the scan of ${BUSINESS_PROOF_TYPE_DOCS[businessProofType]}`;
     },
     _when: isBusinessProofTypeDocFieldVisible,
-    className: 'document-group',
+    className: 'document-group msme-document',
   },
   {
     name: 'gstin',
