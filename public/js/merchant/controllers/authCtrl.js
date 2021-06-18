@@ -2774,7 +2774,10 @@ app
             $scope.isCriteoPixelFired = true;
           }
         } else if (eventName === 'signup_complete') {
-          window.criteo_q.push({ event: 'trackTransaction', id: '' }, { event: 'setEmail', email: email });
+          window.criteo_q.push(
+            { event: 'trackTransaction', id: '', item: [{ id: 1, price: 1, quantity: 1 }] },
+            { event: 'setEmail', email: email },
+          );
         }
       }
 
