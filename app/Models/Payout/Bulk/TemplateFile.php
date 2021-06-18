@@ -6,6 +6,7 @@ use RZP\Models\Batch;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Models\FundAccount;
+use RZP\Models\WalletAccount;
 
 class TemplateFile extends Base
 {
@@ -70,9 +71,9 @@ class TemplateFile extends Base
 
     protected function getInputEntries(Merchant\Entity $merchant)
     {
-        $isMerchantEnabledForAmazonpay = (new FundAccount\Core)->isMerchantEnabledForAmazonPay($merchant);
+        $isMerchantDisabledForAmazonpay = (new WalletAccount\Service)->isWalletAccountAmazonPayFeatureDisabled();
 
-        if ($isMerchantEnabledForAmazonpay === true)
+        if ($isMerchantDisabledForAmazonpay === false)
         {
             $inputData = self::TEMPLATE_FILE_DATA_AMAZON_PAY;
         }

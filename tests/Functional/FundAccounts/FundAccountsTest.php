@@ -199,16 +199,6 @@ class FundAccountsTest extends TestCase
 
     public function testCreateWalletAccountFundAccount()
     {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->willReturn('on');
-
         Queue::fake();
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
@@ -242,16 +232,6 @@ class FundAccountsTest extends TestCase
 
     public function testCreateWalletAccountFundAccountPhoneNull()
     {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->willReturn('on');
-
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
         $this->startTest();
@@ -259,16 +239,6 @@ class FundAccountsTest extends TestCase
 
     public function testCreateWalletAccountFundAccountPhoneEmpty()
     {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->willReturn('on');
-
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
         $this->startTest();
@@ -276,16 +246,6 @@ class FundAccountsTest extends TestCase
 
     public function testCreateWalletAccountFundAccountModeCapital()
     {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->willReturn('on');
-
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
         $this->startTest();
@@ -293,15 +253,11 @@ class FundAccountsTest extends TestCase
 
     public function testCreateWalletAccountFundAccountForNonwhitelistedMerchant()
     {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->willReturn('control');
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::DISABLE_X_AMAZONPAY,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
 
@@ -310,16 +266,6 @@ class FundAccountsTest extends TestCase
 
     public function testCreateWalletAccountFundAccountPhoneFormat1()
     {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->willReturn('on');
-
         Queue::fake();
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
@@ -345,16 +291,6 @@ class FundAccountsTest extends TestCase
 
     public function testCreateWalletAccountFundAccountPhoneFormat2()
     {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->willReturn('on');
-
         Queue::fake();
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
@@ -380,16 +316,6 @@ class FundAccountsTest extends TestCase
 
     public function testCreateWalletAccountFundAccountPhoneFormat3()
     {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->willReturn('on');
-
         Queue::fake();
 
         $this->fixtures->create('contact', ['id' => '1000000contact']);
@@ -998,16 +924,6 @@ class FundAccountsTest extends TestCase
 
     public function testBulkFundAccountAmazonPay()
     {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('on');
-
         $this->ba->batchAuth();
 
         $headers = [
@@ -1022,16 +938,6 @@ class FundAccountsTest extends TestCase
 
     public function testBulkFundAccountAmazonPayWithoutProvider()
     {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('on');
-
         $this->ba->batchAuth();
 
         $headers = [
@@ -1046,17 +952,27 @@ class FundAccountsTest extends TestCase
 
     public function testBulkFundAccountAmazonPayWithoutEmail()
     {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->willReturn('on');
-
         $this->ba->batchAuth();
+
+        $headers = [
+            'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
+
+    public function testBulkFundAccountAmazonPayMerchantDisabled()
+    {
+        $this->ba->batchAuth();
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::DISABLE_X_AMAZONPAY,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
 
         $headers = [
             'HTTP_X_Batch_Id'    => 'C0zv9I46W4wiOq',

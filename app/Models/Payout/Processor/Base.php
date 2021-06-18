@@ -1183,7 +1183,7 @@ class Base extends BaseCore
 
         (new Payout\Purpose)->setPurposeAndTypeForPayout($payout, $payout->getPurpose(), $this->isInternal);
 
-        $this->checkMerchantEligibilityForM2PPayout($payout);
+        $this->checkMerchantEligibilityForPayoutMode($payout);
 
         if (isset($input[Payout\Entity::SCHEDULED_AT]) === true)
         {
@@ -1662,36 +1662,65 @@ class Base extends BaseCore
 
     protected function checkMerchantEligibilityForM2PPayout(Payout\Entity $payout)
     {
-        if ($payout->getMode() === FundTransfer\Mode::CARD)
+        $purposeType = $payout->getPurposeType();
+        $cardNetwork = $payout->fundAccount->account->getNetwork();
+
+        $isMerchantBlacklistedForM2P = (new FundTransfer\Mode)->m2pMerchantBlacklisted($this->merchant,
+                                                                                        $cardNetwork,
+                                                                                        $purposeType);
+
+        if ($isMerchantBlacklistedForM2P[FundTransfer\Mode::BLACKLISTED] === true)
         {
-            $purposeType = $payout->getPurposeType();
-            $cardNetwork = $payout->fundAccount->account->getNetwork();
+            $merchantId = $this->merchant->getId();
 
-            $isMerchantBlacklistedForM2P = (new FundTransfer\Mode)->m2pMerchantBlacklisted($this->merchant,
-                                                                                           $cardNetwork,
-                                                                                           $purposeType);
+            $this->trace->error(
+                TraceCode::MERCHANT_BLOCKED_FOR_CARD_MODE,
+                [
+                    Payout\Entity::MERCHANT_ID => $merchantId,
+                    self::ERROR_CODE  => $isMerchantBlacklistedForM2P[FundTransfer\Mode::ERROR_CODE]
+                ]
+            );
 
-            if ($isMerchantBlacklistedForM2P[FundTransfer\Mode::BLACKLISTED] === true)
-            {
-                $merchantId = $this->merchant->getId();
+            throw new Exception\BadRequestException(
+                $isMerchantBlacklistedForM2P[FundTransfer\Mode::ERROR_CODE],
+                null,
+                [
+                    Payout\Entity::MERCHANT_ID => $merchantId
+                ]);
+        }
 
-                $this->trace->error(
-                    TraceCode::MERCHANT_BLOCKED_FOR_CARD_MODE,
-                    [
-                        Payout\Entity::MERCHANT_ID => $merchantId,
-                        self::ERROR_CODE  => $isMerchantBlacklistedForM2P[FundTransfer\Mode::ERROR_CODE]
-                    ]
-                );
+        (new FundTransferMetric)->pushM2PTransfersCount();
+    }
 
-                throw new Exception\BadRequestException(
-                    $isMerchantBlacklistedForM2P[FundTransfer\Mode::ERROR_CODE],
-                    null,
-                    [
-                        Payout\Entity::MERCHANT_ID => $merchantId
-                    ]);
-            }
+    protected function checkMerchantEligibilityForAmazonPayPayout()
+    {
+        if ((new WalletAccount\Service)->isWalletAccountAmazonPayFeatureDisabled() === true)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_AMAZONPAY_PAYOUTS_NOT_PERMITTED,
+                null,
+                [
+                    FundAccount\Entity::MERCHANT_ID => $this->merchant->getId(),
+                ]);
+        }
+    }
 
-            (new FundTransferMetric)->pushM2PTransfersCount();
+    protected function checkMerchantEligibilityForPayoutMode(Payout\Entity $payout)
+    {
+        $payoutMode = $payout->getMode();
+
+        switch ($payoutMode)
+        {
+            case FundTransfer\Mode::CARD:
+                $this->checkMerchantEligibilityForM2PPayout($payout);
+                break;
+
+            case FundTransfer\Mode::AMAZONPAY:
+                $this->checkMerchantEligibilityForAmazonPayPayout();
+                break;
+
+            default:
+                break;
         }
     }
 

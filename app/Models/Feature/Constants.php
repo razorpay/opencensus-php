@@ -1482,6 +1482,11 @@ class Constants
             'display_name'  => 'Will not prefill the customer details on Payment Link hosted page',
             'documentation' => '',
         ],
+        self::DISABLE_X_AMAZONPAY => [
+            'feature'       => self::DISABLE_X_AMAZONPAY,
+            'display_name'  => 'Disable amazonpay payouts for the merchant',
+            'documentation' => '',
+        ],
     ];
 
     /**

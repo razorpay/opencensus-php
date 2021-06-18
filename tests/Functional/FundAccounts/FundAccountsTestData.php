@@ -2420,6 +2420,53 @@ return [
         ],
     ],
 
+    'testBulkFundAccountAmazonPayMerchantDisabled' => [
+        'request'   => [
+            'url'     => '/contacts/bulk',
+            'method'  => 'POST',
+            'content' => [
+                [
+                    'fund'  => [
+                        'account_type'          => 'wallet',
+                        'account_phone_number'  => '+919988998897',
+                        'account_email'         => 'sample@sample.com',
+                        'account_provider'      => 'amazonpay'
+                    ],
+                    'contact'  => [
+                        'id'                => '',
+                        'type'              => 'customer',
+                        'name'              => 'Test rzp3',
+                        'email'             => 'sample@example.com',
+                        'mobile'            => '9988998897',
+                        'reference_id'      => ''
+                    ],
+                    'notes'  => [
+                        'code'              => 'xyz123',
+                        'place'             => 'Hyderabad',
+                        'state'             => 'Telengana'
+                    ],
+                    'idempotency_key'       => 'batch_abc123'
+                ]
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'idempotency_key'  =>  'batch_abc123',
+                        'http_status_code' => 400,
+                        'error'            => [
+                            'description'  => 'Creating a Fund Account of wallet type is not permitted',
+                            'code'         => 'BAD_REQUEST_ERROR',
+                        ]
+                    ],
+                ]
+            ],
+        ],
+    ],
+
     'testBulkFundAccountWithoutName' => [
         'request'   => [
             'url'     => '/contacts/bulk',

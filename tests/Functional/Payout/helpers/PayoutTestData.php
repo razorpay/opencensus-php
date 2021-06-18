@@ -10675,6 +10675,38 @@ return [
         ],
     ],
 
+    'testCreatePayoutViaAmazonPayMerchantDisabled' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 5000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'amazonpay',
+                'fund_account_id' => 'fa_100000000003fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_AMAZONPAY_PAYOUTS_NOT_PERMITTED
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_AMAZONPAY_PAYOUTS_NOT_PERMITTED,
+        ],
+    ],
+
     'testFiringOfWebhookPayoutResponseForReversedPayout' => [
         'entity'   => 'event',
         'event'    => 'payout.reversed',

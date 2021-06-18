@@ -936,9 +936,9 @@ class Core extends Base\Core
 
     public function constructWalletAccountFundAccountRequest(array $input)
     {
-        $isMerchantEnabledForAmazonPay = $this->isMerchantEnabledForAmazonPay($this->merchant);
+        $isMerchantDisabledForAmazonPay = (new WalletAccount\Service)->isWalletAccountAmazonPayFeatureDisabled();
 
-        if ($isMerchantEnabledForAmazonPay === true)
+        if ($isMerchantDisabledForAmazonPay === false)
         {
                 $input[Entity::ACCOUNT_TYPE] = Entity::WALLET_ACCOUNT;
 

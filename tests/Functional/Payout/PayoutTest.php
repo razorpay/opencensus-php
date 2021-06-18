@@ -9626,19 +9626,12 @@ class PayoutTest extends OAuthTestCase
 
     public function testCsvSampleFileForBulkPayouts()
     {
-        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
-
-        $this->app->instance('razorx', $razorx);
-
-        $razorx->shouldReceive('getTreatment')
-            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
-            {
-                if($featureFlag === (RazorxTreatment::ENABLE_WALLET_ACCOUNT_AMAZON_PAYOUT))
-                {
-                    return 'control';
-                }
-                return 'off';
-            });
+        // Disabling amazon pay feature so that merchant gets file in old format
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::DISABLE_X_AMAZONPAY,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
 
         $this->ba->proxyAuth();
 
@@ -9667,20 +9660,6 @@ class PayoutTest extends OAuthTestCase
 
     public function testCsvSampleFileForBulkPayoutsAmazonPayEnabled()
     {
-        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
-
-        $this->app->instance('razorx', $razorx);
-
-        $razorx->shouldReceive('getTreatment')
-            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
-            {
-                if($featureFlag === (RazorxTreatment::ENABLE_WALLET_ACCOUNT_AMAZON_PAYOUT))
-                {
-                    return 'on';
-                }
-                return 'off';
-            });
-
         $this->ba->proxyAuth();
 
         $res = $this->startTest();
@@ -9714,19 +9693,12 @@ class PayoutTest extends OAuthTestCase
 
     public function testCsvTemplateFileForBulkPayouts()
     {
-        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
-
-        $this->app->instance('razorx', $razorx);
-
-        $razorx->shouldReceive('getTreatment')
-            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
-            {
-                if($featureFlag === (RazorxTreatment::ENABLE_WALLET_ACCOUNT_AMAZON_PAYOUT))
-                {
-                    return 'control';
-                }
-                return 'off';
-            });
+        // Disabling amazon pay feature so that merchant gets file in old format
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::DISABLE_X_AMAZONPAY,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
 
         $this->ba->proxyAuth();
 
@@ -9755,20 +9727,6 @@ class PayoutTest extends OAuthTestCase
 
     public function testCsvTemplateFileForBulkPayoutsAmazonPayEnabled()
     {
-        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
-
-        $this->app->instance('razorx', $razorx);
-
-        $razorx->shouldReceive('getTreatment')
-            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
-            {
-                if($featureFlag === (RazorxTreatment::ENABLE_WALLET_ACCOUNT_AMAZON_PAYOUT))
-                {
-                    return 'on';
-                }
-                return 'off';
-            });
-
         $this->ba->proxyAuth();
 
         $res = $this->startTest();
@@ -9802,19 +9760,12 @@ class PayoutTest extends OAuthTestCase
 
     public function testXlsxTemplateFileForBulkPayouts()
     {
-        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
-
-        $this->app->instance('razorx', $razorx);
-
-        $razorx->shouldReceive('getTreatment')
-            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
-            {
-                if($featureFlag === (RazorxTreatment::ENABLE_WALLET_ACCOUNT_AMAZON_PAYOUT))
-                {
-                    return 'control';
-                }
-                return 'off';
-            });
+        // Disabling amazon pay feature so that merchant gets file in old format
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::DISABLE_X_AMAZONPAY,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
 
         $this->ba->proxyAuth();
 
@@ -9917,20 +9868,6 @@ class PayoutTest extends OAuthTestCase
 
     public function testXlsxTemplateFileForBulkPayoutsAmazonPayEnabled()
     {
-        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
-
-        $this->app->instance('razorx', $razorx);
-
-        $razorx->shouldReceive('getTreatment')
-            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
-            {
-                if($featureFlag === (RazorxTreatment::ENABLE_WALLET_ACCOUNT_AMAZON_PAYOUT))
-                {
-                    return 'on';
-                }
-                return 'off';
-            });
-
         $this->ba->proxyAuth();
 
         $res = $this->startTest();
@@ -10057,19 +9994,12 @@ class PayoutTest extends OAuthTestCase
 
     public function testXlsxSampleFileForBulkPayouts()
     {
-        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
-
-        $this->app->instance('razorx', $razorx);
-
-        $razorx->shouldReceive('getTreatment')
-            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
-            {
-                if($featureFlag === (RazorxTreatment::ENABLE_WALLET_ACCOUNT_AMAZON_PAYOUT))
-                {
-                    return 'control';
-                }
-                return 'off';
-            });
+        // Disabling amazon pay feature so that merchant gets file in old format
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::DISABLE_X_AMAZONPAY,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
 
         $this->ba->proxyAuth();
 
@@ -10172,20 +10102,6 @@ class PayoutTest extends OAuthTestCase
 
     public function testXlsxSampleFileForBulkPayoutsAmazonPayEnabled()
     {
-        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
-
-        $this->app->instance('razorx', $razorx);
-
-        $razorx->shouldReceive('getTreatment')
-            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
-            {
-                if($featureFlag === (RazorxTreatment::ENABLE_WALLET_ACCOUNT_AMAZON_PAYOUT))
-                {
-                    return 'on';
-                }
-                return 'off';
-            });
-
         $this->ba->proxyAuth();
 
         $res = $this->startTest();
@@ -10347,6 +10263,27 @@ class PayoutTest extends OAuthTestCase
             'id'            => '100000000003fa',
             'source_type'   => 'contact',
             'source_id'     => $contact->getId(),
+        ]);
+
+        $this->startTest();
+    }
+
+    // Handles the case where merchant is disabled after creating a wallet fund account.
+    // Any payout created to that fund account should fail as long as merchant is disabled
+    public function testCreatePayoutViaAmazonPayMerchantDisabled()
+    {
+        $contact = $this->getDbLastEntity('contact');
+
+        $this->fixtures->create('fund_account:wallet_account', [
+            'id'            => '100000000003fa',
+            'source_type'   => 'contact',
+            'source_id'     => $contact->getId(),
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::DISABLE_X_AMAZONPAY,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
         ]);
 
         $this->startTest();
