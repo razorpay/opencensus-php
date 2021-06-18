@@ -8,4 +8,6 @@ interface Window {
   rzpTicketSystem: any;
   LUMBERJACK_API_URL: string;
   LUMBERJACK_API_KEY: string;
+  APP_ENV: string;
+  SENTRY_DSN: string;
 }

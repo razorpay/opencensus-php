@@ -131,12 +131,11 @@ _dcs.account = '9421167';
     window.pl_extra_fields = {!! $pl_extra_fields !!};
     window.pl_customized_form_fields = {!! $pl_customized_form_fields !!};
     window.is_pl_customer_name_field_enabled = {!! $is_pl_customer_name_field_enabled !!};
-    window.session_id = "{!! $session_id !!}"
+    window.session_id = "{!! $session_id !!}";
   </script>
 
-  @if(env('APP_ENV') === 'production')
-    @include('partials/sentry')
-  @endif
+  @include('partials/sentry')
+
   <script src="https://www.recaptcha.net/recaptcha/api.js?render=explicit"></script>
   <script src="{{$cdnDashboardUrl}}/dist/merchant-entry.js"></script>
 @else
@@ -153,9 +152,7 @@ _dcs.account = '9421167';
   @if ($newAuthFlow === true)
     <script src="{{$cdnDashboardUrl}}/dist/newAuth-entry.js"></script>
   @else
-    @if(env('APP_ENV') === 'production')
-      @include('partials/sentry')
-    @endif
+    @include('partials/sentry')
     <script src='{{$cdnDashboardUrl}}/js/generated/signup.js'></script>
   @endif
 

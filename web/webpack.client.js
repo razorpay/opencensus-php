@@ -8,6 +8,7 @@ const isProd = process.env.STAGE !== 'development';
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 // const projectConfigJs = require('./config')[process.env.STAGE];
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+
 const fontsToProjectMap = {
   pokedex: 'merchant',
 };
@@ -16,10 +17,15 @@ module.exports = ({ config, project }) => {
   config.entry = {
     [project]: `./js/${project}/index.js`,
   };
+
+  config.devtool = 'hidden-source-map';
   config.output = {
     path: path.resolve(__dirname, `../public/dist`),
     publicPath: `/dist/`,
     filename: isProd ? `js/${project}/[name].[chunkhash:8].js` : `js/${project}/[name].js`,
+    sourceMapFilename: isProd
+      ? `js/${project}/[name].[chunkhash:8].js.map`
+      : `js/${project}/[name].js.map`,
     chunkFilename: isProd ? `js/${project}/[name].[chunkhash:8].js` : `js/${project}/[name].js`,
   };
   config.resolve.modules.push('js');
@@ -149,9 +155,6 @@ module.exports = ({ config, project }) => {
 
   if (isProd) {
     config.plugins.splice(4, 1); //removing compress plugin as we have files othe than dist folder
-  }
-  if (project !== 'merchant' && project !== 'newAuth' && isProd) {
-    config.devtool = false;
   }
 
   return config;

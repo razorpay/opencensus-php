@@ -68,12 +68,6 @@ export default class ErrorBoundary extends Component {
     eventId: null,
   };
 
-  componentDidMount(): void {
-    if (typeof window.Sentry !== 'undefined') {
-      window.Sentry.forceLoad();
-    }
-  }
-
   componentDidCatch(error: Error, info: ErrorInfo): void {
     let eventId = null;
     if (window.Sentry) {

@@ -27,7 +27,19 @@ jobs:
         run: |
           aws s3 cp s3://rzp-actions-cache/dashboard-${{ github.event.deployment.ref }}.tar.gz public.tar.gz
           tar -xf public.tar.gz
-          ls public
+
+      - name: Create Sentry release
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_IO_AUTH_TOKEN }}
+          SENTRY_ORG: rzp
+          SENTRY_PROJECT: dashboard
+        run: |
+          curl -sL https://sentry.io/get-cli/ | bash
+          sentry-cli releases files ${{ github.event.deployment.id }} upload-sourcemaps ./public/dist --log-level=info
+
+      - name: Remove Sourcemap Files
+        if: ${{ github.event.deployment.environment == 'prod' }}
+        run: find public -name "*.map" -type f -delete
 
       # Prod
       - name: Deploy - Prod
@@ -70,7 +82,6 @@ jobs:
           ls -laR public/js/generated/
           ls -laR public/css/generated/
           ./s3sync.js
-
 
       - name: Mark Deployment Success on GitHub
         if: ${{ success() }}

@@ -1,6 +1,0 @@
-[defaults]
-url=https://sentry9.razorpay.com/
-org=razorpay
-project=dashboard
-[auth]
-dsn=https://cf936e7414b9439abf01587433f9a0fe@sentry9.razorpay.com/13

@@ -9,4 +9,8 @@
     window.INVISIBLE_CAPTCHA_SITE_KEY = "{{ env('INVISIBLE_CAPTCHA_SITE_KEY') }}";
     window.CHECKBOX_CAPTCHA_SITE_KEY = "{{ env('CHECKBOX_CAPTCHA_SITE_KEY') }}";
     window.RECAPTCHA_V3_SITE_KEY = "{{ env('RECAPTCHA_V3_SITE_KEY') }}";
+
+    // Sentry related configs
+    window.APP_ENV = "{!! env('APP_ENV') !!}";
+    window.SENTRY_DSN = "{!! env('SENTRY_DSN') !!}";
 </script>

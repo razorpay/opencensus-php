@@ -2,14 +2,22 @@ function MerchantLAEntry() {
   function executeJS() {
     var cdnDashboardUrl = window.cdnDashboardUrl || '';
     if (typeof Sentry !== 'undefined') {
-      Sentry.onLoad(function () {
+      Sentry.onLoad(() => {
         Sentry.init({
-          environment: 'prod',
-          release: __VERSION__,
+          dsn: window.SENTRY_DSN,
+          integrations: [new Sentry.Integrations.BrowserTracing()],
+          tracesSampleRate: 1.0,
+          environment: window.APP_ENV,
         });
+
         if (window.rzp_user && window.rzp_user.current) {
-          Sentry.configureScope(function (scope) {
-            scope.setUser({ id: window.rzp_user.current });
+          Sentry.configureScope((scope) => {
+            Sentry.setTag('app', 'MerchantLA');
+            Sentry.setTag('role', window.rzp_user.role);
+
+            scope.setUser({
+              id: window.rzp_user.current,
+            });
           });
         }
       });
