@@ -225,7 +225,19 @@ class EdgeThrottleController extends Controller
             'id' => $ruleId,
         ];
 
-        $input['config']['strictly_consistent'] = (empty($input['config']['strictly_consistent']) === true)? false : true;
+        // if key is set in the request then convert the value to bool
+        if (array_key_exists('strictly_consistent', $input['config']) === true)
+        {
+            $input['config']['strictly_consistent'] = !(empty($input['config']['strictly_consistent']) === true);
+        }
+
+        // when key is sent and its empty, then set the value buffer bucket as null
+        if ((array_key_exists('bucket', $input['config']) === true) and
+            (array_key_exists('buffer', $input['config']['bucket']) === true) and
+            (empty($input['config']['bucket']['buffer']) === true))
+        {
+            $input['config']['bucket']['buffer'] = null;
+        }
 
         $response = $this->request($method, $path, $input);
 
@@ -281,7 +293,22 @@ class EdgeThrottleController extends Controller
 
         $input = Request::all();
 
-        $input['config']['strictly_consistent'] = (empty($input['config']['strictly_consistent']) === true)? false : true;
+        // for now we will not let key to be updated from admin dashboard
+        unset($input['key']);
+
+        // if key is set in the request then convert the value to bool
+        if (array_key_exists('strictly_consistent', $input['config']) === true)
+        {
+            $input['config']['strictly_consistent'] = !(empty($input['config']['strictly_consistent']) === true);
+        }
+
+        // when key is sent and its empty, then set the value buffer bucket as null
+        if ((array_key_exists('bucket', $input['config']) === true) and
+            (array_key_exists('buffer', $input['config']['bucket']) === true) and
+            (empty($input['config']['bucket']['buffer']) === true))
+        {
+            $input['config']['bucket']['buffer'] = null;
+        }
 
         $response = $this->request($method, $path, $input);
 
