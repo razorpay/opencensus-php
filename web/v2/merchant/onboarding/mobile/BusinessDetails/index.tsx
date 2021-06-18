@@ -360,6 +360,7 @@ const BusinessDetails: React.FC<BusinessDetailsProps> = ({ isFormLocked }) => {
                         }
                         setIsBlurCalled(true);
                       }}
+                      disabled={isFormLocked}
                     />
                   </View>
                 </Space>
