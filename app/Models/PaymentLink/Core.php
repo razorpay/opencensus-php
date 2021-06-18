@@ -349,13 +349,13 @@ class Core extends Base\Core
                 $input[Payment\Entity::ORDER_ID],
                 $this->merchant);
 
+        $paymentLinkId = $input[Payment\Entity::PAYMENT_LINK_ID];
+
         $this->trace->info(
             TraceCode::PAYMENT_PAGE_PAYMENT_VALIDATION,
             [
-                'input'     => $input,
+                'input'     => $paymentLinkId,
             ]);
-
-        $paymentLinkId = $input[Payment\Entity::PAYMENT_LINK_ID];
 
         $paymentLink   = $this->repo->payment_link->findByPublicIdAndMerchant($paymentLinkId, $this->merchant);
 
