@@ -68,7 +68,10 @@ class JaegerPropagator implements PropagatorInterface
         $data = $headers->get($extract_header);
 
         if (!$data) {
-            return new SpanContext();
+            // get baggage header
+            $baggageItems = $this->getBaggageItemsFromHeader($headers);
+
+            return new SpanContext(null, null, null, false, $baggageItems);
         }
 
         // Jaeger trace id can be of length either 16 or 32.
