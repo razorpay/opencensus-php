@@ -13,6 +13,7 @@ use RZP\Models\Gateway\File\Status;
 use RZP\Exception\GatewayFileException;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Models\FileStore\Storage\Base\Bucket;
+use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Services\Beam\Constants as BeamConstants;
 
 class Nsdl extends Base
@@ -20,6 +21,49 @@ class Nsdl extends Base
     const BANK_NAME       = 'Nsdl';
     const BEAM_FILE_TYPE  = 'combined';
     const FILE_TYPE       = FileStore\Type::NSDL_NETBANKING_CLAIM;
+
+    protected function formatDataForMail(array $data)
+    {
+        $amount = [
+            'claims'  => 0,
+            'refunds' => 0,
+            'total'   => 0,
+        ];
+
+        if (isset($data['refunds']) === true)
+        {
+            $amount['refunds'] = array_reduce($data['refunds'], function ($sum, $item)
+            {
+                $sum += $item['refund']['amount'];
+
+                return $sum;
+            });
+        }
+
+        if (isset($data['claims']) === true)
+        {
+            $amount['claims'] = array_reduce($data['claims'], function ($sum, $item)
+            {
+                $sum += $item['payment']->getAmount();
+
+                return $sum;
+            });
+        }
+
+        $amount['total'] = $amount['claims'] - $amount['refunds'];
+
+        $amount['total'] = $this->getFormattedAmount($amount['total']);
+
+        $amount['refunds'] = $this->getFormattedAmount($amount['refunds']);
+
+        $amount['claims'] = $this->getFormattedAmount($amount['claims']);
+
+        return [
+            'bankName'    => self::BANK_NAME,
+            'amount'      => $amount,
+            'emails'      => $this->gatewayFile->getRecipients(),
+        ];
+    }
 
     public function sendFile($data)
     {
@@ -46,22 +90,21 @@ class Nsdl extends Base
                 Service::BEAM_PUSH_BUCKET_REGION => $bucketConfig['region'],
             ];
 
-
-            $timelines = [];
-
             $mailInfo = [
                 'fileInfo'  => $fileInfo,
                 'channel'   => 'tech_alerts',
                 'filetype'  => self::BEAM_FILE_TYPE,
                 'subject'   => 'Nsdl Combined File send failure',
-                'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::SETTLEMENT_ALERTS]
+                'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::NBPLUS_TECH]
             ];
 
-            $this->app['beam']->beamPush($beamData, $timelines, $mailInfo);
+            $this->sendBeamRequest($beamData, [], $mailInfo, true);
 
-            $this->gatewayFile->setFileSentAt(time());
+            $mailData = $this->formatDataForMail($data);
 
-            $this->gatewayFile->setStatus(Status::FILE_SENT);
+            $dailyFileMail = new DailyFileMail($mailData);
+
+            Mail::send($dailyFileMail);
 
             $this->reconcileNetbankingRefunds($data['refunds'] ?? []);
         }
