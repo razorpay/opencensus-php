@@ -43,6 +43,7 @@ class Kernel extends HttpKernel {
             \App\Http\Middleware\EncryptCookies::class,
             \App\Http\Middleware\StartSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
+            \App\Http\Middleware\GraphRequestAuthCheck::class,
         ],
     ];
 
