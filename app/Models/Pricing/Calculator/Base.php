@@ -332,8 +332,24 @@ abstract class Base extends BaseModel\Core
     {
         foreach ($filters as $filter)
         {
+            $beforeCount = count($rules);
+
             $rules = $this->filterRulesOnFieldByValue(
                 $rules, $filter[0], $filter[1], $filter[2], $filter[3]);
+
+            $afterCount = count($rules);
+
+            if ($beforeCount !== $afterCount)
+            {
+                $this->trace->info(
+                    TraceCode::PRICING_RULES_FILTERED_ON_FILTER,
+                    [
+                        'filter' => $filter[0],
+                        'before_count' => $beforeCount,
+                        'after_count' => $afterCount,
+                    ]
+                );
+            }
         }
 
         return $rules;
