@@ -21,6 +21,7 @@ interface BusinessNamePropsT {
   errorText?: string | false | string[] | FormikErrors<any> | FormikErrors<any>[] | undefined;
   businessNameValue: string;
   updateBusinessName: (value: NameData) => void;
+  disabled?: boolean;
 }
 
 const StyledSeparator = styled(View)`
@@ -33,6 +34,7 @@ const BusinessName: React.FC<BusinessNamePropsT> = ({
   businessNameValue = '',
   updateBusinessName,
   errorText,
+  disabled = false,
 }) => {
   const [inputValue, setInputValue] = useState(businessNameValue);
   const businessNameData = useRef({});
@@ -143,7 +145,7 @@ const BusinessName: React.FC<BusinessNamePropsT> = ({
       helpText="As mentioned in the PAN"
       onChange={onChange}
       onInputChange={onInputChange}
-      disabled={false}
+      disabled={disabled}
       filterOptions={false}
       bottomSheetHeaderText="SELECT BUSINESS NAME"
     >
