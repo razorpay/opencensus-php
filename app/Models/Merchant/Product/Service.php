@@ -19,6 +19,8 @@ class Service extends Base\Service
 
     public function getConfig(string $merchantId, string $merchantProductConfigId)
     {
+        $timeStarted = microtime(true);
+
         $merchant = $this->validateAndSetMerchantContext($merchantId);
 
         Entity::verifyIdAndStripSign($merchantProductConfigId);
@@ -26,6 +28,10 @@ class Service extends Base\Service
         $merchantProduct = $this->validateAndGetMerchantProduct($merchant->getId(), $merchantProductConfigId);
 
         $response = $this->core()->getConfig($merchant, $merchantProduct);
+
+        $timeTaken = get_diff_in_millisecond($timeStarted);
+
+        $this->captureMetricsForFetchProductConfig($merchantProduct, $timeTaken);
 
         return ProductResponseHandler::handleResponse($merchantProduct, $response);
     }
@@ -43,6 +49,8 @@ class Service extends Base\Service
         $transformedRequest = ProductRequestHandler::handleRequest($productName, $request);
 
         $response = $this->core()->updateConfig($merchant, $merchantProduct, $transformedRequest);
+
+        $this->captureMetricsForUpdateProductConfig($merchantProduct);
 
         return ProductResponseHandler::handleResponse($merchantProduct, $response);
     }
@@ -80,6 +88,8 @@ class Service extends Base\Service
                 $this->repo->merchant_product->saveOrFail($merchantProduct);
 
                 $response = $this->core()->createConfig($merchant, $merchantProduct, $payload);
+
+                $this->captureMetricsForCreateProductConfig($merchantProduct);
 
                 return ProductResponseHandler::handleResponse($merchantProduct, $response);
             });
@@ -154,5 +164,37 @@ class Service extends Base\Service
         }
 
         return $merchantProduct;
+    }
+
+    private function captureMetricsForCreateProductConfig(Entity $merchantProduct)
+    {
+        $dimensions = $this->getDimensionsForMerchantProduct($merchantProduct);
+
+        $this->trace->count(Metric::PRODUCT_CONFIG_CREATE_SUCCESS_TOTAL, $dimensions);
+    }
+
+    private function captureMetricsForUpdateProductConfig(Entity $merchantProduct)
+    {
+        $dimensions = $this->getDimensionsForMerchantProduct($merchantProduct);
+
+        $this->trace->count(Metric::PRODUCT_CONFIG_UPDATE_SUCCESS_TOTAL, $dimensions);
+    }
+
+    private function captureMetricsForFetchProductConfig(Entity $merchantProduct, $latencyInMillis)
+    {
+        $dimensions = $this->getDimensionsForMerchantProduct($merchantProduct);
+
+        $this->trace->count(Metric::PRODUCT_CONFIG_FETCH_SUCCESS_TOTAL, $dimensions);
+
+        $this->trace->histogram(Metric::PRODUCT_CONFIG_FETCH_TIME_IN_MS, $latencyInMillis, $dimensions);
+    }
+
+    private function getDimensionsForMerchantProduct(Entity $merchantProduct)
+    {
+        $dimensions = [
+            'product'     => $merchantProduct->getProduct(),
+        ];
+
+        return $dimensions;
     }
 }

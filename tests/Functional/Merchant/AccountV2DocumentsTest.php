@@ -5,6 +5,8 @@ namespace RZP\Tests\Functional\Merchant;
 use Config;
 use RZP\Constants\Mode;
 use Illuminate\Http\UploadedFile;
+use RZP\Tests\Traits\TestsMetrics;
+use RZP\Models\Merchant\Document\Metric;
 use RZP\Tests\Functional\Partner\Constants;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Partner\PartnerTrait;
@@ -15,6 +17,7 @@ use RZP\Models\Merchant\Document as MerchantDocument;
 
 class AccountV2DocumentsTest extends OAuthTestCase
 {
+    use TestsMetrics;
     use PartnerTrait;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
@@ -71,7 +74,7 @@ class AccountV2DocumentsTest extends OAuthTestCase
 
     public function testValidationsForInvalidInput()
     {
-        $subMerchant = $this->setupPrivateAuthForPartner();
+        list($subMerchant, $partner) = $this->setupPrivateAuthForPartner();
 
         $this->updateUploadDocumentData('testInvalidDocumentTypeForDocumentPost');
         $testData = $this->testData['testInvalidDocumentTypeForDocumentPost'];
@@ -81,7 +84,7 @@ class AccountV2DocumentsTest extends OAuthTestCase
 
     public function testValidationsForInvalidEntityData()
     {
-        $subMerchant = $this->setupPrivateAuthForPartner();
+        list($subMerchant, $partner) = $this->setupPrivateAuthForPartner();
 
         $stakeholder = $this->fixtures->create('stakeholder', [
             'merchant_id' => Constants::DEFAULT_MERCHANT_ID
@@ -100,14 +103,22 @@ class AccountV2DocumentsTest extends OAuthTestCase
 
     public function testPostAccountDocument()
     {
-        $subMerchant = $this->setupPrivateAuthForPartner();
+        list($subMerchant, $partner) = $this->setupPrivateAuthForPartner();
         $this->updateUploadDocumentData(__FUNCTION__);
+
+        $metricMock = $this->createMetricsMock();
+
+        $metricCaptured = false;
+        $expectedMetricData = $this->getMetricDataForDocumentUpload('merchant', 'shop_establishment_certificate', $partner);
+        $this->mockAndCaptureCountMetric(Metric::DOCUMENT_UPLOAD_V2_SUCCESS_TOTAL, $metricMock, $metricCaptured, $expectedMetricData);
 
         $testData    = $this->testData[__FUNCTION__];
 
         $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() . '/documents';
 
         $this->runRequestResponseFlow($testData);
+        $this->assertTrue($metricCaptured);
+
 
         $insertedDocument = $this->getDbLastEntity('merchant_document');
 
@@ -115,14 +126,19 @@ class AccountV2DocumentsTest extends OAuthTestCase
         $this->assertEquals($subMerchant->getId(), $insertedDocument['entity_id']);
         $this->assertEquals($subMerchant->getId(), $insertedDocument['merchant_id']);
 
+        $metricCaptured = false;
+        $expectedMetricData = $this->getMetricDataForDocumentFetch('merchant', $partner);
+        $this->mockAndCaptureCountMetric(Metric::DOCUMENT_FETCH_V2_SUCCESS_TOTAL, $metricMock, $metricCaptured, $expectedMetricData);
+
         $testData = $this->testData['testAccountDocumentFetch'];
         $testData['request']['url'] = '/v2/accounts/acc_' . $subMerchant->getId() . '/documents';
         $this->runRequestResponseFlow($testData);
+        $this->assertTrue($metricCaptured);
     }
 
     public function testPostStakeholderDocument()
     {
-        $subMerchant = $this->setupPrivateAuthForPartner();
+        list($subMerchant, $partner) = $this->setupPrivateAuthForPartner();
         $this->updateUploadDocumentData(__FUNCTION__);
 
         $testData    = $this->testData[__FUNCTION__];
@@ -131,9 +147,19 @@ class AccountV2DocumentsTest extends OAuthTestCase
             'merchant_id' => $subMerchant->getId()
         ]);
 
+        $metricMock = $this->createMetricsMock();
+
+        $metricCaptured = false;
+
+        $expectedMetricData = $this->getMetricDataForDocumentUpload('stakeholder', 'aadhar_front', $partner);
+
+        $this->mockAndCaptureCountMetric(Metric::DOCUMENT_UPLOAD_V2_SUCCESS_TOTAL, $metricMock, $metricCaptured, $expectedMetricData);
+
         $testData['request']['url'] = '/v2/accounts/acc_' . $subMerchant->getId() . '/stakeholders/sth_' . $stakeholder->getId() . '/documents';
 
         $this->runRequestResponseFlow($testData);
+
+        $this->assertTrue($metricCaptured);
 
         $insertedDocument = $this->getDbEntity('merchant_document');
 
@@ -141,10 +167,18 @@ class AccountV2DocumentsTest extends OAuthTestCase
         $this->assertEquals($stakeholder->getId(), $insertedDocument['entity_id']);
         $this->assertEquals($subMerchant->getId(), $insertedDocument['merchant_id']);
 
+        $metricCaptured = false;
+
+        $expectedMetricData = $this->getMetricDataForDocumentFetch('stakeholder', $partner);
+
+        $this->mockAndCaptureCountMetric(Metric::DOCUMENT_FETCH_V2_SUCCESS_TOTAL, $metricMock, $metricCaptured, $expectedMetricData);
+
         $testData = $this->testData['testStakeholderDocumentFetch'];
         $testData['request']['url'] = '/v2/accounts/acc_' . $subMerchant->getId() . '/stakeholders/sth_' . $stakeholder->getId() . '/documents';
 
         $this->runRequestResponseFlow($testData);
+        $this->assertTrue($metricCaptured);
+
     }
 
     public function testEveryDocumentMappedToProofType()
@@ -174,7 +208,7 @@ class AccountV2DocumentsTest extends OAuthTestCase
 
         $this->ba->privateAuth($key);
 
-        return $subMerchant;
+        return [$subMerchant, $partner];
     }
 
     protected function updateUploadDocumentData(string $callee)
@@ -187,6 +221,21 @@ class AccountV2DocumentsTest extends OAuthTestCase
             filesize(__DIR__ . '/../Storage/k.png'),
             null,
             true);
+    }
+
+    private function getMetricDataForDocumentUpload(string $entity, string $documentType, $partner)
+    {
+        return [
+            'entity'        => $entity,
+            'document_type' => $documentType
+        ];
+    }
+
+    private function getMetricDataForDocumentFetch(string $entity, $partner)
+    {
+        return [
+            'entity'     => $entity,
+        ];
     }
 
 }

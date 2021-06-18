@@ -286,20 +286,39 @@ class Service extends Base\Service
 
         $res = $this->createForMerchant($input, $accountId);
 
-        return $this->modifyResponseForOnboardingWk($res);
+        $publicResponse = $this->modifyResponseForOnboardingWk($res);
+
+        $dimensions = $this->getDimensionsForWebhookData();
+
+        $this->trace->count(Metric::ACCOUNT_V2_WEBHOOK_CREATE_SUCCESS_TOTAL, $dimensions);
+
+        return $publicResponse;
     }
 
     public function fetchOnboardingWk(string $webhookId, string $accountId)
     {
+        $timeStarted = microtime(true);
+
         $this->validator->validateOnboardingWkAction($accountId, $this->merchant);
 
         $res = $this->get($webhookId, $accountId);
 
-        return $this->modifyResponseForOnboardingWk($res);
+        $publicResponse = $this->modifyResponseForOnboardingWk($res);
+
+        $dimensions = $this->getDimensionsForWebhookData();
+
+        $this->trace->count(Metric::ACCOUNT_V2_WEBHOOK_FETCH_SUCCESS_TOTAL, $dimensions);
+
+        $this->trace->histogram(Metric::ACCOUNT_V2_WEBHOOK_FETCH_TIME_MS, get_diff_in_millisecond($timeStarted), $dimensions);
+
+        return $publicResponse;
+
     }
 
     public function listOnboardingWk(array $input, string $accountId)
     {
+        $timeStarted = microtime(true);
+
         $this->validator->validateOnboardingWkAction($accountId, $this->merchant);
 
         $res = $this->list($input, $accountId);
@@ -308,6 +327,12 @@ class Service extends Base\Service
         {
             $this->modifyResponseForOnboardingWk($item);
         }
+
+        $dimensions = $this->getDimensionsForWebhookData();
+
+        $this->trace->count(Metric::ACCOUNT_V2_WEBHOOK_FETCH_ALL_SUCCESS_TOTAL, $dimensions);
+
+        $this->trace->histogram(Metric::ACCOUNT_V2_WEBHOOK_FETCH_ALL_TIME_MS, get_diff_in_millisecond($timeStarted), $dimensions);
 
         return $res;
     }
@@ -320,7 +345,13 @@ class Service extends Base\Service
 
         $res = $this->update($webhookId, $input, $accountId);
 
-        return $this->modifyResponseForOnboardingWk($res);
+        $publicResponse = $this->modifyResponseForOnboardingWk($res);
+
+        $dimensions = $this->getDimensionsForWebhookData();
+
+        $this->trace->count(Metric::ACCOUNT_V2_WEBHOOK_UPDATE_SUCCESS_TOTAL, $dimensions);
+
+        return $publicResponse;
     }
 
     public function deleteOnboardingWk(string $webhookId, string $accountId)
@@ -328,6 +359,10 @@ class Service extends Base\Service
         $this->validator->validateOnboardingWkAction($accountId, $this->merchant);
 
         $this->delete($webhookId, $accountId);
+
+        $dimensions = $this->getDimensionsForWebhookData();
+
+        $this->trace->count(Metric::ACCOUNT_V2_WEBHOOK_DELETE_SUCCESS_TOTAL, $dimensions);
     }
 
     protected function convertEventsToAssocArray(array &$apiWk)
@@ -799,5 +834,16 @@ class Service extends Base\Service
     public function getWebhookEvents(): array
     {
         return array_keys(Merchant\Webhook\Event::filterForPublicApi($this->merchant));
+    }
+
+    private function getDimensionsForWebhookData(): array
+    {
+        $partner = $this->merchant;
+
+        $dimensions = [
+            'partner_type' => $partner->getPartnerType()
+        ];
+
+        return $dimensions;
     }
 }

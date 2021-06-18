@@ -5,29 +5,28 @@ namespace Functional\Merchant\Products;
 use Mail;
 use Event;
 use RZP\Constants\Mode;
-use RZP\Constants\Entity;
 use RZP\Models\User\Role;
-use RZP\Models\Merchant\Account;
-use RZP\Models\Merchant\Detail;
 use Illuminate\Http\UploadedFile;
+use RZP\Tests\Traits\TestsMetrics;
+use RZP\Models\Merchant\Product\Metric;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
-use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
-use RZP\Models\Merchant\Product\Config\PaymentMethods;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 
 class PaymentGatewayConfigTest extends OAuthTestCase
 {
     use PartnerTrait;
+    use WebhookTrait;
+    use TestsMetrics;
     use TerminalTrait;
+    use HeimdallTrait;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
-    use HeimdallTrait;
-    use WebhookTrait;
+
 
     const RZP_ORG = '100000razorpay';
 
@@ -50,6 +49,8 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
         $this->mockTerminalServiceResponse();
 
+        $metricsMock = $this->createMetricsMock();
+
         $this->setupPrivateAuthForPartner();
 
         $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
@@ -62,7 +63,15 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
         $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
 
+        $metricCaptured = false;
+
+        $expectedMetricData = $this->getMerchantProductMetricData('payment_gateway');
+
+        $this->mockAndCaptureCountMetric(Metric::PRODUCT_CONFIG_CREATE_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+
         $this->runRequestResponseFlow($testData);
+
+        $this->assertTrue($metricCaptured);
 
         $merchantProduct = $this->getDbLastEntity('merchant_product');
 
@@ -79,6 +88,8 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         $this->mockTerminalServiceResponse();
 
         $this->setupPrivateAuthForPartner();
+
+        $metricsMock = $this->createMetricsMock();
 
         $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
 
@@ -98,7 +109,15 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
         $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
 
+        $metricCaptured = false;
+
+        $expectedMetricData = $this->getMerchantProductMetricData('payment_gateway');
+
+        $this->mockAndCaptureCountMetric(Metric::PRODUCT_CONFIG_FETCH_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+
         $this->runRequestResponseFlow($testData);
+
+        $this->assertTrue($metricCaptured);
     }
 
     public function testUpdatePaymentGatewayConfig()
@@ -108,6 +127,8 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         $this->setupPrivateAuthForPartner();
 
         $this->mockTerminalServiceResponse();
+
+        $metricsMock = $this->createMetricsMock();
 
         $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
 
@@ -127,8 +148,15 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
         $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
 
+        $metricCaptured = false;
+
+        $expectedMetricData = $this->getMerchantProductMetricData('payment_gateway');
+
+        $this->mockAndCaptureCountMetric(Metric::PRODUCT_CONFIG_UPDATE_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+
         $this->runRequestResponseFlow($testData);
 
+        $this->assertTrue($metricCaptured);
     }
 
     /**
@@ -723,6 +751,13 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         $this->org = $this->fixtures->create('org');
 
         $this->authToken = $this->getAuthTokenForOrg($this->org);
+    }
+
+    private function getMerchantProductMetricData(string $productName): array
+    {
+        return [
+            'product' => $productName,
+        ];
     }
 }
 

@@ -4,6 +4,8 @@ namespace Functional\Merchant;
 
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Traits\TestsMetrics;
+use RZP\Models\Merchant\AccountV2\Metric;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -11,9 +13,10 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class AccountV2Test extends TestCase
 {
-    use RequestResponseFlowTrait;
-    use DbEntityFetchTrait;
+    use TestsMetrics;
     use PartnerTrait;
+    use DbEntityFetchTrait;
+    use RequestResponseFlowTrait;
 
     const RZP_ORG = '100000razorpay';
 
@@ -33,11 +36,20 @@ class AccountV2Test extends TestCase
         $this->setUpPartnerWithKycHandled();
 
         $this->startTest();
+
     }
 
     public function testCreateAccountV2ForCompletelyFilledRequest()
     {
         $this->setUpPartnerWithKycHandled();
+
+        $metricsMock = $this->createMetricsMock();
+
+        $expectedMetricData = $this->getDimensionsForAccountV2Metrics();
+
+        $metricCaptured = false;
+
+        $this->mockAndCaptureCountMetric(Metric::ACCOUNT_V2_CREATE_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
 
         $response = $this->startTest();
 
@@ -48,6 +60,8 @@ class AccountV2Test extends TestCase
         $stakeholders = $this->getDbEntities('stakeholder', ['merchant_id' => $accountId])->toArray();
 
         $this->assertEmpty($stakeholders);
+
+        $this->assertTrue($metricCaptured);
     }
 
     public function testCreateAccountV2ForCompletelyFilledRegisteredBusinessRequest()
@@ -69,6 +83,15 @@ class AccountV2Test extends TestCase
     {
         $this->setUpPartnerWithKycHandled();
 
+        $metricsMock = $this->createMetricsMock();
+
+        $expectedMetricData = $this->getDimensionsForAccountV2Metrics();
+
+        $metricCaptured = false;
+
+        $this->mockAndCaptureCountMetric(Metric::ACCOUNT_V2_EDIT_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+
+
         $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
 
         $result = $this->runRequestResponseFlow($testData);
@@ -78,6 +101,8 @@ class AccountV2Test extends TestCase
         $testData['request']['url'] = '/v2/accounts/' . $result['id'];
 
         $this->startTest($testData);
+
+        $this->assertTrue($metricCaptured);
     }
 
     public function testEditAccountV2OtherDetails()
@@ -99,6 +124,14 @@ class AccountV2Test extends TestCase
     {
         $this->setUpPartnerWithKycHandled();
 
+        $metricsMock = $this->createMetricsMock();
+
+        $expectedMetricData = $this->getDimensionsForAccountV2Metrics();
+
+        $metricCaptured = false;
+
+        $this->mockAndCaptureCountMetric(Metric::ACCOUNT_V2_FETCH_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+
         $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
 
         $result = $this->runRequestResponseFlow($testData);
@@ -108,6 +141,8 @@ class AccountV2Test extends TestCase
         $testData['request']['url'] = '/v2/accounts/' . $result['id'];
 
         $this->startTest($testData);
+
+        $this->assertTrue($metricCaptured);
     }
 
     public function testDeleteAccountV2()
@@ -147,5 +182,13 @@ class AccountV2Test extends TestCase
         $testData['request']['url'] = '/v2/accounts/' .$accountId;
 
         $this->startTest($testData);
+    }
+
+    private function getDimensionsForAccountV2Metrics()
+    {
+        return [
+            'partner_type'              => 'aggregator',
+            'submerchant_business_type' => 'individual'
+        ];
     }
 }

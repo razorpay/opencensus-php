@@ -55,6 +55,15 @@ class Service extends Merchant\Service
 
         $account = $accountCoreV1->action($account, $input, false);
 
+        $merchantDetails = $account->merchantDetail;
+
+        $dimensions = [
+            'partner_type'          => $this->merchant->getPartnerType(),
+            'submerchant_business_type' => $merchantDetails->getBusinessType()
+        ];
+
+        $this->trace->count(Metric::ACCOUNT_V2_DELETE_SUCCESS_TOTAL, $dimensions);
+
         return $this->getResponseObject()->getAccountResponse($account);
     }
 

@@ -3,6 +3,8 @@
 namespace Functional\Merchant;
 
 use RZP\Constants\Mode;
+use RZP\Tests\Traits\TestsMetrics;
+use RZP\Models\Merchant\Stakeholder\Metric;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Partner\Constants;
 use RZP\Tests\Functional\Partner\PartnerTrait;
@@ -11,6 +13,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class StakeholderTest extends OAuthTestCase
 {
+    use TestsMetrics;
     use PartnerTrait;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
@@ -34,18 +37,31 @@ class StakeholderTest extends OAuthTestCase
 
         $this->ba->privateAuth($key);
 
+        $metricsMock = $this->createMetricsMock();
+
+        $metricCaptured = false;
+
+        $expectedMetricData = $this->getStakeholderMetricData($partner);
+
+        $this->mockAndCaptureCountMetric(Metric::STAKEHOLDER_V2_CREATE_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
         $testData = $this->testData[__FUNCTION__];
         $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() .'/stakeholders';
-
         $response = $this->runRequestResponseFlow($testData);
+        $this->assertTrue($metricCaptured);
 
+        $metricCaptured = false;
+        $this->mockAndCaptureCountMetric(Metric::STAKEHOLDER_V2_FETCH_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
         $testData = $this->testData['testFetchStakeholder'];
         $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() .'/stakeholders/'. $response['id'];
         $this->runRequestResponseFlow($testData);
+        $this->assertTrue($metricCaptured);
 
+        $metricCaptured = false;
+        $this->mockAndCaptureCountMetric(Metric::STAKEHOLDER_V2_UPDATE_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
         $testData = $this->testData['testUpdateStakeholderCompleteRequest'];
         $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() .'/stakeholders/'. $response['id'];
         $this->runRequestResponseFlow($testData);
+        $this->assertTrue($metricCaptured);
 
         $testData = $this->testData['testFetchAllAccountStakeholders'];
         $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() .'/stakeholders';
@@ -91,5 +107,12 @@ class StakeholderTest extends OAuthTestCase
         $testData = $this->testData['testUpdateStakeholderThinToCompleteRequest'];
         $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() .'/stakeholders/'. $response['id'];
         $this->runRequestResponseFlow($testData);
+    }
+
+    private function getStakeholderMetricData($partner): array
+    {
+        return [
+            'partner_type'   => $partner->getPartnerType()
+        ];
     }
 }

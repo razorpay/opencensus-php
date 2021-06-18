@@ -9,7 +9,9 @@ use Mail;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Traits\TestsMetrics;
 use RZP\Tests\Traits\TestsWebhookEvents;
+use RZP\Models\Merchant\WebhookV2\Metric;
 use RZP\Mail\Merchant\Webhook as WebhookMail;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -18,6 +20,7 @@ use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 
 class WebhookV2Test extends TestCase
 {
+    use TestsMetrics;
     use PartnerTrait;
     use TestsWebhookEvents;
     use DbEntityFetchTrait;
@@ -468,6 +471,7 @@ class WebhookV2Test extends TestCase
         list($partner, $app) = $this->createPartnerAndApplication();
         $this->fixtures->merchant->activate($partner->getId());
 
+        $metricsMock = $this->createMetricsMock();
         $this->createConfigForPartnerApp($app->getId());
         list($subMerchant) = $this->createSubMerchant($partner, $app);
 
@@ -481,24 +485,38 @@ class WebhookV2Test extends TestCase
 
         $this->expectStorkServiceRequestForAction('createWebhookForOnboarding');
 
+        $metricCaptured = false;
+
+        $expectedMetricData = $this->getOnboardingWebhookMetricDimensions($partner);
+        $this->mockAndCaptureCountMetric(Metric::ACCOUNT_V2_WEBHOOK_CREATE_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+
         // creating a sub-merchant webhook
         $response = $this->runRequestResponseFlow($testData);
+        $this->assertTrue($metricCaptured);
 
         $testData = $this->testData['testGetOnboardingWebhook'];
         $testData['request']['url'] = '/accounts/acc_'. $subMerchant->getId() . '/webhooks/' . $response['id'];
 
         $this->expectStorkServiceRequestForAction('getWebhookForOnboarding');
 
+        $metricCaptured = false;
+        $this->mockAndCaptureCountMetric(Metric::ACCOUNT_V2_WEBHOOK_FETCH_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+
         // fetching a sub-merchant webhook
         $this->runRequestResponseFlow($testData);
+        $this->assertTrue($metricCaptured);
 
         $testData = $this->testData['testListOnboardingWebhook'];
         $testData['request']['url'] = '/accounts/acc_'. $subMerchant->getId() . '/webhooks?skip=0&count=25';
 
         $this->expectStorkServiceRequestForAction('listWebhookForOnboarding');
 
+        $metricCaptured = false;
+        $this->mockAndCaptureCountMetric(Metric::ACCOUNT_V2_WEBHOOK_FETCH_ALL_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+
         // fetching all sub-merchant webhooks
         $this->runRequestResponseFlow($testData);
+        $this->assertTrue($metricCaptured);
     }
 
     public function testUpdateOnboardingWebhook()
@@ -522,6 +540,11 @@ class WebhookV2Test extends TestCase
         // creating a sub-merchant webhook
         $response = $this->runRequestResponseFlow($testData);
 
+        $metricsMock = $this->createMetricsMock();
+        $metricCaptured = false;
+        $expectedMetricData = $this->getOnboardingWebhookMetricDimensions($partner);
+        $this->mockAndCaptureCountMetric(Metric::ACCOUNT_V2_WEBHOOK_UPDATE_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+
         $testData = $this->testData['testUpdateOnboardingWebhook'];
         $testData['request']['url'] = '/accounts/acc_'. $subMerchant->getId() . '/webhooks/' . $response['id'];
 
@@ -529,6 +552,7 @@ class WebhookV2Test extends TestCase
 
         // updating a sub-merchant webhook
         $this->runRequestResponseFlow($testData);
+        $this->assertTrue($metricCaptured);
     }
 
     public function testDeleteOnboardingWebhook()
@@ -552,6 +576,11 @@ class WebhookV2Test extends TestCase
         // creating a sub-merchant webhook
         $response = $this->runRequestResponseFlow($testData);
 
+        $metricsMock = $this->createMetricsMock();
+        $metricCaptured = false;
+        $expectedMetricData = $this->getOnboardingWebhookMetricDimensions($partner);
+        $this->mockAndCaptureCountMetric(Metric::ACCOUNT_V2_WEBHOOK_DELETE_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+
         $testData = $this->testData['testDeleteOnboardingWebhook'];
         $testData['request']['url'] = '/accounts/acc_'. $subMerchant->getId() . '/webhooks/' . $response['id'];
 
@@ -559,6 +588,7 @@ class WebhookV2Test extends TestCase
 
         // deleting a sub-merchant webhook
         $this->runRequestResponseFlow($testData);
+        $this->assertTrue($metricCaptured);
     }
 
     public function testInvalidOnboardingWebhookActionByPartner()
@@ -582,5 +612,12 @@ class WebhookV2Test extends TestCase
 
         // create a webhook for a sub-merchant unmapped to the partner
         $this->runRequestResponseFlow($testData);
+    }
+
+    private function getOnboardingWebhookMetricDimensions($partner)
+    {
+        return [
+            'partner_type' => $partner->getPartnerType()
+        ];
     }
 }

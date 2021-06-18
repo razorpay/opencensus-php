@@ -101,14 +101,22 @@ class Service extends Base\Service
 
     public function getDocuments(string $accountId, string $entityType, string $entityId)
     {
-        [$entity, $merchant] = $this->validateAndGetDocumentRequest($accountId, $entityType, $entityId);
+        list($entity, $merchant) = $this->validateAndGetDocumentRequest($accountId, $entityType, $entityId);
 
-        return (new DocumentResponse)->documentsResponse($merchant, $entityType, $entity->getId());
+        $timeStarted = microtime(true);
+
+        $documentResponse =  (new DocumentResponse)->documentsResponse($merchant, $entityType, $entity->getId());
+
+        $this->captureMetricsForDocumentFetch($entity, $timeStarted);
+
+        return $documentResponse;
     }
 
     public function postDocumentsByPartner(string $accountId, string $entityType, string $entityId, array $input)
     {
-        [$entity, $merchant] = $this->validateAndGetDocumentRequest($accountId, $entityType, $entityId);
+        $timeStarted = microtime(true);
+
+        list($entity, $merchant) = $this->validateAndGetDocumentRequest($accountId, $entityType, $entityId);
 
         $validator = (new Validator);
 
@@ -142,7 +150,33 @@ class Service extends Base\Service
 
         $accountV2Core->submitDetailsAndActivateIfApplicable($merchant, $merchantDetails);
 
-        return (new DocumentResponse)->documentsResponse($merchant, $entity->getEntity(), $entity->getId());
+        $documentResponse =  (new DocumentResponse)->documentsResponse($merchant, $entity->getEntity(), $entity->getId());
+
+        $this->captureMetricsForDocumentUpload($entity, $input, $timeStarted);
+
+        return $documentResponse;
+
+    }
+
+    private function captureMetricsForDocumentUpload($entity, array $input, $timeStarted)
+    {
+        $dimensions = [
+            'entity'        => $entity->getEntity(),
+            'document_type' => $input[Entity::DOCUMENT_TYPE]
+        ];
+
+        $this->trace->count(Metric::DOCUMENT_UPLOAD_V2_SUCCESS_TOTAL, $dimensions);
+        $this->trace->histogram(Metric::DOCUMENT_UPLOAD_V2_SUCCESS_TOTAL, get_diff_in_millisecond($timeStarted), $dimensions);
+    }
+
+    private function captureMetricsForDocumentFetch($entity, $timeStarted)
+    {
+        $dimensions = [
+            'entity' => $entity->getEntity(),
+        ];
+
+        $this->trace->count(Metric::DOCUMENT_FETCH_V2_SUCCESS_TOTAL, $dimensions);
+        $this->trace->histogram(Metric::DOCUMENT_FETCH_V2_TIME_IN_MS, get_diff_in_millisecond($timeStarted), $dimensions);
     }
 
     protected function validateAndGetDocumentRequest(string $accountId, string $entityType, string $entityId)
@@ -152,10 +186,13 @@ class Service extends Base\Service
 
         (new Account\Core)->validatePartnerAccess($this->merchant, $account->getId());
 
+        $partner = $this->merchant;
+
         // Document V2 API is exposed to partner private auth. But we need the submerchant context during document upload
         // since few of the internal file upload flow uses $this->merchant as merchant. (\RZP\Services\UfhService::createUfhClient)
         // So setting submerchant context here to avoid this.
         $this->app['basicauth']->setMerchant($account);
+
 
         if (E::MERCHANT === $entityType)
         {

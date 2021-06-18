@@ -31,11 +31,18 @@ class Core extends Merchant\Core
             return $subMerchant;
         });
 
+        $merchantDetails = $account->merchantDetail;
+        $dimensions = $this->getDimensionsForAccountV2Metrics($merchantDetails, $partner);
+
+        $this->trace->count(Metric::ACCOUNT_V2_CREATE_SUCCESS_TOTAL, $dimensions);
+
         return $account;
     }
 
     public function fetchAccountV2(string $accountId)
     {
+        $timeStarted = microtime(true);
+
         $accountCoreV1 = new Merchant\Account\Core();
 
         $accountCoreV1->validatePartnerAccess($this->merchant, $accountId);
@@ -44,9 +51,19 @@ class Core extends Merchant\Core
 
         $relations = ['merchantDetail', 'features', 'emails'];
 
-        return $this->repo
+        $account = $this->repo
             ->merchant
             ->findOrFailPublicWithRelations($accountId, $relations);
+
+        $merchantDetails = $account->merchantDetail;
+
+        $dimensions = $this->getDimensionsForAccountV2Metrics($merchantDetails, $this->merchant);
+
+        $this->trace->count(Metric::ACCOUNT_V2_FETCH_SUCCESS_TOTAL, $dimensions);
+
+        $this->trace->histogram(Metric::ACCOUNT_V2_FETCH_TIME_MS, get_diff_in_millisecond($timeStarted), $dimensions);
+
+        return $account;
     }
 
     public function editAccountV2(Merchant\Entity $partner, string $accountId, array $input)
@@ -76,6 +93,10 @@ class Core extends Merchant\Core
 
             return $subMerchant;
         });
+
+        $dimensions = $this->getDimensionsForAccountV2Metrics($subMerchantDetails, $partner);
+
+        $this->trace->count(Metric::ACCOUNT_V2_EDIT_SUCCESS_TOTAL, $dimensions);
 
         return $account;
     }
@@ -238,5 +259,15 @@ class Core extends Merchant\Core
             (new User\Core)->edit($subMerchantUser, $payload);
 
         }
+    }
+
+    private function getDimensionsForAccountV2Metrics(Detail\Entity $merchantDetails, Merchant\Entity $partner): array
+    {
+        $dimensions = [
+            'partner_type'              => $partner->getPartnerType(),
+            'submerchant_business_type' => $merchantDetails->getBusinessType()
+        ];
+
+        return $dimensions;
     }
 }
