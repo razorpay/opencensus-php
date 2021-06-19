@@ -8,6 +8,18 @@ function MerchantLAEntry() {
           integrations: [new Sentry.Integrations.BrowserTracing()],
           tracesSampleRate: 1.0,
           environment: window.APP_ENV,
+          beforeSend: (event, hint) => {
+            if (
+              hint &&
+              hint.originalException &&
+              hint.originalException.code === 'UNKNOWN_ERROR_CODE'
+            ) {
+              // ingore API errors, don't send it to sentry server
+              return null;
+            }
+
+            return event;
+          },
         });
 
         if (window.rzp_user && window.rzp_user.current) {

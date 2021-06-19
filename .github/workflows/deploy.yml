@@ -28,14 +28,17 @@ jobs:
           aws s3 cp s3://rzp-actions-cache/dashboard-${{ github.event.deployment.ref }}.tar.gz public.tar.gz
           tar -xf public.tar.gz
 
+      - name: Install Sentry CLI
+        # skip sentry cli, if already exist
+        continue-on-error: true
+        run: curl -sL https://sentry.io/get-cli/ | bash
+
       - name: Create Sentry release
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_IO_AUTH_TOKEN }}
           SENTRY_ORG: rzp
           SENTRY_PROJECT: dashboard
-        run: |
-          curl -sL https://sentry.io/get-cli/ | bash
-          sentry-cli releases files ${{ github.event.deployment.id }} upload-sourcemaps ./public/dist --log-level=info
+        run: sentry-cli releases files ${{ github.event.deployment.id }} upload-sourcemaps ./public/dist --log-level=info
 
       - name: Remove Sourcemap Files
         if: ${{ github.event.deployment.environment == 'prod' }}
