@@ -14,7 +14,6 @@ function MerchantLAEntry() {
               hint.originalException &&
               hint.originalException.code === 'UNKNOWN_ERROR_CODE'
             ) {
-              // ingore API errors, don't send it to sentry server
               return null;
             }
 
