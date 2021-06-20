@@ -47,6 +47,52 @@ class TransactionEventTest extends TestCase
         $helper->authorizeTransaction($coproto['callback'], $content);
     }
 
+    public function testPayToBankAccountCompleted()
+    {
+        $this->expectWebhookEvent(
+            'customer.transaction.completed',
+            function(array $event)
+            {
+                $this->assertArraySubset([
+                    'type'                  => 'pay',
+                    'flow'                  => 'debit',
+                    'status'                => 'completed',
+                    'is_pending_collect'    => false,
+                ], $event['payload']);
+
+                $bankAccount = $this->fixtures->bankAccount(self::DEVICE_2);
+                $this->assertArraySubset([
+                    'entity'                =>  'bank_account',
+                    'id'                    =>  $bankAccount->getPublicId(),
+                    'ifsc'                  =>  $bankAccount->getIfsc(),
+                    'masked_account_number' =>  $bankAccount->getMaskedAccountNumber(),
+                    'address'               =>  $bankAccount->getMaskedAccountNumber().'@'.$bankAccount->getIfsc().'.ifsc.npci',
+                ], $event['payload']['payee']);
+
+                $vpa = $this->fixtures->vpa(self::DEVICE_1);
+                $this->assertArraySubset([
+                    'entity'                =>  'vpa',
+                    'handle'                =>  $vpa->getHandle(),
+                    'id'                    =>  $vpa->getPublicId(),
+                    'address'               =>  $vpa->getAddress(),
+                    'username'              =>  $vpa->getUsername(),
+                ], $event['payload']['payer']);
+
+                $this->assertNotNull($event['payload']['upi']['ref_id']);
+                $this->assertNotNull($event['payload']['upi']['rrn']);
+                $this->assertNotNull($event['payload']['upi']['network_transaction_id']);
+            }
+        );
+
+        $helper = $this->getTransactionHelper();
+
+        $coproto = $helper->initiatePayToBankAccount();
+
+        $content = $this->handleSdkRequest($coproto);
+
+        $helper->authorizeTransaction($coproto['callback'], $content);
+    }
+
     public function testPendingCollectWebhook()
     {
         $this->expectWebhookEvent(

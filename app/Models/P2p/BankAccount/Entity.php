@@ -39,6 +39,8 @@ class Entity extends Base\Entity
     const CURRENCY                 = 'currency';
     const CARD                     = 'card';
     const ADDRESS                  = 'address';
+    const AEROBASE                 = '@';
+    const ADDRESS_SUFFIX           = 'ifsc.npci';
 
     /************** Entity Properties ************/
 
@@ -342,6 +344,23 @@ class Entity extends Base\Entity
         return sprintf('%s@%s.ifsc.npci', $this->getAccountNumber(), $this->getIfsc());
     }
 
+    public function getMaskedAccountNumberAttribute()
+    {
+        $maskedAccountNumber = $this->attributes[self::MASKED_ACCOUNT_NUMBER] ?? null;
+
+        if (empty($maskedAccountNumber) === true)
+        {
+            $maskedAccountNumber = mask_except_last4($this->attributes[self::ACCOUNT_NUMBER]) ?? null;
+
+            if ($maskedAccountNumber !== null)
+            {
+                $this->setMaskedAccountNumber($maskedAccountNumber);
+            }
+        }
+
+        return $maskedAccountNumber;
+    }
+
     public function setPublicCredsAttribute(& $array)
     {
         $creds = array_map(
@@ -351,5 +370,36 @@ class Entity extends Base\Entity
             }, $this->getCreds());
 
         $array[self::CREDS] = $creds;
+    }
+
+    public function toArrayPartner(): array
+    {
+        $array = $this->toArrayPublic();
+
+        $array[self::ADDRESS] = self::toAddress([
+            self::ACCOUNT_NUMBER => $this->getMaskedAccountNumber(),
+            self::IFSC           => $this->getIfsc(),
+        ]);
+
+        return $array;
+    }
+
+    public static function toAddress(array $input)
+    {
+        if (empty(array_get($input, self::ACCOUNT_NUMBER)) or
+            empty(array_get($input, self::IFSC)))
+        {
+            return null;
+        }
+
+        $handle = implode('.', [
+            array_get($input, self::IFSC),
+            self::ADDRESS_SUFFIX,
+        ]);
+
+        return implode(self::AEROBASE, [
+            array_get($input, self::ACCOUNT_NUMBER),
+            $handle,
+        ]);
     }
 }

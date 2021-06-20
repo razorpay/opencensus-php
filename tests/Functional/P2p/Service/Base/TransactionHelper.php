@@ -31,6 +31,31 @@ class TransactionHelper extends P2pHelper
         return $this->post($request);
     }
 
+    public function initiatePayToBankAccount(array $content = [])
+    {
+        $this->validationJsonSchemaPath = 'transaction/initiate_authorize';
+
+        $request = $this->request('transactions/pay/initiate');
+
+        $default = [
+            'amount'        => 100,
+            'currency'      => 'INR',
+            'description'   => 'Initiate Pay Test',
+            'payer'         => [
+                'id'    => $this->fixtures->vpa(Fixtures::DEVICE_1)->getPublicId(),
+                'type'  => 'vpa'
+            ],
+            'payee'         => [
+                'id'    => $this->fixtures->bankAccount(Fixtures::DEVICE_2)->getPublicId(),
+                'type'  => 'bank_account'
+            ],
+        ];
+
+        $this->content($request, $default, $content);
+
+        return $this->post($request);
+    }
+
     public function initiateCollect(array $content = [])
     {
         $this->validationJsonSchemaPath = 'transaction/initiate_authorize';

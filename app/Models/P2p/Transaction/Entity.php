@@ -788,8 +788,8 @@ class Entity extends Base\Entity
 
         $array[self::CUSTOMER_ID]   = Customer\Entity::getSignedId($this->getCustomerId());
         $array[self::UPI]           = $this->upi->toArrayPublic();
-        $array[self::PAYER]         = array_except($this->payer->toArrayPublic(), self::BANK_ACCOUNT);
-        $array[self::PAYEE]         = array_except($this->payee->toArrayPublic(), self::BANK_ACCOUNT);
+        $array[self::PAYER]         = array_except($this->payer->toArrayPartner(), self::BANK_ACCOUNT);
+        $array[self::PAYEE]         = array_except($this->payee->toArrayPartner(), self::BANK_ACCOUNT);
         $array[self::BANK_ACCOUNT]  = $this->bankAccount->toArrayPublic();
         $array[self::MODE]          = $this->getMode();
 

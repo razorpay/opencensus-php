@@ -4,6 +4,7 @@ namespace RZP\Models\P2p\Vpa;
 
 use RZP\Base\BuilderEx;
 use RZP\Models\P2p\Base;
+use RZP\Models\P2p\Device;
 
 class Entity extends Base\Entity
 {
@@ -376,7 +377,11 @@ class Entity extends Base\Entity
     {
         $array = $this->toArrayPublic();
 
-        $array[self::DEVICE]  = $this->device->toArrayPublic();
+        // In case of beneficiary VPA, device may not exist
+        if ($this->device instanceof Device\Entity)
+        {
+            $array[self::DEVICE]  = $this->device->toArrayPublic();
+        }
 
         return $array;
     }
