@@ -24,7 +24,7 @@ class P2pTraceProcessor
             'request_id'            => $this->getRequestId(),
             'merchant_id'           => $this->getMerchantId(),
             'device_id'             => $this->getDeviceId(),
-            Context::DEVICE_META    => $this->getDeviceMeta(),
+            'meta'                  => $this->getMeta(),
         ];
 
         return $record;
@@ -75,9 +75,9 @@ class P2pTraceProcessor
         return $this->context->getRequestId();
     }
 
-    public function getDeviceMeta()
+    public function getMeta()
     {
-        $data = $this->context->getOptions()->get(Context::DEVICE_META);
+        $data = $this->context->getOptions()->get(Context::META);
 
         if (empty($data) === false)
         {

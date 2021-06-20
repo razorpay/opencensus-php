@@ -6,13 +6,17 @@ use RZP\Models\P2p\Device;
 use RZP\Gateway\P2p\Upi\Axis\Fields;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Tests\P2p\Service\UpiAxis\TestCase;
+use RZP\Tests\Functional\Helpers\MocksMetricTrait;
 use RZP\Tests\P2p\Service\Base\Traits\EventsTrait;
+use RZP\Models\P2p\Base\Metrics\GatewayActionMetric;
+use RZP\Models\P2p\Base\Metrics\RequestLatencyMetric;
 use RZP\Tests\P2p\Service\Base\Traits\TransactionTrait;
 
 class DeviceTest extends TestCase
 {
-    use TransactionTrait;
     use EventsTrait;
+    use MocksMetricTrait;
+    use TransactionTrait;
     use TestsWebhookEvents;
 
     public function testInitiateVerification()
@@ -318,5 +322,60 @@ class DeviceTest extends TestCase
         $helper = $this->getDeviceHelper();
 
         $helper->deregisterDevice();
+    }
+
+
+    public function testGatewayActionMetrics()
+    {
+        $mock = $this->mockMetricDriver('mock');
+
+        $helper = $this->getDeviceHelper();
+
+        $initiate = $helper->initiateVerification([
+            Fields::SDK => [
+                Fields::SIM_ID  => '0',
+            ]
+        ]);
+
+        $this->withFailureResponse($helper, function($error)
+        {
+            $this->assertArraySubset([
+                'code'          => 'GATEWAY_ERROR',
+                'description'   => 'SMS_SENDING_EXCEPTION. Unable to send SMS',
+            ], $error);
+        }, 502);
+
+        $helper->verification($initiate['callback'], [
+            Fields::SDK => [
+                Fields::STATUS                    => 'FAILURE',
+                Fields::ERROR_CODE                => 'SMS_SENDING_EXCEPTION',
+                Fields::ERROR_DESCRIPTION         => 'Unable to send SMS',
+            ]
+        ]);
+
+        $this->assertArraySelectiveEquals([
+            [
+                GatewayActionMetric::DIMENSION_ACTION       => 'initiateVerification',
+                GatewayActionMetric::DIMENSION_ENTITY       => 'device',
+                GatewayActionMetric::DIMENSION_GATEWAY      => 'p2p_upi_axis',
+                GatewayActionMetric::DIMENSION_STATUS       => 'success',
+                GatewayActionMetric::DIMENSION_TYPE         => 'next',
+                GatewayActionMetric::DIMENSION_OS           => null,
+                GatewayActionMetric::DIMENSION_OS_VERSION   => null,
+                GatewayActionMetric::DIMENSION_SDK_VERSION  => null,
+                GatewayActionMetric::DIMENSION_NETWORK_TYPE => null
+            ],
+            [
+                GatewayActionMetric::DIMENSION_ACTION       => 'verification',
+                GatewayActionMetric::DIMENSION_ENTITY       => 'device',
+                GatewayActionMetric::DIMENSION_GATEWAY      => 'p2p_upi_axis',
+                GatewayActionMetric::DIMENSION_STATUS       => 'failed',
+                GatewayActionMetric::DIMENSION_TYPE         => 'processed',
+                GatewayActionMetric::DIMENSION_OS           => null,
+                GatewayActionMetric::DIMENSION_OS_VERSION   => null,
+                GatewayActionMetric::DIMENSION_SDK_VERSION  => null,
+                GatewayActionMetric::DIMENSION_NETWORK_TYPE => null
+            ],
+        ], $mock->metric(GatewayActionMetric::PSP_GATEWAY_ACTION_TOTAL));
     }
 }

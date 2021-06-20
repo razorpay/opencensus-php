@@ -41,9 +41,9 @@ class Context extends ArrayObject
     const INPUT                     = 'input';
 
 
-    const DEVICE_META               = 'device_meta';
+    const META                      = 'meta';
 
-    /**** Device Meta Keys ******/
+    /**** Meta Keys ******/
     const OS                        = 'os';
 
     const OS_VERSION                = 'os_version';
@@ -55,20 +55,19 @@ class Context extends ArrayObject
     const NETWORK_TYPE              = 'network_type';
 
     const OPTIONS_RULES = [
-        self::REQUEST_ID                                => 'nullable|string|max:50',
-        self::HANDLE                                    => 'required|string',
-        self::OS                                        => 'nullable|string|max:50',
-        self::SDK_VERSION                               => 'nullable|string|max:50',
-        self::NETWORK_TYPE                              => 'nullable|string|max:50',
-        self::DEVICE                                    => 'array',
-        self::DEVICE . '.' . Device\Entity::IP          => 'nullable|ipv4',
-        self::DEVICE . '.' . Device\Entity::GEOCODE     => 'nullable|string|max:20',
-        self::DEVICE_META                               => 'array',
-        self::DEVICE_META . '.' . self::OS              => 'nullable|string|max:50',
-        self::DEVICE_META . '.' . self::OS_VERSION      => 'nullable|string|max:50',
-        self::DEVICE_META . '.' . self::SDK_SESSION_ID  => 'nullable|string|max:50',
-        self::DEVICE_META . '.' . self::SDK_VERSION     => 'nullable|string|max:50',
-        self::DEVICE_META . '.' . self::NETWORK_TYPE    => 'nullable|string|max:50',
+        self::REQUEST_ID                              => 'nullable|string|max:50',
+        self::HANDLE                                  => 'required|string',
+        self::DEVICE                                  => 'array',
+        self::DEVICE . '.' . Device\Entity::IP        => 'nullable|ipv4',
+        self::DEVICE . '.' . Device\Entity::GEOCODE   => 'nullable|string|max:20',
+        self::META                                    => 'array',
+        self::META . '.' . self::OS                   => 'nullable|string|max:50',
+        self::META . '.' . self::OS_VERSION           => 'nullable|string|max:50',
+        self::META . '.' . self::SDK_SESSION_ID       => 'nullable|string|max:50',
+        self::META . '.' . self::SDK_VERSION          => 'nullable|string|max:50',
+        self::META . '.' . self::NETWORK_TYPE         => 'nullable|string|max:50',
+        self::META . '.' . Device\Entity::IP          => 'nullable|ipv4',
+        self::META . '.' . Device\Entity::GEOCODE     => 'nullable|string|max:20',
     ];
 
     /**

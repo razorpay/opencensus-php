@@ -9,9 +9,11 @@ use RZP\Models\P2p\Device;
 use RZP\Exception\LogicException;
 use RZP\Gateway\P2p\Base\Response;
 use RZP\Exception\P2p\ProcessorException;
+use RZP\Models\P2p\Base\Libraries\Context;
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
 use RZP\Exception\P2p\GatewayErrorException;
 use RZP\Models\P2p\Base\Traits\ApplicationTrait;
+use RZP\Models\P2p\Base\Metrics\GatewayActionMetric;
 
 /**
  * @property Core $core
@@ -195,8 +197,17 @@ class Processor
         // We might need to reverse the logic where context will be put inside gateway input.
         $this->context()->setGatewayData($gateway, $this->action, $this->gatewayInput);
 
-        // In spite of passing the gateway data, we are passing complete context object
-        $this->gatewayResponse = $this->app['gateway']->call($gateway, $entity, $this->context(), $mode);
+        try
+        {
+            // In spite of passing the gateway data, we are passing complete context object
+            $this->gatewayResponse = $this->app['gateway']->call($gateway, $entity, $this->context(), $mode);
+        }
+        catch (\Throwable $e)
+        {
+            $this->pushGatewayActionMetric($this->context(), true);
+
+            throw $e;
+        }
 
         return $this->processGatewayResponse();
     }
@@ -238,6 +249,8 @@ class Processor
             'exception' => $this->getTracableException(),
             'response'  => $this->redactForAction($response),
         ]);
+
+        $this->pushGatewayActionMetric($this->context(),$this->gatewayResponse->isSuccess() === false);
 
         // The exception can only be set from handleGatewayFailure or specific failure/success handler
         if ($this->hasException() === true)
@@ -410,5 +423,42 @@ class Processor
         }
 
         return $output;
+    }
+
+    /**
+     * Metrics to be sent for gateway actions
+     * @param Context $context To extract fields for metrics like os, sdk_version etc
+     * @param bool $isFailure  Resembles if it is a failure metric
+     */
+    protected function pushGatewayActionMetric(Context $context, bool $isFailure)
+    {
+        $gatewayActionMetric = new GatewayActionMetric($context);
+
+        $gatewayActionMetric
+            ->setGateway($this->getGateway())
+            ->setEntity($this->getEntity())
+            ->setAction($this->action)
+            ->statusSuccess()
+            ->typeProcessed();
+
+        /**
+         * We are checking for both failure, one explicit failure (when exception happens),
+         * and When gateway response has the failure
+         */
+        if ($isFailure or ($this->gatewayResponse->isSuccess() === false))
+        {
+            $gatewayActionMetric
+                ->statusFailed()
+                ->pushCount();
+
+            return;
+        }
+
+        if ($this->gatewayResponse->hasRequest())
+        {
+            $gatewayActionMetric->typeNext();
+        }
+
+        $gatewayActionMetric->pushCount();
     }
 }
