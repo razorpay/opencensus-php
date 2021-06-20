@@ -4967,6 +4967,7 @@ class Route
         'merchant_edit_risk_attributes'            => Permission::EDIT_MERCHANT_RISK_ATTRIBUTES,
         'adj_add'                                  => Permission::ADD_MERCHANT_ADJUSTMENT,
         'merchant_bank_account_create'             => Permission::EDIT_MERCHANT_BANK_DETAIL,
+        'merchant_bank_account_update'             => Permission::EDIT_MERCHANT_BANK_DETAIL,
         'admin_fetch_terminal_by_id'               => Permission::VIEW_TERMINAL,
         'merchants_update_bulk'                    => Permission::EDIT_BULK_MERCHANT,
         'merchants_update_channel'                 => Permission::EDIT_BULK_MERCHANT_CHANNEL,

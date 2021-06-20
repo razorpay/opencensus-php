@@ -2828,6 +2828,70 @@ class MerchantTest extends TestCase
         $this->assertEquals('test admin', $action['maker']);
     }
 
+    public function testUpdateBankAccountViaPennyTestingInAdminProxyAuth()
+    {
+        $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
+
+        $beforeCount = $this->getBankAccountsCount($merchantId);
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin['id'], ['allow_all_merchants' => true]);
+
+        $this->ba->adminProxyAuth($merchantId, 'rzp_test_' . $merchantId);
+
+        $this->makeRequestAndGetContent([
+            'content' => [
+                'ifsc_code'        => 'ICIC0001206',
+                'account_number'   => '0000009999999999999',
+                'beneficiary_name' => 'Test R4zorpay:',
+            ],
+            'url'     => '/merchants/bank_account/update',
+            'method'  => 'POST'
+        ]);
+
+        $fav = $this->getLastEntity('fund_account_validation', true);
+
+        $fundAccount = $this->getEntityById('fund_account', $fav['fund_account_id'], true);
+
+        $fundAccountBankAccount = $fundAccount['bank_account'];
+
+        $this->assertNotNull($fav);
+
+        $this->assertEquals('bank_account_update', $fav['notes']['penny_testing_reason']);
+
+        $this->assertNull($fav['results']['account_status']);
+
+        $this->assertNull($fav['results']['registered_name']);
+
+
+        $this->assertEquals('0000009999999999999', $fundAccountBankAccount['account_number']);
+        $this->assertEquals('ICIC0001206', $fundAccountBankAccount['ifsc']);
+        $this->assertEquals('Test R4zorpay:', $fundAccountBankAccount['name']);
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertEquals('initiated', $merchantDetails->getBankDetailsVerificationStatus());
+
+        $this->assertEquals(Validation\Entity::stripDefaultSign($fav['id']), $merchantDetails->getFundAccountValidationId());
+
+        $this->assertBankAccountForMerchant($merchantId, [
+            'entity'            => 'bank_account',
+            'ifsc'              => 'RZPB0000000',
+            'account_number'    => '10010101011',
+        ]);
+
+        Mail::assertQueued(MerchantMail\AccountChangeRequest::class, function ($mail) {
+            return true;
+        });
+
+        $afterCount = $this->getBankAccountsCount($merchantId);
+
+        $this->assertEquals($beforeCount, $afterCount);
+
+        $this->assertTrue($this->getBankAccountChangeStatusForMerchant($merchantId));
+    }
+
     public function testUpdateBankAccountWithAddressProof()
     {
         $documentType = 'address_proof_url';
