@@ -1559,6 +1559,16 @@ class VirtualAccountTest extends TestCase
         $expectedResponse = $this->testData[__FUNCTION__];
 
         $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        // This is to ensure that old qr payments should remain part of VA payments
+
+        $this->fixtures->merchant->addFeatures(['qr_codes']);
+
+        $response = $this->fetchVirtualAccountPayments($virtualAccount['id']);
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
     }
 
     public function testVirtualAccountForCustomer()

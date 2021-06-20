@@ -353,4 +353,58 @@ class NonVirtualAccountQrCodeTest extends TestCase
     {
         return (array) simplexml_load_string(trim($response));
     }
+
+    public function testFetchQrCodePayments()
+    {
+        $qrCode = $this->createQrCode();
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->fixtures->stripSign($qrCodeId);
+
+        $this->processPaymentForQr($qrCodeId);
+
+        $expectedResponse = $this->testData['testFetchPaymentsrQrCode'];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $this->fetchQrPayment());
+    }
+
+    public function testFetchPaymentsForQrCode()
+    {
+        $this->markTestSkipped();
+        
+        $qrCode = $this->createQrCode();
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->fixtures->stripSign($qrCodeId);
+
+        $this->processPaymentForQr($qrCodeId);
+
+        $expectedResponse = $this->testData['testFetchPaymentsrQrCode'];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $this->fetchQrPayment($qrCode['id']));
+    }
+
+    protected function processPaymentForQr($qrCodeId)
+    {
+        $this->ba->directAuth();
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+
+        $content = $this->getMockServer(Gateway::UPI_ICICI)
+                        ->getAsyncCallbackContentForBharatQr($request['content']);
+
+        $request['raw'] = $content;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('OK', $response[0]);
+    }
 }

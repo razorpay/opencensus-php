@@ -43,4 +43,28 @@ return [
             Fields::RESPONSE_CODE       => '',
         ],
     ],
+
+    'testFetchPaymentsrQrCode' => [
+        'entity' => 'collection',
+        'count'  => 1,
+        'items'  => [
+            [
+                'entity'            => 'payment',
+                'amount'            => 4000,
+                'currency'          => 'INR',
+                'status'            => 'captured',
+                'order_id'          => null,
+                'invoice_id'        => null,
+                'method'            => 'upi',
+                'amount_refunded'   => 0,
+                'refund_status'     => null,
+                'captured'          => true,
+                'description'       => 'QRv2 Payment',
+                'email'             => null,
+                'contact'           => null,
+                'error_code'        => null,
+                'error_description' => null,
+            ]
+        ],
+    ],
 ];

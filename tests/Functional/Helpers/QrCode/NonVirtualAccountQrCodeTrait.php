@@ -57,4 +57,28 @@ trait NonVirtualAccountQrCodeTrait
             ],
         ];
     }
+
+    private function fetchQrPayment(string $id = null)
+    {
+        $url = '';
+        if ($id === null)
+        {
+            $url = '/payments/qr_payments';
+
+        }
+        else
+        {
+            $url = '/payments/qr_codes/' . $id . '/payments';
+        }
+        $request = [
+            'method' => 'GET',
+            'url'    => $url,
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
+    }
 }

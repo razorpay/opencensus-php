@@ -1809,31 +1809,13 @@ class Repository extends Base\Repository
      */
     protected function addQueryParamVirtualAccountId($query, $params)
     {
-        $paymentReceiverId = $this->dbColumn(Payment\Entity::RECEIVER_ID);
+        $this->joinQueryVaReceiver($query);
 
         $virtualAccountIdCol = $this->repo->virtual_account->dbColumn(VirtualAccount\Entity::ID);
 
         $virtualAccountId = $params[Payment\Entity::VIRTUAL_ACCOUNT_ID];
 
-        $qrcodeId = $this->repo
-                         ->virtual_account
-                         ->dbColumn(VirtualAccount\Entity::QR_CODE_ID);
-
-        $bankAccountId = $this->repo
-                              ->virtual_account
-                              ->dbColumn(VirtualAccount\Entity::BANK_ACCOUNT_ID);
-
-        $vpaId = $this->repo
-                      ->virtual_account
-                      ->dbColumn(VirtualAccount\Entity::VPA_ID);
-
-        $query->join(Table::VIRTUAL_ACCOUNT, function ($join) use($paymentReceiverId, $qrcodeId, $bankAccountId, $vpaId)
-                    {
-                        $join->on($paymentReceiverId, '=', $qrcodeId);
-                        $join->orOn($paymentReceiverId, '=', $bankAccountId);
-                        $join->orOn($paymentReceiverId, '=', $vpaId);
-                    })
-              ->where($virtualAccountIdCol, '=', $virtualAccountId);
+        $query->where($virtualAccountIdCol, '=', $virtualAccountId);
     }
 
     /**
@@ -1851,6 +1833,38 @@ class Repository extends Base\Repository
         }
 
         $query->whereNotNull(Entity::RECEIVER_ID);
+
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::QR_CODES) === true)
+        {
+            $this->joinQueryVaReceiver($query);
+        }
+    }
+
+    /**
+     * @param $query
+     */
+    protected function joinQueryVaReceiver($query): void
+    {
+        $paymentReceiverId = $this->dbColumn(Payment\Entity::RECEIVER_ID);
+
+        $qrcodeId = $this->repo
+                         ->virtual_account
+                         ->dbColumn(VirtualAccount\Entity::QR_CODE_ID);
+
+        $bankAccountId = $this->repo
+                              ->virtual_account
+                              ->dbColumn(VirtualAccount\Entity::BANK_ACCOUNT_ID);
+
+        $vpaId = $this->repo
+                      ->virtual_account
+                      ->dbColumn(VirtualAccount\Entity::VPA_ID);
+
+        $query->join(Table::VIRTUAL_ACCOUNT, function($join) use ($paymentReceiverId, $qrcodeId, $bankAccountId, $vpaId)
+        {
+            $join->on($paymentReceiverId, '=', $qrcodeId);
+            $join->orOn($paymentReceiverId, '=', $bankAccountId);
+            $join->orOn($paymentReceiverId, '=', $vpaId);
+        });
     }
 
     protected function joinQueryBankTransfer($query)
