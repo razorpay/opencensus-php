@@ -33,5 +33,8 @@ return [
 
         //QR Code campaign
         'ANNOUNCEMENT_QR_CODE_V1_SPLITZ' => env('ANNOUNCEMENT_QR_CODE_V1_SPLITZ', ''),
+
+        //MTU Saver campaign
+        'ANNOUNCEMENT_MTU_SAVER_V1_SPLITZ' => env('ANNOUNCEMENT_MTU_SAVER_V1_SPLITZ', ''),
     ]
 ];

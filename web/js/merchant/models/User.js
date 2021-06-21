@@ -535,6 +535,10 @@ export default class User {
     return getSplitzExperimentVariant('whats_new_text_experiment')?.variables?.result === 'on';
   }
 
+  get isFirstUsageMerchantsExperimentEnabled() {
+    return getSplitzExperimentVariant('first_usage_merchants_experiment')?.variables?.result === 'on';
+  }
+
   get isWhatsNewSectionEnabled() {
     return this.getExpStatus('whats-new-dec-2020');
   }

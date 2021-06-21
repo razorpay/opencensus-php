@@ -16,6 +16,7 @@ import QuickGuide from './QuickGuide';
 import PaymentPagesList from 'merchant/views/PaymentPages/PaymentPages/List';
 
 import PaymentPageAnalyticsBanner from 'merchant/components/Announcements/PaymentPageAnalytics';
+import MTUSaverCampaignBanner from 'merchant/components/Announcements/MTUSaverCampaign';
 
 @connect(
   (state) => {
@@ -30,6 +31,7 @@ import PaymentPageAnalyticsBanner from 'merchant/components/Announcements/Paymen
 )
 export default class PaymentPagesContainer extends React.Component {
   render() {
+    const user = this.props.user;
     const { isQuickGuideOpen, showOnboarding } = this.props.paymentPageProductOnBoarding;
 
     if (showOnboarding) {
@@ -38,10 +40,15 @@ export default class PaymentPagesContainer extends React.Component {
 
     return (
       <>
-        <PaymentPageAnalyticsBanner
-          bannerKey={`payment-pages-analytics-${this.props.user.current}`}
-        />
+        <div className='banner-container'>
 
+          <PaymentPageAnalyticsBanner
+            bannerKey={`payment-pages-analytics-${user.current}`}
+            />
+          
+          <MTUSaverCampaignBanner productName='payment-pages' />
+
+        </div>
         <tabbed-container>
           {isQuickGuideOpen && <QuickGuide />}
 

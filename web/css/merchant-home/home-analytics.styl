@@ -579,3 +579,35 @@ body.analytics-v2-active {
     }
   }
 }
+
+.mtu-saver-banner {
+  .title {
+    &:before {
+      width: 0
+      height: 0
+      right: 10px
+      background-color: transparent
+      transform: none
+      border-left: 10px solid transparent
+      border-right: 10px solid transparent
+      border-bottom: 17px solid #FDB63D
+    }
+
+    &:after {
+      background: linear-gradient(221.45deg, #FFC300 -6.27%, #F08A0A 83.44%)
+      right: 0
+      width: 100%
+      transform: none
+      clip-path: polygon(0 0, 100% 0, 86.5% 100%, 0% 100%)
+    }
+
+    .title-content {
+      @media(min-width: 769px) {
+        background-image: none !important
+      }
+    }
+  }
+  a.btn.btn-link {
+    padding-left: 3px;
+  }
+}

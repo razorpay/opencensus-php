@@ -45,4 +45,11 @@ export default {
     // prod experiment ids
     'H7UYFAJIqhQB0X',
   ],
+  first_usage_merchants_experiment: [
+    // beta experiment ids
+    'HPfpmgQiXlqfr8',
+    
+    // prod experiment ids
+    'HPcWQJN0hMXgzK',
+  ],
 };

@@ -11,6 +11,7 @@ import BatchUploadList from 'merchant/views/PaymentLinks/BatchUpload/List';
 
 import PaymentButtonLaunchBanner from 'merchant/components/Announcements/PaymentButtonLaunch';
 import CashAdvanceCampaignBanner from 'merchant/components/Announcements/CashAdvanceCampaign';
+import MTUSaverCampaignBanner from 'merchant/components/Announcements/MTUSaverCampaign';
 import SwitchToPaymentLinksV2 from 'merchant/components/Announcements/SwitchToPaymentLinksV2';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import { ShowWhenRoute } from 'merchant/components/ShowWhen';
@@ -168,6 +169,8 @@ export default class PaymentLinksContainer extends React.Component {
           >
             <CashAdvanceCampaignBanner productName="PaymentLinks" />
           </ShowWhen>
+
+          <MTUSaverCampaignBanner productName='payment-links' />
 
           <ShowWhen additionalCondition={(user) => user.isPLSwitchEnabled}>
             <SwitchToPaymentLinksV2 source="payment-links-list" />

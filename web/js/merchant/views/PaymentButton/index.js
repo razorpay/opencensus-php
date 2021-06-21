@@ -21,6 +21,7 @@ import OnBoarding, {
 } from './OnBoarding';
 import QuickGuide, { getPaymentButtonsQuickGuideIsClosed } from './QuickGuide';
 import CardPaymentsBlockedBanner from 'merchant/views/Subscriptions/components/CardPaymentsBlocked/Banner';
+import MTUSaverCampaignBanner from 'merchant/components/Announcements/MTUSaverCampaign';
 
 @connect(
   (state) => {
@@ -108,9 +109,14 @@ export default class PaymentButtonsContainer extends React.Component {
 
     return (
       <>
-        {user.isSubscriptionButtonEnabled && user.isCardRecurringPaymentsBlocked && (
-          <CardPaymentsBlockedBanner />
-        )}
+        <div className='banner-container'>
+          {user.isSubscriptionButtonEnabled && user.isCardRecurringPaymentsBlocked && (
+            <CardPaymentsBlockedBanner />
+            )}
+
+          <MTUSaverCampaignBanner productName='payment-buttons' />
+
+        </div>
 
         <tabbed-container>
           {isQuickGuideOpen && <QuickGuide mid={this.props.user.current} mode={this.props.mode} />}
