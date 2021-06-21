@@ -84,9 +84,13 @@ trait CardPaymentService
 
     public function callCpsAction($payment, $gateway, $action, $gatewayData)
     {
+        $statusCode = null;
+
         try
         {
             $response = $this->app['card.payments']->action($gateway, $action, $gatewayData);
+
+            $statusCode = (empty($response['status_code']) === true) ? 0 : $response['status_code'];
 
             $this->updatePaymentFromCpsResponse($payment, $response);
 
@@ -99,7 +103,7 @@ trait CardPaymentService
                 return $response;
             }
 
-            $this->pushDimensions($action, $gatewayData, Metric::SUCCESS, $gateway);
+            $this->pushDimensions($action, $gatewayData, Metric::SUCCESS, $gateway, null, $statusCode);
 
             return $response['data'];
         }
@@ -112,7 +116,7 @@ trait CardPaymentService
             {
                 $excData = curl_errno($previousExc->getData());
 
-                $this->pushDimensions($action, $gatewayData, Metric::CURL_ERROR, $excData);
+                $this->pushDimensions($action, $gatewayData, Metric::CURL_ERROR, $gateway, $excData, $statusCode);
             }
             else
             {
@@ -122,14 +126,14 @@ trait CardPaymentService
                 {
                     $excData = $exc->getError()->getClass();
                 }
-                $this->pushDimensions($action, $gatewayData, Metric::FAILED, $gateway, $excData);
+                $this->pushDimensions($action, $gatewayData, Metric::FAILED, $gateway, $excData, $statusCode);
             }
 
             throw $exc;
         }
     }
 
-    protected function pushDimensions($action, $input, $status, $gateway, $excData = null)
+    protected function pushDimensions($action, $input, $status, $gateway, $excData = null, $statusCode = null)
     {
         if (($this->mode === Mode::TEST) and
             ($this->app->runningUnitTests() === false))
@@ -139,7 +143,7 @@ trait CardPaymentService
 
         $gatewayMetric = new Metric;
 
-        $gatewayMetric->pushGatewayDimensions($action, $input, $status, $gateway, $excData);
+        $gatewayMetric->pushGatewayDimensions($action, $input, $status, $gateway, $excData, $statusCode);
     }
 
     protected function callCpsAuthorizeAcrossTerminals(Payment\Entity $payment, array $data)

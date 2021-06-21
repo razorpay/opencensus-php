@@ -48,6 +48,7 @@ class Metric
     const DIMENSION_BHARAT_QR            = 'bharat_qr';
     const DIMENSION_AUTH_TYPE            = 'auth_type';
     const DIMENSION_STATUS               = 'status';
+    const DIMENSION_STATUS_CODE          = 'status_code';
     const DIMENSION_TERMINAL_ID          = 'terminal_id';
     const DIMENSION_MERCHANT_CATEGORY    = 'merchant_category';
     const DIMENSION_ERROR                = 'curl_error_no';
@@ -290,7 +291,7 @@ class Metric
         return 'none';
     }
 
-    public function pushGatewayDimensions($action, $input, $status, $gateway = null, $excData = null)
+    public function pushGatewayDimensions($action, $input, $status, $gateway = null, $excData = null, $statusCode = null)
     {
         try
         {
@@ -301,6 +302,8 @@ class Metric
                 $dimensions2 = $this->getV2Dimensions($action, $input, $gateway, $excData);
 
                 $dimensions2[Metric::DIMENSION_STATUS] = $status;
+
+                $dimensions2[Metric::DIMENSION_STATUS_CODE] = $statusCode;
 
                 $gatewayMetrics = app('trace')->metricsDriver(self::DOGSTATSD_DRIVER);
 
