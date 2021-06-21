@@ -893,6 +893,7 @@ const uploadFields = [
     getName: (activation) => activation.state.business_proof_type,
     _cmp: Input.File,
     description: (activation) => {
+      const { props: { trackEvent, data: { merchant } } } = activation;
       const businessProofType = activation.state.business_proof_type;
       if (businessProofType === BUSINESS_PROOF_CERTIFICATE_TYPES.MSME_CERTIFICATE) {
         const getMsmeDownloadLinksView = (header, cerificates) => {
@@ -908,11 +909,15 @@ const uploadFields = [
                       target='_blank'
                       className='link'
                       onClick={() => {
+                        trackEvent(
+                          window.rzpQ.onbr().initiated(`kyc.${analyticsActionName.split(' ').join('_')}`, {
+                            merchantId: merchant.id,
+                          }),
+                        );
                         analyticsTrack({
-                          objectName: 'SignUp',
+                          objectName: 'kyc.document upload',
                           actionName: analyticsActionName,
                           screen: 'Document Upload Tab',
-                          eventAction: 'clicked',
                           properties: {
                             ...getCommonSegmentProperties(),
                           },
@@ -936,12 +941,12 @@ const uploadFields = [
                   url:
                     'http://www.msmeudyogaadhaar.org/msme-ssi-udyog-certificate-sample/',
                   label: 'Udyog Aadhar Certificate',
-                  analyticsActionName: 'Udyog Aadhar Certificate',
+                  analyticsActionName: 'udyog aadhar certificate clicked',
                 },
                 {
                   url: 'https://www.udyogaadhar.co.in/sample-certificate',
                   label: 'Udyam Certificate',
-                  analyticsActionName: 'Udyam Certificate',
+                  analyticsActionName: 'udyam certificate clicked',
                 },
               ],
             )}
@@ -949,12 +954,12 @@ const uploadFields = [
               {
                 url: 'https://udyamregistration.gov.in/UA/PrintAcknowledgement_Pub.aspx',
                 label: 'Udyog Aadhar Certificate',
-                analyticsActionName: 'Download Udyog Aadhar Certificate',
+                analyticsActionName: 'download udyog aadhar certificate clicked',
               },
               {
                 url: 'https://udyamregistration.gov.in/PrintUdyamCertificate.aspx',
                 label: 'Udyam Certificate',
-                analyticsActionName: 'Download Udyam Certificate',
+                analyticsActionName: 'download udyam certificate clicked',
               },
             ])}
           </div>

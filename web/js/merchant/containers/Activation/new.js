@@ -515,7 +515,7 @@ export default class ActivationContainer extends React.Component {
         ...data,
         business_category: data.business_category || (data.business_model ? 'others' : null),
       };
-
+      
       content = (
         <ActivationWizard
           accountId={this.props.accountId}
@@ -535,6 +535,7 @@ export default class ActivationContainer extends React.Component {
           handleRxCaCheckboxChange={this.handleRxCaCheckboxChange}
           fetchBusinessCategory={this.fetchBusinessCategory}
           aovRange={aovRange}
+          trackEvent={this.props.tracking.trackEvent}
         />
       );
     }
