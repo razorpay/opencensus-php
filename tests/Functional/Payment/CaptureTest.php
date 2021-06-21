@@ -290,6 +290,8 @@ class CaptureTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '5567630000002004';
 
+        $this->mockRazorxTreatmentV2(Merchant\RazorxTreatment::PAYMENT_GATEWAY_CAPTURE_ASYNC_MC, 'on');
+
         $response = $this->doAuthPayment($payment);
 
         $payment = $this->getLastEntity('payment', true);

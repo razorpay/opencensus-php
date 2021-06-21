@@ -1191,7 +1191,12 @@ trait Authorize
                 'razorx_variant' => $variant,
             ]);
 
-            return true;
+            if (strtolower($variant) === 'on')
+            {
+                return true;
+            }
+
+            return false;
         }
 
         if(($payment->isGatewayCaptured() === false) and
