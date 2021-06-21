@@ -189,7 +189,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
   const getMsmeDownloadLinksView = (header, cerificates) => {
     return (
       <View>
-        <Text size="xsmall" color="shade.960">
+        <Text size="xxsmall" color="shade.960">
           {header}
         </Text>
         <Flex flexDirection="row" alignItems="center">
@@ -199,7 +199,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
                 <Dot />
                 <Space margin={[0, 0.75, 0, 0.5]}>
                   <Link
-                    size="xsmall"
+                    size="xxsmall"
                     href={url}
                     target="_blank"
                     onClick={() => {
@@ -457,7 +457,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
                 )}
                 {businessDoc === 'msme_certificate' && (
                   <View>
-                    <Space margin={[1.5, 0, 1.5, 0]}>
+                    <Space margin={[1.5, 0, 1, 0]}>
                       {getMsmeDownloadLinksView(
                         'What is Udyog Aadhar/Udyam Cerificate? View Sample :',
                         [
