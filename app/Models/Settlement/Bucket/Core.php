@@ -448,11 +448,6 @@ class Core extends Base\Core
 
         $status = (empty($result) === false);
 
-        if ($balanceType === Balance\Type::COMMISSION)
-        {
-            $status =  false;
-        }
-
         $this->trace->info(
             TraceCode::SETTLEMENT_SERVICE_RAMP,
             [

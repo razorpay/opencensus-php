@@ -9,6 +9,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity as E;
 use RZP\Models\Settlement\Core;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Feature\Constants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankAccount\Core as BankAccount;
@@ -281,7 +282,7 @@ class migration extends Job
                         foreach ($balances as $balance)
                         {
                             //TODO: Allow Commission Type also
-                            if($balance->isTypePrimary() === true)
+                            if(Balance\Type::isSettleableBalanceType($balance->getType()) === true)
                             {
                                 $opt = [
                                     'from'                => null,
