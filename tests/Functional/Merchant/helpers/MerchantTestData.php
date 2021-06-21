@@ -7738,11 +7738,11 @@ return [
                     '1234567890' => [
                         'instruments' =>[
                             [
-                                'instrument' => 'phonepay',
+                                'instrument' => 'paytm',
                                 'method'     => 'wallet',
                             ],
                             [
-                                'instrument' => 'icici_bank',
+                                'instrument' => 'SBIN',
                                 'method'     => 'netbanking',
                             ],
                             [
@@ -7775,11 +7775,11 @@ return [
                     '1234567890' => [
                         'instruments' => [
                             [
-                                'instrument' => 'phonepay',
+                                'instrument' => 'paytm',
                                 'method'     => 'wallet',
                             ],
                             [
-                                'instrument' => 'icici_bank',
+                                'instrument' => 'SBIN',
                                 'method'     => 'netbanking',
                             ],
                             [
@@ -7812,7 +7812,7 @@ return [
                     'default' => [
                         'instruments' => [
                             [
-                                'instrument' => 'phonepay',
+                                'instrument' => 'paytm',
                                 'method'    => 'wallet',
                             ],
                             [
@@ -7849,7 +7849,7 @@ return [
                     'default' => [
                         'instruments' => [
                             [
-                                'instrument' => 'phonepay',
+                                'instrument' => 'paytm',
                                 'method'    => 'wallet',
                             ],
                             [
@@ -7890,7 +7890,7 @@ return [
                     '+918888888888' => [
                         'instruments' => [
                             [
-                                'instrument' => 'phonepay',
+                                'instrument' => 'paytm',
                                 'method'     => 'wallet',
                             ],
                             [
@@ -7961,11 +7961,11 @@ return [
                     '1234567890' => [
                         'instruments' => [
                             [
-                                'instrument' => 'phonepay',
+                                'instrument' => 'paytm',
                                 'method'     => 'wallet',
                             ],
                             [
-                                'instrument' => 'icici_bank',
+                                'instrument' => 'SBIN',
                                 'method'     => 'netbanking',
                             ],
                             [
@@ -8090,7 +8090,7 @@ return [
                     '1234123412' => [
                         'instruments' => [
                             [
-                                'instrument' => 'phonepay',
+                                'instrument' => 'paytm',
                                 'method'     => 'wallet',
                             ],
                             [

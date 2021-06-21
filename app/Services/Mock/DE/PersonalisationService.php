@@ -6,8 +6,15 @@ namespace RZP\Services\Mock\DE;
 
 class PersonalisationService
 {
-    public function fetchPersonalisationData(array $input, bool $upiIntent = false, bool $nullResponse = false)
+    public function fetchPersonalisationData(array $input, array $data, bool $upiIntent = false, bool $nullResponse = false)
     {
+        $contact = null;
+        if(isset($data['customer'])){
+            if(isset($data['customer']['contact'])){
+                $contact = $data['customer']['contact'];
+            }
+        }
+
         if ($nullResponse === true)
         {
             return null;
@@ -28,12 +35,12 @@ class PersonalisationService
 
         $instruments = [
                     [
-                        'instrument' => 'phonepay',
+                        'instrument' => 'paytm',
                         'method'     => 'wallet',
                         'score'      =>  0.54
                     ],
                     [
-                        'instrument' => 'icici_bank',
+                        'instrument' => 'SBIN',
                         'method'     => 'netbanking',
                         'score'      => 0.21,
                     ],
@@ -43,6 +50,47 @@ class PersonalisationService
                         'score'      => 0.20
                     ]
         ];
+
+        if($contact === "+919999999909"){
+            $instruments = [
+                [
+                    'instrument' => 'freecharge',
+                    'method'     => 'wallet',
+                    'score'      =>  0.54
+                ],
+                [
+                    'instrument' => 'SBIN',
+                    'method'     => 'netbanking',
+                    'score'      => 0.21,
+                ],
+                [
+                    'instrument' => 'HEyHQ6jw2vd6aE',
+                    'method'     => 'card',
+                    'issuer'     => 'KKBK',
+                    'type'       => 'debit',
+                    'network'    => 'Visa',
+                    'score'      =>  0.15
+                ]
+            ];
+        } else if($contact === "+919999999908"){
+            $instruments = [
+                [
+                    'instrument' => 'freecharge',
+                    'method'     => 'wallet',
+                    'score'      =>  0.54
+                ],
+                [
+                    'instrument' => 'SBIN',
+                    'method'     => 'netbanking',
+                    'score'      => 0.55,
+                ],
+                [
+                    'instrument' => 'Scbaala@okhdfcbank',
+                    'method'     => 'upi',
+                    'score'      =>  0.60
+                ]
+            ];
+        }
 
 
         $responseArray = [

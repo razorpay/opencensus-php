@@ -1338,19 +1338,19 @@ class Checkout
         {
             if ((isset( $input['upi_intent']) === true) and (isset($input['null_response']) === true))
             {
-                $response = (new MockPersonalisationService())->fetchPersonalisationData($input, $input['upi_intent'], $input['null_response']);
+                $response = (new MockPersonalisationService())->fetchPersonalisationData($input, $data, $input['upi_intent'], $input['null_response']);
             }
             else if ((isset( $input['upi_intent']) === true))
             {
-                $response = (new MockPersonalisationService())->fetchPersonalisationData($input, $input['upi_intent']);
+                $response = (new MockPersonalisationService())->fetchPersonalisationData($input, $data, $input['upi_intent']);
             }
             else if ((isset( $input['null_response']) === true))
             {
-                $response = (new MockPersonalisationService())->fetchPersonalisationData($input, false, $input['null_response']);
+                $response = (new MockPersonalisationService())->fetchPersonalisationData($input, $data, false, $input['null_response']);
             }
             else
             {
-                $response = (new MockPersonalisationService())->fetchPersonalisationData($input);
+                $response = (new MockPersonalisationService())->fetchPersonalisationData($input, $data);
             }
         }
         else
