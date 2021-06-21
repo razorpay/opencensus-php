@@ -13,8 +13,9 @@ import {
   isValidName,
 } from 'common/utils/validators';
 import { trackLinkClick } from 'merchant/containers/Activation/ga_new';
-
+import { analyticsTrack } from 'common/utils/analytics';
 import AddressFields from 'merchant/containers/Activation/AddressFieldsMap';
+import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
 
 import {
   excludeFor_Indiv,
@@ -46,7 +47,7 @@ import {
   showAadharDoc,
 } from './ActivationUtils';
 
-import { ADDITIONAL_DOCS_LABEL_VALUE_MAP, BUSINESS_PROOF_TYPE_DOCS } from './Constants';
+import { ADDITIONAL_DOCS_LABEL_VALUE_MAP, BUSINESS_PROOF_TYPE_DOCS, BUSINESS_PROOF_CERTIFICATE_TYPES } from './Constants';
 
 const PROPRIETORSHIP = 1;
 const PARTNERSHIP = 3;
@@ -892,11 +893,82 @@ const uploadFields = [
     getName: (activation) => activation.state.business_proof_type,
     _cmp: Input.File,
     description: (activation) => {
+      const { props: { trackEvent, data: { merchant } } } = activation;
       const businessProofType = activation.state.business_proof_type;
+      if (businessProofType === BUSINESS_PROOF_CERTIFICATE_TYPES.MSME_CERTIFICATE) {
+        const getMsmeDownloadLinksView = (header, cerificates) => {
+          return (
+            <div>
+              <div className='links-header'>{header}</div>
+              <div className='links-container'>
+                {cerificates.map(({ url, label, analyticsActionName }) => (
+                  <>
+                    <div className="dot" />
+                    <a
+                      href={url}
+                      target='_blank'
+                      className='link'
+                      onClick={() => {
+                        trackEvent(
+                          window.rzpQ.onbr().initiated(`kyc.${analyticsActionName.split(' ').join('_')}`, {
+                            merchantId: merchant.id,
+                          }),
+                        );
+                        analyticsTrack({
+                          objectName: 'kyc document upload',
+                          actionName: analyticsActionName,
+                          screen: 'Document Upload Tab',
+                          properties: {
+                            ...getCommonSegmentProperties(),
+                          },
+                        });
+                      }}
+                    >
+                      {label}
+                    </a>
+                  </>
+                ))}
+              </div>
+            </div>
+          );
+        };
+        return (
+          <div className='msme-links'>
+            {getMsmeDownloadLinksView(
+              'What is Udyog Aadhar/Udyam Cerificate? View Sample :',
+              [
+                {
+                  url:
+                    'http://www.msmeudyogaadhaar.org/msme-ssi-udyog-certificate-sample/',
+                  label: 'Udyog Aadhar Certificate',
+                  analyticsActionName: 'udyog aadhar certificate clicked',
+                },
+                {
+                  url: 'https://www.udyogaadhar.co.in/sample-certificate',
+                  label: 'Udyam Certificate',
+                  analyticsActionName: 'udyam certificate clicked',
+                },
+              ],
+            )}
+            {getMsmeDownloadLinksView('Don’t have it right now? Download here :', [
+              {
+                url: 'https://udyamregistration.gov.in/UA/PrintAcknowledgement_Pub.aspx',
+                label: 'Udyog Aadhar Certificate',
+                analyticsActionName: 'download udyog aadhar certificate clicked',
+              },
+              {
+                url: 'https://udyamregistration.gov.in/PrintUdyamCertificate.aspx',
+                label: 'Udyam Certificate',
+                analyticsActionName: 'download udyam certificate clicked',
+              },
+            ])}
+          </div>
+        );
+      }
       return `Upload the scan of ${BUSINESS_PROOF_TYPE_DOCS[businessProofType]}`;
     },
     _when: isBusinessProofTypeDocFieldVisible,
-    className: 'document-group',
+    className: 'document-group msme-document',
   },
   {
     name: 'gstin',
