@@ -13,15 +13,15 @@ class Core extends Base\Core
     public function addSegment($filePath, $segmentName)
     {
 
-        $seg_res = (new SplitzService)->getSegmentFromName($segmentName);
+        $seg_res = $this->app->splitzService->getSegmentFromName($segmentName);
 
         $preSignedUrl = $this->getPreSignedUrl($filePath);
 
         if (!isset($seg_res['response']['segment'])) {
-            $response = (new SplitzService)->createSegment($preSignedUrl, $segmentName);
+            $response = $this->app->splitzService->createSegment($preSignedUrl, $segmentName);
         } else {
             $segment = $seg_res['response']['segment'];
-            $response = (new SplitzService)->updateSegment($preSignedUrl, $segmentName,$segment['id']);
+            $response = $this->app->splitzService->updateSegment($preSignedUrl, $segmentName,$segment['id']);
         }
 
         return $response;
@@ -37,7 +37,6 @@ class Core extends Base\Core
         $handler = new Handler();
         $env = $this->app['env'];
         $bucketConfig = $handler->getBucketConfig(Type::DATA_LAKE_SEGMENT_FILE, $env);
-        $this->trace->info(TraceCode::SEGMENTATION_CONFIG, ['bucket_config'=>$bucketConfig]);
         $preSignedUrl = $handler->getSignedUrl($bucketConfig, $filePath);
         return $preSignedUrl;
     }

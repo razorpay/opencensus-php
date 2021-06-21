@@ -521,6 +521,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->registerXPayrollService();
 
         $this->registerLedger();
+
+        $this->registerSplitz();
     }
 
     /**
@@ -584,6 +586,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             'cache.store',
             'cache.psr6',
             'ledger',
+            'splitzService',
         ];
     }
 
@@ -1500,6 +1503,21 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             $implementation = $enabled ? Ledger::class : Mock\Ledger::class;
 
             return new $implementation($app);
+        });
+    }
+
+    protected function registerSplitz()
+    {
+        $this->app->singleton('splitzService', function ($app) {
+
+            $mock = $app['config']->get('applications.splitz.mock');
+
+            if ($mock === true)
+            {
+                return new RZP\Services\Mock\SplitzService();
+            }
+
+            return new SplitzService();
         });
     }
 }

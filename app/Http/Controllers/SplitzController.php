@@ -58,69 +58,61 @@ class SplitzController extends Controller
         $parameters = Request::all();
 
         $response = [];
-
-        if (empty($parameters) === false)
+        try
         {
-            $bulkEvaluateArray['bulk_evaluate'] = [];
 
-            $chunkExperimentArray = array_chunk($parameters, 10);
-
-            foreach ($chunkExperimentArray as $batchExperimentArray)
+            if (empty($parameters) === false)
             {
-                $bulkEvaluateArray = json_encode($batchExperimentArray, JSON_UNESCAPED_SLASHES);
 
-                $bulk_evaluate = '{"bulk_evaluate":' . $bulkEvaluateArray . '}';
+                $bulkEvaluateArray['bulk_evaluate'] = [];
 
-                $result = (new SplitzService())->bulkCallsToSplitz($bulk_evaluate);
+                $chunkExperimentArray = array_chunk($parameters, 10);
 
-                foreach ($result as $resultValue)
+                foreach ($chunkExperimentArray as $batchExperimentArray)
                 {
-                    if (isset($resultValue['bulk_evaluate_response']) == true)
+                    $bulkEvaluateArray = json_encode($batchExperimentArray, JSON_UNESCAPED_SLASHES);
+
+                    $bulk_evaluate = '{"bulk_evaluate":' . $bulkEvaluateArray . '}';
+
+                    $result = $this->app->splitzService->bulkCallsToSplitz($bulk_evaluate);
+
+                    foreach ($result as $resultValue)
                     {
-                        $response = array_merge($response, $resultValue['bulk_evaluate_response']);
+                        if (isset($resultValue['bulk_evaluate_response']) == true)
+                        {
+                            $response = array_merge($response, $resultValue['bulk_evaluate_response']);
+                        }
                     }
                 }
             }
+        } catch (\Throwable $e)
+        {
+            throw new Exception\ServerErrorException('Error completing the request', ErrorCode::SERVER_ERROR_SPLITZ_BULK_FAILURE, null, $e);
         }
 
         return $response;
     }
 
-
     public function evaluateRequest()
     {
-        $headers['Content-Type'] = self::CONTENT_TYPE_JSON;
-
         $parameters = Request::all();
+        $response = [];
 
-        $parameters = json_encode($parameters);
+        try {
+            if (empty($parameters) === false)
+            {
 
-        $options = [
-            'timeout' => $this->requestTimeout,
-            'auth'    => [$this->key, $this->secret],
-        ];
+                $response = $this->app->splitzService->evaluateRequest($parameters);
 
-        $url = $this->baseUrl . self::EVALUATE_URL;
+                $response = ApiResponse::json($response);
 
-        try
-        {
-            $response = Requests::request(
-                $url,
-                $headers,
-                $parameters,
-                Requests::POST,
-                $options);
-
-            $res = $this->parseAndReturnResponse($response);
-
-            $response = ApiResponse::json($res);
-
-            return $response;
-        }
-        catch (\Throwable $e)
+            }
+        } catch (\Throwable $e)
         {
             throw new Exception\ServerErrorException('Error completing the request', ErrorCode::SERVER_ERROR_SPLITZ_FAILURE, null, $e);
         }
+
+        return $response;
     }
 
     public function sendRequest()
@@ -208,3 +200,4 @@ class SplitzController extends Controller
         return $path;
     }
 }
+
