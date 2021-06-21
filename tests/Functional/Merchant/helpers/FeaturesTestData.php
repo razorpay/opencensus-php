@@ -676,6 +676,11 @@ return [
                         'display_name' => 'UPI transfer tr webhook'
                     ],
                     [
+                        'feature'      => 'qr_image_content',
+                        'value'        => false,
+                        'display_name' => 'QR Intent link response'
+                    ],
+                    [
                         'feature'      => 'payout',
                         'value'        => false,
                         'display_name' => 'Payouts'
@@ -923,6 +928,7 @@ return [
                     'payment_failure_email',
                     'virtual_accounts',
                     'upi_transfer_tr',
+                    'qr_image_content',
                     'virtual_accounts_banking',
                     'bank_transfer_on_checkout',
                     'checkout_va_with_customer',

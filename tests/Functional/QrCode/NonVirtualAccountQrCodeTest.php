@@ -81,6 +81,26 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->runEntityAssertions($response);
     }
 
+    public function testCreateUpiQrCodeUpiIntentLinkExposure()
+    {
+        $this->fixtures->merchant->addFeatures(['qr_image_content']);
+
+        $input = [
+            'type'  => 'upi_qr',
+            'usage' => 'multiple_use'
+        ];
+
+        $response = $this->createQrCode($input);
+
+        $expectedResponse = $this->testData['testCreateUpiQrCode'];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $this->assertArrayHasKey('image_content', $response);
+
+        $this->runEntityAssertions($response);
+    }
+
     public function testCloseQrCode()
     {
         $response = $this->createQrCode();

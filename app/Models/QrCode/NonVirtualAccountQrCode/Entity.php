@@ -4,6 +4,7 @@ namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 
 use Carbon\Carbon;
 use RZP\Models\QrCode;
+use RZP\Models\Feature;
 use RZP\Models\Customer;
 use RZP\Models\Base\Traits\NotesTrait;
 
@@ -28,6 +29,7 @@ class Entity extends QrCode\Entity
     const REQ_USAGE_TYPE               = 'usage';
     const REQ_IMAGE_URL                = 'image_url';
     const RESP_PAYMENTS_COUNT_RECEIVED = 'payments_count_received';
+    const RESP_IMAGE_CONTENT           = 'image_content';
 
     const SHARED_ID = 'FallbackQrCode';
 
@@ -91,7 +93,8 @@ class Entity extends QrCode\Entity
         self::CUSTOMER_ID,
         self::CLOSE_BY,
         self::CLOSED_AT,
-        self::CLOSE_REASON
+        self::CLOSE_REASON,
+        self::RESP_IMAGE_CONTENT,
     ];
 
     protected $casts = [
@@ -108,6 +111,7 @@ class Entity extends QrCode\Entity
         self::REQ_IMAGE_URL,
         self::REQ_AMOUNT,
         self::RESP_PAYMENTS_COUNT_RECEIVED,
+        self::RESP_IMAGE_CONTENT,
     ];
 
     protected $defaults = [
@@ -208,6 +212,14 @@ class Entity extends QrCode\Entity
     protected function setPublicPaymentsCountReceivedAttribute(array & $array)
     {
         $array[self::RESP_PAYMENTS_COUNT_RECEIVED] = $this->getAttribute(self::PAYMENTS_RECEIVED_COUNT);
+    }
+
+    protected function setPublicImageContentAttribute(array & $array)
+    {
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::QR_IMAGE_CONTENT) === true)
+        {
+            $array[self::RESP_IMAGE_CONTENT] = $this->getAttribute(self::QR_STRING);
+        }
     }
 
     public function hasFixedAmount()
