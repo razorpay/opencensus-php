@@ -48,7 +48,7 @@ class CombinedNachCiti extends Base
             {
                 foreach ($xmls as $count => $xml)
                 {
-                    $count = str_pad(++$count, 5, '0', STR_PAD_LEFT);
+                    $count = str_pad(++$count, 6, '0', STR_PAD_LEFT);
 
                     $fileName = strtr(self::FILE_NAME, ['{$date}' => $date, '{$count}' => $count]);
 
