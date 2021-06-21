@@ -915,7 +915,7 @@ const uploadFields = [
                           }),
                         );
                         analyticsTrack({
-                          objectName: 'kyc.document upload',
+                          objectName: 'kyc document upload',
                           actionName: analyticsActionName,
                           screen: 'Document Upload Tab',
                           properties: {
