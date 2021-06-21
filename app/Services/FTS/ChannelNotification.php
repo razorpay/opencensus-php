@@ -4,15 +4,15 @@ namespace RZP\Services\FTS;
 
 use Mail;
 use Razorpay\IFSC\IFSC;
-use Razorpay\Trace\Logger as Trace;
-
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
 use RZP\Models\Event\Entity;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\UniqueIdEntity;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\Payout\DowntimeNotification;
+use RZP\Models\Payout\Service as PayoutService;
 
 class ChannelNotification
 {
@@ -81,7 +81,9 @@ class ChannelNotification
      */
     public function channelNotify(array $input)
     {
-        $this->getConfigAndSendNotification($input);
+        (new PayoutService())->processEventNotificationFromFts($input);
+
+        return $this->getConfigAndSendNotification($input);
     }
 
     protected function sendEmail($result, $toEmailIds)
@@ -278,6 +280,10 @@ class ChannelNotification
 
             $this->processWebhook($result, $config->getMerchantId());
         }
+
+        return [
+            'message' => 'FTS channel notification processed successfully',
+        ];
     }
 
     protected function preProcessNotification($input): array

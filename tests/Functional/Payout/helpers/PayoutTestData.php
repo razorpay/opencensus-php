@@ -18,8 +18,6 @@ return [
                 'account_number'  => '2224440041626905',
                 'amount'          => 2000000,
                 'currency'        => 'INR',
-              
-              
                 'purpose'         => 'refund',
                 'narration'       => 'Batman',
                 'mode'            => 'IMPS',
@@ -12963,4 +12961,67 @@ return [
             ],
         ],
     ],
-];
+
+    'testBeneBankDowntimeConfigSetup' => [
+        'request' => [
+            'url'    => '/fts/channel/notify',
+            'method' => 'post',
+            'content' => [
+                "type" => "bene_health",
+                "payload" => [
+                    "begin"=> 1621201921,
+                    "created_at" => 1621201921,
+                    "end"=>1621202497,
+                    "entity"=>"bene_health",
+                    "id"=>"HBcQBczRgAD0I6",
+                    "instrument"=>[
+                        "bank"=> "HDFC"
+                    ],
+                    "method"=> ["IMPS"],
+                    "scheduled"=> false,
+                    "source"=> "BENEFICIARY",
+                    "status"=> "started",
+                    "updated_at"=> 1621202497
+                ]
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'message' => 'FTS channel notification processed successfully',
+            ],
+        ],
+    ],
+
+    'testBeneBankUptimeConfigSetup' => [
+        'request' => [
+            'url'    => '/fts/channel/notify',
+            'method' => 'post',
+            'content' => [
+                "type" => "bene_health",
+                "payload" => [
+                    "begin"=> 1621201921,
+                    "created_at" => 1621201921,
+                    "end"=>1621202497,
+                    "entity"=>"bene_health",
+                    "id"=>"HBcQBczRgAD0I6",
+                    "instrument"=>[
+                        "bank"=> "HDFC"
+                    ],
+                    "method"=> ["IMPS"],
+                    "scheduled"=> false,
+                    "source"=> "BENEFICIARY",
+                    "status"=> "resolved",
+                    "updated_at"=> 1621202497
+                ]
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'message' => 'FTS channel notification processed successfully',
+            ],
+        ],
+    ],
+    ];
+

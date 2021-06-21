@@ -12321,4 +12321,57 @@ class PayoutTest extends OAuthTestCase
 
         $this->startTest();
     }
+
+    public function testBeneBankDowntimeConfigSetup()
+    {
+        $this->ba->privateAuth();
+
+        $benebankConfig =
+            [
+
+            ];
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT => $benebankConfig]);
+
+        $this->ba->ftsAuth("live");
+
+        $this->startTest();
+
+        $eventConfigFromFTS = (new Admin\Service)->getConfigKey([
+            'key' => Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT
+        ]);
+
+        $this->assertNotNull($eventConfigFromFTS['BENEFICIARY']['HDFC']);
+        $this->assertEquals($eventConfigFromFTS['BENEFICIARY']['HDFC']['status'], 'started');
+    }
+
+    public function testBeneBankUptimeConfigSetup()
+    {
+        $this->ba->privateAuth();
+
+        $benebankConfig =
+            [
+                "BENEFICIARY" => [
+                    "SBIN" => [
+                        "status" => "started",
+                    ],
+                    'HDFC' => [
+                        'status' => "started"
+                    ],
+                    "default" => "resolved"
+                ]
+            ];
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT => $benebankConfig]);
+
+        $this->ba->ftsAuth("live");
+
+        $this->startTest();
+
+        $eventConfigFromFTS = (new Admin\Service)->getConfigKey([
+            'key' => Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT
+        ]);
+
+        $this->assertNotContains('HDFC',$eventConfigFromFTS['BENEFICIARY'],true);
+    }
 }

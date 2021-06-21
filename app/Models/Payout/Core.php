@@ -84,6 +84,8 @@ class Core extends Base\Core
 
     const FAILURE_STATUSES_FOR_PAYOUT_TO_AMEX = [Attempt\Status::FAILED, Attempt\Status::REVERSED];
 
+    const BENEFICIARY = 'BENEFICIARY';
+
     /**
      * @var Mutex
      */
@@ -3300,5 +3302,65 @@ class Core extends Base\Core
 
         // webhook fired via payout service
         $this->reversePayoutService($payout, $ftaFailureReason, $ftaBankStatusCode, $reversal);
+    }
+
+    public function processEventNotificationFromFts(array $input)
+    {
+        try
+        {
+            if ($input['payload']['source'] === self::BENEFICIARY)
+            {
+                $beneBankIfsc = $input['payload']['instrument']['bank'];
+
+                $status = $input['payload']['status'];
+
+                (new Validator)->validateBeneStatusReceivedFromFts($status);
+
+                $eventConfigFromFTS = (new Admin\Service)->getConfigKey([
+                    'key' => Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT
+                ]);
+
+                $this->trace->info(
+                    TraceCode::BENE_BANK_EVENT_NOTIFICATION_RECEIVED,
+                    [
+                        'bank' => $beneBankIfsc,
+                        'status' => $status,
+                    ]);
+
+                if ($status === 'resolved')
+                {
+                    if (in_array($beneBankIfsc, array_keys($eventConfigFromFTS[self::BENEFICIARY]), true) === true)
+                    {
+                        unset($eventConfigFromFTS[self::BENEFICIARY][$beneBankIfsc]);
+                    }
+                }
+                else
+                {
+                    $eventConfigFromFTS[self::BENEFICIARY][$beneBankIfsc] = array('status' => $status);
+                }
+
+                $this->trace->info(
+                    TraceCode::BENE_BANK_EVENT_NOTIFICATION_RECEIVED,
+                    [
+                        'bene_bank_redis_config' => $eventConfigFromFTS,
+                    ]);
+
+                (new Admin\Service)->setConfigKeys(
+                    [Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT => $eventConfigFromFTS]);
+            }
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::BENE_BANK_EVENT_NOTIFICATION_CONFIG_UPDATE_FAILED,
+                [
+                    'input' => $input,
+                ]);
+            $operation = 'Bene Bank uptime downtime config update failed';
+
+            (new SlackNotification)->send($operation, $input, null, 1, 'x-payouts-core-alerts');
+        }
     }
 }

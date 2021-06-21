@@ -624,6 +624,11 @@ class Service extends Base\Service
         return (strtolower($variant) === 'on');
     }
 
+    public function processEventNotificationFromFts(array $input)
+    {
+        return $this->core->processEventNotificationFromFts($input);
+    }
+
     public function getDashboardSummary(): array
     {
         $queued = $this->getQueuedPayoutsSummary();

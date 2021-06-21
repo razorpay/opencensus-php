@@ -1063,4 +1063,18 @@ class Validator extends Base\Validator
             }
         }
     }
+
+    public function validateBeneStatusReceivedFromFts(string $status)
+    {
+        if($status != 'started' and $status != 'resolved')
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "The status received from fts is " . $status . ".",
+                null,
+                [
+                    'status' => $status,
+                ]
+            );
+        }
+    }
 }
