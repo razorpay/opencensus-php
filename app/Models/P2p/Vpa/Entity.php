@@ -380,7 +380,7 @@ class Entity extends Base\Entity
         // In case of beneficiary VPA, device may not exist
         if ($this->device instanceof Device\Entity)
         {
-            $array[self::DEVICE]  = $this->device->toArrayPublic();
+            $array[self::DEVICE]  = $this->device->toArrayPartner(true);
         }
 
         return $array;

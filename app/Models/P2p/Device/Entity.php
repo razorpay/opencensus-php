@@ -396,9 +396,18 @@ class Entity extends Base\Entity
         $input[self::CUSTOMER_ID] = Customer\Entity::getSignedId($input[self::CUSTOMER_ID]);
     }
 
-    public function toArrayPartner(): array
+    public function toArrayPartner($shouldMask = false): array
     {
         $array = $this->toArrayPublic();
+
+        // authToken will be masked only in case of vpa webhook payload
+        // as it will be removed from the payload in the later stage.
+        if($shouldMask === true)
+        {
+            $array[self::AUTH_TOKEN] = mask_except_last4($array[self::AUTH_TOKEN]);
+
+            return $array;
+        }
 
         return array_except($array, [self::AUTH_TOKEN]);
     }

@@ -30,7 +30,8 @@ class VpaEventTest extends TestCase
                         'id'          => 'device_ALC01device001',
                         'entity'      => 'device',
                         'customer_id' => 'cust_ArzpLocalCust1',
-                        'contact'     => '919988771111'
+                        'contact'     => '919988771111',
+                        'auth_token'  => 'XXXXXXXXXXe001',
                     ],
                 ], $event['payload']);
             }
@@ -82,8 +83,9 @@ class VpaEventTest extends TestCase
                     'active'    => true,
                     'default'   => false,
                     'device'    => [
-                        'id'     => 'device_ALC01device001',
-                        'entity' => 'device',
+                        'id'            => 'device_ALC01device001',
+                        'entity'        => 'device',
+                        'auth_token'    => 'XXXXXXXXXXe001',
                     ],
                 ], $event['payload']);
             }
