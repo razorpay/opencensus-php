@@ -21,7 +21,7 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
         if (empty($refundId) === false)
         {
             $refundId = trim(str_replace("'", '', $refundId));
-            
+
             // Sometimes we get digits appended in refund ID
             // so take first 14 chars only.
             //
@@ -61,14 +61,17 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
             $this->reportMissingColumn($row, ReconciliationFields::TXN_REF);
         }
 
-        $onusIndicator = $this->getOnusIndicator($row);
+        // Removing dependency on onus indicator while saving arn.
+        // Slack thread - https://razorpay.slack.com/archives/CGXKVCMAL/p1622102381070900
 
-        if ($onusIndicator === self::ONUS_INDICATOR)
-        {
-            return $rrn;
-        }
+        //$onusIndicator = $this->getOnusIndicator($row);
 
-        return null;
+//        if ($onusIndicator === self::ONUS_INDICATOR)
+//        {
+//            return $rrn;
+//        }
+
+        return $rrn;
     }
 
     protected function getOnusIndicator($row)

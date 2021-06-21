@@ -31,18 +31,21 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
     public function getArn($row)
     {
-        $onusIndicator = $this->getOnusIndicator($row);
+        // Removing dependency on onus indicator while saving arn.
+        // Slack thread - https://razorpay.slack.com/archives/CGXKVCMAL/p1622102381070900
+
+//        $onusIndicator = $this->getOnusIndicator($row);
 
         $rrn = $this->getReferenceNumber($row);
 
-        if ($onusIndicator === self::ONUS_INDICATOR)
-        {
-            // Only in case of ONUS transactions, we want to store RRN
-            // In all the other cases, we want to store ARN only.
-            return $rrn;
-        }
+//        if ($onusIndicator === self::ONUS_INDICATOR)
+//        {
+//            // Only in case of ONUS transactions, we want to store RRN
+//            // In all the other cases, we want to store ARN only.
+//            return $rrn;
+//        }
 
-        return null;
+        return $rrn;
     }
 
     protected function getOnusIndicator($row)
