@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
+import { withRouter } from 'react-router-dom';
 import Button from 'common/new-ui/Button';
 import ScheduledModal from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal';
 import { connect } from 'react-redux';
 import * as ModalActions from 'merchant_common/reducers/modals';
+import { trackEnableNow } from '../../trackEvents';
 
 @connect(
   (state) => ({
@@ -12,7 +14,7 @@ import * as ModalActions from 'merchant_common/reducers/modals';
     ...ModalActions,
   },
 )
-export default class ScheduledBanner extends Component {
+class ScheduledBanner extends Component {
   constructor(props) {
     super(props);
   }
@@ -22,6 +24,7 @@ export default class ScheduledBanner extends Component {
   }
 
   openAutomatic = () => {
+    trackEnableNow(this.props.location.pathname);
     this.props.openModal({
       component: (
         <ScheduledModal
@@ -68,3 +71,5 @@ export default class ScheduledBanner extends Component {
     );
   }
 }
+
+export default withRouter(ScheduledBanner);

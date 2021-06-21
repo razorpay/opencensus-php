@@ -517,7 +517,7 @@ export default class SettlementsListContainer extends ListContainer {
                         <SettleNowButton
                           disabled={checkIfSettlementDisabled}
                           merchantId={user.current}
-                          fromWhere="Settlement"
+                          fromWhere="Settlements"
                           settlementExists={settlementExists}
                           esOndemandSettlementEnabled={esOndemandSettlementEnabled}
                           showOndemandSettlementForm={this.showOndemandSettlementForm}

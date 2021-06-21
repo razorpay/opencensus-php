@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link, withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
@@ -14,6 +14,10 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import * as InstantSettlementActions from 'merchant/reducers/instantSettlements/details';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import trackIS from 'merchant/views/Settlements/InstantSettlements/ga';
+import {
+  trackOnDemandPayoutDeductionsHover,
+  trackOnDemandPayoutDetailsFetched,
+} from '../../trackEvents';
 
 const InstantSettlementPayoutDetails = ({
   match,
@@ -23,6 +27,8 @@ const InstantSettlementPayoutDetails = ({
   fetchItem,
   fetchTotalSettlementAmount,
 }) => {
+  const [trackedPayoutDetails, setTrackedPayoutDetails] = useState(false);
+
   useEffect(() => {
     fetchItem(match.params.id);
   }, [match.params.id]);
@@ -39,6 +45,13 @@ const InstantSettlementPayoutDetails = ({
   useEffect(() => {
     trackIS.visitPayoutDetails();
   }, []);
+
+  useEffect(() => {
+    if (instantSettlement && Object.keys(instantSettlement).length > 0 && !trackedPayoutDetails) {
+      trackOnDemandPayoutDetailsFetched(instantSettlement);
+      setTrackedPayoutDetails(true);
+    }
+  }, [instantSettlement, trackedPayoutDetails]);
 
   const handleInstantSettlementsClick = () => {
     trackIS.clickCTAISPayoutDetails();
@@ -98,7 +111,10 @@ const InstantSettlementPayoutDetails = ({
               Deductions
               <i
                 className="i i-info-outline mr-10"
-                onMouseEnter={() => trackIS.hoverDeductionIconPayoutDetails()}
+                onMouseEnter={() => {
+                  trackIS.hoverDeductionIconPayoutDetails();
+                  trackOnDemandPayoutDeductionsHover();
+                }}
               >
                 <Popover align="bottom" theme="dark">
                   <PopoverBody>

@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { withRouter } from 'react-router-dom';
 import ModalHeader from 'common/ui/ModalHeader';
 import ajax from 'merchant/utils/ajax';
 import { connect } from 'react-redux';
@@ -10,6 +11,7 @@ import * as SessionActions from 'merchant/reducers/session';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import ModalCloseReasons from 'merchant/views/Settlements/Settlements/components/Modals/ModalCloseReasons';
 import { CreateTicketEmitter } from '../../../../TicketSupport/utils';
+import { trackConfirmEnableNow, trackEnableNowClose } from '../../../trackEvents';
 
 @connect(
   (state) => ({
@@ -23,7 +25,7 @@ import { CreateTicketEmitter } from '../../../../TicketSupport/utils';
     showNotification,
   },
 )
-export default class ScheduledModal extends Component {
+class ScheduledModal extends Component {
   constructor(props) {
     super(props);
 
@@ -112,6 +114,7 @@ export default class ScheduledModal extends Component {
   };
 
   onEnable = () => {
+    trackConfirmEnableNow(this.props.fromBanner ? 'banner' : this.props.location.pathname);
     this.fireGAEvent({
       eventAction: `ES Modal`,
       eventLabel: `Scheduled ES Enabling attempt | Enable Scheduled ES`,
@@ -210,7 +213,10 @@ export default class ScheduledModal extends Component {
       <>
         <ModalHeader
           title={this.successModalHeader()}
-          onCloseClick={() => this.props.closeModal()}
+          onCloseClick={() => {
+            trackEnableNowClose(this.props.fromBanner ? 'banner' : this.props.location.pathname);
+            this.props.closeModal();
+          }}
         />
         <div class="modal-body">
           <div class="overflow-box">
@@ -244,6 +250,7 @@ export default class ScheduledModal extends Component {
         <ModalHeader
           title="Enable Early Settlement"
           onCloseClick={() => {
+            trackEnableNowClose(this.props.fromBanner ? 'banner' : this.props.location.pathname);
             if (errors) {
               closeModal();
             } else {
@@ -333,3 +340,5 @@ export default class ScheduledModal extends Component {
     );
   }
 }
+
+export default withRouter(ScheduledModal);

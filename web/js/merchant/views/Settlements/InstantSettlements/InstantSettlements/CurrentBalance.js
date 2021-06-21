@@ -47,7 +47,7 @@ const CurrentBalance = ({
           <SettleNowButton
             disabled={checkIfSettlementDisabled}
             merchantId={merchantId}
-            fromWhere="Instant Settlement"
+            fromWhere="Instant Settlements"
             settlementExists={settlementExists}
             esOndemandSettlementEnabled={esOndemandSettlementEnabled}
             showOndemandSettlementForm={handleSettleNowClick}

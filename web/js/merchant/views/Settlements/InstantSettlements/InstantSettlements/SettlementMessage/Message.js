@@ -5,16 +5,19 @@ import ScheduledModal from 'merchant/views/Settlements/Settlements/components/Mo
 import trackIS, {
   EVENT_CATEGORY_DASHBOARD_INSTANT_SETTLEMENT,
 } from 'merchant/views/Settlements/InstantSettlements/ga';
+import { trackEnableNow } from '../../../trackEvents';
 
 const Message = ({ heading, description, image, showEnableNowButton, openModal }) => {
   function handleEnableNowClick() {
     trackIS.clickCTAEnableNow();
+    trackEnableNow('banner');
     openModal({
       component: (
         <ScheduledModal
           eventCategory={EVENT_CATEGORY_DASHBOARD_INSTANT_SETTLEMENT}
           fromWhere="Instant Settlements"
           goBackToInitialModalView={handleEnableNowClick}
+          fromBanner={true}
         />
       ),
       size: 'small',

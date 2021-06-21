@@ -33,6 +33,7 @@ import ModalCloseReasons from 'merchant/views/Settlements/Settlements/components
 import SettlementsUpsellBanner from 'merchant/views/Settlements/Settlements/components/SettlementsUpsellBanner';
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 import LocalStorageService from 'common/utils/localStorage';
+import { onDemandModalTrackEvents } from '../../../trackEvents';
 
 @connect((state) => ({ user: state.session.user }), {
   closeModal,
@@ -101,6 +102,7 @@ export default class OndemandModal extends Component {
     this.setState({
       clickedConfirm: true,
     });
+    onDemandModalTrackEvents.trackSettleNowFirstConfirm(fromWhere);
     trackEsConfirm(user.current);
     if (hasChangedAmount) trackEsAmountUpdated();
 
@@ -129,6 +131,7 @@ export default class OndemandModal extends Component {
           eventLabel: `Yes,Settle | Second Confirm`,
         });
         trackEsSettlementAction(user.current, fromWhere, true);
+        onDemandModalTrackEvents.trackSettleNowSecondConfirm(fromWhere);
         this.onSubmit();
       },
       abort: () => {
@@ -137,6 +140,7 @@ export default class OndemandModal extends Component {
           eventLabel: `No, Don't | Second Confirm`,
         });
         trackEsSettlementAction(user.current, fromWhere);
+        onDemandModalTrackEvents.trackSettleNowCancelConfirm(fromWhere);
       },
     });
   };
@@ -260,6 +264,12 @@ export default class OndemandModal extends Component {
           this.props.fetchOndemandRestrictions();
         })
         .catch((response) => {
+          if (response.errors) {
+            onDemandModalTrackEvents.trackSettleNowAmountError(
+              this.props.fromWhere,
+              response.errors[0],
+            );
+          }
           this.setState({
             errors: response.errors,
             validAmount: false,
@@ -295,7 +305,10 @@ export default class OndemandModal extends Component {
   }
 
   handleMouseOverTooltip = () => {
-    if (this.props.user.isFeatureEnabled('es_on_demand_restricted')) trackEsInfoHover();
+    if (this.props.user.isFeatureEnabled('es_on_demand_restricted')) {
+      trackEsInfoHover();
+      onDemandModalTrackEvents.trackSettleNowInfoHover(this.props.fromWhere);
+    }
   };
 
   showInputTooltip = () => {
@@ -317,7 +330,9 @@ export default class OndemandModal extends Component {
   };
 
   fetchBreakup = () => {
-    trackEsShowBreakup(!this.state.clickedConfirm);
+    const { clickedConfirm } = this.state;
+    trackEsShowBreakup(!clickedConfirm);
+    onDemandModalTrackEvents.trackSettleNowShowBreakup(this.props.fromWhere, clickedConfirm);
     if (this.state.clickedConfirm) {
       this.gaEventDispatcher({
         eventAction: `Show Breakup`,
@@ -421,6 +436,10 @@ export default class OndemandModal extends Component {
   validateAmount = (val) => {
     if (isInteger(val) && val > 0) {
       if (val <= 1) {
+        onDemandModalTrackEvents.trackSettleNowAmountError(
+          this.props.fromWhere,
+          'Minimum Amount should be greater than Rs. 1.00',
+        );
         this.setState({
           errors: [
             <>
@@ -537,13 +556,16 @@ export default class OndemandModal extends Component {
 
   renderPreTransaction = () => {
     const { isLoadingBreakup, validAmount, errors, isSaving, amount, instantFee, tax } = this.state;
-    const { settlableAmount, currentBalance } = this.props;
+    const { settlableAmount, currentBalance, fromWhere } = this.props;
     return (
       <div class="onmdemand-modal">
         <ModalHeader
           class="header"
           title="Instant Settlement"
-          onCloseClick={() => this.handleCloseModal('Close Modal Screen 1')}
+          onCloseClick={() => {
+            this.handleCloseModal('Close Modal Screen 1');
+            onDemandModalTrackEvents.trackSettleNowCloseClick(this.props.fromWhere);
+          }}
         />
         <div class="modal-body">
           <p>
@@ -568,6 +590,7 @@ export default class OndemandModal extends Component {
                 validator={this.validateAmount}
                 onChange={(e) => {
                   this.handleChange(e);
+                  onDemandModalTrackEvents.trackSettleAmountUpdated(fromWhere);
                 }}
               />
               <span
@@ -667,6 +690,7 @@ export default class OndemandModal extends Component {
               goBackToInitialModalView={goBackToInitialModalView}
               closeOrigin="OnDemand"
               eventCategory={this.props.eventCategory}
+              fromWhere={this.props.fromWhere}
             />
           )}
         </React.Fragment>

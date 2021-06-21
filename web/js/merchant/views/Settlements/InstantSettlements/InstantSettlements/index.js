@@ -24,7 +24,7 @@ import trackIS, {
   EVENT_CATEGORY_DASHBOARD_INSTANT_SETTLEMENT,
 } from 'merchant/views/Settlements/InstantSettlements/ga';
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
-import LocalStorageService from 'common/utils/localStorage';
+import { trackOnDemandSearchClick } from '../../trackEvents';
 
 @withRouter
 @connect(
@@ -88,8 +88,9 @@ class InstantSettlements extends ListContainer {
     }
   };
 
-  onSearchAnalytics() {
+  onSearchAnalytics(params) {
     trackIS.clickCTAISSearch();
+    trackOnDemandSearchClick(params);
   }
 
   onClearAnalytics() {

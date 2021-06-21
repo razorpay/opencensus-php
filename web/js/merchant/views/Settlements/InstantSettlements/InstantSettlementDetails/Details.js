@@ -12,6 +12,11 @@ import List from 'merchant/views/Settlements/InstantSettlements/InstantSettlemen
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import trackIS from 'merchant/views/Settlements/InstantSettlements/ga';
 import Popover, { PopoverBody } from 'common/ui/Popover';
+import {
+  trackOnDemandHoverInfo,
+  trackOnDemandIdDetails,
+  trackOnDemandViewMoreClick,
+} from '../../trackEvents';
 
 const Details = ({
   settlement,
@@ -21,8 +26,11 @@ const Details = ({
   fetchTotalSettlementAmount,
   loadingTotalSettledAmount,
 }) => {
+  const [trackedSettlementDetails, setTrackedSettlementDetails] = React.useState(false);
+
   function handlePayoutDetailClick() {
     trackIS.clickCTAViewMoreDetails();
+    trackOnDemandViewMoreClick();
     closeModal();
   }
 
@@ -34,6 +42,14 @@ const Details = ({
       return () => clearInterval(timer);
     }
   });
+
+  useEffect(() => {
+    if (settlement && Object.keys(settlement).length > 0 && !trackedSettlementDetails) {
+      trackOnDemandIdDetails(settlement);
+      setTrackedSettlementDetails(true);
+    }
+  }, [settlement, trackedSettlementDetails]);
+
   return (
     <div className="content-wrapper content-sm txn-details">
       {isLoading ? (
@@ -66,9 +82,10 @@ const Details = ({
                   <PlaceholderLoader />
                   <i
                     className="i i-info-outline total-settlement-info-icon ml-8"
-                    onMouseEnter={() =>
-                      trackIS.hoverLoadingTotalSettledAmountIconSettlementDetails()
-                    }
+                    onMouseEnter={() => {
+                      trackIS.hoverLoadingTotalSettledAmountIconSettlementDetails();
+                      trackOnDemandHoverInfo();
+                    }}
                   >
                     <Popover align="bottom" theme="dark">
                       <PopoverBody>

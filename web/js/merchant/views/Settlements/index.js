@@ -11,6 +11,7 @@ import EarlySettlementsAnnouncement from 'merchant/components/Announcements/Earl
 import CashAdvanceCampaignBanner from 'merchant/components/Announcements/CashAdvanceCampaign';
 import { handleNegativeBalanceLimit } from 'common/utils/rzp-utils';
 import { getSettlementStatus } from 'merchant/views/Capital/utils';
+import { trackOnDemandTabClick } from './trackEvents';
 
 const Settlements = ({ user, merchantBalanceConfigs, current_balance }) => {
   const [settlementExists, setSettlementExists] = useState(true);
@@ -18,6 +19,7 @@ const Settlements = ({ user, merchantBalanceConfigs, current_balance }) => {
 
   const onInstantSettlementsClick = () => {
     checkIfFirstEverSettlement();
+    trackOnDemandTabClick();
     trackIS.goToTabIS();
   };
 

@@ -6,6 +6,7 @@ import Button from 'common/new-ui/Button';
 import { CLOSE_OPTIONS } from 'merchant/views/Settlements/Settlements/data';
 import Input from 'common/new-ui/Input';
 import { trackEsChurnReason, trackEsModalCloseAction } from '../../ga';
+import { trackSettleNowCloseReason, trackSettleNowConfirmClose } from '../../../trackEvents';
 
 @connect((state) => ({ user: state.session.user }), {
   closeModal,
@@ -29,7 +30,7 @@ export default class ModalCloseReasons extends Component {
 
   submitCloseReason = () => {
     const { brief, closeReason } = this.state;
-    const { user } = this.props;
+    const { user, fromWhere, closeOrigin } = this.props;
     const analyticsPayload = {
       eventCategory: this.props.eventCategory,
       eventAction: `Reasons - ${this.props.closeOrigin}`,
@@ -39,6 +40,13 @@ export default class ModalCloseReasons extends Component {
     window.rzpAnalytics(analyticsPayload);
     trackEsChurnReason(user.current, `${closeReason}${brief ? ` | Description - ${brief}` : ''}`);
     trackEsModalCloseAction(user.current, true);
+    if (closeOrigin === 'OnDemand') {
+      const label =
+        CLOSE_OPTIONS[CLOSE_OPTIONS.findIndex((each) => each.value === closeReason)].label;
+      const desc = brief ? `| ${brief}` : '';
+      trackSettleNowCloseReason(fromWhere, `${label} ${desc}`);
+      trackSettleNowConfirmClose(fromWhere);
+    }
     this.props.closeModal();
   };
 

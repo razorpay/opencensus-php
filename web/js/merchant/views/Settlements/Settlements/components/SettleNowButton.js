@@ -6,6 +6,7 @@ import SettleNowLottieHover from 'merchant/helpers/lottieConfigs/SettleNowHover.
 import { trackAnimatedSettleBtnImpressions } from 'merchant/views/Settlements/Settlements/ga';
 import settleNowIcon from '../../../../../../icons/merchant/settle-now-thunder.svg';
 import PropTypes from 'prop-types';
+import { trackSettleNowClicked } from '../../trackEvents';
 
 const CustomLottie = lazy(() =>
   import(/* webpackChunkName: "CustomLottie" */ 'common/new-ui/Lottie'),
@@ -40,6 +41,7 @@ const SettleNowButton = ({
   };
 
   const handleSettleNowClick = (e) => {
+    trackSettleNowClicked(fromWhere);
     const merchantsSettlementStatus =
       JSON.parse(LocalStorageService.getItem('merchantsSettlementStatus')) || {};
     const isAnimationDisabled =

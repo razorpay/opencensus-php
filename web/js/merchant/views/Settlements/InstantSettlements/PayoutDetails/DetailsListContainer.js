@@ -3,6 +3,7 @@ import PayoutList from 'merchant/views/Settlements/InstantSettlements/PayoutDeta
 import PayoutFilters from 'merchant/views/Settlements/InstantSettlements/PayoutDetails/PayoutFilters';
 import PropTypes from 'prop-types';
 import trackIS from 'merchant/views/Settlements/InstantSettlements/ga';
+import { trackOnDemandPayoutSearch } from '../../trackEvents';
 
 const PayoutDetailsContainer = ({ instantSettlement }) => {
   const [status, setStatus] = useState('');
@@ -12,6 +13,10 @@ const PayoutDetailsContainer = ({ instantSettlement }) => {
 
   const handleFilterApply = () => {
     trackIS.clickCTAISSearchPayoutDetails();
+    trackOnDemandPayoutSearch({
+      status,
+      payoutId,
+    });
     const filteredItems = instantSettlement.ondemand_payouts.items.filter((item) => {
       if (status && item.status !== status) {
         return false;

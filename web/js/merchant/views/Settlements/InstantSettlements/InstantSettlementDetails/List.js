@@ -6,23 +6,30 @@ import { SettlementStatusLabel } from 'merchant/components/StatusLabel';
 import TableBody from 'common/ui/TableBody';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import trackIS from 'merchant/views/Settlements/InstantSettlements/ga';
+import { trackOnDemandPayoutIdClick } from '../../trackEvents';
 
-const ListItem = ({ settlement, settlementId }) => {
+const ListItem = ({ payout, settlement, settlementId }) => {
   return (
-    <EntityItemRow id={settlement.id}>
+    <EntityItemRow id={payout.id}>
       <td>
         <Link
           to={`/instantsettlement_details/${settlementId}`}
-          onClick={() => trackIS.clickUTRISDetails()}
+          onClick={() => {
+            trackIS.clickUTRISDetails();
+            trackOnDemandPayoutIdClick({
+              settlementDetails: settlement,
+              payoutDetails: payout,
+            });
+          }}
         >
-          <code>{settlement.utr ? settlement.utr : '-'}</code>
+          <code>{payout.utr ? payout.utr : '-'}</code>
         </Link>
       </td>
       <td className="text-right">
-        <Amount value={settlement.amount} currency="INR" />
+        <Amount value={payout.amount} currency="INR" />
       </td>
       <td className="text-center">
-        <SettlementStatusLabel status={settlement.status} />
+        <SettlementStatusLabel status={payout.status} />
       </td>
     </EntityItemRow>
   );
@@ -56,7 +63,8 @@ const List = ({ settlement, isLoading }) => {
             <ListItem
               key={onDemandPayout.id}
               settlementId={settlement.id}
-              settlement={onDemandPayout}
+              payout={onDemandPayout}
+              settlement={settlement}
             />
           ))}
         </TableBody>

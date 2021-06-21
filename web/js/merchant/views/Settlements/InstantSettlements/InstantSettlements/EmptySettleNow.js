@@ -2,10 +2,12 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import Button from 'common/new-ui/Button';
 import trackIS from 'merchant/views/Settlements/InstantSettlements/ga';
+import { trackSettleNowClicked } from '../../trackEvents';
 
 const EmptySettleNow = ({ showOndemandSettlementForm }) => {
   const handleSettleNowClick = (e) => {
     trackIS.clickCTAEmptySettleNow();
+    trackSettleNowClicked('Empty State');
     showOndemandSettlementForm(e);
   };
   return (
