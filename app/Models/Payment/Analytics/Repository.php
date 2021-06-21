@@ -127,20 +127,21 @@ class Repository extends Base\Repository
 
         $this->trace->info(TraceCode::PAYMENT_ANALYTICS_PARTITION_CREATE_QUERY, ['query' => $query]);
 
-        $connection = ($this->mode === Mode::LIVE) ? Connection::PAYMENT_ANALYTICS_PARTITION_LIVE : Connection::PAYMENT_ANALYTICS_PARTITION_TEST;
+        $connection = $this->getConnectionForPartitionQuery();
 
         DB::connection($connection)->statement($query);
     }
 
-    // commenting as not dropping partitions as of now
-    // public function dropPartition()
-    // {
-    //     $query = "ALTER TABLE " . $this->entity . " drop partition " . $this->getOldestPartitionName();
+    public function dropPartition()
+    {
+        $query = "ALTER TABLE " . $this->entity . " drop partition " . $this->getOldestPartitionName();
 
-    //     $this->trace->info(TraceCode::PAYMENT_ANALYTICS_PARTITION_DROP_QUERY, ['query' => $query]);
+        $this->trace->info(TraceCode::PAYMENT_ANALYTICS_PARTITION_DROP_QUERY, ['query' => $query]);
 
-    //     DB::connection(Connection::PAYMENT_ANALYTICS_PARTITION_LIVE)->statement($query);
-    // }
+        $connection = $this->getConnectionForPartitionQuery();
+
+        DB::connection($connection)->statement($query);
+    }
 
     // partition to be created
     protected function getNewestPartitionName()
@@ -158,7 +159,9 @@ class Repository extends Base\Repository
     // partition to be deleted
     protected function getOldestPartitionName()
     {
-        $db = DB::connection()->getDatabaseName();
+        $connection = $this->getConnectionForPartitionQuery();
+
+        $db = DB::connection($connection)->getDatabaseName();
 
         $partitions = DB::select(DB::RAW("select partition_name from information_schema.partitions where table_schema='$db' and table_name='$this->entity' and partition_ordinal_position=1"));
 
@@ -172,6 +175,17 @@ class Repository extends Base\Repository
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, null, 'No partition to drop');
         }
 
+        $this->trace->info(
+            TraceCode::PAYMENT_ANALYTICS_PARTITON_TO_DROP,
+            ['partition_being_dropped' => $partitions]);
+
         return $partitions[0]->PARTITION_NAME;
+    }
+
+    protected function getConnectionForPartitionQuery()
+    {
+        $connection = ($this->mode === Mode::LIVE) ? Connection::PAYMENT_ANALYTICS_PARTITION_LIVE : Connection::PAYMENT_ANALYTICS_PARTITION_TEST;
+
+        return $connection;
     }
 }

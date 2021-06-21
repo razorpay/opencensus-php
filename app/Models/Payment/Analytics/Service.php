@@ -9,7 +9,6 @@ use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
-use RZP\Models\Payment\NewAnalytics\Repository as NewAnalyticsRepo;
 
 class Service extends Base\Service
 {
@@ -115,8 +114,7 @@ class Service extends Base\Service
         {
             $this->repo->payment_analytics->createPartition();
 
-            // not dropping partitions for now, will be used later
-            // $this->repo->payment_analytics->dropPartition();
+            $this->repo->payment_analytics->dropPartition();
         }
         catch (\Illuminate\Database\QueryException $e)
         {
