@@ -927,7 +927,7 @@ export default class SubscriptionDetailsContainer extends React.Component {
           onManualAttempt={this.onManualAttempt}
           onTestChargeAttempt={
             this.props.mode === 'test' &&
-            (entity.status === 'created'
+            (entity.status === 'created' && entity.payment_method !== 'emandate'
               ? this.onTestChargeAttemptWhileCreate
               : this.onTestChargeAttempt)
           }

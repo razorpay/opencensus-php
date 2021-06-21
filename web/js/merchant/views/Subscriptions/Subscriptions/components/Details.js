@@ -57,7 +57,7 @@ export default (props) => {
     (['authenticated', 'active', 'halted', 'pending'].indexOf(subscription.status) > -1 ||
       subscription.status === 'created');
 
-  const testModeMsg = getTestModeMessage(subscription.status) || {};
+  const testModeMsg = getTestModeMessage(subscription) || {};
 
   const allowUpdateSubscription =
     ['authenticated', 'active'].includes(subscription.status) &&
@@ -315,8 +315,21 @@ export default (props) => {
   );
 };
 
-const getTestModeMessage = (status) => {
-  switch (status) {
+const getTestModeMessage = (subscription) => {
+
+  const chargeThisNowBtn = {
+    btnLabel: 'Charge this now',
+    infoMsg: ' Attempt charge now for next scheduled invoice. ',
+  };
+
+  if (subscription.payment_method === 'emandate' &&
+      subscription.status === 'created' &&
+      subscription.pay_now_enabled) {
+
+    return chargeThisNowBtn;
+  }
+
+  switch (subscription.status) {
     case 'halted': {
       return {
         btnLabel: 'Issue invoice',
@@ -339,10 +352,7 @@ const getTestModeMessage = (status) => {
     }
 
     default: {
-      return {
-        btnLabel: 'Charge this now',
-        infoMsg: ' Attempt charge now for next scheduled invoice. ',
-      };
+      return chargeThisNowBtn;
     }
   }
 };
