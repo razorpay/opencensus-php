@@ -12,6 +12,7 @@ use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Detail\Status;
+use RZP\Models\Merchant\Escalations as NewEscalations;
 use RZP\Models\Workflow\Action\MakerType;
 
 class Workflow extends BaseEscalationType
@@ -49,6 +50,14 @@ class Workflow extends BaseEscalationType
         if ($merchant->merchantDetail->tnc !== null)
         {
             $tags[] = 'tnc_generated';
+        }
+
+        $escalation = $this->repo->merchant_onboarding_escalations->fetchEscalationForThresholdAndMilestone(
+            $merchant->getId(), 'L1', 1500000);
+
+        if(empty($escalation) === false)
+        {
+            $tags[] = '15k_transacted_before_l2';
         }
 
         // The reason routeName and Controller is set here because

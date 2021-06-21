@@ -187,6 +187,9 @@ final class RazorxTreatment
     // experiment to enable esign aadhar functionality
     const ESIGN_AADHAR_FUNCTIONALITY = 'esign_aadhar_functionality';
 
+    // experiment to enable instant activations on L1 submit;
+    const INSTANT_ACTIVATION_FUNCTIONALITY = 'instant-activations-functionality';
+
     // experiment to enable msme doc verification through OCR;
     const MSME_DOC_VERIFICATION = 'MSME_DOC_VERIFICATION';
 
@@ -271,7 +274,6 @@ final class RazorxTreatment
      * Experiment to indicate if a payment should go via capture queue for Master Card Network
      */
     const PAYMENT_GATEWAY_CAPTURE_ASYNC_MC = 'payment_gateway_capture_asyc_mc';
-
 
     /**
      * Experiment to indicate if a payment should go via capture queue for Visa and other n/ws like Amex,Diner etc.

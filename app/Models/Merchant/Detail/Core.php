@@ -106,6 +106,22 @@ class Core extends Base\Core
         $this->dedupeCore = $dedupeCore;
     }
 
+    public function isPOIVerificationRequiredForL2(Entity $merchantDetails, array $input)
+    {
+        if (empty($input[Entity::PROMOTER_PAN]) === true)
+        {
+            return true;
+        }
+
+        if (($merchantDetails->getPromoterPan() === $input[Entity::PROMOTER_PAN]) and
+            ($merchantDetails->getPoiVerificationStatus() === BvsValidationConstants::VERIFIED))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     public function saveMerchantDetails(array $input,
                                         Merchant\Entity $merchant,
                                         string $originProduct = Product::PRIMARY)
@@ -127,6 +143,10 @@ class Core extends Base\Core
 
         $merchantDetails->getValidator()->blockInstantActivationCriticalFields($input);
 
+        $activationFormMilestone = $input[Entity::ACTIVATION_FORM_MILESTONE] ?? null;
+
+        unset($input[Entity::ACTIVATION_FORM_MILESTONE]);
+
         $merchantDetails->edit($input);
 
         // do pan validation
@@ -142,14 +162,15 @@ class Core extends Base\Core
 
         return $this->mutex->acquireAndRelease(
             $merchant->getId(),
-            function() use ($input, $merchantDetails, $merchant, $originProduct, $oldMerchantDetails) {
+            function() use ($input, $merchantDetails, $merchant, $originProduct, $oldMerchantDetails, $activationFormMilestone) {
 
                 return $this->repo->transactionOnLiveAndTest(function() use (
                     $input,
                     $merchantDetails,
                     $merchant,
                     $originProduct,
-                    $oldMerchantDetails
+                    $oldMerchantDetails,
+                    $activationFormMilestone
                 ) {
 
                     $this->repo->merchant->lockForUpdate($merchant->getId());
@@ -162,7 +183,7 @@ class Core extends Base\Core
 
                     $response = $this->createResponse($merchantDetails);
 
-                    if ($this->canSubmit($input, $response) === true)
+                    if ($this->canSubmit($input, $response, $activationFormMilestone) === true)
                     {
                         // blacklisted merchant should not be allowed to submit l2 form
                         $merchantDetails->getValidator()->validateFullActivationForm($merchant);
@@ -409,6 +430,48 @@ class Core extends Base\Core
         $bvsValidation = (new AutoKyc\Bvs\Core())->verify($merchantDetails->getId(), $payload);
     }
 
+    public function canActivateMerchant(DetailEntity $merchantDetails, $isImpersonated)
+    {
+        $activationFormMilestone = $merchantDetails->getActivationFormMilestone();
+
+        $activationFlow = $merchantDetails->getActivationFlow();
+
+        if (empty($activationFlow) === true and
+            $merchantDetails->canDetermineActivationFlow() === true)
+        {
+            $activationFlow = $this->getActivationFlow(
+                $merchantDetails->merchant, $merchantDetails, null, false);
+        }
+
+        if ($isImpersonated === true)
+        {
+            return false;
+        }
+
+        if ($activationFlow !== ActivationFlow::WHITELIST)
+        {
+            return false;
+        }
+
+        if ($merchantDetails->isUnregisteredBusiness() === true)
+        {
+            if (($merchantDetails->isPoiVerified() === true) and
+                ($activationFormMilestone === DetailConstants::L1_SUBMISSION))
+            {
+                return true;
+            }
+            return false;
+        }
+        else
+        {
+            if ($activationFormMilestone === DetailConstants::L1_SUBMISSION)
+            {
+                return true;
+            }
+            return false;
+        }
+    }
+
     public function submitActivationForm(Merchant\Entity $merchant, string $originProduct = Product::PRIMARY)
     {
         $this->repo->assertTransactionActive();
@@ -417,8 +480,17 @@ class Core extends Base\Core
 
         [$isImpersonated, $action] = $this->dedupeCore->match($merchant);
 
+        if ($this->canActivateMerchant($merchantDetails, $isImpersonated) === true)
+        {
+            $merchant->activate();
+
+            $this->repo->saveOrFail($merchant);
+        }
+
+        $merchantDetails->setActivationFormMilestone(DetailConstants::L2_SUBMISSION);
+
         $this->autoUpdateMerchantActivationFlows(
-            $merchant, $merchantDetails, null, [Detail\Constants::INTERNATIONAL_ACTIVATION], false, $isImpersonated);
+            $merchant, $merchantDetails, null, [Detail\Constants::INTERNATIONAL_ACTIVATION], false);
 
         $statusToBeUpdated = $this->getApplicableActivationStatus($merchantDetails);
 
@@ -439,7 +511,7 @@ class Core extends Base\Core
 
         $this->verifyAadhaarWithPanIfApplicable($merchant, $merchantDetails);
 
-        if($statusToBeUpdated != null)
+        if ($statusToBeUpdated != null)
         {
             $activationStatusData = [
                 Entity::ACTIVATION_STATUS => $statusToBeUpdated,
@@ -535,13 +607,12 @@ class Core extends Base\Core
      * @param Merchant\Entity|null $partner
      * @param array|string[] $activationFlowTypes
      * @param bool $batchFlow
-     * @param bool $isImpersonated
      */
     public function autoUpdateMerchantActivationFlows(Merchant\Entity $merchant,
                                                       Merchant\Detail\Entity $merchantDetails = null,
                                                       Merchant\Entity $partner = null,
                                                       array $activationFlowTypes = Detail\Constants::ACTIVATION_FLOWS,
-                                                      bool $batchFlow = false, bool $isImpersonated = false
+                                                      bool $batchFlow = false
     )
     {
         $this->repo->assertTransactionActive();
@@ -558,11 +629,6 @@ class Core extends Base\Core
         }
 
         $this->updateActivationFlows($merchant, $merchantDetails, $partner, $activationFlowTypes, $batchFlow);
-
-        if ($isImpersonated === true)
-        {
-            $merchantDetails->setActivationFlow(ActivationFlow::GREYLIST);
-        }
 
         $eventAttributes['activation_flow'] = $merchantDetails->getActivationFlow();
 
@@ -683,7 +749,28 @@ class Core extends Base\Core
 
         $this->convertStatesToStatesCode($input);
 
+        //added after introducing activation_form_milestone and separation of L1 and L2
+        $requiredInputFields = [
+            Entity::BUSINESS_CATEGORY,
+            Entity::PROMOTER_PAN,
+            Entity::PROMOTER_PAN_NAME,
+            Entity::BUSINESS_DBA,
+            Entity::BUSINESS_TYPE,
+            Entity::BUSINESS_NAME,
+        ];
+
+        foreach ($requiredInputFields as $field)
+        {
+            if ((empty($input[$field]) === true) and
+                (empty($merchantDetails->getAttribute($field)) === false))
+            {
+                $input[$field] = $merchantDetails->getAttribute($field);
+            }
+        }
+
         $merchantDetails->getValidator()->performInstantActivationValidations($input);
+
+        unset($input[Entity::ACTIVATION_FORM_MILESTONE]);
 
         $merchantDetails->edit($input, 'instant_activation');
 
@@ -737,6 +824,8 @@ class Core extends Base\Core
 
                     $this->updateLegalEntity($input, $merchant);
 
+                    $merchantDetails->setActivationFormMilestone(DetailConstants::L1_SUBMISSION);
+
                     $this->repo->saveOrFail($merchantDetails);
 
                     $merchantCore = new Merchant\Core();
@@ -751,24 +840,17 @@ class Core extends Base\Core
                     }
                     else
                     {
-                        if ($merchantCore->isAutoKycEnabled($merchantDetails, $merchant) === true)
-                        {
-                            if ($this->canProcessInstantActivation($merchantDetails) === true)
-                            {
-                                $this->processInstantActivation($merchant, $merchantDetails);
-                            }
-                        }
-                        else
-                        {
-                            $this->processInstantActivation($merchant, $merchantDetails);
-                        }
+                        $this->processInstantActivation($merchant, $merchantDetails);
                     }
+
+                    $this->triggerValidationRequests($merchant, $merchantDetails, DetailConstants::L1_SUBMISSION);
 
                     $response = $this->createResponse($merchantDetails);
 
                     // used to show the progress of the activation form on the dashboard
                     $activationProgress = $response['verification']['activation_progress'];
                     $merchantDetails->setActivationProgress($activationProgress);
+
                     $this->repo->saveOrFail($merchantDetails);
 
                     return $response;
@@ -834,9 +916,19 @@ class Core extends Base\Core
 
         $this->autoUpdateMerchantActivationFlows($merchant, $merchantDetails);
 
-        if (BusinessType::isUnregisteredBusiness($merchantDetails->getBusinessType()) === true)
+        if ($isImpersonated === true)
         {
-            if ($isImpersonated === false and $this->canProcessInstantActivation($merchantDetails) === true)
+            return;
+        }
+
+        if ($merchantDetails->isUnregisteredBusiness() === true)
+        {
+            $isAutoKycEnabled = (new Merchant\Core)->isAutoKycEnabled($merchantDetails, $merchant);
+
+            $canProcessInstantActivation = $this->canProcessInstantActivation($merchantDetails);
+
+            if (($isAutoKycEnabled === true) and
+                ($canProcessInstantActivation === true))
             {
                 // in case of unregistered business if pan is verified then instantly activate merchant
                 (new Detail\ActivationFlow\Whitelist())->process($merchant);
@@ -846,28 +938,32 @@ class Core extends Base\Core
         {
             // $activationFlow will be an instance of the ActivationFlowInterface
             $activationFlow = ActivationFlow\Factory::getActivationFlowImpl($merchantDetails);
+
             $activationFlow->process($merchant);
         }
     }
 
     protected function handleFlowForImpersonatedMerchant(Merchant\Entity $merchant, Entity $merchantDetails, $action)
     {
-        $this->triggerWorkflowFlowForImpersonatedMerchant($merchant, $merchantDetails);
+        if ($merchantDetails->getActivationFormMilestone() !== DetailConstants::L1_SUBMISSION)
+        {
+            $this->triggerWorkflowFlowForImpersonatedMerchant($merchant, $merchantDetails);
+        }
 
-        if(empty($action) === false)
+        $merchant->deactivate();
+
+        if (empty($action) === false)
         {
             switch ($action)
             {
                 case DeDupe\Constants::DEACTIVATE:
                     $merchant->merchantDetail->setLocked(true);
-                    $merchant->deactivate();
                     break;
 
                 case DeDupe\Constants::UNREG_DEACTIVATE:
-                    if($merchantDetails->isUnregisteredBusiness() === true)
+                    if ($merchantDetails->isUnregisteredBusiness() === true)
                     {
                         $merchant->merchantDetail->setLocked(true);
-                        $merchant->deactivate();
                     }
                     break;
             }
@@ -875,7 +971,7 @@ class Core extends Base\Core
 
         $dedupeTag = $this->dedupeCore->getDedupeTagForAction($merchantDetails, $action);
 
-        if(empty($dedupeTag) === false)
+        if (empty($dedupeTag) === false)
         {
             (new Merchant\Core)->appendTag($merchant, $dedupeTag);
         }
@@ -900,10 +996,6 @@ class Core extends Base\Core
             return;
         }
 
-        $oldMerchantDetails = clone $merchantDetails;
-        $newMerchantDetails = clone $merchantDetails;
-        $newMerchantDetails->setActivationFlow(ActivationFlow::WHITELIST);
-
         $this->app['workflow']
             ->setPermission(Permission\Name::IMPERSONATING_MERCHANT_DEDUPE)
             ->setRouteName(DEConstants::ACTIVATION_ROUTE_NAME)
@@ -913,8 +1005,8 @@ class Core extends Base\Core
             ->setRouteParams([DetailEntity::ID => $merchant->getId()])
             ->setInput([])
             ->setEntity($merchant->merchantDetail->getEntity())
-            ->setOriginal($oldMerchantDetails)
-            ->setDirty($newMerchantDetails);
+            ->setOriginal([])
+            ->setDirty($merchantDetails);
 
         try {
             $this->app['workflow']->handle();
@@ -1572,11 +1664,17 @@ class Core extends Base\Core
         Mail::queue($notifyAdminMail);
     }
 
-    protected function canSubmit($input, $response)
+    protected function canSubmit($input, $response, $activationFormMilestone = null)
     {
-        return (($response['can_submit'] === true) and
-                (isset($input[Entity::SUBMIT]) === true) and
-                ($input[Entity::SUBMIT] === '1'));
+        if ($response['can_submit'] === false)
+        {
+            return false;
+        }
+
+        $submit = $input[Entity::SUBMIT] ?? false;
+
+        return (($submit === '1') or
+            ($activationFormMilestone === DEConstants::L2_SUBMISSION));
     }
 
     /**
@@ -2209,15 +2307,25 @@ class Core extends Base\Core
         $hardEscalationLevel4 = $this->repo->merchant_auto_kyc_escalations->fetchEscalationsForMerchantAndTypeAndLevel
         ($merchant->getMerchantId(), Merchant\AutoKyc\Escalations\Constants::HARD_LIMIT, 4);
 
+        $isDedupeBlocked = $this->dedupeCore->isDedupeBlocked($merchant);
+        $isDedupeMatch   = $this->dedupeCore->isMerchantImpersonated($merchant);
+        $dedupe          = [
+            'isMatch'       => $isDedupeMatch,
+            'isUnderReview' => !$isDedupeBlocked
+        ];
+
         $response[Merchant\Entity::ACTIVATED]                   = (int) $merchant->isActivated();
         $response[Merchant\Entity::LIVE]                        = $merchant->isLive();
         $response[Merchant\Entity::INTERNATIONAL]               = $merchant->isInternational();
         $response[Constants::MERCHANT]                          = $merchant->toArrayPublic();
         $response[Entity::STAKEHOLDER]                          = $merchantDetails->stakeholder;
         $response[Entity::MERCHANT_AVG_ORDER_VALUE]             = $merchantDetails->avgOrderValue;
+        $response[Entity::ACTIVATION_PROGRESS]                  = $response['verification'][Entity::ACTIVATION_PROGRESS];
+        $response['dedupe']                                     = $dedupe;
+        $response['isDedupe']                                   = $isDedupeBlocked;
         $response['isAutoKycDone']                              = $this->isAutoKycDone($merchantDetails);
         $response['isHardLimitReached']                         = empty($hardEscalationLevel4) ? false : true;
-        $response['isDedupe']                                   = $this->dedupeCore->isDedupeBlocked($merchant);
+        $response['activationStatusChangeLogs']                 = $this->getStatusChangeLogs($merchant);
 
         if ($this->isMerchantTncApplicable($merchant) === true)
         {
@@ -2227,6 +2335,13 @@ class Core extends Base\Core
         $response = $this->appendBankingSpecificDetails($response, $merchant);
 
         return $response;
+    }
+
+    private function getStatusChangeLogs(Merchant\Entity $merchant)
+    {
+        $statusChangeLogs = (new Merchant\Core)->getActivationStatusChangeLog($merchant);
+
+        return array_column($statusChangeLogs->toArray(), 'name');
     }
 
     /**
@@ -2589,7 +2704,7 @@ class Core extends Base\Core
 
         $currentActivationFlow = $merchantDetails->getActivationFlow();
 
-        if(empty($currentActivationFlow) === true and
+        if (empty($currentActivationFlow) === true and
             $merchantDetails->canDetermineActivationFlow())
         {
             $currentActivationFlow = $this->getActivationFlow(
@@ -2598,8 +2713,11 @@ class Core extends Base\Core
 
         $isWhitelisted = ($currentActivationFlow === ActivationFlow::WHITELIST);
 
-        if ($isWhitelisted === true and
-            in_array($currentActivationStatus, $excludeActivationStatusList) === false)
+        $isImpersonated = $this->dedupeCore->isMerchantImpersonated($merchantDetails->merchant);
+
+        if (($isWhitelisted === true) and
+            ($isImpersonated === false) and
+            (in_array($currentActivationStatus, $excludeActivationStatusList) === false))
         {
             $isSelfServeEnabled = (new Merchant\Core())->isRazorxExperimentEnable(
                 $merchantDetails->getMerchantId(),
@@ -2628,10 +2746,11 @@ class Core extends Base\Core
         ];
 
         $currentActivationStatus = $merchantDetails->getActivationStatus();
+
         $isImpersonated = $this->dedupeCore->isMerchantImpersonated($merchantDetails->merchant);
 
-        if ($isImpersonated === false and
-            in_array($currentActivationStatus, $excludeActivationStatusList) === false)
+        if (($isImpersonated === false) and
+            (in_array($currentActivationStatus, $excludeActivationStatusList) === false))
         {
             $isSelfServeEnabled = $this->mcore->isRazorxExperimentEnable(
                 $merchantDetails->getMerchantId(),
@@ -2650,7 +2769,7 @@ class Core extends Base\Core
     {
         $businessType = $merchantDetails->getBusinessType();
 
-        if (isset($businessType) === false or $businessType === '')
+        if (empty($businessType) === true)
         {
             return false;
         }
@@ -3244,7 +3363,6 @@ class Core extends Base\Core
 
         $this->setShopEstablishmentVerifiableZone($merchantDetails, $response);
 
-
         foreach ($validationFields as $key)
         {
             //
@@ -3287,7 +3405,57 @@ class Core extends Base\Core
             $response['can_submit'] = true;
         }
 
+        $isExperimentEnabled = (new Merchant\Core())->isRazorxExperimentEnable($merchant->getId(),
+            RazorxTreatment::INSTANT_ACTIVATION_FUNCTIONALITY);
+
+        if ($isExperimentEnabled === true)
+        {
+            $response['verification']['activation_progress'] = $this->getActivationProgress($merchantDetails);
+        }
+
         return $response;
+    }
+
+    private function getActivationProgress(Entity $merchantDetails)
+    {
+        $activationProgress = 10;
+
+        if ($merchantDetails->avgOrderValue !== null)
+        {
+            $activationProgress = 40;
+        }
+
+        $milestone = $merchantDetails->getActivationFormMilestone();
+
+        switch ($milestone)
+        {
+            case DetailConstants::L1_SUBMISSION:
+                $activationProgress = 60;
+                break;
+
+            case DetailConstants::L2_SUBMISSION:
+                $activationProgress = 80;
+                break;
+        }
+
+        if (in_array(
+            Status::ACTIVATED_MCC_PENDING,
+            $this->getStatusChangeLogs($merchantDetails->merchant)) === true)
+        {
+            $activationProgress = 90;
+        }
+
+        if ($merchantDetails->tnc !== null)
+        {
+            $activationProgress += 5;
+        }
+
+        if ($merchantDetails->getActivationStatus() === Status::ACTIVATED)
+        {
+            $activationProgress = 100;
+        }
+
+        return $activationProgress;
     }
 
     private function setShopEstablishmentVerifiableZone(Entity $merchantDetails, array &$response)
@@ -3735,7 +3903,7 @@ class Core extends Base\Core
     {
         (new Validator())->validateInput('search_business_details', $input);
 
-        if(isset($input[DEConstants::SEARCH_STRING]) === false)
+        if (isset($input[DEConstants::SEARCH_STRING]) === false)
         {
             $input[DEConstants::SEARCH_STRING] = "";
         }
@@ -3904,12 +4072,13 @@ class Core extends Base\Core
      *
      * @param Merchant\Entity $merchant
      * @param Entity          $merchantDetails
+     * @param string          $activationFormMilestone
      */
-    protected function triggerValidationRequests(Merchant\Entity $merchant, Entity $merchantDetails): void
+    protected function triggerValidationRequests(Merchant\Entity $merchant, Entity $merchantDetails, string $activationFormMilestone = ''): void
     {
         $factory = new requestDispatcher\Factory();
 
-        $requestCreators = $factory->getBvsRequestDispatchers($merchant, $merchantDetails);
+        $requestCreators = $factory->getBvsRequestDispatchers($merchant, $merchantDetails, $activationFormMilestone);
 
         foreach ($requestCreators as $requestCreator)
         {

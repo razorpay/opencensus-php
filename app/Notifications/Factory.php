@@ -17,9 +17,23 @@ class Factory
             case Channel::SMS:
                 $class = self::getSmsService($namespace);
                 return new $class($event, $args);
+            case Channel::EMAIL:
+                $class = self::getEmailService($namespace);
+                return new $class($event, $args);
             default:
                 throw new Exception\LogicException('invalid channel for notification: '. $channel);
         }
+    }
+
+    private static function getEmailService(string $namespace)
+    {
+        $class = $namespace . '\\' . 'EmailNotificationService';
+
+        if (class_exists($class) === true)
+        {
+            return $class;
+        }
+        throw new Exception\LogicException($class . ' is not a valid class');
     }
 
     private static function getWhatsappService(string $namespace)

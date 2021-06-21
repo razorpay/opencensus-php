@@ -14,6 +14,7 @@ use RZP\Models\Merchant;
 use RZP\Constants\Table;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
+use RZP\Models\Admin\Org;
 use RZP\Gateway\Billdesk;
 use RZP\Constants\Product;
 use RZP\Models\Settlement;
@@ -474,6 +475,39 @@ class Repository extends Base\Repository
                     ->having('gmv', '>=' , $gmvThreshold)
                     ->pluck(Entity::MERCHANT_ID)
                     ->toArray();
+    }
+
+    public function fetchTransactedMerchants(string $type, int $createdAt)
+    {
+        $transactionsMerchantIdColumn  = $this->dbColumn(Entity::MERCHANT_ID);
+        $merchantIdColumn              = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
+        $merchantOrgIdColumn           = $this->repo->merchant->dbColumn(Merchant\Entity::ORG_ID);
+        $merchantParentIdColumn        = $this->repo->merchant->dbColumn(Merchant\Entity::PARENT_ID);
+
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+            ->join(Table::MERCHANT, $merchantIdColumn, '=', $transactionsMerchantIdColumn)
+            ->select(Entity::MERCHANT_ID)
+            ->where($this->dbColumn(Entity::TYPE), '=', $type)
+            ->where($this->dbColumn(Entity::CREATED_AT), '>=', $createdAt)
+            ->where($merchantOrgIdColumn, '=',  Org\Entity::RAZORPAY_ORG_ID)
+            ->where($merchantParentIdColumn, '=', null)
+            ->distinct()
+            ->get()
+            ->pluck(Entity::MERCHANT_ID)
+            ->toArray();
+    }
+
+    public function fetchTotalAmountByTransactionTypeAboveThreshold(
+        array $merchantIdList, string $type, int $threshold): array
+    {
+        return $this->newQueryWithConnection($this->getReportingReplicaConnection())
+            ->where($this->dbColumn(Entity::TYPE), '=', $type)
+            ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
+            ->groupBy(Entity::MERCHANT_ID)
+            ->selectRaw('SUM(' . Entity::AMOUNT . ') as total,' . Entity::MERCHANT_ID)
+            ->having('total', '>=' , $threshold)
+            ->get()
+            ->toArray();
     }
 
     public function updateSettledAtToNow($txn)

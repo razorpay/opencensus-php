@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
+use RZP\Models\Admin\Org;
 use RZP\Models\Merchant\Stakeholder;
 use RZP\Models\Feature\Constants as FeatureConstants;
 
@@ -299,14 +300,28 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchMerchantIdsByActivationStatus(array $activationStatusList): array
+    public function fetchMerchantIdsByActivationStatus(array $activationStatusList, int $createdAt = null): array
     {
-        return $this->newQuery()
+        $detailMerchantIdColumn        = $this->dbColumn(Entity::MERCHANT_ID);
+        $merchantIdColumn              = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
+        $merchantOrgIdColumn           = $this->repo->merchant->dbColumn(Merchant\Entity::ORG_ID);
+        $merchantParentIdColumn        = $this->repo->merchant->dbColumn(Merchant\Entity::PARENT_ID);
+
+        $query = $this->newQuery()
+                    ->join(Table::MERCHANT, $merchantIdColumn, '=', $detailMerchantIdColumn)
+                    ->where($merchantOrgIdColumn, '=',  Org\Entity::RAZORPAY_ORG_ID)
+                    ->where($merchantParentIdColumn, '=', null)
                     ->select(Entity::MERCHANT_ID)
-                    ->whereIn(Entity::ACTIVATION_STATUS, $activationStatusList)
-                    ->get()
-                    ->pluck(Entity::MERCHANT_ID)
-                    ->toArray();
+                    ->whereIn(Entity::ACTIVATION_STATUS, $activationStatusList);
+
+        if (empty($createdAt) === false)
+        {
+            $query->where($this->dbColumn(Entity::CREATED_AT), '>=', $createdAt);
+        }
+
+        return $query->get()
+            ->pluck(Entity::MERCHANT_ID)
+            ->toArray();
     }
 
     public function filterMerchantIdsByActivationStatus(array $mids, array $activationStatusList): array

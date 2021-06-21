@@ -148,15 +148,24 @@ class Service extends Base\Service
 
     public function saveMerchantDetailsForActivation(array $input)
     {
-        $merchant = $this->repo->merchant->findOrFailPublic($this->merchant->getMerchantId());
+        $activationFormMilestone = $input[Entity::ACTIVATION_FORM_MILESTONE] ?? null;
 
-        $response = $this->saveMerchantDetails($input, $merchant);
+        if ($activationFormMilestone === DEConstants::L1_SUBMISSION)
+        {
+            $response = $this->saveInstantActivationDetails($input);
+        }
+        else
+        {
+            $merchant = $this->repo->merchant->findOrFailPublic($this->merchant->getMerchantId());
 
-        $this->app['terminals_service']->reRequestInternalInstrumentRequestsOnActivationFormSubmit($merchant->getId());
+            $response = $this->saveMerchantDetails($input, $merchant);
 
-        $this->app->hubspot->trackL2ContactProperties($input, $this->merchant);
+            $this->app['terminals_service']->reRequestInternalInstrumentRequestsOnActivationFormSubmit($merchant->getId());
 
-        $this->app['diag']->trackOnboardingEvent(EventCode::KYC_SAVE_MODIFICATIONS_SUCCESS, $this->merchant, null, $input);
+            $this->app->hubspot->trackL2ContactProperties($input, $this->merchant);
+
+            $this->app['diag']->trackOnboardingEvent(EventCode::KYC_SAVE_MODIFICATIONS_SUCCESS, $this->merchant, null, $input);
+        }
 
         return $response;
     }
@@ -1691,7 +1700,7 @@ class Service extends Base\Service
 
         $requestDispatcher =  $factory->getBvsRequestDispatcherForArtefact(
             $validationArtefact, $merchant, $merchant->merchantDetail);
-        
+
         return $requestDispatcher->fetchValidationDetails();
     }
 }

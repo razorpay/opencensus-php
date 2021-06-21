@@ -158,6 +158,9 @@ class Table
     const MERCHANT_AVG_ORDER_VALUE      = 'merchant_avg_order_value';
     const MERCHANT_TNC                  = 'merchant_tnc';
 
+    const MERCHANT_ONBOARDING_ESCALATIONS   = 'merchant_onboarding_escalations';
+    const ONBOARDING_ESCALATION_ACTIONS     = 'onboarding_escalation_actions';
+
     // This table does not belong to api service but is stored in api db.
     // API Service should be owner of its DB and all the migrations for other
     // services have to be stored in API source only

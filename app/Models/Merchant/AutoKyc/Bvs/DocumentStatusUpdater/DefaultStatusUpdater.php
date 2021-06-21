@@ -7,6 +7,8 @@ use App;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\BvsValidation\Entity;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\BvsValidation\Constants;
@@ -91,9 +93,48 @@ class DefaultStatusUpdater extends BaseStatusUpdater
             ]);
         }
 
+        $this->instantlyActivateMerchantIfApplicable($this->merchant, $this->merchantDetails);
+
         $this->updateMerchantContext();
 
         $this->sendConsumedValidationResultEvent();
+    }
+
+    protected function instantlyActivateMerchantIfApplicable($merchant, Detail\Entity $merchantDetails)
+    {
+        try
+        {
+            if ($this->artefactType !== Constant::PERSONAL_PAN)
+            {
+                return;
+            }
+
+
+            $isExperimentEnabled = (new MerchantCore())->isRazorxExperimentEnable($merchant->getId(),
+                RazorxTreatment::INSTANT_ACTIVATION_FUNCTIONALITY);
+
+            if ($isExperimentEnabled === false)
+            {
+                return;
+            }
+
+            $isImpersonated = (new Detail\DeDupe\Core())->isMerchantImpersonated($merchantDetails->merchant);
+
+            if ((new Detail\Core)->canActivateMerchant($merchantDetails, $isImpersonated) === true)
+            {
+                (new Detail\ActivationFlow\Whitelist())->process($merchant);
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, null,
+                TraceCode::UPDATE_MERCHANT_CONTEXT_JOB_ERROR,
+                [
+                    'merchant_id' => $this->merchantId,
+                    'method'      => __FUNCTION__
+                ]);
+
+        }
     }
 
     public function updateStatusToPending(): void

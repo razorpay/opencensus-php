@@ -910,6 +910,8 @@ class MerchantDetailTest extends OAuthTestCase
 
     public function testMerchantDetailsFetch()
     {
+        $this->enableRazorXTreatmentForRazorXRefund();
+
         $merchant = $this->fixtures->create('merchant', ['id' => '10000000000002',
                                                          'email' => 'razorpay@razorpay.com']);
 

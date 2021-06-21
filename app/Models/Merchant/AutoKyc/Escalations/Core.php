@@ -6,12 +6,15 @@ use Mail;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant\Core as MerchantCore;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Mail\Merchant\HardLimitLevelThreeEmail;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Status as DetailStatus;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
+use RZP\Models\Merchant\Escalations as NewEscalation;
 
 class Core extends Base\Core
 {
@@ -75,10 +78,14 @@ class Core extends Base\Core
         // filter merchants who have not escalated to soft limit already
         $merchantIdList = $this->filterMerchantIdsNotEscalatedToType($merchantIdList, Constants::SOFT_LIMIT);
 
-        // filter merchants who have crossed GMV above threshold
-        $merchantIdList = $this->repo->transaction->fetchMerchantIdListWithGmvAboveThreshold(
-            $merchantIdList, env(Constants::SOFT_LIMIT_MCC_PENDING_THRESHOLD)
-        );
+        // filter merchants who have crossed settlements above threshold
+        $merchantsGmvList = $this->repo->transaction->fetchTotalAmountByTransactionTypeAboveThreshold(
+            $merchantIdList, 'payment', env(Constants::SOFT_LIMIT_MCC_PENDING_THRESHOLD));
+
+        $merchantIdList = array_map(function($element)
+        {
+            return $element[Entity::MERCHANT_ID];
+        }, $merchantsGmvList);
 
         if(empty($merchantIdList) === true)
         {
@@ -119,15 +126,21 @@ class Core extends Base\Core
             DetailStatus::ACTIVATED_MCC_PENDING
         ]);
 
-        // filter merchants who have crossed GMV above threshold
-        $merchantIdList = $this->repo->transaction->fetchMerchantIdListWithGmvAboveThreshold(
-            $merchantIdList, env(Constants::HARD_LIMIT_MCC_PENDING_THRESHOLD));
+        // filter merchants who have crossed payments above threshold
+        $merchantsGmvList = $this->repo->transaction->fetchTotalAmountByTransactionTypeAboveThreshold(
+            $merchantIdList, 'payment', env(Constants::HARD_LIMIT_MCC_PENDING_THRESHOLD));
+
+        $merchantIdList = array_map(function($element)
+        {
+            return $element[Entity::MERCHANT_ID];
+        }, $merchantsGmvList);
 
         if (empty($merchantIdList) === true)
         {
             $this->trace->info(TraceCode::SELF_SERVE_CRON_FAILURE, [
                 'type'      => Constants::HARD_LIMIT,
-                'reason'    => 'no merchants to run the cron'
+                'reason'    => 'no merchants to run the cron',
+                'count'     => count($merchantIdList),
             ]);
             return;
         }
@@ -136,6 +149,10 @@ class Core extends Base\Core
 
         // finally raise escalations
         (new Handler)->handleEscalations($merchants, Constants::HARD_LIMIT, 1);
+
+        // save these escalations to new escalation entity (v2) as well
+        // TODO: in future we should move everything to V2
+        $this->saveEscalationToV2($merchantsGmvList, "hard_limit_level_1");
     }
 
     /**
@@ -207,6 +224,46 @@ class Core extends Base\Core
                     $this->sendMailToInformHardLimitReached($merchant);
                     $this->repo->merchant->saveOrFail($merchant);
                 }
+
+                // save these escalations to new escalation entity (v2) as well
+                // TODO: in future we should move everything to V2
+                $merchantIdList = array_map(function($merchant)
+                {
+                    return $merchant->getId();
+                }, $merchants);
+
+                $merchantsGmvList = $this->repo->transaction->fetchTotalAmountByTransactionTypeAboveThreshold(
+                    $merchantIdList, 'payment', env(Constants::HARD_LIMIT_MCC_PENDING_THRESHOLD));
+
+                $this->saveEscalationToV2($merchantsGmvList, "hard_limit_level_4");
+            }
+        }
+    }
+
+    /**
+     * This method is just to save V1 triggered escalations to V2 escalation entity
+     * In future we'll move everything from V1 to V2.
+     * @param $merchantsList array of total settled amonut to a merchant
+     * @param $milestone
+     */
+    private function saveEscalationToV2($merchantsList, $milestone)
+    {
+        foreach ($merchantsList as $data)
+        {
+            $merchantId = $data[Entity::MERCHANT_ID];
+            $amount = $data['total'];
+            $threshold = env(Constants::HARD_LIMIT_MCC_PENDING_THRESHOLD);
+
+            $isExperimentEnabled = (new MerchantCore())->isRazorxExperimentEnable($merchantId,
+                RazorxTreatment::INSTANT_ACTIVATION_FUNCTIONALITY);
+
+            if($isExperimentEnabled === true)
+            {
+                (new NewEscalation\Handler)->triggerEscalation(
+                    $merchantId, $amount, $threshold,
+                    (new NewEscalation\Core)->getEscalationConfigForThresholdAndMilestone($threshold, $milestone),
+                    NewEscalation\Constants::PAYMENT_BREACH
+                );
             }
         }
     }

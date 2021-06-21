@@ -5,6 +5,7 @@ namespace RZP\Notifications;
 
 use App;
 
+use RZP\Constants\Mode;
 use Illuminate\Foundation\Application;
 use Razorpay\Trace\Logger as Trace;
 
@@ -37,6 +38,10 @@ abstract class BaseNotificationService
         if (isset($this->app['rzp.mode']))
         {
             $this->mode = $this->app['rzp.mode'];
+        }
+        else
+        {
+            $this->mode = Mode::LIVE;
         }
 
         $this->trace = $this->app['trace'];

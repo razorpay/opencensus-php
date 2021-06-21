@@ -43,7 +43,7 @@ class SmsNotificationService extends BaseNotificationService
     {
         $merchant = $this->args['merchant'];
 
-        return [
+        $payload = [
             'receiver' => $this->getPhone(),
             'template' => $this->getTemplateMessage(),
             'source'   => self::ONBOARDING_SOURCE,
@@ -52,6 +52,9 @@ class SmsNotificationService extends BaseNotificationService
                 'dashboardUrl' => $this->app['config']->get('applications.dashboard.url')
             ]
         ];
+
+        $payload['params'] = array_merge($payload['params'], $this->args['params'] ?? []);
+        return $payload;
     }
 
     private function getPhone()

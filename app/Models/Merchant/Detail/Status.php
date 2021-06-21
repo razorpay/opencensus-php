@@ -25,4 +25,16 @@ class Status
         self::ACTIVATED_MCC_PENDING => [self::NEEDS_CLARIFICATION, self::ACTIVATED],
         self::ACTIVATED           => [],
     ];
+
+    const OPEN_STATUSES = [
+        self::INSTANTLY_ACTIVATED,
+        self::UNDER_REVIEW,
+        self::NEEDS_CLARIFICATION,
+        self::ACTIVATED_MCC_PENDING
+    ];
+
+    const END_STATUSES  = [
+        self::ACTIVATED,
+        self::REJECTED
+    ];
 }

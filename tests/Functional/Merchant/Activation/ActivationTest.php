@@ -102,13 +102,57 @@ class ActivationTest extends OAuthTestCase
             ->will($this->returnCallback(
                 function($mid, $feature, $mode) {
                     if ($feature === RazorxTreatment::SELF_SERVE_AUTO_KYC or
-                        $feature === RazorxTreatment::PRICING_PLAN_DEFAULT_METHODS)
+                        $feature === RazorxTreatment::PRICING_PLAN_DEFAULT_METHODS or
+                        $feature === RazorxTreatment::INSTANT_ACTIVATION_FUNCTIONALITY)
                     {
                         return 'on';
                     }
 
                     return 'off';
                 }));
+    }
+
+    public function testInstantActivationWithActivationFormMilestoneAsL1Submission()
+    {
+        $merchant = $this->fixtures->create('merchant', [
+            'pricing_plan_id' => '1hDYlICobzOCYt'
+        ]);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => $merchant->getId()
+        ]);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'       => $merchant->getId(),
+            'promoter_pan'      => 'EBPPK8222K',
+            'promoter_pan_name' => 'User 1',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' .$merchant->id);
+
+        $this->startTest();
+    }
+
+    public function testInstantActivationWithInvalidActivationFormMilestone()
+    {
+        $this->ba->proxyAuth('rzp_test_' .self::DEFAULT_MERCHANT_ID);
+
+        $this->startTest();
+    }
+
+    public function testInstantActivationWithNullActivationFormMilestone()
+    {
+        $merchant = $this->fixtures->create('merchant', [
+            'pricing_plan_id' => '1hDYlICobzOCYt'
+        ]);
+
+        $this->fixtures->on('live')->create('methods:default_methods', [
+            'merchant_id' => $merchant->getId()
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' .$merchant->id);
+
+        $this->startTest();
     }
 
     public function testMerchantActivationCategoriesResponseForAdminAuth()
@@ -1282,6 +1326,8 @@ class ActivationTest extends OAuthTestCase
      */
     public function testBlacklistInstantActivation()
     {
+        $this->enableRazorXTreatmentForRazorX();
+
         $this->fixtures->create('merchant_detail', [
             'merchant_id'             => self::DEFAULT_MERCHANT_ID,
             'contact_email'           => 'test@razorpay.com',
@@ -1299,6 +1345,8 @@ class ActivationTest extends OAuthTestCase
 
     public function testGreylistInstantActivation()
     {
+        $this->enableRazorXTreatmentForRazorX();
+
         $this->fixtures->create('merchant_detail', [
             'merchant_id'             => self::DEFAULT_MERCHANT_ID,
             'contact_email'           => 'test@razorpay.com',
@@ -1876,13 +1924,14 @@ class ActivationTest extends OAuthTestCase
     protected function getInstantlyActivatedMerchantDetailData($merchantId)
     {
         return [
-            'merchant_id'          => $merchantId,
-            'business_category'    => 'ecommerce',
-            'business_subcategory' => 'fashion_and_lifestyle',
-            'promoter_pan'         => 'ABCPE0000Z',
-            'promoter_pan_name'    => 'John Doe',
-            'activation_status'    => 'instantly_activated',
-            'activation_flow'      => 'whitelist',
+            'merchant_id'               => $merchantId,
+            'business_category'         => 'ecommerce',
+            'business_subcategory'      => 'fashion_and_lifestyle',
+            'promoter_pan'              => 'ABCPE0000Z',
+            'promoter_pan_name'         => 'John Doe',
+            'activation_status'         => 'instantly_activated',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L1'
         ];
     }
 
@@ -3402,6 +3451,7 @@ class ActivationTest extends OAuthTestCase
         $this->startTest();
 
     }
+
     public function testHardLimitEmailSent()
     {
         Mail::fake();
@@ -3449,6 +3499,26 @@ class ActivationTest extends OAuthTestCase
             $this->assertEquals('emails.merchant.hard_limit_reached', $mail->view);
 
             return true;
+        });
+    }
+
+    public function testKycSubmissionForInstantlyActivatedMerchantWithL2Milestone()
+    {
+        Mail::fake();
+
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->setupKycSubmissionForInstantlyActivatedMerchant($merchantId);
+
+        $this->startTest();
+
+        Mail::assertQueued(\RZP\Mail\Admin\NotifyActivationSubmission::class, function($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals('emails.admin.notify_activation_submission', $mail->view);
+
+            return $this->assertRazorpayOrgMailData($viewData['merchant_details']);
         });
     }
 

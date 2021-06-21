@@ -53,6 +53,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $setConfigKeysRules = [
+        ConfigKey::ASYNC_ESCALATION_HANDLING_ENABLED    => 'filled|boolean',
         ConfigKey::TERMINAL_SELECTION_LOG_VERBOSE       => 'filled|boolean',
         ConfigKey::PRICING_RULE_SELECTION_LOG_VERBOSE   => 'filled|boolean',
         ConfigKey::GATEWAY_PROCESSED_REFUNDS            => 'filled|array',

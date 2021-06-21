@@ -4,10 +4,12 @@
 namespace Unit\Models\Merchant\Bvs\DocumentStatusUpdater;
 
 
-use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
-use RZP\Services\KafkaMessageProcessor;
-use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
+use RZP\Services\KafkaMessageProcessor;
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class PersonalPanStatusUpdaterTest extends TestCase
 {
@@ -51,5 +53,57 @@ class PersonalPanStatusUpdaterTest extends TestCase
     public function testFailureEvent()
     {
         $this->processKafkaEvent('failed', 'failed');
+    }
+
+    public function testPoiVerifiedTriggersInstantlyActivate()
+    {
+        $this->mockRazorxTreatment();
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
+            'activation_form_milestone' => 'L1',
+            'business_category'         => 'ecommerce',
+            'business_subcategory'      => 'fashion_and_lifestyle',
+        ]);
+
+        $mid = $merchantDetail->getId();
+
+        $this->fixtures->merchant->edit($mid, [
+            MerchantEntity::CATEGORY          => '5399',
+            MerchantEntity::CATEGORY2         => 'ecommerce',
+        ]);
+
+        $bvsValidation = $this->fixtures->create('bvs_validation',
+            [
+                'owner_id'      => $mid,
+                'artefact_type' => Constant::PERSONAL_PAN,
+            ]);
+
+        $kafkaEventPayload = [
+            'data'  => [
+                'validation_id'     => $bvsValidation->getValidationId(),
+                'status'            => 'success',
+                'error_description' => '',
+                'error_code'        => ''
+            ]
+        ];
+
+        (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_BVS_EVENTS, $kafkaEventPayload, 'live');
+
+        $merchant = $this->getDbLastEntity('merchant');
+
+        $this->assertEquals(true, $merchant->isActivated());
+    }
+
+    protected function mockRazorxTreatment(string $returnValue = 'on')
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn($returnValue);
     }
 }

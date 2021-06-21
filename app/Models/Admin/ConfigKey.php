@@ -247,7 +247,10 @@ class ConfigKey
     const MAX_ACTIVATION_PROGRESS_FOR_POPUP_RANGE1
         = self::PREFIX . 'max_activation_progress_for_popup_range1';
 
+    const ASYNC_ESCALATION_HANDLING_ENABLED = self::PREFIX . 'async_escalation_handling_enabled';
+
     const PUBLIC_KEYS = [
+        self::ASYNC_ESCALATION_HANDLING_ENABLED,
         self::TERMINAL_SELECTION_LOG_VERBOSE,
         self::PRICING_RULE_SELECTION_LOG_VERBOSE,
         self::THROTTLE_MOCK_LOG_VERBOSE,

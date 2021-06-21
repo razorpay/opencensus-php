@@ -61,6 +61,9 @@ class Route
         'merchant_autokyc_soft_limit'              => ['post',     'merchants/auto-kyc-cron/soft-limit',             'MerchantController@postSoftLimitBreachOnAutoKYC'                 ],
         'merchant_autokyc_hard_limit'              => ['post',     'merchants/auto-kyc-cron/hard-limit',             'MerchantController@postHardLimitBreachOnAutoKYC'                 ],
         'merchant_autokyc_escalation'              => ['post',     'merchants/auto-kyc-cron/escalations',            'MerchantController@handleAutoKycEscalationCron'                  ],
+
+        'merchant_onboarding_escalations'          => ['post',     'merchants/onboarding/escalations',               'MerchantController@handleOnboardingEscalationsCron'],
+        'fetch_merchant_escalation'                => ['get',      'merchants/onboarding/escalations',               'MerchantController@fetchOnboardingEscalations'],
         'payment_create'                           => ['post',     'payments',                                       'PaymentCreateController@postCreatePayment'                         ],
         'internal_transactions'                    => ['post',      'internal/transactions',                         'TransactionController@postInternalTransaction'                 ],
         // @todo: Require feature S2S for payment_create_private route.
@@ -2950,6 +2953,7 @@ class Route
         'merchant_autokyc_soft_limit',
         'merchant_autokyc_hard_limit',
         'merchant_autokyc_escalation',
+        'merchant_onboarding_escalations',
         'settlement_ondemand_process',
         'internal_balance_fetch_by_merchant_id',
         'merchant_balance_create',
@@ -3594,6 +3598,7 @@ class Route
         'merchant_gstin_self_serve_update',
         'merchant_international_toggle',
         'merchant_activation_details',
+        'fetch_merchant_escalation',
         'merchant_aov_config',
         'merchant_get_disabled_banks',
         'merchant_activation_upload_file',
@@ -5012,6 +5017,7 @@ class Route
         'merchant_activation_needs_clarification'  => Permission::VIEW_MERCHANT,
         'merchant_get_terminals'                   => Permission::VIEW_TERMINAL,
         'merchant_activation_details'              => Permission::VIEW_MERCHANT,
+        'fetch_merchant_escalation'                => Permission::VIEW_MERCHANT,
         'merchant_aov_config'                      => Permission::VIEW_MERCHANT,
         'merchant_fetch'                           => Permission::VIEW_MERCHANT,
         'admin_get_file'                           => Permission::ADMIN_GET_FILE,
@@ -6544,6 +6550,7 @@ class Route
             'merchant_activation_business_details',
             'merchant_activation_company_search',
             'merchant_activation_details',
+            'fetch_merchant_escalation',
             'merchant_activation_needs_clarification',
             'merchant_activation_save',
             'merchant_tnc_save',
@@ -8876,7 +8883,7 @@ class Route
             'merchant_autokyc_soft_limit',
             'merchant_autokyc_hard_limit',
             'merchant_autokyc_escalation',
-
+            'merchant_onboarding_escalations',
             'setcronjob_webhook',
             // The rest are crons
             'entity_tax_update',

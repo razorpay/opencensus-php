@@ -130,7 +130,7 @@ return [
     'testUpdateIfscCodeWithFailure' => [
         'request' => [
             'content' => [
-                'bank_branch_ifsc' => 'ICIC000000'
+                'bank_branch_ifsc'          => 'ICIC000000'
             ],
             'url' => '/merchant/activation',
             'method' => 'POST'
@@ -219,7 +219,7 @@ return [
     'testUpdateDetailForLockedMerchant' => [
         'request' => [
             'content' => [
-                'bank_branch_ifsc' => 'ICIC0000001'
+                'bank_branch_ifsc'          => 'ICIC0000001'
             ],
             'url' => '/merchant/activation',
             'method' => 'POST'
@@ -819,14 +819,14 @@ return [
                     'contact_email'         => 'razorpay@razorpay.com',
                     'gstin'                 => null,
                     'p_gstin'               => null,
-                    'activation_progress'   => 0,
+                    'activation_progress'   => 10,
                     'can_submit'            => false,
                     'steps_finished'        => [],
                     'activated'             => 0,
                     'verification'          => [
                         'status'                => 'disabled',
                         'disabled_reason'       => 'required_fields',
-                        'activation_progress'   => 6,
+                        'activation_progress'   => 10,
                     ],
                 ],
                 'auto_capture_late_auth'    => false,
@@ -1235,8 +1235,8 @@ return [
     'testUnsupportedActivationFlow' => [
         'request'   => [
             'content' => [
-                'bank_branch_ifsc' => 'ICIC0000002',
-                'submit'           => 1,
+                'bank_branch_ifsc'          => 'ICIC0000002',
+                'submit'                    => 1,
             ],
             'url'     => '/merchant/activation',
             'method'  => 'POST',

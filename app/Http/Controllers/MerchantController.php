@@ -2024,6 +2024,22 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function handleOnboardingEscalationsCron()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_ONBOARDING_ESCALATIONS)->handleOnboardingEscalationsCron($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function fetchOnboardingEscalations()
+    {
+        $response = $this->service(E::MERCHANT_ONBOARDING_ESCALATIONS)->fetchOnboardingEscalations();
+
+        return ApiResponse::json($response);
+    }
+
     /**
      * This function is called from oauth service.
      * It is responsible for sending banking accounts webhook to pure play partners.

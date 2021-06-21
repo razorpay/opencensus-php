@@ -27,7 +27,7 @@ class WhatsappNotificationService extends BaseNotificationService
 
         $templateName = self::ONBOARDING_PREFIX . strtolower($this->event);
 
-        return [
+        $payload = [
             'ownerId'       => $merchant->getMerchantId(),
             'ownerType'     => Constants::MERCHANT,
             'template_name' => $templateName,
@@ -36,11 +36,23 @@ class WhatsappNotificationService extends BaseNotificationService
                 'dashboardUrl' => $this->app['config']->get('applications.dashboard.url')
             ]
         ];
+
+        $payload['params'] = array_merge($payload['params'], $this->args['params'] ?? []);
+        return $payload;
     }
 
     private function getTemplateMessage()
     {
-        return Events::WHATSAPP_TEMPLATES[$this->event];
+        if(isset(Events::WHATSAPP_TEMPLATES[$this->event]) === true)
+        {
+            return Events::WHATSAPP_TEMPLATES[$this->event];
+        }
+        else
+        {
+            $template = Events::WHATSAPP_TEMPLATES_NEW[$this->event];
+
+            return view($template, $this->getPayload()['params'])->render();
+        }
     }
 
     private function getPhone()

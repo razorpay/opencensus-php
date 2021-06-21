@@ -16,7 +16,6 @@ use RZP\Models\Merchant\Detail\DeDupe\Core as DedupeCore;
 
 class DedupeTest extends OAuthTestCase
 {
-    
     protected function mockMerchantRiskClient(string $merchantId, array $fields = [])
     {
         $mockMR = $this->getMockBuilder(MerchantRiskClient::class)
@@ -313,6 +312,42 @@ class DedupeTest extends OAuthTestCase
         self::assertEquals(Constants::DEDUPE_TAG, $dedupeTag);
     }
 
+    public function testL2FormSubmitWithDedupeTrueAndUnderReviewPaymentBlocked()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
+            'business_type' => 4
+        ]);
+
+        $merchant = $this->fixtures->edit('merchant', $merchantDetail->getId(), [
+            'activated'     => 1,
+            'live'          => 1
+        ]);
+
+        $mocks = $this->createAndFetchMocks(true, ['match', 'isDedupeBlocked']);
+
+        $dedupeCoreMock = $mocks['dedupeCoreMock'];
+        $detailCoreMock = $mocks['detailCoreMock'];
+
+        $dedupeCoreMock->expects($this->any())
+            ->method('match')
+            ->willReturn([true, Constants::UNREG_DEACTIVATE]);
+        $dedupeCoreMock->expects($this->any())->method('isDedupeBlocked')
+            ->willReturn(false);
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $detailCoreMock->setDedupeCore($dedupeCoreMock);
+
+        $input = [
+            'activation_form_milestone' => 'L2'
+        ];
+
+        $response = $detailCoreMock->saveMerchantDetails($input, $merchant);
+
+        $this->assertFalse($response['merchant']['live']);
+        $this->assertFalse($response['merchant']['activated']);
+    }
+
     private function verifyLockAndDeactivate(array $response)
     {
         $this->assertTrue($response['locked']);
@@ -341,7 +376,6 @@ class DedupeTest extends OAuthTestCase
 
         return $subMerchant;
     }
-
 
     private function mockRazorx()
     {

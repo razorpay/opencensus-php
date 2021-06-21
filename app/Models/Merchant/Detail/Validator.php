@@ -36,6 +36,7 @@ class Validator extends Base\Validator
     const INVALID_CLARIFICATION_MODE_MESSAGE            = 'Invalid clarification mode';
     const INVALID_FILE_NON_NGO_ORGANISATION_TYPE        = 'Invalid file for non NGO organisation type';
     const INVALID_CLARIFICATION_MODE_FOR_STATUS_MESSAGE = 'Clarification mode should not be sent for this status';
+    const INVALID_ACTIVATION_FORM_MILESTONE_MESSAGE     = 'Invalid Activation Form milestone';
     const INVALID_BUSINESS_CATEGORY                     = 'Invalid business category';
     const INVALID_BUSINESS_SUBCATEGORY                  = 'Invalid business subcategory';
     const INVALID_PREDEFINED_REASON                     = 'Invalid Predefined Reason';
@@ -127,6 +128,7 @@ class Validator extends Base\Validator
         Entity::SUBMIT                          => 'sometimes',
         Entity::ADDITIONAL_WEBSITES             => 'sometimes|array|max:15',
         Entity::ADDITIONAL_WEBSITES. '.*'       => 'required_with:'. Entity::ADDITIONAL_WEBSITES . '|string|active_url',
+        Entity::ACTIVATION_FORM_MILESTONE       => 'sometimes|string|max:30|custom',
         Entity::SHOP_ESTABLISHMENT_NUMBER       => 'sometimes|string|max:100|nullable',
     ];
 
@@ -224,6 +226,7 @@ class Validator extends Base\Validator
         Entity::AUTHORIZED_SIGNATORY_RESIDENTIAL_ADDRESS => 'sometimes|max:255',
         Entity::AUTHORIZED_SIGNATORY_DOB                 => 'sometimes|date_format:"Y-m-d"|before:"today"',
         Entity::PLATFORM                                 => 'sometimes|max:40',
+        Entity::ACTIVATION_FORM_MILESTONE                => 'sometimes|string|max:30|custom',
         Entity::SHOP_ESTABLISHMENT_NUMBER                => 'sometimes|string|max:100|nullable',
         Entity::BUSINESS_SUGGESTED_PIN                   => 'sometimes|size:6',
         Entity::BUSINESS_SUGGESTED_ADDRESS               => 'sometimes|max:255',
@@ -307,6 +310,7 @@ class Validator extends Base\Validator
         Entity::BUSINESS_REGISTERED_STATE   => 'sometimes|alpha_space|max:2|custom',
         Entity::BUSINESS_REGISTERED_CITY    => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_REGISTERED_PIN     => 'sometimes|size:6',
+        Entity::ACTIVATION_FORM_MILESTONE   => 'sometimes|string|max:30|custom',
     ];
 
     protected static $instantActivationBatchRules = [
@@ -667,6 +671,22 @@ class Validator extends Base\Validator
         if (in_array($newStatus, Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING[$currentStatus], true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(self::INVALID_STATUS_CHANGE_MESSAGE);
+        }
+    }
+
+    public function validateActivationFormMilestone($attribute, $value)
+    {
+        if (empty($value) === true)
+        {
+            return;
+        }
+
+        $allowedMilestones = Constants::ALLOWED_MILESTONES;
+
+        if (in_array($value, $allowedMilestones, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                self::INVALID_ACTIVATION_FORM_MILESTONE_MESSAGE);
         }
     }
 

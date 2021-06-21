@@ -18,7 +18,10 @@ class Handler extends BaseHandler
         Events::REGISTERED_PAYMENTS_ENABLED          => [Channel::SMS, Channel::WHATSAPP],
         Events::UNREGISTERED_PAYMENTS_ENABLED        => [Channel::SMS, Channel::WHATSAPP],
         Events::PENNY_TESTING_FAILURE                => [Channel::SMS, Channel::WHATSAPP],
-        Events::ACTIVATED_MCC_PENDING                => [Channel::WHATSAPP]
+        Events::ACTIVATED_MCC_PENDING                => [Channel::WHATSAPP],
+
+        Events::PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION   => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
+        Events::PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL]
     ];
 
     private $activationStatus;

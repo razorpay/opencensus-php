@@ -11,4 +11,5 @@ class Channel
      */
     const SMS       = "sms";
     const WHATSAPP  = "whatsapp";
+    const EMAIL     = "email";
 }

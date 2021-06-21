@@ -167,6 +167,8 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     //merchant's business banking id generated from banking account service.
     const BAS_BUSINESS_ID                          = 'bas_business_id';
 
+    const ACTIVATION_FORM_MILESTONE                = 'activation_form_milestone';
+
     // relation name
     const STAKEHOLDER               = 'stakeholder';
     const MERCHANT_AVG_ORDER_VALUE  = 'merchant_avg_order_value';
@@ -296,6 +298,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::AUTHORIZED_SIGNATORY_DOB,
         self::PLATFORM,
         self::DATE_OF_ESTABLISHMENT,
+        self::ACTIVATION_FORM_MILESTONE,
         self::SHOP_ESTABLISHMENT_NUMBER,
         self::CLIENT_APPLICATIONS,
         self::BUSINESS_SUGGESTED_PIN,
@@ -401,6 +404,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::FUND_ACCOUNT_VALIDATION_ID,
         self::GSTIN_VERIFICATION_STATUS,
         self::DATE_OF_ESTABLISHMENT,
+        self::ACTIVATION_FORM_MILESTONE,
         self::COMPANY_PAN_VERIFICATION_STATUS,
         self::CIN_VERIFICATION_STATUS,
         self::COMPANY_PAN_DOC_VERIFICATION_STATUS,
@@ -608,6 +612,16 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     public function getActivationStatus()
     {
         return $this->getAttribute(self::ACTIVATION_STATUS);
+    }
+
+    public function getActivationFormMilestone()
+    {
+        return $this->getAttribute(self::ACTIVATION_FORM_MILESTONE);
+    }
+
+    public function setActivationFormMilestone($milestone)
+    {
+        $this->setAttribute(self::ACTIVATION_FORM_MILESTONE, $milestone);
     }
 
     public function getBankAccountName()
@@ -1178,7 +1192,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
 
     public function canDetermineActivationFlow()
     {
-        if($this->getBusinessCategory() === BusinessCategory::OTHERS)
+        if ($this->getBusinessCategory() === BusinessCategory::OTHERS)
         {
             return true;
         }

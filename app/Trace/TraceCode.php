@@ -4134,6 +4134,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_ONBOARDING_SMS_SENT                        = 'MERCHANT_ONBOARDING_SMS_SENT';
     const MERCHANT_ONBOARDING_SMS_FAILED                      = 'MERCHANT_ONBOARDING_SMS_FAILED';
 
+    const MERCHANT_ONBOARDING_EMAIL_SENT                      = 'MERCHANT_ONBOARDING_EMAIL_SENT';
+    const MERCHANT_ONBOARDING_EMAIL_FAILED                    = 'MERCHANT_ONBOARDING_EMAIL_FAILED';
+
     // Trim fields trace code
     const START_ACCOUNT_NUMBER_TRIMMING                                 = 'START_ACCOUNT_NUMBER_TRIMMING';
     const ACCOUNT_NUMBER_TRIMMED                                        = 'ACCOUNT_NUMBER_TRIMMED';
@@ -4194,6 +4197,16 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SELF_SERVE_CRON                       = 'SELF_SERVE_CRON';
     const SELF_SERVE_CRON_FAILURE               = 'SELF_SERVE_CRON_FAILURE';
     const SELF_SERVE_ESCALATION_FAILURE         = 'SELF_SERVE_ESCALATION_FAILURE';
+
+    //Merchant Onboarding Escalations
+    const ESCALATION_CRON_TRACE                 = 'ESCALATION_CRON_TRACE';
+    const ESCALATION_ATTEMPT                    = 'ESCALATION_ATTEMPT';
+    const ESCALATION_ATTEMPT_SKIPPED            = 'ESCALATION_ATTEMPT_SKIPPED';
+    const ESCALATION_ATTEMPT_FAILED             = 'ESCALATION_ATTEMPT_FAILED';
+    const ESCALATION_ATTEMPT_SUCCESS            = 'ESCALATION_ATTEMPT_SUCCESS';
+    const ESCALATION_ACTION_JOB                 = 'ESCALATION_ACTION_JOB';
+    const ESCALATION_ACTION_JOB_ERROR           = 'ESCALATION_ACTION_JOB_ERROR';
+    const ESCALATION_ACTION_FAILURE             = 'ESCALATION_ACTION_FAILURE';
 
     // Tracing error logs
     const OPENCENSUS_ERROR = 'OPENCENSUS_ERROR';

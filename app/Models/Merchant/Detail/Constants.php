@@ -199,6 +199,16 @@ class Constants
 
     const SEARCH_STRING = 'search_string';
 
+    const L1_SUBMISSION = 'L1';
+    const L2_SUBMISSION = 'L2';
+    /*
+     * Allowed activation form milestones
+     */
+    const ALLOWED_MILESTONES = [
+        self::L1_SUBMISSION,
+        self::L2_SUBMISSION
+    ];
+
     const ACTIVATION_ROUTE_NAME     = 'merchant_activation_status';
     const ACTIVATION_CONTROLLER     = 'RZP\Http\Controllers\MerchantController@updateActivationStatus';
 

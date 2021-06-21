@@ -344,6 +344,11 @@ return [
         'live'       => env('AWS_ONBOARDING_KYC_VERIFICATION_QUEUE'),
     ],
 
+    'merchant_onboarding_escalation' => [
+        'test'       => env('AWS_MERCHANT_ONBOARDING_ESCALATION_QUEUE'),
+        'live'       => env('AWS_MERCHANT_ONBOARDING_ESCALATION_QUEUE'),
+    ],
+
     'bank_transfer_create' => [
         'test'       => env('AWS_BANK_TRANSFER_CREATE_TEST_QUEUE'),
         'live'       => env('AWS_BANK_TRANSFER_CREATE_LIVE_QUEUE'),

@@ -1,0 +1,1 @@
+Hi {{{$merchantName}}}, you have already transacted INR {{{$threshold}}} out of your allotted INR 15000 payment limit. To remove this limit, submit your bank account and KYC details otherwise your payments will get paused. Visit your razorpay dashboard to quickly update your KYC details now!

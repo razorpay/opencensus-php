@@ -186,6 +186,8 @@ class DetailServiceTest extends TestCase
 
         $this->merchantDetailEntityMock->shouldReceive('getActivationFlow')->andReturn('whitelist');
 
+        $this->merchantDetailEntityMock->shouldReceive('getAttribute')->andReturn();
+
         $response = $this->merchantService->saveInstantActivationDetails($input);
 
         $this->assertEquals(false, $response['auto_activated']);

@@ -65,6 +65,24 @@ final class FactoryData
             ]
         );
 
+        $factory(\RZP\Models\Merchant\Escalations\Entity::class, [
+                'id'            => $faker->uniqueid,
+                'merchant_id'   => '10000000000000',
+                'type'          => 'payment_breach',
+                'milestone'     => 'L1',
+                'amount'        => 500000,
+                'threshold'     => 500000
+            ]
+        );
+
+        $factory(\RZP\Models\Merchant\Escalations\Actions\Entity::class, [
+                'id'            => $faker->uniqueid,
+                'escalation_id'  => $faker->uniqueid,
+                'action_handler' => 'some handler',
+                'status'         => 'pending'
+            ]
+        );
+
         $factory(\RZP\Models\Merchant\AutoKyc\Escalations\Entity::class, [
                 'id'            => $faker->uniqueid,
                 'merchant_id'       =>  '10000000000000',
@@ -786,6 +804,12 @@ final class FactoryData
         );
 
         $factory(\RZP\Models\Merchant\Stakeholder\Entity::class, [
+                'id'            => $faker->uniqueid,
+                'merchant_id'   => '10000000000000',
+            ]
+        );
+
+        $factory(\RZP\Models\Merchant\Tnc\Entity::class, [
                 'id'            => $faker->uniqueid,
                 'merchant_id'   => '10000000000000',
             ]

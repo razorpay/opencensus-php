@@ -53,12 +53,12 @@ class Core extends Base\Core
 
         $partnerCore = (new Partner\Core);
 
-        if($partnerCore->isFullyManagedSubMerchant($merchant) === true)
+        if ($partnerCore->isFullyManagedSubMerchant($merchant) === true)
         {
             return false;
         }
 
-        if($this->isDedupeExperimentEnabled($merchant->getId()) === false)
+        if ($this->isDedupeExperimentEnabled($merchant->getId()) === false)
         {
             return false;
         }
@@ -68,7 +68,7 @@ class Core extends Base\Core
 
     public function isMerchantImpersonated(Merchant\Entity $merchant): bool
     {
-        if($this->isDedupeRequired($merchant) === false)
+        if ($this->isDedupeRequired($merchant) === false)
         {
             return false;
         }
@@ -83,7 +83,7 @@ class Core extends Base\Core
 
     public function isDedupeBlocked(Merchant\Entity $merchant): bool
     {
-        if($this->isDedupeRequired($merchant) === false)
+        if ($this->isDedupeRequired($merchant) === false)
         {
             return false;
         }
@@ -93,7 +93,8 @@ class Core extends Base\Core
 
         [$isImpersonated, $action] = $this->checkImpersonationFromRiskScore($riskScores, false);
 
-        if($isImpersonated === false or empty($action) === true)
+        if (($isImpersonated === false) or
+            (empty($action) === true))
         {
             return false;
         }
@@ -102,8 +103,9 @@ class Core extends Base\Core
         {
             case Constants::DEACTIVATE:
                 return true;
+
             case Constants::UNREG_DEACTIVATE:
-                if($merchant->merchantDetail->isUnregisteredBusiness() === true)
+                if ($merchant->merchantDetail->isUnregisteredBusiness() === true)
                 {
                     return true;
                 }
@@ -114,7 +116,7 @@ class Core extends Base\Core
 
     public function match(Merchant\Entity $merchant): array
     {
-        if($this->isDedupeRequired($merchant) === false)
+        if ($this->isDedupeRequired($merchant) === false)
         {
             return [false, null];
         }
@@ -207,6 +209,7 @@ class Core extends Base\Core
                 }
 
                 $score = $response[$key][$value['list']];
+
                 switch ($value['matchType']) {
                     case Constants::FUZZY_MATCH:
                         if ($score < env(Constants::FUZZY_MATCH_THRESHOLD)) $flag = false;
@@ -214,7 +217,7 @@ class Core extends Base\Core
                 }
             }
 
-            if($flag === true)
+            if ($flag === true)
             {
                 $actionToExecute = $action[Constants::ACTION] ?? null;
 
@@ -236,8 +239,9 @@ class Core extends Base\Core
         {
             case Constants::DEACTIVATE:
                 return Constants::DEDUPE_BLOCKED_TAG;
+
             case Constants::UNREG_DEACTIVATE:
-                if($merchantDetails->isUnregisteredBusiness() === true)
+                if ($merchantDetails->isUnregisteredBusiness() === true)
                 {
                     return Constants::DEDUPE_BLOCKED_TAG;
                 }

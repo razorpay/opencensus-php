@@ -208,7 +208,9 @@ class Activate extends Base\Core
 
         (new Core)->createBalanceConfig($merchantBalance, 'live');
 
-        $this->trace->info(TraceCode::MERCHANT_ACCOUNT_INSTANTLY_ACTIVATED);
+        $this->trace->info(TraceCode::MERCHANT_ACCOUNT_INSTANTLY_ACTIVATED, [
+            'merchant_id'   => $merchant->getId()
+        ]);
 
         //
         // If a merchant does not have website or app, we would need to activate them

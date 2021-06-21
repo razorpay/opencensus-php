@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Document\Type;
+use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 
 class Factory
 {
@@ -35,8 +36,16 @@ class Factory
         }
     }
 
-    public function getBvsRequestDispatchers(Merchant\Entity $merchant, Detail\Entity $merchantDetails): array
+    public function getBvsRequestDispatchers(Merchant\Entity $merchant, Detail\Entity $merchantDetails, string $activationFormMilestone = ''): array
     {
+        if ($activationFormMilestone === DetailConstants::L1_SUBMISSION)
+        {
+            return [
+                new CompanyPan($merchant, $merchantDetails),
+                new PersonalPan($merchant, $merchantDetails)
+            ];
+        }
+
         return [
             new CompanyPanOcr($merchant, $merchantDetails),
             new PersonalPanOcr($merchant, $merchantDetails),
