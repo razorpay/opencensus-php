@@ -1210,7 +1210,7 @@ return [
             'url'     => '/settlements/ondemand',
             'method'  => 'post',
             'content' => [
-                'amount'    => 4000,
+                'amount'    => 2500,
                 'description' => 'Demo Narration - optional',
                 'notes'     => [
                     'key1' => 'note3',
@@ -1221,10 +1221,10 @@ return [
         'response' => [
             'content' => [
                 'entity'                => 'settlement.ondemand',
-                'amount_requested'      => 4000,
-                'fees'                  => 94,
-                'tax'                   => 14,
-                'amount_pending'        => 3906,
+                'amount_requested'      => 2500,
+                'fees'                  => 60,
+                'tax'                   => 10,
+                'amount_pending'        => 2440,
                 'amount_settled'        => 0,
                 'amount_reversed'       => 0,
                 'currency'              => 'INR',

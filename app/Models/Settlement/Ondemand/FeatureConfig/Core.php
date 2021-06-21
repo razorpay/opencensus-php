@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Settlement\Ondemand\FeatureConfig;
 
+use RZP\Constants;
 use RZP\Models\Base;
 
 class Core extends Base\Core
@@ -42,6 +43,18 @@ class Core extends Base\Core
 
     public function getFeatureConfigByMerchantId($merchantId)
     {
+        if ($this->mode === Constants\Mode::TEST)
+        {
+            $data = [
+                Entity::MERCHANT_ID                  => $merchantId,
+                Entity::MAX_AMOUNT_LIMIT             => 10000,
+                Entity::SETTLEMENTS_COUNT_LIMIT      => 1000000,
+                Entity::PERCENTAGE_OF_BALANCE_LIMIT  => 50,
+                Entity::PRICING_PERCENT              => 30
+            ];
+
+           return (new Entity)->build($data);
+        }
         return (new Repository)->getConfigByMerchantId($merchantId);
     }
 }

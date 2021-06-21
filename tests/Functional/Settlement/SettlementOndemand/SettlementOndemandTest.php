@@ -1225,12 +1225,12 @@ class SettlementOndemandTest extends TestCase
 
     public function testOndemandFeatureValidationSuccess()
     {
-        $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
+        $this->ba->proxyAuth('rzp_live_' . $this->merchantDetail['merchant_id'], $this->user->getId());
 
         $this->fixtures->feature->create([
             'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand_restricted']);
 
-        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand.feature_config',[
+        $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand.feature_config',[
             'merchant_id'                 => $this->merchantDetail['merchant_id'],
             'percentage_of_balance_limit' => 50,
             'settlements_count_limit'     => 2,
@@ -1245,12 +1245,12 @@ class SettlementOndemandTest extends TestCase
 
     public function testOndemandFeatureValidationNoAttemptLeftFailure()
     {
-        $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
+        $this->ba->proxyAuth('rzp_live_' . $this->merchantDetail['merchant_id'], $this->user->getId());
 
         $this->fixtures->feature->create([
             'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand_restricted']);
 
-        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand.feature_config',[
+        $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand.feature_config',[
             'merchant_id'                 => $this->merchantDetail['merchant_id'],
             'percentage_of_balance_limit' => 50,
             'settlements_count_limit'     => 2,
@@ -1258,12 +1258,12 @@ class SettlementOndemandTest extends TestCase
             'pricing_percent'             => 50,
         ]);
 
-        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand',[
+        $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand',[
             'merchant_id'                 => $this->merchantDetail['merchant_id'],
             'amount'                      => 250,
         ]);
 
-        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand',[
+        $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand',[
             'merchant_id'                 => $this->merchantDetail['merchant_id'],
             'amount'                      => 250,
         ]);
@@ -1275,12 +1275,12 @@ class SettlementOndemandTest extends TestCase
 
     public function testOndemandFeatureValidationDailyAmountExceededFailure()
     {
-        $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
+        $this->ba->proxyAuth('rzp_live_' . $this->merchantDetail['merchant_id'], $this->user->getId());
 
         $this->fixtures->feature->create([
             'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand_restricted']);
 
-        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand.feature_config',[
+        $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand.feature_config',[
             'merchant_id'                 => $this->merchantDetail['merchant_id'],
             'percentage_of_balance_limit' => 50,
             'settlements_count_limit'     => 3,
@@ -1288,12 +1288,12 @@ class SettlementOndemandTest extends TestCase
             'pricing_percent'             => 50,
         ]);
 
-        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand',[
+        $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand',[
             'merchant_id'                 => $this->merchantDetail['merchant_id'],
             'amount'                      => 5000,
         ]);
 
-        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand',[
+        $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand',[
             'merchant_id'                 => $this->merchantDetail['merchant_id'],
             'amount'                      => 2500,
         ]);
@@ -1835,7 +1835,7 @@ class SettlementOndemandTest extends TestCase
 
     public function testOndemandCreationWithLimitExceededError()
     {
-        $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
+        $this->ba->proxyAuth('rzp_live_' . $this->merchantDetail['merchant_id'], $this->user->getId());
 
         $this->fixtures->feature->create([
             'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
@@ -1843,7 +1843,7 @@ class SettlementOndemandTest extends TestCase
         $this->fixtures->feature->create([
             'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand_restricted']);
 
-        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand.feature_config',[
+        $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand.feature_config',[
             'merchant_id'                 => '10000000000000',
             'percentage_of_balance_limit' => 50,
             'settlements_count_limit'     => 2,
@@ -1851,12 +1851,12 @@ class SettlementOndemandTest extends TestCase
             'pricing_percent'             => 50,
         ]);
 
-        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand',[
+        $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand',[
             'merchant_id'                 => $this->merchantDetail['merchant_id'],
             'amount'                      => 250,
         ]);
 
-        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand',[
+        $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand',[
             'merchant_id'                 => $this->merchantDetail['merchant_id'],
             'amount'                      => 250,
         ]);
@@ -1868,7 +1868,7 @@ class SettlementOndemandTest extends TestCase
 
     public function testOndemandCreationWithAmountExceededError()
     {
-        $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
+        $this->ba->proxyAuth('rzp_live_' . $this->merchantDetail['merchant_id'], $this->user->getId());
 
         $this->fixtures->feature->create([
             'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
@@ -1876,7 +1876,7 @@ class SettlementOndemandTest extends TestCase
         $this->fixtures->feature->create([
             'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand_restricted']);
 
-        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand.feature_config',[
+        $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand.feature_config',[
             'merchant_id'                 => '10000000000000',
             'percentage_of_balance_limit' => 50,
             'settlements_count_limit'     => 3,
@@ -1884,12 +1884,12 @@ class SettlementOndemandTest extends TestCase
             'pricing_percent'             => 50,
         ]);
 
-        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand',[
+        $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand',[
             'merchant_id'                 => $this->merchantDetail['merchant_id'],
             'amount'                      => 5000,
         ]);
 
-        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand',[
+        $this->fixtures->on(Mode::LIVE)->create('settlement.ondemand',[
             'merchant_id'                 => $this->merchantDetail['merchant_id'],
             'amount'                      => 2300,
         ]);
@@ -1910,14 +1910,6 @@ class SettlementOndemandTest extends TestCase
 
         $this->fixtures->feature->create([
             'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand_restricted']);
-
-        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand.feature_config',[
-            'merchant_id'                 => '10000000000000',
-            'percentage_of_balance_limit' => 50,
-            'settlements_count_limit'     => 3,
-            'max_amount_limit'            => 75000,
-            'pricing_percent'             => 50,
-        ]);
 
         $this->fixtures->on(Mode::TEST)->create('settlement.ondemand',[
             'merchant_id'                 => $this->merchantDetail['merchant_id'],
