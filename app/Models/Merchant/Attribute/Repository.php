@@ -24,16 +24,23 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
-    public function getKeyValues(string $merchantId, string $product, string $group, array $types = [])
+    public function getKeyValues(string $merchantId, string $product, string $group, array $types = [], string $column = null, string $orderType = 'asc')
     {
         $query = $this->newQuery()
                        ->where(Entity::MERCHANT_ID, $merchantId)
                        ->where(Entity::PRODUCT, $product)
                        ->where(Entity::GROUP, $group);
 
-        if (empty($types) === false) {
+        if ($column != null)
+        {
+            $query->orderBy($column, $orderType);
+        }
+
+        if (empty($types) === false)
+        {
             $query->whereIn(Entity::TYPE, $types);
         }
+
         return $query->get();
     }
 

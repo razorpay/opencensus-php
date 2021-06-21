@@ -139,9 +139,41 @@ class MerchantAttributeTest extends TestCase
         $this->startTest();
     }
 
+    public function testMerchantAddingNewPreferencesForIntent()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testMerchantAddingNewPreferencesForSource()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testMerchantUpsertingPreferences()
     {
         $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
+    public function testMerchantUpsertingPreferencesForIntent()
+    {
+        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_intent', 'current_account', 'true');
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testMerchantUpsertingPreferencesForSource()
+    {
+        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_source', 'pg', 'true');
+
+        $this->ba->proxyAuth();
+
         $this->startTest();
     }
 
@@ -154,6 +186,20 @@ class MerchantAttributeTest extends TestCase
     public function testMerchantPreferencesWithWrongType()
     {
         $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
+    public function testMerchantPreferencesWithWrongTypeForIntent()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testMerchantPreferencesWithWrongTypeForSource()
+    {
+        $this->ba->proxyAuth();
+
         $this->startTest();
     }
 
@@ -179,6 +225,41 @@ class MerchantAttributeTest extends TestCase
         ]);
 
         $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
+    public function testMerchantGetPreferencesByGroupForIntent()
+    {
+        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_intent', 'current_account', 'false');
+
+        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_intent', 'tax_payments', 'true');
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testMerchantGetPreferencesByGroupForIntentOrderByCreation()
+    {
+        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_intent', 'tax_payments', 'true');
+
+        sleep(1);
+
+        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_intent', 'current_account', 'false');
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testMerchantGetPreferencesByGroupForSource()
+    {
+        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_source', 'pg', 'false');
+
+        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_source', 'website', 'true');
+
+        $this->ba->proxyAuth();
+
         $this->startTest();
     }
 

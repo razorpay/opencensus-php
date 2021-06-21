@@ -94,12 +94,18 @@ class Service extends Base\Service
     public function getPreferencesByGroupAndType(string $group, string $type = null)
     {
         $merchant = $this->merchant;
+
         $product = $this->auth->getRequestOriginProduct();
 
-        if ($type != null) {
-            return $this->core->fetchKeyValues($merchant, $product, $group, [$type]);
-        } else {
-            return $this->core->fetchKeyValues($merchant, $product, $group);
+        $type = !empty($type) ? [$type] : [];
+
+        $column = null;
+
+        if (in_array($group, [Group::X_MERCHANT_SOURCE, Group::X_MERCHANT_INTENT], true) === true)
+        {
+            $column = Entity::CREATED_AT;
         }
+
+        return $this->core->fetchKeyValues($merchant, $product, $group, $type, $column);
     }
 }

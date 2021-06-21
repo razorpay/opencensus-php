@@ -4974,8 +4974,8 @@ class Service extends Base\Service
         $attributeCore = new Attribute\Core;
 
         $product = Product::BANKING;
-        $group = Attribute\Entity::X_SIGNUP;
-        $type = Attribute\Entity::CA_PAGE_VISITED;
+        $group = Attribute\Group::X_SIGNUP;
+        $type = Attribute\Type::CA_PAGE_VISITED;
 
         $this->trace->info(TraceCode::UTM_PARAMS, [
             'merchant' => $merchant->getId(),

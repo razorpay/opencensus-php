@@ -16,35 +16,6 @@ class Entity extends Base\PublicEntity
     const TYPE                          = 'type';
     const VALUE                         = 'value';
 
-    // Groups
-    const ONBOARDING                    = 'onboarding';
-    const X_MERCHANT_PREFERENCES        = 'x_merchant_preferences';
-    const X_SIGNUP                      = 'x_signup';
-
-    // Types
-    // ONBOARDING Types
-    const MERCHANT_ONBOARDING_CATEGORY  = 'merchant_onboarding_category';
-    const CA_PAGE_VISITED               = 'ca_page_visited';
-    // PREFERENCES Types
-    const BUSINESS_CATEGORY             = 'business_category';
-    const TEAM_SIZE                     = 'team_size';
-    const MONTHLY_PAYOUT_COUNT          = 'monthly_payout_count';
-
-    const GROUP_TYPE_MAP = [
-        self::X_SIGNUP => [
-            self::CA_PAGE_VISITED
-        ],
-
-        self::ONBOARDING => [
-            self::MERCHANT_ONBOARDING_CATEGORY
-        ],
-
-        self::X_MERCHANT_PREFERENCES => [
-            self::BUSINESS_CATEGORY,
-            self::TEAM_SIZE,
-            self::MONTHLY_PAYOUT_COUNT
-        ]
-    ];
     protected $entity = 'merchant_attribute';
 
     protected $table  = Table::MERCHANT_ATTRIBUTE;
@@ -98,8 +69,8 @@ class Entity extends Base\PublicEntity
     }
 
     public static function isValidGroupAndType(string $group, string $type): bool {
-        if (array_key_exists($group, self::GROUP_TYPE_MAP )) {
-            if (in_array($type, self::GROUP_TYPE_MAP[$group], true)) {
+        if (array_key_exists($group, GroupType::GROUP_TYPE_MAP )) {
+            if (in_array($type, GroupType::GROUP_TYPE_MAP[$group], true)) {
                 return true;
             }
         }

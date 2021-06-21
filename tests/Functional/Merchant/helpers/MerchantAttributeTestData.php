@@ -86,6 +86,62 @@ return [
         ],
     ],
 
+    'testMerchantAddingNewPreferencesForIntent' => [
+        'request' => [
+            'content' => [
+                [
+                    'type' => 'current_account',
+                    'value' => 'true'
+                ],
+                [
+                    'type' => 'vendor_payments',
+                    'value' => 'true'
+                ]
+            ],
+            'url' => '/merchant/preferences/x_merchant_intent',
+            'method' => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'type' => 'current_account',
+                    'value' => 'true'
+                ],
+                [
+                    'type' => 'vendor_payments',
+                    'value' => 'true'
+                ]
+            ]
+        ],
+    ],
+
+    'testMerchantAddingNewPreferencesForSource' => [
+        'request' => [
+            'content' => [
+                [
+                    'type' => 'pg',
+                    'value' => 'true'
+                ]
+            ],
+            'url' => '/merchant/preferences/x_merchant_source',
+            'method' => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'type' => 'pg',
+                    'value' => 'true'
+                ]
+            ]
+        ],
+    ],
+
     'testMerchantUpsertingPreferences' => [
         'request' => [
             'content' => [
@@ -110,6 +166,54 @@ return [
                 [
                     'type' => 'monthly_payout_count',
                     'value' => '1000'
+                ]
+            ]
+        ],
+    ],
+
+    'testMerchantUpsertingPreferencesForIntent' => [
+        'request' => [
+            'content' => [
+                [
+                    'type' => 'current_account',
+                    'value' => 'false'
+                ]
+            ],
+            'url' => '/merchant/preferences/x_merchant_intent',
+            'method' => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'type' => 'current_account',
+                    'value' => 'false'
+                ]
+            ]
+        ],
+    ],
+
+    'testMerchantUpsertingPreferencesForSource' => [
+        'request' => [
+            'content' => [
+                [
+                    'type' => 'pg',
+                    'value' => 'false'
+                ]
+            ],
+            'url' => '/merchant/preferences/x_merchant_source',
+            'method' => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'type' => 'pg',
+                    'value' => 'false'
                 ]
             ]
         ],
@@ -165,6 +269,64 @@ return [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Invalid Group: x_merchant_preferences AND/OR Invalid Type: monthly_payout_count_wrong',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testMerchantPreferencesWithWrongTypeForIntent' => [
+        'request' => [
+            'content' => [
+                [
+                    'type' => 'current_account_wrong',
+                    'value' => 'true'
+                ]
+            ],
+            'url' => '/merchant/preferences/x_merchant_intent',
+            'method' => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid Group: x_merchant_intent AND/OR Invalid Type: current_account_wrong',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testMerchantPreferencesWithWrongTypeForSource' => [
+        'request' => [
+            'content' => [
+                [
+                    'type' => 'pg_wrong',
+                    'value' => 'true'
+                ]
+            ],
+            'url' => '/merchant/preferences/x_merchant_source',
+            'method' => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid Group: x_merchant_source AND/OR Invalid Type: pg_wrong',
                 ],
             ],
             'status_code' => 400,
@@ -248,6 +410,72 @@ return [
                     'type' => 'business_category',
                     'value' => 'School'
                 ]
+            ]
+        ],
+    ],
+
+    'testMerchantGetPreferencesByGroupForIntent' => [
+        'request' => [
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+            'url' => '/merchant/preferences/x_merchant_intent',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'type' => 'current_account',
+                    'value' => 'false'
+                ],
+                [
+                    'type' => 'tax_payments',
+                    'value' => 'true'
+                ],
+            ]
+        ],
+    ],
+
+    'testMerchantGetPreferencesByGroupForIntentOrderByCreation' => [
+        'request' => [
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+            'url' => '/merchant/preferences/x_merchant_intent',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'type' => 'tax_payments',
+                    'value' => 'true'
+                ],
+                [
+                    'type' => 'current_account',
+                    'value' => 'false'
+                ],
+            ]
+        ],
+    ],
+
+    'testMerchantGetPreferencesByGroupForSource' => [
+        'request' => [
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+            'url' => '/merchant/preferences/x_merchant_source',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'type' => 'pg',
+                    'value' => 'false'
+                ],
+                [
+                    'type' => 'website',
+                    'value' => 'true'
+                ],
             ]
         ],
     ],
