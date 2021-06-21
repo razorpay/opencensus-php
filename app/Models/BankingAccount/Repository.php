@@ -116,17 +116,6 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function isMerchantCaActivated($merchantId, array $channelList): bool
-    {
-        $caActivatedBankAccountsForMerchant = $this->newQuery()
-                                                   ->where(Entity::MERCHANT_ID, '=', $merchantId)
-                                                   ->where(Entity::STATUS, Status::ACTIVATED)
-                                                   ->where(Entity::ACCOUNT_TYPE, AccountType::CURRENT)
-                                                   ->whereIn(Entity::CHANNEL, $channelList);
-
-        return ($caActivatedBankAccountsForMerchant->count()) > 0;
-    }
-
     public function getMerchantIdsByChannel($channel, $limit)
     {
         $bankingAccountBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);

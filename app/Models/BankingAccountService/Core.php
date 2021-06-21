@@ -85,6 +85,8 @@ class Core extends Base\Core
                 Merchant\Constants::MERCHANT_ID => $merchantId
             ]);
 
+            (new Merchant\Core())->addHasKeyAccessToMerchantIfApplicable($merchant);
+
             return $balance;
         }
         catch(\Exception $e)

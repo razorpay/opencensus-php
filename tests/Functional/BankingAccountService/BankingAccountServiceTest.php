@@ -95,13 +95,14 @@ class BankingAccountServiceTest extends TestCase
         $this->assertEquals($schedule['id'], $scheduleTask['schedule_id']);
     }
 
-    public function testCreateBankingEntitiesAndAddPayoutFeature()
+    public function testCreateBankingEntitiesAndAddPayoutFeatureAndAllowHasKeyAccess()
     {
         $schedule = $this->setupDefaultScheduleForFeeRecovery();
 
         $attributes = [
             'bas_business_id'   => '10000000000000',
             'activation_status' => 'deactivated',
+            'business_website' => 'www.businesswebsite.com'
         ];
 
         $this->createMerchantDetailWithBusinessId($attributes);
@@ -114,6 +115,13 @@ class BankingAccountServiceTest extends TestCase
             ]);
 
         $this->assertNull($feature);
+
+        $merchant = $this->getDbEntity('merchant',
+            [
+                'id'    => '10000000000000',
+            ]);
+
+        $this->assertEquals(0, $merchant['has_key_access']);
 
         $this->ba->bankingAccountServiceAppAuth();
 
@@ -149,6 +157,13 @@ class BankingAccountServiceTest extends TestCase
             ]);
 
         $this->assertEquals('payout', $feature['name']);
+
+        $merchant = $this->getDbEntity('merchant',
+            [
+                'id'    => '10000000000000',
+            ]);
+
+        $this->assertEquals(1, $merchant['has_key_access']);
 
         $scheduleTask = $this->getDbLastEntity('schedule_task')->toArray();
 

@@ -92,6 +92,32 @@ class OrderTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateOrderLiveModeNonKycActivatedIciciCaActivatedExperimentOff()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testCreateOrderLiveModeNonKycActivatedNonCaActivatedExperimentOff'];
+
+        $attributes = [
+            'merchant_id'       => '10000000000000',
+            'bas_business_id'   => '10000000000000',
+        ];
+
+        $this->fixtures->on('live')->create('merchant_detail', $attributes);
+
+        $this->fixtures->on('live')->create('balance',
+            [
+                'merchant_id'       => '10000000000000',
+                'type'              => 'banking',
+                'account_type'      => 'direct',
+                'account_number'    => '2224440041626905',
+                'balance'           => 200,
+                'channel'           => 'icici',
+            ]);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
     public function testCreateOrderLiveModeKycActivatedCaActivatedExperimentOff()
     {
         $this->testData[__FUNCTION__] = $this->testData['testCreateOrder'];
@@ -116,6 +142,34 @@ class OrderTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateOrderLiveModeKycActivatedIciciCaActivatedExperimentOff()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testCreateOrder'];
+
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['activated' => 1]);
+
+        $attributes = [
+            'merchant_id'       => '10000000000000',
+            'bas_business_id'   => '10000000000000',
+        ];
+
+        $this->fixtures->on('live')->create('merchant_detail', $attributes);
+
+        $this->fixtures->on('live')->create('balance',
+            [
+                'merchant_id'       => '10000000000000',
+                'type'              => 'banking',
+                'account_type'      => 'direct',
+                'account_number'    => '2224440041626905',
+                'balance'           => 200,
+                'channel'           => 'icici',
+            ]);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
     public function testCreateOrderLiveModeNonKycActivatedCaActivatedExperimentOn()
     {
         $this->testData[__FUNCTION__] = $this->testData['testCreateOrder'];
@@ -134,6 +188,34 @@ class OrderTest extends TestCase
         ];
 
         $this->fixtures->on('live')->create('banking_account', $params);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
+    public function testCreateOrderLiveModeNonKycActivatedIciciCaActivatedExperimentOn()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testCreateOrder'];
+
+        $this->mockRazorxTreatmentV2(RazorxTreatment::RAZORPAY_X_AUTHORISE_CA_ACTIVATED_MERCHANT_TO_ACCESS_X_PRIVATE_ROUTES, 'on');
+
+        $attributes = [
+            'merchant_id'       => '10000000000000',
+            'bas_business_id'   => '10000000000000',
+        ];
+
+        $this->fixtures->on('live')->create('merchant_detail', $attributes);
+
+        $this->fixtures->on('live')->create('balance',
+            [
+                'merchant_id'       => '10000000000000',
+                'type'              => 'banking',
+                'account_type'      => 'direct',
+                'account_number'    => '2224440041626905',
+                'balance'           => 200,
+                'channel'           => 'icici',
+            ]);
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 

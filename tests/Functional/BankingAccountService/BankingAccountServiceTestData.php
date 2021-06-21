@@ -21,7 +21,7 @@ return [
         ],
     ],
 
-    'testCreateBankingEntitiesAndAddPayoutFeature' => [
+    'testCreateBankingEntitiesAndAddPayoutFeatureAndAllowHasKeyAccess' => [
         'request'  => [
             'url'     => '/bas/merchant/10000000000000/banking_accounts',
             'method'  => 'POST',

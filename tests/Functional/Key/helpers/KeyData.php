@@ -83,6 +83,7 @@ return [
             'status_code' => 200,
         ],
     ],
+
     'testCaActivatedMerchantCanCreateKeys' => [
         'request' => [
             'url'    => '/keys',
@@ -98,6 +99,7 @@ return [
         ],
         'status_code' => 200
     ],
+
     'testNonCaActivatedMerchantCannotCreateKeys' => [
         'request' => [
             'url'    => '/keys',

@@ -252,7 +252,7 @@ abstract class AuthCreds
      */
     public function canNonKycActivatedMerchantAccessPrivateXRoutes(): bool
     {
-        $isMerchantCaActivated = $this->repo->banking_account->isMerchantCaActivated($this->merchant->getId(), ['rbl']);
+        $isMerchantCaActivated = (new Merchant\Core())->isCurrentAccountActivated($this->merchant);
 
         if ($isMerchantCaActivated === true)
         {

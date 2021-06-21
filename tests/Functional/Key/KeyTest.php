@@ -155,6 +155,37 @@ class KeyTest extends TestCase
         $this->startTest();
     }
 
+    public function testIciciCaActivatedMerchantCanCreateKeys()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testCaActivatedMerchantCanCreateKeys'];
+
+        $merchant = $this->fixtures->create('merchant', ['has_key_access' => true]);
+
+        $id = $merchant['id'];
+
+        $user = $this->fixtures->user->createBankingUserForMerchant($id);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'       => $id,
+            'business_type'     => '2',
+            'bas_business_id'   => '10000000000000',
+        ]);
+
+        $this->fixtures->on('live')->create('balance',
+            [
+                'merchant_id'       => $id,
+                'type'              => 'banking',
+                'account_type'      => 'direct',
+                'account_number'    => '2224440041626905',
+                'balance'           => 200,
+                'channel'           => 'icici',
+            ]);
+
+        $this->ba->proxyAuth('rzp_live_' . $id, $user->getId());
+
+        $this->startTest();
+    }
+
     public function testNonCaActivatedMerchantCannotCreateKeys()
     {
         $merchant = $this->fixtures->create('merchant');

@@ -9,9 +9,8 @@ use ApiResponse;
 use Carbon\Carbon;
 use Monolog\Logger;
 use RZP\Jobs\SyncStakeholder;
+use \RZP\Models\BankingAccount;
 use RZP\Listeners\ApiEventSubscriber;
-use RZP\Models\BankingAccount\AccountType;
-use RZP\Models\BankingAccount\Status;
 use Razorpay\OAuth\Application as OAuthApp;
 
 use RZP\Exception;
@@ -4754,7 +4753,7 @@ class Core extends Base\Core
 
     public function checkIfCurrentAccountIsActivated(Entity $merchant)
     {
-        $bankingAccounts = $this->repo->banking_account->fetchActivatedBankingAccountByMerchantIdAccountTypeAndChannel($merchant->getMerchantId(), \RZP\Models\BankingAccount\Channel::RBL, AccountType::CURRENT);
+        $bankingAccounts = $this->repo->banking_account->fetchActivatedBankingAccountByMerchantIdAccountTypeAndChannel($merchant->getMerchantId(), BankingAccount\Channel::RBL, BankingAccount\AccountType::CURRENT);
 
         //Rbl
         if(empty($bankingAccounts) === false)
@@ -4835,5 +4834,23 @@ class Core extends Base\Core
         $this->app['cache']->put(self::CUSTOMER_COUNT."_".$merchantId, $count, 7*24*60);
 
         return $count;
+    }
+
+    /**
+     * @param Base\Entity $merchant
+     * @throws Exception\RuntimeException
+     */
+    public function addHasKeyAccessToMerchantIfApplicable(Merchant\Entity $merchant)
+    {
+        $merchantDetail = $merchant->merchantDetail;
+
+        // making sure that merchant's has_key_access is set to true when website is set.
+        if ((empty($merchantDetail->getWebsite()) === false) and
+            ($merchant->getHasKeyAccess() === false))
+        {
+            $merchant->setHasKeyAccess(true);
+
+            $merchant->save();
+        }
     }
 }

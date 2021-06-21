@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Models\Key;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Product;
 use RZP\Http\Throttle\Constant as Throttle;
@@ -55,7 +56,7 @@ class Core extends Base\Core
             ($merchant->isActivated() === false))
         {
             // We need to allow key generation in case merchant is ca activated and request is coming from banking
-            $isMerchantCaActivated = $this->repo->banking_account->isMerchantCaActivated($merchant->getId(), ['rbl']);
+            $isMerchantCaActivated = (new Merchant\Core())->isCurrentAccountActivated($merchant);
 
             $isRequestOriginBanking = ($this->app->basicauth->getRequestOriginProduct() === Product::BANKING);
 

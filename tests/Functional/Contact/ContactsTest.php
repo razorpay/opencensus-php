@@ -291,6 +291,32 @@ class ContactsTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateContactLiveModeNonKycActivatedIciciCaActivated()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testCreateContact'];
+
+        $attributes = [
+            'merchant_id'       => '10000000000000',
+            'bas_business_id'   => '10000000000000',
+        ];
+
+        $this->fixtures->on('live')->create('merchant_detail', $attributes);
+
+        $this->fixtures->on('live')->create('balance',
+            [
+                'merchant_id'       => '10000000000000',
+                'type'              => 'banking',
+                'account_type'      => 'direct',
+                'account_number'    => '2224440041626905',
+                'balance'           => 200,
+                'channel'           => 'icici',
+            ]);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
     public function testCreateContactLiveModeKycActivatedCaActivated()
     {
         $this->testData[__FUNCTION__] = $this->testData['testCreateContact'];
@@ -309,6 +335,34 @@ class ContactsTest extends TestCase
         ];
 
         $this->fixtures->on('live')->create('banking_account', $params);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
+    public function testCreateContactLiveModeKycActivatedIciciCaActivated()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testCreateContact'];
+
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['activated' => 1]);
+
+        $attributes = [
+            'merchant_id'       => '10000000000000',
+            'bas_business_id'   => '10000000000000',
+        ];
+
+        $this->fixtures->on('live')->create('merchant_detail', $attributes);
+
+        $this->fixtures->on('live')->create('balance',
+            [
+                'merchant_id'       => '10000000000000',
+                'type'              => 'banking',
+                'account_type'      => 'direct',
+                'account_number'    => '2224440041626905',
+                'balance'           => 200,
+                'channel'           => 'icici',
+            ]);
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 

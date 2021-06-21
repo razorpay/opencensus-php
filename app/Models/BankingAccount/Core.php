@@ -826,16 +826,7 @@ class Core extends Base\Core
             return $bankingAccount;
         });
 
-        $merchantDetail = $bankingAccount->merchant->merchantDetail;
-
-        // making sure that merchant's has_key_access is set to true when website is set.
-        if ((empty($merchantDetail->getWebsite()) === false) and
-            ($bankingAccount->merchant->getHasKeyAccess() === false))
-        {
-            $bankingAccount->merchant->setHasKeyAccess(true);
-
-            $bankingAccount->merchant->save();
-        }
+        (new Merchant\Core())->addHasKeyAccessToMerchantIfApplicable($bankingAccount->merchant);
 
         $this->sendBankingCaActivationSmsIfApplicable($bankingAccount);
 
