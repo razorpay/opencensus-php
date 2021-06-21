@@ -52,7 +52,7 @@ export default class QRPaymentsListContainer extends ListContainer {
               onAbort={() => track.tourStatus(false)}
             />
 
-            <DocsLink url="https://razorpay.com/docs/qr_codes/" onClick={track.docs} />
+            <DocsLink url="https://razorpay.com/docs/qr-codes/" onClick={track.docs} />
           </div>
         </HeaderAction>
 
