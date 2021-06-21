@@ -36,7 +36,7 @@ class CreateCreditsTransactionTable extends Migration
             $table->char(CreditTransaction::ENTITY_TYPE, 255)
                   ->nullable();
 
-             $table->integer(CreditTransaction::CREDITS_USED)
+             $table->bigInteger(CreditTransaction::CREDITS_USED)
                    ->default(0);
 
             $table->integer(CreditTransaction::CREATED_AT);

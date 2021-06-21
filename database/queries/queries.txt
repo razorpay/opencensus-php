@@ -6272,5 +6272,9 @@ ALTER TABLE merchants
 ALTER TABLE merchants
     ADD COLUMN refund_credits_threshold BIGINT UNSIGNED DEFAULT NULL;
 
+ALTER TABLE credits MODIFY COLUMN value BIGINT, MODIFY COLUMN used BIGINT;
+
+ALTER TABLE credit_transaction MODIFY COLUMN credits_used BIGINT;
+
 ALTER TABLE payouts
     ADD COLUMN queued_reason varchar(255) DEFAULT NULL;

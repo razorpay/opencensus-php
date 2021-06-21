@@ -31,11 +31,11 @@ class CreateCreditsTable extends Migration
             $table->char(Credits::PROMOTION_ID, Promotion\Entity::ID_LENGTH)
                   ->nullable();
 
-            $table->integer(Credits::VALUE);
+            $table->bigInteger(Credits::VALUE);
 
             $table->string(Credits::TYPE, 20);
 
-            $table->integer(Credits::USED)
+            $table->bigInteger(Credits::USED)
                   ->default(0);
 
             $table->integer(Credits::EXPIRED_AT)
