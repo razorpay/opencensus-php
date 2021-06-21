@@ -15,6 +15,7 @@ import {
 import { trackLinkClick } from 'merchant/containers/Activation/ga_new';
 import { analyticsTrack } from 'common/utils/analytics';
 import AddressFields from 'merchant/containers/Activation/AddressFieldsMap';
+import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
 
 import {
   excludeFor_Indiv,
@@ -910,9 +911,11 @@ const uploadFields = [
                         analyticsTrack({
                           objectName: 'SignUp',
                           actionName: analyticsActionName,
-                          screen: 'home page',
+                          screen: 'Document Upload Tab',
                           eventAction: 'clicked',
-                          user,
+                          properties: {
+                            ...getCommonSegmentProperties(),
+                          },
                         });
                       }}
                     >

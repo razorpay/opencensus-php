@@ -206,7 +206,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ isFormLocked }) => {
                       analyticsTrack({
                         objectName: 'SignUp',
                         actionName: analyticsActionName,
-                        screen: 'home page',
+                        screen: 'Document Upload Tab',
                         eventAction: 'clicked',
                         user,
                       });
