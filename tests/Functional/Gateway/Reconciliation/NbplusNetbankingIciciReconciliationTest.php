@@ -74,6 +74,69 @@ class NbplusNetbankingIciciReconciliationTest extends NbPlusPaymentServiceNetban
         $this->assertEquals($batch['status'], 'processed');
     }
 
+    public function testIciciEmiSuccessReconMailgun()
+    {
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $payment1 = $this->getDbLastPayment();
+
+        $this->assertEquals(Payment::NB_PLUS_SERVICE, $payment1[Payment::CPS_ROUTE]);
+        $this->assertEquals(Payment::CAPTURED, $payment1[Payment::STATUS]);
+        $this->assertEquals($this->terminal->getId(), $payment1->terminal->getId());
+
+        $data = $this->testData['testIciciSuccessRecon'];
+
+        $data['ITC'] = $payment1['id'];
+        $data['PRN'] = $payment1['id'];
+
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $payment2 = $this->getDbLastPayment();
+
+        $this->assertEquals(Payment::NB_PLUS_SERVICE, $payment2[Payment::CPS_ROUTE]);
+        $this->assertEquals(Payment::CAPTURED, $payment2[Payment::STATUS]);
+        $this->assertEquals($this->terminal->getId(), $payment1->terminal->getId());
+
+        $data2 = $this->testData['testIciciSuccessRecon'];
+
+        $data2['ITC'] = $payment2['id'];
+        $data2['PRN'] = $payment2['id'];
+
+        $reconFile = $this->generateReconFile($data, $data2);
+
+        $fileName = 'razorpayreports_test_'.Carbon::today()->format("m-d-Y").'.txt';
+
+        $uploadedFile = $this->createUploadedFile($reconFile['local_file_path'], $fileName, "text/plain");
+
+        $input = [
+            'X-Original-Sender' => 'infinitydatacenter@icicibank.com',
+            'subject'           => 'Consumer Durable Loan booking Razorpay Reports for 21-06-2021',
+            'recipient'         => 'reconciliate@mg.razorpay.com',
+            'timestamp'         => '1624300396',
+        ];
+
+        $request = [
+            'url'     => '/reconciliate',
+            'content' => $input,
+            'method'  => 'POST',
+            'files'   => [
+                'attachment-1' => $uploadedFile,
+            ],
+        ];
+
+        $this->ba->cronAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $transactionEntity = $this->getDbLastEntity(Entity::TRANSACTION);
+
+        $this->assertNotNull($transactionEntity[Txn::RECONCILED_AT]);
+
+        $batch = $this->getDbLastEntityToArray('batch');
+
+        $this->assertEquals('processed', $batch['status']);
+    }
+
     protected function createPaylaterPayment()
     {
         $this->payment = $this->getDefaultPayLaterPaymentArray('icic');

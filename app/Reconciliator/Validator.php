@@ -52,7 +52,7 @@ class Validator extends Base\Core
                                                      ],
         RequestProcessor\Base::NETBANKING_CSB     => ["/^RAZORPAY_Recon File/"],
         RequestProcessor\Base::NETBANKING_SBI     => ["/^RAZORPAY Recon File/"],
-        RequestProcessor\Base::NETBANKING_ICICI   => ["/^Payment Through Internet Banking Center Razorpay/"],
+        RequestProcessor\Base::NETBANKING_ICICI   => ["/Consumer Durable Loan booking Razorpay Reports for [0-9]{2}-[0-9]{2}-20[0-9]{2}/"],
         RequestProcessor\Base::NETBANKING_FEDERAL => [
                                                         "/^MIS Report File Dated "
                                                         . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}---razorpay/"
@@ -187,6 +187,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::NETBANKING_KOTAK_V2      => 1,
         RequestProcessor\Base::NETBANKING_DCB           => 1,
         RequestProcessor\Base::NETBANKING_DLB           => 1,
+        RequestProcessor\Base::NETBANKING_ICICI         => 1,
     ];
 
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
@@ -457,22 +458,17 @@ class Validator extends Base\Core
         return ($validSubject and $validBody);
     }
 
-    public function validateNetbankingIciciEmail(array $emailDetails)
+    public function validateNetbankingIciciEmail(array $emailDetails): bool
     {
         $validSubject = $this->validateEmailSubject(
-                                $emailDetails[RequestProcessor\Mailgun::SUBJECT],
-                                RequestProcessor\Base::NETBANKING_ICICI);
+                            $emailDetails[RequestProcessor\Mailgun::SUBJECT],
+                            RequestProcessor\Base::NETBANKING_ICICI);
 
-        $validBody = $this->validateEmailBody(
-            $emailDetails[RequestProcessor\Mailgun::BODY],
-            RequestProcessor\Base::NETBANKING_ICICI);
+        $validAttachmentCount = $this->validateAttachmentCount(
+                                    $emailDetails[RequestProcessor\Base::ATTACHMENT_COUNT],
+                                    RequestProcessor\Base::NETBANKING_ICICI);
 
-        //
-        // There isn't a need to validate the attachment count because
-        // validateAttachments already validates a non zero value.
-        // In this case, the number is attachments is variable.
-        //
-        return ($validSubject and $validBody);
+        return ($validSubject and $validAttachmentCount);
     }
 
     public function validateNetbankingSbiEmail(array $emailDetails)

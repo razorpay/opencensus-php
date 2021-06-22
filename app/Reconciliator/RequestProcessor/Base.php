@@ -157,7 +157,7 @@ class Base extends Core
         self::FREECHARGE             => ['noreply@fcemail.in', 'noreply@freechargemail.in'],
         self::EMANDATE_AXIS          => ['cmsdirect.debit@axisbank.com'],
         self::NETBANKING_AXIS        => ['ibanking@axisbank.com'],
-        self::NETBANKING_ICICI       => ['ubpshelp@icicibank.com'],
+        self::NETBANKING_ICICI       => ['ubpshelp@icicibank.com', 'infinitydatacenter@icicibank.com'],
         self::NETBANKING_FEDERAL     => ['fednetrm@federalbank.co.in'],
         self::NETBANKING_SIB         => ['epayments@sib.co.in'],
         self::NETBANKING_SCB         => ['no-reply@northakross.com'],

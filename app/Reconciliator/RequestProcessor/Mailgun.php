@@ -151,13 +151,15 @@ class Mailgun extends Base
         // 'X-Original-Sender' always contains just the email address.
         //
 
+        $strippedHtml = $input[self::STRIPPED_HTML] ?? '';
+
         $inputDetails = [
             self::FROM           => strtolower($input['X-Original-Sender'] ?? $input['sender']),
             self::SUBJECT        => $input[self::SUBJECT],
             self::TO             => $input[self::RECIPIENT],
             self::TIMESTAMP      => $input[self::TIMESTAMP],
             self::BODY           => $input[self::STRIPPED_TEXT] ?? '',
-            self::BODY_HTML_TEXT => html_entity_decode(strip_tags($input[self::STRIPPED_HTML])),
+            self::BODY_HTML_TEXT => html_entity_decode(strip_tags($strippedHtml)),
         ];
 
         //
@@ -235,7 +237,7 @@ class Mailgun extends Base
         return $gateway;
     }
 
-    protected function gatewayEmailValidationIsNeeded($gateway)
+    protected function gatewayEmailValidationIsNeeded($gateway): bool
     {
         return (in_array($gateway, self::GATEWAY_EMAIL_VALIDATION, true) === true);
     }
