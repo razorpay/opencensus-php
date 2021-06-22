@@ -33,6 +33,7 @@ class DedupeTest extends OAuthTestCase
         return $mockMR;
     }
 
+    
     protected function createAndFetchMocks($isDedupeRequired = true, array $mockDedupeMethods = [])
     {
         $defaultMockDedupeMethods = ['isDedupeRequired'];
@@ -171,7 +172,7 @@ class DedupeTest extends OAuthTestCase
         $dedupeCore = $mocks['dedupeCoreMock'];
 
         $request = Mockery::mock('Illuminate\Http\Request')->makePartial();
-        
+
         $request->shouldReceive('getClientIp')->withAnyArgs()->andReturn("127.0.0.0");
 
         $this->app->instance('request', $request);

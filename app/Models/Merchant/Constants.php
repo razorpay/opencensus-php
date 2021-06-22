@@ -389,6 +389,8 @@ final class Constants
     const WHATSAPP_TEMPLATE      = 'whatsapp_template';
     const DASHBOARD_TEMPLATE_TAG = 'dashboard_template_tag';
 
+    const TAGS = 'tags';
+
     //cron tag names
     const MERCHANT_RISK_FOH_CRON_TAG     = 'Merchant_risk_cron_tag_foh';
     const MERCHANT_RISK_SUSPEND_CRON_TAG = 'Merchant_risk_cron_tag_suspend';

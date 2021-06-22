@@ -74,8 +74,23 @@ class Repository extends Base\Repository
         Entity::GROUPS                  => 'sometimes|array',
         Entity::ADMINS                  => 'sometimes|array|min:1|max:1',
         Constants::INSTANT_ACTIVATION   => 'sometimes|boolean',
-        Constants::BUSINESS_TYPE_BUCKET => 'sometimes|custom'
+        Constants::BUSINESS_TYPE_BUCKET => 'sometimes|custom',
+        Constants::TAGS                 => 'sometimes|array'
     ];
+
+    public function addQueryParamTags($query, $params)
+    {
+        $tags = $params[Constants::TAGS];
+
+        $tags = array_unique(array_map('mb_strtolower', array_map('str_slug', $tags)));
+
+        $tagsTable = 'tagging_tagged';
+
+        $query->join($tagsTable, $tagsTable . '.taggable_id', 'merchants.id')
+            ->where($tagsTable . '.taggable_type', '=', E::MERCHANT)
+            ->whereIn($tagsTable . '.tag_slug', $tags)
+            ->distinct();
+    }
 
     protected function validateAccountStatus($attribute, $value)
     {

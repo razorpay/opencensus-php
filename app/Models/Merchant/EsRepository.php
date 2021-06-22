@@ -90,6 +90,7 @@ class EsRepository extends Base\EsRepository
         Constants::INSTANT_ACTIVATION,
         Constants::BUSINESS_TYPE_BUCKET,
         Entity::ACTIVATION_SOURCE,
+        Constants::TAGS,
     ];
 
     /**
@@ -141,6 +142,19 @@ class EsRepository extends Base\EsRepository
     // Following methods with empty block are here so the default impl of query
     // builder doesn't get called for these fields in input.
     //
+
+    public function buildQueryForTags(array & $query, array $value)
+    {
+        foreach ($value as $tag)
+        {
+            $clause = [
+                Es::MATCH => [
+                    Entity::TAG_LIST    => $tag
+                ]
+            ];
+            $this->addMust($query, $clause);
+        }
+    }
 
     public function buildQueryForOrgId(array & $query, string $value)
     {
