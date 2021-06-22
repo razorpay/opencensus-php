@@ -343,8 +343,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $deleteAdditionalWebsitesRules = [
-        Entity::ADDITIONAL_WEBSITES             => 'required|array|min:0',
-        Entity::ADDITIONAL_WEBSITES. '.*'       => 'string|active_url',
+        Entity::ADDITIONAL_WEBSITES             => 'required|array|min:0'
     ];
 
     protected static $patchMerchantDetailsRules = [

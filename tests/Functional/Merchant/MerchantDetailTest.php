@@ -1916,7 +1916,7 @@ class MerchantDetailTest extends OAuthTestCase
         $actualAdditionalWebsites = $this->getLastEntity('merchant_detail', true)['additional_websites'];
 
         $expectedAdditionalWebsites = [
-            'https://www.website1.com',
+            'https://www.website2.com',
             'https://www.website3.com',
         ];
 
