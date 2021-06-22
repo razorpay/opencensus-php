@@ -10026,6 +10026,7 @@ class Route
         'contact_delete',
         'contact_types_get',
         'contact_types_post',
+        'contact_create_internal',
 
         'fund_account_validate',
         'fund_account_validate_fetch',
