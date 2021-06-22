@@ -3561,6 +3561,17 @@ class Service extends Base\Service
         return $data;
     }
 
+    /**
+     * returns merchant's submissionDate
+     */
+    public function internalGetMerchantSubmissionDate($merchantId)
+    {
+        (new Detail\Core())->getMerchantAndSetBasicAuth($merchantId);
+
+        $detailService = new Detail\Service();
+
+        return ['first_l2_submission_timestamp' => ($detailService)->getFirstL2SubmissionDate()];
+    }
     public function getRejectionReasons($merchantId)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);

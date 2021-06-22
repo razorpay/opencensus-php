@@ -1308,12 +1308,20 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
     /**
      * returns merchant info along with merchant_details, to be used by internal apps
      */
     public function internalGetMerchant(string $merchantId)
     {
         $response = $this->service()->internalGetMerchant($merchantId);
+
+        return ApiResponse::json($response);
+    }
+
+    public function internalGetMerchantSubmissionDate($merchantId)
+    {
+        $response = $this->service()->internalGetMerchantSubmissionDate($merchantId);
 
         return ApiResponse::json($response);
     }

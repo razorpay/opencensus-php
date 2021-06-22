@@ -1678,10 +1678,10 @@ class Service extends Base\Service
                 'action_state_logs without filter' => $activationStatusChangeLogs,
             ]);
 
-        $activationStatusChangeLogs = array_filter($activationStatusChangeLogs, function ($activationStatusChangeLog)
+        $activationStatusChangeLogs = array_values(array_filter($activationStatusChangeLogs, function ($activationStatusChangeLog)
         {
             return ($activationStatusChangeLog[StateChangeEntity::NAME] === Status::UNDER_REVIEW);
-        });
+        }));
 
         $this->trace->info(
             TraceCode::SHOW_CREATE_TICKET_POPUP_DEBUG,

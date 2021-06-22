@@ -46,6 +46,27 @@ class CareServiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testInternalMerchantGetFirstSubmissionDate()
+    {
+        $this->fixtures->on('live')->create('state', [
+            'entity_id'   => '10000000000000',
+            'entity_type' => 'merchant_detail',
+            'name'        => 'under_review',
+            'created_at'  =>  1539543931
+        ]);
+
+        $this->fixtures->on('live')->create('state', [
+            'entity_id'   => '10000000000000',
+            'entity_type' => 'merchant_detail',
+            'name'        => 'under_review',
+            'created_at'  =>  1539543989
+        ]);
+
+        $this->ba->careAppAuth();
+
+        $this->startTest();
+    }
+
     protected function setUpCareServiceMock()
     {
         $this->careServiceMock = Mockery::mock('RZP\Services\CareServiceClient', [$this->app])

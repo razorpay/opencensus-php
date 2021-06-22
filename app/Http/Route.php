@@ -349,7 +349,8 @@ class Route
         'merchant_details_suggested_update'        => ['post',     'merchants/details/suggested_update',             'MerchantController@updateSuggestedMerchantDetails'                 ],
         'internal_merchants_fetch'                 => ['get',      'internal/merchants',                             'MerchantController@getMerchantBulk'                                ],
         'internal_merchant_fetch'                  => ['get',      'internal/merchants/{id}',                        'MerchantController@internalGetMerchant'                            ],
-        'internal_send_merchant_email'             => ['post',     'internal/merchants/{id}/send_email',                  'MerchantController@sendMerchantEmail'                            ],
+        'internal_merchant_submission_date'        => ['get',      'internal/merchants/{id}/submission_date',       'MerchantController@internalGetMerchantSubmissionDate'               ],
+        'internal_send_merchant_email'             => ['post',     'internal/merchants/{id}/send_email',             'MerchantController@sendMerchantEmail'                            ],
         'internal_merchant_get_rejection_reasons'  => ['get',      'internal/merchants/{id}/rejection_reasons',      'MerchantController@internalGetMerchantRejectionReasons'          ],
         'merchant_invoice_add_bulk'                => ['post',     'merchants/invoice/bulk',                         'MerchantInvoiceController@postMultipleEntities'                    ],
         'merchant_get_app_access_mapping'          => ['get',      'merchants/{id}/applications',                    'MerchantController@getConnectedApplications'                       ],
@@ -3210,6 +3211,7 @@ class Route
         'feature_delete_entity_internal',
 
         'internal_merchant_fetch',
+        'internal_merchant_submission_date',
         'internal_merchant_get_rejection_reasons',
         'internal_merchants_fetch',
         'internal_fetch_config_by_id',
@@ -9483,6 +9485,7 @@ class Route
 
         'care' => [
             'internal_merchant_fetch',
+            'internal_merchant_submission_date',
             'internal_merchant_get_rejection_reasons',
             'myoperator_v1_proxy_get',
             'myoperator_v2_proxy_post',
