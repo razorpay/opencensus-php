@@ -49,7 +49,9 @@ export default class Support extends Component {
 
   componentDidMount() {
     this.props.checkCallEligibility();
-    this.props.checkScheduleCallConfig();
+    if (this.props.user.isScheduleCallbackEnabled) {
+      this.props.checkScheduleCallConfig();
+    }
     this.bindEvents();
     merchantFetch({
       url: 'merchants/support/option/flags',
