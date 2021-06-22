@@ -4723,7 +4723,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_VERIFICATION_VERIFY_AT_GREATER_THAN_VERIFY_START      = 'PAYMENT_VERIFICATION_VERIFY_AT_GREATER_THAN_VERIFY_START';
     const PAYMENT_VERIFICATION_PAYMENT_CAPTURED                         = 'PAYMENT_VERIFICATION_PAYMENT_CAPTURED';
     const PAYMENT_VERIFICATION_INITIATED                                = 'PAYMENT_VERIFY_EVENT_DATA';
+    const PAYMENT_NOT_FOUND_FOR_VERIFY                                  = 'PAYMENT_NOT_FOUND_FOR_VERIFY';
+    
     const DOWNTIME_NOTIFICATION_MERCHANT_KEY_MISSING                    = 'DOWNTIME_NOTIFICATION_MERCHANT_KEY_MISSING';
+
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

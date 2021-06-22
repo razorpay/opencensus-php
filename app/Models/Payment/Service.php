@@ -3660,7 +3660,20 @@ class Service extends Base\Service
 
         $statusToVerify = [Payment\Status::FAILED, Payment\Status::CREATED];
 
-        $payment =  $this->repo->payment->findOrFail($id);
+        $payment =  $this->repo->payment->find($id);
+
+        if (isset($payment) === false)
+        {
+            $data['retry_verify'] = false;
+
+            $this->trace->info(
+                TraceCode::PAYMENT_NOT_FOUND_FOR_VERIFY,
+                [
+                    'payment_id' => $id
+                ]);
+
+            return $data;
+        }
 
         if(array_search($payment->getStatus(), $statusToVerify) === false)
         {
@@ -3686,22 +3699,31 @@ class Service extends Base\Service
         {
             $filter = ($payment->isCreated() === true) ? Payment\Verify\Filter::PAYMENTS_CREATED : Payment\Verify\Filter::PAYMENTS_FAILED;
 
-            $result = (new Verify())->verifyPaymentNewRoute($payment, $filter);
-
-            $this->trace->info(
-                TraceCode::VERIFY_NEW_ROUTE_RESULT,
-                [
-                    'payment_id' => $id,
-                    'result'     => $result,
-                ]);
-
-            if (($payment->getStatus() === Payment\Status::CAPTURED) or
-                ($payment->getStatus() === Payment\Status::AUTHORIZED))
+            try
             {
-                $data['retry_verify'] = false;
+                $result = (new Verify())->verifyPaymentNewRoute($payment, $filter);
+
+                $this->trace->info(
+                    TraceCode::VERIFY_NEW_ROUTE_RESULT,
+                    [
+                        'payment_id' => $id,
+                        'result'     => $result,
+                    ]);
+
+                if (($payment->getStatus() === Payment\Status::CAPTURED) or
+                    ($payment->getStatus() === Payment\Status::AUTHORIZED))
+                {
+                    $data['retry_verify'] = false;
+                }
+                else
+                {
+                    $data['retry_verify'] = true;
+                }
             }
-            else
+            catch(\Exception $ex)
             {
+                $this->trace->traceException($ex);
+
                 $data['retry_verify'] = true;
             }
         }
