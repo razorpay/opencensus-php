@@ -130,7 +130,7 @@
                                         <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                                             <tr>
                                                 <td style="display:none;mso-hide:all;width:600px;">
-                                        <![endif]--> Not at all likely <!--[if mso | IE]>
+                                        <![endif]--> Extremely Dissatisfied <!--[if mso | IE]>
                                         </td>
                                         </tr>
                                         </table>
@@ -420,7 +420,7 @@
                                         <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                                             <tr>
                                                 <td style="display:none;mso-hide:all;width:600px;">
-                                        <![endif]--> Extremely likely <!--[if mso | IE]>
+                                        <![endif]--> Extremely Satisfied <!--[if mso | IE]>
                                         </td>
                                         </tr>
                                         </table>
@@ -457,7 +457,7 @@
                                             <tbody>
                                             <tr>
                                                 <td style="word-wrap:break-word;font-size:0px;padding:10px 0px 10px 28px;" align="left">
-                                                    <div style="cursor:auto;color:#FFFFFF;font-family:Trebuchet MS, sans-serif;font-size:13px;font-weight:200;line-height:22px;text-align:left;">Not at all likely</div>
+                                                    <div style="cursor:auto;color:#FFFFFF;font-family:Trebuchet MS, sans-serif;font-size:13px;font-weight:200;line-height:22px;text-align:left;">Extremely Dissatisfied</div>
                                                 </td>
                                             </tr>
                                             </tbody>
@@ -487,7 +487,7 @@
                                             <tbody>
                                             <tr>
                                                 <td style="word-wrap:break-word;font-size:0px;padding:10px 28px 10px 0px;" align="right">
-                                                    <div style="cursor:auto;color:#FFFFFF;font-family:Trebuchet MS, sans-serif;font-size:13px;font-weight:200;line-height:22px;text-align:right;">Extremely likely</div>
+                                                    <div style="cursor:auto;color:#FFFFFF;font-family:Trebuchet MS, sans-serif;font-size:13px;font-weight:200;line-height:22px;text-align:right;">Extremely Satisfied</div>
                                                 </td>
                                             </tr>
                                             </tbody>
