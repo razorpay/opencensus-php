@@ -82,7 +82,8 @@ class Netbanking
         IFSC::UTBI   => 'PNB (Erstwhile-United Bank of India)',
         IFSC::CORP   => 'Union Bank of India (Erstwhile Corporation Bank)',
         IFSC::ALLA   => 'Indian Bank (Erstwhile Allahabad Bank)',
-        IFSC::VIJB   => 'Bank of Baroda - Retail Banking (Erstwhile Vijaya Bank)'
+        IFSC::VIJB   => 'Bank of Baroda - Retail Banking (Erstwhile Vijaya Bank)',
+        IFSC::HSBC   => 'HSBC',
     ];
 
     const ACCOUNT_NUMBER_LENGTHS = [
@@ -187,6 +188,7 @@ class Netbanking
                 IFSC::ESFB,
                 IFSC::FDRL,
                 IFSC::HDFC,
+                IFSC::HSBC,
                 IFSC::ICIC,
                 IFSC::IDFB,
                 IFSC::INDB,
@@ -239,6 +241,7 @@ class Netbanking
                 IFSC::ESFB,
                 IFSC::FDRL,
                 IFSC::HDFC,
+                IFSC::HSBC,
                 IFSC::IBKL,
                 IFSC::ICIC,
                 IFSC::IDFB,
@@ -962,6 +965,7 @@ class Netbanking
         IFSC::ZCBL,
         IFSC::CIUB,
         IFSC::FDRL,
+        IFSC::HSBC,
         self::LAVB_C,
         self::UTIB_C,
         self::IBKL_C,

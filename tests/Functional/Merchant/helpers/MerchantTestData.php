@@ -3516,7 +3516,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 27,
+                'count' => 28,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -3551,6 +3551,13 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'ESAF',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'HSBC',
                         ],
                     ],
                     [
@@ -3720,7 +3727,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 28,
+                'count' => 29,
                 'items' => [
                     [
                         'method' => 'netbanking',
@@ -3762,6 +3769,13 @@ return [
                         'severity' => 'low',
                         'instrument' => [
                             'issuer' => 'ESAF',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'HSBC',
                         ],
                     ],
                     [
@@ -4139,6 +4153,7 @@ return [
                                 'BDBL',
                                 'COSB',
                                 'ESAF',
+                                'HSBC',
                                 'JSBP',
                                 'KCCB',
                                 'KJSB',

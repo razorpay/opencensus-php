@@ -31,6 +31,7 @@ class BankCodes
         IFSC::ESFB => 'EQB',                    // Equitas Small Finance Bank
         IFSC::FDRL => 'FBK',                    // Federal Bank Ltd
         IFSC::HDFC => 'HDF',                    // HDFC Bank
+        IFSC::HSBC => 'HSB',                    // HSBC Bank
         IFSC::IBKL => 'IDB',                    // Idbi Bank Ltd
         IFSC::ICIC => 'ICI',                    // ICICI Bank
         IFSC::IDFB => 'IDN',                    // IDFC Bank
