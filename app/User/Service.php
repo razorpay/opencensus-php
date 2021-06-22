@@ -500,7 +500,30 @@ class Service extends Base\Service
 
         $this->trace->info(TraceCode::USER_OAUTH_LOGIN, $traceData);
 
+        $this->deleteSessionsIfApplicable($genericUser);
+
         return [$error, $res];
+    }
+
+    public function deleteSessionsIfApplicable(GenericUser $genericUser)
+    {
+        $genericUser = $genericUser ? $genericUser->toArray() : null;
+
+        if ((isset($genericUser[Constants::INVALIDATE_SESSIONS]) === true) and
+            ($genericUser[Constants::INVALIDATE_SESSIONS] === true))
+        {
+            $currentSessionId = Session::getId();
+
+            $sessionData = [
+                Constants::USER_ID          => $genericUser[Constants::ID],
+                Constants::CURRENT_SESSION  => $currentSessionId,
+            ];
+
+            $this->trace->info(TraceCode::INVALIDATE_OTHER_ACTIVE_SESSIONS, $sessionData);
+
+            // delete other active sessions when a user login/sign-up using Google SSO for the first time
+            (new SessionTable\Entity)->deleteSessionsForUser($genericUser[Constants::ID], $currentSessionId);
+        }
     }
 
     public function changePassword(array $input)

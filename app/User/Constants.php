@@ -56,6 +56,14 @@ class Constants
 
     const DASHBOARD_USER_PAYLOAD = 'dashboard_user_payload';
 
+    /**
+     * during google oauth login/signup for the first time, if this
+     * flag is set to true than invalidate all other active user sessions
+     */
+    const INVALIDATE_SESSIONS = 'invalidate_sessions';
+
+    const CURRENT_SESSION = 'current_session';
+
     // Routes
     const OAUTH_LOGIN_ROUTE = 'users/oauth-login';
 
