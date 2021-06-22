@@ -2,8 +2,12 @@
 
 namespace RZP\Tests\Functional\Report;
 
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+
 
 class ReportingTest extends TestCase
 {
@@ -48,7 +52,7 @@ class ReportingTest extends TestCase
             'contact_name'=> 'Aditya',
             'business_type' => 2
         ]);
-        
+
         // This is required, because this is going to on board the merchant on X on the test mode
         // which requires the terminal entity to be present
         $this->fixtures->create('terminal:bank_account_terminal_for_business_banking',
@@ -68,5 +72,114 @@ class ReportingTest extends TestCase
         $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
 
         $this->startTest();
+    }
+
+    public function testPGReportLogForInvalidEmails()
+    {
+        $user = (new User())->createUserForMerchant('10000000000000', [
+            'email' => 'test3@razorpay.com'
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->mockRazorxTreatment();
+
+        $this->startTest();
+    }
+
+    public function testPGReportLogForValidEmails()
+    {
+        $this->ba->proxyAuth();
+
+        $this->mockRazorxTreatment();
+
+        $this->startTest();
+    }
+
+    public function testRXReportLogForInvalidEmails()
+    {
+        $user = (new User())->createBankingUserForMerchant('10000000000000', [
+            'email' => 'test2@razorpay.com',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->mockRazorxTreatment();
+
+        $this->startTest();
+    }
+
+    public function testRXReportLogForValidEmails()
+    {
+        $user = (new User())->createBankingUserForMerchant('10000000000000', [
+            'email' => 'test2@razorpay.com',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->mockRazorxTreatment();
+
+        $this->startTest();
+    }
+
+    public function testPGReportLogEditForInvalidEmails()
+    {
+        $user = (new User())->createUserForMerchant('10000000000000', [
+            'email' => 'test3@razorpay.com'
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->mockRazorxTreatment();
+
+        $this->startTest();
+    }
+
+    public function testPGReportLogEditForValidEmails()
+    {
+        $this->ba->proxyAuth();
+
+        $this->mockRazorxTreatment();
+
+        $this->startTest();
+    }
+
+    public function testRXReportLogEditForInvalidEmails()
+    {
+        $user = (new User())->createBankingUserForMerchant('10000000000000', [
+            'email' => 'test2@razorpay.com',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->mockRazorxTreatment();
+
+        $this->startTest();
+    }
+
+    public function testRXReportLogEditForValidEmails()
+    {
+        $user = (new User())->createBankingUserForMerchant('10000000000000', [
+            'email' => 'test2@razorpay.com',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->mockRazorxTreatment();
+
+        $this->startTest();
+    }
+
+    protected function mockRazorxTreatment(string $returnValue = 'on')
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn($returnValue);
     }
 }

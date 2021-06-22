@@ -26,6 +26,7 @@ use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Services\Reporting\Constants;
+use RZP\Services\Reporting\Validators\Factory as ValidationFactory;
 
 /**
  * Interface for api to talk to Reporting service
@@ -82,6 +83,9 @@ class Reporting implements ExternalService
         'reporting_config_create_full',
         'reporting_config_edit_full',
     ];
+
+    //RazorX Experiments
+    const ENABLE_REPORT_REQUEST_VALIDATION = "enable_report_request_validation";
 
     /**
      * @var array
@@ -341,12 +345,16 @@ class Reporting implements ExternalService
             $input = $this->buildCaTransactionRawQueryParams($input);
         }
 
+        $this->validateInput($input);
+
         return $this->createAndSendRequest(Requests::POST, $path, $input);
     }
 
     public function editLog(string $id, array $input): array
     {
         $path = self::LOG_PATH . '/' . $id;
+
+        $this->validateInput($input);
 
         return $this->createAndSendRequest(Requests::PATCH, $path, $input);
     }
@@ -1409,5 +1417,25 @@ class Reporting implements ExternalService
         $input[self::TEMPLATE_OVERRIDES][self::RAW_SQL][self::QUERY_PARAMS] = $query_params;
 
         return $input;
+    }
+
+    protected function validateInput(array $input)
+    {
+        $exp = $this->app->razorx->getTreatment(
+            $this->headers[self::CONSUMER_HEADER] ?? '',
+            self::ENABLE_REPORT_REQUEST_VALIDATION,
+            $this->mode
+        );
+
+        if ($exp === "on")
+        {
+            $validator = ValidationFactory::getReportTypeBasedValidator(
+                $this->headers[self::REPORT_TYPE_HEADER] ?? '',
+                $input);
+
+            if ($validator !== null) {
+                $validator->validate();
+            }
+        }
     }
 }

@@ -388,5 +388,273 @@ return [
                 ]
             ]
         ]
-    ]
+    ],
+
+    'testPGReportLogForInvalidEmails' => [
+        'request' => [
+            'url'     => '/reporting/logs',
+            'method'  => 'POST',
+            'content' => [
+                "config_id"     => "config_D5RAgPWrrUgP9K",
+                "start_time"    => "1614537000",
+                "end_time"      => "1617215399",
+                "send_email"    => true,
+                "emails"        => ["test2@razorpay.com"],
+            ],
+            'server' => [
+                'HTTP_X-Report-Type' => 'merchant',
+            ],
+        ],
+        'response' => [
+            'content'   => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'test2@razorpay.com is not a registered email address',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testPGReportLogForValidEmails' => [
+        'request' => [
+            'url'     => '/reporting/logs',
+            'method'  => 'POST',
+            'content' => [
+                "config_id"     => "config_D5RAgPWrrUgP9K",
+                "start_time"    => "1614537000",
+                "end_time"      => "1617215399",
+                "send_email"    => false,
+                "emails"        => ["test@razorpay.com"],
+            ],
+            'server' => [
+                'HTTP_X-Report-Type' => 'merchant',
+            ],
+        ],
+        'response' => [
+            'content'   => [
+                "entity" => "collection",
+                "count" => 3,
+                "items" => [
+                    [
+                        "id" => "config_D5RAgPWrrUgP9K",
+                        "consumer" => "100000Razorpay",
+                        "report_type" => "merchant"
+                    ],
+                    [
+                        "id" => "config_CC39ZQphE0ox5U",
+                        "consumer" => "100000Razorpay",
+                        "report_type" => "merchant"
+                    ],
+                    [
+                        "id" => "config_C1eAjMzFDEU074",
+                        "consumer" => "10000000000000",
+                        "report_type" => "merchant"
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testRXReportLogForInvalidEmails' => [
+        'request' => [
+            'url'     => '/reporting/logs',
+            'method'  => 'POST',
+            'content' => [
+                "config_id"     => "config_D5RAgPWrrUgP9K",
+                "start_time"    => "1614537000",
+                "end_time"      => "1617215399",
+                "send_email"    => true,
+                "emails"        => ["test3@razorpay.com"],
+            ],
+            'server' => [
+                'HTTP_X-Report-Type' => 'razorpayx',
+            ],
+        ],
+        'response' => [
+            'content'   => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'test3@razorpay.com is not a registered email address',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testRXReportLogForValidEmails' => [
+        'request' => [
+            'url'     => '/reporting/logs',
+            'method'  => 'POST',
+            'content' => [
+                "config_id"     => "config_D5RAgPWrrUgP9K",
+                "start_time"    => "1614537000",
+                "end_time"      => "1617215399",
+                "send_email"    => true,
+                "emails"        => ["test2@razorpay.com"],
+            ],
+            'server' => [
+                'HTTP_X-Report-Type' => 'razorpayx'
+            ],
+        ],
+        'response' => [
+            'content'   => [
+                "entity" => "collection",
+                "count" => 3,
+                "items" => [
+                    [
+                        "id" => "config_D5RAgPWrrUgP9K",
+                        "consumer" => "100000Razorpay",
+                        "report_type" => "merchant"
+                    ],
+                    [
+                        "id" => "config_CC39ZQphE0ox5U",
+                        "consumer" => "100000Razorpay",
+                        "report_type" => "merchant"
+                    ],
+                    [
+                        "id" => "config_C1eAjMzFDEU074",
+                        "consumer" => "10000000000000",
+                        "report_type" => "merchant"
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testPGReportLogEditForInvalidEmails' => [
+        'request' => [
+            'url'     => '/reporting/logs/log_100000Squirtle',
+            'method'  => 'PATCH',
+            'content' => [
+                "send_email"    => true,
+                "emails"        => ["test2@razorpay.com"],
+            ],
+            'server' => [
+                'HTTP_X-Report-Type' => 'merchant',
+            ],
+        ],
+        'response' => [
+            'content'   => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'test2@razorpay.com is not a registered email address',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testPGReportLogEditForValidEmails' => [
+        'request' => [
+            'url'     => '/reporting/logs/log_100000Squirtle',
+            'method'  => 'PATCH',
+            'content' => [
+                "send_email"    => false,
+                "emails"        => ["test@razorpay.com"],
+            ],
+            'server' => [
+                'HTTP_X-Report-Type' => 'merchant',
+            ],
+        ],
+        'response' => [
+            'content'   => [
+                "entity" => "collection",
+                "count" => 3,
+                "items" => [
+                    [
+                        "id" => "config_D5RAgPWrrUgP9K",
+                        "consumer" => "100000Razorpay",
+                        "report_type" => "merchant"
+                    ],
+                    [
+                        "id" => "config_CC39ZQphE0ox5U",
+                        "consumer" => "100000Razorpay",
+                        "report_type" => "merchant"
+                    ],
+                    [
+                        "id" => "config_C1eAjMzFDEU074",
+                        "consumer" => "10000000000000",
+                        "report_type" => "merchant"
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testRXReportLogEditForInvalidEmails' => [
+        'request' => [
+            'url'     => '/reporting/logs/log_100000Squirtle',
+            'method'  => 'PATCH',
+            'content' => [
+                "send_email"    => true,
+                "emails"        => ["test3@razorpay.com"],
+            ],
+            'server' => [
+                'HTTP_X-Report-Type' => 'razorpayx',
+            ],
+        ],
+        'response' => [
+            'content'   => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'test3@razorpay.com is not a registered email address',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testRXReportLogEditForValidEmails' => [
+        'request' => [
+            'url'     => '/reporting/logs/log_100000Squirtle',
+            'method'  => 'PATCH',
+            'content' => [
+                "send_email"    => true,
+                "emails"        => ["test2@razorpay.com"],
+            ],
+            'server' => [
+                'HTTP_X-Report-Type' => 'razorpayx'
+            ],
+        ],
+        'response' => [
+            'content'   => [
+                "entity" => "collection",
+                "count" => 3,
+                "items" => [
+                    [
+                        "id" => "config_D5RAgPWrrUgP9K",
+                        "consumer" => "100000Razorpay",
+                        "report_type" => "merchant"
+                    ],
+                    [
+                        "id" => "config_CC39ZQphE0ox5U",
+                        "consumer" => "100000Razorpay",
+                        "report_type" => "merchant"
+                    ],
+                    [
+                        "id" => "config_C1eAjMzFDEU074",
+                        "consumer" => "10000000000000",
+                        "report_type" => "merchant"
+                    ]
+                ]
+            ]
+        ]
+    ],
 ];
