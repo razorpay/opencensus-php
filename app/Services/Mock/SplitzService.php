@@ -139,4 +139,15 @@ class SplitzService extends BaseSplitz
         return ['status_code' => $code, 'response' => $res];
 
     }
+
+    public function allowCors()
+    {
+        $response = ApiResponse::json([]);
+
+        $response->headers->set(self::ACCESS_CONTROL_ALLOW_METHODS, 'POST, OPTIONS' );
+
+        $response->headers->set(self::ACCESS_CONTROL_ALLOW_HEADERS, self::CONTENT_TYPE);
+
+        return $response;
+    }
 }

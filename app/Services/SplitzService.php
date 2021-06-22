@@ -22,6 +22,15 @@ class SplitzService extends Base\Service
     const FALSE_POSITIVITY_RATE     = "0.00001";
     const EVALUATE_BULK_URL         = 'twirp/rzp.splitz.evaluate.v1.EvaluateAPI/EvaluateBulk';
 
+    // Tells the client what the content type of the returned content actually is
+    const CONTENT_TYPE = 'Content-Type';
+
+    // Specifies the method or methods allowed when accessing the resource in response to a preflight request.
+    const ACCESS_CONTROL_ALLOW_METHODS = 'Access-Control-Allow-Methods';
+
+    // Used in response to a preflight request which includes the Access-Control-Request-Headers to indicate which HTTP headers can be used during the actual request.
+    const ACCESS_CONTROL_ALLOW_HEADERS = 'Access-Control-Allow-Headers';
+
     /**
      * @var string
      */
@@ -205,5 +214,16 @@ class SplitzService extends Base\Service
         {
             throw new Exception\ServerErrorException('Error completing the request', ErrorCode::SERVER_ERROR_SPLITZ_BULK_FAILURE, null, $e);
         }
+    }
+
+    public function allowCors()
+    {
+        $response = ApiResponse::json([]);
+
+        $response->headers->set(self::ACCESS_CONTROL_ALLOW_METHODS, 'POST, OPTIONS' );
+
+        $response->headers->set(self::ACCESS_CONTROL_ALLOW_HEADERS, self::CONTENT_TYPE);
+
+        return $response;
     }
 }

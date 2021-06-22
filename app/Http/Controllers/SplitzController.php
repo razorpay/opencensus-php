@@ -50,7 +50,9 @@ class SplitzController extends Controller
 
     public function allowCors()
     {
-        return ApiResponse::json([]);
+        $response = $this->app->splitzService->allowCors();
+
+        return $response;
     }
 
     public function evaluateRequestBulk()
