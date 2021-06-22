@@ -25,6 +25,12 @@ class DowntimeSlackNotification
 
     protected $redis;
 
+    private $DOWNTIME_BASE_TEMPLATE = '`[$severity]  $heading` '."\n".'```Method : $method'."\n".'Start Time : $startTime'."\n".'$additionalFields```';
+
+    private $MERCHANT_DETAILS_TEMPLATE = 'Merchant Name: $merchantName'."\n".'Merchant Id : $merchantId';
+
+    private $RESOLUTION_TEMPLATE = 'End Time: $endTime'."\n".'Duration : $duration';
+
     public function __construct($app)
     {
         $this->trace = $app['trace'];
@@ -34,13 +40,11 @@ class DowntimeSlackNotification
             [
                 'channel' => 'C0243P7P7H7',
                 'emitTransitions' => true,
-                'onlyMerchant' => false,
                 "allowedTypes" => ['PLATFORM', 'PLTF', 'MERCHANT']
             ],
             [
                 'channel' => 'C023ABXTCGP',
                 'emitTransitions' => false,
-                'onlyMerchant' => true,
                 "allowedTypes" => ['MERCHANT_', 'SRM']
             ]
         ];
@@ -51,13 +55,16 @@ class DowntimeSlackNotification
                 [
                     'channel' => 'C01B1J4N1E1',
                     'emitTransitions' => true,
-                    'onlyMerchant' => false,
                     "allowedTypes" => ['PLATFORM', 'PLTF', 'MERCHANT']
                 ],
                 [
                     'channel' => 'CQHNFF004',
                     'emitTransitions' => false,
-                    'onlyMerchant' => true,
+                    "allowedTypes" => ['MERCHANT_', 'SRM_']
+                ],
+                [
+                    'channel' => 'C0259FLRRAS',
+                    'emitTransitions' => true,
                     "allowedTypes" => ['MERCHANT', 'SRM']
                 ]
             ];
@@ -200,34 +207,31 @@ class DowntimeSlackNotification
         return $isMerchantDowntime;
     }
 
-    private function formMesssage($downtimeState, $downtime, $startTime)
+    private function formMesssage($downtimeState, $downtime, $eTime)
     {
-        $method = $downtime['method'];
-
         $severity = $downtime['severity'];
         $eventTime = $downtime['eventTime'];
 
-        $duration = 0;
-        if ($this->isResolve($downtimeState))
+        $startTime  = $this->formatEpoc($eventTime);
+
+        $additionalDetails = "";
+
+        if($this->isMerchantDowntime($downtime))
         {
-            $duration = ($eventTime - $startTime);
+            $additionalDetails = $this->getMerchantDetails($downtime);
         }
 
-        $eventTime = $this->formatEpoc($eventTime);
+        if($this->isResolve($downtimeState)){
+            $severity = 'RESOLVED';
+            $additionalDetails = $additionalDetails."\n".$this->getResolutionDetails($eTime, $eventTime);
+        }
 
-        $message = $this->addHeading($downtime, $downtimeState, $severity);
+        $heading = $this->getHeading($downtime);
 
-        $message = $this->addMethod($downtime, $message, $method);
+        $method = $this->getMethod($downtime);
 
-        $message = $this->addTimeSection($downtimeState, $message, $eventTime);
-
-        $message = $this->addMerchantSection($downtime, $message);
-
-        $message = $this->addDuration($duration, $downtimeState, $message);
-
-        //$message = $this->addCc($downtimeState, $message);
-
-        return $message;
+         return strtr($this->DOWNTIME_BASE_TEMPLATE, ['$severity' => $severity,
+             '$heading' => $heading, '$method'=>$method, '$startTime' => $startTime, '$additionalFields' => $additionalDetails ]);
     }
 
     /**
@@ -283,112 +287,53 @@ class DowntimeSlackNotification
         return $downtimeState === "RESOLVE";
     }
 
-    /**
-     * @param $downtimeState
-     * @param string $message
-     * @param string $eventTime
-     * @return string
-     */
-    private function addTimeSection($downtimeState, string $message, string $eventTime): string
+    private function getHeading($downtime): string
     {
-        if ($this->isResolve($downtimeState))
-        {
-            $message = $message . "\n EndTime: " . $eventTime;
-        }
-        else
-        {
-            $message = $message . "\n StartTime: " . $eventTime;
-        }
-        return $message;
-    }
-
-    private function addHeading($downtime, $downtimeState, $severity): string
-    {
-        $issuer = '';
+        $heading = '';
 
         if(isset($downtime['issuer']) === true)
         {
-            $issuer = $downtime['issuer'];
+            $heading = $downtime['issuer'];
         }
 
-        if(isset($downtime['network']) === true
-            and empty($downtime['network']) === false)
+        if($downtime['method'] === "card" and isset($downtime['network']) === true)
         {
-            $issuer = $downtime['network'];
             if(empty($downtime['issuer']) === false)
             {
-                $issuer = $issuer." - ".$downtime['issuer'];
+                $heading = $downtime['network']." - ".$heading;
+            }
+            else
+            {
+                $heading = $downtime['network'];
             }
         }
 
-        $message = "*" . $issuer . "*";
-        if ($this->isCreateState($downtimeState) || $this->isTrannsitionState($downtimeState))
+        if(isset($downtime['sr']) === true)
         {
-            $message = "[". $severity . "] ".$message;
+            $heading = $heading. " SR : ".$downtime['sr'];
         }
-        else
-        {
-            $message =  "[RESOLVED] ".$message;
-        }
-        return $message;
+
+        return $heading;
     }
 
-    private function addMethod($downtime, string $message, $method): string
+    private function getMethod($downtime): string
     {
-        $m = $method;
-        if($method === "card"
-            and empty($downtime['cardType']) === false)
+        $method = $downtime['method'];
+
+        switch ($method)
         {
-            $m = $downtime['cardType']." ".$m;
+            case "card":
+                if(empty($downtime['cardType']) === false)
+                    $method = $downtime['cardType']." ".$method;
+                break;
+            case "upi":
+                if(empty($downtime['flow']) === false)
+                    $method = $downtime['flow']." ".$method;
+                break;
+            default:
+                break;
         }
-
-        if($method === "upi"
-            and empty($downtime['flow']) === false)
-        {
-            $m = $m." ".$downtime['flow'];
-        }
-
-        $message = $message . " \n ``` Method  : " . $m;
-        return $message;
-    }
-
-    /**
-     * @param $downtime
-     * @param string $message
-     * @return string
-     */
-    private function addMerchantSection($downtime, string $message): string
-    {
-        if ($this->isMerchantDowntime($downtime))
-        {
-            $message = $message . "\n Merchant : " . $downtime['merchantId'];
-        }
-        return $message;
-    }
-
-    /**
-     * @param $downtimeState
-     * @param string $message
-     * @return string
-     */
-    private function addCc($downtimeState, string $message): string
-    {
-        if (!$this->isTrannsitionState($downtimeState))
-        {
-            $message = $message . "// <!here>";
-        }
-        return $message;
-    }
-
-    private function addDuration($duration, $downtimeState, string $message): string
-    {
-        if ($this->isResolve($downtimeState))
-        {
-            $message = $message . "\n Duration : " . (round($duration / 60)) . " minutes";
-        }
-
-        $message = $message . "``` \n";
-        return $message;
+        return $method;
     }
 
     /**
@@ -472,5 +417,43 @@ class DowntimeSlackNotification
             );
         }
     }
+
+    private function getMerchantDetails($downtime): string
+    {
+        $id = $downtime['merchantId'];
+        $name = $this->getMerchantName($downtime);
+
+        return strtr($this->MERCHANT_DETAILS_TEMPLATE, [
+            '$merchantId' => $id,
+            '$merchantName' => $name,
+        ]);
+    }
+
+    private function getResolutionDetails($startTime, $eventTime): string
+    {
+        $duration = ($startTime - $eventTime);
+        $duration =  (round($duration / 60));
+
+        $eventTime = $this->formatEpoc($eventTime);
+
+        return  strtr($this->RESOLUTION_TEMPLATE, ['$duration' =>  $duration, '$endTime' => $eventTime]);
+    }
+
+    private function getMerchantName($downtime)
+    {
+        $merchantId = $downtime['merchantId'];
+        $key = "{downtime}:merchant_name_".$merchantId;
+        $merchantName  = $this->redis->HGETALL($key);
+
+        if(empty($merchantName) === true)
+        {
+            $this->trace->error(TraceCode::DOWNTIME_NOTIFICATION_MERCHANT_KEY_MISSING, ["merchantId" => $merchantId]);
+            return $merchantId;
+        }
+
+        return $merchantName['name'];
+    }
+
+
 
 }

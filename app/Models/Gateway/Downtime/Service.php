@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Gateway\Downtime;
 
+use Illuminate\Support\Facades\Redis;
 use RZP\Models\Admin\Query\Validator;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -138,6 +139,20 @@ class Service extends Base\Service
         $data = $processor->process($input);
 
         return $data;
+    }
+
+    public function updateDowntimeSlackNotifationMerchantNames(array $input)
+    {
+        $this->setMode();
+
+        $this->trace->info(TraceCode::GATEWAY_DOWNTIME_WEBHOOK, $input);
+
+        $redis = Redis::Connection('mutex_redis');
+
+        foreach ($input as $mMap) {
+            $key = "{downtime}:merchant_name_".$mMap['id'];
+            $redis->HMSET($key, ["name"=>$mMap['name']]);
+        }
     }
 
     public function setMode()

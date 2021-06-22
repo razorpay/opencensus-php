@@ -1100,6 +1100,15 @@ class GatewayController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postDowntimeSlackNotificationMerchants(Downtime\Service $service)
+    {
+        $input = Request::all();
+
+        $service->updateDowntimeSlackNotifationMerchantNames($input);
+
+        return ApiResponse::json(["success" => true]);
+    }
+
     protected function setCpsRoutingFlag(Admin\Service $service, array $input)
     {
         $alertStatus = $input[VajraConstants::STATUS_KEY];
