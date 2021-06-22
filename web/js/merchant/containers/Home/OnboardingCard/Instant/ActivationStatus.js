@@ -235,7 +235,7 @@ export default class ActivationCard extends Component {
         status = possibleStatuses.active;
         content = (
           <div>
-            You can accept unlimited payments now. Start recieving{' '}
+            You can accept unlimited payments now. Start receiving{' '}
             <a
               className="btn-link"
               target="_blank"
@@ -255,7 +255,7 @@ export default class ActivationCard extends Component {
         status = possibleStatuses.active;
         content = (
           <div>
-            You can accept unlimited payments now. Start recieving{' '}
+            You can accept unlimited payments now. Start receiving{' '}
             <a
               className="btn-link"
               target="_blank"
@@ -275,7 +275,7 @@ export default class ActivationCard extends Component {
         status = limitBreachHappened ? possibleStatuses.blocked : possibleStatuses.active;
         content = (
           <div>
-            You can accept unlimited payments now. Start recieving{' '}
+            You can accept unlimited payments now. Start receiving{' '}
             <a
               className="btn-link"
               target="_blank"

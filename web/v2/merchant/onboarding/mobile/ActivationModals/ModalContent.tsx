@@ -108,7 +108,7 @@ export const getModalContent = (
                   variant="tertiary"
                   onClick={() => {
                     closeModal();
-                    history.push('/onboarding/steps');
+                    location.href = '/onboarding/steps';
                   }}
                 >
                   {Message.PAYMENT_ENABLE.secondryButtonText}

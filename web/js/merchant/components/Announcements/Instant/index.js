@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
 import LocalStorageService from 'common/utils/localStorage';
-import { merchantFetch } from 'merchant/utils/ajax';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import SupportButton from 'merchant/components/Home/SupportButton';
 
@@ -16,6 +15,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getActivationState } from 'merchant/components/Activation/ActivationUtils';
 import { showProductsModal, hideProductsModal } from 'merchant/reducers/home';
 import ProductsModal from 'merchant/components/Home/ProductsModal';
+import { trackProductsModal } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
 
 @connect(
   (state) => ({
@@ -84,7 +84,7 @@ export default class InstantActivationAnnouncements extends Component {
               <div className="big-circle-seprator" />
               <SupportButton
                 type="anchor"
-                buttonLabel="contact support"
+                buttonLabel="Contact Support"
                 category="merchant"
                 openSection="account-activation"
               />
@@ -370,7 +370,7 @@ export default class InstantActivationAnnouncements extends Component {
         }
         case 'rejected': {
           theme = 'danger';
-          title = 'Business not supported';
+          title = 'Account Rejected';
           content = (
             <div class="announcement-container">
               <div class="announcement-info">
@@ -408,7 +408,12 @@ export default class InstantActivationAnnouncements extends Component {
         }
         case 'activated_mcc_pending_with_tnc': {
           theme = 'success';
-          title = 'Payment and Settlements Enabled';
+          title = (
+            <div>
+              Payment and <br />
+              Settlements Enabled
+            </div>
+          );
           content = (
             <div>
               Congratulations, now you can accept unlimited payments. Settlements to your bank

@@ -175,6 +175,9 @@ export default class ActivationContainer extends React.Component {
       activation_form_milestone,
       dedupe,
       poi_verification_status,
+      business_type,
+      merchant,
+      isHardLimitReached,
     } = data;
 
     // Updating % activation_progress (side bar) and other important activation fields
@@ -190,6 +193,9 @@ export default class ActivationContainer extends React.Component {
       activation_form_milestone,
       dedupe,
       poi_verification_status,
+      business_type,
+      merchant,
+      isHardLimitReached,
     });
 
     this.props.updateSession({

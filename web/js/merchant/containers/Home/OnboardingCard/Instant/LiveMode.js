@@ -82,8 +82,8 @@ export default class LiveMode extends Component {
           status = possibleStatuses.done;
           content = (
             <div>
-              Your account will be activated once compliance checks are complete. Settlements might
-              be paused if we need more details for review
+              Your account has been activated successfully and your settlements are completely
+              activated
             </div>
           );
           break;

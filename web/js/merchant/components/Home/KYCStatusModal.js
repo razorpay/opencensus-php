@@ -10,6 +10,8 @@ import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import GenerateTnCPage from 'merchant/components/Home/GenerateTnCPage';
 import { showProductsModal, hideProductsModal } from 'merchant/reducers/home';
 import ProductsModal from 'merchant/components/Home/ProductsModal';
+import { trackProductsModal } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
+import { isDedupe, getActivationState } from 'merchant/components/Activation/ActivationUtils';
 
 const MODAL_CONTENT = {
   KYC_CLARIFICATION_SUBMIT_MODAL: {
@@ -65,6 +67,20 @@ const KYCStatusModal = ({
     showProductsModal();
   };
 
+  const onCloseModal = () => {
+    const activationState = getActivationState(user, user.isUnregisteredBusiness);
+    const shouldShowModal =
+      isDedupe(user) === 'blocked' ||
+      activationState === 'needs_clarification_mcc_pending' ||
+      activationState === 'needs_clarification' ||
+      activationState === 'rejected';
+    if (!shouldShowModal) {
+      onGoToDashboard();
+    } else {
+      onClose();
+    }
+  };
+
   const args = {
     isWhitelistFlow: user.instantActivation.isWhitelistFlow,
     isUnregisteredBusiness: user.isUnregisteredBusiness,
@@ -88,7 +104,7 @@ const KYCStatusModal = ({
     <>
       {!!content ? (
         <ModalMask>
-          <Modal className="pan-status-modal" onClose={onClose}>
+          <Modal className="pan-status-modal" onClose={() => onCloseModal()}>
             <div className={`modal-header ${content.background}`}>
               <h1>{content.title}</h1>
               {content.subtitle && <p>{content.subtitle}</p>}

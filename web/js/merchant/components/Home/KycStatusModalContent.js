@@ -66,6 +66,7 @@ export const kycModalContent = (args = {}) => {
                   ...getCommonSegmentProperties(),
                 },
               });
+              args.onClose();
               args.goToActivationForm();
             }}
           >
@@ -86,7 +87,13 @@ export const kycModalContent = (args = {}) => {
         ),
         background: 'pending',
         button: (
-          <button className="btn btn-primary" onClick={() => args.openPaymentAcceptModal()}>
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              args.onClose();
+              args.openPaymentAcceptModal();
+            }}
+          >
             Try our products
           </button>
         ),
@@ -111,11 +118,20 @@ export const kycModalContent = (args = {}) => {
           <>
             <button
               className="btn btn-default KYC__more_details"
-              onClick={() => args.goToActivationForm()}
+              onClick={() => {
+                args.onClose();
+                args.goToActivationForm();
+              }}
             >
               Complete KYC
             </button>
-            <button className="btn btn-primary" onClick={args.openPaymentAcceptModal}>
+            <button
+              className="btn btn-primary"
+              onClick={() => {
+                args.onClose();
+                args.openPaymentAcceptModal();
+              }}
+            >
               Accept Payments
             </button>
           </>
@@ -155,6 +171,7 @@ export const kycModalContent = (args = {}) => {
                   ...getCommonAnalyticsProperties(window.rzp_user),
                 },
               });
+              args.onClose();
               args.generatePage();
             }}
           >
@@ -217,6 +234,7 @@ export const kycModalContent = (args = {}) => {
                   ...getCommonAnalyticsProperties(window.rzp_user),
                 },
               });
+              args.onClose();
               args.generatePage();
             }}
           >
@@ -279,6 +297,7 @@ export const kycModalContent = (args = {}) => {
                   ...getCommonAnalyticsProperties(window.rzp_user),
                 },
               });
+              args.onClose();
               args.generatePage();
             }}
           >
@@ -346,7 +365,7 @@ export const kycModalContent = (args = {}) => {
 
     case 'rejected': {
       return {
-        title: 'Business not supported',
+        title: 'Account Rejected',
         body: (
           <div>
             We can't support your business because it doesn't meet our compliance requirements.
