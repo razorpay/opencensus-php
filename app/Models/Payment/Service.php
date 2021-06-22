@@ -1716,7 +1716,7 @@ class Service extends Base\Service
             {
                 $dccInfo = $this->getDCCInfo($amount, $currency, $merchant->getDccMarkupPercentage());
 
-                $dccInfo['card_currency'] = $iinEntity->getIinCurrency() ?? $currency;
+                $dccInfo['card_currency'] = $iinEntity->getIinCurrency() ?? Currency\Currency::USD;
 
                 $dccInfo['show_markup'] = $merchant->isDCCMarkupVisible();
 
