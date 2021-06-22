@@ -1,4 +1,75 @@
 .cash-advance-container, .cash-advance-repayments-schedule
+  .cash-advance-gromor-esign-wrapper
+    .announcement-banner-container
+      padding: 20px 20px 0 !important;
+      .unsigned
+        background: #E5F5F9;
+        border: 1px solid rgba(0, 140, 177, 0.32);
+        .close-btn
+          display: none !important;
+      .signed
+        background: rgba(229, 247, 240, 0.87);
+        border: 1px solid rgba(0, 156, 92, 0.32);
+      .error
+        background: #FEF4E7;
+        border: 1px solid rgba(223, 135, 0, 0.32);
+      .Announcement_Banner
+        box-shadow: none !important;
+        border-radius: 4px;
+
+      .content
+         display: flex;
+         flex-direction: row;
+         align-items: center;
+         height:100%;
+         padding:0 16px !important;
+         >div{
+            align-items: center;
+         }
+
+    .legal-sign-icon
+      width: 25.95px;
+      height: 24px;
+    .round-tick-icon
+      width:20px;
+      height:20px;
+
+    p 
+      margin-left: 12px;
+      font-size: 14px;
+      line-height: 20px;
+      color: #565A5C;
+     span
+      text-transform: uppercase;
+      margin-right:6px; 
+      font-weight: bold;
+      color: #324664;
+
+    .unsigned-btn
+      background: #E5F5F9;
+      border: 1px solid rgba(0, 140, 177, 0.32) !important;
+      color: #00779E;
+      margin-right: 0;
+      i
+       color: #00779E;
+    .error-btn
+      background: rgba(223, 135, 0, 0.09);
+      border: 1px solid rgba(223, 135, 0, 0.32) !important;
+      color: #BD7A03;
+      i
+       color: #BD7A03;
+    a
+      margin-left: 24.5px;
+      box-shadow: none !important;
+      font-weight: bold;
+      font-size: 14px;
+      line-height: 20px;
+      padding: 4px 8px;   
+      i
+        margin-left: 4px;     
+      &:hover
+        background: rgba(0, 140, 177, 0.05);
+
   .custom-loader
     width: 100%;
     height: 150px;
@@ -104,3 +175,266 @@
   .bg-warning
     color: #162F56;
     background-color: #FFE074;
+
+.gromor-agreement-wrapper
+  padding: 24px;
+  background: #FAFAFA;
+  .title-wrapper
+    align-items: center;
+    border-bottom: 1px solid rgba(11, 112, 231, 0.12);
+    padding-bottom: 12px;
+    position:relative;
+    .close
+      position:absolute;
+      right:0;
+      top:0
+    .gromor-legal-sign-icon
+      width:39.8px;
+    .title-container
+      display: flex;
+      flex-direction: column;
+      margin-left: 6.52px;
+      .title
+        font-weight: bold;
+        font-size: 18px;
+        line-height: 24px;
+        color: rgba(22, 47, 86, 0.87);
+  .text
+    font-size: 14px;
+    line-height: 20px;
+  .agreement-info
+    color: rgba(22, 47, 86, 0.74);
+    margin-top: 24px;
+  .credit-title
+    color: rgba(22, 47, 86, 0.87);
+    font-weight: bold;
+    margin-top: 20px;
+  .credit-info-container
+    background: #FFFFFF;
+    border: 1px solid rgba(11, 112, 231, 0.1);
+    padding: 24px 20px;
+    margin-top:8px;
+    .credit-limit-container
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 18px
+      border-bottom: 1px solid rgba(11, 112, 231, 0.12);
+      .credit
+        font-size: 13px;
+        font-weight: bold;
+        color: rgba(22, 47, 86, 0.87);
+      .rzp-whole
+       font-size: 18px;
+       line-height: 20px;
+       font-weight: bold;
+      .rzp-currency
+       font-size: 16px;
+      .rzp-paise
+       font-size: 14px;
+       font-weight: normal;
+
+      .rzp-whole
+        font-size: 24px;
+    .details-wrapper
+      flex-direction: row;
+      justify-content: space-between;
+      width: 100%;
+      align-items: center;
+      padding-top: 16px;
+      >div
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+      .details-heading
+        font-weight: bold;
+        font-size: 12px;
+        line-height: 16px;
+        color: rgba(22, 47, 86, 0.54);
+      .detail
+        font-size: 12px;
+        line-height: 20px;
+        color: rgba(22, 47, 86, 0.84);
+        span
+          font-size: 14px;
+          color: rgba(22, 47, 86, 0.87);
+          font-weight: bold;
+      .gromor-icon
+         width: 59.68px;
+         margin-top: 5px;
+      .border-right
+        position: relative;
+        &::after
+          content:"";
+          height:21px;
+          right: 12px;
+          position: absolute;
+          width:1px;
+          color:rgba(22, 47, 86, 0.1);
+  .cta
+    margin-top: 24px;
+    font-weight: bold;
+    width: 100%;
+    padding: 10px 24px;
+    i{
+        margin-left: 8px
+      }
+
+
+.leegality-redirect-wrapper {
+  max-width:512px !important;
+
+  .leegality-redirect-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 24px 40px;
+    position:relative;
+    .close{
+      position:absolute;
+      right:13px;
+      top:13px
+    }
+  }
+
+  h1 {
+    font-weight: bold;
+    font-size: 18px;
+    line-height: 22px;
+    color: #162F56;
+    margin:0;
+  }
+
+  h3 {
+    font-weight: normal;
+    font-size: 14px;
+    line-height: 20px;
+    color: rgba(22, 47, 86, 0.87);
+    margin: 2px 0 0 0;
+  }
+
+  .leegality-redirect-inner-wrapper {
+    margin-top: 20px;
+    padding: 40px 32px;
+    background: #FFFFFF;
+    border: 1px solid rgba(173, 188, 201, 0.24);
+    border-radius: 3px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+
+    button {
+      padding: 8px 48px;
+      font-weight: bold;
+      font-size: 14px;
+      line-height: 20px;
+    }
+
+    .leegality-redirect-inner-text {
+      font-size: 14px;
+      line-height: 20px;
+      text-align: center;
+      font-weight: normal;
+      color: rgba(22, 47, 86, 0.74);
+      margin: 32px 0 16px 0;
+      max-width: 368px;
+      span {
+        font-weight: 700;
+      }
+    }
+  }
+
+  .leegality-redirect-inner-header {
+    align-items: center;
+    position:relative;
+    justify-content: center;
+    width: calc(100% - 162px);
+    z-index :10
+  }
+
+
+
+  .leegality-redirect-logo-wrapper{
+    width: 43.43px;
+    height: 43.43px;
+    border: 1px solid rgba(11, 112, 231, 0.16);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+  }
+
+  .leegality-redirect-razorpaylogo{
+    animation: smooth-collide-inner 800ms 1s forwards;
+    transform: translateX(-100%);
+
+    @keyframes smooth-collide-inner {
+        0% {
+          transform: translateX(-100%)
+        }
+
+        100% {
+          transform: translateX(9%);
+        }
+      }
+
+    img {
+      width: 17.63px;
+      height: 19.83px;
+    }
+  }
+
+  .leegality-redirect-leegality-logo{
+    animation: smooth-collide-outside 800ms 1s forwards;
+    transform: translateX(100%);
+    background-color: white;
+
+    @keyframes smooth-collide-outside {
+        0% {
+          transform: translateX(100%)
+        }
+
+        100% {
+          transform: translateX(-9%);
+        }
+      }
+
+
+    img {
+      width: 31.21px;
+      height: 10.86px;
+    }
+  }
+
+
+  .leegality-redirect-footer {
+    margin-top: 16px;
+    align-self: flex-start;
+
+    .leegality-redirect-footer-lockcontainer{
+     align-items: center;
+      img{
+        width: 9px;
+        height: 12px;
+      }
+    }
+
+    .leegality-redirect-footer-info{
+      color: rgba(36, 168, 50, .87);
+      font-weight: bold;
+      font-size: 12px;
+      line-height: 18px;
+      margin-left: 4.5px;
+    }
+
+    .leegality-redirect-footer-text {
+      font-weight: normal;
+      font-size: 12px;
+      line-height: 17px;
+      color: rgba(22, 47, 86, .63);
+      margin-top: 3px;
+    }
+  }
+ }

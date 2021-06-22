@@ -124,6 +124,11 @@ export const toBase64 = (file) => {
   });
 };
 
+export const checkifDateExpired = (dateToCheck) => {
+  const today = new Date();
+  return !!(dateToCheck.setHours(0, 0, 0, 0) <= today.setHours(0, 0, 0, 0));
+};
+
 export const getSettlementStatus = (merchantId, callbackSettlementStatus) => {
   const parseSettlementCallbackStatus = () => {
     if (callbackSettlementStatus === 'settlementDone') return true;
@@ -152,5 +157,19 @@ export const getSettlementStatus = (merchantId, callbackSettlementStatus) => {
     );
     if (settlementStatusExists) return merchantsSettlementStatus[merchantId];
     else return true;
+  }
+};
+
+export const getDateSuffix = (date) => {
+  if (date > 3 && date < 21) return 'th';
+  switch (date % 10) {
+    case 1:
+      return 'st';
+    case 2:
+      return 'nd';
+    case 3:
+      return 'rd';
+    default:
+      return 'th';
   }
 };

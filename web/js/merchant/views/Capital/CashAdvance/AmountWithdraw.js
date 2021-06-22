@@ -15,6 +15,7 @@ import {
   fetchWithdrawals,
   fetchInstallments,
 } from 'merchant/reducers/capital/withdrawals';
+import { fetchMerchantDetails } from 'merchant/reducers/capital/migrations';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import {
   CLOSE_OPTIONS,
@@ -42,6 +43,8 @@ import { loadCheckoutScript } from '../utils/index';
 import { fetchRepayments } from 'merchant/reducers/capital/repayments';
 import Spinner from 'common/ui/Spinner';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
+import GromorAgreementModal from 'merchant/views/Capital/components/Modals/GromorAgreementModal';
+import { checkifDateExpired } from 'merchant/views/Capital/utils';
 
 function updateRepaymentData(data, onResolve, onReject) {
   const repayment = new Repayments();
@@ -115,6 +118,7 @@ const computeMaxDueDate = (limit) => {
     withdrawalConfigurationDetails: state.withdrawals.withdrawalConfiguration,
     seedData: state.withdrawals.seedData,
     haveWithdrawals: state.withdrawals.list.data,
+    merchantGromorEsignDetails: state.migrations.merchantGromorEsignDetails,
   }),
   {
     fetchWithdrawalConfiguration: fetchWithdrawalConfiguration,
@@ -126,6 +130,7 @@ const computeMaxDueDate = (limit) => {
     fetchWithdrawals,
     fetchInstallments,
     fetchRepayments,
+    fetchMerchantDetails,
   },
 )
 export default class AmountWithdraw extends React.Component {
@@ -773,6 +778,35 @@ export default class AmountWithdraw extends React.Component {
     });
   };
 
+  openGromorSignModal = () => {
+    const {
+      closeModal,
+      openModal,
+      withdrawalConfigurationDetails,
+      merchantGromorEsignDetails: {
+        data: { due_at, email_id = '', name = 'You', leegality_url = '' } = {},
+      } = {},
+    } = this.props;
+
+    const handleModalClose = () => {
+      closeModal();
+    };
+
+    openModal({
+      component: (
+        <GromorAgreementModal
+          onClose={handleModalClose}
+          withdrawalConfigurationDetails={withdrawalConfigurationDetails.data}
+          eSignUrl={leegality_url}
+          name={name}
+          email_id={email_id}
+          due_at={due_at}
+        />
+      ),
+      size: 'medium',
+    });
+  };
+
   automatedWithdrawTooltipView = () => {
     const {
       withdrawalConfigurationDetails: {
@@ -819,6 +853,30 @@ export default class AmountWithdraw extends React.Component {
     );
   };
 
+  withdrawableSectionPostGromorAgreementDate = () => {
+    return (
+      <div className="withdrawals-disabled">
+        <div className="withdrawals-disabled-title-wrapper">
+          <div className="flex end-align">
+            <i className="i i-error withdrawals-disabled-icon" />
+            <h3 className="withdrawals-disabled-title text--secondary">
+              Withdrawals are temporarily disabled!
+            </h3>
+          </div>
+          <p className="withdrawals-disabled-summary">
+            Kindly review and sign the new lender agreement to continue with your Cash Advance
+            withdrawals.
+          </p>
+        </div>
+        <div className="flex cta_wrapper">
+          <button onClick={this.openGromorSignModal} className="btn btn-primary">
+            {'View & Sign Agreement'}
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   withdrawableSection = () => {
     const {
       withdrawalAmount,
@@ -833,8 +891,11 @@ export default class AmountWithdraw extends React.Component {
     const {
       user,
       withdrawalConfigurationDetails: { data: { automated_loc } } = {
-        data: { automated_loc: false },
+        data: {
+          automated_loc: false,
+        },
       },
+      merchantGromorEsignDetails: { loading, data: { due_at = '' } = {} } = {},
     } = this.props;
     const hasDueDateAndWithdrawnAmount = selectedDueDate && withdrawalAmount;
     const { principle = 0, interest = 0 } = hasDueDateAndWithdrawnAmount
@@ -844,7 +905,15 @@ export default class AmountWithdraw extends React.Component {
     const showFirstWithdrawalOffer = this.getFirstWithdrawalOffer();
     const withdrawalConfigStatus = this.props.withdrawalConfigurationDetails.data.status;
     const withdrawalInputHasError = withdraw_errors.length > 0;
-
+    const isDateExpired = checkifDateExpired(new Date(due_at));
+    const isGromorAgreementLoading = loading;
+    const locEsignEnabled = user.isFeatureEnabled('loc_esign');
+    const partner_id =
+      this.props.withdrawalConfigurationDetails && this.props.withdrawalConfigurationDetails.data
+        ? this.props.withdrawalConfigurationDetails.data.configuration.custom_partner_fields
+            .partner_id
+        : '';
+    const isAggrementSigned = isDateExpired && locEsignEnabled && partner_id !== 'GROMOR';
     return (
       <div className="withdrawals__action-container card flex">
         {showFirstWithdrawalOffer ? (
@@ -873,8 +942,15 @@ export default class AmountWithdraw extends React.Component {
             <div class="cash-advance-first-withdrawal-background"></div>
           </React.Fragment>
         ) : null}
+
         <div class="no-margin full-width" style={{ position: 'relative' }}>
-          {withdrawalConfigStatus && withdrawalConfigStatus.toLowerCase() === 'onhold' ? (
+          {isGromorAgreementLoading ? (
+            <div class="page-spinner-container" style={{ height: '100%' }}>
+              <Spinner />
+            </div>
+          ) : isAggrementSigned ? (
+            this.withdrawableSectionPostGromorAgreementDate()
+          ) : withdrawalConfigStatus && withdrawalConfigStatus.toLowerCase() === 'onhold' ? (
             isRepaymentLoading === 'LOADING' ? (
               <div class="page-spinner-container" style={{ height: '100%' }}>
                 <Spinner />
@@ -1082,9 +1158,7 @@ export default class AmountWithdraw extends React.Component {
       } = {},
     } = this.props;
     const { selectedDueDate } = this.state;
-    const dateToShow = selectedDueDate
-      ? moment(selectedDueDate).format('DD-MM-YYYY')
-      : computeMaxDueDate(end_day_limit);
+    const dateToShow = selectedDueDate ? moment(selectedDueDate) : computeMaxDueDate(end_day_limit);
 
     return (
       <div className="flex withdrawal-form-container">
@@ -1120,7 +1194,10 @@ export default class AmountWithdraw extends React.Component {
               I will repay the amount by
               <small
                 className="help-content small"
-                style={{ paddingLeft: '4px', position: 'relative' }}
+                style={{
+                  paddingLeft: '4px',
+                  position: 'relative',
+                }}
               >
                 <i
                   className="i i-info-outline"
