@@ -212,7 +212,7 @@ class DowntimeSlackNotification
         $severity = $downtime['severity'];
         $eventTime = $downtime['eventTime'];
 
-        $startTime  = $this->formatEpoc($eventTime);
+        $startTime  = $this->formatEpoc($eTime);
 
         $additionalDetails = "";
 
@@ -223,7 +223,7 @@ class DowntimeSlackNotification
 
         if($this->isResolve($downtimeState)){
             $severity = 'RESOLVED';
-            $additionalDetails = $additionalDetails."\n".$this->getResolutionDetails($eTime, $eventTime);
+            $additionalDetails = $additionalDetails."\n".$this->getResolutionDetails($eventTime, $eTime);
         }
 
         $heading = $this->getHeading($downtime);
@@ -429,9 +429,9 @@ class DowntimeSlackNotification
         ]);
     }
 
-    private function getResolutionDetails($startTime, $eventTime): string
+    private function getResolutionDetails($eventTime, $startTime): string
     {
-        $duration = ($startTime - $eventTime);
+        $duration = ($eventTime - $startTime);
         $duration =  (round($duration / 60));
 
         $eventTime = $this->formatEpoc($eventTime);
